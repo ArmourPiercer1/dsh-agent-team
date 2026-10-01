@@ -1,0 +1,221 @@
+$ cd packages/runtime && pnpm vitest run test/fix-control-authz-c-abandon-terminal.test.ts test/persona-kind-provider-preflight.test.ts test/persona-kind-shipped-dist-smoke.test.ts test/consent-scope-hash-binding.test.ts test/leader-disable-no-requirements-initial-work.test.ts test/template-disable-no-requirements-gate.test.ts --reporter=verbose
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz
+
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T1 — bespoke composable preset ids, v2 teamRequirement `standard`, no seed > the team-scope preflight PASSES (pre-fix the kind subject was unknown ⇒ seed-less FATAL) 4ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T1 — bespoke composable preset ids, v2 teamRequirement `standard`, no seed > evaluateCreationScopes agrees: the team verdict is PASS with the typed reason 1ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T2 — root observes `standard`, member observes `complete` (R8 split) > the team scope PASSES on the ROOT observation; the member template scope FATALs on the MEMBER observation 3ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T3 — root observes `complete` (the §13.5 conflict) > the team scope FATALs with the typed conflict observation (no downgrade through the kind path) 1ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T4 — the observer fails typed (unresolved) > no seed ⇒ unknown ⇒ the fact is omitted ⇒ the preflight FATALs (fail-closed, NOT pending) 1ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T4 — the observer fails typed (unresolved) > WITH a bootstrap seed available:true the seed truth decides ⇒ proceed (the documented 2-state) 0ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T4 — the observer fails typed (unresolved) > WITH a bootstrap seed available:false the seed truth decides ⇒ FATAL (the 2-state is not a blanket OPEN) 0ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T5 — the frozen v1 preset-ID convention (unchanged legacy path) > a NON-kind subject keeps the legacy root/member preset-id matching (v1 frozen Blueprint cold resume) 0ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T5 — the frozen v1 preset-ID convention (unchanged legacy path) > a kind subject resolves through the KIND path even when the mounted id equals a preset (no legacy shadowing) 0ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T6 — end-to-end through the creation preflight (root.ts port shape) > a v2 blueprint with the persona teamRequirement `standard` + a mounted composable preset PASSES with no seed 1ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > T6 — end-to-end through the creation preflight (root.ts port shape) > the SAME chain with a complete mounted preset FATALs end-to-end (no false OPEN) 1ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > Blocker-1 — the template scope carries its role (leader ≠ member observation) > BL1: a HEALTHY leader template PASSES on the leader OWN (root) observation — the no-member-requirement world (pre-fix: judged by the MEMBER entry ⇒ spurious FATAL) 1ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > Blocker-1 — the template scope carries its role (leader ≠ member observation) > BL2: a leader whose OWN observation is `complete` FATALs with the leader observation (pre-fix: FALSE PASS — the leader was judged by the member entry) 1ms
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts > Blocker-1 — the template scope carries its role (leader ≠ member observation) > BL3: in ONE world, the leader template is judged by the ROOT observation and the member template by the MEMBER observation (per-template role dispatch) 1ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case) 15ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > control: with the worker ENABLED the delegate is admitted (healthy world, empty worker) 8ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set 11ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > the same disable BLOCKS the follow-up to the worker (same normalWork class, same scopeRefs) 6ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > re-enabling resumes the delegate through the SAME checks (the block did not key on requirements) 7ms
+ ✓ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > premise: the leader template declares NO requirements (its scope has no verdict inputs) 16ms
+ ✓ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work) 11ms
+ ✓ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way 8ms
+ ✓ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL3: with the leader disabled the legitimate control/recovery lanes still function 8ms
+ ✓ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL4: re-enable RESUMES the initial work through the same checks (allowed again) 8ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work 80ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness) 7ms
+ ✓ packages/runtime/test/persona-kind-shipped-dist-smoke.test.ts > SHIPPED DIST SMOKE — the built provider artifact carries the finding-A semantics > the built provider.js is committed in the dist mirror (the artifact the plugin loads) 1ms
+ ✓ packages/runtime/test/persona-kind-shipped-dist-smoke.test.ts > SHIPPED DIST SMOKE — the built provider artifact carries the finding-A semantics > the shipped module resolves a KIND subject against the role observation (not unknown) — no seed 2ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter) 22ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes 40ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands 20ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator 20ms
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r1" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:1381:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2111:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2933:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r1" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:1381:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2111:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2933:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r2" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:1381:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2111:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2933:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r2" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:1381:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2111:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2933:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work 18ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work 80ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-1: delegate × decision-settle × no-mark 18ms
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r3" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:1381:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2111:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2933:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r3" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:1381:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2111:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/root.ts:2933:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-control-authz/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > finding J premise: the same optional reqID is legal in two scopes; rev1/rev2 differ by hash > J1: the team list and the worker list carry the SAME reqID (validate allows it — within-list uniqueness only) 2ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > finding J premise: the same optional reqID is legal in two scopes; rev1/rev2 differ by hash > J2: rev1 and rev2 carry the SAME requirement ids but DIFFERENT content hashes 2ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J1: a consent is bound to the SCOPE it was granted for (cross-scope, same reqID) > the first create is refused consentRequired (both scopes carry the unconsented reqID) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J1: a consent is bound to the SCOPE it was granted for (cross-scope, same reqID) > a consent granted for the TEAM scope does NOT cover the WORKER scope: re-drive #1 stays consentRequired 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J1: a consent is bound to the SCOPE it was granted for (cross-scope, same reqID) > the two scoped grants are distinct durable rows (scopeKey + contentHash stamped) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J1: a consent is bound to the SCOPE it was granted for (cross-scope, same reqID) > after BOTH scopes are consented the re-drive proceeds (the consent is per-scope, not per-id) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J1: a consent is bound to the SCOPE it was granted for (cross-scope, same reqID) > S2: a grant WITHOUT an explicit scopeKey (the reqID unmet in TWO scopes) is the typed DUPLICATE_REQUIREMENT_SCOPE refusal 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J2: a consent is bound to the BLUEPRINT HASH it was granted for (stale-hash, same root) > the first create (rev1) is refused consentRequired 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J2: a consent is bound to the BLUEPRINT HASH it was granted for (stale-hash, same root) > the rev1 consent row is stamped with the derived scope (team) and rev1 content hash 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J2: a consent is bound to the BLUEPRINT HASH it was granted for (stale-hash, same root) > the pre-team rev2 re-drive does NOT inherit the rev1 consent: stays consentRequired (the stale hash fails closed) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J2: a consent is bound to the BLUEPRINT HASH it was granted for (stale-hash, same root) > re-consenting against rev2 admits the re-drive (the consent keys on scope + hash, both must match) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J3 (S1 addendum): the LEGACY unkeyed row under the keyed PRODUCTION evaluation is fail-closed > the first create is refused consentRequired (one unconsented warning — team scope) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J3 (S1 addendum): the LEGACY unkeyed row under the keyed PRODUCTION evaluation is fail-closed > the seeded legacy row carries NO key (the pre-keying 4-field shape, byte-identical round-trip) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J3 (S1 addendum): the LEGACY unkeyed row under the keyed PRODUCTION evaluation is fail-closed > the KEYED production re-drive does NOT inherit the legacy row: stays consentRequired (fail-closed, zero durable effect) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J3 (S1 addendum): the LEGACY unkeyed row under the keyed PRODUCTION evaluation is fail-closed > the production re-grant mints a KEYED row (scope derived — team — + the bound hash) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J3 (S1 addendum): the LEGACY unkeyed row under the keyed PRODUCTION evaluation is fail-closed > after the re-grant the re-drive proceeds (the migration path works end-to-end) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > J3 (S1 addendum): the LEGACY unkeyed row under the keyed PRODUCTION evaluation is fail-closed > r2 addendum: an EXPLICIT scopeKey naming a scope that does not declare the requirement → typed CONSENT_TARGET_SATISFIED 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > S1 unit face (pure startupPreflight): the same legacy row — keyed vs legacy evaluation > KEYED evaluation (blueprintContentHash modeled — the production face): the unkeyed row is NEVER consented (fail-closed) 0ms
+ ✓ packages/runtime/test/consent-scope-hash-binding.test.ts > S1 unit face (pure startupPreflight): the same legacy row — keyed vs legacy evaluation > LEGACY evaluation (no blueprintContentHash — the pre-J unit face): the same row IS honored (byte-identical requirementId-only match) 0ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-2: delegate × decision-settle × already-abandoned 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-3: delegate × terminal-snapshot × no-mark 18ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-4: delegate × terminal-snapshot × already-abandoned 17ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-5: delegate × outer-queue × no-mark 17ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-6: delegate × outer-queue × already-abandoned 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-7: delegate × gate-success × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-8: delegate × gate-success × already-abandoned 17ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-9: delegate × gate-reject × no-mark 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-10: delegate × gate-reject × already-abandoned 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-11: delegate × control-queue × no-mark 79ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-12: delegate × control-queue × already-abandoned 78ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-13: delegate × pre-flight-authority × no-mark 18ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-14: delegate × pre-flight-authority × already-abandoned 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-15: delegate × pre-flight-provider-lock × no-mark 41ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-16: delegate × pre-flight-provider-lock × already-abandoned 38ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-17: delegate × pre-flight-external-facts × no-mark 38ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-18: delegate × pre-flight-external-facts × already-abandoned 37ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-19: delegate × post-commit × no-mark 22ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-20: follow-up × decision-settle × no-mark 14ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-21: follow-up × decision-settle × already-abandoned 14ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-22: follow-up × terminal-snapshot × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-23: follow-up × terminal-snapshot × already-abandoned 17ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-24: follow-up × outer-queue × no-mark (the external named repro) 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-25: follow-up × outer-queue × already-abandoned 18ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-26: follow-up × gate-success × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-27: follow-up × gate-success × already-abandoned 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-28: follow-up × gate-reject × no-mark 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-29: follow-up × gate-reject × already-abandoned 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-30: follow-up × control-queue × no-mark 78ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-31: follow-up × control-queue × already-abandoned 79ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-32: follow-up × post-commit × no-mark 19ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-33: follow-up × fault-admission × no-mark 77ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-34: send-message × decision-settle × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-35: send-message × decision-settle × already-abandoned 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-36: send-message × terminal-snapshot × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-37: send-message × terminal-snapshot × already-abandoned 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-38: send-message × outer-queue × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-39: send-message × outer-queue × already-abandoned 17ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-40: send-message × control-queue × no-mark 79ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-41: send-message × control-queue × already-abandoned 80ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-42: create-member × decision-settle × no-mark 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-43: create-member × decision-settle × already-abandoned 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-44: create-member × terminal-snapshot × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-45: create-member × terminal-snapshot × already-abandoned 14ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-46: create-member × outer-queue × no-mark 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-47: create-member × outer-queue × already-abandoned 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-48: create-member × gate-success × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-49: create-member × gate-success × already-abandoned 17ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-50: create-member × gate-reject × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-51: create-member × gate-reject × already-abandoned 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-52: create-member × control-queue × no-mark 78ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-53: create-member × control-queue × already-abandoned 78ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-54: create-member × pre-flight-authority × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-55: create-member × pre-flight-authority × already-abandoned 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-56: create-member × pre-flight-provider-lock × no-mark 36ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-57: create-member × pre-flight-provider-lock × already-abandoned 38ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-58: create-member × pre-flight-external-facts × no-mark 38ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-59: create-member × pre-flight-external-facts × already-abandoned 38ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-60: create-member × fault-preflight × no-mark 16ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end) 1ms
+
+ Test Files  6 passed (6)
+      Tests  114 passed (114)
+   Start at  08:15:18
+   Duration  2.93s (transform 2.98s, setup 0ms, import 4.44s, tests 2.12s, environment 0ms)
+
+EXIT=0 (focused: my C file + #46 persona + #48 consent suites at merged head 0aef4d91)

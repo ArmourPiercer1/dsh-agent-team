@@ -245,6 +245,152 @@ in the tree untouched.
 | `pnpm run typecheck` (repo root, legible full log — per-package lines + final status, command line first, true exit last) | **EXIT=0** | `merged-typecheck-1.log` |
 | `pnpm run check:artifacts` (legible full 1372-file verification output, command line first, true exit last) | **OK: 1372 files, EXIT=0** (also the `build:composition` step during the regeneration) | `merged-check-artifacts-1.log` |
 
+## Residual P2 — the pre-first-durable-commit abort settlement (D1–D4) + the bounded C9 matrix
+
+External review's residual P2 (the service race, NOT an arbitrary-GUI
+unauthorized-execution claim): an invocation that aborts while QUEUED at a
+pre-commit await settles with NO durable close — the Control allow stays
+`decided`, no typed terminal, the waiter/retry world keeps polling a
+request that can never resolve. One systematic settlement mechanism, no
+per-hole catches (scope locked at D1–D4 + C9 exactly as designed):
+
+- **D1 (action-router/effects.ts, `withTeamLock`)** — the map entry a
+  later caller chains onto now settles only when BOTH the previous chain
+  and this call have settled (the one-expression chain-tail fix): a
+  cancelled waiter's tail keeps its queue slot — a later writer can never
+  overtake the still-running holder (the reviewer's exact sequence:
+  holder start → cancel waiter → later writer → holder end). The entry is
+  still set SYNCHRONOUSLY per call (the C6/c9-serial entry-identity
+  proofs are preserved).
+- **D2 (action-router/router.ts, `performAction`)** — the systematic
+  settle for an invocation that aborted BEFORE the effect commit,
+  whichever pre-commit await the abort landed at (the runtime-chain queue,
+  the pre-dispatch terminal snapshot at L631, the gate re-probe, the
+  unit's control-lock queue — gated AND fallback branches): the request
+  is durably closed by the SAME unit the commit takes (a never-run
+  `commitEffect`) and the invocation settles with the typed zero-effect
+  abandon block. `effectCommitStarted` / `boundarySettled` tracking keeps
+  the post-commit world byte-identical (a committed Phase A fact is never
+  re-marked; `WORK_DELIVERY_FAILED` surfaces unchanged) and
+  non-marker / non-aborted errors pass through untouched. Runs outside
+  any chain hold (control lock alone) → no deadlock; composes
+  idempotently with the pre-dispatch best-effort abandon and concurrent
+  explicit abandons (exactly one mark).
+- **D3 (activation/provider.ts + types.ts + errors.ts +
+  admission/gate.ts + effects.ts wiring)** — the SECOND preflight on
+  fresh create-member / delegate-create carried NO signal (an abort still
+  created the member). `MemberActivationRequest` now threads the
+  invocation signal + a marker-only `persistAbandonClose` callback; the
+  provider checks FOUR pre-reservation boundary points (post-authority,
+  post-v2-templateFacts, top of the provider-lock body, immediately
+  pre-journal-reservation) and settles the close + rejects typed
+  `ACTIVATION_REQUEST_ABORTED` (zero provisioning: no journal
+  reservation, no child session, no member row). The gate maps it to the
+  compatibility block (`status: 'ABORTED_PRE_RESERVATION'`); the router's
+  `commitReviewedEffect` catch converts it — for marker requests — into
+  the SAME typed abandon terminal as every other pre-commit settle
+  (providerCode check). Non-marker creations get the typed abort with
+  zero provisioning and no close (disclosed signal threading).
+- **D4 (control/service.ts + types.ts)** — `persistAbandonCloseLocked` —
+  the LOCK-FREE durable close for the pre-reservation boundary
+  (precondition: the caller holds the control lock under the
+  effect-admission unit; re-acquiring would deadlock). Resolves when the
+  close is guaranteed (persisted here or already terminal); rejects only
+  on the close persist fault (typed `DURABLE_WRITE_FAILED` — fail-closed).
+
+**C9 (test/fix-control-authz-c-abandon-terminal.test.ts — pure addition
+after C1–C8; C1–C8 byte-identical, verified: the only deleted line in the
+file is the import line replaced by the extended import)**: the bounded
+matrix — 4 actions (follow-up / delegate / create-member / send-message)
+× 6 await points (decision-settle, terminal-snapshot L631, outer runtime
+queue, outer gate success/reject, control queue, second preflight
+[authority / provider-lock / external-facts]) × 2 pre-states + persist-
+fault legs + post-commit rows = **60 rows + c9-serial** (the reviewer's
+exact determinism sequence: map-identity proof captured BETWEEN the
+holder and waiter calls — the entry is set synchronously per call).
+
+| Leg | Result | Log |
+| --- | --- | --- |
+| GENUINE RED @ `a2b3df79` (pre-D1–D4) | **29 GREEN / 32 RED, EXIT=1** — the RED set is exactly the designed gap set: 4 terminal-snapshot no-mark + 8 outer-queue + 6 gate-reject + 12 second-preflight + 1 fault-preflight + 1 serial | `c9-red-baseline.log` |
+| Focused file AFTER D1–D4 @ `b168870e` (+ envCall lint fix) | **69/69 GREEN, EXIT=0** (C1–C8 + 60 rows + c9-serial) — all 32 baseline-RED rows flipped GREEN; the 29 baseline-GREEN rows stayed green (no regression: post-commit rows still zero-mark via `effectCommitStarted`; decision-settle still the S6 race) | `c9-green-focused-1.log` / `c9-green-focused-3.log` |
+| `pnpm run typecheck` (runtime) | EXIT=0 | (in `c9-green-focused-3.log` run context) |
+| Full suite @ `b168870e` (2 runs) | **4788P/20F (4808)** and **4787P/21F (4808)** — the deterministic `31ad828d` debt set (19F + 3 collections) + ONE pre-existing load/timing flake rotating between `rmr-remote-mount-race` (run 1) and `p6t1-parallel` (run 2). Flake proven pre-existing: `p6t1-parallel` flakes 2/6 in isolation with the `a2b3df79` (pre-D1) production files restored in place (same 2 tests, same F/P pattern — the known flake family the #48 round already documented with its 0–2 envelope); `rmr` passes 3/3 isolated at this head. Neither flake involves the D1–D4 surface (no cancellation on the p6t1 parallel path; rmr is the remote connection-service bounded wait) | `full-b168870e-1.log` / `full-b168870e-2.log` |
+| `pnpm exec eslint .` @ `b168870e` + envCall fix | **142 (117E/25W)** — fp-identical to the `a2b3df79` baseline except the +1 line shift in `router.ts` (the new `ACTIVATION_ERROR_CODES` import); the ONE new error (unused `envCall` counter in the C9 stub) was fixed and re-verified | `lint-b168870e-2.log` |
+| dist @ `c948c62d` | regenerated (`pnpm -r run build` EXIT=0 + `build:composition` — its internal `check-artifacts-committed` step reported the then-uncommitted drift, as expected pre-commit) — 24 files, all under `packages/runtime/dist` for the D1–D4 modules; zero client/composition drift; `pnpm run check:artifacts` after the dist commit = **OK 1372, EXIT=0** | `build-b168870e-1.log` + `check-artifacts-c948c62d-1.log` |
+
+## Controlled master sync round 2 (PR #46 + PR #48 — merge of `621fdba1`)
+
+MASTER-MOVED mid-batch (user merged PR #48, authorized per-HEAD): new
+master = **`621fdba1f9feaf7dc192f8c8e89e2b9c848881b7`** (parents
+`8e18819c` + `73ed19d1`) carrying BOTH #46 (finding A: persona KIND
+subject vs presetId — the requirement-facts provider kind path + 2 test
+files) and #48 (findings I/J + I-residual: template availability gating
++ consent scope/hash binding — 3 test files + root.ts /
+requirement-gate.ts / requirements/* / requirement-facts/* edits).
+Re-verified `origin/master` = `621fdba1` immediately before merging.
+
+Merge commit: **`0aef4d917657b5ceb0ebeb90a44fddf884cf7054`** (parents
+`c948c62d4ac664bf63390018936db616d6663610` + `621fdba1`).
+
+### Conflict-resolution list (EVERY resolution — NEW UNREVIEWED CHANGES)
+
+Files that differ from BOTH parents after the merge (the complete set —
+every other merged file is byte-identical to at least one parent):
+
+| # | File | Hunk | Resolution |
+| --- | --- | --- | --- |
+| 1 | `dev/agent-workflow/SESSION_ROUTER_LOG.md` | the file tail (both sides appended entries after the common base `2bfbca12`) | **KEPT BOTH SIDES** verbatim, chronological: my four `2026-10-01` fix-control-authz entries (pass-1 / pass-2 / pass-3 / sync-1) FIRST, then the #48 + #46 entries (consent findings I+J, I residual, persona finding A, their sync entries) — byte-verified by the both-parents diff (the resolved file is the only file differing from both parents besides p4t6) |
+| 2 | `packages/testkit/test/p4t6-session-event-scan.test.ts` | (a) the `it('coverage: …')` description string — both sides extended it; (b) the pin comment block + expects | (a) **KEPT BOTH SIDES**: master's extension (#48 consent + #46 persona clauses) with my `fix-control-authz` five-files clause appended after it; (b) **UNION of both comment blocks + NEW union comment, pin RECOMPUTED → 906**: `896` base + 2 `fix-persona-kind` files + 3 `fix-runtime-template-consent` files + 5 `fix-control-authz` files = 10 new scannable `.ts` files over the merge base — COMPUTED from the actual `git diff --name-status 31ad828d..621fdba1` (5 A-lines: the 2 persona + the 3 consent) + `31ad828d..c948c62d` (5 A-lines: my five) — union 10, disjoint. Scanner `.mjs`/`.d.mts` byte-identical (DEC-1 precedent). Probe FIRST (protocol): p4t6 ran 10/10 at the merged head BEFORE the bookkeeping commit — the scanner's authoritative count confirmed the computed 906 (old pins were 901 on BOTH sides — each side's own 896+5 union) |
+| 3 | every other file | auto-merged clean — the two sides' change sets are DISJOINT (verified: #46/#48 touched `root.ts` / `requirement-gate.ts` / `requirement-facts/*` / `requirements/*` / `root-initial-work.ts` + their 5 test files + their evidence dir + their dist; this branch touched `action-router/{effects,router}` / `activation/*` / `admission/gate.ts` / `control/{service,types}` / my 5 test files + the shared spy + my dist + my evidence; zero `control/*` or `activation/*` files in the #46/#48 delta) | KEPT the merge (no manual resolution needed). dist: both sides' dists auto-merged (disjoint files); **REGENERATED from the merged source tree** (`pnpm -r run build` + `pnpm build:composition`) — the regeneration produced **ZERO diff** against the auto-merged union (clean tree after rebuild) — `pnpm run check:artifacts` = **OK 1372, EXIT=0** ("the merged dist is the canonical one") |
+
+Nothing from #46/#48 was dropped, rewritten, or cherry-picked: their
+commits land verbatim; the #46/#48 surface is **byte-identical to
+master at the merged head** (verified: `git diff 621fdba1 0aef4d91 --
+<persona/consent suites + root.ts + requirement-facts/ + requirements/ +
+requirement-gate.ts + root-initial-work.ts>` = EMPTY — the A role
+metadata survives byte-for-byte).
+
+### Role-wiring re-audit on this branch's delta (per the MASTER-MOVED notice)
+
+Question: does any file THIS branch added/changed construct a
+requirement-scope (`RequirementFactScope` / `resolveFacts` template
+scope) that would now need the #46/#48 closed-set `role`?
+
+- Grep of all five new test files + the C file + the shared spy for
+  `RequirementFactScope` / `resolveFacts` / `requirementFacts` /
+  requirement `scope: {` / `kind: 'template'` requirement-scope
+  constructions: the ONLY hit is `fix-control-authz-h-send-message.test.ts`
+  L239 `subject: { kind: 'template', templateId: 'worker' }` — a
+  **ControlSubject** (the control-request subject vocabulary, exercised
+  INTENTIONALLY as the evidence-guard leg proving the real validator
+  rejects the buggy template-subject-with-targetInstanceId shape with
+  `CONTROL_REQUEST_MALFORMED`). The A contract governs the
+  requirement-facts scope vocabulary, a DIFFERENT closed set; #46/#48
+  touched ZERO `control/*` or `activation/*` files (verified from the
+  master delta list), so the validator behavior that leg pins is
+  unchanged at the merged tree (the suite re-ran GREEN there).
+- The world fixtures the C9 matrix builds on (`p6t2-helpers.ts`,
+  `fix-control-authz-helpers.ts`): `p6t2-helpers.ts` is unmodified on
+  BOTH sides of the merge (not in either change set); the authz helpers
+  construct CONTROL subjects only (same vocabulary audit).
+- **Audit result: ZERO role-less requirement-template-scope
+  constructions, ZERO `MALFORMED_DTO` exposure in this branch's delta.**
+- Disposition confirmation: the merged-head focused run includes all
+  five #46/#48 suites (114/114 GREEN with my C file — `merged2-focused-1.log`)
+  and the full suite shows no new failures from the A-contract surface
+  (failed set = the debt set + the documented flake family, below).
+
+### Gates at the merged head `0aef4d91` (full re-test)
+
+| Gate | Result | Log |
+| --- | --- | --- |
+| p4t6 probe (BEFORE bookkeeping — probe-first) | **10/10 GREEN @ pin 906**, EXIT=0 (the scanner's authoritative count confirmed the computed union) | `merged2-p4t6-1.log` |
+| Focused: my C file (C1–C8 + C9 60 rows + c9-serial) + #46 persona suites (2) + #48 consent suites (3) | **6 files / 114 tests GREEN**, EXIT=0 | `merged2-focused-1.log` |
+| Full `pnpm vitest run` | **10F files / 406P (416); 21F tests / 4837P (4858); EXIT=1** — failed set = the deterministic `31ad828d` debt set (t1-capability-schema 9 / t2-blueprint-hash 1 / d3-member-identity-context 1 / p6t3-mediation 5 / p6t3-restart 2 / p6t6-actions 1 = 19F + collections p8s3b-result-effects / t12a-b2-child-identity / t12a-glue-handoff-ports) + **`p6t1-parallel` 2F = the KNOWN flake family** (documented in the #48 round's own log entry with its 0–2 envelope: "p6t1-parallel 1–2F = 已知 flake 家族, 隔离重跑 ×3 全 9/9 GREEN"; pre-existence independently re-proven this batch by the in-place `a2b3df79`-files experiment — 2/6 isolated flakes WITHOUT the D1–D4 production changes; `rmr-remote-mount-race` passed this run). **SET DIFF vs the debt set = EMPTY except the documented flake family. Arithmetic closes exactly: 4858 = 4808 (this branch pre-merge) + 45 (the five NEW #46/#48 test files) + 5 (their +1 `requirement-facts.test.ts` + 4 `runtime-requirement-facts-provider.test.ts` — verified per-file against the pre-merge run's per-file counts; test-file count 411 + 5 = 416, zero missing/duplicate files)** | `merged2-full-1.log` |
+| `pnpm exec eslint .` | **142 (117E/25W), EXIT=1** — same COUNT and same ISSUE SET as the `a2b3df79` baseline (file-aware fingerprint: zero additions, zero deletions); the only deltas are line-number shifts in 4 files — `action-router/router.ts` 83→84 (this branch's new `ACTIVATION_ERROR_CODES` import line — a pre-existing unused-import issue, shifted) + `requirement-facts/provider.ts` (3 shifted — #46/#48's own in-place edits) + `requirement-d1-d3-decision-scoping.test.ts` 340→341 + `runtime-requirement-facts-provider.test.ts` 42→44 (#46/#48's own test edits). **Zero new lint issues from this branch's delta or the merge** | `merged2-lint-1.log` + `merged2-fp-fileaware.txt` |
+| `pnpm -r run typecheck` (repo root, legible full log) | **EXIT=0** | `merged2-typecheck-1.log` |
+| dist regeneration + `pnpm run check:artifacts` | `pnpm -r run build` EXIT=0 + `pnpm build:composition` EXIT=0 — **ZERO diff** against the auto-merged union (clean tree after rebuild) — `check:artifacts` = **OK: 1372 files, EXIT=0** | `merged2-build-1.log` |
+
 ## Full-suite gate (valid environment)
 
 Environment validity: the test-use checkout `tests/deepseek-harness-test-use` was verified valid before the baseline — pristine @ `46a7f68b0922371ce7144b668b90e377d8e799f4` (0.1.7-rc.1), `node_modules` present, `packages/boot/app-boot/lib/index.js` built. (The earlier `baseline-full.log` run — kept in evidence — was taken BEFORE this environment was valid and is NOT the cited baseline; its two extra failed files, `plugin-dsh-compat` + `a2c7-subtree-matcher`, were environmental — missing test-use build.)
