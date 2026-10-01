@@ -42,6 +42,7 @@ import type {
   ProgressValue,
   TemplateKind,
 } from '../../../contracts/src/index.js'
+import type { RemoteSafeJsonValue } from '../../../remote/src/index.js'
 import type { TeamPerspective } from '../state/team-session-resolution.js'
 
 /** Re-exported for adapter consumers (the snapshot carries it). */
@@ -193,6 +194,58 @@ export interface TeamUiLedgerRow {
 }
 
 /**
+ * The CLIENT-LOCAL frozen mirror of the canonical `ControlSubject`
+ * (PROVENANCE — the client may not import the host package:
+ * `packages/runtime/control/types.ts` L256-259, the CLOSED union
+ * `instance→instanceId | template→templateId | team→rootSessionId`).
+ * The adapter reads the durable subject through the closed map verbatim
+ * and carries it as `{kind, id}`; `targetInstanceId` is ONLY ever the
+ * instance-subject DERIVATION (or the legacy row's own leaf), NEVER
+ * fabricated for a non-instance subject (PR #56).
+ */
+export interface TeamUiControlSubject {
+  readonly kind: 'instance' | 'template' | 'team'
+  readonly id: string
+}
+
+/**
+ * The explicit display-side rendering mode of one control chain (PR #56;
+ * display-side ONLY — never authority):
+ *  - `standard` — a well-formed durable `subject` (any defined kind),
+ *    no recovery-payload requirement applies;
+ *  - `legacy-compat` — a pre-PR-D history row (NO `subject` leaf; the
+ *    instance-only flow: `packages/runtime/control/service.ts`
+ *    L1490-1492 writes `targetInstanceId` ONLY for the instance
+ *    subject): compatibility preserved, explicitly labeled;
+ *  - `recovery-v1` — a recovery-dispatch request, classified by the
+ *    SHIPPED POSITIVE ID ONLY: the `reviewPayload` `schema` leaf
+ *    `dsh-agent-team/recovery-dispatch/v1`
+ *    (`packages/runtime/action-router/router.ts` L331). ACCEPTED
+ *    LIMITATION — USER OPTION A (scope locked): with payload AND digest
+ *    both absent, recovery-requiredness is not protocol-identifiable;
+ *    the row keeps its plain subject mode, disclosed — NO heuristic
+ *    ships (the router's `recovery:` correlation prefix, router.ts
+ *    L524, is a producer convention, not a reserved contract token) and
+ *    option B (protocol marker + integrity re-check) is DEFERRED to
+ *    Alpha3. The contract-required payload integrity applies (see
+ *    `reviewIntegrity`);
+ *  - `unsupported-subject` — the subject is absent / malformed /
+ *    unknown (fail-closed, STRICTLY so — the parseSubject mirror admits
+ *    ONLY the kind's own id leaf with the other two kind leaves absent,
+ *    service.ts L436-462, and a legacy targetInstanceId outside an
+ *    instance subject, L610-616): the request STAYS VISIBLE,
+ *    non-decidable (Allow disabled), never a silent drop.
+ * DIGEST NOTE: the client ships NO canonicalization / hash (display ≠
+ * verification): the digest renders verbatim as WIRE-SOURCED evidence,
+ * never as a client-verified value.
+ */
+export type TeamUiControlRenderMode =
+  | 'standard'
+  | 'legacy-compat'
+  | 'recovery-v1'
+  | 'unsupported-subject'
+
+/**
  * One control request paired with its decision when a loaded page carries
  * one (the S3-B "control chains"; the legacy `TeamApprovalView`
  * successor). `pending` = no paired decision in the loaded entries.
@@ -205,8 +258,56 @@ export interface TeamUiControlChain {
   readonly requestId: string
   /** The request fact's sequence (chain identity anchor). */
   readonly requestSequence: number
-  /** The requesting member instance (payload `targetInstanceId`). */
-  readonly targetInstanceId: string
+  /**
+   * The requesting member instance — the instance-subject DERIVATION
+   * (`subject.kind === 'instance' ? subject.id : undefined`) or the
+   * legacy row's own `targetInstanceId` leaf. ABSENT for every
+   * non-instance subject (never fabricated, PR #56).
+   */
+  readonly targetInstanceId?: string
+  /**
+   * The durable control subject verbatim (the closed canonical map, PR
+   * #56). ABSENT only on an `unsupported-subject` chain (never guessed).
+   */
+  readonly subject?: TeamUiControlSubject
+  /** Unsupported subject only: the raw wire `subject.kind` leaf (fail-safe). */
+  readonly subjectKindRaw?: string
+  /** The request's durable logical correlation (fail-safe leaf). */
+  readonly correlation?: string
+  /** The explicit rendering mode (present on every adapter-built chain). */
+  readonly renderMode?: TeamUiControlRenderMode
+  /**
+   * `reviewable` iff a recovery-v1 line carries a LOSSLESS
+   * `reviewPayload` AND a SHAPE-valid `reviewPayloadDigest` (SHAPE
+   * check only — the client never recomputes: display ≠ verification);
+   * `incomplete` otherwise. `incomplete` is ALSO set as DEFENSE-IN-DEPTH
+   * on any OTHER mode whose line carries a `reviewPayloadDigest` with NO
+   * lossless `reviewPayload` (a digest pointing at an absent payload —
+   * the current backend cannot produce this shape: the write path
+   * rejects service.ts L1369-1374, the read path drops L654-656, so it
+   * is a corrupt-data guard ONLY and claims nothing about recovery
+   * classification). ABSENT = no integrity claim on the row (no payload
+   * requirement applies).
+   * PROVENANCE: `packages/runtime/control/types.ts` L406-425 (the
+   * lossless display contract; a non-lossless value is malformed →
+   * never rendered, never guessed).
+   */
+  readonly reviewIntegrity?: 'reviewable' | 'incomplete'
+  /** The lossless review payload verbatim (ABSENT = the wire omitted it). */
+  readonly reviewPayload?: RemoteSafeJsonValue
+  /** The FULL wire digest string verbatim (never recomputed client-side). */
+  readonly reviewPayloadDigest?: string
+  /**
+   * The request was closed by a terminal `control-request-abandoned`
+   * fact (RULED UNIFORM, PR #56: instance AND template AND team
+   * identically — the abandon fact is the TERMINAL mark and wins over a
+   * concurrent decision, `packages/runtime/control/types.ts` L433-440;
+   * the projection reacts ONLY to the durable factType entry from the
+   * ledger page, never to any wait-cancel/AbortSignal notion — a wait
+   * cancellation with no durable fact leaves the request legitimately
+   * pending, service.ts L370-389).
+   */
+  readonly abandoned?: boolean
   readonly actionName: string
   readonly kind?: string
   readonly toolName?: string

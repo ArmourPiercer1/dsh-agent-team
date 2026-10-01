@@ -1,0 +1,157 @@
+$ npx vitest run test/pr56-control-subject-payload.test.ts -t 'abandon'   (src stashed to STOCK 1385f1ee; historical defect record — instance case must FAIL on stock)
+2026-10-01T17:18:00Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr56-client-panel/packages/client
+
+ ❯ test/pr56-control-subject-payload.test.ts (32 tests | 7 failed | 24 skipped) 12ms
+     ↓ the template-subject request becomes a pending chain (today: silently dropped)
+     ↓ carries the reviewPayload + the FULL wire digest verbatim
+     ↓ identifies the recovery-dispatch/v1 request as fully reviewable
+     ↓ sha256(canonicalJsonStringify(S9 payload)) === the displayed wire digest
+     ↓ a team-subject request becomes a chain over rootSessionId
+     ↓ LEGACY wire shape (targetInstanceId only, no subject leaf) keeps today chain shape
+     ↓ PR-D wire shape (subject instance + targetInstanceId) stays byte-identical + labeled standard
+     ↓ a subject/target CONTRADICTION fails closed to unsupported (never a trusted pick)
+     ↓ the broken-identity skips stay (no requestId / no actionName → no chain)
+     × a decision pairs onto the template request by requestId (pending false) 6ms
+     × an ORPHAN decision over a template subject scope becomes a resolved chain (no invented instance) 0ms
+     × an abandon fact closes a NON-instance pending chain (no orphaned pending) 0ms
+     × RULED UNIFORM: an abandon fact closes an INSTANCE-subject chain too (historical defect: stock master keeps it pending) 2ms
+     × RULED UNIFORM: an abandon fact closes a TEAM-subject chain too 0ms
+     × TERMINAL PRECEDENCE (types.ts L433-440): decision-then-abandon → abandoned wins (both facts are legitimate durable data, never flagged) 0ms
+     × TERMINAL PRECEDENCE (types.ts L433-440): abandon-then-decision → still abandoned (order of durable facts does not flip the terminal mark) 0ms
+     ✓ CRITICAL NEGATIVE: NO durable abandon entry → the request stays pending + Allowable (a narrated wait-cancel with NO durable fact changes NOTHING; the projection reacts ONLY to durable factType entries) 0ms
+     ↓ an unknown subject.kind becomes an unsupported-subject chain (never dropped)
+     ↓ a MISSING subject (no targetInstanceId either) is unsupported too (visible, nothing invented)
+     ↓ a template subject with the wrong id leaf fails closed to unsupported
+     ↓ v1 by payload.schema + valid digest → reviewable
+     ↓ v1 with an ABSENT digest → incomplete
+     ↓ v1 with a MALFORMED digest → incomplete
+     ↓ NON-recovery correlation + NO schema leaf is NEVER classified v1 (no false Allow-disable)
+     ↓ SHIPPED CLASSIFIER (positive ID only): an UNKNOWN subject does not block the v1 classification when the schema id is present
+     ↓ PENDING USER DECISION (options A/B) — ABSENT reviewPayload on a recovery correlation → recovery-v1 + incomplete (not shipped)
+     ↓ DISCLOSED PENDING-RULING GAP (today's shipped behavior): a payload-absent recovery-correlation request is NOT classified v1 and gains NO integrity gate
+     ↓ a CORRUPTED (non-lossless) reviewPayload is OMITTED + the request is incomplete
+     ↓ NON-recovery defined requests keep compatibility (no integrity gate applies)
+     ↓ a legacy no-payload fact renders in the labeled compat mode (no integrity gate)
+     ↓ DEFENSE-IN-DEPTH: digest present + payload ABSENT on a NON-v1 line → incomplete (cannot fully review; current backend cannot produce this shape — write path rejects service.ts L1369-1374, read path drops L654-656 — classification stays neutral)
+     ↓ deriveTeamLedgerSection shows the template-subject control-request row, pending, with its requestId
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 (7) — decision/abandon facts on non-instance subjects > a decision pairs onto the template request by requestId (pending false)
+Error: missing: s9 chain
+ ❯ must test/pr56-control-subject-payload.test.ts:51:34
+     49|
+     50| function must<T>(value: T | undefined, label: string): T {
+     51|   if (value === undefined) throw new Error(`missing: ${label}`)
+       |                                  ^
+     52|   return value
+     53| }
+ ❯ test/pr56-control-subject-payload.test.ts:276:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 (7) — decision/abandon facts on non-instance subjects > an ORPHAN decision over a template subject scope becomes a resolved chain (no invented instance)
+Error: missing: template orphan
+ ❯ must test/pr56-control-subject-payload.test.ts:51:34
+     49|
+     50| function must<T>(value: T | undefined, label: string): T {
+     51|   if (value === undefined) throw new Error(`missing: ${label}`)
+       |                                  ^
+     52|   return value
+     53| }
+ ❯ test/pr56-control-subject-payload.test.ts:295:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 (7) — decision/abandon facts on non-instance subjects > an abandon fact closes a NON-instance pending chain (no orphaned pending)
+Error: missing: s9 chain
+ ❯ must test/pr56-control-subject-payload.test.ts:51:34
+     49|
+     50| function must<T>(value: T | undefined, label: string): T {
+     51|   if (value === undefined) throw new Error(`missing: ${label}`)
+       |                                  ^
+     52|   return value
+     53| }
+ ❯ test/pr56-control-subject-payload.test.ts:312:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 (7) — decision/abandon facts on non-instance subjects > RULED UNIFORM: an abandon fact closes an INSTANCE-subject chain too (historical defect: stock master keeps it pending)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/pr56-control-subject-payload.test.ts:324:27
+    322|     ], true)
+    323|     const chain = must(model.controls[0], 'instance chain')
+    324|     expect(chain.pending).toBe(false)
+       |                           ^
+    325|     expect(chain.abandoned).toBe(true)
+    326|     // a closed chain badges no pending instance.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 (7) — decision/abandon facts on non-instance subjects > RULED UNIFORM: an abandon fact closes a TEAM-subject chain too
+Error: missing: team chain
+ ❯ must test/pr56-control-subject-payload.test.ts:51:34
+     49|
+     50| function must<T>(value: T | undefined, label: string): T {
+     51|   if (value === undefined) throw new Error(`missing: ${label}`)
+       |                                  ^
+     52|   return value
+     53| }
+ ❯ test/pr56-control-subject-payload.test.ts:338:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 (7) — decision/abandon facts on non-instance subjects > TERMINAL PRECEDENCE (types.ts L433-440): decision-then-abandon → abandoned wins (both facts are legitimate durable data, never flagged)
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ test/pr56-control-subject-payload.test.ts:351:29
+    349|     const chain = must(model.controls[0], 'decided→abandoned chain')
+    350|     expect(chain.pending).toBe(false)
+    351|     expect(chain.abandoned).toBe(true)
+       |                             ^
+    352|     // facts are never rewritten: the decision block rides verbatim.
+    353|     expect(chain.decision?.value).toBe('allow_once')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 (7) — decision/abandon facts on non-instance subjects > TERMINAL PRECEDENCE (types.ts L433-440): abandon-then-decision → still abandoned (order of durable facts does not flip the terminal mark)
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ test/pr56-control-subject-payload.test.ts:364:29
+    362|     const chain = must(model.controls[0], 'abandoned→decided chain')
+    363|     expect(chain.pending).toBe(false)
+    364|     expect(chain.abandoned).toBe(true)
+       |                             ^
+    365|     expect(chain.decision?.value).toBe('allow_once')
+    366|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed | 24 skipped (32)
+   Start at  17:18:00
+   Duration  187ms (transform 55ms, setup 13ms, import 59ms, tests 12ms, environment 0ms)
+
+[exit code: 1]

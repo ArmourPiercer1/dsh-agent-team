@@ -1,0 +1,225 @@
+$ npx vitest run test/pr56-control-subject-payload.test.ts test/pr56-control-panel-payload.client.spec.tsx  (FROZEN BATCH RED capture — before the three fixes; batch item 3 static rule also RED until the CSS edit)
+2026-10-01T17:34:43Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr56-client-panel/packages/client
+
+ ❯ test/pr56-control-subject-payload.test.ts (42 tests | 5 failed) 15ms
+     ✓ the template-subject request becomes a pending chain (today: silently dropped) 2ms
+     ✓ carries the reviewPayload + the FULL wire digest verbatim 0ms
+     ✓ identifies the recovery-dispatch/v1 request as fully reviewable 0ms
+     ✓ sha256(canonicalJsonStringify(S9 payload)) === the displayed wire digest 0ms
+     ✓ a team-subject request becomes a chain over rootSessionId 0ms
+     ✓ LEGACY wire shape (targetInstanceId only, no subject leaf) keeps today chain shape 0ms
+     ✓ PR-D wire shape (subject instance + targetInstanceId) stays byte-identical + labeled standard 0ms
+     ✓ a subject/target CONTRADICTION fails closed to unsupported (never a trusted pick) 0ms
+     ✓ the broken-identity skips stay (no requestId / no actionName → no chain) 0ms
+     ✓ a decision pairs onto the template request by requestId (pending false) 0ms
+     ✓ an ORPHAN decision over a template subject scope becomes a resolved chain (no invented instance) 0ms
+     ✓ an abandon fact closes a NON-instance pending chain (no orphaned pending) 0ms
+     ✓ RULED UNIFORM: an abandon fact closes an INSTANCE-subject chain too (historical defect: stock master keeps it pending) 0ms
+     ✓ RULED UNIFORM: an abandon fact closes a TEAM-subject chain too 0ms
+     ✓ TERMINAL PRECEDENCE (types.ts L433-440): decision-then-abandon → abandoned wins (both facts are legitimate durable data, never flagged) 0ms
+     ✓ TERMINAL PRECEDENCE (types.ts L433-440): abandon-then-decision → still abandoned (order of durable facts does not flip the terminal mark) 0ms
+     ✓ CRITICAL NEGATIVE: NO durable abandon entry → the request stays pending + Allowable (a narrated wait-cancel with NO durable fact changes NOTHING; the projection reacts ONLY to durable factType entries) 0ms
+     ✓ an unknown subject.kind becomes an unsupported-subject chain (never dropped) 0ms
+     ✓ a MISSING subject (no targetInstanceId either) is unsupported too (visible, nothing invented) 0ms
+     ✓ a template subject with the wrong id leaf fails closed to unsupported 0ms
+     ✓ v1 by payload.schema + valid digest → reviewable 0ms
+     ✓ v1 with an ABSENT digest → incomplete 0ms
+     ✓ v1 with a MALFORMED digest → incomplete 0ms
+     ✓ NON-recovery correlation + NO schema leaf is NEVER classified v1 (no false Allow-disable) 0ms
+     ✓ SHIPPED CLASSIFIER (positive ID only): an UNKNOWN subject does not block the v1 classification when the schema id is present 0ms
+     ✓ ACCEPTED LIMITATION — USER OPTION A (pinned): payload-absent recovery-correlation row → standard mode, NO integrity gate, Allow unchanged (never classified recovery-v1) 0ms
+     ✓ a CORRUPTED (non-lossless) reviewPayload is OMITTED + the request is incomplete 0ms
+     ✓ NON-recovery defined requests keep compatibility (no integrity gate applies) 0ms
+     ✓ a legacy no-payload fact renders in the labeled compat mode (no integrity gate) 0ms
+     ✓ DEFENSE-IN-DEPTH: digest present + payload ABSENT on a NON-v1 line → incomplete (cannot fully review; current backend cannot produce this shape — write path rejects service.ts L1369-1374, read path drops L654-656 — classification stays neutral) 0ms
+     × reviewPayload NULL (legal RemoteSafeJsonValue — the crash shape) → row survives, standard mode, no gate, no v1 claim 3ms
+     ✓ reviewPayload number → verbatim carry, standard/legacy mode, never recovery-v1, no gate 0ms
+     ✓ reviewPayload boolean → verbatim carry, standard/legacy mode, never recovery-v1, no gate 0ms
+     ✓ reviewPayload string → verbatim carry, standard/legacy mode, never recovery-v1, no gate 0ms
+     ✓ reviewPayload array → verbatim carry, standard/legacy mode, never recovery-v1, no gate 0ms
+     × template subject with an EXTRA instanceId leaf → unsupported (parseSubject-mirror: exactly one id leaf) 2ms
+     × instance subject with an EXTRA rootSessionId leaf → unsupported 0ms
+     × team subject carrying the legacy targetInstanceId leaf → unsupported (backend rejects: service.ts L610-616) 1ms
+     ✓ REGRESSION GUARD (byte-stable): team subject WITHOUT the targetInstanceId leaf stays defined/standard 0ms
+     × ORPHAN decision with an EXPLICIT malformed scope.subject → unsupported chain, NO legacy targetInstanceId fallback 0ms
+     ✓ REGRESSION GUARD (byte-stable): orphan with ABSENT scope.subject + targetInstanceId → the legacy compat chain stays 0ms
+     ✓ deriveTeamLedgerSection shows the template-subject control-request row, pending, with its requestId 0ms
+ ❯ test/pr56-control-panel-payload.client.spec.tsx (27 tests | 4 failed) 128ms
+     ✓ the pending template request renders the detail panel with subject + VISIBLE requestId 30ms
+     ✓ renders the FULL wire digest verbatim, labeled wire-sourced 7ms
+     ✓ renders the FULL reviewPayload as inert text that parses back to the exact reviewed value 7ms
+     ✓ shows the recovery-dispatch/v1 rendering mode and keeps BOTH commands live for a reviewable request 6ms
+     ✓ displays the requestToken VERBATIM (governance correlation token — no name-based masking) 5ms
+     ✓ renders HTML-shaped payload content as INERT TEXT (no element injection) 4ms
+     ✓ v1 with NO digest → explicit cannot-fully-review banner + Allow disabled, Deny enabled 5ms
+     ✓ ACCEPTED LIMITATION — USER OPTION A (pinned): MISSING reviewPayload (recovery correlation) → standard mode, NO banner, payload omitted, Allow ENABLED 4ms
+     ✓ v1 with a CORRUPTED (non-lossless) reviewPayload → omitted + banner + Allow disabled 3ms
+     ✓ the cannot-fully-review banner text renders (en dictionary) 3ms
+     ✓ DEFENSE-IN-DEPTH: digest present + payload absent (non-v1 legacy line) → banner + Allow disabled (classification stays neutral, no v1 claim) 3ms
+     ✓ a LEGACY no-payload instance fact keeps the legacy panel + the labeled compat mode 4ms
+     ✓ a DEFINED template subject without any payload requirement renders the standard mode 3ms
+     ✓ an UNKNOWN subject stays visible in the unsupported mode with Allow disabled (Deny stays) 3ms
+     ✓ a decided non-instance fact leaves no resolve bar (no orphaned pending) 2ms
+     ✓ RULED UNIFORM: a terminal abandon fact leaves no resolve bar and no Allow for ANY subject (instance case, the stock-master defect) 3ms
+     ✓ RULED UNIFORM: a terminal abandon fact closes the S9 template chain too (no resolve bar) 3ms
+     ✓ CRITICAL NEGATIVE (render): NO durable abandon entry → panel stays rendered with Allow ENABLED (a narrated wait-cancel with no durable fact flips nothing) 6ms
+     × reviewPayload NULL renders the inert text "null" — panel survives, standard-family mode, no banner, Allow ENABLED 3ms
+     ✓ reviewPayload number renders as inert JSON text (42), never classified v1, Allow ENABLED 3ms
+     ✓ reviewPayload boolean renders as inert JSON text (true), never classified v1, Allow ENABLED 3ms
+     ✓ reviewPayload string renders as inert JSON text ("plain text"), never classified v1, Allow ENABLED 3ms
+     ✓ reviewPayload ARRAY renders losslessly as JSON text (round-trips through JSON.parse) 2ms
+     × template subject + EXTRA instanceId leaf → unsupported-subject panel + Allow DISABLED + Deny enabled 4ms
+     × team subject + legacy targetInstanceId leaf → unsupported-subject panel + Allow DISABLED 3ms
+     ✓ the digest dd carries controlDigestValue through the real pipeline 3ms
+     × the stylesheet defines .controlField dd.controlDigestValue (0,1,2) beating the .controlField dd ellipsis (0,1,1) — STATIC specificity assertion (jsdom does not apply the CSS-module cascade) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pr56-control-panel-payload.client.spec.tsx > PR56 batch#1 render — null/scalar/array payloads are SAFE TEXT end-to-end, Allow unaffected > reviewPayload NULL renders the inert text "null" — panel survives, standard-family mode, no banner, Allow ENABLED
+TypeError: Cannot read properties of null (reading 'schema')
+ ❯ str src/model/ledger-adapter.ts:306:17
+    304| /** Fail-safe string leaf read (`undefined` for any non-string / absen…
+    305| function str(payload: Payload, key: string): string | undefined {
+    306|   const value = payload[key]
+       |                 ^
+    307|   return typeof value === 'string' ? value : undefined
+    308| }
+ ❯ adaptControlRequestDraft src/model/ledger-adapter.ts:430:9
+ ❯ adaptTeamLedger src/model/ledger-adapter.ts:704:23
+ ❯ pipeline test/pr56-control-panel-payload.client.spec.tsx:77:10
+ ❯ test/pr56-control-panel-payload.client.spec.tsx:478:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  test/pr56-control-panel-payload.client.spec.tsx > PR56 batch#2 render — contradictory subjects are non-decidable end-to-end > template subject + EXTRA instanceId leaf → unsupported-subject panel + Allow DISABLED + Deny enabled
+AssertionError: expected '渲染模式standard' to contain 'unsupported-subject'
+
+Expected: "unsupported-subject"
+Received: "渲染模式standard"
+
+ ❯ test/pr56-control-panel-payload.client.spec.tsx:559:60
+    557|     const panel = panelOf(view, 'r-b2a-p')
+    558|     if (panel === null) throw new Error('the contradictory panel did n…
+    559|     expect(detailField(panel, 'render-mode')?.textContent).toContain('…
+       |                                                            ^
+    560|     const allow = panel.querySelector('[data-ledger-resolve-allow]') a…
+    561|     const deny = panel.querySelector('[data-ledger-resolve-deny]') as …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  test/pr56-control-panel-payload.client.spec.tsx > PR56 batch#2 render — contradictory subjects are non-decidable end-to-end > team subject + legacy targetInstanceId leaf → unsupported-subject panel + Allow DISABLED
+AssertionError: expected '渲染模式standard' to contain 'unsupported-subject'
+
+Expected: "unsupported-subject"
+Received: "渲染模式standard"
+
+ ❯ test/pr56-control-panel-payload.client.spec.tsx:580:60
+    578|     const panel = panelOf(view, 'r-b2c-p')
+    579|     if (panel === null) throw new Error('the team+target panel did not…
+    580|     expect(detailField(panel, 'render-mode')?.textContent).toContain('…
+       |                                                            ^
+    581|     const allow = panel.querySelector('[data-ledger-resolve-allow]') a…
+    582|     expect(allow?.disabled).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  test/pr56-control-panel-payload.client.spec.tsx > PR56 batch#3 — the full digest beats the ellipsis: (0,1,2) stylesheet override + class application > the stylesheet defines .controlField dd.controlDigestValue (0,1,2) beating the .controlField dd ellipsis (0,1,1) — STATIC specificity assertion (jsdom does not apply the CSS-module cascade)
+TypeError: The URL must be of scheme file
+ ❯ test/pr56-control-panel-payload.client.spec.tsx:615:17
+    613|     const { readFileSync } = await import('node:fs')
+    614|     const cssUrl = new URL('../src/ui/TeamLedger.module.css', import.m…
+    615|     const css = readFileSync(cssUrl, 'utf8')
+       |                 ^
+    616|     /** The specificity of a plain selector (a,b,c) as a comparable tu…
+    617|     const specificity = (selector: string): string => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 batch#1 — legal null/scalar/array reviewPayload: NO crash, no v1 classification, no gate > reviewPayload NULL (legal RemoteSafeJsonValue — the crash shape) → row survives, standard mode, no gate, no v1 claim
+TypeError: Cannot read properties of null (reading 'schema')
+ ❯ str src/model/ledger-adapter.ts:306:17
+    304| /** Fail-safe string leaf read (`undefined` for any non-string / absen…
+    305| function str(payload: Payload, key: string): string | undefined {
+    306|   const value = payload[key]
+       |                 ^
+    307|   return typeof value === 'string' ? value : undefined
+    308| }
+ ❯ adaptControlRequestDraft src/model/ledger-adapter.ts:430:9
+ ❯ adaptTeamLedger src/model/ledger-adapter.ts:704:23
+ ❯ test/pr56-control-subject-payload.test.ts:583:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > template subject with an EXTRA instanceId leaf → unsupported (parseSubject-mirror: exactly one id leaf)
+AssertionError: expected 'standard' to be 'unsupported-subject' // Object.is equality
+
+Expected: "unsupported-subject"
+Received: "standard"
+
+ ❯ test/pr56-control-subject-payload.test.ts:640:30
+    638|     ], true)
+    639|     const chain = must(model.controls[0], 'contradictory template chai…
+    640|     expect(chain.renderMode).toBe('unsupported-subject')
+       |                              ^
+    641|     expect(chain.subject).toBe(undefined)
+    642|     expect(chain.targetInstanceId).toBe(undefined)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > instance subject with an EXTRA rootSessionId leaf → unsupported
+AssertionError: expected 'standard' to be 'unsupported-subject' // Object.is equality
+
+Expected: "unsupported-subject"
+Received: "standard"
+
+ ❯ test/pr56-control-subject-payload.test.ts:653:30
+    651|     ], true)
+    652|     const chain = must(model.controls[0], 'contradictory instance chai…
+    653|     expect(chain.renderMode).toBe('unsupported-subject')
+       |                              ^
+    654|   })
+    655|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > team subject carrying the legacy targetInstanceId leaf → unsupported (backend rejects: service.ts L610-616)
+AssertionError: expected 'standard' to be 'unsupported-subject' // Object.is equality
+
+Expected: "unsupported-subject"
+Received: "standard"
+
+ ❯ test/pr56-control-subject-payload.test.ts:664:30
+    662|     ], true)
+    663|     const chain = must(model.controls[0], 'team+target chain')
+    664|     expect(chain.renderMode).toBe('unsupported-subject')
+       |                              ^
+    665|     expect(chain.targetInstanceId).toBe(undefined)
+    666|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  test/pr56-control-subject-payload.test.ts > PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > ORPHAN decision with an EXPLICIT malformed scope.subject → unsupported chain, NO legacy targetInstanceId fallback
+AssertionError: expected 'legacy-compat' to be 'unsupported-subject' // Object.is equality
+
+Expected: "unsupported-subject"
+Received: "legacy-compat"
+
+ ❯ test/pr56-control-subject-payload.test.ts:689:30
+    687|     ], true)
+    688|     const chain = must(model.controls[0], 'malformed-subject orphan')
+    689|     expect(chain.renderMode).toBe('unsupported-subject')
+       |                              ^
+    690|     expect(chain.subject).toBe(undefined)
+    691|     expect(chain.subjectKindRaw).toBe('quantum')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  9 failed | 60 passed (69)
+   Start at  17:34:43
+   Duration  2.34s (transform 1.14s, setup 21ms, import 1.79s, tests 143ms, environment 373ms)
+
+[exit code: 1]

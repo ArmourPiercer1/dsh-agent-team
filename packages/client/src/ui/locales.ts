@@ -121,6 +121,15 @@ export type TeamKey =
   | 'view.ledger.control.authority'
   | 'view.ledger.control.human'
   | 'view.ledger.control.readOnly'
+  // PR #56 — the durable subject / VISIBLE requestId / explicit
+  // rendering-mode / wire-sourced digest / lossless payload labels and
+  // the recovery-integrity banner.
+  | 'view.ledger.control.subject'
+  | 'view.ledger.control.requestId'
+  | 'view.ledger.control.renderMode'
+  | 'view.ledger.control.digest'
+  | 'view.ledger.control.payload'
+  | 'view.ledger.control.cannotReview'
   | 'view.ledger.externalPolicy.teamDecision'
   | 'view.ledger.externalPolicy.execution'
   | 'intent.startHere'
@@ -383,6 +392,12 @@ export const zh: Record<TeamKey, string> = {
   'view.ledger.control.authority': '请求权限',
   'view.ledger.control.human': '人工',
   'view.ledger.control.readOnly': '当前宿主未提供 v4 人工控制裁决，此面板为只读。',
+  'view.ledger.control.subject': '控制对象',
+  'view.ledger.control.requestId': '请求编号',
+  'view.ledger.control.renderMode': '渲染模式',
+  'view.ledger.control.digest': 'ledger wire: reviewPayloadDigest（账本线值）',
+  'view.ledger.control.payload': '审阅载荷 reviewPayload（线载 JSON 全文）',
+  'view.ledger.control.cannotReview': '无法完整审阅：审阅载荷或其摘要缺失/损坏——已禁用“允许”（“拒绝”仍可用）。',
   'view.ledger.externalPolicy.teamDecision': '团队裁决：已允许',
   'view.ledger.externalPolicy.execution': '执行：被托管策略阻止',
   'intent.startHere': '从此处开始团队',
@@ -642,6 +657,12 @@ export const en: Record<TeamKey, string> = {
   'view.ledger.control.authority': 'Requested authority',
   'view.ledger.control.human': 'Human',
   'view.ledger.control.readOnly': 'The served host does not serve the v4 human control resolution; this panel is read-only.',
+  'view.ledger.control.subject': 'Control subject',
+  'view.ledger.control.requestId': 'Request ID',
+  'view.ledger.control.renderMode': 'Rendering mode',
+  'view.ledger.control.digest': 'ledger wire: reviewPayloadDigest',
+  'view.ledger.control.payload': 'reviewPayload (wire JSON, full text)',
+  'view.ledger.control.cannotReview': 'Cannot fully review: the reviewed payload or its digest is missing or corrupted — Allow is disabled (Deny stays available).',
   'view.ledger.externalPolicy.teamDecision': 'Team decision: Allowed',
   'view.ledger.externalPolicy.execution': 'Execution: Blocked by managed policy',
   'intent.startHere': 'Start Team from Here',

@@ -1,0 +1,71 @@
+$ npx vitest run test/pr56-control-panel-payload.client.spec.tsx  (TINY FIX dt-cap pin — RED capture before the CSS delta)
+2026-10-01T22:06:54Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr56-client-panel/packages/client
+
+ ❯ test/pr56-control-panel-payload.client.spec.tsx (32 tests | 1 failed) 127ms
+     ✓ the pending template request renders the detail panel with subject + VISIBLE requestId 29ms
+     ✓ renders the FULL wire digest verbatim, labeled wire-sourced 6ms
+     ✓ renders the FULL reviewPayload as inert text that parses back to the exact reviewed value 6ms
+     ✓ shows the recovery-dispatch/v1 rendering mode and keeps BOTH commands live for a reviewable request 6ms
+     ✓ displays the requestToken VERBATIM (governance correlation token — no name-based masking) 4ms
+     ✓ renders HTML-shaped payload content as INERT TEXT (no element injection) 5ms
+     ✓ v1 with NO digest → explicit cannot-fully-review banner + Allow disabled, Deny enabled 4ms
+     ✓ ACCEPTED LIMITATION — USER OPTION A (pinned): MISSING reviewPayload (recovery correlation) → standard mode, NO banner, payload omitted, Allow ENABLED 4ms
+     ✓ v1 with a CORRUPTED (non-lossless) reviewPayload → omitted + banner + Allow disabled 4ms
+     ✓ the cannot-fully-review banner text renders (en dictionary) 4ms
+     ✓ DEFENSE-IN-DEPTH: digest present + payload absent (non-v1 legacy line) → banner + Allow disabled (classification stays neutral, no v1 claim) 3ms
+     ✓ a LEGACY no-payload instance fact keeps the legacy panel + the labeled compat mode 3ms
+     ✓ a DEFINED template subject without any payload requirement renders the standard mode 3ms
+     ✓ an UNKNOWN subject stays visible in the unsupported mode with Allow disabled (Deny stays) 3ms
+     ✓ a decided non-instance fact leaves no resolve bar (no orphaned pending) 2ms
+     ✓ RULED UNIFORM: a terminal abandon fact leaves no resolve bar and no Allow for ANY subject (instance case, the stock-master defect) 3ms
+     ✓ RULED UNIFORM: a terminal abandon fact closes the S9 template chain too (no resolve bar) 2ms
+     ✓ CRITICAL NEGATIVE (render): NO durable abandon entry → panel stays rendered with Allow ENABLED (a narrated wait-cancel with no durable fact flips nothing) 3ms
+     ✓ reviewPayload NULL renders the inert text "null" — panel survives, standard-family mode, no banner, Allow ENABLED 3ms
+     ✓ reviewPayload number renders as inert JSON text (42), never classified v1, Allow ENABLED 3ms
+     ✓ reviewPayload boolean renders as inert JSON text (true), never classified v1, Allow ENABLED 4ms
+     ✓ reviewPayload string renders as inert JSON text ("plain text"), never classified v1, Allow ENABLED 6ms
+     ✓ reviewPayload ARRAY renders losslessly as JSON text (round-trips through JSON.parse) 2ms
+     ✓ template subject + EXTRA instanceId leaf → unsupported-subject panel + Allow DISABLED + Deny enabled 3ms
+     ✓ team subject + legacy targetInstanceId leaf → unsupported-subject panel + Allow DISABLED 2ms
+     ✓ the digest dd carries controlDigestValue through the real pipeline 3ms
+     ✓ the stylesheet defines .controlField dd.controlDigestValue (0,1,2) beating the .controlField dd ellipsis (0,1,1) — STATIC specificity assertion (jsdom does not apply the CSS-module cascade) 1ms
+     ✓ ① .resolveBar wraps (the flex:none command buttons may take their own line) 0ms
+     ✓ ② .controlDetail carries the min(100%, 20rem) flex-basis floor (full bar width at 380, right-beside buttons at 1440) 0ms
+     ✓ ③ .controlField wraps (dt + dd share a line ONLY while both bases fit; the value then gets the full dl width on its own line) 0ms
+     ✓ ④ .row wraps (fixed flex:none siblings drop to their own line instead of clipping under .rows) 0ms
+     × ⑤ .controlField dt is capped + breakable (long CJK labels wrap instead of clipping; short labels inline-unchanged) 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pr56-control-panel-payload.client.spec.tsx > PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ⑤ .controlField dt is capped + breakable (long CJK labels wrap instead of clipping; short labels inline-unchanged)
+AssertionError: expected '.controlField dt {\n  flex: none;\n  …' to match /max-width:\s*100%/
+
+- Expected:
+/max-width:\s*100%/
+
++ Received:
+".controlField dt {
+  flex: none;
+  color: var(--dsw-alias-label-caption);
+  font: var(--dsw-font-xxxs-11);
+}"
+
+ ❯ test/pr56-control-panel-payload.client.spec.tsx:748:21
+    746|     const rule = css.match(/\.controlField dt\s*\{[^}]*\}/)
+    747|     if (rule === null) throw new Error('the .controlField dt rule is m…
+    748|     expect(rule[0]).toMatch(/max-width:\s*100%/)
+       |                     ^
+    749|     expect(rule[0]).toMatch(/overflow-wrap:\s*break-word/)
+    750|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 passed (32)
+   Start at  22:06:54
+   Duration  2.20s (transform 1.03s, setup 16ms, import 1.63s, tests 127ms, environment 350ms)
+
+[exit code: 1]
