@@ -28,6 +28,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createRuntimeRequirementFactsProvider,
   assertRequirementFactScope,
+  type RequirementFactScope,
   type RequirementFactsPorts,
   type SeedEnvironmentFact,
 } from '../requirement-facts/index.js'
@@ -39,6 +40,7 @@ import {
   type CapabilityReadinessProvider,
   type ProbeVerdict,
 } from '../readiness/index.js'
+import { isTeamContractError } from '../../contracts/src/index.js'
 import type { EnvironmentFact, RequirementInput } from '../../domain/compatibility/src/index.js'
 import type { RuntimeSubstratePlan } from '../agent-setup/preset/index.js'
 
@@ -384,5 +386,121 @@ describe('the scope validation (fail loud, typed)', () => {
   it('assertRequirementFactScope rejects a malformed scope', () => {
     expect(() => assertRequirementFactScope({ kind: 'template' })).toThrowError(/templateId/)
     expect(() => assertRequirementFactScope({ kind: 'bogus' })).toThrowError(/unknown requirement-fact scope kind/)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// the template scope ROLE identity (the PR #46 contract — RED→GREEN)
+// ---------------------------------------------------------------------------
+// PR #46 (finding A, merged to master at 8e18819c) tightens the
+// RequirementFactScope contract: the template scope must carry the closed-set
+// role identity ('leader' | 'member' — REQUIREMENT_FACT_SCOPE_ROLES); absence
+// or a non-closed value = the typed MALFORMED_DTO from assertRequirementFactScope,
+// which the production provider enforces as the FIRST step of resolveFacts
+// (fail-closed, before any port call). The shared helper
+// requirementFactScopeRoleOf derives the role from the bound blueprint's
+// leader template identity (the leader template -> 'leader', every other
+// template -> 'member').
+//
+// RED→GREEN: at the pre-#46 tip the old contract ACCEPTED a role-less
+// template scope, so every leg below fails (the genuine RED, EXIT=1 — the
+// fail-closed behavior is not yet in place); from the master-sync merge
+// onward the same legs are GREEN. The helper is referenced through a dynamic
+// import so this file stays COLLECTABLE at both tips (a static import of the
+// new export would be a link-time collection error before the contract
+// exists — RED must be an assertion failure, not a broken module graph).
+describe('the template scope ROLE identity (the PR #46 contract — RED at the pre-contract tip)', () => {
+  it('a template scope WITHOUT the role identity is rejected fail-closed (MALFORMED_DTO at $.role)', () => {
+    let error: unknown
+    try {
+      assertRequirementFactScope({ kind: 'template', templateId: 'dev' })
+    } catch (e) {
+      error = e
+    }
+    expect(error, 'the role-less template scope must be rejected (the PR #46 contract)').toBeDefined()
+    expect(isTeamContractError(error)).toBe(true)
+    expect((error as { code?: string }).code).toBe('MALFORMED_DTO')
+    expect((error as { details?: { path?: string } }).details?.path).toBe('$.role')
+  })
+
+  it("a template scope with a role OUTSIDE the closed set is rejected fail-closed (MALFORMED_DTO at $.role)", () => {
+    let error: unknown
+    try {
+      assertRequirementFactScope({ kind: 'template', templateId: 'dev', role: 'boss' })
+    } catch (e) {
+      error = e
+    }
+    expect(error, "the non-closed role 'boss' must be rejected (closed set = leader|member)").toBeDefined()
+    expect(isTeamContractError(error)).toBe(true)
+    expect((error as { code?: string }).code).toBe('MALFORMED_DTO')
+    expect((error as { details?: { path?: string } }).details?.path).toBe('$.role')
+  })
+
+  it('the provider resolveFacts rejects the role-less template scope BEFORE any port call (fail-closed, no I/O)', async () => {
+    let probeCalls = 0
+    const provider = createRuntimeRequirementFactsProvider(
+      ports({
+        configured: ['github'],
+        readiness: {
+          probe: async (type, name) => {
+            probeCalls += 1
+            throw new Error(
+              `the readiness probe must NOT be reached (scope validation is first) — got (${type}, ${name})`,
+            )
+          },
+        },
+      }),
+    )
+    let error: unknown
+    try {
+      await provider.resolveFacts({
+        requirements: [{ requirementId: 'req-mcp', type: 'mcpServer', subjects: ['github'], complete: true }],
+        // INTENTIONALLY MALFORMED (the leg under test): a role-less template
+        // scope. The type cast bypasses the compile-time contract on purpose —
+        // this leg pins the RUNTIME fail-closed guard (assertRequirementFactScope
+        // inside resolveFacts) that the type cannot express.
+        scope: { kind: 'template', templateId: 'dev' } as unknown as RequirementFactScope,
+      })
+    } catch (e) {
+      error = e
+    }
+    expect(error, 'the role-less template scope must reject in resolveFacts (the PR #46 contract)').toBeDefined()
+    expect(isTeamContractError(error)).toBe(true)
+    expect((error as { code?: string }).code).toBe('MALFORMED_DTO')
+    expect(probeCalls, 'no port call may run after the typed rejection').toBe(0)
+  })
+
+  it('the role identity derives from the bound blueprint leader template + a derived-role scope round-trips frozen', async () => {
+    // The helper is NEW in the PR #46 contract: the dynamic import keeps this
+    // file collectable at the pre-contract tip (RED via the missing export,
+    // never a broken module graph).
+    const factsModule = await import('../requirement-facts/index.js')
+    expect(
+      typeof factsModule.requirementFactScopeRoleOf,
+      'requirementFactScopeRoleOf must exist (the PR #46 contract)',
+    ).toBe('function')
+    const roleOf = factsModule.requirementFactScopeRoleOf as (leaderTemplateId: string, templateId: string) => string
+    // The leader template addresses its OWN (root) observation; every other
+    // template addresses the member entry — derived from the blueprint's
+    // actual leader identity, never hardcoded.
+    expect(roleOf('leader', 'leader')).toBe('leader')
+    expect(roleOf('leader', 'worker')).toBe('member')
+    expect(roleOf('lead-tpl', 'lead-tpl')).toBe('leader')
+    expect(roleOf('lead-tpl', 'other')).toBe('member')
+    // The derived role makes the construction VALID under the new contract —
+    // the frozen shape carries kind + templateId + role.
+    const workerScope = assertRequirementFactScope({
+      kind: 'template',
+      templateId: 'worker',
+      role: roleOf('leader', 'worker'),
+    })
+    expect(workerScope).toEqual({ kind: 'template', templateId: 'worker', role: 'member' })
+    expect(Object.isFrozen(workerScope)).toBe(true)
+    const leaderScope = assertRequirementFactScope({
+      kind: 'template',
+      templateId: 'leader',
+      role: roleOf('leader', 'leader'),
+    })
+    expect(leaderScope).toEqual({ kind: 'template', templateId: 'leader', role: 'leader' })
   })
 })

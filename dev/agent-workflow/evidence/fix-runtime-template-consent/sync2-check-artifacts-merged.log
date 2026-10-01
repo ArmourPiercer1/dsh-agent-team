@@ -1,0 +1,4 @@
+pnpm run check:artifacts
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+EXIT=0

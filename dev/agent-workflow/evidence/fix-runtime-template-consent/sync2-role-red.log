@@ -1,0 +1,93 @@
+pnpm vitest run packages/runtime/test/runtime-requirement-facts-provider.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent
+
+ ❯ packages/runtime/test/runtime-requirement-facts-provider.test.ts (19 tests | 4 failed) 12ms
+     ✓ required → the feed is available:false (the gate BLOCKs); optional → the gate DEGRADEs 2ms
+     ✓ the fresh evaluation recovers (available:true) 0ms
+     ✓ unknown after restart → the durable record is NOT adopted; the fresh probe recovers 0ms
+     ✓ template boundary: materialization not-applicable (derived from liveness) 0ms
+     ✓ team boundary: no materialization axis at all (supply + fresh readiness only) 0ms
+     ✓ an absent materialization view (no live member state) is a cold member: not-applicable 0ms
+     ✓ resident + failed slot → materialization failed (the gate BLOCKs the template) 0ms
+     ✓ an unconfigured required MCP is unreachable BY CONFIGURATION (no probe) 0ms
+     ✓ a standard root preset is reachable (composable); the feed says available:true 0ms
+     ✓ a complete preset is unreachable (the §13.5 conflict) 0ms
+     ✓ an unresolved persona is unknown (typed — re-probe, never a guess) 0ms
+     ✓ guide §17 R8: the member template persona uses the MEMBER plan entry 0ms
+     ✓ a subject that is neither the root nor the member preset is unknown (typed mismatch) 0ms
+     ✓ a missing probe port is unknown (never unreachable) and feeds only the seed (or nothing) 0ms
+     ✓ assertRequirementFactScope rejects a malformed scope 1ms
+     × a template scope WITHOUT the role identity is rejected fail-closed (MALFORMED_DTO at $.role) 2ms
+     × a template scope with a role OUTSIDE the closed set is rejected fail-closed (MALFORMED_DTO at $.role) 0ms
+     × the provider resolveFacts rejects the role-less template scope BEFORE any port call (fail-closed, no I/O) 2ms
+     × the role identity derives from the bound blueprint leader template + a derived-role scope round-trips frozen 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/runtime-requirement-facts-provider.test.ts > the template scope ROLE identity (the PR #46 contract — RED at the pre-contract tip) > a template scope WITHOUT the role identity is rejected fail-closed (MALFORMED_DTO at $.role)
+AssertionError: the role-less template scope must be rejected (the PR #46 contract): expected undefined to be defined
+ ❯ packages/runtime/test/runtime-requirement-facts-provider.test.ts:415:90
+    413|       error = e
+    414|     }
+    415|     expect(error, 'the role-less template scope must be rejected (the …
+       |                                                                                          ^
+    416|     expect(isTeamContractError(error)).toBe(true)
+    417|     expect((error as { code?: string }).code).toBe('MALFORMED_DTO')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/runtime-requirement-facts-provider.test.ts > the template scope ROLE identity (the PR #46 contract — RED at the pre-contract tip) > a template scope with a role OUTSIDE the closed set is rejected fail-closed (MALFORMED_DTO at $.role)
+AssertionError: the non-closed role 'boss' must be rejected (closed set = leader|member): expected undefined to be defined
+ ❯ packages/runtime/test/runtime-requirement-facts-provider.test.ts:428:95
+    426|       error = e
+    427|     }
+    428|     expect(error, "the non-closed role 'boss' must be rejected (closed…
+       |                                                                                               ^
+    429|     expect(isTeamContractError(error)).toBe(true)
+    430|     expect((error as { code?: string }).code).toBe('MALFORMED_DTO')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/runtime-requirement-facts-provider.test.ts > the template scope ROLE identity (the PR #46 contract — RED at the pre-contract tip) > the provider resolveFacts rejects the role-less template scope BEFORE any port call (fail-closed, no I/O)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/runtime-requirement-facts-provider.test.ts:457:40
+    455|     }
+    456|     expect(error, 'the role-less template scope must reject in resolve…
+    457|     expect(isTeamContractError(error)).toBe(true)
+       |                                        ^
+    458|     expect((error as { code?: string }).code).toBe('MALFORMED_DTO')
+    459|     expect(probeCalls, 'no port call may run after the typed rejection…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/runtime-requirement-facts-provider.test.ts > the template scope ROLE identity (the PR #46 contract — RED at the pre-contract tip) > the role identity derives from the bound blueprint leader template + a derived-role scope round-trips frozen
+AssertionError: requirementFactScopeRoleOf must exist (the PR #46 contract): expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ packages/runtime/test/runtime-requirement-facts-provider.test.ts:470:7
+    468|       typeof factsModule.requirementFactScopeRoleOf,
+    469|       'requirementFactScopeRoleOf must exist (the PR #46 contract)',
+    470|     ).toBe('function')
+       |       ^
+    471|     const roleOf = factsModule.requirementFactScopeRoleOf as (leaderTe…
+    472|     // The leader template addresses its OWN (root) observation; every…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 15 passed (19)
+   Start at  07:16:12
+   Duration  319ms (transform 168ms, setup 0ms, import 212ms, tests 12ms, environment 0ms)
+
+EXIT=1

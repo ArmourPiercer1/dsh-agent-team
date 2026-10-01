@@ -25,11 +25,6 @@
  */
 import { type PreflightResult, type RequirementScope } from './types.js';
 import { type EvaluationInput } from './evaluator.js';
-/**
- * Run the startup preflight over the bound blueprint's requirement verdicts.
- * @param input - the scope verdicts + durable consents + template availability.
- * @returns the closed {@link PreflightResult}.
- */
 export declare function startupPreflight(input: EvaluationInput): PreflightResult;
 /**
  * The scopes a `fixOrDisable` outcome leaves for the human to act on (the

@@ -1,0 +1,176 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+ ✓ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts (13 tests) 7ms
+ ✓ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (42 tests) 9ms
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/requirement-authority-negatives.test.ts (10 tests) 26ms
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-spfc-fat1" is 'fatal' — the durable Team bind is refused (zero durable effect; a Team-level required requirement is down — it cannot be bypassed by disabling a template; repair the environment and re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-scp-r5" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-std-r3" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-spfc-fix1" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-spfc-con1" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-std-r3x" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/startup-preflight-production-create.test.ts (6 tests) 4ms
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-sa-r6" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-std-r3x" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-scp-r8" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:1368:13
+    at createAndStartTeam (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2098:20)
+    at Object.boot (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/root.ts:2920:9)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/fix-runtime-template-consent/packages/runtime/src/plugin/host.ts:2371:5)
+
+ ✓ packages/runtime/test/startup-template-disable-production.test.ts (8 tests) 5ms
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/startup-all-templates-real-authority.test.ts (3 tests) 4ms
+ ✓ packages/runtime/test/startup-consent-production.test.ts (8 tests) 4ms
+ ✓ packages/runtime/test/requirement-facts.test.ts (13 tests) 5ms
+ ✓ packages/runtime/test/degradation-consent.test.ts (7 tests) 4ms
+ ✓ packages/runtime/test/template-disable-enable.test.ts (8 tests) 4ms
+ ✓ packages/runtime/test/startup-preflight-all-templates.test.ts (8 tests) 3ms
+ ✓ packages/runtime/test/restart-readiness-unknown.test.ts (3 tests) 37ms
+ ✓ packages/runtime/test/requirement-applicability.test.ts (6 tests) 3ms
+ ✓ packages/runtime/test/requirement-action-impact.test.ts (10 tests) 4ms
+ ✓ packages/runtime/test/optional-runtime-degradation.test.ts (5 tests) 3ms
+ ✓ packages/runtime/test/team-required-recovery.test.ts (5 tests) 4ms
+ ✓ packages/runtime/test/startup-required-team-fatal.test.ts (4 tests) 3ms
+ ✓ packages/runtime/test/template-required-recovery.test.ts (4 tests) 3ms
+
+ Test Files  19 passed (19)
+      Tests  173 passed (173)
+   Start at  05:25:52
+   Duration  1.88s (transform 3.46s, setup 0ms, import 7.03s, tests 134ms, environment 1ms)
+
+EXIT=0
