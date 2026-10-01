@@ -12,7 +12,13 @@
  * - `kind: 'autonomy-overlay'`, `scope: 'instance'` (this instance) → the
  *   `instanceOverlay` slot;
  * - `kind: 'human-override'` → the `humanOverride` slot (the instance-
- *   scoped record wins over the team-scoped one, per the policy contract);
+ *   scoped slot's LATEST event wins over the team-scoped slot's LATEST
+ *   event, per the policy contract; a slot whose latest event is a RESET
+ *   TOMBSTONE — an empty values set, the audit-preserving reset, PR-A /
+ *   ADR-05 — has NO effective value for that slot and the precedence
+ *   falls to the team slot, which falls to the lower layers when IT is a
+ *   tombstone; an OLDER event of the same slot is never resurrected —
+ *   the pre-reset history is audit-only);
  * - multiple candidates for one slot: the HIGHEST `generation` wins, ties
  *   broken by the LEXICOGRAPHICALLY SMALLEST `recordId` (deterministic;
  *   multi-overlay composition is owned by the later governance work).
@@ -57,12 +63,33 @@ export function selectPolicyOverrides(overrides, rootSessionId, instanceId) {
             values: instance.values,
         };
     }
-    const human = humanInstance[0] !== undefined ? humanInstance[0] : humanTeam[0];
+    // The human-override slots (the ADR-04 precedence: the instance-scoped
+    // slot outranks the team-scoped slot). Each slot's effective value is
+    // its LATEST event; an OLDER event of the same slot is NEVER consulted
+    // (the pre-reset history is audit-only — resurrecting it would undo the
+    // human revocation). A slot whose latest event is a RESET TOMBSTONE (an
+    // empty values set — the audit-preserving reset, PR-A / ADR-05) has NO
+    // effective value for that slot: precedence falls to the team slot, and
+    // to the lower (template/static) layers when that too is a tombstone.
+    const humanInstanceLatest = humanInstance[0];
+    const humanTeamLatest = humanTeam[0];
+    const slotHasEffectiveValue = (record) => Object.keys(record.values).length > 0;
+    const human = humanInstanceLatest !== undefined && slotHasEffectiveValue(humanInstanceLatest)
+        ? humanInstanceLatest
+        : humanTeamLatest !== undefined && slotHasEffectiveValue(humanTeamLatest)
+            ? humanTeamLatest
+            : undefined;
     if (human !== undefined) {
         result.humanOverride = {
             overrideId: human.recordId,
             scope: human.scope,
             values: human.values,
+        };
+    }
+    if (humanInstanceLatest !== undefined || humanTeamLatest !== undefined) {
+        result.humanSlotEvents = {
+            ...(humanInstanceLatest !== undefined ? { instance: humanInstanceLatest } : {}),
+            ...(humanTeamLatest !== undefined ? { team: humanTeamLatest } : {}),
         };
     }
     return result;
