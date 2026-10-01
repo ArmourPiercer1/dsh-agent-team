@@ -1,4 +1,4 @@
-== identical command: python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1])); print(PARSE OK)' <file>  (PyYAML 6.0.1) ==
+== reproducible command (CORRECTED SUMMARY, not a verbatim shell transcript; per-run raw outputs summarized below): python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1])); print("PARSE OK")' <file>   [PyYAML 6.0.1] ==
 --- BEFORE: master 1385f1ee copy ---
 ParserError: while parsing a block mapping; in master copy, line 742, column 5; expected <block end>, but found '<scalar>'; in master copy, line 743, column 3078
 --- BEFORE: pr52 a04681a4 copy ---
