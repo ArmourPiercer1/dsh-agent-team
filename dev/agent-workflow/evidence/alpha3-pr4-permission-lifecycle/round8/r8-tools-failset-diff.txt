@@ -1,0 +1,4 @@
+baseline=round7/r7-tools-failset.txt
+baseline-lines=1  new-lines=1
+(no hunks)
+VERDICT: BYTE-IDENTICAL (failsets agree line-for-line)

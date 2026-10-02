@@ -1,0 +1,4 @@
+baseline=round7/r7-runtime-failset-r1.txt
+baseline-lines=11  new-lines=11
+(no hunks)
+VERDICT: BYTE-IDENTICAL (failsets agree line-for-line)

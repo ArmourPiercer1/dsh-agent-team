@@ -288,6 +288,19 @@ async function openR7World(): Promise<R7World> {
       activityVersion: 1,
     })
   }
+  // The durable LEADER row, exactly as the production boot creates it
+  // (root.ts:3190-3204). R8's leader-claim leg requires it: deriveMutationActor
+  // resolves a leader claim ONLY against a durable leader row.
+  await domain.repositories.memberInstances.put({
+    rootSessionId: parseRootSessionId(R7_ROOT),
+    instanceId: LEADER_INSTANCE_ID,
+    templateId: parseTemplateId('leader'),
+    label: 'leader',
+    childSessionId: parseChildSessionId(R7_ROOT),
+    lifecycle: 'RUNNING',
+    createdAt: NOW,
+    activityVersion: 1,
+  })
   await putMember(R7_ROOT, R7_WORKER, 'RUNNING', 'child-r7-worker')
   await putMember(R7_ROOT, R7_ARCH, 'ARCHIVED', 'child-r7-arch')
   await putMember(R7_ROOT, R7_DISP, 'DISPOSED', 'child-r7-disp')
@@ -968,6 +981,244 @@ describe('R7-sem — reason label split (missing vs over-bound) and replay seman
       expect(sameTokenDifferentRules.status).toBe('permission-mutated')
       expect(sameTokenDifferentRules.changed, 'mutationId does NOT dedupe distinct rule sets').toBe(true)
     } finally {
+      await world.close()
+    }
+  })
+})
+
+// ══════════════════════════════════════════════════════════════════════════
+// R8-PRINCIPAL — BLOCK-5 role matrix AT THE ROOT-ASSEMBLED ROUTER.
+// The trust doctrine pinned here (A32 model, recorded honestly): the remote
+// CHANNEL is the operator-class connection gate (ServerPrincipalContext is the
+// authority basis; a member SESSION has no separate remote connection in this
+// product — members act through the tool path). The payload `actor` claim is
+// therefore a ROLE SELECTION inside the trusted channel, validated by
+// deriveMutationActor against the DURABLE domain — it is not connection
+// binding, and this leg set pins exactly what that machinery guarantees:
+// a human claim answers the host operator via the ADDRESSED (owned) team id,
+// never a client string; a leader claim requires the durable leader row and
+// then runs UNDER THE CARRIER ENVELOPE (§6 — the §7 exemption does NOT leak);
+// a member claim is refused TYPED (never upgraded to operator); forged or
+// absent claims are typed refusals with zero write.
+// ══════════════════════════════════════════════════════════════════════════
+
+type R8Response = {
+  ok: boolean
+  value?: { data?: Record<string, unknown> }
+  error?: { code?: string; message?: string; details?: Record<string, unknown> }
+}
+
+describe('R8-principal — actor role matrix through the ROOT-ASSEMBLED router (BLOCK-5 fix)', () => {
+  const call = (
+    world: R7World,
+    params: Record<string, unknown>,
+  ): Promise<R8Response> =>
+    world.root.remoteDispatcher('override.mutatePermission', {
+      version: REMOTE_CONTRACT_VERSION_V7,
+      params,
+    }) as Promise<R8Response>
+
+  it('legitimate Human claim → legal mutation; the durable row records the human provenance verbatim; pre-execute ALLOW', async () => {
+    const world = await openR7World()
+    const pre = installPreExecute(world, R7_ROOT, R7_WORKER, world.wsA)
+    try {
+      const granted = await call(world, {
+        teamSessionId: R7_ROOT,
+        memberInstanceId: R7_WORKER,
+        kind: 'grant_instance',
+        mutationId: 'r8-human-grant',
+        reason: 'r8 human claim provenance',
+        actor: { kind: 'human' },
+        rules: [
+          {
+            operationClass: 'write',
+            matcher: { kind: 'exact', value: world.openKey },
+            effect: 'allow',
+          },
+        ],
+      })
+      expect(granted.ok, JSON.stringify(granted.error ?? {})).toBe(true)
+      expect(granted.value?.data?.['changed']).toBe(true)
+      const row = (await world.overlay.latest({
+        teamSessionId: R7_ROOT,
+        memberInstanceId: R7_WORKER,
+      })) as unknown as {
+        provenance?: { actor?: string; reason?: string; mutationId?: string }
+      }
+      // The §7 human surface: actor 'human'; the identity CHANNEL of the
+      // humanId is the ADDRESSED, ownership-validated teamSessionId — the
+      // durable row IS that record (teamSessionId R7_ROOT, never a client
+      // string); the reason lands verbatim.
+      expect(row.provenance?.actor).toBe('human')
+      expect(row.provenance?.reason).toBe('r8 human claim provenance')
+      expect(row.provenance?.mutationId).toBe('r8-human-grant')
+      const allowed = await pre.run('write', { file_path: world.openKey, content: 'x' })
+      expect(allowed.kind, JSON.stringify(allowed)).toBe('allow')
+    } finally {
+      pre.disposer()
+      await world.close()
+    }
+  })
+
+  it('Leader claim → NOT the §7 exemption: the row records leader provenance, and expansion runs under the carrier envelope (in-ceiling commits; out-of-ceiling refuses TYPED, zero write)', async () => {
+    const world = await openR7World()
+    const pre = installPreExecute(world, R7_ROOT, R7_WORKER, world.wsA)
+    try {
+      const leaderGrant = await call(world, {
+        teamSessionId: R7_ROOT,
+        memberInstanceId: R7_WORKER,
+        kind: 'grant_instance',
+        mutationId: 'r8-leader-grant',
+        reason: 'r8 leader claim within carrier ceiling',
+        actor: { kind: 'leader' },
+        rules: [
+          {
+            operationClass: 'write',
+            matcher: { kind: 'exact', value: world.secondKey },
+            effect: 'allow',
+          },
+        ],
+      })
+      expect(leaderGrant.ok, JSON.stringify(leaderGrant.error ?? {})).toBe(true)
+      const row = (await world.overlay.latest({
+        teamSessionId: R7_ROOT,
+        memberInstanceId: R7_WORKER,
+      })) as unknown as { provenance?: { actor?: string } }
+      expect(row.provenance?.actor, 'leader provenance — NOT a fabricated human one').toBe('leader')
+      const allowed = await pre.run('write', { file_path: world.secondKey, content: 'x' })
+      expect(allowed.kind, JSON.stringify(allowed)).toBe('allow')
+      // OUT of the carrier ceiling: the envelope carries only the three
+      // EXACT write rules (+ the exec fingerprint) — a SUBTREE expansion
+      // must die at the §6 envelope gate. If the old default-to-operator
+      // were still in play this would COMMIT (the §7 surface is exempt).
+      const overCeiling = await call(world, {
+        teamSessionId: R7_ROOT,
+        memberInstanceId: R7_WORKER,
+        kind: 'grant_instance',
+        mutationId: 'r8-leader-over-ceiling',
+        reason: 'r8 leader claim beyond carrier ceiling',
+        actor: { kind: 'leader' },
+        rules: [
+          {
+            operationClass: 'write',
+            matcher: { kind: 'subtree', value: world.wsA },
+            effect: 'allow',
+          },
+        ],
+      })
+      expect(overCeiling.ok).toBe(false)
+      expect(overCeiling.error?.code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+      const after = (await world.overlay.latest({
+        teamSessionId: R7_ROOT,
+        memberInstanceId: R7_WORKER,
+      })) as unknown as { provenance?: { mutationId?: string } }
+      expect(after.provenance?.mutationId, 'the denied expansion wrote NOTHING').toBe('r8-leader-grant')
+    } finally {
+      pre.disposer()
+      await world.close()
+    }
+  })
+
+  it('member claim (durable real member) → PERMISSION_MUTATION_UNAUTHORIZED_ACTOR typed, zero write — NEVER operator', async () => {
+    const world = await openR7World()
+    try {
+      const denied = await call(world, {
+        teamSessionId: R7_ROOT,
+        memberInstanceId: R7_WORKER,
+        kind: 'grant_instance',
+        mutationId: 'r8-member-grant',
+        reason: 'r8 member claim must never mutate',
+        actor: { kind: 'member', member: { rootSessionId: R7_ROOT, instanceId: R7_WORKER } },
+        rules: [
+          {
+            operationClass: 'write',
+            matcher: { kind: 'exact', value: world.openKey },
+            effect: 'allow',
+          },
+        ],
+      })
+      expect(denied.ok).toBe(false)
+      expect(denied.error?.code).toBe('PERMISSION_MUTATION_UNAUTHORIZED_ACTOR')
+      expect(await world.overlay.latest({ teamSessionId: R7_ROOT, memberInstanceId: R7_WORKER })).toBeUndefined()
+    } finally {
+      await world.close()
+    }
+  })
+
+  it('forged/absent claims → typed principal refusals AT THE ROUTER (specific code each), zero write', async () => {
+    const world = await openR7World()
+    try {
+      const base = {
+        teamSessionId: R7_ROOT,
+        memberInstanceId: R7_WORKER,
+        kind: 'grant_instance',
+        mutationId: 'r8-forged',
+        reason: 'r8 forged claim',
+        rules: [
+          {
+            operationClass: 'write',
+            matcher: { kind: 'exact', value: world.openKey },
+            effect: 'allow',
+          },
+        ],
+      }
+      // 'operator' is NOT a claimable kind anywhere in the vocabulary: it
+      // dies at the contract's closed actor set (typed, zero write) and
+      // NEVER reaches derivation as an authority — never upgraded.
+      const forged = await call(world, { ...base, actor: { kind: 'operator' } })
+      expect(forged.ok).toBe(false)
+      expect(forged.error?.code, 'unclaimable actor kind is a typed contract refusal').toBe('malformed-params')
+      expect(String(forged.error?.details?.['field'] ?? forged.error?.message ?? '')).toContain('actor')
+      const ghostMember = await call(world, {
+        ...base,
+        actor: { kind: 'member', member: { rootSessionId: R7_ROOT, instanceId: 'inst-a3p4r8ghost' } },
+      })
+      expect(ghostMember.error?.code).toBe('TEAM_REMOTE_PRINCIPAL_INVALID')
+      const foreignMember = await call(world, {
+        ...base,
+        actor: { kind: 'member', member: { rootSessionId: 'session-a3p4r8foreign', instanceId: 'whatever' } },
+      })
+      expect(foreignMember.error?.code).toBe('TEAM_REMOTE_PRINCIPAL_INVALID')
+      const leaderAsMember = await call(world, {
+        ...base,
+        actor: { kind: 'member', member: { rootSessionId: R7_ROOT, instanceId: LEADER_INSTANCE_ID } },
+      })
+      expect(leaderAsMember.error?.code).toBe('TEAM_REMOTE_PRINCIPAL_INVALID')
+      const absent = await call(world, { ...base })
+      expect(absent.ok, 'absent actor stays a typed malformed refusal (contract layer)').toBe(false)
+      expect(absent.error?.code).toBe('malformed-params')
+      expect(await world.overlay.latest({ teamSessionId: R7_ROOT, memberInstanceId: R7_WORKER })).toBeUndefined()
+    } finally {
+      await world.close()
+    }
+  })
+
+  it('RPC-position symmetry of the ARCHIVED law: human claim over an ARCHIVED target commits (row exists) yet the REAL pre-execute plane still refuses', async () => {
+    const world = await openR7World()
+    const pre = installPreExecute(world, R7_ROOT, R7_ARCH, world.wsA)
+    try {
+      const archivedGrant = await call(world, {
+        teamSessionId: R7_ROOT,
+        memberInstanceId: R7_ARCH,
+        kind: 'grant_instance',
+        mutationId: 'r8-archived-grant',
+        reason: 'r8 archived target mutates legally (RPC position)',
+        actor: { kind: 'human' },
+        rules: [
+          {
+            operationClass: 'write',
+            matcher: { kind: 'exact', value: world.openKey },
+            effect: 'allow',
+          },
+        ],
+      })
+      expect(archivedGrant.ok, JSON.stringify(archivedGrant.error ?? {})).toBe(true)
+      expect(archivedGrant.value?.data?.['changed']).toBe(true)
+      expect(await world.overlay.latest({ teamSessionId: R7_ROOT, memberInstanceId: R7_ARCH })).toBeDefined()
+      const attempted = await pre.run('write', { file_path: world.openKey, content: 'x' })
+      expect(attempted.kind, 'ARCHIVED never executes, whichever entry mutated the overlay').not.toBe('allow')
+    } finally {
+      pre.disposer()
       await world.close()
     }
   })

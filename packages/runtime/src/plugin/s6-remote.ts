@@ -2863,6 +2863,12 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // envelope-gated), the Leader lane answers {kind:'leader'} (full
         // carrier gate), a MEMBER caller answers a member authority the
         // governance service rejects typed (members never mutate).
+        // ROUND 8 (BLOCK-5): this documented intent is now ACTUALLY the
+        // behavior — the method joined MUTATION_METHODS, so `caller` is the
+        // claim DERIVED and VALIDATED by s6-principal's deriveMutationActor
+        // (durable leader row / owned durable member rows / addressed-team
+        // human binding), not the old host-operator default that made every
+        // caller an operator and the claim inert.
         const authority = authorityOf(caller, leaderInstanceId)
         const permission = options.permission
         const canonicalize = options.permissionCanonicalize

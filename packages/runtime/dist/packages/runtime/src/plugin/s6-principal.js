@@ -101,8 +101,30 @@ function isPlainRecord(value) {
 }
 /** The closed admission-method set (the `caller`-claiming remote methods). */
 const ADMISSION_METHODS = new Set(['member.create', 'member.send', 'member.followup']);
-/** The closed mutation-method set (the `actor`-claiming remote methods). */
-const MUTATION_METHODS = new Set(['override.set', 'override.reset', 'policyState.set']);
+/** The closed mutation-method set (the `actor`-claiming remote methods).
+ *  ROUND 8 (parent BLOCK-5 ruling, option A — consistency with the existing
+ *  pattern): `override.mutatePermission` JOINS this set. It was declared
+ *  v7-`actor`-claiming at the contract layer but was NOT routed here, so
+ *  derivation fell to the host-operator default below — every caller got
+ *  `{kind:'operator'}` (the §7 envelope-exempt surface) and the claim was
+ *  inert. The port's own documented intent (s6-remote "the override-lane
+ *  mirror": human → operator, Leader → carrier-gated, member → typed refusal)
+ *  REQUIRED this routing; the three sibling methods are the reference.
+ *  Consequences, ALL through the shared `deriveMutationActor` validation:
+ *  a human claim answers the host-known operator identified by the ADDRESSED
+ *  (owned) teamSessionId — never a client string; a leader claim requires a
+ *  DURABLE leader row (else typed `unknown-leader`); a member claim is
+ *  validated against ownership + durable rows and then REFUSED TYPED by the
+ *  governance lane (members never mutate); an absent/garbage claim is a typed
+ *  `malformed-actor` refusal. There is NO default-to-operator path for a
+ *  mutation method, and no client-supplied role can exceed the trust ceiling
+ *  documented above. */
+const MUTATION_METHODS = new Set([
+    'override.set',
+    'override.reset',
+    'policyState.set',
+    'override.mutatePermission',
+]);
 /**
  * Build the production {@link ServerPrincipalDerivation}.
  *

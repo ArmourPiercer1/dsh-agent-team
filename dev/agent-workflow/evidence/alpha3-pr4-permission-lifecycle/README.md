@@ -853,3 +853,119 @@ claims, exhaustively:
 The round-5 section's shorthand "(code identity)" at its honest-non-closures
 line is READ AS this audit defines it — static proof, no base run — and is
 otherwise left untouched.
+
+## Round 8 — BLOCK-5: the trusted-principal routing for `override.mutatePermission` (parent GO at 864690cd, sole writer)
+
+Date: 2026-10-02. Tree base (shipped round-7) code `02025168`, tip `864690cd`.
+Input: the parent's BLOCK-5 GO at the reviewed HEAD (the ONLY open block) +
+R-A's two folded items (RPC-position ARCHIVED pin; round-8 tsc raws — the
+round-7 evidence indeed had NO tsc raw, acknowledged here, raws exist for
+round 8: `round8/r8-tsc-runtime.log` rc=0, `round8/r8-tsc-remote-tools.log`
+rc=0/0) + R-B's fix-analysis inputs.
+
+### The gap (localized read-only, then fixed)
+
+`override.mutatePermission` declared the v7 `actor` claim at the contract
+(round 7) but was NOT in `MUTATION_METHODS` (`s6-principal.ts:189`), so the
+deriver's dispatch (`:407`) fell to the host-operator default (`:412`):
+EVERY caller derived `{kind:'human', humanId: rootSessionId}` →
+`authorityOf` (`s6-remote.ts:1235-1239`) answered `{kind:'operator'}` → the
+governance closure mapped operator → the §7 Human surface (envelope-EXEMPT,
+`service.ts:572-585`). The client's claim was INERT at derivation (the port's
+`request.actorClaim` is written by the dispatcher but read nowhere — the claim
+only takes effect via `params['actor']` INSIDE `deriveMutationActor`, which the
+routing skipped). Consequences: a Leader-intended mutation silently got the §7
+exemption (the §6 carrier gate bypassed) and the durable row recorded `actor:
+'human'` provenance the caller never held. That is exactly the forbidden
+"accept claims then escalate them".
+
+### Chosen fix: OPTION A — join the existing mutation-principal closed set
+
+`override.mutatePermission` is now a member of `MUTATION_METHODS`
+(`s6-principal.ts:186-207`, dated comment block). Pattern justification (from
+the existing repo, no product decision needed): (i) the port ALREADY documents
+this exact behavior — "the override-lane mirror: human → operator, Leader →
+carrier-gated, member → typed refusal" (`s6-remote.ts:2860-2872`, round-5 text
+now ACTUAL behavior, dated note added); (ii) the three sibling methods
+(`override.set`, `override.reset`, `policyState.set`) all validate actor claims
+through the SAME `deriveMutationActor` — one machinery, one trust model;
+(iii) the v7 contract REQUIRES the claim (round 7), and R-B item 1 holds:
+the claim is derivation INPUT — a Human-only schema would contradict the
+already-shipped closed `human|leader|member` vocabulary and the `authorityOf`
+leader/member mapping. A mutation method now NEVER reaches the
+default-to-operator branch.
+
+Derivation guarantees now enforced for this method (`s6-principal.ts:304-360`):
+human claim → `{kind:'human', humanId: <ADDRESSED teamSessionId>}` (ownership
+via `assertTeamScoped`; NEVER a client-supplied identity string); leader claim
+→ requires a DURABLE leader row (else typed `unknown-leader`) → leader
+authority → FULL §6 carrier envelope; member claim → ownership + durable row +
+`≠ leader` validated, then the governance lane refuses it TYPED (members never
+mutate); absent/garbage claim → typed refusal.
+
+### Documented boundaries (NOT hidden, NOT fixed here)
+
+- **Claims are not connection-bound** (R-B item 2, recorded): a forged
+  `{kind:'leader'}` claim on any gate-passing connection derives LEADER
+  authority when the durable leader row exists (boot ALWAYS creates it,
+  `root.ts:3190-3204`). This is the SAME trust posture `override.set` has
+  shipped under (A32 model: the ServerPrincipalContext connection gate is the
+  authority basis; payload claims select/validate SCOPE inside it). Full
+  claim-vs-connection binding is a LARGER change shared by the WHOLE override
+  lane (all four methods) — post-PR4 territory, stated, not glossed.
+- **Doctrine on reachability (R-B item 3, stated explicitly):** a member
+  SESSION has no separate remote connection in this product — members act
+  through the tool path (server-fixed leader/member identities, `root.ts`
+  `resolveToolCaller`; the TOOL path is UNAFFECTED by BLOCK-5 — the RPC is the
+  leader/human surface). The channel is the operator-class gate; the role
+  matrix is therefore pinned at the DERIVATION layer, which is the layer the
+  doctrine actually relies on. `unknown-leader` is unreachable at the router
+  in any boot-completed world (boot guarantees the row) — pinned via the
+  shared branch + the boot guarantee, not claimed as a router leg.
+- `actorClaim` on the request records remains written-but-unread (inert
+  carrier); removal is out of scope (frozen batch), harmless — recorded.
+
+### Regressions: R8 role matrix AT THE ROOT-ASSEMBLED ROUTER (5 new legs, 17/17 in file)
+
+`round8/r8-family-green.log` (family + p8s6-principal: **116/116**). Each leg
+asserts the DURABLE ROW provenance (what actor identity actually landed):
+1. Human claim → commits; row `provenance.actor === 'human'`, reason verbatim,
+   mutationId pinned; the identity channel is the ADDRESSED owned teamSessionId
+   (the durable row IS that record; no humanId string is stored in the row —
+   same as the in-set methods, stated); REAL pre-execute ALLOW follows.
+2. Leader claim → row `provenance.actor === 'leader'` (NOT a fabricated human
+   one); in-ceiling grant commits and ALLOWs; OUT-of-ceiling (subtree beyond
+   the exact-only carrier) refuses `PERMISSION_ENVELOPE_EXPANSION_DENIED` with
+   the row UNCHANGED (mutationId still the previous one — zero write). If the
+   old default-to-operator were in play, this leg would COMMIT. §7 leak closed.
+3. Member claim (real durable member) → `PERMISSION_MUTATION_UNAUTHORIZED_ACTOR`
+   typed, `overlay.latest` UNDEFINED — never operator.
+4. Forged/absent → typed refusals at the router, zero write: `{kind:'operator'}`
+   dies at the CONTRACT closed actor set (`malformed-params`, field `actor` —
+   discovery: it never even reaches derivation); ghost member →
+   `TEAM_REMOTE_PRINCIPAL_INVALID`; foreign-root member → same code;
+   leader-claimed-as-member → same code; ABSENT actor → `malformed-params`.
+5. R-A folded item (RPC-position ARCHIVED symmetry): human claim over the
+   ARCHIVED target commits (row exists, `changed:true`) yet the REAL
+   pre-execute plane still refuses — the tri-state now pinned at BOTH entries.
+
+Fixture discovery (honest): the R7 world had NO durable leader row because it
+inserts member rows directly instead of running the boot creator; the fixture
+now mirrors production boot (`root.ts:3190-3204` cited inline) — the R8 leader
+leg failing FIRST at `unknown-leader` proved the derivation is really wired.
+
+### Battery (round8/, per-run names; extractor with both counts printed)
+
+- Runtime `8 failed | 3244 passed` (+5 = exactly the R8 legs); failset
+  BYTE-IDENTICAL vs `round7/r7-runtime-failset-r1.txt`
+  (`round8/r8-runtime-failset-diff.txt`).
+- Tools `1f|110` (p6t6, byte-identical vs `round7/r7-tools-failset.txt`);
+  Domain `10f|482` (byte-identical vs `round7/r7-domain-failset.txt`; all
+  claims remain code-identity proofs — no base run executed);
+  Remote `220/220` (0-failset vs `round7/r7-remote-failset.txt`).
+- tsc runtime/remote/tools rc=0 (raws above); build rc=0 (`r8-build.log`);
+  checker pre-stage drift BEFORE staging (`r8-checker-prestage.log`, rc=1 with
+  the dist drift list — the genuine state) and post-commit rc=0 (follow-up
+  evidence commit).
+- Everything else frozen: no opportunistic refactors; the two source files
+  changed are the set + a dated comment; the third file is the test.
