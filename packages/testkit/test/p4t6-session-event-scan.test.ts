@@ -1646,8 +1646,18 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `round9/r9-p4t6-RED.log`, GREEN `round9/r9-p4t6-GREEN.log`, full suite
     // `round9/r9-testkit-suite.log`; not hand-computed). The testkit suite
     // had NOT been run in rounds 5-8 — this closes that gap.
-    expect(scanResult.filesScanned).toBe(945)
-    expect(scanResult.files.length).toBe(945)
+    // MASTER INTEGRATION (root ruling: merge of 6259cf4b; round 10):
+    // 945 + 1 = 946 — the combined tree adds master's ONE new scannable
+    // client spec (`packages/client/test/pr56-control-subject-payload.test.ts`,
+    // PR #56, absent from the branch base). The 946 value is the committed
+    // scanner run on the combined tree (authoritative: this suite reported
+    // `expected 946 to be 945` before the recount — RED raw
+    // `round10/r10-p4t6-combined-RED.log`, GREEN `round10/r10-p4t6-GREEN.log`;
+    // not hand-computed). On the combined tree 9 of the 10 legs passed
+    // UNCHANGED (quarantine hits, excluded-self, citations, controls) — the
+    // ONLY failing leg is this count leg.
+    expect(scanResult.filesScanned).toBe(946)
+    expect(scanResult.files.length).toBe(946)
 
   })
 
