@@ -11003,8 +11003,9 @@ var __dshFactory = (require) => {
 			 * v2-only `team.admitInitialWork` plus the v3-only `team.listRoots` /
 			 * `team.ensureRootLive` plus the v4-only `team.resolveControl` plus the
 			 * v5-only `team.prepareOrdinaryOpen` plus the v6-only
-			 * `team.getReadState` plus the v7-only `override.mutatePermission`
-			 * (30 methods total; PR4 round 5). Key = endpoint = method name
+			 * `team.getReadState` plus the v7-only `override.mutatePermission` and
+			 * `override.getPermission` (31 methods total; PR4 round 5 + PR5 read lane).
+			 * Key = endpoint = method name
 			 * (dotted: `<category>.<action>`). Per-version availability is the
 			 * closed {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS}
 			 * + {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} +
@@ -11037,6 +11038,12 @@ var __dshFactory = (require) => {
 			    // lane (the durable permission overlay's grant/revoke through the ONE
 			    // governance mutation authority; v7-only, closed field set in params.ts).
 			    'override.mutatePermission': { category: REMOTE_CATEGORIES.OVERRIDE },
+			    // alpha.3 PR5 (ROOT BLOCK-1): the READ half of the same permission lane —
+			    // the durable overlay's CURRENT authority + AUDIT history for one exact
+			    // (team, member) pair through the append-narrowed read projection (v7
+			    // co-tenancy with its write pair; closed field set in params.ts; a pure
+			    // read — never consulted by execution/authorization, ADR §9).
+			    'override.getPermission': { category: REMOTE_CATEGORIES.OVERRIDE },
 			    'policyState.get': { category: REMOTE_CATEGORIES.POLICY_STATE },
 			    'policyState.set': { category: REMOTE_CATEGORIES.POLICY_STATE },
 			    'compatibility.get': { category: REMOTE_CATEGORIES.COMPATIBILITY },
@@ -11138,11 +11145,16 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_V6_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V6_ONLY_METHODS });
 			/**
 			 * PR4 ROUND 5 (FIX-2b): the v7-only methods — the human-facing permission
-			 * grant/revoke entry over the ONE governance mutation authority. v<7
-			 * requests to it are the typed `method-version-unsupported` rejection (the
-			 * same availability machinery as every prior version-only method).
+			 * grant/revoke entry over the ONE governance mutation authority, plus
+			 * (alpha.3 PR5, ROOT BLOCK-1) its read pair `override.getPermission` (the
+			 * overlay's current authority + audit history; pure read, ADR §9). v<7
+			 * requests to either are the typed `method-version-unsupported` rejection
+			 * (the same availability machinery as every prior version-only method).
 			 */
-			const REMOTE_V7_ONLY_METHODS = ['override.mutatePermission'];
+			const REMOTE_V7_ONLY_METHODS = [
+			    'override.mutatePermission',
+			    'override.getPermission',
+			];
 			Object.defineProperty(exports, "REMOTE_V7_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V7_ONLY_METHODS });
 			/**
 			 * Is `method` a catalog method available in remote contract `version`?
@@ -12135,6 +12147,7 @@ var __dshFactory = (require) => {
 			    };
 			}
 			Object.defineProperty(exports, "parseRemoteTeamPrepareOrdinaryOpenParams", { enumerable: true, get: () => parseRemoteTeamPrepareOrdinaryOpenParams });
+			const REMOTE_OVERRIDE_GET_PERMISSION_FIELDS = ['teamSessionId', 'memberInstanceId'];
 			const REMOTE_OVERRIDE_MUTATE_PERMISSION_FIELDS = [
 			    'teamSessionId',
 			    'memberInstanceId',
@@ -12212,6 +12225,15 @@ var __dshFactory = (require) => {
 			    return out;
 			}
 			/** Parse `override.mutatePermission` params (contract v7, v7-only method). */
+			/** Parse `override.getPermission` params (alpha.3 PR5, ROOT BLOCK-1). */
+			function parseRemoteOverrideGetPermissionParams(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_OVERRIDE_GET_PERMISSION_FIELDS);
+			    return {
+			        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			        memberInstanceId: parseRemoteInstanceId(requiredField(method, params, 'memberInstanceId'), 'memberInstanceId'),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteOverrideGetPermissionParams", { enumerable: true, get: () => parseRemoteOverrideGetPermissionParams });
 			function parseRemoteOverrideMutatePermissionParams(method, params) {
 			    assertNoUnknownFields(method, params, REMOTE_OVERRIDE_MUTATE_PERMISSION_FIELDS);
 			    const kind = requiredField(method, params, 'kind');
@@ -12701,6 +12723,9 @@ var __dshFactory = (require) => {
 			        case 'override.mutatePermission':
 			            // v7-only (PR4 round 5; the availability check guarantees version 7).
 			            return wrapParsed(method, parseRemoteOverrideMutatePermissionParams(method, params));
+			        case 'override.getPermission':
+			            // v7-only (alpha.3 PR5 ROOT BLOCK-1; co-tenancy with the write pair).
+			            return wrapParsed(method, parseRemoteOverrideGetPermissionParams(method, params));
 			        case 'team.getProjection':
 			            return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
 			        case 'team.getLedgerPage':

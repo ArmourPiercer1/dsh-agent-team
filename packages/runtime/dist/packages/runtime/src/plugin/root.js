@@ -119,6 +119,7 @@ import { createGovernanceMutationService } from '../../governance/index.js';
 // effective answer stays inside the merged read plane (ADR §3).
 import { createMemberLifecycleReader, createPermissionGovernanceLane, createTeamPermissionLanes, } from './permission-plane.js';
 import { assertPermissionMutationTarget } from '../../permission-lifecycle/mutation-lane.js';
+import { PERMISSION_LIFECYCLE_ERROR_CODES, PermissionLifecycleError, } from '../../permission-lifecycle/types.js';
 import { canonicalizeShellOperation } from '../../operation-permission/canonical-operation.js';
 // alpha.3 PR5 (final splice): the permission-change NOTIFICATION awareness
 // layer over the merged durable authority (ADR §9 "notification is
@@ -128,7 +129,7 @@ import { canonicalizeShellOperation } from '../../operation-permission/canonical
 // decision, ack, gate or read path consumes it (lane hygiene spec + the
 // binding specs pin the closed surface; parent GO: delivery is PUBLIC
 // `Agent.inject` only, never a wake).
-import { createPermissionChangeNotifier, createPermissionDeliveryAdapter, createPermissionDeliveryBinding, detachPermissionNotice, } from '../../permission-notification/index.js';
+import { createPermissionChangeNotifier, createPermissionDeliveryAdapter, createPermissionDeliveryBinding, createPermissionReadProjection, detachPermissionNotice, } from '../../permission-notification/index.js';
 import { createFailClosedOverlayProxy, createProjectionLiveOverlaySeam, createRemoteHandlerRegistrationSeam, createRemoteQueryCommandCompletionSeam, createServerPrincipalDerivationSeam, } from './seams.js';
 import { createTeamDomainReadPort } from './projection-source.js';
 import { createEffectiveConfigView } from './effective-config-view.js';
@@ -1930,7 +1931,12 @@ export function createTeamProductionRoot(params) {
                 // RECEIPT — and only to suppress delivery to a member whose
                 // lifecycle left the active set (ARCHIVED / DISPOSED / unknown
                 // never receive; CREATED / RUNNING / SETTLED stay delivery-
-                // eligible, the idle one merely parks). This is a delivery
+                // eligible). Delivery-eligible does NOT mean deliverable: the
+                // injection itself happens ONLY when the ACTUAL live agent
+                // status is running — an IDLE target DROPS at the receipt gate
+                // and is never parked, queued or woken (parking exists only
+                // for an inject the running host ACCEPTED into its inbox).
+                // This is a delivery
                 // gate, never a decision input: a refusal here refuses a
                 // NOTIFICATION, never a mutation.
                 lifecycleActive: (identity) => {
@@ -1959,6 +1965,21 @@ export function createTeamProductionRoot(params) {
                 detachPermissionNotice(() => notifier.notifyPermissionCommit(snapshot));
             };
         })();
+    // alpha.3 PR5 (ROOT BLOCK-1): the production permission overlay READ
+    // projection — the append-NARROWED seam over the SAME shared durable
+    // overlay port (the writer stays the governance lane; this surface has
+    // no `append` member even by type). It feeds ONLY the remote
+    // `override.getPermission` read below; it is never consulted by the
+    // decision plane, the pre-execute gate, kernel authorize, the delivery
+    // gate or any wake path (ADR §9 — a read that never authorizes).
+    const permissionReadProjection = permissionOverlay === undefined
+        ? undefined
+        : createPermissionReadProjection({
+            overlay: {
+                latest: async (identity) => await permissionOverlay.latest(identity),
+                history: async (identity) => await permissionOverlay.history(identity),
+            },
+        });
     if (permissionNoticeEmitter !== undefined) {
         const governanceAuthority = mutation.governance;
         mutation.governance = Object.freeze({
@@ -2265,6 +2286,31 @@ export function createTeamProductionRoot(params) {
         permission: {
             mutatePermission: permissionLaneMutate,
             canonicalizeExecIntent: permissionExecCanonicalize,
+            ...(permissionReadProjection === undefined
+                ? {}
+                : {
+                    getPermission: async (teamSessionId, memberInstanceId) => {
+                        // The READ mirror of the write side's tri-state (mutation
+                        // lane §8): NO durable MemberInstance row (Leader-aware — the
+                        // Leader position answers live iff the TeamSession row
+                        // exists; the SAME shared lifecycle reader) is a TYPED
+                        // `PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN` refusal — never an
+                        // empty view masquerading as zero authority. DISPOSED /
+                        // ARCHIVED rows KEEP their row: the overlay HISTORY stays
+                        // audit-visible (ADR §2/§8 — lifecycle gates EXECUTION, never
+                        // the durable audit read; a DISPOSED member's live-effective
+                        // authority is separately never-effective in the decision
+                        // plane, which never consults this surface at all).
+                        const state = permissionLifecycleReader.readLifecycle(teamSessionId, memberInstanceId);
+                        if (state === undefined) {
+                            throw new PermissionLifecycleError(PERMISSION_LIFECYCLE_ERROR_CODES.INSTANCE_UNKNOWN, `override.getPermission: no durable MemberInstance row for ${JSON.stringify(memberInstanceId)} in TeamSession ${JSON.stringify(teamSessionId)} (zero read)`, { teamSessionId, memberInstanceId });
+                        }
+                        const identity = { teamSessionId, memberInstanceId };
+                        const authority = await permissionReadProjection.readAuthority(identity);
+                        const history = await permissionReadProjection.readHistoryAudit(identity);
+                        return { authority, history };
+                    },
+                }),
         },
         ...(permissionCanonicalize === undefined
             ? {}

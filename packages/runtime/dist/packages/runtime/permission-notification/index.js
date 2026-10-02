@@ -20,8 +20,10 @@
  * point — `src/plugin/root.ts`, the governance-mutation completion point
  * (post-COMMIT, fire-and-forget, active-only inject). Its outputs feed
  * nothing else; the layer is never an authorization source (ADR §9). The
- * READ PROJECTION remains a library until a production read surface
- * consumes it (still no caller). The lane ships into the install surface
+ * READ PROJECTION is WIRED (ROOT BLOCK-1) as a second read surface in
+ * that same file: the append-NARROWED seam behind the v7-only remote read
+ * method `override.getPermission` — a pure read that execution
+ * authorization never consults. The lane ships into the install surface
  * TRANSITIVELY through root.ts's import chain (dist co-commit).
  *
  * @module @dsh-agent-team/runtime/permission-notification

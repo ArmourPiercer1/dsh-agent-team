@@ -188,3 +188,33 @@ build); `source-full-runtime-suite.log` + `source-final-fail-set.txt` rc=1 — 8
 
 Scope honored: ONLY binding.ts + its spec + lane README + evidence. Shared
 root/agent-bindings/GMS glue untouched; no interface-range change; pr4 worktree untouched.
+
+## ROOT BLOCK fix batch (round 5) — raws in `fixbatch/`
+
+Formal root GO (aggregated fix batch): BLOCK-2 receipt-identity fix,
+BLOCK-1 production readprojection wiring, docs corrections, real-glue
+receipt tests, restore regressions, advisories A8-1/2/3. All raws below
+carry their real rc (A8-1).
+
+| Leg | Raw | Result |
+| --- | --- | --- |
+| ESLint (9 changed/new files; incl. the two PRE-EXISTING s6-remote findings fixed to keep the zero-findings changed-file law) | `fixbatch/eslint-fixbatch.log` | rc=0, zero findings |
+| runtime tsc --noEmit | `fixbatch/tsc-runtime-fixbatch.log` | rc=0 (first capture showed 3 test-surface type errors, fixed, clean) |
+| remote tsc --noEmit | `fixbatch/tsc-remote-fixbatch.log` | rc=0 |
+| testkit tsc --noEmit | `fixbatch/tsc-testkit-fixbatch.log` | rc=0 |
+| p4t6 session-event scan (2 new scannable specs) | `fixbatch/p4t6-RED.log` / `fixbatch/p4t6-GREEN.log` | RED `expected 958 to be 956`; repinned 956 -> 958; GREEN 10/10 rc=0; quarantine hits stay 15 |
+| remote package suite (versioned-union pins advanced 30 -> 31, v7-only set gains `override.getPermission`; 4th pin on the runtime side in p8s7r4 spec) | `fixbatch/remote-suite-fixbatch.log` | 220/220 rc=0 |
+| testkit suite | `fixbatch/testkit-suite-fixbatch.log` | 158/158 rc=0 |
+| a3p5 lane + fix-batch specs (splice 9, read-wiring 12, glue-receipt 8, hygiene 9, notification 16, binding 17, read-projection 7) | `fixbatch/lane-suite-fixbatch.log` | 78/78 |
+| full runtime suite | `fixbatch/full-runtime-suite-fixbatch.log` | 3322/3330 (8 failed), failset BYTE-IDENTICAL to `splice/final-fail-set.txt` (diff empty; `fixbatch/final-fail-set-fixbatch.txt`) |
+| build (pnpm -r run build) + composition (glue placement + client composition bundle) | `fixbatch/build-fixbatch.log` / `fixbatch/composition-fixbatch.log` | rc=0 / rc=0 |
+| check:artifacts prestage (drift preview -> co-committed) / postcommit | `fixbatch/prestage-check-artifacts.log` / `fixbatch/postcommit-check-artifacts.log` | preview 21 drifted install-surface files; postcommit rc=0 |
+
+Real-glue harness note: `test/a3p5-glue-permission-receipt.test.ts` runs
+the ACTUAL `agent-bindings.mjs` receipt module (t12a live bridge, hostless
+dependent fakes) — non-derived seed / restored / leader durable rows
+resolve, ANTI-ECHO collision returns the TRUE owner (gate drops
+identity-mismatch), stale re-pointed row reads undefined with the new key
+staying cold, ghost undefined, derived-id regression; create/resume/steer/
+followup counters pinned on every leg (cold-stays-cold). Host/kit
+dimension stays NOT_RUN (never claimed).

@@ -36,6 +36,9 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
+  parseBlueprintContentHash,
+  parseBlueprintId,
+  parseBlueprintRevision,
   parseChildSessionId,
   parseInstanceId,
   parseRootSessionId,
@@ -163,6 +166,8 @@ interface SpliceWorld {
   setAgentStatus(status: 'idle' | 'running'): void
   setClosing(closing: boolean): void
   grant(mutationId: string, resource: string): Promise<{ changed: boolean; reason?: string }>
+  restore(mutationId: string, resource?: string): Promise<Record<string, unknown>>
+  lifecycleRestore(): Promise<Record<string, unknown>>
   /** Drain the detached emitter: poll until settled (fire-and-forget by
    *  design, so the drain is observed, never joined). */
   settle(): Promise<void>
@@ -172,6 +177,7 @@ interface SpliceWorld {
 async function openSpliceWorld(options: {
   readonly receipt?: 'attached' | 'absent' | 'closing'
   readonly agentStatus?: 'idle' | 'running'
+  readonly memberLifecycle?: 'SETTLED' | 'ARCHIVED'
 } = {}): Promise<SpliceWorld> {
   const receipt = options.receipt ?? 'attached'
   const base = scratchDir(`a3p5splice-${Math.random().toString(36).slice(2, 8)}`)
@@ -181,13 +187,24 @@ async function openSpliceWorld(options: {
 
   const seam = new FileStorageSeam(base)
   const domain = await createTeamDomain(seam)
+  await domain.repositories.teamSessions.put({
+    blueprint: {
+      blueprintId: parseBlueprintId('A3P5SP-BP'),
+      revision: parseBlueprintRevision('1'),
+      contentHash: parseBlueprintContentHash('sha256-0123456789abcdef0123456789abcdef'),
+    },
+    createdAt: NOW,
+    defaultWorkspace: `${base}/workspace`,
+    generation: 1,
+    rootSessionId: parseRootSessionId(ROOT_SID),
+  })
   await domain.repositories.memberInstances.put({
     rootSessionId: parseRootSessionId(ROOT_SID),
     instanceId: WORKER_ID,
     templateId: parseTemplateId('worker'),
     label: 'a3p5 splice worker',
     childSessionId: parseChildSessionId('session-child-a3p5worker'),
-    lifecycle: 'SETTLED',
+    lifecycle: options.memberLifecycle ?? 'SETTLED',
     createdAt: NOW,
     activityVersion: 1,
   })
@@ -277,6 +294,32 @@ async function openSpliceWorld(options: {
         ? { changed: true as const }
         : { changed: false as const, reason: result.reason }
     },
+    async restore(mutationId, resource) {
+      const result = await plane.mutation.restore({
+        teamSessionId: ROOT_SID,
+        memberInstanceId: WORKER_ID,
+        ...(resource === undefined
+          ? {}
+          : {
+              ruleChange: {
+                kind: 'grant_instance' as const,
+                mutationId,
+                reason: 'a3p5 restore rule change',
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- closed carrier shape (lane spec pins)
+                rules: [exactRule('write', resource, 'allow')] as any,
+                authority: { kind: 'operator' as const },
+              },
+            }),
+      })
+      return result as unknown as Record<string, unknown>
+    },
+    async lifecycleRestore() {
+      const result = await root.lifecycle.service.restoreMember({
+        rootSessionId: ROOT_SID,
+        instanceId: WORKER_ID,
+      })
+      return result as unknown as Record<string, unknown>
+    },
     async settle() {
       // The dispatch is fire-and-forget (detached at the emission point):
       // give it a generous wall-clock drain so a NEGATIVE expectation
@@ -290,6 +333,11 @@ async function openSpliceWorld(options: {
       destroyDir(base)
     },
   }
+}
+
+/** The durable overlay history for the worker identity (raw snapshots). */
+async function overlayDump(world: SpliceWorld): Promise<readonly { metadata: { generation: number } }[]> {
+  return (await world.overlay.history({ teamSessionId: ROOT_SID, memberInstanceId: WORKER_ID })) as unknown as readonly { metadata: { generation: number } }[]
 }
 
 describe('splice leg 1 — a committed grant delivers EXACTLY ONE inject through the real root wiring', () => {
@@ -437,6 +485,53 @@ describe('splice leg 5 — no receipt seam: zero delivery, byte-identical durabl
   })
 })
 
+describe('splice leg 5b — RESTORE regression: a pure restore emits ZERO, a genuine rule change at restore commits EXACTLY ONE new snapshot', () => {
+  it('a pure lifecycle restore commits the lifecycle row only: zero overlay writes, zero emissions', async () => {
+    const world = await openSpliceWorld({ memberLifecycle: 'ARCHIVED' })
+    try {
+      // Grant during ARCHIVED is LEGAL (tri-state) — one snapshot exists
+      // and the emission point fires once, but the ARCHIVED lifecycle gate
+      // drops DELIVERY (leg semantics owned by leg 3; inbox stays empty).
+      expect((await world.grant('mut-a3p5-pure-a', `${world.insideDir}/r1.ts`)).changed).toBe(true)
+      await world.settle()
+      expect(world.inbox).toHaveLength(0)
+      const dumpBefore = await overlayDump(world)
+      expect(dumpBefore.length).toBe(1)
+      // PURE restore (the EXISTING lifecycle path, no overlay contact).
+      const restored = await world.lifecycleRestore()
+      expect(String((restored as { lifecycle?: string }).lifecycle ?? JSON.stringify(restored))).toContain('SETTLED')
+      await world.settle()
+      expect(world.inbox, 'a pure restore never touches the emission point').toHaveLength(0)
+      const dumpAfter = await overlayDump(world)
+      expect(JSON.stringify(dumpAfter)).toBe(JSON.stringify(dumpBefore))
+      expect(dumpAfter.length).toBe(1)
+    } finally {
+      await world.close()
+    }
+  })
+
+  it('restore with a genuine rule change commits exactly one new snapshot through the decorated mutatePermission', async () => {
+    // The agent stays IDLE: the delivery gate drops (leg 3 owns delivery),
+    // so this leg isolates what it measures — the rule-change restore
+    // commits EXACTLY ONE snapshot THROUGH the decorated mutatePermission
+    // (the single completion point), never bypassing it, never writing two.
+    const world = await openSpliceWorld({ agentStatus: 'idle', memberLifecycle: 'ARCHIVED' })
+    try {
+      const result = await world.restore('mut-a3p5-restore-change', `${world.insideDir}/r2.ts`)
+      void result
+      await world.settle()
+      expect(world.inbox, 'idle target: delivery drops')
+        .toHaveLength(0)
+      const dump = await overlayDump(world)
+      expect(dump.length, 'exactly one new snapshot — the rule change rides the ONE path').toBe(1)
+      expect(dump[0]?.metadata.generation).toBe(1)
+      expect(JSON.stringify(dump), 'the committed rule is the restore rule change').toContain('r2.ts')
+    } finally {
+      await world.close()
+    }
+  })
+})
+
 describe('splice leg 6 — source pins: the real glue receipt block is read-only; root has ONE emission site', () => {
   const glueSource = readFileSync(
     join(RUNTIME_ROOT, 'src', 'plugin', 'live', 'agent-bindings.mjs'),
@@ -450,11 +545,20 @@ describe('splice leg 6 — source pins: the real glue receipt block is read-only
     const blockStart = glueSource.indexOf('permissionNoticeReceipt: Object.freeze({')
     const block = glueSource.slice(blockStart, glueSource.indexOf('\n    }),', blockStart))
     expect(block.length).toBeGreaterThan(0)
-    // The two facts and the identity law are the glue OWN derivations.
+    // The two facts, and the identity/ownership law is the glue OWN
+    // durable lookup (ROOT BLOCK-2 fix): the exact pair's durable
+    // MemberInstance row supplies the liveAgents key the registrant used
+    // (boot seeds + restore both key by that durable value) — NEVER a
+    // re-derivation — and the returned identity is derived FROM the
+    // durable reverse mapping, never echoed from the request.
     expect(block).toContain('closing === true')
-    expect(block).toContain('liveAgents.get(sid)')
-    expect(block).toContain('childSessionIdFor(teamSessionId, memberInstanceId)')
-    expect(block).toContain('LEADER_INSTANCE_ID')
+    expect(block).toContain('memberInstances.list(teamSessionId)')
+    expect(block).toContain('liveAgents.get(key)')
+    expect(block).toContain('String(ownerRow.instanceId)')
+    // BLOCK-2 FIX LAW: the derived-id path is gone (a re-derivation would
+    // miss legitimately non-derived boot/restored members AND echo the
+    // request — both were the bug).
+    expect(block.includes('childSessionIdFor'), 'receipt must never re-derive a child id').toBe(false)
     // ZERO wake/capacity members: nothing here can create, resume, adopt
     // or send to an Agent (the ensureLiveAgent exclusion is the leg that
     // keeps awareness from ever waking a cold member).

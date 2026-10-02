@@ -49,6 +49,7 @@ import { REMOTE_CONTRACT_VERSION, REMOTE_CONTRACT_VERSION_V2, } from '../../../r
 import { PROJECTION_SHAPES, TEAM_CREATE_FLAVORS, projectionShapeOf, teamCreateFlavorOf, withLiveProjectionFreshness, } from '../../../remote/src/contracts/semantic.js';
 import { REMOTE_BACKING_ERROR_CODE_SET } from '../../../remote/src/handlers/dispatch.js';
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js';
+import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
 import { createLedgerPageTracker } from '../../../remote/src/push/ledger-page.js';
 import { TeamPluginError } from './types.js';
 import { S6_PRINCIPAL_ERROR_CODES, SERVER_PRINCIPAL_TRANSPORTS, createServerPrincipalContext, isServerPrincipalContext, } from './s6-principal.js';
@@ -454,7 +455,7 @@ export function mergeProbeEnvironmentFacts(hostFacts, callerFacts) {
  * @returns the thirteen ports.
  */
 export function createS6RemotePorts(options) {
-    const { rootSessionId, repositories, catalog, blueprint, leaderInstanceId, now, isOwnedRoot } = options;
+    const { rootSessionId, repositories, catalog, blueprint, leaderInstanceId, isOwnedRoot } = options;
     /** The bound-root guard's acceptance: the bound root OR a durably owned
      *  root (P9-S8 — a team created after boot by this host). Without the
      *  predicate (single-root fixtures) this is the T12 bound-root-only
@@ -1641,6 +1642,32 @@ export function createS6RemotePorts(options) {
                     safe['reason'] = result['reason'];
                 return safe;
             },
+            async getPermission(request, caller) {
+                const root = assertBoundRoot('override.getPermission', request.teamSessionId);
+                // ROOT BLOCK-1 (AD-1): the ACCESS GATE lives at the wire seam — the
+                // read projection below stays pure. The transport-authenticated
+                // operator (the connection-gate principal a READ derives to by the
+                // EXISTING default — no new derivation branch) may read; an
+                // INSTANCE caller may read ONLY the Leader position (the governance
+                // actor) or its OWN overlay — a member reading another member's
+                // authority is refused typed (the per-(team,member) addressing law;
+                // this grants NO new authority, it only narrows who may read).
+                if (caller.kind === 'instance') {
+                    const callerInstanceId = String(caller.instanceId);
+                    if (callerInstanceId !== LEADER_INSTANCE_ID &&
+                        callerInstanceId !== request.memberInstanceId) {
+                        throw new TeamPluginError(S6_PRINCIPAL_ERROR_CODES.PRINCIPAL_INVALID, `remote method 'override.getPermission': instance caller '${callerInstanceId}' may not read the overlay of instance '${request.memberInstanceId}' (self-read or Leader only)`, { reason: 'cross-member-read-refused', caller: callerInstanceId, target: request.memberInstanceId });
+                    }
+                }
+                const permission = options.permission;
+                if (permission === undefined || permission.getPermission === undefined) {
+                    throw new Error('override.getPermission: the permission overlay read seam is unwired on this surface — zero read, zero write');
+                }
+                // PURE READ through the root-assembled append-narrowed projection;
+                // this result is NEVER consulted by execution/authorization (ADR §9
+                // — the decision plane's inputs do not include the read lane).
+                return (await permission.getPermission(root, request.memberInstanceId));
+            },
             async reset(request, caller) {
                 const root = assertBoundRoot('override.reset', request.teamSessionId);
                 const authority = authorityOf(caller, leaderInstanceId);
@@ -2239,6 +2266,19 @@ function buildS6CategoryHandlers(ports, principal) {
                         rules: mutateParams.rules,
                     };
                     return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.override.mutatePermission(request, caller)).then((result) => ({ data: result }));
+                }
+                case 'override.getPermission': {
+                    // alpha.3 PR5 (ROOT BLOCK-1): v7-only READ pair (the frozen
+                    // param-parse chain already rejected v<7 envelopes). A read
+                    // carries NO actor field — the principal is the DERIVED caller
+                    // (the connection-gate operator by the EXISTING default; no new
+                    // derivation branch). Access gating lives in the port.
+                    const readParams = params;
+                    const request = {
+                        teamSessionId: readParams.teamSessionId,
+                        memberInstanceId: readParams.memberInstanceId,
+                    };
+                    return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.override.getPermission(request, caller)).then((result) => ({ data: result }));
                 }
                 default:
                     return Promise.reject(new Error(`override handler routed an unknown method: ${method}`));

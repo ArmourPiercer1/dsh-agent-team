@@ -1,0 +1,8 @@
+test/a3p5-permission-read-wiring.test.ts(205,11): error TS2322: Type '(memberInstanceId: string, version?: number | undefined, teamSessionId?: string | undefined) => Promise<RemoteResponse>' is not assignable to type '(memberInstanceId: string, version?: number | undefined, teamSessionId?: string | undefined) => Promise<Record<string, unknown>>'.
+  Type 'Promise<RemoteResponse>' is not assignable to type 'Promise<Record<string, unknown>>'.
+    Type 'RemoteResponse' is not assignable to type 'Record<string, unknown>'.
+      Type 'RemoteSuccessResult' is not assignable to type 'Record<string, unknown>'.
+        Index signature for type 'string' is missing in type 'RemoteSuccessResult'.
+test/a3p5-permission-read-wiring.test.ts(206,20): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+test/a3p5-permission-splice.test.ts(340,3): error TS4104: The type 'readonly PermissionOverlaySnapshot[]' is 'readonly' and cannot be assigned to the mutable type '{ metadata: { generation: number; }; }[]'.
+runtime-tsc rc=2

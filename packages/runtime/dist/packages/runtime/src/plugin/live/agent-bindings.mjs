@@ -4730,16 +4730,19 @@ export function createAgentBindings(deps) {
     listLiveSessions: () => [...liveAgents.keys()].sort(),
     hasLive: (sessionId) => liveAgents.has(String(sessionId)),
     isResuming: (sessionId) => resumingSessions.has(String(sessionId)),
-    // alpha.3 PR5 (final splice): the SYNCHRONOUS permission-notice RECEIPT
-    // POINT the production root's awareness emitter binds. READ-ONLY facts
-    // only — the closing fact + the CURRENT owned live handle for the EXACT
-    // addressed (team, member) pair. Nothing here can create, resume,
-    // materialize or adopt an Agent: `ensureLiveAgent` is deliberately NOT
-    // referenced; a cold or absent member reads `undefined` and STAYS COLD
-    // (awareness never wakes). The pair→session mapping is the glue's OWN
-    // identity law (childSessionIdFor; the leader position's live Agent IS
-    // the team-root session's handle — the same mapping resolveInstanceIdFor
-    // applies at the top of this module).
+    // alpha.3 PR5 (final splice + ROOT BLOCK-2 fix): the SYNCHRONOUS
+    // permission-notice RECEIPT POINT the production root's awareness
+    // emitter binds. READ-ONLY facts only — the closing fact + the CURRENT
+    // owned live handle for the EXACT addressed (team, member) pair.
+    // Nothing here can create, resume, materialize or adopt an Agent:
+    // `ensureLiveAgent` is deliberately NOT referenced; a cold or absent
+    // member reads `undefined` and STAYS COLD (awareness never wakes).
+    // The pair→session key comes from the DURABLE MemberInstance row (the
+    // exact pair's OWN row, whose `childSessionId` is verbatim the key the
+    // registrant used — boot seeds and resume both key liveAgents by that
+    // durable/config value, never a re-derivation); the returned identity
+    // is derived FROM the durable reverse mapping, never echoed from the
+    // request.
     permissionNoticeReceipt: Object.freeze({
       closing: () => closing === true,
       liveHandle: (identity) => {
@@ -4748,13 +4751,30 @@ export function createAgentBindings(deps) {
         if (typeof teamSessionId !== 'string' || typeof memberInstanceId !== 'string') {
           return undefined
         }
-        const sid =
-          memberInstanceId === LEADER_INSTANCE_ID
-            ? teamSessionId
-            : childSessionIdFor(teamSessionId, memberInstanceId)
-        const handle = liveAgents.get(sid)
+        // DURABLE lookup, never a re-derivation (ROOT BLOCK-2 fix law): a
+        // pair with no durable row, a typed-absent child binding, or no
+        // owned live entry reads `undefined` (fail closed — there is NO
+        // derived-id fallback: a guess would be a bypass, not a fallback).
+        const members = domain.repositories.memberInstances.list(teamSessionId)
+        const row = members.find((m) => String(m.instanceId) === memberInstanceId)
+        if (row === undefined) return undefined
+        const key = row.childSessionId
+        if (typeof key !== 'string' || key.length === 0) return undefined
+        const handle = liveAgents.get(key)
         if (handle === undefined || handle.agent === undefined) return undefined
-        return Object.freeze({ teamSessionId, memberInstanceId, agent: handle.agent })
+        // Ownership proof derived FROM the durable facts: the TRUE owner of
+        // the handle found is the row whose childSessionId BINDS this key
+        // (the reverse mapping — the same durable relation the boot and
+        // persona paths trust). Under a durable collision the returned
+        // pair is the handle's real owner, so the receipt gate drops it as
+        // a mismatch; no provable owner → `undefined`.
+        const ownerRow = members.find((m) => String(m.childSessionId) === key)
+        if (ownerRow === undefined) return undefined
+        return Object.freeze({
+          teamSessionId: String(ownerRow.rootSessionId),
+          memberInstanceId: String(ownerRow.instanceId),
+          agent: handle.agent,
+        })
       },
     }),
     ensureLiveAgent,

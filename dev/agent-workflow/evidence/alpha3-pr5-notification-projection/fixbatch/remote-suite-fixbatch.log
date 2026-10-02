@@ -1,0 +1,24 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/remote
+
+ ✓ test/tcm-m1-remote-v2.test.ts (26 tests) 13ms
+ ✓ test/d1-remote-v3.test.ts (24 tests) 12ms
+ ✓ test/f9-remote-v4.test.ts (31 tests) 17ms
+ ✓ test/p8t4-negative.test.ts (7 tests) 41ms
+ ✓ test/p8t3-negative.test.ts (7 tests) 70ms
+ ✓ test/c6-remote-v6.test.ts (26 tests) 9ms
+ ✓ test/p8t3-round-trip.test.ts (14 tests) 9ms
+ ✓ test/p8t4-engine.test.ts (23 tests) 9ms
+ ✓ test/p8t3-version.test.ts (19 tests) 5ms
+ ✓ test/p8t4-sync.test.ts (11 tests) 11ms
+ ✓ test/p8t3-admission.test.ts (6 tests) 8ms
+ ✓ test/c1-remote-v5.test.ts (15 tests) 5ms
+ ✓ test/p8t3-invalid-ids.test.ts (9 tests) 7ms
+ ✓ test/remote.test.ts (2 tests) 2ms
+
+ Test Files  14 passed (14)
+      Tests  220 passed (220)
+   Start at  02:13:40
+   Duration  887ms (transform 843ms, setup 0ms, import 1.71s, tests 219ms, environment 1ms)
+
+remote-suite rc=0

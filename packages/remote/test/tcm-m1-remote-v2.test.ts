@@ -578,8 +578,8 @@ describe('TCM M1: catalog facts (versioned union, closed)', () => {
     expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7])
   })
 
-  it('the closed catalog is the versioned union: 30 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 1 v7-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(30)
+  it('the closed catalog is the versioned union: 31 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(31)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     // the D1 (Team D1-D6 repair v2) v3-only closed set
     expect([...REMOTE_V3_ONLY_METHODS].sort()).toEqual(['team.ensureRootLive', 'team.listRoots'])
@@ -593,7 +593,10 @@ describe('TCM M1: catalog facts (versioned union, closed)', () => {
     // PR4 ROUND 5 (FIX-2b) v7-only closed set — the human/operator
     // permission grant/revoke lane; unavailable (typed
     // method-version-unsupported) at every version below 7.
-    expect([...REMOTE_V7_ONLY_METHODS].sort()).toEqual(['override.mutatePermission'])
+    expect([...REMOTE_V7_ONLY_METHODS].sort()).toEqual(['override.getPermission', 'override.mutatePermission'])
+    expect(isRemoteMethodAvailableInVersion('override.getPermission', 7)).toBe(true)
+    expect(isRemoteMethodAvailableInVersion('override.getPermission', 6)).toBe(false)
+    expect(isRemoteMethodAvailableInVersion('override.getPermission', 1)).toBe(false)
     expect(isRemoteMethodAvailableInVersion('override.mutatePermission', 7)).toBe(true)
     expect(isRemoteMethodAvailableInVersion('override.mutatePermission', 6)).toBe(false)
     expect(isRemoteMethodAvailableInVersion('override.mutatePermission', 1)).toBe(false)

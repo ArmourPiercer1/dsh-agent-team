@@ -405,7 +405,7 @@ export interface RemoteLegacyInspectParams {
     readonly projectDir?: string;
 }
 /** The union of every method's parsed param object. */
-export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideSetParamsV7 | RemoteOverrideResetParams | RemoteOverrideResetParamsV7 | RemoteOverrideMutatePermissionParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
+export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideSetParamsV7 | RemoteOverrideResetParams | RemoteOverrideResetParamsV7 | RemoteOverrideMutatePermissionParams | RemoteOverrideGetPermissionParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
 /** The parse result of one request's `params` (typed + token echo). */
 export interface RemoteParsedParams {
     /** The catalog method the params were parsed for. */
@@ -542,7 +542,19 @@ export interface RemoteOverrideMutatePermissionParams {
         readonly effect: 'allow' | 'ask' | 'deny';
     }[];
 }
+/**
+ * alpha.3 PR5 (ROOT BLOCK-1) — `override.getPermission`: the READ half of
+ * the permission lane (the overlay's current authority + audit history for
+ * one exact (team, member) pair). A READ carries NO actor field (the
+ * `override.get` precedent above — a read is host-initiated at the wire).
+ */
+export interface RemoteOverrideGetPermissionParams {
+    readonly teamSessionId: string;
+    readonly memberInstanceId: string;
+}
 /** Parse `override.mutatePermission` params (contract v7, v7-only method). */
+/** Parse `override.getPermission` params (alpha.3 PR5, ROOT BLOCK-1). */
+export declare function parseRemoteOverrideGetPermissionParams(method: string, params: RemoteSafeRecord): RemoteOverrideGetPermissionParams;
 export declare function parseRemoteOverrideMutatePermissionParams(method: string, params: RemoteSafeRecord): RemoteOverrideMutatePermissionParams;
 /** Parse `team.getReadState` params (contract v6, v6-only method). */
 export declare function parseRemoteTeamGetReadStateParams(method: string, params: RemoteSafeRecord): RemoteTeamGetReadStateParams;

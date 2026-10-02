@@ -344,8 +344,8 @@ const RT = await (async () => {
 // ---------------------------------------------------------------------------
 
 describe('F9 (remote contract v4): catalog facts', () => {
-  it('the catalog is the 30-method versioned union; the v4-only set is still exactly team.resolveControl (the C1 v5 bump adds team.prepareOrdinaryOpen; the team-view-sync v6 bump adds team.getReadState; PR4 round 5 adds override.mutatePermission v7-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(30)
+  it('the catalog is the 31-method versioned union; the v4-only set is still exactly team.resolveControl (the C1 v5 bump adds team.prepareOrdinaryOpen; the team-view-sync v6 bump adds team.getReadState; PR4 round 5 adds override.mutatePermission v7-only; the PR5 ROOT BLOCK fix batch adds its co-tenant READ pair override.getPermission v7-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(31)
     expect(REMOTE_METHOD_NAMES.includes('team.resolveControl')).toBe(true)
     expect([...REMOTE_V4_ONLY_METHODS].sort()).toEqual(['team.resolveControl'])
     // the v4-only method is disjoint from the v2/v3/v5/v6-only surfaces
