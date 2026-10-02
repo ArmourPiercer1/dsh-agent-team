@@ -62,8 +62,9 @@ export interface RemoteMethodSpec {
  * v2-only `team.admitInitialWork` plus the v3-only `team.listRoots` /
  * `team.ensureRootLive` plus the v4-only `team.resolveControl` plus the
  * v5-only `team.prepareOrdinaryOpen` plus the v6-only
- * `team.getReadState` plus the v7-only `override.mutatePermission`
- * (30 methods total; PR4 round 5). Key = endpoint = method name
+ * `team.getReadState` plus the v7-only `override.mutatePermission` and
+ * `override.getPermission` (31 methods total; PR4 round 5 + PR5 read lane).
+ * Key = endpoint = method name
  * (dotted: `<category>.<action>`). Per-version availability is the
  * closed {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS}
  * + {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} +
@@ -96,6 +97,12 @@ export const REMOTE_METHOD_CATALOG: Readonly<Record<string, RemoteMethodSpec>> =
   // lane (the durable permission overlay's grant/revoke through the ONE
   // governance mutation authority; v7-only, closed field set in params.ts).
   'override.mutatePermission': { category: REMOTE_CATEGORIES.OVERRIDE },
+  // alpha.3 PR5 (ROOT BLOCK-1): the READ half of the same permission lane —
+  // the durable overlay's CURRENT authority + AUDIT history for one exact
+  // (team, member) pair through the append-narrowed read projection (v7
+  // co-tenancy with its write pair; closed field set in params.ts; a pure
+  // read — never consulted by execution/authorization, ADR §9).
+  'override.getPermission': { category: REMOTE_CATEGORIES.OVERRIDE },
   'policyState.get': { category: REMOTE_CATEGORIES.POLICY_STATE },
   'policyState.set': { category: REMOTE_CATEGORIES.POLICY_STATE },
   'compatibility.get': { category: REMOTE_CATEGORIES.COMPATIBILITY },
@@ -201,11 +208,16 @@ export const REMOTE_V6_ONLY_METHODS: readonly string[] = ['team.getReadState']
 
 /**
  * PR4 ROUND 5 (FIX-2b): the v7-only methods — the human-facing permission
- * grant/revoke entry over the ONE governance mutation authority. v<7
- * requests to it are the typed `method-version-unsupported` rejection (the
- * same availability machinery as every prior version-only method).
+ * grant/revoke entry over the ONE governance mutation authority, plus
+ * (alpha.3 PR5, ROOT BLOCK-1) its read pair `override.getPermission` (the
+ * overlay's current authority + audit history; pure read, ADR §9). v<7
+ * requests to either are the typed `method-version-unsupported` rejection
+ * (the same availability machinery as every prior version-only method).
  */
-export const REMOTE_V7_ONLY_METHODS: readonly string[] = ['override.mutatePermission']
+export const REMOTE_V7_ONLY_METHODS: readonly string[] = [
+  'override.mutatePermission',
+  'override.getPermission',
+]
 
 /**
  * Is `method` a catalog method available in remote contract `version`?

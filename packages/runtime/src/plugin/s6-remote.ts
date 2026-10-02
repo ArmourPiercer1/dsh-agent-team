@@ -69,6 +69,7 @@ import type {
   RemoteMemberSendParams,
   RemoteMethodParams,
   RemoteOverrideGetParams,
+  RemoteOverrideGetPermissionParams,
   RemoteOverrideResetParamsV7,
   RemoteOverrideMutatePermissionParams,
   RemoteOverrideSetParamsV7,
@@ -97,7 +98,6 @@ import {
   REMOTE_PROJECTION_FIELDS,
   type RemoteLedgerEntryValue,
   type RemoteLedgerPageValue,
-  type RemoteTeamGetReadStateValue,
 } from '../../../remote/src/contracts/types.js'
 import {
   REMOTE_CONTRACT_VERSION,
@@ -115,6 +115,7 @@ import { REMOTE_BACKING_ERROR_CODE_SET } from '../../../remote/src/handlers/disp
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js'
 import type { RemoteHandlerOutcome } from '../../../remote/src/handlers/ports.js'
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js'
+import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js'
 import type {
   ConnectionLike,
   RemoteRegistration,
@@ -710,6 +711,15 @@ export interface S6RemoteOverridePort {
     request: S6RemotePermissionMutateRequest,
     caller: ActionCaller,
   ): Promise<RemoteSafeRecord>
+  /** alpha.3 PR5 (ROOT BLOCK-1): the permission overlay READ pair (v7-only
+   *  `override.getPermission`) — the current authority + audit history for
+   *  one exact (team, member) pair through the root-assembled append-
+   *  narrowed read projection. Wire-seam access gate (operator / Leader /
+   *  member-self); pure read, never an authorization input. */
+  getPermission(
+    request: { readonly teamSessionId: string; readonly memberInstanceId: string },
+    caller: ActionCaller,
+  ): Promise<RemoteSafeRecord>
 }
 /** Port 9/12 — the TeamSession PolicyState over the mutation service (`policyState.*`). */
 export interface S6RemotePolicyStatePort {
@@ -1004,6 +1014,17 @@ export interface S6RemoteOptions {
   readonly permission?: {
     readonly mutatePermission: (
       mutationArgs: Record<string, unknown>,
+    ) => Promise<Record<string, unknown>>
+    /** alpha.3 PR5 (ROOT BLOCK-1): the permission overlay READ seam — the
+     *  root-assembled, append-NARROWED read projection over the SAME shared
+     *  durable overlay port (current authority + audit history for one
+     *  exact (team, member) pair). Purely read: never consulted by
+     *  execution/authorization (ADR §9), and the projection type has no
+     *  append member — the seam cannot write even by accident. Absent =
+     *  the method refuses typed (zero read, zero write). */
+    readonly getPermission?: (
+      teamSessionId: string,
+      memberInstanceId: string,
     ) => Promise<Record<string, unknown>>
     /** ROUND 7 (parent item 3): canonicalize a CLOSED structured exec intent
      *  into the EXACT execution fingerprint (the same canonicalizer the
@@ -1527,7 +1548,7 @@ export function mergeProbeEnvironmentFacts(
  * @returns the thirteen ports.
  */
 export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
-  const { rootSessionId, repositories, catalog, blueprint, leaderInstanceId, now, isOwnedRoot } = options
+  const { rootSessionId, repositories, catalog, blueprint, leaderInstanceId, isOwnedRoot } = options
 
   /** The bound-root guard's acceptance: the bound root OR a durably owned
    *  root (P9-S8 — a team created after boot by this host). Without the
@@ -2949,6 +2970,43 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         if (typeof result['reason'] === 'string') safe['reason'] = result['reason']
         return safe
       },
+      async getPermission(
+        request: { readonly teamSessionId: string; readonly memberInstanceId: string },
+        caller: ActionCaller,
+      ): Promise<RemoteSafeRecord> {
+        const root = assertBoundRoot('override.getPermission', request.teamSessionId)
+        // ROOT BLOCK-1 (AD-1): the ACCESS GATE lives at the wire seam — the
+        // read projection below stays pure. The transport-authenticated
+        // operator (the connection-gate principal a READ derives to by the
+        // EXISTING default — no new derivation branch) may read; an
+        // INSTANCE caller may read ONLY the Leader position (the governance
+        // actor) or its OWN overlay — a member reading another member's
+        // authority is refused typed (the per-(team,member) addressing law;
+        // this grants NO new authority, it only narrows who may read).
+        if (caller.kind === 'instance') {
+          const callerInstanceId = String(caller.instanceId)
+          if (
+            callerInstanceId !== LEADER_INSTANCE_ID &&
+            callerInstanceId !== request.memberInstanceId
+          ) {
+            throw new TeamPluginError(
+              S6_PRINCIPAL_ERROR_CODES.PRINCIPAL_INVALID,
+              `remote method 'override.getPermission': instance caller '${callerInstanceId}' may not read the overlay of instance '${request.memberInstanceId}' (self-read or Leader only)`,
+              { reason: 'cross-member-read-refused', caller: callerInstanceId, target: request.memberInstanceId },
+            )
+          }
+        }
+        const permission = options.permission
+        if (permission === undefined || permission.getPermission === undefined) {
+          throw new Error(
+            'override.getPermission: the permission overlay read seam is unwired on this surface — zero read, zero write',
+          )
+        }
+        // PURE READ through the root-assembled append-narrowed projection;
+        // this result is NEVER consulted by execution/authorization (ADR §9
+        // — the decision plane's inputs do not include the read lane).
+        return (await permission.getPermission(root, request.memberInstanceId)) as RemoteSafeRecord
+      },
       async reset(
         request: S6RemoteOverrideResetRequest,
         caller: ActionCaller,
@@ -3652,6 +3710,21 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
             return Promise.resolve(
               principal({ method, request: envelope }),
             ).then((caller) => ports.override.mutatePermission(request, caller)).then((result) => ({ data: result }))
+          }
+          case 'override.getPermission': {
+            // alpha.3 PR5 (ROOT BLOCK-1): v7-only READ pair (the frozen
+            // param-parse chain already rejected v<7 envelopes). A read
+            // carries NO actor field — the principal is the DERIVED caller
+            // (the connection-gate operator by the EXISTING default; no new
+            // derivation branch). Access gating lives in the port.
+            const readParams = params as RemoteOverrideGetPermissionParams
+            const request = {
+              teamSessionId: readParams.teamSessionId,
+              memberInstanceId: readParams.memberInstanceId,
+            }
+            return Promise.resolve(
+              principal({ method, request: envelope }),
+            ).then((caller) => ports.override.getPermission(request, caller)).then((result) => ({ data: result }))
           }
           default:
             return Promise.reject(new Error(`override handler routed an unknown method: ${method}`))

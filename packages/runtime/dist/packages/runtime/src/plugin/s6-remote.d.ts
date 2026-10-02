@@ -521,6 +521,15 @@ export interface S6RemoteOverridePort {
      *  `override.mutatePermission`); authority from the host-derived caller,
      *  file rules canonicalized server-side at the TARGET member basis. */
     mutatePermission(request: S6RemotePermissionMutateRequest, caller: ActionCaller): Promise<RemoteSafeRecord>;
+    /** alpha.3 PR5 (ROOT BLOCK-1): the permission overlay READ pair (v7-only
+     *  `override.getPermission`) — the current authority + audit history for
+     *  one exact (team, member) pair through the root-assembled append-
+     *  narrowed read projection. Wire-seam access gate (operator / Leader /
+     *  member-self); pure read, never an authorization input. */
+    getPermission(request: {
+        readonly teamSessionId: string;
+        readonly memberInstanceId: string;
+    }, caller: ActionCaller): Promise<RemoteSafeRecord>;
 }
 /** Port 9/12 — the TeamSession PolicyState over the mutation service (`policyState.*`). */
 export interface S6RemotePolicyStatePort {
@@ -797,6 +806,14 @@ export interface S6RemoteOptions {
      */
     readonly permission?: {
         readonly mutatePermission: (mutationArgs: Record<string, unknown>) => Promise<Record<string, unknown>>;
+        /** alpha.3 PR5 (ROOT BLOCK-1): the permission overlay READ seam — the
+         *  root-assembled, append-NARROWED read projection over the SAME shared
+         *  durable overlay port (current authority + audit history for one
+         *  exact (team, member) pair). Purely read: never consulted by
+         *  execution/authorization (ADR §9), and the projection type has no
+         *  append member — the seam cannot write even by accident. Absent =
+         *  the method refuses typed (zero read, zero write). */
+        readonly getPermission?: (teamSessionId: string, memberInstanceId: string) => Promise<Record<string, unknown>>;
         /** ROUND 7 (parent item 3): canonicalize a CLOSED structured exec intent
          *  into the EXACT execution fingerprint (the same canonicalizer the
          *  pre-execute plane uses). Absent = exec-intent rules refuse typed. */

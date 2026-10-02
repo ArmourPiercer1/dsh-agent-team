@@ -4730,6 +4730,93 @@ export function createAgentBindings(deps) {
     listLiveSessions: () => [...liveAgents.keys()].sort(),
     hasLive: (sessionId) => liveAgents.has(String(sessionId)),
     isResuming: (sessionId) => resumingSessions.has(String(sessionId)),
+    // alpha.3 PR5 (final splice + ROOT BLOCK-2 fix): the SYNCHRONOUS
+    // permission-notice RECEIPT POINT the production root's awareness
+    // emitter binds. READ-ONLY facts only — the closing fact + the CURRENT
+    // owned live handle for the EXACT addressed (team, member) pair.
+    // Nothing here can create, resume, materialize or adopt an Agent:
+    // `ensureLiveAgent` is deliberately NOT referenced; a cold or absent
+    // member reads `undefined` and STAYS COLD (awareness never wakes).
+    // The pair→session key comes from the DURABLE rows: a member pair
+    // through its OWN MemberInstance row (whose `childSessionId` is
+    // verbatim the key the registrant used — boot seeds and re-binds both
+    // key liveAgents by that durable/config value, never a re-derivation);
+    // a LEADER pair through the durable TeamSession row (the root handle
+    // is registered AT the team session id; the v2 leader record binds no
+    // child). The returned identity is always derived FROM the durable
+    // facts, never echoed from the request, and an ambiguous reverse
+    // binding is refused outright.
+    permissionNoticeReceipt: Object.freeze({
+      closing: () => closing === true,
+      liveHandle: (identity) => {
+        const teamSessionId = identity?.teamSessionId
+        const memberInstanceId = identity?.memberInstanceId
+        if (typeof teamSessionId !== 'string' || typeof memberInstanceId !== 'string') {
+          return undefined
+        }
+        // DURABLE lookup, never a re-derivation (ROOT BLOCK-2 fix law): a
+        // pair with no durable row, a typed-absent child binding, or no
+        // owned live entry reads `undefined` (fail closed — there is NO
+        // derived-id fallback: a guess would be a bypass, not a fallback).
+        const members = domain.repositories.memberInstances.list(teamSessionId)
+        if (String(memberInstanceId) === String(LEADER_INSTANCE_ID)) {
+          // LEADER pair (ROOT BLOCK-3 fix): the Leader IS the Root Session
+          // (v2 record union — a leader row NEVER carries the child/life-
+          // cycle keys, Architecture §9.2) and the boot path registers the
+          // root handle AT the team session id itself. So the pair's key
+          // IS the team session id — read back FROM the durable TeamSession
+          // row (below), never from the request echo, and never through a
+          // faked child/lifecycle key. Attribution is proven from the real
+          // durable identity: the addressed TeamSession row must exist and
+          // the durable leader row must be present in the same table. A
+          // team without those facts, or a root handle that is not
+          // currently registered, reads `undefined` — a cold root stays
+          // exactly as cold as it was.
+          const teamRow =
+            domain.repositories.teamSessions !== undefined
+              ? domain.repositories.teamSessions.get(teamSessionId)
+              : undefined
+          if (teamRow === undefined || teamRow === null) return undefined
+          const leaderRows = members.filter(
+            (m) => String(m.instanceId) === String(LEADER_INSTANCE_ID),
+          )
+          if (leaderRows.length !== 1) return undefined
+          const leaderRow = leaderRows[0]
+          const key = String(teamRow.rootSessionId)
+          const rootHandle = liveAgents.get(key)
+          if (rootHandle === undefined || rootHandle.agent === undefined) return undefined
+          return Object.freeze({
+            teamSessionId: String(teamRow.rootSessionId),
+            memberInstanceId: String(leaderRow.instanceId),
+            agent: rootHandle.agent,
+          })
+        }
+        const targetRows = members.filter((m) => String(m.instanceId) === memberInstanceId)
+        if (targetRows.length !== 1) return undefined
+        const row = targetRows[0]
+        const key = row.childSessionId
+        if (typeof key !== 'string' || key.length === 0) return undefined
+        const handle = liveAgents.get(key)
+        if (handle === undefined || handle.agent === undefined) return undefined
+        // Ownership proof derived FROM the durable facts: the TRUE owner of
+        // the handle found is the row (the ONE row) whose childSessionId
+        // BINDS this key (the reverse mapping — the same durable relation
+        // the boot and persona paths trust). ROOT BLOCK-4 fix: a corrupted
+        // table where MORE THAN ONE instance binds the same key is
+        // ambiguous — it is REFUSED outright (never a first-match winner,
+        // in either list order, even when the requesting pair is one of
+        // the claimants: a corrupted binding is not a delivery target).
+        // No provable single owner -> `undefined`.
+        const ownerRows = members.filter((m) => String(m.childSessionId) === key)
+        if (ownerRows.length !== 1) return undefined
+        const ownerRow = ownerRows[0]
+        return Object.freeze({
+          teamSessionId: String(ownerRow.rootSessionId),
+          memberInstanceId: String(ownerRow.instanceId),
+          agent: handle.agent,
+        })
+      },
+    }),
     ensureLiveAgent,
     prepareAgentForRequest,
     executeTool,

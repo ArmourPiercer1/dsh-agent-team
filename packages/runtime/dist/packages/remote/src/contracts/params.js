@@ -663,6 +663,7 @@ export function parseRemoteTeamPrepareOrdinaryOpenParams(method, params) {
         teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
     };
 }
+const REMOTE_OVERRIDE_GET_PERMISSION_FIELDS = ['teamSessionId', 'memberInstanceId'];
 const REMOTE_OVERRIDE_MUTATE_PERMISSION_FIELDS = [
     'teamSessionId',
     'memberInstanceId',
@@ -740,6 +741,14 @@ function parseRemotePermissionExecIntent(method, raw, label) {
     return out;
 }
 /** Parse `override.mutatePermission` params (contract v7, v7-only method). */
+/** Parse `override.getPermission` params (alpha.3 PR5, ROOT BLOCK-1). */
+export function parseRemoteOverrideGetPermissionParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_OVERRIDE_GET_PERMISSION_FIELDS);
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+        memberInstanceId: parseRemoteInstanceId(requiredField(method, params, 'memberInstanceId'), 'memberInstanceId'),
+    };
+}
 export function parseRemoteOverrideMutatePermissionParams(method, params) {
     assertNoUnknownFields(method, params, REMOTE_OVERRIDE_MUTATE_PERMISSION_FIELDS);
     const kind = requiredField(method, params, 'kind');
@@ -1206,6 +1215,9 @@ export function parseRemoteMethodParams(version, method, params) {
         case 'override.mutatePermission':
             // v7-only (PR4 round 5; the availability check guarantees version 7).
             return wrapParsed(method, parseRemoteOverrideMutatePermissionParams(method, params));
+        case 'override.getPermission':
+            // v7-only (alpha.3 PR5 ROOT BLOCK-1; co-tenancy with the write pair).
+            return wrapParsed(method, parseRemoteOverrideGetPermissionParams(method, params));
         case 'team.getProjection':
             return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
         case 'team.getLedgerPage':

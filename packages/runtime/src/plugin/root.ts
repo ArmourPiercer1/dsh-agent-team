@@ -268,10 +268,30 @@ import {
   createTeamPermissionLanes,
 } from './permission-plane.js'
 import { assertPermissionMutationTarget } from '../../permission-lifecycle/mutation-lane.js'
+import {
+  PERMISSION_LIFECYCLE_ERROR_CODES,
+  PermissionLifecycleError,
+} from '../../permission-lifecycle/types.js'
 import { canonicalizeShellOperation } from '../../operation-permission/canonical-operation.js'
 import type { TeamPermissionExecIntent } from '../../../tools/src/index.js'
 import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js'
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js'
+// alpha.3 PR5 (final splice): the permission-change NOTIFICATION awareness
+// layer over the merged durable authority (ADR §9 "notification is
+// awareness, never authorization evidence"). The root wires the emitter
+// ONLY — a post-commit DETACHED dispatch through the inject-only receipt
+// gate (binding.ts). Nothing downstream ever reads a notification: no
+// decision, ack, gate or read path consumes it (lane hygiene spec + the
+// binding specs pin the closed surface; parent GO: delivery is PUBLIC
+// `Agent.inject` only, never a wake).
+import {
+  createPermissionChangeNotifier,
+  createPermissionDeliveryAdapter,
+  createPermissionDeliveryBinding,
+  createPermissionReadProjection,
+  detachPermissionNotice,
+} from '../../permission-notification/index.js'
+import type { PermissionOverlaySnapshot } from '../../permission-governance/types.js'
 import type { OverrideRecordView, OverrideStorePort } from '../../mutation/index.js'
 import type {
   CreationFieldRecord,
@@ -2611,6 +2631,109 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     resolveDurableMcpFacet,
   }
 
+  // --- alpha.3 PR5 the post-COMMIT permission-change notification emitter --
+  // Emission at the GOVERNANCE-MUTATION completion point: the decoration
+  // below is the ONLY view of `mutation.governance` downstream consumers
+  // receive (the lifecycle plane, the remote port and the tools adapter
+  // all read the property after this point), so every path that commits a
+  // permission overlay snapshot — entry grant/revoke via the plane, the
+  // remote `override.mutatePermission`, the tool adapter, a rule change at
+  // restore time — emits EXACTLY ONE notification per `{ changed: true }`
+  // result, AFTER the service's own commit-before-ack. This is AWARENESS,
+  // never an authorization source (ADR §9): its only inputs are the
+  // committed snapshot and the glue's READ-ONLY receipt surface, and no
+  // outcome, ordering or timing of a notification feeds an ack, a
+  // decision, or any read path (the emitter is fire-and-forget —
+  // `detachPermissionNotice` — so a slow, faulting or never-settling
+  // delivery cannot delay, reorder or alter a committed ack). Delivery
+  // semantics are the binding module's, pinned by its specs: the SYNCHRONOUS
+  // receipt gate (closing / exact owned live handle / lifecycle /
+  // `status === 'running'`), PUBLIC `Agent.inject` ONLY (never a wake;
+  // plugin-owned producer source `plugin:dsh-agent-team`, never human
+  // attribution), at most one attempt, drops terminal, host durable-inbox
+  // parking used AS-IS. A root assembled WITHOUT the glue receipt seam
+  // (a factory/test root) or without the overlay port gets NO emitter:
+  // zero delivery, behavior identical to the pre-splice tree.
+  const permissionNoticeSource = live.permissionNoticeReceipt
+  const permissionNoticeEmitter =
+    permissionOverlay === undefined || permissionNoticeSource === undefined
+      ? undefined
+      : (() => {
+          const binding = createPermissionDeliveryBinding({
+            closing: () => permissionNoticeSource.closing(),
+            liveHandle: (identity) => permissionNoticeSource.liveHandle(identity),
+            // The SAME shared lifecycle facts the governance lane's
+            // caller-side pre-check reads (one lifecycle law), re-read at
+            // RECEIPT — and only to suppress delivery to a member whose
+            // lifecycle left the active set (ARCHIVED / DISPOSED / unknown
+            // never receive; CREATED / RUNNING / SETTLED stay delivery-
+            // eligible). Delivery-eligible does NOT mean deliverable: the
+            // injection itself happens ONLY when the ACTUAL live agent
+            // status is running — an IDLE target DROPS at the receipt gate
+            // and is never parked, queued or woken (parking exists only
+            // for an inject the running host ACCEPTED into its inbox).
+            // This is a delivery
+            // gate, never a decision input: a refusal here refuses a
+            // NOTIFICATION, never a mutation.
+            lifecycleActive: (identity) => {
+              const state = permissionLifecycleReader.readLifecycle(
+                identity.teamSessionId,
+                identity.memberInstanceId,
+              )
+              return state === 'CREATED' || state === 'RUNNING' || state === 'SETTLED'
+            },
+          })
+          const notifier = createPermissionChangeNotifier({
+            authority: {
+              latest: async (identity) => await permissionOverlay.latest(identity),
+            },
+            liveness: {
+              // The ADVISORY park-prevention hint only (an async read
+              // ahead of the synchronous gate): it labels outcomes and
+              // never wakes, queues or decides.
+              async status(identity) {
+                const handle = permissionNoticeSource.liveHandle(identity)
+                if (handle === undefined) return 'unknown'
+                return handle.agent.status === 'running' ? 'active' : 'idle'
+              },
+            },
+            deliver: createPermissionDeliveryAdapter(binding),
+          })
+          return (snapshot: PermissionOverlaySnapshot): void => {
+            detachPermissionNotice(() => notifier.notifyPermissionCommit(snapshot))
+          }
+        })()
+  // alpha.3 PR5 (ROOT BLOCK-1): the production permission overlay READ
+  // projection — the append-NARROWED seam over the SAME shared durable
+  // overlay port (the writer stays the governance lane; this surface has
+  // no `append` member even by type). It feeds ONLY the remote
+  // `override.getPermission` read below; it is never consulted by the
+  // decision plane, the pre-execute gate, kernel authorize, the delivery
+  // gate or any wake path (ADR §9 — a read that never authorizes).
+  const permissionReadProjection =
+    permissionOverlay === undefined
+      ? undefined
+      : createPermissionReadProjection({
+          overlay: {
+            latest: async (identity) => await permissionOverlay.latest(identity),
+            history: async (identity) => await permissionOverlay.history(identity),
+          },
+        })
+  if (permissionNoticeEmitter !== undefined) {
+    const governanceAuthority = mutation.governance
+    mutation.governance = Object.freeze({
+      ...governanceAuthority,
+      async mutatePermission(args: Parameters<typeof governanceAuthority.mutatePermission>[0]) {
+        const result = await governanceAuthority.mutatePermission(args)
+        // Commit already happened (commit-before-ack is the service's own
+        // invariant); the ack path continues regardless of what follows —
+        // the emit below is detached and never awaited, never joined.
+        if (result.changed) permissionNoticeEmitter(result.snapshot)
+        return result
+      },
+    })
+  }
+
   // --- pre-alpha3 PR4 the permission LIFECYCLE planes (plan PR4) ----------
   // The write entries (grant / revoke / restore) ride `mutation.governance`
   // and the EXISTING lifecycle service; the decision plane reads the same
@@ -2942,6 +3065,35 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     permission: {
       mutatePermission: permissionLaneMutate,
       canonicalizeExecIntent: permissionExecCanonicalize,
+      ...(permissionReadProjection === undefined
+        ? {}
+        : {
+            getPermission: async (teamSessionId: string, memberInstanceId: string) => {
+              // The READ mirror of the write side's tri-state (mutation
+              // lane §8): NO durable MemberInstance row (Leader-aware — the
+              // Leader position answers live iff the TeamSession row
+              // exists; the SAME shared lifecycle reader) is a TYPED
+              // `PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN` refusal — never an
+              // empty view masquerading as zero authority. DISPOSED /
+              // ARCHIVED rows KEEP their row: the overlay HISTORY stays
+              // audit-visible (ADR §2/§8 — lifecycle gates EXECUTION, never
+              // the durable audit read; a DISPOSED member's live-effective
+              // authority is separately never-effective in the decision
+              // plane, which never consults this surface at all).
+              const state = permissionLifecycleReader.readLifecycle(teamSessionId, memberInstanceId)
+              if (state === undefined) {
+                throw new PermissionLifecycleError(
+                  PERMISSION_LIFECYCLE_ERROR_CODES.INSTANCE_UNKNOWN,
+                  `override.getPermission: no durable MemberInstance row for ${JSON.stringify(memberInstanceId)} in TeamSession ${JSON.stringify(teamSessionId)} (zero read)`,
+                  { teamSessionId, memberInstanceId },
+                )
+              }
+              const identity = { teamSessionId, memberInstanceId }
+              const authority = await permissionReadProjection.readAuthority(identity)
+              const history = await permissionReadProjection.readHistoryAudit(identity)
+              return { authority, history }
+            },
+          }),
     },
     ...(permissionCanonicalize === undefined
       ? {}

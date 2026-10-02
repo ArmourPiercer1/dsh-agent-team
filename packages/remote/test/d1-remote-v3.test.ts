@@ -248,8 +248,8 @@ const RT = await (async () => {
 // ---------------------------------------------------------------------------
 
 describe('D1 (remote contract v3): catalog facts', () => {
-  it('the catalog is the 30-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 1 v7-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(30)
+  it('the catalog is the 31-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(31)
     expect(REMOTE_METHOD_NAMES.includes('team.listRoots')).toBe(true)
     expect(REMOTE_METHOD_NAMES.includes('team.ensureRootLive')).toBe(true)
     // F9: the v4-only method is in the union; the frozen v1 methods are

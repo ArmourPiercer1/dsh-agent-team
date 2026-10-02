@@ -1,0 +1,69 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts (17 tests | 3 failed) 47ms
+     ✓ delivers the rendered awareness text as ONE model-visible user message 7ms
+     ✓ each attempt carries a fresh message id (no park-collision by construction) 3ms
+     ✓ the REAL notifier through the REAL adapter delivers end-to-end to a running target 2ms
+     ✓ idle target drops as not-running 2ms
+     ✓ cold (no owned live handle) drops as not-live 2ms
+     ✓ closing glue drops BEFORE any handle lookup 2ms
+     ✓ lifecycle-blocked member drops without touching the agent 2ms
+     ✓ a handle whose identity is not the EXACT addressed pair drops 2ms
+     ✓ the adapter surfaces every drop as a rejection carrying the closed reason 3ms
+     ✓ idle-at-receipt DROPS at the gate although the advisory liveness read said active 3ms
+     ✓ direct binding leg: the synchronous gate + inject share one tick (no interleaving point exists) 2ms
+     ✓ an aborted-but-still-running target gets exactly one inject; no wake member is nameable or touched 2ms
+     ✓ the binding module source never names a wake-capable call site 1ms
+     × slow delivery never delays or reorders the acks 4ms
+     × a never-settling delivery leaves the ack settled and the next mutation unaffected 2ms
+     × a faulting inject byte-equals the no-notification durable result (ack content untouched) 5ms
+     ✓ detachPermissionNotice swallows even a synchronously throwing dispatch 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > slow delivery never delays or reorders the acks
+ReferenceError: ackId is not defined
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:501:9
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+    500|         })
+    501|         return ackId
+       |         ^
+    502|       },
+    503|     }
+ ❯ test/a3p5-permission-delivery-binding.test.ts:516:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > a never-settling delivery leaves the ack settled and the next mutation unaffected
+ReferenceError: ackId is not defined
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:501:9
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+    500|         })
+    501|         return ackId
+       |         ^
+    502|       },
+    503|     }
+ ❯ test/a3p5-permission-delivery-binding.test.ts:537:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > a faulting inject byte-equals the no-notification durable result (ack content untouched)
+ReferenceError: ackId is not defined
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:501:9
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+    500|         })
+    501|         return ackId
+       |         ^
+    502|       },
+    503|     }
+ ❯ test/a3p5-permission-delivery-binding.test.ts:576:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 14 passed (17)
+   Start at  00:49:20
+   Duration  363ms (transform 175ms, setup 0ms, import 227ms, tests 47ms, environment 0ms)
+

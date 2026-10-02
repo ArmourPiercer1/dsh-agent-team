@@ -1,0 +1,20 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ✓ test/a3p5-permission-notification.test.ts (15 tests) 57ms
+ ✓ test/a3p5-permission-delivery-binding.test.ts (18 tests) 137ms
+ ✓ test/a3p5-permission-read-projection.test.ts (7 tests) 26ms
+ ✓ test/a3p5-permission-notification-lane-hygiene.test.ts (9 tests) 23ms
+ ✓ test/a3p5-glue-permission-receipt.test.ts (11 tests) 719ms
+     ✓ positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived  697ms
+ ✓ test/a3p5-permission-read-wiring.test.ts (12 tests) 79ms
+ ✓ test/a3p5-permission-splice.test.ts (9 tests) 1922ms
+     ✓ changed:false commits no row and notifies nobody  416ms
+     ✓ a pure lifecycle restore commits the lifecycle row only: zero overlay writes, zero emissions  421ms
+
+ Test Files  7 passed (7)
+      Tests  81 passed (81)
+   Start at  02:24:32
+   Duration  3.16s (transform 2.69s, setup 0ms, import 3.32s, tests 2.96s, environment 0ms)
+
+lane-suite-2 rc=0

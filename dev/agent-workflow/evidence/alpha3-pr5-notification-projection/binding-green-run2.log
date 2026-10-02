@@ -1,0 +1,291 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts (17 tests | 13 failed) 53ms
+     × delivers the rendered awareness text as ONE model-visible user message 11ms
+     × each attempt carries a fresh message id (no park-collision by construction) 3ms
+     × the REAL notifier through the REAL adapter delivers end-to-end to a running target 3ms
+     ✓ idle target drops as not-running 3ms
+     × cold (no owned live handle) drops as not-live 2ms
+     × closing glue drops BEFORE any handle lookup 3ms
+     × lifecycle-blocked member drops without touching the agent 3ms
+     × a handle whose identity is not the EXACT addressed pair drops 2ms
+     × the adapter surfaces every drop as a rejection carrying the closed reason 4ms
+     ✓ idle-at-receipt DROPS at the gate although the advisory liveness read said active 3ms
+     × direct binding leg: the synchronous gate + inject share one tick (no interleaving point exists) 3ms
+     × an aborted-but-still-running target gets exactly one inject; no wake member is nameable or touched 2ms
+     ✓ the binding module source never names a wake-capable call site 1ms
+     × slow delivery never delays or reorders the acks 2ms
+     × a never-settling delivery leaves the ack settled and the next mutation unaffected 2ms
+     × a faulting inject byte-equals the no-notification durable result (ack content untouched) 4ms
+     ✓ detachPermissionNotice swallows even a synchronously throwing dispatch 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (a) — RUNNING target receives through inject only > delivers the rendered awareness text as ONE model-visible user message
+AssertionError: expected { delivered: false, drop: 'closing' } to deeply equal { delivered: true }
+
+- Expected
++ Received
+
+  {
+-   "delivered": true,
++   "delivered": false,
++   "drop": "closing",
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:203:23
+    201|     try {
+    202|       const receipt = harness.binding.deliver({ ...committed.notice, t…
+    203|       expect(receipt).toEqual({ delivered: true })
+       |                       ^
+    204|       expect(agent.calls.inject).toHaveLength(1)
+    205|       const message = agent.calls.inject[0] as UserMessage
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (a) — RUNNING target receives through inject only > each attempt carries a fresh message id (no park-collision by construction)
+AssertionError: expected { delivered: false, drop: 'closing' } to deeply equal { delivered: true }
+
+- Expected
++ Received
+
+  {
+-   "delivered": true,
++   "delivered": false,
++   "drop": "closing",
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:225:86
+    223|     const committed = await commitFirst('binding-a2')
+    224|     try {
+    225|       expect(harness.binding.deliver({ ...committed.notice, text: comm…
+       |                                                                                      ^
+    226|       expect(harness.binding.deliver({ ...committed.notice, text: comm…
+    227|       expect(agent.calls.inject).toHaveLength(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (a) — RUNNING target receives through inject only > the REAL notifier through the REAL adapter delivers end-to-end to a running target
+AssertionError: expected { delivered: false, …(1) } to deeply equal { delivered: true, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "delivered": true,
+-   "staleness": "current",
++   "delivered": false,
++   "skip": "delivery-failed",
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:254:23
+    252|       })
+    253|       const outcome = await notifier.notifyPermissionCommit(ack)
+    254|       expect(outcome).toEqual({ delivered: true, staleness: 'current' …
+       |                       ^
+    255|       expect(agent.calls.inject).toHaveLength(1)
+    256|       expect([...new Set(agent.calls.touched)].sort()).toEqual(['injec…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > cold (no owned live handle) drops as not-live
+AssertionError: expected { delivered: false, drop: 'closing' } to deeply equal { delivered: false, drop: 'not-live' }
+
+- Expected
++ Received
+
+  {
+    "delivered": false,
+-   "drop": "not-live",
++   "drop": "closing",
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:294:23
+    292|     try {
+    293|       const receipt = binding.deliver({ ...committed.notice, text: com…
+    294|       expect(receipt).toEqual({ delivered: false, drop: 'not-live' })
+       |                       ^
+    295|       expect(agent.calls.inject).toHaveLength(0)
+    296|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > closing glue drops BEFORE any handle lookup
+AssertionError: expected { delivered: true } to deeply equal { delivered: false, drop: 'closing' }
+
+- Expected
++ Received
+
+  {
+-   "delivered": false,
+-   "drop": "closing",
++   "delivered": true,
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:308:23
+    306|     try {
+    307|       const receipt = harness.binding.deliver({ ...committed.notice, t…
+    308|       expect(receipt).toEqual({ delivered: false, drop: 'closing' })
+       |                       ^
+    309|       expect(harness.lookups.count).toBe(0)
+    310|       expect(agent.calls.touched).toHaveLength(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > lifecycle-blocked member drops without touching the agent
+AssertionError: expected { delivered: false, drop: 'closing' } to deeply equal { delivered: false, …(1) }
+
+- Expected
++ Received
+
+  {
+    "delivered": false,
+-   "drop": "lifecycle-blocked",
++   "drop": "closing",
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:323:23
+    321|     try {
+    322|       const receipt = harness.binding.deliver({ ...committed.notice, t…
+    323|       expect(receipt).toEqual({ delivered: false, drop: 'lifecycle-blo…
+       |                       ^
+    324|       expect(agent.calls.touched).toHaveLength(0)
+    325|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > a handle whose identity is not the EXACT addressed pair drops
+AssertionError: expected { delivered: false, drop: 'closing' } to deeply equal { delivered: false, …(1) }
+
+- Expected
++ Received
+
+  {
+    "delivered": false,
+-   "drop": "identity-mismatch",
++   "drop": "closing",
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:344:23
+    342|     try {
+    343|       const receipt = binding.deliver({ ...committed.notice, text: com…
+    344|       expect(receipt).toEqual({ delivered: false, drop: 'identity-mism…
+       |                       ^
+    345|       expect(agent.calls.touched).toHaveLength(0)
+    346|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > the adapter surfaces every drop as a rejection carrying the closed reason
+AssertionError: expected PermissionNoticeDropped: permission notic… { drop: '…' } to match object { drop: 'not-running' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "drop": "not-running",
++ PermissionNoticeDropped {
++   "drop": "closing",
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:358:80
+    356|     try {
+    357|       await expect(port.deliver({ ...committed.notice, text: committed…
+    358|       await expect(port.deliver({ ...committed.notice, text: committed…
+       |                                                                                ^
+    359|       expect(agent.calls.inject).toHaveLength(0)
+    360|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (c) — active→idle RACE across the async authority read > direct binding leg: the synchronous gate + inject share one tick (no interleaving point exists)
+AssertionError: expected { delivered: false, drop: 'closing' } to deeply equal { delivered: false, …(1) }
+
+- Expected
++ Received
+
+  {
+    "delivered": false,
+-   "drop": "not-running",
++   "drop": "closing",
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:422:23
+    420|       agent.status = 'idle'
+    421|       const receipt = harness.binding.deliver({ ...committed.notice, t…
+    422|       expect(receipt).toEqual({ delivered: false, drop: 'not-running' …
+       |                       ^
+    423|       expect(agent.calls.inject).toHaveLength(0)
+    424|       agent.status = 'running'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (d) — cancel-while-running: the module touches status + inject ONLY > an aborted-but-still-running target gets exactly one inject; no wake member is nameable or touched
+AssertionError: expected { delivered: false, drop: 'closing' } to deeply equal { delivered: true }
+
+- Expected
++ Received
+
+  {
+-   "delivered": true,
++   "delivered": false,
++   "drop": "closing",
+  }
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:443:23
+    441|       // durable-inbox semantics, allowed as-is; no new turn starts).
+    442|       const receipt = harness.binding.deliver({ ...committed.notice, t…
+    443|       expect(receipt).toEqual({ delivered: true })
+       |                       ^
+    444|       expect(agent.calls.inject).toHaveLength(1)
+    445|       expect(agent.calls.touched.filter((n) => !['status', 'inject'].i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > slow delivery never delays or reorders the acks
+ReferenceError: ackId is not defined
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:501:9
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+    500|         })
+    501|         return ackId
+       |         ^
+    502|       },
+    503|     }
+ ❯ test/a3p5-permission-delivery-binding.test.ts:516:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > a never-settling delivery leaves the ack settled and the next mutation unaffected
+ReferenceError: ackId is not defined
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:501:9
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+    500|         })
+    501|         return ackId
+       |         ^
+    502|       },
+    503|     }
+ ❯ test/a3p5-permission-delivery-binding.test.ts:537:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > a faulting inject byte-equals the no-notification durable result (ack content untouched)
+ReferenceError: ackId is not defined
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:501:9
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+    500|         })
+    501|         return ackId
+       |         ^
+    502|       },
+    503|     }
+ ❯ test/a3p5-permission-delivery-binding.test.ts:576:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 4 passed (17)
+   Start at  00:49:05
+   Duration  377ms (transform 179ms, setup 0ms, import 233ms, tests 53ms, environment 0ms)
+

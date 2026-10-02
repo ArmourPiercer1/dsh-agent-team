@@ -1,0 +1,257 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts (17 tests | 17 failed) 24ms
+     × delivers the rendered awareness text as ONE model-visible user message 3ms
+     × each attempt carries a fresh message id (no park-collision by construction) 0ms
+     × the REAL notifier through the REAL adapter delivers end-to-end to a running target 5ms
+     × idle target drops as not-running 0ms
+     × cold (no owned live handle) drops as not-live 0ms
+     × closing glue drops BEFORE any handle lookup 0ms
+     × lifecycle-blocked member drops without touching the agent 0ms
+     × a handle whose identity is not the EXACT addressed pair drops 0ms
+     × the adapter surfaces every drop as a rejection carrying the closed reason 0ms
+     × idle-at-receipt DROPS at the gate although the advisory liveness read said active 2ms
+     × direct binding leg: the synchronous gate + inject share one tick (no interleaving point exists) 0ms
+     × an aborted-but-still-running target gets exactly one inject; no wake member is nameable or touched 0ms
+     × the binding module source never names a wake-capable call site 0ms
+     × slow delivery never delays or reorders the acks 2ms
+     × a never-settling delivery leaves the ack settled and the next mutation unaffected 2ms
+     × a faulting inject byte-equals the no-notification durable result (ack content untouched) 4ms
+     × detachPermissionNotice swallows even a synchronously throwing dispatch 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (a) — RUNNING target receives through inject only > delivers the rendered awareness text as ONE model-visible user message
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeBindingHarness test/a3p5-permission-delivery-binding.test.ts:150:19
+    148|   const state = { closing: false, lifecycleActive: true }
+    149|   const lookups = { count: 0 }
+    150|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    151|     closing: () => state.closing,
+    152|     liveHandle: (identity) => {
+ ❯ test/a3p5-permission-delivery-binding.test.ts:199:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (a) — RUNNING target receives through inject only > each attempt carries a fresh message id (no park-collision by construction)
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeBindingHarness test/a3p5-permission-delivery-binding.test.ts:150:19
+    148|   const state = { closing: false, lifecycleActive: true }
+    149|   const lookups = { count: 0 }
+    150|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    151|     closing: () => state.closing,
+    152|     liveHandle: (identity) => {
+ ❯ test/a3p5-permission-delivery-binding.test.ts:222:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (a) — RUNNING target receives through inject only > the REAL notifier through the REAL adapter delivers end-to-end to a running target
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeWorldBindingHarness test/a3p5-permission-delivery-binding.test.ts:170:19
+    168|   state: { closing: boolean; lifecycleActive: boolean } = { closing: f…
+    169| ): { binding: ReturnType<typeof createPermissionDeliveryBinding>; stat…
+    170|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    171|     closing: () => state.closing,
+    172|     liveHandle: (identity) => handles.get(`${identity.teamSessionId}\u…
+ ❯ test/a3p5-permission-delivery-binding.test.ts:247:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > idle target drops as not-running
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeBindingHarness test/a3p5-permission-delivery-binding.test.ts:150:19
+    148|   const state = { closing: false, lifecycleActive: true }
+    149|   const lookups = { count: 0 }
+    150|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    151|     closing: () => state.closing,
+    152|     liveHandle: (identity) => {
+ ❯ test/a3p5-permission-delivery-binding.test.ts:281:23
+ ❯ expectDrop test/a3p5-permission-delivery-binding.test.ts:268:47
+ ❯ test/a3p5-permission-delivery-binding.test.ts:279:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > cold (no owned live handle) drops as not-live
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeWorldBindingHarness test/a3p5-permission-delivery-binding.test.ts:170:19
+    168|   state: { closing: boolean; lifecycleActive: boolean } = { closing: f…
+    169| ): { binding: ReturnType<typeof createPermissionDeliveryBinding>; stat…
+    170|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    171|     closing: () => state.closing,
+    172|     liveHandle: (identity) => handles.get(`${identity.teamSessionId}\u…
+ ❯ test/a3p5-permission-delivery-binding.test.ts:290:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > closing glue drops BEFORE any handle lookup
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeBindingHarness test/a3p5-permission-delivery-binding.test.ts:150:19
+    148|   const state = { closing: false, lifecycleActive: true }
+    149|   const lookups = { count: 0 }
+    150|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    151|     closing: () => state.closing,
+    152|     liveHandle: (identity) => {
+ ❯ test/a3p5-permission-delivery-binding.test.ts:303:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > lifecycle-blocked member drops without touching the agent
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeBindingHarness test/a3p5-permission-delivery-binding.test.ts:150:19
+    148|   const state = { closing: false, lifecycleActive: true }
+    149|   const lookups = { count: 0 }
+    150|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    151|     closing: () => state.closing,
+    152|     liveHandle: (identity) => {
+ ❯ test/a3p5-permission-delivery-binding.test.ts:318:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > a handle whose identity is not the EXACT addressed pair drops
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeWorldBindingHarness test/a3p5-permission-delivery-binding.test.ts:170:19
+    168|   state: { closing: boolean; lifecycleActive: boolean } = { closing: f…
+    169| ): { binding: ReturnType<typeof createPermissionDeliveryBinding>; stat…
+    170|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    171|     closing: () => state.closing,
+    172|     liveHandle: (identity) => handles.get(`${identity.teamSessionId}\u…
+ ❯ test/a3p5-permission-delivery-binding.test.ts:340:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > the adapter surfaces every drop as a rejection carrying the closed reason
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeBindingHarness test/a3p5-permission-delivery-binding.test.ts:150:19
+    148|   const state = { closing: false, lifecycleActive: true }
+    149|   const lookups = { count: 0 }
+    150|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    151|     closing: () => state.closing,
+    152|     liveHandle: (identity) => {
+ ❯ test/a3p5-permission-delivery-binding.test.ts:353:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (c) — active→idle RACE across the async authority read > idle-at-receipt DROPS at the gate although the advisory liveness read said active
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeWorldBindingHarness test/a3p5-permission-delivery-binding.test.ts:170:19
+    168|   state: { closing: boolean; lifecycleActive: boolean } = { closing: f…
+    169| ): { binding: ReturnType<typeof createPermissionDeliveryBinding>; stat…
+    170|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    171|     closing: () => state.closing,
+    172|     liveHandle: (identity) => handles.get(`${identity.teamSessionId}\u…
+ ❯ test/a3p5-permission-delivery-binding.test.ts:380:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (c) — active→idle RACE across the async authority read > direct binding leg: the synchronous gate + inject share one tick (no interleaving point exists)
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeBindingHarness test/a3p5-permission-delivery-binding.test.ts:150:19
+    148|   const state = { closing: false, lifecycleActive: true }
+    149|   const lookups = { count: 0 }
+    150|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    151|     closing: () => state.closing,
+    152|     liveHandle: (identity) => {
+ ❯ test/a3p5-permission-delivery-binding.test.ts:413:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (d) — cancel-while-running: the module touches status + inject ONLY > an aborted-but-still-running target gets exactly one inject; no wake member is nameable or touched
+TypeError: createPermissionDeliveryBinding is not a function
+ ❯ makeBindingHarness test/a3p5-permission-delivery-binding.test.ts:150:19
+    148|   const state = { closing: false, lifecycleActive: true }
+    149|   const lookups = { count: 0 }
+    150|   const binding = createPermissionDeliveryBinding({
+       |                   ^
+    151|     closing: () => state.closing,
+    152|     liveHandle: (identity) => {
+ ❯ test/a3p5-permission-delivery-binding.test.ts:435:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (d) — cancel-while-running: the module touches status + inject ONLY > the binding module source never names a wake-capable call site
+Error: ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime/permission-notification/binding.ts'
+ ❯ test/a3p5-permission-delivery-binding.test.ts:452:20
+    450|
+    451|   it('the binding module source never names a wake-capable call site',…
+    452|     const source = readFileSync(join(HERE, '..', 'permission-notificat…
+       |                    ^
+    453|     const code = source
+    454|       .replace(/\/\*[\s\S]*?\*\//g, '')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > slow delivery never delays or reorders the acks
+TypeError: detachPermissionNotice is not a function
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:497:9
+    495|         const ack = await world.port.append(snapshotInput(generation))
+    496|         events.push(`ack:${String(generation)}`)
+    497|         detachPermissionNotice(async () => {
+       |         ^
+    498|           const outcome = await notifier.notifyPermissionCommit(ack.sn…
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+ ❯ test/a3p5-permission-delivery-binding.test.ts:516:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > a never-settling delivery leaves the ack settled and the next mutation unaffected
+TypeError: detachPermissionNotice is not a function
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:497:9
+    495|         const ack = await world.port.append(snapshotInput(generation))
+    496|         events.push(`ack:${String(generation)}`)
+    497|         detachPermissionNotice(async () => {
+       |         ^
+    498|           const outcome = await notifier.notifyPermissionCommit(ack.sn…
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+ ❯ test/a3p5-permission-delivery-binding.test.ts:537:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > a faulting inject byte-equals the no-notification durable result (ack content untouched)
+TypeError: Cannot read properties of undefined (reading 'snapshotId')
+ ❯ test/a3p5-permission-delivery-binding.test.ts:553:88
+    551|       const acksGolden: string[] = []
+    552|       for (const generation of [1, 2, 3]) {
+    553|         acksGolden.push((await golden.port.append(snapshotInput(genera…
+       |                                                                                        ^
+    554|       }
+    555|       const agent = makeFakeAgent({ injectBehavior: 'throw' })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/17]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > detachPermissionNotice swallows even a synchronously throwing dispatch
+AssertionError: expected [Function] to not throw an error but 'TypeError: (0 , __vite_ssr_import_4__…' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"TypeError: (0 , __vite_ssr_import_4__.detachPermissionNotice) is not a function"
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts:590:94
+    588|
+    589|   it('detachPermissionNotice swallows even a synchronously throwing di…
+    590|     expect(() => detachPermissionNotice(() => { throw new Error('dispa…
+       |                                                                                              ^
+    591|     expect(detachPermissionNotice(async () => Promise.reject(new Error…
+    592|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/17]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  17 failed (17)
+   Start at  00:47:08
+   Duration  352ms (transform 176ms, setup 0ms, import 224ms, tests 24ms, environment 0ms)
+

@@ -1,0 +1,5 @@
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+[ELIFECYCLE] Command failed with exit code 1.
+prestage-check-2 rc=1

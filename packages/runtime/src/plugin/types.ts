@@ -992,6 +992,17 @@ export interface TeamAgentBindings {
    *  P8-S7 R2-5: written at the production resume points, cleared when
    *  the resume settles; ephemeral by design). */
   readonly isResuming: (sessionId: string) => boolean
+  /**
+   * alpha.3 PR5 (final splice): the SYNCHRONOUS permission-notice RECEIPT
+   * POINT — the closing fact + the CURRENT owned live-handle read for one
+   * EXACT (team, member) pair. READ-ONLY: it cannot create / resume /
+   * materialize / adopt an Agent (the root's awareness emitter binds it
+   * into `createPermissionDeliveryBinding`; a cold or absent member reads
+   * `undefined` and stays cold — awareness never wakes). OPTIONAL: a glue
+   * that predates this seam leaves it undefined, and the root assembles
+   * with NO notification emission (fail-closed: zero delivery).
+   */
+  readonly permissionNoticeReceipt?: import('../../permission-notification/index.js').PermissionNoticeReceiptSource
   /** Create-or-resume the live agent of one session (the route helper). */
   readonly ensureLiveAgent: (sessionId: string) => Promise<unknown>
   /**

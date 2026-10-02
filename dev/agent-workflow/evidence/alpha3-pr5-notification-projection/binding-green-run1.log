@@ -1,0 +1,238 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts (17 tests | 15 failed) 41ms
+     × delivers the rendered awareness text as ONE model-visible user message 8ms
+     × each attempt carries a fresh message id (no park-collision by construction) 2ms
+     × the REAL notifier through the REAL adapter delivers end-to-end to a running target 3ms
+     × idle target drops as not-running 2ms
+     × cold (no owned live handle) drops as not-live 2ms
+     × closing glue drops BEFORE any handle lookup 2ms
+     × lifecycle-blocked member drops without touching the agent 2ms
+     × a handle whose identity is not the EXACT addressed pair drops 2ms
+     × the adapter surfaces every drop as a rejection carrying the closed reason 2ms
+     × idle-at-receipt DROPS at the gate although the advisory liveness read said active 2ms
+     × direct binding leg: the synchronous gate + inject share one tick (no interleaving point exists) 2ms
+     × an aborted-but-still-running target gets exactly one inject; no wake member is nameable or touched 2ms
+     ✓ the binding module source never names a wake-capable call site 1ms
+     × slow delivery never delays or reorders the acks 2ms
+     × a never-settling delivery leaves the ack settled and the next mutation unaffected 2ms
+     × a faulting inject byte-equals the no-notification durable result (ack content untouched) 4ms
+     ✓ detachPermissionNotice swallows even a synchronously throwing dispatch 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 15 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (a) — RUNNING target receives through inject only > delivers the rendered awareness text as ONE model-visible user message
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:200:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (a) — RUNNING target receives through inject only > each attempt carries a fresh message id (no park-collision by construction)
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:223:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (a) — RUNNING target receives through inject only > the REAL notifier through the REAL adapter delivers end-to-end to a running target
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ Object.notifyPermissionCommit permission-notification/notification.ts:200:28
+ ❯ test/a3p5-permission-delivery-binding.test.ts:253:38
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > idle target drops as not-running
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:282:25
+ ❯ expectDrop test/a3p5-permission-delivery-binding.test.ts:268:41
+ ❯ test/a3p5-permission-delivery-binding.test.ts:279:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > cold (no owned live handle) drops as not-live
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:291:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > closing glue drops BEFORE any handle lookup
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:305:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > lifecycle-blocked member drops without touching the agent
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:320:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > a handle whose identity is not the EXACT addressed pair drops
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:341:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (b) — idle / cold / closing / lifecycle / mismatch DROP, zero inbox writes > the adapter surfaces every drop as a rejection carrying the closed reason
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:355:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (c) — active→idle RACE across the async authority read > idle-at-receipt DROPS at the gate although the advisory liveness read said active
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ Object.notifyPermissionCommit permission-notification/notification.ts:200:28
+ ❯ test/a3p5-permission-delivery-binding.test.ts:397:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (c) — active→idle RACE across the async authority read > direct binding leg: the synchronous gate + inject share one tick (no interleaving point exists)
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:414:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (d) — cancel-while-running: the module touches status + inject ONLY > an aborted-but-still-running target gets exactly one inject; no wake member is nameable or touched
+TypeError: Cannot read properties of undefined (reading 'identity')
+ ❯ permissionChangeNotificationFromSnapshot permission-notification/notification.ts:81:29
+     79| ): PermissionChangeNotification {
+     80|   return Object.freeze({
+     81|     teamSessionId: snapshot.identity.teamSessionId,
+       |                             ^
+     82|     memberInstanceId: snapshot.identity.memberInstanceId,
+     83|     snapshotId: snapshot.snapshotId,
+ ❯ commitFirst test/a3p5-permission-delivery-binding.test.ts:186:24
+ ❯ test/a3p5-permission-delivery-binding.test.ts:436:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > slow delivery never delays or reorders the acks
+TypeError: Cannot read properties of undefined (reading 'snapshotId')
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:501:29
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+    500|         })
+    501|         return ack.snapshot.snapshotId
+       |                             ^
+    502|       },
+    503|     }
+ ❯ test/a3p5-permission-delivery-binding.test.ts:516:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > a never-settling delivery leaves the ack settled and the next mutation unaffected
+TypeError: Cannot read properties of undefined (reading 'snapshotId')
+ ❯ Object.mutateThenNotify test/a3p5-permission-delivery-binding.test.ts:501:29
+    499|           events.push(outcome.delivered ? 'notify:delivered' : `notify…
+    500|         })
+    501|         return ack.snapshot.snapshotId
+       |                             ^
+    502|       },
+    503|     }
+ ❯ test/a3p5-permission-delivery-binding.test.ts:537:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > a faulting inject byte-equals the no-notification durable result (ack content untouched)
+TypeError: Cannot read properties of undefined (reading 'snapshotId')
+ ❯ test/a3p5-permission-delivery-binding.test.ts:553:88
+    551|       const acksGolden: string[] = []
+    552|       for (const generation of [1, 2, 3]) {
+    553|         acksGolden.push((await golden.port.append(snapshotInput(genera…
+       |                                                                                        ^
+    554|       }
+    555|       const agent = makeFakeAgent({ injectBehavior: 'throw' })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  15 failed | 2 passed (17)
+   Start at  00:48:47
+   Duration  366ms (transform 178ms, setup 0ms, import 230ms, tests 41ms, environment 0ms)
+

@@ -518,6 +518,7 @@ export type RemoteMethodParams =
   | RemoteOverrideResetParams
   | RemoteOverrideResetParamsV7
   | RemoteOverrideMutatePermissionParams
+  | RemoteOverrideGetPermissionParams
   | RemotePolicyStateGetParams
   | RemotePolicyStateSetParams
   | RemoteCompatibilityGetParams
@@ -1502,6 +1503,19 @@ export interface RemoteOverrideMutatePermissionParams {
   }[]
 }
 
+/**
+ * alpha.3 PR5 (ROOT BLOCK-1) — `override.getPermission`: the READ half of
+ * the permission lane (the overlay's current authority + audit history for
+ * one exact (team, member) pair). A READ carries NO actor field (the
+ * `override.get` precedent above — a read is host-initiated at the wire).
+ */
+export interface RemoteOverrideGetPermissionParams {
+  readonly teamSessionId: string
+  readonly memberInstanceId: string
+}
+
+const REMOTE_OVERRIDE_GET_PERMISSION_FIELDS = ['teamSessionId', 'memberInstanceId'] as const
+
 const REMOTE_OVERRIDE_MUTATE_PERMISSION_FIELDS = [
   'teamSessionId',
   'memberInstanceId',
@@ -1584,6 +1598,24 @@ function parseRemotePermissionExecIntent(
 }
 
 /** Parse `override.mutatePermission` params (contract v7, v7-only method). */
+/** Parse `override.getPermission` params (alpha.3 PR5, ROOT BLOCK-1). */
+export function parseRemoteOverrideGetPermissionParams(
+  method: string,
+  params: RemoteSafeRecord,
+): RemoteOverrideGetPermissionParams {
+  assertNoUnknownFields(method, params, REMOTE_OVERRIDE_GET_PERMISSION_FIELDS)
+  return {
+    teamSessionId: parseRemoteTeamSessionId(
+      requiredField(method, params, 'teamSessionId'),
+      'teamSessionId',
+    ),
+    memberInstanceId: parseRemoteInstanceId(
+      requiredField(method, params, 'memberInstanceId'),
+      'memberInstanceId',
+    ),
+  }
+}
+
 export function parseRemoteOverrideMutatePermissionParams(
   method: string,
   params: RemoteSafeRecord,
@@ -2324,6 +2356,9 @@ export function parseRemoteMethodParams(
     case 'override.mutatePermission':
       // v7-only (PR4 round 5; the availability check guarantees version 7).
       return wrapParsed(method, parseRemoteOverrideMutatePermissionParams(method, params))
+    case 'override.getPermission':
+      // v7-only (alpha.3 PR5 ROOT BLOCK-1; co-tenancy with the write pair).
+      return wrapParsed(method, parseRemoteOverrideGetPermissionParams(method, params))
     case 'team.getProjection':
       return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params))
     case 'team.getLedgerPage':
