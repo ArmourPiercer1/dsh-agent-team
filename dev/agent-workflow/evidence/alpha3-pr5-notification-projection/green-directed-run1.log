@@ -1,0 +1,94 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ❯ test/a3p5-permission-notification-lane-hygiene.test.ts (9 tests | 1 failed) 24ms
+     ✓ the runtime exports are EXACTLY the allow-list 1ms
+     ✓ no export NAME (value or type) names a decision / authority input 1ms
+     ✓ the lane never names the mutation/envelope/authority INPUT vocabularies 1ms
+     ✓ every cross-directory import is TYPE-ONLY to the PR1 overlay vocabulary 1ms
+     × the lane reaches NO forbidden surface (PR60-safety boundary) 3ms
+     ✓ no shipped source outside the lane directory and the tests imports permission-notification 16ms
+     ✓ the lane ships OUT of the tsc install-surface build too (PR1 precedent for unwired layers) 0ms
+     ✓ the renderer mirrors the durable reason bound verbatim 0ms
+     ✓ the rendered text states the awareness-only contract verbatim (ADR §9) 0ms
+ ❯ test/a3p5-permission-read-projection.test.ts (7 tests | 2 failed) 30ms
+     ✓ an empty identity reads present:false (no fabricated authority) 5ms
+     ✓ the highest generation is the authority (never a fold of the history) 4ms
+     × identity isolation: the view answers for the addressed pair only 8ms
+     ✓ lists every durable generation ascending, with frozen provenance copies 4ms
+     ✓ an empty identity reads an empty audit list 2ms
+     ✓ authority + history views deep-freeze, copy, and never leak row identity 3ms
+     × reaching `append` through the injected seam throws, and both reads still succeed 3ms
+ ✓ test/a3p5-permission-notification.test.ts (15 tests) 34ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p5-permission-notification-lane-hygiene.test.ts > leg 2 — the import graph: zero runtime edges outside the lane > the lane reaches NO forbidden surface (PR60-safety boundary)
+AssertionError: types.ts matched /governance\/(service|types|permission-mutation|slot)\.js/: expected 'import type { PermissionOverlayIdenti…' not to match /…/(service|types|permission-mutation|slot)\.js
+
+- Expected:
+/governance\/(service|types|permission-mutation|slot)\.js/
+
++ Received:
+"import type { PermissionOverlayIdentity } from '../permission-governance/types.js'"
+
+ ❯ test/a3p5-permission-notification-lane-hygiene.test.ts:139:71
+    137|         .join('\n')
+    138|       for (const pattern of forbidden) {
+    139|         expect(importLines, `${file} matched ${String(pattern)}`).not.…
+       |                                                                       ^
+    140|       }
+    141|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a3p5-permission-read-projection.test.ts > the authority view mirrors the durable current authority > identity isolation: the view answers for the addressed pair only
+AssertionError: expected { present: true, …(7) } to match object { present: false }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "present": false,
++   "present": true,
+  }
+
+ ❯ test/a3p5-permission-read-projection.test.ts:140:27
+    138|         `${FIXTURE_TEAM_SESSION_ID}#${OTHER_INSTANCE_ID}#1`,
+    139|       )
+    140|       expect(foreignTeam).toMatchObject({ present: false })
+       |                           ^
+    141|     } finally {
+    142|       world.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a3p5-permission-read-projection.test.ts > projections are frozen copies, and `append` is unreachable > reaching `append` through the injected seam throws, and both reads still succeed
+AssertionError: expected [ 'append', 'history', 'latest' ] to deeply equal [ 'history', 'latest' ]
+
+- Expected
++ Received
+
+  [
++   "append",
+    "history",
+    "latest",
+  ]
+
+ ❯ test/a3p5-permission-read-projection.test.ts:264:40
+    262|       expect(history.entries).toHaveLength(1)
+    263|       // The walk over the seam touched EXACTLY the two read boundarie…
+    264|       expect([...seam.touched].sort()).toEqual(['history', 'latest'])
+       |                                        ^
+    265|     } finally {
+    266|       world.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  3 failed | 28 passed (31)
+   Start at  23:58:14
+   Duration  367ms (transform 478ms, setup 0ms, import 632ms, tests 88ms, environment 0ms)
+

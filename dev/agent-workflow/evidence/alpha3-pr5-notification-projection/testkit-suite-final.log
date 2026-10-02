@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/testkit
+
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+ ✓ test/t6-4-policy-precedence.test.ts (11 tests) 43ms
+ ✓ test/t6-9-negative-matrix.test.ts (12 tests) 54ms
+ ✓ test/p4t5-corrupt-version.test.ts (10 tests) 6ms
+ ✓ test/p4t5-retry-restart.test.ts (11 tests) 4ms
+ ✓ test/a3p1-team-domain-tenth-store.test.ts (10 tests) 21ms
+ ✓ test/p4t5-crash-matrix.test.ts (13 tests) 11ms
+ ✓ test/t6-5-compat-complete-true.test.ts (6 tests) 14ms
+ ✓ test/t6-10-composition-pipeline.test.ts (5 tests) 10ms
+ ✓ test/t6-7-fresh-per-delegation.test.ts (6 tests) 16ms
+ ✓ test/a3p1-seam-additive-tables.test.ts (8 tests) 8ms
+ ✓ test/t6-8-serialization-roundtrip.test.ts (9 tests) 20ms
+ ✓ test/t6-3-lifecycle-matrix.test.ts (8 tests) 7ms
+ ✓ test/plugin-dsh-compat.test.ts (7 tests) 86ms
+ ✓ test/t6-6-snapshot-immutability.test.ts (8 tests) 27ms
+ ✓ test/bp1h-blueprint-authoring.test.ts (8 tests) 21ms
+ ✓ test/t6-1-no-agent-dependency.test.ts (6 tests) 8ms
+ ✓ test/t6-2-template-n-instances.test.ts (8 tests) 51ms
+ ✓ test/testkit.test.ts (2 tests) 2ms
+
+ Test Files  19 passed (19)
+      Tests  158 passed (158)
+   Start at  00:01:10
+   Duration  1.05s (transform 1.39s, setup 0ms, import 2.83s, tests 414ms, environment 1ms)
+
