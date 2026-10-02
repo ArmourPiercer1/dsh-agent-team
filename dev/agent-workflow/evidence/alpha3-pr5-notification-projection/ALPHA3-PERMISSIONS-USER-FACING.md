@@ -15,8 +15,8 @@ production root wires it once; every entry reaches the same service:
 | Entry | What it is | Where |
 | --- | --- | --- |
 | `plane.mutation.grantInstance` / `plane.mutation.revoke` / `plane.mutation.restore` | the in-process permission plane (grant / revoke / member restore), assembled by the root and exposed through the shared `permissionPlaneRef` (the `controlServiceRef` pattern) | `packages/runtime/src/plugin/root.ts:2748-2761` (`createTeamPermissionLanes`), entry dispatcher `permissionLaneMutate` at `root.ts:2788` |
-| remote RPC `override.mutatePermission` | the v7-ONLY remote method for the human/operator grant/revoke lane (the one version-gated addition to the remote catalog since PR #60; v<7 gets the typed `method-version-unsupported`) | wired at `root.ts:3066` (`permission: { mutatePermission: permissionLaneMutate, getPermission }`); method catalog `packages/remote/src/contracts/catalog.ts` (`REMOTE_V7_ONLY_METHODS = ['override.mutatePermission']`) |
-| remote RPC `override.getPermission` (NEW, ROOT BLOCK-1) | the v7-ONLY remote READ pair: the durable permission overlay's CURRENT authority + ascending AUDIT history for one exact addressed (team, member) pair, served by the production readprojection (`createPermissionReadProjection`) through an append-NARROWED seam (no `append` member even by type). Wire-seam access gate: host operator / team Leader / member-SELF only (cross-member refused `TEAM_REMOTE_PRINCIPAL_INVALID`, the read seam never invoked); ghost identity = typed `PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN` (mirrors the write side; never an empty-view masquerade); ARCHIVED/DISPOSED history stays audit-visible (lifecycle gates EXECUTION, not the durable audit read); foreign team = `TEAM_REMOTE_FOREIGN_TEAM`; v<7 = `method-version-unsupported`. Execution authorization NEVER consults it (ADR §9; zero-reference leg pinned) | seam composed at `root.ts:2713` + wired at `root.ts:3071`; handler + gate `s6-remote.ts:2974` (dispatch case :3715); catalog `packages/remote/src/contracts/catalog.ts:105` + `REMOTE_V7_ONLY_METHODS` :219; closed params (`teamSessionId`, `memberInstanceId`, NO actor field — the `override.get` read precedent) `packages/remote/src/contracts/params.ts:1512` |
+| remote RPC `override.mutatePermission` | the v7-ONLY remote method for the human/operator grant/revoke lane (the one version-gated addition to the remote catalog since PR #60; v<7 gets the typed `method-version-unsupported`) | wired at `root.ts:3066` (`permission: { mutatePermission: permissionLaneMutate, getPermission }`); method catalog `packages/remote/src/contracts/catalog.ts` (`REMOTE_V7_ONLY_METHODS = ['override.mutatePermission', 'override.getPermission']` — BOTH v7-only methods) |
+| remote RPC `override.getPermission` (NEW, ROOT BLOCK-1) | the v7-ONLY remote READ pair: the durable permission overlay's CURRENT authority snapshot + ascending AUDIT history for one exact addressed (team, member) pair — overlay rows ONLY. It is NOT the effective-permission OUTCOME (no static layers, no envelope ceiling, no lifecycle gate, no matcher evaluation are folded in): validate any execution conclusion by the safe next operation, never by this read, served by the production readprojection (`createPermissionReadProjection`) through an append-NARROWED seam (no `append` member even by type). Wire-seam access gate: host operator / team Leader / member-SELF only (cross-member refused `TEAM_REMOTE_PRINCIPAL_INVALID`, the read seam never invoked); ghost identity = typed `PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN` (mirrors the write side; never an empty-view masquerade); ARCHIVED/DISPOSED history stays audit-visible (lifecycle gates EXECUTION, not the durable audit read); foreign team = `TEAM_REMOTE_FOREIGN_TEAM`; v<7 = `method-version-unsupported`. Execution authorization NEVER consults it (ADR §9; zero-reference leg pinned). A HUMAN reaches it through the SAME authenticated versioned remote transport that already serves every s6 remote method (the versioned-envelope dispatcher created by `createS6RemoteDispatcher` in `s6-remote.ts`, API-scope credentials — no Human-UI path, never `client.call`; exactly how PR #60's `override.mutatePermission` is called; no dedicated human CLI exists — UNVERIFIED beyond that) | seam composed at `root.ts:2713` + wired at `root.ts:3071`; handler + gate `s6-remote.ts:2974` (dispatch case :3715); catalog `packages/remote/src/contracts/catalog.ts:105` + `REMOTE_V7_ONLY_METHODS` :219; closed params (`teamSessionId`, `memberInstanceId`, NO actor field — the `override.get` read precedent) `packages/remote/src/contracts/params.ts:1512` |
 | the Leader tool lane | the team tool's permission adapter (Leader gate inside the tool layer), SAME dispatcher | `root.ts:3213` (`permission: { mutatePermission: permissionLaneMutate, ... }` into `createTeamTools`) |
 | `restore` | threads the ONE lifecycle path (ARCHIVED -> SETTLED, one durable commit, zero live contact); the lane performs no transition of its own and writes NO permission snapshot for a pure restore | `root.ts:2757` (`lifecycleService.restoreMember`) |
 
@@ -148,7 +148,9 @@ against, verified against the REAL catalog source (not memory): the team
 tool catalog is **15 tools** — the 13 original `team_*` tools defined in
 `packages/tools/src/tools.ts` plus `team_grant_permission` and
 `team_revoke_permission`, shipped by PR #60 (same file; the table at
-:36-37 and the factory at :1316). That 15-tool set is the CURRENT closed
+:36-37 and the factory at :1316). The catalog total is NOT what every
+Leader SEES: the exposed set is filtered by the bound Blueprint's tool
+selection, so a given Leader session may legitimately expose fewer. That 15-tool set is the CURRENT closed
 catalog; this lane adds ZERO tools. On the RPC axis, PR #60 landed the
 v7-only permission WRITE method `override.mutatePermission`; this branch
 adds its v7 co-tenant READ pair `override.getPermission` (31 methods in
@@ -201,25 +203,37 @@ v7 protocol version.
    tree loaded) and create a team from a valid Blueprint that carries the
    section-2 `permissionMutationEnvelope` (a non-empty rule set; the real
    fixture shape is `packages/runtime/test/a3p4-r4-authority-binding.test.ts:163-172`).
-3. Tool surface: the Leader session exposes 15 `team_*` tools including
-   `team_grant_permission` and `team_revoke_permission`.
+3. Tool surface: the Leader session exposes the Blueprint-SELECTED subset
+   of the 15-tool `team_*` catalog — acceptance requires ONLY that
+   `team_grant_permission` and `team_revoke_permission` are visible (a
+   Blueprint selecting fewer of the other tools is legitimate).
 4. WRITE leg: as Leader, `team_grant_permission` for one exact file
-   resource on one existing member -> ack reports a committed change.
+   resource on one existing member -> ack reports `changed: true` (the
+   notification fires ONLY on a real change — re-issuing the IDENTICAL
+   grant may no-op with zero notification, by design).
    Operator-side equivalent: remote `override.mutatePermission` (v7).
 5. READ leg: remote `override.getPermission` (v7) for the same (team,
    member) pair -> `authority` shows the grant (present) and `history`
-   lists the committed snapshots in ascending generation order.
-6. ACTIVE notification: with the addressed member RUNNING, performing leg
-   4 delivers EXACTLY ONE message to that member starting
+   lists the committed snapshots in ascending generation order. This
+   reads overlay + history ONLY — it is NOT the effective permission
+   OUTCOME; confirm the execution conclusion by safely attempting the
+   next operation.
+6. ACTIVE notification (best-effort, at-most-one): with the addressed
+   member RUNNING, performing a CHANGING leg-4 grant should produce at
+   most one message to that member (eligibility re-checked at receipt;
+   zero is a legitimate best-effort outcome, immediate visibility is NOT
+   guaranteed) starting
    `[team-perm-changed team=... instance=... generation=...]`, containing
    no rule bodies; the member is not restarted.
 7. IDLE no-wake: same grant/revoke while the member is IDLE -> the member
    receives NOTHING and is NOT woken (no new activity appears on it); the
    WRITE leg still commits (leg 5 read-back proves it).
-8. Negative reads: `override.getPermission` for an unknown memberInstanceId
-   -> typed `PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN` (NOT an empty view);
-   for a member of ANOTHER team -> `TEAM_REMOTE_FOREIGN_TEAM`; the call at
-   protocol v6 -> `method-version-unsupported`.
+8. Negative reads: ONLY a FOREIGN teamSessionId yields
+   `TEAM_REMOTE_FOREIGN_TEAM`. The CURRENT teamSessionId with another
+   team's memberInstanceId (or any unknown/ghost id) ->
+   `PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN` (NOT an empty view) — the read
+   is scoped to the addressed team; the call at protocol v6 ->
+   `method-version-unsupported`.
 9. Lifecycle audit: archive the member, then re-read -> the audit history
    REMAINS readable (disposed/archived history is audit-visible); create a
    fresh member -> its read shows `authority` absent (no inheritance from

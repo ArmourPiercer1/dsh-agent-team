@@ -199,13 +199,13 @@ carry their real rc (A8-1).
 | Leg | Raw | Result |
 | --- | --- | --- |
 | ESLint (9 changed/new files; incl. the two PRE-EXISTING s6-remote findings fixed to keep the zero-findings changed-file law) | `fixbatch/eslint-fixbatch.log` | rc=0, zero findings |
-| runtime tsc --noEmit | `fixbatch/tsc-runtime-fixbatch.log` | rc=0 (first capture showed 3 test-surface type errors, fixed, clean) |
+| runtime tsc --noEmit | `fixbatch/tsc-runtime-fixbatch.log` (intermediate: rc=2 — 3 test-surface type errors) -> fixes landed in the batch -> **GREEN capture `fixbatch/tsc-runtime-fixbatch-2.log` rc=0 (committed; R-C BLOCK-F1 close — the clean claim now carries its raw)** |
 | remote tsc --noEmit | `fixbatch/tsc-remote-fixbatch.log` | rc=0 |
 | testkit tsc --noEmit | `fixbatch/tsc-testkit-fixbatch.log` | rc=0 |
-| p4t6 session-event scan (2 new scannable specs) | `fixbatch/p4t6-RED.log` / `fixbatch/p4t6-GREEN.log` | RED `expected 958 to be 956`; repinned 956 -> 958; GREEN 10/10 rc=0; quarantine hits stay 15 |
+| p4t6 session-event scan (2 new scannable specs) | `fixbatch/p4t6-RED.log` (= committed as `p4t6-fixbatch.log`, the RED scanner run) / `fixbatch/p4t6-GREEN.log` | RED `expected 958 to be 956`; repinned 956 -> 958; GREEN 10/10 rc=0; quarantine hits stay 15 |
 | remote package suite (versioned-union pins advanced 30 -> 31, v7-only set gains `override.getPermission`; 4th pin on the runtime side in p8s7r4 spec) | `fixbatch/remote-suite-fixbatch.log` | 220/220 rc=0 |
 | testkit suite | `fixbatch/testkit-suite-fixbatch.log` | 158/158 rc=0 |
-| a3p5 lane + fix-batch specs (splice 9, read-wiring 12, glue-receipt 8, hygiene 9, notification 16, binding 17, read-projection 7) | `fixbatch/lane-suite-fixbatch.log` | 78/78 |
+| a3p5 lane + fix-batch specs (splice 9, read-wiring 12 [group A 8 + group B 4], glue-receipt 8, hygiene 9, notification 15, binding 18, read-projection 7) | `fixbatch/lane-suite-fixbatch.log` | 78/78; SUPERSEDED by `fixbatch/lane-suite-fixbatch-2.log` (81/81 rc=0 after the BLOCK-3/4 glue round: glue-receipt 8 -> 11) |
 | full runtime suite | `fixbatch/full-runtime-suite-fixbatch.log` | 3322/3330 (8 failed), failset BYTE-IDENTICAL to `splice/final-fail-set.txt` (diff empty; `fixbatch/final-fail-set-fixbatch.txt`) |
 | build (pnpm -r run build) + composition (glue placement + client composition bundle) | `fixbatch/build-fixbatch.log` / `fixbatch/composition-fixbatch.log` | rc=0 / rc=0 |
 | check:artifacts prestage (drift preview -> co-committed) / postcommit | `fixbatch/prestage-check-artifacts.log` / `fixbatch/postcommit-check-artifacts.log` | preview 21 drifted install-surface files; postcommit rc=0 |
@@ -218,3 +218,56 @@ identity-mismatch), stale re-pointed row reads undefined with the new key
 staying cold, ghost undefined, derived-id regression; create/resume/steer/
 followup counters pinned on every leg (cold-stays-cold). Host/kit
 dimension stays NOT_RUN (never claimed).
+
+## Successor round (ROOT GO BLOCK-3/BLOCK-4) — raws `fixbatch/*-2.log` + `fixbatch/glue-consumers-fixbatch.log`
+
+Two real BLOCKs in the fix's OWNERSHIP (verdict on `ecbc30f6`; projection /
+ack / SETTLED law untouched):
+
+- **BLOCK-3 (Leader was dropped)**: the real v2 `LeaderInstanceRecordDto`
+  carries NO child/lifecycle keys (contracts
+  `dto/member-instance-record.ts:116-130` + `:206-213` — validation
+  REJECTS their presence), while the boot registers the root handle AT the
+  team session id (`agent-bindings.mjs:3560 liveAgents.set(rootSid, ...)`).
+  The receipt now restores the LEADER branch: pair targeting the leader
+  instance keys to the durable TeamSession row's rootSessionId (exactly
+  the registration key), attribution proven from the durable TeamSession
+  row + the durable v2 leader row (both read back; identity never echoed;
+  no fake child/lifecycle consulted). Cold root / missing team row ->
+  undefined (zero creates — pinned).
+- **BLOCK-4 (first-match owner)**: owner resolution collects ALL rows
+  binding the key; count != 1 -> REFUSAL (undefined) regardless of
+  list() order, including when the requesting pair is one of the
+  claimants (a corrupted binding is not a delivery target); no
+  first-match anywhere in the return path (the forward lookup is
+  likewise exactly-one). Single-binding members and the leader still
+  resolve (no over-refusal).
+
+Tests (REAL glue, validator-gated fixtures): `a3p5-glue-permission-receipt`
+grew to **11 legs** — real-v2 leader receives (fixture passes
+`parseMemberInstanceRecord`, which REJECTS child/lifecycle presence —
+asserted), leader fail-closed x2 (no team row / cold root, counters 0),
+ambiguity refusal in REAL list order + swapped order + no-over-refusal;
+the six member-path legs stay verbatim. The legacy child-bearing fake
+leader fixture is GONE.
+
+| Leg | Raw | Result |
+| --- | --- | --- |
+| runtime tsc --noEmit (GREEN capture closing R-C BLOCK-F1) | `fixbatch/tsc-runtime-fixbatch-2.log` | rc=0 |
+| ESLint (changed files) | `fixbatch/eslint-fixbatch-2.log` | rc=0 |
+| a3p5 lane suite (post-BLOCK-3/4) | `fixbatch/lane-suite-fixbatch-2.log` | 81/81 rc=0 |
+| p4t6 scanner (no new scannable files; count unchanged) | `fixbatch/p4t6-fixbatch-2.log` | rc=0 (958 holds) |
+| glue consumers (t12a family GREEN-class + shipped-dist smoke over the rebuilt dist) | `fixbatch/glue-consumers-fixbatch.log` | 34/34 rc=0 |
+| build + composition | `fixbatch/build-fixbatch-2.log` / `fixbatch/composition-fixbatch-2.log` | rc=0 / rc=0 |
+
+Same-batch DOC corrections (root's five, edited in-place): BOTH v7 methods
+quoted everywhere; 15-tool catalog vs Blueprint-filtered Leader view
+(acceptance needs grant/revoke visible); notification = best-effort
+AT-MOST-ONE attempt, changed:true-gated, re-checked at receipt (no
+exactly-one / immediate-visibility guarantee); FOREIGN teamSessionId vs
+current-team-other-member -> INSTANCE_UNKNOWN split stated; readprojection
+= overlay+history ONLY, NOT the effective outcome (validate by safe next
+op). R-C advisories folded: A9-1 per-file counts corrected to the raw
+(15/18), A9-2 RED-file naming aligned, A9-4 fixed (both methods), R-C(a)
+positive transport pointer added; group labels aligned to the raw
+(A 8 + B 4 = 12). Host/kit remains NOT_RUN.

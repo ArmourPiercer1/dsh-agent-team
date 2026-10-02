@@ -1,0 +1,17 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ✓ test/persona-kind-shipped-dist-smoke.test.ts (2 tests) 5ms
+ ✓ test/t12a-b3-external-deny.test.ts (4 tests) 3ms
+ ✓ test/t12a-h1-nullable-mcp.test.ts (7 tests) 3ms
+ ✓ test/t12a-m2-persona.test.ts (8 tests) 8ms
+ ✓ test/t12a-team-tools-registration.test.ts (3 tests) 3ms
+ ✓ test/t12a-m3-recursive-drain.test.ts (5 tests) 2ms
+ ✓ test/t12a-m1-effective-cwd.test.ts (5 tests) 2ms
+
+ Test Files  7 passed (7)
+      Tests  34 passed (34)
+   Start at  02:24:48
+   Duration  1.39s (transform 3.02s, setup 0ms, import 5.14s, tests 26ms, environment 0ms)
+
+glue-consumers rc=0

@@ -18,6 +18,7 @@ import { describe, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
 
 import { createLiveWorld } from './t12a-live-bridge.mjs'
+import { parseMemberInstanceRecord } from '../../contracts/src/index.js'
 import {
   createPermissionDeliveryBinding,
   type PermissionLiveHandle,
@@ -36,6 +37,27 @@ function childSidOf(rootSessionId: string, instanceId: string): string {
     .update(`${rootSessionId}${NUL}${instanceId}`, 'utf8')
     .digest('hex')
   return `session-team-child-${digest.slice(0, 32)}`
+}
+
+/** A REAL v2 LeaderInstanceRecordDto: schemaVersion 2 with the child and
+ *  lifecycle keys ABSENT (Architecture §9.2 — validation REJECTS their
+ *  presence; the fixture below is passed through the real contract
+ *  validator so the leader leg cannot be a faked legacy row). */
+function v2LeaderRow(rootSessionId: string): Record<string, unknown> {
+  return parseMemberInstanceRecord({
+    schemaVersion: 2,
+    rootSessionId,
+    instanceId: 'inst-leader',
+    templateId: 'leader',
+    label: 'leader',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    activityVersion: 1,
+  }) as unknown as Record<string, unknown>
+}
+
+/** The durable TeamSession row the glue leader leg reads back. */
+function teamRow(rootSessionId: string): Record<string, unknown> {
+  return { schemaVersion: 2, rootSessionId, generation: 1 }
 }
 
 type World = Awaited<ReturnType<typeof createLiveWorld>>
@@ -68,10 +90,12 @@ async function bootWorld(
   members: readonly MemberRow[],
   seedMembers: readonly Record<string, unknown>[],
   bootPhase = 'create',
+  options: { readonly teamSession?: Record<string, unknown> } = {},
 ): Promise<World> {
   const world = await createLiveWorld({
     rootSessionId: ROOT,
     members: members as never[],
+    teamSession: (options.teamSession ?? teamRow(ROOT)) as never,
     configOverrides: { bootPhase, seedMembers },
   })
   await world.binding.boot()
@@ -187,40 +211,141 @@ describe('a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings 
     world.binding.close()
   })
 
-  it('leader pair hits the root handle through the durable leader row whose childSessionId is the root itself', async () => {
-    const world = await bootWorld([memberRow('inst-leader', ROOT, { templateId: 'leader' })], [])
+  it('REAL v2 leader row (validator-gated, no child/lifecycle keys): the leader pair resolves the root handle at the team-session key', async () => {
+    // The fixture IS the frozen contract: parseMemberInstanceRecord only
+    // returns for a schemaVersion-2 leader record WITHOUT child/lifecycle
+    // keys (their presence is rejected — pinned right here, and the row
+    // below carries none because the validator forbids it).
+    const leader = v2LeaderRow(ROOT)
+    expect(Object.keys(leader)).not.toContain('childSessionId')
+    expect(Object.keys(leader)).not.toContain('lifecycle')
+    expect(() =>
+      parseMemberInstanceRecord({ ...leader, childSessionId: 'session-fake-child' }),
+    ).toThrow()
+    const world = await bootWorld([leader as never], [])
     const handle = receiptOf(world).liveHandle({ teamSessionId: ROOT, memberInstanceId: 'inst-leader' })
-    expect(handle, 'the leader position is a durable row like every pair').toBeDefined()
+    expect(handle, 'the leader pair keys to the team session id — exactly where boot registered the root handle').toBeDefined()
     expect((handle?.agent as { id: string }).id).toBe(ROOT)
+    // Attribution is derived FROM the durable facts (team row + leader row
+    // instance id), never echoed: the request-shaped identity matches only
+    // because the durable facts genuinely name this team.
+    expect(handle?.teamSessionId).toBe(ROOT)
     expect(handle?.memberInstanceId).toBe('inst-leader')
+    // The leader RECEIVES through the real production binding:
+    ;(handle?.agent as { status: string }).status = 'running'
+    const before = counters(world)
+    const result = realBinding(world).deliver({
+      teamSessionId: ROOT,
+      memberInstanceId: 'inst-leader',
+      text: 'permission overlay updated team-wide',
+    })
+    expect(result).toEqual({ delivered: true })
+    const after = counters(world)
+    expect(after.injects - before.injects).toBe(1)
+    expect(after.steers).toBe(before.steers)
+    expect(after.followups).toBe(before.followups)
     world.binding.close()
   })
 
-  it('anti-echo leg: under a durable child-binding collision the receipt returns the true owner identity and the real binding drops identity-mismatch with zero injects', async () => {
-    // A corrupted world: TWO rows bind the SAME child session (the live
-    // agent belongs to inst-beta). The OLD echo-identity receipt made this
-    // case structurally undetectable — the anti-echo smell the root named.
+  it('leader leg fail-closed: no durable TeamSession row, or a cold (never-booted) root handle, reads undefined with zero side effects', async () => {
+    // (a) no durable team row (an explicit EMPTY teamSessions list
+    // suppresses the bridge synthesized default row):
+    const noTeam = await createLiveWorld({
+      rootSessionId: ROOT,
+      members: [v2LeaderRow(ROOT) as never] as never[],
+      teamSessions: [] as never[],
+      configOverrides: { bootPhase: 'create', seedMembers: [] },
+    })
+    // No boot here: the durable-fact refusal needs no live surface, and
+    // nothing may be created by the read itself.
+    expect(
+      receiptOf(noTeam).liveHandle({ teamSessionId: ROOT, memberInstanceId: 'inst-leader' }),
+      'no durable TeamSession row -> no leader attribution',
+    ).toBeUndefined()
+    // (b) cold root handle: the receipt is read BEFORE any boot — the
+    // root handle is not registered; the receipt must not create it.
+    const cold = await createLiveWorld({
+      rootSessionId: ROOT,
+      members: [v2LeaderRow(ROOT) as never] as never[],
+      teamSession: teamRow(ROOT) as never,
+      configOverrides: { bootPhase: 'create', seedMembers: [] },
+    })
+    const before = counters(cold)
+    expect(before.creates).toBe(0)
+    expect(
+      receiptOf(cold).liveHandle({ teamSessionId: ROOT, memberInstanceId: 'inst-leader' }),
+      'a cold root stays exactly as cold as it was',
+    ).toBeUndefined()
+    const after = counters(cold)
+    expect(after.creates, 'reading the receipt created nothing').toBe(0)
+    expect(after.resumes).toBe(0)
+    expect(after.injects).toBe(0)
+  })
+
+  it('ambiguous binding (real list order, alpha-first): BOTH claimants are refused outright — no first-match owner, zero side effects', async () => {
+    // A corrupted durable table: TWO rows bind the SAME child session.
+    // The rows are supplied in the REAL repo.list order (instanceId byte
+    // order — alpha first), the exact ordering under which the old
+    // first-match winner would inject alpha notice into betas handle.
     const sharedChild = 'session-COLLISION-shared-1'
     const world = await bootWorld(
-      [memberRow('inst-beta', sharedChild), memberRow('inst-alpha', sharedChild)],
-      [{ instanceId: 'inst-beta', templateId: 'tpl-t12a', childSessionId: sharedChild }],
+      [memberRow('inst-alpha', sharedChild), memberRow('inst-beta', sharedChild)],
+      [{ instanceId: 'inst-alpha', templateId: 'tpl-t12a', childSessionId: sharedChild }],
     )
-    const handle = receiptOf(world).liveHandle({ teamSessionId: ROOT, memberInstanceId: 'inst-alpha' })
-    expect(handle, 'a live entry exists under the bound key').toBeDefined()
-    // Identity comes FROM the durable reverse mapping — the TRUE owner —
-    // never the request echo:
-    expect(handle?.memberInstanceId).toBe('inst-beta')
-    // And the REAL production gate FIRES on the mismatch:
+    const receipt = receiptOf(world)
+    expect(
+      receipt.liveHandle({ teamSessionId: ROOT, memberInstanceId: 'inst-alpha' }),
+      'the requesting pair IS one of the claimants — over-broad refusal is CORRECT: a corrupted binding is not a delivery target',
+    ).toBeUndefined()
+    expect(
+      receipt.liveHandle({ teamSessionId: ROOT, memberInstanceId: 'inst-beta' }),
+      'the other claimant is refused identically',
+    ).toBeUndefined()
+    // The REAL gate drops the notice (handle absent -> not-live), zero
+    // side effects on refusal:
     const result = realBinding(world).deliver({
       teamSessionId: ROOT,
       memberInstanceId: 'inst-alpha',
-      text: 'must never reach an agent it does not belong to',
+      text: 'must never reach any agent under an ambiguous binding',
     })
-    expect(result).toEqual({ delivered: false, drop: 'identity-mismatch' })
+    expect(result).toEqual({ delivered: false, drop: 'not-live' })
     const c = counters(world)
     expect(c.injects).toBe(0)
     expect(c.steers).toBe(0)
     expect(c.followups).toBe(0)
+    world.binding.close()
+  })
+
+  it('ambiguous binding (swapped order): refusal is order-independent — the swap changes nothing', async () => {
+    const sharedChild = 'session-COLLISION-shared-2'
+    const swapped = await bootWorld(
+      [memberRow('inst-beta', sharedChild), memberRow('inst-alpha', sharedChild)],
+      [{ instanceId: 'inst-beta', templateId: 'tpl-t12a', childSessionId: sharedChild }],
+    )
+    const receipt = receiptOf(swapped)
+    expect(receipt.liveHandle({ teamSessionId: ROOT, memberInstanceId: 'inst-alpha' })).toBeUndefined()
+    expect(receipt.liveHandle({ teamSessionId: ROOT, memberInstanceId: 'inst-beta' })).toBeUndefined()
+    expect(
+      realBinding(swapped).deliver({ teamSessionId: ROOT, memberInstanceId: 'inst-beta', text: 'x' }),
+    ).toEqual({ delivered: false, drop: 'not-live' })
+    expect(counters(swapped).injects).toBe(0)
+    swapped.binding.close()
+  })
+
+  it('no over-refusal: the SAME rows with the collision removed resolve normally (exactly-one binding still delivers)', async () => {
+    const sharedChild = 'session-COLLISION-removed-3'
+    const world = await bootWorld(
+      [memberRow('inst-alpha', sharedChild)],
+      [{ instanceId: 'inst-alpha', templateId: 'tpl-t12a', childSessionId: sharedChild }],
+    )
+    const handle = receiptOf(world).liveHandle({ teamSessionId: ROOT, memberInstanceId: 'inst-alpha' })
+    expect(handle, 'a single-row binding is NOT refused by the ambiguity guard').toBeDefined()
+    expect(handle?.memberInstanceId).toBe('inst-alpha')
+    ;(handle?.agent as { status: string }).status = 'running'
+    expect(
+      realBinding(world).deliver({ teamSessionId: ROOT, memberInstanceId: 'inst-alpha', text: 'fine' }),
+    ).toEqual({ delivered: true })
+    expect(counters(world).injects).toBe(1)
     world.binding.close()
   })
 
