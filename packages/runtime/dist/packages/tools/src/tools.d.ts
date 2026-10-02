@@ -33,6 +33,8 @@
  * |                       | request token — a read: unguarded, zero      |
  * |                       | writes, zero delivery)                       |
  * | team_archive_member   | facade `archive-member` (lifecycle ARCHIVED; |
+ * | team_grant_permission | PR4 round 5: governance `grant_instance`       |
+ * | team_revoke_permission| PR4 round 5: governance `revoke_permission`    |
  * |                       | guarded on the target, SD-GUARD; leader     |
  * |                       | only — the lifecycle-management surface)    |
  *
@@ -73,7 +75,9 @@
 import type { TeamToolDefinition, TeamToolsOptions } from './types.js';
 /** The registered team tool set. */
 export interface TeamToolSet {
-    /** The thirteen closed tool definitions (registration order). */
+    /** The closed tool definitions (registration order; the set has GROWN
+     *  through the series — C1, the archive round, and PR4 round 5 each
+     *  extended it — it is not a frozen thirteen). */
     readonly tools: readonly TeamToolDefinition[];
 }
 /**
@@ -81,7 +85,7 @@ export interface TeamToolSet {
  *
  * @param options - the sanctioned runtime ports (facade, control service,
  *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the thirteen tool definitions, ready for the host's public
+ * @returns the tool definitions, ready for the host's public
  *   tool registration (each returns a disposer on register; the caller
  *   owns the effect lifetime).
  */

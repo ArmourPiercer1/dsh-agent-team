@@ -1,0 +1,4 @@
+baseline=dev/agent-workflow/evidence/alpha3-pr4-permission-lifecycle/round5/r5-remote-suite-r3.log
+baseline-lines=0  new-lines=0
+(no hunks)
+VERDICT: BYTE-IDENTICAL (failsets agree line-for-line)

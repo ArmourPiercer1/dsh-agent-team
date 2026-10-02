@@ -1,0 +1,152 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts (9 tests | 8 failed) 432ms
+     × the LEADER resolves LIVE for a decision over the real TeamSession (no member row exists for the leader — v2 design) 23ms
+     × member semantics unchanged: a ghost instance still refuses INSTANCE_UNKNOWN 6ms
+     × a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1) 8ms
+     × NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing 5ms
+     ✓ UNKNOWN static facts refuse EFFECT_CONTEXT_UNAVAILABLE (never a guessed baseline) 5ms
+     × a booted permissions row lets the LEADER expansion commit through the DERIVED envelope and the plane answers allow (i-host) 157ms
+     × store-open failure at apply(): typed startup failure, never a warn-only boot (BLOCK-5, fail-open closed) 11ms
+     × NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning 9ms
+     × a persisted overlay DENY beats the template ALLOW through the real glue pipeline 207ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E1 — the root-assembled lane consumes the fact readers and the leader liveness (BLOCK-1 + BLOCK-4) > the LEADER resolves LIVE for a decision over the real TeamSession (no member row exists for the leader — v2 design)
+AssertionError: leader decision refused: PERMISSION_LIFECYCLE_EXECUTION_STATE_UNKNOWN: expected 'refused' to be 'effective' // Object.is equality
+
+Expected: "effective"
+Received: "refused"
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:303:83
+    301|       // Today: refused EXECUTION_STATE_UNKNOWN (the reader reads memb…
+    302|       // blindly and v2 never seeds a leader row).
+    303|       expect(decision.kind, `leader decision refused: ${decision.code …
+       |                                                                                   ^
+    304|       expect(decision.effect).toBe('allow')
+    305|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E1 — the root-assembled lane consumes the fact readers and the leader liveness (BLOCK-1 + BLOCK-4) > member semantics unchanged: a ghost instance still refuses INSTANCE_UNKNOWN
+AssertionError: expected 'PERMISSION_LIFECYCLE_EXECUTION_STATE_…' to be 'PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN' // Object.is equality
+
+Expected: "PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN"
+Received: "PERMISSION_LIFECYCLE_EXECUTION_STATE_UNKNOWN"
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:326:29
+    324|       })) as { kind: string; code?: string }
+    325|       expect(decision.kind).toBe('refused')
+    326|       expect(decision.code).toBe(PERMISSION_LIFECYCLE_ERROR_CODES.INST…
+       |                             ^
+    327|     } finally {
+    328|       await world.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E1 — the root-assembled lane consumes the fact readers and the leader liveness (BLOCK-1 + BLOCK-4) > a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1)
+PermissionMutationError: the effective before/after of at least one affected region cannot be decided without the missing context (1 region(s)) — zero write (problem: effect-context-unavailable)
+ ❯ refuse governance/permission-mutation.ts:206:9
+    204|   details: Record<string, unknown> = {},
+    205| ): never {
+    206|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    207|     problem,
+    208|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeLeaderPermissionMutation governance/permission-mutation.ts:1197:5
+ ❯ governance/service.ts:646:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E1 — the root-assembled lane consumes the fact readers and the leader liveness (BLOCK-1 + BLOCK-4) > NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing
+AssertionError: expected 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' to include undefined
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:389:71
+    387|         .catch((caught: unknown) => caught)
+    388|       const code = (error as { code?: string })?.code
+    389|       expect(typeof code === 'string' ? code : JSON.stringify(error)).…
+       |                                                                       ^
+    390|         PERMISSION_MUTATION_ERROR_CODES.EXPANSION_DENIED,
+    391|       )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry derives the facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the DERIVED envelope and the plane answers allow (i-host)
+PermissionMutationError: the permission-mutation lane is not configured on this governance service (PR3 ships the authority with zero production wiring)
+ ❯ Object.mutatePermission governance/service.ts:558:13
+    556|     const lane = deps.permissionLane
+    557|     if (lane === undefined) {
+    558|       throw new PermissionMutationError(
+       |             ^
+    559|         PERMISSION_MUTATION_ERROR_CODES.NOT_CONFIGURED,
+    560|         'the permission-mutation lane is not configured on this govern…
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:660:54
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry derives the facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > store-open failure at apply(): typed startup failure, never a warn-only boot (BLOCK-5, fail-open closed)
+AssertionError: the boot must NOT succeed when the durable permission authority cannot be read: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:740:104
+    738|       // Today (BLOCK-5): the boot RESOLVES (warn-only posture) — the …
+    739|       // agents then execute on static allow with the authority absent.
+    740|       expect(booted, 'the boot must NOT succeed when the durable permi…
+       |                                                                                                        ^
+    741|       const code = (rejection as { code?: string } | null)?.code
+    742|       expect(String(code)).toBe(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_PE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry derives the facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning
+AssertionError: unexpected permission warnings: ["[dsh-agent-team] the permission overlay store could not be opened (storage seam failure during 'open' on store 'team_domain': already-open — domain 'team_domain' is already open) — the permission mutation lane stays unconfigured (fail closed)"]: expected [ Array(1) ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:756:101
+    754|       expect(root, 'the no-permissions world boots green').toBeTruthy()
+    755|       const permissionWarns = warnings.filter((row) => /permission/i.t…
+    756|       expect(permissionWarns, `unexpected permission warnings: ${JSON.…
+       |                                                                                                     ^
+    757|     } finally {
+    758|       await world.dispose()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK-5 decision side, t12a blind spot) > a persisted overlay DENY beats the template ALLOW through the real glue pipeline
+Error: agent-bindings: root base tools unavailable for 'session-a3p4e3root': the agentPresets service is absent from the glue deps (or lacks a callable mount) — the leader (root) must never run without its ordinary base tools (code: root-base-tools-unavailable)
+ ❯ rootBaseToolsUnavailable src/plugin/live/agent-bindings.mjs:4224:19
+    4222|   // setup (the root), before any member is created.
+    4223|   function rootBaseToolsUnavailable(sessionId, reason) {
+    4224|     const error = new Error(`agent-bindings: root base tools unavailab…
+       |                   ^
+    4225|     error.code = 'root-base-tools-unavailable'
+    4226|     observations.push(`p6t6: root-base-tools-unavailable for ${session…
+ ❯ src/plugin/live/agent-bindings.mjs:2142:15
+ ❯ src/plugin/live/agent-bindings.mjs:998:20
+ ❯ makeHandle test/t12a-live-bridge.mjs:870:60
+ ❯ Object.create test/t12a-live-bridge.mjs:902:28
+ ❯ src/plugin/live/agent-bindings.mjs:1057:14
+ ❯ src/plugin/live/agent-bindings.mjs:1025:20
+ ❯ src/plugin/live/agent-bindings.mjs:814:20
+ ❯ singleFlightTeamActivation src/plugin/live/agent-bindings.mjs:815:7
+ ❯ runOwnedActivation src/plugin/live/agent-bindings.mjs:1021:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 1 passed (9)
+   Start at  22:49:31
+   Duration  1.65s (transform 1.02s, setup 0ms, import 1.12s, tests 432ms, environment 0ms)
+

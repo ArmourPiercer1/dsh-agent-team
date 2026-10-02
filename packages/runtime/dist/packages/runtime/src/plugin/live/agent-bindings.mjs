@@ -680,7 +680,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, activationFence, policyReaderRef, resolvePersonaSubstrate } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, activationFence, policyReaderRef, resolvePersonaSubstrate } = deps
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -2485,10 +2485,94 @@ export function createAgentBindings(deps) {
           artifactAuthorityRef !== undefined && artifactAuthorityRef !== null
             ? artifactAuthorityRef.current
             : undefined
+        // pre-alpha3 PR4 (plan "PR4: Grant/Revoke/Lifecycle", production entry
+        // wiring): the DYNAMIC decision layer of this agent. The plane is the
+        // production root's (filled into the shared reference during root
+        // construction - the exact artifactAuthorityRef pattern), and it owns
+        // BOTH halves of the answer: the ADR §8 lifecycle gate over the
+        // durable MemberInstance state (an ARCHIVED or DISPOSED instance never
+        // executes, a fresh instance has no rows to inherit) and the effective
+        // permission answer over the durable overlay (the ONE authority PR3's
+        // `mutatePermission` appends) on top of THIS decision's freshly
+        // canonicalized static lanes. Absent reference (factory world, a root
+        // whose overlay store did not open) -> nothing is passed and the
+        // adapter's pipeline stays byte-for-byte the static one.
+        const permissionPlane =
+          permissionPlaneRef !== undefined && permissionPlaneRef !== null
+            ? permissionPlaneRef.current
+            : undefined
+        // The overlay's `subtree` roots are stored as CANONICAL keys, so the
+        // verdict over them comes from the same pinned public
+        // `FileSystem.contains` the static rules use - the keys are exactly
+        // the provider's own `FsTarget.targetKey` values (`resolveTarget`
+        // above unbrands that field), handed back to the authority as
+        // target records: no key parsing, no `startsWith`, no path
+        // arithmetic, resolved per call (never cached, plan §9.4 / H4). A
+        // provider without the public seam THROWS, which the read plane
+        // reports as an undeterminable subtree verdict (the frozen lane
+        // asymmetry: a deny/ask rule is never dropped, an allow is never
+        // invented) - never as a silent match.
+        const containOverlayKeys = (subtreeRootKey, childKey) => {
+          if (subtreeRootKey === childKey) return true
+          const backend = fsBackend(agentCtx)
+          if (typeof backend.contains !== 'function') {
+            throw new Error('the fs provider does not expose a public contains() seam (overlay subtree containment undeterminable)')
+          }
+          return backend.contains({ targetKey: subtreeRootKey }, { targetKey: childKey }) === true
+        }
         const disposePermission = installParameterPermissionListener(agentCtx, {
           policy: permissionPolicy,
           resolveTarget,
           containsTargets,
+          ...(permissionPlane === undefined || permissionPlane === null
+            ? {}
+            : {
+                resolveDynamicDecision: async ({ operation, staticRules, staticDefault }) => {
+                  const outcome = await permissionPlane.decisions.decide({
+                    teamSessionId: teamRoot,
+                    memberInstanceId: instanceId,
+                    operation,
+                    // PR4 round 3 (INFO-3): static facts ride ONLY when the
+                    // adapter canonicalized them. Absent rules arrive as
+                    // ABSENT facts — the decision lane's own typed
+                    // STATIC_FACTS_UNKNOWN refusal (hard deny downstream) —
+                    // never a fabricated DECLARED-NONE empty rule set, a
+                    // state the lane deliberately keeps distinct from
+                    // UNKNOWN and this glue must not launder.
+                    ...(staticRules === undefined || staticRules === null
+                      ? {}
+                      : {
+                          staticFacts: {
+                            template: {
+                              label: String(
+                                (boundTemplate !== undefined && boundTemplate !== null && boundTemplate.templateId !== undefined)
+                                  ? boundTemplate.templateId
+                                  : 'template',
+                              ),
+                              default: staticDefault,
+                              rules: staticRules,
+                            },
+                          },
+                        }),
+                    containment: (subtreeRootKey, target) => containOverlayKeys(subtreeRootKey, target.key),
+                  })
+                  if (outcome.kind === 'refused') {
+                    return { refused: true, code: outcome.code, reason: outcome.reason }
+                  }
+                  return {
+                    effect: outcome.effect,
+                    plane: outcome.plane,
+                    winningLayer: outcome.winningLayer,
+                    overlayGeneration: outcome.overlayGeneration,
+                    explanation: outcome.explanation,
+                    // Round 3 (BLOCK-3 routing): the merged answer's own
+                    // provenance class ('rule' | 'default') — the adapter
+                    // routes the artifact-grant floor on THIS, not on the
+                    // static decision it no longer is.
+                    source: outcome.source,
+                  }
+                },
+              }),
           controlService,
           rootSessionId: teamRoot,
           caller: { kind: 'instance', instanceId },

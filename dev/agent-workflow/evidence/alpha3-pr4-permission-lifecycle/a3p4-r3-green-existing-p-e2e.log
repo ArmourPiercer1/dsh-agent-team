@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ✓ test/a3p4-permission-lifecycle-e2e.test.ts (26 tests) 95ms
+ ✓ test/a3p4-production-permission-plane.test.ts (7 tests) 57ms
+
+ Test Files  2 passed (2)
+      Tests  33 passed (33)
+   Start at  23:03:01
+   Duration  1.09s (transform 1.22s, setup 0ms, import 1.64s, tests 152ms, environment 0ms)
+

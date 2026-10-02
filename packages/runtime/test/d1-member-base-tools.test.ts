@@ -69,7 +69,7 @@ import {
 import { destroyP6T1World } from './p6t1-helpers.js'
 import { createP6T6World } from '../../tools/test/p6t6-helpers.js'
 
-/** The frozen thirteen-tool team vocabulary (the closed set — name drift fails; C1 adds team_list_pending_control; the archive-member round adds team_archive_member). */
+/** The closed team-tool vocabulary (name drift fails; C1 adds team_list_pending_control; the archive-member round adds team_archive_member; PR4 round 5 adds team_grant_permission + team_revoke_permission). */
 const EXPECTED_TOOL_NAMES = [
   'team_list_members',
   'team_list_templates',
@@ -84,6 +84,8 @@ const EXPECTED_TOOL_NAMES = [
   'team_resolve_control',
   'team_list_pending_control',
   'team_archive_member',
+  'team_grant_permission',
+  'team_revoke_permission',
 ]
 
 /** The stable typed error codes of the D1 fail-closed agent setups. */
@@ -345,7 +347,7 @@ describe('D1 (v2 → v3) agent base tools: the ordinary preset mounts on member 
     expect(String(error.message).includes(MEMBER_BASE_TOOLS_UNAVAILABLE)).toBe(false)
   })
 
-  it('D1-6 the thirteen team_* tools are still registered on the member AND root rows (no regression; the mount adds no tools)', () => {
+  it('D1-6 the fifteen team_* tools are still registered on the member AND root rows (no regression; the mount adds no tools)', () => {
     // The member row carries the full real stack — every lifecycle.
     expect(memberToolsA).toEqual(EXPECTED_TOOL_NAMES)
     expect(memberToolsC1).toEqual(EXPECTED_TOOL_NAMES)

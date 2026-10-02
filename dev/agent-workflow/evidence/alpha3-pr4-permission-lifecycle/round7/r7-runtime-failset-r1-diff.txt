@@ -1,0 +1,4 @@
+baseline=round4/r4-battery-failset.txt
+baseline-lines=11  new-lines=11
+(no hunks)
+VERDICT: BYTE-IDENTICAL (failsets agree line-for-line)

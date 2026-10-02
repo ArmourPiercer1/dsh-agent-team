@@ -1,0 +1,4 @@
+=== tsc remote+tools 2026-10-02T01:09:24+00:00
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+rc-remote=0 rc-tools=0

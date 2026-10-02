@@ -110,6 +110,7 @@ export {
   REMOTE_V4_ONLY_METHODS,
   REMOTE_V5_ONLY_METHODS,
   REMOTE_V6_ONLY_METHODS,
+  REMOTE_V7_ONLY_METHODS,
   isRemoteMethod,
   isRemoteMethodAvailableInVersion,
   remoteCategoryOf,

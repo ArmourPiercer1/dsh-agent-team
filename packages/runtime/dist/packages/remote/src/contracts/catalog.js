@@ -49,7 +49,8 @@ export const REMOTE_CATEGORY_VALUES = Object.freeze(Object.values(REMOTE_CATEGOR
  * v2-only `team.admitInitialWork` plus the v3-only `team.listRoots` /
  * `team.ensureRootLive` plus the v4-only `team.resolveControl` plus the
  * v5-only `team.prepareOrdinaryOpen` plus the v6-only
- * `team.getReadState` (29 methods total). Key = endpoint = method name
+ * `team.getReadState` plus the v7-only `override.mutatePermission`
+ * (30 methods total; PR4 round 5). Key = endpoint = method name
  * (dotted: `<category>.<action>`). Per-version availability is the
  * closed {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS}
  * + {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} +
@@ -78,6 +79,10 @@ export const REMOTE_METHOD_CATALOG = {
     'override.get': { category: REMOTE_CATEGORIES.OVERRIDE },
     'override.set': { category: REMOTE_CATEGORIES.OVERRIDE },
     'override.reset': { category: REMOTE_CATEGORIES.OVERRIDE },
+    // pre-alpha3 PR4 ROUND 5 (FIX-2b): the human/operator permission mutation
+    // lane (the durable permission overlay's grant/revoke through the ONE
+    // governance mutation authority; v7-only, closed field set in params.ts).
+    'override.mutatePermission': { category: REMOTE_CATEGORIES.OVERRIDE },
     'policyState.get': { category: REMOTE_CATEGORIES.POLICY_STATE },
     'policyState.set': { category: REMOTE_CATEGORIES.POLICY_STATE },
     'compatibility.get': { category: REMOTE_CATEGORIES.COMPATIBILITY },
@@ -169,6 +174,13 @@ export const REMOTE_V5_ONLY_METHODS = ['team.prepareOrdinaryOpen'];
  */
 export const REMOTE_V6_ONLY_METHODS = ['team.getReadState'];
 /**
+ * PR4 ROUND 5 (FIX-2b): the v7-only methods — the human-facing permission
+ * grant/revoke entry over the ONE governance mutation authority. v<7
+ * requests to it are the typed `method-version-unsupported` rejection (the
+ * same availability machinery as every prior version-only method).
+ */
+export const REMOTE_V7_ONLY_METHODS = ['override.mutatePermission'];
+/**
  * Is `method` a catalog method available in remote contract `version`?
  *
  * This is the version-aware membership check the version-aware param
@@ -192,29 +204,37 @@ export function isRemoteMethodAvailableInVersion(method, version) {
             !REMOTE_V3_ONLY_METHODS.includes(method) &&
             !REMOTE_V4_ONLY_METHODS.includes(method) &&
             !REMOTE_V5_ONLY_METHODS.includes(method) &&
-            !REMOTE_V6_ONLY_METHODS.includes(method));
+            !REMOTE_V6_ONLY_METHODS.includes(method) &&
+            !REMOTE_V7_ONLY_METHODS.includes(method));
     }
     if (version === 2) {
         return (!REMOTE_V3_ONLY_METHODS.includes(method) &&
             !REMOTE_V4_ONLY_METHODS.includes(method) &&
             !REMOTE_V5_ONLY_METHODS.includes(method) &&
-            !REMOTE_V6_ONLY_METHODS.includes(method));
+            !REMOTE_V6_ONLY_METHODS.includes(method) &&
+            !REMOTE_V7_ONLY_METHODS.includes(method));
     }
     if (version === 3) {
         return (!REMOTE_V4_ONLY_METHODS.includes(method) &&
             !REMOTE_V5_ONLY_METHODS.includes(method) &&
-            !REMOTE_V6_ONLY_METHODS.includes(method));
+            !REMOTE_V6_ONLY_METHODS.includes(method) &&
+            !REMOTE_V7_ONLY_METHODS.includes(method));
     }
     if (version === 4) {
-        return !REMOTE_V5_ONLY_METHODS.includes(method) && !REMOTE_V6_ONLY_METHODS.includes(method);
+        return (!REMOTE_V5_ONLY_METHODS.includes(method) &&
+            !REMOTE_V6_ONLY_METHODS.includes(method) &&
+            !REMOTE_V7_ONLY_METHODS.includes(method));
     }
     if (version === 5) {
-        return !REMOTE_V6_ONLY_METHODS.includes(method);
+        return (!REMOTE_V6_ONLY_METHODS.includes(method) && !REMOTE_V7_ONLY_METHODS.includes(method));
     }
-    // version === 6 / 7: every v1/v2/v3/v4/v5 method plus the v6-only
-    // methods (the v7 bump adds NO method — its version-aware surface is
-    // the `override.set` / `override.reset` closed field sets in
-    // `params.ts`).
+    if (version === 6) {
+        return !REMOTE_V7_ONLY_METHODS.includes(method);
+    }
+    // version === 7: every v1..v6 method, the v6-only methods, and the
+    // PR4-round-5 v7-only `override.mutatePermission` (the v7 bump's other
+    // version-aware surface is the `override.set` / `override.reset` closed
+    // field sets in `params.ts`).
     return true;
 }
 /**

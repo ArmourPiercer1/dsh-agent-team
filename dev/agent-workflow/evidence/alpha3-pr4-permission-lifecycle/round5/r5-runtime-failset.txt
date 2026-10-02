@@ -1,0 +1,18 @@
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 
+     × D1-1 create: mount exactly once for the ROOT (configured rootPresetId) and once for the MEMBER (configured memberPresetId) 
+     × D1-6 the thirteen team_* tools are still registered on the member AND root rows (no regression; the mount adds no tools) 
+     × D2-1 create phase: root + seeded member receive exactly the thirteen real team tools (same objects, stack order; C1 adds the pending-list tool; the archive-member round adds team_archive_member) 
+     × D2-2 resume phase: a cold-root restart re-registers the thirteen tools on the resumed leader 
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 
+     × D4-1 create/resume setup registers exactly the thirteen team tools on boot root (C1 adds the pending-list tool; the archive-member round adds team_archive_member), boot-root member, and second root N 
+     × D4-6 the cold resume re-registers the thirteen tools on N under its own root and keeps the context block 
+     × five activated results, five COMMITTED operations, five members, five child Sessions 
+     × S4: the closed catalog carries no AGENT-side decision method — the handoff category is exactly prepare + create (versioned union 9/29: 23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only) 
+     × T1.1 create phase: A01-A29 assembled + reachable, 12 tools, seeded world (C1 adds the pending-list tool) 
+       × the leader receives the FULL thirteen-tool catalog (no selection) 

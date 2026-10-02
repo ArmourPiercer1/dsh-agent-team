@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts (17 tests | 2 failed | 15 skipped) 38ms
+     ↓ the LEADER resolves LIVE for a decision over the real TeamSession (no member row exists for the leader — v2 design)
+     ↓ member semantics unchanged: a ghost instance still refuses INSTANCE_UNKNOWN
+     ↓ a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1)
+     ↓ NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing
+     ↓ UNKNOWN static facts refuse EFFECT_CONTEXT_UNAVAILABLE (never a guessed baseline)
+     ↓ a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+     ↓ store-open failure at apply(): typed startup failure, never a warn-only boot (BLOCK-5, fail-open closed)
+     ↓ NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning
+     ↓ a persisted overlay DENY beats the template ALLOW through the real glue pipeline
+     ↓ R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+     ↓ R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+     ↓ R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+     ↓ R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working
+     ↓ R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+     ↓ R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+     × R5-tool — the REAL team_grant_permission/team_revoke_permission surface: grant commits → decision ALLOW; revoke → decision DENY again (Leader gate + server-side canonicalization) 27ms
+     × R5-rpc — the REAL remote method override.mutatePermission (v7-only): operator grant → decision ALLOW; revoke → DENY; member-caller authority refuses typed 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-tool — the REAL team_grant_permission/team_revoke_permission surface: grant commits → decision ALLOW; revoke → decision DENY again (Leader gate + server-side canonicalization)
+AssertionError: tool grant failed: {"status":"rejected","code":"PERMISSION_EFFECT_CONTEXT_UNAVAILABLE","message":"team-tools: team_grant_permission refused typed (the effective before/after of at least one affected region cannot be decided without the missing context (1 region(s)) — zero write (problem: effect-context-unavailable)) — zero write"}: expected 'rejected' to be 'permission-mutated' // Object.is equality
+
+Expected: "permission-mutated"
+Received: "rejected"
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:1670:79
+    1668|         { agent: { id: 'agent-of-the-leader' } },
+    1669|       )
+    1670|       expect(granted.status, `tool grant failed: ${JSON.stringify(gran…
+       |                                                                               ^
+    1671|       expect(granted.changed).toBe(true)
+    1672|       // The DURABLE SNAPSHOT proves the canonical key landed at the m…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-rpc — the REAL remote method override.mutatePermission (v7-only): operator grant → decision ALLOW; revoke → DENY; member-caller authority refuses typed
+AssertionError: expected [] to include '/srv/workspace/dsh-plugins/dsh-agent-…'
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:1866:22
+    1864|         (r) => r.matcher.resource,
+    1865|       )
+    1866|       expect(landed).toContain(openKey)
+       |                      ^
+    1867|       // THE NEXT PRE-EXECUTE DECISION: ALLOW through the production l…
+    1868|       const allowed = await plane.decisions.decide({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 15 skipped (17)
+   Start at  00:13:58
+   Duration  1.24s (transform 883ms, setup 0ms, import 1.11s, tests 38ms, environment 0ms)
+

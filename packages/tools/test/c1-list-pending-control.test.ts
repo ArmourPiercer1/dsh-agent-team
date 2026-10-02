@@ -315,10 +315,10 @@ describe('team_list_pending_control (C1) — the Leader pending-approval discove
   it('is registered as the 12th closed team tool', () => {
     const names = S.env.tools.map((t) => t.name)
     expect(names).toContain('team_list_pending_control')
-    // The catalog is now thirteen: the archive-member round (2026-09-21)
-    // appends team_archive_member as the 13th; C1's tool keeps its 12th
-    // registration position.
-    expect(names).toHaveLength(13)
+    // The catalog grew: archive-member round → 13; PR4 round 5 appends
+    // team_grant_permission + team_revoke_permission → 15. C1's tool keeps
+    // its 12th registration position.
+    expect(names).toHaveLength(15)
   })
 
   it('case 1: Leader + zero pending -> the empty list (count 0, not truncated)', () => {

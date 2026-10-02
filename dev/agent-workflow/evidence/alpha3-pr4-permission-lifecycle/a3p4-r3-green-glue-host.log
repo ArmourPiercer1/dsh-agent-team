@@ -1,0 +1,87 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ✓ test/a2c5-read-fingerprint.test.ts (10 tests) 4ms
+ ✓ test/a6a-production-wiring.test.ts (52 tests) 8ms
+ ✓ test/a2c4-external-lastmile.test.ts (11 tests) 5ms
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: bootPhase must be "create", "resume" or "create-or-open"
+    at fail (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/src/plugin/host.ts:588:11)
+    at validateTeamPluginConfig (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/src/plugin/host.ts:595:97)
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/src/plugin/host.ts:1476:29)
+    at Module.apply (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/src/plugin/host.ts:2661:46)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/test/p8s5a-production-assembly.test.ts:709:16
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/test/p8s5a-production-assembly.test.ts:697:13
+    at VitestModuleEvaluator._runInlinedModule (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "agents" public service is absent from the plugin context
+    at bootstrap (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/src/plugin/host.ts:1483:13)
+    at Module.apply (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/src/plugin/host.ts:2661:46)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/test/p8s5a-production-assembly.test.ts:736:16
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime/test/p8s5a-production-assembly.test.ts:697:13
+    at VitestModuleEvaluator._runInlinedModule (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ test/p8s5a-production-assembly.test.ts (7 tests) 3ms
+
+ Test Files  4 passed (4)
+      Tests  80 passed (80)
+   Start at  23:03:06
+   Duration  1.38s (transform 2.74s, setup 0ms, import 4.19s, tests 20ms, environment 0ms)
+

@@ -112,6 +112,14 @@ import { readCanonicalSourceSurface, summarizeSourceSurface, } from './handoff-s
 import { createProjectionService } from '../../projection/index.js';
 import { createTeamTools } from '../../../tools/src/index.js';
 import { createGovernanceMutationService } from '../../governance/index.js';
+// pre-alpha3 PR4 (plan "PR4: Grant/Revoke/Lifecycle", production entry
+// wiring): the production PERMISSION PLANE assembly (the overlay port's
+// lane deps + the two lifecycle lanes). The root owns the wiring only —
+// the durable write stays inside `mutatePermission` (ADR §2) and the
+// effective answer stays inside the merged read plane (ADR §3).
+import { createMemberLifecycleReader, createPermissionGovernanceLane, createTeamPermissionLanes, } from './permission-plane.js';
+import { assertPermissionMutationTarget } from '../../permission-lifecycle/mutation-lane.js';
+import { canonicalizeShellOperation } from '../../operation-permission/canonical-operation.js';
 import { createFailClosedOverlayProxy, createProjectionLiveOverlaySeam, createRemoteHandlerRegistrationSeam, createRemoteQueryCommandCompletionSeam, createServerPrincipalDerivationSeam, } from './seams.js';
 import { createTeamDomainReadPort } from './projection-source.js';
 import { createEffectiveConfigView } from './effective-config-view.js';
@@ -314,7 +322,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionEnvelope, permissionStaticLayers, permissionCanonicalize, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1772,6 +1780,30 @@ export function createTeamProductionRoot(params) {
     // ./durable-mutation-store.js).
     const durableMutation = createDurableMutationStore(createEphemeralMutationStore(), repos, rootSid, now);
     const mutationStore = durableMutation.store;
+    // --- pre-alpha3 PR4 the permission lane of the ONE governance authority --
+    // The deps of `mutatePermission` (PR3): the PR1 persistence-only overlay
+    // port + the runtime containment predicate. Constructed BEFORE the
+    // governance service because the service takes them at construction; the
+    // durable append stays inside the service (ADR §2), and the plane below is
+    // built AFTER it (its write entries need the service).
+    // ROUND 7 (parent BLOCK-1): ONE leader-aware lifecycle reader feeds BOTH
+    // positions of the SAME lifecycle law — the mutation lane's caller-side
+    // pre-check and the governance service's IN-SECTION revalidation (the
+    // post-await position inside the serialized chain). Not two gates.
+    const permissionLifecycleReader = createMemberLifecycleReader(repos.memberInstances, repos.teamSessions);
+    const permissionGovernanceLane = permissionOverlay === undefined
+        ? undefined
+        : createPermissionGovernanceLane({
+            overlay: permissionOverlay,
+            targetGuard: (teamSessionId, memberInstanceId) => assertPermissionMutationTarget(permissionLifecycleReader, teamSessionId, memberInstanceId, 'mutate the permission overlay of'),
+            ...(fsContainsKeys === undefined ? {} : { fsContainsKeys }),
+            // Round 3 (BLOCK-1) / round 4 (addressed-team + X1 ceiling): the
+            // fact readers pass through VERBATIM — this factory neither
+            // synthesizes nor withholds them (absent = the kernel's distinct
+            // UNKNOWN / zero-envelope / no-ceiling postures).
+            ...(permissionStaticLayers === undefined ? {} : { staticLayers: permissionStaticLayers }),
+            ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
+        });
     const mutation = {
         // R2-1: the durable-backed store is exposed on the root surface (an
         // additive read-side seam): the remote policyState surface, the
@@ -1844,9 +1876,107 @@ export function createTeamProductionRoot(params) {
                 ...boundBlueprintFor(root).policyStates.map((state) => state.id),
             ],
             now,
+            // pre-alpha3 PR4: the permission-mutation lane of this SAME authority
+            // (ADR §1/§2 — there is no second writer of the overlay; absent the
+            // port the lane is absent and the method refuses typed).
+            ...(permissionGovernanceLane === undefined
+                ? {}
+                : { permissionLane: permissionGovernanceLane }),
         }),
         resolveDurableModelSelection,
         resolveDurableMcpFacet,
+    };
+    // --- pre-alpha3 PR4 the permission LIFECYCLE planes (plan PR4) ----------
+    // The write entries (grant / revoke / restore) ride `mutation.governance`
+    // and the EXISTING lifecycle service; the decision plane reads the same
+    // overlay authority behind the ADR §8 gate. `restore` threads the ONE
+    // lifecycle path (ARCHIVED -> SETTLED, one durable commit, zero live
+    // contact) — the lane performs no transition of its own and writes no
+    // permission snapshot for a pure restore (a genuine rule change at restore
+    // time is an ordinary PermissionMutation).
+    const permissionPlane = permissionOverlay === undefined
+        ? undefined
+        : createTeamPermissionLanes({
+            governance: mutation.governance,
+            overlay: permissionOverlay,
+            // Round 3 (BLOCK-4): the reader is LEADER-AWARE over the durable
+            // TeamSession row (the control service's authority semantics — the
+            // v2 Leader has NO member row in a real boot); member reads are
+            // byte-identical to the pre-PR4 member-rows-only reader.
+            members: permissionLifecycleReader,
+            lifecycle: {
+                restore: (target) => lifecycleService.restoreMember({
+                    rootSessionId: target.rootSessionId,
+                    instanceId: target.instanceId,
+                }),
+            },
+        });
+    if (permissionPlaneRef !== undefined) {
+        permissionPlaneRef.current = permissionPlane;
+    }
+    // ROUND 7 (parent BLOCK-1/2/3): the ONE entry-side permission surface.
+    // Every production entry (the Leader tools AND the remote router) reaches
+    // the durable overlay ONLY through these closures — the lifecycle gate
+    // rides the shared mutation lane (caller pre-check) + the governance
+    // service's in-section revalidation (wired above), the addressed-root
+    // context flows per-call (never a boot-row capture), and exec scope is
+    // expressed ONLY as a closed structured intent canonicalized to the EXACT
+    // fingerprint here. Entries never check-then-call the governance service
+    // directly; a root without the durable overlay store has NO permission
+    // mutation surface at all (typed refusal, zero write).
+    const permissionEntryUnwired = (what) => {
+        const error = new Error(`permission mutation is unwired on this root (${what}) — zero write`);
+        error.code = 'PERMISSION_MUTATION_NOT_CONFIGURED';
+        return error;
+    };
+    /** Route one entry-level mutation through the SHARED lifecycle mutation
+     *  lane (kind dispatch; the lane strips `kind` and asserts the target
+     *  before the service; the service revalidates in-section). */
+    const permissionLaneMutate = async (mutationArgs) => {
+        const plane = permissionPlane;
+        if (plane === undefined)
+            throw permissionEntryUnwired('no durable permission-overlay store');
+        const kind = mutationArgs['kind'];
+        const { kind: _kind, ...laneArgs } = mutationArgs;
+        const result = kind === 'grant_instance'
+            ? await plane.mutation.grantInstance(laneArgs)
+            : kind === 'revoke_permission'
+                ? await plane.mutation.revoke(laneArgs)
+                : (() => {
+                    const error = new Error(`unsupported permission mutation kind at the entry: ${JSON.stringify(kind)}`);
+                    error.code = 'PERMISSION_MUTATION_MALFORMED';
+                    throw error;
+                })();
+        return (result ?? {});
+    };
+    /** The addressed-team TARGET-member effective workspace (durable member
+     *  row, else the durable TeamSession default — the FIX-3 doctrine; NO
+     *  durable row → refusal, never the acting/boot row's tail). */
+    const permissionEffectiveWorkspace = (teamSessionId, memberInstanceId) => {
+        const workspace = repos.memberInstances.get(teamSessionId, memberInstanceId)?.workspace ??
+            repos.teamSessions.get(teamSessionId)?.defaultWorkspace;
+        if (typeof workspace !== 'string' || workspace.length === 0) {
+            throw new Error('permission rule canonicalization: the addressed team/member has no durable effective workspace — refusing, zero write');
+        }
+        return workspace;
+    };
+    /** ROUND 7 (parent item 3): canonicalize a CLOSED structured exec intent
+     *  into the EXACT execution fingerprint the pre-execute plane computes —
+     *  the SAME `canonicalizeShellOperation` (operation-permission) the live
+     *  adapter runs, with the workdir resolved at the TARGET member's durable
+     *  effective workspace (the same basis the live member's session cwd is
+     *  seeded from). The GMS-internal key stays the exact `sha256:` value. */
+    const permissionExecCanonicalize = async (teamSessionId, memberInstanceId, intent) => {
+        if (permissionCanonicalize === undefined) {
+            throw new Error('permission exec-intent canonicalization is unwired (no fs provider seam on this root) — refusing, zero write');
+        }
+        const workspace = permissionEffectiveWorkspace(teamSessionId, memberInstanceId);
+        const { tool, ...execArgs } = intent;
+        const operation = await canonicalizeShellOperation(tool, execArgs, async (pathInput) => {
+            const key = await permissionCanonicalize(pathInput, workspace);
+            return { key, display: pathInput, handle: { targetKey: key } };
+        });
+        return operation.fingerprint;
     };
     // --- A30 the projection service (durable source + the S6 overlay seam) ---------------------------
     const seams = {
@@ -2039,6 +2169,18 @@ export function createTeamProductionRoot(params) {
         // routes override.set / override.reset / policyState.set through it
         // (serialized on the shared chain, committed before the ack).
         governance: mutation.governance,
+        // PR4 ROUND 5 (FIX-2b): the human/operator permission grant/revoke lane
+        // (remote method `override.mutatePermission`, v7-only) — the SAME
+        // governance service the Leader tool and the in-process entries reach
+        // (ONE authority; the caller-derived authority rides the ActionCaller),
+        // sharing the ONE server-side canonicalizer seam.
+        permission: {
+            mutatePermission: permissionLaneMutate,
+            canonicalizeExecIntent: permissionExecCanonicalize,
+        },
+        ...(permissionCanonicalize === undefined
+            ? {}
+            : { permissionCanonicalize }),
         // pre-alpha3 PR-B (plan §B.2): the remote PolicyState read surface
         // reads the DURABLE transition rows (the ledger) directly — the
         // commit-order read the committed-state derivation consumes (the
@@ -2183,13 +2325,33 @@ export function createTeamProductionRoot(params) {
     seams.remoteHandlerRegistration.install(remoteSurfaces.registration);
     // --- A04 the intent surface (the remote method catalog) --------------------------------------------
     const intent = { catalog: REMOTE_METHOD_CATALOG };
-    // --- the thirteen Team tools (the glue registers them on the agent setup; C1 adds the pending-list tool; the archive-member round adds team_archive_member) -------------------------------------
+    // --- the Team tool set (the glue registers them on the agent setup; C1 added the pending-list tool; the archive-member round added team_archive_member; PR4 ROUND 5 adds team_grant_permission + team_revoke_permission) ----
     const tools = createTeamTools({
         teamRuntime: runtime,
         controlService: control,
         messaging,
         activity,
         resolveCaller: live.resolveCaller,
+        // PR4 ROUND 5 (FIX-2a): the permission grant/revoke entries over the
+        // ONE governance mutation authority. Server-side everything: the
+        // authority rides the CALLER identity the host already resolved (the
+        // tool's Leader gate), rule PATHS canonicalize at the TARGET member's
+        // durable effective workspace through the injected provider, and the
+        // mutation itself is the same service every other entry uses.
+        permission: {
+            mutatePermission: permissionLaneMutate,
+            // ROUND 7 (parent BLOCK-2): the TEAM context is the per-call ADDRESSED
+            // ctx.rootSessionId the tool passes through this seam — never the boot
+            // row's capture. Canonicalization and the mutation below share ONE
+            // trusted addressed context per call.
+            async canonicalizeFile(teamSessionId, targetInstanceId, path) {
+                if (permissionCanonicalize === undefined) {
+                    throw new Error('team_grant_permission: file-rule canonicalization is unwired (no fs provider seam on this root) — refusing, zero write');
+                }
+                return permissionCanonicalize(path, permissionEffectiveWorkspace(teamSessionId, targetInstanceId));
+            },
+            canonicalizeExecIntent: permissionExecCanonicalize,
+        },
     });
     teamToolsRef.current = tools;
     // --- boot (create phase: fixture seed OR real fresh-root create + live
@@ -2516,6 +2678,14 @@ export function createTeamProductionRoot(params) {
         runtime,
         lifecycle: { service: lifecycleService, commit: lifecycleCommit },
         mutation,
+        // pre-alpha3 PR4 — the assembled permission plane (undefined when the
+        // overlay port was not injected; see TeamProductionRoot.permissionPlane).
+        permissionPlane,
+        // ROUND 7 (R-B wiring requirement): the ROOT-ASSEMBLED remote dispatcher
+        // (the same ports/principal basis the mounted registration uses) so the
+        // production-entry regressions exercise the real router → real root
+        // closures, not a hand-built options object.
+        remoteDispatcher: remoteSurfaces.dispatcher,
         messaging,
         control,
         activity,

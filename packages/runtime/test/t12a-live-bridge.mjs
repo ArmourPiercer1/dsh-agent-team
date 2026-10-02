@@ -1399,6 +1399,14 @@ export async function createLiveWorld(options = {}) {
     teamToolsRef,
     controlServiceRef,
     now,
+    // PR4 round 3 (BLOCK-5, the t12a blind spot): the shared permission-
+    // plane reference pass-through — the production host hands the glue
+    // this same construction-time object; a test fills `.current` with the
+    // assembled plane and drives the REAL decision seam through the REAL
+    // glue. Absent = the glue's pre-PR4 posture (no seam installed).
+    ...(options.permissionPlaneRef !== undefined
+      ? { permissionPlaneRef: options.permissionPlaneRef }
+      : {}),
     ...(options.subagents !== undefined ? { subagents: options.subagents } : {}),
     // F15 (plan §11): the durable capability-runtime telemetry hook —
     // the glue's `capabilityTelemetry` dep (a NO-OP when absent: a test

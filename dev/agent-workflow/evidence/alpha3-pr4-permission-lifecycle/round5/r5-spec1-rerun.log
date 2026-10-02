@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ✓ test/a3p4-r4-authority-binding.test.ts (13 tests) 39ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  00:20:53
+   Duration  451ms (transform 252ms, setup 0ms, import 323ms, tests 39ms, environment 0ms)
+

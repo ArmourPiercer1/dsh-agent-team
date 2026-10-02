@@ -45,17 +45,26 @@ import { LedgerRepository } from './ledger.js';
 import { MemberInstancesRepository } from './member-instances.js';
 import { OperationsRepository } from './operations.js';
 import { OverridesRepository } from './overrides.js';
+import { PermissionOverlayRepository } from './permission-overlays.js';
 import { SchemaMetaRepository } from './schema-meta.js';
 import { SessionBindingsRepository } from './session-bindings.js';
 import { TeamSessionsRepository } from './team-sessions.js';
 /**
  * The store repositories of an open TeamDomain.
  *
- * The tenth store (`permission_overlays`, Alpha.3 PR1) is intentionally NOT
- * a member of this facade: its only consumer is the Alpha.3
- * GovernanceMutationService (PR3), and PR1 ships the persistence layer with
- * ZERO production-path imports of it. Its repository takes the same
- * `StorageDomainHandle` as these nine (`new PermissionOverlayRepository(handle)`).
+ * The tenth store (`permission_overlays`, Alpha.3 PR1) joined this facade at
+ * the PR4 round-3 production wiring. Its repository always took the SAME
+ * `StorageDomainHandle` as the nine baseline stores — and the upstream
+ * facility ENFORCES single-open-per-domain-name (an `already-open` rejection
+ * on a second handle), so the facade handle is the ONE legal home for it in
+ * production: a consumer that opened its own second handle (the pre-fix
+ * `openPermissionOverlayStore(seam)` on an already-open seam) always failed
+ * there and silently lost the durable permission authority. The store keeps
+ * its own stamp bootstrap and append-only semantics unchanged; the facade's
+ * `close()` (the handle's close) remains the single release point.
+ * (The documented team-domain ↔ permission-overlays ESM cycle is call-time
+ * only: each module uses the other's exports inside functions, never during
+ * module evaluation.)
  */
 export interface TeamDomainRepositories {
     /** Per-store schema stamps (L2). */
@@ -76,6 +85,8 @@ export interface TeamDomainRepositories {
     readonly ledger: LedgerRepository;
     /** The durable immutable registry of frozen Blueprint snapshots (v2). */
     readonly blueprintRegistry: BlueprintRegistryRepository;
+    /** The durable append-only permission overlay authority (v2, PR4 wiring). */
+    readonly permissionOverlays: PermissionOverlayRepository;
 }
 /**
  * One open TeamDomain: the durable sidecar of the Team control-plane.

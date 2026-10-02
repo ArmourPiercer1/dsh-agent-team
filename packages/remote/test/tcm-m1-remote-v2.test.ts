@@ -40,6 +40,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createRemoteDispatcher,
   isRemoteMethodAvailableInVersion,
+  REMOTE_V7_ONLY_METHODS,
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
   REMOTE_CONTRACT_VERSION_V3,
@@ -577,8 +578,8 @@ describe('TCM M1: catalog facts (versioned union, closed)', () => {
     expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7])
   })
 
-  it('the closed catalog is the versioned union: 29 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(29)
+  it('the closed catalog is the versioned union: 30 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 1 v7-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(30)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     // the D1 (Team D1-D6 repair v2) v3-only closed set
     expect([...REMOTE_V3_ONLY_METHODS].sort()).toEqual(['team.ensureRootLive', 'team.listRoots'])
@@ -589,6 +590,13 @@ describe('TCM M1: catalog facts (versioned union, closed)', () => {
     expect([...REMOTE_V5_ONLY_METHODS].sort()).toEqual(['team.prepareOrdinaryOpen'])
     // the team-view-sync-complete (Phase 2) v6-only closed set
     expect([...REMOTE_V6_ONLY_METHODS].sort()).toEqual(['team.getReadState'])
+    // PR4 ROUND 5 (FIX-2b) v7-only closed set — the human/operator
+    // permission grant/revoke lane; unavailable (typed
+    // method-version-unsupported) at every version below 7.
+    expect([...REMOTE_V7_ONLY_METHODS].sort()).toEqual(['override.mutatePermission'])
+    expect(isRemoteMethodAvailableInVersion('override.mutatePermission', 7)).toBe(true)
+    expect(isRemoteMethodAvailableInVersion('override.mutatePermission', 6)).toBe(false)
+    expect(isRemoteMethodAvailableInVersion('override.mutatePermission', 1)).toBe(false)
   })
 
   it('the closed field sets are frozen per version', () => {

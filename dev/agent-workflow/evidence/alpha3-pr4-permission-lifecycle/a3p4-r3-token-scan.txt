@@ -1,0 +1,14 @@
+# Round-3 staged-diff secret scan (RAW output below, then annotation)
+
+$ git diff --cached | grep -inE "api[_-]?key|secret|passwd|password|ghp_|AKIA|-----BEGIN" | head -3
+178:+| 11 | `git diff --cached \| grep -icE 'api[_-]?key\|secret\|passwd\|password\|ghp_\|AKIA\|-----BEGIN'` | 1 (no match) | `0` | recorded here |
+(exit 0)
+
+$ git diff --cached | grep -icE  ...   -> 1
+
+# The ONE hit is the SELF-REFERENTIAL documentation line of this evidence
+# directory README table (round-1 scan description, added again in the round-3
+# README update). Excluding the evidence README itself, the staged source/test
+# diff matches ZERO:
+0
+(grep exit 1 — 1 means no match)

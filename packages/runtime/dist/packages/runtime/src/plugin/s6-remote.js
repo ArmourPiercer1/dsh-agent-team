@@ -1561,6 +1561,86 @@ export function createS6RemotePorts(options) {
                     record['noChange'] = true;
                 return record;
             },
+            async mutatePermission(request, caller) {
+                const root = assertBoundRoot('override.mutatePermission', request.teamSessionId);
+                // THE server-side authority derivation (the override-lane mirror):
+                // a bound human session answers {kind:'operator'} (the PR3-pinned
+                // legacy explicit-capability admission — operator mutations are not
+                // envelope-gated), the Leader lane answers {kind:'leader'} (full
+                // carrier gate), a MEMBER caller answers a member authority the
+                // governance service rejects typed (members never mutate).
+                // ROUND 8 (BLOCK-5): this documented intent is now ACTUALLY the
+                // behavior — the method joined MUTATION_METHODS, so `caller` is the
+                // claim DERIVED and VALIDATED by s6-principal's deriveMutationActor
+                // (durable leader row / owned durable member rows / addressed-team
+                // human binding), not the old host-operator default that made every
+                // caller an operator and the claim inert.
+                const authority = authorityOf(caller, leaderInstanceId);
+                const permission = options.permission;
+                const canonicalize = options.permissionCanonicalize;
+                if (permission === undefined) {
+                    throw new Error('override.mutatePermission: the governance permission lane is unwired on this surface — zero write');
+                }
+                // SERVER-SIDE canonicalization at the TARGET member's effective
+                // workspace (durable member row, else the durable TeamSession
+                // default — the FIX-3 doctrine; NO durable row → refusal, never the
+                // acting row's tail).
+                const rules = [];
+                for (const rule of request.rules) {
+                    if (rule.matcher.kind === 'exec') {
+                        // ROUND 7 (parent item 3): the CLOSED structured exec intent is
+                        // canonicalized SERVER-SIDE into the EXACT execution fingerprint
+                        // (no client-supplied fingerprint ever reaches the overlay).
+                        if (permission.canonicalizeExecIntent === undefined) {
+                            throw new Error('override.mutatePermission: exec-intent canonicalization is unwired (no exec canonicalizer seam) — refusing, zero write');
+                        }
+                        const resource = await permission.canonicalizeExecIntent(root, request.memberInstanceId, rule.matcher.intent);
+                        rules.push({
+                            operationClass: rule.operationClass,
+                            matcher: { kind: 'fingerprint', resource },
+                            effect: rule.effect,
+                        });
+                        continue;
+                    }
+                    // File matcher: canonicalize at the ADDRESSED root's TARGET member
+                    // effective workspace (durable member row, else the durable
+                    // TeamSession default — the FIX-3 doctrine; NO durable row ->
+                    // refusal, never the acting row's tail). `root` is the REQUEST's
+                    // bound session (assertBoundRoot is per-call addressed).
+                    if (canonicalize === undefined) {
+                        throw new Error('override.mutatePermission: file-rule canonicalization is unwired (no fs provider seam) — refusing, zero write');
+                    }
+                    const workspace = options.repositories.memberInstances.get(root, request.memberInstanceId)?.workspace ??
+                        options.repositories.teamSessions.get(root)?.defaultWorkspace;
+                    if (typeof workspace !== 'string' || workspace.length === 0) {
+                        throw new Error('override.mutatePermission: the addressed team/member has no durable effective workspace — refusing, zero write');
+                    }
+                    const resource = await canonicalize(rule.matcher.value, workspace);
+                    rules.push({
+                        operationClass: rule.operationClass,
+                        matcher: { kind: rule.matcher.kind, resource },
+                        effect: rule.effect,
+                    });
+                }
+                const result = (await permission.mutatePermission({
+                    authority,
+                    teamSessionId: root,
+                    memberInstanceId: request.memberInstanceId,
+                    kind: request.kind,
+                    mutationId: request.mutationId,
+                    // ROUND 7 (parent item 4): the wire REQUIRES reason (option (a):
+                    // an honest contract beats a fabricated default under PR1
+                    // provenance semantics) — the propagation is unconditional.
+                    reason: request.reason,
+                    rules,
+                }));
+                const safe = { changed: result['changed'] === true };
+                if (typeof result['code'] === 'string')
+                    safe['code'] = result['code'];
+                if (typeof result['reason'] === 'string')
+                    safe['reason'] = result['reason'];
+                return safe;
+            },
             async reset(request, caller) {
                 const root = assertBoundRoot('override.reset', request.teamSessionId);
                 const authority = authorityOf(caller, leaderInstanceId);
@@ -2144,6 +2224,22 @@ function buildS6CategoryHandlers(ports, principal) {
                     };
                     return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.override.reset(request, caller)).then((result) => ({ data: { removed: result.removed } }));
                 }
+                case 'override.mutatePermission': {
+                    // PR4 ROUND 5 (FIX-2b): v7-only (the availability check in the
+                    // frozen param-parse chain already rejected v<7 envelopes).
+                    const mutateParams = params;
+                    const request = {
+                        teamSessionId: mutateParams.teamSessionId,
+                        actorClaim: mutateParams.actor,
+                        memberInstanceId: mutateParams.memberInstanceId,
+                        kind: mutateParams.kind,
+                        mutationId: mutateParams.mutationId,
+                        // ROUND 7 (item 4): REQUIRED provenance end to end — no spread.
+                        reason: mutateParams.reason,
+                        rules: mutateParams.rules,
+                    };
+                    return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.override.mutatePermission(request, caller)).then((result) => ({ data: result }));
+                }
                 default:
                     return Promise.reject(new Error(`override handler routed an unknown method: ${method}`));
             }
@@ -2538,6 +2634,7 @@ export function createS6RemoteSurfaces(options) {
     return {
         registration: createS6RemoteRegistration(ports, options.principal, principalContext, options.readiness),
         completion,
+        dispatcher,
     };
 }
 //# sourceMappingURL=s6-remote.js.map

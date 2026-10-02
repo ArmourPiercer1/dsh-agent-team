@@ -435,6 +435,45 @@ export interface AgentPreExecuteCtx {
 // ---------------------------------------------------------------------------
 
 /**
+ * PR4 (pre-alpha3 permission lifecycle) — ONE answer of the caller-owned
+ * DYNAMIC decision seam.
+ *
+ * `effect` is the EFFECTIVE effect of this round (the seam already folded
+ * THIS decision's static lanes in — it never re-decides precedence inside
+ * the adapter); `refused` is a TYPED refusal of the read plane (an ARCHIVED
+ * or DISPOSED instance, an overlay the carrier grammar cannot decode, an
+ * exec region the kernel could not answer): the adapter fails closed on it,
+ * exactly like a canonicalization failure, and NEVER falls through to the
+ * static answer.
+ */
+export type DynamicPermissionDecision =
+  | {
+      readonly effect: 'allow' | 'ask' | 'deny'
+      /** Which merged plane answered (`'file'` / `'exec'`). */
+      readonly plane: string
+      /** The layer that answered (`'overlay' | 'template' | 'blueprint' | null`). */
+      readonly winningLayer: string | null
+      /** The overlay generation that answered (`null` = no overlay row yet). */
+      readonly overlayGeneration: number | null
+      /** A deterministic one-line explanation (observation only). */
+      readonly explanation: string
+      /**
+       * PR4 round 3 (BLOCK-3) — the merged answer's OWN provenance class:
+       * `'rule'` = an explicit rule answered (overlay OR a template/blueprint
+       * lane rule); `'default'` = no rule matched and the layer DEFAULT
+       * answered. The adapter routes the artifact-grant floor on THIS
+       * (a merged DEFAULT deny keeps flowing the floor — the strict-read
+       * core-spill use case survives the plane being wired; an EXPLICIT
+       * deny never does — a grant is a floor, never a ceiling override).
+       * Absent = a pre-round-3 producer: treated as `'rule'` (conservative
+       * — byte-identical to the pre-fix posture where NO dynamic deny ever
+       * reached the floor).
+       */
+      readonly source?: 'rule' | 'default'
+    }
+  | { readonly refused: true; readonly code: string; readonly reason: string }
+
+/**
  * One installation of the parameter-permission pre-execute listener on
  * one agent ctx (the A6 glue builds these per agent lifecycle from the
  * bound template, the session cwd, and the team's control service).
@@ -516,6 +555,48 @@ export interface InstallParameterPermissionListenerParams {
    * `leader-approval` (the leader decides; the human may stand in)
    * unchanged.
    */
+/**
+ * PR4 (pre-alpha3 permission lifecycle) — the DYNAMIC decision seam,
+ * consulted AFTER the static (template) decision of step (3) and BEFORE the
+ * artifact-grant / approval lanes, so what it reports is what those lanes
+ * see.
+ *
+ * ABSENT (every pre-PR4 installer, every factory world, every existing spec)
+ * the pipeline stays byte-for-byte the frozen one: the seam is additive and
+ * is never consulted when unwired.
+ *
+ * It is NOT a second authority (plan PR4 "no second authority"): the overlay
+ * it reads is the one `GovernanceMutationService.mutatePermission` appends
+ * (ADR §2 — the highest generation is the authority, history is audit-only),
+ * the layer precedence is the merged PR2 assembler's (blueprint < template <
+ * overlay, and within a layer deny > ask > allow), the lifecycle gate is
+ * ADR §8 (ARCHIVED / DISPOSED never execute; a fresh instance has no rows to
+ * inherit), and the exec (fingerprint) plane is the governance kernel's own
+ * pure effective-answer algebra. The adapter contributes NO precedence of
+ * its own: the seam returns the effective effect of the round and the
+ * adapter routes it through the SAME allow / ask / deny lanes the static
+ * decision uses (so the exec dual gate and the approval floor keep applying
+ * on top of it).
+ *
+ * `staticRules` / `staticDefault` are THIS decision's freshly canonicalized
+ * static lanes (the same values the frozen resolver just consumed, H4 —
+ * never cached), so the seam's answer and the static answer are computed
+ * from one set of canonical identities.
+ */
+  readonly resolveDynamicDecision?: (input: {
+    readonly operation: CanonicalOperation
+    /**
+     * PR4 round 3 (INFO-3): THIS decision's freshly canonicalized rules
+     * PASSED THROUGH VERBATIM. The pre-fix `?? { allow: [], ask: [], deny: []
+     * }` fallback claimed DECLARED-NONE where the adapter merely had no
+     * value — a state the decision lane deliberately keeps DISTINCT
+     * (UNKNOWN must never arrive as declared-none). The adapter always
+     * canonicalizes before reaching the seam today; the `undefined` member
+     * exists so no future path can re-fabricate the empty claim.
+     */
+    readonly staticRules: CanonicalRules | undefined
+    readonly staticDefault: 'ask' | 'deny'
+  }) => Promise<DynamicPermissionDecision | undefined>
   readonly execEnvelopeOps?: readonly string[]
   /**
    * Strict-read + Core-spill (implementation guide §9) — the injected
@@ -1075,9 +1156,11 @@ export function installParameterPermissionListener(
     // outcome) or deny (more restrictive) — neither is an escalation;
     // only the deny lane flips. The R2 module doc states the asymmetry.)
     let decision: PermissionDecision
+    let canonicalRules: CanonicalRules | undefined
     try {
-      const { rules: canonicalRules, denyCanonicalizationFailure, denyCanonicalizationCauses } =
+      const { rules, denyCanonicalizationFailure, denyCanonicalizationCauses } =
         await canonicalRulesFor(operation.tool, operation, targetHandles, params.containsTargets)
+      canonicalRules = rules
       if (denyCanonicalizationFailure !== undefined) {
         // The frozen P1-3 reason text (h4/a5a pin the prefix via
         // .includes — it survives A2C-7 verbatim; the subtree paths ride
@@ -1105,7 +1188,7 @@ export function installParameterPermissionListener(
         })
         return { kind: 'deny', reason }
       }
-      decision = resolveOperationPermission(policy, operation, canonicalRules)
+      decision = resolveOperationPermission(policy, operation, rules)
     } catch (error: unknown) {
       // A3 is pure and total over well-formed input; an unexpected throw
       // is a programming fault — fail closed (plan §10.3: deny).
@@ -1131,6 +1214,107 @@ export function installParameterPermissionListener(
           : {}),
       },
     })
+
+    // (3a') PR4 — the DYNAMIC layer (the instance's durable overlay
+    // authority + the ADR §8 lifecycle gate). UNWIRED = the frozen pipeline
+    // continues here unchanged (no extra row, no extra await, no behavior
+    // change). WIRED, three outcomes:
+    //   - `undefined`  — the seam has nothing to say about this instance
+    //                    (no overlay lane configured for it): the static
+    //                    decision stands, exactly as before PR4;
+    //   - `refused`    — the read plane REFUSED (archived / disposed /
+    //                    undecodable overlay / unanswerable exec region):
+    //                    fail closed with the typed reason. Falling back to
+    //                    the static answer would let an archived instance
+    //                    execute what its template allows, which is exactly
+    //                    what ADR §8 forbids;
+    //   - an `effect`  — the EFFECTIVE effect of this round (static layers
+    //                    already folded in by the merged assembler / kernel
+    //                    algebra), which then flows through the SAME allow /
+    //                    ask / deny lanes below — so the exec dual gate, the
+    //                    approval floor and the artifact-grant floor keep
+    //                    their frozen positions on top of it. Round 3:
+    //                    literally true for EVERY effect — a merged DENY no
+    //                    longer short-circuits above; it routes at the
+    //                    single deny site (with the floor's frozen say on
+    //                    DEFAULT denies), which is what makes
+    //                    ask-over-static-deny reach approval and lets the
+    //                    core-spill floor survive the plane being wired.
+    let dynamicEffect: 'allow' | 'ask' | 'deny' | undefined
+    let dynamicSource: 'rule' | 'default' | undefined
+    let dynamicDenyExplanation: string | undefined
+    if (params.resolveDynamicDecision !== undefined) {
+      let dynamic: DynamicPermissionDecision | undefined
+      try {
+        dynamic = await params.resolveDynamicDecision({
+          operation,
+          // The canonical lanes of THIS decision VERBATIM (the same values
+          // the frozen resolver just consumed). Round 3 (INFO-3): NO
+          // fabricated declared-none — an absent value stays absent (UNKNOWN),
+          // which is the decision lane's own typed-refusal input, never a
+          // silently empty rule set.
+          staticRules: canonicalRules,
+          staticDefault: policy.default,
+        })
+      } catch (error: unknown) {
+        observe({
+          stage: 'dynamic-decision-failed',
+          callId,
+          tool: operation.tool,
+          reason: error instanceof Error ? error.message : String(error),
+        })
+        return {
+          kind: 'deny',
+          reason: `permission denied: the dynamic permission decision failed (unexpected read-plane failure: ${
+            error instanceof Error ? error.message : String(error)
+          })`,
+        }
+      }
+      if (dynamic !== undefined && 'refused' in dynamic) {
+        observe({
+          stage: 'dynamic-decision-refused',
+          callId,
+          tool: operation.tool,
+          code: dynamic.code,
+          reason: dynamic.reason,
+        })
+        return { kind: 'deny', reason: `permission denied: ${dynamic.code} — ${dynamic.reason}` }
+      }
+      if (dynamic !== undefined) {
+        dynamicEffect = dynamic.effect
+        dynamicSource = dynamic.source ?? 'rule'
+        dynamicDenyExplanation = dynamic.effect === 'deny' ? dynamic.explanation : undefined
+        observe({
+          stage: 'dynamic-decision',
+          callId,
+          tool: operation.tool,
+          plane: dynamic.plane,
+          decision: dynamic.effect,
+          winningLayer: dynamic.winningLayer,
+          overlayGeneration: dynamic.overlayGeneration,
+          source: dynamicSource,
+          staticDecision: decision.decision,
+          explanation: dynamic.explanation,
+        })
+        // PR4 round 3 (BLOCK-2 + BLOCK-3): NO early return on a dynamic
+        // deny. EVERY answer — allow, ask, deny — flows the SAME routing
+        // below, so the merged effective effect (never the stale static
+        // decision) decides: a merged ASK enters approval (the pre-fix
+        // build denied outright: the approval bypass), a merged DEFAULT
+        // deny still reaches the artifact-grant floor (the pre-fix early
+        // return stranded it), and a merged RULE deny still blocks WITHOUT
+        // consulting the floor (the ceiling stays a ceiling).
+      }
+    }
+    // The SINGLE routing value of the rest of the pipeline: the dynamic
+    // answer when the seam had one (overlay > template — the merged
+    // assembler computed that precedence, the adapter did not), the static
+    // decision otherwise. `effectiveSource` carries the SAME merged
+    // provenance (never the static provenance re-read after a dynamic
+    // answer overrode it — the pre-fix bug class).
+    const effectiveEffect: 'allow' | 'ask' | 'deny' = dynamicEffect ?? decision.decision
+    const effectiveSource: 'rule' | 'default' =
+      dynamicSource ?? (decision.provenance.source === 'default' ? 'default' : 'rule')
 
     // (3b) Strict-read + Core-spill (implementation guide §9,
     // architecture §12) — the ARTIFACT-GRANT lane of the read decision.
@@ -1161,9 +1345,11 @@ export function installParameterPermissionListener(
     // external hard policy); marking + next() follow the frozen
     // allow-path convention (mark only on final-allow paths).
     if (name === 'read' && authorizeArtifactRead !== undefined) {
+      // Round 3: the eligibility reads the MERGED answer's own provenance
+      // (`effectiveSource` — identical to the static provenance whenever no
+      // seam answered, the merged plane's source whenever it did).
       const grantLaneEligible =
-        decision.decision === 'ask' ||
-        (decision.decision === 'deny' && decision.provenance.source === 'default')
+        effectiveEffect === 'ask' || (effectiveEffect === 'deny' && effectiveSource === 'default')
       if (grantLaneEligible && operation.resource.kind === 'file') {
         const rawArguments =
           typeof exec.arguments === 'object' && exec.arguments !== null && !Array.isArray(exec.arguments)
@@ -1217,7 +1403,7 @@ export function installParameterPermissionListener(
       }
     }
 
-    if (decision.decision === 'allow') {
+    if (effectiveEffect === 'allow') {
       // exec-autonomy-contract (user ruling 2026-09-18) — the DUAL
       // GATE: a LEADER exec-class ALLOW (bash / pwsh — the shell class;
       // the leader allow-lane whole-tool rule is the ONLY contract path
@@ -1294,7 +1480,15 @@ export function installParameterPermissionListener(
         return await next()
       }
     }
-    if (decision.decision === 'deny') {
+    if (effectiveEffect === 'deny') {
+      // Round 3 (BLOCK-2): route on the MERGED effect, never the stale
+      // static decision. A deny that ANSWERED (dynamic or static) settles
+      // here — after the floor above has had its frozen say on DEFAULT
+      // denies only; an explicit rule deny (any plane) never got floor
+      // eligibility and blocks now.
+      if (dynamicDenyExplanation !== undefined) {
+        return { kind: 'deny', reason: `permission denied: ${dynamicDenyExplanation}` }
+      }
       const provenance =
         decision.provenance.source === 'rule'
           ? `the template's ${decision.provenance.lane} rule ${decision.provenance.ruleIndex}`

@@ -55,7 +55,8 @@ export interface RemoteMethodSpec {
  * v2-only `team.admitInitialWork` plus the v3-only `team.listRoots` /
  * `team.ensureRootLive` plus the v4-only `team.resolveControl` plus the
  * v5-only `team.prepareOrdinaryOpen` plus the v6-only
- * `team.getReadState` (29 methods total). Key = endpoint = method name
+ * `team.getReadState` plus the v7-only `override.mutatePermission`
+ * (30 methods total; PR4 round 5). Key = endpoint = method name
  * (dotted: `<category>.<action>`). Per-version availability is the
  * closed {@link REMOTE_V2_ONLY_METHODS} + {@link REMOTE_V3_ONLY_METHODS}
  * + {@link REMOTE_V4_ONLY_METHODS} + {@link REMOTE_V5_ONLY_METHODS} +
@@ -122,6 +123,13 @@ export declare const REMOTE_V5_ONLY_METHODS: readonly string[];
  * generation advance. Every v1/v2/v3/v4/v5 method stays available in v6.
  */
 export declare const REMOTE_V6_ONLY_METHODS: readonly string[];
+/**
+ * PR4 ROUND 5 (FIX-2b): the v7-only methods — the human-facing permission
+ * grant/revoke entry over the ONE governance mutation authority. v<7
+ * requests to it are the typed `method-version-unsupported` rejection (the
+ * same availability machinery as every prior version-only method).
+ */
+export declare const REMOTE_V7_ONLY_METHODS: readonly string[];
 /**
  * Is `method` a catalog method available in remote contract `version`?
  *

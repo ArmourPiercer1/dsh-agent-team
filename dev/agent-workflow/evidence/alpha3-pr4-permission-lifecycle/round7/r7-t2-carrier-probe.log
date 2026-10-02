@@ -1,0 +1,12 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+non-declaring doc — projection contains a carrier key? false
+non-declaring doc — contentHash = sha256:4a32f1f23395bc62b450d56472a48a94fae04c0bcd4d28aa9420980c68ed498d
+MINIMAL: carrier insertion effective (text differs)? true
+MINIMAL non-declaring — projection carrier key? false
+MINIMAL declaring — projection carrier key? true
+MINIMAL non-declaring hash = sha256:85cb481d4a863cff14fe6fb306dc6cc2e1d6b234b6bc3e16ef59643db444d5a5
+MINIMAL declaring hash     = sha256:a8d661ccfccdd93d3f03b2437a323c9f24885675cf3e37e9995da3b3cd7fe37d
+DECLARED carrier changes the hash (no leak both ways): true
+leader projection keys (fixture): ["templateId","displayName","description","persona","modelPreference","contextPolicy","capabilities"]
+minimal leader projection keys: ["templateId","displayName","description","persona","modelPreference","contextPolicy","capabilities"]
+minimal carries capabilities key? true

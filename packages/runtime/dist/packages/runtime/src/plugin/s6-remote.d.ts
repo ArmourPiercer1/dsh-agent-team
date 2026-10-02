@@ -197,6 +197,50 @@ export interface S6RemoteAdmissionRequest {
     readonly payload?: RemoteSafeRecord;
 }
 /** The `override.set` request (the structural mirror of the frozen shape). */
+/**
+ * PR4 ROUND 5 (FIX-2b) — `override.mutatePermission` request (v7-only): one
+ * grant/revoke into the durable permission overlay through the ONE
+ * governance mutation authority. NO client-supplied authority: it rides the
+ * host-derived ActionCaller (operator for humans, leader for the Leader
+ * lane); NO client-supplied canonical keys: exact/subtree rule values are
+ * raw paths canonicalized SERVER-SIDE at the TARGET member's effective
+ * workspace (the same doctrine as the team_grant_permission tool).
+ */
+/** The CLOSED structured exec intent (round 7, parent item 3) — structurally
+ *  identical to the remote contract's RemotePermissionExecIntent and the
+ *  tools package's TeamPermissionExecIntent (one shape, three layers,
+ *  independently pinned by each package's parser). */
+export interface S6RemotePermissionExecIntent {
+    readonly tool: 'bash' | 'pwsh';
+    readonly command: string;
+    readonly workdir?: string;
+    readonly run_in_background?: boolean;
+    readonly timeoutMs?: number;
+    readonly sandbox_permissions?: string;
+}
+export interface S6RemotePermissionMutateRequest {
+    readonly teamSessionId: string;
+    readonly memberInstanceId: string;
+    /** The client's actor claim (derivation input only — the port authority
+     *  comes from the derived ActionCaller, never from this field). */
+    readonly actorClaim: unknown;
+    readonly kind: 'grant_instance' | 'revoke_permission';
+    readonly mutationId: string;
+    /** ROUND 7: REQUIRED provenance (the wire contract requires it; the
+     *  governance kernel always did). */
+    readonly reason: string;
+    readonly rules: readonly {
+        readonly operationClass: string;
+        readonly matcher: {
+            readonly kind: 'exact' | 'subtree';
+            readonly value: string;
+        } | {
+            readonly kind: 'exec';
+            readonly intent: S6RemotePermissionExecIntent;
+        };
+        readonly effect: 'allow' | 'ask' | 'deny';
+    }[];
+}
 export interface S6RemoteOverrideSetRequest {
     readonly teamSessionId: string;
     readonly capability: string;
@@ -473,6 +517,10 @@ export interface S6RemoteOverridePort {
     reset(request: S6RemoteOverrideResetRequest, caller: ActionCaller): Promise<{
         readonly removed: boolean;
     }>;
+    /** PR4 ROUND 5 (FIX-2b): the permission grant/revoke lane (v7-only
+     *  `override.mutatePermission`); authority from the host-derived caller,
+     *  file rules canonicalized server-side at the TARGET member basis. */
+    mutatePermission(request: S6RemotePermissionMutateRequest, caller: ActionCaller): Promise<RemoteSafeRecord>;
 }
 /** Port 9/12 — the TeamSession PolicyState over the mutation service (`policyState.*`). */
 export interface S6RemotePolicyStatePort {
@@ -741,6 +789,25 @@ export interface S6RemoteOptions {
      * reset delete) are gone.
      */
     readonly governance: GovernanceMutationService;
+    /**
+     * PR4 ROUND 5 (FIX-2b): the permission mutation lane behind
+     * `override.mutatePermission` — root wires it to the SAME governance
+     * service the Leader tool + the in-process entries use (ONE authority).
+     * Absent = the method refuses typed (zero write).
+     */
+    readonly permission?: {
+        readonly mutatePermission: (mutationArgs: Record<string, unknown>) => Promise<Record<string, unknown>>;
+        /** ROUND 7 (parent item 3): canonicalize a CLOSED structured exec intent
+         *  into the EXACT execution fingerprint (the same canonicalizer the
+         *  pre-execute plane uses). Absent = exec-intent rules refuse typed. */
+        readonly canonicalizeExecIntent?: (teamSessionId: string, targetInstanceId: string, intent: S6RemotePermissionExecIntent) => Promise<string>;
+    };
+    /** PR4 ROUND 5 (FIX-2b): the server-side fs canonicalizer (the same seam
+     *  the authority facts + the grant tool share). Absent = file rules
+     *  refuse typed. (ROUND 7: there is no longer any client-supplied
+     *  fingerprint passthrough — exec scope canonicalizes through
+     *  permission.canonicalizeExecIntent.) */
+    readonly permissionCanonicalize?: (path: string, cwd: string) => Promise<string>;
     /** The mutation store's transition rows (the durable PolicyState read). */
     readonly mutationTransitions: (teamSessionId: string) => readonly PolicyStateTransitionRecord[];
     /** The override record identity source (the durable `overrides` rows). */
@@ -1035,6 +1102,13 @@ export interface S6RemoteSurfaces {
     readonly registration: RemoteHandlerRegistration;
     /** A34 — the completion the `remoteQueryCommandCompletion` seam installs. */
     readonly completion: RemoteQueryCommandCompletion;
+    /**
+     * ROUND 7: the throw-proof dispatcher over the SAME ports/principal basis
+     * the A31 registration mounts — exposed so the production-entry
+     * regressions drive the ROOT-ASSEMBLED router end to end instead of
+     * hand-rebuilding the options object.
+     */
+    readonly dispatcher: ReturnType<typeof createS6RemoteDispatcher>;
 }
 /**
  * Build the complete S6 remote surface set (A31 + A33 + A34) over the
