@@ -1,0 +1,63 @@
+=== run-4 result + controlled cancel (observer FAIL fast-path; the 10-minute cascade was not waited out) ===
+captured_utc=2026-10-01T20:58:08.953Z   world=prereq-2026-10-01T20-57-09   launch_utc=2026-10-01T20:57:09.027Z
+carrier HEAD=a2c3a52f4c4e8a3207d8c23e892233f728a4c1d9 tree=0b7230967dbe548f7a4130376a233e4dbd1b9315
+
+--- exits / cancel ---
+  11-paired-exit.txt=143
+  recorder: paired_exit=143 recorder_end_utc=2026-10-01T20:57:37.065Z
+  cancel-note (see disclosed cosmetic defect at the end):
+    utc=2026-10-01T20:57:36.563Z
+    --- supported abort support in the kit? (read-only grep) ---
+    1844:            if (ctrl.signal.aborted) throw Object.assign(new Error('UI read aborted (AbortSignal)'), { name: 'AbortError', code: 'ABORT_ERR' })
+      hits=0 -> no supported signal/abort seam
+    --- re-verify launch-captured identities, then cancel only those ---
+      pid=876643 startticks_verified=9958979 :: ash /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.scratch-logs/s2o-runner/s2o-paired.sh
+      pid=876658 startticks_verified=9958980 :: ode /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/tests/kits/pr-e-requirem
+      pid=876659 -> gone
+      pid=876659 -> gone
+      pid=876668 -> gone
+      pid=877827 -> gone
+      pid=878933 -> gone
+      pid=881182 -> gone
+      pid=882766 -> gone
+      pid=884611 startticks_verified=9960004 :: home/user/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3182 --no-open
+    --- children first, then the kit root ---
+      SIGTERM -> 884611 (depth-verified owned identity)
+      SIGTERM -> 876658 (depth-verified owned identity)
+      SIGTERM -> 876643 (depth-verified owned identity)
+    --- after cancel ---
+      ports=0 listeners  3080=401
+
+--- kit criteria ledger at cancel (nothing is reported PASS unless the kit itself printed it) ---
+  kit-printed criteria lines: PASS=15 FAIL=0
+  last kit log line: [2026-10-01T20:57:21.508Z] b3a: UI OBSERVE hold — requestId=ctrl-1qsqova0vxd5190f12cvc055 digest=s
+  VERDICT lines printed: 0 (0 = cancelled before verdict)
+  S9: not reached — hold still open at cancel (would have become FAIL UI NOT_RUN at 21:00:1x)
+  ⇒ ledger: scenarios already printed keep their printed verdicts; every scenario after the b3a hold = CANCELLED / NOT_RUN; kit final verdict = NOT_RUN (cancelled). No PASS inferred.
+
+--- observer ---
+  STAGE2_OBSERVER_FAIL S2O_ROOT_ROW_MISSING :: no session-browser row carries data-row-key="session:session-prereq-main-prereq-2026-10-01T20-57-09" even after the bounded fresh-boot activation
+  marker=NOT_RUN   success PNGs=0   failure diagnostic present: s2o-entry-dump.json 
+  token consumed once by the observer's own first goto; access record mode=600, never read or echoed
+
+--- entry diagnostic stages, exactly as measured ---
+   nav           welcome=0 welcomeVisible=false ungrouped=0 expanded=null treeitems=0 rows=0 expectedRoot=false matchKeyAttr=false groupState=absent
+   pre-notice    welcome=1 welcomeVisible=true ungrouped=1 expanded=false treeitems=1 rows=0 expectedRoot=false matchKeyAttr=false groupState=absent
+   post-notice   welcome=0 welcomeVisible=false ungrouped=1 expanded=false treeitems=1 rows=0 expectedRoot=false matchKeyAttr=false groupState=absent
+   pre-group     welcome=0 welcomeVisible=false ungrouped=1 expanded=false treeitems=1 rows=0 expectedRoot=false matchKeyAttr=false groupState=absent
+   post-group    welcome=0 welcomeVisible=false ungrouped=1 expanded=true treeitems=3 rows=2 expectedRoot=false matchKeyAttr=false groupState=absent
+   pre-overflow  welcome=0 welcomeVisible=false ungrouped=1 expanded=true treeitems=3 rows=2 expectedRoot=false matchKeyAttr=false groupState=absent
+  reading (effect-evidenced, not inferred): notice step changed welcomeCount 1->0; group step changed ungroupedExpanded false->true, treeitems 1->3, rows 0->2; only pre-overflow exists (bounded sequence ended there). rowCount=2 while expectedRootPresent=false and matchKeyAttr=false => the two rendered rows are not keyed to the durable rootSessionId. welcomeVisible=true means the matching button is PRESENT, not pixel-verified visible.
+
+--- identity census (recorder v3, 0.5 s simple sampling) ---
+  censuses=17  distinct_pids=9  chrome_lines=0
+  alive_after_cancel=0
+
+--- health after cancel ---
+  listeners all test families=0   3080_listeners=1 GET=401
+  chrome=0  node=0
+  TestUse HEAD=46a7f68b0922371ce7144b668b90e377d8e799f4 porcelain=0
+  carrier tracked-modified=0  launchers=042a5981a093ffe8/dd09c8fdb28d15bf (never edited)
+  worlds retained: 2026-10-01T19-42-45=RETAINED 2026-10-01T20-10-50=RETAINED 2026-10-01T20-33-43=RETAINED 2026-10-01T20-57-09=RETAINED 
+  run dirs: 4 present, deleted=0
+--- DISCLOSED cosmetic defect in .cancel-note: the command text printed there lost its first character ('ash'/'ode') because my sed anchor ':: ' plus 4 skipped one char past the separator. The pid/startticks fields were correct and were the ONLY signalling basis. Not rewritten. ---

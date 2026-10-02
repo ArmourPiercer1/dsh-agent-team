@@ -1,0 +1,139 @@
+{
+  "probe": {
+    "schemaVersion": 1,
+    "environmentFingerprint": "fp-v1:69e3c2ef91c429c9",
+    "status": "OPEN",
+    "requirements": [
+      {
+        "requirementId": "team.mcp.repo",
+        "type": "mcpServer",
+        "complete": true,
+        "outcome": "PASS",
+        "reasonCode": "SATISFIED",
+        "detail": "all 1 required subject(s) available",
+        "unavailableSubjects": [],
+        "mismatchFingerprint": null,
+        "acknowledgement": null
+      },
+      {
+        "requirementId": "team.mcp.leaderreq",
+        "type": "mcpServer",
+        "complete": true,
+        "outcome": "PASS",
+        "reasonCode": "SATISFIED",
+        "detail": "all 1 required subject(s) available",
+        "unavailableSubjects": [],
+        "mismatchFingerprint": null,
+        "acknowledgement": null
+      }
+    ],
+    "counts": {
+      "pass": 2,
+      "warning": 0,
+      "fatal": 0,
+      "unackedWarning": 0,
+      "staleAcknowledgement": 0
+    },
+    "unappliedAcknowledgements": []
+  },
+  "toolOutcome": {
+    "status": "rejected",
+    "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+    "message": "TeamRuntime: the recovery dispatch was denied by the reviewer — zero durable effect (the operation remains blocked)",
+    "details": {
+      "rootSessionId": "session-prf-main-prf-2026-10-01T12-41-15",
+      "status": "BLOCKED_FATAL",
+      "gateReason": "requiredScopeDown",
+      "blockedScopes": [
+        "template:worker"
+      ],
+      "source": "requirement-gate",
+      "controlDecision": "deny",
+      "controlRequestId": "ctrl-1gviwnj0qcmen60922xkp0rj"
+    }
+  },
+  "rejectCode": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+  "decisions": [
+    {
+      "requestId": "ctrl-1gviwnj0qcmen60922xkp0rj",
+      "class": "recovery",
+      "decision": "deny",
+      "resolveStatus": 200,
+      "resolveError": null
+    }
+  ],
+  "pendingSeen": [
+    {
+      "requestId": "ctrl-1gviwnj0qcmen60922xkp0rj",
+      "kind": "user-approval",
+      "correlation": "recovery:rt-g4b-prf-2026-10-01T12-41-15:b49e1f21-aecf-4dbb-ade9-3d70e3a5607f",
+      "toolName": null,
+      "actionName": "delegate",
+      "reviewPayload": {
+        "action": "delegate",
+        "arguments": {
+          "label": "w-g4b",
+          "prompt": "PRREQ_W_g4b_prf-2026-10-01T12-41-15 work unit g4b (nonce prf-2026-10-01T12-41-15)"
+        },
+        "blockedScopes": [
+          "template:worker"
+        ],
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance"
+        },
+        "delegationTemplateId": "worker",
+        "downedCapabilitySubjects": [
+          "mcp_web"
+        ],
+        "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+        "execution": "sync",
+        "reducedAuthority": {
+          "externalHardCeiling": "absolute (never bypassed)",
+          "otherwise": "unchanged (the original permissions apply)",
+          "policy": "reduced original authority (plan §E.9)",
+          "unavailableSubjects": [
+            "mcp_web"
+          ]
+        },
+        "requestToken": "rt-g4b-prf-2026-10-01T12-41-15",
+        "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+        "rootSessionId": "session-prf-main-prf-2026-10-01T12-41-15",
+        "schema": "dsh-agent-team/recovery-dispatch/v1",
+        "subject": {
+          "kind": "template",
+          "templateId": "worker"
+        },
+        "templateId": "worker",
+        "toolName": "delegate"
+      },
+      "reviewPayloadDigest": "sha256:cc92a577b369ee98d27fc9fb5147d17ff93ce448a9a0621992c4c64325b87245",
+      "executionCoupling": "inline"
+    }
+  ],
+  "before": {
+    "members": 0,
+    "incidents": 0
+  },
+  "after": {
+    "members": 0,
+    "incidents": 0
+  },
+  "zeroEffect": true,
+  "webSlots": [
+    {
+      "sessionId": "session-prf-boot-prf-2026-10-01T12-41-15",
+      "mounted": false,
+      "materialization": "pending",
+      "attempts": null,
+      "reason": null
+    },
+    {
+      "sessionId": "session-prf-main-prf-2026-10-01T12-41-15",
+      "mounted": false,
+      "materialization": "failed",
+      "attempts": 1,
+      "reason": "mcp-client(mcp_web): initial connection or tool synchronization failed"
+    }
+  ]
+}

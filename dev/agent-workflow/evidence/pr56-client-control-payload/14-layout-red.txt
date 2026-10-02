@@ -1,0 +1,157 @@
+$ npx vitest run test/pr56-control-panel-payload.client.spec.tsx  (RUN5 LAYOUT FIX — RED capture before the CSS edit: the four STATIC width-budget pins must FAIL on the current stylesheet)
+2026-10-01T21:57:08Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr56-client-panel/packages/client
+
+ ❯ test/pr56-control-panel-payload.client.spec.tsx (31 tests | 4 failed) 126ms
+     ✓ the pending template request renders the detail panel with subject + VISIBLE requestId 28ms
+     ✓ renders the FULL wire digest verbatim, labeled wire-sourced 6ms
+     ✓ renders the FULL reviewPayload as inert text that parses back to the exact reviewed value 6ms
+     ✓ shows the recovery-dispatch/v1 rendering mode and keeps BOTH commands live for a reviewable request 6ms
+     ✓ displays the requestToken VERBATIM (governance correlation token — no name-based masking) 5ms
+     ✓ renders HTML-shaped payload content as INERT TEXT (no element injection) 4ms
+     ✓ v1 with NO digest → explicit cannot-fully-review banner + Allow disabled, Deny enabled 5ms
+     ✓ ACCEPTED LIMITATION — USER OPTION A (pinned): MISSING reviewPayload (recovery correlation) → standard mode, NO banner, payload omitted, Allow ENABLED 4ms
+     ✓ v1 with a CORRUPTED (non-lossless) reviewPayload → omitted + banner + Allow disabled 3ms
+     ✓ the cannot-fully-review banner text renders (en dictionary) 3ms
+     ✓ DEFENSE-IN-DEPTH: digest present + payload absent (non-v1 legacy line) → banner + Allow disabled (classification stays neutral, no v1 claim) 3ms
+     ✓ a LEGACY no-payload instance fact keeps the legacy panel + the labeled compat mode 4ms
+     ✓ a DEFINED template subject without any payload requirement renders the standard mode 3ms
+     ✓ an UNKNOWN subject stays visible in the unsupported mode with Allow disabled (Deny stays) 2ms
+     ✓ a decided non-instance fact leaves no resolve bar (no orphaned pending) 2ms
+     ✓ RULED UNIFORM: a terminal abandon fact leaves no resolve bar and no Allow for ANY subject (instance case, the stock-master defect) 3ms
+     ✓ RULED UNIFORM: a terminal abandon fact closes the S9 template chain too (no resolve bar) 2ms
+     ✓ CRITICAL NEGATIVE (render): NO durable abandon entry → panel stays rendered with Allow ENABLED (a narrated wait-cancel with no durable fact flips nothing) 2ms
+     ✓ reviewPayload NULL renders the inert text "null" — panel survives, standard-family mode, no banner, Allow ENABLED 4ms
+     ✓ reviewPayload number renders as inert JSON text (42), never classified v1, Allow ENABLED 3ms
+     ✓ reviewPayload boolean renders as inert JSON text (true), never classified v1, Allow ENABLED 3ms
+     ✓ reviewPayload string renders as inert JSON text ("plain text"), never classified v1, Allow ENABLED 6ms
+     ✓ reviewPayload ARRAY renders losslessly as JSON text (round-trips through JSON.parse) 2ms
+     ✓ template subject + EXTRA instanceId leaf → unsupported-subject panel + Allow DISABLED + Deny enabled 3ms
+     ✓ team subject + legacy targetInstanceId leaf → unsupported-subject panel + Allow DISABLED 2ms
+     ✓ the digest dd carries controlDigestValue through the real pipeline 3ms
+     ✓ the stylesheet defines .controlField dd.controlDigestValue (0,1,2) beating the .controlField dd ellipsis (0,1,1) — STATIC specificity assertion (jsdom does not apply the CSS-module cascade) 1ms
+     × ① .resolveBar wraps (the flex:none command buttons may take their own line) 3ms
+     × ② .controlDetail carries the min(100%, 20rem) flex-basis floor (full bar width at 380, right-beside buttons at 1440) 1ms
+     × ③ .controlField wraps (dt + dd share a line ONLY while both bases fit; the value then gets the full dl width on its own line) 0ms
+     × ④ .row wraps (fixed flex:none siblings drop to their own line instead of clipping under .rows) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pr56-control-panel-payload.client.spec.tsx > PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ① .resolveBar wraps (the flex:none command buttons may take their own line)
+AssertionError: expected '.resolveBar {\n  display: flex;\n  al…' to match /flex-wrap:\s*wrap/
+
+- Expected:
+/flex-wrap:\s*wrap/
+
++ Received:
+".resolveBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 10px 6px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+  background: var(--dsw-alias-bg-layer-3);
+}"
+
+ ❯ test/pr56-control-panel-payload.client.spec.tsx:710:21
+    708|     const rule = css.match(/\.resolveBar\s*\{[^}]*\}/)
+    709|     if (rule === null) throw new Error('the .resolveBar rule is missin…
+    710|     expect(rule[0]).toMatch(/flex-wrap:\s*wrap/)
+       |                     ^
+    711|   })
+    712|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/pr56-control-panel-payload.client.spec.tsx > PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ② .controlDetail carries the min(100%, 20rem) flex-basis floor (full bar width at 380, right-beside buttons at 1440)
+AssertionError: expected '.controlDetail {\n  display: flex;\n …' to match /flex:\s*1 1 min\(100%,\s*20rem\)/
+
+- Expected:
+/flex:\s*1 1 min\(100%,\s*20rem\)/
+
++ Received:
+".controlDetail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  flex: 1 1 auto;
+  margin: 0;
+  min-width: 0;
+}"
+
+ ❯ test/pr56-control-panel-payload.client.spec.tsx:717:21
+    715|     const rule = css.match(/\.controlDetail\s*\{[^}]*\}/)
+    716|     if (rule === null) throw new Error('the .controlDetail rule is mis…
+    717|     expect(rule[0]).toMatch(/flex:\s*1 1 min\(100%,\s*20rem\)/)
+       |                     ^
+    718|   })
+    719|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/pr56-control-panel-payload.client.spec.tsx > PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ③ .controlField wraps (dt + dd share a line ONLY while both bases fit; the value then gets the full dl width on its own line)
+AssertionError: expected '.controlField {\n  display: flex;\n  …' to match /flex-wrap:\s*wrap/
+
+- Expected:
+/flex-wrap:\s*wrap/
+
++ Received:
+".controlField {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}"
+
+ ❯ test/pr56-control-panel-payload.client.spec.tsx:724:21
+    722|     const rule = css.match(/\.controlField\s*\{[^}]*\}/)
+    723|     if (rule === null) throw new Error('the .controlField rule is miss…
+    724|     expect(rule[0]).toMatch(/flex-wrap:\s*wrap/)
+       |                     ^
+    725|   })
+    726|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/pr56-control-panel-payload.client.spec.tsx > PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ④ .row wraps (fixed flex:none siblings drop to their own line instead of clipping under .rows)
+AssertionError: expected '.row {\n  display: flex;\n  align-ite…' to match /flex-wrap:\s*wrap/
+
+- Expected:
+/flex-wrap:\s*wrap/
+
++ Received:
+".row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xs-13);
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+}"
+
+ ❯ test/pr56-control-panel-payload.client.spec.tsx:731:21
+    729|     const rule = css.match(/\.row\s*\{[^}]*\}/)
+    730|     if (rule === null) throw new Error('the .row rule is missing')
+    731|     expect(rule[0]).toMatch(/flex-wrap:\s*wrap/)
+       |                     ^
+    732|   })
+    733| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 27 passed (31)
+   Start at  21:57:08
+   Duration  2.24s (transform 1.01s, setup 16ms, import 1.65s, tests 126ms, environment 353ms)
+
+[exit code: 1]

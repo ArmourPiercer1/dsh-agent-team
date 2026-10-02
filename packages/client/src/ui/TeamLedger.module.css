@@ -70,6 +70,9 @@
 
 .row {
   display: flex;
+  /* run5 geometry fix ④: a chip/badge too wide for the row drops to its
+     own line instead of clipping under `.rows` (overflow: hidden). */
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -198,6 +201,12 @@
    unchanged). */
 .resolveBar {
   display: flex;
+  /* run5 geometry fix ①: on a narrow bar the flex:none command buttons
+     (+gaps, ~128px) used to squeeze the detail list below ~60px. With
+     wrap + the `.controlDetail` flex-basis floor (②) the list takes the
+     first line at full width and the buttons move to a line of their
+     own — never an overflow, never a collapse. */
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-width: 0;
@@ -277,13 +286,23 @@
   display: flex;
   flex-wrap: wrap;
   gap: 2px 12px;
-  flex: 1 1 auto;
+  /* run5 geometry fix ②: flex-basis floor via min(). A 181px bar: the
+     basis resolves to 181, the list fills the first line and the
+     buttons wrap below. A wide bar (≥ ~452px content): the basis is
+     20rem, list + buttons share one line and the list grows — the
+     1440/675 layout is preserved by construction. */
+  flex: 1 1 min(100%, 20rem);
   margin: 0;
   min-width: 0;
 }
 
 .controlField {
   display: flex;
+  /* run5 geometry fix ③: dt and dd keep one line ONLY while both flex
+     bases fit (a line break is forced exactly when they do not, so the
+     value can never be squeezed beside a long label — it lands on its
+     own line at the FULL list width instead). */
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 6px;
   min-width: 0;
@@ -291,6 +310,15 @@
 
 .controlField dt {
   flex: none;
+  /* TINY FIX (parent gap in 7816423d): flex:none sizes the label by its
+     MAX-CONTENT width (which ignores soft-wrap opportunities), so a
+     longer CJK digest label — or a long embedded Latin token — let the
+     NON-SHRINKING label itself overflow the field and clip under
+     `.rows`. The cap resolves against the field box and
+     overflow-wrap:break-word breaks the label's own lines; short
+     labels keep their inline behavior bit-identical (basis below cap). */
+  max-width: 100%;
+  overflow-wrap: break-word;
   color: var(--dsw-alias-label-caption);
   font: var(--dsw-font-xxxs-11);
 }
@@ -314,5 +342,57 @@
   border-radius: 4px;
   background: var(--dsw-alias-bg-layer-2);
   color: var(--dsw-alias-label-caption);
+  font: var(--dsw-font-xxxs-11);
+}
+
+/* PR #56 — the control-detail extensions (display ≠ verification): the
+   FULL wire digest and the FULL review payload render VERBATIM and are
+   NEVER truncated (the base `.controlField dd` ellipsis is overridden;
+   the payload block scrolls instead). */
+.controlFieldWide {
+  flex: 1 1 100%;
+  align-items: flex-start;
+}
+
+.controlFieldWide dd {
+  display: flex;
+  flex: 1 1 auto;
+  overflow: visible;
+  white-space: normal;
+}
+
+/* FROZEN BATCH #3: this selector MUST out-specify the `.controlField dd`
+   ellipsis trio (0,1,1) or the FULL wire digest renders TRUNCATED in a
+   narrow panel — `.controlField dd.controlDigestValue` is (0,1,2). */
+.controlField dd.controlDigestValue {
+  overflow: visible;
+  white-space: normal;
+  font-family: var(--dsw-font-family-mono, ui-monospace, monospace);
+  word-break: break-all;
+  user-select: all;
+}
+
+.controlPayload {
+  flex: 1 1 auto;
+  max-height: 16rem;
+  margin: 0;
+  padding: 4px 6px;
+  overflow: auto;
+  border: 1px solid var(--dsw-alias-border-primary, currentColor);
+  border-radius: 4px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xxxs-11) var(--dsw-font-family-mono, ui-monospace, monospace);
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
+}
+
+.cannotReview {
+  flex: 1 1 100%;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-state-error-primary);
   font: var(--dsw-font-xxxs-11);
 }

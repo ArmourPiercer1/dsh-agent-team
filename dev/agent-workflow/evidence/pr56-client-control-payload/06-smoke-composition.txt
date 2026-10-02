@@ -1,0 +1,8 @@
+COMPOSITION SMOKE — pre-existing failure characterization (identical output on the STOCK committed tree at 1385f1ee with PR#56 changes stashed, and with the changes applied + rebuilt bundle):
+
+[stock run] npx node scripts/composition-smoke.mjs (git status --porcelain empty)
+FAIL host plugin (packages/runtime): apply subscribed to listeners before failing: agent/created, agent/disposed, internal/get
+FAIL client plugin (packages/client): Cannot find package 'clsx' imported from .../@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+FAIL composition-smoke
+
+CONCLUSION: NOT caused by PR #56 — same failures on stock. Root causes: (1) client: transitive dep 'clsx' of @deepseek-ai/dsh-client-ui-primitives is unresolved under the offline --ignore-scripts install in this sandbox (no network install permitted per task law); (2) host: the built host.js subscribes listener services before the degenerate-config rejection (script contract expects fail-before-subscribe). Both are environment/pre-existing; the composition FRESHNESS gate that this PR is accountable for is scripts/check-artifacts-committed.mjs (run inside build:composition) — satisfied by committing the regenerated client-bundle.js together with the source.

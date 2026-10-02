@@ -1,0 +1,11 @@
+{
+  "http://127.0.0.1:3080/": {
+    "status": 401,
+    "length": 68,
+    "head": "dsh web authentication required; reopen the URL printed by dsh web.\n"
+  },
+  "http://127.0.0.1:3180/": {
+    "status": 0,
+    "error": "fetch failed"
+  }
+}

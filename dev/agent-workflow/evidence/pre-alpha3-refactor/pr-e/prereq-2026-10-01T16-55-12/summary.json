@@ -1,0 +1,1262 @@
+{
+  "kit": "pr-e-requirement-recovery-smoke.mjs",
+  "runStamp": "prereq-2026-10-01T16-55-12",
+  "verdict": "PASS",
+  "summary": "16/16 criteria pass; worldCleaned=true",
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr54-ui-observe/tests/homes/prereq-2026-10-01T16-55-12",
+  "testUse": {
+    "pre": {
+      "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    },
+    "post": {
+      "head": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+      "headSource": "git",
+      "status": "",
+      "statusEmpty": true,
+      "diff": "",
+      "diffEmpty": true,
+      "errors": []
+    }
+  },
+  "scenarios": {
+    "s1-live-preconditions": {
+      "dumpCarries": true,
+      "liveUp": {
+        "mcp_repo": true,
+        "mcp_leaderreq": true,
+        "mcp_web": true
+      }
+    },
+    "s13-create": {
+      "data": {
+        "path": "fresh-root",
+        "durable": {
+          "teamSession": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-prereq-v1-prereq-2026-10-01T16-55-12",
+            "blueprint": {
+              "blueprintId": "team.mpr-anchor",
+              "revision": "1",
+              "contentHash": "sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37"
+            },
+            "createdAt": "2026-10-01T16:55:15.834Z",
+            "generation": 1,
+            "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+          },
+          "binding": {
+            "schemaVersion": 1,
+            "kind": "team-root",
+            "sessionId": "session-prereq-v1-prereq-2026-10-01T16-55-12"
+          },
+          "wrote": true,
+          "leaderRow": {
+            "schemaVersion": 2,
+            "rootSessionId": "session-prereq-v1-prereq-2026-10-01T16-55-12",
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "createdAt": "2026-10-01T16:55:15.839Z",
+            "activityVersion": 1
+          }
+        },
+        "bind": {
+          "requested": "fresh-root",
+          "bound": true,
+          "installed": true,
+          "identity": {
+            "kind": "root",
+            "sessionId": "session-prereq-v1-prereq-2026-10-01T16-55-12",
+            "rootSessionId": "session-prereq-v1-prereq-2026-10-01T16-55-12"
+          },
+          "admitted": true,
+          "admissionCode": "ADMISSION_OPEN",
+          "emittedEvents": [
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "persona"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "model"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "capability"
+            },
+            {
+              "name": "agent-setup/admission-decided",
+              "detail": "ADMISSION_OPEN"
+            }
+          ]
+        }
+      }
+    },
+    "s1-probe": {
+      "probe": {
+        "type": "server-response",
+        "rpcId": "s1-probe-98701e01",
+        "result": {
+          "ok": true,
+          "value": {
+            "data": {
+              "compatibility": {
+                "schemaVersion": 1,
+                "environmentFingerprint": "fp-v1:69e3c2ef91c429c9",
+                "status": "OPEN",
+                "requirements": [
+                  {
+                    "requirementId": "team.mcp.repo",
+                    "type": "mcpServer",
+                    "complete": true,
+                    "outcome": "PASS",
+                    "reasonCode": "SATISFIED",
+                    "detail": "all 1 required subject(s) available",
+                    "unavailableSubjects": [],
+                    "mismatchFingerprint": null,
+                    "acknowledgement": null
+                  },
+                  {
+                    "requirementId": "team.mcp.leaderreq",
+                    "type": "mcpServer",
+                    "complete": true,
+                    "outcome": "PASS",
+                    "reasonCode": "SATISFIED",
+                    "detail": "all 1 required subject(s) available",
+                    "unavailableSubjects": [],
+                    "mismatchFingerprint": null,
+                    "acknowledgement": null
+                  }
+                ],
+                "counts": {
+                  "pass": 2,
+                  "warning": 0,
+                  "fatal": 0,
+                  "unackedWarning": 0,
+                  "staleAcknowledgement": 0
+                },
+                "unappliedAcknowledgements": []
+              }
+            },
+            "provenance": {
+              "origin": "team-remote",
+              "method": "intent.probe",
+              "endpoint": "intent.probe",
+              "contractVersion": 1,
+              "requestToken": null,
+              "projectionGeneration": null,
+              "effectSequence": null
+            }
+          }
+        }
+      }
+    },
+    "s1-t-create-pre-consent-refusal": {
+      "error": {
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: the creation preflight of \"session-prereq-main-prereq-2026-10-01T16-55-12\" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)",
+        "details": {
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+            "message": "TeamRuntime: the creation preflight of \"session-prereq-main-prereq-2026-10-01T16-55-12\" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)",
+            "details": {
+              "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+              "source": "creation-preflight",
+              "outcome": "consentRequired",
+              "blockedScopes": [],
+              "consentRequiredRequirementIds": [
+                "lead.mcp.signal"
+              ],
+              "fixOrDisableRequirementIds": [],
+              "fatalRequirementIds": []
+            }
+          }
+        }
+      },
+      "details": {
+        "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "source": "creation-preflight",
+        "outcome": "consentRequired",
+        "blockedScopes": [],
+        "consentRequiredRequirementIds": [
+          "lead.mcp.signal"
+        ],
+        "fixOrDisableRequirementIds": [],
+        "fatalRequirementIds": []
+      }
+    },
+    "s13-world-after-b1": {
+      "registry": {
+        "team.prereq-anchor@1": "{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:56bb230f6c0a67c08c094db59b8542055bc2d57797fd4c08051cbe8a90fd205f\",\"frozenAt\":\"2026-10-01T16:55:14.798Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.prereq-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E smoke boot team. prereq-2026-10-01T16-55-12 is the run nonce.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}",
+        "team.mpr-anchor@1": "{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"frozenAt\":\"2026-10-01T16:55:15.829Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.mpr-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the boot anchor leader of the model-preference-routing smoke row.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}"
+      },
+      "teamSessions": {
+        "session-prereq-boot-prereq-2026-10-01T16-55-12": "{\"blueprint\":{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:56bb230f6c0a67c08c094db59b8542055bc2d57797fd4c08051cbe8a90fd205f\",\"revision\":\"1\"},\"createdAt\":\"2026-10-01T16:55:14.801Z\",\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":2,\"rootSessionId\":\"session-prereq-boot-prereq-2026-10-01T16-55-12\",\"schemaVersion\":1}",
+        "session-prereq-v1-prereq-2026-10-01T16-55-12": "{\"blueprint\":{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"revision\":\"1\"},\"createdAt\":\"2026-10-01T16:55:15.834Z\",\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":1,\"rootSessionId\":\"session-prereq-v1-prereq-2026-10-01T16-55-12\",\"schemaVersion\":1}"
+      }
+    },
+    "s1-b1-consent-grant": {
+      "consentSeqT": 1,
+      "consentSeqT2": 2,
+      "rowT": {
+        "createdAt": "2026-10-01T16:55:15.965Z",
+        "factType": "optional-requirement-accepted",
+        "payload": {
+          "consentedAt": 1790873715954,
+          "consentedBy": "kit-e12",
+          "contentHash": "sha256:4b29288b4483bee5131c68a6c2b8bf9a8f4be4b673331b5fbec8a89874d9fb1d",
+          "generation": 1,
+          "requirementId": "lead.mcp.signal",
+          "scopeKey": "template:leader"
+        },
+        "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "schemaVersion": 2,
+        "sequence": 1
+      },
+      "rowT2": {
+        "createdAt": "2026-10-01T16:55:15.967Z",
+        "factType": "optional-requirement-accepted",
+        "payload": {
+          "consentedAt": 1790873715965,
+          "consentedBy": "kit-e12",
+          "contentHash": "sha256:c62c9e983a14fc17ef6a0be91db5ff03f5761366d273985a4b301f0ab8c804dc",
+          "generation": 1,
+          "requirementId": "lead.mcp.signal",
+          "scopeKey": "template:leader"
+        },
+        "rootSessionId": "session-prereq-iso-prereq-2026-10-01T16-55-12",
+        "schemaVersion": 2,
+        "sequence": 2
+      }
+    },
+    "s1-compat-b2": {
+      "status": "OPEN",
+      "environmentFingerprint": "fp-v1:69e3c2ef91c429c9",
+      "generation": 1,
+      "recordedAt": "2026-10-01T16:55:17.740Z",
+      "counts": {
+        "pass": 2,
+        "warning": 0,
+        "fatal": 0,
+        "unackedWarning": 0,
+        "staleAcknowledgement": 0
+      }
+    },
+    "s2-consent-fact": {
+      "consents": [
+        {
+          "schemaVersion": 2,
+          "sequence": 1,
+          "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+          "factType": "optional-requirement-accepted",
+          "payload": {
+            "consentedAt": 1790873715954,
+            "consentedBy": "kit-e12",
+            "contentHash": "sha256:4b29288b4483bee5131c68a6c2b8bf9a8f4be4b673331b5fbec8a89874d9fb1d",
+            "generation": 1,
+            "requirementId": "lead.mcp.signal",
+            "scopeKey": "template:leader"
+          },
+          "operationId": null,
+          "createdAt": "2026-10-01T16:55:15.965Z"
+        },
+        {
+          "schemaVersion": 2,
+          "sequence": 17,
+          "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+          "factType": "optional-requirement-accepted",
+          "payload": {
+            "consentedAt": 1790873721321,
+            "consentedBy": "kit-e12",
+            "contentHash": "sha256:4b29288b4483bee5131c68a6c2b8bf9a8f4be4b673331b5fbec8a89874d9fb1d",
+            "generation": 1,
+            "requirementId": "lead.mcp.signal",
+            "scopeKey": "template:leader"
+          },
+          "operationId": null,
+          "createdAt": "2026-10-01T16:55:21.326Z"
+        }
+      ]
+    },
+    "s9-reviewed-payload": {
+      "recorded": {
+        "schemaVersion": 2,
+        "sequence": 23,
+        "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "factType": "control-request-recorded",
+        "payload": {
+          "actionName": "delegate",
+          "correlation": "recovery:rt-b3a-prereq-2026-10-01T16-55-12:1a68d3ae-6509-4b01-a36d-e6618b5ae958",
+          "executionCoupling": "inline",
+          "kind": "user-approval",
+          "requestId": "ctrl-0iuc5nj123i3m80w2p3c50po",
+          "requester": {
+            "instanceId": "inst-leader",
+            "kind": "instance",
+            "role": "leader"
+          },
+          "reviewPayload": {
+            "action": "delegate",
+            "arguments": {
+              "label": "w-b3a",
+              "prompt": "PRREQ_W_b3a_prereq-2026-10-01T16-55-12 work unit b3a (nonce prereq-2026-10-01T16-55-12)"
+            },
+            "blockedScopes": [
+              "template:worker"
+            ],
+            "caller": {
+              "instanceId": "inst-leader",
+              "kind": "instance"
+            },
+            "delegationTemplateId": "worker",
+            "downedCapabilitySubjects": [
+              "mcp_web"
+            ],
+            "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+            "execution": "sync",
+            "reducedAuthority": {
+              "externalHardCeiling": "absolute (never bypassed)",
+              "otherwise": "unchanged (the original permissions apply)",
+              "policy": "reduced original authority (plan §E.9)",
+              "unavailableSubjects": [
+                "mcp_web"
+              ]
+            },
+            "requestToken": "rt-b3a-prereq-2026-10-01T16-55-12",
+            "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+            "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+            "schema": "dsh-agent-team/recovery-dispatch/v1",
+            "subject": {
+              "kind": "template",
+              "templateId": "worker"
+            },
+            "templateId": "worker",
+            "toolName": "delegate"
+          },
+          "reviewPayloadDigest": "sha256:0936ff2f0ff28ad225266b43dc722fc88e973784c0f6d935b104ba347e40d3f6",
+          "subject": {
+            "kind": "template",
+            "templateId": "worker"
+          },
+          "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [template:worker] on the reduced original authority"
+        },
+        "operationId": null,
+        "createdAt": "2026-10-01T16:55:25.320Z"
+      },
+      "digestOk": true,
+      "shapeOk": true
+    },
+    "b3a": {
+      "W1": "inst-0adbbjy13nt1",
+      "toolOk": true,
+      "decisions": [
+        {
+          "requestId": "ctrl-0iuc5nj123i3m80w2p3c50po",
+          "class": "recovery",
+          "decision": "allow",
+          "resolveStatus": 200,
+          "resolveError": null
+        },
+        {
+          "requestId": "ctrl-02k2q9i03149jj0ha8xgk1op",
+          "class": "ask",
+          "decision": "allow",
+          "resolveStatus": 200,
+          "resolveError": null
+        }
+      ],
+      "pendingSeen": [
+        {
+          "requestId": "ctrl-0iuc5nj123i3m80w2p3c50po",
+          "kind": "user-approval",
+          "correlation": "recovery:rt-b3a-prereq-2026-10-01T16-55-12:1a68d3ae-6509-4b01-a36d-e6618b5ae958",
+          "toolName": null,
+          "actionName": "delegate",
+          "reviewPayload": {
+            "action": "delegate",
+            "arguments": {
+              "label": "w-b3a",
+              "prompt": "PRREQ_W_b3a_prereq-2026-10-01T16-55-12 work unit b3a (nonce prereq-2026-10-01T16-55-12)"
+            },
+            "blockedScopes": [
+              "template:worker"
+            ],
+            "caller": {
+              "instanceId": "inst-leader",
+              "kind": "instance"
+            },
+            "delegationTemplateId": "worker",
+            "downedCapabilitySubjects": [
+              "mcp_web"
+            ],
+            "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+            "execution": "sync",
+            "reducedAuthority": {
+              "externalHardCeiling": "absolute (never bypassed)",
+              "otherwise": "unchanged (the original permissions apply)",
+              "policy": "reduced original authority (plan §E.9)",
+              "unavailableSubjects": [
+                "mcp_web"
+              ]
+            },
+            "requestToken": "rt-b3a-prereq-2026-10-01T16-55-12",
+            "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+            "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+            "schema": "dsh-agent-team/recovery-dispatch/v1",
+            "subject": {
+              "kind": "template",
+              "templateId": "worker"
+            },
+            "templateId": "worker",
+            "toolName": "delegate"
+          },
+          "reviewPayloadDigest": "sha256:0936ff2f0ff28ad225266b43dc722fc88e973784c0f6d935b104ba347e40d3f6",
+          "executionCoupling": "inline"
+        },
+        {
+          "requestId": "ctrl-02k2q9i03149jj0ha8xgk1op",
+          "kind": "leader-approval",
+          "correlation": "call-prereq-ee34f695",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "reviewPayload": null,
+          "reviewPayloadDigest": null,
+          "executionCoupling": null
+        }
+      ],
+      "baselineLedgerEntries": 15
+    },
+    "b3b-deny": {
+      "toolOutcome": {
+        "status": "rejected",
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: the recovery dispatch was denied by the reviewer — zero durable effect (the operation remains blocked)",
+        "details": {
+          "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+          "status": "BLOCKED_FATAL",
+          "gateReason": "requiredScopeDown",
+          "blockedScopes": [
+            "template:worker"
+          ],
+          "source": "requirement-gate",
+          "controlDecision": "deny",
+          "controlRequestId": "ctrl-160uz8s0znoygr0yjdj9y0o5"
+        }
+      },
+      "decisions": [
+        {
+          "requestId": "ctrl-160uz8s0znoygr0yjdj9y0o5",
+          "class": "recovery",
+          "decision": "deny",
+          "resolveStatus": 200,
+          "resolveError": null
+        }
+      ],
+      "before": {
+        "members": 0,
+        "incidents": 1
+      },
+      "after": {
+        "members": 0,
+        "incidents": 1
+      }
+    },
+    "b3c-late-allow": {
+      "lateError": {
+        "code": "CONTROL_REQUEST_ABANDONED",
+        "message": "ControlService: request 'ctrl-1k0ccso0j0ncdr1ktv8oe04d' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "CONTROL_REQUEST_ABANDONED",
+            "message": "ControlService: request 'ctrl-1k0ccso0j0ncdr1ktv8oe04d' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+            "details": {
+              "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+              "requestId": "ctrl-1k0ccso0j0ncdr1ktv8oe04d"
+            }
+          }
+        }
+      },
+      "lateBody": {
+        "type": "server-response",
+        "rpcId": "b3c-late-allow-dcb8165f",
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "CONTROL_REQUEST_ABANDONED",
+            "message": "ControlService: request 'ctrl-1k0ccso0j0ncdr1ktv8oe04d' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+            "details": {
+              "method": "team.resolveControl",
+              "endpoint": "team.resolveControl",
+              "contractVersion": 4,
+              "requestToken": null,
+              "reason": "domain-error",
+              "cause": {
+                "code": "CONTROL_REQUEST_ABANDONED",
+                "message": "ControlService: request 'ctrl-1k0ccso0j0ncdr1ktv8oe04d' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+                "details": {
+                  "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+                  "requestId": "ctrl-1k0ccso0j0ncdr1ktv8oe04d"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "b3c-abort": {
+      "elapsedMs": 120276,
+      "toolOutcome": {
+        "message": "tool call aborted",
+        "info": {
+          "name": "AbortError",
+          "code": "ABORTED"
+        }
+      },
+      "abandonFacts": [
+        {
+          "abandonedAt": "2026-10-01T16:57:28.890Z",
+          "reason": "wait-aborted",
+          "requestId": "ctrl-1k0ccso0j0ncdr1ktv8oe04d",
+          "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12"
+        }
+      ],
+      "pendingSeen": [
+        {
+          "requestId": "ctrl-1k0ccso0j0ncdr1ktv8oe04d",
+          "kind": "user-approval",
+          "correlation": "recovery:rt-b3c-prereq-2026-10-01T16-55-12:53ec2509-8692-4669-b24c-c9822a8c5972",
+          "toolName": null,
+          "actionName": "delegate",
+          "reviewPayload": {
+            "action": "delegate",
+            "arguments": {
+              "label": "w-b3c",
+              "prompt": "PRREQ_W_b3c_prereq-2026-10-01T16-55-12 work unit b3c (nonce prereq-2026-10-01T16-55-12)"
+            },
+            "blockedScopes": [
+              "template:worker"
+            ],
+            "caller": {
+              "instanceId": "inst-leader",
+              "kind": "instance"
+            },
+            "delegationTemplateId": "worker",
+            "downedCapabilitySubjects": [
+              "mcp_web"
+            ],
+            "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+            "execution": "sync",
+            "reducedAuthority": {
+              "externalHardCeiling": "absolute (never bypassed)",
+              "otherwise": "unchanged (the original permissions apply)",
+              "policy": "reduced original authority (plan §E.9)",
+              "unavailableSubjects": [
+                "mcp_web"
+              ]
+            },
+            "requestToken": "rt-b3c-prereq-2026-10-01T16-55-12",
+            "requestedOperation": "one recovery attempt of 'delegate' on template 'worker'",
+            "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+            "schema": "dsh-agent-team/recovery-dispatch/v1",
+            "subject": {
+              "kind": "template",
+              "templateId": "worker"
+            },
+            "templateId": "worker",
+            "toolName": "delegate"
+          },
+          "reviewPayloadDigest": "sha256:3805f791b80435ece8dbe6b893c171256f0766895fe8dc00bb3087809b30b927",
+          "executionCoupling": "inline"
+        }
+      ]
+    },
+    "s14-isolation-b3": {
+      "T_incidents": [
+        {
+          "openedAt": 1790873726086,
+          "requirementIds": [
+            "worker.mcp.web"
+          ],
+          "scope": "template:worker"
+        }
+      ],
+      "T2_incidents": [],
+      "T2_control": []
+    },
+    "s8-b4": {
+      "W1": "inst-0adbbjy13nt1",
+      "toolOk": true,
+      "slot": {
+        "sessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null
+      },
+      "closed": {
+        "closedAt": 1790873850991,
+        "requirementIds": [
+          "worker.mcp.web"
+        ],
+        "scope": "template:worker"
+      },
+      "pendingSeen": []
+    },
+    "s10-no-flag-after-b4": {
+      "teamSessionT": {
+        "blueprint": {
+          "blueprintId": "team.prereq-main",
+          "contentHash": "sha256:4b29288b4483bee5131c68a6c2b8bf9a8f4be4b673331b5fbec8a89874d9fb1d",
+          "revision": "1"
+        },
+        "createdAt": "2026-10-01T16:55:17.593Z",
+        "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+        "generation": 36,
+        "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "schemaVersion": 1
+      }
+    },
+    "s4-admit-b5": {
+      "admitError": {
+        "code": "NO_RESULT",
+        "message": "null"
+      },
+      "details": null,
+      "newRequests": 0,
+      "slotsAtAdmit": [
+        {
+          "sessionId": "session-prereq-boot-prereq-2026-10-01T16-55-12",
+          "mounted": false,
+          "materialization": "pending",
+          "attempts": null,
+          "reason": null
+        }
+      ],
+      "liveSessionsAtAdmit": [
+        "session-prereq-boot-prereq-2026-10-01T16-55-12"
+      ],
+      "mcpOverrideRecords": 0
+    },
+    "s4-b5-window": {
+      "inFlightSlot": null,
+      "failedSlot": {
+        "sessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "mounted": false,
+        "materialization": "failed",
+        "attempts": 2,
+        "reason": "mcp-client(mcp_repo): initial connection or tool synchronization failed"
+      },
+      "slotsAtAdmit": [
+        {
+          "sessionId": "session-prereq-boot-prereq-2026-10-01T16-55-12",
+          "mounted": false,
+          "materialization": "pending",
+          "attempts": null,
+          "reason": null
+        }
+      ]
+    },
+    "s4-team-down-b5": {
+      "recoveryRecord": {
+        "actionName": "delegate",
+        "correlation": "recovery:rt-b5-prereq-2026-10-01T16-55-12:9be71fbd-548b-436a-a803-6a5e23daa5cd",
+        "executionCoupling": "inline",
+        "kind": "user-approval",
+        "requestId": "ctrl-1ev212g14lkr4h1k7gcbe1st",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "reviewPayload": {
+          "action": "delegate",
+          "arguments": {
+            "label": "w-b5",
+            "prompt": "PRREQ_W_b5_prereq-2026-10-01T16-55-12 work unit b5 (nonce prereq-2026-10-01T16-55-12)"
+          },
+          "blockedScopes": [
+            "team"
+          ],
+          "caller": {
+            "instanceId": "inst-leader",
+            "kind": "instance"
+          },
+          "delegationTemplateId": "helper",
+          "downedCapabilitySubjects": [
+            "mcp_repo"
+          ],
+          "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+          "execution": "sync",
+          "reducedAuthority": {
+            "externalHardCeiling": "absolute (never bypassed)",
+            "otherwise": "unchanged (the original permissions apply)",
+            "policy": "reduced original authority (plan §E.9)",
+            "unavailableSubjects": [
+              "mcp_repo"
+            ]
+          },
+          "requestToken": "rt-b5-prereq-2026-10-01T16-55-12",
+          "requestedOperation": "one recovery attempt of 'delegate' on template 'helper'",
+          "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+          "schema": "dsh-agent-team/recovery-dispatch/v1",
+          "subject": {
+            "kind": "template",
+            "templateId": "helper"
+          },
+          "templateId": "helper",
+          "toolName": "delegate"
+        },
+        "reviewPayloadDigest": "sha256:650f003821f40083c011a1a9dc8a712921a491b8861782787a93b515860b7f87",
+        "subject": {
+          "kind": "template",
+          "templateId": "helper"
+        },
+        "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [team] on the reduced original authority"
+      },
+      "teamIncident": null,
+      "decisions": [
+        {
+          "requestId": "ctrl-1ev212g14lkr4h1k7gcbe1st",
+          "class": "recovery",
+          "decision": "deny",
+          "resolveStatus": 200,
+          "resolveError": null
+        }
+      ],
+      "delegateValue": {
+        "status": "rejected",
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: the recovery dispatch was denied by the reviewer — zero durable effect (the operation remains blocked)",
+        "details": {
+          "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+          "status": "BLOCKED_FATAL",
+          "gateReason": "requiredScopeDown",
+          "blockedScopes": [
+            "team"
+          ],
+          "source": "requirement-gate",
+          "controlDecision": "deny",
+          "controlRequestId": "ctrl-1ev212g14lkr4h1k7gcbe1st"
+        }
+      }
+    },
+    "s3-disable-b6": {
+      "toolOutcome": {
+        "status": "rejected",
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: the targeted template is disabled — its work cannot start (availability, not a policy denial; re-enable the template or fix + recheck its requirements)",
+        "details": {
+          "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+          "status": "BLOCKED_FATAL",
+          "gateReason": "templateDisabled",
+          "blockedScopes": [
+            "template:worker"
+          ],
+          "blockingRequirementIds": [],
+          "unavailableSubjects": [],
+          "source": "requirement-gate",
+          "recoveryDispatchAvailable": false
+        }
+      }
+    },
+    "s4b-admit-b6": {
+      "admitError": {
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: a required scope is down (team) — new work admission is blocked (invariant 50)",
+        "details": {
+          "method": "team.admitInitialWork",
+          "endpoint": "team.admitInitialWork",
+          "contractVersion": 2,
+          "requestToken": "rt-admit-b6-prereq-2026-10-01T16-55-12",
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+            "message": "TeamRuntime: a required scope is down (team) — new work admission is blocked (invariant 50)",
+            "details": {
+              "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+              "status": "BLOCKED_FATAL",
+              "gateReason": "requiredScopeDown",
+              "blockedScopes": [
+                "team"
+              ],
+              "blockingRequirementIds": [
+                "team.mcp.repo"
+              ],
+              "unavailableSubjects": [
+                "mcp_repo"
+              ],
+              "source": "requirement-gate",
+              "recoveryDispatchAvailable": true
+            }
+          }
+        }
+      },
+      "details": {
+        "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "status": "BLOCKED_FATAL",
+        "gateReason": "requiredScopeDown",
+        "blockedScopes": [
+          "team"
+        ],
+        "blockingRequirementIds": [
+          "team.mcp.repo"
+        ],
+        "unavailableSubjects": [
+          "mcp_repo"
+        ],
+        "source": "requirement-gate",
+        "recoveryDispatchAvailable": true
+      }
+    },
+    "s5-s6-b7": {
+      "W3": "inst-09ocv5o17c9m",
+      "reviewPayload": {
+        "action": "delegate",
+        "arguments": {
+          "label": "w-b7",
+          "prompt": "PRREQ_W_b7_prereq-2026-10-01T16-55-12 work unit b7 (nonce prereq-2026-10-01T16-55-12)"
+        },
+        "blockedScopes": [
+          "team"
+        ],
+        "caller": {
+          "instanceId": "inst-leader",
+          "kind": "instance"
+        },
+        "delegationTemplateId": "helper",
+        "downedCapabilitySubjects": [
+          "mcp_leaderreq"
+        ],
+        "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+        "execution": "sync",
+        "reducedAuthority": {
+          "externalHardCeiling": "absolute (never bypassed)",
+          "otherwise": "unchanged (the original permissions apply)",
+          "policy": "reduced original authority (plan §E.9)",
+          "unavailableSubjects": [
+            "mcp_leaderreq"
+          ]
+        },
+        "requestToken": "rt-b7-prereq-2026-10-01T16-55-12",
+        "requestedOperation": "one recovery attempt of 'delegate' on template 'helper'",
+        "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "schema": "dsh-agent-team/recovery-dispatch/v1",
+        "subject": {
+          "kind": "template",
+          "templateId": "helper"
+        },
+        "templateId": "helper",
+        "toolName": "delegate"
+      },
+      "controlPayload": {
+        "actionName": "delegate",
+        "correlation": "recovery:rt-b7-prereq-2026-10-01T16-55-12:ef70598d-2365-41cd-8365-db6bef912da1",
+        "executionCoupling": "inline",
+        "kind": "user-approval",
+        "requestId": "ctrl-16jty7g0pmr7cp1wt3uh21sc",
+        "requester": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "reviewPayload": {
+          "action": "delegate",
+          "arguments": {
+            "label": "w-b7",
+            "prompt": "PRREQ_W_b7_prereq-2026-10-01T16-55-12 work unit b7 (nonce prereq-2026-10-01T16-55-12)"
+          },
+          "blockedScopes": [
+            "team"
+          ],
+          "caller": {
+            "instanceId": "inst-leader",
+            "kind": "instance"
+          },
+          "delegationTemplateId": "helper",
+          "downedCapabilitySubjects": [
+            "mcp_leaderreq"
+          ],
+          "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+          "execution": "sync",
+          "reducedAuthority": {
+            "externalHardCeiling": "absolute (never bypassed)",
+            "otherwise": "unchanged (the original permissions apply)",
+            "policy": "reduced original authority (plan §E.9)",
+            "unavailableSubjects": [
+              "mcp_leaderreq"
+            ]
+          },
+          "requestToken": "rt-b7-prereq-2026-10-01T16-55-12",
+          "requestedOperation": "one recovery attempt of 'delegate' on template 'helper'",
+          "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+          "schema": "dsh-agent-team/recovery-dispatch/v1",
+          "subject": {
+            "kind": "template",
+            "templateId": "helper"
+          },
+          "templateId": "helper",
+          "toolName": "delegate"
+        },
+        "reviewPayloadDigest": "sha256:a0f098ef5a4e5883c6841f63fed2d8dad55262c68b4ec62a4e75e96f916ae921",
+        "subject": {
+          "kind": "template",
+          "templateId": "helper"
+        },
+        "summary": "recovery dispatch: one reviewed attempt of 'delegate' on the blocked scope(s) [team] on the reduced original authority"
+      },
+      "decisions": [
+        {
+          "requestId": "ctrl-16jty7g0pmr7cp1wt3uh21sc",
+          "class": "recovery",
+          "decision": "allow",
+          "resolveStatus": 200,
+          "resolveError": null
+        }
+      ],
+      "pendingSeen": [
+        {
+          "requestId": "ctrl-16jty7g0pmr7cp1wt3uh21sc",
+          "kind": "user-approval",
+          "correlation": "recovery:rt-b7-prereq-2026-10-01T16-55-12:ef70598d-2365-41cd-8365-db6bef912da1",
+          "toolName": null,
+          "actionName": "delegate",
+          "reviewPayload": {
+            "action": "delegate",
+            "arguments": {
+              "label": "w-b7",
+              "prompt": "PRREQ_W_b7_prereq-2026-10-01T16-55-12 work unit b7 (nonce prereq-2026-10-01T16-55-12)"
+            },
+            "blockedScopes": [
+              "team"
+            ],
+            "caller": {
+              "instanceId": "inst-leader",
+              "kind": "instance"
+            },
+            "delegationTemplateId": "helper",
+            "downedCapabilitySubjects": [
+              "mcp_leaderreq"
+            ],
+            "effect": "allow: exactly ONE reviewed recovery attempt of this operation on the reduced original authority; deny/abandon: zero durable effect (the operation remains blocked)",
+            "execution": "sync",
+            "reducedAuthority": {
+              "externalHardCeiling": "absolute (never bypassed)",
+              "otherwise": "unchanged (the original permissions apply)",
+              "policy": "reduced original authority (plan §E.9)",
+              "unavailableSubjects": [
+                "mcp_leaderreq"
+              ]
+            },
+            "requestToken": "rt-b7-prereq-2026-10-01T16-55-12",
+            "requestedOperation": "one recovery attempt of 'delegate' on template 'helper'",
+            "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+            "schema": "dsh-agent-team/recovery-dispatch/v1",
+            "subject": {
+              "kind": "template",
+              "templateId": "helper"
+            },
+            "templateId": "helper",
+            "toolName": "delegate"
+          },
+          "reviewPayloadDigest": "sha256:a0f098ef5a4e5883c6841f63fed2d8dad55262c68b4ec62a4e75e96f916ae921",
+          "executionCoupling": "inline"
+        }
+      ]
+    },
+    "s11-readiness-reset-b8": {
+      "preB8hSlots": [
+        {
+          "sessionId": "session-prereq-boot-prereq-2026-10-01T16-55-12",
+          "mounted": false,
+          "materialization": "pending",
+          "attempts": null,
+          "reason": null
+        }
+      ]
+    },
+    "s11-b8": {
+      "consentFacts": [
+        {
+          "consentedAt": 1790873715954,
+          "consentedBy": "kit-e12",
+          "contentHash": "sha256:4b29288b4483bee5131c68a6c2b8bf9a8f4be4b673331b5fbec8a89874d9fb1d",
+          "generation": 1,
+          "requirementId": "lead.mcp.signal",
+          "scopeKey": "template:leader"
+        },
+        {
+          "consentedAt": 1790873721321,
+          "consentedBy": "kit-e12",
+          "contentHash": "sha256:4b29288b4483bee5131c68a6c2b8bf9a8f4be4b673331b5fbec8a89874d9fb1d",
+          "generation": 1,
+          "requirementId": "lead.mcp.signal",
+          "scopeKey": "template:leader"
+        }
+      ],
+      "disableFacts": [
+        {
+          "at": 1790873929696,
+          "available": false,
+          "templateId": "worker"
+        }
+      ],
+      "compatB8": {
+        "status": "OPEN",
+        "environmentFingerprint": "fp-v1:69e3c2ef91c429c9",
+        "generation": 4,
+        "recordedAt": "2026-10-01T16:58:56.618Z",
+        "counts": {
+          "pass": 2,
+          "warning": 0,
+          "fatal": 0,
+          "unackedWarning": 0,
+          "staleAcknowledgement": 0
+        }
+      },
+      "closedTeam": {
+        "closedAt": 1790873936630,
+        "requirementIds": [
+          "team.mcp.leaderreq"
+        ],
+        "scope": "team"
+      },
+      "slot": {
+        "sessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "mounted": true,
+        "materialization": "mounted",
+        "attempts": 1,
+        "reason": null
+      }
+    },
+    "s12b-b9b": {
+      "admitError": {
+        "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+        "message": "TeamRuntime: a required scope is down (team) — new work admission is blocked (invariant 50)",
+        "details": {
+          "method": "team.admitInitialWork",
+          "endpoint": "team.admitInitialWork",
+          "contractVersion": 2,
+          "requestToken": "rt-admit-b9b-prereq-2026-10-01T16-55-12",
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_RUNTIME_COMPATIBILITY_BLOCKED",
+            "message": "TeamRuntime: a required scope is down (team) — new work admission is blocked (invariant 50)",
+            "details": {
+              "rootSessionId": "session-prereq-persona-prereq-2026-10-01T16-55-12",
+              "status": "BLOCKED_FATAL",
+              "gateReason": "requiredScopeDown",
+              "blockedScopes": [
+                "team"
+              ],
+              "blockingRequirementIds": [
+                "team.persona.standard"
+              ],
+              "unavailableSubjects": [
+                "standard"
+              ],
+              "source": "requirement-gate",
+              "recoveryDispatchAvailable": true
+            }
+          }
+        }
+      },
+      "details": {
+        "rootSessionId": "session-prereq-persona-prereq-2026-10-01T16-55-12",
+        "status": "BLOCKED_FATAL",
+        "gateReason": "requiredScopeDown",
+        "blockedScopes": [
+          "team"
+        ],
+        "blockingRequirementIds": [
+          "team.persona.standard"
+        ],
+        "unavailableSubjects": [
+          "standard"
+        ],
+        "source": "requirement-gate",
+        "recoveryDispatchAvailable": true
+      },
+      "probeVerdict": {
+        "schemaVersion": 1,
+        "environmentFingerprint": "fp-v1:6cb31629da76b43f",
+        "status": "BLOCKED_FATAL",
+        "requirements": [
+          {
+            "requirementId": "team.persona.standard",
+            "type": "persona",
+            "complete": true,
+            "outcome": "FATAL",
+            "reasonCode": "PERSONA_INCOMPATIBLE",
+            "detail": "complete:true persona requirement unmet: required kind(s) standard not observed — the world provides no persona section that composes (structural FATAL, not downgradeable)",
+            "unavailableSubjects": [
+              "standard"
+            ],
+            "mismatchFingerprint": "fp-v1:f258410fcedf7599",
+            "acknowledgement": null
+          }
+        ],
+        "counts": {
+          "pass": 0,
+          "warning": 0,
+          "fatal": 1,
+          "unackedWarning": 0,
+          "staleAcknowledgement": 0
+        },
+        "unappliedAcknowledgements": []
+      },
+      "compatibility": {
+        "status": "BLOCKED_FATAL",
+        "environmentFingerprint": "fp-v1:3fc757dcfec8149a",
+        "generation": 2,
+        "recordedAt": "2026-10-01T16:59:01.783Z",
+        "counts": {
+          "pass": 0,
+          "warning": 0,
+          "fatal": 1,
+          "unackedWarning": 0,
+          "staleAcknowledgement": 0
+        }
+      }
+    }
+  },
+  "worldDumps": {
+    "afterB1": {
+      "registry": {
+        "team.prereq-anchor@1": "{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:56bb230f6c0a67c08c094db59b8542055bc2d57797fd4c08051cbe8a90fd205f\",\"frozenAt\":\"2026-10-01T16:55:14.798Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.prereq-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the PR-E smoke boot team. prereq-2026-10-01T16-55-12 is the run nonce.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}",
+        "team.mpr-anchor@1": "{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"frozenAt\":\"2026-10-01T16:55:15.829Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 1\\nblueprintId: team.mpr-anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the boot anchor leader of the model-preference-routing smoke row.\\\"\\nmembers: []\\nrequirements: []\\nmemberEnvelopes: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}"
+      },
+      "teamSessions": {
+        "session-prereq-boot-prereq-2026-10-01T16-55-12": "{\"blueprint\":{\"blueprintId\":\"team.prereq-anchor\",\"contentHash\":\"sha256:56bb230f6c0a67c08c094db59b8542055bc2d57797fd4c08051cbe8a90fd205f\",\"revision\":\"1\"},\"createdAt\":\"2026-10-01T16:55:14.801Z\",\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":2,\"rootSessionId\":\"session-prereq-boot-prereq-2026-10-01T16-55-12\",\"schemaVersion\":1}",
+        "session-prereq-v1-prereq-2026-10-01T16-55-12": "{\"blueprint\":{\"blueprintId\":\"team.mpr-anchor\",\"contentHash\":\"sha256:6a7fba9ffce952639cf85b01714b1ca61a7d4816efe32607f3d7061da0c15a37\",\"revision\":\"1\"},\"createdAt\":\"2026-10-01T16:55:15.834Z\",\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":1,\"rootSessionId\":\"session-prereq-v1-prereq-2026-10-01T16-55-12\",\"schemaVersion\":1}"
+      }
+    },
+    "afterB4": {
+      "teamSessionT": {
+        "blueprint": {
+          "blueprintId": "team.prereq-main",
+          "contentHash": "sha256:4b29288b4483bee5131c68a6c2b8bf9a8f4be4b673331b5fbec8a89874d9fb1d",
+          "revision": "1"
+        },
+        "createdAt": "2026-10-01T16:55:17.593Z",
+        "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+        "generation": 36,
+        "rootSessionId": "session-prereq-main-prereq-2026-10-01T16-55-12",
+        "schemaVersion": 1
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "S1",
+      "name": "startup all-template matrix: fresh per-scope evaluation at every admission (team up B1b / team down B5 / worker down B3 / optional degraded B2 / persona pass B9 / persona fatal B9b); pass-3: the pre-consent typed refusal (B1) + the consent grant + the post-consent re-drive (B1b)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S2",
+      "name": "optional requirement consent: auto-degraded proceed (B2) + durable optional-requirement-accepted fact readable, gate still ignores it (B2b)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S3",
+      "name": "required template disable: delegate -> gateReason templateDisabled (availability, never policy — negative #9)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S4",
+      "name": "Team-level required outage: the D-3 B5 DUAL reclassified under the PF-2 tri-state (option A) — admitInitialWork during the NEVER-OBSERVED window (no live repo surface on ANY live session: main root cold, boot anchor structurally admits nothing, ZERO mcp override records) -> the SEED truth decides (available:true -> NOT blocked, NO dispatch — PENDING means in-flight ONLY); post-boundary delegate after the blackhole close -> typed FATAL (BLOCKED_FATAL / requiredScopeDown) + recovery dispatch; disable cannot bypass (B5/B6)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S5",
+      "name": "Leader required MCP down (team-scope model): team scope blocked -> Recovery",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S6",
+      "name": "Human-reviewed recovery dispatch: the kit as human resolver, ALLOW -> recovery attempt proceeds on the reduced original authority",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S7",
+      "name": "degraded Member controlled bash repair: read executes (original allow), bash opens an ASK request (recovery does not turn ask into allow — negative #2), executes after approval",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S8",
+      "name": "service restored -> next boundary NORMAL: incident CLOSED durable, follow-up without recovery correlation, mcp materialized (E.10; no durable recovery flag)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S9",
+      "name": "exact reviewed payload: recovery-dispatch/v1 shape + reducedAuthority + effect + kind user-approval + inline + recovery:<token>:<seq> + canonical sha256 digest recomputed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S10",
+      "name": "deny / close / abort zero effect: DENY typed block (no new member/incident); abort -> control-request-abandoned + typed abandoned block; later allow rejected (terminal)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S11",
+      "name": "restarts persist, readiness resets: consent + disable facts survive all restarts and drive the fresh evaluation; the compatibility row is recomputed per boot; LIVE readiness is ephemeral — no mounted slot survives a restart, re-probed at the next boundary",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S12",
+      "name": "LIVE persona world (D-2a re-scope): the mounted preset is the authority (rootPresetId -> production persona observer over the agentPresets seam) — standard mounted -> PASS (correct open, no scripted seam); bare preset (no persona row, kit-installed) mounted -> FATAL PERSONA_INCOMPATIBLE + admitInitialWork blocked (no false open)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S13",
+      "name": "old v1 frozen blueprint cold resume: byte-exact pre-PR-E source -> SAME pre-PR-E contentHash under the PR-E code; cold resume re-attaches with the hash unchanged",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "S14",
+      "name": "dual-Team isolation: T2 proceeds while T is in a recovery incident; the LIVE probe is host-wide (one row, all live sessions) — the isolation proven here is the DURABLE per-root state (incidents / control facts / compatibility rows never cross roots)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "H1",
+      "name": "test-use pristine BEFORE + AFTER (porcelain empty, HEAD baseline); :3080/:3180 zero-touch (pre == post); the worker bash is a no-op echo",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "id": "H2",
+      "name": "all run ports released after teardown (worldCleaned=true on PASS only)",
+      "pass": true,
+      "note": ""
+    }
+  ],
+  "at": "2026-10-01T16:59:01.916Z"
+}

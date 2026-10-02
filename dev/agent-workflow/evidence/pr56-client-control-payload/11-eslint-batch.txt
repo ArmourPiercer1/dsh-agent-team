@@ -1,0 +1,4 @@
+$ npx eslint <changed files>  (FROZEN BATCH)
+2026-10-01T17:41:15Z
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+[eslint exit code: 0]

@@ -1,0 +1,23 @@
+== closure product-tree identity proof ==
+merge master: c19af1954239c6b3933e708fd9bdb0d50dbe1ea4
+closure head: 59b619c6b9638ab10aebf7ef9e5f89107b7823c8
+date: 2026-10-01T11:03:59Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-identity-proof.txt
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-sync-battery.sh
+
+$ git diff --stat c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 59b619c6b9638ab10aebf7ef9e5f89107b7823c8 -- packages/ pnpm-lock.yaml package.json
+EXIT_DIFF=0
+
+result: EMPTY = the closure product tree (packages/ + lockfile) is BYTE-IDENTICAL to the merged master (= the verified #50 final-head product tree aab72757)
+
+$ git diff --name-only c19af1954239c6b3933e708fd9bdb0d50dbe1ea4 59b619c6b9638ab10aebf7ef9e5f89107b7823c8
+AGENTS.md
+README.md
+dev/agent-workflow/evidence/pre-alpha3-refactor/closure/baseline-battery-run-pre-testuse.log
+dev/agent-workflow/evidence/pre-alpha3-refactor/closure/baseline-full-suite-pre-testuse-degraded-env.log
+dev/agent-workflow/evidence/pre-alpha3-refactor/closure/baseline-lint-fingerprint.txt
+dev/agent-workflow/evidence/pre-alpha3-refactor/closure/final-series-report.md
+docs/STATUS.md
+EXIT_LIST=0
+(the full closure-vs-master delta = the docs/evidence files only, listed above)

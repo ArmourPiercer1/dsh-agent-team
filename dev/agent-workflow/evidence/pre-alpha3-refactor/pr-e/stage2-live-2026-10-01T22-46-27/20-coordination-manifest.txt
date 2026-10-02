@@ -1,0 +1,28 @@
+=== run-7 coordination manifest (read-only aggregation of existing files; nothing imported, nothing committed) ===
+generated_utc=2026-10-01T22:52:46.795Z  run_dir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T22-46-27
+carrier=e63da1256f7313822a2205b34696d330bba79e65 tree=da83b95bce459aa0b525535d5431200a5b2524d6 parents=76dfd4c7…+034b7418…  world=prereq-2026-10-01T22-46-27 (kit-cleaned on PASS)
+outcome: observer STAGE2_OBSERVE_PASS 40/40; marker VERIFIED:observed-pending; kit VERDICT PASS — all 16 criteria green; runner=0 kit=0 paired=0; signals=0
+role  file  bytes  sha256
+other  03-launch-argv.txt                           1818  12d4cac9172e31a06a638a831da2cc39b3de4b0280800a502362ca4755fa9249
+console  10-paired-console-raw.log                    4101  3fa1166e7d677418ef76f90fc77d8e0ada4803cffcac611c99202730995db7a5
+console  11-paired-exit.txt                              2  9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa
+identity  15-owned-identity-recorder.sh                1821  83208a77883c270bee93ce8874d627bb7c2faf52214f7981ae164cc4c8faafcf
+identity  16-owned-identity.raw                      114995  cf52faf67ff7206a3692b9d41ed61cbd2cdf9578bb18383b8374ed1cf4e4be5e
+report  17-result-summary.txt                        3366  f3ecbd325eba76cc4857c447b5f204b3ab61a5810fc2617cea2c2c512306df04
+report  18-finally-by-identity.txt                   1715  2f69675dc33473ffb7ed31e5f629e178bfffe98c949dad690c00022156a3404a
+report  19-runtime-restored-raw.txt                  2796  5a3df15ccafcc1a2912ac4d33a97fdd2ae19d69c472e00897ce6b09cdbef9afc
+report  20-coordination-manifest.txt                 1559  75063519f120e0d6bc70226bf0a62c739d4c704714eabb021b1c908ca630d373
+kit-log  kit-run.log                                 54933  adab70af5fb62931fa2b0ab89e1d3da552c0d96f7383412be4ebabc8a9eae69b
+kit-await  observe/marker.json                           206  d20be6f73de7268c6bd1e2ed46c42498844bb341a6a2945962bf78a660ec073c
+observer  observer/comparisons.json                   19955  fd934714df6117f8f7ca43db69d6fe4d2ed2bf33522c71912ac701ec2d22d0ee
+observer  observer/dom-narrow.json                     1753  af3da5901feb2cc29d770dce5bfc9f7764f2633aa088706f37f7d06985856a15
+observer  observer/dom-normal.json                     1753  af3da5901feb2cc29d770dce5bfc9f7764f2633aa088706f37f7d06985856a15
+observer  observer/manifest.json                       1317  06fd7fa9c1bfe53759828f3e383af39fe2d99b3451d49c4d8698210b66c82be9
+observer  observer/meta.json                            601  21ccb7592a5e6907d7bdaab384f298f192f98b101f640becc7f47adf818da3a9
+observer  observer/panel-narrow.png                   43395  767d96418c15a3a33e65aba4c67551fa62d632c3dd024c1194a45f9f2e4d01d8
+observer  observer/panel-normal.png                   55130  ef61e0b5a2b8f8b8467aa88ca7b2ebfec6dc257cc01f61e48219b9573760cc86
+observer  observer/shot-narrow.png                    71440  8432fbee091ef4f2d056fd08774794bd09d3ac4d918a78b6344442b0f030c469
+observer  observer/shot-normal.png                   106343  57c004273202b054a0f758693dbcae5ee65d27dfc1410a156e75a7102156e98c
+kit-await  observe/summary.json                          355  8650316986111794cab9a19690d716e78192b0582f502932632aa6ac39aa4c34
+other  scratch/digest-row.json                      1843  4cefa94414b64017500e8f42e6b51327173d08fe81900359834b5f372a943f92
+other  scratch/payload.json                         1058  7d3904c82d8978ec04294a35c6d2dcc48e24d3f30967f6152feb4b79f3eaee29

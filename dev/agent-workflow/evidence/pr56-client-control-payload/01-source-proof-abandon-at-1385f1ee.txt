@@ -1,0 +1,2 @@
+$ git grep -n -i abandon 1385f1ee -- packages/client/src   (worktree HEAD=1385f1ee)
+[exit code: 1]  (1 = zero hits)

@@ -1,0 +1,10 @@
+== post-merge-check-artifacts (closure post-merge light sanity) ==
+HEAD: 59b619c6b9638ab10aebf7ef9e5f89107b7823c8 (controlled sync of master c19af195 [#50 merge] onto the closure branch)
+date: 2026-10-01T11:04:13Z
+git status --porcelain:
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/post-merge-identity-proof.txt
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-merge-sanity.sh
+?? dev/agent-workflow/evidence/pre-alpha3-refactor/closure/run-post-sync-battery.sh
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1372 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+POST-MERGE-CHECK-ARTIFACTS_EXIT=0

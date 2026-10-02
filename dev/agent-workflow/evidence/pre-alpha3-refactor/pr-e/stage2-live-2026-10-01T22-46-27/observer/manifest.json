@@ -1,0 +1,46 @@
+{
+  "kit": "pr-e-requirement-recovery-smoke/stage2-observer",
+  "at": "2026-10-01T22:46:42.526Z",
+  "files": [
+    {
+      "file": "comparisons.json",
+      "bytes": 19955,
+      "sha256": "fd934714df6117f8f7ca43db69d6fe4d2ed2bf33522c71912ac701ec2d22d0ee"
+    },
+    {
+      "file": "dom-narrow.json",
+      "bytes": 1753,
+      "sha256": "af3da5901feb2cc29d770dce5bfc9f7764f2633aa088706f37f7d06985856a15"
+    },
+    {
+      "file": "dom-normal.json",
+      "bytes": 1753,
+      "sha256": "af3da5901feb2cc29d770dce5bfc9f7764f2633aa088706f37f7d06985856a15"
+    },
+    {
+      "file": "meta.json",
+      "bytes": 601,
+      "sha256": "21ccb7592a5e6907d7bdaab384f298f192f98b101f640becc7f47adf818da3a9"
+    },
+    {
+      "file": "panel-narrow.png",
+      "bytes": 43395,
+      "sha256": "767d96418c15a3a33e65aba4c67551fa62d632c3dd024c1194a45f9f2e4d01d8"
+    },
+    {
+      "file": "panel-normal.png",
+      "bytes": 55130,
+      "sha256": "ef61e0b5a2b8f8b8467aa88ca7b2ebfec6dc257cc01f61e48219b9573760cc86"
+    },
+    {
+      "file": "shot-narrow.png",
+      "bytes": 71440,
+      "sha256": "8432fbee091ef4f2d056fd08774794bd09d3ac4d918a78b6344442b0f030c469"
+    },
+    {
+      "file": "shot-normal.png",
+      "bytes": 106343,
+      "sha256": "57c004273202b054a0f758693dbcae5ee65d27dfc1410a156e75a7102156e98c"
+    }
+  ]
+}

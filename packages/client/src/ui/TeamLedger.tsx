@@ -36,7 +36,7 @@ import type { LedgerCategory, ProgressValue } from '../../../contracts/src/index
 import type { RemoteResponse } from '../../../remote/src/index.js'
 import type { TeamLedgerState } from '../state/team-ledger-store.js'
 import type {
-  TeamUiControlChain, TeamUiLedgerModel, TeamUiSnapshot,
+  TeamUiControlChain, TeamUiControlRenderMode, TeamUiLedgerModel, TeamUiSnapshot,
 } from '../model/team-ui-snapshot.js'
 import {
   TEAM_LEDGER_INITIAL_LIMIT, TEAM_LEDGER_STEP,
@@ -125,6 +125,46 @@ export interface TeamLedgerProps {
 type ResolveControlState =
   | { readonly phase: 'busy' }
   | { readonly phase: 'error'; readonly code: string; readonly message: string }
+
+/**
+ * PR #56 — the fixed wire-style label of one control-chain rendering
+ * mode (the explicit compat-class label in the detail panel; wire
+ * tokens — deliberately identical across dictionaries, never
+ * translated).
+ */
+function controlRenderModeLabel(mode: TeamUiControlRenderMode): string {
+  switch (mode) {
+    case 'recovery-v1':
+      return 'recovery-dispatch/v1'
+    case 'legacy-compat':
+      return 'legacy-compatible'
+    case 'unsupported-subject':
+      return 'unsupported-subject'
+    case 'standard':
+      return 'standard'
+  }
+}
+
+/**
+ * PR #56 — the SAFE TEXT presentation of the full review payload: a
+ * React TEXT NODE (rendered inside <pre> — absolutely no
+ * dangerouslySetInnerHTML / no HTML interpretation; a hostile payload
+ * value stays inert text). The FULL value is serialized (never
+ * sampled, never truncated; the block scrolls — see
+ * `.controlPayload`); an unexpected serializer failure falls back to
+ * `String(value)` text (never a throw, never an invented value). This
+ * is presentation formatting ONLY — NOT canonicalization and NOT
+ * verification (the client ships no canonicalizer / hash; the digest
+ * renders as wire-sourced evidence).
+ */
+function renderReviewPayloadText(value: TeamUiControlChain['reviewPayload']): string {
+  try {
+    const text = JSON.stringify(value, null, 2)
+    return typeof text === 'string' ? text : String(value)
+  } catch {
+    return String(value)
+  }
+}
 
 /** The closed frozen category filter options (the contracts `LedgerCategory` set). */
 const CATEGORY_FILTER_OPTIONS: readonly (readonly [LedgerCategory, TeamKey])[] = [
@@ -426,6 +466,19 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
     // UI §26.2 "requested authority": the closed resolver role set for
     // the closed kind; ABSENT for an unknown kind (never invented).
     const authority = requestedAuthorityForKind(chain?.kind)
+    // PR #56 (3) — the DISPLAY-SIDE recovery-integrity gate (client only;
+    // the backend authority is untouched): an integrity verdict of
+    // `incomplete` (a v1 request whose reviewPayload is missing /
+    // corrupted or whose digest is absent / shape-invalid — SHAPE
+    // validation only; or the DEFENSIVE digest-without-payload guard,
+    // a shape the current backend cannot produce) → an explicit banner +
+    // ALLOW DISABLED (deny keeps its existing safe semantics; never a
+    // silent omit-then-approve). The client ships no canonicalization /
+    // hash: display ≠ verification.
+    const cannotFullyReview = chain?.reviewIntegrity === 'incomplete'
+    // PR #56 (1) — an unsupported subject is non-decidable too (the
+    // request stays VISIBLE, Allow disabled, deny safe).
+    const allowBlocked = cannotFullyReview || chain?.renderMode === 'unsupported-subject'
     return (
       <div
         className={styles.resolveBar}
@@ -490,7 +543,84 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
               </div>
             )
             : null}
+          {/* PR #56 (1) — the durable control subject verbatim (closed
+              canonical map; ABSENT never invented). An unsupported
+              subject renders the RAW kind leaf (never a guessed id). */}
+          {chain?.subject !== undefined
+            ? (
+              <div
+                className={styles.controlField}
+                data-control-detail-subject
+                data-subject-kind={chain.subject.kind}
+                data-subject-id={chain.subject.id}
+              >
+                <dt>{t('view.ledger.control.subject')}</dt>
+                <dd>{`${chain.subject.kind}:${chain.subject.id}`}</dd>
+              </div>
+            )
+            : chain?.subjectKindRaw !== undefined
+              ? (
+                <div
+                  className={styles.controlField}
+                  data-control-detail-subject
+                  data-subject-kind="unsupported"
+                >
+                  <dt>{t('view.ledger.control.subject')}</dt>
+                  <dd>{`unsupported (${chain.subjectKindRaw})`}</dd>
+                </div>
+              )
+              : null}
+          {/* PR #56 (2) — the requestId as a VISIBLE field (screenshots
+              must carry the binding; the data-request-id attribute is
+              insufficient). */}
+          <div className={styles.controlField} data-control-detail-request-id>
+            <dt>{t('view.ledger.control.requestId')}</dt>
+            <dd>{requestId}</dd>
+          </div>
+          {/* PR #56 — the explicit rendering mode label (compat classes
+              stay distinguishable on screen and in evidence). */}
+          {chain?.renderMode !== undefined
+            ? (
+              <div className={styles.controlField} data-control-detail-render-mode data-render-mode={chain.renderMode}>
+                <dt>{t('view.ledger.control.renderMode')}</dt>
+                <dd>{controlRenderModeLabel(chain.renderMode)}</dd>
+              </div>
+            )
+            : null}
+          {/* PR #56 (2) — the FULL wire digest verbatim, labeled
+              wire-sourced (SHAPE is not re-verified client-side: no
+              product-side hash — display ≠ verification). */}
+          {chain?.reviewPayloadDigest !== undefined
+            ? (
+              <div className={styles.controlField} data-control-detail-digest data-digest-source="ledger-wire">
+                <dt>{t('view.ledger.control.digest')}</dt>
+                <dd className={styles.controlDigestValue}>{chain.reviewPayloadDigest}</dd>
+              </div>
+            )
+            : null}
+          {/* PR #56 (2) — the FULL reviewPayload as SAFE TEXT: a React
+              text node inside <pre> (absolutely no
+              dangerouslySetInnerHTML / HTML interpretation); full
+              content, scrollable, NEVER truncated; an absent payload
+              OMITS the block entirely (no 'null' invention). */}
+          {chain?.reviewPayload !== undefined
+            ? (
+              <div className={`${styles.controlField} ${styles.controlFieldWide}`} data-control-detail-payload>
+                <dt>{t('view.ledger.control.payload')}</dt>
+                <dd>
+                  <pre className={styles.controlPayload}>{renderReviewPayloadText(chain.reviewPayload)}</pre>
+                </dd>
+              </div>
+            )
+            : null}
         </dl>
+        {cannotFullyReview
+          ? (
+            <span className={styles.cannotReview} data-control-detail-cannot-review role="alert">
+              {t('view.ledger.control.cannotReview')}
+            </span>
+          )
+          : null}
         {showCommands
           ? (
             <>
@@ -498,7 +628,8 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
                 type="button"
                 className={styles.resolveBtn}
                 data-ledger-resolve-allow
-                disabled={busy}
+                data-allow-blocked={allowBlocked ? 'true' : undefined}
+                disabled={busy || allowBlocked}
                 onClick={() => { runResolve(requestId, 'allow') }}
               >
                 {t('view.ledger.resolve.allow')}

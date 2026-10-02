@@ -203,6 +203,46 @@
  *  The ENTIRE evidence dir is token-scrubbed (`\bsk-[A-Za-z0-9]{24,}` = 0
  *  matches); `mock-requests.json` is NOT part of the evidence.
  *
+ * UI OBSERVE mode (OPT-IN; pre-alpha3 pending-review / reviewed-payload UI
+ * gate — pure helpers + unit tests in `ui-observe.mjs`/`ui-observe.test.mjs`):
+ *  --ui-observe <dir>   Enables the hold point. The FIRST recovery-class
+ *      pending request the pump observes (the S9 reviewed payload + digest
+ *      carrier) is NOT resolved by the kit: it writes the browser ACCESS
+ *      record (launch URL/token, mode 0600 — the browser-smoke-host pattern)
+ *      ONLY inside the gitignored test world
+ *      (tests/homes/<world>/browser-access.json, realpath-guarded) and a
+ *      token-free `summary.json` into the observe dir, then waits for the
+ *      observer tooling's `marker.json` HINT. The marker is NEVER truth:
+ *      the kit proceeds only after re-reading durable truth through the
+ *      EXISTING `team.getLedgerPage` path and matching requestId +
+ *      reviewPayloadDigest (recomputed sha256 over canonicalJson) + the
+ *      actual durable fact for the claim — resolved:deny / resolved:allow
+ *      (control-decision-recorded), abandon-observed (control-request-
+ *      abandoned — THIS KIT'S TRIGGER: the 120s executeTool abort seam, a
+ *      product lifecycle fact, never written by the kit), surface-close
+ *      (asserts ONLY zero new durable facts for the requestId, is NEVER a
+ *      deny/allow/abandon, then the original automation continues; RESERVED
+ *      for a future closeable surface — the MERGED UI has none: packages/
+ *      client/src/ui/TeamLedger.tsx @ 1385f1ee, inline §26.2 detail panel
+ *      data-control-detail* fields L436-447, "the detail panel stays visible
+ *      for the pending state" L101, only resolve allow/deny buttons L497-512,
+ *      ZERO close affordance), and observed-pending (the observer FINISHED
+ *      INSPECTING a STILL-PENDING, zero-durable-effect request — distinct
+ *      refusals DECIDED_EXISTS / ABANDONED_EXISTS; after verification the
+ *      kit's pre-existing SCRIPTED policy resumes: a SCRIPT decision, never a
+ *      UI approval). The
+ *      observe dir must be a controlled dir INSIDE the authorized workspace
+ *      (suggested: <repo>/.worktrees/.scratch-logs/pr54-ui-observe/), never
+ *      the world and never under tests/homes; it only ever holds
+ *      marker.json + summary.json (never auth values).
+ *  --ui-hold-ms <n>     Hold budget in ms (1000..300000; default 180000 —
+ *      above the 120s abort seam so abandon-observed stays verifiable).
+ *  Timeout is FAIL-CLOSED: an explicit "UI NOT_RUN"/"UI TIMEOUT" criterion
+ *  failure, world retained; the kit NEVER auto-allows and NEVER resolves on
+ *  behalf. FLAGS OFF = byte-identical previous behavior. Verification of
+ *  this module = `node --test tests/kits/pr-e-requirement-recovery-smoke/
+ *  ui-observe.test.mjs`; live-host runs stay the env's job.
+ *
  * EXIT: 0 = all 14 scenarios + hygiene PASS (world deleted);
  *        2 = a criterion failed (evidence dumped, world retained);
  *        1 = fatal (infrastructure / pre-flight).
@@ -210,8 +250,19 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { createHash, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
+// OPT-IN UI observe hold-point helpers (flag-off = never executed). This module
+// is the ONE implementation of canonicalJson/sha256Hex (the kit's former local
+// copies — results pinned byte-identical by ui-observe.test.mjs golden vectors).
+import {
+  parseObserveFlags, writePrivateAccessRecord, readMarkerHint, verifyUiTruth,
+  planUiHoldStep, summarizeUiObserve, reviewPayloadDigestOf,
+  sha256Hex, canonicalJson,
+  UI_CLIENT_ROW_ID, uiClientShimIndexHref, uiClientBundlePath, uiClientPatchLines,
+  UI_LEDGER_READ_BUDGET_MS, boundedUiLedgerRead, uiObservePollFlow, uiPumpHookDisposition,
+} from './ui-observe.mjs'
+import { makeRemoteIo } from './remote-io.mjs'
 import {
   TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH,
 } from '../../paths.mjs'
@@ -359,6 +410,22 @@ const LOCK_FILE = `${HOME}.lock`
 const BLUEPRINT_DIR = join(HOME, 'blueprints') // saved sources live IN the world home
 const WORLD_FILE = join(HOME, 'storages', 'team_domain.json')
 
+// ── OPT-IN UI observe mode (pre-alpha3 pending-review / payload UI gate) ────
+// FLAGS OFF (default) => UI_OBSERVE.enabled === false and EVERY path below is
+// never entered — the kit keeps its previous behavior byte-identically. The
+// observe dir must be a controlled dir INSIDE the authorized workspace, never
+// the world, never under tests/homes (the 0600 access record stays world-only).
+const WORKSPACE_ROOT = /(^|[\\/])\.worktrees([\\/]|$)/.test(WORKTREE) ? resolve(WORKTREE, '..', '..') : WORKTREE
+let UI_OBSERVE = { enabled: false, observeDir: null, holdMs: 0 }
+try {
+  UI_OBSERVE = parseObserveFlags(args, { workspaceRoot: WORKSPACE_ROOT, worldDir: HOME })
+} catch (error) {
+  process.stderr.write(`FATAL (ui-observe flags, fail closed): ${String(error?.code ?? '')} ${String(error?.message ?? error)}\n`)
+  process.exit(1)
+}
+let uiTargetClaimed = false // UI mode: the FIRST observed recovery request is the observe target
+const uiObserveRecords = []
+
 const ROOT = `session-prereq-boot-${RUN_STAMP}` // the row anchor's boot root
 const T = `session-prereq-main-${RUN_STAMP}` // the main scenario team (v2)
 const T2 = `session-prereq-iso-${RUN_STAMP}` // the dual-team isolation team (v2)
@@ -452,35 +519,12 @@ function dieFatal(msg) {
 
 // ── small utils ─────────────────────────────────────────────────────────────
 
-function sha256Hex(s) {
-  return createHash('sha256').update(s, 'utf8').digest('hex')
-}
-
-/** Deterministic JSON: keys in ascending code-unit order, compact (the
- *  contracts `canonicalJsonStringify` — recomputed for the S9 digest). */
-function canonicalJson(value) {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') {
-    return JSON.stringify(value)
-  }
-  if (Array.isArray(value)) return `[${value.map((item) => canonicalJson(item)).join(',')}]`
-  const entries = Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-  return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${canonicalJson(item)}`).join(',')}}`
-}
+// sha256Hex / canonicalJson are imported from ./ui-observe.mjs (ONE canonical
+// implementation; the S9 digest pattern rides on them unchanged — pinned by
+// the ui-observe.test.mjs golden vectors against the kit's former local fns).
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-async function fetchJson(url, init, timeoutMs = 30_000) {
-  let res
-  try {
-    res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
-  } catch (error) {
-    return { status: 0, body: null, error: String(error?.message ?? error) }
-  }
-  const text = await res.text().catch(() => '')
-  let body = null
-  try { body = text === '' ? null : JSON.parse(text) } catch { body = text }
-  return { status: res.status, body, error: null }
-}
 
 async function probeStableInstance(url) {
   // Refusal-safe (2026-10-01, test-infra): the stable-instance probe is a
@@ -528,45 +572,7 @@ function scrubTokens(text) {
     .replace(/\blt-v1-[0-9a-f]{16,}/g, 'lt-v1-REDACTED')
 }
 
-async function remoteCall(host, method, params, tag, version = 1, timeoutMs = 60_000) {
-  const body = {
-    type: 'client-request',
-    rpcId: `${tag}-${randomUUID().slice(0, 8)}`,
-    method,
-    payload: { version, params },
-  }
-  const r = await fetchJson(`${host.origin}/team-remote/${method}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', cookie: host.cookie },
-    body: JSON.stringify(body),
-  }, timeoutMs)
-  const entry = {
-    at: new Date().toISOString(),
-    boot: host.boot,
-    method,
-    version,
-    tag,
-    status: r.status,
-    error: r.error,
-    ok: r.body?.result?.ok === true,
-    code: r.body?.result?.ok === false ? r.body?.result?.error?.code : undefined,
-    params: params ?? null,
-    body: r.body,
-  }
-  EVID.transcript.push(entry)
-  log(`remote ${method} v${version} [${tag}] -> ${r.status} ok=${entry.ok === true}${entry.code ? ` code=${entry.code}` : ''}${r.error ? ` (net: ${scrubTokens(r.error)})` : ''}`)
-  return r
-}
 
-async function remoteCallReady(host, method, params, tag, version = 1, retries = 20) {
-  let last = null
-  for (let i = 0; i < retries; i += 1) {
-    last = await remoteCall(host, method, params, tag, version)
-    if (last.status !== 429) return last
-    await sleep(1500)
-  }
-  return last
-}
 
 function remoteValue(result, method) {
   if (result.status !== 200) throw new Error(`${method}: HTTP ${result.status}: ${scrubTokens(JSON.stringify(result.body).slice(0, 400))}`)
@@ -1600,6 +1606,20 @@ function yamlEmitItem(item, indent) {
 
 function writeTeamPatchFile(patchPath, rowConfig, comment) {
   mkdirSync(dirname(patchPath), { recursive: true })
+  // UI OBSERVE bootstrap (FIX-1; FLAGS OFF => every block below is inert and
+  // the written patch stays BYTE-IDENTICAL to the committed flag-off form).
+  // The browser lane needs the S8-pattern CLIENT row (the inert node half whose
+  // manifest serves the built client-bundle.js to the dynamic cordis runner);
+  // the bundle is verified BEFORE boot and the written patch AFTER write — a
+  // missing piece is a typed UI NOT_RUN fail-closed (never boot the UI lane on
+  // a silently-dropped row: the smoke-host's `- id:` mapping-form trap).
+  if (UI_OBSERVE.enabled) {
+    const bundlePath = uiClientBundlePath(WORKTREE)
+    if (!existsSync(bundlePath)) {
+      check('S9', 'UI NOT_RUN: UI OBSERVE client bootstrap bundle missing — refusing to boot the UI lane', false, bundlePath)
+      dieFatal(`UI NOT_RUN: client bundle missing for the UI OBSERVE bootstrap row: ${bundlePath}`)
+    }
+  }
   const lines = [
     `# pre-alpha3 PR-E E.12 gate patch layer (world ${RUN_STAMP}): production dsh-agent-team row (WORKTREE dist — this branch's build) + p6t6 observability row + the D-2a \`bare\` preset (a composable preset with NO persona row — the LIVE-ABSENT persona world; the production persona observer maps it to kind \`absent\` (source effective-composition) and the required-standard persona requirement FATALs (PERSONA_INCOMPATIBLE) — the S12b re-scope subject) — mounted ONLY through this public profile-patch seam (CORE PATCH BUDGET = 0).`,
     `# ${comment}`,
@@ -1617,9 +1637,18 @@ function writeTeamPatchFile(patchPath, rowConfig, comment) {
         ],
       },
     }, 2),
+    ...(UI_OBSERVE.enabled ? ['', ...uiClientPatchLines({ worktree: WORKTREE, enabled: true })] : []),
     '',
   ]
   writeFileSync(patchPath, lines.join('\n'))
+  if (UI_OBSERVE.enabled) {
+    const written = readFileSync(patchPath, 'utf8')
+    const shimIndex = uiClientShimIndexHref(WORKTREE)
+    if (!written.includes(UI_CLIENT_ROW_ID) || !written.includes(shimIndex)) {
+      check('S9', 'UI NOT_RUN: written profile patch lacks the UI client row or the shim bundle path', false, `row=${written.includes(UI_CLIENT_ROW_ID)} shim=${written.includes(shimIndex)}`)
+      dieFatal(`UI NOT_RUN: written profile patch lacks the ${UI_CLIENT_ROW_ID} row or the shim bundle path (${patchPath})`)
+    }
+  }
 }
 
 // ── world boot / stop ───────────────────────────────────────────────────────
@@ -1732,6 +1761,123 @@ async function sweepLiveHosts() {
 // ── the scripted delegate attempt (the heart of the gate) ───────────────────
 
 /**
+ * UI OBSERVE hold point (entered ONLY when UI_OBSERVE.enabled — flags-off
+ * runs never call this). The kit does NOT resolve the target request. It
+ * writes (a) the PRIVATE 0600 browser access record (origin + launch URL)
+ * ONLY inside the gitignored test world — realpath-guarded, never logged,
+ * never evidence — and (b) a token-free `summary.json` into the observe dir,
+ * then waits for the observer tooling's `marker.json` HINT. The marker is
+ * NEVER truth: every iteration re-reads the durable ledger through the
+ * EXISTING `ledgerEntries` path (`team.getLedgerPage`) and only proceeds when
+ * `verifyUiTruth` matches requestId + recomputed reviewPayloadDigest + the
+ * actual durable fact for the claimed action. Expiry is FAIL-CLOSED
+ * ('UI NOT_RUN' / 'UI TIMEOUT' — an explicit criterion failure; the kit
+ * NEVER auto-allows and NEVER resolves on behalf).
+ */
+async function uiObserveHold(rec, rootSessionId, req, rid, tag) {
+  const observeDir = UI_OBSERVE.observeDir
+  const expectedDigest = reviewPayloadDigestOf(req.reviewPayload ?? null)
+  let accessPath = null
+  try {
+    // FIX-3 secure write: placement guard + O_CREAT|O_EXCL|O_NOFOLLOW 0600 +
+    // post-write fstat/realpath verification; a pre-existing leaf (symlink OR
+    // loose mode) is refused UNTOUCHED — this lane only writes NEW records it
+    // just created; legacy private records are never followed/chmod'ed/rewritten.
+    const writtenRecord = writePrivateAccessRecord({
+      repoRoot: WORKTREE,
+      worldDir: HOME,
+      payload: {
+        note: 'PRIVATE operational record — raw launch URL. Not evidence: never commit, never paste into a log or a report. Valid only while this boot is live.',
+        runStamp: RUN_STAMP,
+        world: HOME,
+        boot: rec.label,
+        origin: rec.origin,
+        launchUrl: rec.url,
+        requestId: rid,
+        reviewPayloadDigest: expectedDigest,
+      },
+    })
+    accessPath = writtenRecord.path
+  } catch (error) {
+    const reason = `ACCESS_RECORD_REJECTED :: ${String(error?.code ?? error?.message ?? error).slice(0, 200)}`
+    check('S9', 'UI NOT_RUN: UI OBSERVE access record rejected by the placement guard (fail closed)', false, reason)
+    return { ok: false, outcome: 'UI NOT_RUN', reason }
+  }
+  const startedAt = Date.now()
+  const writeSummary = (outcome, claim = null) => {
+    try {
+      mkdirSync(observeDir, { recursive: true })
+      writeFileSync(join(observeDir, 'summary.json'), JSON.stringify(summarizeUiObserve({
+        runStamp: RUN_STAMP, origin: rec.origin, requestId: rid, digest: expectedDigest,
+        outcome, holdMs: UI_OBSERVE.holdMs, claim,
+      }), null, 2))
+    } catch { /* observe-dir summary is best effort — the ledger is the truth */ }
+  }
+  writeSummary('AWAITING')
+  log(`${tag}: UI OBSERVE hold — requestId=${rid} digest=${expectedDigest.slice(0, 18)}… holdMs=${UI_OBSERVE.holdMs}; access record ${accessPath} (0600, world-only); awaiting ${join(observeDir, 'marker.json')} (HINT ONLY — durable truth decides)`)
+  const deadlineAt = startedAt + UI_OBSERVE.holdMs
+  // ITEM-A: the loop's decision logic is the SHARED single implementation
+  // (uiObservePollFlow — tests drive the SAME logic with a fake remote
+  // surface); this wrapper keeps ALL persistence: summary.json, the
+  // uiObserveRecords/S9 evidence bookkeeping and the fail-closed check().
+  const flow = await uiObservePollFlow({
+    observeDir,
+    expectedRequestId: rid,
+    expectedDigest,
+    deadlineAt,
+    holdStartedAt: startedAt,
+    sleepFn: sleep,
+    readLedger: async () => {
+      // ITEM-B: the UI read carries a REAL AbortSignal end-to-end
+      // (fetchPage → remoteCallReady → remoteCall → fetchJson → fetch).
+      // Any overrun aborts it: the in-flight HTTP is cancelled and the
+      // 429-retry chain stops mid-sleep — nothing keeps running or logging
+      // after the boundary. Residual honesty: a client-side abort cannot
+      // recall server-side work already received; the guarantee is that
+      // past the boundary nothing is waited on, adopted, retried or logged
+      // CLIENT-side.
+      const ctrl = new AbortController()
+      try {
+        const read = await boundedUiLedgerRead({
+          deadlineAt,
+          fetchPage: async (afterSequence) => {
+            if (ctrl.signal.aborted) throw Object.assign(new Error('UI read aborted (AbortSignal)'), { name: 'AbortError', code: 'ABORT_ERR' })
+            return remoteValue(
+              await remoteCallReady(rec, 'team.getLedgerPage', { teamSessionId: rootSessionId, afterSequence, limit: 500 }, `ui-ledger-p${afterSequence}`, 1, 20, ctrl.signal),
+              'team.getLedgerPage',
+            )
+          },
+        })
+        if (read.ok !== true) ctrl.abort()
+        return read
+      } finally {
+        ctrl.abort()
+      }
+    },
+    onEvent: (event) => {
+      if (event.type === 'summary') writeSummary(event.outcome, event.claim)
+      else if (event.type === 'poll-error') log(`${tag}: UI OBSERVE poll error (transient): ${event.message}`)
+    },
+  })
+  if (!flow.ok) {
+    const lastReason = flow.lastReason
+    writeSummary(flow.outcome)
+    const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome: flow.outcome, claim: null, holdMs: UI_OBSERVE.holdMs, waitedMs: Date.now() - startedAt, lastReason, at: new Date().toISOString() }
+    uiObserveRecords.push(record)
+    saveScenario('ui-observe', { records: uiObserveRecords })
+    check('S9', `${flow.outcome}: UI OBSERVE hold point expired FAIL-CLOSED — no auto-allow, no kit resolve-on-behalf`, false, `tag=${tag} requestId=${rid} lastReason=${lastReason ?? 'no marker seen'} holdMs=${UI_OBSERVE.holdMs}`)
+    return { ok: false, outcome: flow.outcome, reason: lastReason }
+  }
+  const outcome = flow.claim === 'surface-close' ? 'SURFACE_CLOSE_ZERO_EFFECT' : `VERIFIED:${flow.claim}`
+  writeSummary(outcome, flow.claim)
+  const record = { tag, requestId: rid, digestPrefix: expectedDigest.slice(0, 18), outcome, claim: flow.claim, holdMs: UI_OBSERVE.holdMs, waitedMs: flow.waitedMs, at: new Date().toISOString() }
+  uiObserveRecords.push(record)
+  saveScenario('ui-observe', { records: uiObserveRecords })
+  log(`${tag}: UI OBSERVE VERIFIED (${flow.claim}) — durable ledger truth confirmed BEFORE the deadline (the marker hint itself is never trusted)`)
+  return { ok: true, decision: flow.decision, claim: flow.claim }
+}
+
+/**
  * Fire ONE leader team-tool call through the p6t6 seam (async:false — the
  * call returns when the work unit settles) and, in parallel, resolve the
  * control requests it opens per `policy`:
@@ -1764,6 +1910,51 @@ async function leaderAttempt(rec, tag, policy, { timeoutMs = 200_000 } = {}) {
           pendingSeen.push({ requestId: rid, kind: req.kind, correlation: req.correlation ?? null, toolName: req.toolName ?? null, actionName: req.actionName ?? null, reviewPayload: req.reviewPayload ?? null, reviewPayloadDigest: req.reviewPayloadDigest ?? null, executionCoupling: req.executionCoupling ?? null })
           const isRecovery = typeof req.correlation === 'string' && req.correlation.startsWith('recovery:')
           if (isRecovery) {
+            if (UI_OBSERVE.enabled && !uiTargetClaimed) {
+              // UI OBSERVE mode: the FIRST observed recovery-class pending
+              // request is the observe target (the S9 reviewed payload + digest
+              // the external UI session reviews). The kit HOLDS — it never
+              // resolves this request; the durable truth gate decides.
+              uiTargetClaimed = true
+              const held = await uiObserveHold(rec, rootSessionId, req, rid, tag)
+              const disposition = uiPumpHookDisposition({ held })
+              if (disposition === 'record-durable-decision') {
+                // Durable truth ALREADY recorded the decision / the abandon —
+                // NEVER re-resolve; feed the EXISTING assertion branches with
+                // the durable decision the real UI (or the product lifecycle)
+                // produced for the SAME real request.
+                decisions.push({ requestId: rid, class: 'recovery', decision: held.decision, resolveStatus: 'ui-observe', resolveError: null })
+                continue
+              }
+              if (disposition === 'record-fail-closed') {
+                // Fail-closed ('UI NOT_RUN' / 'UI TIMEOUT' recorded by
+                // uiObserveHold as an explicit criterion failure). NEVER
+                // auto-allow, NEVER fall back to the kit's default resolve.
+                decisions.push({ requestId: rid, class: 'recovery', decision: null, resolveStatus: 'ui-fail-closed', resolveError: held.reason ?? held.outcome ?? 'UI NOT_RUN' })
+                continue
+              }
+              if (disposition === 'record-observation') {
+                // ITEM-A (coordinator-approved): the VERIFIED observed-pending
+                // observation lives ONLY in uiObserveRecords + the S9 UI
+                // evidence (recorded inside uiObserveHold) — NEVER in
+                // decisions[]. decisions[] keeps EXACTLY the pre-FIX-4
+                // semantics (entries only for real durable decision/abandon
+                // facts and the post-hold scripted push), so the S6/S7-style
+                // find-based consumers (UNCHANGED) see the SCRIPTED entry
+                // exactly like flag-off. The scripted policy resumes below —
+                // the scripted ALLOW is a SCRIPT decision, NEVER a UI
+                // approval / Human authorization.
+                log(`${tag}: UI OBSERVE observed-pending verified — observation recorded (uiObserveRecords/S9 evidence only; decisions[] untouched); the pre-existing scripted policy resumes (a SCRIPT decision, never a UI approval)`)
+              } else {
+                // VERIFIED surface-close (continue-scripted): the ONLY
+                // assertion is that the ledger gained NO new fact for the
+                // requestId (zero durable effect — enforced inside
+                // verifyUiTruth; never treated as deny/allow/abandon, and the
+                // UI gate NEVER proceeds to those assertions on this hint).
+                // The original automation continues below, unchanged.
+                log(`${tag}: UI OBSERVE surface-close verified — zero durable effect asserted; the original automation continues`)
+              }
+            }
             if (policy.recovery === 'abandon') continue // NEVER resolve — the 120s abort seam
             const r = await resolveControl(rec, rootSessionId, rid, policy.recovery, `kit e12 ${tag} (${policy.recovery})`, `resolve-${tag}-${rid.slice(0, 8)}`)
             decisions.push({ requestId: rid, class: 'recovery', decision: policy.recovery, resolveStatus: r.status, resolveError: resultError(r.body)?.code ?? null })
@@ -1800,6 +1991,18 @@ const EVID = {
   scenarios: {},
   world: {},
 }
+
+// ITEM-B gap closure: the transport wrappers (fetchJson / remoteCall /
+// remoteCallReady) were moved VERBATIM to ./remote-io.mjs — ONE implementation
+// the kit destructures here (replacing the former local definitions) AND the
+// offline regression tests drive directly, injecting only the transport-level
+// fetch + timers. No host, no kit run is needed to exercise them.
+const { fetchJson, remoteCall, remoteCallReady } = makeRemoteIo({
+  getTranscript: () => EVID.transcript,
+  log,
+  sleep,
+  scrubTokens,
+})
 
 function saveScenario(name, obj) {
   EVID.scenarios[name] = obj
