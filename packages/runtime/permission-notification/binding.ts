@@ -29,10 +29,13 @@
  * durable snapshot store stays the authority; the read projection is the
  * recovery path for a lost notice).
  *
- * The binding is still UNWIRED: the production receipt-point glue (the
- * live-handle map read + the closing/lifecycle facts bound to the real
- * root surfaces) lands in the final splice after PR60 stabilizes — see
- * the module README (WIRED VS PENDING).
+ * The binding is WIRED (final splice): `src/plugin/root.ts` composes this
+ * module at the governance-mutation completion point — the production
+ * receipt point is the live glue's `permissionNoticeReceipt` (the closing
+ * fact + the owned live-handle map read for the EXACT pair, both
+ * read-only) and the lifecycle fact is the shared
+ * `createMemberLifecycleReader` read — see the module README (WIRED VS
+ * PENDING).
  *
  * @module @dsh-agent-team/runtime/permission-notification/binding
  */
@@ -68,6 +71,22 @@ export interface PermissionNoticeInput {
   readonly teamSessionId: string
   readonly memberInstanceId: string
   readonly text: string
+}
+
+/**
+ * The production RECEIPT POINT the live glue exposes: the closing fact +
+ * the current owned live-handle read for one exact pair. The host wires
+ * the glue's surface here; this layer only ever READS it (the splice in
+ * `src/plugin/root.ts` binds these two facts into
+ * {@link createPermissionDeliveryBinding}).
+ */
+export interface PermissionNoticeReceiptSource {
+  /** The live glue's closing fact. */
+  readonly closing: () => boolean
+  /** The CURRENT owned live handle for the EXACT pair, else undefined. */
+  readonly liveHandle: (
+    identity: { readonly teamSessionId: string; readonly memberInstanceId: string },
+  ) => PermissionLiveHandle | undefined
 }
 
 /** The CLOSED drop vocabulary (every drop is terminal for the notice). */

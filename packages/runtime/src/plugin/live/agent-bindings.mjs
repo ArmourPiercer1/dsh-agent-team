@@ -4730,6 +4730,33 @@ export function createAgentBindings(deps) {
     listLiveSessions: () => [...liveAgents.keys()].sort(),
     hasLive: (sessionId) => liveAgents.has(String(sessionId)),
     isResuming: (sessionId) => resumingSessions.has(String(sessionId)),
+    // alpha.3 PR5 (final splice): the SYNCHRONOUS permission-notice RECEIPT
+    // POINT the production root's awareness emitter binds. READ-ONLY facts
+    // only — the closing fact + the CURRENT owned live handle for the EXACT
+    // addressed (team, member) pair. Nothing here can create, resume,
+    // materialize or adopt an Agent: `ensureLiveAgent` is deliberately NOT
+    // referenced; a cold or absent member reads `undefined` and STAYS COLD
+    // (awareness never wakes). The pair→session mapping is the glue's OWN
+    // identity law (childSessionIdFor; the leader position's live Agent IS
+    // the team-root session's handle — the same mapping resolveInstanceIdFor
+    // applies at the top of this module).
+    permissionNoticeReceipt: Object.freeze({
+      closing: () => closing === true,
+      liveHandle: (identity) => {
+        const teamSessionId = identity?.teamSessionId
+        const memberInstanceId = identity?.memberInstanceId
+        if (typeof teamSessionId !== 'string' || typeof memberInstanceId !== 'string') {
+          return undefined
+        }
+        const sid =
+          memberInstanceId === LEADER_INSTANCE_ID
+            ? teamSessionId
+            : childSessionIdFor(teamSessionId, memberInstanceId)
+        const handle = liveAgents.get(sid)
+        if (handle === undefined || handle.agent === undefined) return undefined
+        return Object.freeze({ teamSessionId, memberInstanceId, agent: handle.agent })
+      },
+    }),
     ensureLiveAgent,
     prepareAgentForRequest,
     executeTool,

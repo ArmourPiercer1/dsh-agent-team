@@ -1,4 +1,4 @@
-# `permission-notification` — Alpha.3 PR5 (notification + read projection): DRAFT, UNWIRED BY DESIGN
+# `permission-notification` — Alpha.3 PR5 (notification + read projection): emitter WIRED at the governance-mutation completion point
 
 The awareness layer over the merged Alpha.3 permission durable surface
 (PR1 overlay store + port, PR3 `mutatePermission`). It implements the two
@@ -63,31 +63,30 @@ the effective-policy lane, plugin WIP files (`host.ts`, permission-plane,
 blueprint schema) — which also keeps this PR zero-conflict against PR60's
 in-flight rewrites.
 
-## WIRED vs PENDING (exact state in this PR)
+## WIRED vs PENDING (exact state after the final splice)
 
-| Piece | State in this PR |
+| Piece | State |
 | --- | --- |
-| `permissionChangeNotificationFromSnapshot` (pure builder, generation tag, no rule payload) | implemented + unit-tested (library code; NO production caller yet) |
-| `renderPermissionChangeNotification` (deterministic, token-leading `[team-perm-changed …]`, stale/unknown marking) | implemented + unit-tested (library code; NO production caller yet) |
-| `createPermissionChangeNotifier` (advisory liveness gate, at-most-once delivery, never-throws outcome) | implemented + unit-tested against fakes + the REAL durable overlay port (library code; NO production emission point yet) |
-| `createPermissionReadProjection` (`latest`/`history` frozen views) | implemented + unit-tested over the REAL durable store (library code; NO production read surface exposes it yet) |
-| `createPermissionDeliveryBinding` + `createPermissionDeliveryAdapter` (INJECT-ONLY receipt gate: closing / exact owned live handle / identity / lifecycle / running-status, one sync inject, closed drop vocabulary) | implemented + unit-tested incl. the active→idle race and the landmine-pinned inject-only surface (library code; NO production receipt point yet) |
-| `detachPermissionNotice` (fire-and-forget off the ack; never throws, never awaited) | implemented + unit-tested (slow / never-settling / faulting delivery leave ack content + order byte-identical) |
-| post-commit notification EMISSION inside the permission-lane mutation path (`changed: true` branch only) | PENDING — small splice after PR60 stabilizes; compose `detachPermissionNotice(() => notifyPermissionCommit(result.snapshot))`, outcome never joined into the ack |
-| production binding of the three SYNCHRONOUS binding facts (glue `closing`, the live-handle map read for the EXACT pair, the member lifecycle fact) + the liveness advisory read + the durable overlay port | PENDING — binds EXISTING runtime surfaces only (read-only map/fact reads; nothing that creates, resumes, or adopts), no new authority surface |
-| integration test (post-commit emission + production read-projection wiring over a live world) | PENDING — lands with the splice, coordinated via parent |
+| `permissionChangeNotificationFromSnapshot` (pure builder, generation tag, no rule payload) | WIRED through the emitter (composition below); unit-tested |
+| `renderPermissionChangeNotification` (deterministic, token-leading `[team-perm-changed …]`, stale/unknown marking) | WIRED through the emitter; unit-tested |
+| `createPermissionChangeNotifier` (advisory liveness gate, at-most-once delivery, never-throws outcome) | WIRED — constructed by `src/plugin/root.ts` over the REAL durable overlay port (`latest` only); unit-tested |
+| `createPermissionReadProjection` (`latest`/`history` frozen views) | library, unit-tested over the REAL durable store — still NO production read surface consuming it |
+| `createPermissionDeliveryBinding` + `createPermissionDeliveryAdapter` (INJECT-ONLY receipt gate: closing / exact owned live handle / identity / lifecycle / running-status, one sync inject, closed drop vocabulary) | WIRED — the three synchronous facts bind the live glue's `permissionNoticeReceipt` (closing + owned live-handle map read for the EXACT pair) and the shared lifecycle reader, all READ-ONLY; unit-tested incl. the active→idle race and the landmine-pinned inject-only surface |
+| `detachPermissionNotice` (fire-and-forget off the ack; never throws, never awaited) | WIRED at the emission point; unit-tested (slow / never-settling / faulting delivery leave ack content + order byte-identical) |
+| post-commit notification EMISSION at the governance-mutation completion point (`changed: true` branch only) | WIRED in `src/plugin/root.ts` — the completion-point decoration wraps the ONE governance mutation authority BEFORE the plane/remote/tools consumers bind it, so every committing entry (entry grant/revoke, remote `override.mutatePermission`, the tool adapter, a rule change at restore time) emits exactly one detached notice per committed snapshot; outcome never joined into the ack |
+| production binding of the SYNCHRONOUS receipt facts | WIRED — glue `permissionNoticeReceipt` (`closing()` + `liveHandle(pair)` over `liveAgents.get(childSessionIdFor(...))`, leader pair = the team-root session handle; zero wake/capacity members) + `createMemberLifecycleReader.readLifecycle` (CREATED/RUNNING/SETTLED eligible; ARCHIVED/DISPOSED/unknown never receive); the durable overlay port through the `latest`-narrowed authority seam |
+| integration test | `test/a3p5-permission-splice.test.ts` — root-assembled (real root, real governance service, real durable overlay, real gate): commit→one inject (plugin producer), no-change→nothing, idle→nothing, closing→nothing, no-seam→zero delivery + byte-identical durable commit, glue/root source pins. The live AGENT itself is a labeled boundary double (a real running Agent needs the host runtime; host/kit-dimension acceptance is the recorded remaining step). |
 
-Nothing in this directory is constructed by `src/plugin/root.ts`, no dist
-artifact ships it yet (same build treatment as the PR1 unwired foundation:
-the module is type-checked and tested from source, not part of the tsc
-install-surface build), and no runtime behavior of the product changes
-when this PR lands. The zero-production-consumer walk leg in the hygiene
-spec pins exactly this claim — when the wiring splice lands it must update
-that leg deliberately. PENDING NOTE (recorded per parent review): because
-the lane has NO production dist reference today, no build/dist change can
-accompany it; once the final splice wires this module into the production
-root, a REGULAR build + dist co-commit (and `check-artifacts-committed`
-verification of the new surface) WILL be required in that splice commit.
+The lane is now consumed by exactly ONE production file — `src/plugin/root.ts`
+(the emitter) — and it ships in the dist install surface TRANSITIVELY through
+that import chain (like `permission-governance` / `permission-lifecycle` /
+`governance` before it), so the splice commit co-commits the built dist and
+`check-artifacts-committed` verifies the new surface. The exact-consumer walk
+leg in the hygiene spec pins the single-consumer set — a second consumer must
+update that leg deliberately. With the splice, permission-change notices
+become a real runtime behavior for ACTIVE addressed Agents (inject-only,
+never a wake); no decision, ack, gate or read path consumes a notification —
+awareness, never authorization evidence (ADR §9).
 
 ## Files
 
@@ -101,4 +100,5 @@ verification of the new surface) WILL be required in that splice commit.
 | `../test/a3p5-permission-notification.test.ts` | the four required classes: active delivered / idle never awakened / stale marked, permissions untouched / failed delivery, mutation result & ack untouched |
 | `../test/a3p5-permission-read-projection.test.ts` | projection legs over the REAL durable store (authority = highest generation, history audit-only, append unreachable) |
 | `../test/a3p5-permission-delivery-binding.test.ts` | the GO's (a)-(e): running receives (plugin-producer SOURCE pinned, never human 'user'); idle/cold/closing/lifecycle/mismatch drop with zero writes; active→idle race drops at the gate; inject-only surface (wake landmines untouched); detached ack independence |
-| `../test/a3p5-permission-notification-lane-hygiene.test.ts` | structural pins: closed exports, pinned import graph (TYPE-only repo edges + the two PUBLIC upstream edges), no decision/mutation-input path, zero production consumers |
+| `../test/a3p5-permission-notification-lane-hygiene.test.ts` | structural pins: closed exports, pinned import graph (TYPE-only repo edges + the two PUBLIC upstream edges), no decision/mutation-input path, the EXACT single-production-consumer set (root.ts) |
+| `../test/a3p5-permission-splice.test.ts` | the final splice, root-assembled: commit→one inject (plugin producer), no-change/idle/closing→nothing, no-seam→zero delivery + byte-identical durable commit, real-glue receipt block read-only + root single-emission-site pins |

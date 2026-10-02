@@ -26,12 +26,19 @@
  *    under `src/` — so PR60's in-flight envelope/authority-schema and
  *    host/plane rewrites cannot collide with this lane.
  *
- * 3. THE ZERO-CONSUMER WALK (PR1/PR2/PR3 precedent): the layer lands
- *    DORMANT — no production source outside the module directory and the
- *    test directory imports it. The wiring splice (post-commit emission
- *    + production read-projection wiring + integration test) is a
- *    deliberate follow-up after PR60 stabilizes; landing it must update
- *    this leg ON PURPOSE, not by accident.
+ * 3. THE EXACT CONSUMER SET (final splice, 2026-10): the layer's ONE
+ *    RUNTIME production consumer is the single splice site
+ *    `src/plugin/root.ts` (the post-COMMIT notification emitter at the
+ *    governance-mutation completion point — a fire-and-forget dispatcher
+ *    whose outputs are consumed by NOTHING else), plus exactly ONE
+ *    type-only edge in `src/plugin/types.ts` so the glue contract
+ *    `TeamAgentBindings` can name the receipt point. Any further
+ *    production consumer must be a deliberate, reviewed change to THIS
+ *    leg — the awareness layer never grows callers by accretion, and no
+ *    consumer may feed a decision, ack, or read path (the emission point
+ *    is pinned by the a3p5-permission-splice spec). The lane ships in the
+ *    install surface transitively through root.ts's import chain (dist
+ *    co-commit).
  *
  * 4. THE MIRRORED DURABLE BOUNDS: the renderer mirrors the overlay
  *    audit-reason bound instead of importing storage (keeping the lane
@@ -43,7 +50,7 @@
  * @module @dsh-agent-team/runtime/test/a3p5-permission-notification-lane-hygiene
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -168,9 +175,9 @@ describe('leg 2 — the import graph: repo edges TYPE-ONLY; public upstream edge
   })
 })
 
-describe('leg 3 — ZERO production consumers (PR5 lands dormant / unwired)', () => {
-  it('no shipped source outside the lane directory and the tests imports permission-notification', () => {
-    const offenders: string[] = []
+describe('leg 3 — the EXACT production consumer set (final splice: exactly root.ts)', () => {
+  it('the ONLY shipped consumer outside tests is src/plugin/root.ts (the emitter splice)', () => {
+    const consumers: string[] = []
     const visit = (dir: string): void => {
       for (const entry of readdirSync(dir)) {
         const full = join(dir, entry)
@@ -185,7 +192,7 @@ describe('leg 3 — ZERO production consumers (PR5 lands dormant / unwired)', ()
         // The lane itself may of course import its own modules.
         if (rel.startsWith(`permission-notification${sep}`)) continue
         const text = readFileSync(full, 'utf8')
-        if (/permission-notification/.test(text)) offenders.push(rel)
+        if (/permission-notification/.test(text)) consumers.push(rel)
       }
     }
     const packagesRoot = join(RUNTIME_ROOT, '..')
@@ -198,14 +205,37 @@ describe('leg 3 — ZERO production consumers (PR5 lands dormant / unwired)', ()
       }
       visit(pkgRoot)
     }
-    expect(offenders).toEqual([])
+    // ON-PURPOSE SET (final splice): root.ts binds the emitter (the ONLY
+    // RUNTIME consumer); types.ts carries one TYPE-ONLY edge so the glue
+    // contract `TeamAgentBindings` can name the receipt point. Nothing
+    // else in the shipped tree may reference the lane; a second entry
+    // here is a review signal, never an accident to absorb.
+    expect(consumers.slice().sort()).toEqual(
+      [join('src', 'plugin', 'root.ts'), join('src', 'plugin', 'types.ts')].sort(),
+    )
+    // The types.ts edge is TYPE-ONLY (the glue contract member), exactly
+    // once, and never a value import: the lane's runtime surface is bound
+    // at ONE site (root.ts) or not at all.
+    const typesSource = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'types.ts'), 'utf8')
+    const typeEdges = typesSource.match(/permission-notification/g) ?? []
+    expect(typeEdges).toHaveLength(1)
+    expect(typesSource).toContain("import('../../permission-notification/index.js')")
+    expect(typesSource).not.toMatch(/^import\s+\{[^}]*\}\s+from\s+['"][^'"]*permission-notification/m)
+    // root.ts is the ONLY file constructing lane VALUES.
+    const rootSource = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'root.ts'), 'utf8')
+    expect(rootSource).toMatch(/from\s+'[^']*permission-notification\/index\.js'/)
   })
 
-  it('the lane ships OUT of the tsc install-surface build too (PR1 precedent for unwired layers)', () => {
-    // tsconfig.build.json does NOT include this directory: nothing in the
-    // produced dist ships it, so the artifact surface is untouched and
-    // there is zero dist-level collision surface with PR60. (The module is
-    // still type-checked: tsconfig.json pulls it in through the specs.)
+  it('the lane ships in the install surface TRANSITIVELY (root.ts import chain; dist co-commit)', () => {
+    // tsconfig.build.json still names no lane directory — the lane joins
+    // dist only because root.ts (a build root) imports it, exactly like
+    // permission-governance / permission-lifecycle / governance before it.
+    // The build pins the emitted artifacts; the repo checker proves they
+    // are committed. This leg proves the SHIPPED surface carries the lane.
+    const distLane = join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', 'permission-notification')
+    for (const file of ['index.js', 'binding.js', 'notification.js', 'projection.js', 'types.js']) {
+      expect(existsSync(join(distLane, file)), `dist/packages/runtime/permission-notification/${file}`).toBe(true)
+    }
     const buildConfig = readFileSync(join(RUNTIME_ROOT, 'tsconfig.build.json'), 'utf8')
     expect(buildConfig).not.toContain('permission-notification')
   })
@@ -221,9 +251,14 @@ describe('leg 4 — mirrored durable bounds and awareness text', () => {
     const notificationSource = readFileSync(join(MODULE_DIR, 'notification.ts'), 'utf8')
     expect(notificationSource).toContain('AWARENESS ONLY')
     expect(notificationSource).toContain('never authorization evidence')
-    // And the module docs are honest about the wiring state.
+    // And the module docs state the CURRENT wiring state honestly: the
+    // notification emitter is WIRED at exactly one production point
+    // (src/plugin/root.ts, the governance-mutation completion point); the
+    // read projection remains a library until a production read surface
+    // consumes it — the README says which is which.
     const readme = readFileSync(join(MODULE_DIR, 'README.md'), 'utf8')
-    expect(readme).toContain('UNWIRED')
-    expect(readme).toContain('PENDING')
+    expect(readme).toContain('WIRED')
+    expect(readme).toContain('src/plugin/root.ts')
+    expect(readme).toContain('never authorization evidence')
   })
 })

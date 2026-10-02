@@ -42,19 +42,9 @@
  *
  * @module @dsh-agent-team/runtime/permission-notification/types
  */
-
-// TYPE-ONLY edge to the PR1 overlay vocabulary (the stable durable surface
-// this whole lane reads; no runtime import survives — pinned by the hygiene
-// spec). The identity pair is the ADR §2 `PermissionOverlayIdentity` itself.
-import type { PermissionOverlayIdentity } from '../permission-governance/types.js'
-
+import type { PermissionOverlayIdentity } from '../permission-governance/types.js';
 /** Re-export of the ADR §2 identity pair (one definition, PR1 owns it). */
-export type { PermissionOverlayIdentity } from '../permission-governance/types.js'
-
-// ---------------------------------------------------------------------------
-// Agent liveness (READ-ONLY)
-// ---------------------------------------------------------------------------
-
+export type { PermissionOverlayIdentity } from '../permission-governance/types.js';
 /**
  * The closed liveness answer of one addressed Agent, as read READ-ONLY from
  * the existing runtime surfaces (the DSH Agent `status === 'idle'`
@@ -66,14 +56,12 @@ export type { PermissionOverlayIdentity } from '../permission-governance/types.j
  * read): like `idle` it suppresses delivery — the awareness layer never
  * guesses liveness and never performs a wake.
  */
-export type PermissionAgentLiveness = 'active' | 'idle' | 'unknown'
-
+export type PermissionAgentLiveness = 'active' | 'idle' | 'unknown';
 /**
  * The identity the liveness question is asked for — the ADR §2 identity
  * pair verbatim (an alias, so the vocabulary has exactly one definition).
  */
-export type PermissionAgentLivenessQuery = PermissionOverlayIdentity
-
+export type PermissionAgentLivenessQuery = PermissionOverlayIdentity;
 /**
  * The READ-ONLY liveness seam. Exactly ONE member, ONE question, zero side
  * effects: it must never wake, queue, materialize or resume anything — the
@@ -81,19 +69,14 @@ export type PermissionAgentLivenessQuery = PermissionOverlayIdentity
  * plus the notifier's active-only gate, and pinned by the specs.
  */
 export interface PermissionAgentLivenessPort {
-  /**
-   * Read the CURRENT liveness of one addressed Agent (no latch, no
-   * subscription — a point read, best-effort). A throw is handled by the
-   * notifier as `unknown` (delivery suppressed).
-   * @param query - the addressed (TeamSession, MemberInstance) pair.
-   */
-  status(query: PermissionAgentLivenessQuery): Promise<PermissionAgentLiveness>
+    /**
+     * Read the CURRENT liveness of one addressed Agent (no latch, no
+     * subscription — a point read, best-effort). A throw is handled by the
+     * notifier as `unknown` (delivery suppressed).
+     * @param query - the addressed (TeamSession, MemberInstance) pair.
+     */
+    status(query: PermissionAgentLivenessQuery): Promise<PermissionAgentLiveness>;
 }
-
-// ---------------------------------------------------------------------------
-// Delivery (best-effort, active-only)
-// ---------------------------------------------------------------------------
-
 /**
  * The delivery seam: put ONE model-visible input in front of one
  * ACTIVE Agent WITHOUT waking anything. The production binding is the
@@ -107,23 +90,18 @@ export interface PermissionAgentLivenessPort {
  * read projection is the recovery path for a lost notice).
  */
 export interface PermissionNotificationDeliveryPort {
-  /**
-   * Deliver the rendered text to one addressed Agent. A throw is a
-   * LIVENESS failure only — the notifier converts it into a typed
-   * outcome and never rethrows to its caller, so a failed delivery can
-   * never alter an already-returned mutation result or ack.
-   */
-  deliver(input: {
-    readonly teamSessionId: string
-    readonly memberInstanceId: string
-    readonly text: string
-  }): Promise<void>
+    /**
+     * Deliver the rendered text to one addressed Agent. A throw is a
+     * LIVENESS failure only — the notifier converts it into a typed
+     * outcome and never rethrows to its caller, so a failed delivery can
+     * never alter an already-returned mutation result or ack.
+     */
+    deliver(input: {
+        readonly teamSessionId: string;
+        readonly memberInstanceId: string;
+        readonly text: string;
+    }): Promise<void>;
 }
-
-// ---------------------------------------------------------------------------
-// The generation-tagged notification record
-// ---------------------------------------------------------------------------
-
 /**
  * One awareness record built from ONE committed `PermissionOverlaySnapshot`
  * (the changed:true branch of the PR3 mutation result). Every field is a
@@ -133,28 +111,27 @@ export interface PermissionNotificationDeliveryPort {
  * behind the read projection, ADR §9 "awareness only").
  */
 export interface PermissionChangeNotification {
-  /** The owning TeamSession (ADR §2 identity). */
-  readonly teamSessionId: string
-  /** The addressed MemberInstance whose overlay changed (ADR §2 identity). */
-  readonly memberInstanceId: string
-  /** The durable snapshot this notice names (derived row key). */
-  readonly snapshotId: string
-  /** THE GENERATION TAG: the snapshot's monotonic overlay generation. */
-  readonly generation: number
-  /** The replaced snapshot id (`null` exactly at generation 1). */
-  readonly previousSnapshotId: string | null
-  /** Provenance carrier: the producing mutation id (audit, never precedence). */
-  readonly mutationId: string
-  /** Provenance carrier: the durable actor verbatim (audit, never precedence). */
-  readonly actor: string
-  /** Provenance carrier: the durable commit timestamp, ISO-8601. */
-  readonly changedAt: string
-  /** Provenance carrier: the audit reason (whitespace-collapsed, bounded). */
-  readonly reason: string
-  /** How many rules the new snapshot carries (COUNT only, never the rules). */
-  readonly ruleCount: number
+    /** The owning TeamSession (ADR §2 identity). */
+    readonly teamSessionId: string;
+    /** The addressed MemberInstance whose overlay changed (ADR §2 identity). */
+    readonly memberInstanceId: string;
+    /** The durable snapshot this notice names (derived row key). */
+    readonly snapshotId: string;
+    /** THE GENERATION TAG: the snapshot's monotonic overlay generation. */
+    readonly generation: number;
+    /** The replaced snapshot id (`null` exactly at generation 1). */
+    readonly previousSnapshotId: string | null;
+    /** Provenance carrier: the producing mutation id (audit, never precedence). */
+    readonly mutationId: string;
+    /** Provenance carrier: the durable actor verbatim (audit, never precedence). */
+    readonly actor: string;
+    /** Provenance carrier: the durable commit timestamp, ISO-8601. */
+    readonly changedAt: string;
+    /** Provenance carrier: the audit reason (whitespace-collapsed, bounded). */
+    readonly reason: string;
+    /** How many rules the new snapshot carries (COUNT only, never the rules). */
+    readonly ruleCount: number;
 }
-
 /**
  * The staleness judgement attached to one DELIVERED notice:
  * - `current` — the notice's generation equals the durable authority;
@@ -164,42 +141,38 @@ export interface PermissionChangeNotification {
  *   so staleness is honestly undetermined (the text says so; the read
  *   projection is the authority).
  */
-export type PermissionNotificationStaleness = 'current' | 'superseded' | 'unknown'
-
+export type PermissionNotificationStaleness = 'current' | 'superseded' | 'unknown';
 /** Why a notice was NOT delivered (each case leaves durable state untouched). */
-export type PermissionNotificationSkip =
-  /** The target Agent is idle — never awakened (plan PR5 active-only rule). */
-  | 'agent-idle'
-  /** The target Agent is not live (closed glue, failed read, no binding). */
-  | 'agent-liveness-unknown'
-  /** The delivery seam threw — a liveness failure only. */
-  | 'delivery-failed'
-
+export type PermissionNotificationSkip = 
+/** The target Agent is idle — never awakened (plan PR5 active-only rule). */
+'agent-idle'
+/** The target Agent is not live (closed glue, failed read, no binding). */
+ | 'agent-liveness-unknown'
+/** The delivery seam threw — a liveness failure only. */
+ | 'delivery-failed';
 /**
  * The notifier's outcome — an AWARENESS report, structurally incapable of
  * carrying permission state and never joined into a mutation result. The
  * notifier NEVER throws: every seam failure lands in this closed union.
  */
-export type PermissionNotificationOutcome =
-  | { readonly delivered: true; readonly staleness: PermissionNotificationStaleness }
-  | { readonly delivered: false; readonly skip: PermissionNotificationSkip }
-
-// ---------------------------------------------------------------------------
-// The read projection (existing access boundaries ONLY)
-// ---------------------------------------------------------------------------
-
+export type PermissionNotificationOutcome = {
+    readonly delivered: true;
+    readonly staleness: PermissionNotificationStaleness;
+} | {
+    readonly delivered: false;
+    readonly skip: PermissionNotificationSkip;
+};
 /** The provenance copy of a durable snapshot (audit data, never precedence). */
 export interface PermissionProvenanceView {
-  /** The durable actor verbatim (no authority meaning; ADR §7). */
-  readonly actor: string
-  /** The producing mutation id. */
-  readonly mutationId: string
-  /** ISO-8601 commit timestamp. */
-  readonly timestamp: string
-  /** The audit reason (verbatim from the durable row). */
-  readonly reason: string
+    /** The durable actor verbatim (no authority meaning; ADR §7). */
+    readonly actor: string;
+    /** The producing mutation id. */
+    readonly mutationId: string;
+    /** ISO-8601 commit timestamp. */
+    readonly timestamp: string;
+    /** The audit reason (verbatim from the durable row). */
+    readonly reason: string;
 }
-
 /**
  * The frozen read view of the CURRENT AUTHORITY of one identity: either
  * `present: false` (no snapshot yet) or a faithful deep-frozen COPY of the
@@ -207,56 +180,51 @@ export interface PermissionProvenanceView {
  * never a fold, never a replay, never a decision input — writing back is
  * structurally impossible (frozen, no identity of the stored row preserved).
  */
-export type PermissionAuthorityView =
-  | {
-      readonly present: false
-      /** The queried identity (echoed for caller ergonomics). */
-      readonly identity: PermissionOverlayIdentity
-    }
-  | {
-      readonly present: true
-      /** The queried identity. */
-      readonly identity: PermissionOverlayIdentity
-      /** The derived durable row key. */
-      readonly snapshotId: string
-      /** The authority generation (the durable CURRENT authority is the HIGHEST generation). */
-      readonly generation: number
-      /** The replaced snapshot id (`null` exactly at generation 1). */
-      readonly previousSnapshotId: string | null
-      /** How many rules the authority carries. */
-      readonly ruleCount: number
-      /** Frozen copies of the authority's rules (read view; never interpreted here). */
-      readonly rules: readonly {
-        readonly operation: string
-        readonly resource: string
-        readonly effect: 'allow' | 'ask' | 'deny'
-      }[]
-      /** Frozen provenance copy (audit only). */
-      readonly provenance: PermissionProvenanceView
-    }
-
+export type PermissionAuthorityView = {
+    readonly present: false;
+    /** The queried identity (echoed for caller ergonomics). */
+    readonly identity: PermissionOverlayIdentity;
+} | {
+    readonly present: true;
+    /** The queried identity. */
+    readonly identity: PermissionOverlayIdentity;
+    /** The derived durable row key. */
+    readonly snapshotId: string;
+    /** The authority generation (the durable CURRENT authority is the HIGHEST generation). */
+    readonly generation: number;
+    /** The replaced snapshot id (`null` exactly at generation 1). */
+    readonly previousSnapshotId: string | null;
+    /** How many rules the authority carries. */
+    readonly ruleCount: number;
+    /** Frozen copies of the authority's rules (read view; never interpreted here). */
+    readonly rules: readonly {
+        readonly operation: string;
+        readonly resource: string;
+        readonly effect: 'allow' | 'ask' | 'deny';
+    }[];
+    /** Frozen provenance copy (audit only). */
+    readonly provenance: PermissionProvenanceView;
+};
 /** One ascending audit entry of the history view (audit only, never folded). */
 export interface PermissionHistoryEntryView {
-  /** The derived durable row key. */
-  readonly snapshotId: string
-  /** This row's generation (ascending across the view). */
-  readonly generation: number
-  /** The replaced snapshot id (`null` exactly at generation 1). */
-  readonly previousSnapshotId: string | null
-  /** How many rules this row carried. */
-  readonly ruleCount: number
-  /** Frozen provenance copy (audit only). */
-  readonly provenance: PermissionProvenanceView
+    /** The derived durable row key. */
+    readonly snapshotId: string;
+    /** This row's generation (ascending across the view). */
+    readonly generation: number;
+    /** The replaced snapshot id (`null` exactly at generation 1). */
+    readonly previousSnapshotId: string | null;
+    /** How many rules this row carried. */
+    readonly ruleCount: number;
+    /** Frozen provenance copy (audit only). */
+    readonly provenance: PermissionProvenanceView;
 }
-
 /** The frozen history-audit view of one identity (ascending by generation). */
 export interface PermissionHistoryAuditView {
-  /** The queried identity. */
-  readonly identity: PermissionOverlayIdentity
-  /** The durable audit rows, ascending by generation (empty when none). */
-  readonly entries: readonly PermissionHistoryEntryView[]
+    /** The queried identity. */
+    readonly identity: PermissionOverlayIdentity;
+    /** The durable audit rows, ascending by generation (empty when none). */
+    readonly entries: readonly PermissionHistoryEntryView[];
 }
-
 /**
  * The read projection surface. TWO members, both pure reads through the
  * existing PR1 port boundaries (`latest` / `history`); the injected port
@@ -265,8 +233,9 @@ export interface PermissionHistoryAuditView {
  * throws on any other member access.
  */
 export interface PermissionReadProjection {
-  /** The CURRENT AUTHORITY view (the highest-generation snapshot, never a fold). */
-  readAuthority(identity: PermissionOverlayIdentity): Promise<PermissionAuthorityView>
-  /** The AUDIT history view (ascending; audit-only, ADR §2 — never folded). */
-  readHistoryAudit(identity: PermissionOverlayIdentity): Promise<PermissionHistoryAuditView>
+    /** The CURRENT AUTHORITY view (the highest-generation snapshot, never a fold). */
+    readAuthority(identity: PermissionOverlayIdentity): Promise<PermissionAuthorityView>;
+    /** The AUDIT history view (ascending; audit-only, ADR §2 — never folded). */
+    readHistoryAudit(identity: PermissionOverlayIdentity): Promise<PermissionHistoryAuditView>;
 }
+//# sourceMappingURL=types.d.ts.map

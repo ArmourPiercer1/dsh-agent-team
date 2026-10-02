@@ -165,10 +165,12 @@ export interface CreatePermissionChangeNotifierDeps {
 }
 
 /**
- * The notifier factory (the shape the PENDING production splice will bind:
- * post-commit of `mutatePermission` → `notifyPermissionCommit(result.snapshot)`,
- * OUTCOME IGNORED for the ack — the splice exists nowhere yet; this PR
- * ships the layer tested and UNWIRED by design).
+ * The notifier factory. WIRED at exactly one production point (final
+ * splice, `src/plugin/root.ts`): post-commit of `mutatePermission` →
+ * `notifyPermissionCommit(result.snapshot)` through `detachPermissionNotice`
+ * — fire-and-forget, the outcome NEVER joined into the ack (the ack is
+ * fully settled by the durable commit; this dispatch cannot delay,
+ * reorder, or alter it).
  *
  * `notifyPermissionCommit(snapshot)` pipeline, in order:
  * 1. build the awareness record (pure);

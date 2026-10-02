@@ -272,6 +272,21 @@ import { canonicalizeShellOperation } from '../../operation-permission/canonical
 import type { TeamPermissionExecIntent } from '../../../tools/src/index.js'
 import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js'
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js'
+// alpha.3 PR5 (final splice): the permission-change NOTIFICATION awareness
+// layer over the merged durable authority (ADR §9 "notification is
+// awareness, never authorization evidence"). The root wires the emitter
+// ONLY — a post-commit DETACHED dispatch through the inject-only receipt
+// gate (binding.ts). Nothing downstream ever reads a notification: no
+// decision, ack, gate or read path consumes it (lane hygiene spec + the
+// binding specs pin the closed surface; parent GO: delivery is PUBLIC
+// `Agent.inject` only, never a wake).
+import {
+  createPermissionChangeNotifier,
+  createPermissionDeliveryAdapter,
+  createPermissionDeliveryBinding,
+  detachPermissionNotice,
+} from '../../permission-notification/index.js'
+import type { PermissionOverlaySnapshot } from '../../permission-governance/types.js'
 import type { OverrideRecordView, OverrideStorePort } from '../../mutation/index.js'
 import type {
   CreationFieldRecord,
@@ -2609,6 +2624,88 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     }),
     resolveDurableModelSelection,
     resolveDurableMcpFacet,
+  }
+
+  // --- alpha.3 PR5 the post-COMMIT permission-change notification emitter --
+  // Emission at the GOVERNANCE-MUTATION completion point: the decoration
+  // below is the ONLY view of `mutation.governance` downstream consumers
+  // receive (the lifecycle plane, the remote port and the tools adapter
+  // all read the property after this point), so every path that commits a
+  // permission overlay snapshot — entry grant/revoke via the plane, the
+  // remote `override.mutatePermission`, the tool adapter, a rule change at
+  // restore time — emits EXACTLY ONE notification per `{ changed: true }`
+  // result, AFTER the service's own commit-before-ack. This is AWARENESS,
+  // never an authorization source (ADR §9): its only inputs are the
+  // committed snapshot and the glue's READ-ONLY receipt surface, and no
+  // outcome, ordering or timing of a notification feeds an ack, a
+  // decision, or any read path (the emitter is fire-and-forget —
+  // `detachPermissionNotice` — so a slow, faulting or never-settling
+  // delivery cannot delay, reorder or alter a committed ack). Delivery
+  // semantics are the binding module's, pinned by its specs: the SYNCHRONOUS
+  // receipt gate (closing / exact owned live handle / lifecycle /
+  // `status === 'running'`), PUBLIC `Agent.inject` ONLY (never a wake;
+  // plugin-owned producer source `plugin:dsh-agent-team`, never human
+  // attribution), at most one attempt, drops terminal, host durable-inbox
+  // parking used AS-IS. A root assembled WITHOUT the glue receipt seam
+  // (a factory/test root) or without the overlay port gets NO emitter:
+  // zero delivery, behavior identical to the pre-splice tree.
+  const permissionNoticeSource = live.permissionNoticeReceipt
+  const permissionNoticeEmitter =
+    permissionOverlay === undefined || permissionNoticeSource === undefined
+      ? undefined
+      : (() => {
+          const binding = createPermissionDeliveryBinding({
+            closing: () => permissionNoticeSource.closing(),
+            liveHandle: (identity) => permissionNoticeSource.liveHandle(identity),
+            // The SAME shared lifecycle facts the governance lane's
+            // caller-side pre-check reads (one lifecycle law), re-read at
+            // RECEIPT — and only to suppress delivery to a member whose
+            // lifecycle left the active set (ARCHIVED / DISPOSED / unknown
+            // never receive; CREATED / RUNNING / SETTLED stay delivery-
+            // eligible, the idle one merely parks). This is a delivery
+            // gate, never a decision input: a refusal here refuses a
+            // NOTIFICATION, never a mutation.
+            lifecycleActive: (identity) => {
+              const state = permissionLifecycleReader.readLifecycle(
+                identity.teamSessionId,
+                identity.memberInstanceId,
+              )
+              return state === 'CREATED' || state === 'RUNNING' || state === 'SETTLED'
+            },
+          })
+          const notifier = createPermissionChangeNotifier({
+            authority: {
+              latest: async (identity) => await permissionOverlay.latest(identity),
+            },
+            liveness: {
+              // The ADVISORY park-prevention hint only (an async read
+              // ahead of the synchronous gate): it labels outcomes and
+              // never wakes, queues or decides.
+              async status(identity) {
+                const handle = permissionNoticeSource.liveHandle(identity)
+                if (handle === undefined) return 'unknown'
+                return handle.agent.status === 'running' ? 'active' : 'idle'
+              },
+            },
+            deliver: createPermissionDeliveryAdapter(binding),
+          })
+          return (snapshot: PermissionOverlaySnapshot): void => {
+            detachPermissionNotice(() => notifier.notifyPermissionCommit(snapshot))
+          }
+        })()
+  if (permissionNoticeEmitter !== undefined) {
+    const governanceAuthority = mutation.governance
+    mutation.governance = Object.freeze({
+      ...governanceAuthority,
+      async mutatePermission(args: Parameters<typeof governanceAuthority.mutatePermission>[0]) {
+        const result = await governanceAuthority.mutatePermission(args)
+        // Commit already happened (commit-before-ack is the service's own
+        // invariant); the ack path continues regardless of what follows —
+        // the emit below is detached and never awaited, never joined.
+        if (result.changed) permissionNoticeEmitter(result.snapshot)
+        return result
+      },
+    })
   }
 
   // --- pre-alpha3 PR4 the permission LIFECYCLE planes (plan PR4) ----------
