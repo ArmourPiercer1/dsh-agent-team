@@ -706,9 +706,9 @@ B6-1 completeness).
   direct probe (`r7-t2-carrier-probe.log`): a NON-declaring document's hashable
   projection contains NO carrier key and its contentHash is unchanged; a
   DECLARING document gains the key and the hash changes (present-only spread is
-  the design). Classification: KNOWN-BASELINE (code-identity proof); NOT fixed —
-  outside the GO batch (changing a master-era expectation is not this PR's
-  scope).
+  the design). Classification: KNOWN-BASELINE — code-identity proof; no base run
+  executed (wording audit below); NOT fixed — outside the GO batch (changing a
+  master-era expectation is not this PR's scope).
 - **p6t6-actions** (`1 failed` in tools, byte-identical failset): proven AT the
   shipped HEAD (round-5 HEAD-probe raw + this round's identical suite line);
   base-code comparison NOT done — the throwaway detached base worktree could not
@@ -720,8 +720,8 @@ B6-1 completeness).
   per the parent's scale — no false attribution claimed.
 - **A15 timing leg**: isolated raw RETAINED this round — `r7-a15-isolated.log`
   `16/16` at HEAD. Round-5's single full-suite failure remains load/timing
-  (concurrent-only, 1-line deadline assert, code-identity with base for the
-  activation path). Attribution stated as before; the missing raw from round 5
+  (concurrent-only, 1-line deadline assert; the unchanged-vs-base
+  component is a code-identity proof; no base run executed — wording audit below). Attribution stated as before; the missing raw from round 5
   is now replaced by a kept raw at this HEAD.
 - **Base comparison**: infeasible this round (see `r7-base-comparison-attempt.log`
   for the pnpm evidence); the affected claims carry the exact wording
@@ -783,3 +783,73 @@ remain untracked and unneeded.
 - Domain `t1`×9 remain the round-4-era pre-existing reds (code identity, zero
   domain hunks); no attempt to fix master-era tests inside this PR.
 - No merge, no host boot, no ports touched; Draft kept; forward-only push.
+
+## Round 7 follow-up — the failset numbers: contradiction PRESERVED and clarified + wording audit (parent follow-up, docs-only, 2026-10-02)
+
+No record is altered or deleted by this section; both the round-5 artifacts and
+the round-7 claims stand AS RECORDED. This section states what each number is.
+
+### Failset numbers — which file, which run, which comparison
+
+| file (path) | lines | provenance (exact log + Tests line) |
+| --- | --- | --- |
+| `round4/r4-battery-failset.txt` | 11 | round-4 battery SOLO baseline (repeat copy: `round4/r4-battery-repeat-failset.txt`, 11) |
+| `round5/r5-runtime-failset.txt` | 18 | CONCURRENT full-suite run — `round5/r5-runtime-suite-full.log` (`18 failed | 3217 passed`) |
+| `round5/r5-runtime-failset-r2.txt` | **12** | SOLO re-run #2 — `round5/r5-runtime-suite-r2.log` (`9 failed | 3226 passed`): the 11 baseline lines PLUS the A15 timing-flake line (visible last in that file) |
+| `round5/r5-runtime-failset-r3.txt` | 11 | SOLO re-run #3 — `round5/r5-runtime-suite-r3.log` (`8 failed | 3227 passed`) |
+| `round7/r7-runtime-failset-r1.txt` | 11 | SOLO run this round — `round7/r7-runtime-suite-r1.log` (`8 failed | 3239 passed`; +12 tests = the R7 legs) |
+
+- (b) **The round-5 method defect, preserved:** `round5/r5-failset-diff-vs-r4.txt`
+  is a **zero-byte** artifact while the inputs it purported to compare had
+  DIFFERENT sizes (12-line `round5/r5-runtime-failset-r2.txt` vs 11-line
+  `round4/r4-battery-failset.txt`) — an empty diff was structurally impossible
+  from those inputs. The file is kept unmodified as evidence of the defect
+  (already acknowledged in the round-7 "Failset method repair" section).
+- (a) **No numerical contradiction exists once runs are named:** the 12-line r2
+  file belongs to the run that ADDITIONALLY caught the A15 timing flake
+  (`9 failed`); the round-7 byte-identity claim never referenced that run. It
+  compares the r1 SOLO run of THIS round against the round-4 SOLO baseline.
+- (c) **What the round-7 byte-identity claim rests on:**
+  extractor `round7/r7-failset.py` (dedups FAIL lines, normalizes path prefixes,
+  ALWAYS prints `baseline-lines=` and `new-lines=`, and only states
+  BYTE-IDENTICAL when counts agree AND content matches). Verdict artifact
+  `round7/r7-runtime-failset-r1-diff.txt` prints `baseline-lines=11
+  new-lines=11` and `VERDICT: BYTE-IDENTICAL (failsets agree line-for-line)`.
+  Baseline side: `round4/r4-battery-failset.txt` (11 lines, named above);
+  new side: `round7/r7-runtime-failset-r1.txt` from `round7/r7-runtime-suite-r1.log`.
+  The same extractor + count-printed verdict pattern produced
+  `round7/r7-tools-failset-diff.txt` (vs `round5/r5-tools-suite-r3.log`),
+  `round7/r7-domain-failset-diff.txt` (vs `round5/r5-domain-suite.log`) and
+  `round7/r7-remote-failset-diff.txt` (vs `round5/r5-remote-suite-r3.log`).
+
+### Wording audit — static proofs vs executed runs (binding going forward)
+
+RULE: a claim resting on code identity is worded **"code-identity proof; no
+base run executed"**. No PASS wording is used for anything not run/proven.
+Base EXECUTION was infeasible this round (throwaway worktree could not install:
+`round7/r7-base-comparison-attempt.log`), so NO claim in the round-7 ledger is
+or may be paraphrased as "base run performed". The ledger's static-proof
+claims, exhaustively:
+
+1. **t2 = KNOWN-BASELINE** — code-identity proof; no base run executed. Static
+   basis: `git diff 137532f4 -- packages/domain` = 0 lines; base test blob ==
+   worktree blob (`089b32f1…`); base validate.ts blob == worktree blob
+   (`023cb585…`) (`round7/r7-t2-code-identity.log`). The carrier-leak hypothesis
+   was tested EXECUTED at HEAD by direct probe (`round7/r7-t2-carrier-probe.log`)
+   — the probe RAN; it is not a base comparison.
+2. **Domain t1×9 master-era reds** — code-identity proof; no base run executed
+   (same zero-diff raw above; plus this round's EXECUTED re-run showing the
+   failset byte-identical to round-5's own executed raw).
+3. **A15 attribution** — the isolated 16/16 was EXECUTED and retained
+   (`round7/r7-a15-isolated.log`); the "unchanged activation path vs base"
+   component is a code-identity proof; no base run executed.
+4. **p6t6-actions** — UNATTRIBUTED with reason; wording already at the required
+   standard: "proven AT the shipped HEAD; base comparison not done". The
+   zero-messaging-hunks observation is a code-identity proof; no base run
+   executed.
+5. Everything else in the round-7 battery sections refers to EXECUTED runs with
+   retained raws + `.exit` in `round7/`.
+
+The round-5 section's shorthand "(code identity)" at its honest-non-closures
+line is READ AS this audit defines it — static proof, no base run — and is
+otherwise left untouched.
