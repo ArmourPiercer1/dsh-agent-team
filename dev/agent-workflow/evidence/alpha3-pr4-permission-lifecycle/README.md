@@ -935,7 +935,14 @@ mutate); absent/garbage claim → typed refusal.
 ### Regressions: R8 role matrix AT THE ROOT-ASSEMBLED ROUTER (5 new legs, 17/17 in file)
 
 `round8/r8-family-green.log` (family + p8s6-principal: **116/116**). Each leg
-asserts the DURABLE ROW provenance (what actor identity actually landed):
+asserts the DURABLE ROW provenance (what actor identity actually landed).
+Precision (R-B minor, recorded round 9): every principal leg asserts the exact
+ERROR CODE at the router (`TEAM_REMOTE_PRINCIPAL_INVALID` /
+`PERMISSION_MUTATION_UNAUTHORIZED_ACTOR` / `malformed-params` /
+`PERMISSION_ENVELOPE_EXPANSION_DENIED`); the SUB-reasons
+(`unknown-instance` / `wrong-team` / `leader-is-not-a-member` /
+`malformed-actor`) ride inside `details.reason` and are pinned at the UNIT
+level (`p8s6-principal.test.ts` family), not re-asserted per router leg:
 1. Human claim → commits; row `provenance.actor === 'human'`, reason verbatim,
    mutationId pinned; the identity channel is the ADDRESSED owned teamSessionId
    (the durable row IS that record; no humanId string is stored in the row —
@@ -958,8 +965,17 @@ asserts the DURABLE ROW provenance (what actor identity actually landed):
 
 Fixture discovery (honest): the R7 world had NO durable leader row because it
 inserts member rows directly instead of running the boot creator; the fixture
-now mirrors production boot (`root.ts:3190-3204` cited inline) — the R8 leader
-leg failing FIRST at `unknown-leader` proved the derivation is really wired.
+now mirrors production boot (`root.ts:3190-3204` cited inline).
+[DATED CORRECTION 2026-10-02, round-9 fixup at R-B's pinned-review flag —
+this supersedes the prior wording "the R8 leader leg failing FIRST at
+`unknown-leader` proved the derivation is really wired", which read as a raw
+retention claim: the first failure was OBSERVED during development; NO raw of
+it was retained at the time (no tracked round8/ file contains
+`unknown-leader`). Narrative-only. The derivation wiring is INDEPENDENTLY
+CORROBORATED by the retained legs themselves — the leader-provenance row
+(`actor: 'leader'`) and the envelope-gate refusal (`PERMISSION_ENVELOPE_-
+EXPANSION_DENIED`, zero write) cannot pass under the old default-to-operator
+derivation.]
 
 ### Battery (round8/, per-run names; extractor with both counts printed)
 
