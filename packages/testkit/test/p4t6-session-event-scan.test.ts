@@ -1634,8 +1634,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // scanner run on this tree (authoritative: this suite reported
     // `expected 944 to be 943` before the recount — raw retained as
     // `round4/r4-p4t6-scan.log`; not hand-computed).
-    expect(scanResult.filesScanned).toBe(944)
-    expect(scanResult.files.length).toBe(944)
+    // ALPHA.3 PR4 permission-lifecycle ROUND 9 (2026-10-02, parent A7-5):
+    // 944 + 1 = 945 — the ONE new scannable spec since the round-4 pin is
+    // the root-assembled entry/exec + principal regression
+    // (`a3p4-pr7-entry-exec-contract-regression.test.ts`, added round 7,
+    // SessionEvent-free; round 8 EXTENDED it in place — `git log
+    // --diff-filter=A` over base..HEAD confirms no other test file was ever
+    // added on this branch). Every other pin of this suite is UNCHANGED.
+    // The 945 value is the scanner run on this tree (authoritative: this
+    // suite reported `expected 945 to be 944` before the recount — RED raw
+    // `round9/r9-p4t6-RED.log`, GREEN `round9/r9-p4t6-GREEN.log`, full suite
+    // `round9/r9-testkit-suite.log`; not hand-computed). The testkit suite
+    // had NOT been run in rounds 5-8 — this closes that gap.
+    expect(scanResult.filesScanned).toBe(945)
+    expect(scanResult.files.length).toBe(945)
 
   })
 

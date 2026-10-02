@@ -794,10 +794,17 @@ the round-7 claims stand AS RECORDED. This section states what each number is.
 | file (path) | lines | provenance (exact log + Tests line) |
 | --- | --- | --- |
 | `round4/r4-battery-failset.txt` | 11 | round-4 battery SOLO baseline (repeat copy: `round4/r4-battery-repeat-failset.txt`, 11) |
-| `round5/r5-runtime-failset.txt` | 18 | CONCURRENT full-suite run — `round5/r5-runtime-suite-full.log` (`18 failed | 3217 passed`) |
-| `round5/r5-runtime-failset-r2.txt` | **12** | SOLO re-run #2 — `round5/r5-runtime-suite-r2.log` (`9 failed | 3226 passed`): the 11 baseline lines PLUS the A15 timing-flake line (visible last in that file) |
-| `round5/r5-runtime-failset-r3.txt` | 11 | SOLO re-run #3 — `round5/r5-runtime-suite-r3.log` (`8 failed | 3227 passed`) |
+| `round5/r5-runtime-failset.txt` | 18 | FULL-suite run — `round5/r5-runtime-suite-full.log` (`18 failed | 3217 passed`). **[Round-9, A7-2: the earlier "CONCURRENT" label on this row is DOWNGRADED to UNVERIFIED — the log header records only RUN/cwd and no surviving raw supports concurrency; the 18-line failset's composition (extra concurrent-looking reds) is suggestive but is NOT cited as proof — see the format footnote below for its actual extraction format]** |
+| `round5/r5-runtime-failset-r2.txt` | **12** | **[label corrected 2026-10-02, round-9, A7-1 — this row originally read "SOLO re-run #2", contradicting round-5 ledger row 7 (`README.md:539`: "run 1 (concurrent with #5/#6)") and the A15 concurrent-only doctrine — the A15 flake FIRED here, so it cannot be solo]** FULL runtime suite, run 1 (CONCURRENT with #5/#6) — `round5/r5-runtime-suite-r2.log` (`9 failed | 3226 passed`): the 11 baseline lines PLUS the A15 timing-flake line (visible last in that file). Numbers untouched |
+| `round5/r5-runtime-failset-r3.txt` | 11 | FULL-suite run 2 (SOLO, final tree — per round-5 ledger row 8) — `round5/r5-runtime-suite-r3.log` (`8 failed | 3227 passed`) |
 | `round7/r7-runtime-failset-r1.txt` | 11 | SOLO run this round — `round7/r7-runtime-suite-r1.log` (`8 failed | 3239 passed`; +12 tests = the R7 legs) |
+
+Format footnote (round-9, A7-3): `round5/r5-runtime-failset.txt` is NOT in the
+`FAIL <file> > <suite> > <leg>` format the other rows use — its lines are the
+reporter's ` × ` SUMMARY format (leg text only, no file paths: provenance =
+leg-set, not FAIL-line-set). Its "18 lines == 18 failed" agreement is therefore
+weaker evidence than the FAIL-line failsets above; it is listed here for
+completeness, and no byte-identity claim anywhere in this ledger rests on it.
 
 - (b) **The round-5 method defect, preserved:** `round5/r5-failset-diff-vs-r4.txt`
   is a **zero-byte** artifact while the inputs it purported to compare had
@@ -969,3 +976,52 @@ leg failing FIRST at `unknown-leader` proved the derivation is really wired.
   evidence commit).
 - Everything else frozen: no opportunistic refactors; the two source files
   changed are the set + a dated comment; the third file is the test.
+
+## Round 9 — R-C advisories: stale testkit pin closed, failset-label corrections, `.exit` completeness (docs + one test-pin; PUSH HELD per parent freeze)
+
+Date: 2026-10-02. Tree base: shipped round-8 tip `f7f30f60` (reviewers pinned
+this head; per the parent freeze note this round is committed LOCALLY and NOT
+pushed until the round-8 review closes — one forward-only commit when released).
+
+1. **A7-5 — the p4t6 testkit scan pin was STALE** (still `toBe(944)`; the
+   testkit suite had NOT been run in rounds 5-8). Established pattern applied:
+   RED-before raw `round9/r9-p4t6-RED.log` (`expected 945 to be 944` — the
+   SCANNER'S OWN count), pin updated 944 → **945** with dated comment
+   (`packages/testkit/test/p4t6-session-event-scan.test.ts`), GREEN-after raw
+   `round9/r9-p4t6-GREEN.log` (10/10). Attribution verified, not assumed:
+   `git log --diff-filter=A` over base..HEAD shows EXACTLY ONE test file ever
+   added on this branch (`a3p4-pr7-entry-exec-contract-regression.test.ts`,
+   round 7; round 8 extended it IN PLACE) — the +1 is exact. FULL testkit
+   suite now green: `round9/r9-testkit-suite.log` **158/158**, failset 0
+   (`round9/r9-testkit-failset.txt`). No behavior change: test-pin only.
+2. **A7-1 — r2 run label corrected** in the round-7 follow-up clarification
+   table: "SOLO re-run #2" was WRONG — round-5 ledger row 7 (`README.md:539`)
+   records `r5-runtime-suite-r2.log` as **run 1, CONCURRENT with #5/#6**, and
+   the A15 flake FIRED there (consistent with the concurrent-only doctrine;
+   a solo run contradicts it). The row now carries the corrected label with a
+   dated correction marker; ALL numbers untouched. The r3 row was tightened to
+   its ledger wording too ("run 2 (SOLO, final tree)", row 8).
+3. **A7-2 — full.log "CONCURRENT" label DOWNGRADED to UNVERIFIED** in the same
+   table: the log header records only RUN/cwd and no surviving raw supports
+   concurrency; the row states that explicitly (no byte-identity claim rests
+   on it).
+4. **A7-3 — format footnote added** under the table: `round5/r5-runtime-failset.txt`
+   is in the reporter's ` × ` SUMMARY format (leg-set provenance, no file
+   paths), so its line-count agreement is weaker evidence than the FAIL-line
+   failsets; named and quarantined from equality claims.
+5. **A7-4 — `.exit` completeness**: the round-7 battery header claimed
+   "`.exit` per log" but `r7-build`, `r7-checker-prestage`, `r7-secret-scan`
+   and `r7-base-comparison-attempt` (and `r8-build`, `r8-checker-prestage`,
+   `r8-secret-scan`) lacked siblings. Backfilled HONESTLY-LABELED `.exit`
+   files: each states it is a round-9 backfill and where the rc actually comes
+   from (inline log lines for build/checker; completion-of-artifact for scans;
+   `rc=n/a (narrative record…)` for the base-comparison attempt, which is not
+   a command execution). Nothing was re-executed to fake a same-time rc.
+6. **A7-6 — scan-pattern echo**: `round9/r9-secret-scan.log` echoes its own
+   grep pattern and lists ALL matches with count (9, every one a scan artifact
+   or ledger checklist line quoting the pattern's own text; zero credentials).
+   The v1 of that artifact had a rendering slip and was OVERWRITTEN at the
+   same path — recorded in the artifact itself, not hidden.
+
+Frozen otherwise: no source behavior touched (the only non-doc change is the
+p4t6 pin + comment); no push while the reviewers hold `f7f30f60`.
