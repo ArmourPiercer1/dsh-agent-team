@@ -587,3 +587,199 @@ the note that the forwarded originals were not committed at receipt).
 - Pre-existing reds recorded this round with proofs: `p6t6-actions` messaging
   leg (HEAD-probe raw), domain `t1`×9 + `t2`×1 (code identity), the A15
   timing-leg load flake (isolated 16/16 vs concurrent fail).
+
+## Round 7 — the lifecycle law IN the shared lane, the addressed root, the closed exec intent, the required reason (sole writer, fresh)
+
+Date: 2026-10-02. Tree base (shipped round-5 pair) code `6f755080`, evidence tip
+`dbf8ecb1`; branch/PR unchanged, Draft kept.
+Input: the parent's round-7 GO batch (BLOCK-1 shared-path lifecycle gate with the
+parent-pinned TRI-STATE, BLOCK-2 one trusted per-call addressed-root context,
+item 3 closed-set structured exec intent canonicalized SERVER-SIDE, item 4 reason
+contract = R-B option (a)) + the evidence-hygiene corrections (per-log failset
+diffs that cannot silently print empty, A15 isolated raw, t2 triage, p6t6 wording,
+B6-1 completeness).
+
+### What landed (round 7, non-dist — 14 source/test files + this ledger)
+
+- **BLOCK-1 — the lifecycle gate moved INTO the serialized mutation path.**
+  `assertPermissionMutationTarget(members, tsid, mid, operation)` is now the ONE
+  exported law (`permission-lifecycle/mutation-lane.ts:78`, re-exported at
+  `permission-lifecycle/index.ts:61`); the lane's pre-check delegates to it
+  (`mutation-lane.ts:115`), and the governance service calls it INSIDE
+  `deps.chain.run` — after the serialized lock is held, before ANY
+  classification or append (`governance/service.ts:612-613`, law comment
+  :608; `GovernancePermissionLaneDeps.targetGuard` at `governance/types.ts:144`;
+  passthrough `permission-plane.ts:181-188`). NO parallel second gate: the SAME
+  function runs pre-lane and in-section (post-await revalidation — a DISPOSED
+  transition racing past the pre-check is caught inside the section). Both
+  entries route through `plane.mutation.grantInstance/revoke` ONLY
+  (`src/plugin/root.ts:2665` `permissionLaneMutate`, wired at :2943 RPC-side and
+  :3116 tool-side); no entry checks-then-calls-GMS directly.
+  TRI-STATE pinned by legs (`R7-law`, `R7-rpc`): **unknown** →
+  `PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN`, zero write; **DISPOSED** →
+  `PERMISSION_LIFECYCLE_TARGET_TERMINAL`, zero write; **ARCHIVED** → overlay
+  legally MUTABLE (grant commits) but execution NEVER happens — the leg grants
+  through the real tool, then drives the REAL pre-execute adapter and asserts
+  the overlay-allow STILL does not produce ALLOW (the decision lane's own
+  ARCHIVED refusal precedes facts). Mutation-legal vs execution-illegal,
+  split-pinned.
+- **BLOCK-2 — ONE trusted per-call addressed context.** The tool closure no
+  longer captures the boot `rootSid`: `canonicalizeFile(teamSessionId,
+  targetInstanceId, path)` (`tools/src/types.ts:268`) is called with the
+  PER-CALL ctx at `tools/src/tools.ts:1388`, and the root implementation is
+  parameterized (`src/plugin/root.ts:3121`). The R7-addr leg boots Team B under
+  a foreign boot root: the tool call addressed to Team B commits
+  `exact:<wsB>/b.txt` (B's durable defaultWorkspace), `exact:<wsA>/b.txt`
+  provably ABSENT, and the pre-execute ALLOW leg runs under B. The s6 RPC file
+  branch was already addressed-clean; both entries now share the law.
+- **Item 3 — CLOSED-SET structured exec intent; the fingerprint is GMS-internal.**
+  The wire vocabulary is `{kind:'exact'|'subtree', value}` OR `{kind:'exec',
+  intent}` — the raw `fingerprint` string is REMOVED from both entries' grammar
+  (a client cannot self-label canonical authority; smuggle legs at tool AND
+  router refuse with zero write). `TeamPermissionExecIntent`
+  (`tools/src/types.ts`, exported via `tools/src/index.ts`) /
+  `RemotePermissionExecIntent` (`remote/src/contracts/params.ts:1477`) carry
+  ONLY `{tool: bash|pwsh (default bash), command, workdir?, run_in_background?,
+  timeoutMs?, sandbox_permissions?}`; closed fields, unknown fields refused
+  (`tools.ts:1208` `parseExecIntent`, `params.ts:1527`). The SERVER canonicalizes
+  through the REAL `canonicalizeShellOperation` (`root.ts:2706`
+  `permissionExecCanonicalize` builds the exec args at the target's durable
+  workspace and takes `.fingerprint`); the GMS stores exactly the same
+  `fingerprint:sha256:…` the execution plane computes — the exec legs assert
+  entry-side and execution-side keys are BYTE-IDENTICAL (grant→ALLOW for the
+  identical call, DENY for another command, revoke→DENY, via the REAL
+  `installParameterPermissionListener`). No new authority surface: the intent is
+  data, the canonicalizer is the kernel's own.
+- **Item 4 — reason is REQUIRED at the RPC wire (R-B option (a)).** Zero shipped
+  consumers; the kernel ALWAYS required it; an optional wire reason only lets
+  provenance be silently omitted. `params.ts:1602` `requiredField(…, 'reason')`
+  + non-empty ≤512 (:1604). The kernel label split is honest now: missing-field
+  → `reason-missing`, length → `reason-over-bound`
+  (`governance/permission-mutation.ts:461/:469`) — the round-5
+  `reason-over-bound` mislabel for absent-field is corrected.
+- **Writer-discovered through the ROOT-ASSEMBLED router (two real gaps the
+  fixture-level dispatchers could not see):**
+  1. v7 params lacked the `actor` derivation claim — the root dispatcher's
+     `deriveMutationActor` REQUIRES `params.actor` (v7 contract), so every
+     legitimate root-assembled call would have died `malformed-actor`. Added to
+     contract + parse + dispatcher mapping
+     (`params.ts` `RemoteOverrideMutatePermissionParams.actor`,
+     `s6-remote.ts:3638`); the round-5 RPC fixture had to gain the claim too —
+     proving the round-5 RPC legs were fixture-level.
+  2. `REMOTE_BACKING_ERROR_CODE_SET` carried ZERO `PERMISSION_*` codes, so at
+     the real router every typed permission refusal (lifecycle, envelope,
+     generation…) degraded to `internal-error` — the round-5 typed-code claims
+     were only ever fixture-visible. Nine codes added
+     (`remote/src/handlers/dispatch.ts:220-228`); the R7-rpc legs now pin
+     `PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN` / `…_TARGET_TERMINAL` /
+     malformed-`reason` as TYPED codes through the root-assembled dispatcher.
+  The root now exposes `remoteDispatcher` (`root.ts:3483`, `plugin/types.ts`)
+  for exactly this entry-level verification.
+
+### Regression battery (all raws in `round7/`, `.exit` per log)
+
+- **NEW `a3p4-pr7-entry-exec-contract-regression.test.ts` — 12/12**
+  (`r7-family-green.log` with the 5 a3p4 files: family **91/91**). 3 exec legs
+  (tool), 5 RPC legs (root-assembled dispatcher incl. reason-required +
+  provenance-verbatim), lifecycle tri-state, addressed-root Team B, kernel
+  semantics (reason label split; replay = rule-set-equal no-op, same-mutationId
+  different-rules STILL commits — mutationId is provenance, NOT dedupe).
+  MANDATED legs: actual tool/RPC → GMS → REAL `installParameterPermissionListener`
+  pre-execute boundary, NO `plane.decide` substitutes, BOTH file and exec
+  classes, grant→ALLOW and revoke-or-absent→DENY on every leg.
+- **Runtime suite** `r7-runtime-suite-r1.log`: `8 failed | 3239 passed` — the
+  failset is BYTE-IDENTICAL to the round-4 baseline (`r7-runtime-failset-r1-diff.txt`,
+  counts printed on both sides; +12 tests = exactly the new R7 legs).
+- **Tools** `1 failed | 110`: failset byte-identical vs round-5 r3
+  (`r7-tools-failset-diff.txt`). **Domain** `10 failed | 482`: byte-identical vs
+  round-5 (`r7-domain-failset-diff.txt`). **Remote** `220/220` green.
+- **t2 triage (parent-mandated)**: the failing leg is pinned to
+  `t2-blueprint-hash.test.ts > projects absent optional singles as explicit
+  null` (`r7-t2-files.log`: hash 15/16, v2-hash 8/8 GREEN, revision 8/8 GREEN —
+  the confusion risk is dead, per-file raw). ROOT CAUSE: the projection has
+  always emitted `capabilities: null` for absent template capabilities
+  (`domain/blueprint/src/validate.ts:1582`, toHashableTemplate) while the test
+  expects the key absent — a test-vs-code contradiction that is **byte-identical
+  at the base**: `git diff 137532f4 -- packages/domain` = 0 lines, base test blob
+  == worktree blob (`089b32f1…`), base validate.ts blob == worktree blob
+  (`023cb585…`) (`r7-t2-code-identity.log`). CARRIER LEAK HYPOTHESIS REFUTED by
+  direct probe (`r7-t2-carrier-probe.log`): a NON-declaring document's hashable
+  projection contains NO carrier key and its contentHash is unchanged; a
+  DECLARING document gains the key and the hash changes (present-only spread is
+  the design). Classification: KNOWN-BASELINE (code-identity proof); NOT fixed —
+  outside the GO batch (changing a master-era expectation is not this PR's
+  scope).
+- **p6t6-actions** (`1 failed` in tools, byte-identical failset): proven AT the
+  shipped HEAD (round-5 HEAD-probe raw + this round's identical suite line);
+  base-code comparison NOT done — the throwaway detached base worktree could not
+  be provisioned (`pnpm install` dies at `StoreIndex.openDatabase`; store index
+  unwritable in this sandbox) — raw `r7-base-comparison-attempt.log`, including
+  the tools/src hunk map showing NO hunk touches the messaging action code —
+  the only change outside the permission additions is ONE divider-comment line
+  (hunk @480, verified diff text in that raw). Classification: UNATTRIBUTED with reason,
+  per the parent's scale — no false attribution claimed.
+- **A15 timing leg**: isolated raw RETAINED this round — `r7-a15-isolated.log`
+  `16/16` at HEAD. Round-5's single full-suite failure remains load/timing
+  (concurrent-only, 1-line deadline assert, code-identity with base for the
+  activation path). Attribution stated as before; the missing raw from round 5
+  is now replaced by a kept raw at this HEAD.
+- **Base comparison**: infeasible this round (see `r7-base-comparison-attempt.log`
+  for the pnpm evidence); the affected claims carry the exact wording
+  "proven AT the shipped HEAD; base comparison not done" — never "pre-existing
+  by base run".
+
+### Failset method repair (round-5 defect, parent-noted)
+
+Round 5's `r5-failset-diff-vs-r4.txt` compared a 12-line file against an 11-line
+r4 file yet printed "no diff" — a comparison-script integrity failure. Replaced by
+`round7/r7-failset.py`: dedups FAIL lines, normalizes path prefixes, and its diff
+artifact ALWAYS prints `baseline-lines=` / `new-lines=` and only states
+BYTE-IDENTICAL when counts agree AND content matches; a mismatched-count case is
+structurally unable to print equality. This round every suite diff is per-log
+and carries both counts.
+
+### Comment / ledger corrections (round-5 texts this round repairs)
+
+- `tools/src/tools.ts` — the round-5 comment "the client never supplies the
+  authority key" was FALSE at that time for exec rules (a client-supplied
+  fingerprint string was accepted verbatim). With item 3 it is now TRUE by
+  construction (fingerprint is not wire-reachable) and the comment states why.
+- `tools/src/tools.ts` — the "durable dedupe by mutationId" comment was wrong:
+  the kernel no-ops on a RULE-SET-EQUAL plan only; the same mutationId with
+  different rules commits. Both the comment and the tool DESCRIPTION strings now
+  say this, and the replay leg pins it (`changed:false` no-op vs
+  same-token-different-rules commits).
+- Round-5 RPC legs were fixture-level (hand-built options). Disclosed then;
+  now ALSO corrected at the line level the way R-B asked: the round-5 R5-tool
+  leg DID exercise the real handler; R5-rpc did not reach the root-assembled
+  dispatcher — and reaching it found the two real gaps (actor claim, backing
+  error-code vocabulary). Round-7's R7-rpc legs ARE root-assembled.
+- Glue boundary (recorded, NOT code, per R-A): the permission-fact workspace is
+  the DURABLE `TeamSession.defaultWorkspace` (host.ts:1842 addressed
+  memberWorkspace; root `permissionLane` effective-workspace law), while the
+  agent-bindings boot glue's memberCwd is the acting-row value — the two
+  coincide in boot worlds by construction and are DISTINCT for non-boot teams,
+  where the R5-ws/R7-addr legs pin the durable-default as the permission truth.
+  Documented boundary, not a silent divergence.
+
+### B6-1 completeness note
+
+This commit carries the FULL cited round-7 evidence set (every log + `.exit` +
+the failset extractor + this ledger). Round-5's `diag-backup/` row-6 dependence
+(18 untracked payload copies) is SUPERSEDED as a dependence: no round-7 claim
+rests on restoring those files; the manifest stays as recorded history, payloads
+remain untracked and unneeded.
+
+### Honest non-closures / recorded edges (round 7)
+
+- R5-rpc's original fixture-level legs stay as shipped evidence of what they
+  pinned; the root-assembled coverage this round lives in R7-rpc. Nothing was
+  retroactively re-labeled.
+- `update_permission` remains kernel-only surface (no entry exposes it) —
+  unchanged.
+- `canonicalizeExecIntent` is OPTIONAL on both wiring ports (unwired → typed
+  `PERMISSION_MUTATION_NOT_CONFIGURED`, pinned); a host that wires tool
+  permissions without it gets refusal, not guesswork.
+- Domain `t1`×9 remain the round-4-era pre-existing reds (code identity, zero
+  domain hunks); no attempt to fix master-era tests inside this PR.
+- No merge, no host boot, no ports touched; Draft kept; forward-only push.

@@ -995,9 +995,57 @@ function archiveMemberSpec() {
  *  `subtree` carry FILE PATHS (canonicalized SERVER-SIDE at the target
  *  member's effective workspace); `fingerprint` carries an opaque exec/
  *  resource identity (passed through — it is already an identity). */
-const PERMISSION_MATCHER_KINDS = ['exact', 'subtree', 'fingerprint'];
+// ROUND 7 (parent item 3): the WIRE vocabulary is file kinds + the CLOSED
+// structured exec intent. `fingerprint` is the GMS-INTERNAL key grammar — an
+// entry client can no longer submit a fingerprint string and self-label it
+// canonical; exec scope is expressed ONLY as {kind:'exec', intent:{...}} and
+// the SERVER canonicalizes it to the exact fingerprint (canonicalizeShell
+// Operation semantics, identical to what pre-execute computes).
+const PERMISSION_WIRE_MATCHER_KINDS = ['exact', 'subtree', 'exec'];
+const PERMISSION_EXEC_TOOLS = ['bash', 'pwsh'];
 const PERMISSION_EFFECTS = ['allow', 'ask', 'deny'];
 const PERMISSION_RULES_MAX = 32;
+/** Closed parse of the structured exec intent (field names == the shell
+ *  tool's own argument names; identity-mapped onto the canonicalizer). */
+function parseExecIntent(raw, label) {
+    if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+        throw new TeamToolArgsError(`team-tools: ${label} must be an object {tool, command, ...}`);
+    }
+    const closed = new Set(['tool', 'command', 'workdir', 'run_in_background', 'timeoutMs', 'sandbox_permissions']);
+    const intent = raw;
+    for (const key of Object.keys(intent)) {
+        if (!closed.has(key)) {
+            throw new TeamToolArgsError(`team-tools: ${label} carries the unknown field ${JSON.stringify(key)}`);
+        }
+    }
+    if (intent.tool !== undefined && (typeof intent.tool !== 'string' || !PERMISSION_EXEC_TOOLS.includes(intent.tool))) {
+        throw new TeamToolArgsError(`team-tools: ${label}.tool must be one of ${PERMISSION_EXEC_TOOLS.join('|')} (bash/pwsh default applies server-side and must be explicit here)`);
+    }
+    if (typeof intent.command !== 'string' || intent.command.length === 0 || intent.command.length > 4096) {
+        throw new TeamToolArgsError(`team-tools: ${label}.command must be a non-empty string`);
+    }
+    if (intent.workdir !== undefined && (typeof intent.workdir !== 'string' || intent.workdir.length === 0 || intent.workdir.length > 4096)) {
+        throw new TeamToolArgsError(`team-tools: ${label}.workdir must be a non-empty string when present`);
+    }
+    if (intent.run_in_background !== undefined && typeof intent.run_in_background !== 'boolean') {
+        throw new TeamToolArgsError(`team-tools: ${label}.run_in_background must be a boolean when present`);
+    }
+    if (intent.timeoutMs !== undefined &&
+        !(typeof intent.timeoutMs === 'number' && Number.isFinite(intent.timeoutMs) && intent.timeoutMs > 0)) {
+        throw new TeamToolArgsError(`team-tools: ${label}.timeoutMs must be a finite positive number when present (the EXPLICIT value only — plan §4.4)`);
+    }
+    if (intent.sandbox_permissions !== undefined && typeof intent.sandbox_permissions !== 'string') {
+        throw new TeamToolArgsError(`team-tools: ${label}.sandbox_permissions must be a string when present`);
+    }
+    return {
+        tool: intent.tool ?? 'bash',
+        command: intent.command,
+        ...(intent.workdir !== undefined ? { workdir: intent.workdir } : {}),
+        ...(intent.run_in_background !== undefined ? { run_in_background: intent.run_in_background } : {}),
+        ...(intent.timeoutMs !== undefined ? { timeoutMs: intent.timeoutMs } : {}),
+        ...(intent.sandbox_permissions !== undefined ? { sandbox_permissions: intent.sandbox_permissions } : {}),
+    };
+}
 function parsePermissionRules(raw) {
     if (!Array.isArray(raw) || raw.length === 0 || raw.length > PERMISSION_RULES_MAX) {
         throw new TeamToolArgsError(`team-tools: argument 'rules' must be an array of 1..${PERMISSION_RULES_MAX} permission rules`);
@@ -1028,14 +1076,26 @@ function parsePermissionRules(raw) {
         }
         const matcherRecord = matcher;
         const matcherKeys = Object.keys(matcherRecord);
-        if (matcherKeys.length !== 2 || !matcherKeys.includes('kind') || !matcherKeys.includes('value')) {
+        const kind = matcherRecord.kind;
+        if (typeof kind !== 'string' || !PERMISSION_WIRE_MATCHER_KINDS.includes(kind)) {
+            throw new TeamToolArgsError(`team-tools: rules[${index}].matcher.kind must be one of ${PERMISSION_WIRE_MATCHER_KINDS.join('|')} (exec scope is a CLOSED structured intent, never a raw fingerprint string)`);
+        }
+        if (kind === 'exec') {
+            if (matcherKeys.length !== 2 || !matcherKeys.includes('intent')) {
+                throw new TeamToolArgsError(`team-tools: rules[${index}].matcher with kind 'exec' must carry exactly {kind, intent}`);
+            }
+            return {
+                operationClass,
+                kind,
+                value: '',
+                intent: parseExecIntent(matcherRecord.intent, `rules[${index}].matcher.intent`),
+                effect,
+            };
+        }
+        if (matcherKeys.length !== 2 || !matcherKeys.includes('value')) {
             throw new TeamToolArgsError(`team-tools: rules[${index}].matcher must carry exactly {kind, value}`);
         }
-        const kind = matcherRecord.kind;
         const value = matcherRecord.value;
-        if (typeof kind !== 'string' || !PERMISSION_MATCHER_KINDS.includes(kind)) {
-            throw new TeamToolArgsError(`team-tools: rules[${index}].matcher.kind must be one of ${PERMISSION_MATCHER_KINDS.join('|')}`);
-        }
         if (typeof value !== 'string' || value.length === 0 || value.length > 4096) {
             throw new TeamToolArgsError(`team-tools: rules[${index}].matcher.value must be a non-empty string`);
         }
@@ -1047,15 +1107,15 @@ function permissionSpec(verb) {
     return {
         name: toolName,
         description: verb === 'grant'
-            ? 'Grant durable permission-overlay rules to ONE member instance (Leader-only; the ONE governance mutation authority). Rules are closed {operationClass, matcher{kind: exact|subtree|fingerprint, value}, effect: allow|ask|deny}; exact/subtree values are file paths canonicalized SERVER-SIDE at the TARGET member\'s effective workspace (a client-supplied key is never the authority). The mutation is classified against the bound Blueprint\'s permissionMutationEnvelope carrier: a tightening applies immediately; an EXPANSION requires explicit carrier coverage and refuses typed (zero write) otherwise. Deduplicated by the request token. Does NOT change the Leader\'s own permissions.'
-            : 'Revoke previously granted permission-overlay rules from ONE member instance (Leader-only; the ONE governance mutation authority). Same closed rule grammar as team_grant_permission — the matched rules leave the member\'s durable overlay, so the next pre-execute decision falls back to the lower layers. Deduplicated by the request token.',
+            ? 'Grant durable permission-overlay rules to ONE member instance (Leader-only; the ONE governance mutation authority). Rules are closed {operationClass, matcher: {kind: exact|subtree, value: <path>} OR {kind: exec, intent: {tool: bash|pwsh, command, workdir?, run_in_background?, timeoutMs?, sandbox_permissions?}}, effect: allow|ask|deny}; file values are canonicalized SERVER-SIDE at the ADDRESSED team\'s TARGET member effective workspace and exec intents are canonicalized SERVER-SIDE to the EXACT execution fingerprint the pre-execute plane computes (a client-supplied key or fingerprint string is never the authority). The target must have a durable row and not be DISPOSED (unknown/DISPOSED refuse typed, zero write; ARCHIVED stays legally mutable and never executes). The mutation is classified against the bound Blueprint\'s permissionMutationEnvelope carrier: a tightening applies immediately; an EXPANSION requires explicit carrier coverage and refuses typed (zero write) otherwise. Replays commit nothing (a rule-set-equal mutation no-ops). Does NOT change the Leader\'s own permissions.'
+            : 'Revoke previously granted permission-overlay rules from ONE member instance (Leader-only; the ONE governance mutation authority). Same closed rule grammar as team_grant_permission — the matched rules leave the member\'s durable overlay, so the next pre-execute decision falls back to the lower layers. A replay commits nothing (a rule-set-equal mutation no-ops).',
         properties: {
             rootSessionId: ROOT_SESSION_ID_ARG,
             requestToken: REQUEST_TOKEN_ARG,
             targetInstanceId: TARGET_INSTANCE_ARG,
             rules: {
                 type: 'array',
-                description: 'One or more closed permission rules {operationClass: string, matcher: {kind: exact|subtree|fingerprint, value: string}, effect: allow|ask|deny}.',
+                description: 'One or more closed permission rules {operationClass: string, matcher: {kind: exact|subtree, value: <path>} OR {kind: exec, intent: {tool: bash|pwsh, command, workdir?, run_in_background?, timeoutMs?, sandbox_permissions?}}, effect: allow|ask|deny}.',
                 items: { type: 'object' },
             },
         },
@@ -1082,14 +1142,34 @@ function permissionSpec(verb) {
             }
             const targetInstanceId = requireStringField(args, 'targetInstanceId', INSTANCE_ID_MAX_LENGTH);
             const parsed = parsePermissionRules(args.rules);
-            // SERVER-SIDE canonicalization at the TARGET member's effective
-            // workspace (FIX-2a): the client never supplies the authority key.
+            // SERVER-SIDE canonicalization (FIX-2a + round-7 items 2/3): file paths
+            // resolve at the ADDRESSED team's TARGET member effective workspace
+            // (ctx.rootSessionId — the SAME per-call context the mutation below
+            // carries, never a boot-row capture); exec scope arrives ONLY as a
+            // CLOSED structured intent and is canonicalized to the EXACT execution
+            // fingerprint the pre-execute plane itself computes. The client never
+            // supplies an authority key — in either class.
             const rules = [];
             for (const rule of parsed) {
                 let resource = rule.value;
-                if (rule.kind !== 'fingerprint') {
+                let matcherKind = rule.kind;
+                if (rule.kind === 'exec') {
                     try {
-                        resource = await permission.canonicalizeFile(targetInstanceId, rule.value);
+                        resource = await permission.canonicalizeExecIntent(ctx.rootSessionId, targetInstanceId, rule.intent);
+                    }
+                    catch (error) {
+                        return {
+                            status: 'rejected',
+                            code: TEAM_TOOL_PERMISSION_CANONICALIZE_FAILED,
+                            message: `team-tools: ${toolName} could not canonicalize an exec intent to the execution fingerprint (${error instanceof Error ? error.message : String(error)}) — refusing, zero write`,
+                        };
+                    }
+                    // The GMS-internal key grammar is the EXACT fingerprint matcher.
+                    matcherKind = 'fingerprint';
+                }
+                else {
+                    try {
+                        resource = await permission.canonicalizeFile(ctx.rootSessionId, targetInstanceId, rule.value);
                     }
                     catch (error) {
                         return {
@@ -1101,13 +1181,17 @@ function permissionSpec(verb) {
                 }
                 rules.push({
                     operationClass: rule.operationClass,
-                    matcher: { kind: rule.kind, resource },
+                    matcher: { kind: matcherKind, resource },
                     effect: rule.effect,
                 });
             }
             // The authority is the CALLER identity the host resolved (Leader,
-            // gated above) — never an argument. The request token is the durable
-            // dedupe identity (the governance lane dedupes by mutationId).
+            // gated above) — never an argument. The request token rides into
+            // mutationId as PROVENANCE identity; a replay commits nothing because
+            // the kernel no-ops on a rule-set-equal plan (changed:false), not
+            // because the store dedupes ids (round-7 ledger correction of the
+            // earlier "dedupes by mutationId" comment — mutationId is audit
+            // provenance, the snapshot comparison is the idempotence).
             const mutationArgs = {
                 authority: { kind: 'leader' },
                 teamSessionId: ctx.rootSessionId,

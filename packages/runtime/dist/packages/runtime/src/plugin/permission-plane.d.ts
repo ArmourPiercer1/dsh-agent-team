@@ -137,6 +137,11 @@ export declare function createPermissionGovernanceLane(deps: {
     readonly fsContainsKeys?: CanonicalKeyContains;
     readonly staticLayers?: GovernancePermissionLaneDeps['staticLayers'];
     readonly permissionEnvelope?: GovernancePermissionLaneDeps['permissionEnvelope'];
+    /** ROUND 7 (parent BLOCK-1): the target lifecycle guard awaited INSIDE the
+     *  serialized mutation section (the post-await revalidation position). The
+     *  production root wires the SAME shared assertion the mutation lane
+     *  pre-checks — one lifecycle law, never a second gate. */
+    readonly targetGuard?: GovernancePermissionLaneDeps['targetGuard'];
 }): GovernancePermissionLaneDeps;
 /**
  * The two PR4 lanes over the already-assembled authority + lifecycle path.

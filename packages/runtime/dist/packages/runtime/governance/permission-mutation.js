@@ -332,7 +332,12 @@ export function parsePermissionMutation(raw) {
             refuse(PERMISSION_MUTATION_ERROR_CODES.MALFORMED_MUTATION, 'mutation-id-control-char', 'mutationId must not contain control characters', { field: 'mutationId' });
         }
     }
-    if (typeof raw.reason !== 'string' || raw.reason.length > 512) {
+    // ROUND 7 (parent item 4): MISSING and OVER-BOUND are different contract
+    // violations — the old label called an absent field "over-bound".
+    if (typeof raw.reason !== 'string') {
+        refuse(PERMISSION_MUTATION_ERROR_CODES.MALFORMED_MUTATION, 'reason-missing', 'reason is REQUIRED provenance (a string of at most 512 characters) — an audit-reason-free permission mutation does not exist (PR1 provenance semantics)', { field: 'reason' });
+    }
+    if (raw.reason.length > 512) {
         refuse(PERMISSION_MUTATION_ERROR_CODES.MALFORMED_MUTATION, 'reason-over-bound', 'reason must be a string of at most 512 characters (the PR1 provenance bound, PERMISSION_OVERLAY_MAX_REASON_LENGTH)', { field: 'reason' });
     }
     if (!Array.isArray(raw.rules) || raw.rules.length === 0) {

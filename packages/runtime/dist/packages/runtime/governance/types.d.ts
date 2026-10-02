@@ -106,6 +106,16 @@ export type GovernancePolicyReader = PolicyReader;
  */
 export interface GovernancePermissionLaneDeps {
     /**
+     * ROUND 7 (parent BLOCK-1): the TARGET lifecycle guard, awaited INSIDE the
+     * serialized mutation section before any classification or append (the
+     * post-await revalidation position). The production wiring passes the SAME
+     * shared assertion the mutation lane pre-checks
+     * (`assertPermissionMutationTarget` over the leader-aware member lifecycle
+     * reader) — one lifecycle law, two positions, no second gate. Absent =
+     * unguarded (test/factory worlds only; production root always wires it).
+     */
+    readonly targetGuard?: (teamSessionId: string, memberInstanceId: string) => Promise<void>;
+    /**
      * The PR1 persistence-only overlay port — the ONE durable write target of
      * the permission path (ADR §1: GovernanceMutationService → this port →
      * durable store). The port validates nothing about authority or the

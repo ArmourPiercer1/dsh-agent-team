@@ -496,26 +496,48 @@ export declare function parseRemoteTeamResolveControlParams(method: string, para
 /** Parse `team.prepareOrdinaryOpen` params (contract v5, v5-only method). */
 export declare function parseRemoteTeamPrepareOrdinaryOpenParams(method: string, params: RemoteSafeRecord): RemoteTeamPrepareOrdinaryOpenParams;
 /**
- * PR4 ROUND 5 (FIX-2b) — `override.mutatePermission` (contract v7, v7-only):
- * the human/operator grant/revoke into the durable permission overlay via
- * the ONE governance mutation authority. CLOSED grammar: rules are 1..32
- * entries of {operationClass, matcher{kind,value}, effect}; the caller NEVER
- * supplies the authority (the server derives it from the session binding)
- * and exact/subtree matcher VALUES are raw paths — the server canonicalizes
- * them at the TARGET member's effective workspace (a client-supplied
- * canonical key is never authorization input).
+ * PR4 ROUND 5 (FIX-2b) / ROUND 7 (parent items 3+4) — `override.mutatePermission`
+ * (contract v7, v7-only): the human/operator grant/revoke into the durable
+ * permission overlay via the ONE governance mutation authority. CLOSED
+ * grammar: rules are 1..32 entries of {operationClass, matcher, effect}
+ * where the matcher is EITHER a file matcher {kind: exact|subtree, value:
+ * <raw path>} — canonicalized SERVER-SIDE at the TARGET member's effective
+ * workspace — OR a CLOSED structured exec intent {kind: exec, intent:{tool,
+ * command, ...}} — canonicalized SERVER-SIDE to the EXACT execution
+ * fingerprint the pre-execute plane computes. A raw fingerprint string is no
+ * longer accepted (round 7: an arbitrary client string must never self-label
+ * as canonical); the caller NEVER supplies the authority (the server derives
+ * it from the session binding). `reason` is REQUIRED provenance (round 7:
+ * the governance kernel has ALWAYS required it — an optional wire field was
+ * a dead-on-arrival contract; PR1 provenance semantics carry no
+ * reason-free permission mutation and no fabricated default).
  */
+export interface RemotePermissionExecIntent {
+    readonly tool: 'bash' | 'pwsh';
+    readonly command: string;
+    readonly workdir?: string;
+    readonly run_in_background?: boolean;
+    readonly timeoutMs?: number;
+    readonly sandbox_permissions?: string;
+}
 export interface RemoteOverrideMutatePermissionParams {
     readonly teamSessionId: string;
     readonly memberInstanceId: string;
     readonly kind: 'grant_instance' | 'revoke_permission';
     readonly mutationId: string;
-    readonly reason?: string;
+    readonly reason: string;
+    /** The client's mutation-actor CLAIM (derivation input only — the server
+     *  re-derives the authority from it, exactly like the override lane; a
+     *  claim is never an authority). */
+    readonly actor: RemoteMutationActor;
     readonly rules: readonly {
         readonly operationClass: string;
         readonly matcher: {
-            readonly kind: 'exact' | 'subtree' | 'fingerprint';
+            readonly kind: 'exact' | 'subtree';
             readonly value: string;
+        } | {
+            readonly kind: 'exec';
+            readonly intent: RemotePermissionExecIntent;
         };
         readonly effect: 'allow' | 'ask' | 'deny';
     }[];

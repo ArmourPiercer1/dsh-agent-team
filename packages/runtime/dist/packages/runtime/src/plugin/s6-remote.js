@@ -1581,18 +1581,35 @@ export function createS6RemotePorts(options) {
                 // acting row's tail).
                 const rules = [];
                 for (const rule of request.rules) {
-                    let resource = rule.matcher.value;
-                    if (rule.matcher.kind !== 'fingerprint') {
-                        if (canonicalize === undefined) {
-                            throw new Error('override.mutatePermission: file-rule canonicalization is unwired (no fs provider seam) — refusing, zero write');
+                    if (rule.matcher.kind === 'exec') {
+                        // ROUND 7 (parent item 3): the CLOSED structured exec intent is
+                        // canonicalized SERVER-SIDE into the EXACT execution fingerprint
+                        // (no client-supplied fingerprint ever reaches the overlay).
+                        if (permission.canonicalizeExecIntent === undefined) {
+                            throw new Error('override.mutatePermission: exec-intent canonicalization is unwired (no exec canonicalizer seam) — refusing, zero write');
                         }
-                        const workspace = options.repositories.memberInstances.get(root, request.memberInstanceId)?.workspace ??
-                            options.repositories.teamSessions.get(root)?.defaultWorkspace;
-                        if (typeof workspace !== 'string' || workspace.length === 0) {
-                            throw new Error('override.mutatePermission: the addressed team/member has no durable effective workspace — refusing, zero write');
-                        }
-                        resource = await canonicalize(resource, workspace);
+                        const resource = await permission.canonicalizeExecIntent(root, request.memberInstanceId, rule.matcher.intent);
+                        rules.push({
+                            operationClass: rule.operationClass,
+                            matcher: { kind: 'fingerprint', resource },
+                            effect: rule.effect,
+                        });
+                        continue;
                     }
+                    // File matcher: canonicalize at the ADDRESSED root's TARGET member
+                    // effective workspace (durable member row, else the durable
+                    // TeamSession default — the FIX-3 doctrine; NO durable row ->
+                    // refusal, never the acting row's tail). `root` is the REQUEST's
+                    // bound session (assertBoundRoot is per-call addressed).
+                    if (canonicalize === undefined) {
+                        throw new Error('override.mutatePermission: file-rule canonicalization is unwired (no fs provider seam) — refusing, zero write');
+                    }
+                    const workspace = options.repositories.memberInstances.get(root, request.memberInstanceId)?.workspace ??
+                        options.repositories.teamSessions.get(root)?.defaultWorkspace;
+                    if (typeof workspace !== 'string' || workspace.length === 0) {
+                        throw new Error('override.mutatePermission: the addressed team/member has no durable effective workspace — refusing, zero write');
+                    }
+                    const resource = await canonicalize(rule.matcher.value, workspace);
                     rules.push({
                         operationClass: rule.operationClass,
                         matcher: { kind: rule.matcher.kind, resource },
@@ -1605,7 +1622,10 @@ export function createS6RemotePorts(options) {
                     memberInstanceId: request.memberInstanceId,
                     kind: request.kind,
                     mutationId: request.mutationId,
-                    ...(request.reason !== undefined ? { reason: request.reason } : {}),
+                    // ROUND 7 (parent item 4): the wire REQUIRES reason (option (a):
+                    // an honest contract beats a fabricated default under PR1
+                    // provenance semantics) — the propagation is unconditional.
+                    reason: request.reason,
                     rules,
                 }));
                 const safe = { changed: result['changed'] === true };
@@ -2204,10 +2224,12 @@ function buildS6CategoryHandlers(ports, principal) {
                     const mutateParams = params;
                     const request = {
                         teamSessionId: mutateParams.teamSessionId,
+                        actorClaim: mutateParams.actor,
                         memberInstanceId: mutateParams.memberInstanceId,
                         kind: mutateParams.kind,
                         mutationId: mutateParams.mutationId,
-                        ...(mutateParams.reason !== undefined ? { reason: mutateParams.reason } : {}),
+                        // ROUND 7 (item 4): REQUIRED provenance end to end — no spread.
+                        reason: mutateParams.reason,
                         rules: mutateParams.rules,
                     };
                     return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.override.mutatePermission(request, caller)).then((result) => ({ data: result }));
@@ -2606,6 +2628,7 @@ export function createS6RemoteSurfaces(options) {
     return {
         registration: createS6RemoteRegistration(ports, options.principal, principalContext, options.readiness),
         completion,
+        dispatcher,
     };
 }
 //# sourceMappingURL=s6-remote.js.map

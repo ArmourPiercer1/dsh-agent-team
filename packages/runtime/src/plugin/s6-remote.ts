@@ -360,18 +360,35 @@ export interface S6RemoteAdmissionRequest {
  * raw paths canonicalized SERVER-SIDE at the TARGET member's effective
  * workspace (the same doctrine as the team_grant_permission tool).
  */
+/** The CLOSED structured exec intent (round 7, parent item 3) — structurally
+ *  identical to the remote contract's RemotePermissionExecIntent and the
+ *  tools package's TeamPermissionExecIntent (one shape, three layers,
+ *  independently pinned by each package's parser). */
+export interface S6RemotePermissionExecIntent {
+  readonly tool: 'bash' | 'pwsh'
+  readonly command: string
+  readonly workdir?: string
+  readonly run_in_background?: boolean
+  readonly timeoutMs?: number
+  readonly sandbox_permissions?: string
+}
+
 export interface S6RemotePermissionMutateRequest {
   readonly teamSessionId: string
   readonly memberInstanceId: string
+  /** The client's actor claim (derivation input only — the port authority
+   *  comes from the derived ActionCaller, never from this field). */
+  readonly actorClaim: unknown
   readonly kind: 'grant_instance' | 'revoke_permission'
   readonly mutationId: string
-  readonly reason?: string
+  /** ROUND 7: REQUIRED provenance (the wire contract requires it; the
+   *  governance kernel always did). */
+  readonly reason: string
   readonly rules: readonly {
     readonly operationClass: string
-    readonly matcher: {
-      readonly kind: 'exact' | 'subtree' | 'fingerprint'
-      readonly value: string
-    }
+    readonly matcher:
+      | { readonly kind: 'exact' | 'subtree'; readonly value: string }
+      | { readonly kind: 'exec'; readonly intent: S6RemotePermissionExecIntent }
     readonly effect: 'allow' | 'ask' | 'deny'
   }[]
 }
@@ -988,10 +1005,20 @@ export interface S6RemoteOptions {
     readonly mutatePermission: (
       mutationArgs: Record<string, unknown>,
     ) => Promise<Record<string, unknown>>
+    /** ROUND 7 (parent item 3): canonicalize a CLOSED structured exec intent
+     *  into the EXACT execution fingerprint (the same canonicalizer the
+     *  pre-execute plane uses). Absent = exec-intent rules refuse typed. */
+    readonly canonicalizeExecIntent?: (
+      teamSessionId: string,
+      targetInstanceId: string,
+      intent: S6RemotePermissionExecIntent,
+    ) => Promise<string>
   }
   /** PR4 ROUND 5 (FIX-2b): the server-side fs canonicalizer (the same seam
    *  the authority facts + the grant tool share). Absent = file rules
-   *  refuse typed; fingerprint rules still pass (identities). */
+   *  refuse typed. (ROUND 7: there is no longer any client-supplied
+   *  fingerprint passthrough — exec scope canonicalizes through
+   *  permission.canonicalizeExecIntent.) */
   readonly permissionCanonicalize?: (path: string, cwd: string) => Promise<string>
   /** The mutation store's transition rows (the durable PolicyState read). */
   readonly mutationTransitions: (teamSessionId: string) => readonly PolicyStateTransitionRecord[]
@@ -2850,26 +2877,49 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // acting row's tail).
         const rules: Record<string, unknown>[] = []
         for (const rule of request.rules) {
-          let resource = rule.matcher.value
-          if (rule.matcher.kind !== 'fingerprint') {
-            if (canonicalize === undefined) {
+          if (rule.matcher.kind === 'exec') {
+            // ROUND 7 (parent item 3): the CLOSED structured exec intent is
+            // canonicalized SERVER-SIDE into the EXACT execution fingerprint
+            // (no client-supplied fingerprint ever reaches the overlay).
+            if (permission.canonicalizeExecIntent === undefined) {
               throw new Error(
-                'override.mutatePermission: file-rule canonicalization is unwired (no fs provider seam) — refusing, zero write',
+                'override.mutatePermission: exec-intent canonicalization is unwired (no exec canonicalizer seam) — refusing, zero write',
               )
             }
-            const workspace =
-              (options.repositories.memberInstances.get(
-                root as never,
-                request.memberInstanceId as never,
-              )?.workspace as string | undefined) ??
-              (options.repositories.teamSessions.get(root as never)?.defaultWorkspace as string | undefined)
-            if (typeof workspace !== 'string' || workspace.length === 0) {
-              throw new Error(
-                'override.mutatePermission: the addressed team/member has no durable effective workspace — refusing, zero write',
-              )
-            }
-            resource = await canonicalize(resource, workspace)
+            const resource = await permission.canonicalizeExecIntent(
+              root,
+              request.memberInstanceId,
+              rule.matcher.intent,
+            )
+            rules.push({
+              operationClass: rule.operationClass,
+              matcher: { kind: 'fingerprint', resource },
+              effect: rule.effect,
+            })
+            continue
           }
+          // File matcher: canonicalize at the ADDRESSED root's TARGET member
+          // effective workspace (durable member row, else the durable
+          // TeamSession default — the FIX-3 doctrine; NO durable row ->
+          // refusal, never the acting row's tail). `root` is the REQUEST's
+          // bound session (assertBoundRoot is per-call addressed).
+          if (canonicalize === undefined) {
+            throw new Error(
+              'override.mutatePermission: file-rule canonicalization is unwired (no fs provider seam) — refusing, zero write',
+            )
+          }
+          const workspace =
+            (options.repositories.memberInstances.get(
+              root as never,
+              request.memberInstanceId as never,
+            )?.workspace as string | undefined) ??
+            (options.repositories.teamSessions.get(root as never)?.defaultWorkspace as string | undefined)
+          if (typeof workspace !== 'string' || workspace.length === 0) {
+            throw new Error(
+              'override.mutatePermission: the addressed team/member has no durable effective workspace — refusing, zero write',
+            )
+          }
+          const resource = await canonicalize(rule.matcher.value, workspace)
           rules.push({
             operationClass: rule.operationClass,
             matcher: { kind: rule.matcher.kind, resource },
@@ -2882,7 +2932,10 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
           memberInstanceId: request.memberInstanceId,
           kind: request.kind,
           mutationId: request.mutationId,
-          ...(request.reason !== undefined ? { reason: request.reason } : {}),
+          // ROUND 7 (parent item 4): the wire REQUIRES reason (option (a):
+          // an honest contract beats a fabricated default under PR1
+          // provenance semantics) — the propagation is unconditional.
+          reason: request.reason,
           rules,
         })) as Record<string, unknown>
         const safe: { [key: string]: string | boolean } = { changed: result['changed'] === true }
@@ -3582,10 +3635,12 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
             const mutateParams = params as RemoteOverrideMutatePermissionParams
             const request: S6RemotePermissionMutateRequest = {
               teamSessionId: mutateParams.teamSessionId,
+              actorClaim: mutateParams.actor,
               memberInstanceId: mutateParams.memberInstanceId,
               kind: mutateParams.kind,
               mutationId: mutateParams.mutationId,
-              ...(mutateParams.reason !== undefined ? { reason: mutateParams.reason } : {}),
+              // ROUND 7 (item 4): REQUIRED provenance end to end — no spread.
+              reason: mutateParams.reason,
               rules: mutateParams.rules,
             }
             return Promise.resolve(
@@ -4082,6 +4137,13 @@ export interface S6RemoteSurfaces {
   readonly registration: RemoteHandlerRegistration
   /** A34 — the completion the `remoteQueryCommandCompletion` seam installs. */
   readonly completion: RemoteQueryCommandCompletion
+  /**
+   * ROUND 7: the throw-proof dispatcher over the SAME ports/principal basis
+   * the A31 registration mounts — exposed so the production-entry
+   * regressions drive the ROOT-ASSEMBLED router end to end instead of
+   * hand-rebuilding the options object.
+   */
+  readonly dispatcher: ReturnType<typeof createS6RemoteDispatcher>
 }
 
 /**
@@ -4108,5 +4170,6 @@ export function createS6RemoteSurfaces(options: S6RemoteOptions): S6RemoteSurfac
   return {
     registration: createS6RemoteRegistration(ports, options.principal, principalContext, options.readiness),
     completion,
+    dispatcher,
   }
 }

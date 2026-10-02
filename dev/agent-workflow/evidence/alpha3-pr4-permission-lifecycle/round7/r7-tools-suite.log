@@ -1,0 +1,54 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle
+
+ ✓ packages/tools/test/t2-tool-selector-deny.test.ts (19 tests) 5ms
+ ✓ packages/tools/test/h3-hostile-seam.test.ts (10 tests) 3ms
+ ✓ packages/tools/test/p6t6-bypass-scan.test.ts (10 tests) 5ms
+ ✓ packages/tools/test/c1-list-pending-control.test.ts (10 tests) 6ms
+ ✓ packages/tools/test/archive-member-tool.test.ts (11 tests) 8ms
+ ✓ packages/tools/test/issue1-collect-tools.test.ts (12 tests) 5ms
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed) 13ms
+     ✓ reads: list-members / list-templates / inspect-config execute with lossless effects 1ms
+     ✓ E1/E4: template-addressed creations admit DISTINCT new instances (member-activated) 1ms
+     ✓ E6: at-limit admitted; over the TEMPLATE limit rejected; over the TEAM limit rejected 0ms
+     ✓ E3: persistent follow-up keeps the SAME bound child session (durable read-back) 0ms
+     ✓ E2: label and template addressing on instance-addressed tools are live-rejected 0ms
+     × messaging: worker -> leader is delivered direct to the leader bound session 8ms
+     ✓ progress: per-subject sequences (1,2 on unit-a; the other subject restarts at 1) 0ms
+     ✓ the request-token contract: missing/empty/over-long -> BAD_ARGUMENTS 0ms
+     ✓ argument-shape rejections: missing/non-string root, non-object args -> BAD_ARGUMENTS 0ms
+     ✓ caller resolution: no agent / unknown session / throwing resolver -> CALLER_UNRESOLVED 0ms
+     ✓ delegate XOR: neither or both delegation fields -> BAD_ARGUMENTS 0ms
+     ✓ closed vocabularies: bad progress / kind / decision -> BAD_ARGUMENTS 0ms
+     ✓ a well-formed unknown instance id is blocked target-stale by the guard (SD-GUARD) 0ms
+     ✓ the stale-head retry: one ACTIVITY_SEQUENCE_STALE is retried with a fresh head 0ms
+ ✓ packages/tools/test/issue2-builtin-deny-focused.test.ts (8 tests) 3ms
+ ✓ packages/tools/test/c1-caller-root-binding.test.ts (6 tests) 3ms
+ ✓ packages/tools/test/tools.test.ts (2 tests) 2ms
+ ✓ packages/tools/test/p6t6-guard.test.ts (9 tests) 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality
+
+Expected: "session-child-p6t2-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/tools/test/p6t6-actions.test.ts:893:46
+    891|       expect(delivered.deliveryMode).toBe('direct')
+    892|       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
+    893|       expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.le…
+       |                                              ^
+    894|     }
+    895|     const inputs = A.recordedInputs
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  1 failed | 110 passed (111)
+   Start at  00:56:00
+   Duration  1.29s (transform 2.90s, setup 0ms, import 4.81s, tests 55ms, environment 1ms)
+

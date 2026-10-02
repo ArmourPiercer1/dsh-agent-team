@@ -32,6 +32,6 @@
  */
 export type { MemberLifecycleReaderPort, OverlaySubtreeContainment, PermissionCarrierDecoder, PermissionCarrierMatcher, PermissionDecisionLane, PermissionDecisionLaneDeps, PermissionDecisionLayer, PermissionDecisionOutcome, PermissionDecisionPlane, PermissionDecisionRequest, PermissionDecisionStaticFacts, PermissionEffectiveAnswerPort, PermissionKernelAnswer, PermissionKernelStaticFacts, PermissionKernelStaticLayer, PermissionKernelStaticLayerRule, PermissionLifecycleErrorCode, PermissionLifecycleGateVerdict, PermissionLifecycleGrantArgs, PermissionLifecycleMutationLane, PermissionLifecycleMutationLaneDeps, PermissionLifecycleRestoreArgs, PermissionLifecycleRestorePort, PermissionLifecycleRestoreResult, } from './types.js';
 export { PERMISSION_LIFECYCLE_ERROR_CODES, PermissionLifecycleError } from './types.js';
-export { createPermissionLifecycleMutationLane } from './mutation-lane.js';
+export { createPermissionLifecycleMutationLane, assertPermissionMutationTarget } from './mutation-lane.js';
 export { containmentFallback, createPermissionDecisionLane, evaluatePermissionLifecycleGate, toKernelStaticFacts, } from './decision-lane.js';
 //# sourceMappingURL=index.d.ts.map

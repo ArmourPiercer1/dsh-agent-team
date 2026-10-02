@@ -47,6 +47,27 @@
  */
 import type { PermissionLifecycleMutationLane, PermissionLifecycleMutationLaneDeps } from './types.js';
 /**
+ * THE shared permission-target assertion (ROUND 7, parent BLOCK-1: ONE
+ * lifecycle law, never a second parallel gate). The mutation lane runs it as
+ * a caller-side pre-check AND the governance service runs the SAME function
+ * INSIDE its serialized section (post-await revalidation — a pre-check can
+ * race a dispose, the in-chain run cannot).
+ *
+ * The parent-pinned TRI-STATE (§8):
+ *   - NO durable row (`undefined`, and the reader is Leader-aware: the
+ *     Leader position answers live iff the TeamSession row exists)
+ *       -> `INSTANCE_UNKNOWN`, append FORBIDDEN;
+ *   - `DISPOSED` -> `TARGET_TERMINAL`, append FORBIDDEN (the overlay is
+ *     historical only; writing it is audit noise dressed as authority);
+ *   - `ARCHIVED` -> **LEGAL**: the overlay is RETAINED and may still be
+ *     granted/revoked (revoke-during-archive is exactly what the restore leg
+ *     pins as still revoked afterwards); execution over an ARCHIVED instance
+ *     is separately, unconditionally disabled by the DECISION lane — the
+ *     mutation side never executes anything, so a legal mutation there is
+ *     consistent, not a leak.
+ */
+export declare function assertPermissionMutationTarget(members: PermissionLifecycleMutationLaneDeps['members'], teamSessionId: string, memberInstanceId: string, operation: string): Promise<void>;
+/**
  * Build the lifecycle mutation lane. Pure wiring: no clock, no randomness,
  * no I/O of its own (every durable effect happens behind an injected port).
  */

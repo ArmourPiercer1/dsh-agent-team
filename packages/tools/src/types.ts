@@ -198,6 +198,30 @@ export interface ResolvedTeamToolCaller {
  * layer delegates to — the facade plus the sanctioned satellites. Every
  * durable write flows through them; the tool layer itself writes nothing.
  */
+/**
+ * The CLOSED structured exec intent (round 7, parent item 3): the ONLY
+ * way an entry expresses exec (shell-class) scope. The server canonicalizes
+ * it into the exact execution fingerprint via the SAME semantics the
+ * execution plane uses at pre-execute (`canonicalizeShellOperation`:
+ * tool + command hash + canonical workdir KEY + background flag + explicit
+ * timeout + sandbox mode) — arbitrary client strings can never self-label
+ * as canonical. Field names mirror the shell tool's OWN argument names so
+ * the canonicalization is the identity mapping onto the real exec shape.
+ */
+export interface TeamPermissionExecIntent {
+  /** The closed shell-class tool (the resource key IS the tool name). */
+  readonly tool: 'bash' | 'pwsh'
+  /** The exact command string the exec fingerprint hashes. */
+  readonly command: string
+  /** Workdir input (absent = the tool's own default '.'). */
+  readonly workdir?: string
+  readonly run_in_background?: boolean
+  /** EXPLICIT timeout only — never a deployment default (plan §4.4). */
+  readonly timeoutMs?: number
+  /** Requested sandbox mode string only; legality is decided at exec. */
+  readonly sandbox_permissions?: string
+}
+
 export interface TeamToolsOptions {
   /** The unified runtime/control action facade (all facade actions). */
   readonly teamRuntime: TeamRuntime
@@ -229,15 +253,33 @@ export interface TeamToolsOptions {
    * a client-supplied key is never authorization input.
    */
   readonly permission?: {
-    /** Runs one closed permission mutation (grant_instance/revoke_instance)
-     *  through the governance service; the service's typed refusal THROWS a
-     *  PermissionMutationError-shaped error (`code`, `reason`). */
+    /** Routes one closed permission mutation (grant_instance /
+     *  revoke_permission) through the SHARED lifecycle mutation lane onto the
+     *  governance service; typed refusals THROW errors carrying `code`
+     *  (the tool forwards the code verbatim). */
     readonly mutatePermission: (
       mutationArgs: Record<string, unknown>,
     ) => Promise<Record<string, unknown>>
-    /** Canonicalizes one file-rule path at the TARGET member's effective
-     *  workspace through the host's fs provider (throws on any fault — the
-     *  tool maps it to a typed rejection, never a raw-path authority). */
-    readonly canonicalizeFile: (targetInstanceId: string, path: string) => Promise<string>
+    /** Canonicalizes one file-rule path at the ADDRESSED team's TARGET member
+     *  effective workspace through the host's fs provider (throws on any
+     *  fault — the tool maps it to a typed rejection, never a raw-path
+     *  authority). ROUND 7 (parent BLOCK-2): the TEAM is the per-call
+     *  addressed ctx.rootSessionId — never a boot-row capture. */
+    readonly canonicalizeFile: (
+      teamSessionId: string,
+      targetInstanceId: string,
+      path: string,
+    ) => Promise<string>
+    /** Canonicalizes one CLOSED structured exec intent (bash|pwsh + command +
+     *  exec params) into the EXACT execution fingerprint the execution plane
+     *  itself computes (server-side canonicalizeShellOperation semantics).
+     *  ROUND 7 (parent item 3): a client-supplied fingerprint string is NEVER
+     *  accepted — the only way to express exec scope through an entry is a
+     *  structured intent this seam canonicalizes. Throws on any fault. */
+    readonly canonicalizeExecIntent: (
+      teamSessionId: string,
+      targetInstanceId: string,
+      intent: TeamPermissionExecIntent,
+    ) => Promise<string>
   }
 }

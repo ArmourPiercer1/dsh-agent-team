@@ -198,6 +198,20 @@ async function openEntryWorld(): Promise<EntryWorld> {
     createdAt: NOW,
     activityVersion: 1,
   })
+  // ROUND 7: a SECOND real member row the fact reader ABSTAINS on — the
+  // UNKNOWN-facts leg needs a target that reaches the fact gate, i.e. a
+  // lifecycle-LEGAL row (the ghost variant dies earlier at the lifecycle
+  // gate since round 7 wired the in-section target guard).
+  await domain.repositories.memberInstances.put({
+    rootSessionId: parseRootSessionId(ENTRY_ROOT),
+    instanceId: parseInstanceId('inst-a3p4e1nofacts'),
+    templateId: parseTemplateId('worker'),
+    label: 'a3p4e1 no-facts member',
+    childSessionId: parseChildSessionId('session-child-a3p4e1nofacts'),
+    lifecycle: 'RUNNING',
+    createdAt: NOW,
+    activityVersion: 1,
+  })
 
   const overlayStore = await openPermissionOverlayStore(new FileStorageSeam(base))
   const overlay = createPermissionOverlayRepositoryPort({ repository: overlayStore.repository })
@@ -409,14 +423,18 @@ describe('E1 — the root-assembled lane consumes the fact readers and the leade
 
   it('UNKNOWN static facts refuse EFFECT_CONTEXT_UNAVAILABLE (never a guessed baseline)', async () => {
     // A world whose reader abstains on every instance (UNKNOWN, not
-    // DECLARED-NONE): the leader expansion must refuse typed.
+    // DECLARED-NONE): the leader expansion must refuse typed. ROUND 7: the
+    // target is a REAL member row — the ghost-target variant is now refused
+    // EARLIER by the lifecycle gate (INSTANCE_UNKNOWN), which the R7 entry
+    // legs pin on their own; this leg keeps testing the FACT gate, which
+    // only a live-addressable target reaches.
     const world = await openEntryWorld()
     try {
       const error = await world.root.mutation.governance
         .mutatePermission({
           authority: { kind: 'leader' },
           teamSessionId: ENTRY_ROOT,
-          memberInstanceId: 'inst-a3p4e1ghost',
+          memberInstanceId: 'inst-a3p4e1nofacts',
           kind: 'grant_instance',
           mutationId: 'mut-a3p4e1-unknown',
           reason: 'facts unknown for this target',
@@ -1874,6 +1892,7 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
         kind: 'grant_instance',
         mutationId,
         reason: 'r5 rpc leg',
+        actor: { kind: 'human' },
         rules: [{ operationClass: 'write', matcher: { kind: 'exact', value: 'open.txt' }, effect: 'allow' }],
       },
     })

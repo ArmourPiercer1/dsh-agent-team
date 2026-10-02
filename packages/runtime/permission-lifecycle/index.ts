@@ -58,7 +58,7 @@ export type {
   PermissionLifecycleRestoreResult,
 } from './types.js'
 export { PERMISSION_LIFECYCLE_ERROR_CODES, PermissionLifecycleError } from './types.js'
-export { createPermissionLifecycleMutationLane } from './mutation-lane.js'
+export { createPermissionLifecycleMutationLane, assertPermissionMutationTarget } from './mutation-lane.js'
 export {
   containmentFallback,
   createPermissionDecisionLane,

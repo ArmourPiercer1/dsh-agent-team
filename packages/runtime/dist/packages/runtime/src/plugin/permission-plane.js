@@ -122,11 +122,12 @@ export function createMemberLifecycleReader(rows, teamSessions) {
  *   policy ADR §6 does not carry).
  */
 export function createPermissionGovernanceLane(deps) {
-    const { overlay, fsContainsKeys, staticLayers, permissionEnvelope } = deps;
+    const { overlay, fsContainsKeys, staticLayers, permissionEnvelope, targetGuard } = deps;
     return {
         overlay,
         ...(staticLayers === undefined ? {} : { staticLayers }),
         ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
+        ...(targetGuard === undefined ? {} : { targetGuard }),
         ...(fsContainsKeys === undefined
             ? {}
             : {

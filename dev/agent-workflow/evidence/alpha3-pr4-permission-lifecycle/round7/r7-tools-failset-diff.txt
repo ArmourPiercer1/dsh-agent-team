@@ -1,0 +1,4 @@
+baseline=round5/r5-tools-suite-r3.log
+baseline-lines=1  new-lines=1
+(no hunks)
+VERDICT: BYTE-IDENTICAL (failsets agree line-for-line)

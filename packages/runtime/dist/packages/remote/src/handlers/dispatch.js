@@ -174,6 +174,20 @@ export const REMOTE_BACKING_ERROR_CODES = [
     'UNKNOWN_INSTANCE',
     'OVERRIDE_IDENTITY_CONFLICT',
     'OVERRIDE_GENERATION_CONFLICT',
+    // PR4 ROUND 7 (parent RPC-wiring requirement): the permission-lane typed
+    // refusments must reach the caller as THEIR codes, not degrade to
+    // internal-error (invariant 4b pass-through for the v7
+    // override.mutatePermission surface — the governance kernel codes and the
+    // lifecycle mutation-lane codes, verbatim as the services throw them).
+    'PERMISSION_MUTATION_MALFORMED',
+    'PERMISSION_ENVELOPE_MALFORMED',
+    'PERMISSION_MUTATION_UNAUTHORIZED_ACTOR',
+    'PERMISSION_ENVELOPE_EXPANSION_DENIED',
+    'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE',
+    'PERMISSION_OVERLAY_GENERATION_CONFLICT',
+    'PERMISSION_MUTATION_NOT_CONFIGURED',
+    'PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN',
+    'PERMISSION_LIFECYCLE_TARGET_TERMINAL',
     'UNAUTHORIZED_MUTATION',
     'MEMBER_SELF_ESCALATION',
     'LEADER_OUT_OF_ENVELOPE',

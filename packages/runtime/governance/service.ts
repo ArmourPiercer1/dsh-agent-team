@@ -602,6 +602,16 @@ export function createGovernanceMutationService(
     // construction).
     return deps.chain.run(args.teamSessionId, async () => {
       const overlay: PermissionOverlayRepositoryPort = lane.overlay
+      // ROUND 7 (parent BLOCK-1): the TARGET lifecycle assertion INSIDE the
+      // serialized section — the post-await revalidation a caller-side
+      // pre-check can never be (a dispose racing between the pre-check and
+      // this line is caught here, before ANY classification or append). The
+      // guard is the SAME shared assertion the mutation lane pre-checks
+      // (permission-lifecycle/mutation-lane assertPermissionMutationTarget)
+      // — ONE lifecycle law, wired from the same reader, never a second gate.
+      if (lane.targetGuard !== undefined) {
+        await lane.targetGuard(mutation.teamSessionId, mutation.memberInstanceId)
+      }
       const latest = await overlay.latest({
         teamSessionId: mutation.teamSessionId,
         memberInstanceId: mutation.memberInstanceId,

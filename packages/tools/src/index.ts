@@ -45,6 +45,7 @@ export type { ToolRestrictionDisposer } from './builtin-deny.js'
 
 export type {
   ResolvedTeamToolCaller,
+  TeamPermissionExecIntent,
   TeamToolDefinition,
   TeamToolExecContext,
   TeamToolParameterSchema,

@@ -1,0 +1,8 @@
+== git diff 137532f4 -- packages/domain (empty = byte-identical since base):
+0
+== test blob base vs worktree (identical hashes):
+089b32f10c08de270387ff4ff05aa9c6ab21de5d
+089b32f10c08de270387ff4ff05aa9c6ab21de5d
+== validate.ts (projection) blob base vs worktree:
+023cb5850fedd69df1715fee7670c6377be642be
+023cb5850fedd69df1715fee7670c6377be642be

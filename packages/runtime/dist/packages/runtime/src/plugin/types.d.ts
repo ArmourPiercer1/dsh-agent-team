@@ -631,6 +631,13 @@ export interface TeamProductionRoot {
      */
     readonly permissionPlane?: import('./permission-plane.js').TeamPermissionPlane;
     /**
+     * ROUND 7 (R-B wiring requirement): the ROOT-ASSEMBLED throw-proof remote
+     * dispatcher (the same ports/principal basis the mounted registration
+     * carries) — the production-entry regressions drive the real router with
+     * the real root closures through it.
+     */
+    readonly remoteDispatcher?: ReturnType<typeof import('./s6-remote.js').createS6RemoteDispatcher>;
+    /**
      * pre-alpha3 PR-B (plan §B.2) — the production PolicyReader (the bound-
      * snapshot static authority: the blueprint envelope / the durable
      * member template policy / the external hard facts). The SAME instance

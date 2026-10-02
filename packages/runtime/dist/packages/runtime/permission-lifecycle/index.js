@@ -31,6 +31,6 @@
  * @module @dsh-agent-team/runtime/permission-lifecycle
  */
 export { PERMISSION_LIFECYCLE_ERROR_CODES, PermissionLifecycleError } from './types.js';
-export { createPermissionLifecycleMutationLane } from './mutation-lane.js';
+export { createPermissionLifecycleMutationLane, assertPermissionMutationTarget } from './mutation-lane.js';
 export { containmentFallback, createPermissionDecisionLane, evaluatePermissionLifecycleGate, toKernelStaticFacts, } from './decision-lane.js';
 //# sourceMappingURL=index.js.map
