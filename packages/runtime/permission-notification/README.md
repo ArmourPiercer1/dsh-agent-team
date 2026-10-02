@@ -36,6 +36,19 @@ semantics are the upstream's own and are used AS-IS (a notice may wait
 for a future natural wake); this layer owns NO queue, NO pending state,
 NO retry path.
 
+Producer provenance (PR61 review BLOCK fix): the inject message CARRIER is
+`createUserMessage` (role 'user' — the host's only model-visible input
+carrier), but the SOURCE is the plugin's OWN v4 producer kind
+`plugin:dsh-agent-team` — the pinned glue attribution
+(agent-bindings.mjs:4078-4081), admitted by v4 (only the retired shared
+`kind: 'plugin'` wrapper is rejected, session-format-v3-to-v4
+src/message-sources.ts:8-11) and registered via the plugin's declaration
+merging (`src/plugin/live/message-sources.d.ts`). Human `kind: 'user'`
+attribution is FORBIDDEN for notices: the upstream consecutive-wake budget
+refills exactly on USER-sourced claims (tool-jobs src/index.ts:211-215,
+spent :295-305), so a plugin notice wearing it would trigger the Human
+pathway; the spec pins the exact predicate negation.
+
 Notification and projection output is **awareness, never authorization
 evidence**: the lane exports no path to any decision/mutation input
 (no authorize/resolve/assemble/mutate/grant/revoke/envelope member — the
@@ -70,7 +83,11 @@ the module is type-checked and tested from source, not part of the tsc
 install-surface build), and no runtime behavior of the product changes
 when this PR lands. The zero-production-consumer walk leg in the hygiene
 spec pins exactly this claim — when the wiring splice lands it must update
-that leg deliberately.
+that leg deliberately. PENDING NOTE (recorded per parent review): because
+the lane has NO production dist reference today, no build/dist change can
+accompany it; once the final splice wires this module into the production
+root, a REGULAR build + dist co-commit (and `check-artifacts-committed`
+verification of the new surface) WILL be required in that splice commit.
 
 ## Files
 
@@ -83,5 +100,5 @@ that leg deliberately.
 | `index.ts` | closed public surface (pinned by the hygiene spec) |
 | `../test/a3p5-permission-notification.test.ts` | the four required classes: active delivered / idle never awakened / stale marked, permissions untouched / failed delivery, mutation result & ack untouched |
 | `../test/a3p5-permission-read-projection.test.ts` | projection legs over the REAL durable store (authority = highest generation, history audit-only, append unreachable) |
-| `../test/a3p5-permission-delivery-binding.test.ts` | the GO's (a)-(e): running receives; idle/cold/closing/lifecycle/mismatch drop with zero writes; active→idle race drops at the gate; inject-only surface (wake landmines untouched); detached ack independence |
+| `../test/a3p5-permission-delivery-binding.test.ts` | the GO's (a)-(e): running receives (plugin-producer SOURCE pinned, never human 'user'); idle/cold/closing/lifecycle/mismatch drop with zero writes; active→idle race drops at the gate; inject-only surface (wake landmines untouched); detached ack independence |
 | `../test/a3p5-permission-notification-lane-hygiene.test.ts` | structural pins: closed exports, pinned import graph (TYPE-only repo edges + the two PUBLIC upstream edges), no decision/mutation-input path, zero production consumers |

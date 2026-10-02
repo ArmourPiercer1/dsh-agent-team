@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ✓ test/a3p5-permission-notification-lane-hygiene.test.ts (9 tests) 22ms
+ ✓ test/a3p5-permission-read-projection.test.ts (7 tests) 25ms
+ ✓ test/a3p5-permission-notification.test.ts (15 tests) 34ms
+ ✓ test/a3p5-permission-delivery-binding.test.ts (18 tests) 116ms
+
+ Test Files  4 passed (4)
+      Tests  49 passed (49)
+   Start at  01:01:53
+   Duration  463ms (transform 674ms, setup 0ms, import 920ms, tests 198ms, environment 0ms)
+

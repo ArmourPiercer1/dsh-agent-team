@@ -204,6 +204,11 @@ describe('class (a) — RUNNING target receives through inject only', () => {
       expect(agent.calls.inject).toHaveLength(1)
       const message = agent.calls.inject[0] as UserMessage
       expect(message.role).toBe('user')
+      // SOURCE PROVENANCE (PR61 review BLOCK): role 'user' is the host
+      // MESSAGE CARRIER only — the SOURCE must be the plugin's own v4
+      // producer kind, never human 'user' attribution (pinned glue
+      // precedent agent-bindings.mjs:4078-4081).
+      expect(message.source).toEqual({ kind: 'plugin:dsh-agent-team' })
       const rendered = JSON.stringify(message)
       expect(rendered).toContain('[team-perm-changed team=')
       expect(rendered).toContain('generation=1')
@@ -231,6 +236,40 @@ describe('class (a) — RUNNING target receives through inject only', () => {
     }
   })
 
+  it('the notice never satisfies the upstream USER-source predicate that refills the wake budget', async () => {
+    // The consecutive-wake budget consumer (pristine 46a7f68b09
+    // packages/jobs/tool-jobs/src/index.ts): the budget is SPENT at
+    // :295-305 (wake-delivery followup while `spent < wakeBudget`) and
+    // refills EXACTLY on user-sourced claims at :211-215 —
+    //   ctx.on('agent/inbox/claimed', ({ agent, message }) => {
+    //     if (message.source.kind === 'user') spentWakes.delete(agent)
+    //   })
+    // A plugin notice wearing `kind: 'user'` would therefore REFILL the
+    // Human pathway it just spent. Every injected notice must fail that
+    // predicate: the carrier role stays 'user' (createUserMessage), the
+    // source kind is the plugin's own v4 producer kind — which v4
+    // admission accepts (only the retired shared 'plugin' wrapper is
+    // rejected, session-format-v3-to-v4 src/message-sources.ts:8-11) and
+    // which MessageSourceMap admits by design (dsh-llm message.d.ts:
+    // 95-107, merge-extensible, "no shared catch-all plugin kind").
+    const agent = makeFakeAgent()
+    const harness = makeBindingHarness(agent)
+    const committed = await commitFirst('binding-a-provenance')
+    try {
+      expect(harness.binding.deliver({ ...committed.notice, text: committed.text })).toEqual({ delivered: true })
+      expect(harness.binding.deliver({ ...committed.notice, text: committed.text })).toEqual({ delivered: true })
+      expect(agent.calls.inject).toHaveLength(2)
+      for (const message of agent.calls.inject) {
+        expect(message.role).toBe('user') // carrier role — not the source
+        expect(message.source.kind).toBe('plugin:dsh-agent-team')
+        // The EXACT predicate the upstream reset branch consumes:
+        expect(message.source.kind === 'user').toBe(false)
+      }
+    } finally {
+      committed.destroy()
+    }
+  })
+
   it('the REAL notifier through the REAL adapter delivers end-to-end to a running target', async () => {
     const agent = makeFakeAgent()
     const world = await openWorld('binding-a3')
@@ -253,6 +292,10 @@ describe('class (a) — RUNNING target receives through inject only', () => {
       const outcome = await notifier.notifyPermissionCommit(ack)
       expect(outcome).toEqual({ delivered: true, staleness: 'current' })
       expect(agent.calls.inject).toHaveLength(1)
+      // The COMPOSED path (notifier → adapter → binding) carries the same
+      // producer provenance as the direct leg — the notice the real
+      // pipeline emits is plugin-sourced, never human-sourced.
+      expect((agent.calls.inject[0] as UserMessage).source).toEqual({ kind: 'plugin:dsh-agent-team' })
       expect([...new Set(agent.calls.touched)].sort()).toEqual(['inject', 'status'])
     } finally {
       world.destroy()
@@ -445,6 +488,9 @@ describe('class (d) — cancel-while-running: the module touches status + inject
       const receipt = harness.binding.deliver({ ...committed.notice, text: committed.text })
       expect(receipt).toEqual({ delivered: true })
       expect(agent.calls.inject).toHaveLength(1)
+      // Parked notices keep the same producer provenance — whatever the
+      // host inbox later surfaces is never human-attributed.
+      expect((agent.calls.inject[0] as UserMessage).source).toEqual({ kind: 'plugin:dsh-agent-team' })
       expect(agent.calls.touched.filter((n) => !['status', 'inject'].includes(n))).toEqual([])
     } finally {
       committed.destroy()

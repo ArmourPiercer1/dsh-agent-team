@@ -141,3 +141,50 @@ world; sync-throwing dispatch swallowed.
   on the committed lane → rc=0, `OK: 1392 files` — the committed install-surface
   artifacts match a fresh build (zero dist churn confirmed POST-commit, same
   re-check discipline as round 1).
+
+---
+
+# ROUND 3 (parent final GO) — SOURCE-PROVENANCE FIX (PR61 review BLOCK)
+
+BLOCK (parent-found): the inject message carried `source: { kind: 'user' }` — human
+attribution for a runtime plugin notice. Impact is not merely audit: the upstream
+consecutive-wake budget refills EXACTLY on user-sourced claims —
+`packages/jobs/tool-jobs/src/index.ts:211-215` (pristine 46a7f68b09; NOT in any
+installed library bundle — the tool-jobs plugin ships in the harness app tree; closest
+installed equivalent is the claim-event typing `agent/inbox/claimed` with `message:
+UserMessage` at `@deepseek-ai/dsh-agent/lib/types/runtime-types.d.ts:277`):
+`if (message.source.kind === 'user') spentWakes.delete(agent)`; the budget is SPENT at
+:295-305 (wake-delivery `followup` while `spent < wakeBudget`, else `inject`). A plugin
+notice wearing kind:'user' would refill that Human pathway. Fix per GO:
+
+- `binding.ts` — inject source → `{ kind: 'plugin:dsh-agent-team' }` (the pinned Team v4
+  producer kind, same as the glue precedent agent-bindings.mjs:4078-4081). Carrier stays
+  `createUserMessage`/role 'user' (host message-carrier distinction). Upstream admission
+  verified THIS round: v4 rejects ONLY the retired shared wrapper (pristine
+  session-format-v3-to-v4 src/message-sources.ts:8-11 — non-empty string kind, !==
+  'plugin'); MessageSourceMap is merge-extensible BY DESIGN with "no shared catch-all
+  plugin kind" and "user messages carry any producer's kind" (installed dsh-llm
+  message.d.ts:95-107); the plugin registers its kind via declaration merging
+  (src/plugin/live/message-sources.d.ts, in the runtime tsc program via tsconfig
+  include `src` — the literal typechecks rc=0).
+- Spec (same file): producer source asserted on the DIRECT leg, the COMPOSED
+  notifier→adapter→binding leg, and the park (cancel-while-running) leg; NEW dedicated
+  leg asserts the exact upstream predicate negation per message
+  (`message.source.kind === 'user'` is false; role 'user' carrier kept), with the
+  tool-jobs file:line cited in the test comment.
+- Lane README: producer-provenance paragraph + PENDING NOTE per GO item 5: the lane has
+  NO production dist reference today (stays UNWIRED; hygiene zero-consumer leg green);
+  the FINAL splice commit WILL require a regular build + dist co-commit +
+  check-artifacts verification of the new surface.
+
+Raw logs (real rc): `source-binding-spec.log` rc=0 — **18/18** (+1 new provenance leg);
+`source-all-directed.log` rc=0 — **49/49** four lane specs (zero-consumer leg green);
+`source-typecheck-runtime.log` rc=0; `source-eslint.log` rc=0; `source-p4t6.log` rc=0
+(944 pin unchanged — no new files); `source-build.log` rc=0 +
+`source-check-artifacts.log` rc=0 OK 1392 (zero dist churn — lane ships out of the tsc
+build); `source-full-runtime-suite.log` + `source-final-fail-set.txt` rc=1 — 8 failed /
+**3197 passed** (3205), failure-set diff vs the retained set = IDENTICAL (zero new;
++1 = the new provenance leg, passing).
+
+Scope honored: ONLY binding.ts + its spec + lane README + evidence. Shared
+root/agent-bindings/GMS glue untouched; no interface-range change; pr4 worktree untouched.

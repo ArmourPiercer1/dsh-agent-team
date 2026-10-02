@@ -194,13 +194,31 @@ export function createPermissionDeliveryBinding(
       }
       if (status !== 'running') return { delivered: false, drop: 'not-running' }
       // The one send. A fresh message per attempt (fresh id) so a parked
-      // notice can never collide with a still-pending earlier one.
+      // notice can never collide with a still-pending earlier one. The
+      // message CARRIER is `createUserMessage` (role 'user' — the host's
+      // only model-visible input carrier), but the SOURCE is the plugin's
+      // OWN producer kind `plugin:dsh-agent-team` — the pinned Team v4
+      // producer attribution the live glue uses too
+      // (agent-bindings.mjs:4078-4081) and what the official v3→v4
+      // migration maps legacy wrapper rows to. Human `kind: 'user'`
+      // attribution is FORBIDDEN here: the upstream consecutive-wake
+      // budget refills EXACTLY on USER-sourced claims (pristine
+      // 46a7f68b09 packages/jobs/tool-jobs/src/index.ts:211-215 —
+      // `if (message.source.kind === 'user') spentWakes.delete(agent)`;
+      // spent at :295-305) — a plugin notice wearing human attribution
+      // would trigger that Human pathway. v4 admission accepts any
+      // producer-owned kind (only the retired shared `kind: 'plugin'`
+      // wrapper is rejected — session-format-v3-to-v4 src/message-sources
+      // .ts:8-11), MessageSourceMap is merge-extensible by design
+      // (dsh-llm message.d.ts:95-107: "no shared catch-all plugin kind"),
+      // and this plugin registers its kind for typed consumers via the
+      // declaration merging in src/plugin/live/message-sources.d.ts.
       if (input.text.length === 0) return { delivered: false, drop: 'inject-fault' }
       try {
         handle.agent.inject(
           createUserMessage({
             content: [{ type: 'text', text: input.text }],
-            source: { kind: 'user' },
+            source: { kind: 'plugin:dsh-agent-team' },
           }),
         )
       } catch {
