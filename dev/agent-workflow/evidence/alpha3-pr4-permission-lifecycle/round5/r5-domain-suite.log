@@ -1,0 +1,237 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/domain
+
+ ✓ test/t4-policy-explain.test.ts (15 tests) 11ms
+ ✓ test/t4-policy-matrix.test.ts (14 tests) 47ms
+ ✓ test/t4-policy-negative.test.ts (34 tests) 49ms
+ ❯ test/t1-capability-schema.test.ts (17 tests | 9 failed) 36ms
+     × 1. Legacy fixture parses without capabilities field 11ms
+     × 2. Leader with full capabilities parses and validates 3ms
+     × 3. Members can have different capabilities 3ms
+     ✓ 4. Malformed allow entry rejects (missing items) 1ms
+     ✓ 4b. Malformed allow entry rejects (items not string[]) 1ms
+     ✓ 5. Malformed deny entry rejects (extra fields) 3ms
+     ✓ 6a. Unknown capability sub-field rejects 1ms
+     ✓ 6b. Unknown template field rejects 1ms
+     × 7. Changing capability fields changes the hash 1ms
+     × 8. Static source returns selective mode for Leader with capabilities 2ms
+     × 9. Static source returns selective mode for MemberTemplate with capabilities 1ms
+     × 10. Static source returns legacy mode when capabilities absent 0ms
+     × 11. Selective source maps to TemplatePolicy values correctly 1ms
+     × 11b. Selective source maps deny entries to values correctly 1ms
+     ✓ 11c. Legacy source returns undefined values 0ms
+     ✓ 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3) 5ms
+     ✓ 11e. Selective source with mixed allow([])/deny preserves all cells (P1) 0ms
+ ✓ test/t3-member-n-instances.test.ts (14 tests) 11ms
+ ✓ test/t3-member-context-policy.test.ts (17 tests) 9ms
+ ✓ test/t3-lifecycle-transitions.test.ts (14 tests) 16ms
+ ✓ test/a1-permission-policy.test.ts (49 tests) 76ms
+ ✓ test/t3-member-lifecycle.test.ts (7 tests) 9ms
+ ✓ test/t3-member-workspace.test.ts (14 tests) 9ms
+ ✓ test/t2-blueprint-v2-requirements.test.ts (16 tests) 32ms
+ ✓ test/exec-contract-a1-leader-allow.test.ts (35 tests) 40ms
+ ✓ test/t2-blueprint-validation.test.ts (69 tests) 46ms
+ ✓ test/bp1-blueprint-inspector.test.ts (19 tests) 20ms
+ ✓ test/t2-blueprint-parse.test.ts (13 tests) 20ms
+ ✓ test/t2-blueprint-v2-hash.test.ts (8 tests) 24ms
+ ❯ test/t2-blueprint-hash.test.ts (18 tests | 1 failed) 50ms
+     ✓ matches the NIST vector for "abc" 1ms
+     ✓ matches the NIST vector for the empty string 0ms
+     ✓ matches the NIST vector for the 448-bit message 0ms
+     ✓ hashes multi-byte UTF-8 deterministically 1ms
+     ✓ is independent of key order (canonical JSON binding) 1ms
+     ✓ changes when any value changes 0ms
+     ✓ returns a sha256-prefixed 64-hex string 2ms
+     ✓ is deterministic across parses 21ms
+     ✓ is independent of YAML key order 5ms
+     ✓ changes when semantic content changes 4ms
+     ✓ changes across revisions of the same id 1ms
+     ✓ changes across ids with identical content 2ms
+     ✓ binds exactly to the canonical hashable projection 2ms
+     × projects absent optional singles as explicit null 5ms
+     ✓ preserves present optional values (including nested quota nulls) 3ms
+     ✓ changes when only the leader modelPreference changes 1ms
+     ✓ absent vs present modelPreference hash differently 1ms
+     ✓ is deterministic for the same token 1ms
+ ✓ test/t2-blueprint-catalog.test.ts (15 tests) 16ms
+ ✓ test/t3-lifecycle-property.test.ts (4 tests) 220ms
+ ✓ test/t2-blueprint-immutability.test.ts (10 tests) 10ms
+ ✓ test/blueprint-v1-frozen-resume.test.ts (4 tests) 16ms
+ ✓ test/t2-blueprint-revision.test.ts (8 tests) 13ms
+ ✓ test/domain.test.ts (2 tests) 2ms
+ ✓ test/t5-compatibility-bridge.test.ts (76 tests) 21ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 1. Legacy fixture parses without capabilities field
+TeamContractError: $.metadata must be a plain object, got null
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertPlainRecord ../contracts/src/dto/common.ts:38:11
+ ❯ takeRecord blueprint/src/validate.ts:241:10
+ ❯ validateBlueprintDocument blueprint/src/validate.ts:1424:23
+ ❯ parseBlueprint blueprint/src/validate.ts:1496:16
+ ❯ test/t1-capability-schema.test.ts:152:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 2. Leader with full capabilities parses and validates
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint blueprint/src/validate.ts:1495:15
+ ❯ test/t1-capability-schema.test.ts:163:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 3. Members can have different capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint blueprint/src/validate.ts:1495:15
+ ❯ test/t1-capability-schema.test.ts:181:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 7. Changing capability fields changes the hash
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint blueprint/src/validate.ts:1495:15
+ ❯ test/t1-capability-schema.test.ts:257:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 8. Static source returns selective mode for Leader with capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint blueprint/src/validate.ts:1495:15
+ ❯ test/t1-capability-schema.test.ts:313:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 9. Static source returns selective mode for MemberTemplate with capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint blueprint/src/validate.ts:1495:15
+ ❯ test/t1-capability-schema.test.ts:329:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 10. Static source returns legacy mode when capabilities absent
+TeamContractError: $.metadata must be a plain object, got null
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertPlainRecord ../contracts/src/dto/common.ts:38:11
+ ❯ takeRecord blueprint/src/validate.ts:241:10
+ ❯ validateBlueprintDocument blueprint/src/validate.ts:1424:23
+ ❯ parseBlueprint blueprint/src/validate.ts:1496:16
+ ❯ test/t1-capability-schema.test.ts:349:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11. Selective source maps to TemplatePolicy values correctly
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint blueprint/src/validate.ts:1495:15
+ ❯ test/t1-capability-schema.test.ts:359:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11b. Selective source maps deny entries to values correctly
+TeamContractError: $.metadata must be a plain object, got null
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertPlainRecord ../contracts/src/dto/common.ts:38:11
+ ❯ takeRecord blueprint/src/validate.ts:241:10
+ ❯ validateBlueprintDocument blueprint/src/validate.ts:1424:23
+ ❯ parseBlueprint blueprint/src/validate.ts:1496:16
+ ❯ test/t1-capability-schema.test.ts:376:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  test/t2-blueprint-hash.test.ts > t2 hash: hashable projection > projects absent optional singles as explicit null
+AssertionError: expected { templateId: 'leader', …(6) } to deeply equal { templateId: 'leader', …(5) }
+
+- Expected
++ Received
+
+@@ -1,6 +1,7 @@
+  {
++   "capabilities": null,
+    "contextPolicy": null,
+    "description": null,
+    "displayName": null,
+    "modelPreference": null,
+    "persona": "Lead.",
+
+ ❯ test/t2-blueprint-hash.test.ts:116:29
+    114|     expect(hashable.quotas).toBe(null)
+    115|     expect(hashable.capabilityPolicy).toBe(null)
+    116|     expect(hashable.leader).toEqual({
+       |                             ^
+    117|       templateId: 'leader',
+    118|       displayName: null,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  2 failed | 22 passed (24)
+      Tests  10 failed | 482 passed (492)
+   Start at  00:22:06
+   Duration  1.14s (transform 875ms, setup 0ms, import 2.05s, tests 802ms, environment 1ms)
+

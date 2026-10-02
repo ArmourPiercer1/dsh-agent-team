@@ -1,0 +1,3 @@
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+rc=0

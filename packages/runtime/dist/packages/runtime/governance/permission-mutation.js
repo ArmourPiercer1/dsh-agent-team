@@ -332,7 +332,12 @@ export function parsePermissionMutation(raw) {
             refuse(PERMISSION_MUTATION_ERROR_CODES.MALFORMED_MUTATION, 'mutation-id-control-char', 'mutationId must not contain control characters', { field: 'mutationId' });
         }
     }
-    if (typeof raw.reason !== 'string' || raw.reason.length > 512) {
+    // ROUND 7 (parent item 4): MISSING and OVER-BOUND are different contract
+    // violations — the old label called an absent field "over-bound".
+    if (typeof raw.reason !== 'string') {
+        refuse(PERMISSION_MUTATION_ERROR_CODES.MALFORMED_MUTATION, 'reason-missing', 'reason is REQUIRED provenance (a string of at most 512 characters) — an audit-reason-free permission mutation does not exist (PR1 provenance semantics)', { field: 'reason' });
+    }
+    if (raw.reason.length > 512) {
         refuse(PERMISSION_MUTATION_ERROR_CODES.MALFORMED_MUTATION, 'reason-over-bound', 'reason must be a string of at most 512 characters (the PR1 provenance bound, PERMISSION_OVERLAY_MAX_REASON_LENGTH)', { field: 'reason' });
     }
     if (!Array.isArray(raw.rules) || raw.rules.length === 0) {
@@ -725,6 +730,12 @@ function cellsForRegion(operationClass, scope, family, subtreeContains) {
  * Anything else with `staticFacts === undefined` refuses
  * EFFECT_CONTEXT_UNAVAILABLE — an unknown prior is never labeled expansion
  * OR tightening.
+ *
+ * ROUND 5 (parent final review): the round-4 `authorityCeiling` parameter is
+ * REMOVED — comparing risen cells against the grantor's own effective answer
+ * was a SECOND policy condition ADR §6 does not carry. The envelope-only
+ * algebra below is the UNCONDITIONAL whole decision (coverage + target
+ * effective before/after), byte-equal to the pre-round-4 envelope judgement.
  */
 export function authorizeLeaderPermissionMutation(input) {
     const { latestRules, plannedRules, mutationRules, envelope, staticFacts, subtreeContains } = input;
@@ -813,6 +824,8 @@ export function authorizeLeaderPermissionMutation(input) {
                 }
                 if (covered)
                     continue;
+                // (Round-5: the round-4 ceiling fold that lived here is REMOVED —
+                // the covering envelope rule IS the authorization.)
                 if (coverageUnknown) {
                     undeterminable.push({
                         detail: {

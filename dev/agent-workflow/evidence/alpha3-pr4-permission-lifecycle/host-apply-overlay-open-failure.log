@@ -1,0 +1,2 @@
+[dsh-agent-team] the permission overlay store could not be opened (storage seam failure during 'open' on store 'team_domain': already-open — domain 'team_domain' is already open) — the permission mutation lane stays unconfigured (fail closed)
+[dsh-agent-team] the permission overlay store could not be opened (storage seam failure during 'open' on store 'team_domain': already-open — domain 'team_domain' is already open) — the permission mutation lane stays unconfigured (fail closed)

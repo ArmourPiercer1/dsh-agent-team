@@ -106,6 +106,16 @@ export type GovernancePolicyReader = PolicyReader;
  */
 export interface GovernancePermissionLaneDeps {
     /**
+     * ROUND 7 (parent BLOCK-1): the TARGET lifecycle guard, awaited INSIDE the
+     * serialized mutation section before any classification or append (the
+     * post-await revalidation position). The production wiring passes the SAME
+     * shared assertion the mutation lane pre-checks
+     * (`assertPermissionMutationTarget` over the leader-aware member lifecycle
+     * reader) — one lifecycle law, two positions, no second gate. Absent =
+     * unguarded (test/factory worlds only; production root always wires it).
+     */
+    readonly targetGuard?: (teamSessionId: string, memberInstanceId: string) => Promise<void>;
+    /**
      * The PR1 persistence-only overlay port — the ONE durable write target of
      * the permission path (ADR §1: GovernanceMutationService → this port →
      * durable store). The port validates nothing about authority or the
@@ -114,14 +124,27 @@ export interface GovernancePermissionLaneDeps {
      */
     readonly overlay: PermissionOverlayRepositoryPort;
     /**
-     * The bound §6 MutationEnvelope for one team (the Leader's expansion
-     * authority; design §4 model, ADR §6 semantics). Absent = NO envelope =
-     * no Leader expansion authority (tightenings unaffected) — fail closed.
-     * The returned document is validated (typed refusal on a malformed
-     * envelope, before any write).
+     * The bound §6 MutationEnvelope for one team's addressed mutation (the
+     * Leader's expansion authority; design §4 model, ADR §6 semantics). Absent
+     * = NO envelope = no Leader expansion authority (tightenings unaffected) —
+     * fail closed. The returned document is validated (typed refusal on a
+     * malformed envelope, before any write).
+     *
+     * Round 4 (addressed-team binding): the reader is addressed by the SAME
+     * (team, target member) the mutation names. The envelope's FILE matchers
+     * are canonical keys and are compared against the rising cells the kernel
+     * partitions from the target member's overlay + static layers — one
+     * decision, ONE canonical key space — so a provider-backed reader
+     * canonicalizes them at the TARGET member's documented envelope path basis
+     * (the member's effective workspace), never a row-wide constant. A
+     * provider-backed reader is ASYNC (canonicalization goes through the real
+     * fs provider); a sync reader (a fixed document) stays valid — the service
+     * awaits either. The parameter is ADDITIVE: a one-parameter reader keeps
+     * working verbatim.
      * @param teamSessionId - the team whose bound envelope is read.
+     * @param memberInstanceId - the target instance of the addressed mutation.
      */
-    readonly permissionEnvelope?: (teamSessionId: string) => PermissionMutationEnvelope;
+    readonly permissionEnvelope?: (teamSessionId: string, memberInstanceId: string) => PermissionMutationEnvelope | Promise<PermissionMutationEnvelope>;
     /**
      * The LOWER-LAYER FACTS the Leader authorization compares effective
      * before/after against (design v2 — expansion is a property of the
@@ -134,10 +157,16 @@ export interface GovernancePermissionLaneDeps {
      * verdict depends on lower facts refuse EFFECT_CONTEXT_UNAVAILABLE; a
      * reader returning `{ layers: [] }` = DECLARED-NONE (known deny fallback)
      * → decidable. Never conflated.
+     *
+     * Round 4: the facts are the TARGET MEMBER'S OWN (canonicalized at its
+     * actual effective workspace through the real provider), so the reader may
+     * be ASYNC; the service awaits it inside the serialized section (the
+     * reader itself re-validates its bindings across the await and abstains on
+     * drift). A sync reader keeps working verbatim.
      * @param teamSessionId - the team whose static permission layers are read.
      * @param memberInstanceId - the instance the effective policy is for.
      */
-    readonly staticLayers?: (teamSessionId: string, memberInstanceId: string) => PermissionStaticLayerFacts | undefined;
+    readonly staticLayers?: (teamSessionId: string, memberInstanceId: string) => PermissionStaticLayerFacts | undefined | Promise<PermissionStaticLayerFacts | undefined>;
     /**
      * The WHOLE-MATCHER containment predicate over two canonical identities
      * of the SAME backend namespace — the ONLY containment relation this lane

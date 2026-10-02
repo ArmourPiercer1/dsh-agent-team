@@ -76,7 +76,7 @@ import {
   parseRootSessionId,
 } from '../../contracts/src/index.js'
 
-/** The frozen thirteen-tool team vocabulary (the closed set — name drift fails; C1 adds team_list_pending_control; the archive-member round adds team_archive_member). */
+/** The closed team-tool vocabulary (name drift fails; C1 adds team_list_pending_control; the archive-member round adds team_archive_member; PR4 round 5 adds team_grant_permission + team_revoke_permission). */
 const EXPECTED_TOOL_NAMES = [
   'team_list_members',
   'team_list_templates',
@@ -91,6 +91,8 @@ const EXPECTED_TOOL_NAMES = [
   'team_resolve_control',
   'team_list_pending_control',
   'team_archive_member',
+  'team_grant_permission',
+  'team_revoke_permission',
 ]
 
 /** The world's BOOT root = the P6-T2 durable team root (the pre-existing team). */
@@ -310,7 +312,7 @@ const nToolsAfterClose = nCtxAfterResume === undefined ? [] : names(nCtxAfterRes
 await destroyP6T1World(p6t6.world)
 
 describe('TCM-D4 the second root in a boot-root world (the freshly created team)', () => {
-  it('D4-1 create/resume setup registers exactly the thirteen team tools on boot root (C1 adds the pending-list tool; the archive-member round adds team_archive_member), boot-root member, and second root N', () => {
+  it('D4-1 create/resume setup registers exactly the fifteen team tools on boot root (C1 adds the pending-list tool; the archive-member round adds team_archive_member; PR4 round 5 adds team_grant_permission + team_revoke_permission), boot-root member, and second root N', () => {
     // The real factory emits the frozen vocabulary (guards the stack input).
     expect(toolStack.tools.map((tool) => tool.name)).toEqual(EXPECTED_TOOL_NAMES)
     // The boot root (leader) carries the full stack — the same def objects,
@@ -430,7 +432,7 @@ describe('TCM-D4 the second root in a boot-root world (the freshly created team)
     expect(followupText(2, followupsAfterBoundaries)).toBe('[team-work requestToken=tok-d4-wd] do the delegated work')
   })
 
-  it('D4-6 the cold resume re-registers the thirteen tools on N under its own root and keeps the context block', () => {
+  it('D4-6 the cold resume re-registers the fifteen tools on N under its own root and keeps the context block', () => {
     // The resident handle was dropped (the durable session stays on disk).
     expect(droppedN).toEqual({ dropped: true })
     // The first chat after the restart cold-resumes N through

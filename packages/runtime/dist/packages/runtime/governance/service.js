@@ -55,6 +55,7 @@ import { normalizeStateView } from '../mutation/service.js';
 import { committedPolicyState } from '../effective-policy/index.js';
 import { assertCells, buildReissueRecord, buildTombstoneRecord, checkCellsAgainstEnvelope, checkCellsExternalHard, isNoChange, mergedSlotValues, mintRecordId, selectSlotWinner, slotIdentityOf, slotOf, } from './slot.js';
 import { authorizeLeaderPermissionMutation, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionStaticLayerFacts, planPermissionMutation, PERMISSION_MUTATION_ERROR_CODES, PermissionMutationError, } from './permission-mutation.js';
+import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
 /** The storage duplicate code string (mirrors TEAM_DOMAIN_ERROR_CODES). */
 const STORAGE_RECORD_DUPLICATE = 'RECORD_DUPLICATE';
 /**
@@ -453,6 +454,16 @@ export function createGovernanceMutationService(deps) {
         // construction).
         return deps.chain.run(args.teamSessionId, async () => {
             const overlay = lane.overlay;
+            // ROUND 7 (parent BLOCK-1): the TARGET lifecycle assertion INSIDE the
+            // serialized section — the post-await revalidation a caller-side
+            // pre-check can never be (a dispose racing between the pre-check and
+            // this line is caught here, before ANY classification or append). The
+            // guard is the SAME shared assertion the mutation lane pre-checks
+            // (permission-lifecycle/mutation-lane assertPermissionMutationTarget)
+            // — ONE lifecycle law, wired from the same reader, never a second gate.
+            if (lane.targetGuard !== undefined) {
+                await lane.targetGuard(mutation.teamSessionId, mutation.memberInstanceId);
+            }
             const latest = await overlay.latest({
                 teamSessionId: mutation.teamSessionId,
                 memberInstanceId: mutation.memberInstanceId,
@@ -482,11 +493,23 @@ export function createGovernanceMutationService(deps) {
                 // mid-check): the envelope document + the LOWER-LAYER FACTS.
                 // `undefined` (no reader / reader abstains) = UNKNOWN;
                 // `{ layers: [] }` = DECLARED-NONE (known deny fallback) — distinct.
+                // PR4 round 4 (parent-binding): BOTH readers are addressed by the
+                // mutation's own (team, member) — the envelope's file matchers are
+                // canonical keys compared against the SAME member's rising cells, so
+                // they canonicalize at that member's basis, never a row-wide
+                // constant. Provider-backed readers are AWAITED (they re-validate
+                // binding/cwd/provider across their own await and abstain on drift);
+                // fixed-document sync readers keep working byte-identically (await
+                // of a non-promise).
                 const envelopeDoc = lane.permissionEnvelope === undefined
                     ? parsePermissionMutationEnvelope({ rules: [] })
-                    : parsePermissionMutationEnvelope(lane.permissionEnvelope(mutation.teamSessionId));
-                const factsRaw = lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId);
+                    : parsePermissionMutationEnvelope(await lane.permissionEnvelope(mutation.teamSessionId, mutation.memberInstanceId));
+                const factsRaw = await lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId);
                 const staticFacts = factsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(factsRaw);
+                // ROUND 5 (parent final review): the round-4 leader-facts ceiling
+                // fold is REMOVED — it was a second policy gate ADR §6 does not
+                // carry. The envelope document + the target's lower-layer facts
+                // above are the WHOLE injected context.
                 // ONE pure authorization step: effective rises inside the mutation's
                 // closed regions need whole-matcher envelope coverage with the risen
                 // effect ceiling (all-or-nothing, ladder-strict, ADR §6); a region

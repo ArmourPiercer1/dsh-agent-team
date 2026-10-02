@@ -621,6 +621,13 @@ export interface LiveWorldOptions {
    *  returned on the world (see `LiveWorld.controlServiceRef`). Absent =
    *  the glue dep not passed (alpha.1/legacy: never read). */
   readonly controlServiceRef?: { current: unknown }
+  /** pre-alpha3 PR4 round 3 (BLOCK-5): the caller-owned shared permission-
+   *  plane reference (the controlServiceRef pattern) — forwarded verbatim to
+   *  the glue, which installs the REAL dynamic decision seam when `.current`
+   *  is filled at agent-setup time. Absent = the glue's pre-PR4 posture
+   *  (no seam, static-only decisions — the leg that proves a world without a
+   *  plane is unaffected). */
+  readonly permissionPlaneRef?: { current: unknown }
   /** alpha.2 (A6, V1-1): override the per-agent fs seam accessor
    *  ((agentCtx) => { resolve(path, { cwd? }) }). Default: routes to each
    *  agent ctx double's own fake fs (makeFakeFs on the double), so

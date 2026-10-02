@@ -73,6 +73,12 @@ import {
   BLUEPRINT_CAPABILITIES_FIELDS,
   BLUEPRINT_ENVELOPE_FIELDS,
   BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS,
+  BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_EXEC_MATCHER_FIELDS,
+  BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FIELDS,
+  BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FILE_MATCHER_FIELDS,
+  BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS,
+  BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS,
+  BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_RULE_FIELDS,
   BLUEPRINT_POLICY_REFERENCEABLE_FIELDS,
   BLUEPRINT_POLICY_STATE_FIELDS,
   BLUEPRINT_QUOTA_FIELDS,
@@ -95,6 +101,7 @@ import {
   METADATA_VALUE_MAX_LENGTH,
   MODEL_PREFERENCE_MAX_LENGTH,
   PERSONA_MAX_LENGTH,
+  PERMISSION_FINGERPRINT_MAX_LENGTH,
   PERMISSION_PATH_MAX_LENGTH,
   PERMISSION_POLICY_DEFAULTS,
   PERMISSION_POLICY_FIELDS,
@@ -113,6 +120,9 @@ import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js'
 import { deriveContentHash } from './hash.js'
 import { parseModelPreferenceToken } from './model-preference.js'
 import type {
+  BlueprintPermissionMutationEnvelope,
+  BlueprintPermissionMutationEnvelopeMatcher,
+  BlueprintPermissionMutationEnvelopeRule,
   BlueprintRequirement,
   BlueprintTemplate,
   CapabilityPolicy,
@@ -591,6 +601,181 @@ function validateEnvelope(raw: unknown, path: string): MutationEnvelope {
   }
 
   return { allow, deny }
+}
+
+/**
+ * Validate the Alpha.3 PR4 permission-EXPANSION authority carrier
+ * (`permissionMutationEnvelope`, ADR §6 / design §4). The ONE explicit
+ * Leader expansion ceiling — deliberately NOT the operation-token
+ * {@link MutationEnvelope} above (D2: two concepts, one per concept, no
+ * transformation between them).
+ *
+ * The grammar mirrors the runtime kernel's own write-time gate
+ * (`governance/permission-mutation.ts validateMatcher`): the
+ * `operationClass` picks the matcher shape —
+ * - FILE-class operations (`read`/`read_image`/`write`/`edit`/`lsp`) pair
+ *   with `exact`/`subtree` carrying a workspace `path` (SAME constraints as
+ *   the static permission lanes: trimmed non-empty, no control chars,
+ *   `PERMISSION_PATH_MAX_LENGTH`; relative paths stay honest — the runtime
+ *   resolves them against the documented envelope path basis, this layer
+ *   never reinterprets them);
+ * - SHELL-class operations (`bash`/`pwsh`) pair with `fingerprint` ONLY —
+ *   the canonical operation identity carried VERBATIM (design §5: no
+ *   subtree, no `any`; Final Acceptance 7: exec stays exact).
+ * A mispairing is a typed refusal here, never a silently inert rule.
+ * `maximumEffect` is the closed §6 ceiling (`allow`/`ask`/`deny`).
+ * Duplicates of the same (operationClass, matcher) pair are a document
+ * defect (the coverage question is a ceiling lookup — two ceilings for one
+ * pair is ambiguous). A declared empty `rules` list is legal and means
+ * exactly one thing: NO expansion authority.
+ */
+function validatePermissionMutationEnvelope(
+  raw: unknown,
+  path: string,
+): BlueprintPermissionMutationEnvelope {
+  const record = assertPlainRecord(raw, `${path} (permission mutation envelope)`)
+  assertNoUnknownFields(record, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FIELDS, `${path} (permission mutation envelope)`)
+
+  const rulesRaw = requireField(record, 'rules', path)
+  if (!Array.isArray(rulesRaw)) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `field ${path}.rules must be an ARRAY of { operationClass, matcher, maximumEffect } (it may be empty — empty means NO Leader expansion authority), got ${rulesRaw === null ? 'null' : typeof rulesRaw}`,
+      { path: `${path}.rules` },
+    )
+  }
+
+  const rules: BlueprintPermissionMutationEnvelopeRule[] = []
+  const seenPairs = new Set<string>()
+  rulesRaw.forEach((item, index) => {
+    const rulePath = `${path}.rules[${index}]`
+    const rule = assertPlainRecord(item, `${rulePath} (envelope rule)`)
+    assertNoUnknownFields(rule, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_RULE_FIELDS, rulePath)
+
+    const operationClass = requireField(rule, 'operationClass', rulePath)
+    if (typeof operationClass !== 'string' || !PERMISSION_TOOL_NAMES.includes(operationClass)) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `field ${rulePath}.operationClass must be one of ${PERMISSION_TOOL_NAMES.join(' | ')} (the closed permission vocabulary), got ${JSON.stringify(operationClass)}`,
+        { path: `${rulePath}.operationClass` },
+      )
+    }
+    const isShellTool = operationClass === 'bash' || operationClass === 'pwsh'
+
+    const maximumEffect = requireField(rule, 'maximumEffect', rulePath)
+    if (typeof maximumEffect !== 'string' || !BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS.includes(maximumEffect)) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `field ${rulePath}.maximumEffect must be one of ${BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS.join(' | ')} (the §6 effect ceiling), got ${JSON.stringify(maximumEffect)}`,
+        { path: `${rulePath}.maximumEffect` },
+      )
+    }
+
+    const matcherRaw = requireField(rule, 'matcher', rulePath)
+    const matcherRecord = assertPlainRecord(matcherRaw, `${rulePath}.matcher (envelope matcher)`)
+    const kind = requireField(matcherRecord, 'kind', `${rulePath}.matcher`)
+    if (typeof kind !== 'string' || !BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS.includes(kind)) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `field ${rulePath}.matcher.kind must be one of ${BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS.join(' | ')} (no 'any' in this grammar — design §5), got ${JSON.stringify(kind)}`,
+        { path: `${rulePath}.matcher.kind` },
+      )
+    }
+
+    let matcher: BlueprintPermissionMutationEnvelopeMatcher
+    if (isShellTool) {
+      // Exec lane: fingerprint ONLY (design §5). A file matcher on a shell
+      // class is refused HERE (the same mispairing the kernel refuses at
+      // write time — never a silently inert authority rule).
+      assertNoUnknownFields(matcherRecord, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_EXEC_MATCHER_FIELDS, `${rulePath}.matcher`)
+      if (kind !== 'fingerprint') {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `field ${rulePath}.matcher.kind is rejected: the ${operationClass} operation class is shell-class — its matcher is the canonical 'fingerprint' EXACTLY (design §5: no subtree, no any, no path)`,
+          { path: `${rulePath}.matcher.kind`, operationClass },
+        )
+      }
+      const fingerprint = requireField(matcherRecord, 'fingerprint', `${rulePath}.matcher`)
+      if (typeof fingerprint !== 'string' || fingerprint.trim().length === 0) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `field ${rulePath}.matcher.fingerprint must be a non-empty canonical fingerprint string`,
+          { path: `${rulePath}.matcher.fingerprint` },
+        )
+      }
+      if (CONTROL_CHARS.test(fingerprint)) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `field ${rulePath}.matcher.fingerprint contains control characters`,
+          { path: `${rulePath}.matcher.fingerprint` },
+        )
+      }
+      if (fingerprint.length > PERMISSION_FINGERPRINT_MAX_LENGTH) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `field ${rulePath}.matcher.fingerprint exceeds max length ${PERMISSION_FINGERPRINT_MAX_LENGTH} (${fingerprint.length})`,
+          { path: `${rulePath}.matcher.fingerprint`, maxLength: PERMISSION_FINGERPRINT_MAX_LENGTH },
+        )
+      }
+      matcher = { kind: 'fingerprint', fingerprint }
+    } else {
+      // File lane: exact | subtree with a path (same path constraints as
+      // the static lanes; runtime canonicalizes against the documented
+      // envelope path basis — this layer never resolves or reinterprets).
+      assertNoUnknownFields(matcherRecord, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FILE_MATCHER_FIELDS, `${rulePath}.matcher`)
+      if (kind === 'fingerprint') {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `field ${rulePath}.matcher.kind is rejected: the ${operationClass} operation class is filesystem-class — its matcher is 'exact' | 'subtree' with a workspace path (design §5)`,
+          { path: `${rulePath}.matcher.kind`, operationClass },
+        )
+      }
+      const pathValue = requireField(matcherRecord, 'path', `${rulePath}.matcher`)
+      if (typeof pathValue !== 'string') {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `field ${rulePath}.matcher.path must be a non-empty string, got ${pathValue === null ? 'null' : typeof pathValue}`,
+          { path: `${rulePath}.matcher.path` },
+        )
+      }
+      if (CONTROL_CHARS.test(pathValue)) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `field ${rulePath}.matcher.path contains control characters`,
+          { path: `${rulePath}.matcher.path` },
+        )
+      }
+      const normalized = pathValue.trim()
+      if (normalized.length === 0) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `field ${rulePath}.matcher.path must not be empty`,
+          { path: `${rulePath}.matcher.path` },
+        )
+      }
+      if (normalized.length > PERMISSION_PATH_MAX_LENGTH) {
+        throw teamContractError(
+          'MALFORMED_DTO',
+          `field ${rulePath}.matcher.path exceeds max length ${PERMISSION_PATH_MAX_LENGTH} (${normalized.length})`,
+          { path: `${rulePath}.matcher.path`, maxLength: PERMISSION_PATH_MAX_LENGTH },
+        )
+      }
+      matcher = kind === 'subtree' ? { kind: 'subtree', path: normalized } : { kind: 'exact', path: normalized }
+    }
+
+    const pairKey = `${operationClass}\u0000${kind}\u0000${'path' in matcher ? matcher.path : matcher.fingerprint}`
+    if (seenPairs.has(pairKey)) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `duplicate permissionMutationEnvelope rule for (${operationClass}, ${kind} ${'path' in matcher ? matcher.path : matcher.fingerprint}) — one pair carries one ceiling`,
+        { path: rulePath },
+      )
+    }
+    seenPairs.add(pairKey)
+    rules.push({ operationClass, matcher, maximumEffect: maximumEffect as 'allow' | 'ask' | 'deny' })
+  })
+
+  return { rules }
 }
 
 /** Validate one quota. */
@@ -1114,6 +1299,19 @@ export function validateBlueprintDocument(raw: unknown): TeamBlueprintCore {
     memberEnvelopes.push({ templateId, envelope })
   })
 
+  // --- Alpha.3 PR4 permission-EXPANSION authority carrier ---------------------
+  // The ONE explicit Leader expansion ceiling (ADR §6 / design §4), OPTIONAL
+  // at every document version and ABSENT-BY-DEFAULT: an absent field is a
+  // legal typed absence (no expansion authority), never a read failure. The
+  // key is OMITTED from the core (and therefore the content hash) when
+  // absent — the teamRequirements/permissions discipline, so every existing
+  // document hashes byte-identically.
+  const permissionMutationEnvelopeRaw = takeRecord(record, 'permissionMutationEnvelope', '$')
+  const permissionMutationEnvelope =
+    permissionMutationEnvelopeRaw === undefined
+      ? undefined
+      : validatePermissionMutationEnvelope(permissionMutationEnvelopeRaw, '$.permissionMutationEnvelope')
+
   // --- PolicyState definitions (field refs must resolve) ---------------------
   const policyStatesRaw = takeArray(record, 'policyStates', '$') ?? []
   const policyStates: PolicyStateDefinition[] = []
@@ -1268,6 +1466,10 @@ export function validateBlueprintDocument(raw: unknown): TeamBlueprintCore {
     ...(teamRequirements !== undefined ? { teamRequirements } : {}),
     teamEnvelope,
     memberEnvelopes,
+    // PR4 expansion authority carrier — PRESENT ONLY when declared (the
+    // teamRequirements discipline: `stripUndefined` omits the key, so every
+    // non-declaring document hashes byte-identically).
+    permissionMutationEnvelope,
     policyStates,
     quotas,
     capabilityPolicy,
@@ -1334,6 +1536,22 @@ export function toHashableBlueprint(core: TeamBlueprintCore): RemoteSafeRecord {
       templateId: entry.templateId,
       envelope: toHashableEnvelope(entry.envelope),
     })),
+    // PR4 expansion authority carrier. PRESENT ONLY when declared (the
+    // teamRequirements / permissions "absent ⇒ key omitted" discipline): a
+    // document that does not declare it hashes byte-identically to before
+    // this field existed. Canonical JSON is key-sorted, so the projection
+    // shape (not insertion order) is what the hash binds to.
+    ...(core.permissionMutationEnvelope !== undefined
+      ? {
+          permissionMutationEnvelope: {
+            rules: core.permissionMutationEnvelope.rules.map((rule) => ({
+              operationClass: rule.operationClass,
+              matcher: toHashableEnvelopeMatcher(rule.matcher),
+              maximumEffect: rule.maximumEffect,
+            })),
+          },
+        }
+      : {}),
     policyStates: core.policyStates.map((state) => ({
       id: state.id,
       description: state.description ?? null,
@@ -1442,6 +1660,22 @@ function toHashableAllowDeny(
 
 function toHashableEnvelope(envelope: MutationEnvelope): RemoteSafeRecord {
   return { allow: [...envelope.allow], deny: [...envelope.deny] }
+}
+
+/**
+ * The hashable projection of one PR4 expansion-carrier matcher. Each branch
+ * is a SINGLE object literal (no shared-union `path?: undefined` members —
+ * the hashable record forbids `undefined` values, and the hash must bind to
+ * the DECLARED identity: file matchers carry `path`, exec matchers carry the
+ * verbatim `fingerprint`).
+ */
+function toHashableEnvelopeMatcher(
+  matcher: BlueprintPermissionMutationEnvelopeMatcher,
+): RemoteSafeRecord {
+  if (matcher.kind === 'fingerprint') {
+    return { kind: matcher.kind, fingerprint: matcher.fingerprint }
+  }
+  return { kind: matcher.kind, path: matcher.path }
 }
 
 function toHashableQuota(quota: Quota): RemoteSafeRecord {

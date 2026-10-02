@@ -83,6 +83,18 @@ import {
   openTeamDomain,
 } from '../../../storage/repositories/index.js'
 import type { TeamDomain } from '../../../storage/repositories/index.js'
+// pre-alpha3 PR4 (plan PR4 "production entry wiring"): the durable
+// `permission_overlays` store (the TeamDomain's tenth store) is OPENED by the
+// host entry — the entry owns the async boot and the teardown order — and
+// handed to the production root as a port. The persistence-only face
+// (`append`/`latest`/`history`) is what crosses; nothing else reaches the
+// repository (PR1 ADR §1).
+import { createPermissionOverlayRepositoryPort } from '../../permission-governance/index.js'
+import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js'
+import { createPermissionAuthorityFacts } from './permission-plane.js'
+import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js'
+import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
+import type { TemplatePermissionPolicy } from '../../../domain/blueprint/src/index.js'
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../storage/schema/index.js'
 import type { StorageDomainSeam } from '../../../storage/schema/index.js'
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js'
@@ -355,6 +367,18 @@ interface GlueModule {
      * / factory-world behavior — byte-for-byte unchanged pipeline).
      */
     readonly artifactAuthorityRef?: { current: unknown }
+    /**
+     * pre-alpha3 PR4 (plan PR4 "production entry wiring", optional additive):
+     * the shared permission-plane reference (the controlServiceRef pattern —
+     * the entry creates the plain `{ current: undefined }` object and passes
+     * it BOTH to the glue and to the production root; the ROOT fills
+     * `.current` during its construction with the assembled lifecycle lanes).
+     * The glue reads it LAZILY inside agentSetup: when present, the
+     * pre-execute listener gains the dynamic decision layer (the ADR §8
+     * lifecycle gate + the durable overlay authority over this decision's
+     * canonical static lanes); when absent, the static pipeline is unchanged.
+     */
+    readonly permissionPlaneRef?: { current: unknown }
     /**
      * BP-F (issue #2 blueprint-loading, plan §11.1, optional additive):
      * the narrow per-Team bound-blueprint resolver —
@@ -1262,6 +1286,10 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // with the other runtime services; the durable facts are the source
   // of truth, the runtime projection a rebuilt cache).
   const artifactAuthorityRef: { current: TeamArtifactAuthority | undefined } = { current: undefined }
+  // pre-alpha3 PR4 — the overlay store handle of THIS row, declared in the
+  // apply scope (like the artifact-authority reference above): `bootstrap()`
+  // opens it, the row teardown closes it (the durable rows stay on the
+  // medium; only this handle is released).
   // The row-scope BRIDGE the host provides under
   // TEAM_ARTIFACT_AUTHORITY_SERVICE (module docs for the visibility and
   // lifetime contract): the Team-aware spill provider row (the
@@ -1700,6 +1728,154 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // compositions) keeps the pre-PR-B legacy input.
   const policyReaderRef: { current: unknown } = { current: null }
 
+  // pre-alpha3 PR4 — the shared permission-plane reference (the exact
+  // `controlServiceRef` / `artifactAuthorityRef` precedent): a construction-
+  // time object the ROOT fills during its construction; the live glue reads
+  // `.current` at agent setup and wires the pre-execute decision seam.
+  const permissionPlaneRef: { current: TeamPermissionPlane | undefined } = {
+    current: undefined,
+  }
+  // pre-alpha3 PR4 — the containment predicate over two canonical keys of the
+  // SAME provider: the pinned public `FileSystem.contains`, resolved per call
+  // through the row's strict `ctx.get('fs')` accessor (the `fsBackend`
+  // rationale above — never a captured service). The canonical keys ARE the
+  // provider's own `FsTarget.targetKey` strings (the glue's `resolveTarget`
+  // unbrands exactly that), so the predicate hands the SAME values the
+  // handles carry to the ONE legal containment authority — no key parsing, no
+  // `startsWith`, no consumer-side path arithmetic, no cache (plan §9.4 /
+  // H4). A composition without the service, or a provider without the public
+  // `contains`, THROWS: the plane maps that to the kernel's typed
+  // `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE` (unknown coverage is never a
+  // verdict), never to a silent `false`.
+  const fsContainsKeys: CanonicalKeyContains = (parentKey, childKey) => {
+    const backend = fsBackend()
+    if (typeof backend.contains !== 'function') {
+      throw new Error(
+        'the fs provider does not expose a public contains() seam (the subtree containment is undeterminable)',
+      )
+    }
+    return backend.contains({ targetKey: parentKey }, { targetKey: childKey }) === true
+  }
+  // pre-alpha3 PR4 (round 3, BLOCK-0 + BLOCK-5) — the durable permission
+  // authority is MANDATORY at the production entry. Its repository RIDES
+  // the ONE legal handle of this row's TeamDomain (`domain.repositories.
+  // permissionOverlays`): the upstream facility enforces
+  // single-open-per-domain-name, so the pre-fix shape (a SECOND
+  // `openPermissionOverlayStore(seam)` while the domain handle was live)
+  // ALWAYS failed with `already-open`, the catch downgraded it to a warn,
+  // and the row booted with no overlay port at all — mutations refusing
+  // while execution ran on static rules alone: the fail-open this closes.
+  // The boot now PROVES the authority answers: one read-only probe, and any
+  // fault is a typed startup failure — never a warn-only half-state. The
+  // handle's release stays the facade's single `close()` (no second close).
+  const permissionOverlay: PermissionOverlayRepositoryPort = createPermissionOverlayRepositoryPort({
+    repository: domain.repositories.permissionOverlays,
+  })
+  try {
+    // The repository is LAZY (table access per call): without this eager
+    // probe the first touch of a broken store would be a runtime decision
+    // AFTER the world shipped. An absent snapshot is a fine answer; a
+    // faulting store is not.
+    await permissionOverlay.latest({
+      teamSessionId: rowConfig.rootSessionId,
+      memberInstanceId: LEADER_INSTANCE_ID,
+    })
+  } catch (error: unknown) {
+    throw new TeamPluginError(
+      TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_PERMISSION_AUTHORITY_UNAVAILABLE,
+      `the durable permission authority of this row could not be read (${
+        error instanceof Error ? error.message : String(error)
+      }) — the production entry treats it as MANDATORY: booting past this would run every bound permission decision without the durable overlay while mutations refuse, which is exactly the fail-open this entry refuses to ship`,
+    )
+  }
+  // pre-alpha3 PR4 (round 4) — the ADDRESSED-TEAM authority facts (the §6
+  // expansion ceiling from the bound Blueprint's explicit
+  // `permissionMutationEnvelope` carrier + the per-member static layers).
+  // Round 3 built these ONCE from the ROW ANCHOR with a frozen identity and a
+  // row-wide-constant envelope — external review showed (BLOCK-2) two teams
+  // minted from the same blueprint/template made team B's member evaluated
+  // under team A's authority, and (BLOCK-3) canonicalizing at the row's
+  // defaultWorkspace while the member RUNS at its own effective workspace let
+  // relative rules mis-resolve, laundering an expansion past the envelope.
+  // Round 4 reads every document THROUGH `resolveBoundBlueprint(teamSessionId)`
+  // — the SAME three-case bound-Blueprint authority the team-root/member
+  // identity binds to — canonicalizes at the TARGET member's effective
+  // workspace (durable `member.workspace ?? defaultWorkspace` — exactly the
+  // glue's `memberCwd` doctrine, so facts, envelope, overlay and the decision
+  // plane share ONE canonical key space per member), and re-validates the
+  // binding tuple across each canonicalization await (drift → abstain). The
+  // fs provider is consulted only for rules that actually exist (a world
+  // without `capabilities.permissions` performs ZERO fs calls); failures are
+  // never cached, so the next read retries (bounded recovery).
+  // PR4 ROUND 5 (FIX-2a): the ONE server-side canonicalizer over the row's
+  // fs provider — shared by the authority facts and the Leader permission
+  // grant/revoke tool (client-supplied paths are NEVER authorization
+  // input; every file matcher canonicalizes here, at the TARGET basis).
+  const permissionCanonicalize = async (path: string, cwd: string): Promise<string> => {
+    const resolved = (await fsBackend().resolve(path, { cwd })) as
+      | { targetKey?: unknown }
+      | null
+      | undefined
+    const key = resolved?.targetKey
+    if (typeof key !== 'string' || key.length === 0) {
+      throw new Error(
+        `permission authority facts: the fs provider returned no canonical key for ${JSON.stringify(path)}`,
+      )
+    }
+    return key
+  }
+
+  const permissionFacts = createPermissionAuthorityFacts({
+    resolveBlueprint: (teamSessionId) => {
+      try {
+        return resolveBoundBlueprint(teamSessionId)
+      } catch {
+        // No durable row / unresolvable bound ref: UNKNOWN facts (typed
+        // refusal downstream), never a fall-back to the row anchor.
+        return undefined
+      }
+    },
+    memberTemplateId: (teamSessionId, memberInstanceId) =>
+      domain.repositories.memberInstances
+        .get(teamSessionId as never, memberInstanceId as never)
+        ?.templateId as string | undefined,
+    memberWorkspace: (teamSessionId, memberInstanceId) => {
+      const workspace = domain.repositories.memberInstances.get(
+        teamSessionId as never,
+        memberInstanceId as never,
+      )?.workspace as string | undefined
+      // The member's EFFECTIVE workspace — the durable row's own
+      // `workspace`, falling back to the ADDRESSED team's durable default
+      // (the TeamSession row), exactly as the live glue computes
+      // `effectiveRootWorkspace`/`memberCwd` (agent-bindings). ROUND 5
+      // (FIX-3, parent ruling): the fallback is the DURABLE row of the
+      // ADDRESSED teamSessionId — NEVER `resolvedRowConfig.defaultWorkspace`
+      // (that is the ACTING boot row's tail; with two teams over one host
+      // row a Team-B leader/member would canonicalize under Team A's
+      // workspace). The leader position has no member row and takes the
+      // same durable team default; NO durable row for the addressed team →
+      // `undefined` = UNKNOWN (consistent with the bound-blueprint abstain).
+      if (typeof workspace === 'string' && workspace !== '') return workspace
+      const teamDefault = domain.repositories.teamSessions.get(
+        teamSessionId as never,
+      )?.defaultWorkspace as string | undefined
+      return typeof teamDefault === 'string' && teamDefault !== '' ? teamDefault : undefined
+    },
+    canonicalize: permissionCanonicalize,
+    bootWarmTargets: () => [
+      // The boot team's leader position (member documents warm lazily on
+      // their first addressed read — every build is a re-validated build).
+      { teamSessionId: rowConfig.rootSessionId, memberInstanceId: LEADER_INSTANCE_ID },
+    ],
+  })
+  // Loud-log only: the boot anchor's declared permissions-bearing templates.
+  // (NOT an authority source — the round-4 readers resolve per addressed
+  // team; this stays for the operator-facing startup line.)
+  const factsAnchorBlueprint = parseBlueprint(resolvedRowConfig.blueprintSource)
+  const permissionsBearingTemplates = [factsAnchorBlueprint.leader, ...factsAnchorBlueprint.members]
+    .filter((template) => template.capabilities?.permissions !== undefined)
+    .map((template) => template.templateId as string)
+
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
     sessionPersistence,
@@ -1730,6 +1906,11 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // constructed + rebuilt — see the ref's rationale). Additive optional
     // dep: never in the hard inject array.
     artifactAuthorityRef,
+    // pre-alpha3 PR4: the shared permission-plane reference (the root fills
+    // it during construction; the glue wires the pre-execute decision seam
+    // from it per agent). Additive optional dep: never in the hard inject
+    // array.
+    permissionPlaneRef,
     // C1 (restart-recovery, guide §4.3): the Team session-activation fence
     // — the production host MUST pass it (the glue wraps every Team
     // create/resume in runOwned and performs the bounded writer-conflict
@@ -2245,6 +2426,21 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // root fills `controlServiceRef.current` during construction (the same
     // object the glue reads lazily in agentSetup).
     controlServiceRef,
+    // pre-alpha3 PR4 (plan PR4 "production entry wiring"): the durable
+    // overlay port + the runtime containment predicate + the plane reference
+    // the root fills.
+    permissionOverlay,
+    fsContainsKeys,
+    permissionPlaneRef,
+    // pre-alpha3 PR4 (round 3 BLOCK-1 + round 4 addressed-team binding,
+    // round 5 ceiling REMOVAL): the authority fact readers (the root
+    // forwards them VERBATIM into the pure governance lane). The envelope +
+    // static facts resolve the ADDRESSED team's bound Blueprint and the
+    // TARGET member's effective workspace. (Round 4's leader-ceiling reader
+    // injection is REMOVED — ADR §6 carries no second policy gate.)
+    permissionEnvelope: permissionFacts.permissionEnvelope,
+    permissionStaticLayers: permissionFacts.staticLayers,
+    permissionCanonicalize,
     legacyInspect,
     // BP5 (issue #2 blueprint-loading, plan §9): the live catalog over the
     // saved sources + the frozen registry + this row's anchor (the legacy
@@ -2471,6 +2667,47 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // route from it, never the world from it).
   try {
     await builtRoot.boot()
+    // pre-alpha3 PR4 (round 4): WARM the authority documents at this async
+    // boundary — AFTER the boot effect (the durable TeamSession row exists
+    // from here on; the only entry that could reach `mutatePermission`
+    // remotely is gated on `teamRuntimeReadiness`, which flips below) and
+    // BEFORE readiness. This is a WARMUP, not the authority's existence: the
+    // round-4 readers resolve the ADDRESSED team's bound Blueprint and the
+    // TARGET member's workspace at READ time, so a warmup failure (or a
+    // member created after boot) self-heals — the next addressed read
+    // rebuilds (bounded recovery, fail-closed preserved: until then Leader
+    // EXPANSIONS refuse typed, zero envelope authority, while decisions,
+    // execution, and every unaffected reader keep serving correct current
+    // facts). The loud line below stays the operator signal; boot continues
+    // (a transient fs fault at boot must not fail the world — the artifact-
+    // authority rebuild precedent).
+    try {
+      await permissionFacts.refresh()
+      // ROUND 5 (R-A minor): `refresh` resolves even when a warm READ
+      // faulted; `healthy()` now aggregates READ RESULTS (not throw-only),
+      // so a faulted warm prints LOUD here instead of the old silent
+      // `facts healthy: true` line over a zero-rule envelope.
+      if (!permissionFacts.healthy()) {
+        console.error(
+          '[dsh-agent-team] the permission authority facts warm-up FAULTED (a provider read abstained for at least one warm target) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE / zero envelope authority) until an addressed read rebuilds the facts (bounded recovery); decisions and execution are unaffected',
+        )
+      }
+    } catch (error: unknown) {
+      console.error(
+        `[dsh-agent-team] the permission authority facts warm-up failed (${
+          error instanceof Error ? error.message : String(error)
+        }) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE / zero envelope authority) until an addressed read rebuilds the facts (bounded recovery); decisions and execution are unaffected`,
+      )
+    }
+    if (permissionsBearingTemplates.length > 0) {
+      console.info(
+        `[dsh-agent-team] durable permission authority ACTIVE for row ${rowConfig.rootSessionId}: ` +
+          `anchor templates declaring capabilities.permissions = ${JSON.stringify(permissionsBearingTemplates)}, ` +
+          `facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor ${String(factsAnchorBlueprint.blueprintId)}@${String(factsAnchorBlueprint.revision)}), ` +
+          `canonicalized at each target member's effective workspace; expansion ceiling = the bound ` +
+          `Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: ${String(permissionFacts.healthy())})`,
+      )
+    }
     teamRuntimeReadiness = 'ready'
   } catch (error) {
     teamRuntimeReadiness = 'failed'
@@ -2630,6 +2867,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
             artifactAuthorityRef.current?.dispose()
           } catch {
             // a throwing disposer is swallowed: the row teardown proceeds
+          }
+          // pre-alpha3 PR4: release the overlay store's own domain handle
+          // (the durable rows stay on the medium; the plane is stateless).
+          // Never fails the row teardown.
+          try {
+          } catch {
+            // a throwing close is swallowed: the row teardown proceeds
           }
           if (settled !== undefined) {
             void settled.close().catch(() => undefined)

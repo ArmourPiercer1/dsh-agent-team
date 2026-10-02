@@ -1,0 +1,74 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-hash — golden content-hash pin: the carrier-bearing blueprint hashes BYTE-IDENTICALLY (canonicalizer drift trips this leg)
+R5HASH "sha256:f0148ab83ec03c4dcb3da4b9357b260ea446067fb335c56153b35b815c897bd6"
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts (20 tests | 2 failed | 17 skipped) 221ms
+     ↓ the LEADER resolves LIVE for a decision over the real TeamSession (no member row exists for the leader — v2 design)
+     ↓ member semantics unchanged: a ghost instance still refuses INSTANCE_UNKNOWN
+     ↓ a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1)
+     ↓ NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing
+     ↓ UNKNOWN static facts refuse EFFECT_CONTEXT_UNAVAILABLE (never a guessed baseline)
+     ↓ a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+     ↓ store-open failure at apply(): typed startup failure, never a warn-only boot (BLOCK-5, fail-open closed)
+     ↓ NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning
+     ↓ a persisted overlay DENY beats the template ALLOW through the real glue pipeline
+     ↓ R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+     ↓ R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+     ↓ R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+     ↓ R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working
+     ↓ R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+     ↓ R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+     ↓ R5-tool — the REAL team_grant_permission/team_revoke_permission surface: grant commits → decision ALLOW; revoke → decision DENY again (Leader gate + server-side canonicalization)
+     ↓ R5-rpc — the REAL remote method override.mutatePermission (v7-only): operator grant → decision ALLOW; revoke → DENY; member-caller authority refuses typed
+     ✓ R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row) 209ms
+     × R5-grammar — the carrier grammar refuses malformed carriers typed (R-B debt: MALFORMED rejection strings existed nowhere) 8ms
+     × R5-hash — golden content-hash pin: the carrier-bearing blueprint hashes BYTE-IDENTICALLY (canonicalizer drift trips this leg) 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-grammar — the carrier grammar refuses malformed carriers typed (R-B debt: MALFORMED rejection strings existed nowhere)
+AssertionError: expected [Function] to throw error matching /permissionMutationEnvelope|matcher|M…/i but got 'blueprint frontmatter is not valid YA…'
+
+- Expected:
+/permissionMutationEnvelope|matcher|MALFORMED/i
+
++ Received:
+"blueprint frontmatter is not valid YAML (line 37): Nested mappings are not allowed in compact mappings at line 37, column 23:"
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:2078:45
+    2076|       return keep
+    2077|     })
+    2078|     expect(() => parseBlueprint(noMatcher)).toThrowError(/permissionMu…
+       |                                             ^
+    2079|   })
+    2080|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-hash — golden content-hash pin: the carrier-bearing blueprint hashes BYTE-IDENTICALLY (canonicalizer drift trips this leg)
+AssertionError: expected 'sha256:f0148ab83ec03c4dcb3da4b9357b26…' to be 'sha256:PLACEHOLDER' // Object.is equality
+
+Expected: "sha256:PLACEHOLDER"
+Received: "sha256:f0148ab83ec03c4dcb3da4b9357b260ea446067fb335c56153b35b815c897bd6"
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:2097:31
+    2095|     // eslint-disable-next-line no-console -- one-shot golden capture
+    2096|     console.log(`R5HASH ${JSON.stringify(first.contentHash)}`)
+    2097|     expect(first.contentHash).toBe('sha256:PLACEHOLDER')
+       |                               ^
+    2098|   })
+    2099| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed | 17 skipped (20)
+   Start at  00:15:54
+   Duration  1.43s (transform 962ms, setup 0ms, import 1.11s, tests 221ms, environment 0ms)
+

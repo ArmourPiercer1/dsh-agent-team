@@ -1,0 +1,5 @@
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+rc=0

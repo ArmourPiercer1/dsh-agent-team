@@ -1,0 +1,55 @@
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 91 modules, 11 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/client/composition-shim/client-bundle.js (1147053 B)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/client/composition-shim/package.json
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-governance/index.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-governance/index.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-governance/index.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-governance/index.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-governance/overlay-repository.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-governance/overlay-repository.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-governance/overlay-repository.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-governance/overlay-repository.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/decision-lane.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/decision-lane.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/decision-lane.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/decision-lane.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/index.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/index.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/index.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/index.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/mutation-lane.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/mutation-lane.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/mutation-lane.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/mutation-lane.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/types.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/types.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/types.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/permission-lifecycle/types.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/storage/repositories/permission-overlays.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/storage/repositories/permission-overlays.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/storage/repositories/permission-overlays.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/storage/repositories/permission-overlays.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+[ELIFECYCLE] Command failed with exit code 1.

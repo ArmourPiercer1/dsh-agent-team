@@ -1,0 +1,1 @@
+diag-backup/ holds the writer-backup of the 18 files round-5 touched, used ONLY for the HEAD-probe (see README battery row 6 / r5-p6t6-head-probe.log). The file copies are deliberately NOT committed (they duplicate tracked sources); this manifest (the backup->path map) is the retained evidence.

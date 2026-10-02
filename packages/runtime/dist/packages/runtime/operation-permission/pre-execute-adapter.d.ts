@@ -303,7 +303,8 @@
  *
  * @module @dsh-agent-team/runtime/operation-permission/pre-execute-adapter
  */
-import type { PathTargetResolver } from './types.js';
+import type { CanonicalOperation, PathTargetResolver } from './types.js';
+import type { CanonicalRules } from './permission-resolver.js';
 import type { ControlService, ControlWaitSignal } from '../control/index.js';
 import type { ActionCaller } from '../admission/index.js';
 import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js';
@@ -386,6 +387,46 @@ export interface AgentPreExecuteCtx {
     };
 }
 /**
+ * PR4 (pre-alpha3 permission lifecycle) — ONE answer of the caller-owned
+ * DYNAMIC decision seam.
+ *
+ * `effect` is the EFFECTIVE effect of this round (the seam already folded
+ * THIS decision's static lanes in — it never re-decides precedence inside
+ * the adapter); `refused` is a TYPED refusal of the read plane (an ARCHIVED
+ * or DISPOSED instance, an overlay the carrier grammar cannot decode, an
+ * exec region the kernel could not answer): the adapter fails closed on it,
+ * exactly like a canonicalization failure, and NEVER falls through to the
+ * static answer.
+ */
+export type DynamicPermissionDecision = {
+    readonly effect: 'allow' | 'ask' | 'deny';
+    /** Which merged plane answered (`'file'` / `'exec'`). */
+    readonly plane: string;
+    /** The layer that answered (`'overlay' | 'template' | 'blueprint' | null`). */
+    readonly winningLayer: string | null;
+    /** The overlay generation that answered (`null` = no overlay row yet). */
+    readonly overlayGeneration: number | null;
+    /** A deterministic one-line explanation (observation only). */
+    readonly explanation: string;
+    /**
+     * PR4 round 3 (BLOCK-3) — the merged answer's OWN provenance class:
+     * `'rule'` = an explicit rule answered (overlay OR a template/blueprint
+     * lane rule); `'default'` = no rule matched and the layer DEFAULT
+     * answered. The adapter routes the artifact-grant floor on THIS
+     * (a merged DEFAULT deny keeps flowing the floor — the strict-read
+     * core-spill use case survives the plane being wired; an EXPLICIT
+     * deny never does — a grant is a floor, never a ceiling override).
+     * Absent = a pre-round-3 producer: treated as `'rule'` (conservative
+     * — byte-identical to the pre-fix posture where NO dynamic deny ever
+     * reached the floor).
+     */
+    readonly source?: 'rule' | 'default';
+} | {
+    readonly refused: true;
+    readonly code: string;
+    readonly reason: string;
+};
+/**
  * One installation of the parameter-permission pre-execute listener on
  * one agent ctx (the A6 glue builds these per agent lifecycle from the
  * bound template, the session cwd, and the team's control service).
@@ -467,6 +508,48 @@ export interface InstallParameterPermissionListenerParams {
      * `leader-approval` (the leader decides; the human may stand in)
      * unchanged.
      */
+    /**
+     * PR4 (pre-alpha3 permission lifecycle) — the DYNAMIC decision seam,
+     * consulted AFTER the static (template) decision of step (3) and BEFORE the
+     * artifact-grant / approval lanes, so what it reports is what those lanes
+     * see.
+     *
+     * ABSENT (every pre-PR4 installer, every factory world, every existing spec)
+     * the pipeline stays byte-for-byte the frozen one: the seam is additive and
+     * is never consulted when unwired.
+     *
+     * It is NOT a second authority (plan PR4 "no second authority"): the overlay
+     * it reads is the one `GovernanceMutationService.mutatePermission` appends
+     * (ADR §2 — the highest generation is the authority, history is audit-only),
+     * the layer precedence is the merged PR2 assembler's (blueprint < template <
+     * overlay, and within a layer deny > ask > allow), the lifecycle gate is
+     * ADR §8 (ARCHIVED / DISPOSED never execute; a fresh instance has no rows to
+     * inherit), and the exec (fingerprint) plane is the governance kernel's own
+     * pure effective-answer algebra. The adapter contributes NO precedence of
+     * its own: the seam returns the effective effect of the round and the
+     * adapter routes it through the SAME allow / ask / deny lanes the static
+     * decision uses (so the exec dual gate and the approval floor keep applying
+     * on top of it).
+     *
+     * `staticRules` / `staticDefault` are THIS decision's freshly canonicalized
+     * static lanes (the same values the frozen resolver just consumed, H4 —
+     * never cached), so the seam's answer and the static answer are computed
+     * from one set of canonical identities.
+     */
+    readonly resolveDynamicDecision?: (input: {
+        readonly operation: CanonicalOperation;
+        /**
+         * PR4 round 3 (INFO-3): THIS decision's freshly canonicalized rules
+         * PASSED THROUGH VERBATIM. The pre-fix `?? { allow: [], ask: [], deny: []
+         * }` fallback claimed DECLARED-NONE where the adapter merely had no
+         * value — a state the decision lane deliberately keeps DISTINCT
+         * (UNKNOWN must never arrive as declared-none). The adapter always
+         * canonicalizes before reaching the seam today; the `undefined` member
+         * exists so no future path can re-fabricate the empty claim.
+         */
+        readonly staticRules: CanonicalRules | undefined;
+        readonly staticDefault: 'ask' | 'deny';
+    }) => Promise<DynamicPermissionDecision | undefined>;
     readonly execEnvelopeOps?: readonly string[];
     /**
      * Strict-read + Core-spill (implementation guide §9) — the injected

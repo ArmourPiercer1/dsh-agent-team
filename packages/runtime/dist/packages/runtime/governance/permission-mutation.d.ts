@@ -407,6 +407,12 @@ export interface LeaderMutationAuthorizationInput {
  * Anything else with `staticFacts === undefined` refuses
  * EFFECT_CONTEXT_UNAVAILABLE — an unknown prior is never labeled expansion
  * OR tightening.
+ *
+ * ROUND 5 (parent final review): the round-4 `authorityCeiling` parameter is
+ * REMOVED — comparing risen cells against the grantor's own effective answer
+ * was a SECOND policy condition ADR §6 does not carry. The envelope-only
+ * algebra below is the UNCONDITIONAL whole decision (coverage + target
+ * effective before/after), byte-equal to the pre-round-4 envelope judgement.
  */
 export declare function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void;
 /** The plan of one mutation against the current authority snapshot.

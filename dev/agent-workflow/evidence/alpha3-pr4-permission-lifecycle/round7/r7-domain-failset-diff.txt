@@ -1,0 +1,4 @@
+baseline=dev/agent-workflow/evidence/alpha3-pr4-permission-lifecycle/round5/r5-domain-suite.log
+baseline-lines=10  new-lines=10
+(no hunks)
+VERDICT: BYTE-IDENTICAL (failsets agree line-for-line)

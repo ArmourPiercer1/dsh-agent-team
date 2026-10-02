@@ -46,6 +46,7 @@ import { LedgerRepository } from './ledger.js';
 import { MemberInstancesRepository } from './member-instances.js';
 import { OperationsRepository } from './operations.js';
 import { OverridesRepository } from './overrides.js';
+import { PermissionOverlayRepository } from './permission-overlays.js';
 import { SchemaMetaRepository } from './schema-meta.js';
 import { SessionBindingsRepository } from './session-bindings.js';
 import { TeamSessionsRepository } from './team-sessions.js';
@@ -110,6 +111,7 @@ function buildDomain(handle) {
             operations: new OperationsRepository(handle),
             ledger: new LedgerRepository(handle, teamSessions),
             blueprintRegistry: new BlueprintRegistryRepository(handle),
+            permissionOverlays: new PermissionOverlayRepository(handle),
         },
         close() {
             return handle.close();

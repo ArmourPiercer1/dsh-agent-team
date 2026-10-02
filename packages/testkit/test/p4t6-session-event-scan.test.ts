@@ -1598,8 +1598,66 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (outside the scanner's denylist); the frozen quarantine hit set stays
     // at fifteen occurrences; scanner .mjs unchanged. The 934 value is the
     // scanner run on this tree (authoritative; not hand-computed).
-    expect(scanResult.filesScanned).toBe(934)
-    expect(scanResult.files.length).toBe(934)
+    // ALPHA.3 PR4 permission-lifecycle round (2026-10-02): 934 + 7 = 941 —
+    // the seven scannable files this PR adds: the lifecycle lane module set
+    // (`runtime/permission-lifecycle/types.ts` + `mutation-lane.ts` +
+    // `decision-lane.ts` + `index.ts` — the grant / revoke / restore entries
+    // riding the SAME `PermissionMutation` authority, the ADR §8 execution
+    // gate, and the merged file / exec decision planes), the production
+    // assembly helper (`runtime/src/plugin/permission-plane.ts` — the
+    // governance lane the root injects + the plane reference the live glue
+    // reads), and the two specs (`a3p4-permission-lifecycle-e2e`, the
+    // end-to-end service / call-chain legs over the real durable store and
+    // the real lifecycle service, and `a3p4-production-permission-plane`, the
+    // production-root assembly reachability legs). The `root.ts` / `host.ts`
+    // / `agent-bindings.mjs` / `pre-execute-adapter.ts` edits are in-place
+    // changes on already-scanned files (no count delta). Zero new denylist
+    // vocabulary — the lifecycle words this lane carries are the contracts FSM
+    // vocabulary (`ARCHIVE` / `RESTORE` / `ARCHIVED` / `DISPOSED`), not legacy
+    // Team SessionEvent names; the frozen quarantine hit set stays at fifteen
+    // occurrences and the scanner .mjs is unchanged. The 941 value is the
+    // scanner run on this tree (authoritative: this suite reported
+    // `expected 941 to be 934` before the recount; not hand-computed).
+    // ALPHA.3 PR4 permission-lifecycle ROUND 3 (2026-10-06): 941 + 2 = 943 —
+    // the two RED-first regression specs of the consolidated fix
+    // (`a3p4-pr4-decision-routing-regression.test.ts`,
+    // `a3p4-pr4-production-entry-regression.test.ts`; both SessionEvent-free
+    // — every other pin of this suite, the fifteen-occurrence quarantine hit
+    // set included, is UNCHANGED). The 943 value is the scanner run on this
+    // tree (authoritative: this suite reported `expected 943 to be 941`
+    // before the recount; not hand-computed).
+    // ALPHA.3 PR4 permission-lifecycle ROUND 4 (2026-10-07): 943 + 1 = 944 —
+    // the one new direct authority-facts + kernel-ceiling spec
+    // (`a3p4-r4-authority-binding.test.ts`, SessionEvent-free; every other
+    // pin of this suite is UNCHANGED — the round-4 production edits are
+    // in-place changes on already-scanned files). The 944 value is the
+    // scanner run on this tree (authoritative: this suite reported
+    // `expected 944 to be 943` before the recount — raw retained as
+    // `round4/r4-p4t6-scan.log`; not hand-computed).
+    // ALPHA.3 PR4 permission-lifecycle ROUND 9 (2026-10-02, parent A7-5):
+    // 944 + 1 = 945 — the ONE new scannable spec since the round-4 pin is
+    // the root-assembled entry/exec + principal regression
+    // (`a3p4-pr7-entry-exec-contract-regression.test.ts`, added round 7,
+    // SessionEvent-free; round 8 EXTENDED it in place — `git log
+    // --diff-filter=A` over base..HEAD confirms no other test file was ever
+    // added on this branch). Every other pin of this suite is UNCHANGED.
+    // The 945 value is the scanner run on this tree (authoritative: this
+    // suite reported `expected 945 to be 944` before the recount — RED raw
+    // `round9/r9-p4t6-RED.log`, GREEN `round9/r9-p4t6-GREEN.log`, full suite
+    // `round9/r9-testkit-suite.log`; not hand-computed). The testkit suite
+    // had NOT been run in rounds 5-8 — this closes that gap.
+    // MASTER INTEGRATION (root ruling: merge of 6259cf4b; round 10):
+    // 945 + 1 = 946 — the combined tree adds master's ONE new scannable
+    // client spec (`packages/client/test/pr56-control-subject-payload.test.ts`,
+    // PR #56, absent from the branch base). The 946 value is the committed
+    // scanner run on the combined tree (authoritative: this suite reported
+    // `expected 946 to be 945` before the recount — RED raw
+    // `round10/r10-p4t6-combined-RED.log`, GREEN `round10/r10-p4t6-GREEN.log`;
+    // not hand-computed). On the combined tree 9 of the 10 legs passed
+    // UNCHANGED (quarantine hits, excluded-self, citations, controls) — the
+    // ONLY failing leg is this count leg.
+    expect(scanResult.filesScanned).toBe(946)
+    expect(scanResult.files.length).toBe(946)
 
   })
 

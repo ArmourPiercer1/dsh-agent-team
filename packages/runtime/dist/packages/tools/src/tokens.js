@@ -31,6 +31,17 @@ export const TEAM_TOOL_PENDING_LIST_NOT_LEADER = 'TEAM_TOOL_PENDING_LIST_NOT_LEA
  *  non-leader caller is rejected before the guard consult and any
  *  runtime effect, the C1 leader-gate precedent). */
 export const TEAM_TOOL_ARCHIVE_NOT_LEADER = 'TEAM_TOOL_ARCHIVE_NOT_LEADER';
+/** PR4 ROUND 5 (FIX-2a): the closed leader-only caller error codes for the
+ *  permission grant/revoke tools (a member caller is rejected BEFORE any
+ *  governance call — the C1/archive leader-gate precedent). */
+export const TEAM_TOOL_PERMISSION_NOT_LEADER = 'TEAM_TOOL_PERMISSION_NOT_LEADER';
+/** PR4 ROUND 5 (FIX-2a): the permission grant/revoke tools are unwired on
+ *  this host (no governance port injected) — rejected typed, zero write. */
+export const TEAM_TOOL_PERMISSION_UNWIRED = 'TEAM_TOOL_PERMISSION_UNWIRED';
+/** PR4 ROUND 5 (FIX-2a): a file-rule path could not be canonicalized at the
+ *  TARGET member's effective workspace (unwired provider, unknown workspace,
+ *  provider fault) — rejected typed, zero write; never a raw-path authority. */
+export const TEAM_TOOL_PERMISSION_CANONICALIZE_FAILED = 'TEAM_TOOL_PERMISSION_CANONICALIZE_FAILED';
 /** The closed tool-layer caller-root binding error code (P0: the calling
  *  session's owning team root must equal the requested root — every
  *  Team's leader shares `inst-leader`, so a cross-root caller is

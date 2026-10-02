@@ -68,11 +68,66 @@ export const BLUEPRINT_TOP_LEVEL_FIELDS = [
     'requirements',
     'teamEnvelope',
     'memberEnvelopes',
+    'permissionMutationEnvelope',
     'policyStates',
     'quotas',
     'capabilityPolicy',
     'metadata',
 ];
+/**
+ * The exact closed field set of the Alpha.3 PR4 `permissionMutationEnvelope`
+ * block — the ONE explicit Leader permission-expansion authority carrier
+ * (ADR §6 / design §4). It is CONCEPTUALLY DISTINCT from the operation-token
+ * capability envelopes `teamEnvelope` / `memberEnvelopes` (a
+ * set-intersection over mutation-operation tokens feeding the exec-token
+ * dual gate): this carrier is a per-rule permission ceiling
+ * {operationClass, matcher, maximumEffect}. The two envelopes NEVER read
+ * each other; there is no transformation between them
+ * (governance/permission-mutation.ts D2 ruling). The block carries exactly
+ * one field, `rules` (a possibly-empty array — an empty list is exactly
+ * "no Leader expansion authority").
+ */
+export const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FIELDS = ['rules'];
+/** The exact closed field set of one `permissionMutationEnvelope.rules` entry. */
+export const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_RULE_FIELDS = [
+    'operationClass',
+    'matcher',
+    'maximumEffect',
+];
+/**
+ * The closed matcher field sets of one `permissionMutationEnvelope.rules`
+ * entry. The `operationClass` lane PICKS the matcher shape (design §5):
+ * - a FILE-class operation (`read`/`read_image`/`write`/`edit`/`lsp`) pairs
+ *   with `exact` / `subtree` — the resource is a workspace PATH here (the
+ *   blueprint is pure data; canonicalization to an opaque key is the runtime
+ *   provider's job, never this layer's);
+ * - a SHELL-class operation (`bash`/`pwsh`) pairs with `fingerprint` ONLY —
+ *   the resource is a canonical operation fingerprint carried VERBATIM
+ *   (exact identity; no subtree, no `any`, no path — design §5, Final
+ *   Acceptance 7).
+ */
+export const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FILE_MATCHER_FIELDS = [
+    'kind',
+    'path',
+];
+export const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_EXEC_MATCHER_FIELDS = [
+    'kind',
+    'fingerprint',
+];
+/** The closed matcher kinds of the config carrier (design §5; no `any`). */
+export const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS = [
+    'exact',
+    'subtree',
+    'fingerprint',
+];
+/** The closed `maximumEffect` ceiling vocabulary (the §6 ladder's values). */
+export const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS = [
+    'allow',
+    'ask',
+    'deny',
+];
+/** Max length of one exec fingerprint in the carrier (structural bound). */
+export const PERMISSION_FINGERPRINT_MAX_LENGTH = 256;
 /**
  * The exact closed field set of a LeaderTemplate and a MemberTemplate
  * (the two share one schema; the Leader is distinguished by position,

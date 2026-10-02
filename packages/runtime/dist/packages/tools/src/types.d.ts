@@ -91,6 +91,17 @@ export interface TeamToolDefinition {
  * flow); only unexpected errors throw (the host marks them tool errors).
  */
 export type TeamToolsResult = {
+    readonly status: 'permission-mutated';
+    readonly rootSessionId: string;
+    readonly targetInstanceId: string;
+    /** Which governance verb ran (grant_instance / revoke_instance). */
+    readonly verb: 'grant' | 'revoke';
+    /** Durable effect (the governance lane's dedupe-aware answer). */
+    readonly changed: boolean;
+    /** Governance lane code when the settled result carries one. */
+    readonly code?: string;
+    readonly reason?: string;
+} | {
     readonly status: 'executed';
     readonly action: string;
     readonly rootSessionId: string;
@@ -161,6 +172,29 @@ export interface ResolvedTeamToolCaller {
  * layer delegates to — the facade plus the sanctioned satellites. Every
  * durable write flows through them; the tool layer itself writes nothing.
  */
+/**
+ * The CLOSED structured exec intent (round 7, parent item 3): the ONLY
+ * way an entry expresses exec (shell-class) scope. The server canonicalizes
+ * it into the exact execution fingerprint via the SAME semantics the
+ * execution plane uses at pre-execute (`canonicalizeShellOperation`:
+ * tool + command hash + canonical workdir KEY + background flag + explicit
+ * timeout + sandbox mode) — arbitrary client strings can never self-label
+ * as canonical. Field names mirror the shell tool's OWN argument names so
+ * the canonicalization is the identity mapping onto the real exec shape.
+ */
+export interface TeamPermissionExecIntent {
+    /** The closed shell-class tool (the resource key IS the tool name). */
+    readonly tool: 'bash' | 'pwsh';
+    /** The exact command string the exec fingerprint hashes. */
+    readonly command: string;
+    /** Workdir input (absent = the tool's own default '.'). */
+    readonly workdir?: string;
+    readonly run_in_background?: boolean;
+    /** EXPLICIT timeout only — never a deployment default (plan §4.4). */
+    readonly timeoutMs?: number;
+    /** Requested sandbox mode string only; legality is decided at exec. */
+    readonly sandbox_permissions?: string;
+}
 export interface TeamToolsOptions {
     /** The unified runtime/control action facade (all facade actions). */
     readonly teamRuntime: TeamRuntime;
@@ -181,5 +215,35 @@ export interface TeamToolsOptions {
      * @throws when the session cannot be resolved to a team caller.
      */
     readonly resolveCaller: (sessionId: string) => Promise<ResolvedTeamToolCaller>;
+    /**
+     * pre-alpha3 PR4 ROUND 5 (FIX-2a) — the Leader's permission grant/revoke
+     * entries over the ONE governance mutation authority (the SAME service the
+     * human RPC lane reaches). ABSENT by default: the two permission tools
+     * then reject typed (`TEAM_TOOL_PERMISSION_UNWIRED`, zero write).
+     * SERVER-SIDE everything: the authority rides the caller identity the
+     * host resolved (Leader-gated), and file-rule PATHS canonicalize through
+     * `canonicalizeFile` at the TARGET member's durable effective workspace —
+     * a client-supplied key is never authorization input.
+     */
+    readonly permission?: {
+        /** Routes one closed permission mutation (grant_instance /
+         *  revoke_permission) through the SHARED lifecycle mutation lane onto the
+         *  governance service; typed refusals THROW errors carrying `code`
+         *  (the tool forwards the code verbatim). */
+        readonly mutatePermission: (mutationArgs: Record<string, unknown>) => Promise<Record<string, unknown>>;
+        /** Canonicalizes one file-rule path at the ADDRESSED team's TARGET member
+         *  effective workspace through the host's fs provider (throws on any
+         *  fault — the tool maps it to a typed rejection, never a raw-path
+         *  authority). ROUND 7 (parent BLOCK-2): the TEAM is the per-call
+         *  addressed ctx.rootSessionId — never a boot-row capture. */
+        readonly canonicalizeFile: (teamSessionId: string, targetInstanceId: string, path: string) => Promise<string>;
+        /** Canonicalizes one CLOSED structured exec intent (bash|pwsh + command +
+         *  exec params) into the EXACT execution fingerprint the execution plane
+         *  itself computes (server-side canonicalizeShellOperation semantics).
+         *  ROUND 7 (parent item 3): a client-supplied fingerprint string is NEVER
+         *  accepted — the only way to express exec scope through an entry is a
+         *  structured intent this seam canonicalizes. Throws on any fault. */
+        readonly canonicalizeExecIntent: (teamSessionId: string, targetInstanceId: string, intent: TeamPermissionExecIntent) => Promise<string>;
+    };
 }
 //# sourceMappingURL=types.d.ts.map

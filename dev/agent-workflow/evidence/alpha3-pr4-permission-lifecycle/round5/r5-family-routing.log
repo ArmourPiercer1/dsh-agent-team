@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts (13 tests) 376ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  00:22:34
+   Duration  1.50s (transform 821ms, setup 0ms, import 1.03s, tests 376ms, environment 0ms)
+

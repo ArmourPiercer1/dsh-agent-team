@@ -1,0 +1,5 @@
+== round-10 master-integration evidence 2026-10-02T01:24:28+00:00
+- merge commit: 1b20475567c77ab01ac6082e71a074b13fd3694f (P1 282dc58d, P2 6259cf4b) TREE 4186981ba2cc03eacea2f4ac2e353960592ad156 == coordinator combined-tree OID (verified post-merge)
+- merge rc raw: this file; merge output showed zero conflicts (git merge --no-edit exit 0); untracked diag-backup payloads untouched.
+- scanner combined-tree RED (pin 945): round10/r10-p4t6-combined-RED.log — 'expected 946 to be 945', 9/10 legs green (hits=15 etc. hold).
+- GREEN after pin 946: round10/r10-p4t6-GREEN.log.
