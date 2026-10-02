@@ -1,0 +1,2 @@
+[check-artifacts-committed] OK: 1444 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+POSTCOMMIT_CHECK_RC=0
