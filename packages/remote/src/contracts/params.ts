@@ -517,6 +517,7 @@ export type RemoteMethodParams =
   | RemoteOverrideSetParamsV7
   | RemoteOverrideResetParams
   | RemoteOverrideResetParamsV7
+  | RemoteOverrideMutatePermissionParams
   | RemotePolicyStateGetParams
   | RemotePolicyStateSetParams
   | RemoteCompatibilityGetParams
@@ -1456,6 +1457,125 @@ export function parseRemoteTeamPrepareOrdinaryOpenParams(
   }
 }
 
+/**
+ * PR4 ROUND 5 (FIX-2b) — `override.mutatePermission` (contract v7, v7-only):
+ * the human/operator grant/revoke into the durable permission overlay via
+ * the ONE governance mutation authority. CLOSED grammar: rules are 1..32
+ * entries of {operationClass, matcher{kind,value}, effect}; the caller NEVER
+ * supplies the authority (the server derives it from the session binding)
+ * and exact/subtree matcher VALUES are raw paths — the server canonicalizes
+ * them at the TARGET member's effective workspace (a client-supplied
+ * canonical key is never authorization input).
+ */
+export interface RemoteOverrideMutatePermissionParams {
+  readonly teamSessionId: string
+  readonly memberInstanceId: string
+  readonly kind: 'grant_instance' | 'revoke_permission'
+  readonly mutationId: string
+  readonly reason?: string
+  readonly rules: readonly {
+    readonly operationClass: string
+    readonly matcher: {
+      readonly kind: 'exact' | 'subtree' | 'fingerprint'
+      readonly value: string
+    }
+    readonly effect: 'allow' | 'ask' | 'deny'
+  }[]
+}
+
+const REMOTE_OVERRIDE_MUTATE_PERMISSION_FIELDS = [
+  'teamSessionId',
+  'memberInstanceId',
+  'kind',
+  'mutationId',
+  'reason',
+  'rules',
+] as const
+const REMOTE_PERMISSION_RULE_FIELDS = ['operationClass', 'matcher', 'effect'] as const
+const REMOTE_PERMISSION_MATCHER_FIELDS = ['kind', 'value'] as const
+const REMOTE_PERMISSION_KINDS: readonly string[] = ['grant_instance', 'revoke_permission']
+const REMOTE_PERMISSION_MATCHER_KINDS: readonly string[] = ['exact', 'subtree', 'fingerprint']
+const REMOTE_PERMISSION_EFFECTS: readonly string[] = ['allow', 'ask', 'deny']
+
+/** Parse `override.mutatePermission` params (contract v7, v7-only method). */
+export function parseRemoteOverrideMutatePermissionParams(
+  method: string,
+  params: RemoteSafeRecord,
+): RemoteOverrideMutatePermissionParams {
+  assertNoUnknownFields(method, params, REMOTE_OVERRIDE_MUTATE_PERMISSION_FIELDS)
+  const kind = requiredField(method, params, 'kind')
+  if (typeof kind !== 'string' || !REMOTE_PERMISSION_KINDS.includes(kind)) {
+    throw paramMalformed(method, 'kind', 'invalid-value', 'kind must be grant_instance or revoke_permission')
+  }
+  const rawReason = optionalField(method, params, 'reason')
+  if (rawReason !== undefined && (typeof rawReason !== 'string' || rawReason.length > 512)) {
+    throw paramMalformed(method, 'reason', 'invalid-value', 'reason must be a string of at most 512 characters')
+  }
+  const mutationId = requiredField(method, params, 'mutationId')
+  if (typeof mutationId !== 'string' || mutationId.length === 0 || mutationId.length > 200) {
+    throw paramMalformed(method, 'mutationId', 'invalid-value', 'mutationId must be a non-empty string (<=200 chars)')
+  }
+  const rawRules = requiredField(method, params, 'rules')
+  if (!Array.isArray(rawRules) || rawRules.length === 0 || rawRules.length > 32) {
+    throw paramMalformed(method, 'rules', 'invalid-value', 'rules must be an array of 1..32 entries')
+  }
+  const rules = rawRules.map((entry, index): RemoteOverrideMutatePermissionParams['rules'][number] => {
+    const label = `rules[${index}]`
+    if (!isPlainRecord(entry)) {
+      throw paramMalformed(method, label, 'invalid-value', `${label} must be an object`)
+    }
+    for (const key of Object.keys(entry)) {
+      if (!(REMOTE_PERMISSION_RULE_FIELDS as readonly string[]).includes(key)) {
+        throw paramMalformed(method, label, 'unknown-field', `${label} carries the unknown field ${key}`)
+      }
+    }
+    const operationClass = requiredField(method, entry, 'operationClass')
+    if (typeof operationClass !== 'string' || operationClass.length === 0 || operationClass.length > 128) {
+      throw paramMalformed(method, `${label}.operationClass`, 'invalid-value', `${label}.operationClass must be a non-empty string (<=128 chars)`)
+    }
+    const effect = requiredField(method, entry, 'effect')
+    if (typeof effect !== 'string' || !REMOTE_PERMISSION_EFFECTS.includes(effect)) {
+      throw paramMalformed(method, `${label}.effect`, 'invalid-value', `${label}.effect must be allow, ask, or deny`)
+    }
+    const matcher = requiredField(method, entry, 'matcher')
+    if (!isPlainRecord(matcher)) {
+      throw paramMalformed(method, `${label}.matcher`, 'invalid-value', `${label}.matcher must be an object`)
+    }
+    for (const key of Object.keys(matcher)) {
+      if (!(REMOTE_PERMISSION_MATCHER_FIELDS as readonly string[]).includes(key)) {
+        throw paramMalformed(method, `${label}.matcher`, 'unknown-field', `${label}.matcher carries the unknown field ${key}`)
+      }
+    }
+    const matcherKind = requiredField(method, matcher, 'kind')
+    if (
+      typeof matcherKind !== 'string' ||
+      !REMOTE_PERMISSION_MATCHER_KINDS.includes(matcherKind)
+    ) {
+      throw paramMalformed(method, `${label}.matcher.kind`, 'invalid-value', `${label}.matcher.kind must be exact, subtree, or fingerprint`)
+    }
+    const value = requiredField(method, matcher, 'value')
+    if (typeof value !== 'string' || value.length === 0 || value.length > 4096) {
+      throw paramMalformed(method, `${label}.matcher.value`, 'invalid-value', `${label}.matcher.value must be a non-empty string (<=4096 chars)`)
+    }
+    return {
+      operationClass,
+      matcher: { kind: matcherKind as 'exact' | 'subtree' | 'fingerprint', value },
+      effect: effect as 'allow' | 'ask' | 'deny',
+    }
+  })
+  return {
+    teamSessionId: parseRemoteTeamSessionId(
+      requiredField(method, params, 'teamSessionId'),
+      'teamSessionId',
+    ),
+    memberInstanceId: parseRemoteInstanceId(requiredField(method, params, 'memberInstanceId'), 'memberInstanceId'),
+    kind: kind as 'grant_instance' | 'revoke_permission',
+    mutationId,
+    ...(rawReason !== undefined ? { reason: rawReason as string } : {}),
+    rules,
+  }
+}
+
 /** Parse `team.getReadState` params (contract v6, v6-only method). */
 export function parseRemoteTeamGetReadStateParams(
   method: string,
@@ -2090,6 +2210,9 @@ export function parseRemoteMethodParams(
     case 'team.getReadState':
       // v6-only (the availability check above guarantees version === 6).
       return wrapParsed(method, parseRemoteTeamGetReadStateParams(method, params))
+    case 'override.mutatePermission':
+      // v7-only (PR4 round 5; the availability check guarantees version 7).
+      return wrapParsed(method, parseRemoteOverrideMutatePermissionParams(method, params))
     case 'team.getProjection':
       return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params))
     case 'team.getLedgerPage':

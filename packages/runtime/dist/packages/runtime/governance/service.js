@@ -496,25 +496,10 @@ export function createGovernanceMutationService(deps) {
                     : parsePermissionMutationEnvelope(await lane.permissionEnvelope(mutation.teamSessionId, mutation.memberInstanceId));
                 const factsRaw = await lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId);
                 const staticFacts = factsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(factsRaw);
-                // PR4 round 4 (external review X1) — the ACTING LEADER's authority
-                // ceiling: its OWN overlay lane + its OWN static facts, read through
-                // the same ports inside this serialized section. Every risen cell
-                // additionally needs the leader's EFFECTIVE answer at >= the risen
-                // effect (exceptions subtract authority — an envelope union never
-                // substitutes for it). Absent reader = the pre-round-4 envelope-only
-                // judgement stays byte-for-byte (hand-authored test/legacy lanes).
-                let authorityCeiling;
-                if (lane.leaderAuthorityFacts !== undefined) {
-                    const leaderFactsRaw = await lane.leaderAuthorityFacts(mutation.teamSessionId, mutation.memberInstanceId);
-                    const leaderOverlay = await overlay.latest({
-                        teamSessionId: mutation.teamSessionId,
-                        memberInstanceId: LEADER_INSTANCE_ID,
-                    });
-                    authorityCeiling = {
-                        overlayRules: leaderOverlay === undefined ? [] : leaderOverlay.state.rules,
-                        staticFacts: leaderFactsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(leaderFactsRaw),
-                    };
-                }
+                // ROUND 5 (parent final review): the round-4 leader-facts ceiling
+                // fold is REMOVED — it was a second policy gate ADR §6 does not
+                // carry. The envelope document + the target's lower-layer facts
+                // above are the WHOLE injected context.
                 // ONE pure authorization step: effective rises inside the mutation's
                 // closed regions need whole-matcher envelope coverage with the risen
                 // effect ceiling (all-or-nothing, ladder-strict, ADR §6); a region
@@ -527,7 +512,6 @@ export function createGovernanceMutationService(deps) {
                     envelope: envelopeDoc,
                     staticFacts,
                     subtreeContains: lane.subtreeContains,
-                    ...(authorityCeiling !== undefined ? { authorityCeiling } : {}),
                 });
             }
             // 5. Commit ONE new FULL snapshot THROUGH the persistence-only port

@@ -1,0 +1,78 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts (20 tests | 3 failed | 17 skipped) 200ms
+     ↓ the LEADER resolves LIVE for a decision over the real TeamSession (no member row exists for the leader — v2 design)
+     ↓ member semantics unchanged: a ghost instance still refuses INSTANCE_UNKNOWN
+     ↓ a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1)
+     ↓ NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing
+     ↓ UNKNOWN static facts refuse EFFECT_CONTEXT_UNAVAILABLE (never a guessed baseline)
+     ↓ a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+     ↓ store-open failure at apply(): typed startup failure, never a warn-only boot (BLOCK-5, fail-open closed)
+     ↓ NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning
+     ↓ a persisted overlay DENY beats the template ALLOW through the real glue pipeline
+     ↓ R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+     ↓ R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+     ↓ R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+     ↓ R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working
+     ↓ R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+     ↓ R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+     ↓ R5-tool — the REAL team_grant_permission/team_revoke_permission surface: grant commits → decision ALLOW; revoke → decision DENY again (Leader gate + server-side canonicalization)
+     ↓ R5-rpc — the REAL remote method override.mutatePermission (v7-only): operator grant → decision ALLOW; revoke → DENY; member-caller authority refuses typed
+     × R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row) 190ms
+     × R5-grammar — the carrier grammar refuses malformed carriers typed (R-B debt: MALFORMED rejection strings existed nowhere) 3ms
+     × R5-hash — golden content-hash pin: the carrier-bearing blueprint hashes BYTE-IDENTICALLY (canonicalizer drift trips this leg) 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+TeamContractError: instanceId must match inst-<1..32 lowercase alphanumerics>, got "inst-r5-bmember"
+ ❯ teamContractError ../contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ parseInstanceId ../contracts/src/ids/instance-id.ts:58:11
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:1982:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-grammar — the carrier grammar refuses malformed carriers typed (R-B debt: MALFORMED rejection strings existed nowhere)
+TypeError: baseLines.map is not a function
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:2067:33
+    2065|     }
+    2066|     // (a) an effect OUTSIDE the closed ladder vocabulary
+    2067|     const badEffect = baseLines.map((line) => line.replace('maximumEff…
+       |                                 ^
+    2068|     expect(() => parseBlueprint(badEffect)).toThrowError(/permissionMu…
+    2069|     // (b) an unknown rule field (closed field set)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-hash — golden content-hash pin: the carrier-bearing blueprint hashes BYTE-IDENTICALLY (canonicalizer drift trips this leg)
+AssertionError: expected 'sha256:f0148ab83ec03c4dcb3da4b9357b26…' to be 'sha256:e1786b1077a315af28a25d07923717…' // Object.is equality
+
+Expected: "sha256:e1786b1077a315af28a25d0792371729069f7224482236d269162d8b0456b559"
+Received: "sha256:f0148ab83ec03c4dcb3da4b9357b260ea446067fb335c56153b35b815c897bd6"
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:2094:31
+    2092|     // this builder emits. Any drift in the blueprint canonicalization
+    2093|     // (field ordering, carrier serialization, hashing) changes it.
+    2094|     expect(first.contentHash).toBe('sha256:e1786b1077a315af28a25d07923…
+       |                               ^
+    2095|   })
+    2096| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 17 skipped (20)
+   Start at  00:15:40
+   Duration  1.41s (transform 969ms, setup 0ms, import 1.12s, tests 200ms, environment 0ms)
+

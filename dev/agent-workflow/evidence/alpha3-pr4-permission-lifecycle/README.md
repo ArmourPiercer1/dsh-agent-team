@@ -299,7 +299,17 @@ files use the `rc=N` convention.
   `A7` (mid-await workspace drift → document discarded, never cached), `A8` (cache keyed by the
   FULL tuple; rebind rebuilds), `R4-anchor` (member-basis key COMMITS, foreign-basis key
   refuses — the round-3 inversion).
-- **BLOCK-4 DERIVE SWALLOWING DENY/ASK** — derivation DELETED (absence ≠ read failure: absent
+  **[SUPERSEDED PARTIALLY 2026-10-02 (ROUND 5): the leader-ceiling facts clause is GONE (FIX-1); the authority cache was
+  REMOVED outright (FIX-4 — a constant `providerVersion` is not a version; every read
+  RE-CANONICALIZES through the CURRENT provider/cwd), so `A8` is INVERTED to a
+  no-cross-call-cache pin (rebind-rebuild half kept); and the memberWorkspace FALLBACK now
+  reads the DURABLE TeamSession default, never the acting boot row (FIX-3) — pinned by
+  `R5-ws` (NON-BOOT Team B, leader position + member without a workspace row).]**
+- **BLOCK-4 DERIVE SWALLOWING DENY/ASK** — **[SUPERSEDED PARTIALLY 2026-10-02 (ROUND 5): the SECOND gate this bullet adds
+  on top (`authorityCeiling` = the leader's effective answer capping every risen cell) was
+  REMOVED — ADR §6 carries no second policy condition; see ROUND4-FIX-DESIGN-NOTE.md supersede
+  marker incl. the mislabeled `expansion-region-uncovered` refusal finding. The DERIVATION
+  REMOVAL below STANDS.]**- **BLOCK-4 DERIVE SWALLOWING DENY/ASK** — derivation DELETED (absence ≠ read failure: absent
   carrier = legal typed zero authority, NO hard-fail of unrelated reads — `A4`, `R4-absent`:
   tightening commits while the same static-lane grant that round 3 DERIVED to legal now
   refuses); risen effects additionally checked against the leader's EFFECTIVE answer. GREEN:
@@ -329,10 +339,14 @@ files use the `rc=N` convention.
 | R-B | exec code identity | FIXED round 4: fingerprint verbatim end-to-end, `A3` + `R4-exec` |
 | X1 | exec-reachability split (carrier needed for exec authority; `any` may NEVER derive exec authority) | FIXED round 4 exactly along the split: carrier-fingerprint path added, `any`-derivation stays forbidden; dual gate + overlay exec-shape rules untouched (decision plane untouched — no diff there) |
 | X1 | demos: deny-exception + ask-ceiling must both pin | `B1`/`B2` verbatim + `R4-derive`/`R4-ceiling` at entry |
+| X1 | (round-5 note 2026-10-02) the ceiling DEMOS above were retargeted with the gate's removal: `B1`/`B2` now pin the ENVELOPE'S OWN ladder algebra (carrier `maximumEffect`), `R4-derive` → `R5-derive` (carrier-covered grant COMMITS despite leader deny; no self-widening), `R4-ceiling` KEPT (carrier ladder math — name collision with the deleted gate, deliberate). X1's EXEC truths (dual gate, no `any` derivation) remain untouched. |
 | X2 | decision-plane-per-team refinement (live glue CORRECT today; mutation-authority plane was the defect; no verdict cache exists) | respected: glue untouched; isolation pinned at the mutation plane (`A1`); **no production wire caller of `grantInstance` at this commit** — the root `permissionPlane` surface + these entry tests are what make the isolation real (stated per X2, no live-RPC claim) |
 | R-C | B-1/A-1/A-2 ledger errors | FIXED this round — see "Ledger corrections (round 4)" below |
 
 ### Round-4 battery (real exits, this worktree, clean scratch; raws under `round4/`)
+> **[SUPERSEDED PARTIALLY 2026-10-02 (ROUND 5): every count below was superseded by the round-5 battery (`round5/`) —
+  two tools (13 → 15), one remote method (29 → 30), five retargeted/added spec legs and five
+  added entry legs. The rows stay as the round-4 record.]**
 
 | # | command (cwd) | exit | recorded result (QUOTED from the raw) | log |
 | --- | --- | --- | --- | --- |
@@ -401,3 +415,175 @@ legs retained, the relative-divergence coverage ADDED alongside, per parent ruli
   revalidation), and an unchanged effective state is not an expansion.
 - X1's standing exec truths preserved verbatim (dual gate; overlay exec shapes; no `any`
   derivation) — `CONSOLIDATED-FIX-DESIGN-NOTE.md` §:64 unmet-line now CLOSED by the carrier.
+
+
+---
+
+## Round 5 — the parent's FINAL batch: the second gate out, the REAL entries in (sole writer, fresh)
+
+Date: 2026-10-02. Tree base (round-4 HEAD) `137532f4…`, parent of that `3d432261…`.
+Input: the parent's round-5 directive (implement NOW, do not park on reviewers) +
+three independent reviewer reports over the shipped round-4 HEAD (R-A design/law,
+R-B line-level, R-C entry/production — archived, condensed + attributed, in
+`round5/REVIEWER-REPORTS-ROUND5-ARCHIVE.md`, including the GAP-numbering map and
+the note that the forwarded originals were not committed at receipt).
+
+### What landed (round 5, non-dist — 27 files)
+
+- **FIX-1 — the SECOND policy gate is GONE** (ADR §6 carries exactly ONE policy
+  condition: the explicit carrier over the TARGET's effective before/after).
+  `authorityCeiling` deleted from the kernel input + risen branch
+  (`governance/permission-mutation.ts`), the service fold (`governance/service.ts`),
+  the `leaderAuthorityFacts` type member (`governance/types.ts`), the plane reader
+  and the host injection. KEPT per rulings: real actor identity, the PR3 legacy
+  operator explicit-capability admission (operator mutations intentionally skip
+  the LEADER authorize gate — pinned since PR3, now WIRE-REACHABLE via FIX-2),
+  the single carrier, the target effective before/after check (kernel, byte-stable).
+  Writer-discovered while removing it: the round-4 ceiling refusals were
+  **MISLABELED** — the aggregate coverage loop threw the wrapped
+  `expansion-region-uncovered` problem while the documented
+  `expansion-exceeds-authority-ceiling` label was UNREACHABLE in that path
+  (cited in the ROUND4-FIX-DESIGN-NOTE.md supersede markers).
+- **FIX-2 — REAL production entries, both paths** (no future-listing):
+  (a) TOOLS: `team_grant_permission` + `team_revoke_permission` on the real
+  `ToolSpec` surface (`tools/src/tools.ts`; registration AFTER the archive tool —
+  existing selection indices untouched). Leader identity is taken SERVER-SIDE
+  from the session identity (`resolveToolCaller`), never from arguments; member
+  callers are refused typed (`TEAM_TOOL_PERMISSION_NOT_LEADER`); malformed rules
+  refused by a CLOSED rule grammar (1..32 rules, `exact|subtree|fingerprint`,
+  `allow|ask|deny`); non-fingerprint path values are canonicalized INSIDE the
+  wiring at the TARGET member's basis (`root.ts` → `options.permission.canonicalizeFile`,
+  member row workspace else DURABLE TeamSession default; unwired/no-workspace →
+  typed refusal) — client-supplied keys are never authorization input. Mutation
+  identity = the tool's request token (`perm-<verb>-<token>` = durable dedupe).
+  (b) RPC: new REMOTE method `override.mutatePermission` (v7-only — the closed
+  availability chain v1–v6 excludes it, typed `method-version-unsupported` below
+  7; OVERRIDE category; catalog 29 → 30). The strict closed param schema
+  (`remote/src/contracts/params.ts`) refuses unknown fields — a client smuggled
+  `authority` field is DEAD: the handler derives the principal server-side
+  (`principalDerivation`) and maps human → `{kind:'operator'}` through the SAME
+  `authorityOf` the override lane uses, then routes to `options.governance.
+  mutatePermission` (`s6-remote.ts` port + router).
+- **FIX-3 — CWD source-of-truth**: `host.ts` memberWorkspace fallback now reads
+  the DURABLE `teamSessions.get(teamSessionId)?.defaultWorkspace` — for the
+  no-member-workspace case AND the leader position (no member row at all). The
+  ACTING boot row's `resolvedRowConfig.defaultWorkspace` is never a cross-team
+  fallback; no durable row → `undefined` (UNKNOWN → typed refusal).
+- **FIX-4 — NO unprovable-version authority cache**: the plane's cache Map +
+  bindingKey are DELETED (a constant `providerVersion` is not a version —
+  symlink re-point staleness; the old key omitted `templateId`; nothing evicted).
+  Every read RE-CANONICALIZES inside the serialized outer layer through the
+  CURRENT provider/cwd; the post-read identity revalidation (drift → discard +
+  abstain) stays; faults still never cache; `healthy()` now derives from
+  per-target READ RESULTS (R-A minor) and a warm-up fault prints a LOUD
+  `console.error` (`R4-recover` asserts the line). `refresh()`'s rebind→rebuild
+  half survives; the A8 cache-tuple pin is INVERTED into a no-cross-call-cache
+  pin (a stable binding MUST show fresh provider reads through).
+- **R-B folded**: carrier NEGATIVE-GRAMMAR legs (closed ladder vocabulary /
+  closed field set / matcher-kind closure — first legs of this class anywhere in
+  the repo) + the GOLDEN content-hash pin (`sha256:f0148ab8…c897bd6`) guarding
+  canonicalizer drift.
+- **Closed-set growth (precedent: C1, archive-member)**: team tools 13 → **15**
+  (vocab + count pins retargeted in `d1-member-base-tools`,
+  `t12a-team-tools-registration`, `tcm-d4-root-context`, `t4a-capability-wiring`,
+  `p8s5a-production-assembly` T1.1, `c1-list-pending-control`,
+  `archive-member-tool` A1, `p6t6-bypass-scan`); remote methods 29 → **30**
+  (`tcm-m1`, `d1-remote-v3`, `f9-remote-v4`, runtime `p8s7r4` S4;
+  `REMOTE_V7_ONLY_METHODS` exported from the package index). The external
+  skill-catalog text still says "thirteen" — that is NOT this repo's frozen-doc
+  set (`frozen thirteen` = 0 occurrences there, re-checked round 4); recorded,
+  not chased.
+
+### Tests added / retargeted (RED raws before GREEN)
+
+- `a3p4-r4-authority-binding.test.ts` (14 → **13**): B1/B2 retargeted to the
+  ruled envelope algebra (carrier-covered subtree grant COMMITS; envelope
+  `maximumEffect` ladder math intact); B3 removed with the gate; A9 REPLACED by
+  the leader-position staticLayers pin (workspace = durable team default;
+  ghost team → `undefined`); A8 INVERTED (fresh reads through a stable binding);
+  B4/B5 kept verbatim (verified ceiling-FREE inputs — R-C's B5 suspicion was
+  wrong at line level).
+- `a3p4-pr4-production-entry-regression.test.ts` (15 → **20**): `R4-derive` →
+  `R5-derive` (THE required positive: carrier-covered member grant COMMITS
+  while the LEADER's own decide for the same key stays DENY — no self-widening);
+  `R4-recover` + the LOGD warm-up-fault assertion + the exact during-fault wire
+  code pinned (`PERMISSION_ENVELOPE_EXPANSION_DENIED` — during a fault BOTH
+  reads abstain and the kernel aggregates envelope-zero FIRST; the pure
+  facts-abstention CONTEXT route stays pinned at
+  `a3p3-permission-mutation-authority.test.ts:454`); NEW `R5-tool`, `R5-rpc`
+  (grant→durable overlay→NEXT pre-execute ALLOW→revoke→DENY through the REAL
+  surfaces incl. member-caller refusal, closed-schema refusal, dedupe replay,
+  v6 typed rejection, operator human mapping), `R5-ws` (NON-BOOT Team B over
+  ONE host row: B member WITHOUT a workspace row + B LEADER commit at B's
+  durable default; the row-A basis REFUSES typed; Team A stays correct
+  concurrently), `R5-grammar`, `R5-hash`.
+- RED evidence (round-4 tree, the NEW/rewritten legs first):
+  `round5/r5-redprobe-rewritten-legs.log` — `Tests 3 failed | 25 passed (28)`
+  (exactly the inverted legs: A8, the derive inversion, the recover log
+  assertion — the round-4 tree cannot satisfy the round-5 rulings).
+  `round5/r5-entries-iter1.log` — the FIRST run of R5-tool/R5-rpc refused
+  typed: the writer had invented the kind token `revoke_instance`; the kernel's
+  closed set (`permission-mutation.ts:394`: `grant_instance |
+  update_permission | revoke_permission`) caught it — corrected everywhere.
+
+### Round-5 battery (real exits, this worktree, clean scratch; raws under `round5/`)
+
+| # | command (cwd) | exit | recorded result (QUOTED from the raw) | log |
+| --- | --- | --- | --- | --- |
+| 1 | RED probe of the rewritten legs on the round-4 tree (`packages/runtime`) | 1 | `Tests 3 failed \| 25 passed (28)` | `r5-redprobe-rewritten-legs.log` |
+| 2 | entry file, GREEN (whole file incl. R5) | 0 | `Tests 20 passed (20)` | `r5-green-entry-final.log` |
+| 3 | `test/a3p4-r4-authority-binding.test.ts` | 0 | `Tests 13 passed (13)` | `r5-spec1-rerun.log` |
+| 4 | PR4 family (plane 7 + e2e 26 + spec1 13 + entry 20) + routing file separately | 0 / 0 | `Tests 66 passed (66)` + `Tests 13 passed (13)` → **79** (round 4 was 75: entry +5, spec1 −1; the runtime-suite delta is the same +4) | `r5-family-green.log`, `r5-family-routing.log` |
+| 5 | FULL remote suite | 0 | `Tests 220 passed (220)` | `r5-remote-suite-r3.log` (iter logs `-suite.log`, `-r2` kept: the 29→30 + v7-import iterations, per-log failsets, no blending) |
+| 6 | FULL tools suite | 1 | `Tests 1 failed \| 110 passed (111)` — the ONE is `p6t6-actions` "worker -> leader delivered direct", PROVEN pre-existing at the shipped HEAD: the leg fails BYTE-EQUAL against HEAD's versions of every file this diff touches (`Tests 1 failed \| 13 skipped (14)`, same `session-root-p6t1` assertion); the HEAD-file run restored all files from backup immediately | `r5-tools-suite-r3.log`, `r5-p6t6-head-probe.log` |
+| 7 | FULL runtime suite, run 1 (concurrent with #5/#6) | 1 | `Tests 9 failed \| 3226 passed (3235)` — baseline 8 + `team-session-activation` A15 (absolute-deadline TIMING leg; passes `16/16` ISOLATED) = the recorded load-flake class | `r5-runtime-suite-r2.log` |
+| 8 | FULL runtime suite, run 2 (SOLO, final tree) | 1 | `Test Files 6 failed \| 296 passed (302)`, `Tests 8 failed \| 3227 passed (3235)`; failset vs `round4/r4-battery-failset.txt` = **byte-identical (diff EMPTY)** | `r5-runtime-suite-r3.log`, `r5-runtime-failset-r3.txt`, `r5-failset-diff-vs-r4.txt` |
+| 9 | `npx vitest run test/p4t6-session-event-scan.test.ts` (`packages/testkit`) | 0 | `Tests 10 passed (10)` (no new test FILES this round — the count pin stands) | `r5-p4t6-scan.log` |
+| 10 | FULL domain suite (NOT covered by the runtime battery — recorded for completeness) | 1 | `Tests 10 failed \| 482 passed (492)`: `t1-capability-schema` ×9 (pre-existing per code identity — zero changed files under `packages/domain\|storage\|contracts` in this diff) + `t2-blueprint-hash` ×1 ("projects absent optional singles as explicit null" — a projection test my diff cannot reach; the round-4 note's "t2 green" was itself a code-identity claim that was NEVER RUN; honest correction: t2 is RED in the domain suite on the shipped tree class too) | `r5-domain-suite.log` |
+| 11 | `npx tsc --noEmit -p .` (`packages/runtime`) | 0 | clean | `r5-tsc.log` |
+| 12 | `pnpm run build` (repo root) | 0 | all packages Done; dist staged IN THE SAME commit | `r5-build.log` |
+| 13 | `node scripts/check-artifacts-committed.mjs` (pre-commit, dist staged) | 0 | `OK: 1424 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))` — re-run post-commit in `r5-artifacts-COMMITTED.log` | `r5-artifacts-PRESTAGE.log`, `r5-artifacts-COMMITTED.log` |
+| 14 | staged-diff secret scan (same pattern as round-4 row 12) | 0 (24 matches) | stated exact: ALL 24 are `secret`-family (the carrier deny-exception fixtures `secret.txt`/`secretPath`/`/work/secret` + this ledger's prose); the exactly ONE line matching a HIGH-confidence pattern (`api[_-]?key`/`-----BEGIN`) is THIS row's OWN scan-pattern line — a self-match; zero external credentials (`ghp_`/`AKIA`: 0) | `r5-secret-scan.log` |
+
+### Ledger corrections (round 5 — mandatory)
+
+1. **A-1/A-2 transposition**: the round-4 "Ledger corrections" rows cited R-C's
+   A-1/A-2 swapped (A-1 = the per-file-sections citation → retained raw
+   `a3p4-r3-green-existing-p-e2e.log`; A-2 = the reconstructed `941/934`
+   scanner line with NO retained raw). Both inline tags corrected in place; the
+   corrections themselves stand.
+2. **ROUND4-FIX-DESIGN-NOTE.md line 4**: "CONFIRMED-GO" was overstated framing
+   for the parent's round-4 directive (implement while reviews circulate);
+   annotated — read as GO-to-implement, never design-beyond-review.
+3. **GAP numbering**: round-4 README's "GAP3" (refresh semantics) vs the
+   round-5 reports' GAP2(hard)/GAP3(minor) — mapped in
+   `round5/REVIEWER-REPORTS-ROUND5-ARCHIVE.md`; no silent renumbering.
+4. **Round-4 supersede markers** added in place: README BLOCK-3/BLOCK-4 bullets,
+   the X1 ledger row, the round-4 battery header, the ROUND3-VERIFIED addendum,
+   and ROUND4-FIX-DESIGN-NOTE.md §2/§3/§5 + header. All dated 2026-10-02, all
+   keeping the round-4 text visible AS RECORDED.
+5. **Family math re-pinned**: 75 → **79** (per-file: plane 7, routing 13, e2e
+   26, spec1 13, entry 20) — matches the full-suite +4 test delta exactly.
+
+### Honest non-closures / recorded edges (round 5)
+
+- The entry worlds' CALLER-IDENTITY seam is the stub glue's `resolveCaller`
+  (overridden live to Leader/member per leg): the seam's own root-binding is
+  pinned in the tools package suite; the R5 legs pin everything downstream of
+  it. Stated, not hidden.
+- Glue ambiguity (recorded, NOT code): agent-bindings boot-member `meta.cwd`
+  equals `config.defaultWorkspace` in boot worlds — a boot-only world cannot
+  distinguish row-vs-team default by construction; the FIX-3 pin therefore uses
+  a NON-boot Team B where the two ARE distinct (`R5-ws`).
+- `override.mutatePermission` v<7 pin covers the typed rejection at the
+  dispatcher gate; the v7 param-schema negatives pinned: unknown field, plus
+  the closed kind/matcher/effect vocabularies. Deep fuzzing not added (budget).
+- Operator (human) mutations skip the LEADER authorize gate BY DESIGN (PR3
+  legacy explicit-capability admission, pinned `a3p3` plane legs since round 1);
+  the new wire merely REACHES that pre-existing semantics.
+- The `update_permission` kind exists in the kernel closed set but is exposed
+  by NEITHER new entry this round (tool = grant/revoke; RPC exposes grant +
+  revoke like the tool pair). Not future-listed as shipped surface.
+- Pre-existing reds recorded this round with proofs: `p6t6-actions` messaging
+  leg (HEAD-probe raw), domain `t1`×9 + `t2`×1 (code identity), the A15
+  timing-leg load flake (isolated 16/16 vs concurrent fail).

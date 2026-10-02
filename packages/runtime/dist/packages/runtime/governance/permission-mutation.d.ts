@@ -382,26 +382,6 @@ export interface LeaderMutationAuthorizationInput {
      *  conflated. */
     readonly staticFacts: PermissionStaticLayerFacts | undefined;
     readonly subtreeContains?: SubtreeContains;
-    /**
-     * PR4 round 4 (parent-binding + external review X1): the ACTING LEADER's
-     * OWN effective authority in the target's key space — the leader lane's
-     * overlay rules + the leader's static template facts, both canonicalized
-     * through the SAME provider (the plane's per-(team, leader) facts). When
-     * present, every cell whose effect the mutation RAISES must also be one
-     * the leader itself can answer at `>= risen` EFFECTIVELY (deny/ask
-     * exceptions SUBTRACTED — `allow subtree /work` + `deny exact /work/secret`
-     * means the leader has NO allow authority on /work/secret, so it cannot
-     * grant that to a member even if a broad envelope rule would cover it).
-     * This is the §6 "expansion only within the grantor's own authority" floor
-     * that a lane-UNION envelope derivation over-granted past. `undefined`
-     * (a hand-authored test/legacy lane that injects no leader facts) keeps
-     * the pre-round-4 envelope-only judgement byte-for-byte — it grants the
-     * caller no ceiling, it does not remove one the envelope already caps.
-     */
-    readonly authorityCeiling?: {
-        readonly overlayRules: readonly PermissionOverlayRule[];
-        readonly staticFacts: PermissionStaticLayerFacts | undefined;
-    };
 }
 /**
  * Authorize (or refuse, typed, zero write) one LEADER mutation by comparing
@@ -428,14 +408,11 @@ export interface LeaderMutationAuthorizationInput {
  * EFFECT_CONTEXT_UNAVAILABLE — an unknown prior is never labeled expansion
  * OR tightening.
  *
- * PR4 round 4 (`authorityCeiling`): when the caller injects the acting
- * leader's OWN overlay rules + static facts, EVERY risen cell additionally
- * needs the leader's EFFECTIVE answer in that cell at rank >= the risen
- * effect — the grantor cannot promote a member past what it itself holds
- * (exceptions subtracted, never folded into a union). Unknown leader facts
- * → EFFECT_CONTEXT_UNAVAILABLE; below-risen → EXPANSION_OUTSIDE_ENVELOPE
- * (problem `expansion-exceeds-authority-ceiling`). Absent input = the
- * pre-round-4 envelope-only judgement, byte-for-byte.
+ * ROUND 5 (parent final review): the round-4 `authorityCeiling` parameter is
+ * REMOVED — comparing risen cells against the grantor's own effective answer
+ * was a SECOND policy condition ADR §6 does not carry. The envelope-only
+ * algebra below is the UNCONDITIONAL whole decision (coverage + target
+ * effective before/after), byte-equal to the pre-round-4 envelope judgement.
  */
 export declare function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void;
 /** The plan of one mutation against the current authority snapshot.

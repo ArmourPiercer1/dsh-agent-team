@@ -1,0 +1,152 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/remote
+
+ ✓ test/c6-remote-v6.test.ts (26 tests) 8ms
+ ❯ test/tcm-m1-remote-v2.test.ts (26 tests | 1 failed) 9ms
+     ✓ v1 team.create + initialWork → the v1 port receives the fourth argument verbatim 1ms
+     ✓ v1 team.create keeps the frozen wire shape { path, durable, bind } with v1 provenance 0ms
+     ✓ v1 team.create + workspace → malformed-params unknown-field (v2 field rejected on v1) 0ms
+     ✓ v1 team.create + createRequestToken → malformed-params unknown-field 0ms
+     ✓ v2 create → success, served by the teamCreateWorkspace port (never the v1 port) 0ms
+     ✓ v2 create response reuses the v1 shape { path, durable, bind } and echoes version 2 0ms
+     ✓ v2 workspace is forwarded to the port verbatim (echoed in bind) 0ms
+     ✓ v2 blueprintRevision is forwarded to the port 0ms
+     ✓ v2 + initialWork → malformed-params unknown-field (create-only v2) 0ms
+     ✓ v2 unknown field → malformed-params unknown-field 0ms
+     ✓ v2 control-char workspace → malformed-params (invalid-value) 0ms
+     ✓ v2 oversized workspace (> 4096) → malformed-params (invalid-value) 0ms
+     ✓ v2 malformed rootSessionId → the mirrored frozen P3 code INVALID_ROOT_SESSION_ID 0ms
+     ✓ legal v2 admit → port args forwarded verbatim, data echoed, token in provenance, version 2 0ms
+     ✓ empty prompt → malformed-params (invalid-value, field prompt) 0ms
+     ✓ oversized prompt (> 200000) → malformed-params (invalid-value, field prompt) 0ms
+     ✓ whitespace requestToken → malformed-params (invalid-value, field requestToken) 0ms
+     ✓ malformed rootSessionId → INVALID_ROOT_SESSION_ID (mirrored frozen P3 code) 0ms
+     ✓ unknown field → malformed-params unknown-field 0ms
+     ✓ a v1 request to the v2-only method → method-version-unsupported (typed after envelope parse) 0ms
+     ✓ every TCM v2 code passes through with code + message + cause identity (v2 provenance echo) 1ms
+     ✓ an out-of-vocabulary backing code (ENOENT) → internal-error, no leak 0ms
+     ✓ the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 + C1 v5 + team-view-sync v6 + pre-alpha3 W1 fix-A v7 bumps extend the supported set (v7 adds NO method) 0ms
+     × the closed catalog is the versioned union: 30 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 1 v7-only) 3ms
+     ✓ the closed field sets are frozen per version 0ms
+     ✓ the availability matrix: v2-only set is closed; everything else is v1-legal; the v4-only method is v4-only (F9) 0ms
+ ❯ test/f9-remote-v4.test.ts (31 tests | 1 failed) 12ms
+     × the catalog is the 29-method versioned union; the v4-only set is still exactly team.resolveControl (the C1 v5 bump adds team.prepareOrdinaryOpen; the team-view-sync v6 bump adds team.getReadState) 5ms
+     ✓ the frozen v1 baseline constant is still 1; v4 is a distinct stamp (U1: one bump) 0ms
+     ✓ the closed v4 field set and decision set are frozen (U3: NO caller/role fields) 0ms
+     ✓ the v4-only method lives in the team category (U2: the existing team category) 0ms
+     ✓ the availability matrix: v1/v2/v3 reject the v4-only method; v4 admits the full surface 0ms
+     ✓ a v1 request to team.resolveControl → method-version-unsupported (typed after envelope parse) 0ms
+     ✓ a v2 request to team.resolveControl → method-version-unsupported 0ms
+     ✓ a v3 request to team.resolveControl → method-version-unsupported 0ms
+     ✓ a client-provided caller field is an unknown-field (U3: the wire carries no identity) 0ms
+     ✓ a client-provided role field is an unknown-field 0ms
+     ✓ a client-provided actor field is an unknown-field 0ms
+     ✓ missing teamSessionId / requestId / decision → missing-required 0ms
+     ✓ an out-of-closed-set decision → invalid-value; the closed set is exactly allow | deny (U3) 0ms
+     ✓ stale-denied (a durable-plane decision value) is NOT a wire decision (the wire set is allow | deny) 0ms
+     ✓ an empty / whitespace requestId → invalid-value (the opaque-token rule) 0ms
+     ✓ a malformed teamSessionId → the frozen P3 INVALID_ROOT_SESSION_ID (deviation D-1) 0ms
+     ✓ an empty / null note → invalid-value (the note is 1..2048 chars, any content) 0ms
+     ✓ a 2049-char note → invalid-value; a 2048-char note succeeds (the bound) 0ms
+     ✓ a non-record / null params block → malformed-request at the envelope boundary 0ms
+     ✓ a v4 allow request succeeds: data is { decision: <durable record> }, provenance echoes 4 0ms
+     ✓ a v4 deny request WITHOUT note: the note key stays absent (optional fields do not materialize) 0ms
+     ✓ the port is called exactly once with the frozen params (read the fake log) 0ms
+     ✓ the params are forwarded verbatim (the echo proves teamSessionId/requestId/decision/note) 0ms
+     ✓ every F9-emitted CONTROL_* wire code + the unavailability code passes through with code + message 1ms
+     ✓ an out-of-vocabulary code (ENOENT) degrades to internal-error with no leak 0ms
+     ✓ a decision scope carrying operationFingerprint passes through verbatim (D-4 + A4 validation) 0ms
+     ✓ a present-but-empty scope fingerprint fails closed at the wire boundary (port-contract) 0ms
+     ✓ a present-but-non-string scope fingerprint fails closed at the wire boundary (port-contract) 0ms
+     ✓ a v1 team.getProjection still round-trips on the v1 envelope (provenance 1) 0ms
+     ✓ a v1 request to the v2-only team.admitInitialWork is still rejected (the v1-v3 matrix holds) 0ms
+     ✓ a v3 team.listRoots still round-trips on the v3 envelope (provenance 3) 0ms
+ ❯ test/d1-remote-v3.test.ts (24 tests | 1 failed) 14ms
+     × the catalog is the 29-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only) 7ms
+     ✓ the v1 baseline constant is still 1 and the supported set is [1, 2, 3, 4, 5, 6, 7] (the team-view-sync-complete v6 bump + the pre-alpha3 W1 fix-A v7 bump, which adds NO method) 0ms
+     ✓ the closed v3-only set is exactly the two D1 methods; the closed v4-only set is exactly team.resolveControl; the closed v5-only set is exactly team.prepareOrdinaryOpen; the closed v6-only set is exactly team.getReadState 0ms
+     ✓ the availability matrix: v3-only methods are v3-only; v1/v2 methods stay available in v3; the v4-only method is v4-only; the v5-only method is v5-only 0ms
+     ✓ the closed param field sets are frozen (listRoots: none; ensureRootLive: teamSessionId) 0ms
+     ✓ a v3 request with the empty closed params succeeds: data is { roots: [...] } from the port 0ms
+     ✓ the success provenance echoes contractVersion 3 (the request version) 1ms
+     ✓ a non-empty params object is malformed-params unknown-field (the closed set is EMPTY) 0ms
+     ✓ a non-record params block is rejected at the envelope boundary (malformed-request) 0ms
+     ✓ a v3 request forwards teamSessionId verbatim to the port and echoes the closed success shape 0ms
+     ✓ the success provenance echoes contractVersion 3 (the request version) 0ms
+     ✓ an unknown field is malformed-params unknown-field (closed set: teamSessionId only) 0ms
+     ✓ a missing teamSessionId is malformed-params missing-required 0ms
+     ✓ a malformed teamSessionId → the mirrored frozen P3 code INVALID_ROOT_SESSION_ID (field teamSessionId) 0ms
+     ✓ a port success value violating the closed shape (mode !== team) is internal-error (port contract) 0ms
+     ✓ a port root row violating the closed shape (missing rootSessionId) is internal-error (port contract) 0ms
+     ✓ a v1 request to team.listRoots → method-version-unsupported (typed after the envelope parse) 0ms
+     ✓ a v2 request to team.listRoots → method-version-unsupported 0ms
+     ✓ a v1 request to team.ensureRootLive → method-version-unsupported 0ms
+     ✓ a v2 request to team.ensureRootLive → method-version-unsupported 0ms
+     ✓ every D1-emitted + D2-reserved v3 wire code + the three index integrity codes passes through with code + message 1ms
+     ✓ an out-of-vocabulary backing code (ENOENT) degrades to internal-error with no leak 0ms
+     ✓ a v1 team.getProjection still round-trips on the v1 envelope 0ms
+     ✓ a v1 request to the v2-only team.admitInitialWork still → method-version-unsupported 0ms
+ ✓ test/p8t4-sync.test.ts (11 tests) 6ms
+ ✓ test/p8t3-round-trip.test.ts (14 tests) 6ms
+ ✓ test/p8t4-engine.test.ts (23 tests) 8ms
+ ✓ test/p8t3-admission.test.ts (6 tests) 4ms
+ ✓ test/c1-remote-v5.test.ts (15 tests) 6ms
+ ✓ test/p8t3-version.test.ts (19 tests) 5ms
+ ✓ test/remote.test.ts (2 tests) 2ms
+ ✓ test/p8t3-invalid-ids.test.ts (9 tests) 4ms
+ ✓ test/p8t4-negative.test.ts (7 tests) 16ms
+ ✓ test/p8t3-negative.test.ts (7 tests) 32ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/d1-remote-v3.test.ts > D1 (remote contract v3): catalog facts > the catalog is the 29-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only)
+AssertionError: expected 30 to be 29 // Object.is equality
+
+- Expected
++ Received
+
+- 29
++ 30
+
+ ❯ test/d1-remote-v3.test.ts:251:40
+    249| describe('D1 (remote contract v3): catalog facts', () => {
+    250|   it('the catalog is the 29-method versioned union (23 v1 + 1 v2-only …
+    251|     expect(REMOTE_METHOD_NAMES.length).toBe(29)
+       |                                        ^
+    252|     expect(REMOTE_METHOD_NAMES.includes('team.listRoots')).toBe(true)
+    253|     expect(REMOTE_METHOD_NAMES.includes('team.ensureRootLive')).toBe(t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/f9-remote-v4.test.ts > F9 (remote contract v4): catalog facts > the catalog is the 29-method versioned union; the v4-only set is still exactly team.resolveControl (the C1 v5 bump adds team.prepareOrdinaryOpen; the team-view-sync v6 bump adds team.getReadState)
+AssertionError: expected 30 to be 29 // Object.is equality
+
+- Expected
++ Received
+
+- 29
++ 30
+
+ ❯ test/f9-remote-v4.test.ts:347:40
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/tcm-m1-remote-v2.test.ts > TCM M1: catalog facts (versioned union, closed) > the closed catalog is the versioned union: 30 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 1 v7-only)
+ReferenceError: REMOTE_V7_ONLY_METHODS is not defined
+ ❯ test/tcm-m1-remote-v2.test.ts:595:16
+    593|     // permission grant/revoke lane; unavailable (typed
+    594|     // method-version-unsupported) at every version below 7.
+    595|     expect([...REMOTE_V7_ONLY_METHODS].sort()).toEqual(['override.muta…
+       |                ^
+    596|     expect(isRemoteMethodAvailableInVersion('override.mutatePermission…
+    597|     expect(isRemoteMethodAvailableInVersion('override.mutatePermission…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  3 failed | 11 passed (14)
+      Tests  3 failed | 217 passed (220)
+   Start at  00:16:27
+   Duration  572ms (transform 646ms, setup 0ms, import 1.15s, tests 131ms, environment 1ms)
+

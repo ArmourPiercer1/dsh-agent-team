@@ -158,27 +158,6 @@ export interface GovernancePermissionLaneDeps {
      */
     readonly staticLayers?: (teamSessionId: string, memberInstanceId: string) => PermissionStaticLayerFacts | undefined | Promise<PermissionStaticLayerFacts | undefined>;
     /**
-     * PR4 round 4 (external review X1) — the ACTING LEADER's OWN static facts
-     * for one team (the leader position's template layer, canonicalized by the
-     * same addressed-team reader that serves members). Together with the
-     * leader lane's durable overlay (read by the service through the SAME
-     * overlay port), it forms the AUTHORITY CEILING checked against every
-     * risen cell: a leader cannot grant a member an effect the leader does not
-     * itself hold. ABSENT = the ceiling check stays inert (pre-round-4
-     * envelope-only judgement — test/legacy lanes that hand-author envelopes
-     * and inject no leader policy keep working byte-for-byte); a PRESENT
-     * reader returning `undefined` = UNKNOWN leader facts → risen cells whose
-     * grantor-side answer depends on them refuse EFFECT_CONTEXT_UNAVAILABLE
-     * (an unknown grantor is never assumed to hold the effect).
-     * @param teamSessionId - the team whose leader static facts are read.
-     * @param targetMemberInstanceId - the mutation's target member: the
-     *   leader's template rules are evaluated AS IF applied in the target's
-     *   canonical key space (the ONE space the rising cells live in — an
-     *   unknown-vs-mismatched grantor space can only make the ceiling
-     *   STRICTER, never looser: fail closed).
-     */
-    readonly leaderAuthorityFacts?: (teamSessionId: string, targetMemberInstanceId: string) => PermissionStaticLayerFacts | undefined | Promise<PermissionStaticLayerFacts | undefined>;
-    /**
      * The WHOLE-MATCHER containment predicate over two canonical identities
      * of the SAME backend namespace — the ONLY containment relation this lane
      * ever consults (region partition, subtree boundary nesting, envelope

@@ -197,6 +197,30 @@ export interface S6RemoteAdmissionRequest {
     readonly payload?: RemoteSafeRecord;
 }
 /** The `override.set` request (the structural mirror of the frozen shape). */
+/**
+ * PR4 ROUND 5 (FIX-2b) — `override.mutatePermission` request (v7-only): one
+ * grant/revoke into the durable permission overlay through the ONE
+ * governance mutation authority. NO client-supplied authority: it rides the
+ * host-derived ActionCaller (operator for humans, leader for the Leader
+ * lane); NO client-supplied canonical keys: exact/subtree rule values are
+ * raw paths canonicalized SERVER-SIDE at the TARGET member's effective
+ * workspace (the same doctrine as the team_grant_permission tool).
+ */
+export interface S6RemotePermissionMutateRequest {
+    readonly teamSessionId: string;
+    readonly memberInstanceId: string;
+    readonly kind: 'grant_instance' | 'revoke_permission';
+    readonly mutationId: string;
+    readonly reason?: string;
+    readonly rules: readonly {
+        readonly operationClass: string;
+        readonly matcher: {
+            readonly kind: 'exact' | 'subtree' | 'fingerprint';
+            readonly value: string;
+        };
+        readonly effect: 'allow' | 'ask' | 'deny';
+    }[];
+}
 export interface S6RemoteOverrideSetRequest {
     readonly teamSessionId: string;
     readonly capability: string;
@@ -473,6 +497,10 @@ export interface S6RemoteOverridePort {
     reset(request: S6RemoteOverrideResetRequest, caller: ActionCaller): Promise<{
         readonly removed: boolean;
     }>;
+    /** PR4 ROUND 5 (FIX-2b): the permission grant/revoke lane (v7-only
+     *  `override.mutatePermission`); authority from the host-derived caller,
+     *  file rules canonicalized server-side at the TARGET member basis. */
+    mutatePermission(request: S6RemotePermissionMutateRequest, caller: ActionCaller): Promise<RemoteSafeRecord>;
 }
 /** Port 9/12 — the TeamSession PolicyState over the mutation service (`policyState.*`). */
 export interface S6RemotePolicyStatePort {
@@ -741,6 +769,19 @@ export interface S6RemoteOptions {
      * reset delete) are gone.
      */
     readonly governance: GovernanceMutationService;
+    /**
+     * PR4 ROUND 5 (FIX-2b): the permission mutation lane behind
+     * `override.mutatePermission` — root wires it to the SAME governance
+     * service the Leader tool + the in-process entries use (ONE authority).
+     * Absent = the method refuses typed (zero write).
+     */
+    readonly permission?: {
+        readonly mutatePermission: (mutationArgs: Record<string, unknown>) => Promise<Record<string, unknown>>;
+    };
+    /** PR4 ROUND 5 (FIX-2b): the server-side fs canonicalizer (the same seam
+     *  the authority facts + the grant tool share). Absent = file rules
+     *  refuse typed; fingerprint rules still pass (identities). */
+    readonly permissionCanonicalize?: (path: string, cwd: string) => Promise<string>;
     /** The mutation store's transition rows (the durable PolicyState read). */
     readonly mutationTransitions: (teamSessionId: string) => readonly PolicyStateTransitionRecord[];
     /** The override record identity source (the durable `overrides` rows). */

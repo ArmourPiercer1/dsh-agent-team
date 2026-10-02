@@ -45,7 +45,7 @@ import {
 import { destroyP6T1World } from './p6t1-helpers.js'
 import { createP6T6World } from '../../tools/test/p6t6-helpers.js'
 
-/** The frozen thirteen-tool team vocabulary (the closed set — name drift fails; C1 adds team_list_pending_control; the archive-member round adds team_archive_member). */
+/** The closed team-tool vocabulary (name drift fails; C1 adds team_list_pending_control; the archive-member round adds team_archive_member; PR4 round 5 adds team_grant_permission + team_revoke_permission). */
 const EXPECTED_TOOL_NAMES = [
   'team_list_members',
   'team_list_templates',
@@ -60,6 +60,8 @@ const EXPECTED_TOOL_NAMES = [
   'team_resolve_control',
   'team_list_pending_control',
   'team_archive_member',
+  'team_grant_permission',
+  'team_revoke_permission',
 ]
 
 function names(ctx: AgentCtxDouble): string[] {
@@ -121,7 +123,7 @@ const rootToolsAfterCloseB = names(rootCtxB)
 await destroyP6T1World(p6t6.world)
 
 describe('D-2 the team tools registered on the leader (and member) agent ctx', () => {
-  it('D2-1 create phase: root + seeded member receive exactly the thirteen real team tools (same objects, stack order; C1 adds the pending-list tool; the archive-member round adds team_archive_member)', () => {
+  it('D2-1 create phase: root + seeded member receive exactly the fifteen real team tools (same objects, stack order; C1 adds the pending-list tool; the archive-member round adds team_archive_member; PR4 round 5 adds team_grant_permission + team_revoke_permission)', () => {
     // The real factory emits the frozen vocabulary (guards the stack input).
     expect(p6t6.tools.map((tool) => tool.name)).toEqual(EXPECTED_TOOL_NAMES)
     // The leader's ctx carries the full stack — the same def objects.
@@ -136,7 +138,7 @@ describe('D-2 the team tools registered on the leader (and member) agent ctx', (
     expect(worldA.records.creates.every((create) => create.setupProvided)).toBe(true)
   })
 
-  it('D2-2 resume phase: a cold-root restart re-registers the thirteen tools on the resumed leader', () => {
+  it('D2-2 resume phase: a cold-root restart re-registers the fifteen tools on the resumed leader', () => {
     expect(rootToolsAfterResume).toEqual(EXPECTED_TOOL_NAMES)
     // A restart resumes the root (never re-creates it) — with the setup.
     expect(worldB.records.creates.length).toBe(0)

@@ -62,6 +62,7 @@ import {
   REMOTE_V4_ONLY_METHODS,
   REMOTE_V5_ONLY_METHODS,
   REMOTE_V6_ONLY_METHODS,
+  REMOTE_V7_ONLY_METHODS,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   type RemoteErrorResult,
   type RemoteSafeRecord,
@@ -247,8 +248,8 @@ const RT = await (async () => {
 // ---------------------------------------------------------------------------
 
 describe('D1 (remote contract v3): catalog facts', () => {
-  it('the catalog is the 29-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(29)
+  it('the catalog is the 30-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 1 v7-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(30)
     expect(REMOTE_METHOD_NAMES.includes('team.listRoots')).toBe(true)
     expect(REMOTE_METHOD_NAMES.includes('team.ensureRootLive')).toBe(true)
     // F9: the v4-only method is in the union; the frozen v1 methods are
@@ -260,7 +261,7 @@ describe('D1 (remote contract v3): catalog facts', () => {
     // team-view-sync-complete (Phase 2): the v6-only method is in the
     // union
     expect(REMOTE_METHOD_NAMES.includes('team.getReadState')).toBe(true)
-    expect(REMOTE_METHOD_NAMES.length - REMOTE_V2_ONLY_METHODS.length - REMOTE_V3_ONLY_METHODS.length - REMOTE_V4_ONLY_METHODS.length - REMOTE_V5_ONLY_METHODS.length - REMOTE_V6_ONLY_METHODS.length).toBe(23)
+    expect(REMOTE_METHOD_NAMES.length - REMOTE_V2_ONLY_METHODS.length - REMOTE_V3_ONLY_METHODS.length - REMOTE_V4_ONLY_METHODS.length - REMOTE_V5_ONLY_METHODS.length - REMOTE_V6_ONLY_METHODS.length - REMOTE_V7_ONLY_METHODS.length).toBe(23)
   })
 
   it('the v1 baseline constant is still 1 and the supported set is [1, 2, 3, 4, 5, 6, 7] (the team-view-sync-complete v6 bump + the pre-alpha3 W1 fix-A v7 bump, which adds NO method)', () => {

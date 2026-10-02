@@ -91,6 +91,17 @@ export interface TeamToolDefinition {
  * flow); only unexpected errors throw (the host marks them tool errors).
  */
 export type TeamToolsResult = {
+    readonly status: 'permission-mutated';
+    readonly rootSessionId: string;
+    readonly targetInstanceId: string;
+    /** Which governance verb ran (grant_instance / revoke_instance). */
+    readonly verb: 'grant' | 'revoke';
+    /** Durable effect (the governance lane's dedupe-aware answer). */
+    readonly changed: boolean;
+    /** Governance lane code when the settled result carries one. */
+    readonly code?: string;
+    readonly reason?: string;
+} | {
     readonly status: 'executed';
     readonly action: string;
     readonly rootSessionId: string;
@@ -181,5 +192,25 @@ export interface TeamToolsOptions {
      * @throws when the session cannot be resolved to a team caller.
      */
     readonly resolveCaller: (sessionId: string) => Promise<ResolvedTeamToolCaller>;
+    /**
+     * pre-alpha3 PR4 ROUND 5 (FIX-2a) — the Leader's permission grant/revoke
+     * entries over the ONE governance mutation authority (the SAME service the
+     * human RPC lane reaches). ABSENT by default: the two permission tools
+     * then reject typed (`TEAM_TOOL_PERMISSION_UNWIRED`, zero write).
+     * SERVER-SIDE everything: the authority rides the caller identity the
+     * host resolved (Leader-gated), and file-rule PATHS canonicalize through
+     * `canonicalizeFile` at the TARGET member's durable effective workspace —
+     * a client-supplied key is never authorization input.
+     */
+    readonly permission?: {
+        /** Runs one closed permission mutation (grant_instance/revoke_instance)
+         *  through the governance service; the service's typed refusal THROWS a
+         *  PermissionMutationError-shaped error (`code`, `reason`). */
+        readonly mutatePermission: (mutationArgs: Record<string, unknown>) => Promise<Record<string, unknown>>;
+        /** Canonicalizes one file-rule path at the TARGET member's effective
+         *  workspace through the host's fs provider (throws on any fault — the
+         *  tool maps it to a typed rejection, never a raw-path authority). */
+        readonly canonicalizeFile: (targetInstanceId: string, path: string) => Promise<string>;
+    };
 }
 //# sourceMappingURL=types.d.ts.map

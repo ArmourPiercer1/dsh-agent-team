@@ -1,9 +1,29 @@
 # Alpha3 PR4 — ROUND 4 FIX-DESIGN NOTE (authority binding + explicit §6 carrier)
 
+> **[SUPERSEDED PARTIALLY — 2026-10-02 (ROUND 5)]** The parent's
+> final round-4 review (three reviewer reports R-A/R-B/R-C, all IN) removed
+> the `leaderAuthorityFacts`/`authorityCeiling` SECOND policy gate described
+> in §2 (last paragraph) and §3 (BLOCK-4) below — ADR §6 carries NO second
+> policy condition: the §6 expansion policy is EXACTLY the explicit
+> `permissionMutationEnvelope` carrier over the target member's effective
+> before/after. What the grantor itself can execute is the grantor's own
+> decision-plane question, never a gate on the grant. Ledger-honesty note:
+> the round-4 ceiling refusals additionally MISLABELED — they threw the
+> aggregate problem `expansion-region-uncovered` while the documented
+> `expansion-exceeds-authority-ceiling` label was UNREACHABLE in the
+> aggregate path. The round-4 record below stays visible AS RECORDED; the
+> round-5 chains live in `round5/` and the README round-5 section.
+
 Date: round 4 (tree base `3d432261a4941328e78ff1785c694fff65d70f3d`, parent `440ede51…`).
 Author: PR60 sole writer. Input: parent CONFIRMED-GO batch + the five reviewer
 reports (R-A, R-B, X1, X2, R-C). This note records the DESIGN DECISIONS; the
 battery raws live in `round4/`, the ledger in `README.md` (round-4 section).
+**[CORRECTED 2026-10-02 (ROUND 5): "CONFIRMED-GO" was overstated framing — the
+parent's round-4 batch directed implementation WHILE the reviews circulated;
+the round-5 reviews (three independent reviewers over the shipped round-4 HEAD)
+reopened two of this note's designs (the second policy gate and the authority
+cache, both removed in round 5). Read "CONFIRMED" as "GO to implement", never
+as "design beyond review".]**
 
 ## 1. The config carrier (`permissionMutationEnvelope`)
 
@@ -60,6 +80,10 @@ policy AT THE TARGET MEMBER'S BASIS for the same one-key-space reason: a
 deny exception inside an allow subtree must land on the exact key it
 subtracts. Cross-workspace interpretation mismatch can only make the ceiling
 STRICTER (fail-closed), never looser.
+**[SUPERSEDED 2026-10-02 by ROUND 5: this paragraph's second half — the ceiling itself — was REMOVED in
+round 5 (no second policy gate; carrier breadth over a leader deny is the
+content-hash-pinned blueprint AUTHOR's choice per §6). The addressed-basis
+doctrine of the surrounding sections stands.]**
 
 ## 3. Per-BLOCK closure map
 
@@ -105,6 +129,16 @@ STRICTER (fail-closed), never looser.
   `B1`/`B2` (X1's two demos verbatim), `R4-derive` (same shape through the
   real boot), `R4-absent` (absence = no expansion, tightening unaffected —
   NOT a hard fail).
+  **[SUPERSEDED 2026-10-02 by ROUND 5: the "additionally capped by the leader's EFFECTIVE answer"
+  mechanism and its `authorityCeiling` input are REMOVED (kernel, service
+  fold, host injection, plane reader — all deleted; the mislabeled problem
+  label recorded above). The derive-REMOVAL (carrier-only envelope) and
+  `R4-absent` STAND. Test pin changes: B1/B2 retargeted to the ruled
+  positive (carrier-subtree-covering grants COMMIT), B3/A9 removed,
+  `R4-derive` INVERTED into `R5-derive` (carrier-covering member grant
+  COMMITS while the leader's own answer stays DENY — no self-widening),
+  B4/B5 retained (pure-envelope algebra), `R4-ceiling` retained (the
+  envelope's OWN ladder math — name collision with the removed gate only).]**
 - **GAP3 (refresh-failure semantics, recorded).** Boot refresh is a WARMUP:
   failure = LOUD log + abstention + typed expansion refusal + BOOT CONTINUES;
   faults are NEVER cached, so the next addressed read REBUILDS (bounded
@@ -136,6 +170,18 @@ STRICTER (fail-closed), never looser.
   added the EXPLICIT carrier path only).
 
 ## 5. Tests added this round
+
+> **[SUPERSEDED PARTIALLY 2026-10-02 (ROUND 5)]** The counts below are the
+> round-4 record (spec 14, family 75). Round 5 retargets them: the
+> `authorityCeiling` kernel legs B1/B2/ B3 (B3 removed) and the leader-ceiling
+> leg A9 (removed) change `a3p4-r4-authority-binding` (14 → 12 legs, A8
+> INVERTED to a no-cross-call-cache pin); the entry file grows 15 → 20
+> (`R4-derive` → `R5-derive`, +`R5-tool`/`R5-rpc`/`R5-ws`/`R5-grammar`/
+> `R5-hash`). The round-5 math + raws live in README (round-5 section) and
+> `round5/`. What ROUND 5 KEPT of this section verbatim: the FIRST direct
+> spec of `createPermissionAuthorityFacts` (addressed-team, target anchor,
+> fingerprint verbatim, absence legal, unknown bindings, drift discard, fault
+> recovery) and the E2 carrier re-anchor.
 
 - `test/a3p4-r4-authority-binding.test.ts` — FIRST direct spec of
   `createPermissionAuthorityFacts` (A1–A9: addressed-team, target anchor,

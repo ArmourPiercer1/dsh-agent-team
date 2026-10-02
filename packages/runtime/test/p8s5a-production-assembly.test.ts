@@ -801,7 +801,7 @@ const t17 = await (async (): Promise<T17State> => {
 // --- the assertions (synchronous `it` bodies over the captured state) -------------------
 
 describe('P8-S5A T1 production assembly (source entry, real storage, stub glue)', () => {
-  it('T1.1 create phase: A01-A29 assembled + reachable, 12 tools, seeded world (C1 adds the pending-list tool)', () => {
+  it('T1.1 create phase: A01-A29 assembled + reachable, 15 tools, seeded world (C1 adds the pending-list tool; the archive-member round +1; PR4 round 5 adds team_grant_permission + team_revoke_permission +2)', () => {
     // The entry identity (named-export Cordis protocol).
     expect(t11.hostName).toBe('dsh-agent-team')
     expect(t11.applyType).toBe('function')
@@ -870,7 +870,7 @@ describe('P8-S5A T1 production assembly (source entry, real storage, stub glue)'
     expect(t11.bootCount).toBe(1)
 
     // The tool stack is filled (thirteen team tools; C1 adds the pending-list tool; the archive-member round adds team_archive_member).
-    expect(t11.toolsCount).toBe(13)
+    expect(t11.toolsCount).toBe(15)
 
     // The create-phase boot seeded the durable world (real storage).
     expect(t11.rootRecordPresent).toBe(true)

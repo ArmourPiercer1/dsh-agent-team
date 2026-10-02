@@ -394,7 +394,7 @@ describe('createPermissionAuthorityFacts (round 4): addressed-team binding + car
     expect(stable.rules[0]?.matcher).toEqual({ kind: 'exact', resource: '/members/new/out.json' })
   })
 
-  it('A8 — the cache is keyed by the FULL binding tuple (stable reads reuse; rebind rebuilds)', async () => {
+  it('A8 (round 5 rewrite) — NO cross-call authority cache: every read canonicalizes FRESH; a rebind lands on the next read', async () => {
     const h = harness({
       blueprints: { [TEAM_A]: bpSource({ carrier: fileCarrier('write', 'exact', 'out.json', 'allow') }) },
       templates: { [`${TEAM_A}|${WORKER}`]: 'worker' },
@@ -403,16 +403,25 @@ describe('createPermissionAuthorityFacts (round 4): addressed-team binding + car
     await h.facts.permissionEnvelope(TEAM_A, WORKER)
     const afterFirst = h.calls()
     await h.facts.permissionEnvelope(TEAM_A, WORKER)
-    expect(h.calls(), 'a stable binding re-reads NOTHING from the provider').toBe(afterFirst)
-    // Rebind the team to a new snapshot (carrier ceiling ASK now): the cache
-    // key moved (contentHash) → the document is REBUILT, never stale-served.
+    // Round 5 (parent ruling + R-A): a CONSTANT provider version is NOT a
+    // version — after a symlink/junction re-point or a lazy provider swap a
+    // cached canonical would authorize stale paths. Every read therefore
+    // canonicalizes FRESH through the CURRENT provider (the governance
+    // service's serialized outer layer makes this per-mutation).
+    expect(h.calls(), 'a stable binding must re-read the provider FRESH (no unprovable-version cache)').toBeGreaterThan(afterFirst)
+    // Rebind the team to a new snapshot (carrier ceiling ASK now): the next
+    // read reflects the NEW binding immediately — fresh by construction.
     h.blueprints.set(TEAM_A, parseBlueprint(bpSource({ revision: '2', carrier: fileCarrier('write', 'exact', 'out.json', 'ask') })))
     const rebound = await h.facts.permissionEnvelope(TEAM_A, WORKER)
     expect(rebound.rules[0]?.maximumEffect).toBe('ask')
     expect(h.calls()).toBeGreaterThan(afterFirst)
   })
 
-  it('A9 — the leader-ceiling facts read the LEADER template AT THE TARGET MEMBER basis (X1 shared key space)', async () => {
+  it('A9 (round 5 rewrite) — the LEADER POSITION reads its own template through the SAME addressed staticLayers reader', async () => {
+    // Round 4's leader-ceiling reader is REMOVED (the parent's final review:
+    // the ceiling fold was a second policy gate ADR §6 does not have). The
+    // leader position remains a first-class addressed reader for its OWN
+    // static facts (the decision-plane consumer of the leader template).
     const h = harness({
       blueprints: {
         [TEAM_A]: bpSource({ leaderWrite: [{ kind: 'subtree', path: 'work' }] }),
@@ -420,15 +429,15 @@ describe('createPermissionAuthorityFacts (round 4): addressed-team binding + car
       templates: { [`${TEAM_A}|${WORKER}`]: 'worker' },
       workspaces: { [`${TEAM_A}|${WORKER}`]: '/members/m1' },
     })
-    const ceiling = await h.facts.leaderAuthorityFacts(TEAM_A, WORKER)
-    expect(ceiling?.layers[0]?.label).toBe('leader')
-    expect(ceiling?.layers[0]?.rules.map((r) => `${r.effect}:${r.matcher.resource}`)).toEqual(['allow:/members/m1/work'])
-    expect(await h.facts.leaderAuthorityFacts(TEAM_A, 'inst-ghost')).toBeUndefined()
-    // The leader POSITION reads its own template at ITS OWN workspace.
+    // The leader position has NO member row: the template comes from the
+    // bound Blueprint's leader, the workspace from the caller-supplied
+    // effective root workspace (the durable TeamSession default — FIX-3).
     h.workspaces.set(`${TEAM_A}|${LEADER_INSTANCE_ID}`, '/team/default')
-    h.templates.set(`${TEAM_A}|${LEADER_INSTANCE_ID}`, undefined)
     const own = await h.facts.staticLayers(TEAM_A, LEADER_INSTANCE_ID)
     expect(own?.layers[0]?.label).toBe('leader')
+    expect(own?.layers[0]?.rules.map((r) => `${r.effect}:${r.matcher.resource}`)).toEqual(['allow:/team/default/work'])
+    expect(await h.facts.staticLayers('session-ghost', LEADER_INSTANCE_ID)).toBeUndefined()
+    expect(await (h.facts.permissionEnvelope(TEAM_A, LEADER_INSTANCE_ID))).toBeDefined()
   })
 })
 
@@ -453,30 +462,29 @@ const ENVELOPE_WORK_ALLOW: PermissionMutationEnvelope = {
   rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: '/work' }, maximumEffect: 'allow' }],
 }
 
-describe('authorizeLeaderPermissionMutation authorityCeiling (round 4): the grantor cannot give what it does not hold', () => {
-  it('B1 (X1 demo 1, deny-exception leg) — allow-subtree + DENY-exact leader cannot grant the exception ALLOW, and CAN grant the rest', () => {
+describe('authorizeLeaderPermissionMutation envelope-only algebra (round 5): the carrier is the WHOLE policy — the leader-facts ceiling gate is REMOVED (ADR §6, parent final review)', () => {
+  it('B1 (round-5 inversion of the X1 demo-1 shape) — the carrier subtree covering the member ALLOW COMMITS; a leader lane that denies X never gates the member expansion', () => {
     const base = {
       latestRules: [] as PermissionOverlayRule[],
       envelope: ENVELOPE_WORK_ALLOW,
       staticFacts: { layers: [] } as PermissionStaticLayerFacts, // target declares none → deny fallback
       subtreeContains: keyContainment,
-      authorityCeiling: {
-        overlayRules: [] as PermissionOverlayRule[],
-        staticFacts: staticLayer([
-          { operationClass: 'write', matcher: { kind: 'subtree', resource: '/work' }, effect: 'allow' },
-          { operationClass: 'write', matcher: { kind: 'exact', resource: '/work/secret' }, effect: 'deny' },
-        ]),
-      },
     }
+    // Round 4 REFUSED this shape via the leader-facts ceiling fold; the
+    // parent's final review ruled that fold a SECOND policy condition the
+    // frozen §6 does not carry. The envelope is the whole expansion policy:
+    // a covering carrier commits, and what the leader's OWN lane holds is
+    // the leader's execution question, not the grantor's gate. Carrier
+    // breadth over a leader deny is a content-hash-pinned blueprint AUTHOR
+    // choice (§6), pinned here as the ruled semantics.
     expect(() =>
       authorizeLeaderPermissionMutation({
         ...base,
         plannedRules: [ov('write', { kind: 'exact', resource: '/work/secret' }, 'allow')],
         mutationRules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/secret' }, effect: 'allow' }],
       }),
-    ).toThrowError(expect.objectContaining({ code: PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE }))
-    // The same grant WITHOUT the exception inside the leader's own lane
-    // commits — the denial is what subtracts, not the region shape.
+    ).not.toThrow()
+    // The rest of the covered region commits, as always.
     expect(() =>
       authorizeLeaderPermissionMutation({
         ...base,
@@ -486,26 +494,25 @@ describe('authorizeLeaderPermissionMutation authorityCeiling (round 4): the gran
     ).not.toThrow()
   })
 
-  it('B2 (X1 demo 2, ask-ceiling leg) — an ASK exception caps the grantor at ASK (allow refuses, ask commits)', () => {
-    const base = {
-      latestRules: [] as PermissionOverlayRule[],
-      envelope: ENVELOPE_WORK_ALLOW,
-      staticFacts: { layers: [] } as PermissionStaticLayerFacts,
-      subtreeContains: keyContainment,
-      authorityCeiling: {
-        overlayRules: [] as PermissionOverlayRule[],
-        staticFacts: staticLayer([
-          { operationClass: 'write', matcher: { kind: 'subtree', resource: '/work' }, effect: 'allow' },
-          { operationClass: 'write', matcher: { kind: 'exact', resource: '/work/b' }, effect: 'ask' },
-        ]),
-      },
+  it('B2 (envelope-level subtraction) — the carrier\'s OWN maximumEffect ladder is the cap (ask covers ask, refuses allow)', () => {
+    // The subtraction that SURVIVES the ceiling removal is the envelope's
+    // own ladder-strictness: a carrier rule with maximumEffect `ask` never
+    // contributes `allow` coverage (this is the same math the entry
+    // R4-ceiling leg pins at host apply — envelope arithmetic, not leader
+    // facts). The R-A ruling: carrier exception lanes are structural;
+    // breadth is the author\'s declared choice.
+    const envelope: PermissionMutationEnvelope = {
+      rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/b' }, maximumEffect: 'ask' }],
     }
     let thrown: unknown
     try {
       authorizeLeaderPermissionMutation({
-        ...base,
+        latestRules: [],
         plannedRules: [ov('write', { kind: 'exact', resource: '/work/b' }, 'allow')],
         mutationRules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/b' }, effect: 'allow' }],
+        envelope,
+        staticFacts: { layers: [] } as PermissionStaticLayerFacts,
+        subtreeContains: keyContainment,
       })
     } catch (error) {
       thrown = error
@@ -514,30 +521,24 @@ describe('authorizeLeaderPermissionMutation authorityCeiling (round 4): the gran
     expect((thrown as PermissionMutationError).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
     expect(() =>
       authorizeLeaderPermissionMutation({
-        ...base,
+        latestRules: [],
         plannedRules: [ov('write', { kind: 'exact', resource: '/work/b' }, 'ask')],
         mutationRules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/b' }, effect: 'ask' }],
+        envelope,
+        staticFacts: { layers: [] } as PermissionStaticLayerFacts,
+        subtreeContains: keyContainment,
       }),
     ).not.toThrow()
   })
 
-  it('B3 — an UNKNOWN grantor refuses EFFECT_CONTEXT_UNAVAILABLE (an unknown leader is never assumed to hold the effect)', () => {
-    expect(() =>
-      authorizeLeaderPermissionMutation({
-        latestRules: [],
-        plannedRules: [ov('write', { kind: 'exact', resource: '/work/x' }, 'allow')],
-        mutationRules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/x' }, effect: 'allow' }],
-        envelope: ENVELOPE_WORK_ALLOW,
-        staticFacts: { layers: [] },
-        subtreeContains: keyContainment,
-        authorityCeiling: { overlayRules: [], staticFacts: undefined },
-      }),
-    ).toThrowError(expect.objectContaining({ code: PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE }))
-  })
+  // B3 (round-4 unknown-grantor leg) is REMOVED with the ceiling gate: an
+  // unknown leader had no meaning once the leader facts are out of the
+  // grant decision (round-5 FIX-1; R-C classification).
 
-  it('B4 — legacy compatibility: WITHOUT authorityCeiling the envelope-only judgement is byte-for-byte the PR3 algebra', () => {
-    // The exact B1 refused-grant input minus the ceiling: the hand-authored
-    // pre-round-4 lanes (the a3p3 suite, 80/80 family) keep flowing.
+  it('B4 — the envelope-only judgement is the UNCONDITIONAL algebra (post-removal this is the whole decision)', () => {
+    // The exact B1 input shape: after the round-5 removal there is no
+    // ceiling input to omit — this is the PR3 algebra every caller gets
+    // (the a3p3 suite, 80/80 family, pins the same envelope-only math).
     expect(() =>
       authorizeLeaderPermissionMutation({
         latestRules: [],

@@ -15,9 +15,11 @@
  * session to its member identity).
  *
  * Contract (asserted on the lossless-JSON result union + durable state):
- *   A1 the catalog: `team_archive_member` is the 13th (LAST) tool —
+ *   A1 the catalog: `team_archive_member` is the 13th tool —
  *        registration order preserved for the first twelve (selection
- *        indices unchanged); the parameter shape is closed
+ *        indices unchanged; PR4 round 5 appends its two permission tools
+ *        AFTER this position);
+ * the parameter shape is closed
  *        (rootSessionId + requestToken + targetInstanceId, all required,
  *        no additional properties);
  *   A2 guard last-mile (SD-GUARD), pending: a durable leader-approval
@@ -597,8 +599,8 @@ const B = await (async (): Promise<ProductionScenario> => {
 })()
 
 describe('team_archive_member — the 13th closed team tool (the archive-member round)', () => {
-  it('A1 the catalog: the 13th (LAST) tool with the closed argument shape', () => {
-    expect(A.toolNames).toHaveLength(13)
+  it('A1 the catalog: the 13th tool with the closed argument shape (PR4 round 5 appends team_grant_permission + team_revoke_permission after it)', () => {
+    expect(A.toolNames).toHaveLength(15)
     expect(A.toolNames[12]).toBe('team_archive_member')
     // The first twelve keep their registration order (selection indices
     // are unchanged by the round).

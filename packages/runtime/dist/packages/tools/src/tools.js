@@ -33,6 +33,8 @@
  * |                       | request token — a read: unguarded, zero      |
  * |                       | writes, zero delivery)                       |
  * | team_archive_member   | facade `archive-member` (lifecycle ARCHIVED; |
+ * | team_grant_permission | PR4 round 5: governance `grant_instance`       |
+ * | team_revoke_permission| PR4 round 5: governance `revoke_permission`    |
  * |                       | guarded on the target, SD-GUARD; leader     |
  * |                       | only — the lifecycle-management surface)    |
  *
@@ -75,7 +77,7 @@ import { CONTROL_DECISION_VALUES, CONTROL_REQUEST_KIND_VALUES, isControlError, }
 import { isMessagingError } from '../../runtime/messaging/index.js';
 import { ACTIVITY_ERROR_CODES, isActivityError, } from '../../runtime/activity/index.js';
 import { isArgsRecord, isTeamToolArgsError, optionalStringField, requireStringField, validateRequestToken, } from './tokens.js';
-import { TEAM_TOOL_ARCHIVE_NOT_LEADER, TEAM_TOOL_BAD_ARGUMENTS, TEAM_TOOL_CALLER_ROOT_MISMATCH, TEAM_TOOL_CALLER_UNRESOLVED, TEAM_TOOL_PENDING_LIST_NOT_LEADER, TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH, TeamToolArgsError, } from './tokens.js';
+import { TEAM_TOOL_ARCHIVE_NOT_LEADER, TEAM_TOOL_PERMISSION_CANONICALIZE_FAILED, TEAM_TOOL_PERMISSION_NOT_LEADER, TEAM_TOOL_PERMISSION_UNWIRED, TEAM_TOOL_BAD_ARGUMENTS, TEAM_TOOL_CALLER_ROOT_MISMATCH, TEAM_TOOL_CALLER_UNRESOLVED, TEAM_TOOL_PENDING_LIST_NOT_LEADER, TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH, TeamToolArgsError, } from './tokens.js';
 import { INSTANCE_ID_PATTERN, LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
 import { consultGuard } from './guard.js';
 /** The maximum root-session-id length accepted by the tool layer. */
@@ -369,7 +371,7 @@ function makeDefinition(options, spec) {
         },
     };
 }
-// --- the thirteen closed tools --------------------------------------------------------------
+// --- the closed team tools (set grew through the series; see TeamToolSet doc) ---
 function listMembersSpec() {
     return {
         name: 'team_list_members',
@@ -988,12 +990,163 @@ function archiveMemberSpec() {
         },
     };
 }
+// --- PR4 ROUND 5 (FIX-2a): the Leader permission grant/revoke tools ------
+/** The closed matcher grammar of a tool-side permission rule. `exact` and
+ *  `subtree` carry FILE PATHS (canonicalized SERVER-SIDE at the target
+ *  member's effective workspace); `fingerprint` carries an opaque exec/
+ *  resource identity (passed through — it is already an identity). */
+const PERMISSION_MATCHER_KINDS = ['exact', 'subtree', 'fingerprint'];
+const PERMISSION_EFFECTS = ['allow', 'ask', 'deny'];
+const PERMISSION_RULES_MAX = 32;
+function parsePermissionRules(raw) {
+    if (!Array.isArray(raw) || raw.length === 0 || raw.length > PERMISSION_RULES_MAX) {
+        throw new TeamToolArgsError(`team-tools: argument 'rules' must be an array of 1..${PERMISSION_RULES_MAX} permission rules`);
+    }
+    return raw.map((entry, index) => {
+        if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) {
+            throw new TeamToolArgsError(`team-tools: rules[${index}] must be an object`);
+        }
+        const keys = Object.keys(entry);
+        const closed = new Set(['operationClass', 'matcher', 'effect']);
+        for (const key of keys) {
+            if (!closed.has(key)) {
+                throw new TeamToolArgsError(`team-tools: rules[${index}] carries the unknown field ${JSON.stringify(key)}`);
+            }
+        }
+        const rule = entry;
+        const operationClass = rule.operationClass;
+        const matcher = rule.matcher;
+        const effect = rule.effect;
+        if (typeof operationClass !== 'string' || operationClass.length === 0 || operationClass.length > 128) {
+            throw new TeamToolArgsError(`team-tools: rules[${index}].operationClass must be a non-empty string`);
+        }
+        if (typeof effect !== 'string' || !PERMISSION_EFFECTS.includes(effect)) {
+            throw new TeamToolArgsError(`team-tools: rules[${index}].effect must be one of ${PERMISSION_EFFECTS.join('|')}`);
+        }
+        if (matcher === null || typeof matcher !== 'object' || Array.isArray(matcher)) {
+            throw new TeamToolArgsError(`team-tools: rules[${index}].matcher must be an object`);
+        }
+        const matcherRecord = matcher;
+        const matcherKeys = Object.keys(matcherRecord);
+        if (matcherKeys.length !== 2 || !matcherKeys.includes('kind') || !matcherKeys.includes('value')) {
+            throw new TeamToolArgsError(`team-tools: rules[${index}].matcher must carry exactly {kind, value}`);
+        }
+        const kind = matcherRecord.kind;
+        const value = matcherRecord.value;
+        if (typeof kind !== 'string' || !PERMISSION_MATCHER_KINDS.includes(kind)) {
+            throw new TeamToolArgsError(`team-tools: rules[${index}].matcher.kind must be one of ${PERMISSION_MATCHER_KINDS.join('|')}`);
+        }
+        if (typeof value !== 'string' || value.length === 0 || value.length > 4096) {
+            throw new TeamToolArgsError(`team-tools: rules[${index}].matcher.value must be a non-empty string`);
+        }
+        return { operationClass, kind, value, effect };
+    });
+}
+function permissionSpec(verb) {
+    const toolName = verb === 'grant' ? 'team_grant_permission' : 'team_revoke_permission';
+    return {
+        name: toolName,
+        description: verb === 'grant'
+            ? 'Grant durable permission-overlay rules to ONE member instance (Leader-only; the ONE governance mutation authority). Rules are closed {operationClass, matcher{kind: exact|subtree|fingerprint, value}, effect: allow|ask|deny}; exact/subtree values are file paths canonicalized SERVER-SIDE at the TARGET member\'s effective workspace (a client-supplied key is never the authority). The mutation is classified against the bound Blueprint\'s permissionMutationEnvelope carrier: a tightening applies immediately; an EXPANSION requires explicit carrier coverage and refuses typed (zero write) otherwise. Deduplicated by the request token. Does NOT change the Leader\'s own permissions.'
+            : 'Revoke previously granted permission-overlay rules from ONE member instance (Leader-only; the ONE governance mutation authority). Same closed rule grammar as team_grant_permission — the matched rules leave the member\'s durable overlay, so the next pre-execute decision falls back to the lower layers. Deduplicated by the request token.',
+        properties: {
+            rootSessionId: ROOT_SESSION_ID_ARG,
+            requestToken: REQUEST_TOKEN_ARG,
+            targetInstanceId: TARGET_INSTANCE_ARG,
+            rules: {
+                type: 'array',
+                description: 'One or more closed permission rules {operationClass: string, matcher: {kind: exact|subtree|fingerprint, value: string}, effect: allow|ask|deny}.',
+                items: { type: 'object' },
+            },
+        },
+        required: ['rootSessionId', 'requestToken', 'targetInstanceId', 'rules'],
+        async run(ctx, args) {
+            // Leader-only BEFORE anything else (the C1/archive gate precedent):
+            // a blueprint that grants this tool to a member cannot materialize a
+            // member-side permission mutation.
+            const caller = ctx.caller;
+            if (caller.kind !== 'instance' || caller.instanceId !== LEADER_INSTANCE_ID) {
+                return {
+                    status: 'rejected',
+                    code: TEAM_TOOL_PERMISSION_NOT_LEADER,
+                    message: `team-tools: ${toolName} is Leader-only (the permission grant surface is the Leader's governance authority; a member caller is rejected before any effect)`,
+                };
+            }
+            const permission = ctx.options.permission;
+            if (permission === undefined) {
+                return {
+                    status: 'rejected',
+                    code: TEAM_TOOL_PERMISSION_UNWIRED,
+                    message: `team-tools: ${toolName} is unwired on this host (no governance mutation port) — zero write`,
+                };
+            }
+            const targetInstanceId = requireStringField(args, 'targetInstanceId', INSTANCE_ID_MAX_LENGTH);
+            const parsed = parsePermissionRules(args.rules);
+            // SERVER-SIDE canonicalization at the TARGET member's effective
+            // workspace (FIX-2a): the client never supplies the authority key.
+            const rules = [];
+            for (const rule of parsed) {
+                let resource = rule.value;
+                if (rule.kind !== 'fingerprint') {
+                    try {
+                        resource = await permission.canonicalizeFile(targetInstanceId, rule.value);
+                    }
+                    catch (error) {
+                        return {
+                            status: 'rejected',
+                            code: TEAM_TOOL_PERMISSION_CANONICALIZE_FAILED,
+                            message: `team-tools: ${toolName} could not canonicalize a file rule at the target member's effective workspace (${error instanceof Error ? error.message : String(error)}) — refusing, zero write`,
+                        };
+                    }
+                }
+                rules.push({
+                    operationClass: rule.operationClass,
+                    matcher: { kind: rule.kind, resource },
+                    effect: rule.effect,
+                });
+            }
+            // The authority is the CALLER identity the host resolved (Leader,
+            // gated above) — never an argument. The request token is the durable
+            // dedupe identity (the governance lane dedupes by mutationId).
+            const mutationArgs = {
+                authority: { kind: 'leader' },
+                teamSessionId: ctx.rootSessionId,
+                memberInstanceId: targetInstanceId,
+                kind: verb === 'grant' ? 'grant_instance' : 'revoke_permission',
+                mutationId: `perm-${verb}-${ctx.requestToken}`,
+                reason: `${toolName} via requestToken ${ctx.requestToken}`,
+                rules,
+            };
+            const settled = await permission
+                .mutatePermission(mutationArgs)
+                .then((value) => ({ ok: true, value }))
+                .catch((error) => ({ ok: false, error }));
+            if (!settled.ok) {
+                const error = settled.error;
+                return {
+                    status: 'rejected',
+                    code: typeof error.code === 'string' ? error.code : 'PERMISSION_MUTATION_FAILED',
+                    message: `team-tools: ${toolName} refused typed (${typeof error.reason === 'string' ? error.reason : typeof error.message === 'string' ? error.message : 'unknown'}) — zero write`,
+                };
+            }
+            return {
+                status: 'permission-mutated',
+                rootSessionId: ctx.rootSessionId,
+                targetInstanceId,
+                verb,
+                changed: settled.value['changed'] === true,
+                ...(typeof settled.value['code'] === 'string' ? { code: settled.value['code'] } : {}),
+                ...(typeof settled.value['reason'] === 'string' ? { reason: settled.value['reason'] } : {}),
+            };
+        },
+    };
+}
 /**
  * Build the model-facing team tool set over one runtime satellite wiring.
  *
  * @param options - the sanctioned runtime ports (facade, control service,
  *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the thirteen tool definitions, ready for the host's public
+ * @returns the tool definitions, ready for the host's public
  *   tool registration (each returns a disposer on register; the caller
  *   owns the effect lifetime).
  */
@@ -1012,6 +1165,8 @@ export function createTeamTools(options) {
         resolveControlSpec(),
         listPendingControlSpec(),
         archiveMemberSpec(),
+        permissionSpec('grant'),
+        permissionSpec('revoke'),
     ];
     return {
         tools: specs.map((spec) => makeDefinition(options, spec)),

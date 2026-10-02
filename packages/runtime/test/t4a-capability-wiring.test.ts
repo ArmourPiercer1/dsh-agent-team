@@ -89,6 +89,8 @@ const EXPECTED_TOOL_NAMES = [
   'team_resolve_control',
   'team_list_pending_control',
   'team_archive_member',
+  'team_grant_permission',
+  'team_revoke_permission',
 ]
 
 const ROOT = 'session-t4a-root'
@@ -478,7 +480,7 @@ describe('alpha.1 T4 — the production capability wiring on the REAL live glue'
   })
 
   describe('the legacy Blueprint (no `capabilities`) does not regress (0.1.0-rc.1 behavior)', () => {
-    it('the leader receives the FULL thirteen-tool catalog (no selection)', () => {
+    it('the leader receives the FULL fifteen-tool catalog (no selection)', () => {
       expect(legacyTools).toEqual(EXPECTED_TOOL_NAMES)
     })
     it('no builtin tool deny (legacy: the restrict seam is never called)', () => {

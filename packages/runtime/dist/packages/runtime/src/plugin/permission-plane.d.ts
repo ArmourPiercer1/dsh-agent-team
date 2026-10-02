@@ -128,17 +128,15 @@ export declare function createMemberLifecycleReader(rows: MemberInstanceRowReade
  *   by {@link createPermissionAuthorityFacts}).
  * @param deps.permissionEnvelope - the bound §6 expansion ceiling for the
  *   Leader; forwarded VERBATIM (this module grants nothing — absent = the
- *   service's zero-authority default).
- * @param deps.leaderAuthorityFacts - the acting leader's OWN static facts
- *   (the authority ceiling X1 requires on every risen cell; forwarded
- *   VERBATIM — absent = the pre-round-4 envelope-only judgement).
+ *   service's zero-authority default). ROUND 5: the round-4
+ *   leaderAuthorityFacts forward is REMOVED (the ceiling gate was a second
+ *   policy ADR §6 does not carry).
  */
 export declare function createPermissionGovernanceLane(deps: {
     readonly overlay: PermissionOverlayRepositoryPort;
     readonly fsContainsKeys?: CanonicalKeyContains;
     readonly staticLayers?: GovernancePermissionLaneDeps['staticLayers'];
     readonly permissionEnvelope?: GovernancePermissionLaneDeps['permissionEnvelope'];
-    readonly leaderAuthorityFacts?: GovernancePermissionLaneDeps['leaderAuthorityFacts'];
 }): GovernancePermissionLaneDeps;
 /**
  * The two PR4 lanes over the already-assembled authority + lifecycle path.
@@ -179,9 +177,11 @@ export interface PermissionAuthorityFactsDeps {
     /** The A2 canonicalizer (the row's fs provider — the ONLY legal key
      *  source), anchored at the caller-supplied cwd. */
     readonly canonicalize: (path: string, cwd: string) => Promise<string>;
-    /** A token identifying the CURRENT fs provider instance/epoch (identity
-     *  across which a cached document stays valid; default = a constant so a
-     *  single-provider host is unaffected). A change invalidates every cache. */
+    /** A token identifying the CURRENT fs provider instance/epoch. ROUND 5:
+     *  a DRIFT field of the revalidated binding tuple — NOT a cache epoch (no
+     *  cache exists); a mid-read change discards the in-flight build. Default
+     *  = a constant, honest for a single-provider host (a constant is NOT a
+     *  version — which is exactly why nothing may be cached on it). */
     readonly providerVersion?: () => string;
     /** The boot warm targets (leader + existing members of the boot team). */
     readonly bootWarmTargets?: () => readonly PermissionFactsWarmTarget[];
@@ -199,10 +199,6 @@ export interface PermissionAuthorityFacts {
      *  the LANE deps may omit them (legacy), the production surface may not. */
     readonly staticLayers: (teamSessionId: string, memberInstanceId: string) => Promise<PermissionStaticLayerFacts | undefined>;
     readonly permissionEnvelope: (teamSessionId: string, memberInstanceId: string) => Promise<PermissionMutationEnvelope>;
-    /** The acting leader's OWN static facts for one addressed (team, target
-     *  member) — the authority-ceiling facts the service folds into every
-     *  risen cell (X1). Same revalidation + recovery discipline as the others. */
-    readonly leaderAuthorityFacts: (teamSessionId: string, targetMemberInstanceId: string) => Promise<PermissionStaticLayerFacts | undefined>;
 }
 /**
  * Build the addressed-team, per-member authority readers (see the section

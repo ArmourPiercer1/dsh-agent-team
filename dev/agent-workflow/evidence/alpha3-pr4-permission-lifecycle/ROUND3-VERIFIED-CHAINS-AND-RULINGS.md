@@ -47,7 +47,15 @@ re-derived; the predecessor's note is corroborated except where marked.
   member COULD be widened past the leader's EFFECTIVE answer at exception regions (X1's two demos:
   deny-exception + ask-ceiling). Round 4 removed the derivation (explicit carrier only) and added
   the `authorityCeiling` effective comparison; the false code comment (then permission-plane.ts
-  :259-260) is deleted with the rewrite. Pins: `a3p4-r4-authority-binding` B1/B2/B5 + entry `R4-derive`.]**
+  :259-260) is deleted with the rewrite. Pins: `a3p4-r4-authority-binding` B1/B2/B5 + entry `R4-derive`.
+  **[SUPERSEDED 2026-10-02 by ROUND 5: the added `authorityCeiling` effective comparison was REMOVED
+  — ADR §6 carries NO second policy condition; carrier breadth over a leader deny is the
+  content-hash-pinned blueprint author's choice. Round-4's own CORRECTION (derivation removed,
+  explicit carrier only, comment deleted) STANDS, and so does the round-3 truth this addendum
+  records: the derive route is gone forever. Retargeted pins: B1/B2 → envelope-algebra form,
+  B5 kept (pure-envelope; the ceiling input it was suspected of is deleted), `R4-derive` →
+  `R5-derive` (carrier-covered member grant COMMITS despite the leader's own deny; leader
+  self-answer unchanged — no self-widening).]**]**
   version-explicit: the facts document binds {blueprintId, revision, contentHash} and abstains
   (UNKNOWN / zero-envelope) on drift ⇒ typed refusal, never a stale answer.
 

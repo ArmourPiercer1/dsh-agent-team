@@ -320,7 +320,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionEnvelope, permissionStaticLayers, permissionLeaderAuthorityFacts, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionEnvelope, permissionStaticLayers, permissionCanonicalize, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1795,9 +1795,6 @@ export function createTeamProductionRoot(params) {
             // UNKNOWN / zero-envelope / no-ceiling postures).
             ...(permissionStaticLayers === undefined ? {} : { staticLayers: permissionStaticLayers }),
             ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
-            ...(permissionLeaderAuthorityFacts === undefined
-                ? {}
-                : { leaderAuthorityFacts: permissionLeaderAuthorityFacts }),
         });
     const mutation = {
         // R2-1: the durable-backed store is exposed on the root surface (an
@@ -2100,6 +2097,17 @@ export function createTeamProductionRoot(params) {
         // routes override.set / override.reset / policyState.set through it
         // (serialized on the shared chain, committed before the ack).
         governance: mutation.governance,
+        // PR4 ROUND 5 (FIX-2b): the human/operator permission grant/revoke lane
+        // (remote method `override.mutatePermission`, v7-only) — the SAME
+        // governance service the Leader tool and the in-process entries reach
+        // (ONE authority; the caller-derived authority rides the ActionCaller),
+        // sharing the ONE server-side canonicalizer seam.
+        permission: {
+            mutatePermission: (mutationArgs) => mutation.governance.mutatePermission(mutationArgs),
+        },
+        ...(permissionCanonicalize === undefined
+            ? {}
+            : { permissionCanonicalize }),
         // pre-alpha3 PR-B (plan §B.2): the remote PolicyState read surface
         // reads the DURABLE transition rows (the ledger) directly — the
         // commit-order read the committed-state derivation consumes (the
@@ -2244,13 +2252,36 @@ export function createTeamProductionRoot(params) {
     seams.remoteHandlerRegistration.install(remoteSurfaces.registration);
     // --- A04 the intent surface (the remote method catalog) --------------------------------------------
     const intent = { catalog: REMOTE_METHOD_CATALOG };
-    // --- the thirteen Team tools (the glue registers them on the agent setup; C1 adds the pending-list tool; the archive-member round adds team_archive_member) -------------------------------------
+    // --- the Team tool set (the glue registers them on the agent setup; C1 added the pending-list tool; the archive-member round added team_archive_member; PR4 ROUND 5 adds team_grant_permission + team_revoke_permission) ----
     const tools = createTeamTools({
         teamRuntime: runtime,
         controlService: control,
         messaging,
         activity,
         resolveCaller: live.resolveCaller,
+        // PR4 ROUND 5 (FIX-2a): the permission grant/revoke entries over the
+        // ONE governance mutation authority. Server-side everything: the
+        // authority rides the CALLER identity the host already resolved (the
+        // tool's Leader gate), rule PATHS canonicalize at the TARGET member's
+        // durable effective workspace through the injected provider, and the
+        // mutation itself is the same service every other entry uses.
+        permission: {
+            async mutatePermission(mutationArgs) {
+                const result = await mutation.governance.mutatePermission(mutationArgs);
+                return (result ?? {});
+            },
+            async canonicalizeFile(targetInstanceId, path) {
+                if (permissionCanonicalize === undefined) {
+                    throw new Error('team_grant_permission: file-rule canonicalization is unwired (no fs provider seam on this root) — refusing, zero write');
+                }
+                const workspace = repos.memberInstances.get(rootSid, targetInstanceId)?.workspace ??
+                    repos.teamSessions.get(rootSid)?.defaultWorkspace;
+                if (typeof workspace !== 'string' || workspace.length === 0) {
+                    throw new Error('team_grant_permission: the addressed team/member has no durable effective workspace — refusing, zero write');
+                }
+                return permissionCanonicalize(path, workspace);
+            },
+        },
     });
     teamToolsRef.current = tools;
     // --- boot (create phase: fixture seed OR real fresh-root create + live

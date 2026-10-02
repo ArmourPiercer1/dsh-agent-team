@@ -70,6 +70,7 @@ import type {
   RemoteMethodParams,
   RemoteOverrideGetParams,
   RemoteOverrideResetParamsV7,
+  RemoteOverrideMutatePermissionParams,
   RemoteOverrideSetParamsV7,
   RemotePolicyStateGetParams,
   RemotePolicyStateSetParams,
@@ -350,6 +351,31 @@ export interface S6RemoteAdmissionRequest {
 }
 
 /** The `override.set` request (the structural mirror of the frozen shape). */
+/**
+ * PR4 ROUND 5 (FIX-2b) — `override.mutatePermission` request (v7-only): one
+ * grant/revoke into the durable permission overlay through the ONE
+ * governance mutation authority. NO client-supplied authority: it rides the
+ * host-derived ActionCaller (operator for humans, leader for the Leader
+ * lane); NO client-supplied canonical keys: exact/subtree rule values are
+ * raw paths canonicalized SERVER-SIDE at the TARGET member's effective
+ * workspace (the same doctrine as the team_grant_permission tool).
+ */
+export interface S6RemotePermissionMutateRequest {
+  readonly teamSessionId: string
+  readonly memberInstanceId: string
+  readonly kind: 'grant_instance' | 'revoke_permission'
+  readonly mutationId: string
+  readonly reason?: string
+  readonly rules: readonly {
+    readonly operationClass: string
+    readonly matcher: {
+      readonly kind: 'exact' | 'subtree' | 'fingerprint'
+      readonly value: string
+    }
+    readonly effect: 'allow' | 'ask' | 'deny'
+  }[]
+}
+
 export interface S6RemoteOverrideSetRequest {
   readonly teamSessionId: string
   readonly capability: string
@@ -660,6 +686,13 @@ export interface S6RemoteOverridePort {
   ): Promise<RemoteSafeRecord | null>
   set(request: S6RemoteOverrideSetRequest, caller: ActionCaller): Promise<RemoteSafeRecord>
   reset(request: S6RemoteOverrideResetRequest, caller: ActionCaller): Promise<{ readonly removed: boolean }>
+  /** PR4 ROUND 5 (FIX-2b): the permission grant/revoke lane (v7-only
+   *  `override.mutatePermission`); authority from the host-derived caller,
+   *  file rules canonicalized server-side at the TARGET member basis. */
+  mutatePermission(
+    request: S6RemotePermissionMutateRequest,
+    caller: ActionCaller,
+  ): Promise<RemoteSafeRecord>
 }
 /** Port 9/12 — the TeamSession PolicyState over the mutation service (`policyState.*`). */
 export interface S6RemotePolicyStatePort {
@@ -945,6 +978,21 @@ export interface S6RemoteOptions {
    * reset delete) are gone.
    */
   readonly governance: GovernanceMutationService
+  /**
+   * PR4 ROUND 5 (FIX-2b): the permission mutation lane behind
+   * `override.mutatePermission` — root wires it to the SAME governance
+   * service the Leader tool + the in-process entries use (ONE authority).
+   * Absent = the method refuses typed (zero write).
+   */
+  readonly permission?: {
+    readonly mutatePermission: (
+      mutationArgs: Record<string, unknown>,
+    ) => Promise<Record<string, unknown>>
+  }
+  /** PR4 ROUND 5 (FIX-2b): the server-side fs canonicalizer (the same seam
+   *  the authority facts + the grant tool share). Absent = file rules
+   *  refuse typed; fingerprint rules still pass (identities). */
+  readonly permissionCanonicalize?: (path: string, cwd: string) => Promise<string>
   /** The mutation store's transition rows (the durable PolicyState read). */
   readonly mutationTransitions: (teamSessionId: string) => readonly PolicyStateTransitionRecord[]
   /** The override record identity source (the durable `overrides` rows). */
@@ -2777,6 +2825,71 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         if (!result.changed) record['noChange'] = true
         return record as RemoteSafeRecord
       },
+      async mutatePermission(
+        request: S6RemotePermissionMutateRequest,
+        caller: ActionCaller,
+      ): Promise<RemoteSafeRecord> {
+        const root = assertBoundRoot('override.mutatePermission', request.teamSessionId)
+        // THE server-side authority derivation (the override-lane mirror):
+        // a bound human session answers {kind:'operator'} (the PR3-pinned
+        // legacy explicit-capability admission — operator mutations are not
+        // envelope-gated), the Leader lane answers {kind:'leader'} (full
+        // carrier gate), a MEMBER caller answers a member authority the
+        // governance service rejects typed (members never mutate).
+        const authority = authorityOf(caller, leaderInstanceId)
+        const permission = options.permission
+        const canonicalize = options.permissionCanonicalize
+        if (permission === undefined) {
+          throw new Error(
+            'override.mutatePermission: the governance permission lane is unwired on this surface — zero write',
+          )
+        }
+        // SERVER-SIDE canonicalization at the TARGET member's effective
+        // workspace (durable member row, else the durable TeamSession
+        // default — the FIX-3 doctrine; NO durable row → refusal, never the
+        // acting row's tail).
+        const rules: Record<string, unknown>[] = []
+        for (const rule of request.rules) {
+          let resource = rule.matcher.value
+          if (rule.matcher.kind !== 'fingerprint') {
+            if (canonicalize === undefined) {
+              throw new Error(
+                'override.mutatePermission: file-rule canonicalization is unwired (no fs provider seam) — refusing, zero write',
+              )
+            }
+            const workspace =
+              (options.repositories.memberInstances.get(
+                root as never,
+                request.memberInstanceId as never,
+              )?.workspace as string | undefined) ??
+              (options.repositories.teamSessions.get(root as never)?.defaultWorkspace as string | undefined)
+            if (typeof workspace !== 'string' || workspace.length === 0) {
+              throw new Error(
+                'override.mutatePermission: the addressed team/member has no durable effective workspace — refusing, zero write',
+              )
+            }
+            resource = await canonicalize(resource, workspace)
+          }
+          rules.push({
+            operationClass: rule.operationClass,
+            matcher: { kind: rule.matcher.kind, resource },
+            effect: rule.effect,
+          })
+        }
+        const result = (await permission.mutatePermission({
+          authority,
+          teamSessionId: root,
+          memberInstanceId: request.memberInstanceId,
+          kind: request.kind,
+          mutationId: request.mutationId,
+          ...(request.reason !== undefined ? { reason: request.reason } : {}),
+          rules,
+        })) as Record<string, unknown>
+        const safe: { [key: string]: string | boolean } = { changed: result['changed'] === true }
+        if (typeof result['code'] === 'string') safe['code'] = result['code']
+        if (typeof result['reason'] === 'string') safe['reason'] = result['reason']
+        return safe
+      },
       async reset(
         request: S6RemoteOverrideResetRequest,
         caller: ActionCaller,
@@ -3462,6 +3575,22 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
             return Promise.resolve(
               principal({ method, request: envelope }),
             ).then((caller) => ports.override.reset(request, caller)).then((result) => ({ data: { removed: result.removed } }))
+          }
+          case 'override.mutatePermission': {
+            // PR4 ROUND 5 (FIX-2b): v7-only (the availability check in the
+            // frozen param-parse chain already rejected v<7 envelopes).
+            const mutateParams = params as RemoteOverrideMutatePermissionParams
+            const request: S6RemotePermissionMutateRequest = {
+              teamSessionId: mutateParams.teamSessionId,
+              memberInstanceId: mutateParams.memberInstanceId,
+              kind: mutateParams.kind,
+              mutationId: mutateParams.mutationId,
+              ...(mutateParams.reason !== undefined ? { reason: mutateParams.reason } : {}),
+              rules: mutateParams.rules,
+            }
+            return Promise.resolve(
+              principal({ method, request: envelope }),
+            ).then((caller) => ports.override.mutatePermission(request, caller)).then((result) => ({ data: result }))
           }
           default:
             return Promise.reject(new Error(`override handler routed an unknown method: ${method}`))

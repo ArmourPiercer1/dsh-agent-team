@@ -1,0 +1,77 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/tools
+
+ ✓ test/t2-tool-selector-deny.test.ts (19 tests) 5ms
+ ✓ test/h3-hostile-seam.test.ts (10 tests) 3ms
+ ❯ test/p6t6-bypass-scan.test.ts (10 tests | 1 failed) 8ms
+     ✓ the scan walks exactly the tool-layer source boundary (seven .ts files) 2ms
+     ✓ §6b-1: no storage-layer import — the tool layer never writes the durable domain directly 0ms
+     ✓ §6b-1: no repository-level member access anywhere in the tool layer 0ms
+     ✓ §6b-2: no agent creation — no agents.create call text in the tool layer 0ms
+     ✓ §6b-3: no legacy Team SessionEvent vocabulary (event strings, payload symbols, merging identifier, session-types specifier) 0ms
+     ✓ the scan totals reconcile (no silent partial walk) 0ms
+     ✓ positive controls: every rule class is detected exactly once in the synthetic sample 0ms
+     ✓ negative controls: near-misses (exact-literal and word-boundary precision) never hit 0ms
+     × the model-facing surface is EXACTLY the fifteen sanctioned tools (SD-CREATE/SD-GUARD scope; C1 adds the pending-list tool; the archive-member round adds team_archive_member; PR4 round 5 adds team_grant_permission + team_revoke_permission) 3ms
+     ✓ every tool requires rootSessionId + requestToken and closes additionalProperties (SD-TOKEN) 2ms
+ ✓ test/c1-list-pending-control.test.ts (10 tests) 4ms
+ ✓ test/p6t6-guard.test.ts (9 tests) 3ms
+ ✓ test/archive-member-tool.test.ts (11 tests) 6ms
+ ✓ test/issue1-collect-tools.test.ts (12 tests) 5ms
+ ✓ test/issue2-builtin-deny-focused.test.ts (8 tests) 3ms
+ ✓ test/c1-caller-root-binding.test.ts (6 tests) 3ms
+ ✓ test/tools.test.ts (2 tests) 2ms
+ ❯ test/p6t6-actions.test.ts (14 tests | 1 failed) 8ms
+     ✓ reads: list-members / list-templates / inspect-config execute with lossless effects 1ms
+     ✓ E1/E4: template-addressed creations admit DISTINCT new instances (member-activated) 0ms
+     ✓ E6: at-limit admitted; over the TEMPLATE limit rejected; over the TEAM limit rejected 0ms
+     ✓ E3: persistent follow-up keeps the SAME bound child session (durable read-back) 0ms
+     ✓ E2: label and template addressing on instance-addressed tools are live-rejected 0ms
+     × messaging: worker -> leader is delivered direct to the leader bound session 4ms
+     ✓ progress: per-subject sequences (1,2 on unit-a; the other subject restarts at 1) 0ms
+     ✓ the request-token contract: missing/empty/over-long -> BAD_ARGUMENTS 0ms
+     ✓ argument-shape rejections: missing/non-string root, non-object args -> BAD_ARGUMENTS 0ms
+     ✓ caller resolution: no agent / unknown session / throwing resolver -> CALLER_UNRESOLVED 0ms
+     ✓ delegate XOR: neither or both delegation fields -> BAD_ARGUMENTS 0ms
+     ✓ closed vocabularies: bad progress / kind / decision -> BAD_ARGUMENTS 0ms
+     ✓ a well-formed unknown instance id is blocked target-stale by the guard (SD-GUARD) 0ms
+     ✓ the stale-head retry: one ACTIVITY_SEQUENCE_STALE is retried with a fresh head 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality
+
+Expected: "session-child-p6t2-leader"
+Received: "session-root-p6t1"
+
+ ❯ test/p6t6-actions.test.ts:893:46
+    891|       expect(delivered.deliveryMode).toBe('direct')
+    892|       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
+    893|       expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.le…
+       |                                              ^
+    894|     }
+    895|     const inputs = A.recordedInputs
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/p6t6-bypass-scan.test.ts > P6-T6 tool set — the static bypass scan (brief §6b, G6 criterion 7) > the model-facing surface is EXACTLY the fifteen sanctioned tools (SD-CREATE/SD-GUARD scope; C1 adds the pending-list tool; the archive-member round adds team_archive_member; PR4 round 5 adds team_grant_permission + team_revoke_permission)
+AssertionError: expected 15 to be 13 // Object.is equality
+
+- Expected
++ Received
+
+- 13
++ 15
+
+ ❯ test/p6t6-bypass-scan.test.ts:226:29
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 9 passed (11)
+      Tests  2 failed | 109 passed (111)
+   Start at  00:20:15
+   Duration  1.35s (transform 3.06s, setup 0ms, import 4.96s, tests 51ms, environment 1ms)
+

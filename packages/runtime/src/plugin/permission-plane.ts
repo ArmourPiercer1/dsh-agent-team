@@ -165,24 +165,21 @@ export function createMemberLifecycleReader(
  *   by {@link createPermissionAuthorityFacts}).
  * @param deps.permissionEnvelope - the bound §6 expansion ceiling for the
  *   Leader; forwarded VERBATIM (this module grants nothing — absent = the
- *   service's zero-authority default).
- * @param deps.leaderAuthorityFacts - the acting leader's OWN static facts
- *   (the authority ceiling X1 requires on every risen cell; forwarded
- *   VERBATIM — absent = the pre-round-4 envelope-only judgement).
+ *   service's zero-authority default). ROUND 5: the round-4
+ *   leaderAuthorityFacts forward is REMOVED (the ceiling gate was a second
+ *   policy ADR §6 does not carry).
  */
 export function createPermissionGovernanceLane(deps: {
   readonly overlay: PermissionOverlayRepositoryPort
   readonly fsContainsKeys?: CanonicalKeyContains
   readonly staticLayers?: GovernancePermissionLaneDeps['staticLayers']
   readonly permissionEnvelope?: GovernancePermissionLaneDeps['permissionEnvelope']
-  readonly leaderAuthorityFacts?: GovernancePermissionLaneDeps['leaderAuthorityFacts']
 }): GovernancePermissionLaneDeps {
-  const { overlay, fsContainsKeys, staticLayers, permissionEnvelope, leaderAuthorityFacts } = deps
+  const { overlay, fsContainsKeys, staticLayers, permissionEnvelope } = deps
   return {
     overlay,
     ...(staticLayers === undefined ? {} : { staticLayers }),
     ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
-    ...(leaderAuthorityFacts === undefined ? {} : { leaderAuthorityFacts }),
     ...(fsContainsKeys === undefined
       ? {}
       : {
@@ -333,9 +330,11 @@ export interface PermissionAuthorityFactsDeps {
   /** The A2 canonicalizer (the row's fs provider — the ONLY legal key
    *  source), anchored at the caller-supplied cwd. */
   readonly canonicalize: (path: string, cwd: string) => Promise<string>
-  /** A token identifying the CURRENT fs provider instance/epoch (identity
-   *  across which a cached document stays valid; default = a constant so a
-   *  single-provider host is unaffected). A change invalidates every cache. */
+  /** A token identifying the CURRENT fs provider instance/epoch. ROUND 5:
+   *  a DRIFT field of the revalidated binding tuple — NOT a cache epoch (no
+   *  cache exists); a mid-read change discards the in-flight build. Default
+   *  = a constant, honest for a single-provider host (a constant is NOT a
+   *  version — which is exactly why nothing may be cached on it). */
   readonly providerVersion?: () => string
   /** The boot warm targets (leader + existing members of the boot team). */
   readonly bootWarmTargets?: () => readonly PermissionFactsWarmTarget[]
@@ -360,13 +359,6 @@ export interface PermissionAuthorityFacts {
     teamSessionId: string,
     memberInstanceId: string,
   ) => Promise<PermissionMutationEnvelope>
-  /** The acting leader's OWN static facts for one addressed (team, target
-   *  member) — the authority-ceiling facts the service folds into every
-   *  risen cell (X1). Same revalidation + recovery discipline as the others. */
-  readonly leaderAuthorityFacts: (
-    teamSessionId: string,
-    targetMemberInstanceId: string,
-  ) => Promise<PermissionStaticLayerFacts | undefined>
 }
 
 const DECLARED_NONE: PermissionStaticLayerFacts = { layers: [] }
@@ -404,10 +396,6 @@ function bindingsEqual(a: BindingTuple, b: BindingTuple): boolean {
   )
 }
 
-function bindingKey(kind: string, team: string, member: string, t: BindingTuple): string {
-  return `${kind}\u0000${team}\u0000${member}\u0000${t.contentHash}\u0000${t.cwd}\u0000${t.providerVersion}`
-}
-
 /**
  * Build the addressed-team, per-member authority readers (see the section
  * header for the three bindings and the fail-closed rules).
@@ -415,18 +403,25 @@ function bindingKey(kind: string, team: string, member: string, t: BindingTuple)
  */
 export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDeps): PermissionAuthorityFacts {
   const providerVersion = deps.providerVersion ?? ((): string => SINGLE_PROVIDER)
-  /** Cached documents keyed by (kind, team, member, binding); a fault is
-   *  NEVER stored here (the next read retries → bounded recovery). */
-  const cache = new Map<string, PermissionStaticLayerFacts | PermissionMutationEnvelope>()
+  // ROUND 5 (FIX-4, parent ruling + R-A): there is NO cross-call document
+  // cache. The constant default providerVersion is NOT a trustworthy epoch —
+  // a cached canonical could outlive a symlink/junction re-point or a lazy
+  // provider swap and authorize STALE paths while execution reads fresh.
+  // Every read RE-CANONICALIZES through the CURRENT provider inside the
+  // governance service's serialized outer section (fresh-per-mutation); the
+  // binding tuple below is a DRIFT guard across each read's own awaits,
+  // never a cache key (round 4's key also omitted templateId — a template
+  // swap under an unchanged hash would have served stale; removal kills
+  // that second staleness too, and the cache never evicted).
   let healthyFlag = false
 
   function providerVersionOf(): string {
     try {
       return providerVersion()
     } catch {
-      // A provider-version fault is an unknown provider → no cached doc is
-      // trustworthy this round; surface as a distinct token (forces a rebuild
-      // and, if it persists, an UNKNOWN read rather than a stale serve).
+      // A provider-version fault is an unknown provider this round: surface
+      // as a distinct token so the post-await revalidation DISCARDS the
+      // in-flight build (drift), never a stale serve.
       return 'provider-version-fault'
     }
   }
@@ -530,106 +525,85 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
     return parsePermissionMutationEnvelope({ rules })
   }
 
-  /** The shared read path: build-or-cache, then RE-VALIDATE the binding tuple
-   *  across the canonicalization await (drift → abstain, discard, retry next
-   *  read; never serve a half-trusted / stale document). Bounded to two build
-   *  attempts, then a typed abstention. */
-  async function readCached<T>(
-    kind: 'static' | 'env' | 'leader',
+  /** The shared read path (round 5): build FRESH on every call — no cache —
+   *  then RE-VALIDATE the binding tuple across the canonicalization await
+   *  (drift → abstain; never serve a mixed-identity document). The outcome
+   *  (`ok`) drives `healthy()`; faults are never cached (nothing is) and the
+   *  next read simply rebuilds (bounded recovery). */
+  async function readFresh<T>(
     teamSessionId: string,
     memberInstanceId: string,
     build: (blueprint: TeamBlueprint, tuple: BindingTuple) => Promise<T>,
     unknownValue: T,
-  ): Promise<T> {
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      const now = currentBinding(teamSessionId, memberInstanceId)
-      if (now === undefined) {
-        healthyFlag = false
-        return unknownValue // UNKNOWN bindings → abstain (never a guess)
-      }
-      const key = bindingKey(kind, teamSessionId, memberInstanceId, now.tuple)
-      const cached = cache.get(key)
-      if (cached !== undefined) {
-        healthyFlag = true
-        return cached as T
-      }
-      let built: T
-      try {
-        built = await build(now.blueprint, now.tuple)
-      } catch {
-        // A canonicalization fault: NO cache (next read retries = bounded
-        // recovery), UNKNOWN this round, never a partially canonicalized doc.
-        healthyFlag = false
-        return unknownValue
-      }
-      // RE-VALIDATE across the await: the bindings must be UNCHANGED or the
-      // document is mixed-identity and is discarded (abstain this round, the
-      // next read rebuilds against the current bindings).
-      const after = currentBinding(teamSessionId, memberInstanceId)
-      if (after === undefined || !bindingsEqual(now.tuple, after.tuple)) {
-        healthyFlag = false
-        return unknownValue
-      }
-      cache.set(key, built as unknown as PermissionStaticLayerFacts | PermissionMutationEnvelope)
-      healthyFlag = true
-      return built
+  ): Promise<{ ok: boolean; value: T }> {
+    const now = currentBinding(teamSessionId, memberInstanceId)
+    if (now === undefined) {
+      healthyFlag = false
+      return { ok: false, value: unknownValue } // UNKNOWN bindings → abstain
     }
-    healthyFlag = false
-    return unknownValue
+    let built: T
+    try {
+      built = await build(now.blueprint, now.tuple)
+    } catch {
+      // A canonicalization fault: UNKNOWN this round, never a partially
+      // canonicalized document; the next read retries fresh.
+      healthyFlag = false
+      return { ok: false, value: unknownValue }
+    }
+    // RE-VALIDATE across the await: the bindings must be UNCHANGED or the
+    // document is mixed-identity and is discarded (abstain this round; the
+    // next read builds against the current bindings).
+    const after = currentBinding(teamSessionId, memberInstanceId)
+    if (after === undefined || !bindingsEqual(now.tuple, after.tuple)) {
+      healthyFlag = false
+      return { ok: false, value: unknownValue }
+    }
+    healthyFlag = true
+    return { ok: true, value: built }
   }
 
   const staticLayers: GovernancePermissionLaneDeps['staticLayers'] = (teamSessionId, memberInstanceId) =>
-    readCached<PermissionStaticLayerFacts | undefined>(
-      'static',
+    readFresh<PermissionStaticLayerFacts | undefined>(
       teamSessionId,
       memberInstanceId,
       (blueprint, tuple) => buildStaticFacts(blueprint, tuple.templateId as string, tuple.cwd),
       undefined,
-    )
+    ).then((r) => r.value)
 
   const permissionEnvelope: GovernancePermissionLaneDeps['permissionEnvelope'] = (teamSessionId, memberInstanceId) =>
-    readCached<PermissionMutationEnvelope>(
-      'env',
+    readFresh<PermissionMutationEnvelope>(
       teamSessionId,
       memberInstanceId,
       (blueprint, tuple) => buildEnvelope(blueprint, tuple.cwd),
       NO_ENVELOPE,
-    )
-
-  // The acting leader's OWN static facts (X1 authority ceiling), evaluated
-  // against the TARGET member's effective-workspace basis (the SAME space
-  // the rising cells and the envelope occupy — the leader template's relative
-  // rules resolve identically to how they are judged at execution, so a
-  // `deny exact <path>` exception lands on the exact key it must subtract).
-  // The target's binding tuple (freshness + UNKNOWN) governs the read; the
-  // policy CONTENT is the leader template's.
-  const leaderAuthorityFacts: GovernancePermissionLaneDeps['leaderAuthorityFacts'] = (
-    teamSessionId,
-    targetMemberInstanceId,
-  ) =>
-    readCached<PermissionStaticLayerFacts | undefined>(
-      'leader',
-      teamSessionId,
-      targetMemberInstanceId,
-      (blueprint, tuple) => buildStaticFacts(blueprint, String(blueprint.leader.templateId), tuple.cwd),
-      undefined,
-    )
+    ).then((r) => r.value)
 
   return {
     async refresh() {
       const targets = deps.bootWarmTargets?.() ?? []
       // Best-effort warm: build each target so the FIRST grant (post-boot,
-      // pre-readiness) is reachable (BLOCK-1); an individual fault just leaves
-      // that target to retry lazily, but flips `healthy` (the loud host log
-      // reports it) — never a hard boot failure on a transient fs fault.
-      let allOk = true
+      // pre-readiness) is reachable (BLOCK-1). ROUND 5 (R-A minor): `healthy`
+      // is computed from the READ RESULTS (abstention/fault included), not
+      // from whether the readers THREW — a warm that abstained on a provider
+      // fault must report UNHEALTHY so the host logs it LOUD (the old
+      // throw-only aggregation printed healthy:true over a faulted warm).
+      let allOk = targets.length > 0
       for (const target of targets) {
-        try {
-          await staticLayers(target.teamSessionId, target.memberInstanceId)
-          await permissionEnvelope(target.teamSessionId, target.memberInstanceId)
-        } catch {
-          allOk = false
-        }
+        const outcomes = await Promise.all([
+          readFresh<PermissionStaticLayerFacts | undefined>(
+            target.teamSessionId,
+            target.memberInstanceId,
+            (blueprint, tuple) => buildStaticFacts(blueprint, tuple.templateId as string, tuple.cwd),
+            undefined,
+          ),
+          readFresh<PermissionMutationEnvelope>(
+            target.teamSessionId,
+            target.memberInstanceId,
+            (blueprint, tuple) => buildEnvelope(blueprint, tuple.cwd),
+            NO_ENVELOPE,
+          ),
+        ])
+        for (const outcome of outcomes) if (!outcome.ok) allOk = false
       }
       healthyFlag = allOk
     },
@@ -641,8 +615,6 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
       staticLayers(teamSessionId, memberInstanceId),
     permissionEnvelope: async (teamSessionId, memberInstanceId) =>
       permissionEnvelope(teamSessionId, memberInstanceId),
-    leaderAuthorityFacts: async (teamSessionId, targetMemberInstanceId) =>
-      leaderAuthorityFacts(teamSessionId, targetMemberInstanceId),
   }
 }
 

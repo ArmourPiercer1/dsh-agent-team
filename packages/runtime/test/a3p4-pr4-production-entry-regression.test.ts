@@ -51,6 +51,7 @@ import { dirname, join, resolve, relative, sep, isAbsolute } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
 import {
+  LEADER_INSTANCE_ID,
   parseChildSessionId,
   parseInstanceId,
   parseRootSessionId,
@@ -70,9 +71,12 @@ import type { PermissionOverlayRepositoryPort } from '../permission-governance/p
 import * as hostEntry from '../src/plugin/host.js'
 import { TEAM_PLUGIN_ERROR_CODES } from '../src/plugin/types.js'
 import { createTeamProductionRoot } from '../src/plugin/root.js'
-import type { CanonicalKeyContains, TeamPermissionPlane } from '../src/plugin/permission-plane.js'
+import { createPermissionAuthorityFacts, type CanonicalKeyContains, type TeamPermissionPlane } from '../src/plugin/permission-plane.js'
 import { PERMISSION_MUTATION_ERROR_CODES } from '../governance/permission-mutation.js'
 import { PERMISSION_LIFECYCLE_ERROR_CODES } from '../permission-lifecycle/types.js'
+import { createS6RemotePorts, createS6RemoteDispatcher } from '../src/plugin/s6-remote.js'
+import { parseBlueprint } from '../../domain/blueprint/src/index.js'
+import { REMOTE_CONTRACT_VERSION_V7 } from '../../remote/src/index.js'
 import { createAgentBindings as createStubBindings } from './p8s5a-stub-glue.mjs'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
 import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
@@ -1284,7 +1288,7 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
     }
   })
 
-  it('R4-derive — the leader DENY exception survives at the entry: the carrier subtree covers, the CEILING refuses (round-3 derivation swallowed it)', async () => {
+  it('R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER\'s own answer stays DENY (no ceiling gate; no self-widening)', async () => {
     const world = makeHostWorld((base) => new FileStorageSeam(base))
     try {
       const openPath = `${world.scratch}/workspace/open.txt`
@@ -1300,32 +1304,75 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
         ]),
       })
       const { root } = await world.apply(hostRowConfig(source, `${world.scratch}/workspace`))
-      // The secret grant is covered by the carrier EXACTLY — and still
-      // refuses: the leader's own effective answer there is DENY. The
-      // round-3 derivation had flattened the leader lane to an allow union
-      // and would have COMMITTED this grant.
+      // The Ruled positive regression (parent FIX-1 + R-A discriminator at
+      // ENTRY level): the leader's OWN effective answer at the secret is
+      // DENY (its template denies the exception), the carrier EXPLICITLY
+      // permits the member expansion there — so the grant is LEGAL and
+      // COMMITS. Round 4's ceiling fold refused this shape (and mislabeled
+      // the refusal expansion-region-uncovered); the parent's final review
+      // removed the fold: the carrier is the whole §6 expansion policy.
       const secret = await settleMutation(root.mutation.governance.mutatePermission({
         authority: { kind: 'leader' },
         teamSessionId: HOST_ROOT,
         memberInstanceId: 'inst-a3p4e2worker',
         kind: 'grant_instance',
-        mutationId: 'mut-r4-derive-secret',
-        reason: 'carrier covers it, the leader does not hold it',
+        mutationId: 'mut-r5-derive-secret',
+        reason: 'carrier permits what the leader itself denies — legal member expansion',
         rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: secretPath }, effect: 'allow' }],
       }))
-      expect(secret.changed, 'the derivation-over-grant shape COMMITTED again').not.toBe(true)
-      expect(String(secret.code)).toContain('EXPANSION_DENIED')
-      // The exception-subtracted rest stays fully grantable.
+      expect(secret.changed, `carrier-covered member grant refused: ${secret.code ?? secret.reason ?? 'n/a'}`).toBe(true)
       const open = await settleMutation(root.mutation.governance.mutatePermission({
         authority: { kind: 'leader' },
         teamSessionId: HOST_ROOT,
         memberInstanceId: 'inst-a3p4e2worker',
         kind: 'grant_instance',
-        mutationId: 'mut-r4-derive-open',
-        reason: 'inside the leader lane, covered by the carrier',
+        mutationId: 'mut-r5-derive-open',
+        reason: 'plain covered grant',
         rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: openPath }, effect: 'allow' }],
       }))
-      expect(open.changed, `legal grant refused: ${open.code ?? 'n/a'}`).toBe(true)
+      expect(open.changed, `covered grant refused: ${open.code ?? 'n/a'}`).toBe(true)
+      // NO SELF-WIDENING: the grant wrote the MEMBER's overlay; the leader's
+      // own effective answer at the secret path stays DENY through the
+      // production decision lane (the same lane the pre-execute gate reads).
+      const plane = root.permissionPlane as {
+        decisions: { decide(a: Record<string, unknown>): Promise<Record<string, unknown>> }
+      }
+      const leaderAnswer = await plane.decisions.decide({
+        teamSessionId: HOST_ROOT,
+        memberInstanceId: LEADER_INSTANCE_ID,
+        operation: {
+          tool: 'write',
+          resource: { kind: 'file', key: secretPath, display: secretPath },
+          fingerprint: `sha256:${'d'.repeat(64)}`,
+        },
+        staticFacts: {
+          layers: [
+            {
+              label: 'leader',
+              default: 'deny',
+              rules: [
+                { operationClass: 'write', matcher: { kind: 'subtree', resource: `${world.scratch}/workspace` }, effect: 'allow' },
+                { operationClass: 'write', matcher: { kind: 'exact', resource: secretPath }, effect: 'deny' },
+              ],
+            },
+          ],
+        },
+      })
+      expect(leaderAnswer['kind']).toBe('effective')
+      expect(leaderAnswer['effect'], 'the member grant must not widen the LEADER\'s own authority').toBe('deny')
+      // And the member NOW executes X: the same lane answers ALLOW.
+      const memberAnswer = await plane.decisions.decide({
+        teamSessionId: HOST_ROOT,
+        memberInstanceId: 'inst-a3p4e2worker',
+        operation: {
+          tool: 'write',
+          resource: { kind: 'file', key: secretPath, display: secretPath },
+          fingerprint: `sha256:${'d'.repeat(64)}`,
+        },
+        staticFacts: { layers: [] },
+      })
+      expect(memberAnswer['kind']).toBe('effective')
+      expect(memberAnswer['effect']).toBe('allow')
     } finally {
       await world.dispose()
     }
@@ -1438,7 +1485,11 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
         leaderWrite: [{ kind: 'exact', path: 'recover.txt', effect: 'allow' }],
         carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: 'recover.txt', maximumEffect: 'allow' }]),
       })
-      const { root } = await world.apply(hostRowConfig(source, memberWs))
+      const { root, warnings } = await world.apply(hostRowConfig(source, memberWs))
+      // The warm-up fault is LOUD at boot (round-5 R-A minor closed): the
+      // host logs the failed warm explicitly; it never prints healthy:true
+      // over a faulted warm.
+      expect(warnings.join('\n'), 'warm-up fault must be logged LOUD at boot').toMatch(/warm-up FAULTED/)
       const mutate = (mutationId: string, effect: 'allow' | 'deny') =>
         root.mutation.governance.mutatePermission({
           authority: { kind: 'leader' },
@@ -1462,7 +1513,18 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
       // envelope / UNKNOWN facts) — never commits, never crashes.
       const during = await mutate('mut-r4-recover-during', 'allow')
       expect(during.changed, 'a faulted authority must not authorize expansion').not.toBe(true)
-      expect(String(`${during.code ?? ''}${during.reason ?? ''}`)).toMatch(/EXPANSION|CONTEXT|ENVELOPE/)
+      // Pinned EXACTLY on the wired fail-closed label. During the fault BOTH
+      // authority reads abstain: the envelope reader yields zero authority
+      // (the kernel's coverage judgement therefore refuses FIRST), so this
+      // fixture's route is ENVELOPE-EXPANSION_DENIED — the pure
+      // facts-abstention CONTEXT route (envelope covered, target facts
+      // UNKNOWN) is pinned where only the facts abstain:
+      // a3p3-permission-mutation-authority.test.ts:454. What this leg pins:
+      // a fault NEVER authorizes, and it refuses TYPED (not a crash, not a
+      // silent false).
+      expect(String(during.code), `unexpected refusal path: ${during.code ?? during.reason}`).toBe(
+        'PERMISSION_ENVELOPE_EXPANSION_DENIED',
+      )
       // UNAFFECTED decisions keep reading correct current facts: the
       // envelope-free tightening commits even while the fault persists.
       const unaffected = await mutate('mut-r4-recover-unaffected', 'deny')
@@ -1477,5 +1539,564 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
     }
   })
 })
+
+
+function r5AuthorityFacts(deps: {
+  domain: any
+  base: string
+  blueprintSource: string
+  canonicalize: (path: string, cwd: string) => Promise<string>
+}) {
+  const parsed = parseBlueprint(deps.blueprintSource)
+  return createPermissionAuthorityFacts({
+    resolveBlueprint: () => parsed,
+    memberTemplateId: (teamSessionId, memberInstanceId) =>
+      deps.domain.repositories.memberInstances
+        .get(teamSessionId, memberInstanceId)?.templateId as string | undefined,
+    memberWorkspace: (teamSessionId, memberInstanceId) => {
+      const ws = deps.domain.repositories.memberInstances.get(teamSessionId, memberInstanceId)
+        ?.workspace as string | undefined
+      if (typeof ws === 'string' && ws !== '') return ws
+      const teamDefault = deps.domain.repositories.teamSessions.get(teamSessionId)
+        ?.defaultWorkspace as string | undefined
+      return typeof teamDefault === 'string' && teamDefault !== '' ? teamDefault : undefined
+    },
+    canonicalize: deps.canonicalize,
+  })
+}
+
+// ===========================================================================
+// R5 — ROUND 5: the REAL production entries (FIX-2 tool + RPC), the CWD
+// source-of-truth pin (FIX-3), the carrier grammar negatives + golden hash
+// (R-B debt). The parent's required regressions: "real entry → governance
+// mutation service → durable snapshot → the NEXT pre-execute decision shows
+// a real ALLOW (granted) and a real refusal (absent/revoked), end-to-end
+// through the production adapter" — for BOTH new entries.
+// ===========================================================================
+describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt)', () => {
+  it('R5-tool — the REAL team_grant_permission/team_revoke_permission surface: grant commits → decision ALLOW; revoke → decision DENY again (Leader gate + server-side canonicalization)', async () => {
+    const base = scratchDir(`a3p4r5t-${Math.random().toString(36).slice(2, 8)}`)
+    openScratch.push(base)
+    destroyDir(base)
+    mkdirSync(`${base}/workspace`, { recursive: true })
+    const seam = new FileStorageSeam(base)
+    const domain = await createTeamDomain(seam)
+    const overlayStore = await openPermissionOverlayStore(new FileStorageSeam(base))
+    const overlay = createPermissionOverlayRepositoryPort({ repository: overlayStore.repository })
+    const openKey = `${base}/workspace/open.txt`
+    const config = {
+      bootPhase: 'create' as const,
+      rootSessionId: GLUE_ROOT,
+      blueprintSource: r4BlueprintSource({
+        leaderWrite: [],
+        carrier: carrierYaml([
+          { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
+        ]),
+      }),
+      generation: 1,
+      defaultWorkspace: `${base}/workspace`,
+      seedMembers: [],
+      staticModel: { provider: 'a3p4r5', model: 'a3p4r5-model' },
+      deniedSelection: null,
+      mcpServer: null,
+      environmentFacts: [],
+      externalPolicyFacts: { hard: {}, capabilityExists: {} },
+    }
+    await domain.repositories.teamSessions.put({
+      rootSessionId: parseRootSessionId(GLUE_ROOT),
+      blueprint: createBlueprintSnapshotRef({
+        blueprintId: parseBlueprintId('team.a3p4r5x'),
+        revision: parseBlueprintRevision('1'),
+        contentHash: parseBlueprintContentHash(`sha256:${'9'.repeat(64)}`),
+      }),
+      defaultWorkspace: `${base}/workspace`,
+      createdAt: NOW,
+      generation: 1,
+    })
+    await domain.repositories.memberInstances.put({
+      rootSessionId: parseRootSessionId(GLUE_ROOT),
+      instanceId: parseInstanceId(GLUE_INST),
+      templateId: parseTemplateId('worker'),
+      label: 'r5 tool member (NO workspace row — FIX-3 durable default applies)',
+      childSessionId: parseChildSessionId('child-r5-tool'),
+      lifecycle: 'RUNNING',
+      createdAt: NOW,
+      activityVersion: 1,
+    })
+    const teamToolsRef: { current: any } = { current: undefined }
+    const callerState: { value: { caller: Record<string, unknown>; rootSessionId: string } } = {
+      value: { caller: { kind: 'instance', instanceId: LEADER_INSTANCE_ID }, rootSessionId: GLUE_ROOT },
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- stub glue surface
+    const live: any = createStubBindings({ config, teamToolsRef, domain })
+    // The IDENTITY seam (stubbed by this glue world by design — the caller-
+    // root binding of the real seam is pinned in the tools package suite):
+    // the holder below lets this leg flip Leader/member identity per leg.
+    live.resolveCaller = async () => callerState.value
+    const permissionCanonicalize = async (path: string, cwd: string) =>
+      path.startsWith('/') ? path : resolve(cwd, path)
+    const facts = r5AuthorityFacts({ domain, base, blueprintSource: config.blueprintSource, canonicalize: permissionCanonicalize })
+    const permissionPlaneRef: { current: TeamPermissionPlane | undefined } = { current: undefined }
+    const root = createTeamProductionRoot({
+      config,
+      domain: domain as never,
+      storageSeam: seam,
+      live,
+      now: () => NOW,
+      teamToolsRef,
+      controlServiceRef: { current: undefined },
+      legacyInspect: (() => {
+        throw new Error('a3p4r5 world: legacy inspect is unused')
+      }) as never,
+      permissionOverlay: overlay,
+      fsContainsKeys: makeContainKeys(),
+      permissionPlaneRef,
+      // THE production canonicalizer seam shape (host.ts permissionCanonicalize).
+      permissionCanonicalize,
+      permissionEnvelope: facts.permissionEnvelope,
+      permissionStaticLayers: facts.staticLayers,
+    })
+    void root
+    const tools = teamToolsRef.current?.tools as { name: string; execute(a: unknown, e: unknown): Promise<any> }[]
+    const grant = tools.find((t) => t.name === 'team_grant_permission')
+    const revoke = tools.find((t) => t.name === 'team_revoke_permission')
+    expect(grant, 'team_grant_permission is on the REAL registered tool set').toBeDefined()
+    expect(revoke, 'team_revoke_permission is on the REAL registered tool set').toBeDefined()
+    const plane = permissionPlaneRef.current
+    if (plane === undefined) throw new Error('the r5 root did not fill the plane reference')
+    try {
+      // (0) MEMBER callers are rejected at the tool boundary, zero write.
+      callerState.value = {
+        caller: { kind: 'instance', instanceId: 'inst-somebody-else' },
+        rootSessionId: GLUE_ROOT,
+      }
+      const memberAttempt = await grant!.execute(
+        {
+          rootSessionId: GLUE_ROOT,
+          requestToken: 'r5-member-attempt',
+          targetInstanceId: GLUE_INST,
+          rules: [{ operationClass: 'write', matcher: { kind: 'exact', value: 'open.txt' }, effect: 'allow' }],
+        },
+        { agent: { id: 'agent-of-somebody-else' } },
+      )
+      expect(memberAttempt.status).toBe('rejected')
+      expect(String(memberAttempt.code)).toContain('PERMISSION_NOT_LEADER')
+      // (1) THE REAL ENTRY: the Leader executes the tool with a RAW RELATIVE
+      // path — the tool canonicalizes SERVER-SIDE at the target member's
+      // durable effective workspace (member row has NO workspace → the
+      // durable TeamSession default, FIX-3/FIX-2a). The carrier covers the
+      // canonical key ⇒ the governance mutation COMMITS durably.
+      callerState.value = { caller: { kind: 'instance', instanceId: LEADER_INSTANCE_ID }, rootSessionId: GLUE_ROOT }
+      const granted = await grant!.execute(
+        {
+          rootSessionId: GLUE_ROOT,
+          requestToken: 'r5-tool-grant-1',
+          targetInstanceId: GLUE_INST,
+          rules: [{ operationClass: 'write', matcher: { kind: 'exact', value: 'open.txt' }, effect: 'allow' }],
+        },
+        { agent: { id: 'agent-of-the-leader' } },
+      )
+      expect(granted.status, `tool grant failed: ${JSON.stringify(granted)}`).toBe('permission-mutated')
+      expect(granted.changed).toBe(true)
+      // The DURABLE SNAPSHOT proves the canonical key landed at the member's
+      // basis (never the raw relative path, never the acting row's tail).
+      const snapshot = await overlay.latest({ teamSessionId: GLUE_ROOT, memberInstanceId: GLUE_INST } as never)
+      const landed = (((snapshot ?? {}) as { state?: { rules?: { resource: string }[] } }).state?.rules ?? []).map(
+        (r) => r.resource,
+      )
+      expect(landed.join('|'), `overlay landed ${JSON.stringify(landed)}`).toContain(openKey)
+      // THE NEXT PRE-EXECUTE DECISION: the production decision lane (the
+      // lane the agent-bindings pre-execute gate consumes) answers ALLOW.
+      const allowed = await plane.decisions.decide({
+        teamSessionId: GLUE_ROOT,
+        memberInstanceId: GLUE_INST,
+        operation: {
+          tool: 'write',
+          resource: { kind: 'file', key: openKey, display: openKey },
+          fingerprint: `sha256:${'a'.repeat(64)}`,
+        },
+        staticFacts: { layers: [] },
+      } as never)
+      expect((allowed as Record<string, unknown>)['kind']).toBe('effective')
+      expect((allowed as Record<string, unknown>)['effect']).toBe('allow')
+      // (2) The dedupe identity: the same request token re-executes nothing.
+      const replay = await grant!.execute(
+        {
+          rootSessionId: GLUE_ROOT,
+          requestToken: 'r5-tool-grant-1',
+          targetInstanceId: GLUE_INST,
+          rules: [{ operationClass: 'write', matcher: { kind: 'exact', value: 'open.txt' }, effect: 'allow' }],
+        },
+        { agent: { id: 'agent-of-the-leader' } },
+      )
+      expect(replay.status).toBe('permission-mutated')
+      expect(replay.changed, 'the request token is the durable dedupe identity').toBe(false)
+      // (3) The closed grammar refuses malformed rules at the tool boundary.
+      const malformed = await grant!.execute(
+        {
+          rootSessionId: GLUE_ROOT,
+          requestToken: 'r5-tool-bad-1',
+          targetInstanceId: GLUE_INST,
+          rules: [{ operationClass: 'write', matcher: { kind: 'glob', value: '*' }, effect: 'allow' }],
+        },
+        { agent: { id: 'agent-of-the-leader' } },
+      )
+      expect(malformed.status).toBe('rejected')
+      // (4) THE REVOKE through the tool → the next pre-execute decision
+      // refuses again (the real refusal, not a wiring absence).
+      const revoked = await revoke!.execute(
+        {
+          rootSessionId: GLUE_ROOT,
+          requestToken: 'r5-tool-revoke-1',
+          targetInstanceId: GLUE_INST,
+          rules: [{ operationClass: 'write', matcher: { kind: 'exact', value: 'open.txt' }, effect: 'allow' }],
+        },
+        { agent: { id: 'agent-of-the-leader' } },
+      )
+      expect(revoked.status, `tool revoke failed: ${JSON.stringify(revoked)}`).toBe('permission-mutated')
+      expect(revoked.changed).toBe(true)
+      const refused = await plane.decisions.decide({
+        teamSessionId: GLUE_ROOT,
+        memberInstanceId: GLUE_INST,
+        operation: {
+          tool: 'write',
+          resource: { kind: 'file', key: openKey, display: openKey },
+          fingerprint: `sha256:${'a'.repeat(64)}`,
+        },
+        staticFacts: { layers: [] },
+      } as never)
+      expect((refused as Record<string, unknown>)['effect'], 'after revoke the member falls back to the deny floor').toBe('deny')
+    } finally {
+      await seam.closeAll?.()
+    }
+  })
+
+  it('R5-rpc — the REAL remote method override.mutatePermission (v7-only): operator grant → decision ALLOW; revoke → DENY; member-caller authority refuses typed', async () => {
+    const base = scratchDir(`a3p4r5r-${Math.random().toString(36).slice(2, 8)}`)
+    openScratch.push(base)
+    destroyDir(base)
+    mkdirSync(`${base}/workspace`, { recursive: true })
+    const seam = new FileStorageSeam(base)
+    const domain = await createTeamDomain(seam)
+    const overlayStore = await openPermissionOverlayStore(new FileStorageSeam(base))
+    const overlay = createPermissionOverlayRepositoryPort({ repository: overlayStore.repository })
+    const openKey = `${base}/workspace/open.txt`
+    await domain.repositories.teamSessions.put({
+      rootSessionId: parseRootSessionId(GLUE_ROOT),
+      blueprint: createBlueprintSnapshotRef({
+        blueprintId: parseBlueprintId('team.a3p4r5x'),
+        revision: parseBlueprintRevision('1'),
+        contentHash: parseBlueprintContentHash(`sha256:${'9'.repeat(64)}`),
+      }),
+      defaultWorkspace: `${base}/workspace`,
+      createdAt: NOW,
+      generation: 1,
+    })
+    await domain.repositories.memberInstances.put({
+      rootSessionId: parseRootSessionId(GLUE_ROOT),
+      instanceId: parseInstanceId(GLUE_INST),
+      templateId: parseTemplateId('worker'),
+      label: 'r5 rpc member',
+      childSessionId: parseChildSessionId('child-r5-rpc'),
+      lifecycle: 'RUNNING',
+      createdAt: NOW,
+      activityVersion: 1,
+    })
+    // The ONE governance authority (the same service root assembles).
+    const config = {
+      bootPhase: 'create' as const,
+      rootSessionId: GLUE_ROOT,
+      blueprintSource: r4BlueprintSource({
+        leaderWrite: [],
+        carrier: carrierYaml([
+          { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
+        ]),
+      }),
+      generation: 1,
+      defaultWorkspace: `${base}/workspace`,
+      seedMembers: [],
+      staticModel: { provider: 'a3p4r5', model: 'a3p4r5-model' },
+      deniedSelection: null,
+      mcpServer: null,
+      environmentFacts: [],
+      externalPolicyFacts: { hard: {}, capabilityExists: {} },
+    }
+    const teamToolsRef: { current: any } = { current: undefined }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- stub glue surface
+    const live: any = createStubBindings({ config, teamToolsRef, domain })
+    const permissionCanonicalize = async (path: string, cwd: string) =>
+      path.startsWith('/') ? path : resolve(cwd, path)
+    const facts = r5AuthorityFacts({ domain, base, blueprintSource: config.blueprintSource, canonicalize: permissionCanonicalize })
+    const permissionPlaneRef: { current: TeamPermissionPlane | undefined } = { current: undefined }
+    const root = createTeamProductionRoot({
+      config,
+      domain: domain as never,
+      storageSeam: seam,
+      live,
+      now: () => NOW,
+      teamToolsRef,
+      controlServiceRef: { current: undefined },
+      legacyInspect: (() => {
+        throw new Error('a3p4r5 rpc world: legacy inspect is unused')
+      }) as never,
+      permissionOverlay: overlay,
+      fsContainsKeys: makeContainKeys(),
+      permissionPlaneRef,
+      permissionCanonicalize: async (path: string, cwd: string) =>
+        path.startsWith('/') ? path : resolve(cwd, path),
+    })
+    // THE PRODUCTION S6 DISPATCHER over the same authority (the root wires
+    // exactly these option shapes into createS6RemoteSurfaces).
+    const s6Options = {
+      rootSessionId: GLUE_ROOT,
+      repositories: domain.repositories,
+      isOwnedRoot: (sid: string) => sid === GLUE_ROOT,
+      governance: root.mutation.governance,
+      permission: {
+        mutatePermission: (args: Record<string, unknown>) =>
+          root.mutation.governance.mutatePermission(args as never) as unknown as Promise<Record<string, unknown>>,
+      },
+      permissionCanonicalize: async (path: string, cwd: string) =>
+        path.startsWith('/') ? path : resolve(cwd, path),
+    }
+    const ports = createS6RemotePorts(s6Options as never)
+    const asHuman = () => Promise.resolve({ kind: 'human', humanId: 'operator-r5' } as never)
+    const asMember = () => Promise.resolve({ kind: 'instance', instanceId: GLUE_INST } as never)
+    const dispatchHuman = createS6RemoteDispatcher(ports, asHuman as never)
+    const dispatchMember = createS6RemoteDispatcher(ports, asMember as never)
+    const plane = permissionPlaneRef.current
+    if (plane === undefined) throw new Error('the r5 rpc root did not fill the plane reference')
+    const mutateParams = (mutationId: string) => ({
+      version: REMOTE_CONTRACT_VERSION_V7,
+      params: {
+        teamSessionId: GLUE_ROOT,
+        memberInstanceId: GLUE_INST,
+        kind: 'grant_instance',
+        mutationId,
+        reason: 'r5 rpc leg',
+        rules: [{ operationClass: 'write', matcher: { kind: 'exact', value: 'open.txt' }, effect: 'allow' }],
+      },
+    })
+    try {
+      // (1) A v6 envelope is the typed version rejection (closed rollout).
+      const v6 = await dispatchHuman('override.mutatePermission', {
+        version: 6,
+        params: mutateParams('x').params,
+      })
+      expect(v6.ok, 'v6 must not reach the v7-only method').toBe(false)
+      // (2) THE REAL ENTRY (human RPC): operator authority, RAW RELATIVE
+      // path canonicalized server-side at the member's durable basis →
+      // durable commit.
+      const granted = await dispatchHuman('override.mutatePermission', mutateParams('r5-rpc-grant-1'))
+      expect(granted.ok, `rpc grant failed: ${JSON.stringify((granted as { error?: unknown }).error ?? {})}`).toBe(true)
+      const data = (granted as { value: { data: Record<string, unknown> } }).value.data
+      expect(data['changed']).toBe(true)
+      const snapshot = await overlay.latest({ teamSessionId: GLUE_ROOT, memberInstanceId: GLUE_INST } as never)
+      const landed = (((snapshot ?? {}) as { state?: { rules?: { resource: string }[] } }).state?.rules ?? []).map(
+        (r) => r.resource,
+      )
+      expect(landed.join('|')).toContain(openKey)
+      // THE NEXT PRE-EXECUTE DECISION: ALLOW through the production lane.
+      const allowed = await plane.decisions.decide({
+        teamSessionId: GLUE_ROOT,
+        memberInstanceId: GLUE_INST,
+        operation: {
+          tool: 'write',
+          resource: { kind: 'file', key: openKey, display: openKey },
+          fingerprint: `sha256:${'b'.repeat(64)}`,
+        },
+        staticFacts: { layers: [] },
+      } as never)
+      expect((allowed as Record<string, unknown>)['effect']).toBe('allow')
+      // (3) The closed field set refuses unknown fields (strict closed schema).
+      const smuggled = await dispatchHuman('override.mutatePermission', {
+        version: REMOTE_CONTRACT_VERSION_V7,
+        params: { ...mutateParams('r5-rpc-smuggle').params, authority: { kind: 'leader' } },
+      })
+      expect(smuggled.ok, 'a client-supplied authority field is refused').toBe(false)
+      // (4) The REVOKE through the same entry → the next decision refuses.
+      const revoked = await dispatchHuman('override.mutatePermission', {
+        version: REMOTE_CONTRACT_VERSION_V7,
+        params: {
+          ...mutateParams('r5-rpc-revoke-1').params,
+          kind: 'revoke_permission',
+          mutationId: 'r5-rpc-revoke-1',
+        },
+      })
+      expect(revoked.ok, `rpc revoke failed: ${JSON.stringify((revoked as { error?: unknown }).error ?? {})}`).toBe(true)
+      const refused = await plane.decisions.decide({
+        teamSessionId: GLUE_ROOT,
+        memberInstanceId: GLUE_INST,
+        operation: {
+          tool: 'write',
+          resource: { kind: 'file', key: openKey, display: openKey },
+          fingerprint: `sha256:${'b'.repeat(64)}`,
+        },
+        staticFacts: { layers: [] },
+      } as never)
+      expect((refused as Record<string, unknown>)['effect']).toBe('deny')
+      // (5) A MEMBER principal never mutates: the member authority is
+      // rejected by the governance service (typed, zero write).
+      const memberAttempt = await dispatchMember('override.mutatePermission', mutateParams('r5-rpc-member-1'))
+      expect(memberAttempt.ok, 'a member principal must not mutate the permission overlay').toBe(false)
+      const afterMember = await overlay.latest({ teamSessionId: GLUE_ROOT, memberInstanceId: GLUE_INST } as never)
+      const afterRules = ((((afterMember ?? {}) as { state?: { rules?: { resource: string }[] } }).state?.rules) ?? []).map(
+        (r) => r.resource,
+      )
+      expect(afterRules.join('|'), 'the member attempt wrote nothing').not.toContain(`${openKey}`.replace(/^/, 'exact:'))
+    } finally {
+      await seam.closeAll?.()
+    }
+  })
+
+  it('R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B\u2019s durable default \u2014 never the acting row-A tail (two teams, one host row)', async () => {
+    const world = makeHostWorld((base) => new FileStorageSeam(base))
+    try {
+      const wsA = `${world.scratch}/workspace`
+      const wsB = `${world.scratch}/wsB`
+      const source = r4BlueprintSource({
+        leaderWrite: [],
+        carrier: carrierYaml([
+          { operationClass: 'write', kind: 'exact', value: 'b-open.txt', maximumEffect: 'allow' },
+          { operationClass: 'write', kind: 'exact', value: 'b-secret.txt', maximumEffect: 'allow' },
+        ]),
+      })
+      const { root } = await world.apply(hostRowConfig(source, wsA))
+      const repos = (root as unknown as { domain: { repositories: any } }).domain.repositories
+      const teamA = await repos.teamSessions.get(HOST_ROOT as never)
+      if (teamA === undefined) throw new Error('the boot team row is absent')
+      const TEAM_B = 'session-r5teamb'
+      // Team B: a DURABLE TeamSession row over the SAME host row/boot, with
+      // its OWN defaultWorkspace and the SAME frozen blueprint snapshot.
+      await repos.teamSessions.put({
+        rootSessionId: parseRootSessionId(TEAM_B),
+        blueprint: teamA.blueprint,
+        defaultWorkspace: wsB,
+        createdAt: NOW,
+        generation: 1,
+      } as never)
+      // Team B's member: NO workspace row field \u2014 the durable team default
+      // must supply the canonicalization basis (the FIX-3 fallback).
+      await repos.memberInstances.put({
+        rootSessionId: parseRootSessionId(TEAM_B),
+        instanceId: parseInstanceId('inst-r5bmember'),
+        templateId: parseTemplateId('worker'),
+        label: 'r5 team-B member (no workspace row)',
+        childSessionId: parseChildSessionId('child-r5-b'),
+        lifecycle: 'RUNNING',
+        createdAt: NOW,
+        activityVersion: 1,
+      } as never)
+      // (1) POSITIVE: the B-basis key is covered \u21d2 the grant COMMITS. This
+      // only holds if the carrier canonicalized 'b-open.txt' at wsB (the
+      // durable Team B default) \u2014 the round-4 code used the ACTING row-A
+      // tail here and inverted this outcome.
+      const bMemberGrant = await settleMutation(root.mutation.governance.mutatePermission({
+        authority: { kind: 'leader' },
+        teamSessionId: TEAM_B,
+        memberInstanceId: 'inst-r5bmember',
+        kind: 'grant_instance',
+        mutationId: 'mut-r5-ws-bmember',
+        reason: 'B-basis grant',
+        rules: [
+          { operationClass: 'write', matcher: { kind: 'exact', resource: `${wsB}/b-open.txt` }, effect: 'allow' },
+        ],
+      }))
+      expect(bMemberGrant.changed, `B-basis member grant refused: ${bMemberGrant.code ?? 'n/a'}`).toBe(true)
+      // (2) NEGATIVE: the row-A-basis key is NOT covered at B's basis \u21d2
+      // refused (the pre-fix code would have COMMITTED this one).
+      const aBasisGrant = await settleMutation(root.mutation.governance.mutatePermission({
+        authority: { kind: 'leader' },
+        teamSessionId: TEAM_B,
+        memberInstanceId: 'inst-r5bmember',
+        kind: 'grant_instance',
+        mutationId: 'mut-r5-ws-abasis',
+        reason: 'row-A-basis key must not be the Team B envelope basis',
+        rules: [
+          { operationClass: 'write', matcher: { kind: 'exact', resource: `${wsA}/b-open.txt` }, effect: 'allow' },
+        ],
+      }))
+      expect(aBasisGrant.changed, 'the acting row-A tail leaked into the Team B basis').not.toBe(true)
+      expect(String(aBasisGrant.code)).toContain('EXPANSION_DENIED')
+      // (3) LEADER POSITION of Team B (NO member row at all): the same
+      // durable team default supplies the basis.
+      const bLeaderGrant = await settleMutation(root.mutation.governance.mutatePermission({
+        authority: { kind: 'leader' },
+        teamSessionId: TEAM_B,
+        memberInstanceId: LEADER_INSTANCE_ID,
+        kind: 'grant_instance',
+        mutationId: 'mut-r5-ws-bsleader',
+        reason: 'B-basis leader-position grant',
+        rules: [
+          { operationClass: 'write', matcher: { kind: 'exact', resource: `${wsB}/b-secret.txt` }, effect: 'allow' },
+        ],
+      }))
+      expect(bLeaderGrant.changed, `B-basis leader grant refused: ${bLeaderGrant.code ?? 'n/a'}`).toBe(true)
+      // (4) TWO TEAMS ONE ROW: Team A stays fully correct at ITS basis
+      // (its row default wsA), concurrently with Team B.
+      const aGrant = await settleMutation(root.mutation.governance.mutatePermission({
+        authority: { kind: 'leader' },
+        teamSessionId: HOST_ROOT,
+        memberInstanceId: 'inst-a3p4e2worker',
+        kind: 'grant_instance',
+        mutationId: 'mut-r5-ws-amember',
+        reason: 'A-basis grant still works',
+        rules: [
+          { operationClass: 'write', matcher: { kind: 'exact', resource: `${wsA}/b-open.txt` }, effect: 'allow' },
+        ],
+      }))
+      expect(aGrant.changed, `A-basis grant refused: ${aGrant.code ?? 'n/a'}`).toBe(true)
+    } finally {
+      await world.dispose()
+    }
+  })
+
+  it('R5-grammar \u2014 the carrier grammar refuses malformed carriers typed (R-B debt: MALFORMED rejection strings existed nowhere)', () => {
+    const baseLines: string = r4BlueprintSource({
+      leaderWrite: [],
+      carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' }]),
+    })
+    // Valid baseline parses (the negative control for the three below).
+    expect(() => parseBlueprint(baseLines)).not.toThrow()
+    const mutate = (fn: (lines: string[]) => string[]): string => fn(baseLines.split('\n')).join('\n')
+    // (a) an effect OUTSIDE the closed ladder vocabulary
+    const badEffect = mutate((ls) => ls.map((line) => line.replace('maximumEffect: allow', 'maximumEffect: granted')))
+    expect(() => parseBlueprint(badEffect)).toThrowError(/permissionMutationEnvelope|maximumEffect|MALFORMED/i)
+    // (b) an unknown rule field (closed field set)
+    const unknownField = mutate((ls) => {
+      const at = ls.findIndex((line) => line.includes('maximumEffect:'))
+      ls.splice(at, 0, '        smuggledField: 1')
+      return ls
+    })
+    expect(() => parseBlueprint(unknownField)).toThrowError(/permissionMutationEnvelope|smuggledField|MALFORMED/i)
+    // (c) a matcher kind OUTSIDE the closed carrier vocabulary (the YAML
+    // stays well-formed, so this trips the GRAMMAR, not the parser).
+    const badKind = mutate((ls) =>
+      ls.map((line) => (line.includes('kind: exact') ? line.replace('kind: exact', 'kind: glob') : line)),
+    )
+    expect(badKind).not.toBe(baseLines)
+    expect(() => parseBlueprint(badKind)).toThrowError(/permissionMutationEnvelope|kind|matcher|MALFORMED/i)
+  })
+
+  it('R5-hash \u2014 golden content-hash pin: the carrier-bearing blueprint hashes BYTE-IDENTICALLY (canonicalizer drift trips this leg)', () => {
+    const source = r4BlueprintSource({
+      leaderWrite: [],
+      carrier: carrierYaml([
+        { operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' },
+        { operationClass: 'write', kind: 'subtree', value: 'dir', maximumEffect: 'ask' },
+      ]),
+    })
+    const first = parseBlueprint(source)
+    const again = parseBlueprint(source)
+    expect(again.contentHash).toBe(first.contentHash)
+    // GOLDEN: this literal is the canonical content hash of the EXACT bytes
+    // this builder emits. Any drift in the blueprint canonicalization
+    // (field ordering, carrier serialization, hashing) changes it.
+    expect(first.contentHash).toBe(
+      'sha256:f0148ab83ec03c4dcb3da4b9357b260ea446067fb335c56153b35b815c897bd6',
+    )
+  })
+})
+
 
 void HERE

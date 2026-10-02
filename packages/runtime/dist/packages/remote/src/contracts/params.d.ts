@@ -405,7 +405,7 @@ export interface RemoteLegacyInspectParams {
     readonly projectDir?: string;
 }
 /** The union of every method's parsed param object. */
-export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideSetParamsV7 | RemoteOverrideResetParams | RemoteOverrideResetParamsV7 | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
+export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideSetParamsV7 | RemoteOverrideResetParams | RemoteOverrideResetParamsV7 | RemoteOverrideMutatePermissionParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
 /** The parse result of one request's `params` (typed + token echo). */
 export interface RemoteParsedParams {
     /** The catalog method the params were parsed for. */
@@ -495,6 +495,33 @@ export declare function parseRemoteTeamEnsureRootLiveParams(method: string, para
 export declare function parseRemoteTeamResolveControlParams(method: string, params: RemoteSafeRecord): RemoteTeamResolveControlParams;
 /** Parse `team.prepareOrdinaryOpen` params (contract v5, v5-only method). */
 export declare function parseRemoteTeamPrepareOrdinaryOpenParams(method: string, params: RemoteSafeRecord): RemoteTeamPrepareOrdinaryOpenParams;
+/**
+ * PR4 ROUND 5 (FIX-2b) — `override.mutatePermission` (contract v7, v7-only):
+ * the human/operator grant/revoke into the durable permission overlay via
+ * the ONE governance mutation authority. CLOSED grammar: rules are 1..32
+ * entries of {operationClass, matcher{kind,value}, effect}; the caller NEVER
+ * supplies the authority (the server derives it from the session binding)
+ * and exact/subtree matcher VALUES are raw paths — the server canonicalizes
+ * them at the TARGET member's effective workspace (a client-supplied
+ * canonical key is never authorization input).
+ */
+export interface RemoteOverrideMutatePermissionParams {
+    readonly teamSessionId: string;
+    readonly memberInstanceId: string;
+    readonly kind: 'grant_instance' | 'revoke_permission';
+    readonly mutationId: string;
+    readonly reason?: string;
+    readonly rules: readonly {
+        readonly operationClass: string;
+        readonly matcher: {
+            readonly kind: 'exact' | 'subtree' | 'fingerprint';
+            readonly value: string;
+        };
+        readonly effect: 'allow' | 'ask' | 'deny';
+    }[];
+}
+/** Parse `override.mutatePermission` params (contract v7, v7-only method). */
+export declare function parseRemoteOverrideMutatePermissionParams(method: string, params: RemoteSafeRecord): RemoteOverrideMutatePermissionParams;
 /** Parse `team.getReadState` params (contract v6, v6-only method). */
 export declare function parseRemoteTeamGetReadStateParams(method: string, params: RemoteSafeRecord): RemoteTeamGetReadStateParams;
 /** Parse `team.getProjection` params. */

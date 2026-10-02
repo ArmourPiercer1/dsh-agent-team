@@ -794,13 +794,18 @@ export interface TeamProductionRootParams {
    */
   readonly permissionStaticLayers?: GovernancePermissionLaneDeps['staticLayers']
   /**
-   * pre-alpha3 PR4 (round 4, external review X1) — the acting leader's OWN
-   * static-facts reader (the authority ceiling checked against every risen
-   * cell). Forwarded VERBATIM; absent = the pre-round-4 envelope-only
-   * judgement (hand-authored test/legacy lanes keep working byte-for-byte).
-   * The host entry injects `permissionFacts.staticLayers(team, LEADER)`.
+   * pre-alpha3 PR4 ROUND 5 (FIX-2a) — the server-side canonicalizer for the
+   * Leader's permission grant/revoke TOOL (the SAME fs-provider seam the
+   * authority facts use). The tool NEVER trusts a client-supplied canonical
+   * key: file rule PATHS arrive and are canonicalized HERE, at the TARGET
+   * member's effective workspace (the durable member row's workspace, else
+   * the durable TeamSession default — the FIX-3 durable fallback). Absent =
+   * the grant tool refuses file rules typed (zero write); fingerprint rules
+   * are identities and pass through regardless. (Round 5 also REMOVED the
+   * round-4 permissionLeaderAuthorityFacts ceiling reader — ADR §6 carries
+   * no second policy gate.)
    */
-  readonly permissionLeaderAuthorityFacts?: GovernancePermissionLaneDeps['leaderAuthorityFacts']
+  readonly permissionCanonicalize?: (path: string, cwd: string) => Promise<string>
 
 }
 
@@ -836,7 +841,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     permissionPlaneRef,
     permissionEnvelope,
     permissionStaticLayers,
-    permissionLeaderAuthorityFacts,
+    permissionCanonicalize,
   } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
@@ -2492,9 +2497,6 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           // UNKNOWN / zero-envelope / no-ceiling postures).
           ...(permissionStaticLayers === undefined ? {} : { staticLayers: permissionStaticLayers }),
           ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
-          ...(permissionLeaderAuthorityFacts === undefined
-            ? {}
-            : { leaderAuthorityFacts: permissionLeaderAuthorityFacts }),
         })
 
   const mutation = {
@@ -2830,6 +2832,20 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // routes override.set / override.reset / policyState.set through it
     // (serialized on the shared chain, committed before the ack).
     governance: mutation.governance,
+    // PR4 ROUND 5 (FIX-2b): the human/operator permission grant/revoke lane
+    // (remote method `override.mutatePermission`, v7-only) — the SAME
+    // governance service the Leader tool and the in-process entries reach
+    // (ONE authority; the caller-derived authority rides the ActionCaller),
+    // sharing the ONE server-side canonicalizer seam.
+    permission: {
+      mutatePermission: (mutationArgs: Record<string, unknown>) =>
+        mutation.governance.mutatePermission(mutationArgs as never) as unknown as Promise<
+          Record<string, unknown>
+        >,
+    },
+    ...(permissionCanonicalize === undefined
+      ? {}
+      : { permissionCanonicalize }),
     // pre-alpha3 PR-B (plan §B.2): the remote PolicyState read surface
     // reads the DURABLE transition rows (the ledger) directly — the
     // commit-order read the committed-state derivation consumes (the
@@ -2983,13 +2999,41 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // --- A04 the intent surface (the remote method catalog) --------------------------------------------
   const intent = { catalog: REMOTE_METHOD_CATALOG }
 
-  // --- the thirteen Team tools (the glue registers them on the agent setup; C1 adds the pending-list tool; the archive-member round adds team_archive_member) -------------------------------------
+  // --- the Team tool set (the glue registers them on the agent setup; C1 added the pending-list tool; the archive-member round added team_archive_member; PR4 ROUND 5 adds team_grant_permission + team_revoke_permission) ----
   const tools = createTeamTools({
     teamRuntime: runtime,
     controlService: control,
     messaging,
     activity,
     resolveCaller: live.resolveCaller,
+    // PR4 ROUND 5 (FIX-2a): the permission grant/revoke entries over the
+    // ONE governance mutation authority. Server-side everything: the
+    // authority rides the CALLER identity the host already resolved (the
+    // tool's Leader gate), rule PATHS canonicalize at the TARGET member's
+    // durable effective workspace through the injected provider, and the
+    // mutation itself is the same service every other entry uses.
+    permission: {
+      async mutatePermission(mutationArgs: Record<string, unknown>): Promise<Record<string, unknown>> {
+        const result = await mutation.governance.mutatePermission(mutationArgs as never)
+        return (result ?? {}) as Record<string, unknown>
+      },
+      async canonicalizeFile(targetInstanceId: string, path: string): Promise<string> {
+        if (permissionCanonicalize === undefined) {
+          throw new Error(
+            'team_grant_permission: file-rule canonicalization is unwired (no fs provider seam on this root) — refusing, zero write',
+          )
+        }
+        const workspace =
+          (repos.memberInstances.get(rootSid as never, targetInstanceId as never)?.workspace as string | undefined) ??
+          (repos.teamSessions.get(rootSid as never)?.defaultWorkspace as string | undefined)
+        if (typeof workspace !== 'string' || workspace.length === 0) {
+          throw new Error(
+            'team_grant_permission: the addressed team/member has no durable effective workspace — refusing, zero write',
+          )
+        }
+        return permissionCanonicalize(path, workspace)
+      },
+    },
   })
   teamToolsRef.current = tools
 

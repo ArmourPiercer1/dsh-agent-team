@@ -1,0 +1,114 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr4-permission-lifecycle/packages/runtime
+
+ ❯ test/a3p4-r4-authority-binding.test.ts (13 tests | 1 failed) 45ms
+     ✓ A1 — each addressed team reads its OWN bound Blueprint (identical template ids, row-wide constant dead) 15ms
+     ✓ A2 — relative matchers canonicalize at the TARGET member workspace, never a shared anchor 6ms
+     ✓ A3 — exec fingerprints carry VERBATIM with ZERO provider calls (BLOCK-1 grammar reachability) 3ms
+     ✓ A4 — an absent carrier is a LEGAL typed absence (zero authority, zero fs calls), never a read failure 4ms
+     ✓ A5 — unknown bindings abstain fail-closed (typed downstream), never hard-fail reads 1ms
+     ✓ A6 — a provider fault abstains WITHOUT caching (bounded recovery: the next read rebuilds) 2ms
+     ✓ A7 — drift ACROSS the canonicalization await discards the mixed-identity document (never cached, never served) 2ms
+     × A8 (round 5 rewrite) — NO cross-call authority cache: every read canonicalizes FRESH; a rebind lands on the next read 5ms
+     ✓ A9 (round 5 rewrite) — the LEADER POSITION reads its own template through the SAME addressed staticLayers reader 3ms
+     ✓ B1 (round-5 inversion of the X1 demo-1 shape) — the carrier subtree covering the member ALLOW COMMITS; a leader lane that denies X never gates the member expansion 1ms
+     ✓ B2 (envelope-level subtraction) — the carrier's OWN maximumEffect ladder is the cap (ask covers ask, refuses allow) 1ms
+     ✓ B4 — the envelope-only judgement is the UNCONDITIONAL algebra (post-removal this is the whole decision) 0ms
+     ✓ B5 (R-A shape) — honestly-anchored deny facts make the deny→allow flip a PROVEN rise that refuses (the laundering class stays closed) 0ms
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry resolves the addressed facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4E2-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts (15 tests | 2 failed) 585ms
+     ✓ the LEADER resolves LIVE for a decision over the real TeamSession (no member row exists for the leader — v2 design) 20ms
+     ✓ member semantics unchanged: a ghost instance still refuses INSTANCE_UNKNOWN 5ms
+     ✓ a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1) 8ms
+     ✓ NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing 5ms
+     ✓ UNKNOWN static facts refuse EFFECT_CONTEXT_UNAVAILABLE (never a guessed baseline) 4ms
+     ✓ a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host) 191ms
+     ✓ store-open failure at apply(): typed startup failure, never a warn-only boot (BLOCK-5, fail-open closed) 7ms
+     ✓ NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning 10ms
+     ✓ a persisted overlay DENY beats the template ALLOW through the real glue pipeline 189ms
+     ✓ R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more) 40ms
+     ✓ R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply) 26ms
+     × R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening) 32ms
+     ✓ R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working 19ms
+     ✓ R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3) 19ms
+     × R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3) 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+AssertionError: carrier-covered member grant refused: PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:1319:112
+    1317|         rules: [{ operationClass: 'write', matcher: { kind: 'exact', r…
+    1318|       }))
+    1319|       expect(secret.changed, `carrier-covered member grant refused: ${…
+       |                                                                                                                ^
+    1320|       const open = await settleMutation(root.mutation.governance.mutat…
+    1321|         authority: { kind: 'leader' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+AssertionError: warm-up fault must be logged LOUD at boot: expected '[dsh-agent-team] the "skills" public …' to match /warm-up FAULTED/
+
+- Expected:
+/warm-up FAULTED/
+
++ Received:
+"[dsh-agent-team] the \"skills\" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] remote mount: SKIPPED — the \"connection\" public service is absent (headless host)"
+
+ ❯ test/a3p4-pr4-production-entry-regression.test.ts:1488:80
+    1486|       // host logs the failed warm explicitly; it never prints healthy…
+    1487|       // over a faulted warm.
+    1488|       expect(warnings.join('\n'), 'warm-up fault must be logged LOUD a…
+       |                                                                                ^
+    1489|       const mutate = (mutationId: string, effect: 'allow' | 'deny') =>
+    1490|         root.mutation.governance.mutatePermission({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A8 (round 5 rewrite) — NO cross-call authority cache: every read canonicalizes FRESH; a rebind lands on the next read
+AssertionError: a stable binding must re-read the provider FRESH (no unprovable-version cache): expected 1 to be greater than 1
+ ❯ test/a3p4-r4-authority-binding.test.ts:411:105
+    409|     // canonicalizes FRESH through the CURRENT provider (the governance
+    410|     // service's serialized outer layer makes this per-mutation).
+    411|     expect(h.calls(), 'a stable binding must re-read the provider FRES…
+       |                                                                                                         ^
+    412|     // Rebind the team to a new snapshot (carrier ceiling ASK now): th…
+    413|     // read reflects the NEW binding immediately — fresh by constructi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 25 passed (28)
+   Start at  00:03:25
+   Duration  1.73s (transform 1.20s, setup 0ms, import 1.41s, tests 630ms, environment 0ms)
+

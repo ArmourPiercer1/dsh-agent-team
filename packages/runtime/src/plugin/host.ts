@@ -1807,6 +1807,24 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // fs provider is consulted only for rules that actually exist (a world
   // without `capabilities.permissions` performs ZERO fs calls); failures are
   // never cached, so the next read retries (bounded recovery).
+  // PR4 ROUND 5 (FIX-2a): the ONE server-side canonicalizer over the row's
+  // fs provider — shared by the authority facts and the Leader permission
+  // grant/revoke tool (client-supplied paths are NEVER authorization
+  // input; every file matcher canonicalizes here, at the TARGET basis).
+  const permissionCanonicalize = async (path: string, cwd: string): Promise<string> => {
+    const resolved = (await fsBackend().resolve(path, { cwd })) as
+      | { targetKey?: unknown }
+      | null
+      | undefined
+    const key = resolved?.targetKey
+    if (typeof key !== 'string' || key.length === 0) {
+      throw new Error(
+        `permission authority facts: the fs provider returned no canonical key for ${JSON.stringify(path)}`,
+      )
+    }
+    return key
+  }
+
   const permissionFacts = createPermissionAuthorityFacts({
     resolveBlueprint: (teamSessionId) => {
       try {
@@ -1827,25 +1845,23 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
         memberInstanceId as never,
       )?.workspace as string | undefined
       // The member's EFFECTIVE workspace — the durable row's own
-      // `workspace`, falling back to the team's default exactly as the live
-      // glue computes `memberCwd` (agent-bindings). The leader position has
-      // no row and runs at the default workspace. NEVER the acting row's
-      // anchor as a CONSTANT for every member.
-      return typeof workspace === 'string' && workspace !== '' ? workspace : resolvedRowConfig.defaultWorkspace
+      // `workspace`, falling back to the ADDRESSED team's durable default
+      // (the TeamSession row), exactly as the live glue computes
+      // `effectiveRootWorkspace`/`memberCwd` (agent-bindings). ROUND 5
+      // (FIX-3, parent ruling): the fallback is the DURABLE row of the
+      // ADDRESSED teamSessionId — NEVER `resolvedRowConfig.defaultWorkspace`
+      // (that is the ACTING boot row's tail; with two teams over one host
+      // row a Team-B leader/member would canonicalize under Team A's
+      // workspace). The leader position has no member row and takes the
+      // same durable team default; NO durable row for the addressed team →
+      // `undefined` = UNKNOWN (consistent with the bound-blueprint abstain).
+      if (typeof workspace === 'string' && workspace !== '') return workspace
+      const teamDefault = domain.repositories.teamSessions.get(
+        teamSessionId as never,
+      )?.defaultWorkspace as string | undefined
+      return typeof teamDefault === 'string' && teamDefault !== '' ? teamDefault : undefined
     },
-    canonicalize: async (path, cwd) => {
-      const resolved = (await fsBackend().resolve(path, { cwd })) as
-        | { targetKey?: unknown }
-        | null
-        | undefined
-      const key = resolved?.targetKey
-      if (typeof key !== 'string' || key.length === 0) {
-        throw new Error(
-          `permission authority facts: the fs provider returned no canonical key for ${JSON.stringify(path)}`,
-        )
-      }
-      return key
-    },
+    canonicalize: permissionCanonicalize,
     bootWarmTargets: () => [
       // The boot team's leader position (member documents warm lazily on
       // their first addressed read — every build is a re-validated build).
@@ -2416,15 +2432,15 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     permissionOverlay,
     fsContainsKeys,
     permissionPlaneRef,
-    // pre-alpha3 PR4 (round 3 BLOCK-1 + round 4 addressed-team binding): the
-    // authority fact readers (the root forwards them VERBATIM into the pure
-    // governance lane). The envelope + static facts resolve the ADDRESSED
-    // team's bound Blueprint and the TARGET member's effective workspace;
-    // the leader-ceiling reader is the plane's LEADER-position static facts
-    // (X1 authority ceiling on every risen cell).
+    // pre-alpha3 PR4 (round 3 BLOCK-1 + round 4 addressed-team binding,
+    // round 5 ceiling REMOVAL): the authority fact readers (the root
+    // forwards them VERBATIM into the pure governance lane). The envelope +
+    // static facts resolve the ADDRESSED team's bound Blueprint and the
+    // TARGET member's effective workspace. (Round 4's leader-ceiling reader
+    // injection is REMOVED — ADR §6 carries no second policy gate.)
     permissionEnvelope: permissionFacts.permissionEnvelope,
     permissionStaticLayers: permissionFacts.staticLayers,
-    permissionLeaderAuthorityFacts: permissionFacts.leaderAuthorityFacts,
+    permissionCanonicalize,
     legacyInspect,
     // BP5 (issue #2 blueprint-loading, plan §9): the live catalog over the
     // saved sources + the frozen registry + this row's anchor (the legacy
@@ -2667,6 +2683,15 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // authority rebuild precedent).
     try {
       await permissionFacts.refresh()
+      // ROUND 5 (R-A minor): `refresh` resolves even when a warm READ
+      // faulted; `healthy()` now aggregates READ RESULTS (not throw-only),
+      // so a faulted warm prints LOUD here instead of the old silent
+      // `facts healthy: true` line over a zero-rule envelope.
+      if (!permissionFacts.healthy()) {
+        console.error(
+          '[dsh-agent-team] the permission authority facts warm-up FAULTED (a provider read abstained for at least one warm target) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE / zero envelope authority) until an addressed read rebuilds the facts (bounded recovery); decisions and execution are unaffected',
+        )
+      }
     } catch (error: unknown) {
       console.error(
         `[dsh-agent-team] the permission authority facts warm-up failed (${

@@ -370,13 +370,18 @@ export interface TeamProductionRootParams {
      */
     readonly permissionStaticLayers?: GovernancePermissionLaneDeps['staticLayers'];
     /**
-     * pre-alpha3 PR4 (round 4, external review X1) — the acting leader's OWN
-     * static-facts reader (the authority ceiling checked against every risen
-     * cell). Forwarded VERBATIM; absent = the pre-round-4 envelope-only
-     * judgement (hand-authored test/legacy lanes keep working byte-for-byte).
-     * The host entry injects `permissionFacts.staticLayers(team, LEADER)`.
+     * pre-alpha3 PR4 ROUND 5 (FIX-2a) — the server-side canonicalizer for the
+     * Leader's permission grant/revoke TOOL (the SAME fs-provider seam the
+     * authority facts use). The tool NEVER trusts a client-supplied canonical
+     * key: file rule PATHS arrive and are canonicalized HERE, at the TARGET
+     * member's effective workspace (the durable member row's workspace, else
+     * the durable TeamSession default — the FIX-3 durable fallback). Absent =
+     * the grant tool refuses file rules typed (zero write); fingerprint rules
+     * are identities and pass through regardless. (Round 5 also REMOVED the
+     * round-4 permissionLeaderAuthorityFacts ceiling reader — ADR §6 carries
+     * no second policy gate.)
      */
-    readonly permissionLeaderAuthorityFacts?: GovernancePermissionLaneDeps['leaderAuthorityFacts'];
+    readonly permissionCanonicalize?: (path: string, cwd: string) => Promise<string>;
 }
 /**
  * Assemble the complete production root (A01–A29 + the four S6 seams).

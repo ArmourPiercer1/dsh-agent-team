@@ -726,17 +726,14 @@ function cellsForRegion(operationClass, scope, family, subtreeContains) {
  * EFFECT_CONTEXT_UNAVAILABLE — an unknown prior is never labeled expansion
  * OR tightening.
  *
- * PR4 round 4 (`authorityCeiling`): when the caller injects the acting
- * leader's OWN overlay rules + static facts, EVERY risen cell additionally
- * needs the leader's EFFECTIVE answer in that cell at rank >= the risen
- * effect — the grantor cannot promote a member past what it itself holds
- * (exceptions subtracted, never folded into a union). Unknown leader facts
- * → EFFECT_CONTEXT_UNAVAILABLE; below-risen → EXPANSION_OUTSIDE_ENVELOPE
- * (problem `expansion-exceeds-authority-ceiling`). Absent input = the
- * pre-round-4 envelope-only judgement, byte-for-byte.
+ * ROUND 5 (parent final review): the round-4 `authorityCeiling` parameter is
+ * REMOVED — comparing risen cells against the grantor's own effective answer
+ * was a SECOND policy condition ADR §6 does not carry. The envelope-only
+ * algebra below is the UNCONDITIONAL whole decision (coverage + target
+ * effective before/after), byte-equal to the pre-round-4 envelope judgement.
  */
 export function authorizeLeaderPermissionMutation(input) {
-    const { latestRules, plannedRules, mutationRules, envelope, staticFacts, subtreeContains, authorityCeiling } = input;
+    const { latestRules, plannedRules, mutationRules, envelope, staticFacts, subtreeContains } = input;
     const family = [];
     for (const rules of [latestRules, plannedRules]) {
         for (const rule of rules) {
@@ -820,48 +817,10 @@ export function authorizeLeaderPermissionMutation(input) {
                         break;
                     }
                 }
-                if (covered) {
-                    // PR4 round 4 (external review X1, both demos pinned): envelope
-                    // coverage says the cell MAY rise; the ACTING LEADER's own
-                    // effective answer says the grantor HAS the risen authority. A
-                    // leader whose lane answers `deny`/`ask` for THIS cell (a deny
-                    // exception inside an allow subtree, a narrower ask inside a
-                    // broader allow) cannot promote a member past its own effective
-                    // effect — exceptions SUBTRACT authority; a lane union does not.
-                    // Unknown leader facts refuse as context (never a guess), below-
-                    // risen refuses as the §6 ceiling breach (same typed code, honest
-                    // problem label — no new error codes).
-                    if (authorityCeiling !== undefined) {
-                        const leaderAnswer = permissionEffectiveAnswer({
-                            overlayRules: authorityCeiling.overlayRules,
-                            staticFacts: authorityCeiling.staticFacts,
-                            operationClass,
-                            region: cell.parent,
-                            subtreeContains,
-                        });
-                        if (leaderAnswer.status !== 'decided') {
-                            undeterminable.push({
-                                detail: {
-                                    ...cellDetail,
-                                    missing: 'leader-authority-facts',
-                                    why: 'the envelope covers this rise, but the acting leader\'s OWN effective answer for the cell cannot be decided from the injected leader authority facts — an unknown grantor is never assumed to hold the risen effect (zero write)',
-                                },
-                            });
-                            continue;
-                        }
-                        if (PERMISSION_EFFECT_PRECEDENCE[risen] > PERMISSION_EFFECT_PRECEDENCE[leaderAnswer.effect]) {
-                            unmet.push({
-                                detail: {
-                                    ...cellDetail,
-                                    leader: `${leaderAnswer.effect}:${leaderAnswer.source}`,
-                                    why: `the effective effect RISES ${before.effect}->${risen} in this cell, but the acting leader's OWN effective answer is ${leaderAnswer.effect} — a leader cannot grant a member an effect it does not itself hold in the cell (deny/ask exceptions subtract authority; ADR §6)`,
-                                },
-                            });
-                            continue;
-                        }
-                    }
+                if (covered)
                     continue;
-                }
+                // (Round-5: the round-4 ceiling fold that lived here is REMOVED —
+                // the covering envelope rule IS the authorization.)
                 if (coverageUnknown) {
                     undeterminable.push({
                         detail: {

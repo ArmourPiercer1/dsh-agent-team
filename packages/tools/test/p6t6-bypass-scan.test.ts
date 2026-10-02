@@ -123,6 +123,7 @@ const EXPECTED_TOOL_NAMES = [
   'team_create_member',
   'team_delegate',
   'team_follow_up',
+  'team_grant_permission',
   'team_inspect_config',
   'team_list_members',
   'team_list_pending_control',
@@ -130,6 +131,7 @@ const EXPECTED_TOOL_NAMES = [
   'team_report_progress',
   'team_request_control',
   'team_resolve_control',
+  'team_revoke_permission',
   'team_send_message',
 ] // already in sorted order
 
@@ -220,8 +222,8 @@ describe('P6-T6 tool set — the static bypass scan (brief §6b, G6 criterion 7)
     expect(NEGATIVE_HITS.length).toBe(0)
   })
 
-  it('the model-facing surface is EXACTLY the thirteen sanctioned tools (SD-CREATE/SD-GUARD scope; C1 adds the pending-list tool; the archive-member round adds team_archive_member)', () => {
-    expect(TOOL_SET.length).toBe(13)
+  it('the model-facing surface is EXACTLY the fifteen sanctioned tools (SD-CREATE/SD-GUARD scope; C1 adds the pending-list tool; the archive-member round adds team_archive_member; PR4 round 5 adds team_grant_permission + team_revoke_permission)', () => {
+    expect(TOOL_SET.length).toBe(15)
     const names = TOOL_SET.map((tool) => tool.name).slice()
     names.sort()
     expect(names).toEqual(EXPECTED_TOOL_NAMES)
