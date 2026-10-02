@@ -4,24 +4,27 @@
  *
  * 1. THE CLOSED EXPORT SURFACE ("notification/projection output is never
  *    consumed as authorization input", ADR §9): the runtime export set is
- *    EXACTLY the allow-list (two factories, one builder, one renderer),
- *    and no export name — value or type — carries decision/authority
- *    vocabulary (authorize / resolve / assemble / mutate / grant / revoke
- *    / envelope / admit / approve / decide / permit). The module exposes
- *    NO PATH to a decision or mutation input: there is nothing to feed a
- *    resolver, an assembler, or the mutation service, in either
- *    direction — the lane's own inputs are type-only snapshots, never the
- *    reverse.
+ *    EXACTLY the allow-list (two factories, one pure builder, one pure
+ *    renderer, the inject-only delivery binding + adapter + detached
+ *    dispatcher, one typed drop error), and no export name — value or
+ *    type — carries decision/authority vocabulary (authorize / resolve /
+ *    assemble / mutate / grant / revoke / envelope / admit / approve /
+ *    decide / permit). The module exposes NO PATH to a decision or
+ *    mutation input: there is nothing to feed a resolver, an assembler,
+ *    or the mutation service, in either direction — the lane's own inputs
+ *    are type-only snapshots, never the reverse.
  *
- * 2. THE IMPORT GRAPH (PR60-safety + purity): every cross-directory edge
- *    of the module is TYPE-ONLY to the stable PR1 overlay vocabulary
- *    (`../permission-governance/*`); there is ZERO runtime import outside
- *    the directory, and NO edge at all to the governance mutation lane,
- *    the effective-policy lane, the resolver, storage, the mutation
- *    plane, admission, the plugin WIP files (host.ts / permission-plane /
- *    blueprint schema) or anything under `src/` — so PR60's in-flight
- *    envelope/authority-schema and host/plane rewrites cannot collide
- *    with this lane.
+ * 2. THE IMPORT GRAPH (PR60-safety + purity): every REPO cross-directory
+ *    edge of the module is TYPE-ONLY to the stable PR1 overlay vocabulary
+ *    (`../permission-governance/*`); the only admitted cross-package
+ *    edges are the two PUBLIC upstream packages of the parent GO binding
+ *    ruling — `@deepseek-ai/dsh-agent` TYPE-ONLY and `@deepseek-ai/dsh-llm`
+ *    with EXACTLY one value member (`createUserMessage`). NO edge at all
+ *    to the governance mutation lane, the effective-policy lane, the
+ *    resolver, storage, the mutation plane, admission, the plugin WIP
+ *    files (host.ts / permission-plane / blueprint schema) or anything
+ *    under `src/` — so PR60's in-flight envelope/authority-schema and
+ *    host/plane rewrites cannot collide with this lane.
  *
  * 3. THE ZERO-CONSUMER WALK (PR1/PR2/PR3 precedent): the layer lands
  *    DORMANT — no production source outside the module directory and the
@@ -53,7 +56,7 @@ const MODULE_DIR = join(RUNTIME_ROOT, 'permission-notification')
 
 /** Every scannable source line of the lane, tagged with its file. */
 function moduleSources(): { file: string; source: string }[] {
-  return ['types.ts', 'notification.ts', 'projection.ts', 'index.ts'].map((file) => ({
+  return ['types.ts', 'notification.ts', 'projection.ts', 'binding.ts', 'index.ts'].map((file) => ({
     file,
     source: readFileSync(join(MODULE_DIR, file), 'utf8'),
   }))
@@ -67,8 +70,12 @@ function importSpecifiers(source: string): string[] {
 describe('leg 1 — the export surface is closed and carries no authority vocabulary', () => {
   it('the runtime exports are EXACTLY the allow-list', () => {
     expect(Object.keys(lane).sort()).toEqual([
+      'PermissionNoticeDropped',
       'createPermissionChangeNotifier',
+      'createPermissionDeliveryAdapter',
+      'createPermissionDeliveryBinding',
       'createPermissionReadProjection',
+      'detachPermissionNotice',
       'permissionChangeNotificationFromSnapshot',
       'renderPermissionChangeNotification',
     ])
@@ -101,18 +108,35 @@ describe('leg 1 — the export surface is closed and carries no authority vocabu
   })
 })
 
-describe('leg 2 — the import graph: zero runtime edges outside the lane', () => {
-  it('every cross-directory import is TYPE-ONLY to the PR1 overlay vocabulary', () => {
+describe('leg 2 — the import graph: repo edges TYPE-ONLY; public upstream edges as pinned', () => {
+  it('every cross-directory import is TYPE-ONLY to the PR1 overlay vocabulary (plus the two pinned PUBLIC upstream edges)', () => {
+    // PUBLIC upstream packages the parent GO admitted for the binding
+    // module — the exact closed allow-list, nothing else may cross by name.
+    const upstreamAllow = new Set(['@deepseek-ai/dsh-llm', '@deepseek-ai/dsh-agent'])
     for (const { file, source } of moduleSources()) {
       for (const specifier of importSpecifiers(source)) {
         const local = specifier.startsWith('./')
         const pr1TypeOnly = specifier === '../permission-governance/types.js' ||
           specifier === '../permission-governance/port.js'
-        expect(local || pr1TypeOnly, `${file} -> ${specifier}`).toBe(true)
+        const upstream = upstreamAllow.has(specifier)
+        expect(local || pr1TypeOnly || upstream, `${file} -> ${specifier}`).toBe(true)
       }
-      // …and as TYPE imports only (no runtime value enters from PR1).
+      // …repo cross-directory edges are TYPE imports only (no runtime
+      // value enters from PR1).
       const runtimeImports = [...source.matchAll(/^import\s+(?!type\s)[\s\S]*?from\s+'(\.\.[^']+)'/gm)]
       expect(runtimeImports.map((m) => m[1]), file).toEqual([])
+      // PUBLIC upstream edges, pinned to EXACTLY the binding surface:
+      // dsh-agent TYPE-ONLY (Pick over Agent); dsh-llm contributes the
+      // single createUserMessage value import — nothing else by value.
+      for (const line of source.split('\n').filter((l) => /^\s*import\b/.test(l) && l.includes('@deepseek-ai/'))) {
+        if (line.includes("'@deepseek-ai/dsh-agent'")) {
+          expect(line, `${file}: dsh-agent must enter as a TYPE import only`).toMatch(/^import\s+type\s/)
+        }
+        if (line.includes("'@deepseek-ai/dsh-llm'") && !/^\s*import\s+type\s/.test(line)) {
+          expect(line.trim(), `${file}: only createUserMessage enters from dsh-llm by value`)
+            .toBe("import { createUserMessage } from '@deepseek-ai/dsh-llm'")
+        }
+      }
     }
   })
 

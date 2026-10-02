@@ -94,11 +94,15 @@ export interface PermissionAgentLivenessPort {
 // ---------------------------------------------------------------------------
 
 /**
- * The delivery seam: put ONE model-visible input turn in front of one
- * ACTIVE Agent (the production binding is the existing steer-style input
- * delivery of the live glue — part of the PENDING wiring). The seam owns
- * the at-MOST-once best-effort attempt: no redelivery, no acknowledgement,
- * no retry, no ledger (the durable snapshot store is the authority; the
+ * The delivery seam: put ONE model-visible input in front of one
+ * ACTIVE Agent WITHOUT waking anything. The production binding is the
+ * binding module's INJECT-ONLY receipt gate (parent GO ruling, pinned to
+ * pristine 0.1.7-rc.1: the public `Agent.inject` is the one input whose
+ * implementation never wakes and never latches; `steer`/`followup` start
+ * a turn on an idle target and are FORBIDDEN in this layer). The seam
+ * owns the at-MOST-once best-effort attempt: no redelivery, no
+ * acknowledgement, no queue of its own (host durable-inbox semantics are
+ * the upstream's own; the durable snapshot store is the authority; the
  * read projection is the recovery path for a lost notice).
  */
 export interface PermissionNotificationDeliveryPort {
