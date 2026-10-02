@@ -44,3 +44,100 @@ No tsc-build include and no dist artifact ship the lane yet (exactly the PR1 `pe
 - p4t6 pin: updated 934 → 942 covering the +7 PR5 files AND the pre-existing +1 drift from merged PR #56 (the leg was red at base; disclosed here, in the pin text, and in the test title).
 - `p6t1-parallel` baseline flake: two live-seam tests failed in the baseline cold run and passed warm; standalone rc=0 proves it. Failure-set identity claim is stated as "zero NEW failures + final ⊆ baseline".
 - No production files outside `packages/runtime/permission-notification/` (new), the three new `a3p5-*` specs, `packages/testkit/test/p4t6-session-event-scan.test.ts` (pin), and this evidence directory were touched.
+
+---
+
+# ROUND 2 (parent GO) — the DELIVERY BINDING module (inject-only ruling)
+
+Scope (parent GO, this round only): the NON-CONFLICTING binding module + tests in the
+lane. Shared root/agent-bindings/GMS splice remains NOT GO (awaits PR60 stabilizing).
+Base: lane head `ebd57905` (the PR5 lane commit). The pure-lane raw record above stays
+retained as-is; everything below is the new round (file prefixes `binding-*`).
+
+## Ruled design implemented (source anchors, pristine 0.1.7-rc.1 `46a7f68b09`)
+
+`packages/runtime/permission-notification/binding.ts`: delivery uses PUBLIC
+`Agent.inject` ONLY (`packages/core/agent/src/runtime-types.ts:233-241` "without
+waking"; `agent-loop/src/agent.ts:153-171`: `inject = send('next-step', /*wake*/false)`,
+the sole wake call `if (wakeup) this.wakeDriver(...)` at :159 is never reached, no latch
+in any phase :213-234). `steer`/`followup` are forbidden (wake=true; idle STARTS a turn,
+runtime-types.ts:225-231). The agent type is `Pick<Agent, 'status' | 'inject'>` — a
+wake-capable member is NOT NAMEABLE (compile-level, not discipline). The receipt gate
+(closing → owned live-handle for the EXACT pair → identity equality → lifecycle fact →
+`status === 'running'` → one `inject`) is a FULLY SYNCHRONOUS function — zero awaits
+between final check and inject is structural, not sequencing. Closed drop vocabulary
+(`closing | not-live | identity-mismatch | lifecycle-blocked | not-running |
+inject-fault`); never throws; no queue/pending/retry of ours; host durable-inbox parking
+used AS-IS. `createPermissionDeliveryAdapter` maps drops to the typed
+`PermissionNoticeDropped` for the existing port; `detachPermissionNotice` fires the
+awareness dispatch off the ack path (rejections swallowed). Upstream facts re-verified
+in this worktree's own `node_modules/@deepseek-ai/dsh-agent/lib/types/*` (runtime-types
+d.ts :147 status, inject/steer/followup doc+members; AgentStatus = 'idle'|'running').
+
+## Raw logs (real rc via `> log 2>&1; rc=$?`)
+
+| File | Command | Result |
+| --- | --- | --- |
+| `binding-red-module-absent.log` | new binding spec BEFORE binding.ts exists | rc=1 — 17 failed, raw `createPermissionDeliveryBinding is not a function` (honest RED). |
+| `binding-green-run1..3.log` | first implementations | rc=1 — three choreography fixes recorded honestly (facts reader inverted for closing → three-state FactRead read; two spec-shape fixes: port `append` returns the snapshot directly; `rawOverlayRows(dir)` arg). |
+| `binding-green-final.log` | binding spec final | rc=0 — **17 passed / 17**. |
+| `binding-all-directed-final.log` | all FOUR PR5 specs together | rc=0 — **48 passed / 48** (notification 15 + projection 7 + hygiene 9 + binding 17). |
+| `binding-typecheck-runtime.log` | `npx tsc -p tsconfig.json` (packages/runtime) | rc=0 (after one intermediate rc=2: `Promise.withResolvers` not in the package lib target — replaced with a plain deferred; capture kept is the clean run). |
+| `binding-full-runtime-suite.log` + `binding-final-fail-set.txt` | `npx vitest run` final | rc=1 — 6 files / **8 failed / 3196 passed (3204)**; `diff` against the retained round-1 `final-fail-set.txt` = IDENTICAL (pre-existing live-seam set only). +17 tests, all binding, all pass. |
+| `binding-p4t6-pin-944-green.log` | p4t6 after pin bump 942→944 | rc=0 — 10 passed; scanner reports filesScanned = **944** = 942 + 2 (binding.ts + its spec; authoritative run, not hand-computed). Quarantine hits unchanged at 15. |
+| `binding-typecheck-testkit.log` / `binding-testkit-suite-final.log` | testkit tsc / suite | rc=0 both — 158/158. |
+| `binding-build.log` / `binding-check-artifacts.log` | `pnpm run build` / `node scripts/check-artifacts-committed.mjs` | rc=0 / rc=0 — `OK: 1392 files` (lane ships OUT of the tsc build per PR1 precedent: ZERO dist churn; nothing to co-commit). |
+| ESLint (all new/changed files) | `npx eslint ...` | rc=0, zero findings. |
+
+## Test classes (parent GO (a)-(e)) — all in `binding-green-final.log` (17/17)
+
+(a) RUNNING receives: one `inject` of the rendered `[team-perm-changed …]` awareness
+text as a model-visible user message (fresh id per attempt — parked-notice id collision
+impossible), rule payload never rides (count only), and an end-to-end leg through the
+REAL notifier + REAL adapter + REAL durable port;
+(b) idle / cold / closing / lifecycle-blocked / identity-mismatch → closed drop reasons,
+ZERO injects, ZERO touches of any wake-capable member (landmine proxy), closing drops
+BEFORE any handle lookup; the adapter surfaces drops typed (`PermissionNoticeDropped`);
+(c) RACE: advisory liveness LIES active, target flips idle WHILE the async authority
+read is in flight → the sync receipt gate drops at receipt (`delivery-failed` outcome,
+zero inbox writes); plus the direct leg proving no interleaving point exists between
+gate and send;
+(d) cancel-while-running: exactly one inject; `touched` set ⊆ {status, inject} —
+`steer`/`followup`/`whenIdle`/`cancel`/`send` landmines NEVER touched (module-side half
+of the no-wake guarantee; the upstream half — wake=false neither wakes nor latches — is
+source-pinned above, not re-implemented); plus a source scan proving binding.ts contains
+no wake-capable call site and uses the two-member `Pick`;
+(e) ack independence DETACHED: slow (timer) → both acks settle BEFORE any delivery
+settles, order = commit order; never-settling → acks complete, next mutation unaffected;
+faulting inject → ack list + raw durable rows BYTE-EQUAL the no-notification golden
+world; sync-throwing dispatch swallowed.
+
+## Deviations / notes (round 2)
+
+- Hygiene updated ON PURPOSE (leg 1 allow-list + leg 2 import graph): the lane now has
+  EXACTLY two PUBLIC upstream edges — `@deepseek-ai/dsh-agent` TYPE-only and
+  `@deepseek-ai/dsh-llm` with the single `createUserMessage` value import (both pinned
+  to exact lines); repo cross-directory edges remain TYPE-ONLY to PR1. Zero-consumer
+  walk still passes (module remains UNWIRED — the GO explicitly keeps the production
+  splice NOT GO).
+- Public-boundary findings: NONE insufficient (GO rule 7 not triggered) — `inject`,
+  `status`, `Pick<Agent,…>` structural typing, and `createUserMessage` all exist on the
+  public installed surface; no hidden hooks, no own queues.
+- Status mirror honesty (parent §4 verdict): the notifier's liveness read stays
+  ADVISORY (park/drop labeling); the guarantee lives in the sync receipt gate + inject
+  non-wake semantics. Class (c) pins exactly that division.
+- Files touched this round (exact): `packages/runtime/permission-notification/binding.ts`
+  (new), `index.ts` (exports + header), `types.ts` (delivery-port doc: steer-style →
+  inject-only), `README.md` (WIRED/PENDING rows), `packages/runtime/test/
+  a3p5-permission-delivery-binding.test.ts` (new), lane hygiene spec (on-purpose
+  updates), `packages/testkit/test/p4t6-session-event-scan.test.ts` (pin 942→944), this
+  evidence directory. No dist churn; no production file outside the lane touched.
+
+## Post-commit re-check (round 2)
+
+- Lane commit `45b15e900aa909b5bda2decc51ceda54d61dc07b` (parent `ebd57905…`, the
+  round-1 evidence commit; forward-only).
+- `binding-postcommit-check-artifacts.log`: `node scripts/check-artifacts-committed.mjs`
+  on the committed lane → rc=0, `OK: 1392 files` — the committed install-surface
+  artifacts match a fresh build (zero dist churn confirmed POST-commit, same
+  re-check discipline as round 1).

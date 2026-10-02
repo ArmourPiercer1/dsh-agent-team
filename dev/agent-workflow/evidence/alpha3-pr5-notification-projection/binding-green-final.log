@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ✓ test/a3p5-permission-delivery-binding.test.ts (17 tests) 112ms
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  00:51:11
+   Duration  456ms (transform 194ms, setup 0ms, import 252ms, tests 112ms, environment 0ms)
+

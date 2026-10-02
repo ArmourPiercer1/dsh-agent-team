@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr5-notification/packages/runtime
+
+ ❯ test/a3p5-permission-delivery-binding.test.ts (17 tests | 1 failed) 107ms
+     ✓ delivers the rendered awareness text as ONE model-visible user message 7ms
+     ✓ each attempt carries a fresh message id (no park-collision by construction) 2ms
+     ✓ the REAL notifier through the REAL adapter delivers end-to-end to a running target 2ms
+     ✓ idle target drops as not-running 2ms
+     ✓ cold (no owned live handle) drops as not-live 2ms
+     ✓ closing glue drops BEFORE any handle lookup 2ms
+     ✓ lifecycle-blocked member drops without touching the agent 2ms
+     ✓ a handle whose identity is not the EXACT addressed pair drops 2ms
+     ✓ the adapter surfaces every drop as a rejection carrying the closed reason 3ms
+     ✓ idle-at-receipt DROPS at the gate although the advisory liveness read said active 3ms
+     ✓ direct binding leg: the synchronous gate + inject share one tick (no interleaving point exists) 2ms
+     ✓ an aborted-but-still-running target gets exactly one inject; no wake member is nameable or touched 2ms
+     ✓ the binding module source never names a wake-capable call site 1ms
+     ✓ slow delivery never delays or reorders the acks 62ms
+     ✓ a never-settling delivery leaves the ack settled and the next mutation unaffected 3ms
+     × a faulting inject byte-equals the no-notification durable result (ack content untouched) 8ms
+     ✓ detachPermissionNotice swallows even a synchronously throwing dispatch 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a3p5-permission-delivery-binding.test.ts > class (e) — ack independence under detached dispatch > a faulting inject byte-equals the no-notification durable result (ack content untouched)
+TypeError: The "path" argument must be of type string. Received an instance of Object
+ ❯ rawOverlayRows test/permission-overlay-helpers.ts:169:16
+    167|  */
+    168| export function rawOverlayRows(dir: string): Record<string, string> {
+    169|   const path = join(dir, TEAM_DOMAIN_NAME, `${PERMISSION_OVERLAY_STORE…
+       |                ^
+    170|   return JSON.parse(readFileSync(path, 'utf8')) as Record<string, stri…
+    171| }
+ ❯ test/a3p5-permission-delivery-binding.test.ts:580:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  00:49:27
+   Duration  431ms (transform 179ms, setup 0ms, import 233ms, tests 107ms, environment 0ms)
+
