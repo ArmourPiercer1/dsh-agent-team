@@ -12,7 +12,7 @@
  * an assertion, so an unmigrated file is a NAMED entry that a specific commit
  * must remove, and a newly-written legacy fixture fails the suite.
  */
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
@@ -45,6 +45,7 @@ const MIGRATED_SOURCES = [
   'tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs',
   'tests/kits/exec-contract-live-smoke/exec-contract-live-smoke.mjs',
   'tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs',
+  'packages/runtime/root-binding/harness/run.mjs',
 ]
 
 /**
@@ -53,7 +54,6 @@ const MIGRATED_SOURCES = [
  * deleting a file's entry without migrating it fails P5b.
  */
 const NOT_YET_MIGRATED: Array<{ file: string; reason: string }> = [
-  { file: 'packages/runtime/root-binding/harness/run.mjs', reason: 'writes .agent-presets/p5t5-team-persona and imports PERSONA_SECTION' },
   { file: 'packages/runtime/member-residency/harness/run.mjs', reason: 'writes two .agent-presets fixtures and imports PERSONA_SECTION' },
 ]
 
@@ -63,6 +63,17 @@ const NOT_YET_MIGRATED: Array<{ file: string; reason: string }> = [
  * name the retired path (that is how it stays documented) without being a use.
  */
 const LEGACY_WRITE_LINE = /\b(?:mkdirSync|writeFileSync|rmSync|readdirSync|createWriteStream|join|resolve)\b[^\n]*\.agent-presets|\.agent-presets[^\n]*(?:mkdirSync|writeFileSync)/
+
+/** Every .mjs / .ts source under a directory, excluding build output. */
+function* walkSources(dir: string): Generator<string> {
+  for (const entry of readdirSync(dir)) {
+    if (entry === 'node_modules' || entry === 'dist' || entry === '.tmp-faultscratch') continue
+    const full = join(dir, entry)
+    const st = statSync(full)
+    if (st.isDirectory()) yield* walkSources(full)
+    else if (/\.(mjs|ts)$/.test(entry)) yield full
+  }
+}
 
 /** Strip line comments so a mention in prose does not count as a write. */
 function codeOnly(source: string): string {
@@ -213,6 +224,40 @@ describe('P4 the pinned host really exposes that contract (read from the mandate
       if (read(rel).includes(LEGACY_PRESET_DIRECTORY_SEAM)) readers.push(rel)
     }
     expect(readers).toEqual([])
+  })
+})
+
+describe('P6 the persona-import residue is enumerated, not called debt', () => {
+  /**
+   * Files that still import the bare `PERSONA_SECTION` from the host's
+   * system-prompt package. P4 proves that export does NOT exist at the pinned
+   * baseline, so a file below cannot load against the 0.2 host at all: these are
+   * harness-side persona wiring leftovers with a named owner (the independent
+   * persona-residue patch), NOT vague "upgrade debt". The list is exact by scan:
+   * it fails if one is fixed without being removed, and if a new one appears.
+   */
+  const PERSONA_SECTION_IMPORTERS = [
+    'packages/runtime/root-binding/harness/plugin.mjs',
+    'packages/runtime/root-binding/harness/slots.mjs',
+    'packages/runtime/member-residency/harness/plugin.mjs',
+    'packages/runtime/member-residency/harness/slots-t6.mjs',
+  ]
+
+  it('the pinned host exports the two section names and never the bare one (P4 again, from the importer side)', () => {
+    const src = read('packages/core/system-prompt/src/index.ts')
+    expect(src).toContain('PERSONA_PREFIX_SECTION')
+    expect(/export const PERSONA_SECTION\b/.test(src)).toBe(false)
+  })
+
+  it('the importing files are exactly the recorded set', () => {
+    const importers: string[] = []
+    for (const rel of walkSources(join(REPO_ROOT, 'packages'))) {
+      const source = readFileSync(rel, 'utf8')
+      if (/import\s*\{[^}]*\bPERSONA_SECTION\b[^}]*\}\s*from\s*'@deepseek-ai\/dsh-system-prompt'/.test(source)) {
+        importers.push(rel.slice(REPO_ROOT.length + 1))
+      }
+    }
+    expect(importers.sort()).toEqual([...PERSONA_SECTION_IMPORTERS].sort())
   })
 })
 

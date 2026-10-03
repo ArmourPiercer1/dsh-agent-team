@@ -68,6 +68,12 @@ import {
   waitForLogLine,
   waitForPortFree,
 } from '../../../../tests/characterization/lib/util.mjs'
+import {
+  AGENT_PRESET_ROW_NAME,
+  emitPatchLayer,
+  personaRow,
+  presetDeclarationRow,
+} from '../../../../tests/kits/_shared/preset-seam.mjs'
 import { captureGitState } from '../../../../tests/characterization/lib/tree-clean.mjs'
 import { closeMiniServer, startMiniMcpServer } from './mini-mcp.mjs'
 
@@ -285,19 +291,22 @@ async function main() {
     })
     log('junction farm ready')
 
-    // ── user preset fixture (DSH_HOME-local persona preset) ─────────────────
+    // ── preset fixture: a DECLARATION ROW, mounted on the patch seam below ───
+    // This used to be `$DSH_HOME/.agent-presets/p5t5-team-persona/
+    // agent.cordis.yml` with `config: { text: … }`. Neither half survives the
+    // pinned host: the registry no longer reads that directory, and the persona
+    // plugin's schema takes `prefix` (required) / `suffix` / `complete` /
+    // `includeRuntimeContext` — there is no `text` key. Writing the old file was
+    // a fixture that LOOKED configured while the leader ran the shipped default
+    // preset, which is exactly what this harness asserts against.
     const presetId = 'p5t5-team-persona'
-    const presetDir = join(DSH_HOME, '.agent-presets', presetId)
-    mkdirSync(presetDir, { recursive: true })
-    writeFileSync(join(presetDir, 'agent.cordis.yml'), [
-      '# P5-T5 harness fixture: team leader persona preset (user preset, DSH_HOME-local).',
-      '- id: persona',
-      "  name: '@deepseek-ai/dsh-persona'",
-      '  config:',
-      `    text: ${LEADER_PERSONA}`,
-      '',
-    ].join('\n'))
-    log(`user preset written: ${presetId}`)
+    const presetRow = presetDeclarationRow({
+      id: presetId,
+      displayName: 'P5-T5 team leader persona',
+      description: 'P5-T5 root-binding harness persona preset (public profile-patch seam).',
+      plugins: [personaRow({ text: LEADER_PERSONA })],
+    })
+    log(`preset declaration built: ${presetId}`)
 
     // ── mini MCP server (127.0.0.1, ports 3481-3485 candidates) ─────────────
     const mini = await startMiniMcpServer([3481, 3482, 3483, 3484, 3485])
@@ -345,6 +354,13 @@ async function main() {
 
     // ── boot driver ──────────────────────────────────────────────────────────
     const row = { id: 'p5t5-root-binding', name: pathToFileURL(join(HERE, 'plugin.mjs')).href }
+
+    /** Write the whole profile patch layer (rows with nested config). */
+    function writePatchLayer(instance, rows, header) {
+      mkdirSync(instance.profileDir, { recursive: true })
+      writeFileSync(instance.patchFile, emitPatchLayer({ header, rows }))
+      return instance.patchFile
+    }
 
     /** Fetch + tolerant JSON parse (records the raw body when not JSON). */
     const fetchJson = async (url, init, timeoutMs) => {
@@ -415,7 +431,21 @@ async function main() {
       try {
         const profile = await ensureProfile({ instance, log, timeoutMs: 90_000 })
         record.profile = profile
-        instance.mountRows([row], [`P5-T5 harness patch layer (boot ${boot}): the p5t5-root-binding row is mounted ONLY through this public profile-patch seam.`])
+        // DshInstance.mountRows() writes { id, name } pairs only; a preset
+        // declaration needs nested config, so the layer is emitted here and both
+        // rows go down the same public seam in one write.
+        writePatchLayer(instance, [row, presetRow], [
+          `P5-T5 harness patch layer (boot ${boot}): the p5t5-root-binding row AND the ${presetId} preset declaration row, mounted ONLY through this public profile-patch seam.`,
+          '# (0.2.0-rc.2: a preset is a declaration row here; the retired user-preset directory is not read by the host.)',
+        ])
+        {
+          const patchText = readFileSync(instance.patchFile, 'utf8')
+          const teamRowSeen = patchText.includes(row.id)
+          const presetRowSeen = patchText.includes(AGENT_PRESET_ROW_NAME) && patchText.includes(`id: "${presetId}"`)
+          record.patchLayer = { bytes: patchText.length, teamRow: teamRowSeen, presetRow: presetRowSeen }
+          if (!teamRowSeen) noteFailure(`boot ${boot}: patch layer lost the plugin row`)
+          if (!presetRowSeen) noteFailure(`boot ${boot}: patch layer lost the ${presetId} preset declaration row`)
+        }
         writeDirective(boot)
         const started = await instance.start({ timeoutMs: 120_000 })
         record.url = started.url
