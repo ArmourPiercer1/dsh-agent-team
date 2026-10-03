@@ -47,7 +47,6 @@ import {
   appendFileSync,
   writeFileSync,
 } from 'node:fs'
-import { createHash } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -342,12 +341,14 @@ async function main() {
     log(`mini MCP server up on 127.0.0.1:${mini.port}`)
 
     // ── blueprint + capability directive data ────────────────────────────────
+    // No contentHash here on purpose: the snapshot ref is derived from the parsed
+    // blueprint document the harness builds from these personas
+    // (blueprint-source.mjs + plugin.mjs). A hand-composed hash of an ad-hoc JSON
+    // blob could never disagree with anything, which is what made the old
+    // "immutable snapshot" assertion unfalsifiable.
     const blueprint = {
       blueprintId: 'P5T5-BP-REAL',
       revision: '1',
-      contentHash: `sha256-${createHash('sha256')
-        .update(JSON.stringify({ id: 'P5T5-BP-REAL', leaderPersona: LEADER_PERSONA, memberPersonas: { p5t5worker: MEMBER_PERSONA } }))
-        .digest('hex')}`,
       leaderPersona: LEADER_PERSONA,
       memberPersonas: { p5t5worker: MEMBER_PERSONA },
       defaultModel: { provider: 'p5t5-static', model: 'p5t5-model-v1' },
