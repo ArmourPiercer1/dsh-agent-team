@@ -59,6 +59,7 @@ import {
 import {
   CLIENT_COMMIT_HASH,
   findTestRepoRoot,
+  isSanctionedTestPort,
   TEST_HOME_ROOT_REL,
   TEST_USE_REL,
 } from '../../../../tests/paths.mjs'
@@ -79,6 +80,16 @@ import { closeMiniServer, startMiniMcpServer } from './mini-mcp.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..', '..')
+
+/**
+ * Mini-MCP candidates. NOT 3481-3485: that block sits outside this repo's port
+ * policy (docs/TEST_METHODS.md — 3180-3186 / 3491-3500, :3080 forbidden), a drift
+ * from the pre-migration machine that pre-flight caught before any bind. The
+ * 3496-3500 half also keeps clear of the member-residency harness block
+ * (3491-3495). The ledger in bounded-run.regression.test.mjs fails the day a
+ * harness reaches outside tests/paths.mjs TEST_PORT_RANGES again.
+ */
+const DEFAULT_MCP_PORT_CANDIDATES = Object.freeze([3496, 3497, 3498, 3499, 3500])
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
@@ -94,17 +105,26 @@ function tailText(text, lines = 12) {
 // ── argument parsing ────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { reportDir: null, scenarios: 'S1,S3,S4,S2', port: 3180 }
+  const args = { reportDir: null, scenarios: 'S1,S3,S4,S2', port: 3180, mcpPorts: null }
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i]
     if (token === '--report-dir') args.reportDir = argv[++i]
     else if (token === '--scenarios') args.scenarios = argv[++i]
     else if (token === '--port') args.port = Number.parseInt(argv[++i], 10)
+    else if (token === '--mcp-ports') args.mcpPorts = argv[++i].split(',').map((x) => Number.parseInt(x, 10))
     else throw new Error(`unknown argument: ${token}`)
   }
   if (args.reportDir === null) throw new Error('--report-dir is required')
   if (!Number.isInteger(args.port) || args.port < 1 || args.port > 65535) {
     throw new Error(`invalid --port: ${args.port}`)
+  }
+  if (!isSanctionedTestPort(args.port)) {
+    throw new Error(`--port ${args.port} is outside the sanctioned test ranges (docs/TEST_METHODS.md, tests/paths.mjs TEST_PORT_RANGES)`)
+  }
+  if (args.mcpPorts !== null) {
+    if (args.mcpPorts.length === 0 || args.mcpPorts.some((x) => !isSanctionedTestPort(x))) {
+      throw new Error(`--mcp-ports must all be sanctioned test ports, got ${JSON.stringify(args.mcpPorts)}`)
+    }
   }
   const selected = args.scenarios.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
   for (const s of selected) {
@@ -308,8 +328,16 @@ async function main() {
     })
     log(`preset declaration built: ${presetId}`)
 
-    // ── mini MCP server (127.0.0.1, ports 3481-3485 candidates) ─────────────
-    const mini = await startMiniMcpServer([3481, 3482, 3483, 3484, 3485])
+    // Default candidates sit in the 3491-3500 half of the range, clear of the
+    // member-residency harness's 3491-3495 block so the two can coexist.
+    // ── mini MCP server (127.0.0.1, ports inside the documented test range) ─
+    const mcpCandidates = args.mcpPorts ?? DEFAULT_MCP_PORT_CANDIDATES
+    // These candidates were 3481-3485, which is outside this repo's own port
+    // policy (docs/TEST_METHODS.md: 3180-3186 / 3491-3500, never 3080) — a
+    // leftover from the pre-migration machine, caught by pre-flight rather than
+    // by running. `bounded-run.regression.test.mjs` now fails if any harness
+    // binds outside the sanctioned ranges again.
+    const mini = await startMiniMcpServer(mcpCandidates)
     summary.ports.mcp = mini.port
     log(`mini MCP server up on 127.0.0.1:${mini.port}`)
 

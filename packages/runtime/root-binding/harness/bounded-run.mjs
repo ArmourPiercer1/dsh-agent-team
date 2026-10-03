@@ -24,9 +24,10 @@
 import { openSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import { createRunControl } from '../../../../tests/kits/rc2-real-host-smoke/run-control.mjs'
+import { TEST_PORT_RANGES, isSanctionedTestPort } from '../../../../tests/paths.mjs'
 
-/** Ports this repo's test infrastructure is allowed to bind (TEST_METHODS §2). */
-const PORT_RANGES = [[3180, 3186], [3491, 3500]]
+/** Ports this repo's test infrastructure may bind — canonical in tests/paths.mjs. */
+const PORT_RANGES = TEST_PORT_RANGES
 const MAX_LIFETIME_MS = 900_000
 
 function parseArgv(argv) {
@@ -44,8 +45,7 @@ function parseArgv(argv) {
     else if (key === '--log') out.logPath = val
     else throw new Error(`unknown flag: ${key}`)
   }
-  if (!Number.isInteger(out.port)) throw new Error('--port must be an integer')
-  if (!PORT_RANGES.some(([lo, hi]) => out.port >= lo && out.port <= hi)) {
+  if (!isSanctionedTestPort(out.port)) {
     throw new Error(`--port ${out.port} is outside the sanctioned test ranges ${JSON.stringify(PORT_RANGES)}`)
   }
   if (!Number.isInteger(out.lifetimeMs) || out.lifetimeMs < 1000 || out.lifetimeMs > MAX_LIFETIME_MS) {

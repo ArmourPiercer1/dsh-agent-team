@@ -70,6 +70,28 @@ export const TEST_USE_BASELINE_SHA = '639ed015397290b3745d163aafe02ffee4aa3f84'
 export const CLIENT_COMMIT_HASH = '639ed01539'
 
 /**
+ * Port policy, canonicalized here for the same reason paths are: the ranges live
+ * in docs/TEST_METHODS.md (3180 family + 3491-3500; :3080 is the stable
+ * development instance and is never a test port), but they were being
+ * re-transcribed per harness — and one transcription had drifted out of policy
+ * (the P5-T5 mini-MCP server was binding 3481-3485). Harnesses and bounded
+ * runners now read these numbers, so a drift is a one-line fix in one place and
+ * a ledger test can enforce it.
+ */
+export const TEST_PORT_RANGES = Object.freeze([
+  Object.freeze([3180, 3186]),
+  Object.freeze([3491, 3500]),
+])
+/** The stable development instance. A test must never bind it, only probe it. */
+export const STABLE_INSTANCE_PORT = 3080
+
+/** @param {number} port @returns {boolean} */
+export function isSanctionedTestPort(port) {
+  if (!Number.isInteger(port) || port === STABLE_INSTANCE_PORT) return false
+  return TEST_PORT_RANGES.some(([lo, hi]) => port >= lo && port <= hi)
+}
+
+/**
  * The nearest ancestor of `start` containing the test-use checkout at its
  * canonical location (the marker that identifies a team-repo root for test
  * purposes). Returns null when no ancestor qualifies.
