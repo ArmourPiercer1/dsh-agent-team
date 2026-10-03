@@ -1,0 +1,205 @@
+{
+  "scenario": "S1",
+  "pass": true,
+  "assertions": [
+    {
+      "name": "durable: TeamSession record + team-root binding written",
+      "pass": true,
+      "actual": {
+        "wrote": true,
+        "teamSessionPresent": true,
+        "bindingKind": "team-root"
+      }
+    },
+    {
+      "name": "durable: read-back pins the immutable blueprint snapshot",
+      "pass": true,
+      "actual": {
+        "blueprintId": "P5T5-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256:a22c7816f98bc462e29b62e35fdda898051cccdad0a90157485f96834c3a71b5"
+      },
+      "expected": {
+        "blueprintId": "P5T5-BP-REAL",
+        "revision": "1",
+        "contentHash": "sha256:a22c7816f98bc462e29b62e35fdda898051cccdad0a90157485f96834c3a71b5"
+      }
+    },
+    {
+      "name": "bind: overlays installed in fixed order",
+      "pass": true,
+      "actual": [
+        "persona",
+        "model",
+        "capability"
+      ]
+    },
+    {
+      "name": "bind: agent-setup events (3 overlay-installed + 1 admission-decided)",
+      "pass": true,
+      "actual": [
+        {
+          "sessionId": "session-p5t5-s1",
+          "name": "agent-setup/overlay-installed",
+          "detail": "persona"
+        },
+        {
+          "sessionId": "session-p5t5-s1",
+          "name": "agent-setup/overlay-installed",
+          "detail": "model"
+        },
+        {
+          "sessionId": "session-p5t5-s1",
+          "name": "agent-setup/overlay-installed",
+          "detail": "capability"
+        },
+        {
+          "sessionId": "session-p5t5-s1",
+          "name": "agent-setup/admission-decided",
+          "detail": "ADMISSION_OPEN"
+        }
+      ]
+    },
+    {
+      "name": "admission: open policy admits (ADMISSION_OPEN)",
+      "pass": true,
+      "actual": {
+        "admitted": true,
+        "admissionCode": "ADMISSION_OPEN"
+      }
+    },
+    {
+      "name": "persona: substrate is the seeded standard preset",
+      "pass": true,
+      "actual": {
+        "personaKind": "standard",
+        "probeSections": [
+          "harness:identity",
+          "deployment:persona-prefix",
+          "context:file-reference",
+          "mcp-resource-servers",
+          "ui:deliverable-file-references",
+          "harness:source",
+          "app:web-surface",
+          "deployment:persona-suffix"
+        ]
+      }
+    },
+    {
+      "name": "persona: assembled leader persona text === blueprint text",
+      "pass": true,
+      "actual": "You are the P5-T5 team leader, guiding workers with clear directives and steady judgement."
+    },
+    {
+      "name": "model: assembly variables carry the selected provider/model",
+      "pass": true,
+      "actual": {
+        "provider": "p5t5-static",
+        "model": "p5t5-model-v1"
+      },
+      "expected": {
+        "provider": "p5t5-static",
+        "model": "p5t5-model-v1"
+      }
+    },
+    {
+      "name": "model: ref.assembled captured the selection at the assembly boundary",
+      "pass": true,
+      "actual": {
+        "provider": "p5t5-static",
+        "model": "p5t5-model-v1"
+      },
+      "expected": {
+        "provider": "p5t5-static",
+        "model": "p5t5-model-v1"
+      }
+    },
+    {
+      "name": "capability: installed tools === available ∩ teamResolved ∩ externalHard",
+      "pass": true,
+      "actual": {
+        "registered": [
+          "p5t5-tool-alpha",
+          "p5t5-tool-beta"
+        ],
+        "effective": [
+          "p5t5-tool-alpha",
+          "p5t5-tool-beta"
+        ],
+        "visible": [
+          "p5t5-tool-alpha",
+          "p5t5-tool-beta",
+          "list_mcp_resources",
+          "list_mcp_resource_templates",
+          "read_mcp_resource"
+        ]
+      }
+    },
+    {
+      "name": "capability: installed skills === available ∩ teamResolved ∩ externalHard",
+      "pass": true,
+      "actual": {
+        "registered": [
+          "p5t5-skill-one"
+        ],
+        "effective": [
+          "p5t5-skill-one"
+        ]
+      }
+    },
+    {
+      "name": "capability: pre-step/pre-execute listeners registered per effective items",
+      "pass": true,
+      "actual": {
+        "listeners": [
+          "tools/pre-execute",
+          "agent/pre-step"
+        ],
+        "effective": [
+          "agent/pre-step",
+          "tools/pre-execute"
+        ]
+      }
+    },
+    {
+      "name": "capability: mini-MCP tool visible (mcp__p5t5mini__ping)",
+      "pass": true,
+      "actual": true,
+      "effective": [
+        "p5t5mini"
+      ]
+    },
+    {
+      "name": "session: durable model/selection event recorded",
+      "pass": true,
+      "actual": [
+        {
+          "seq": 0,
+          "type": "permission/preset"
+        },
+        {
+          "seq": 1,
+          "type": "sandbox/mode"
+        },
+        {
+          "seq": 2,
+          "type": "approval/policy"
+        },
+        {
+          "seq": 3,
+          "type": "model/selection"
+        }
+      ]
+    },
+    {
+      "name": "durable: session log published as the v4 final artifact (session.v4.jsonl.zstd)",
+      "pass": true,
+      "actual": {
+        "published": true,
+        "projectDir": "--srv-workspace-dsh-plugins-dsh-agent-team-.worktrees-dsh-020rc2-upgrade-tests-homes-.dsh-test-p5t5--",
+        "waitMs": 1,
+        "size": 438
+      }
+    }
+  ]
+}

@@ -224,7 +224,15 @@ function diskFilesFor(sessionId) {
         files: entries.filter((e) => e.isFile()).map((e) => ({
           name: e.name,
           size: statSync(join(dir, e.name)).size,
-          final: e.name === 'session.jsonl.zstd',
+          // The durable session log carries its generation in the file name on 0.2
+          // (`session[.vN].jsonl`, compressed `…jsonl.zstd`; on the host see
+          // packages/session-query/session-log-export/src/archive.ts:7 and the host's
+          // own `session.v${version}.jsonl`), and the observed artifact is
+          // session.v4.jsonl.zstd. The unversioned 0.1 name is reported separately as
+          // `legacyFinal`, so a naming revert shows in the report rather than
+          // silently flipping this predicate.
+          final: e.name === 'session.v4.jsonl.zstd',
+          legacyFinal: e.name === 'session.jsonl.zstd',
         })),
       }
     }
@@ -742,16 +750,22 @@ async function runFreshScenario(ctx, scenarioId) {
     // WHICH one: quietly substituting an empty list would be indistinguishable from
     // a session that genuinely produced no events.
     const sessionObj = handle.agent.session
-    const eventsSource = typeof sessionObj.events === 'function' ? 'events()'
-      : Array.isArray(sessionObj.events) ? 'events'
-        : typeof sessionObj.history === 'function' ? 'history()'
-          : Array.isArray(sessionObj.history) ? 'history'
+    // The 0.2 Session class publishes its transcript as ownEvents() /
+    // snapshotEvents(from, to) (tests/deepseek-harness-test-use
+    // packages/core/session/src/index.ts:446); the 0.1 `.events` array is gone.
+    // 'model/selection' is still the event type name in the 0.2 SessionEventMap, so
+    // only the accessor moved — the assertion that consumes this is untouched.
+    const eventsSource = typeof sessionObj.ownEvents === 'function' ? 'ownEvents()'
+      : typeof sessionObj.events === 'function' ? 'events()'
+        : Array.isArray(sessionObj.events) ? 'events'
+          : typeof sessionObj.snapshotEvents === 'function' ? 'snapshotEvents()'
             : 'ABSENT'
     const rawEvents = eventsSource === 'ABSENT'
       ? []
-      : eventsSource.endsWith('()')
-        ? sessionObj[eventsSource.slice(0, -2)]()
-        : sessionObj[eventsSource]
+      : eventsSource === 'ownEvents()' ? sessionObj.ownEvents()
+        : eventsSource === 'snapshotEvents()' ? sessionObj.snapshotEvents()
+          : eventsSource === 'events()' ? sessionObj.events()
+            : sessionObj.events
     const sessionEvents = (rawEvents ?? []).map((ev) => ({ seq: ev.seq, type: ev.type }))
     eventsAccessor = eventsSource
     mark('afterEvents')
@@ -839,7 +853,10 @@ async function runFreshScenario(ctx, scenarioId) {
           actual: sessionEvents,
         },
         {
-          name: 'durable: session log published as session.jsonl.zstd',
+          // Same semantics as the 0.1 assertion (a final compressed session log has
+          // been published for this session); only the artifact NAME in the label
+          // changed, because the artifact 0.2 publishes is generation-qualified.
+          name: 'durable: session log published as the v4 final artifact (session.v4.jsonl.zstd)',
           pass: durable.published === true,
           actual: durable,
         },
@@ -862,7 +879,10 @@ async function runFreshScenario(ctx, scenarioId) {
           actual: { teamSessionPresent: teamSession !== undefined, bindingKind: bindingRow?.kind ?? null },
         },
         {
-          name: 'durable: session log published as session.jsonl.zstd',
+          // Same semantics as the 0.1 assertion (a final compressed session log has
+          // been published for this session); only the artifact NAME in the label
+          // changed, because the artifact 0.2 publishes is generation-qualified.
+          name: 'durable: session log published as the v4 final artifact (session.v4.jsonl.zstd)',
           pass: durable.published === true,
           actual: durable,
         },
@@ -986,16 +1006,22 @@ async function runColdScenario(ctx) {
     // WHICH one: quietly substituting an empty list would be indistinguishable from
     // a session that genuinely produced no events.
     const sessionObj = handle.agent.session
-    const eventsSource = typeof sessionObj.events === 'function' ? 'events()'
-      : Array.isArray(sessionObj.events) ? 'events'
-        : typeof sessionObj.history === 'function' ? 'history()'
-          : Array.isArray(sessionObj.history) ? 'history'
+    // The 0.2 Session class publishes its transcript as ownEvents() /
+    // snapshotEvents(from, to) (tests/deepseek-harness-test-use
+    // packages/core/session/src/index.ts:446); the 0.1 `.events` array is gone.
+    // 'model/selection' is still the event type name in the 0.2 SessionEventMap, so
+    // only the accessor moved — the assertion that consumes this is untouched.
+    const eventsSource = typeof sessionObj.ownEvents === 'function' ? 'ownEvents()'
+      : typeof sessionObj.events === 'function' ? 'events()'
+        : Array.isArray(sessionObj.events) ? 'events'
+          : typeof sessionObj.snapshotEvents === 'function' ? 'snapshotEvents()'
             : 'ABSENT'
     const rawEvents = eventsSource === 'ABSENT'
       ? []
-      : eventsSource.endsWith('()')
-        ? sessionObj[eventsSource.slice(0, -2)]()
-        : sessionObj[eventsSource]
+      : eventsSource === 'ownEvents()' ? sessionObj.ownEvents()
+        : eventsSource === 'snapshotEvents()' ? sessionObj.snapshotEvents()
+          : eventsSource === 'events()' ? sessionObj.events()
+            : sessionObj.events
     const sessionEvents = (rawEvents ?? []).map((ev) => ({ seq: ev.seq, type: ev.type }))
     const setupEvents = eventsFor(sid)
     const teamSession = result.durable?.teamSession
