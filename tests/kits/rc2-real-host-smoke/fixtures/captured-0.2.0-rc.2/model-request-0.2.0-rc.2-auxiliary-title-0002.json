@@ -1,0 +1,32 @@
+{
+  "__fixture": "desensitized model-request envelope captured by packages/tools/harness/mock-deepseek.mjs",
+  "capturedAt": "2026-10-03T15:06:27.454Z",
+  "seq": 2,
+  "redactions": "tokens, session cookies, bearer/api keys, absolute paths, dsh_session_log/dsh_plugin_packages payloads; long strings truncated with an explicit marker",
+  "request": {
+    "model": "rc2-smoke-model",
+    "stream": true,
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"WIRE_PROBE_TURN\"}]"
+          }
+        ]
+      }
+    ],
+    "max_tokens": 64,
+    "thinking": {
+      "type": "disabled"
+    },
+    "system": "Create a concise title for an AI coding-assistant session from the supplied human messages.\nReturn only the title on one line, **in plain text of natural language**, with no quotes, prefix, explanation, Markdown, XML, or terminal control codes. No code is allowed.\nUse the language of the messages.\nAim for about 5 words in non-CJK languages or 10 CJK characters.",
+    "dsh_session_log": "<REDACTED:dsh_session_log presence=present chars=33167>",
+    "dsh_plugin_packages": "<REDACTED:dsh_plugin_packages presence=present chars=11028>"
+  },
+  "reply": {
+    "kind": "text",
+    "content": "WIRE_PROBE_IDLE"
+  }
+}

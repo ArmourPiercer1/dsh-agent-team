@@ -1,0 +1,16 @@
+{
+  "__fixture": "PARITY CASE 1/2 (0.1.x encoding): the create-member payload arrives as the tool message content STRING.",
+  "payload": {
+    "status": "executed",
+    "action": "create-member",
+    "targetInstanceId": "inst-rc2smoke-b1",
+    "effect": {
+      "kind": "member-created"
+    }
+  },
+  "result": {
+    "role": "tool",
+    "tool_call_id": "call-create",
+    "content": "{\"status\":\"executed\",\"action\":\"create-member\",\"targetInstanceId\":\"inst-rc2smoke-b1\",\"effect\":{\"kind\":\"member-created\"}}"
+  }
+}

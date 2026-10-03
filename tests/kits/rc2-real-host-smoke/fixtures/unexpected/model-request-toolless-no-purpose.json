@@ -1,0 +1,19 @@
+{
+  "__fixture": "SYNTHETIC negative case: a toolless request whose text matches NO purpose in the closed auxiliary list. Answering it with a neutral reply is what hides new auxiliary dispatches; the decoder must fail.",
+  "request": {
+    "model": "m",
+    "stream": true,
+    "system": "some instruction",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "please summarize something unknown"
+          }
+        ]
+      }
+    ]
+  }
+}

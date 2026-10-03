@@ -1,0 +1,54 @@
+{
+  "__fixture": "SYNTHETIC negative case: the same request carrying BOTH result encodings (a role:\"tool\" message AND a tool_result part). Ambiguous by construction: the decoder reports WIRE_MIXED and asserts fail.",
+  "request": {
+    "model": "m",
+    "stream": true,
+    "system": "persona",
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "task"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "call-1",
+            "name": "read",
+            "input": {}
+          }
+        ]
+      },
+      {
+        "role": "tool",
+        "tool_call_id": "call-1",
+        "content": "classic result"
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "tool_result",
+            "tool_use_id": "call-2",
+            "content": "parts result",
+            "is_error": false
+          }
+        ]
+      }
+    ]
+  }
+}

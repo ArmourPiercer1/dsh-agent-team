@@ -1,0 +1,27 @@
+{
+  "__fixture": "PARITY CASE 2/2 (0.2.0-rc.2 encoding): the SAME payload arrives as content PARTS whose text is that JSON string. JSON.stringify-ing the array escapes the field quotes, which is how the first decoder lost the id.",
+  "payload": {
+    "status": "executed",
+    "action": "create-member",
+    "targetInstanceId": "inst-rc2smoke-b1",
+    "effect": {
+      "kind": "member-created"
+    }
+  },
+  "result": {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "call-create",
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"targetInstanceId\":\"inst-rc2smoke-b1\",\"effect\":{\"kind\":\"member-created\"}}"
+          }
+        ],
+        "is_error": false
+      }
+    ]
+  }
+}

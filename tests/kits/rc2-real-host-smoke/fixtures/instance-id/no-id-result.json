@@ -1,0 +1,13 @@
+{
+  "__fixture": "NEGATIVE CASE: a well-formed result with no instance id anywhere in it.",
+  "result": {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"archive-member\"}"
+      }
+    ],
+    "is_error": false
+  }
+}

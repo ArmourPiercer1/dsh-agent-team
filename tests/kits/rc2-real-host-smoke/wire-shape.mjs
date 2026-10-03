@@ -236,11 +236,147 @@ export function toolResultsOf(body, context = {}) {
   return { shape: c.shape, items: c.toolResults.map((r) => r.item), count: c.toolResults.length }
 }
 
+/**
+ * Flatten a message/tool-result `content` to TEXT, decoding each part EXACTLY
+ * once.
+ *
+ * THE BUG THIS CLOSES (independent review of PR #62, 2026-10-03): on
+ * 0.2.0-rc.2 a tool result's `content` is an ARRAY of parts —
+ * `[{ "type": "text", "text": "{\"targetInstanceId\":\"inst-…\"}" }]` — and the
+ * naive `JSON.stringify(content)` produced by the first version escaped the
+ * inner JSON's quotes (`\"targetInstanceId\"`), so every field regex downstream
+ * missed, and a fallback that then matched a bare `inst-…` returned an
+ * unmatched capture group (`undefined`) instead of failing. A text part's
+ * `text` is therefore unwrapped VERBATIM here — never re-encoded — which is
+ * what makes one extractor behave identically on both generations:
+ *   - 0.1.x: `content` is the JSON string itself;
+ *   - 0.2:   `content` is parts whose text IS that same JSON string.
+ */
+export function flattenContent(content, depth = 0) {
+  if (content === null || content === undefined) return ''
+  if (typeof content === 'string') return content
+  if (depth > 6) return JSON.stringify(content)
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (part === null || part === undefined) return ''
+        if (typeof part === 'string') return part
+        if (typeof part.text === 'string') return part.text
+        if (typeof part.json === 'string') return part.json
+        // A CONTAINER part (0.2 `tool_result`: its payload is itself parts,
+        // nested one level deeper) — descend instead of serializing the shell,
+        // or every field inside the payload comes back quote-escaped.
+        if (part.content !== undefined) return flattenContent(part.content, depth + 1)
+        return JSON.stringify(part)
+      })
+      .filter((s) => s !== '')
+      .join('\n')
+  }
+  if (typeof content === 'object') {
+    // A structured payload with no array wrapper (some adapters hand the tool's
+    // JSON object straight through): serialize once.
+    if (typeof content.text === 'string') return content.text
+    if (content.content !== undefined) return flattenContent(content.content, depth + 1)
+    return JSON.stringify(content)
+  }
+  return String(content)
+}
+
 /** Textual payload of one tool result, whatever the generation's encoding. */
 export function toolResultText(result) {
   if (result === null || result === undefined) return ''
   const content = typeof result === 'object' && 'content' in result ? result.content : result
-  return typeof content === 'string' ? content : JSON.stringify(content ?? '')
+  return flattenContent(content)
+}
+
+/** `is_error` in both spellings, classic message or content part. */
+export function isErrorResult(result) {
+  if (result === null || typeof result !== 'object') return false
+  return result.is_error === true || result.isError === true
+}
+
+/**
+ * The tool results of one request, decoded and paired with their metadata:
+ * `[{ toolUseId, text, isError, item }]`. This is what a scripted chain should
+ * read — `items` alone leaves every caller to re-implement the flattening,
+ * which is exactly where the escaping bug lived.
+ */
+export function toolResultEntries(body, context = {}) {
+  const c = assertWireShape(body, context)
+  return c.toolResults.map((r) => ({
+    toolUseId: r.toolUseId,
+    text: toolResultText(r.item),
+    isError: isErrorResult(r.item),
+    item: r.item,
+  }))
+}
+
+const INSTANCE_ID_PATTERNS = [
+  /"targetInstanceId"\s*:\s*"([^"]+)"/,
+  /"instanceId"\s*:\s*"([^"]+)"/,
+  /\b(inst-[A-Za-z0-9][A-Za-z0-9_-]{3,64})\b/,
+]
+
+/**
+ * The instance id of a `team_create_member` / `team_delegate` result — STRICT,
+ * and it throws rather than returning null/undefined/empty.
+ *
+ * Returning a sentinel was the defect: the caller's `id === null` test let
+ * `undefined` (an unmatched fallback capture group) travel into
+ * `team_delegate`'s `targetInstanceId`, so the failure surfaced later as a
+ * missing-argument rejection instead of at the decode site. An error result, an
+ * empty result, and a result with no id are all loud failures here, and the
+ * caller cannot construct a delegation with them.
+ */
+export function extractInstanceId(source, context = {}) {
+  const isResultObject = source !== null && typeof source === 'object' && !Array.isArray(source)
+  if (isErrorResult(source)) {
+    throw new WireShapeError(
+      `tool result is an error result (${context.label ?? 'instance id'}); refusing to derive an instance id from it`,
+      { ...context, text: toolResultText(source).slice(0, 400) },
+    )
+  }
+  const text = isResultObject && 'content' in source ? toolResultText(source) : flattenContent(source)
+  if (typeof text !== 'string' || text.trim() === '') {
+    throw new WireShapeError(
+      `empty tool result (${context.label ?? 'instance id'}); refusing to derive an instance id`,
+      { ...context, sourceType: typeof source, isArray: Array.isArray(source) },
+    )
+  }
+  // Structured first: the tool's payload is JSON, and a parsed field is the
+  // strongest evidence (no quoting/escaping games).
+  const trimmed = text.trim()
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed)
+      const candidates = Array.isArray(parsed) ? parsed : [parsed]
+      for (const entry of candidates) {
+        if (entry === null || typeof entry !== 'object') continue
+        for (const field of ['targetInstanceId', 'instanceId']) {
+          const value = entry[field]
+          if (typeof value === 'string' && value.trim() !== '') return value.trim()
+        }
+        const inner = entry.result ?? entry.data
+        if (inner !== null && typeof inner === 'object') {
+          for (const field of ['targetInstanceId', 'instanceId']) {
+            const value = inner[field]
+            if (typeof value === 'string' && value.trim() !== '') return value.trim()
+          }
+        }
+      }
+    } catch {
+      /* not pure JSON (a prose envelope around it): fall through to patterns */
+    }
+  }
+  for (const re of INSTANCE_ID_PATTERNS) {
+    const m = re.exec(text)
+    const value = m === null ? null : (m[1] ?? m[0])
+    if (typeof value === 'string' && value.trim() !== '') return value.trim()
+  }
+  throw new WireShapeError(
+    `tool result carries no usable instance id (${context.label ?? 'instance id'}); refusing to delegate with a missing targetInstanceId`,
+    { ...context, textHead: text.slice(0, 400) },
+  )
 }
 
 /**
@@ -252,19 +388,91 @@ export function toolResultText(result) {
 export function userText(body) {
   return ((body?.messages) ?? [])
     .filter((m) => m?.role !== 'system')
-    .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')))
+    // `flattenContent`, not JSON.stringify: a text part contributes ITS TEXT
+    // (verbatim), non-text parts contribute one serialized line each. Markers
+    // are found either way, but the evidence stays readable and a JSON-escaped
+    // payload can never make a field pattern miss.
+    .map((m) => flattenContent(m.content))
     .join('\n')
 }
 
 /** The INSTRUCTION surface: 0.2 top-level `system`, 0.1.x system messages. */
 export function systemText(body) {
   const top = body?.system
-  const topText = typeof top === 'string' ? top : JSON.stringify(top ?? '')
+  const topText = flattenContent(top)
   const messageText = ((body?.messages) ?? [])
     .filter((m) => m?.role === 'system')
-    .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')))
+    .map((m) => flattenContent(m.content))
     .join('\n')
   return `${topText}\n${messageText}`
+}
+
+/**
+ * Purpose attribution.
+ *
+ * Toollessness is NOT a valid auxiliary test on 0.2.0-rc.2: the compaction
+ * summarizer (`packages/compaction/compaction-basic/src/summarizer.ts:145-161`)
+ * replays the conversation's own system prompt, leading messages AND `tools`
+ * and appends one user message carrying `COMPACTION_INSTRUCTION`, so a
+ * compaction dispatch is structurally indistinguishable from an agent turn
+ * except for that instruction (the internal `purpose: 'compaction'` option is
+ * not put on the wire). Since a compaction request replays the conversation,
+ * it satisfies ordinary marker/count predicates — a kit that does not exclude
+ * it can advance a chain step on the wrong request.
+ *
+ * The purposes are therefore a CLOSED marker list, most specific first, and a
+ * request that matches none is an error rather than something to answer
+ * neutrally: an unrecognized purpose must surface while the evidence is hot.
+ */
+export const PURPOSE_AGENT = 'agent'
+export const PURPOSE_TITLE = 'title'
+export const PURPOSE_COMPACTION = 'compaction'
+export const PURPOSE_UNKNOWN = 'unknown'
+
+const COMPACTION_MARKERS = [
+  'You are now acting as a compaction engine',
+  'automatically generated checkpoint condensing',
+  '<compacted-summary>',
+]
+
+/**
+ * Classify WHY the host issued this request.
+ * `compaction` wins over everything (it also carries tools and the whole
+ * conversation); `title` requires the absence of a tool surface; `agent`
+ * requires one; anything else is `unknown`.
+ */
+export function classifyPurpose(body) {
+  const c = classifyRequest(body)
+  const haystack = `${systemText(body)}\n${userText(body)}`
+  const markers = []
+  for (const marker of COMPACTION_MARKERS) {
+    if (haystack.includes(marker)) markers.push(marker)
+  }
+  if (markers.length > 0) return { purpose: PURPOSE_COMPACTION, markers, agentTurn: c.agentTurn }
+  const titleMarkers = TITLE_MARKERS.filter((marker) => haystack.includes(marker))
+  if (titleMarkers.length > 0 && !c.agentTurn) return { purpose: PURPOSE_TITLE, markers: titleMarkers, agentTurn: false }
+  if (c.agentTurn) return { purpose: PURPOSE_AGENT, markers: [], agentTurn: true }
+  return { purpose: PURPOSE_UNKNOWN, markers: [], agentTurn: false }
+}
+
+/** The strict purpose gate: an unattributable request is a diagnostic. */
+export function assertPurpose(body, context = {}) {
+  const p = classifyPurpose(body)
+  if (p.purpose !== PURPOSE_UNKNOWN) return p
+  throw new WireShapeError(
+    `toolless model request with no known purpose marker (${context.label ?? 'request'}) — the auxiliary-purpose list is closed on purpose; classify it from the host source and extend it deliberately, do not answer it neutrally`,
+    { ...context, shape: classifyRequest(body).shape, bodyKeys: Object.keys(body ?? {}), messageShapes: messageShapes(body) },
+  )
+}
+
+/**
+ * Should this request be considered by the scripted AGENT chain? A compaction
+ * or title dispatch replays/derives from the same conversation and would
+ * otherwise satisfy a chain predicate (marker present, tool-result count
+ * matching a historical step) with the wrong request.
+ */
+export function isChainTurn(body) {
+  return classifyPurpose(body).purpose === PURPOSE_AGENT
 }
 
 /**
@@ -276,11 +484,7 @@ export function systemText(body) {
  * turn carries tools and would then fail its own chain step loudly.
  */
 export function isTitleDispatch(body) {
-  if (body === null || typeof body !== 'object') return false
-  const hasToolSurface = Array.isArray(body.tools) && body.tools.length > 0
-  if (hasToolSurface) return false
-  const haystack = `${systemText(body)}\n${userText(body)}`
-  return TITLE_MARKERS.some((marker) => haystack.includes(marker))
+  return classifyPurpose(body).purpose === PURPOSE_TITLE
 }
 
 /** Deterministic signature of a scripted reply (ignores random call ids). */

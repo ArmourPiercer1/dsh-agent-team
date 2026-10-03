@@ -102,6 +102,19 @@ import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, 
 import { join, resolve, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
+import { createRunControl, RunAborted } from './run-control.mjs'
+import { stateKeyOf } from './run-budget.mjs'
+import {
+  assertPurpose,
+  assertWireShape,
+  classifyPurpose,
+  isChainTurn,
+  systemText as wsSystemText,
+  toolResultEntries,
+  userText as wsUserText,
+  extractInstanceId as strictExtractInstanceId,
+} from './wire-shape.mjs'
+import { TEAM_TOOL_CATALOG, deriveBuiltinToolDeny, materializeBcFixtures } from './fixture-invariants.mjs'
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
@@ -138,35 +151,15 @@ const P6T6_ROW_NAME = pathToFileURL(P6T6_PLUGIN_PATH).href
 
 const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
 const SAFE_UNMANAGED_TOOL_NAMES = ['todo_write']
-// The plugin's OWN tool namespace, as it appears on the live model-facing
-// surface: 13 static `name: 'team_*'` registrations in
-// packages/tools/src/tools.ts plus the `team_grant_permission` /
-// `team_revoke_permission` pair named at tools.ts:1316 (verb-built) = 15,
-// verified against the installed surface (packages/runtime/dist/.../tools.js
-// and LEG 0 discovery). These names must NEVER fall into a blueprint's
-// `builtinToolDeny`: that field denies BUILTIN tools, and since 0.2.0-rc.2 the
-// host fails closed on a name its global tool registry does not know
-// (`tools.restrict() names unknown global tool '…'` rejects the whole root
-// (leader) agent start as TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED). A stale
-// catalog therefore breaks the run loudly — see the L0c criterion below, which
-// pins this invariant instead of trusting the constant.
-const TEAM_TOOL_CATALOG = [
-  'team_list_members',
-  'team_list_templates',
-  'team_list_pending_control',
-  'team_inspect_config',
-  'team_create_member',
-  'team_delegate',
-  'team_follow_up',
-  'team_collect',
-  'team_send_message',
-  'team_report_progress',
-  'team_request_control',
-  'team_resolve_control',
-  'team_archive_member',
-  'team_grant_permission',
-  'team_revoke_permission',
-]
+// The plugin's OWN tool namespace lives in ./fixture-invariants.mjs (one
+// source, pinned against the real `createTeamTools` catalog by
+// packages/testkit/test/rc2-kit-fixture-invariants.test.ts). These names must
+// never reach a blueprint's `builtinToolDeny`: that field denies BUILTIN tools
+// the agent INHERITS, and `tools.restrict()` refuses any name outside that
+// global vocabulary — a check that is BYTE-IDENTICAL in 0.1.7-rc.1 (46a7f68b)
+// and 0.2.0-rc.2 (639ed015), so a stale catalog is pre-existing fixture debt
+// (introduced when the tools were added), not a host tightening. The B/C
+// pre-flight below refuses to materialize such a fixture at all.
 // The B/C Leader teamTools allow list (the smoke needs create + delegate;
 // the list is a closed subset of the plugin's team-tool namespace).
 const LEADER_TEAM_TOOLS_ALLOW = [
@@ -242,6 +235,14 @@ function writeEvidence(name, content) {
 function dieFatal(msg, exitCode = 1) {
   log(`FATAL ${msg}`)
   writeEvidence('summary.json', { runStamp: RUN_STAMP, fatal: msg, criteria })
+  if (RC !== undefined && RC.armed()) {
+    // main() is on the stack and owns the child host + the mock: UNWIND into its
+    // `finally` (stopHost + mock.close). `process.exit()` here would skip that
+    // cleanup and leave this run's host process behind — the defect the
+    // independent review of PR #62 found in the first guard version.
+    throw new RunAborted(msg, null)
+  }
+  // Preflight (nothing started yet): a plain exit is safe.
   process.exit(exitCode)
 }
 
@@ -774,89 +775,81 @@ function bodyOf(recordOrBody) {
   return 'body' in recordOrBody ? (recordOrBody.body ?? null) : recordOrBody
 }
 
+/**
+ * The kit's readers, each a thin delegate onto the verified decoder in
+ * ./wire-shape.mjs (the same code the fixtures + unit tests exercise).
+ * They are deliberately LENIENT — never aborting — because they also run in
+ * diagnostic paths; the loud failure for an unclassifiable request is the sweep
+ * inside `waitForMock`, which aborts through the owner's cleanup.
+ *
+ * Why the old 0.1.x-only readers were wrong (run 4): on the 0.2 request wire a
+ * tool result is a `tool_result` CONTENT PART inside an ordinary user message,
+ * so counting `role: 'tool'` messages returned 0 forever — every chain step
+ * timed out while `decide` re-issued step 1 (~1 800 requests). Text flattening
+ * is shared too: a `text` part contributes its text VERBATIM, which is what
+ * lets one instance-id extractor behave identically on both generations.
+ */
 function userTextOf(req) {
-  const messages = bodyOf(req)?.messages ?? []
-  return messages
-    .filter((m) => m.role === 'user')
-    .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')))
-    .join('\n')
+  const body = bodyOf(req)
+  return body === null ? '' : wsUserText(body)
+}
+
+/** The INSTRUCTION surface: 0.2 top-level `system`, 0.1.x system messages. */
+function systemTextOf(req) {
+  const body = bodyOf(req)
+  return body === null ? '' : wsSystemText(body)
 }
 
 function toolMsgsOf(req) {
-  // Tool RESULTS carried by a request, in conversation order, across host
-  // generations. The wire shape is generation-specific and the scripted chain
-  // counts these EXACTLY (one per executed call), so the adapter has to be
-  // precise rather than lenient:
-  //  - 0.1.x: dedicated `role: 'tool'` messages;
-  //  - 0.2.0-rc.2: the request goes through the pi-ai content-part wire —
-  //    results arrive as `tool_result` CONTENT PARTS inside ordinary messages
-  //    (no `role: 'tool'` message exists at all).
-  // Counting only the 0.1.x shape makes every chain step wait forever while
-  // the decide chain keeps re-issuing step 1's tool call — observed in run 4
-  // as a ~1 800-request mock storm with a growing context. Union by tool-call
-  // id, so a mixed or future shape cannot double-count either.
-  const messages = bodyOf(req)?.messages ?? []
-  const out = []
-  const seen = new Set()
-  for (const m of messages) {
-    if (m?.role === 'tool') {
-      const id = m.tool_call_id ?? m.toolCallId ?? m.id ?? null
-      if (id !== null && seen.has(id)) continue
-      if (id !== null) seen.add(id)
-      out.push(m)
-      continue
-    }
-    const content = m?.content
-    if (!Array.isArray(content)) continue
-    for (const p of content) {
-      if (p === null || typeof p !== 'object') continue
-      if (p.type !== 'tool_result' && p.type !== 'tool-result') continue
-      const id = p.tool_use_id ?? p.toolUseId ?? p.tool_call_id ?? p.id ?? null
-      if (id !== null && seen.has(id)) continue
-      if (id !== null) seen.add(id)
-      out.push(p)
-    }
-  }
-  return out
-}
-
-/** The textual payload of one tool result, whatever the generation's shape. */
-function toolResultTextOf(result) {
-  if (result === null || result === undefined) return ''
-  const content = typeof result === 'object' && 'content' in result ? result.content : result
-  return typeof content === 'string' ? content : JSON.stringify(content ?? '')
-}
-
-/**
- * The instruction surface of a request (persona / system prompt): 0.1.x
- * carried it as `role: 'system'` MESSAGES, 0.2.0-rc.2 sends it as the
- * top-level `system` body key (string or content parts) — see the title-call
- * note in the mock policy. Persona assertions must read the surface, not one
- * generation's encoding of it.
- */
-function systemTextOf(req) {
   const body = bodyOf(req)
-  const top = body?.system
-  const topText = typeof top === 'string' ? top : JSON.stringify(top ?? '')
-  const messageText = (body?.messages ?? [])
-    .filter((m) => m?.role === 'system')
-    .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')))
-    .join('\n')
-  return `${topText}\n${messageText}`
+  if (body === null) return []
+  let entries
+  try {
+    entries = toolResultEntries(body, { label: 'count' })
+  } catch {
+    // Unrecognized encoding: reported by the sweep; a diagnostic dump must
+    // never be the thing that ends a run.
+    return []
+  }
+  return entries.map((e) => e.item)
+}
+
+function toolEntriesOf(req, label) {
+  try {
+    return toolResultEntries(bodyOf(req), { label })
+  } catch (err) {
+    // An unreadable shape is a fixture fault, not a chain state: abort through
+    // the owner's cleanup instead of continuing on a guess.
+    RC.requestAbort(`unreadable tool-result surface (${label}): ${err.message}`, { label, decoder: String(err?.name ?? 'Error') })
+    return []
+  }
 }
 
 /**
- * The instance id from a team_create_member / team_delegate tool result.
- * The `executed` result carries `targetInstanceId` (tools.ts
- * toExecutedResult) — the field name FIRST; the bare `instanceId` and the
- * inst- pattern are forensic fallbacks.
+ * The instance id of a `team_create_member` result at `index` — STRICT, with no
+ * fallback that can produce `undefined`. On any problem (missing entry, error
+ * result, empty payload, no id) this ABORTS the run through the owner's cleanup
+ * and returns null, so the caller cannot issue a `team_delegate` with a missing
+ * or fabricated `targetInstanceId`.
  */
-function extractInstanceId(content) {
-  const m =
-    /"targetInstanceId"\s*:\s*"([^"]+)"/.exec(String(content)) ??
-    /"instanceId"\s*:\s*"([^"]+)"/.exec(String(content)) ??
-    /inst-[A-Za-z0-9][A-Za-z0-9-]{3,64}/.exec(String(content))
-  return m === null ? null : m[1]
+function instanceIdFrom(req, index, label) {
+  const entries = toolEntriesOf(req, label)
+  const entry = entries[index]
+  if (entry === undefined) {
+    RC.requestAbort(`fixture fault (${label}): the request carries ${entries.length} tool result(s), no entry ${index}`, { label, index, resultCount: entries.length })
+    return null
+  }
+  try {
+    return strictExtractInstanceId(entry.item, { label })
+  } catch (err) {
+    RC.requestAbort(`fixture fault (${label}): ${err.message}`, { label, index, isError: entry.isError, textHead: entry.text.slice(0, 300) })
+    return null
+  }
+}
+
+/** A typed refusal for the host when a fixture fault already aborted the run. */
+function abortedReply(what) {
+  return { kind: 'error', status: 503, message: `rc2 kit: refusing to continue (${what}); run aborted through the owner's cleanup`, code: 'rc2-fixture-fault' }
 }
 
 function makeDecide() {
@@ -919,9 +912,8 @@ function makeDecide() {
           label: 'worker-b-1',
         })
         case 4: {
-          const bCreateResult = toolResultTextOf(toolMsgsOf(req)[3])
-          const id = extractInstanceId(bCreateResult)
-          if (id === null) return { kind: 'text', content: `RC2_B_EXTRACT_FAIL :: ${bCreateResult.slice(0, 300)}` }
+          const id = instanceIdFrom(req, 3, 'B team_create_member result')
+          if (id === null) return abortedReply('B create result unreadable')
           // EXPLICIT async: false — the 2026-09-27 ruling flipped the
           // no-argument default to async; this kit exercises blueprint
           // binding/persona, so it pins the sync path explicitly to keep
@@ -949,9 +941,8 @@ function makeDecide() {
           label: 'worker-b-1',
         })
         case 1: {
-          const cCreateResult = toolResultTextOf(toolMsgsOf(req)[0])
-          const id = extractInstanceId(cCreateResult)
-          if (id === null) return { kind: 'text', content: `RC2_C_EXTRACT_FAIL :: ${cCreateResult.slice(0, 300)}` }
+          const id = instanceIdFrom(req, 0, 'C team_create_member result')
+          if (id === null) return abortedReply('C create result unreadable')
           // EXPLICIT async: false (2026-09-27 ruling: sync is now opt-in)
           // — keeps this persona-isolation kit's behavior byte-identical.
           return toolCall('team_delegate', {
@@ -973,37 +964,55 @@ function makeDecide() {
 
 /** Poll the in-process mock request log for the first request matching pred. */
 /**
- * Resource guards (added after run 4).
+ * Run control + resource budgets.
  *
- * The kit drives a scripted chain where every model reply advances the chain
- * by exactly one executed tool call, so a healthy run is small (~20-30 model
- * requests in total) and every wait hits on its first or second poll. When a
- * predicate cannot match the host's request shape the failure mode is the
- * opposite: `decide` keeps answering with the SAME scripted branch while the
- * context grows, and each downstream wait grinds its full 180-240 s timeout —
- * run 4 produced ~1 800 model requests without information, and the useful
- * signal was buried. These bounds convert that into one loud, well-documented
- * failure:
- *   - TOTAL_REQUEST_LIMIT: total model requests observed in this run;
- *   - SAME_REPLY_LIMIT: the same scripted branch answered this many times in
- *     a row (the chain is not a loop — no success path repeats a branch);
- *   - CONSECUTIVE_MISS_LIMIT: this many waits in a row found nothing.
- * Exceeding a bound can only FAIL the run (the original predicate, label and
- * request evidence are written to storm-guard.json and the criteria list keeps
- * its recorded results); it never turns a failure into a pass, and no bound
- * sits anywhere near the passing path.
+ * HISTORY. Run 4 of this round produced ~1 800 model requests inside one wait
+ * because the chain predicates could not read the host's 0.2 request shape:
+ * `decide` kept re-answering with the same scripted branch while every
+ * downstream ground its full timeout. The first guard (PR #62 @ 0ff5bbe1)
+ * bounded that but was itself defective, and the independent review named the
+ * three ways it could be wrong:
+ *
+ *   1. it called `dieFatal()` → `process.exit(2)` from inside the mock's
+ *      `decide` callback, skipping `main()`'s `finally` — the ONLY place that
+ *      stops the child host and closes the mock — so a guard trip LEAKED the
+ *      host process it was supposed to protect;
+ *   2. its total was checked in `waitForMock` AFTER the hit fast-path, so a
+ *      storm inside a single wait was counted only when a wait succeeded;
+ *   3. its repetition detector was one global streak, so any interleaved title
+ *      dispatch or sibling-session turn reset it.
+ *
+ * The replacement (this block + run-budget.mjs + run-control.mjs):
+ *   - every request is counted AT ENTRY in `decide`, before any reply exists
+ *     and before any wait can mistake it for progress;
+ *   - counters are per session/purpose AND per scenario AND per (state, reply)
+ *     streak, so interleaving cannot mask a loop;
+ *   - a violation kills ONLY this run's own child, aborts the run signal and
+ *     THROWS `RunAborted` into the owner, whose `finally` closes the mock and
+ *     writes the forensic corpus (`mock-requests.json`, `instance-tail.txt`,
+ *     `run-abort.json`, `summary.json`) before the process exits;
+ *   - an independent watchdog bounds the child's wall-clock lifetime
+ *     separately from every wait;
+ *   - SIGINT/SIGTERM take the same path.
+ * Thresholds are sized from the expected successful chain (~20-30 requests,
+ * documented in run-budget.mjs) with ~4x headroom, and can only ever FAIL the
+ * run — never skip a step or turn a failure into a pass.
  */
-const TOTAL_REQUEST_LIMIT = 600
-const SAME_REPLY_LIMIT = 15
-const CONSECUTIVE_MISS_LIMIT = 3
-const GUARD = {
-  decideCalls: 0,
-  lastReplySig: null,
-  sameReplyStreak: 0,
-  consecutiveMisses: 0,
-  lastWaitLabel: null,
-  lastRequests: [],
-}
+const CHILD_LIFETIME_MS = 20 * 60_000
+/** Requests the decoder could not classify, and how far the sweep has run. */
+const SHAPE_SWEEP = { swept: 0, unknown: [] }
+const RC = createRunControl({
+  log,
+  writeEvidence,
+  limits: {
+    totalRequests: 120,
+    perSessionRequests: 40,
+    perScenarioRequests: 25,
+    sameStateRepeats: 6,
+    consecutiveMisses: 2,
+    childLifetimeMs: CHILD_LIFETIME_MS,
+  },
+})
 
 /** A reply signature that ignores the random tool-call ids. */
 function replySig(reply) {
@@ -1014,61 +1023,107 @@ function replySig(reply) {
   return `text:${String(reply.content ?? '').slice(0, 200)}`
 }
 
-function guardAbort(reason, extra) {
-  const dump = {
-    reason,
-    guard: { ...GUARD, lastReplySig: GUARD.lastReplySig, sameReplyStreak: GUARD.sameReplyStreak },
-    limits: { TOTAL_REQUEST_LIMIT, SAME_REPLY_LIMIT, CONSECUTIVE_MISS_LIMIT },
-    lastWaits: GUARD.lastRequests.slice(-12),
-    criteriaAtAbort: criteria.map((c) => ({ id: c.id, ok: c.ok })),
-    ...extra,
+/** The conversation STATE a request belongs to (run-budget.stateKeyOf). */
+function requestStateKey(req) {
+  const body = bodyOf(req) ?? {}
+  let purpose = 'unclassified'
+  try {
+    purpose = classifyPurpose(body).purpose
+  } catch {
+    purpose = 'unclassified'
   }
-  writeEvidence('storm-guard.json', dump)
-  log(`STORM GUARD: ${reason} (evidence: storm-guard.json; ${criteria.filter((c) => c.ok).length}/${criteria.length} criteria passed so far)`)
-  dieFatal(`storm guard: ${reason}`, 2)
+  let toolResults = 0
+  let sys = ''
+  try {
+    // `toolResultsOf` is the STRICT reader: it throws on an unrecognized shape
+    // (which is itself budget-relevant information) and returns {count}.
+    toolResults = wsToolResults(body).count
+    sys = wsSystemText(body)
+  } catch {
+    toolResults = 0
+    sys = JSON.stringify(body?.messages ?? []).slice(0, 4000)
+  }
+  return stateKeyOf({ purpose, systemText: sys, toolResults })
 }
 
-/** Wrap the scripted decide so every reply passes the repetition guard. */
+/**
+ * The scripted decide, wrapped so every request is counted at entry. On a
+ * violation the child is killed, the run signal is aborted and the HOST gets a
+ * typed 503 instead of yet another scripted reply; the run itself ends through
+ * the owner's cleanup — never `process.exit` from inside the mock.
+ */
 function guardedDecide(req, decideFn) {
-  GUARD.decideCalls += 1
+  if (RC.aborted()) {
+    return { kind: 'error', status: 503, message: 'storm guard: run already aborted', code: 'storm-guard' }
+  }
+  const key = requestStateKey(req)
+  const violation = RC.budget.observeRequest(key)
+  if (violation !== null) {
+    RC.reportViolation(violation, { at: 'decide-entry', stateKey: key })
+    return { kind: 'error', status: 503, message: `storm guard: ${violation.detail}`, code: 'storm-guard' }
+  }
   const reply = decideFn(req)
-  const sig = replySig(reply)
-  GUARD.sameReplyStreak = sig === GUARD.lastReplySig ? GUARD.sameReplyStreak + 1 : 1
-  GUARD.lastReplySig = sig
-  if (GUARD.sameReplyStreak >= SAME_REPLY_LIMIT) {
-    guardAbort(`the same scripted reply repeated ${GUARD.sameReplyStreak}× in a row (${sig.slice(0, 200)}) — the chain is not advancing; last wait: ${GUARD.lastWaitLabel ?? 'none'}`, {
-      lastRequest: { userTextHead: userTextOf(req).slice(0, 400), toolResultCount: toolMsgsOf(req).length, bodyKeys: Object.keys(bodyOf(req) ?? {}) },
-    })
+  const repeat = RC.budget.noteReply(key, replySig(reply))
+  if (repeat !== null) {
+    RC.reportViolation(repeat, { at: 'decide-reply', stateKey: key })
+    return { kind: 'error', status: 503, message: `storm guard: ${repeat.detail}`, code: 'storm-guard' }
   }
   return reply
 }
 
 async function waitForMock(mock, pred, timeoutMs, label) {
-  GUARD.lastWaitLabel = label
-  const deadline = Date.now() + timeoutMs
-  for (;;) {
-    const hit = mock.requests.find(pred)
-    if (hit !== undefined) {
-      GUARD.consecutiveMisses = 0
-      return hit
-    }
-    GUARD.lastRequests = mock.requests.slice(-3).map((r) => ({
-      seq: r.seq,
-      userTextHead: r.body === null ? null : userTextOf(r).slice(0, 200),
-      toolResultCount: r.body === null ? null : toolMsgsOf(r).length,
-    }))
-    if (mock.requests.length > TOTAL_REQUEST_LIMIT) {
-      guardAbort(`${mock.requests.length} model requests exceeded TOTAL_REQUEST_LIMIT while waiting for "${label}"`, { waitingFor: label })
-    }
-    if (Date.now() >= deadline) {
-      GUARD.consecutiveMisses += 1
-      log(`mock wait timed out: ${label} (requests=${mock.requests.length}, consecutiveMisses=${GUARD.consecutiveMisses})`)
-      if (GUARD.consecutiveMisses >= CONSECUTIVE_MISS_LIMIT) {
-        guardAbort(`${GUARD.consecutiveMisses} consecutive mock waits timed out (last: "${label}") — the chain is not recovering; failing fast instead of spending the remaining legs' timeouts`, { waitingFor: label })
+  RC.check()
+  RC.budget.beginScenario(label)
+  try {
+    const deadline = Date.now() + timeoutMs
+    for (;;) {
+      // An abort raised by decide, the watchdog or a signal lands here within
+      // one poll instead of after the remaining timeouts.
+      RC.check()
+      // Loud-shape sweep: a request the decoder cannot classify (unknown role /
+      // part type, mixed encodings, or a purpose outside the closed auxiliary
+      // list) aborts the run HERE through the owner's cleanup, instead of being
+      // read as "zero tool results" and re-asking the model for the same step
+      // forever — the exact failure mode of run 4.
+      for (const r of mock.requests.slice(SHAPE_SWEEP.swept)) {
+        SHAPE_SWEEP.swept += 1
+        if (r.body === null) continue
+        const label = `request #${r.seq}`
+        try {
+          assertWireShape(r.body, { label })
+          assertPurpose(r.body, { label })
+        } catch (err) {
+          SHAPE_SWEEP.unknown.push({ seq: r.seq, error: String((err && err.message) ?? err) })
+          writeEvidence('unknown-wire-shape.json', { unknown: SHAPE_SWEEP.unknown, waitingFor: label })
+          RC.abort(`unrecognized model request (${label}): ${String((err && err.message) ?? err)}`, { seq: r.seq, waitingFor: label })
+        }
       }
-      return null
+      const hit = mock.requests.find((r) => {
+        if (!pred(r)) return false
+        if (r.body === null) return false
+        // A title or compaction dispatch REPLAYS the conversation, so it can
+        // satisfy a marker/count predicate with the wrong request: only genuine
+        // agent turns may advance the scripted chain.
+        try {
+          return isChainTurn(r.body)
+        } catch {
+          return false
+        }
+      })
+      if (hit !== undefined) {
+        RC.budget.noteWaitHit()
+        return hit
+      }
+      if (Date.now() >= deadline) {
+        const miss = RC.budget.noteWaitMiss(label)
+        log(`mock wait timed out: ${label} (requests=${mock.requests.length}, consecutiveMisses=${RC.budget.state.consecutiveMisses}, total=${RC.budget.state.totalRequests})`)
+        if (miss !== null) RC.reportViolation(miss, { waitingFor: label, lastRequests: mock.requests.slice(-5).map((r) => ({ seq: r.seq, userTextHead: r.body === null ? null : userTextOf(r).slice(0, 200), toolResultCount: r.body === null ? null : toolMsgsOf(r).length })) })
+        return null
+      }
+      await new Promise((r) => setTimeout(r, 400))
     }
-    await new Promise((r) => setTimeout(r, 400))
+  } finally {
+    RC.budget.endScenario()
   }
 }
 
@@ -1330,7 +1385,19 @@ async function main() {
       })
     } catch (e) { diag(`dumpMock(${tag}) failed: ${String(e)}`) }
   }
-  const mock = await startMockModel({
+  // From here on this function OWNS a child host and a listening mock, so every
+  // failure path must unwind into the `finally` below. Nothing inside the run
+  // may call process.exit (dieFatal throws RunAborted once RC is armed).
+  RC.arm()
+  const removeSignalHandlers = RC.installSignalHandlers()
+  let mock = null
+  let host = null
+  let booted = null
+  const FAILS = []
+  const fail = (id) => FAILS.push(id)
+
+  try {
+  mock = await startMockModel({
     port: MOCK_PORT,
     decide: (req) => guardedDecide(req, decideDiag),
     log: (l) => {
@@ -1343,13 +1410,12 @@ async function main() {
 
   const instanceLog = join(RUN_DIR, 'instance.log')
   writeFileSync(instanceLog, '', { flag: 'w' })
-  const booted = await bootHost({ port: hostPort, home: HOME, mockPort: mock.port, instanceLog })
-  let host = booted.host
+  booted = await bootHost({ port: hostPort, home: HOME, mockPort: mock.port, instanceLog })
+  host = booted.host
+  // Independent of every wait: the child this run spawned may not outlive the
+  // run budget. Killing is by the bound handle only — never by port or pattern.
+  RC.bindChild(host.child, { lifetimeMs: CHILD_LIFETIME_MS })
 
-  const FAILS = []
-  const fail = (id) => FAILS.push(id)
-
-  try {
     // ── LEG 0: discovery (the boot Leader's model-facing tool surface) ──
     log('── LEG 0: discovery ──')
     const discPrompt = await apiPrompt(booted.origin, booted.cookie, ROOT, MK_DISC)
@@ -1362,9 +1428,12 @@ async function main() {
       const surface = (discReq.body.tools ?? []).map((t) => t.function?.name ?? t.name ?? String(t)).sort()
       writeEvidence('leg0-surface.json', { surface, discRequest: { seq: discReq.seq, tools: surface } })
       log(`discovery surface (${surface.length} tools): ${surface.join(', ')}`)
-      const denyList = surface.filter(
-        (n) => !MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n) && !TEAM_TOOL_CATALOG.includes(n),
-      )
+      const denyList = deriveBuiltinToolDeny({
+        surface,
+        managed: MANAGED_TOOL_NAMES,
+        safeUnmanaged: SAFE_UNMANAGED_TOOL_NAMES,
+        teamCatalog: TEAM_TOOL_CATALOG,
+      })
       const missingManaged = MANAGED_TOOL_NAMES.filter((n) => !surface.includes(n))
       // LIVE-FOUND (run 11-02-31): the minimal-style preset surface carries
       // 5 of the 7 managed tools (no lsp / no pwsh — the preset group set
@@ -1375,25 +1444,37 @@ async function main() {
         surface.includes('read') && surface.includes('bash'),
         `surface=${surface.length} missingManaged=[${missingManaged.join(',')}] denyList=[${denyList.join(',')}]`)
       writeEvidence('leg0-denylist.json', { denyList, missingManaged })
-      // L0c — the kit's own invariant, pinned as a criterion: `builtinToolDeny`
-      // is the BUILTIN surface minus managed/safe-unmanaged minus the plugin's
-      // own team tools, so no `team_*` name may ever land in it. On
-      // 0.2.0-rc.2 a stale TEAM_TOOL_CATALOG is fatal rather than harmless —
-      // the host fails closed (`tools.restrict() names unknown global tool
-      // '…'`) and the root (leader) agent never starts, which surfaces
-      // downstream as a dead S-leg chain. Fail here, loudly, with the stale
-      // names, instead of writing blueprints that cannot boot.
-      const teamNamesDenied = denyList.filter((n) => n.startsWith('team_'))
-      check('L0c', 'no plugin team tool falls into builtinToolDeny (kit catalog covers the live team surface)',
-        teamNamesDenied.length === 0,
-        `staleTeamCatalog=[${teamNamesDenied.join(',')}] surface=${surface.length}`)
-      if (teamNamesDenied.length !== 0) {
-        fail('L0c')
-      }
-      // The saved blueprints (written after discovery — the deny list needs
-      // the live surface; the row's blueprintDir was declared at boot).
-      writeFileSync(join(BLUEPRINT_DIR, 'rc2-b.yaml'), savedBlueprintYaml(BP_B_ID, `You are the leader of the rc2 smoke B team. ${P_LEADER_B}`, `You are worker-b of the rc2 smoke B team. ${P_WORKER_B}`, denyList))
-      writeFileSync(join(BLUEPRINT_DIR, 'rc2-c.yaml'), savedBlueprintYaml(BP_C_ID, `You are the leader of the rc2 smoke C team. ${P_LEADER_C}`, `You are worker-b of the rc2 smoke C team. ${P_WORKER_C}`, denyList))
+      // L0c + blueprint materialization are ONE ordered pre-flight step
+      // (tests/kits/rc2-real-host-smoke/fixture-invariants.mjs). The earlier
+      // version recorded a FAIL and then wrote the bad blueprints and called
+      // team.create anyway — three more host calls against a fixture already
+      // known to be invalid, which buried the cause in downstream failures.
+      // Now the invariants run first, the criterion + evidence are recorded,
+      // and the run ABORTS through the owner's cleanup (RunAborted → finally →
+      // stopHost + mock.close) before a single B/C artifact exists.
+      materializeBcFixtures({
+        surface,
+        managed: MANAGED_TOOL_NAMES,
+        safeUnmanaged: SAFE_UNMANAGED_TOOL_NAMES,
+        teamCatalog: TEAM_TOOL_CATALOG,
+        leaderTeamTools: LEADER_TEAM_TOOLS_ALLOW,
+        blueprints: {
+          'rc2-b.yaml': { bpId: BP_B_ID, leaderPersona: `You are the leader of the rc2 smoke B team. ${P_LEADER_B}`, workerPersona: `You are worker-b of the rc2 smoke B team. ${P_WORKER_B}` },
+          'rc2-c.yaml': { bpId: BP_C_ID, leaderPersona: `You are the leader of the rc2 smoke C team. ${P_LEADER_C}`, workerPersona: `You are worker-b of the rc2 smoke C team. ${P_WORKER_C}` },
+        },
+        renderBlueprint: (name, { bpId, leaderPersona, workerPersona, denyList: dl }) => savedBlueprintYaml(bpId, leaderPersona, workerPersona, dl),
+        writeBlueprint: (name, yaml) => {
+          writeFileSync(join(BLUEPRINT_DIR, name), yaml)
+        },
+        onViolations: (violations, ctx) => {
+          const detail = `${violations.map((v) => `${v.code}=[${v.names.join(',')}]`).join(' ')} surface=${surface.length}`
+          check('L0c', 'B/C fixture pre-flight: no team tool reaches builtinToolDeny, no unknown name in the leader allow lane', false, detail)
+          fail('L0c')
+          writeEvidence('fixture-preflight.json', { violations, denyList: ctx.denyList, surface, leaderTeamTools: LEADER_TEAM_TOOLS_ALLOW })
+          RC.abort(`fixture pre-flight failed (${violations.map((v) => v.code).join(',')}) — refusing to materialize B/C blueprints or issue any B/C host call with a known-invalid fixture`, { violations })
+        },
+      })
+      check('L0c', 'B/C fixture pre-flight passed (deny list names only non-team, non-managed tools)', true, `denyList=[${denyList.join(',')}]`)
       log(`saved blueprints B + C written (deny list = ${denyList.length} names)`)
       // DIAG early-exit: the mock MUST have matched the marker here —
       // otherwise every scripted downstream leg stalls (a NOOP reply ends
@@ -1674,12 +1755,20 @@ async function main() {
     check('S5d', 'S5: the C leader turn completed (final text RC2_SMOKE_C_DONE)', cDone !== null, `requests=${mock.requests.length}`)
     if (cDone === null) fail('S5d')
   } finally {
-    // Teardown (evidence is flushed before the world goes).
+    // Teardown (evidence is flushed before the world goes). This now runs for
+    // EVERY path out of the run — pass, failed leg, budget violation, unexpected
+    // wire shape, throw inside a leg, SIGINT/SIGTERM — because no code below the
+    // owner exits the process.
+    const ctl = RC.dispose()
+    if (ctl.watchdogFired) log('teardown: the child-lifetime watchdog fired during this run')
+    removeSignalHandlers()
     log('teardown: stopping host + mock')
-    stopHost(host)
-    try {
-      await mock.close()
-    } catch { /* best-effort */ }
+    if (host !== null) stopHost(host)
+    if (mock !== null) {
+      try {
+        await mock.close()
+      } catch { /* best-effort */ }
+    }
     const postStable = {
       p3080: await probeStableInstance('http://127.0.0.1:3080/'),
       p3180: await probeStableInstance('http://127.0.0.1:3180/'),
@@ -1693,7 +1782,8 @@ async function main() {
       toolMsgCount: toolMsgsOf(r).length,
       reply: r.reply,
     })))
-    writeEvidence('instance-tail.txt', logTail(booted.instanceLog, 120))
+    if (booted !== null) writeEvidence('instance-tail.txt', logTail(booted.instanceLog, 120))
+    writeEvidence('run-budget.json', { budget: RC.budget.snapshot(), violation: RC.violation(), limits: RC.budget.limits })
     if (FLAG_KEEP) {
       log(`--keep: world retained at ${HOME}`)
     } else {
@@ -1714,6 +1804,7 @@ async function main() {
       failed: FAILS,
       stable: { pre: preStable, post: postStable },
       verdict: FAILS.length === 0 ? 'PASS' : 'FAIL',
+      runControl: { aborted: RC.aborted(), violation: RC.violation(), budget: RC.budget.snapshot() },
     }
     writeEvidence('summary.json', summary)
     log(`VERDICT ${summary.verdict} — ${passed}/${criteria.length} criteria passed${FAILS.length > 0 ? `; failed: ${FAILS.join(',')}` : ''}`)
@@ -1726,7 +1817,9 @@ async function main() {
 main().catch((e) => {
   try {
     log(`FATAL uncaught: ${e.stack ?? e}`)
-    if (RUN_LOG !== null) writeEvidence('summary.json', { runStamp: RUN_STAMP, fatal: String(e.message ?? e), criteria })
+    if (RUN_LOG !== null) writeEvidence('summary.json', { runStamp: RUN_STAMP, fatal: String(e.message ?? e), criteria, runControl: { aborted: RC.aborted(), violation: RC.violation(), budget: RC.budget.snapshot() } })
   } catch { /* best-effort */ }
-  process.exit(1)
+  // An abort means the owner's finally already stopped the child + mock; the
+  // exit code only reports WHY the run ended (2 = budget/guard/failure path).
+  process.exit(e instanceof RunAborted ? 2 : 1)
 })

@@ -1,0 +1,13 @@
+{
+  "__fixture": "NEGATIVE CASE: an error result must never yield an instance id.",
+  "result": {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"status\":\"rejected\",\"code\":\"TEAM_TOOL_MEMBER_CREATE_FAILED\",\"targetInstanceId\":\"inst-not-yours\"}"
+      }
+    ],
+    "is_error": true
+  }
+}

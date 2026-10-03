@@ -1,31 +1,41 @@
 {
   "generator": "scripts/sanitize-evidence.mjs",
-  "generatedAt": "2026-10-03T14:56:50.182Z",
-  "source": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/dev/agent-workflow/evidence/dsh-020rc2-upgrade",
-  "sanitizedTo": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.sanitized-tmp",
-  "rawBytesPreservedIn": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.private-raw-evidence/dsh-020rc2-upgrade",
-  "note": "Raw logs are the forensic record and are NEVER rewritten; they are kept byte-identically (sha256 pinned here) outside the committed tree. Committed copies replace credential-shaped substrings only — line structure, counts and every non-credential byte are preserved.",
+  "generatedAt": "2026-10-03T15:23:42.805Z",
+  "source": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.private-raw-evidence/dsh-020rc2-upgrade",
+  "sanitizedTo": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/dev/agent-workflow/evidence/dsh-020rc2-upgrade",
+  "rawBytesPreservedIn": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.private-raw-evidence/.sanitized-tmp",
+  "separation": "from / to / store canonicalized (symlinks resolved) and proven pairwise disjoint before any write; every raw sha256 re-verified after the run",
+  "note": "Raw logs are the forensic record and are NEVER rewritten; committed copies replace credential-shaped substrings only — line structure and every non-credential byte are preserved.",
   "patterns": [
     "boot-token",
     "token-param",
     "session-cookie",
-    "cookie-header",
     "bearer",
-    "authorization-json",
+    "json-secret-key",
+    "yaml-secret-key",
+    "cookie-header",
+    "abs-path-posix",
+    "abs-path-windows",
     "bare-secret"
   ],
   "files": [
     {
       "file": "00-plan.md",
-      "copiedVerbatim": true
+      "copiedVerbatim": true,
+      "bytesRaw": 6000,
+      "sha256Raw": "70d2ee932a950ad3764d2f31a3b5a46576ac5610374fea384e1eeed904bea588"
     },
     {
       "file": "01-baseline-record.md",
-      "copiedVerbatim": true
+      "copiedVerbatim": true,
+      "bytesRaw": 6955,
+      "sha256Raw": "ea773e860d09faf65d9be4228ca5da493228ea7092b34b143b5d7b1695a73580"
     },
     {
       "file": "02-gates-and-findings.md",
-      "copiedVerbatim": true
+      "copiedVerbatim": true,
+      "bytesRaw": 12923,
+      "sha256Raw": "5c9bdbe79737dfb68762083ba358bd94aefab389cc55bb7322ffcdd84858d034"
     },
     {
       "file": "diag/auth-probe-2026-10-03T14-33-33.log",
@@ -83,7 +93,9 @@
     },
     {
       "file": "diag/auth-probe.mjs",
-      "copiedVerbatim": true
+      "copiedVerbatim": true,
+      "bytesRaw": 7763,
+      "sha256Raw": "6bfb0d05fa2e8f7fcd01f48fd4a2eb9f7b67290ad06e59e674a528dc0ed40caf"
     },
     {
       "file": "diag/auth-probe2-2026-10-03T14-41-16.log",
@@ -105,7 +117,21 @@
     },
     {
       "file": "diag/auth-probe2.mjs",
-      "copiedVerbatim": true
+      "copiedVerbatim": true,
+      "bytesRaw": 7400,
+      "sha256Raw": "46b704330455bb75d7979128125a95b12eda04ccdbdad0b0f0c0d21a4d22ea6c"
+    },
+    {
+      "file": "diag/wire-envelope-agent-with-result-2026-10-03T15-06-25",
+      "copiedVerbatim": true,
+      "bytesRaw": 37900,
+      "sha256Raw": "5bed2d1de31093982743f1ef5122aff452d0b84c44dfc93c399803d301d66429"
+    },
+    {
+      "file": "diag/wire-envelope-auxiliary-2026-10-03T15-06-25",
+      "copiedVerbatim": true,
+      "bytesRaw": 899,
+      "sha256Raw": "233bc76ddb1f3c226a811ed78e567a153bd2f231b51046b407c7dc8c7745fccc"
     },
     {
       "file": "diag/wire-probe-2026-10-03T14-45-59.log",
@@ -121,6 +147,22 @@
       "bytesSanitized": 954,
       "sha256Raw": "d22dd16b406bb3d27cf78e220fad2fbd296264d679b3c6927187afc3ea3956f8",
       "sha256Sanitized": "d22dd16b406bb3d27cf78e220fad2fbd296264d679b3c6927187afc3ea3956f8",
+      "replacements": {}
+    },
+    {
+      "file": "diag/wire-probe-2026-10-03T15-06-25.log",
+      "bytesRaw": 2142,
+      "bytesSanitized": 2142,
+      "sha256Raw": "64bf1c675871c61708470cb24b8c137929e7108aae637e93837c2043a3cd3be8",
+      "sha256Sanitized": "64bf1c675871c61708470cb24b8c137929e7108aae637e93837c2043a3cd3be8",
+      "replacements": {}
+    },
+    {
+      "file": "diag/wire-probe-driver.log",
+      "bytesRaw": 2142,
+      "bytesSanitized": 2142,
+      "sha256Raw": "64bf1c675871c61708470cb24b8c137929e7108aae637e93837c2043a3cd3be8",
+      "sha256Sanitized": "64bf1c675871c61708470cb24b8c137929e7108aae637e93837c2043a3cd3be8",
       "replacements": {}
     },
     {
@@ -144,12 +186,32 @@
       }
     },
     {
+      "file": "diag/wire-probe-instance-2026-10-03T15-06-25.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "d7ec630d69578d2bf14ac196954d4583ffbb9ccd3e9f0617a591a56b4ac56493",
+      "sha256Sanitized": "7bc8b9f16714834fa5a7777850dbff85983e8a6ab18f713202b03d6e243a82b4",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
       "file": "diag/wire-probe.mjs",
-      "copiedVerbatim": true
+      "copiedVerbatim": true,
+      "bytesRaw": 11767,
+      "sha256Raw": "c324a50a736571f519c55e11bef0fa4f049ad01e70df43d22cd5b0547dd3b3bc"
     },
     {
       "file": "diag/wire-shape-2026-10-03T14-45-59",
-      "copiedVerbatim": true
+      "copiedVerbatim": true,
+      "bytesRaw": 962,
+      "sha256Raw": "4bdfe799cbc940ca1bf3b1f8178b988e8f27a67188676552e75b2f350ba6f049"
+    },
+    {
+      "file": "diag/wire-shape-2026-10-03T15-06-25",
+      "copiedVerbatim": true,
+      "bytesRaw": 962,
+      "sha256Raw": "4bdfe799cbc940ca1bf3b1f8178b988e8f27a67188676552e75b2f350ba6f049"
     },
     {
       "file": "logs/CONTROL-base-smoke-composition.log",
@@ -590,5 +652,6 @@
       "replacements": {}
     }
   ],
-  "totalReplacements": 13
+  "rawBytesUnchanged": true,
+  "totalReplacements": 14
 }

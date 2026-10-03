@@ -160,3 +160,60 @@ kit probes it read-only pre/post and every run recorded
 `stable pre-probe: 3080=401 3180=unreachable` (401 = the stable instance
 alive and untouched). Every home is under `tests/homes/<world>` in this
 worktree; only processes this round spawned were killed.
+
+## 5. Post-review repairs on this PR (2026-10-03, after head `0ff5bbe1`)
+
+The provisional head shipped a first guard, a first sanitizer and a first request
+decoder. The independent review found each of them defective; every finding is
+reproduced, fixed and pinned by a test here, and none of them weakened a test.
+
+| # | defect as reviewed | fix | pinned by |
+| --- | --- | --- | --- |
+| F-7 | `dieFatal` → `process.exit(2)` from inside the guard, bypassing `main`'s `finally` (`stopHost` + `mock.close`): a tripped guard **left this run's host child alive**; no independent lifetime watchdog; the request ceiling was checked only after a wait's fast path; the repeated-reply streak was global, so interleaved title/sibling traffic reset it | `tests/kits/rc2-real-host-smoke/run-control.mjs` (owner-scoped `RunAborted` / `requestAbort` / `abort`, `bindChild` + unref'd lifetime watchdog, signal handlers, one killable handle) + `run-budget.mjs` rewritten (`observeRequest` counts at **entry**, per-total / per-session / per-scenario / per-state-repeat caps, consecutive-miss streak, latched first violation); `dieFatal` throws while armed, `process.exit` survives only pre-arm | `packages/testkit/test/rc2-kit-fault-injection.test.ts` F0–F6 (subprocess: after cap / interleaved repeat / wait timeout / decoder failure / watchdog, the run's own child is gone and an unrelated process the test owns is still alive; cleanup + evidence written; exit codes 0/2/3) |
+| F-8 | L0c recorded a FAIL and then continued: it wrote the B/C blueprints with the bad deny list and issued the B/C `team.create` calls anyway, so three more host calls ran against a fixture already known invalid | `tests/kits/rc2-real-host-smoke/fixture-invariants.mjs`: catalog single source + invariants + **materialization inside the same call**, pre-flight first and throwing into the owner's cleanup (`RC.abort`); the kit has no loose B/C blueprint write left | `packages/testkit/test/rc2-kit-fixture-invariants.test.ts` I1–I6: catalog ≡ `packages/tools/src/tools.ts` (incl. the verb-built pair); the historical 11-name drift names exactly the four tools; a stale catalog writes **zero** blueprints with the abort hook running first; a source-order guard keeps the pre-flight ahead of `team.create` |
+| F-9 | the decoder read 0.1.x only (run 4's ~1 800-request storm) and, in the newest review, `toolResultText` JSON-stringified a 0.2 `content` **array**, escaping the inner quotes, while the kit's `extractInstanceId` fallback returned an unmatched capture group (`undefined`) that the `id === null` check happily forwarded into `team_delegate` | `wire-shape.mjs`: `flattenContent` unwraps `text` parts **verbatim** and descends through container parts (depth-guarded); `toolResultEntries` decodes once; `extractInstanceId` parses the payload structurally and **throws** on error / empty / missing id — no sentinel can reach a delegation; the kit reads the strict API, and `waitForMock` sweeps every recorded request, aborting through the owner's cleanup on an unclassifiable shape and letting only genuine agent turns advance the chain | `packages/testkit/test/rc2-kit-wire-shape.test.ts` A–E (17 tests) over 13 fixtures: 3 envelopes captured live from the pinned 0.2 runtime via the harness's desensitized fixture export, 2 reconstructions labelled as such (0.1.x classic; the compaction dispatch built from `packages/compaction/compaction-basic/src/summarizer.ts:145-161` — measured to carry `tools` AND replayed results, which is why toollessness proves nothing), 4 synthetic negative shapes, 5 instance-id parity cases (same id from both encodings; error / empty / id-less all throw) |
+| F-10 | the sanitizer had **no path separation**: `--from == --to`, a symlink alias and a bare no-arg run all exited 0 while rewriting the raw tree; `--store` inside `--to` copied raw secrets back into the sanitized output while the manifest claimed replacement; a YAML `x-api-key:` value and a JSON `"token"` field were missed, so `--verify` reported clean | `scripts/sanitize-evidence.mjs` rewritten: realpath-based disjointness (equal / nested / aliased, `--store` and `--manifest` included), `--force` for a non-empty `--to`, raw SHA-256 snapshot re-verified after the run (any raw change → exit 1, no manifest), expanded pattern vocabulary, exit codes 2 usage / 1 failure / 0 clean | `packages/testkit/test/rc2-sanitize-evidence.test.ts` S1–S12 (subprocess exit codes, raw bytes identical before/after, planted-secret `--verify` non-zero) |
+| F-11 | **caught while fixing F-10, recorded because it is the interesting one**: `--verify` over the committed tree flagged a live boot token in `diag/wire-probe-instance-2026-10-03T15-06-25.log`. That file was **untracked** — written by a probe run after the last sanitize pass — so it never entered any commit or push; the raw copy is now under `.private-raw-evidence/` and the committed copy is redacted, and `--verify` exits 0 over the whole tree | re-sanitized from the raw tree with the fixed tool; the fixed `--verify` is what found it | `VERIFY OK: no credential-shaped substring in 80 files` (recorded in `SANITIZATION.json` run + this note) |
+
+### Test inventory added by this section (all green, no skips)
+
+| file | tests | runner notes |
+| --- | --- | --- |
+| `packages/testkit/test/rc2-kit-wire-shape.test.ts` | 17 | vitest; fixtures under `tests/kits/rc2-real-host-smoke/fixtures/` |
+| `packages/testkit/test/rc2-kit-fixture-invariants.test.ts` | 7 | vitest; reads `packages/tools/src/tools.ts` as the drift oracle |
+| `packages/testkit/test/rc2-kit-fault-injection.test.ts` | 7 | vitest; subprocess + process-table assertions; scratch under `tests/homes/`, removed after |
+| `packages/testkit/test/rc2-sanitize-evidence.test.ts` | 12 | vitest; subprocess |
+| `packages/tools/test/rc2-team-deny-least-privilege.test.ts` | 9 | vitest; real P6-T6 world, torn down in `afterAll` |
+
+`npx tsc -p packages/testkit --noEmit` and `-p packages/tools --noEmit`: clean.
+`npx eslint` on every new/changed file: clean (the kit's `tests/kits/**/*.mjs` are
+outside the eslint project by configuration, as before). Typed ambient
+declarations for the kit's plain-ESM modules follow the `tests/paths.d.mts`
+precedent (`wire-shape.d.mts`, `fixture-invariants.d.mts`).
+
+### Evidence tree counts (do not quote the older numbers)
+
+Raw (gitignored, `.private-raw-evidence/dsh-020rc2-upgrade/`): **78** files,
+byte-identical originals, re-verified after every sanitize run.
+Committed sanitized tree at **this** head: **80** files = 78 manifest-covered +
+`SANITIZATION.json` itself + `03-team-tool-deny-least-privilege.md` (written after
+the manifest). The earlier statement "73 files" was stale in both directions: at
+head `0ff5bbe1` the tree held 74 (72 manifest-covered + manifest + the then-new
+document), and the probes in this section added the remaining 6. Any future count
+must come from `find dev/agent-workflow/evidence/dsh-020rc2-upgrade -type f | wc -l`
+plus the manifest's own `files` length, not from prose.
+
+### Still open after these repairs (unchanged blockers)
+
+- the full rc2 real-host smoke run: **paused** until the security review of the
+  committed evidence passes; nothing here ran the chain (the fault-injection test
+  uses its own throwaway child processes, no host, no port);
+- root vitest + lint vs the recorded debt (132E/32W vs base 118E/25W) is not yet
+  base-classified; base-control lint outstanding;
+- 5 other kits / presets plus `packages/runtime/root-binding/harness/run.mjs` and
+  `member-residency/harness/run.mjs` still use the removed `.agent-presets` seam;
+- composition-smoke **client leg still failing** (not weakened);
+  `PERSONA_SECTION` / `dsh-agent-presets` landmines; nested-worktree effect on
+  `packages/client/test/s3-client-generation-spike.test.ts`; p4t6 pin 934 unchanged;
+  `references/deepseek-harness` absent in this environment (remote anchors
+  re-verified unmoved instead).
