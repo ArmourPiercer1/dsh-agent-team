@@ -100,18 +100,16 @@
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
 import { createRunControl, RunAborted } from './run-control.mjs'
 import { stateKeyOf } from './run-budget.mjs'
 import {
   assertPurpose,
   assertWireShape,
-  classifyPurpose,
   isChainTurn,
   systemText as wsSystemText,
   toolResultEntries,
-  userText as wsUserText,
   extractInstanceId as strictExtractInstanceId,
 } from './wire-shape.mjs'
 import { TEAM_TOOL_CATALOG, deriveBuiltinToolDeny, materializeBcFixtures } from './fixture-invariants.mjs'
@@ -237,7 +235,7 @@ function dieFatal(msg, exitCode = 1) {
   writeEvidence('summary.json', { runStamp: RUN_STAMP, fatal: msg, criteria })
   if (RC !== undefined && RC.armed()) {
     // main() is on the stack and owns the child host + the mock: UNWIND into its
-    // `finally` (stopHost + mock.close). `process.exit()` here would skip that
+    // `finally` (awaited owned-child cleanup + mock.close). `process.exit()` here would skip that
     // cleanup and leave this run's host process behind — the defect the
     // independent review of PR #62 found in the first guard version.
     throw new RunAborted(msg, null)
@@ -249,7 +247,12 @@ function dieFatal(msg, exitCode = 1) {
 // ── small http helpers (a2x kit shape) ──────────────────────────────────────
 
 async function fetchJson(url, init, timeoutMs = 60_000) {
-  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) }).catch((e) => ({ status: 0, body: null, error: e.message }))
+  if (RC.armed()) RC.check()
+  const signal = RC.armed() ? AbortSignal.any([RC.signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs)
+  const res = await fetch(url, { ...init, signal }).catch((e) => {
+    if (RC.armed()) RC.check()
+    return { status: 0, body: null, error: e.message }
+  })
   const body = res.status === 0 ? null : await res.json().catch(() => null)
   return { status: res.status, body }
 }
@@ -260,7 +263,8 @@ async function probeStableInstance(url) {
 }
 
 async function authenticate(origin, token) {
-  const res = await fetch(`${origin}/?token=${token}`, { redirect: 'manual', signal: AbortSignal.timeout(30_000) })
+  RC.check()
+  const res = await fetch(`${origin}/?token=${token}`, { redirect: 'manual', signal: AbortSignal.any([RC.signal, AbortSignal.timeout(30_000)]) })
   const setCookie = res.headers.get('set-cookie')
   if (res.status !== 303 || setCookie === null) {
     throw new Error(`dsh web authentication returned HTTP ${res.status} (expected 303 + set-cookie)`)
@@ -342,6 +346,7 @@ async function waitForLogLine(logPath, regex, timeoutMs, alive) {
   const deadline = Date.now() + timeoutMs
   let seen = 0
   for (;;) {
+    if (RC.armed()) RC.check()
     let text = ''
     try {
       text = readFileSync(logPath, 'utf8')
@@ -650,18 +655,19 @@ function writePatchFile(home) {
 
 // ── the real-host boot (test-use bin; the DshInstance pattern) ─────────────
 
-function spawnHost({ port, home, logPath, mockPort }) {
+export function spawnHost({ port, home, logPath, mockPort, bin = HOST_BIN, cwd = WORKSPACE, control = RC }) {
   const outFd = openSync(logPath, 'a')
   const errFd = openSync(logPath, 'a')
   let child
   try {
     child = spawn(
       process.execPath,
-      [HOST_BIN, 'web', '--port', String(port), '--no-open'],
+      [bin, 'web', '--port', String(port), '--no-open'],
       {
         // The session workspace IS the host cwd: probe files live in the
         // scratch workspace, the frozen checkout is never touched.
-        cwd: WORKSPACE,
+        cwd,
+        detached: process.platform !== 'win32',
         stdio: ['ignore', outFd, errFd],
         env: {
           ...process.env,
@@ -688,14 +694,12 @@ function spawnHost({ port, home, logPath, mockPort }) {
     exitInfo.code = code
     exitInfo.signal = signal
   })
+  // Own the process before boot/authentication can await or fail. The detached
+  // POSIX group contains only descendants created by this test host.
+  control.bindChild(child, { lifetimeMs: CHILD_LIFETIME_MS, processGroup: process.platform !== 'win32' })
+  closeSync(outFd)
+  closeSync(errFd)
   return { child, exitInfo, alive: () => !exitInfo.exited, logPath }
-}
-
-function stopHost(h) {
-  try {
-    h.child.kill()
-  } catch { /* already gone */ }
-  return h
 }
 
 async function bootHost({ port, home, mockPort, instanceLog }) {
@@ -712,7 +716,7 @@ async function bootHost({ port, home, mockPort, instanceLog }) {
   const h = spawnHost({ port, home, logPath: instanceLog, mockPort })
   const line = await waitForLogLine(instanceLog, BOOT_MARKER, 240_000, h.alive)
   if (line === null) {
-    stopHost(h)
+    await RC.stopChild()
     const detail = h.exitInfo.exited
       ? `process exited (code=${h.exitInfo.code} signal=${h.exitInfo.signal ?? 'none'}${h.exitInfo.message ? ` msg=${h.exitInfo.message}` : ''})`
       : 'no boot marker within 240s'
@@ -730,11 +734,11 @@ async function bootHost({ port, home, mockPort, instanceLog }) {
     health = { status: hb.status, body: hb.body }
     if (hb.status === 200 && hb.body?.ok === true) break
     if (hb.status === 200 && hb.body?.ok === false && hb.body?.setupError !== undefined) {
-      stopHost(h)
+      await RC.stopChild()
       dieFatal(`row setup failed — setupError: ${String(hb.body.setupError).slice(0, 600)}\n--- log tail ---\n${logTail(instanceLog)}`)
     }
     if (Date.now() >= deadline) {
-      stopHost(h)
+      await RC.stopChild()
       dieFatal(`row health not ready in 240s — health=${JSON.stringify(hb.body).slice(0, 400)}\n--- log tail ---\n${logTail(instanceLog)}`)
     }
     await new Promise((r) => setTimeout(r, 1000))
@@ -750,7 +754,7 @@ async function bootHost({ port, home, mockPort, instanceLog }) {
       && b.rootSessionId === ROOT && b.phase === 'create'
       && b.teamSession !== null && typeof b.teamSession === 'object') break
     if (Date.now() >= sDeadline) {
-      stopHost(h)
+      await RC.stopChild()
       dieFatal(`row state not well-formed in 90s; last: status=${s.status} body=${JSON.stringify(s.body).slice(0, 400)}`)
     }
     await new Promise((r) => setTimeout(r, 500))
@@ -772,7 +776,9 @@ function toolCall(name, argumentsObj) {
  */
 function bodyOf(recordOrBody) {
   if (recordOrBody === null || typeof recordOrBody !== 'object') return null
-  return 'body' in recordOrBody ? (recordOrBody.body ?? null) : recordOrBody
+  if ('body' in recordOrBody) return recordOrBody.body ?? null
+  if ('req' in recordOrBody) return recordOrBody.req ?? null
+  return recordOrBody
 }
 
 /**
@@ -789,13 +795,23 @@ function bodyOf(recordOrBody) {
  * is shared too: a `text` part contributes its text VERBATIM, which is what
  * lets one instance-id extractor behave identically on both generations.
  */
-function userTextOf(req) {
+export function userTextOf(req) {
   const body = bodyOf(req)
-  return body === null ? '' : wsUserText(body)
+  // Route scenarios only by real user text. A leader's assistant tool_use
+  // arguments and returned tool_result may quote the worker marker; including
+  // those would make the leader impersonate its worker in both policy and waits.
+  return (body?.messages ?? [])
+    .filter((message) => message?.role === 'user')
+    .map((message) => typeof message.content === 'string' ? message.content
+      : Array.isArray(message.content) ? message.content
+        .filter((part) => part?.type === 'text' && typeof part.text === 'string')
+        .map((part) => part.text).join('\n') : '')
+    .filter((text) => text !== '')
+    .join('\n')
 }
 
 /** The INSTRUCTION surface: 0.2 top-level `system`, 0.1.x system messages. */
-function systemTextOf(req) {
+export function systemTextOf(req) {
   const body = bodyOf(req)
   return body === null ? '' : wsSystemText(body)
 }
@@ -854,38 +870,6 @@ function abortedReply(what) {
 
 function makeDecide() {
   return function decide({ req }) {
-    // Title-generation side calls (DSH derives the session title from the
-    // queued human messages — they CARRY the markers, nested, so they must
-    // never drive the scripted chain): a neutral text reply, no chain.
-    //
-    // 0.2.0-rc.2 request-shape note: the auxiliary title dispatch no longer
-    // puts its instruction in a string `messages[0].content`. The host moves
-    // the instruction to the top-level `system` body key and the message
-    // content is a CONTENT-PARTS array (`[{"type":"text","text":"Generate the
-    // session title from this JSON array of human messages:\n[…]"}]`), so the
-    // old `typeof content === 'string' && startsWith('Create a concise title')`
-    // test never fires and the marker-carrying payload leaked into the
-    // scripted chain (`userTextOf` JSON-stringifies the parts). Both the
-    // instruction sites and both known phrasings are checked now, plus the
-    // generation-independent structural backstop below.
-    const body = bodyOf(req)
-    const firstMsg = (body?.messages ?? [])[0]
-    const firstText = typeof firstMsg?.content === 'string'
-      ? firstMsg.content
-      : JSON.stringify(firstMsg?.content ?? '')
-    const instruction = `${typeof body?.system === 'string' ? body.system : JSON.stringify(body?.system ?? '')}\n${firstText}`
-    if (instruction.includes('Create a concise title') || instruction.includes('Generate the session title')) {
-      return { kind: 'text', content: 'RC2 smoke session' }
-    }
-    // Structural backstop: an auxiliary (non-agent) dispatch carries no tool
-    // surface, while every scripted agent turn does (the S1 predicate itself
-    // requires `tools.length > 0`). Answering any toolless call neutrally
-    // keeps auxiliary dispatches out of the scripted chain in any generation;
-    // a toolless AGENT turn would surface as a loud mock-wait timeout, never
-    // as a silent pass.
-    if (body !== undefined && body.tools === undefined) {
-      return { kind: 'text', content: 'RC2 smoke session' }
-    }
     const text = userTextOf(req)
     const tools = toolMsgsOf(req).length
     // Member turns (separate sessions, their own marker).
@@ -1024,49 +1008,53 @@ function replySig(reply) {
 }
 
 /** The conversation STATE a request belongs to (run-budget.stateKeyOf). */
-function requestStateKey(req) {
-  const body = bodyOf(req) ?? {}
-  let purpose = 'unclassified'
-  try {
-    purpose = classifyPurpose(body).purpose
-  } catch {
-    purpose = 'unclassified'
-  }
-  let toolResults = 0
-  let sys = ''
-  try {
-    // `toolResultsOf` is the STRICT reader: it throws on an unrecognized shape
-    // (which is itself budget-relevant information) and returns {count}.
-    toolResults = wsToolResults(body).count
-    sys = wsSystemText(body)
-  } catch {
-    toolResults = 0
-    sys = JSON.stringify(body?.messages ?? []).slice(0, 4000)
-  }
-  return stateKeyOf({ purpose, systemText: sys, toolResults })
+export function requestStateKey(req) {
+  const body = bodyOf(req)
+  const decoded = assertWireShape(body, { label: 'mock entry' })
+  const purpose = assertPurpose(body, { label: 'mock entry' }).purpose
+  return stateKeyOf({ purpose, systemText: wsSystemText(body), toolResults: decoded.toolResults.length })
 }
 
-/**
- * The scripted decide, wrapped so every request is counted at entry. On a
- * violation the child is killed, the run signal is aborted and the HOST gets a
- * typed 503 instead of yet another scripted reply; the run itself ends through
- * the owner's cleanup — never `process.exit` from inside the mock.
- */
-function guardedDecide(req, decideFn) {
-  if (RC.aborted()) {
-    return { kind: 'error', status: 503, message: 'storm guard: run already aborted', code: 'storm-guard' }
+/** The production mock callback validates the actual {seq, req} envelope
+ * before it can issue a scripted tool call. Auxiliary requests cannot enter
+ * the agent policy, even when they replay that agent's tools and markers. */
+export function guardedDecide(envelope, decideFn, control = RC) {
+  const refusal = (message) => ({ kind: 'error', status: 503, message, code: 'rc2-fixture-fault' })
+  if (control.aborted()) return refusal('rc2 kit: run already aborted')
+  const body = bodyOf(envelope)
+  let key
+  let purpose
+  try {
+    key = requestStateKey(body)
+    purpose = assertPurpose(body, { label: `mock request #${envelope?.seq ?? '?'}` }).purpose
+  } catch (err) {
+    // Invalid traffic still consumes the total budget, but never a reply.
+    control.budget.observeRequest('invalid|invalid|0')
+    control.requestAbort(`unrecognized model request at entry: ${err.message}`, { decoder: err.name, info: err.info ?? null })
+    return refusal('rc2 kit: unrecognized request; no scripted reply issued')
   }
-  const key = requestStateKey(req)
-  const violation = RC.budget.observeRequest(key)
+  const violation = control.budget.observeRequest(key)
   if (violation !== null) {
-    RC.reportViolation(violation, { at: 'decide-entry', stateKey: key })
-    return { kind: 'error', status: 503, message: `storm guard: ${violation.detail}`, code: 'storm-guard' }
+    control.reportViolation(violation, { at: 'decide-entry', stateKey: key })
+    return refusal(`storm guard: ${violation.detail}`)
   }
-  const reply = decideFn(req)
-  const repeat = RC.budget.noteReply(key, replySig(reply))
+  let reply
+  try {
+    if (purpose === 'title') reply = { kind: 'text', content: 'RC2 smoke session' }
+    else if (purpose === 'compaction') {
+      // This short deterministic kit cannot reconstruct a scripted chain from
+      // a compacted transcript. Diagnose rather than fake progress or authority.
+      control.requestAbort('unexpected compaction in bounded smoke chain; no scripted tool call issued', { at: 'decide-entry', stateKey: key })
+      return refusal('rc2 kit: compaction requires a separate continuation scenario')
+    } else reply = decideFn({ ...envelope, req: body })
+  } catch (err) {
+    control.requestAbort(`scripted mock reply failed: ${err.message}`, { at: 'decide-reply', stateKey: key })
+    return refusal('rc2 kit: scripted reply failed')
+  }
+  const repeat = control.budget.noteReply(key, replySig(reply))
   if (repeat !== null) {
-    RC.reportViolation(repeat, { at: 'decide-reply', stateKey: key })
-    return { kind: 'error', status: 503, message: `storm guard: ${repeat.detail}`, code: 'storm-guard' }
+    control.reportViolation(repeat, { at: 'decide-reply', stateKey: key })
+    return refusal(`storm guard: ${repeat.detail}`)
   }
   return reply
 }
@@ -1391,10 +1379,10 @@ async function main() {
   RC.arm()
   const removeSignalHandlers = RC.installSignalHandlers()
   let mock = null
-  let host = null
   let booted = null
   const FAILS = []
   const fail = (id) => FAILS.push(id)
+  let completed = false
 
   try {
   mock = await startMockModel({
@@ -1411,10 +1399,8 @@ async function main() {
   const instanceLog = join(RUN_DIR, 'instance.log')
   writeFileSync(instanceLog, '', { flag: 'w' })
   booted = await bootHost({ port: hostPort, home: HOME, mockPort: mock.port, instanceLog })
-  host = booted.host
   // Independent of every wait: the child this run spawned may not outlive the
   // run budget. Killing is by the bound handle only — never by port or pattern.
-  RC.bindChild(host.child, { lifetimeMs: CHILD_LIFETIME_MS })
 
     // ── LEG 0: discovery (the boot Leader's model-facing tool surface) ──
     log('── LEG 0: discovery ──')
@@ -1451,7 +1437,7 @@ async function main() {
       // known to be invalid, which buried the cause in downstream failures.
       // Now the invariants run first, the criterion + evidence are recorded,
       // and the run ABORTS through the owner's cleanup (RunAborted → finally →
-      // stopHost + mock.close) before a single B/C artifact exists.
+      // owned-child cleanup + mock.close) before a single B/C artifact exists.
       materializeBcFixtures({
         surface,
         managed: MANAGED_TOOL_NAMES,
@@ -1676,7 +1662,7 @@ async function main() {
       check('S4d', 'S4: team_delegate executed (tool result returned)', false, `requests=${mock.requests.length}`)
     } else {
       check('S4d', 'S4: team_delegate executed (tool result returned)', true, 'delegate tool result observed')
-      const bMember = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_BMEM) && (r.body?.tools ?? []).length > 0, 240_000, 'B member turn')
+      const bMember = await waitForMock(mock, (r) => r.body !== null && isChainTurn(r.body) && userTextOf(r).includes(MK_BMEM) && (r.body?.tools ?? []).length > 0, 240_000, 'B member turn')
       if (bMember === null) {
         fail('S4e')
         check('S4e', 'S4: the B member turn started (model request observed)', false, `requests=${mock.requests.length}`)
@@ -1740,12 +1726,9 @@ async function main() {
       // — no member persona → false S5c failure). Restrict to REAL model
       // requests (tools > 0), the same guard every other predicate uses.
       const bMemberAgain = mock.requests.find(
-        (r) => r.body !== null && userTextOf(r).includes(MK_BMEM) && (r.body?.tools ?? []).length > 0,
+        (r) => r.body !== null && isChainTurn(r.body) && userTextOf(r).includes(MK_BMEM) && (r.body?.tools ?? []).length > 0,
       )
-      const bMemberSystemAgain = (bMemberAgain?.body.messages ?? [])
-        .filter((mm) => mm.role === 'system')
-        .map((mm) => (typeof mm.content === 'string' ? mm.content : JSON.stringify(mm.content ?? '')))
-        .join('\n')
+      const bMemberSystemAgain = systemTextOf(bMemberAgain)
       check('S5c', 'S5: the B member still carries B worker persona (no cross-team leak)',
         bMemberSystemAgain.includes(P_WORKER_B) && !bMemberSystemAgain.includes(P_WORKER_C),
         `requests=${mock.requests.length} memberReq=${bMemberAgain?.seq}`)
@@ -1754,16 +1737,22 @@ async function main() {
     const cDone = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_C) && (r.reply?.kind === 'text' ? r.reply.content : '').includes('RC2_SMOKE_C_DONE'), 120_000, 'C chain final text')
     check('S5d', 'S5: the C leader turn completed (final text RC2_SMOKE_C_DONE)', cDone !== null, `requests=${mock.requests.length}`)
     if (cDone === null) fail('S5d')
+    RC.check()
+    completed = true
   } finally {
     // Teardown (evidence is flushed before the world goes). This now runs for
     // EVERY path out of the run — pass, failed leg, budget violation, unexpected
     // wire shape, throw inside a leg, SIGINT/SIGTERM — because no code below the
     // owner exits the process.
+    // Keep ownership/watchdog until exit is actually observed, including a
+    // child spawned by a bootHost that never returned. On cleanup failure,
+    // preserve the world and fail instead of claiming a clean teardown.
+    let cleanupError = null
+    try { await RC.stopChild() } catch (err) { cleanupError = err }
     const ctl = RC.dispose()
     if (ctl.watchdogFired) log('teardown: the child-lifetime watchdog fired during this run')
     removeSignalHandlers()
     log('teardown: stopping host + mock')
-    if (host !== null) stopHost(host)
     if (mock !== null) {
       try {
         await mock.close()
@@ -1775,7 +1764,7 @@ async function main() {
     }
     writeEvidence('post-stable-probe.json', postStable)
     // The mock request corpus (the forensic heart of the evidence).
-    writeEvidence('mock-requests.json', mock.requests.map((r) => ({
+    writeEvidence('mock-requests.json', (mock?.requests ?? []).map((r) => ({
       seq: r.seq,
       receivedAt: r.receivedAt,
       userText: userTextOf(r).slice(0, 300),
@@ -1784,7 +1773,7 @@ async function main() {
     })))
     if (booted !== null) writeEvidence('instance-tail.txt', logTail(booted.instanceLog, 120))
     writeEvidence('run-budget.json', { budget: RC.budget.snapshot(), violation: RC.violation(), limits: RC.budget.limits })
-    if (FLAG_KEEP) {
+    if (FLAG_KEEP || cleanupError !== null) {
       log(`--keep: world retained at ${HOME}`)
     } else {
       rmSync(HOME, { recursive: true, force: true })
@@ -1803,18 +1792,20 @@ async function main() {
       total: criteria.length,
       failed: FAILS,
       stable: { pre: preStable, post: postStable },
-      verdict: FAILS.length === 0 ? 'PASS' : 'FAIL',
+      verdict: completed && !RC.aborted() && cleanupError === null && FAILS.length === 0 ? 'PASS' : 'FAIL',
+      cleanupError: cleanupError === null ? null : String(cleanupError.message ?? cleanupError),
       runControl: { aborted: RC.aborted(), violation: RC.violation(), budget: RC.budget.snapshot() },
     }
     writeEvidence('summary.json', summary)
     log(`VERDICT ${summary.verdict} — ${passed}/${criteria.length} criteria passed${FAILS.length > 0 ? `; failed: ${FAILS.join(',')}` : ''}`)
+    if (cleanupError !== null) throw cleanupError
   }
 
   // Exit code: 0 all pass / 2 a leg failed / 1 fatal (dieFatal handles).
   process.exit(FAILS.length === 0 ? 0 : 2)
 }
 
-main().catch((e) => {
+if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch((e) => {
   try {
     log(`FATAL uncaught: ${e.stack ?? e}`)
     if (RUN_LOG !== null) writeEvidence('summary.json', { runStamp: RUN_STAMP, fatal: String(e.message ?? e), criteria, runControl: { aborted: RC.aborted(), violation: RC.violation(), budget: RC.budget.snapshot() } })

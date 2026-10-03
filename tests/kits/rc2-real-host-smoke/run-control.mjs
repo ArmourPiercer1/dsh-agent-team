@@ -17,8 +17,10 @@
  *     `finally` always releases the resources;
  *   - only the top-level script may call `process.exit`, and only after the
  *     owner's cleanup has completed;
- *   - the control may kill EXACTLY the process it was given (`bindChild`), never
- *     a port scan, a pattern match, or anyone else's host;
+ *   - the control may kill only the bound child, or its explicitly owned POSIX
+ *     process group (spawned detached), never a port scan or pattern match;
+ *   - the owner awaits stopChild() before disposal or world removal; Windows
+ *     uses direct-child cleanup and does not promise descendant containment;
  *   - an independent watchdog bounds the child's lifetime by wall time,
  *     separately from every wait, and firing it goes through the same unwind.
  *
@@ -56,6 +58,9 @@ export function createRunControl(opts) {
     violation: null,
     child: null,
     childStartedAt: 0,
+    childExited: false,
+    childProcessGroup: false,
+    childStopPromise: null,
     watchdog: null,
     watchdogFired: false,
     signalsInstalled: false,
@@ -74,18 +79,63 @@ export function createRunControl(opts) {
     return state.violation
   }
 
-  const killOwnChild = (why) => {
+  /** The child.killed flag means "signal sent", not "process exited". */
+  const stopChild = ({ graceMs = 1_000, killWaitMs = 3_000 } = {}) => {
+    if (state.childStopPromise !== null) return state.childStopPromise
     const child = state.child
-    if (child === null || child === undefined) return false
-    if (typeof child.killed === 'boolean' ? child.killed : child.exitCode !== null) return false
-    try {
-      child.kill('SIGKILL')
-      log(`RUN CONTROL: killed this run's own child (pid=${child.pid}) — ${why}`)
-      return true
-    } catch (err) {
-      log(`RUN CONTROL: killing own child failed: ${String((err && err.message) ?? err)}`)
-      return false
+    if (child === null) return Promise.resolve({ pid: null, exited: true, escalated: false, processGroup: false })
+    const group = state.childProcessGroup
+    const pid = child.pid
+    stopWatchdog()
+    const childExited = () => state.childExited || child.exitCode !== null || child.signalCode !== null
+    const groupAlive = () => {
+      if (!group || pid === undefined) return false
+      try { process.kill(-pid, 0); return true } catch (error) {
+        if (error.code === 'ESRCH') return false
+        throw error
+      }
     }
+    const gone = () => (pid === undefined || childExited()) && !groupAlive()
+    const signal = (name) => {
+      try {
+        if (group && pid !== undefined) process.kill(-pid, name)
+        else if (pid !== undefined && !childExited()) child.kill(name)
+      } catch (error) {
+        if (error.code !== 'ESRCH') throw error
+      }
+    }
+    const waitUntilGone = async (timeoutMs) => {
+      const deadline = Date.now() + timeoutMs
+      while (!gone()) {
+        if (Date.now() >= deadline) return false
+        await new Promise((resolve) => setTimeout(resolve, Math.min(20, Math.max(1, deadline - Date.now()))))
+      }
+      return true
+    }
+    state.childStopPromise = (async () => {
+      let escalated = false
+      if (!gone()) {
+        if (graceMs > 0) {
+          signal('SIGTERM')
+          await waitUntilGone(graceMs)
+        }
+        // The leader may have exited while a shell descendant ignored SIGTERM.
+        // Group liveness, not just leader exit, decides whether to escalate.
+        if (!gone()) {
+          escalated = true
+          signal('SIGKILL')
+          if (!(await waitUntilGone(killWaitMs))) {
+            throw new Error(`owned ${group ? 'process group' : 'child'} ${pid} did not exit after SIGKILL`)
+          }
+        }
+      }
+      log(`RUN CONTROL: owned ${group ? 'process group' : 'child'} stopped (pid=${pid ?? 'not spawned'})`)
+      return { pid: pid ?? null, exited: true, escalated, processGroup: group }
+    })()
+    // Abort callbacks cannot await. Keep the rejection observed until the owner
+    // awaits the same promise in finally; a failure must still reject there.
+    state.childStopPromise.catch(() => {})
+    return state.childStopPromise
   }
 
   const stopWatchdog = () => {
@@ -104,7 +154,7 @@ export function createRunControl(opts) {
   const requestAbort = (reason, extra) => {
     const violation = recordViolation({ kind: 'aborted', detail: reason }, extra)
     state.aborted = true
-    killOwnChild(reason)
+    void stopChild({ graceMs: 0 })
     if (!controller.signal.aborted) {
       try {
         controller.abort(new RunAborted(reason, violation))
@@ -129,12 +179,32 @@ export function createRunControl(opts) {
     armed: () => state.armed,
     violation: () => state.violation,
     aborted: () => state.aborted,
-    /** The only process this control is allowed to kill. */
-    bindChild(child, { lifetimeMs, watchdogIntervalMs } = {}) {
+    /** Bind only our spawned child; processGroup requires a detached POSIX spawn. */
+    bindChild(child, { lifetimeMs, watchdogIntervalMs, processGroup = false } = {}) {
+      if (state.child !== null && state.child !== child) throw new Error('cannot replace an owned child before cleanup')
       state.child = child
       state.childStartedAt = Date.now()
+      state.childExited = child.exitCode !== null || child.signalCode !== null
+      state.childProcessGroup = processGroup && process.platform !== 'win32'
+      state.childStopPromise = null
       stopWatchdog()
+      child.once('exit', () => {
+        state.childExited = true
+        if (!state.childProcessGroup) stopWatchdog()
+      })
+      child.once('error', () => {
+        if (child.pid === undefined) {
+          state.childExited = true
+          stopWatchdog()
+        }
+      })
       const ms = lifetimeMs ?? budget.limits.childLifetimeMs
+      budget.limits.childLifetimeMs = ms
+      if (state.aborted) {
+        void stopChild({ graceMs: 0 })
+        return { lifetimeMs: ms }
+      }
+      if (state.childExited) return { lifetimeMs: ms }
       state.watchdog = setInterval(() => {
         const elapsed = Date.now() - state.childStartedAt
         const v = budget.noteChildLifetime(elapsed)
@@ -142,12 +212,13 @@ export function createRunControl(opts) {
         state.watchdogFired = true
         stopWatchdog()
         requestAbort(v.detail, { elapsedMs: elapsed, pid: child?.pid ?? null })
-      }, watchdogIntervalMs ?? 5_000)
+      }, watchdogIntervalMs ?? Math.min(5_000, Math.max(1, ms)))
       // Never keep the loop alive by itself: the run's own work does that.
       if (typeof state.watchdog.unref === 'function') state.watchdog.unref()
       return { lifetimeMs: ms }
     },
     requestAbort,
+    stopChild,
     /** Throwing abort, for the normal call stack. */
     abort(reason, extra) {
       const violation = requestAbort(reason, extra)
@@ -158,7 +229,7 @@ export function createRunControl(opts) {
       if (violation === null || violation === undefined) return null
       const recorded = recordViolation(violation, extra)
       state.aborted = true
-      killOwnChild(recorded.detail)
+      void stopChild({ graceMs: 0 })
       if (!controller.signal.aborted) {
         try {
           controller.abort(new RunAborted(recorded.detail, recorded))
@@ -184,7 +255,7 @@ export function createRunControl(opts) {
         state.signalsInstalled = false
       }
     },
-    /** Called from the owner's finally: stop the watchdog, unbind the child. */
+    /** After awaiting stopChild(): stop the watchdog and unbind the child. */
     dispose() {
       stopWatchdog()
       state.child = null

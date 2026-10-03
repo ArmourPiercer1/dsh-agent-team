@@ -27,7 +27,8 @@
  *      existing prefix, so symlink aliases collapse) and must be PAIRWISE
  *      DISJOINT — equal, nested or contained is refused. That makes the
  *      "read the raw tree, write secrets into it" alias/recursion case
- *      structurally impossible;
+ *      structurally impossible; descendant symlinks and hard-linked output
+ *      files are also refused in a complete preflight before any write;
  *   3. a non-empty `--to` requires `--force`;
  *   4. the raw tree is only ever READ: every raw file's SHA-256 is re-verified
  *      AFTER the run, so a regression that touched one raw byte fails the tool
@@ -44,14 +45,15 @@
  *       [--manifest <path>] [--store <raw-keep-dir>] [--force]
  *   node scripts/sanitize-evidence.mjs --verify <dir>
  */
-import { createHash } from 'node:crypto'
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs'
-import { basename, dirname, join, relative, resolve, sep } from 'node:path'
+import { createHash, randomUUID } from 'node:crypto'
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path'
 
-/** Only captured output is desensitized. Source files (.mjs/.ts) are code —
+/** Captures include JSONL/NDJSON and extensionless protocol dumps.
+ * Source files (.mjs/.ts) are code —
  * they never embed a live credential (the probes log `cookieChars=<n>`, never
  * the value) and rewriting code would produce broken copies. */
-const SANITIZED_EXTENSIONS = new Set(['.log', '.json', '.txt', '.out', '.yaml', '.yml', '.ndjson'])
+const SANITIZED_EXTENSIONS = new Set(['', '.log', '.json', '.jsonl', '.txt', '.out', '.yaml', '.yml', '.ndjson'])
 
 /** `[name, regex, replacement, appliesToSanitizedCopiesOnly]`.
  * `appliesToSanitizedCopiesOnly` patterns (absolute paths) are never reported by
@@ -62,9 +64,14 @@ const PATTERNS = [
   ['session-cookie', /dsh-auth-[A-Za-z0-9_-]{4,}(=[A-Za-z0-9._\-%=]{4,})?/g, 'dsh-auth-<REDACTED>=<REDACTED>', false],
   ['bearer', /\bBearer\s+[A-Za-z0-9._-]{4,}/gi, 'Bearer <REDACTED>', false],
   // JSON string values of credential-ish keys, any casing/separator.
-  ['json-secret-key', /("(?:authorization|cookie|set-cookie|x-api-key|api[_-]?key|apikey|access[_-]?token|token|password|secret)"\s*:\s*")[^"]*(")/gi, '$1<REDACTED>$2', false],
+  ['json-secret-key', /("(?:authorization|cookie|set-cookie|x-api-key|api[_-]?key|apikey|access[_-]?token|token|password|secret)"\s*:\s*")(?:\\.|[^"\\])*(")/gi, '$1<REDACTED>$2', false],
   // YAML / ini style `key: value` for the same vocabulary (the missed case).
-  ['yaml-secret-key', /^(\s*["']?(?:authorization|cookie|set-cookie|x-api-key|api[_-]?key|apikey|access[_-]?token|token|password|secret)["']?\s*:\s*)[^\r\n"'`]+/gim, '$1<REDACTED>', false],
+  ['yaml-secret-key', /^(\s*(?:-\s+)?["']?(?:authorization|cookie|set-cookie|x-api-key|api[_-]?key|apikey|access[_-]?token|token|password|secret)["']?\s*:\s*)(?:"(?:\\.|[^"\\\r\n])*"|'(?:''|[^'\r\n])*'|[^\r\n"'`]+)/gim, (match, prefix) => {
+    // Preserve quotes: this syntax also occurs in pretty-printed JSON.
+    const value = match.slice(prefix.length)
+    const quote = value[0] === '"' || value[0] === "'" ? value[0] : ''
+    return `${prefix}${quote}<REDACTED>${quote}`
+  }, false],
   // Cookie headers that visibly carry a session cookie value.
   ['cookie-header', /((?:set-cookie|cookie)\s*[:=]\s*)[^\r\n"'`]*(?:dsh-auth-|v1\.|Bearer)[^\r\n"'`]*/gi, '$1<REDACTED-COOKIE>', false],
   // Absolute paths appear in captured payloads; docs/scripts keep them.
@@ -78,12 +85,22 @@ const PATTERNS = [
 
 const USAGE = 'usage: --from <raw-dir> --to <sanitized-dir> [--manifest <path>] [--store <raw-keep-dir>] [--force] | --verify <dir>'
 
-const walk = (dir, out = []) => {
+const refuse = (message) => {
+  console.log(`REFUSED: ${message}`)
+  process.exit(2)
+}
+
+const walk = (dir, out = [], writable = false) => {
   for (const entry of readdirSync(dir).sort()) {
     const full = join(dir, entry)
-    const st = statSync(full)
-    if (st.isDirectory()) walk(full, out)
-    else out.push(full)
+    const st = lstatSync(full)
+    if (st.isSymbolicLink()) refuse(`symbolic links are not allowed in evidence trees (${full})`)
+    if (st.isDirectory()) walk(full, out, writable)
+    else {
+      if (!st.isFile()) refuse(`not a regular evidence file (${full})`)
+      if (writable && st.nlink > 1) refuse(`hard-linked output file (${full})`)
+      out.push(full)
+    }
   }
   return out
 }
@@ -117,6 +134,38 @@ function canonicalPath(p) {
 const contains = (parent, child) =>
   child === parent || child.startsWith(parent.endsWith(sep) ? parent : parent + sep)
 
+/** Check every existing component, not only the selected tree's root. */
+function assertWritablePath(root, file) {
+  if (file === root || !contains(root, file)) refuse(`output must be a file inside its tree (${file})`)
+  let current = file
+  while (current !== root) {
+    let st
+    try { st = lstatSync(current) } catch (error) {
+      if (error.code !== 'ENOENT') throw error
+    }
+    if (st) {
+      if (st.isSymbolicLink()) refuse(`symbolic link in output path (${current})`)
+      if (current === file) {
+        if (!st.isFile() || st.nlink > 1) refuse(`output is not an unshared regular file (${current})`)
+      } else if (!st.isDirectory()) refuse(`output parent is not a directory (${current})`)
+    }
+    current = dirname(current)
+  }
+}
+
+/** Replace directory entries with new inodes; never truncate an aliased file. */
+function writeOutput(root, file, bytes) {
+  assertWritablePath(root, file)
+  mkdirSync(dirname(file), { recursive: true })
+  const temporary = join(dirname(file), `.sanitize-${randomUUID()}.tmp`)
+  try {
+    writeFileSync(temporary, bytes, { flag: 'wx', mode: 0o600 })
+    renameSync(temporary, file)
+  } finally {
+    if (existsSync(temporary)) unlinkSync(temporary)
+  }
+}
+
 /** Every pair among the given roles must be disjoint (no equality, no nesting). */
 function assertDisjoint(roles) {
   const entries = Object.entries(roles).filter(([, v]) => typeof v === 'string' && v !== '')
@@ -134,9 +183,15 @@ function assertDisjoint(roles) {
 
 /** A hit is real only if it is not one of our own placeholders. */
 const realHits = (text, patternIndex) => {
-  const [, re, , scanSanitizedOnly] = PATTERNS[patternIndex]
+  const [name, re, , scanSanitizedOnly] = PATTERNS[patternIndex]
   if (scanSanitizedOnly) return []
-  return (text.match(re) ?? []).filter((m) => !m.includes('REDACTED'))
+  return [...text.matchAll(re)].filter((match) => {
+    let value = match[0]
+    if (name === 'json-secret-key') value = value.slice(match[1].length, -match[2].length)
+    if (name === 'yaml-secret-key' || name === 'cookie-header') value = value.slice(match[1].length).trim()
+    if ((value[0] === '"' || value[0] === "'") && value.at(-1) === value[0]) value = value.slice(1, -1)
+    return !/^(?:<REDACTED(?:-[A-Z-]+)?>|Bearer\s+<REDACTED>|dsh-auth-<REDACTED>=<REDACTED>)$/i.test(value)
+  }).map((match) => match[0])
 }
 
 const args = process.argv.slice(2)
@@ -201,6 +256,9 @@ if (clash !== null) {
   console.log(`REFUSED: ${clash}`)
   process.exit(2)
 }
+for (const root of [to, store].filter((p) => p !== null)) {
+  if (existsSync(root) && !lstatSync(root).isDirectory()) refuse(`output tree is not a directory (${root})`)
+}
 if (existsSync(to) && readdirSync(to).length > 0 && !args.includes('--force')) {
   console.log(`REFUSED: --to is not empty (${to}); pass --force to overwrite it`)
   process.exit(2)
@@ -212,9 +270,24 @@ if (!contains(to, manifestPath)) {
   process.exit(2)
 }
 
+// Preflight the entire plan before the first write. Root disjointness alone
+// cannot detect file aliases, symlinked descendants, or manifest collisions.
+const rawFiles = walk(from)
+for (const root of [to, store].filter((p) => p !== null)) {
+  if (existsSync(root)) walk(root, [], true)
+}
+assertWritablePath(to, manifestPath)
+for (const file of rawFiles) {
+  const rel = relative(from, file)
+  const dest = join(to, rel)
+  if (dest === manifestPath) refuse(`manifest collides with captured output (${dest})`)
+  assertWritablePath(to, dest)
+  if (store !== null) assertWritablePath(store, join(store, rel))
+}
+
 // Rule 4: snapshot the raw tree BEFORE any write, and re-verify after.
 const rawHashBefore = new Map()
-for (const file of walk(from)) rawHashBefore.set(file, sha256(readFileSync(file)))
+for (const file of rawFiles) rawHashBefore.set(file, sha256(readFileSync(file)))
 
 const manifest = {
   generator: 'scripts/sanitize-evidence.mjs',
@@ -229,14 +302,14 @@ const manifest = {
 }
 
 let totalReplacements = 0
-for (const file of walk(from)) {
+for (const file of rawFiles) {
   const rel = relative(from, file)
   const raw = readFileSync(file)
-  const isCaptured = SANITIZED_EXTENSIONS.has(rel.slice(rel.lastIndexOf('.')))
+  const isCaptured = SANITIZED_EXTENSIONS.has(extname(rel).toLowerCase())
   const dest = join(to, rel)
-  mkdirSync(dirname(dest), { recursive: true })
+  if (store !== null) writeOutput(store, join(store, rel), raw)
   if (!isCaptured) {
-    copyFileSync(file, dest)
+    writeOutput(to, dest, raw)
     manifest.files.push({ file: rel, copiedVerbatim: true, bytesRaw: raw.length, sha256Raw: rawHashBefore.get(file) })
     continue
   }
@@ -249,12 +322,7 @@ for (const file of walk(from)) {
     const n = before === out ? 0 : (before.match(re) ?? []).length
     if (n > 0) counts[name] = n
   }
-  if (store !== null) {
-    const keep = join(store, rel)
-    mkdirSync(dirname(keep), { recursive: true })
-    copyFileSync(file, keep)
-  }
-  writeFileSync(dest, out)
+  writeOutput(to, dest, out)
   totalReplacements += Object.values(counts).reduce((a, b) => a + b, 0)
   manifest.files.push({
     file: rel,
@@ -264,18 +332,6 @@ for (const file of walk(from)) {
     sha256Sanitized: sha256(Buffer.from(out)),
     replacements: counts,
   })
-}
-
-if (store !== null) {
-  // Copy any non-captured raw files into the keep tree too, so `store` is a
-  // complete raw backup.
-  for (const file of walk(from)) {
-    const rel = relative(from, file)
-    if (SANITIZED_EXTENSIONS.has(rel.slice(rel.lastIndexOf('.')))) continue
-    const keep = join(store, rel)
-    mkdirSync(dirname(keep), { recursive: true })
-    copyFileSync(file, keep)
-  }
 }
 
 // Rule 4 (post-check): prove we did not touch a raw byte.
@@ -288,8 +344,7 @@ for (const [file, before] of rawHashBefore) {
 
 manifest.rawBytesUnchanged = true
 manifest.totalReplacements = totalReplacements
-mkdirSync(dirname(manifestPath), { recursive: true })
-writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n')
+writeOutput(to, manifestPath, JSON.stringify(manifest, null, 2) + '\n')
 console.log(`sanitized ${manifest.files.length} files (${totalReplacements} replacements) -> ${to}`)
 if (store !== null) console.log(`raw copies -> ${store}`)
 console.log(`manifest -> ${manifestPath} (rawBytesUnchanged=true)`)

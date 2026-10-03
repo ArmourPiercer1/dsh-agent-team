@@ -221,4 +221,15 @@ describe('rc2 run control — fault injection leaves only its own child dead', (
       expect(String(JSON.stringify(record))).toContain('total')
     }
   })
+
+  it('F7 the actual runner callback and owned-process cleanup regressions pass', () => {
+    const env = { ...process.env }
+    delete env.NODE_TEST_CONTEXT
+    const result = spawnSync(process.execPath, [
+      '--test',
+      join(REPO, 'tests/kits/rc2-real-host-smoke/runner-wiring.regression.test.mjs'),
+      join(REPO, 'tests/kits/rc2-real-host-smoke/run-control.regression.test.mjs'),
+    ], { encoding: 'utf8', timeout: 60_000, env })
+    expect(result.status).toBe(0)
+  })
 })

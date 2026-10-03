@@ -220,4 +220,16 @@ describe('evidence sanitizer — credential coverage and raw preservation', () =
     expect(r.status).not.toBe(0)
     expect(out(r)).toContain('VERIFY FAIL')
   })
+
+  it('S13 file aliases, quoted values, and capture formats pass the standalone regressions', () => {
+    const env: NodeJS.ProcessEnv = { ...process.env, SANITIZE_EVIDENCE_TOOL: TOOL }
+    // A Node-based compatibility runner must not suppress nested --test runs.
+    delete env.NODE_TEST_CONTEXT
+    const r = spawnSync(process.execPath, ['--test', join(REPO, 'scripts/sanitize-evidence.regression.test.mjs')], {
+      encoding: 'utf8',
+      timeout: 60_000,
+      env,
+    })
+    expect(r.status).toBe(0)
+  })
 })
