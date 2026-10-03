@@ -59,7 +59,8 @@ gitignored) — this section is a pointer summary, not the authority:
   series (PR-0 #37 + A #38 + B #39 + C #40 + D #41 + E #42 + w1a #43 + F15 #44 +
   F #45) is fully merged on master via series-closure merge `533dfcbb`
   (2026-09-30) + bookkeeping `5e1832a3` + skill sync `31ad828d`. Host pin
-  `@deepseek-ai/dsh@0.1.7-rc.1` (root `peerDependencies`). `0.1.1-alpha.1`
+  `@deepseek-ai/dsh@0.2.0-rc.2` (root `peerDependencies`; moved from `0.1.7-rc.1`
+  in the 2026-10-03 host upgrade round). `0.1.1-alpha.1`
   (frozen 2026-09-11) is superseded.
   **Superseded (2026-10-01 handoff closure):** the 2026-09-28 lines "master @
   `e22c659a`" and "Open PR = **PR #22**" — PR #22 is CLOSED as superseded
@@ -125,12 +126,17 @@ gitignored) — this section is a pointer summary, not the authority:
   declares no lifecycle scripts (plugin-prebuilt-artifacts, R131; `docs/INSTALL.md`
    §2). Commits ≤ `e832d73` still need the one-time `allowBuilds` key (INSTALL.md
    §6 troubleshooting); clone + mount remains the offline / manual path (§3).
-- Test baseline: upstream 0.1.7-rc.1 @ `46a7f68b09` (test-use runtime checkout,
-  from the 2026-09-24 host upgrade round; canonical pin = `tests/paths.mjs`).
+- Test baseline: **0.2.0-rc.2 @ `639ed01539`** (test-use runtime checkout, from
+  the 2026-10-03 host upgrade round; the anchor is the fork branch
+  `stable-3-0.2.0-rc.2` tip — the fork carries no `dsh-v0.2.0-rc.2` tag;
+  canonical pin = `tests/paths.mjs`: `DSH_BASELINE_VERSION` /
+  `TEST_USE_BASELINE_SHA` / `CLIENT_COMMIT_HASH`). Every real-host kit reads
+  that pin instead of hardcoding a generation (2026-10-03).
   The characterization fixture/CI pin remains 0.1.5-rc.2 @ `fb2c4b9e` — an
   intentional deferral per the upgrade plan U3 (see `docs/TEST_METHODS.md`
   §1/§4.2). History: 0.1.2-rc.1 @ `76fda72979` (2026-09-04, R122) →
-  0.1.5-rc.2 @ `fb2c4b9e` (2026-09-17, rc2-repair) → 0.1.7-rc.1 (2026-09-24).
+  0.1.5-rc.2 @ `fb2c4b9e` (2026-09-17, rc2-repair) → 0.1.7-rc.1 (2026-09-24) →
+  0.2.0-rc.2 @ `639ed01539` (2026-10-03).
 - Push: origin/master updated through 2026-10-01 under per-round one-shot user
   push authorizations — PRs #16–#21 and #23–#35 merged, then the pre-alpha3
   series PRs #37–#45 merged (latest: PR #45 (PR-F) merged @ `365f635c`,
