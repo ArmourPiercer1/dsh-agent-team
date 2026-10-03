@@ -52,6 +52,7 @@
       "consecutiveMisses": 2,
       "childLifetimeMs": 1200000
     },
+    "measurement_origin": "run-budget.json was written by the kit during the run. The post-run process/port census and the :3080 probe quoted in evidence 08 are single-observer measurements taken in this VM (ss -ltnH, filtered ps -eo args); they have NOT been independently reproduced and should be read as reported-by-this-host.",
     "violation_recorded_by_the_run": null,
     "abort_history_entries": 0
   },
@@ -823,7 +824,12 @@
       "oracle": "S4b/S1a",
       "source_file": "rc2-smoke-run5/s1-b-leader-request.json",
       "seq": 3,
-      "produced_by": "inline filter role === 'system' at runner 00a9a391 lines listed under sources",
+      "produced_by": {
+        "variable": "systemPrompt",
+        "extractor": "generation-aware systemTextOf helper",
+        "line": 1530,
+        "source_line": "const systemPrompt = systemTextOf(bStart)"
+      },
       "chars": 4000,
       "sha256": "d507682cd3cbb4ca3fa94b060d88e658d0094502ca13706394eb4ebaec6e5a19",
       "markers": {
@@ -841,7 +847,12 @@
       "oracle": "S4e",
       "source_file": "rc2-smoke-run5/s4-b-member-request.json",
       "seq": 9,
-      "produced_by": "inline filter role === 'system' at runner 00a9a391 lines listed under sources",
+      "produced_by": {
+        "variable": "bMemberSystem",
+        "extractor": "inline filter role === 'system' (the 0.1 envelope)",
+        "line": 1670,
+        "source_line": "const bMemberSystem = (bMember.body.messages ?? [])"
+      },
       "chars": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "markers": {
@@ -855,196 +866,126 @@
       "tools_recorded": null
     }
   ],
-  "joined_history_risk": {
-    "seqs_carrying_tool_results": [
-      5,
-      6,
-      7,
-      8,
-      11,
-      14,
-      17
-    ],
-    "results_per_seq": [
+  "tool_result_join_scope": {
+    "join_scope": "one request body (not the run, not the session)",
+    "criterion_to_request": [
       {
-        "seq": 5,
-        "count": 1
+        "criterion": "S1a",
+        "request_variable": "bS1",
+        "waiter_required_tool_results": 1,
+        "matched_seq": 5,
+        "earlier_results_inside_the_same_request": 0,
+        "derivation": "const bS1 = await waitForMock(... toolMsgsOf(r).length === 1) at ran-at line 1540 + the recorded toolMsgCount"
       },
       {
-        "seq": 6,
-        "count": 2
+        "criterion": "S2a",
+        "request_variable": "bS2",
+        "waiter_required_tool_results": 2,
+        "matched_seq": 6,
+        "earlier_results_inside_the_same_request": 1,
+        "derivation": "const bS2 = await waitForMock(... toolMsgsOf(r).length === 2) at ran-at line 1567 + the recorded toolMsgCount"
       },
       {
-        "seq": 7,
-        "count": 3
+        "criterion": "S3b",
+        "request_variable": "bS3",
+        "waiter_required_tool_results": 3,
+        "matched_seq": 7,
+        "earlier_results_inside_the_same_request": 2,
+        "derivation": "const bS3 = await waitForMock(... toolMsgsOf(r).length === 3) at ran-at line 1613 + the recorded toolMsgCount"
       },
       {
-        "seq": 8,
-        "count": 4
-      },
-      {
-        "seq": 11,
-        "count": 5
-      },
-      {
-        "seq": 14,
-        "count": 1
-      },
-      {
-        "seq": 17,
-        "count": 2
+        "criterion": "S4c",
+        "request_variable": "bS4",
+        "waiter_required_tool_results": 4,
+        "matched_seq": 8,
+        "earlier_results_inside_the_same_request": 3,
+        "derivation": "const bS4 = await waitForMock(... toolMsgsOf(r).length === 4) at ran-at line 1645 + the recorded toolMsgCount"
       }
     ],
-    "cumulative_results_by_seq": [
-      {
-        "seq": 1,
-        "cumulative_tool_results": 0
-      },
-      {
-        "seq": 2,
-        "cumulative_tool_results": 0
-      },
-      {
-        "seq": 3,
-        "cumulative_tool_results": 0
-      },
-      {
-        "seq": 4,
-        "cumulative_tool_results": 0
-      },
-      {
-        "seq": 5,
-        "cumulative_tool_results": 1
-      },
-      {
-        "seq": 6,
-        "cumulative_tool_results": 3
-      },
-      {
-        "seq": 7,
-        "cumulative_tool_results": 6
-      },
-      {
-        "seq": 8,
-        "cumulative_tool_results": 10
-      },
-      {
-        "seq": 9,
-        "cumulative_tool_results": 10
-      },
-      {
-        "seq": 10,
-        "cumulative_tool_results": 10
-      },
-      {
-        "seq": 11,
-        "cumulative_tool_results": 15
-      },
-      {
-        "seq": 12,
-        "cumulative_tool_results": 15
-      },
-      {
-        "seq": 13,
-        "cumulative_tool_results": 15
-      },
-      {
-        "seq": 14,
-        "cumulative_tool_results": 16
-      },
-      {
-        "seq": 15,
-        "cumulative_tool_results": 16
-      },
-      {
-        "seq": 16,
-        "cumulative_tool_results": 16
-      },
-      {
-        "seq": 17,
-        "cumulative_tool_results": 18
-      }
-    ],
-    "affects_oracles": [
-      "S1a",
-      "S2a",
-      "S3b",
-      "S4c"
-    ],
-    "note": "toolResultTextOf at d4ff5f0b joins every result the request carries, so for S3b and S4c an earlier result (including the S2 deny text) would satisfy a substring test. The reviewer patch reads by call identity / expected result instead; that is the correct fix and this digest does not pre-empt it."
+    "pollution_consequence": "For S3b the joined string carries the S1 and S2 results alongside the bash output; for S4c it carries S1-S3, which includes the S2 deny text. A substring test against the join can therefore pass on an earlier result - a weaker oracle than the criterion intends.",
+    "removed_metric": "cumulative_results_by_seq - a cross-request running total (10 by seq 9, 15 by seq 11) describing the run rather than any request. No criterion reads a cross-request total, so the figure neither supported nor weakened the pollution point and it has been dropped."
   },
   "per_criterion_attribution": [
     {
       "criterion": "S1a",
       "verdict": "fail",
-      "attribution": "runner reader (0.1 envelope), not a demonstrated host defect",
+      "status": "reader_defect_proven_outcome_unverified",
       "evidence": [
         "criterion_extractors: at 65f07a26 the value came from body.messages.find(m => m.role === \"tool\")",
-        "per_request seq 5 carries 1 tool result via the generation-aware reader, so a result existed on the wire",
+        "the waiter that produced this request required 1 tool result and the recorded toolMsgCount at seq 5 is 1, so a result was carried on the wire",
         "criteria[S1a].extractor_report is `result=` (empty)"
-      ]
+      ],
+      "does_not_establish": "that reading team/test.md returned the probe content; only that this reader could not have seen it"
     },
     {
       "criterion": "S2a",
       "verdict": "pass",
-      "attribution": "passed on its observation-array assertion while its tool-result reader was equally blind",
+      "status": "pass_on_a_different_lane",
       "evidence": [
-        "criteria[S2a].extractor_report is `result=` (empty) even though the verdict is pass",
-        "so a pass here does not certify the tool-result path"
-      ]
+        "the assertion is over the durable observation lane (alpha2-perm canonicalized / decision rows), which is separate from the transcript reader",
+        "criteria[S2a].extractor_report is `result=` (empty) even though the verdict is pass"
+      ],
+      "does_not_establish": "anything about the tool-result path; the static-deny observation is what passed"
     },
     {
       "criterion": "S3b",
       "verdict": "fail",
-      "attribution": "runner reader (0.1 envelope), not a demonstrated host defect",
+      "status": "reader_defect_proven_outcome_unverified",
       "evidence": [
         "same expression class as S1a",
-        "per_request seq 7 carries 3 tool results via the generation-aware reader, and S3a (durable allow recorded) passed"
-      ]
+        "its waiter required 3 tool results and the recorded toolMsgCount at seq 7 is 3",
+        "S3a (the durable approval row) passed, which is the observation lane, not the transcript"
+      ],
+      "does_not_establish": "that the approved bash output reached the model. Note too that the current replacement joins S1/S2 results inside this same request, so it can satisfy this criterion on an earlier result"
     },
     {
       "criterion": "S4c",
       "verdict": "fail",
-      "attribution": "runner reader (0.1 envelope), not a demonstrated host defect",
+      "status": "reader_defect_proven_outcome_unverified",
       "evidence": [
         "same expression class as S1a",
-        "per_request seq 11 carries 5 tool results via the generation-aware reader",
-        "S4a/S4d (durable member record and roster) passed in the same run, so the create path itself was not observed failing"
-      ]
+        "its waiter required 4 tool results and the recorded toolMsgCount at seq 8 is 4 - seq 11 / 5 results is a later request and is NOT what S4c read"
+      ],
+      "does_not_establish": "that create-member succeeded or failed on 0.2. Adjacent criteria do not cover it either: S4a is the team.create control-plane call on the fresh root and S4d is only \"delegate tool result observed\" - neither is a durable member-record or roster proof"
     },
     {
       "criterion": "S4e",
       "verdict": "fail",
-      "attribution": "runner reader (0.1 envelope), not a demonstrated host defect",
+      "status": "reader_defect_proven_outcome_unverified",
       "evidence": [
-        "prompt_measurements[member_request seq 9]: the inline role-system filter produced 0 characters",
-        "S4b, reading the same run through systemTextOf, passed with 4000 characters of leader persona"
-      ]
+        "prompt_measurements[member_request seq 9]: the persisted value came from the inline role === \"system\" filter and is 0 characters",
+        "the same run S4b shows the generation-aware helper returning 4000 characters on the leader request"
+      ],
+      "does_not_establish": "that blueprint B persona was or was not bound on the member call; the helper output for that seq was never persisted"
     },
     {
       "criterion": "S5b",
       "verdict": "fail",
-      "attribution": "runner reader (0.1 envelope), not a demonstrated host defect",
+      "status": "reader_defect_proven_outcome_unverified",
       "evidence": [
         "same inline expression class as S4e, on the C member request",
         "S5c, reading through systemTextOf on the same run, passed"
-      ]
+      ],
+      "does_not_establish": "that blueprint C persona resolution works root-scoped"
     },
     {
       "criterion": "S4b",
       "verdict": "pass",
-      "attribution": "control: the generation-aware reader worked on the same host and run",
+      "status": "control_for_the_helper_lane",
       "evidence": [
-        "criterion_extractors: systemTextOf(bStart) at both revisions"
-      ]
+        "criterion_extractors: systemTextOf(bStart) at both revisions",
+        "prompt_measurements[leader_request seq 3] records that the persisted string came from that helper call: 4000 characters, B leader persona present, A absent"
+      ],
+      "does_not_establish": "the member-side persona question in S4e; it shows the helper lane works on a leader request"
     },
     {
       "criterion": "S5c",
       "verdict": "pass",
-      "attribution": "control: same as S4b, for a member request",
+      "status": "control_for_the_helper_lane",
       "evidence": [
         "criterion_extractors: systemTextOf(bMemberAgain) at both revisions"
-      ]
+      ],
+      "does_not_establish": "the C-persona question in S5b; it shows the helper lane works on a member request"
     }
   ],
   "frozen_files": [
@@ -1066,9 +1007,17 @@
     "Nothing in this file is evidence that persona binding, post-approval execution or create-member work on 0.2. It is evidence about what the two extractors reported."
   ],
   "gaps": [
-    "The mock recorder at 00a9a391 keeps seq/receivedAt/userText(300 chars)/toolMsgCount/reply only: no message array, no role/content shape, no tool-result content. So role/content shape per seq is NOT recoverable from this run; it would need a whitelisted body digest in the recorder.",
+    "MISSING, not estimated: the mock recorder at the ran-at revision kept seq/receivedAt/userText(300 chars)/toolMsgCount/reply only - no message array, no role/content shape, no tool-result content. Nothing in this file reconstructs them: no synthesized entries, no placeholders presented as data, no re-derived bodies. A field that cannot be measured is reported as missing, and the only honest fix is a whitelisted body digest in the recorder plus a later run.",
     "For the member request only the inline-reader output was persisted (chars 0). The generation-aware systemTextOf output for that same seq was never written to a file, so the helper side is evidenced indirectly: S4b and S5c passed through systemTextOf on the same run, and the waiter for that request matched on userTextOf plus a tool/tool-count condition.",
     "toolMsgCount is the generation-aware count, so this run cannot state what a 0.1 role:tool count would have been; the claim that the 0.1 lookup is empty rests on the kit check lines (result= / hasB=false) plus the source expressions quoted under sources[]."
+  ],
+  "corrections_in_this_revision": [
+    "cumulative_results_by_seq removed: it was a cross-request running total (10 by seq 9, 15 by seq 11) and no criterion reads one; the join under review is inside a single request body.",
+    "S4c re-bound from seq 11 / 5 results to seq 8 / 4 results: its waiter (bS4) requires toolMsgsOf(r).length === 4, and seq 11 is a later request (the delegate-result step).",
+    "leader prompt provenance corrected: s1-b-leader-request.json was written from systemTextOf(bStart) (the generation-aware helper), not the inline role-system filter; only the member file came from the inline filter. The provenance is now derived from the writeEvidence call and the assignment behind it rather than asserted.",
+    "S4a / S4d roles corrected: S4a is the team.create control-plane call on the fresh root, S4d is \"delegate tool result observed\". Neither is a durable member-record or roster proof, so the earlier claim that they showed the create path was fine has been dropped.",
+    "attribution wording narrowed throughout to reader_defect_proven_outcome_unverified: a proven empty read says nothing about whether the feature works, and it does not exclude a host-side problem underneath.",
+    "superseded first revision: sha256 668ce17ab7fa784591a61388aa5d9ff2cb99eb8c2ef9252ed94a98570f9cb3ee (kept in git history at 1720db2b)."
   ],
   "reproduce": "node dev/agent-workflow/evidence/dsh-020rc2-upgrade/tools/run5-oracle-digest.mjs  (deterministic; diff against the committed file)"
 }

@@ -144,9 +144,10 @@ function promptMeasurements() {
       oracle,
       source_file: file,
       seq: num(rec.seq),
-      // This string is the output of the inline `role === 'system'` reader, which
-      // is what the kit wrote as evidence; it is NOT the full system prompt.
-      produced_by: "inline filter role === 'system' at runner 00a9a391 lines listed under sources",
+      // Which extractor produced this string, derived from the writeEvidence call
+      // and the assignment behind it - see promptProvenance(). Neither value is the
+      // full system prompt; both are whatever that reader returned.
+      produced_by: promptProvenance(file.split('/').pop()),
       chars: num(sp.length),
       sha256: sha256(Buffer.from(sp)),
       markers: {
@@ -163,33 +164,97 @@ function promptMeasurements() {
 }
 
 /**
- * Which tool results existed by the time each tool-result oracle ran, so the
- * reviewer's point — that a join over ALL results lets an earlier expected
- * rejection (S2) satisfy a later criterion (S3/S4) — can be checked with data.
+ * How big the joined string is for each tool-result criterion, DERIVED from the
+ * revision that ran rather than asserted.
+ *
+ * `toolResultTextOf` joins the tool results carried inside ONE request body, so the
+ * size of what a criterion tested equals that request's own tool-result count - the
+ * number the kit recorded as `toolMsgCount` (it records `toolMsgsOf(r).length`).
+ * The waiter for each step states the count it waited for
+ * (`toolMsgsOf(r).length === N`), so the criterion -> seq -> count chain can be
+ * reconstructed instead of guessed:
+ *
+ *   S1a -> "B chain step 1"  -> N=1 -> seq 5
+ *   S2a -> "B chain step 2"  -> N=2 -> seq 6
+ *   S3b -> "B chain step 3"  -> N=3 -> seq 7
+ *   S4c -> "B chain step 4"  -> N=4 -> seq 8
+ *
+ * A cross-request running total (the 10 / 15 figures an earlier revision of this
+ * digest printed) is NOT what any criterion tested and has been removed: it summed
+ * results across all 17 requests, which flatters the pollution argument instead of
+ * stating it.
  */
-function historyPollution(requests) {
-  const withResults = requests.filter((r) => r.tool_results_via_generation_aware_reader > 0)
+function joinScope(requests) {
+  const ranAt = gitShow(SHA.ran_at, RUNNER_PATH)
+  const ranAtLines = ranAt.split('\n')
+  const bound = criterionExtractors().filter((c) => c.at_ran_at?.variable != null)
+  const rows = []
+  for (const row of bound) {
+    const expr = row.at_ran_at.expression ?? ''
+    // The extractor reads one request variable (`bS1` … `bS4`); that waiter is the
+    // only place stating how many tool results the request had to carry, which is
+    // exactly the size of the join the criterion then tested.
+    const reqVar = /\(\s*(b[A-Za-z0-9]+)\.body/.exec(expr)?.[1]
+    if (reqVar === undefined) continue
+    const waiterLine = ranAtLines.find((l) => new RegExp(`^\\s*const\\s+${reqVar}\\s*=\\s*await\\s+waitForMock`).test(l)) ?? ''
+    const wanted = /toolMsgsOf\(r\)\.length === (\d+)/.exec(waiterLine)?.[1]
+    if (wanted === undefined) continue
+    const match = requests.find((r) => r.tool_results_via_generation_aware_reader === Number(wanted))
+    rows.push({
+      criterion: row.criterion,
+      request_variable: reqVar,
+      waiter_required_tool_results: num(Number(wanted)),
+      matched_seq: match?.seq ?? null,
+      earlier_results_inside_the_same_request: num(Number(wanted) - 1),
+      derivation: `const ${reqVar} = await waitForMock(... toolMsgsOf(r).length === ${wanted}) at ran-at line ${(ranAtLines.indexOf(waiterLine) + 1) || null} + the recorded toolMsgCount`,
+    })
+  }
   return {
-    seqs_carrying_tool_results: withResults.map((r) => num(r.seq)),
-    results_per_seq: withResults.map((r) => ({ seq: num(r.seq), count: num(r.tool_results_via_generation_aware_reader) })),
-    cumulative_results_by_seq: (() => {
-      const rows = []
-      let running = 0
-      for (const r of requests) {
-        running += r.tool_results_via_generation_aware_reader
-        rows.push({ seq: num(r.seq), cumulative_tool_results: num(running) })
-      }
-      return rows
-    })(),
-    affects_oracles: ['S1a', 'S2a', 'S3b', 'S4c'],
-    note: 'toolResultTextOf at d4ff5f0b joins every result the request carries, so for S3b and S4c an earlier result (including the S2 deny text) would satisfy a substring test. The reviewer patch reads by call identity / expected result instead; that is the correct fix and this digest does not pre-empt it.',
+    join_scope: 'one request body (not the run, not the session)',
+    criterion_to_request: rows,
+    pollution_consequence: 'For S3b the joined string carries the S1 and S2 results alongside the bash output; for S4c it carries S1-S3, which includes the S2 deny text. A substring test against the join can therefore pass on an earlier result - a weaker oracle than the criterion intends.',
+    removed_metric: 'cumulative_results_by_seq - a cross-request running total (10 by seq 9, 15 by seq 11) describing the run rather than any request. No criterion reads a cross-request total, so the figure neither supported nor weakened the pollution point and it has been dropped.',
   }
 }
 
 /**
- * Bind each failing criterion to the exact extractor expression that produced its
- * observation, in the revision that ran (ran_at) and in the locked revision - so
- * the attribution is checkable against the source, not against my prose.
+ * Which extractor produced each persisted system-prompt string - derived from the
+ * writeEvidence call and the assignment of the variable it passed, because an
+ * earlier revision of this digest asserted "inline role-system filter" for both
+ * files and that was wrong for the leader.
+ */
+function promptProvenance(file) {
+  const ranAt = gitShow(SHA.ran_at, RUNNER_PATH).split('\n')
+  const callLine = ranAt.find((l) => l.includes(`writeEvidence('${file}'`)) ?? ''
+  const varName = /systemPrompt:\s*([A-Za-z_$][\w$]*)/.exec(callLine)?.[1]
+  if (varName === undefined) return { variable: null, extractor: 'unknown', line: null, source_line: null }
+  const callNo = ranAt.findIndex((l) => l === callLine) + 1
+  if (varName === 'systemPrompt') {
+    const decl = ranAt.findIndex((l, i) => i < callNo && new RegExp(`^\\s*const\\s+${varName}\\s*=`).test(l))
+    const declLine = decl >= 0 ? ranAt[decl] : ''
+    return {
+      variable: varName,
+      extractor: /systemTextOf\s*\(/.test(declLine) ? 'generation-aware systemTextOf helper' : 'unresolved',
+      line: decl >= 0 ? num(decl + 1) : null,
+      source_line: declLine.trim().slice(0, 160),
+    }
+  }
+  const declIdx = ranAt.findIndex((l, i) => i < callNo && new RegExp(`^\\s*const\\s+${varName}\\s*=`).test(l))
+  const declLine = declIdx >= 0 ? ranAt[declIdx] : ''
+  const body = declIdx >= 0 ? ranAt.slice(declIdx, declIdx + 5).join(' ') : ''
+  return {
+    variable: varName,
+    extractor: /role === 'system'/.test(body) ? "inline filter role === 'system' (the 0.1 envelope)"
+      : /systemTextOf\s*\(/.test(body) ? 'generation-aware systemTextOf helper' : 'unresolved',
+    line: declIdx >= 0 ? num(declIdx + 1) : null,
+    source_line: declLine.trim().slice(0, 160),
+  }
+}
+
+/**
+ * Bind each criterion to the exact extractor expression that produced its
+ * observation, in the revision that ran (ran_at) and in the locked revision, so the
+ * attribution is checkable against source rather than against prose.
  */
 function criterionExtractors() {
   const before = gitShow(SHA.ran_at, RUNNER_PATH).split('\n')
@@ -259,80 +324,98 @@ function criterionExtractors() {
  * Per-criterion attribution, each entry naming the measurement it rests on. No
  * entry claims more than its evidence: `not_attributable` is a legitimate value.
  */
+
+/**
+ * Per-criterion attribution. Each row names the measurement it rests on and stops
+ * there: `reader_defect_proven_outcome_unverified` means the expression is proven
+ * to return the empty string on this host generation, so the FAIL carries no
+ * information about the feature - it does NOT mean the feature works, and a
+ * host-side problem underneath is not excluded.
+ */
 function attributionTable() {
   return [
     {
       criterion: 'S1a',
       verdict: 'fail',
-      attribution: 'runner reader (0.1 envelope), not a demonstrated host defect',
+      status: 'reader_defect_proven_outcome_unverified',
       evidence: [
         'criterion_extractors: at 65f07a26 the value came from body.messages.find(m => m.role === "tool")',
-        'per_request seq 5 carries 1 tool result via the generation-aware reader, so a result existed on the wire',
+        'the waiter that produced this request required 1 tool result and the recorded toolMsgCount at seq 5 is 1, so a result was carried on the wire',
         'criteria[S1a].extractor_report is `result=` (empty)',
       ],
+      does_not_establish: 'that reading team/test.md returned the probe content; only that this reader could not have seen it',
     },
     {
       criterion: 'S2a',
       verdict: 'pass',
-      attribution: 'passed on its observation-array assertion while its tool-result reader was equally blind',
+      status: 'pass_on_a_different_lane',
       evidence: [
+        'the assertion is over the durable observation lane (alpha2-perm canonicalized / decision rows), which is separate from the transcript reader',
         'criteria[S2a].extractor_report is `result=` (empty) even though the verdict is pass',
-        'so a pass here does not certify the tool-result path',
       ],
+      does_not_establish: 'anything about the tool-result path; the static-deny observation is what passed',
     },
     {
       criterion: 'S3b',
       verdict: 'fail',
-      attribution: 'runner reader (0.1 envelope), not a demonstrated host defect',
+      status: 'reader_defect_proven_outcome_unverified',
       evidence: [
         'same expression class as S1a',
-        'per_request seq 7 carries 3 tool results via the generation-aware reader, and S3a (durable allow recorded) passed',
+        'its waiter required 3 tool results and the recorded toolMsgCount at seq 7 is 3',
+        'S3a (the durable approval row) passed, which is the observation lane, not the transcript',
       ],
+      does_not_establish: 'that the approved bash output reached the model. Note too that the current replacement joins S1/S2 results inside this same request, so it can satisfy this criterion on an earlier result',
     },
     {
       criterion: 'S4c',
       verdict: 'fail',
-      attribution: 'runner reader (0.1 envelope), not a demonstrated host defect',
+      status: 'reader_defect_proven_outcome_unverified',
       evidence: [
         'same expression class as S1a',
-        'per_request seq 11 carries 5 tool results via the generation-aware reader',
-        'S4a/S4d (durable member record and roster) passed in the same run, so the create path itself was not observed failing',
+        'its waiter required 4 tool results and the recorded toolMsgCount at seq 8 is 4 - seq 11 / 5 results is a later request and is NOT what S4c read',
       ],
+      does_not_establish: 'that create-member succeeded or failed on 0.2. Adjacent criteria do not cover it either: S4a is the team.create control-plane call on the fresh root and S4d is only "delegate tool result observed" - neither is a durable member-record or roster proof',
     },
     {
       criterion: 'S4e',
       verdict: 'fail',
-      attribution: 'runner reader (0.1 envelope), not a demonstrated host defect',
+      status: 'reader_defect_proven_outcome_unverified',
       evidence: [
-        'prompt_measurements[member_request seq 9]: the inline role-system filter produced 0 characters',
-        'S4b, reading the same run through systemTextOf, passed with 4000 characters of leader persona',
+        'prompt_measurements[member_request seq 9]: the persisted value came from the inline role === "system" filter and is 0 characters',
+        'the same run S4b shows the generation-aware helper returning 4000 characters on the leader request',
       ],
+      does_not_establish: 'that blueprint B persona was or was not bound on the member call; the helper output for that seq was never persisted',
     },
     {
       criterion: 'S5b',
       verdict: 'fail',
-      attribution: 'runner reader (0.1 envelope), not a demonstrated host defect',
+      status: 'reader_defect_proven_outcome_unverified',
       evidence: [
         'same inline expression class as S4e, on the C member request',
         'S5c, reading through systemTextOf on the same run, passed',
       ],
+      does_not_establish: 'that blueprint C persona resolution works root-scoped',
     },
     {
       criterion: 'S4b',
       verdict: 'pass',
-      attribution: 'control: the generation-aware reader worked on the same host and run',
-      evidence: ['criterion_extractors: systemTextOf(bStart) at both revisions'],
+      status: 'control_for_the_helper_lane',
+      evidence: [
+        'criterion_extractors: systemTextOf(bStart) at both revisions',
+        'prompt_measurements[leader_request seq 3] records that the persisted string came from that helper call: 4000 characters, B leader persona present, A absent',
+      ],
+      does_not_establish: 'the member-side persona question in S4e; it shows the helper lane works on a leader request',
     },
     {
       criterion: 'S5c',
       verdict: 'pass',
-      attribution: 'control: same as S4b, for a member request',
+      status: 'control_for_the_helper_lane',
       evidence: ['criterion_extractors: systemTextOf(bMemberAgain) at both revisions'],
+      does_not_establish: 'the C-persona question in S5b; it shows the helper lane works on a member request',
     },
   ]
 }
 
-/** The kit files under independent review, hashed as they stand at the locked head. */
 function frozenFiles() {
   return [RUNNER_PATH, 'tests/kits/rc2-real-host-smoke/runner-wiring.regression.test.mjs'].map((path) => {
     const text = gitShow(SHA.locked_for_review, path)
@@ -377,6 +460,7 @@ function main() {
       per_session_max_observed: num(Math.max(0, ...Object.values(budget.perSession ?? {}))),
       per_state_max_observed: num(Math.max(0, ...Object.values(budget.perState ?? {}))),
       limits_recorded_by_the_run: budgetFile.limits ?? null,
+      measurement_origin: 'run-budget.json was written by the kit during the run. The post-run process/port census and the :3080 probe quoted in evidence 08 are single-observer measurements taken in this VM (ss -ltnH, filtered ps -eo args); they have NOT been independently reproduced and should be read as reported-by-this-host.',
       violation_recorded_by_the_run: budgetFile.violation ?? null,
       abort_history_entries: num((budget.history ?? []).length),
     },
@@ -389,7 +473,7 @@ function main() {
     criteria: parseChecks(runLog),
     per_request: requests,
     prompt_measurements: promptMeasurements(),
-    joined_history_risk: historyPollution(requests),
+    tool_result_join_scope: joinScope(requests),
     per_criterion_attribution: attributionTable(),
     frozen_files: frozenFiles(),
     attribution_rules: [
@@ -397,9 +481,17 @@ function main() {
       'Nothing in this file is evidence that persona binding, post-approval execution or create-member work on 0.2. It is evidence about what the two extractors reported.',
     ],
     gaps: [
-      'The mock recorder at 00a9a391 keeps seq/receivedAt/userText(300 chars)/toolMsgCount/reply only: no message array, no role/content shape, no tool-result content. So role/content shape per seq is NOT recoverable from this run; it would need a whitelisted body digest in the recorder.',
+      'MISSING, not estimated: the mock recorder at the ran-at revision kept seq/receivedAt/userText(300 chars)/toolMsgCount/reply only - no message array, no role/content shape, no tool-result content. Nothing in this file reconstructs them: no synthesized entries, no placeholders presented as data, no re-derived bodies. A field that cannot be measured is reported as missing, and the only honest fix is a whitelisted body digest in the recorder plus a later run.',
       'For the member request only the inline-reader output was persisted (chars 0). The generation-aware systemTextOf output for that same seq was never written to a file, so the helper side is evidenced indirectly: S4b and S5c passed through systemTextOf on the same run, and the waiter for that request matched on userTextOf plus a tool/tool-count condition.',
       'toolMsgCount is the generation-aware count, so this run cannot state what a 0.1 role:tool count would have been; the claim that the 0.1 lookup is empty rests on the kit check lines (result= / hasB=false) plus the source expressions quoted under sources[].',
+    ],
+    corrections_in_this_revision: [
+      'cumulative_results_by_seq removed: it was a cross-request running total (10 by seq 9, 15 by seq 11) and no criterion reads one; the join under review is inside a single request body.',
+      'S4c re-bound from seq 11 / 5 results to seq 8 / 4 results: its waiter (bS4) requires toolMsgsOf(r).length === 4, and seq 11 is a later request (the delegate-result step).',
+      'leader prompt provenance corrected: s1-b-leader-request.json was written from systemTextOf(bStart) (the generation-aware helper), not the inline role-system filter; only the member file came from the inline filter. The provenance is now derived from the writeEvidence call and the assignment behind it rather than asserted.',
+      'S4a / S4d roles corrected: S4a is the team.create control-plane call on the fresh root, S4d is "delegate tool result observed". Neither is a durable member-record or roster proof, so the earlier claim that they showed the create path was fine has been dropped.',
+      'attribution wording narrowed throughout to reader_defect_proven_outcome_unverified: a proven empty read says nothing about whether the feature works, and it does not exclude a host-side problem underneath.',
+      'superseded first revision: sha256 668ce17ab7fa784591a61388aa5d9ff2cb99eb8c2ef9252ed94a98570f9cb3ee (kept in git history at 1720db2b).',
     ],
     reproduce: 'node dev/agent-workflow/evidence/dsh-020rc2-upgrade/tools/run5-oracle-digest.mjs  (deterministic; diff against the committed file)',
   }
