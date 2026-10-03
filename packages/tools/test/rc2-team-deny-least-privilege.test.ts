@@ -530,6 +530,16 @@ describe('rc2 least privilege — the real catalog and the two capability lanes'
     for (const name of FOUR) {
       expect(PREP2.refusals[name]?.status).toBe('rejected')
     }
+    // The refusal REASON is pinned per tool, mirroring A6, because a bare
+    // `rejected` would also be satisfied by a refusal that merely looks like a
+    // caller denial: a malformed rule, a lifecycle guard, or — the case this
+    // world exists to exclude — the seam silently falling back to the unwired
+    // state (`TEAM_TOOL_PERMISSION_UNWIRED`), which would mean no governance port
+    // was mounted at all while the stasis comparison still passed.
+    expect(pick(PREP2.refusals, 'team_list_pending_control').code).toBe(CODES.pending)
+    expect(pick(PREP2.refusals, 'team_archive_member').code).toBe(CODES.archive)
+    expect(pick(PREP2.refusals, 'team_grant_permission').code).toBe(CODES.permission)
+    expect(pick(PREP2.refusals, 'team_revoke_permission').code).toBe(CODES.permission)
     expect(PREP2.afterRefusals).toEqual(PREP2.afterGrant)
   })
 
