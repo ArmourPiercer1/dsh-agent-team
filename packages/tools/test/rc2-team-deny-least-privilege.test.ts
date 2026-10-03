@@ -142,8 +142,12 @@ interface Prepared {
   catalogNames: string[]
   member: Record<string, Outcome>
   leader: Record<string, Outcome>
-  effectsBefore: { lifecycle: string | null; memberState: string; pending: number }
-  effectsAfter: { lifecycle: string | null; memberState: string; pending: number }
+  // Only what the fixture can actually READ durably. A pending-approval count is
+  // deliberately absent: this world exposes memberInstances, not the governance
+  // pending/permission store, so any number here would be a literal wearing the
+  // clothes of an observation (see A8).
+  effectsBefore: { lifecycle: string | null; memberState: string }
+  effectsAfter: { lifecycle: string | null; memberState: string }
 }
 
 const PREP = await (async (): Promise<Prepared | null> => {
@@ -170,7 +174,6 @@ const PREP = await (async (): Promise<Prepared | null> => {
     return {
       lifecycle: record?.lifecycle !== undefined ? String(record.lifecycle) : null,
       memberState: String(JSON.stringify(record ?? null)),
-      pending: 0,
     }
   }
   const effectsBefore = readState()
@@ -293,14 +296,28 @@ describe('rc2 least privilege — the real catalog and the two capability lanes'
     expect(pick(PREP.leader, 'team_revoke_permission').code).toBe(CODES.unwired)
   })
 
-  it('A8 the member refusals leave no durable trace', () => {
+  it('A8 the member refusals leave the target durable member record unmoved (NOT a pending/permission stasis proof)', () => {
     if (PREP === null) throw new Error('world unavailable')
     expect(PREP.effectsAfter.lifecycle).toEqual(PREP.effectsBefore.lifecycle)
     expect(PREP.effectsAfter.memberState).toEqual(PREP.effectsBefore.memberState)
-    expect(PREP.effectsAfter.pending).toEqual(PREP.effectsBefore.pending)
     // And the target really is a member instance, so A6 was a caller refusal and
     // not an "unknown target" accident.
     expect(PREP.effectsBefore.lifecycle !== null).toBe(true)
+    /*
+     * What this case does NOT establish, stated because an earlier revision of
+     * this suite claimed it: it does not show that no pending approval or
+     * permission mutation was written. The fixture reads only
+     * `domain.repositories.memberInstances`; the earlier
+     * `expect(effectsAfter.pending).toEqual(effectsBefore.pending)` compared two
+     * occurrences of the literal `0` from `readState()`, i.e. it was tautological
+     * and could not fail for any host behaviour. The assertion is removed rather
+     * than reworded. To accept this suite on that dimension, read the durable
+     * governance pending-approval / permission-overlay store before and after the
+     * four refusals (the same store `team_list_pending_control` and
+     * `team_grant_permission` write through) and assert on that snapshot - and if
+     * the fixture cannot reach it, that is a gap to report, not a zero to invent.
+     */
+    expect(true).toBe(true)
   })
 
   it('A9 the deny disposer unwinds the mask exactly once (no standing mask)', () => {
