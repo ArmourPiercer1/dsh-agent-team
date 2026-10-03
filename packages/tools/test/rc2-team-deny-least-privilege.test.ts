@@ -103,6 +103,7 @@ interface Outcome {
   readonly status: string
   readonly code: string | null
   readonly resultStatus: string
+  readonly message: string
 }
 
 /** Index-safe read of a prepared outcome map. */
@@ -114,7 +115,12 @@ function pick(rec: Record<string, Outcome>, key: string): Outcome {
 
 function summarize(result: unknown): Outcome {
   const r = (result ?? {}) as { status?: string; code?: string }
-  return { status: String(r.status ?? ''), code: r.code !== undefined ? String(r.code) : null, resultStatus: String(r.status ?? '') }
+  return {
+    status: String(r.status ?? ''),
+    code: r.code !== undefined ? String(r.code) : null,
+    resultStatus: String(r.status ?? ''),
+    message: String((r as { message?: unknown }).message ?? ''),
+  }
 }
 
 /** A restrict seam with the host's real vocabulary and its real error. */
@@ -137,6 +143,36 @@ function makeRestrictSeam(known: readonly string[]) {
   return { ctx, calls }
 }
 
+/**
+ * One read of the durable governance state, through the SAME paths the tools use:
+ * the control service (`listControlState`, what `team_list_pending_control`
+ * filters) and the TeamDomain repositories the facts and the append-only
+ * permission-overlay store live in.
+ */
+interface GovernanceState {
+  controlRequests: Array<{ requestId: string; kind: string; status: string; requestSequence: number }>
+  controlDecisions: number
+  controlConsumptions: number
+  controlAbandonments: number
+  ledger: Array<{ sequence: number; factType: string }>
+  overlaySnapshots: Array<{ snapshotId: string }>
+}
+
+/**
+ * One read of the durable governance state, through the SAME paths the tools use:
+ * the control service (`listControlState`, what `team_list_pending_control`
+ * filters) and the TeamDomain repositories the fact ledger and the append-only
+ * permission-overlay store live in.
+ */
+interface GovernanceState {
+  controlRequests: Array<{ requestId: string; kind: string; status: string; requestSequence: number }>
+  controlDecisions: number
+  controlConsumptions: number
+  controlAbandonments: number
+  ledger: Array<{ sequence: number; factType: string }>
+  overlaySnapshots: Array<{ snapshotId: string }>
+}
+
 interface Prepared {
   env: P6T6World
   catalogNames: string[]
@@ -147,7 +183,11 @@ interface Prepared {
   // pending/permission store, so any number here would be a literal wearing the
   // clothes of an observation (see A8).
   effectsBefore: { lifecycle: string | null; memberState: string }
+  effectsAfterRefusals: { lifecycle: string | null; memberState: string }
   effectsAfter: { lifecycle: string | null; memberState: string }
+  governanceBefore: GovernanceState
+  governanceAfterRefusals: GovernanceState
+  governanceAfterLeader: GovernanceState
 }
 
 const PREP = await (async (): Promise<Prepared | null> => {
@@ -176,7 +216,29 @@ const PREP = await (async (): Promise<Prepared | null> => {
       memberState: String(JSON.stringify(record ?? null)),
     }
   }
+  // The real governance plane, read through the service and the repositories
+  // rather than inferred: pending/decided control requests (the same state
+  // `team_list_pending_control` filters), the append-only fact ledger, and the
+  // per-member permission-overlay snapshots (`team_grant_permission`'s target).
+  const governanceState = async (): Promise<GovernanceState> => {
+    const repos = env.world.domain.repositories
+    const controlState = await env.control.listControlState(P6T2_ROOT)
+    return {
+      controlRequests: controlState.requests.map((r) => ({
+        requestId: String(r.requestId), kind: String(r.kind), status: String(r.status),
+        requestSequence: r.requestSequence,
+      })),
+      controlDecisions: controlState.decisions.length,
+      controlConsumptions: controlState.consumptions.length,
+      controlAbandonments: controlState.abandonments.length,
+      ledger: repos.ledger.list().map((e) => ({ sequence: e.sequence, factType: e.factType })),
+      overlaySnapshots: repos.permissionOverlays
+        .history(P6T2_ROOT, TARGET_ID)
+        .map((snap) => ({ snapshotId: snap.snapshotId })),
+    }
+  }
   const effectsBefore = readState()
+  const governanceBefore = await governanceState()
   const memberOut: Record<string, Outcome> = {}
   const leaderOut: Record<string, Outcome> = {}
   for (const name of FOUR) {
@@ -184,19 +246,29 @@ const PREP = await (async (): Promise<Prepared | null> => {
     if (call === undefined) throw new Error(`no fixture args for ${name}`)
     memberOut[name] = summarize(await runTool(env, name, call, MEMBER_SESSION))
   }
+  // The window closes HERE: A8/A8b are about the four MEMBER refusals, so the
+  // leader round must not sit inside them (an earlier revision bracketed both,
+  // which would have attributed any leader-side movement to the refusals).
+  const effectsAfterRefusals = readState()
+  const governanceAfterRefusals = await governanceState()
   for (const name of FOUR) {
     const call = callArgs[name]
     if (call === undefined) throw new Error(`no fixture args for ${name}`)
     leaderOut[name] = summarize(await runTool(env, name, call, LEADER_SESSION))
   }
   const effectsAfter = readState()
+  const governanceAfterLeader = await governanceState()
   return {
     env,
     catalogNames: env.tools.map((t) => t.name),
     member: memberOut,
     leader: leaderOut,
     effectsBefore,
+    effectsAfterRefusals,
     effectsAfter,
+    governanceBefore,
+    governanceAfterRefusals,
+    governanceAfterLeader,
   }
 })()
 
@@ -296,30 +368,66 @@ describe('rc2 least privilege — the real catalog and the two capability lanes'
     expect(pick(PREP.leader, 'team_revoke_permission').code).toBe(CODES.unwired)
   })
 
-  it('A8 the member refusals leave the target durable member record unmoved (NOT a pending/permission stasis proof)', () => {
+  it('A8 the member refusals leave the target durable member record unmoved', () => {
     if (PREP === null) throw new Error('world unavailable')
+    // Bracketed on the refusals alone (the leader round is outside this window).
+    expect(PREP.effectsAfterRefusals.lifecycle).toEqual(PREP.effectsBefore.lifecycle)
+    expect(PREP.effectsAfterRefusals.memberState).toEqual(PREP.effectsBefore.memberState)
+    // The whole PREP window, leader round included, is inert on this record.
     expect(PREP.effectsAfter.lifecycle).toEqual(PREP.effectsBefore.lifecycle)
     expect(PREP.effectsAfter.memberState).toEqual(PREP.effectsBefore.memberState)
     // And the target really is a member instance, so A6 was a caller refusal and
     // not an "unknown target" accident.
     expect(PREP.effectsBefore.lifecycle !== null).toBe(true)
     /*
-     * What this case does NOT establish, stated because an earlier revision of
-     * this suite claimed it: it does not show that no pending approval or
-     * permission mutation was written. The fixture reads only
-     * `domain.repositories.memberInstances`; the earlier
+     * What this case does NOT establish, kept because an earlier revision claimed
+     * it: member-record equality is not governance stasis. The governance plane is
+     * read for real in A8b/A8c instead of being guessed here. (An earlier
      * `expect(effectsAfter.pending).toEqual(effectsBefore.pending)` compared two
-     * occurrences of the literal `0` from `readState()`, i.e. it was tautological
-     * and could not fail for any host behaviour. The assertion is removed rather
-     * than reworded. To accept this suite on that dimension, read the durable
-     * governance pending-approval / permission-overlay store before and after the
-     * four refusals (the same store `team_list_pending_control` and
-     * `team_grant_permission` write through) and assert on that snapshot - and if
-     * the fixture cannot reach it, that is a gap to report, not a zero to invent.
-     * (A placeholder `expect(true).toBe(true)` used to close this case; it was
-     * itself a tautology and is deleted - the case stands on the three
-     * observations above, and the gap below stays open.)
+     * occurrences of a literal `0`, and a placeholder `expect(true).toBe(true)`
+     * closed this case; both were tautologies and both are deleted.)
      */
+  })
+
+  it('A8b the four refusals move no durable governance state - read through the control service and the repositories', () => {
+    if (PREP === null) throw new Error('world unavailable')
+    // Not a member-instance read wearing a governance label: `controlRequests`
+    // comes from ControlService.listControlState (the very state
+    // team_list_pending_control filters), `ledger` from the append-only fact
+    // ledger, `overlaySnapshots` from the permission_overlays store that
+    // team_grant_permission writes through.
+    expect(PREP.governanceAfterRefusals).toEqual(PREP.governanceBefore)
+    // And the window as a whole (leader round included) moved nothing.
+    expect(PREP.governanceAfterLeader).toEqual(PREP.governanceBefore)
+    // THE LIMITATION, asserted rather than footnoted: this baseline is EMPTY, so
+    // the equality above is containment on an empty store, not a falsifiable
+    // "a write would have been seen" proof. If this fixture ever gains a write
+    // path this fails, and A8b must be re-read as a real stasis claim.
+    expect(PREP.governanceBefore.ledger.length).toBe(0)
+    expect(PREP.governanceBefore.overlaySnapshots.length).toBe(0)
+    expect(PREP.governanceBefore.controlRequests.length).toBe(0)
+  })
+
+  it('A8c WHY A8b cannot be falsified in this fixture: the governance port is absent, measured verbatim', () => {
+    if (PREP === null) throw new Error('world unavailable')
+    // The Leader - the ONE caller allowed to mutate permissions - is refused
+    // BEFORE any store access, because ctx.options.permission is undefined in
+    // this world (packages/tools/src/tools.ts:1347-1352: "unwired on this host
+    // (no governance mutation port) - zero write"). So no call this fixture can
+    // make is able to write permission_overlays; that is why A8b's baseline is
+    // empty and why an earlier "pending stayed 0" claim was vacuous.
+    const grant = pick(PREP.leader, 'team_grant_permission')
+    expect(grant.status).toBe('rejected')
+    expect(grant.code).toBe(CODES.unwired)
+    expect(grant.message.indexOf('no governance mutation port') >= 0).toBe(true)
+    expect(grant.message.indexOf('zero write') >= 0).toBe(true)
+    // The other channel cannot move either, for a different real reason: the
+    // Leader's archive is refused by the lifecycle FSM (ARCHIVE is legal only
+    // from SETTLED), which is a guard refusal, not a store fault.
+    const archive = pick(PREP.leader, 'team_archive_member')
+    expect(archive.status).toBe('rejected')
+    expect(archive.code).toBe('TEAM_RUNTIME_LIFECYCLE_TRANSITION_REJECTED')
+    expect(PREP.governanceAfterLeader.overlaySnapshots.length).toBe(0)
   })
 
   it('A9 the deny disposer unwinds the mask exactly once (no standing mask)', () => {
