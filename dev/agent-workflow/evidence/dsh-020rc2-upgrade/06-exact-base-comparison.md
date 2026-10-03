@@ -89,3 +89,22 @@ Both facts were checked immediately after the mistake and are recorded here rath
 than mentioned only in chat. A nested `git worktree add` from the same mistake was
 removed with `git worktree remove --force` + `prune`; the pre-existing
 `base-6b2f401b-control` worktree is the one used for the numbers above.
+
+## Repeat runs at this head, because a number you cannot reproduce is not a signal
+
+`4e2d7976`, three consecutive full root runs: **19 failed / 5380 passed (5399)**, with
+identical per-file counts each time (`t1-capability-schema` 9, `p6t3-mediation` 5,
+`p6t3-restart` 2, six files with 1). `logs/root-vitest-head-4e2d7976.log` is one of them.
+
+One earlier run of the same commit reported **21 failed / 5378 passed** — two tests that
+pass in all three recorded runs failed there, and that run's output was truncated by a
+`tail -4` before it was logged, so the two names are lost. Most likely candidate is the
+P6T3/P6T6 session-seed coupling visible in every one of these failures
+(`expected 'session-root-p6t1' to be 'session-child-p6t3-leader'`: fixtures reading a
+world another fixture writes). It is recorded as a single unreproduced observation with a
+named suspect, **not** smoothed into "19 is stable". Any future claim of "no new failures"
+must therefore be a per-file comparison over repeats, not a single total.
+
+Base numbers in the table above come from a **10-file subset** run in the control worktree
+(9 files failed, 19 of 76 tests failed); the coincidence of "9 files / 19" with this head's
+whole-suite numbers is arithmetic luck, not a comparison of the same populations.
