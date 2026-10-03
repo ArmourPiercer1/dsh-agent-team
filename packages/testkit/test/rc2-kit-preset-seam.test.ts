@@ -42,6 +42,7 @@ const read = (rel: string): string => readFileSync(join(HOST, rel), 'utf8')
 const MIGRATED_SOURCES = [
   'tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs',
   'tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs',
+  'tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs',
 ]
 
 /**
@@ -50,14 +51,18 @@ const MIGRATED_SOURCES = [
  * deleting a file's entry without migrating it fails P5b.
  */
 const NOT_YET_MIGRATED: Array<{ file: string; reason: string }> = [
-  { file: 'tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs', reason: 'writeSmokePreset() still emits the directory shape' },
   { file: 'tests/kits/exec-contract-live-smoke/exec-contract-live-smoke.mjs', reason: 'writeSmokePreset(HOME_A/HOME_B) still emits the directory shape' },
   { file: 'tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs', reason: 'writeSmokePreset() still emits the directory shape' },
   { file: 'packages/runtime/root-binding/harness/run.mjs', reason: 'writes .agent-presets/p5t5-team-persona and imports PERSONA_SECTION' },
   { file: 'packages/runtime/member-residency/harness/run.mjs', reason: 'writes two .agent-presets fixtures and imports PERSONA_SECTION' },
 ]
 
-const LEGACY_WRITE = /\.agent-presets/
+/**
+ * A line that ACTUALLY uses the retired directory: a path/fs call composing it,
+ * or an fs call writing into it. Prose in a comment or an emitted YAML note may
+ * name the retired path (that is how it stays documented) without being a use.
+ */
+const LEGACY_WRITE_LINE = /\b(?:mkdirSync|writeFileSync|rmSync|readdirSync|createWriteStream|join|resolve)\b[^\n]*\.agent-presets|\.agent-presets[^\n]*(?:mkdirSync|writeFileSync)/
 
 /** Strip line comments so a mention in prose does not count as a write. */
 function codeOnly(source: string): string {
@@ -219,7 +224,7 @@ describe('P5 the migration ledger is an assertion, not a comment', () => {
       const code = codeOnly(source)
       const offenders = code
         .split('\n')
-        .filter((line) => line.includes(LEGACY_PRESET_DIRECTORY_SEAM))
+        .filter((line) => LEGACY_WRITE_LINE.test(line))
         .map((line) => `${rel}: ${line.trim().slice(0, 90)}`)
       expect(offenders).toEqual([])
       expect(code.includes('PERSONA_SECTION') ? `${rel}: imports PERSONA_SECTION` : 'clean').toBe('clean')
@@ -233,12 +238,27 @@ describe('P5 the migration ledger is an assertion, not a comment', () => {
     }
   })
 
+  it('the guard itself still catches the historical shapes and does not fire on prose', () => {
+    // The retired fixture was written in exactly this shape (kits c1 / exec /
+    // sml and both harnesses, as committed at 6b2f401b). If a future edit
+    // reconstructs it through a variable, the join/mkdir/write pattern must
+    // still light up - otherwise the ledger would be guarding its own syntax.
+    expect(LEGACY_WRITE_LINE.test("  const dir = join(home, '.agent-presets', SMOKE_PRESET_ID)")).toBe(true)
+    expect(LEGACY_WRITE_LINE.test("    const presetDir = join(DSH_HOME, '.agent-presets', presetId)")).toBe(true)
+    expect(LEGACY_WRITE_LINE.test("  writeFileSync(join(dir, '.agent-presets', 'agent.cordis.yml'), text)")).toBe(true)
+    expect(LEGACY_WRITE_LINE.test("mkdirSync(presetDir, { recursive: true }) // .agent-presets")).toBe(true)
+    // documentation of the retired path is allowed: a comment, and the note the
+    // patch layer emits about why the directory is gone.
+    expect(LEGACY_WRITE_LINE.test(' * `$DSH_HOME/.agent-presets/<id>/` is not read any more')).toBe(false)
+    expect(LEGACY_WRITE_LINE.test("    '# (0.2.0-rc.2: the retired user-preset directory is not read by the host.)',")).toBe(false)
+  })
+
   it('the unmigrated set is exactly the recorded one and cannot grow silently', () => {
     const expected = NOT_YET_MIGRATED.map((entry) => entry.file).sort()
     const writers: string[] = []
     for (const rel of [...MIGRATED_SOURCES, ...expected]) {
       const source = readFileSync(resolve(REPO_ROOT, rel), 'utf8')
-      if (LEGACY_WRITE.test(codeOnly(source))) writers.push(rel)
+      if (codeOnly(source).split('\n').some((line) => LEGACY_WRITE_LINE.test(line))) writers.push(rel)
     }
     // every still-listed file must STILL write the seam (otherwise the entry is
     // stale and the migration was never recorded), and no migrated file may.
