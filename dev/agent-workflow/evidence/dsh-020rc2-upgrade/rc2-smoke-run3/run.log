@@ -1,0 +1,15 @@
+[2026-10-03T14:29:39.682Z] rc2 real-host smoke — stamp 2026-10-03T14-29-39
+[2026-10-03T14:29:39.682Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade
+[2026-10-03T14:29:39.682Z] testuse=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use @ 639ed01539
+[2026-10-03T14:29:39.682Z] evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/dev/agent-workflow/evidence/dsh-020rc2-upgrade/rc2-smoke-run3
+[2026-10-03T14:29:39.729Z] ports: host=3492 mock=3497
+[2026-10-03T14:29:39.739Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-10-03T14:29:39.739Z] world materialized (probe files in scratch workspace)
+[2026-10-03T14:29:39.743Z] mock model listening on 3497
+[2026-10-03T14:34:05.064Z] host booted at http://127.0.0.1:3492; row ready — toolCount=15
+[2026-10-03T14:34:05.064Z] ── LEG 0: discovery ──
+[2026-10-03T14:30:57.103Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-10-03T14:30:57.103Z] PASS L0: discovery captured the surface; read + bash present (minimal-style preset: 5/7 managed is the expected shape) — surface=20 missingManaged=[lsp,pwsh] denyList=[team_archive_member,team_grant_permission,team_list_pending_control,team_revoke_permission]
+[2026-10-03T14:30:57.103Z] saved blueprints B + C written (deny list = 4 names)
+[2026-10-03T14:30:57.103Z] ── S1–S4: team B (bound blueprint) ──
+[2026-10-03T14:30:57.106Z] DIAG team.create(B) settled early: status=401 body={"status":401,"body":null}

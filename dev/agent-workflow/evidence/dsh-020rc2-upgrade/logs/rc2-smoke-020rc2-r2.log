@@ -1,0 +1,20 @@
+[2026-10-03T14:16:26.161Z] rc2 real-host smoke — stamp 2026-10-03T14-16-26
+[2026-10-03T14:16:26.161Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade
+[2026-10-03T14:16:26.161Z] testuse=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use @ 639ed01539
+[2026-10-03T14:16:26.161Z] evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/dev/agent-workflow/evidence/dsh-020rc2-upgrade/rc2-smoke-run2
+[2026-10-03T14:16:26.208Z] ports: host=3491 mock=3496
+[2026-10-03T14:16:26.221Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-10-03T14:16:26.221Z] world materialized (probe files in scratch workspace)
+[2026-10-03T14:16:26.225Z] mock model listening on 3496
+[2026-10-03T14:16:28.526Z] host booted at http://127.0.0.1:3491; row ready — toolCount=15
+[2026-10-03T14:16:28.526Z] ── LEG 0: discovery ──
+[2026-10-03T14:16:28.945Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-10-03T14:16:28.945Z] PASS L0: discovery captured the surface; read + bash present (minimal-style preset: 5/7 managed is the expected shape) — surface=20 missingManaged=[lsp,pwsh] denyList=[team_archive_member,team_grant_permission,team_list_pending_control,team_revoke_permission]
+[2026-10-03T14:16:28.946Z] saved blueprints B + C written (deny list = 4 names)
+[2026-10-03T14:16:28.946Z] ── S1–S4: team B (bound blueprint) ──
+[2026-10-03T14:21:04.914Z] mock wait timed out: B leader turn start (requests=2)
+[2026-10-03T14:21:04.915Z] FAIL S1: B leader turn started (model request observed) — requests=2
+[2026-10-03T14:24:05.175Z] mock wait timed out: B chain step 1 (S1 read executed) (requests=2)
+[2026-10-03T14:24:05.175Z] FAIL S1: allow-subtree read executed (tool result returned to the model) — requests=2
+[2026-10-03T14:30:04.767Z] mock wait timed out: B chain step 2 (S2 read executed) (requests=2)
+[2026-10-03T14:30:04.767Z] FAIL S2: deny-subtree read reached a decision (tool result returned to the model) — requests=2
