@@ -74,7 +74,7 @@ test('rejects a manifest path that collides with a captured file', () => {
 const structured = [
   ['double-quoted YAML', 'capture.yaml', `x-api-key: "${secret}"\n`],
   ['single-quoted YAML', 'capture.yml', `x-api-key: '${secret}'\n`],
-  ['escaped double-quoted YAML', 'capture.yaml', `password: "prefix\\\"${secret}"\n`],
+  ['escaped double-quoted YAML', 'capture.yaml', `password: "prefix\\"${secret}"\n`],
   ['escaped single-quoted YAML', 'capture.yml', `secret: 'prefix''${secret}'\n`],
   ['YAML list entry', 'capture.yaml', `- token: '${secret}'\n`],
   ['escaped JSON', 'capture.json', JSON.stringify({ token: `prefix"${secret}`, note: 'keep me' })],
