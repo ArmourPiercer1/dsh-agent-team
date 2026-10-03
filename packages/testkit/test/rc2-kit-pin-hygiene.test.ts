@@ -24,7 +24,9 @@ import {
 const REPO_ROOT = findTestRepoRoot(process.cwd())
 if (REPO_ROOT === null) throw new Error('no repo root with tests/deepseek-harness-test-use')
 
-function sourcesUnder(relDir: string, pattern: RegExp): string[] {
+// A hoisted function declaration would be analysed as if it could run before the
+// null-guard above, so the narrowing of REPO_ROOT would be lost: keep it an arrow.
+const sourcesUnder = (relDir: string, pattern: RegExp): string[] => {
   const out: string[] = []
   const walk = (dir: string): void => {
     for (const entry of readdirSync(dir)) {
