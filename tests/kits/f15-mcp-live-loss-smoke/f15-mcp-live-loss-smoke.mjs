@@ -167,7 +167,7 @@ const TESTUSE = (() => {
   return null
 })()
 
-const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // 0.1.7-rc.1 release point (paths.mjs pin)
+const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // generation lives ONLY in tests/paths.mjs; never restate it here
 const HOST_TREE = TESTUSE
 const PRODUCTION_ROW_PATH = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'host.js')
 const GLUE_PATH = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs')
@@ -1218,7 +1218,7 @@ async function main() {
     'You are a worker of the F15 live-loss team. Do exactly what the work unit says, then finish.',
   ))
   log(`world materialized: home=${HOME} blueprints=${BLUEPRINT_DIR}`)
-  check('PREF', 'preflight (dist files present; test-use pristine @ 46a7f68b09; stable instances probed; kit ports free; home fresh)', true, 'see stable-pre.json / testuse-pre.json / worktree-git-pre.json')
+  check('PREF', `preflight (dist files present; test-use pristine @ ${HOST_BASELINE_SHA.slice(0, 10)}; stable instances probed; kit ports free; home fresh)`, true, 'see stable-pre.json / testuse-pre.json / worktree-git-pre.json')
   finishCriterion('PREF')
 
   // Services: mock model + mini MCP.
@@ -1708,12 +1708,12 @@ async function main() {
         {
           id: 'F15-LOGSINK-1',
           title: 'Real-host world has NO observable sink for plugin ctx.logger output (supervisor WARN lines uncapturable in-world)',
-          detail: 'The mcp-client supervisor emits its WARN lines (connection attempt failed / connection failed; retrying in …) via the Cordis plugin-context logger. On the real host (0.1.7-rc.1 app-boot) the only registered logger exporter is the STARTUP exporter (in-memory startupLogs), which surfaces ONLY in a StartupError boot-failure dump (cause.startup.messages); a running host emits no logger lines to the instance stdout/stderr (verified across runs: the instance log carries raw console.log lines only — 3 lines total in a world where an adapter error provably occurred) and no file sink exists (no DSH_HOME logs dir in app-boot). CONSEQUENCE: R3\' B1 verbatim-log assertions are adapted to the observable channels (slot failed/attempts=1 — proof the single-attempt path ran and no retry loop followed; exactly one mount-failed telemetry; the gate verdict; the no-giving-up assertion on the observable log window). The log window is still captured in evidence (r3-mount-time-failure.json) with the expected lines recorded as null.',
+          detail: 'The mcp-client supervisor emits its WARN lines (connection attempt failed / connection failed; retrying in …) via the Cordis plugin-context logger. On the host generation these observations were made — 0.1.7-rc.1 app-boot, observed at 2026-10-02, UNVERIFIED AT PIN (tests/paths.mjs now names 0.2.0-rc.2; re-verification belongs to the paused host-chain gate) — the only registered logger exporter is the STARTUP exporter (in-memory startupLogs), which surfaces ONLY in a StartupError boot-failure dump (cause.startup.messages); a running host emits no logger lines to the instance stdout/stderr (verified across runs: the instance log carries raw console.log lines only — 3 lines total in a world where an adapter error provably occurred) and no file sink exists (no DSH_HOME logs dir in app-boot). CONSEQUENCE: R3\' B1 verbatim-log assertions are adapted to the observable channels (slot failed/attempts=1 — proof the single-attempt path ran and no retry loop followed; exactly one mount-failed telemetry; the gate verdict; the no-giving-up assertion on the observable log window). The log window is still captured in evidence (r3-mount-time-failure.json) with the expected lines recorded as null.',
         },
         {
           id: 'F15-WIRE-1',
-          title: '0.1.7-rc.1 mock-model wire contract is the DeepSeek Messages API (Anthropic-style blocks), not OpenAI chat/completions',
-          detail: 'The dsh-llm-deepseek adapter on this baseline posts to /v1/messages with messages carrying BLOCK content: text blocks, assistant tool_use blocks, and tool_result blocks delivered INSIDE role:user messages (the internal role:tool is mapped to role:user + tool_result; consecutive same-role messages are merged); tools are Anthropic-style {name,description,input_schema}; responses are Anthropic SSE (message_start/content_block_*/message_delta stop_reason/message_stop). There is NO role:tool and NO OpenAI tool_calls on the wire. The kit\'s transcript readers + decide oracle are block-format aware (the mock harness packages/tools/harness/mock-deepseek.mjs already serves this route; its header docstring describing the OpenAI contract is legacy from the 0.1.5-rc.2 era and remains accurate only for the /chat/completions fallback route). Note: marker-driven oracles written for the older wire (counting role:tool messages) loop forever on this baseline — the tool results never satisfy the counter (infinite tool-call loop; unbounded mock-recorder growth -> process OOM).',
+          title: 'Mock-model wire contract observed at 0.1.7-rc.1 is the DeepSeek Messages API (Anthropic-style blocks), not OpenAI chat/completions — UNVERIFIED AT PIN',
+          detail: 'The dsh-llm-deepseek adapter on the generation observed posts to /v1/messages with messages carrying BLOCK content: (0.2.0-rc.2 keeps the same /v1/messages route but delivers tool results as content parts nested one level deeper inside role:user - see tests/kits/rc2-real-host-smoke/fixtures/captured-0.2.0-rc.2/, so any reader written for the older envelope must be re-checked before this kit runs again): text blocks, assistant tool_use blocks, and tool_result blocks delivered INSIDE role:user messages (the internal role:tool is mapped to role:user + tool_result; consecutive same-role messages are merged); tools are Anthropic-style {name,description,input_schema}; responses are Anthropic SSE (message_start/content_block_*/message_delta stop_reason/message_stop). There is NO role:tool and NO OpenAI tool_calls on the wire. The kit\'s transcript readers + decide oracle are block-format aware (the mock harness packages/tools/harness/mock-deepseek.mjs already serves this route; its header docstring describing the OpenAI contract is legacy text observed at the 0.1.5-rc.2 era, UNVERIFIED AT PIN, and accurate only for the /chat/completions fallback route). Note: marker-driven oracles written for the older wire (counting role:tool messages) loop forever on this baseline — the tool results never satisfy the counter (infinite tool-call loop; unbounded mock-recorder growth -> process OOM).',
         },
         {
           id: 'F15-W3AE-1',

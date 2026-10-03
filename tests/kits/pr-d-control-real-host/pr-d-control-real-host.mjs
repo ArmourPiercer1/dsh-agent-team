@@ -167,7 +167,7 @@ const SIDE_EFFECT_TMP = join(TESTUSE, 'tmp')
 const BLUEPRINT_DIR = join(HOME, 'blueprints')
 
 const HOST_TREE = TESTUSE
-const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // 46a7f68b09... (0.1.7-rc.1)
+const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // generation lives ONLY in tests/paths.mjs; never restate it here
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 const DIST_RUNTIME = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages', 'runtime')
 const PRODUCTION_ROW_PATH = join(DIST_RUNTIME, 'src', 'plugin', 'host.js')

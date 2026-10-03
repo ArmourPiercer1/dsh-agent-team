@@ -1,0 +1,152 @@
+/**
+ * rc2-kit-pin-hygiene — the host generation is named in exactly one place.
+ *
+ * Three kit sources carried a comment (and one carried a PASS detail string)
+ * asserting "test-use pristine @ 46a7f68b09 / 0.1.7-rc.1" while the pin they
+ * actually read had moved to 0.2.0-rc.2. A criterion that reports a baseline the
+ * run did not use is worse than no criterion: the evidence contradicts itself and
+ * the run cannot be judged. Historical provenance comments — "this mirror was taken
+ * at @46a7f68b09", "written against fb2c4b9e69" — stay: they are dated facts, and
+ * they are the archive this round must not launder away.
+ *
+ * Pure static checks: no host, no fs writes.
+ */
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { describe, expect, it } from 'vitest'
+import {
+  CLIENT_COMMIT_HASH,
+  DSH_BASELINE_VERSION,
+  TEST_USE_BASELINE_SHA,
+  findTestRepoRoot,
+} from '../../../tests/paths.mjs'
+
+const REPO_ROOT = findTestRepoRoot(process.cwd())
+if (REPO_ROOT === null) throw new Error('no repo root with tests/deepseek-harness-test-use')
+
+function sourcesUnder(relDir: string, pattern: RegExp): string[] {
+  const out: string[] = []
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir)) {
+      if (entry === 'node_modules' || entry === 'dist' || entry === '.tmp-faultscratch') continue
+      const full = join(dir, entry)
+      const st = statSync(full)
+      if (st.isDirectory()) walk(full)
+      else if (pattern.test(entry)) out.push(full)
+    }
+  }
+  walk(resolve(REPO_ROOT, relDir))
+  return out
+}
+
+/** Code lines only: a line whose first non-space token is a comment marker is prose. */
+function codeLines(source: string): string[] {
+  return source
+    .split('\n')
+    .map((line, i) => ({ line, i }))
+    .filter(({ line }) => {
+      const t = line.trimStart()
+      return !(t.startsWith('//') || t.startsWith('#') || t.startsWith('*') || t.startsWith('/*'))
+    })
+    .map(({ line, i }) => `${i + 1}: ${line}`)
+}
+
+const SHA_LITERAL = /\b[0-9a-f]{40}\b/
+const SHORT_SHA_PIN = /@\s*[0-9a-f]{8,10}\b/
+const RC_LITERAL = /\b\d+\.\d+\.\d+-rc\.\d+\b/
+
+describe('H1 no kit or harness code names a host generation the pin does not', () => {
+  const files = [
+    ...sourcesUnder('tests/kits', /\.mjs$/),
+    ...sourcesUnder('packages/runtime/root-binding/harness', /\.mjs$/),
+    ...sourcesUnder('packages/runtime/member-residency/harness', /\.mjs$/),
+  ]
+
+  it('there is something to scan', () => {
+    expect(files.length).toBeGreaterThan(10)
+  })
+
+  it('code lines carry no 40-hex SHA other than the pinned baseline', () => {
+    const hits: string[] = []
+    for (const file of files) {
+      for (const line of codeLines(readFileSync(file, 'utf8'))) {
+        const found = line.match(new RegExp(SHA_LITERAL.source, 'g')) ?? []
+        for (const sha of found) {
+          if (sha !== TEST_USE_BASELINE_SHA) hits.push(`${file.slice(REPO_ROOT.length + 1)} ${line.slice(0, 120)}`)
+        }
+      }
+    }
+    expect(hits).toEqual([])
+  })
+
+  it('code lines carry no release-candidate literal other than the pinned version', () => {
+    const hits: string[] = []
+    for (const file of files) {
+      for (const line of codeLines(readFileSync(file, 'utf8'))) {
+        // only flag a version literal in a position that reports or compares it,
+        // i.e. a string literal inside a check()/note - the shape that ended up
+        // in a PASS detail line once already.
+        if (!/check\(|detail|note|label/i.test(line)) continue
+        for (const rc of line.match(new RegExp(RC_LITERAL.source, 'g')) ?? []) {
+          if (rc === DSH_BASELINE_VERSION) continue
+          // The convention: a reported generation literal is either the pin, or
+          // it is DATED PROVENANCE that says so out loud. Marking it is not
+          // weakening it - the observation stays, and the reader learns it has
+          // not been re-taken on the current baseline.
+          if (/observed at|UNVERIFIED AT PIN/i.test(line)) continue
+          hits.push(`${file.slice(REPO_ROOT.length + 1)} ${line.slice(0, 120)}`)
+        }
+      }
+    }
+    expect(hits).toEqual([])
+  })
+
+  it('no code line hardcodes "test-use pristine @ <short sha>" instead of the pin', () => {
+    const hits: string[] = []
+    for (const file of files) {
+      for (const line of codeLines(readFileSync(file, 'utf8'))) {
+        if (!/pristine/.test(line)) continue
+        if (SHORT_SHA_PIN.test(line) && !line.includes('HOST_BASELINE_SHA') && !line.includes('TEST_USE_BASELINE_SHA')) {
+          hits.push(`${file.slice(REPO_ROOT.length + 1)} ${line.slice(0, 140)}`)
+        }
+      }
+    }
+    expect(hits).toEqual([])
+  })
+})
+
+describe('H2 the pin has exactly one declaration site', () => {
+  it('only tests/paths.mjs assigns the baseline constants', () => {
+    const offenders: string[] = []
+    for (const file of [...sourcesUnder('tests', /\.mjs$/), ...sourcesUnder('packages', /\.mjs$/)]) {
+      if (file.endsWith('tests/paths.mjs')) continue
+      const source = readFileSync(file, 'utf8')
+      if (/^\s*(const|let|var)\s+(TEST_USE_BASELINE_SHA|DSH_BASELINE_VERSION|CLIENT_COMMIT_HASH)\s*=\s*['"]/m.test(source)) {
+        offenders.push(file.slice(REPO_ROOT.length + 1))
+      }
+    }
+    expect(offenders).toEqual([])
+  })
+
+  it('the pinned values are the 0.2.0-rc.2 triple this round migrated to', () => {
+    expect(DSH_BASELINE_VERSION).toBe('0.2.0-rc.2')
+    expect(TEST_USE_BASELINE_SHA).toBe('639ed015397290b3745d163aafe02ffee4aa3f84')
+    expect(CLIENT_COMMIT_HASH).toBe('639ed01539')
+  })
+})
+
+describe('H3 the reference tree can never become a runtime candidate', () => {
+  it('the plugin upstream-resolver names the legacy path exactly, not references/*', () => {
+    const resolver = readFileSync(
+      resolve(REPO_ROOT, 'packages/runtime/src/plugin/upstream-resolver.mjs'),
+      'utf8',
+    )
+    expect(resolver).toContain("join(base, 'references', 'deepseek-harness-test-use')")
+    // A glob or a looser `references` join would let the read-only 0.2 reference
+    // checkout (references/deepseek-harness-0.2.0-rc.2, see evidence 04) be
+    // discovered as a host tree, which TEST_METHODS forbids.
+    const code = codeLines(resolver).join('\n')
+    expect(code.includes("join(base, 'references', 'deepseek-harness-0.2.0-rc.2')")).toBe(false)
+    expect(/readdirSync\([^)]*'references'/.test(code)).toBe(false)
+  })
+})
