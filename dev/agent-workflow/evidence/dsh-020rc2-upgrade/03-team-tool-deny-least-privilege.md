@@ -147,3 +147,14 @@ an error envelope, so no team, no leader turn, no tool surface).
 3. **Still blocked, unchanged**: the single full rc2 real-host smoke run, until
    the security review of the committed evidence passes. Nothing in this round
    has run the full chain.
+
+   > **Historical status — superseded by run5 (later round, 2026-10-03).** The
+   > sentence above is left verbatim because it is the record of the round that
+   > wrote it; it is no longer the current state. One bounded full-chain run has
+   > since been executed (`08-smoke-run5-reader-defects.md`: head `65f07a26`,
+   > stamp `2026-10-03T16-28-45`, `VERDICT FAIL 14/19`, exit 2, no budget
+   > violation, no watchdog, no compaction abort). So the full chain HAS been run
+   > once. What that run does and does not settle is argued in evidence 08 and
+   > measured in `rc2-smoke-run5/run5-oracle-digest.json`; in particular the four
+   > deny names analysed by this document were not the subject of that run's
+   > failures, and nothing here should be read as validated by it.
