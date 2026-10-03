@@ -47,3 +47,13 @@ tests/characterization/.run-logs/
 # test scratch (runtime artifacts from .test.ts worlds; the test pre-clean
 # destroyDir already handles staleness on every run)
 packages/testkit/test/.tmp-fault/
+
+# 0.2.0-rc.2 upgrade round: kit/probe scratch worlds + private raw evidence
+# (raw host logs are kept byte-identically here, NEVER committed; committed
+# copies are the sanitized ones — see evidence/dsh-020rc2-upgrade/SANITIZATION.json)
+.private-raw-evidence/
+.sanitized-tmp/
+.tmp-npmcache/
+.*-blueprints-*/
+
+.tmp-faultscratch/

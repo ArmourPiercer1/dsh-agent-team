@@ -1,0 +1,3 @@
+[2026-10-03T14:33:33.757Z] world=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/homes/auth-probe-2026-10-03T14-33-33 port=3493 mock=3498 root=session-rc2-smoke-root-2026-10-03T14-29-39
+[2026-10-03T14:33:33.768Z] mock listening on 3498
+[2026-10-03T14:40:04.948Z] FATAL no boot marker in 300s; log tail: [dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550) | dsh web: http://127.0.0.1:3493/?token=<REDACTED-BOOT-TOKEN> | [dsh-agent-team] remote mount: MOUNTED channel=/team-remote | 

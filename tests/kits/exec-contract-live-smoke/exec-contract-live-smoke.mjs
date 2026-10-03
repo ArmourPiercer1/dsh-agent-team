@@ -89,7 +89,8 @@ const EVIDENCE_DIR_ARG = argValue('evidence-dir', null)
 
 // ── frozen facts ────────────────────────────────────────────────────────────
 
-const HOST_BASELINE_SHA = 'fb2c4b9e698e30edb738bca4cf0618587db7d203' // DSH 0.1.5-rc.2 release point
+import { TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH } from '../../../tests/paths.mjs'  // canonical test-infrastructure pin (docs/TEST_METHODS.md §1)
+const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // canonical pin = tests/paths.mjs (moves with the pinned host generation)
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 const DIST_RUNTIME = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages', 'runtime')
 const PRODUCTION_ROW_PATH = join(DIST_RUNTIME, 'src', 'plugin', 'host.js')
@@ -100,6 +101,8 @@ const PRODUCTION_ROW_NAME = pathToFileURL(PRODUCTION_ROW_PATH).href
 const GLUE_URL = pathToFileURL(GLUE_PATH).href
 const SEAM_URL = pathToFileURL(SEAM_PATH).href
 const P6T6_ROW_NAME = pathToFileURL(P6T6_PLUGIN_PATH).href
+
+import { presetDeclarationRow, smokePresetPlugins } from '../_shared/preset-seam.mjs'
 
 const SMOKE_PRESET_ID = 'exec-live-smoke'
 const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
@@ -393,43 +396,27 @@ function teamRowConfig({ rootId, anchorId, hardFacts }) {
   }
 }
 
-function writeSmokePreset(home) {
-  const dir = join(home, '.agent-presets', SMOKE_PRESET_ID)
-  mkdirSync(dir, { recursive: true })
-  const text = [
-    `# ${SMOKE_PRESET_ID} — exec-contract live smoke preset (run ${RUN_STAMP}).`,
-    '# Reused from the C1 kit (public user-preset seam): persona +',
-    '# dsh-tool-fs + the minimal-style persistent shell group (the bash',
-    '# stack — the LEADER exec surface the dual gate governs). NO',
-    '# delegation group (same rc2 constraint as C1).',
-    '- id: persona',
-    "  name: '@deepseek-ai/dsh-persona'",
-    '  config:',
-    '    suffix: Your working directory is {{cwd}}.',
-    '    prefix: >-',
-    '      You are a coding agent powered by the {{model}} model.',
-    '- id: tool-fs',
-    "  name: '@deepseek-ai/dsh-tool-fs'",
-    '- id: persistent-shell',
-    '  name: cordis:group',
-    '  group: true',
-    '  isolate:',
-    '    terminals: true',
-    '  config:',
-    '    - id: pty',
-    "      name: '@deepseek-ai/dsh-terminal'",
-    '    - id: terminal-bash',
-    "      name: '@deepseek-ai/dsh-terminal-bash'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '    - id: persistent-bash',
-    "      name: '@deepseek-ai/dsh-tool-bash-persistent'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '        description: Run commands in a bash shell. State is persistent across calls.',
-    '',
-  ].join('\n')
-  writeFileSync(join(dir, 'agent.cordis.yml'), text)
+/**
+ * The kit's agent preset as a 0.2 DECLARATION ROW (was: a
+ * `$DSH_HOME/.agent-presets/<id>/agent.cordis.yml` directory, which no host
+ * generation >= 0.1.7 reads). Content unchanged from the 0.1.7 kit: persona +
+ * dsh-tool-fs + the minimal-style persistent shell group - the bash stack IS
+ * the leader exec surface the dual gate governs. NO delegation group (same rc2
+ * constraint as C1: the 0.1.5 spawn `subagent` row is a deferred per-agent
+ * own-layer install, un-restrictable and KNOWN_SENSITIVE under the Coverage
+ * Gate).
+ */
+function smokePresetDeclaration() {
+  return presetDeclarationRow({
+    id: SMOKE_PRESET_ID,
+    displayName: 'exec live smoke',
+    description: `exec-contract live smoke preset (run ${RUN_STAMP}); mounted through the public profile-patch seam.`,
+    plugins: smokePresetPlugins({
+      personaText: 'You are a coding agent powered by the {{model}} model.',
+      cwdSuffix: 'Your working directory is {{cwd}}.',
+      bashDescription: 'Run commands in a bash shell. State is persistent across calls.',
+    }),
+  })
 }
 
 /** The p6t6 observability row's boot directive (required at the DSH_HOME
@@ -448,9 +435,11 @@ function writePatchFile(home, { rootId, anchorId, hardFacts, note }) {
   mkdirSync(join(home, 'profiles', 'web'), { recursive: true })
   const lines = [
     `# exec-contract live smoke patch layer (run ${RUN_STAMP}, ${note}): production dsh-agent-team row (worktree dist — the PR branch build) + p6t6 observability row — mounted ONLY through the public profile-patch seam.`,
+    '# (0.2.0-rc.2: a preset is a declaration row mounted on this seam; the retired user-preset directory is not read by the host.)',
     '- insert:',
     ...yamlEmitItem({ id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig({ rootId, anchorId, hardFacts }) }, 2),
     ...yamlEmitItem({ id: 'p6t6-team-tools', name: P6T6_ROW_NAME }, 2),
+    ...yamlEmitItem(smokePresetDeclaration(), 2),
     '',
   ]
   writeFileSync(join(home, 'profiles', 'web', 'cordis.patch.yml'), lines.join('\n'))
@@ -472,7 +461,7 @@ function spawnHost({ port, home, logPath, mockPort }) {
         env: {
           ...process.env,
           DSH_HOME: home,
-          DSH_CLIENT_COMMIT_HASH: 'fb2c4b9e69',
+          DSH_CLIENT_COMMIT_HASH: CLIENT_COMMIT_HASH,
           DEEPSEEK_BASE_URL: `http://127.0.0.1:${mockPort}`,
           DEEPSEEK_API_KEY: 'exec-live-smoke-mock-key',
         },
@@ -783,8 +772,6 @@ async function main() {
   mkdirSync(WORKSPACE_A, { recursive: true })
   mkdirSync(WORKSPACE_B, { recursive: true })
   mkdirSync(BLUEPRINT_DIR, { recursive: true })
-  writeSmokePreset(HOME_A)
-  writeSmokePreset(HOME_B)
   writePatchFile(HOME_A, { rootId: ROOT_A, anchorId: BP_ANCHOR_A_ID, hardFacts: FACTS_NONE, note: 'world A — no external ceiling (L1 + L2)' })
   writeP6t6Directive(HOME_A, ROOT_A)
   writePatchFile(HOME_B, { rootId: ROOT_B, anchorId: BP_ANCHOR_B_ID, hardFacts: FACTS_TOOLS_DENY, note: 'world B — external hard deny of the tools cell (L3)' })

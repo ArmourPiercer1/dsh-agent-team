@@ -1,0 +1,687 @@
+{
+  "generator": "scripts/sanitize-evidence.mjs",
+  "generatedAt": "2026-10-03T15:33:50.007Z",
+  "source": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.private-raw-evidence/dsh-020rc2-upgrade",
+  "sanitizedTo": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/dev/agent-workflow/evidence/dsh-020rc2-upgrade",
+  "rawBytesPreservedIn": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.private-raw-evidence/.sanitized-tmp",
+  "separation": "from / to / store canonicalized (symlinks resolved) and proven pairwise disjoint before any write; every raw sha256 re-verified after the run",
+  "note": "Raw logs are the forensic record and are NEVER rewritten; committed copies replace credential-shaped substrings only — line structure and every non-credential byte are preserved.",
+  "patterns": [
+    "boot-token",
+    "token-param",
+    "session-cookie",
+    "bearer",
+    "json-secret-key",
+    "yaml-secret-key",
+    "cookie-header",
+    "abs-path-posix",
+    "abs-path-windows",
+    "bare-secret"
+  ],
+  "files": [
+    {
+      "file": "00-plan.md",
+      "copiedVerbatim": true,
+      "bytesRaw": 6000,
+      "sha256Raw": "70d2ee932a950ad3764d2f31a3b5a46576ac5610374fea384e1eeed904bea588"
+    },
+    {
+      "file": "01-baseline-record.md",
+      "copiedVerbatim": true,
+      "bytesRaw": 6955,
+      "sha256Raw": "ea773e860d09faf65d9be4228ca5da493228ea7092b34b143b5d7b1695a73580"
+    },
+    {
+      "file": "02-gates-and-findings.md",
+      "copiedVerbatim": true,
+      "bytesRaw": 22791,
+      "sha256Raw": "b03c892f1f354d09dfcc5067a49274b7466c1ab8454a15e11a25b6b8c72eaad1"
+    },
+    {
+      "file": "03-team-tool-deny-least-privilege.md",
+      "copiedVerbatim": true,
+      "bytesRaw": 11797,
+      "sha256Raw": "dd648083849ac7757fd1e27f782e3aa188d69b2d71f5db8d381ad45c4e4f0875"
+    },
+    {
+      "file": "diag/auth-probe-2026-10-03T14-33-33.log",
+      "bytesRaw": 689,
+      "bytesSanitized": 667,
+      "sha256Raw": "7ce425875cf8ca5a6bff6407ae77c2781ac4bd82b936243173704b4fbcf1f0f4",
+      "sha256Sanitized": "b068d3dbfe4a4f3ae1bd9214f39a561f1a2423c50e90b332a1e12f66df8610e4",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "diag/auth-probe-2026-10-03T14-37-03.log",
+      "bytesRaw": 3660,
+      "bytesSanitized": 3660,
+      "sha256Raw": "19b45772cc9a788994db0da016c31cee837045b01546f6790bcfe01f038e8118",
+      "sha256Sanitized": "19b45772cc9a788994db0da016c31cee837045b01546f6790bcfe01f038e8118",
+      "replacements": {}
+    },
+    {
+      "file": "diag/auth-probe-instance-2026-10-03T14-33-33.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "47112520a6393510a7f345e6a0fa6775fbebb7c6e4d64aec8d509fe452733721",
+      "sha256Sanitized": "7bc8b9f16714834fa5a7777850dbff85983e8a6ab18f713202b03d6e243a82b4",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "diag/auth-probe-instance-2026-10-03T14-37-03.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "9274a0feb2df9225e8b3a7a5bc4343434d1ce785014f5c90d026fd63a702718a",
+      "sha256Sanitized": "7bc8b9f16714834fa5a7777850dbff85983e8a6ab18f713202b03d6e243a82b4",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "diag/auth-probe-mock-2026-10-03T14-33-33.log",
+      "bytesRaw": 34,
+      "bytesSanitized": 34,
+      "sha256Raw": "32ab7bca6c93e43ef3de39fb702bdeec0f9b8a13ec8a2125f7617e902629c76b",
+      "sha256Sanitized": "32ab7bca6c93e43ef3de39fb702bdeec0f9b8a13ec8a2125f7617e902629c76b",
+      "replacements": {}
+    },
+    {
+      "file": "diag/auth-probe-mock-2026-10-03T14-37-03.log",
+      "bytesRaw": 34,
+      "bytesSanitized": 34,
+      "sha256Raw": "32ab7bca6c93e43ef3de39fb702bdeec0f9b8a13ec8a2125f7617e902629c76b",
+      "sha256Sanitized": "32ab7bca6c93e43ef3de39fb702bdeec0f9b8a13ec8a2125f7617e902629c76b",
+      "replacements": {}
+    },
+    {
+      "file": "diag/auth-probe.mjs",
+      "copiedVerbatim": true,
+      "bytesRaw": 7763,
+      "sha256Raw": "6bfb0d05fa2e8f7fcd01f48fd4a2eb9f7b67290ad06e59e674a528dc0ed40caf"
+    },
+    {
+      "file": "diag/auth-probe2-2026-10-03T14-41-16.log",
+      "bytesRaw": 1990,
+      "bytesSanitized": 1990,
+      "sha256Raw": "6d291e2b1f89c25f22bf90bc5aa098ef8300f948904342d294ecf3521ded98e2",
+      "sha256Sanitized": "6d291e2b1f89c25f22bf90bc5aa098ef8300f948904342d294ecf3521ded98e2",
+      "replacements": {}
+    },
+    {
+      "file": "diag/auth-probe2-instance-2026-10-03T14-41-16.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "46de4d1c3ce19da559f5dc7bdaff4df0d80584a0e840069b8ade7c72fe0c2387",
+      "sha256Sanitized": "919d0e1b0c367b67fa8305aa30ad1eb4755c5a647b963325657316a81f6d2caa",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "diag/auth-probe2.mjs",
+      "copiedVerbatim": true,
+      "bytesRaw": 7400,
+      "sha256Raw": "46b704330455bb75d7979128125a95b12eda04ccdbdad0b0f0c0d21a4d22ea6c"
+    },
+    {
+      "file": "diag/deny-capture-2026-10-03T15-32-32.log",
+      "bytesRaw": 4053,
+      "bytesSanitized": 4053,
+      "sha256Raw": "c9cb382e3457061251d479291a7c2e55843ec92f8cb383d9d6b253e4ff7fd7bc",
+      "sha256Sanitized": "c9cb382e3457061251d479291a7c2e55843ec92f8cb383d9d6b253e4ff7fd7bc",
+      "replacements": {}
+    },
+    {
+      "file": "diag/deny-capture-instance-2026-10-03T15-32-32.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "e3a87ad0dc8b2b4bffea2cded0c17ba17faa2409f50cac22f371624bc0abb3a0",
+      "sha256Sanitized": "b4c3c273e981f292844feac945ab36efd62d836b51686a411bf06855423afd58",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "diag/deny-name-capture.mjs",
+      "copiedVerbatim": true,
+      "bytesRaw": 8085,
+      "sha256Raw": "55ec4b2f545e455aef508435ca5ea791c5b367a881e230018f95ea5b9c312934"
+    },
+    {
+      "file": "diag/wire-envelope-agent-with-result-2026-10-03T15-06-25",
+      "copiedVerbatim": true,
+      "bytesRaw": 37900,
+      "sha256Raw": "5bed2d1de31093982743f1ef5122aff452d0b84c44dfc93c399803d301d66429"
+    },
+    {
+      "file": "diag/wire-envelope-auxiliary-2026-10-03T15-06-25",
+      "copiedVerbatim": true,
+      "bytesRaw": 899,
+      "sha256Raw": "233bc76ddb1f3c226a811ed78e567a153bd2f231b51046b407c7dc8c7745fccc"
+    },
+    {
+      "file": "diag/wire-probe-2026-10-03T14-45-59.log",
+      "bytesRaw": 1792,
+      "bytesSanitized": 1792,
+      "sha256Raw": "167f23c71cb38ddd315058aac06082c17433b79e133b31af7f42ab738af3dce7",
+      "sha256Sanitized": "167f23c71cb38ddd315058aac06082c17433b79e133b31af7f42ab738af3dce7",
+      "replacements": {}
+    },
+    {
+      "file": "diag/wire-probe-2026-10-03T14-47-03.log",
+      "bytesRaw": 954,
+      "bytesSanitized": 954,
+      "sha256Raw": "d22dd16b406bb3d27cf78e220fad2fbd296264d679b3c6927187afc3ea3956f8",
+      "sha256Sanitized": "d22dd16b406bb3d27cf78e220fad2fbd296264d679b3c6927187afc3ea3956f8",
+      "replacements": {}
+    },
+    {
+      "file": "diag/wire-probe-2026-10-03T15-06-25.log",
+      "bytesRaw": 2142,
+      "bytesSanitized": 2142,
+      "sha256Raw": "64bf1c675871c61708470cb24b8c137929e7108aae637e93837c2043a3cd3be8",
+      "sha256Sanitized": "64bf1c675871c61708470cb24b8c137929e7108aae637e93837c2043a3cd3be8",
+      "replacements": {}
+    },
+    {
+      "file": "diag/wire-probe-driver.log",
+      "bytesRaw": 2142,
+      "bytesSanitized": 2142,
+      "sha256Raw": "64bf1c675871c61708470cb24b8c137929e7108aae637e93837c2043a3cd3be8",
+      "sha256Sanitized": "64bf1c675871c61708470cb24b8c137929e7108aae637e93837c2043a3cd3be8",
+      "replacements": {}
+    },
+    {
+      "file": "diag/wire-probe-instance-2026-10-03T14-45-59.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "ad8dbbf0fcf6bf5686047f24099d51de1b35d94572dfaf3424adeba777599bc8",
+      "sha256Sanitized": "7bc8b9f16714834fa5a7777850dbff85983e8a6ab18f713202b03d6e243a82b4",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "diag/wire-probe-instance-2026-10-03T14-47-03.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "adb6f92c3891c412ab7df4aa64b5094191701872a461ca1e3bda08745e1df5b1",
+      "sha256Sanitized": "7bc8b9f16714834fa5a7777850dbff85983e8a6ab18f713202b03d6e243a82b4",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "diag/wire-probe-instance-2026-10-03T15-06-25.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "d7ec630d69578d2bf14ac196954d4583ffbb9ccd3e9f0617a591a56b4ac56493",
+      "sha256Sanitized": "7bc8b9f16714834fa5a7777850dbff85983e8a6ab18f713202b03d6e243a82b4",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "diag/wire-probe.mjs",
+      "copiedVerbatim": true,
+      "bytesRaw": 11767,
+      "sha256Raw": "c324a50a736571f519c55e11bef0fa4f049ad01e70df43d22cd5b0547dd3b3bc"
+    },
+    {
+      "file": "diag/wire-shape-2026-10-03T14-45-59",
+      "copiedVerbatim": true,
+      "bytesRaw": 962,
+      "sha256Raw": "4bdfe799cbc940ca1bf3b1f8178b988e8f27a67188676552e75b2f350ba6f049"
+    },
+    {
+      "file": "diag/wire-shape-2026-10-03T15-06-25",
+      "copiedVerbatim": true,
+      "bytesRaw": 962,
+      "sha256Raw": "4bdfe799cbc940ca1bf3b1f8178b988e8f27a67188676552e75b2f350ba6f049"
+    },
+    {
+      "file": "logs/CONTROL-base-smoke-composition.log",
+      "bytesRaw": 4071,
+      "bytesSanitized": 4071,
+      "sha256Raw": "e13e6e6c27f0fd7e84054578adb64cc0d27ea3665787c8b45aa765dd5b5c5ff4",
+      "sha256Sanitized": "e13e6e6c27f0fd7e84054578adb64cc0d27ea3665787c8b45aa765dd5b5c5ff4",
+      "replacements": {}
+    },
+    {
+      "file": "logs/CONTROL-base-zero-core-full.log",
+      "bytesRaw": 601656,
+      "bytesSanitized": 601656,
+      "sha256Raw": "7366a1a445a35c39ce1de7c07c20d6a7496609079f7f103bea6a5d31a4d9ea76",
+      "sha256Sanitized": "7366a1a445a35c39ce1de7c07c20d6a7496609079f7f103bea6a5d31a4d9ea76",
+      "replacements": {}
+    },
+    {
+      "file": "logs/build-020rc2.log",
+      "bytesRaw": 779,
+      "bytesSanitized": 779,
+      "sha256Raw": "edc6c2d325a6ff9272c66a8098abb7faa70d0061a7d7ac4d195a43c2b984b3c5",
+      "sha256Sanitized": "edc6c2d325a6ff9272c66a8098abb7faa70d0061a7d7ac4d195a43c2b984b3c5",
+      "replacements": {}
+    },
+    {
+      "file": "logs/build-composition-020rc2-r1.log",
+      "bytesRaw": 1233,
+      "bytesSanitized": 1233,
+      "sha256Raw": "37f06884ee66e379648a0b6c064b9aa53abdb2d5ba4f3c2c319f18bc97dafba8",
+      "sha256Sanitized": "37f06884ee66e379648a0b6c064b9aa53abdb2d5ba4f3c2c319f18bc97dafba8",
+      "replacements": {}
+    },
+    {
+      "file": "logs/check-artifacts-020rc2.log",
+      "bytesRaw": 198,
+      "bytesSanitized": 198,
+      "sha256Raw": "e49934e479e6ecc511501382367c28f733c2ecbad7dc1c1c5d050862ff89b3fa",
+      "sha256Sanitized": "e49934e479e6ecc511501382367c28f733c2ecbad7dc1c1c5d050862ff89b3fa",
+      "replacements": {}
+    },
+    {
+      "file": "logs/compat-GREEN-real02-evaluator.log",
+      "bytesRaw": 490,
+      "bytesSanitized": 490,
+      "sha256Raw": "46b3286597ff35a6ef363b5a18167f33155b4d1bd16fc53422b937e3e433dddb",
+      "sha256Sanitized": "46b3286597ff35a6ef363b5a18167f33155b4d1bd16fc53422b937e3e433dddb",
+      "replacements": {}
+    },
+    {
+      "file": "logs/compat-RED-real02-evaluator.log",
+      "bytesRaw": 6909,
+      "bytesSanitized": 6909,
+      "sha256Raw": "748f98763ecfea5708dd640b24a7a5af58716022fda64fa4cff5003cbba3d9dd",
+      "sha256Sanitized": "748f98763ecfea5708dd640b24a7a5af58716022fda64fa4cff5003cbba3d9dd",
+      "replacements": {}
+    },
+    {
+      "file": "logs/host-build-020rc2-managed.log",
+      "bytesRaw": 201,
+      "bytesSanitized": 201,
+      "sha256Raw": "d56f5a1dde44dff751e9d084d0e270da6ab995811ca9ca2e1cf7a36e094175e1",
+      "sha256Sanitized": "d56f5a1dde44dff751e9d084d0e270da6ab995811ca9ca2e1cf7a36e094175e1",
+      "replacements": {}
+    },
+    {
+      "file": "logs/host-build-020rc2.log",
+      "bytesRaw": 356,
+      "bytesSanitized": 356,
+      "sha256Raw": "0cc5f8b1a02ab7779893381c4d021c1f5bd384d197393fab68c4dc6cddff3605",
+      "sha256Sanitized": "0cc5f8b1a02ab7779893381c4d021c1f5bd384d197393fab68c4dc6cddff3605",
+      "replacements": {}
+    },
+    {
+      "file": "logs/lint-020rc2-r1.log",
+      "bytesRaw": 29469,
+      "bytesSanitized": 29469,
+      "sha256Raw": "5f596d6447b07e786e8f8bb8f191f3878fe1a82467f2ebfe6d50fd4472951f91",
+      "sha256Sanitized": "5f596d6447b07e786e8f8bb8f191f3878fe1a82467f2ebfe6d50fd4472951f91",
+      "replacements": {}
+    },
+    {
+      "file": "logs/normalized/findings-020rc2-host017.txt",
+      "bytesRaw": 315514,
+      "bytesSanitized": 315514,
+      "sha256Raw": "54f377b47a42dabb4d8f1d065f28730d90c36180407da5b0001488c0a7756c99",
+      "sha256Sanitized": "54f377b47a42dabb4d8f1d065f28730d90c36180407da5b0001488c0a7756c99",
+      "replacements": {}
+    },
+    {
+      "file": "logs/normalized/findings-020rc2.txt",
+      "bytesRaw": 315382,
+      "bytesSanitized": 315382,
+      "sha256Raw": "2dba17423c5a19021a58b9f372c039775a2b94e746371fc6feec143908c5fb0a",
+      "sha256Sanitized": "2dba17423c5a19021a58b9f372c039775a2b94e746371fc6feec143908c5fb0a",
+      "replacements": {}
+    },
+    {
+      "file": "logs/normalized/findings-base-6b2f401b.txt",
+      "bytesRaw": 315514,
+      "bytesSanitized": 315514,
+      "sha256Raw": "5981f34e5ddafe0bb82b832d329855396ba7767a40d5dfe8b2f7aa1435e96f3d",
+      "sha256Sanitized": "5981f34e5ddafe0bb82b832d329855396ba7767a40d5dfe8b2f7aa1435e96f3d",
+      "replacements": {}
+    },
+    {
+      "file": "logs/p4t6-020rc2-r1.log",
+      "bytesRaw": 491,
+      "bytesSanitized": 491,
+      "sha256Raw": "80c5d6acdcbc500808964b7f92a8e8319bc00bd44b1f00598b78c8091d653764",
+      "sha256Sanitized": "80c5d6acdcbc500808964b7f92a8e8319bc00bd44b1f00598b78c8091d653764",
+      "replacements": {}
+    },
+    {
+      "file": "logs/plugin-install-020rc2.log",
+      "bytesRaw": 283,
+      "bytesSanitized": 283,
+      "sha256Raw": "21a9dd953ab758b9f052e0f16df76baea911563a9f1bc230624e44e3e5ecabd4",
+      "sha256Sanitized": "21a9dd953ab758b9f052e0f16df76baea911563a9f1bc230624e44e3e5ecabd4",
+      "replacements": {}
+    },
+    {
+      "file": "logs/plugin-lockregen-020rc2.log",
+      "bytesRaw": 1504,
+      "bytesSanitized": 1504,
+      "sha256Raw": "685c7407416f3fbfb4b3e3edc1cfb66eb5d258597e92ed0149a9ead3ad022b03",
+      "sha256Sanitized": "685c7407416f3fbfb4b3e3edc1cfb66eb5d258597e92ed0149a9ead3ad022b03",
+      "replacements": {}
+    },
+    {
+      "file": "logs/rc2-smoke-020rc2-r1.log",
+      "bytesRaw": 3184,
+      "bytesSanitized": 3162,
+      "sha256Raw": "b05de07e3dea134144b18095c6a6566df600dc844d31bb6ae1c2d6fc7eb9bd37",
+      "sha256Sanitized": "0f6ef34baa426341964f7d0d02d83a28ab1fc1a59d9dbbf11da2a7ea2590c93b",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "logs/rc2-smoke-020rc2-r2.log",
+      "bytesRaw": 2370,
+      "bytesSanitized": 2370,
+      "sha256Raw": "3aa7f1f8c1d18d9ab859067b1fc16aeeca305e92d6692e9ad5f18be80523c36a",
+      "sha256Sanitized": "3aa7f1f8c1d18d9ab859067b1fc16aeeca305e92d6692e9ad5f18be80523c36a",
+      "replacements": {}
+    },
+    {
+      "file": "logs/rc2-smoke-020rc2-r3.log",
+      "bytesRaw": 1867,
+      "bytesSanitized": 1867,
+      "sha256Raw": "beffbb2732d0a3d2e69f4f65691d72900d43affdfd3db729488b125e1438ca1d",
+      "sha256Sanitized": "beffbb2732d0a3d2e69f4f65691d72900d43affdfd3db729488b125e1438ca1d",
+      "replacements": {}
+    },
+    {
+      "file": "logs/rc2-smoke-020rc2-r4.log",
+      "bytesRaw": 2197,
+      "bytesSanitized": 2197,
+      "sha256Raw": "f94388f0fd48751e17742efb2f010bac9d77b9f667854d2006ec7b054ffe11a1",
+      "sha256Sanitized": "f94388f0fd48751e17742efb2f010bac9d77b9f667854d2006ec7b054ffe11a1",
+      "replacements": {}
+    },
+    {
+      "file": "logs/smoke-composition-020rc2-RED.log",
+      "bytesRaw": 2022,
+      "bytesSanitized": 2022,
+      "sha256Raw": "3b69896e383845f97060128ea3477ee109571d636bc30735fba492db5d36337b",
+      "sha256Sanitized": "3b69896e383845f97060128ea3477ee109571d636bc30735fba492db5d36337b",
+      "replacements": {}
+    },
+    {
+      "file": "logs/smoke-composition-020rc2.log",
+      "bytesRaw": 1907,
+      "bytesSanitized": 1907,
+      "sha256Raw": "10f135488a20ea7e8807dd9ba70b4a1c0ccb2e752ca3d442074131e671c82d8b",
+      "sha256Sanitized": "10f135488a20ea7e8807dd9ba70b4a1c0ccb2e752ca3d442074131e671c82d8b",
+      "replacements": {}
+    },
+    {
+      "file": "logs/testuse-020rc2-install.log",
+      "bytesRaw": 9622,
+      "bytesSanitized": 9622,
+      "sha256Raw": "e866d4a967bc3481085f85e68ab04ead43f834f7fc09a98760215b19dff5486d",
+      "sha256Sanitized": "e866d4a967bc3481085f85e68ab04ead43f834f7fc09a98760215b19dff5486d",
+      "replacements": {}
+    },
+    {
+      "file": "logs/typecheck-020rc2-r1.log",
+      "bytesRaw": 725,
+      "bytesSanitized": 725,
+      "sha256Raw": "504be5ce62fcbb3fdddf1cff7485846c869c193e02667601204443b43b8117c3",
+      "sha256Sanitized": "504be5ce62fcbb3fdddf1cff7485846c869c193e02667601204443b43b8117c3",
+      "replacements": {}
+    },
+    {
+      "file": "logs/zero-core-full-020rc2-host017-control.log",
+      "bytesRaw": 589210,
+      "bytesSanitized": 589210,
+      "sha256Raw": "d7541f410f5de1ecc8fe8066a0662c5e02df670272d15913a4a96da861ce627b",
+      "sha256Sanitized": "d7541f410f5de1ecc8fe8066a0662c5e02df670272d15913a4a96da861ce627b",
+      "replacements": {}
+    },
+    {
+      "file": "logs/zero-core-full-020rc2.log",
+      "bytesRaw": 589528,
+      "bytesSanitized": 589528,
+      "sha256Raw": "3619990ac5d612c98500d6ee4c45f3d7aeb8f2524f5d92e38df8b036f7ebabe1",
+      "sha256Sanitized": "3619990ac5d612c98500d6ee4c45f3d7aeb8f2524f5d92e38df8b036f7ebabe1",
+      "replacements": {}
+    },
+    {
+      "file": "logs/zero-core-host-020rc2.log",
+      "bytesRaw": 3580,
+      "bytesSanitized": 3580,
+      "sha256Raw": "b234bd33cf361fd25c70ba88680334e8e56a9ff89acf8dcfcdce8f72a1fee273",
+      "sha256Sanitized": "b234bd33cf361fd25c70ba88680334e8e56a9ff89acf8dcfcdce8f72a1fee273",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run1/instance.log",
+      "bytesRaw": 2004,
+      "bytesSanitized": 1982,
+      "sha256Raw": "b4ef44023391633e6812083df31013d73b168d66e192c2904fcdd7ff11f9514f",
+      "sha256Sanitized": "204fa14089136111ed3050754289de807b111953add17df584db55d35143eece",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "rc2-smoke-run1/mock.log",
+      "bytesRaw": 34,
+      "bytesSanitized": 34,
+      "sha256Raw": "be4de22bde5fe380bbf116f3298ba056785d9d90cff48727d41db2b7d64b4d0a",
+      "sha256Sanitized": "be4de22bde5fe380bbf116f3298ba056785d9d90cff48727d41db2b7d64b4d0a",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run1/pre-stable-probe.json",
+      "bytesRaw": 158,
+      "bytesSanitized": 158,
+      "sha256Raw": "1e5072ef2c4f9ce445581fec06286bc08846216357156ab0ca3a9610811083d7",
+      "sha256Sanitized": "1e5072ef2c4f9ce445581fec06286bc08846216357156ab0ca3a9610811083d7",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run1/run.log",
+      "bytesRaw": 3184,
+      "bytesSanitized": 3162,
+      "sha256Raw": "b05de07e3dea134144b18095c6a6566df600dc844d31bb6ae1c2d6fc7eb9bd37",
+      "sha256Sanitized": "0f6ef34baa426341964f7d0d02d83a28ab1fc1a59d9dbbf11da2a7ea2590c93b",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "rc2-smoke-run1/setup-failure.json",
+      "bytesRaw": 1984,
+      "bytesSanitized": 1984,
+      "sha256Raw": "654f710eddf8de7c9f434e9ab1cfa50c0c8b17ba66a5dca1206ad199124d06e0",
+      "sha256Sanitized": "654f710eddf8de7c9f434e9ab1cfa50c0c8b17ba66a5dca1206ad199124d06e0",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run1/summary.json",
+      "bytesRaw": 2470,
+      "bytesSanitized": 2448,
+      "sha256Raw": "eccd43ccd73e0f868ff0aef3ffc7517f02b59e7937d457f3f394403bf34dedf7",
+      "sha256Sanitized": "72c78bab76511058935bc5b670c4cf97287b9e13aaf840403a0e82765a962642",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "rc2-smoke-run2/instance.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "1db921775b131978dd97d9473fb7587141d404201069d357c4375c7bd78e83d9",
+      "sha256Sanitized": "acaee253d907465d452d380e6e1f660201f485674bf481d6dd08f4614f24846c",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "rc2-smoke-run2/leg0-denylist.json",
+      "bytesRaw": 190,
+      "bytesSanitized": 190,
+      "sha256Raw": "3cee0b008403aeca7f3398aee39dbc4027e42daa8329709ad4f77fc80d1bb2c0",
+      "sha256Sanitized": "3cee0b008403aeca7f3398aee39dbc4027e42daa8329709ad4f77fc80d1bb2c0",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run2/leg0-surface.json",
+      "bytesRaw": 1045,
+      "bytesSanitized": 1045,
+      "sha256Raw": "39a694b80b12486cf634f5e6c56987afe2898966bfa658d669172e604196f9b5",
+      "sha256Sanitized": "39a694b80b12486cf634f5e6c56987afe2898966bfa658d669172e604196f9b5",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run2/mock.log",
+      "bytesRaw": 825,
+      "bytesSanitized": 825,
+      "sha256Raw": "22b04a2facc4317dea2837a805752c3cea38ce9bdec39737cac4ca535fadecd3",
+      "sha256Sanitized": "22b04a2facc4317dea2837a805752c3cea38ce9bdec39737cac4ca535fadecd3",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run2/pre-stable-probe.json",
+      "bytesRaw": 158,
+      "bytesSanitized": 158,
+      "sha256Raw": "1e5072ef2c4f9ce445581fec06286bc08846216357156ab0ca3a9610811083d7",
+      "sha256Sanitized": "1e5072ef2c4f9ce445581fec06286bc08846216357156ab0ca3a9610811083d7",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run2/run.log",
+      "bytesRaw": 2370,
+      "bytesSanitized": 2370,
+      "sha256Raw": "3aa7f1f8c1d18d9ab859067b1fc16aeeca305e92d6692e9ad5f18be80523c36a",
+      "sha256Sanitized": "3aa7f1f8c1d18d9ab859067b1fc16aeeca305e92d6692e9ad5f18be80523c36a",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run3/instance.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "a54bc4cab47be568b614bb7ec7fe68df4381bfa5e28a9b2146437f964f3813ea",
+      "sha256Sanitized": "65052960ceb0a484a1829d60fbbee103a3a48b81ddf0ffdbd0f3f527aa1d62a2",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "rc2-smoke-run3/leg0-denylist.json",
+      "bytesRaw": 190,
+      "bytesSanitized": 190,
+      "sha256Raw": "3cee0b008403aeca7f3398aee39dbc4027e42daa8329709ad4f77fc80d1bb2c0",
+      "sha256Sanitized": "3cee0b008403aeca7f3398aee39dbc4027e42daa8329709ad4f77fc80d1bb2c0",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run3/leg0-surface.json",
+      "bytesRaw": 1045,
+      "bytesSanitized": 1045,
+      "sha256Raw": "39a694b80b12486cf634f5e6c56987afe2898966bfa658d669172e604196f9b5",
+      "sha256Sanitized": "39a694b80b12486cf634f5e6c56987afe2898966bfa658d669172e604196f9b5",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run3/mock.log",
+      "bytesRaw": 829,
+      "bytesSanitized": 829,
+      "sha256Raw": "0754e63ca67c2c0fae01981e977c14f8e7af0fc5def7e6155438b798e3a0f352",
+      "sha256Sanitized": "0754e63ca67c2c0fae01981e977c14f8e7af0fc5def7e6155438b798e3a0f352",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run3/pre-stable-probe.json",
+      "bytesRaw": 158,
+      "bytesSanitized": 158,
+      "sha256Raw": "1e5072ef2c4f9ce445581fec06286bc08846216357156ab0ca3a9610811083d7",
+      "sha256Sanitized": "1e5072ef2c4f9ce445581fec06286bc08846216357156ab0ca3a9610811083d7",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run3/run.log",
+      "bytesRaw": 1867,
+      "bytesSanitized": 1867,
+      "sha256Raw": "beffbb2732d0a3d2e69f4f65691d72900d43affdfd3db729488b125e1438ca1d",
+      "sha256Sanitized": "beffbb2732d0a3d2e69f4f65691d72900d43affdfd3db729488b125e1438ca1d",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run4/instance.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "5d2416232749dedd0a76112fe07ad99e9b40eaf884878f7db2c9e80b2576bfbf",
+      "sha256Sanitized": "65052960ceb0a484a1829d60fbbee103a3a48b81ddf0ffdbd0f3f527aa1d62a2",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "rc2-smoke-run4/leg0-denylist.json",
+      "bytesRaw": 69,
+      "bytesSanitized": 69,
+      "sha256Raw": "299946b2a106e5ffa4b9db45506bf53bbb99ac611ba0ae36a00829e4717d23a2",
+      "sha256Sanitized": "299946b2a106e5ffa4b9db45506bf53bbb99ac611ba0ae36a00829e4717d23a2",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run4/leg0-surface.json",
+      "bytesRaw": 1045,
+      "bytesSanitized": 1045,
+      "sha256Raw": "39a694b80b12486cf634f5e6c56987afe2898966bfa658d669172e604196f9b5",
+      "sha256Sanitized": "39a694b80b12486cf634f5e6c56987afe2898966bfa658d669172e604196f9b5",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run4/mock.log",
+      "bytesRaw": 760802,
+      "bytesSanitized": 760802,
+      "sha256Raw": "fdc52df26d35f337a414ce50179df7f1a224f6acbf3a8c4daa7e78385cfafb0f",
+      "sha256Sanitized": "fdc52df26d35f337a414ce50179df7f1a224f6acbf3a8c4daa7e78385cfafb0f",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run4/pre-stable-probe.json",
+      "bytesRaw": 158,
+      "bytesSanitized": 158,
+      "sha256Raw": "1e5072ef2c4f9ce445581fec06286bc08846216357156ab0ca3a9610811083d7",
+      "sha256Sanitized": "1e5072ef2c4f9ce445581fec06286bc08846216357156ab0ca3a9610811083d7",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run4/run.log",
+      "bytesRaw": 2197,
+      "bytesSanitized": 2197,
+      "sha256Raw": "f94388f0fd48751e17742efb2f010bac9d77b9f667854d2006ec7b054ffe11a1",
+      "sha256Sanitized": "f94388f0fd48751e17742efb2f010bac9d77b9f667854d2006ec7b054ffe11a1",
+      "replacements": {}
+    },
+    {
+      "file": "rc2-smoke-run4/s1-b-leader-request.json",
+      "bytesRaw": 266,
+      "bytesSanitized": 266,
+      "sha256Raw": "725418a2d1861621975800186588910695837ce59f950da2f05da298438398f3",
+      "sha256Sanitized": "725418a2d1861621975800186588910695837ce59f950da2f05da298438398f3",
+      "replacements": {}
+    },
+    {
+      "file": "upstream-020rc2-published-from-baseline.txt",
+      "bytesRaw": 11014,
+      "bytesSanitized": 11014,
+      "sha256Raw": "fe23d916df9bb0d973b6bfd87bbaf89ec60b0ae0615765804645fd7cfaea5153",
+      "sha256Sanitized": "fe23d916df9bb0d973b6bfd87bbaf89ec60b0ae0615765804645fd7cfaea5153",
+      "replacements": {}
+    }
+  ],
+  "rawBytesUnchanged": true,
+  "totalReplacements": 15
+}

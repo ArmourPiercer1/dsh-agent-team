@@ -1,0 +1,5 @@
+mock: listening on 127.0.0.1:3496
+diag: seq=1 bodyKeys=["model","stream","messages","max_tokens","thinking","output_config","system","tools","dsh_session_log","dsh_plugin_packages"] userTextLen=653 head="[{\"type\":\"text\",\"text\":\"RC2MK_DISC_2026-10-03T14-16-26\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot s" seesDISC=true seesB=false seesCMEM=false
+mock: 1 [messages] text reply (13 chars): "RC2_DISC_DONE"
+diag: seq=2 bodyKeys=["model","stream","messages","max_tokens","thinking","system","dsh_session_log","dsh_plugin_packages"] userTextLen=152 head="[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"RC2MK" seesDISC=true seesB=false seesCMEM=false
+mock: 2 [messages] text reply (13 chars): "RC2_DISC_DONE"

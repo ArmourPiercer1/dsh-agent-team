@@ -1,0 +1,18 @@
+[2026-10-03T14:41:39.879Z] rc2 real-host smoke — stamp 2026-10-03T14-41-39
+[2026-10-03T14:41:39.880Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade
+[2026-10-03T14:41:39.880Z] testuse=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use @ 639ed01539
+[2026-10-03T14:41:39.880Z] evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/dev/agent-workflow/evidence/dsh-020rc2-upgrade/rc2-smoke-run4
+[2026-10-03T14:41:39.945Z] ports: host=3492 mock=3497
+[2026-10-03T14:41:39.964Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-10-03T14:41:39.964Z] world materialized (probe files in scratch workspace)
+[2026-10-03T14:41:39.970Z] mock model listening on 3497
+[2026-10-03T14:41:42.831Z] host booted at http://127.0.0.1:3492; row ready — toolCount=15
+[2026-10-03T14:41:42.831Z] ── LEG 0: discovery ──
+[2026-10-03T14:41:43.272Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-10-03T14:41:43.273Z] PASS L0: discovery captured the surface; read + bash present (minimal-style preset: 5/7 managed is the expected shape) — surface=20 missingManaged=[lsp,pwsh] denyList=[]
+[2026-10-03T14:41:43.273Z] PASS L0c: no plugin team tool falls into builtinToolDeny (kit catalog covers the live team surface) — staleTeamCatalog=[] surface=20
+[2026-10-03T14:41:43.273Z] saved blueprints B + C written (deny list = 0 names)
+[2026-10-03T14:41:43.273Z] ── S1–S4: team B (bound blueprint) ──
+[2026-10-03T14:41:43.676Z] FAIL S4b: B leader model request carries the BOUND blueprint B persona (not the row anchor A) — hasB=false hasA=false
+[2026-10-03T14:46:04.948Z] mock wait timed out: B chain step 1 (S1 read executed) (requests=1446)
+[2026-10-03T14:46:04.949Z] FAIL S1: allow-subtree read executed (tool result returned to the model) — requests=1446

@@ -1,0 +1,17 @@
+{
+  "seq": 3,
+  "systemPrompt": "",
+  "tools": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_templates",
+    "write"
+  ]
+}

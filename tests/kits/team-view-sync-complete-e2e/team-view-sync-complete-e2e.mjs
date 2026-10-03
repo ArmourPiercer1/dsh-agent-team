@@ -159,7 +159,8 @@ if (!existsSync(TESTUSE) && existsSync(join(WORKTREE, '..', '..', 'tests', 'deep
   TESTUSE = resolve(join(WORKTREE, '..', '..', 'tests', 'deepseek-harness-test-use'))
 }
 const MAIN = resolve(WORKTREE, '..', '..') // <main>/.worktrees/<task> -> <main>
-const HOST_BASELINE_SHA = '46a7f68b0922371ce7144b668b90e377d8e799f4' // DSH 0.1.7-rc.1 release point
+import { TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'  // canonical test-infrastructure pin (docs/TEST_METHODS.md §1)
+const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // canonical pin = tests/paths.mjs (moves with the pinned host generation)
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 const DIST_RUNTIME = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages', 'runtime')
 const PRODUCTION_ROW_PATH = join(DIST_RUNTIME, 'src', 'plugin', 'host.js')

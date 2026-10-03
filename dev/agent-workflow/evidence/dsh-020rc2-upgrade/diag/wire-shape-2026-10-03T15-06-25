@@ -1,0 +1,35 @@
+{
+  "note": "first request that carries an executed tool result back to the model",
+  "bodyKeys": [
+    "model",
+    "stream",
+    "messages",
+    "max_tokens",
+    "thinking",
+    "output_config",
+    "system",
+    "tools",
+    "dsh_session_log",
+    "dsh_plugin_packages"
+  ],
+  "hasTools": true,
+  "messageShapes": [
+    "user:text+text",
+    "assistant:tool_use",
+    "user:tool_result"
+  ],
+  "toolResultShape": {
+    "viaRoleToolMessages": 0,
+    "viaContentParts": 1,
+    "partFieldNames": [
+      "type",
+      "tool_use_id",
+      "content",
+      "is_error"
+    ],
+    "partContentKind": "array:text",
+    "partContentHead": "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_TOOL_BAD_ARGUMENTS\\\",\\\"message\\\":\\\"team-tools: required argument 'rootSessionId' is missing\\\",\\\"details\\\":{\\\"field\\\":\\\"rootSessionId\\\"}}\"}]"
+  },
+  "systemKey": "string(4092)",
+  "systemContainsAnchorPersona": false
+}

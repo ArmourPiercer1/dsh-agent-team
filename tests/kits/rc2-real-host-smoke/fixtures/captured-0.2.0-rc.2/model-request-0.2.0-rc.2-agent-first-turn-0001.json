@@ -1,0 +1,726 @@
+{
+  "__fixture": "desensitized model-request envelope captured by packages/tools/harness/mock-deepseek.mjs",
+  "capturedAt": "2026-10-03T15:06:27.450Z",
+  "seq": 1,
+  "redactions": "tokens, session cookies, bearer/api keys, absolute paths, dsh_session_log/dsh_plugin_packages payloads; long strings truncated with an explicit marker",
+  "request": {
+    "model": "rc2-smoke-model",
+    "stream": true,
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "WIRE_PROBE_TURN"
+          },
+          {
+            "type": "text",
+            "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"<ABSOLUTE_PATH>\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+          }
+        ]
+      }
+    ],
+    "max_tokens": 256000,
+    "thinking": {
+      "type": "enabled"
+    },
+    "output_config": {
+      "effort": "high"
+    },
+    "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the rc2 smoke boot team. RC2SMK_A_LEADER_2026-10-03T14-29-39\n\n[team-root-context rootSessionId=session-rc2-smoke-root-2026-10-03T14-29-39 leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-rc2-smoke-root-2026-10-03T14-29-39\" and a unique requestToken.\n\nYou are a coding agent powered by the rc2-smoke-model model.\n\nTokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nUse the read tool — not shell commands like cat — to inspect text files. Use offset and limit to continue reading large files.\n\nRead an existing file before overwriting it with write (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nRead a file before editing it (the default fs-observation-policy requires it), unless you just c<TRUNCATED 2692 chars>",
+    "tools": [
+      {
+        "name": "bash",
+        "description": "Run commands in a bash shell. State is persistent across calls.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "The bash command to run. Relative path is preferred in the command."
+            }
+          },
+          "required": [
+            "command"
+          ]
+        }
+      },
+      {
+        "name": "edit",
+        "description": "Edit an existing UTF-8 text file by replacing literal text.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to edit, resolved by the filesystem backend."
+            },
+            "old_string": {
+              "type": "string",
+              "description": "Literal text to replace."
+            },
+            "new_string": {
+              "type": "string",
+              "description": "Literal replacement text. Use an empty string to delete the match."
+            },
+            "replace_all": {
+              "type": "boolean",
+              "description": "Replace all matches. Defaults to false; when false, old_string must appear exactly once."
+            },
+            "sandbox_permissions": {
+              "type": "string",
+              "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+              "enum": [
+                "workspace-write",
+                "danger-full-access"
+              ]
+            },
+            "justification": {
+              "type": "string",
+              "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+            }
+          },
+          "required": [
+            "file_path",
+            "old_string",
+            "new_string"
+          ]
+        }
+      },
+      {
+        "name": "read",
+        "description": "Read a UTF-8 text file and return line-numbered content.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to read, resolved by the filesystem backend."
+            },
+            "offset": {
+              "type": "number",
+              "description": "1-based first line to return. Defaults to 1."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of lines to return. Defaults to 2000."
+            }
+          },
+          "required": [
+            "file_path"
+          ]
+        }
+      },
+      {
+        "name": "read_image",
+        "description": "Read a PNG/JPEG/WebP/GIF file and return the image itself. Large images are downscaled automatically; do not install image libraries or create thumbnails to inspect an image.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the image file, resolved by the filesystem backend."
+            }
+          },
+          "required": [
+            "file_path"
+          ]
+        }
+      },
+      {
+        "name": "team_archive_member",
+        "description": "Archive ONE member instance (move it out of the main active work set; durable, Leader-only). For a legal archive target (RUNNING or SETTLED), the lifecycle authority quiesces the member first (its current work is interrupted and its resident descendants drained), then commits durably: a SETTLED member takes one durable ARCHIVE commit, while a RUNNING member takes a durable SETTLE commit followed by the ARCHIVE commit (two durable commits — the frozen lifecycle FSM has no RUNNING → ARCHIVED edge). CREATED, ARCHIVED, and DISPOSED targets are rejected before any live effect. The archived member no longer accepts new Team work until it is explicitly restored. The durable change is committed through the lifecycle authority and recorded as a member-lifecycle-changed fact. Guarded on the target (a pending control request blocks the operation).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "targetInstanceId": {
+              "type": "string",
+              "description": "The member INSTANCE id the operation is addressed to (labels and template ids are rejected)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "targetInstanceId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_collect",
+        "description": "Read the durable state of admitted work units by their request tokens (the async work-status read-back): each token reports running (the async continuation is still in flight, or the chain crashed before settlement — a same-token re-delegate RESUMES the unit instead of admitting a second one) or the terminal member result (succeeded / failed / unavailable, served verbatim from the durable settlement fact). Read-only: it writes nothing and delivers nothing.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "requestTokens": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "The work request tokens to read: the requestToken each team_delegate / team_follow_up call was given (1..64 non-empty strings, max 128 chars each)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "requestTokens"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_create_member",
+        "description": "Create a NEW member instance from a blueprint template (explicit creation; the activation authority enforces quota, envelope, and gates).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "delegationTemplateId": {
+              "type": "string",
+              "description": "The blueprint template id the new member is created from."
+            },
+            "label": {
+              "type": "string",
+              "description": "A short human-readable label for the new member instance (non-empty)."
+            },
+            "groupId": {
+              "type": "string",
+              "description": "Optional group id for the new member."
+            },
+            "workspace": {
+              "type": "string",
+              "description": "Optional workspace path override for the new member."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "delegationTemplateId",
+            "label"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_delegate",
+        "description": "Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId. Asynchronous by default: with no async argument the work is admitted durably and the call returns immediately (the response carries the admission receipt — workStatus \"admitted\", settled false, no result); read the terminal result back with team_collect (the same request token). Pass async: false for the synchronous behavior (the call returns when the work unit has settled and the member result is in the response).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "delegationTemplateId": {
+              "type": "string",
+              "description": "Present: create a new member from this template and delegate to it."
+            },
+            "delegationInstanceId": {
+              "type": "string",
+              "description": "Present: delegate new work to this existing member instance (its persistent context is kept)."
+            },
+            "label": {
+              "type": "string",
+              "description": "A short human-readable label for the new member instance (non-empty)."
+            },
+            "groupId": {
+              "type": "string",
+              "description": "Optional group id for a new member."
+            },
+            "workspace": {
+              "type": "string",
+              "description": "Optional workspace path override for a new member."
+            },
+            "taskSummary": {
+              "type": "string",
+              "description": "Optional short summary of the delegated work unit (audit context)."
+            },
+            "prompt": {
+              "type": "string",
+              "description": "REQUIRED: the exact work prompt delivered (model-visible) to the member's bound child session. No default inheritance from the caller or sibling transcripts."
+            },
+            "attachedContext": {
+              "type": "string",
+              "description": "Optional explicit context attached to the work unit and delivered with the prompt."
+            },
+            "async": {
+              "type": "boolean",
+              "description": "Optional (default true when omitted): the DEFAULT is ASYNCHRONOUS — with no argument the call returns as soon as the durable admission is committed (the response effect carries workStatus \"admitted\", settled false, and NO member result); the terminal result is then read back with team_collect. Pass async: false for the synchronous behavior (the call blocks until the work unit settles and the response carries the member result — reserve it for work you know will not wait on a leader approval, which the Leader cannot resolve from inside a blocked turn)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "label",
+            "prompt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_follow_up",
+        "description": "Admit a follow-up work unit on an EXISTING member instance (persistent delegation: the same bound child session is kept). Asynchronous by default: with no async argument the work is admitted durably and the call returns immediately (the response carries the admission receipt — workStatus \"admitted\", settled false, no result); read the terminal result back with team_collect (the same request token). Pass async: false for the synchronous behavior (the call returns when the work unit has settled and the member result is in the response).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "targetInstanceId": {
+              "type": "string",
+              "description": "The member INSTANCE id the operation is addressed to (labels and template ids are rejected)."
+            },
+            "taskSummary": {
+              "type": "string",
+              "description": "Optional short summary of the follow-up work unit (audit context)."
+            },
+            "prompt": {
+              "type": "string",
+              "description": "REQUIRED: the exact follow-up work prompt delivered (model-visible) to the member's bound child session. No default inheritance from the caller or sibling transcripts."
+            },
+            "attachedContext": {
+              "type": "string",
+              "description": "Optional explicit context attached to the work unit and delivered with the prompt."
+            },
+            "async": {
+              "type": "boolean",
+              "description": "Optional (default true when omitted): the DEFAULT is ASYNCHRONOUS — with no argument the call returns as soon as the durable admission is committed (the response effect carries workStatus \"admitted\", settled false, and NO member result); the terminal result is then read back with team_collect. Pass async: false for the synchronous behavior (the call blocks until the work unit settles and the response carries the member result — reserve it for work you know will not wait on a leader approval, which the Leader cannot resolve from inside a blocked turn)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "targetInstanceId",
+            "prompt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_grant_permission",
+        "description": "Grant durable permission-overlay rules to ONE member instance (Leader-only; the ONE governance mutation authority). Rules are closed {operationClass, matcher: {kind: exact|subtree, value: <path>} OR {kind: exec, intent: {tool: bash|pwsh, command, workdir?, run_in_background?, timeoutMs?, sandbox_permissions?}}, effect: allow|ask|deny}; file values are canonicalized SERVER-SIDE at the ADDRESSED team's TARGET member effective workspace and exec intents are canonicalized SERVER-SIDE to the EXACT execution fingerprint the pre-execute plane computes (a client-supplied key or fingerprint string is never the authority). The target must have a durable row and not be DISPOSED (unknown/DISPOSED refuse typed, zero write; ARCHIVED stays legally mutable and never executes). The mutation is classified against the bound Blueprint's permissionMutationEnvelope carrier: a tightening applies immediately; an EXPANSION requires explicit carrier coverage and refuses typed (zero write) otherwise. Replays commit nothing (a rule-set-equal mutation no-ops). Does NOT change the Leader's own permissions.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "targetInstanceId": {
+              "type": "string",
+              "description": "The member INSTANCE id the operation is addressed to (labels and template ids are rejected)."
+            },
+            "rules": {
+              "type": "array",
+              "description": "One or more closed permission rules {operationClass: string, matcher: {kind: exact|subtree, value: <path>} OR {kind: exec, intent: {tool: bash|pwsh, command, workdir?, run_in_background?, timeoutMs?, sandbox_permissions?}}, effect: allow|ask|deny}.",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "targetInstanceId",
+            "rules"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_inspect_config",
+        "description": "Inspect the effective policy configuration of ONE member instance. `effective` = the per-capability effective policy view over model / tools / skills / mcp (the values after overlay and external facts). The generic `permissions` cell is NOT surfaced (pre-alpha3 PR-F, plan §F.4): it is a legacy five-domain cell, and the alpha.2 operation-permission authority is the independent `operationPermissions` field below. `operationPermissions` = the ACTUAL static parameter-aware operation-permission policy enforced by alpha.2 for this instance (the bound template capabilities.permissions: default plus allow/ask/deny rules as stored, plus the managedTools and resourceKinds vocabulary; `mode: \"absent\"` when the template declares no permissions). `policyState` = the committed PolicyState (the SAME durable read the live boundary and the host projection use: the last committed transition in commit order, or the implicit blueprint default; carries the stateId, source, per-capability cells, and the committing transition origin when durable). `requirement` = the DURABLE requirement facts (the same records the runtime RequirementAuthority consumes: the compatibility verdict + the latest optional-requ<TRUNCATED 281 chars>",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "targetInstanceId": {
+              "type": "string",
+              "description": "The member INSTANCE id the operation is addressed to (labels and template ids are rejected)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "targetInstanceId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_list_members",
+        "description": "List every member instance of the team with its template id, label, lifecycle state, and bound child session id.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_list_pending_control",
+        "description": "List unresolved `leader-approval` control requests for this Team. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. (Leader-only; members are rejected.)",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Optional: the maximum number of pending requests to return (default 50, minimum 1, maximum 100)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_list_templates",
+        "description": "List the member templates of the team's bound blueprint (template id, display name, context policy).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_report_progress",
+        "description": "Report progress on one work subject of a member instance (in-progress | completed | blocked; the per-subject sequence is derived from the durable ledger, with one bounded retry on a stale sequence).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "instanceId": {
+              "type": "string",
+              "description": "The member INSTANCE id the operation is addressed to (labels and template ids are rejected)."
+            },
+            "subject": {
+              "type": "string",
+              "description": "The telemetry subject (the work lane within the instance; max 256 chars)."
+            },
+            "progress": {
+              "type": "string",
+              "enum": [
+                "in-progress",
+                "completed",
+                "blocked"
+              ],
+              "description": "The closed status: in-progress | completed | blocked."
+            },
+            "summary": {
+              "type": "string",
+              "description": "Optional progress summary (max 512 chars)."
+            },
+            "lastAction": {
+              "type": "string",
+              "description": "Optional last-action label (max 256 chars)."
+            },
+            "correlation": {
+              "type": "string",
+              "description": "Optional work-unit tag (max 128 chars)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "instanceId",
+            "subject",
+            "progress"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_request_control",
+        "description": "Request approval for one operation scope (kind: leader-approval | user-approval | envelope-mutation). The operation stays blocked until a resolver (leader/human per kind — never a member) records a decision. Idempotent over the scope identity: retrying with the same token returns the existing request.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "leader-approval",
+                "user-approval",
+                "envelope-mutation"
+              ],
+              "description": "The request kind: leader-approval | user-approval | envelope-mutation."
+            },
+            "targetInstanceId": {
+              "type": "string",
+              "description": "The member INSTANCE id the operation is addressed to (labels and template ids are rejected)."
+            },
+            "actionName": {
+              "type": "string",
+              "description": "The logical operation name the approval gates (max 128 chars)."
+            },
+            "toolName": {
+              "type": "string",
+              "description": "Optional: the tool name the operation runs through (max 128 chars)."
+            },
+            "summary": {
+              "type": "string",
+              "description": "Optional one-line summary for the resolver (max 512 chars)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "kind",
+            "targetInstanceId",
+            "actionName"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_resolve_control",
+        "description": "Record an allow/deny decision on a pending control request (resolver roles per kind: leader-approval -> leader|human, user-approval -> human only, envelope-mutation -> leader|human; a member is never a resolver). An allow authorizes the exact scope exactly once, consumed by the last-mile guard.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "requestId": {
+              "type": "string",
+              "description": "The durable control request id to decide (max 128 chars)."
+            },
+            "decision": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "deny"
+              ],
+              "description": "The decision: allow | deny."
+            },
+            "note": {
+              "type": "string",
+              "description": "Optional decision note (max 256 chars)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "requestId",
+            "decision"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_revoke_permission",
+        "description": "Revoke previously granted permission-overlay rules from ONE member instance (Leader-only; the ONE governance mutation authority). Same closed rule grammar as team_grant_permission — the matched rules leave the member's durable overlay, so the next pre-execute decision falls back to the lower layers. A replay commits nothing (a rule-set-equal mutation no-ops).",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "targetInstanceId": {
+              "type": "string",
+              "description": "The member INSTANCE id the operation is addressed to (labels and template ids are rejected)."
+            },
+            "rules": {
+              "type": "array",
+              "description": "One or more closed permission rules {operationClass: string, matcher: {kind: exact|subtree, value: <path>} OR {kind: exec, intent: {tool: bash|pwsh, command, workdir?, run_in_background?, timeoutMs?, sandbox_permissions?}}, effect: allow|ask|deny}.",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "targetInstanceId",
+            "rules"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "team_send_message",
+        "description": "Send one message to a member instance (instance-addressed; the relay policy mediates through the leader where required). The recipient receives ordinary attributed input on its bound session.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "rootSessionId": {
+              "type": "string",
+              "description": "The TeamSession (root session) id this operation belongs to."
+            },
+            "requestToken": {
+              "type": "string",
+              "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+            },
+            "recipientInstanceId": {
+              "type": "string",
+              "description": "The member INSTANCE id the operation is addressed to (labels and template ids are rejected)."
+            },
+            "body": {
+              "type": "string",
+              "description": "The message body (non-empty, max 8192 chars; stored verbatim)."
+            },
+            "subject": {
+              "type": "string",
+              "description": "Optional subject (non-empty, max 256 chars)."
+            }
+          },
+          "required": [
+            "rootSessionId",
+            "requestToken",
+            "recipientInstanceId",
+            "body"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "write",
+        "description": "Create or fully replace a UTF-8 text file.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to write, resolved by the filesystem backend."
+            },
+            "content": {
+              "type": "string",
+              "description": "Full UTF-8 text content to write."
+            },
+            "sandbox_permissions": {
+              "type": "string",
+              "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+              "enum": [
+                "workspace-write",
+                "danger-full-access"
+              ]
+            },
+            "justification": {
+              "type": "string",
+              "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+            }
+          },
+          "required": [
+            "file_path",
+            "content"
+          ]
+        }
+      }
+    ],
+    "dsh_session_log": "<REDACTED:dsh_session_log presence=present chars=33167>",
+    "dsh_plugin_packages": "<REDACTED:dsh_plugin_packages presence=present chars=11028>"
+  },
+  "reply": {
+    "kind": "tool-call",
+    "toolCalls": [
+      {
+        "id": "call-wire-m9d6e0wc",
+        "name": "team_list_members",
+        "arguments": {}
+      }
+    ]
+  }
+}

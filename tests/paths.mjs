@@ -39,9 +39,16 @@ export const TEST_USE_REL = 'tests/deepseek-harness-test-use'
 export const TEST_HOME_ROOT_REL = 'tests/homes'
 
 /**
- * Pinned upstream baseline (0.1.7-rc.1 — the official 0.1.7-rc.1 release
- * point: tag `dsh-v0.1.7-rc.1` on upstream deepseek-ai/deepseek-harness,
- * the `release(dsh): 0.1.7-rc.1` line, PR #5073 merge).
+ * Pinned upstream baseline (0.2.0-rc.2 — the official 0.2.0-rc.2 release
+ * point: `release(dsh): 0.2.0-rc.2` (c1b47e41fc) plus its release-PR merge
+ * 639ed01539 (upstream deepseek-ai/deepseek-harness PR #5479), carried in
+ * this fork as branch `stable-3-0.2.0-rc.2` on
+ * https://github.com/ArmourPiercer1/deepseek-harness.git; that branch tip IS
+ * the checkout point (unlike the 0.1.x generations the fork carries NO
+ * `dsh-v0.2.0-rc.2` tag object — its newest tag is `dsh-v0.1.7-rc.1`, so the
+ * branch name + full SHA below are the anchors to verify).
+ * The pinned version string is `DSH_BASELINE_VERSION` — tests and manifests
+ * read the version from here instead of restating it.
  * `TEST_USE_BASELINE_SHA` is the full commit; `CLIENT_COMMIT_HASH`
  * is the short form consumed by the DSH build orchestrator's
  * DSH_CLIENT_COMMIT_HASH env (skips a git spawn inside the build — keep
@@ -52,11 +59,15 @@ export const TEST_HOME_ROOT_REL = 'tests/homes'
  * fb2c4b9e69 (0.1.5-rc.2, 2026-09-17 … 2026-09-24 — user ruling: DSH 0.1.2
  * is no longer supported; the rc2-repair round baseline per
  * docs/plans/active/dsh-agent-team-rc2-repair-plan.md §0.1) →
- * 46a7f68b09 (0.1.7-rc.1, from 2026-09-24 — host upgrade round per
- * docs/plans/active/dsh-agent-team-0.1.7-rc.1-upgrade-plan.md).
+ * 46a7f68b09 (0.1.7-rc.1, 2026-09-24 … 2026-10-03 — host upgrade round per
+ * docs/plans/active/dsh-agent-team-0.1.7-rc.1-upgrade-plan.md) →
+ * 639ed01539 (0.2.0-rc.2, from 2026-10-03 — host upgrade round, branch
+ * task/dsh-020rc2-upgrade-20261003, evidence
+ * dev/agent-workflow/evidence/dsh-020rc2-upgrade/).
  */
-export const TEST_USE_BASELINE_SHA = '46a7f68b0922371ce7144b668b90e377d8e799f4'
-export const CLIENT_COMMIT_HASH = '46a7f68b09'
+export const DSH_BASELINE_VERSION = '0.2.0-rc.2'
+export const TEST_USE_BASELINE_SHA = '639ed015397290b3745d163aafe02ffee4aa3f84'
+export const CLIENT_COMMIT_HASH = '639ed01539'
 
 /**
  * The nearest ancestor of `start` containing the test-use checkout at its

@@ -8,6 +8,7 @@
  */
 export const TEST_USE_REL: string
 export const TEST_HOME_ROOT_REL: string
+export const DSH_BASELINE_VERSION: string
 export const TEST_USE_BASELINE_SHA: string
 export const CLIENT_COMMIT_HASH: string
 export function findTestRepoRoot(start: string): string | null

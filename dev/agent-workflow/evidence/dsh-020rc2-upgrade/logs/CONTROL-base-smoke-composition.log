@@ -1,0 +1,41 @@
+# CONTROL: exact base 6b2f401bbc2f82e1eb3e561f71069d5aad2350fc, base lock (0.1.7 pins), base committed dist, base scripts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/packages/runtime/dist/packages/runtime/src/plugin/host.js:189:15)
+    at validateTeamPluginConfig (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/packages/runtime/dist/packages/runtime/src/plugin/host.js:193:9)
+    at bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/packages/runtime/dist/packages/runtime/src/plugin/host.js:963:33)
+    at Module.apply (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/packages/runtime/dist/packages/runtime/src/plugin/host.js:2087:19)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/scripts/composition-smoke.mjs:132:26
+FAIL host plugin (packages/runtime): apply subscribed to listeners before failing: agent/created, agent/disposed, internal/get
+FAIL client plugin (packages/client): Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/packages/client/dist/packages/client/src/plugin/client.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/scripts/composition-smoke.mjs
+FAIL composition-smoke
+file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/scripts/composition-smoke.mjs:189
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/scripts/composition-smoke.mjs:189:9
+
+Node.js v24.21.0
+CONTROL_SMOKE_EXIT=1
+
+# re-run after pnpm build at base (client dist now materialized, base 0.1.7 deps):
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/packages/runtime/dist/packages/runtime/src/plugin/host.js:189:15)
+    at validateTeamPluginConfig (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/packages/runtime/dist/packages/runtime/src/plugin/host.js:193:9)
+    at bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/packages/runtime/dist/packages/runtime/src/plugin/host.js:963:33)
+    at Module.apply (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/packages/runtime/dist/packages/runtime/src/plugin/host.js:2087:19)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/scripts/composition-smoke.mjs:132:26
+FAIL host plugin (packages/runtime): apply subscribed to listeners before failing: agent/created, agent/disposed, internal/get
+FAIL client plugin (packages/client): Cannot find package 'clsx' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.1.7-rc.1_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+FAIL composition-smoke
+file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/scripts/composition-smoke.mjs:189
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/base-6b2f401b-control/scripts/composition-smoke.mjs:189:9
+
+Node.js v24.21.0
+CONTROL_SMOKE_EXIT_AFTER_BUILD=1

@@ -1,0 +1,87 @@
+native/system/packages/darwin-arm64      | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/darwin-x64        | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/linux-arm64       | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+Scope: all 339 workspace projects
+[WARN] There are cyclic workspace dependencies: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/apps/cli, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/sdk/client; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/apps/web, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/test-support/client-runtime, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/bundle/web-app; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/api/remotes, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/client/ui-plugin-manager, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/client/ui-sidebar, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/client/ui-workspace, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/client/ui-conversation; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/api/session-controller, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/subagent/subagent, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/schedule/schedule; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/compaction/compaction-basic, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/compaction/compaction-image-offload; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/compaction/compaction-tool-result-pruner, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/llm/token-meter, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/llm/llm-retry, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/llm/llm-deepseek, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/llm/plugin-package-inventory-deepseek, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/preset/agent-preset-registry, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/preset/agent-preset; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/core/agent-default-model, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/settings/settings; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/sandbox/sandbox-local, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/sandbox/sandbox-windows-acl; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ssh/fs-ssh, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ssh/ssh; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/subagent/subagent-spawn-in-process, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/subagent/tool-subagent; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/vendor/cordis, /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/vendor/include
+? Verifying lockfile against supply-chain policies (1685 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +1390
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │      Update available! 11.7.0 → 12.8.1.      │
+   │     Changelog: https://pnpm.io/v/12.8.1      │
+   │   To update, run: corepack use pnpm@12.8.1   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 1390, reused 1355, downloaded 26, added 1000
+Progress: resolved 1390, reused 1355, downloaded 30, added 1390, done
+[WARN] Request took 189500ms: https://registry.npmjs.org/react-is
+[WARN] Request took 188958ms: https://registry.npmjs.org/zod
+[WARN] Request took 188687ms: https://registry.npmjs.org/react-refresh
+[WARN] Request took 189296ms: https://registry.npmjs.org/use-sync-external-store
+✓ Lockfile passes supply-chain policies (1685 entries in 5.8s)
+[WARN] Failed to create bin at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/apps/desktop-host/node_modules/.bin/dsh. ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/apps/cli/lib/bin.js'
+[WARN] Failed to create bin at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/sdk/client/node_modules/.bin/dsh. ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/apps/cli/lib/bin.js'
+[WARN] Failed to create bin at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/python/sdk-runtime/node_modules/.bin/dsh. ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/apps/cli/lib/bin.js'
+
+devDependencies:
++ @deepseek-ai/dsh-agent 0.2.0-rc.2 <- packages/core/agent
++ @deepseek-ai/dsh-browser-use 0.2.0-rc.2 <- packages/browser-use/browser-use
++ @deepseek-ai/dsh-computer-use 0.2.0-rc.2 <- packages/computer-use/computer-use
++ @deepseek-ai/dsh-experimental-browser-use-chrome-devtools-mcp 0.2.0-rc.2 <- packages/experimental/browser-use-chrome-devtools-mcp
++ @deepseek-ai/dsh-experimental-browser-use-playwright-mcp 0.2.0-rc.2 <- packages/experimental/browser-use-playwright-mcp
++ @deepseek-ai/dsh-experimental-browser-use-runtime 0.2.0-rc.2 <- packages/experimental/browser-use-runtime
++ @deepseek-ai/dsh-experimental-browser-use-stagehand-native 0.2.0-rc.2 <- packages/experimental/browser-use-stagehand-native
++ @deepseek-ai/dsh-experimental-computer-use-cua-driver-mcp 0.2.0-rc.2 <- packages/experimental/computer-use-cua-driver-mcp
++ @deepseek-ai/dsh-experimental-computer-use-cua-driver-native 0.2.0-rc.2 <- packages/experimental/computer-use-cua-driver-native
++ @deepseek-ai/dsh-llm-replay 0.2.0-rc.2 <- packages/test-support/llm-replay
++ @deepseek-ai/dsh-mcp-client 0.2.0-rc.2 <- packages/mcp/mcp-client
++ @deepseek-ai/dsh-skill-office 0.2.0-rc.2 <- packages/skill/skill-office
++ @deepseek-ai/dsh-tool-session-query 0.2.0-rc.2 <- packages/session-query/tool-session-query
++ @deepseek-ai/dsh-tool-workspace-dependencies 0.2.0-rc.2 <- packages/skill/tool-workspace-dependencies
++ @deepseek-ai/dsh-web-fetch-http 0.2.0-rc.2 <- packages/web/web-fetch-http
++ @stylistic/eslint-plugin 5.10.0
++ @testing-library/dom 10.4.2
++ @testing-library/react 16.3.2
++ @types/js-yaml 4.0.9
++ @types/jsdom 28.0.3
++ @types/mdast 4.0.4
++ @types/node 22.20.0
++ @types/spdx-expression-parse 4.0.0
++ @vitest/coverage-v8 4.1.8
++ @yao-pkg/pkg 6.21.0
++ @yarnpkg/cli-dist 4.17.1
++ eslint-plugin-sonarjs 4.1.0
++ execa 10.0.0
++ extract-zip 2.0.1
++ fast-check 4.8.0
++ fflate 0.8.3
++ istanbul-lib-report 3.0.1
++ js-yaml 4.2.0
++ jscpd 5.0.12
++ jsdom 29.1.1
++ lefthook 2.1.9
++ lightningcss 1.32.0
++ mdast-util-from-markdown 2.0.3
++ mdast-util-gfm 3.1.0
++ mermaid 11.16.0
++ micromark-extension-gfm 3.0.0
++ oxlint 1.76.0
++ oxlint-tsgolint 7.0.2001
++ pnpm 11.7.0
++ publint 0.3.21
++ smol-toml 1.7.1
++ spdx-expression-parse 5.0.0
++ tar 7.5.22
++ tsdown 0.22.2
++ tsx 4.22.4
++ typescript 6.0.3
++ vite-tsconfig-paths 6.1.1
++ vitest 4.1.8
+
+Done in 7.4s using pnpm v11.7.0
+INSTALL_EXIT=0

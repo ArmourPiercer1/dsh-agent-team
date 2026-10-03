@@ -90,7 +90,7 @@ import { DshInstance } from '../../../tests/characterization/lib/instance.mjs'
 import {
   logTail, portInUse, waitForPortFree,
 } from '../../../tests/characterization/lib/util.mjs'
-import { CLIENT_COMMIT_HASH } from '../../../tests/paths.mjs'
+import { CLIENT_COMMIT_HASH, TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
 
 // ── paths (worktree-relative: this file is 3 levels below the worktree) ────
@@ -678,7 +678,7 @@ function testUseClean() {
   } catch (e) {
     return { clean: false, detail: `git probe failed: ${String(e?.message ?? e).slice(0, 160)}` }
   }
-  if (head !== '46a7f68b0922371ce7144b668b90e377d8e799f4') return { clean: false, detail: `HEAD ${head} != pinned baseline` }
+  if (head !== TEST_USE_BASELINE_SHA) return { clean: false, detail: `HEAD ${head} != pinned baseline` }
   if (porcelain.trim().length > 0) return { clean: false, detail: `dirty: ${porcelain.trim().split('\n').slice(0, 5).join(' | ')}` }
   return { clean: true, detail: 'HEAD at pinned baseline, clean' }
 }
