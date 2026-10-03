@@ -1,39 +1,52 @@
 /**
  * F1 (PR #29 review supplement) — the plugin's DSH runtime peer
- * compatibility gate, verified against the REAL 0.1.7-rc.1 compatibility
- * evaluator (the upstream `app-boot` built entry of the pinned test-use
- * checkout — the same code the host runs at preflight).
+ * compatibility gate, verified against the REAL host compatibility evaluator
+ * (the upstream `app-boot` built entry of the pinned test-use checkout — the
+ * same code the host runs at preflight).
  *
  * The review found the PR's original U8 install proof was vacuous: with no
  * `peerDependencies` on the plugin manifest the upstream gate imposes no
  * constraint ("Missing DSH peers impose no constraint"), so the plugin
  * "passed" without ever participating in the version-compatibility check
- * despite being deliberately migrated to the 0.1.7 breaking surfaces.
+ * despite being deliberately migrated to the then-current breaking surfaces.
  *
  * This test locks both halves:
- *   1. the manifest actually declares the exact-RC peer
- *      (`@deepseek-ai/dsh: 0.1.7-rc.1` — the review ruling: no ranges, no
- *      `*`, no 0.1.5-rc.2 compatibility claim), and
+ *   1. the manifest actually declares the exact-RC peer of the PINNED
+ *      generation (`@deepseek-ai/dsh: 0.2.0-rc.2` — the review ruling: no
+ *      ranges, no `*`, no cross-generation compatibility claim), and
  *   2. the checker's behavior on THAT manifest:
- *      - runtime 0.1.7-rc.1 → compatible, no exemption needed (positive);
- *      - runtime 0.1.5-rc.2 / 0.1.7-rc.2 → the evaluator reports the
- *        unmet peer and NO active exemption (negative — the gate now
- *        genuinely rejects this plugin on the wrong runtime);
+ *      - runtime 0.2.0-rc.2 → compatible, no exemption needed (positive);
+ *      - runtime 0.1.7-rc.1 (the generation this plugin left) / 0.2.0-rc.3 /
+ *        0.2.0 → the evaluator reports the unmet peer and NO active
+ *        exemption (negative — the gate genuinely rejects this plugin on a
+ *        runtime it was not pinned to, in both directions);
  *      - the vacuous-pass semantics are documented (a peerless manifest
  *        imposes no constraint — the pre-fix state);
  *      - the exact-version exemption mechanism is recognized by the
  *        evaluator (mechanics only — this repo grants none; the host-side
- *        H1 smoke proves no `compatibility.json` grant exists).
+ *        real-host smoke proves no `compatibility.json` grant exists).
  *
  * Prohibited forms (review §1.3) are all avoided: no string-grep as the
  * only check, no `allow-version` exemption making a mismatched case pass,
  * no field-presence-only assertion without checker behavior.
+ *
+ * 0.2.0-rc.2 host upgrade round (2026-10-03, task/dsh-020rc2-upgrade-20261003):
+ * the version expectations are read from the canonical pin
+ * (`tests/paths.mjs` → `DSH_BASELINE_VERSION`) instead of restating the
+ * generation, and the RED state of this gate BEFORE the adaptation is
+ * recorded in `dev/agent-workflow/evidence/dsh-020rc2-upgrade/logs/`
+ * (`compat-RED-real02-evaluator.log`: 6 failed | 1 passed against the real
+ * 0.2.0-rc.2 evaluator — proof the assertions bind the running evaluator,
+ * not a literal). The upstream evaluator source itself is byte-identical
+ * between 0.1.7-rc.1 and 0.2.0-rc.2 (`packages/boot/app-boot/src/
+ * plugin-compatibility.ts`), so no assertion had to be weakened — only the
+ * pinned generation moved.
  */
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { join } from 'node:path'
-import { findTestRepoRoot, testUseTree, TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'
+import { DSH_BASELINE_VERSION, findTestRepoRoot, testUseTree, TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'
 
 const resolvedRepoRoot = findTestRepoRoot(fileURLToPath(import.meta.url))
 if (resolvedRepoRoot === null) {
@@ -43,10 +56,20 @@ if (resolvedRepoRoot === null) {
 // (top-level narrowing does not flow into function bodies).
 const repoRoot: string = resolvedRepoRoot
 
-/** The pinned test-use generation (the 0.1.7-rc.1 release point). */
-const EXPECTED_RUNTIME = '0.1.7-rc.1'
+/**
+ * The pinned test-use generation. Single source = `tests/paths.mjs`; the
+ * literal below is asserted once on purpose so an unintended pin move is a
+ * loud failure here rather than a silent re-target of every case below.
+ */
+const EXPECTED_RUNTIME = DSH_BASELINE_VERSION
+const PINNED_GENERATION_LITERAL = '0.2.0-rc.2'
 /** The review ruling: the exact RC peer, nothing broader. */
-const EXPECTED_PEER_RANGE = '0.1.7-rc.1'
+const EXPECTED_PEER_RANGE = DSH_BASELINE_VERSION
+/** The generation this plugin was pinned to before 2026-10-03 (older side). */
+const PREVIOUS_GENERATION = '0.1.7-rc.1'
+/** A later prerelease / later stable of the same line (newer side). */
+const LATER_PRERELEASE = '0.2.0-rc.3'
+const LATER_STABLE = '0.2.0'
 
 interface PluginCompatibilityIssue {
   readonly name: string
@@ -86,7 +109,7 @@ async function loadEvaluator(): Promise<{
     throw new Error(
       'plugin-dsh-compat: the pinned test-use app-boot entry no longer exports the ' +
         'compatibility evaluator (evaluatePluginCompatibility / getDshRuntimeVersion / ' +
-        'pluginCompatibilityWarning) — the 0.1.7 compatibility gate shape changed',
+        'pluginCompatibilityWarning) — the host compatibility-gate shape changed',
     )
   }
   return { evaluatePluginCompatibility: evaluate, getDshRuntimeVersion: runtime, pluginCompatibilityWarning: warning }
@@ -96,9 +119,14 @@ const manifest = JSON.parse(
   readFileSync(join(repoRoot, 'package.json'), 'utf8'),
 ) as { readonly name: string; readonly version: string; readonly peerDependencies?: Record<string, string> }
 
-describe('F1 plugin DSH peer compatibility (real 0.1.7-rc.1 evaluator, test-use @ ' + TEST_USE_BASELINE_SHA.slice(0, 10) + ')', () => {
-  it('the pinned test-use runtime self-reports 0.1.7-rc.1 (the evaluator runs from the pinned generation)', async () => {
+describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evaluator, test-use @ ' + TEST_USE_BASELINE_SHA.slice(0, 10) + ')', () => {
+  it('the canonical pin is the 0.2.0-rc.2 generation, and the pinned test-use runtime self-reports exactly that version', async () => {
+    // The pin moved on purpose (0.1.7-rc.1 → 0.2.0-rc.2, 2026-10-03 round).
+    expect(EXPECTED_RUNTIME).toBe(PINNED_GENERATION_LITERAL)
     const { getDshRuntimeVersion } = await loadEvaluator()
+    // The evaluator runs OUT OF the pinned checkout, so its self-report is
+    // the host-side truth this plugin is gated against (reads app-boot's own
+    // package.json, no env override).
     expect(getDshRuntimeVersion()).toBe(EXPECTED_RUNTIME)
   })
 
@@ -108,53 +136,63 @@ describe('F1 plugin DSH peer compatibility (real 0.1.7-rc.1 evaluator, test-use 
     expect(dshPeers).toEqual([
       ['@deepseek-ai/dsh', EXPECTED_PEER_RANGE],
     ])
+    // Exact match, not a range: no comparator / wildcard / hygroscopic form.
+    for (const [, requirement] of dshPeers) {
+      expect(requirement).not.toMatch(/[\s|^~*><=]/)
+    }
   })
 
-  it('positive: runtime 0.1.7-rc.1 → compatible, the evaluator reports no issue (no exemption needed)', async () => {
-    const { evaluatePluginCompatibility } = await loadEvaluator()
+  it('positive: runtime ' + EXPECTED_RUNTIME + ' → compatible, the evaluator reports no issue (no exemption needed)', async () => {
+    const { evaluatePluginCompatibility, getDshRuntimeVersion } = await loadEvaluator()
     expect(evaluatePluginCompatibility(manifest, {}, EXPECTED_RUNTIME)).toBeUndefined()
+    // …and against the evaluator's OWN runtime (the preflight call shape the
+    // host actually makes: no explicit runtimeVersion argument).
+    expect(evaluatePluginCompatibility(manifest, {})).toBeUndefined()
+    expect(getDshRuntimeVersion()).toBe(EXPECTED_PEER_RANGE)
   })
 
-  it('negative: runtime 0.1.5-rc.2 → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)', async () => {
+  it('negative: runtime ' + PREVIOUS_GENERATION + ' (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)', async () => {
     const { evaluatePluginCompatibility, pluginCompatibilityWarning } = await loadEvaluator()
-    const issue = evaluatePluginCompatibility(manifest, {}, '0.1.5-rc.2')
+    const issue = evaluatePluginCompatibility(manifest, {}, PREVIOUS_GENERATION)
     expect(issue).toBeDefined()
-    expect(issue?.name).toBe(manifest.name)
-    expect(issue?.version).toBe(manifest.version)
-    expect(issue?.runtimeVersion).toBe('0.1.5-rc.2')
     expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_RANGE })
+    expect(issue?.runtimeVersion).toBe(PREVIOUS_GENERATION)
     expect(issue?.exempted).toBe(false)
-    // The host-facing diagnostic names the plugin@version key the
-    // exact-version exemption mechanism would key on (mechanics check —
-    // this repo grants none).
-    expect(pluginCompatibilityWarning(issue!)).toContain(`${manifest.name}@${manifest.version}`)
-    expect(pluginCompatibilityWarning(issue!)).toContain('not active')
+    const warning = pluginCompatibilityWarning(issue!)
+    expect(warning).toContain(`${manifest.name}@${manifest.version}`)
+    expect(warning).toContain(PREVIOUS_GENERATION)
+    expect(warning).toContain('not active')
   })
 
-  it('negative: a later prerelease (0.1.7-rc.2) is also unmet — the exact-RC range does not widen', async () => {
-    const { evaluatePluginCompatibility } = await loadEvaluator()
-    const issue = evaluatePluginCompatibility(manifest, {}, '0.1.7-rc.2')
-    expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_RANGE })
-    expect(issue?.exempted).toBe(false)
+  it('negative: a later prerelease (' + LATER_PRERELEASE + ') and the later stable (' + LATER_STABLE + ') are also unmet — the exact-RC range does not widen', async () => {
+    const { evaluatePluginCompatibility, pluginCompatibilityWarning } = await loadEvaluator()
+    for (const runtimeVersion of [LATER_PRERELEASE, LATER_STABLE]) {
+      const issue = evaluatePluginCompatibility(manifest, {}, runtimeVersion)
+      expect(issue).toBeDefined()
+      expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_RANGE })
+      expect(issue?.runtimeVersion).toBe(runtimeVersion)
+      expect(issue?.exempted).toBe(false)
+      expect(pluginCompatibilityWarning(issue!)).toContain('not active')
+    }
   })
 
   it('the vacuous-pass semantics are documented: a peerless manifest imposes no constraint (the pre-fix state the review closed)', async () => {
     const { evaluatePluginCompatibility } = await loadEvaluator()
-    const peerless = { name: manifest.name, version: manifest.version }
-    // No peers → no constraint on ANY runtime (the 0.1.7 upstream semantic
-    // the review quoted) — which is exactly why the pre-fix U8 "PASS"
-    // proved nothing.
-    expect(evaluatePluginCompatibility(peerless, {}, '0.1.7-rc.1')).toBeUndefined()
-    expect(evaluatePluginCompatibility(peerless, {}, '0.1.5-rc.2')).toBeUndefined()
+    const peerless = { name: 'peerless-example', version: '1.0.0' }
+    // No peerDependencies key at all → the gate imposes nothing (0.2 upstream
+    // semantic, unchanged from 0.1.7) — which is exactly why the pre-fix
+    // "PASS" proved nothing.
+    expect(evaluatePluginCompatibility(peerless, {}, EXPECTED_RUNTIME)).toBeUndefined()
+    expect(evaluatePluginCompatibility(peerless, {}, PREVIOUS_GENERATION)).toBeUndefined()
   })
 
   it('mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here)', async () => {
     const { evaluatePluginCompatibility } = await loadEvaluator()
     const key = `${manifest.name}@${manifest.version}`
-    const issue = evaluatePluginCompatibility(manifest, { [key]: ['0.1.5-rc.2'] }, '0.1.5-rc.2')
+    const issue = evaluatePluginCompatibility(manifest, { [key]: [PREVIOUS_GENERATION] }, PREVIOUS_GENERATION)
     // The mismatch is still REPORTED (the exemption marks it, it does not
-    // erase it) — and this repo never supplies the exemption: the H1
-    // real-host smoke asserts no compatibility.json grant exists.
+    // erase it) — and this repo never supplies the exemption: the real-host
+    // smoke asserts no compatibility.json grant exists.
     expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_RANGE })
     expect(issue?.exempted).toBe(true)
   })
