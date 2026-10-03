@@ -44,6 +44,7 @@ const MIGRATED_SOURCES = [
   'tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs',
   'tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs',
   'tests/kits/exec-contract-live-smoke/exec-contract-live-smoke.mjs',
+  'tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs',
 ]
 
 /**
@@ -52,7 +53,6 @@ const MIGRATED_SOURCES = [
  * deleting a file's entry without migrating it fails P5b.
  */
 const NOT_YET_MIGRATED: Array<{ file: string; reason: string }> = [
-  { file: 'tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs', reason: 'writeSmokePreset() still emits the directory shape' },
   { file: 'packages/runtime/root-binding/harness/run.mjs', reason: 'writes .agent-presets/p5t5-team-persona and imports PERSONA_SECTION' },
   { file: 'packages/runtime/member-residency/harness/run.mjs', reason: 'writes two .agent-presets fixtures and imports PERSONA_SECTION' },
 ]

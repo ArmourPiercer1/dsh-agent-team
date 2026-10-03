@@ -167,6 +167,8 @@ const P6T6_ROW_NAME = pathToFileURL(P6T6_PLUGIN_PATH).href
 // old whenIdle boundary that a stale dist would silently re-test).
 const FIX_MARKER = 'Success boundary = inbox acceptance'
 
+import { presetDeclarationRow, smokePresetPlugins } from '../_shared/preset-seam.mjs'
+
 const SMOKE_PRESET_ID = 'sml-smoke'
 const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
 const SAFE_UNMANAGED_TOOL_NAMES = ['todo_write']
@@ -610,56 +612,35 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
   ].join('\n')
 }
 
-function writeSmokePreset(home) {
-  const dir = join(home, '.agent-presets', SMOKE_PRESET_ID)
-  mkdirSync(dir, { recursive: true })
-  const text = [
-    `# ${SMOKE_PRESET_ID} — send-message liveness real-host smoke preset (run ${RUN_STAMP}).`,
-    '# Reused from the C1/rc2/WCN kits (public user-preset seam): persona',
-    '# + dsh-tool-fs + the minimal-style persistent shell group (bash',
-    '# stack — installed for surface parity; the member long turn is a',
-    '# long in-flight MODEL call, not a bash step (α.2 forbids member',
-    '# shell-class allow-lane rules). NO',
-    '# delegation group: the 0.1.5 spawn `subagent` row is a deferred',
-    '# per-agent own-layer install (KNOWN_SENSITIVE under the Coverage',
-    '# Gate — followup-backlog 2/5/6).',
-    '- id: persona',
-    "  name: '@deepseek-ai/dsh-persona'",
-    '  config:',
-    '    suffix: Your working directory is {{cwd}}.',
-    '    prefix: >-',
-    '      You are a coding agent powered by the {{model}} model.',
-    '- id: tool-fs',
-    "  name: '@deepseek-ai/dsh-tool-fs'",
-    '- id: persistent-shell',
-    '  name: cordis:group',
-    '  group: true',
-    '  isolate:',
-    '    terminals: true',
-    '  config:',
-    '    - id: pty',
-    "      name: '@deepseek-ai/dsh-terminal'",
-    '    - id: terminal-bash',
-    "      name: '@deepseek-ai/dsh-terminal-bash'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '    - id: persistent-bash',
-    "      name: '@deepseek-ai/dsh-tool-bash-persistent'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '        description: Run commands in a bash shell. State is persistent across calls.',
-    '',
-  ].join('\n')
-  writeFileSync(join(dir, 'agent.cordis.yml'), text)
+/**
+ * The kit's agent preset as a 0.2 DECLARATION ROW (was: a
+ * `$DSH_HOME/.agent-presets/<id>/agent.cordis.yml` directory, which no host
+ * generation >= 0.1.7 reads). Content unchanged from the 0.1.7 kit: persona +
+ * dsh-tool-fs + the minimal-style persistent shell group. NO delegation group
+ * (same rc2 constraint as C1/exec; the member long turn needs no subagent row).
+ */
+function smokePresetDeclaration() {
+  return presetDeclarationRow({
+    id: SMOKE_PRESET_ID,
+    displayName: 'sml smoke',
+    description: `send-message liveness smoke preset (run ${RUN_STAMP}); mounted through the public profile-patch seam.`,
+    plugins: smokePresetPlugins({
+      personaText: 'You are a coding agent powered by the {{model}} model.',
+      cwdSuffix: 'Your working directory is {{cwd}}.',
+      bashDescription: 'Run commands in a bash shell. State is persistent across calls.',
+    }),
+  })
 }
 
 function writePatchFile(home) {
   mkdirSync(join(home, 'profiles', 'web'), { recursive: true })
   const lines = [
     `# send-message liveness real-host smoke patch layer (run ${RUN_STAMP}): production dsh-agent-team row (worktree dist — the send-message-liveness branch build) + p6t6 observability row — mounted ONLY through the public profile-patch seam.`,
+    '# (0.2.0-rc.2: a preset is a declaration row mounted on this seam; the retired user-preset directory is not read by the host.)',
     '- insert:',
     ...yamlEmitItem({ id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig() }, 2),
     ...yamlEmitItem({ id: 'p6t6-team-tools', name: P6T6_ROW_NAME }, 2),
+    ...yamlEmitItem(smokePresetDeclaration(), 2),
     '',
   ]
   writeFileSync(join(home, 'profiles', 'web', 'cordis.patch.yml'), lines.join('\n'))
@@ -715,7 +696,6 @@ function stopHost(h) {
 
 async function bootHost({ port, home, mockPort, instanceLog }) {
   writePatchFile(home)
-  writeSmokePreset(home)
   mkdirSync(BLUEPRINT_DIR, { recursive: true })
   writeFileSync(join(BLUEPRINT_DIR, 'sml-anchor.yaml'), BP_ANCHOR_YAML)
   writeFileSync(join(home, 'p6t6-directive.json'), JSON.stringify({
@@ -1077,7 +1057,6 @@ async function main() {
   rmSync(HOME, { recursive: true, force: true })
   rmSync(BLUEPRINT_DIR, { recursive: true, force: true })
   mkdirSync(WORKSPACE, { recursive: true })
-  writeSmokePreset(HOME)
   log('world materialized (scratch workspace)')
 
   // Mock model.
