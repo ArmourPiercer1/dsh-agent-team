@@ -59,7 +59,7 @@ export const FIXTURE_REDACTIONS = [
   [/(https?:\/\/[^\s"'`]+?\?token=)[A-Za-z0-9_-]{8,}/g, '$1<REDACTED-TOKEN>'],
   [/\b(token|api_key|apikey|access_token)=["']?[A-Za-z0-9_\-.=]{8,}/gi, '$1=<REDACTED>'],
   [/dsh-auth-[A-Za-z0-9_-]{6,}(=[A-Za-z0-9._\-%=]{6,})?/g, 'dsh-auth-<REDACTED>=<REDACTED>'],
-  [/\bBearer\s+[A-Za-z0-9._\-]{6,}/gi, 'Bearer <REDACTED>'],
+  [/\bBearer\s+[A-Za-z0-9._-]{6,}/gi, 'Bearer <REDACTED>'],
   [/\/(?:home|srv|Users|mnt|var|tmp|opt|workspace)\/[^\s"'`,)\]}\\]*/g, '<ABSOLUTE_PATH>'],
   [/(?:[A-Za-z]:\\|\\\\)[^\s"'`,)\]}]+/g, '<ABSOLUTE_PATH>'],
 ]
