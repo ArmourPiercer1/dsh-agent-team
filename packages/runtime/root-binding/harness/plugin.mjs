@@ -91,7 +91,7 @@ import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'n
 import { join } from 'node:path'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
-import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+import { readPersonaSections } from './persona-probe.mjs'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 
 // The TS resolution hook MUST be registered before the first dynamic TS
@@ -648,7 +648,8 @@ async function runFreshScenario(ctx, scenarioId) {
     // ── public verification ────────────────────────────────────────────
     const scope = scopeOf(handle.agent.ctx)
     const assembly = await svc.systemPrompt.assemble({ scope })
-    const personaSection = assembly.sections.find((s) => s.name === PERSONA_SECTION)
+    // The persona slot the preset's `prefix` renders into (see persona-probe.mjs).
+    const personaSection = readPersonaSections(assembly).prefixSection
     const expectedModel = directive.blueprint.defaultModel
     const toolNames = names(handle.agent.ctx.tools.schemas(handle.agent))
     const mcpToolName = 'mcp__p5t5mini__ping'
@@ -782,7 +783,13 @@ async function runFreshScenario(ctx, scenarioId) {
       durableState: result.durable,
       verification: {
         substrate: built.substrate,
-        persona: { present: personaSection !== undefined, textMatches: personaSection?.text === directive.blueprint.leaderPersona },
+        persona: {
+          present: personaSection !== undefined,
+          textMatches: personaSection?.text === directive.blueprint.leaderPersona,
+          // Reported, never merged into the persona text: the suffix slot is a
+          // different position in the prompt (after first-party guidance).
+          suffixPresent: readPersonaSections(assembly).suffixSection !== undefined,
+        },
         model: {
           current: built.modelRef.current ?? null,
           assembled: built.modelRef.assembled ?? null,
@@ -865,7 +872,8 @@ async function runColdScenario(ctx) {
     // The first post-resume prompt assembly: the pending selection must
     // be captured at the assembly boundary (the §40.3 assembly boundary).
     const assembly = await svc.systemPrompt.assemble({ scope: scopeOf(handle.agent.ctx) })
-    const personaSection = assembly.sections.find((s) => s.name === PERSONA_SECTION)
+    // The persona slot the preset's `prefix` renders into (see persona-probe.mjs).
+    const personaSection = readPersonaSections(assembly).prefixSection
     const expectedModel = directive.blueprint.defaultModel
     const sessionEvents = handle.agent.session.events.map((ev) => ({ seq: ev.seq, type: ev.type }))
     const setupEvents = eventsFor(sid)

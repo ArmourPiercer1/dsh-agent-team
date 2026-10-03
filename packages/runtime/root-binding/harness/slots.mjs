@@ -40,7 +40,7 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
-import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+import { readPersonaSections } from './persona-probe.mjs'
 
 import { createPersonaOverlaySlot } from '../../agent-setup/persona/index.js'
 import { TeamModelOverlaySlot, TeamModelSelectionAdapter } from '../../agent-setup/model/index.js'
@@ -113,7 +113,7 @@ function mcpConfig(mcpPort, serverName) {
  * @param {object} deps.systemPrompt - the DSH systemPrompt service.
  * @param {string} deps.presetId - the team persona preset id.
  * @param {string} deps.stamp - a run-unique stamp for the probe session id.
- * @returns {Promise<{presetId: string, personaKind: 'absent'|'standard'|'complete', probeSections: string[], probePersonaText: string|null, probeSessionId: string}>}
+ * @returns {Promise<{presetId: string, personaKind: 'absent'|'standard'|'complete', probeSections: string[], probePersonaText: string|null, probePersonaSuffixText: string|null, probeSessionId: string}>}
  */
 export async function resolvePersonaSubstrate({ agents, systemPrompt, presetId, stamp }) {
   const probeSessionId = `p5t5-substrate-probe-${stamp}`
@@ -123,13 +123,16 @@ export async function resolvePersonaSubstrate({ agents, systemPrompt, presetId, 
   })
   try {
     const assembly = await systemPrompt.assemble({ scope: scopeOf(handle.agent.ctx) })
-    const persona = assembly.sections.find((s) => s.name === PERSONA_SECTION)
-    const personaKind = persona === undefined ? 'absent' : (assembly.sections.length === 1 ? 'complete' : 'standard')
+    // `deployment:persona` never existed upstream; the host has a prefix slot
+    // (persona prose, before first-party guidance) and a distinct suffix slot
+    // (after it). They are read separately - see persona-probe.mjs.
+    const probe = readPersonaSections(assembly)
     return {
       presetId,
-      personaKind,
-      probeSections: assembly.sections.map((s) => s.name),
-      probePersonaText: persona === undefined ? null : persona.text,
+      personaKind: probe.personaKind,
+      probeSections: assembly.sections.map((x) => x.name),
+      probePersonaText: probe.personaText,
+      probePersonaSuffixText: probe.personaSuffixText,
       probeSessionId,
     }
   } finally {

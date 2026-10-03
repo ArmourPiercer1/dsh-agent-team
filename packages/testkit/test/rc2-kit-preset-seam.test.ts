@@ -38,6 +38,9 @@ const HOST = testUseTree(REPO_ROOT)
 
 const read = (rel: string): string => readFileSync(join(HOST, rel), 'utf8')
 
+/** A PLUGIN-tree reader (the `read` helper above is the HOST tree). */
+const readPlugin = (rel: string): string => readFileSync(join(REPO_ROOT, rel), 'utf8')
+
 /** Files migrated to the declaration-row seam; each entry is asserted strictly. */
 const MIGRATED_SOURCES = [
   'tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs',
@@ -229,16 +232,21 @@ describe('P4 the pinned host really exposes that contract (read from the mandate
   })
 })
 
-describe('P6 the persona-import residue is enumerated, not called debt', () => {
+describe('P6 the persona-import residue is closed, and the ledger stays empty', () => {
   /**
-   * Files that still import the bare `PERSONA_SECTION` from the host's
-   * system-prompt package. P4 proves that export does NOT exist at the pinned
-   * baseline, so a file below cannot load against the 0.2 host at all: these are
-   * harness-side persona wiring leftovers with a named owner (the independent
-   * persona-residue patch), NOT vague "upgrade debt". The list is exact by scan:
-   * it fails if one is fixed without being removed, and if a new one appears.
+   * History, kept as an assertion rather than a comment. At `4b94810f` these four
+   * harness files imported the bare `PERSONA_SECTION` from the host's
+   * system-prompt package — an export that exists in NO pinned generation
+   * (0.1.5-rc.2, 0.1.7-rc.1 and 0.2.0-rc.2 all name `deployment:persona-prefix`
+   * and `deployment:persona-suffix`), so those harnesses could not have linked
+   * against any of them. That detail matters: it was never "0.2 got stricter",
+   * and this ledger is empty now because the code was moved to the real
+   * two-slot interface (`root-binding/harness/persona-probe.mjs`, unit-tested in
+   * `packages/runtime/test/rc2-persona-probe.test.ts`), not because the host
+   * changed. The list stays as the shape the guard compares against: it fails if
+   * a re-invented persona export appears anywhere under packages/.
    */
-  const PERSONA_SECTION_IMPORTERS = [
+  const ONCE_IMPORTED_PERSONA_SECTION = [
     'packages/runtime/root-binding/harness/plugin.mjs',
     'packages/runtime/root-binding/harness/slots.mjs',
     'packages/runtime/member-residency/harness/plugin.mjs',
@@ -251,7 +259,7 @@ describe('P6 the persona-import residue is enumerated, not called debt', () => {
     expect(/export const PERSONA_SECTION\b/.test(src)).toBe(false)
   })
 
-  it('the importing files are exactly the recorded set', () => {
+  it('no plugin source imports the invented export, and the four former importers use the probe', () => {
     const importers: string[] = []
     for (const rel of walkSources(join(REPO_ROOT, 'packages'))) {
       const source = readFileSync(rel, 'utf8')
@@ -259,7 +267,10 @@ describe('P6 the persona-import residue is enumerated, not called debt', () => {
         importers.push(rel.slice(REPO_ROOT.length + 1))
       }
     }
-    expect(importers.sort()).toEqual([...PERSONA_SECTION_IMPORTERS].sort())
+    expect(importers).toEqual([])
+    for (const rel of ONCE_IMPORTED_PERSONA_SECTION) {
+      expect(readPlugin(rel)).toContain('readPersonaSections')
+    }
   })
 })
 
