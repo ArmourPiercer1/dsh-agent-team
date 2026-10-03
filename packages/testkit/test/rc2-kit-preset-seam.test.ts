@@ -46,15 +46,17 @@ const MIGRATED_SOURCES = [
   'tests/kits/exec-contract-live-smoke/exec-contract-live-smoke.mjs',
   'tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs',
   'packages/runtime/root-binding/harness/run.mjs',
+  'packages/runtime/member-residency/harness/run.mjs',
 ]
 
 /**
  * Files STILL writing the retired seam, with the reason each one is still here.
- * This list is the ledger: it must shrink to empty, it may not gain entries, and
- * deleting a file's entry without migrating it fails P5b.
+ * This list is the ledger: it may not gain entries, and an entry may not
+ * outlive the code it describes (P5c). It reached empty on 2026-10-03 when the
+ * last harness entry moved; it stays as the shape the guard checks against, so
+ * re-introducing a directory fixture fails instead of quietly landing.
  */
 const NOT_YET_MIGRATED: Array<{ file: string; reason: string }> = [
-  { file: 'packages/runtime/member-residency/harness/run.mjs', reason: 'writes two .agent-presets fixtures and imports PERSONA_SECTION' },
 ]
 
 /**
