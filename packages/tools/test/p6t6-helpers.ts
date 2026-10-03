@@ -40,6 +40,19 @@ import {
   leaderCaller,
   memberCaller,
 } from '../../runtime/test/p6t2-helpers.js'
+import { createTeamOperationCoordinator } from '../../runtime/coordination/index.js'
+import { createGovernanceMutationService } from '../../runtime/governance/index.js'
+import type { GovernanceMutationServiceDeps } from '../../runtime/governance/index.js'
+import { createPermissionOverlayRepositoryPort } from '../../runtime/permission-governance/index.js'
+import { createPermissionLifecycleMutationLane } from '../../runtime/permission-lifecycle/index.js'
+import { canonicalizeShellOperation } from '../../runtime/operation-permission/canonical-operation.js'
+import type { MemberLifecycleReaderPort } from '../../runtime/permission-lifecycle/types.js'
+import type {
+  OverrideRecordView,
+  OverrideStorePort,
+  PolicyReader,
+} from '../../runtime/mutation/index.js'
+import type { PolicyStateTransitionRecord } from '../../runtime/mutation/types.js'
 import { createTeamTools } from '../src/index.js'
 import type {
   ResolvedTeamToolCaller,
@@ -111,6 +124,9 @@ export function createP6T6CallerMap(
 
 /** The full P6-T6 world: the world + runtime + satellites + tools. */
 export interface P6T6World {
+  /** True when the governance mutation port was wired (rc2 A8 opt-in). Absent
+   *  for a hand-assembled P6-T6 world literal, which is by definition unwired. */
+  readonly permissionWired?: boolean
   readonly world: P6T1World
   readonly runtime: TeamRuntime
   readonly control: ControlService
@@ -132,9 +148,152 @@ export interface P6T6World {
  * @param seedNames - which seed members to install (default leader,
  *   worker, scout).
  */
+/**
+ * The three no-permission faces the governance service still requires. They are
+ * NO-ops exactly where the runtime's own permission spec (`a3p4-permission-
+ * lifecycle-e2e.test.ts`) makes them no-ops — this seam adds no policy, it only
+ * declines to invent policy the permission lane must never consult. Each reader
+ * throws if the permission lane reaches for it, so "not consulted" stays an
+ * asserted fact rather than a silent default.
+ */
+class NoopOverrides implements OverrideStorePort {
+  async list(): Promise<readonly OverrideRecordView[]> {
+    return []
+  }
+  async put(): Promise<void> {}
+}
+class NoopTransitions {
+  listTransitions(): readonly PolicyStateTransitionRecord[] {
+    return []
+  }
+  appendTransition(): void {}
+}
+class NoopCommit {
+  async commit(): Promise<void> {}
+}
+const NEVER_CONSULTED: PolicyReader = {
+  readBlueprintEnvelope() {
+    throw new Error('p6t6 permission seam: the static policy reader must not be consulted by the permission lane')
+  },
+  readTemplatePolicy() {
+    throw new Error('p6t6 permission seam: the static policy reader must not be consulted by the permission lane')
+  },
+  readExternalFacts() {
+    throw new Error('p6t6 permission seam: the static policy reader must not be consulted by the permission lane')
+  },
+}
+
+/**
+ * The OPT-IN governance wiring (rc2 A8). OFF by default: every existing P6-T6
+ * suite keeps `options.permission === undefined` and therefore the
+ * `TEAM_TOOL_PERMISSION_UNWIRED` refusal it was written against — this changes
+ * no shipped behaviour and no production permission policy.
+ *
+ * When enabled, the tools' `permission` port is assembled from the SAME three
+ * production factories the runtime's permission spec uses
+ * (`createPermissionOverlayRepositoryPort` + `createGovernanceMutationService` +
+ * `createPermissionLifecycleMutationLane`) and rides on
+ * `world.domain.repositories.permissionOverlays` — the very handle the test READS
+ * — so a granted rule lands in the same durable `permission_overlays` store the
+ * stasis assertion inspects, not in a second store that happens to look alike.
+ */
+function createP6T6PermissionSeam(world: P6T1World): NonNullable<
+  Parameters<typeof createTeamTools>[0]['permission']
+> {
+  const repos = world.domain.repositories
+  const overlay = createPermissionOverlayRepositoryPort({
+    repository: repos.permissionOverlays as never,
+  })
+  const members: MemberLifecycleReaderPort = {
+    readLifecycle: (teamSessionId, memberInstanceId) =>
+      repos.memberInstances.get(teamSessionId as never, memberInstanceId as never)?.lifecycle,
+  }
+  const governance = createGovernanceMutationService({
+    chain: createTeamOperationCoordinator(),
+    overrides: new NoopOverrides(),
+    transitions: new NoopTransitions(),
+    transitionCommit: new NoopCommit(),
+    policy: NEVER_CONSULTED,
+    registeredMembers: async () => [],
+    policyStates: () => ['default'],
+    now: () => P6T2_NOW,
+    permissionLane: {
+      overlay,
+      staticLayers: () => ({ layers: [] }),
+      // The fixture's containment predicate: `/`-nested canonical keys, the
+      // same algebra the runtime permission spec uses. Path AUTHORITY hardening
+      // (symlinks, real fs) is NOT what this leg proves.
+      subtreeContains: (root: string, child: string): boolean =>
+        child === root || child.startsWith(`${root}/`),
+    },
+  } satisfies GovernanceMutationServiceDeps)
+  const lane = createPermissionLifecycleMutationLane({ members, governance, overlay })
+  /** The durable effective workspace, exactly as production derives it
+   *  (plugin/root.ts:2812-2822): the member's own row, else the TeamSession's
+   *  defaultWorkspace, refusing with zero write when neither exists. */
+  const effectiveWorkspace = (teamSessionId: string, memberInstanceId: string): string => {
+    const workspace = (repos.memberInstances.get(teamSessionId as never, memberInstanceId as never)
+      ?.workspace as string | undefined)
+      ?? (repos.teamSessions.get(teamSessionId as never)?.defaultWorkspace as string | undefined)
+    if (typeof workspace !== 'string' || workspace.length === 0) {
+      throw new Error(
+        'p6t6 permission seam: the addressed team/member has no durable effective workspace — refusing, zero write',
+      )
+    }
+    return workspace
+  }
+  const joinAtWorkspace = (workspace: string, path: string): string =>
+    `${workspace.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
+  return {
+    async mutatePermission(mutationArgs: Record<string, unknown>): Promise<Record<string, unknown>> {
+      // Mirrors the production entry (plugin/root.ts permissionLaneMutate):
+      // strip the discriminator, route to the ONE authority lane.
+      const { kind, ...laneArgs } = mutationArgs
+      if (kind === 'grant_instance') {
+        return await lane.grantInstance(laneArgs as never) as unknown as Record<string, unknown>
+      }
+      if (kind === 'revoke_permission') {
+        return await lane.revoke(laneArgs as never) as unknown as Record<string, unknown>
+      }
+      throw new Error(`p6t6 permission seam: unsupported mutation kind ${JSON.stringify(kind)}`)
+    },
+    async canonicalizeFile(
+      teamSessionId: string,
+      memberInstanceId: string,
+      path: string,
+    ): Promise<string> {
+      // The fixture has no host fs provider seam, so joining at the durable
+      // effective workspace is the documented stand-in for the provider call:
+      // this leg proves the write path and the durable stasis, NOT path-authority
+      // hardening (symlink resolution stays the host's job).
+      return joinAtWorkspace(effectiveWorkspace(teamSessionId, memberInstanceId), path)
+    },
+    async canonicalizeExecIntent(
+      teamSessionId: string,
+      memberInstanceId: string,
+      intent: Parameters<NonNullable<Parameters<typeof createTeamTools>[0]['permission']>['canonicalizeExecIntent']>[2],
+    ): Promise<string> {
+      // The REAL `canonicalizeShellOperation` (operation-permission), the same
+      // function the production entry runs, at the target member's durable
+      // effective workspace. Only the fs-provider step is the join stand-in.
+      const workspace = effectiveWorkspace(teamSessionId, memberInstanceId)
+      const { tool, ...execArgs } = intent
+      const operation = await canonicalizeShellOperation(tool, execArgs, async (pathInput: string) => {
+        const key = joinAtWorkspace(workspace, pathInput)
+        return { key, display: pathInput, handle: { targetKey: key } }
+      })
+      return operation.fingerprint
+    },
+  }
+}
+
 export async function createP6T6World(
   basename: string,
   seedNames: readonly (keyof typeof P6T2_SEEDS)[] = ['leader', 'worker', 'scout'],
+  options: {
+    /** Wire the REAL governance mutation port into the tools (rc2 A8). */
+    readonly permissionLane?: boolean
+  } = {},
 ): Promise<P6T6World> {
   const world = await createP6T2World(basename, [...seedNames])
   const runtime = createP6T2Runtime(world)
@@ -157,6 +316,7 @@ export async function createP6T6World(
     now: () => P6T2_NOW,
   })
   const callerMap = createP6T6CallerMap(seedNames)
+  const permission = options.permissionLane === true ? createP6T6PermissionSeam(world) : undefined
   const { tools } = createTeamTools({
     teamRuntime: runtime,
     controlService: control,
@@ -171,8 +331,10 @@ export async function createP6T6World(
       // fixture root.
       return { caller, rootSessionId: String(P6T2_ROOT) }
     },
+    ...(permission === undefined ? {} : { permission }),
   })
   return {
+    permissionWired: permission !== undefined,
     world,
     runtime,
     control,

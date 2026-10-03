@@ -173,6 +173,33 @@ interface GovernanceState {
   overlaySnapshots: Array<{ snapshotId: string }>
 }
 
+/**
+ * Read the durable governance state through the paths the tools themselves use.
+ * Shared by both worlds below so the refusal world and the writable world are
+ * measured identically — two readers with two notions of "unchanged" would make
+ * the comparison meaningless.
+ */
+async function governanceSnapshot(
+  env: P6T6World,
+  targetInstanceId: string,
+): Promise<GovernanceState> {
+  const repos = env.world.domain.repositories
+  const controlState = await env.control.listControlState(P6T2_ROOT)
+  return {
+    controlRequests: controlState.requests.map((r) => ({
+      requestId: String(r.requestId), kind: String(r.kind), status: String(r.status),
+      requestSequence: r.requestSequence,
+    })),
+    controlDecisions: controlState.decisions.length,
+    controlConsumptions: controlState.consumptions.length,
+    controlAbandonments: controlState.abandonments.length,
+    ledger: repos.ledger.list().map((e) => ({ sequence: e.sequence, factType: e.factType })),
+    overlaySnapshots: repos.permissionOverlays
+      .history(P6T2_ROOT, targetInstanceId)
+      .map((snap) => ({ snapshotId: snap.snapshotId })),
+  }
+}
+
 interface Prepared {
   env: P6T6World
   catalogNames: string[]
@@ -220,23 +247,7 @@ const PREP = await (async (): Promise<Prepared | null> => {
   // rather than inferred: pending/decided control requests (the same state
   // `team_list_pending_control` filters), the append-only fact ledger, and the
   // per-member permission-overlay snapshots (`team_grant_permission`'s target).
-  const governanceState = async (): Promise<GovernanceState> => {
-    const repos = env.world.domain.repositories
-    const controlState = await env.control.listControlState(P6T2_ROOT)
-    return {
-      controlRequests: controlState.requests.map((r) => ({
-        requestId: String(r.requestId), kind: String(r.kind), status: String(r.status),
-        requestSequence: r.requestSequence,
-      })),
-      controlDecisions: controlState.decisions.length,
-      controlConsumptions: controlState.consumptions.length,
-      controlAbandonments: controlState.abandonments.length,
-      ledger: repos.ledger.list().map((e) => ({ sequence: e.sequence, factType: e.factType })),
-      overlaySnapshots: repos.permissionOverlays
-        .history(P6T2_ROOT, TARGET_ID)
-        .map((snap) => ({ snapshotId: snap.snapshotId })),
-    }
-  }
+  const governanceState = (): Promise<GovernanceState> => governanceSnapshot(env, TARGET_ID)
   const effectsBefore = readState()
   const governanceBefore = await governanceState()
   const memberOut: Record<string, Outcome> = {}
@@ -275,8 +286,72 @@ const PREP = await (async (): Promise<Prepared | null> => {
 // The world is built at module load (the shim forbids async `it` bodies), so it
 // is torn down here: the scratch dir is SHARED between worlds, and a world left
 // behind makes the next run fail with "team_domain already exists".
+/**
+ * The SECOND world, built with the governance mutation port actually wired
+ * (`createP6T6World(..., { permissionLane: true })` — see p6t6-helpers). This is
+ * what makes A8b's empty baseline into a proof: the same stores, the same
+ * reader, but a call that CAN write.
+ *
+ * Order follows the review instruction: prove the legitimate Leader write lands
+ * FIRST, then show the member refusals do not touch the same durable stores.
+ */
+interface PreparedWrite {
+  env: P6T6World
+  grant: Outcome
+  grantRules: string
+  baseline: GovernanceState
+  afterGrant: GovernanceState
+  afterRefusals: GovernanceState
+  refusals: Record<string, Outcome>
+}
+
+const PREP2 = await (async (): Promise<PreparedWrite | null> => {
+  const env = await createP6T6World('rc2-team-deny-lp-write', ['leader', 'worker', 'worker2'], {
+    permissionLane: true,
+  })
+  if (env.permissionWired !== true) throw new Error('fixture: the governance seam did not wire')
+  // A TIGHTENING rule (deny): the closed carrier law applies a tightening
+  // immediately, while an expansion needs explicit envelope coverage — the
+  // earlier `effect: 'allow'` rule would have refused typed here and produced
+  // another empty baseline dressed up as a control.
+  // The CLOSED permission vocabulary speaks in tool classes
+  // (`FILE_PERMISSION_TOOL_VALUES`: read | read_image | write | edit | lsp), not
+  // in a "file" pseudo-class — a class the authority cannot speak about is
+  // refused typed (`PERMISSION_MUTATION_MALFORMED`, zero write), which is what
+  // the first version of this control hit.
+  const rules = [{ operationClass: 'read', matcher: { kind: 'exact', value: 'team/notes.txt' }, effect: 'deny' }]
+  const baseline = await governanceSnapshot(env, TARGET_ID)
+  const grant = summarize(await runTool(env, 'team_grant_permission', {
+    rootSessionId: LEADER_SESSION,
+    targetInstanceId: TARGET_ID,
+    requestToken: 'rc2-a8-write-token',
+    rules,
+  }, LEADER_SESSION))
+  const afterGrant = await governanceSnapshot(env, TARGET_ID)
+  const refusals: Record<string, Outcome> = {}
+  for (const name of FOUR) {
+    const call = name === 'team_grant_permission' || name === 'team_revoke_permission'
+      ? { rootSessionId: LEADER_SESSION, targetInstanceId: TARGET_ID, requestToken: 'rc2-a8-refusal-token', rules }
+      : name === 'team_archive_member'
+        ? { rootSessionId: LEADER_SESSION, targetInstanceId: TARGET_ID, requestToken: 'rc2-a8-refusal-token' }
+        : { rootSessionId: LEADER_SESSION, requestToken: 'rc2-a8-refusal-token' }
+    refusals[name] = summarize(await runTool(env, name, call, MEMBER_SESSION))
+  }
+  const afterRefusals = await governanceSnapshot(env, TARGET_ID)
+  return {
+    env,
+    grant,
+    grantRules: JSON.stringify(rules),
+    baseline,
+    afterGrant,
+    afterRefusals,
+    refusals,
+  }
+})()
+
 afterAll(async () => {
   if (PREP !== null) await destroyP6T1World(PREP.env.world)
+  if (PREP2 !== null) await destroyP6T1World(PREP2.env.world)
 })
 
 describe('rc2 least privilege — the real catalog and the two capability lanes', () => {
@@ -428,6 +503,34 @@ describe('rc2 least privilege — the real catalog and the two capability lanes'
     expect(archive.status).toBe('rejected')
     expect(archive.code).toBe('TEAM_RUNTIME_LIFECYCLE_TRANSITION_REJECTED')
     expect(PREP.governanceAfterLeader.overlaySnapshots.length).toBe(0)
+  })
+
+  it('A8d the legitimate Leader grant WRITES the real permission_overlay store (the control A8b lacked)', () => {
+    if (PREP2 === null) throw new Error('writable world unavailable')
+    expect(PREP2.env.permissionWired).toBe(true)
+    // Same store A8b reads, same reader — no second source of truth.
+    expect(PREP2.baseline.overlaySnapshots.length).toBe(0)
+    expect(PREP2.grant.status).not.toBe('rejected')
+    expect(PREP2.afterGrant.overlaySnapshots.length).toBe(1)
+    expect(PREP2.afterGrant.overlaySnapshots[0]?.snapshotId.length ?? 0).toBeGreaterThan(0)
+    // The write is the durable append-only chain, not an in-memory answer.
+    const stored = PREP2.env.world.domain.repositories.permissionOverlays
+      .history(P6T2_ROOT, TARGET_ID)
+    expect(stored.length).toBe(1)
+    expect(stored[0]?.identity.memberInstanceId).toBe(TARGET_ID)
+    expect(JSON.stringify(stored[0]?.state.rules)).toContain('deny')
+  })
+
+  it('A8e with a live write path, the four member refusals still move NO durable governance state', () => {
+    if (PREP2 === null) throw new Error('writable world unavailable')
+    // This is the falsifiable version of A8b: the window now sits on a store
+    // that demonstrably accepts writes (A8d), so "nothing moved" could have
+    // failed and did not.
+    expect(PREP2.afterGrant.overlaySnapshots.length).toBeGreaterThan(0)
+    for (const name of FOUR) {
+      expect(PREP2.refusals[name]?.status).toBe('rejected')
+    }
+    expect(PREP2.afterRefusals).toEqual(PREP2.afterGrant)
   })
 
   it('A9 the deny disposer unwinds the mask exactly once (no standing mask)', () => {
