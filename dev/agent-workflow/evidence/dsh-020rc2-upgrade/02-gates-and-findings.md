@@ -193,15 +193,50 @@ precedent (`wire-shape.d.mts`, `fixture-invariants.d.mts`).
 
 ### Evidence tree counts (do not quote the older numbers)
 
-Raw (gitignored, `.private-raw-evidence/dsh-020rc2-upgrade/`): **78** files,
+Raw (gitignored, `.private-raw-evidence/dsh-020rc2-upgrade/`): **81** files,
 byte-identical originals, re-verified after every sanitize run.
-Committed sanitized tree at **this** head: **80** files = 78 manifest-covered +
-`SANITIZATION.json` itself + `03-team-tool-deny-least-privilege.md` (written after
-the manifest). The earlier statement "73 files" was stale in both directions: at
-head `0ff5bbe1` the tree held 74 (72 manifest-covered + manifest + the then-new
-document), and the probes in this section added the remaining 6. Any future count
-must come from `find dev/agent-workflow/evidence/dsh-020rc2-upgrade -type f | wc -l`
-plus the manifest's own `files` length, not from prose.
+Committed sanitized tree: **83** files = 81 manifest-covered + `SANITIZATION.json`
+itself + `03-team-tool-deny-least-privilege.md` (written after the manifest).
+Earlier prose said 72 / 73 / 74 at earlier heads — each was already stale when it
+was written (at head `0ff5bbe1` the tree held 74 = 72 + manifest + the then-new
+document; the probes in this section added the rest). Any count quoted from this
+file is a snapshot: recompute it with
+`find dev/agent-workflow/evidence/dsh-020rc2-upgrade -type f | wc -l` plus the
+manifest's own `files` length.
+
+**One hazard found while producing these numbers, recorded because it bit.** The
+sanitizer takes its input from the raw tree, and the prose documents were
+themselves copied into that raw tree verbatim. Re-running the sanitizer therefore
+REVERTED an already-committed edit to this file (57 lines of §5 disappeared, and
+`git diff` showed the deletion). The tools are behaving as written — the raw tree
+was simply older than the working copy — but that is a silent document-rewind
+with a redaction tool, which is exactly the class of surprise this round is
+supposed to eliminate. Mitigation applied: the raw copies of the prose documents
+are re-synced from the working tree whenever they change (verified idempotent: a
+sanitize run after the sync produces a byte-identical tree), and the diff after
+every sanitize run is read before committing.
+
+### Owed evidence item 2 closed — the complete host refusal
+
+A bounded single-`team.create` probe over the retained stale fixture
+(`diag/deny-name-capture.mjs`, log `diag/deny-capture-2026-10-03T15-32-32.log`,
+world retained at `tests/homes/deny-capture-2026-10-03T15-32-32`) records the
+untruncated message:
+
+```
+TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED
+team.create: starting the root (leader) agent for '…' failed: tools.restrict()
+names unknown global tools "team_archive_member", "team_grant_permission",
+"team_list_pending_control", "team_revoke_permission"; known global tools:
+bash, edit, read, read_image, write
+```
+
+The trailing list is the point: that is the leader agent's ENTIRE restrictable
+global vocabulary on this preset, and none of the four team names is in it — the
+empirical form of "the builtin mask lane cannot reach a team tool" (see
+`03-team-tool-deny-least-privilege.md`). The probe made **zero** model requests
+(the root agent never started), used ports 3495/3498, stopped the host it spawned
+and bound nothing on `:3080`.
 
 ### Still open after these repairs (unchanged blockers)
 

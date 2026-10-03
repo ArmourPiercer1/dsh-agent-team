@@ -113,13 +113,27 @@ an error envelope, so no team, no leader turn, no tool surface).
 1. ~~Unit-level regressions naming these four tools~~ — **landed**:
    `packages/tools/test/rc2-team-deny-least-privilege.test.ts` (9 tests, vitest +
    `tsc -p packages/tools --noEmit` + eslint clean).
-2. **Still owed**: a complete (untruncated) capture of the host's unknown-name
-   message naming all four tools. The recorded probe evidence truncates the
-   message after the first name (`unknown global tools "team_archive_`); a
-   bounded single-root-start probe with the bad deny list would complete it. The
-   disjointness argument does not depend on it (it is structural plus the
-   measured refusals above), but the full message is the cheapest empirical
-   proof and is deliberately not claimed here.
+2. ~~A complete (untruncated) capture of the host's unknown-name message naming
+   all four tools~~ — **captured** by a bounded single-`team.create` probe over the
+   retained stale fixture
+   (`diag/deny-name-capture.mjs`, `diag/deny-capture-2026-10-03T15-32-32.log`,
+   world retained at `tests/homes/deny-capture-2026-10-03T15-32-32`):
+
+   ```
+   TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED
+   team.create: starting the root (leader) agent for 'session-auth-probe2-e' failed:
+   tools.restrict() names unknown global tools "team_archive_member",
+   "team_grant_permission", "team_list_pending_control", "team_revoke_permission";
+   known global tools: bash, edit, read, read_image, write
+   ```
+
+   The trailing list is the point: the leader agent's ENTIRE restrictable global
+   vocabulary on this preset is `bash, edit, read, read_image, write`. None of the
+   four team names is in it, which is the empirical counterpart of the structural
+   argument above — the mask lane could not have hidden them, and team-tool
+   reachability is decided only by the allow lane. The probe issued one create
+   attempt, made **zero** model requests (the root agent never started), used
+   ports 3495/3498, stopped its own host, and bound nothing on `:3080`.
 3. **Still blocked, unchanged**: the single full rc2 real-host smoke run, until
    the security review of the committed evidence passes. Nothing in this round
    has run the full chain.

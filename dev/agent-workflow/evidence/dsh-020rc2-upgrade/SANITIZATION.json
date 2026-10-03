@@ -1,6 +1,6 @@
 {
   "generator": "scripts/sanitize-evidence.mjs",
-  "generatedAt": "2026-10-03T15:23:42.805Z",
+  "generatedAt": "2026-10-03T15:33:50.007Z",
   "source": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.private-raw-evidence/dsh-020rc2-upgrade",
   "sanitizedTo": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/dev/agent-workflow/evidence/dsh-020rc2-upgrade",
   "rawBytesPreservedIn": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.private-raw-evidence/.sanitized-tmp",
@@ -34,8 +34,14 @@
     {
       "file": "02-gates-and-findings.md",
       "copiedVerbatim": true,
-      "bytesRaw": 12923,
-      "sha256Raw": "5c9bdbe79737dfb68762083ba358bd94aefab389cc55bb7322ffcdd84858d034"
+      "bytesRaw": 22791,
+      "sha256Raw": "b03c892f1f354d09dfcc5067a49274b7466c1ab8454a15e11a25b6b8c72eaad1"
+    },
+    {
+      "file": "03-team-tool-deny-least-privilege.md",
+      "copiedVerbatim": true,
+      "bytesRaw": 11797,
+      "sha256Raw": "dd648083849ac7757fd1e27f782e3aa188d69b2d71f5db8d381ad45c4e4f0875"
     },
     {
       "file": "diag/auth-probe-2026-10-03T14-33-33.log",
@@ -120,6 +126,30 @@
       "copiedVerbatim": true,
       "bytesRaw": 7400,
       "sha256Raw": "46b704330455bb75d7979128125a95b12eda04ccdbdad0b0f0c0d21a4d22ea6c"
+    },
+    {
+      "file": "diag/deny-capture-2026-10-03T15-32-32.log",
+      "bytesRaw": 4053,
+      "bytesSanitized": 4053,
+      "sha256Raw": "c9cb382e3457061251d479291a7c2e55843ec92f8cb383d9d6b253e4ff7fd7bc",
+      "sha256Sanitized": "c9cb382e3457061251d479291a7c2e55843ec92f8cb383d9d6b253e4ff7fd7bc",
+      "replacements": {}
+    },
+    {
+      "file": "diag/deny-capture-instance-2026-10-03T15-32-32.log",
+      "bytesRaw": 349,
+      "bytesSanitized": 327,
+      "sha256Raw": "e3a87ad0dc8b2b4bffea2cded0c17ba17faa2409f50cac22f371624bc0abb3a0",
+      "sha256Sanitized": "b4c3c273e981f292844feac945ab36efd62d836b51686a411bf06855423afd58",
+      "replacements": {
+        "boot-token": 1
+      }
+    },
+    {
+      "file": "diag/deny-name-capture.mjs",
+      "copiedVerbatim": true,
+      "bytesRaw": 8085,
+      "sha256Raw": "55ec4b2f545e455aef508435ca5ea791c5b367a881e230018f95ea5b9c312934"
     },
     {
       "file": "diag/wire-envelope-agent-with-result-2026-10-03T15-06-25",
@@ -653,5 +683,5 @@
     }
   ],
   "rawBytesUnchanged": true,
-  "totalReplacements": 14
+  "totalReplacements": 15
 }
