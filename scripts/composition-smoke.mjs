@@ -80,6 +80,16 @@ const targets = [
 ]
 
 /**
+ * The closed set of host seam events a production `apply()` is allowed to
+ * subscribe before (or while) it fails loud on a degenerate context: the C1
+ * activation fence (`agent/created` awaited + `agent/disposed` rollback,
+ * restart-recovery guide §4.1) and the 0.1.5+ remote-channel compatibility
+ * seam (`internal/get`, the `webServer` property-read waterfall). Anything
+ * outside this list is an undocumented side effect and fails the gate.
+ */
+const PRE_BOOTSTRAP_SEAM_EVENTS = Object.freeze(['agent/created', 'agent/disposed', 'internal/get'])
+
+/**
  * Degenerate structural Cordis plugin context: exposes only the lookup,
  * subscription, effect-registration, and service-provision surface — no
  * row config, no injected services. A production `apply` must fail loud
@@ -171,8 +181,34 @@ for (const target of targets) {
         throw new Error('apply on a degenerate context must fail loud, but it succeeded silently')
       }
     }
-    if (listeners.length !== 0) {
-      throw new Error(`apply subscribed to listeners before failing: ${listeners.join(', ')}`)
+    // Side-effect discipline on a degenerate context.
+    //
+    // The original assertion here was `listeners.length === 0` ("no listener
+    // may be subscribed before failing loud"). It predates the C1 Team Session
+    // Activation Fence (commit e951344b, restart-017rc1 round), which is a
+    // frozen contract: the `agent/created` / `agent/disposed` activation
+    // listeners must register at the VERY FRONT of `apply()` — before the
+    // bootstrap's first await — because a Session resume can fire while the
+    // Team bootstrap is still running (restart-recovery guide §4.1), and the
+    // `internal/get` remote-channel compatibility seam registers in the same
+    // pre-bootstrap region. Both registrations are gated solely by
+    // `typeof ctx.on === 'function'` (no host-version input), so the newer
+    // frozen design mandates exactly this small prefix of subscriptions.
+    //
+    // The assertion keeps its teeth through the CLOSED documented set: a
+    // degenerate apply may subscribe ONLY these seam listeners, each at most
+    // once — any other subscription (RPC channel mounts, projection wiring,
+    // session plumbing, …) still fails this gate.
+    const undocumented = listeners.filter((event) => !PRE_BOOTSTRAP_SEAM_EVENTS.includes(event))
+    if (undocumented.length !== 0) {
+      throw new Error(
+        `apply subscribed to undocumented listeners before failing: ${undocumented.join(', ')} `
+        + `(the only pre-bootstrap seam events the frozen design permits are ${PRE_BOOTSTRAP_SEAM_EVENTS.join(', ')})`,
+      )
+    }
+    const duplicated = listeners.filter((event, index) => listeners.indexOf(event) !== index)
+    if (duplicated.length !== 0) {
+      throw new Error(`apply subscribed to seam listeners more than once: ${duplicated.join(', ')}`)
     }
     console.log(
       `PASS ${target.label}: name="${mod.name}", apply fails loud on degenerate context` +
