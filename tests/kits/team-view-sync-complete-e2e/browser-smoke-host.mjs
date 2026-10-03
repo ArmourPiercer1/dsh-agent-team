@@ -31,12 +31,15 @@
  * unflagged run is unchanged; a flag only changes where the seed world and
  * its main-team id come FROM, never a durable fact or a check):
  *
- *   [--seed-world <world>]  seed DSH_HOME — a name under <main>/tests/homes
- *                           or an absolute path INSIDE it (realpath-checked;
- *                           '..', symlink escapes, empty/ambiguous values and
- *                           separator-carrying world names are fatal)
- *   [--t1 <rootSessionId>]  the seed world's main team, matching
- *                           ^session-mpr-t1-[A-Za-z0-9T:-]+$
+ *   --seed-world <world>    REQUIRED. Seed DSH_HOME — a name under
+ *                           <main>/tests/homes or an absolute path INSIDE it
+ *                           (realpath-checked; '..', symlink escapes,
+ *                           empty/ambiguous values and separator-carrying world
+ *                           names are fatal; a missing flag is fatal and lists
+ *                           the worlds that exist)
+ *   --t1 <rootSessionId>    REQUIRED. The selected world's team root; checked
+ *                           for shape only, then held to the world's own
+ *                           member_instances + session_bindings rows
  *
  * MEMBER IDENTITY is NOT a flag and not a literal: the (member session,
  * member instance) pair this host addresses is DERIVED from the durable store
@@ -102,10 +105,9 @@ const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // canonical pin = tests/paths.m
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 
 // ── seed-identity overrides ────────────────────────────────────────────────
-// Both defaults are the literals this kit was proven against, so an unflagged
-// run behaves EXACTLY as before: the flags only change where the seed world
-// and its main-team id come FROM. Nothing downstream re-derives a fact or a
-// check from the CLI — the durable facts below stay as recorded.
+// The seed world and its team root are REQUIRED flags; there is no default and
+// no remembered literal (see requiredSeedInput). Nothing downstream re-derives a
+// fact from the CLI — the durable facts below stay as recorded.
 const HOMES_ROOT = join(MAIN, 'tests', 'homes')
 function flagValue(flag) {
   const i = args.indexOf(flag)
@@ -136,11 +138,31 @@ function matchingToken(flag, raw, pattern) {
   if (!pattern.test(raw)) dieFatal(`${flag}: ${JSON.stringify(raw)} does not match ${pattern}`)
   return raw
 }
-function seedInput(flag, dflt, check) {
+/**
+ * A seed is an INPUT here, never a remembered literal.
+ *
+ * Both values used to DEFAULT to the world this kit was first proven against
+ * (`mpr-2026-09-27T08-35-52` and its `session-mpr-t1-…` team). That made an
+ * unflagged run silently select a generation-local artifact: on any host where
+ * that retained world no longer exists the kit dies on a stale default instead
+ * of naming what is actually available, and on a host where it DOES exist the
+ * run silently proves something about the past rather than the current world.
+ * A missing seed is now fatal, and the fatal lists the worlds to choose from.
+ */
+function requiredSeedInput(flag, check) {
   const raw = flagValue(flag)
-  return raw === undefined ? dflt : check(flag, raw)
+  if (raw === undefined) {
+    let available = []
+    try {
+      available = readdirSync(HOMES_ROOT).filter((n) => !n.startsWith('.') && !n.startsWith('-'))
+    } catch {
+      /* the listing is a convenience; the fatality stands on its own */
+    }
+    dieFatal(`${flag} is REQUIRED — no seed is assumed (the retired default was the mpr-2026-09-27T08-35-52 generation). Worlds available under ${HOMES_ROOT}: ${available.length === 0 ? '(none)' : available.join(', ')}`)
+  }
+  return check(flag, raw)
 }
-const SRC_WORLD = seedInput('--seed-world', join(MAIN, 'tests', 'homes', 'mpr-2026-09-27T08-35-52'), insideHomes)
+const SRC_WORLD = requiredSeedInput('--seed-world', insideHomes)
 const HOST_PORT_MIN = 3181
 const HOST_PORT_MAX = 3186
 const MOCK_PORTS = [3496, 3497]
@@ -151,8 +173,13 @@ const WORLD = join(MAIN, 'tests', 'homes', RUN_STAMP)
 const EVIDENCE_DIR = join(WORKTREE, 'dev', 'agent-workflow', 'evidence', 'team-view-sync-complete', `wp9b-browser-smoke-${RUN_STAMP}`)
 const INSTANCE_LOG = join(EVIDENCE_DIR, 'instance.log')
 
-// The seeded world's team root (CLI-overridable, validated by shape).
-const T1 = seedInput('--t1', 'session-mpr-t1-mpr-2026-09-27T08-35-52', (flag, raw) => matchingToken(flag, raw, /^session-mpr-t1-[A-Za-z0-9T:-]+$/))
+// The selected world's team root. The shape check is a typo guard ONLY: the
+// former pattern `^session-mpr-t1-…$` encoded one remembered team, which is how
+// a valid current-generation root (e.g. a real host run's `session-…`) became
+// unaddressable no matter what the durable store said. Identity is settled where
+// the truth is — deriveT1MemberPair below dies unless the COPY's own
+// member_instances row is rooted at T1 and a team-member binding corroborates it.
+const T1 = requiredSeedInput('--t1', (flag, raw) => matchingToken(flag, raw, /^session-[A-Za-z0-9][A-Za-z0-9._:-]*$/))
 
 // The member identity this smoke addresses is DERIVED from the world that is
 // actually selected — it is not a literal. An earlier revision pinned
