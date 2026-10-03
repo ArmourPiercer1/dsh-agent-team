@@ -316,8 +316,10 @@ describe('rc2 least privilege — the real catalog and the two capability lanes'
      * four refusals (the same store `team_list_pending_control` and
      * `team_grant_permission` write through) and assert on that snapshot - and if
      * the fixture cannot reach it, that is a gap to report, not a zero to invent.
+     * (A placeholder `expect(true).toBe(true)` used to close this case; it was
+     * itself a tautology and is deleted - the case stands on the three
+     * observations above, and the gap below stays open.)
      */
-    expect(true).toBe(true)
   })
 
   it('A9 the deny disposer unwinds the mask exactly once (no standing mask)', () => {
