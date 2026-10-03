@@ -110,6 +110,7 @@ import {
   isChainTurn,
   systemText as wsSystemText,
   toolResultEntries,
+  toolResultText as wsToolResultText,
   extractInstanceId as strictExtractInstanceId,
 } from './wire-shape.mjs'
 import { TEAM_TOOL_CATALOG, deriveBuiltinToolDeny, materializeBcFixtures } from './fixture-invariants.mjs'
@@ -830,6 +831,22 @@ function toolMsgsOf(req) {
   return entries.map((e) => e.item)
 }
 
+/**
+ * Text of every tool result carried by a request, in order.
+ *
+ * Three oracles (S1a, S3b, S4c) used to read `body.messages.find(m => m.role ===
+ * 'tool')?.content` directly. That is the 0.1.x classic envelope. The pinned host
+ * delivers tool results as content parts nested inside role:user messages, so the
+ * inline lookup silently returned '' and the criteria failed with an empty
+ * `result=` - a reader defect wearing the clothes of a product failure (the same
+ * trap f15 records for its marker oracles). The waiter already used toolMsgsOf();
+ * now the assertions read through the same generation-aware path. Nothing is
+ * relaxed: the same substrings are still required.
+ */
+function toolResultTextOf(req) {
+  return toolMsgsOf(req).map((item) => wsToolResultText(item)).join('\n')
+}
+
 function toolEntriesOf(req, label) {
   try {
     return toolResultEntries(bodyOf(req), { label })
@@ -1542,7 +1559,7 @@ async function main() {
       fail('S1')
       check('S1', 'allow-subtree read executed (tool result returned to the model)', false, `requests=${mock.requests.length}`)
     } else {
-      const s1result = String(bS1.body.messages.find((m) => m.role === 'tool')?.content ?? '')
+      const s1result = toolResultTextOf(bS1)
       check('S1a', 'S1: read team/test.md returned the probe content (executed, not blocked)',
         s1result.includes(PROBE_TEAM_CONTENT), `result=${s1result.slice(0, 200)}`)
       if (!s1result.includes(PROBE_TEAM_CONTENT)) fail('S1a')
@@ -1569,7 +1586,7 @@ async function main() {
       fail('S2')
       check('S2', 'deny-subtree read reached a decision (tool result returned to the model)', false, `requests=${mock.requests.length}`)
     } else {
-      const s2result = String(bS2.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+      const s2result = toolResultTextOf(bS2)
       const s2state = await p6t6State(booted.port)
       writeEvidence('s2-state-after.json', s2state.body)
       const s2obs = (Array.isArray(s2state.body?.observations) ? s2state.body.observations : [])
@@ -1617,7 +1634,7 @@ async function main() {
           fail('S3')
           check('S3b', 'S3: bash executed after approval (tool result returned — NO target-stale)', false, `requests=${mock.requests.length}`)
         } else {
-          const s3result = String(bS3.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+          const s3result = toolResultTextOf(bS3)
           check('S3b', 'S3: bash executed after approval — the echo output reached the model (guard passed, no target-stale)',
             s3result.includes('rc2-smoke'), `result=${s3result.slice(0, 200)}`)
           if (!s3result.includes('rc2-smoke')) fail('S3b')
@@ -1647,7 +1664,7 @@ async function main() {
       fail('S4c')
       check('S4c', 'S4: team_create_member(worker-b) executed (tool result returned)', false, `requests=${mock.requests.length}`)
     } else {
-      const s4result = String(bS4.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+      const s4result = toolResultTextOf(bS4)
       writeEvidence('s4-create-member-result.json', { result: s4result.slice(0, 2000) })
       const s4ok = /member|created|inst-/.test(s4result) && !/reject|denied|error|unavailable|not found/i.test(s4result)
       check('S4c', 'S4: first create of the B-only template worker-b SUCCEEDED (no post-commit reject)', s4ok, `result=${s4result.slice(0, 300)}`)
@@ -1667,10 +1684,11 @@ async function main() {
         fail('S4e')
         check('S4e', 'S4: the B member turn started (model request observed)', false, `requests=${mock.requests.length}`)
       } else {
-        const bMemberSystem = (bMember.body.messages ?? [])
-          .filter((mm) => mm.role === 'system')
-          .map((mm) => (typeof mm.content === 'string' ? mm.content : JSON.stringify(mm.content ?? '')))
-          .join('\n')
+        // Same reader class as S1a/S3b/S4c: the persona lives where the pinned host
+        // puts it (systemText() covers both generations), not where role:'system'
+        // happened to live in 0.1.x. S4b and S5c already used systemTextOf(), which
+        // is why they passed while these two failed.
+        const bMemberSystem = systemTextOf(bMember)
         writeEvidence('s4-b-member-request.json', { seq: bMember.seq, systemPrompt: bMemberSystem.slice(0, 4000) })
         check('S4e', 'S4: the B member carries blueprint B worker persona (binder resolved the BOUND blueprint)',
           bMemberSystem.includes(P_WORKER_B) && !bMemberSystem.includes(P_WORKER_A),
@@ -1710,10 +1728,7 @@ async function main() {
       fail('S5b')
       check('S5b', 'S5: the C member turn started', false, `requests=${mock.requests.length}`)
     } else {
-      const cMemberSystem = (cMember.body.messages ?? [])
-        .filter((mm) => mm.role === 'system')
-        .map((mm) => (typeof mm.content === 'string' ? mm.content : JSON.stringify(mm.content ?? '')))
-        .join('\n')
+      const cMemberSystem = systemTextOf(cMember)
       writeEvidence('s5-c-member-request.json', { seq: cMember.seq, systemPrompt: cMemberSystem.slice(0, 4000) })
       check('S5b', 'S5: the C member carries blueprint C worker persona (root-scoped resolution)',
         cMemberSystem.includes(P_WORKER_C) && !cMemberSystem.includes(P_WORKER_B),
