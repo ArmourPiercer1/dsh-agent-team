@@ -73,7 +73,7 @@
  *   - WORLD: host = the pristine test-use checkout (DSH 0.1.5-rc.2 @
  *     fb2c4b9e69) launched as `node <testuse>/apps/cli/lib/bin.js web`
  *     with cwd = a scratch session workspace; env: DSH_HOME=<world home
- *     under tests/homes/>, DSH_CLIENT_COMMIT_HASH=fb2c4b9e69,
+ *     under tests/homes/>, DSH_CLIENT_COMMIT_HASH=<CLIENT_COMMIT_HASH from tests/paths.mjs>,
  *     DEEPSEEK_BASE_URL=<in-process mock model>. Plugin rows mounted
  *     ONLY through the public profile-patch seam (production row = the
  *     WORKTREE's dist — the send-message-liveness branch build).
@@ -149,7 +149,8 @@ const EVIDENCE_DIR_ARG = argValue('evidence-dir', null)
 
 // ── frozen facts ────────────────────────────────────────────────────────────
 
-const HOST_BASELINE_SHA = 'fb2c4b9e698e30edb738bca4cf0618587db7d203' // DSH 0.1.5-rc.2 release point
+import { TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH } from '../../../tests/paths.mjs'  // canonical test-infrastructure pin (docs/TEST_METHODS.md §1)
+const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // canonical pin = tests/paths.mjs (moves with the pinned host generation)
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 const DIST_RUNTIME = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages', 'runtime')
 const PRODUCTION_ROW_PATH = join(DIST_RUNTIME, 'src', 'plugin', 'host.js')
@@ -680,7 +681,7 @@ function spawnHost({ port, home, logPath, mockPort }) {
         env: {
           ...process.env,
           DSH_HOME: home,
-          DSH_CLIENT_COMMIT_HASH: 'fb2c4b9e69',
+          DSH_CLIENT_COMMIT_HASH: CLIENT_COMMIT_HASH,
           DEEPSEEK_BASE_URL: `http://127.0.0.1:${mockPort}`,
           DEEPSEEK_API_KEY: 'sml-smoke-mock-key',
         },

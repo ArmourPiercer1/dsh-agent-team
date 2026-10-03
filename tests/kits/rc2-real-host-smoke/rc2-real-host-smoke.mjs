@@ -60,7 +60,7 @@
  *     fb2c4b9e69) launched as `node <testuse>/apps/cli/lib/bin.js web` with
  *     cwd = a scratch session workspace (`<home>/workspace`) — probe files
  *     live there and NEVER enter the frozen checkout.
- *   - env: DSH_HOME=<world home>, DSH_CLIENT_COMMIT_HASH=fb2c4b9e69,
+ *   - env: DSH_HOME=<world home>, DSH_CLIENT_COMMIT_HASH=<CLIENT_COMMIT_HASH from tests/paths.mjs>,
  *     DEEPSEEK_BASE_URL=http://127.0.0.1:<mock-port> (the in-process mock
  *     model — packages/tools/harness/mock-deepseek.mjs).
  *   - plugin rows mounted ONLY through the public profile-patch seam:
@@ -68,9 +68,11 @@
  *     observability row = packages/tools/harness/plugin.mjs (p6t6).
  *   - one row, one boot team (blueprint A anchor, legacy no-capabilities
  *     Leader — the 0.1.0-rc.1 byte shape), two created teams (B, C).
- *   - preset `rc2-smoke` (user-preset seam, DSH_HOME/.agent-presets):
- *     persona + dsh-tool-fs + the minimal-style persistent shell group
- *     (bash stack; NO delegation group — the 0.1.5 deferred own-layer
+ *   - preset `rc2-smoke` — since 0.2.0-rc.2 an `@deepseek-ai/dsh-agent-preset`
+ *     DECLARATION ROW mounted through the public profile-patch seam (the
+ *     legacy `DSH_HOME/.agent-presets/<id>/` directory seam is no longer read
+ *     by the host): persona + dsh-tool-fs + the minimal-style persistent shell
+ *     group (bash stack; NO delegation group — the 0.1.5 deferred own-layer
  *     `subagent` is structurally un-denyable under the Coverage Gate;
  *     followup-backlog item 2).
  *   - LEG 0 discovery: one scripted turn on the boot Leader captures the
@@ -121,7 +123,8 @@ const EVIDENCE_DIR_ARG = argValue('evidence-dir', null)
 
 // ── frozen facts ────────────────────────────────────────────────────────────
 
-const HOST_BASELINE_SHA = 'fb2c4b9e698e30edb738bca4cf0618587db7d203' // DSH 0.1.5-rc.2 release point
+import { TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH } from '../../../tests/paths.mjs'  // canonical test-infrastructure pin (docs/TEST_METHODS.md §1)
+const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // canonical pin = tests/paths.mjs (moves with the pinned host generation)
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 const DIST_RUNTIME = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages', 'runtime')
 const PRODUCTION_ROW_PATH = join(DIST_RUNTIME, 'src', 'plugin', 'host.js')
@@ -135,9 +138,22 @@ const P6T6_ROW_NAME = pathToFileURL(P6T6_PLUGIN_PATH).href
 
 const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
 const SAFE_UNMANAGED_TOOL_NAMES = ['todo_write']
+// The plugin's OWN tool namespace, as it appears on the live model-facing
+// surface: 13 static `name: 'team_*'` registrations in
+// packages/tools/src/tools.ts plus the `team_grant_permission` /
+// `team_revoke_permission` pair named at tools.ts:1316 (verb-built) = 15,
+// verified against the installed surface (packages/runtime/dist/.../tools.js
+// and LEG 0 discovery). These names must NEVER fall into a blueprint's
+// `builtinToolDeny`: that field denies BUILTIN tools, and since 0.2.0-rc.2 the
+// host fails closed on a name its global tool registry does not know
+// (`tools.restrict() names unknown global tool '…'` rejects the whole root
+// (leader) agent start as TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED). A stale
+// catalog therefore breaks the run loudly — see the L0c criterion below, which
+// pins this invariant instead of trusting the constant.
 const TEAM_TOOL_CATALOG = [
   'team_list_members',
   'team_list_templates',
+  'team_list_pending_control',
   'team_inspect_config',
   'team_create_member',
   'team_delegate',
@@ -147,9 +163,12 @@ const TEAM_TOOL_CATALOG = [
   'team_report_progress',
   'team_request_control',
   'team_resolve_control',
+  'team_archive_member',
+  'team_grant_permission',
+  'team_revoke_permission',
 ]
 // The B/C Leader teamTools allow list (the smoke needs create + delegate;
-// the list is a closed subset of the 11).
+// the list is a closed subset of the plugin's team-tool namespace).
 const LEADER_TEAM_TOOLS_ALLOW = [
   'team_list_members',
   'team_list_templates',
@@ -552,53 +571,77 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
   ].join('\n')
 }
 
-function writeSmokePreset(home) {
-  const dir = join(home, '.agent-presets', SMOKE_PRESET_ID)
-  mkdirSync(dir, { recursive: true })
-  const text = [
-    `# ${SMOKE_PRESET_ID} — rc2 real-host smoke preset (run ${RUN_STAMP}). Kit-authored`,
-    '# via the public user-preset seam (DSH_HOME/.agent-presets). persona +',
-    '# dsh-tool-fs + the minimal-style persistent shell group (bash stack).',
-    '# NO delegation group: the 0.1.5 spawn `subagent` row is a deferred',
-    '# per-agent own-layer install — un-restrictable and KNOWN_SENSITIVE',
-    '# under the Coverage Gate (followup-backlog item 2).',
-    '- id: persona',
-    "  name: '@deepseek-ai/dsh-persona'",
-    '  config:',
-    '    suffix: Your working directory is {{cwd}}.',
-    '    prefix: >-',
-    '      You are a coding agent powered by the {{model}} model.',
-    '- id: tool-fs',
-    "  name: '@deepseek-ai/dsh-tool-fs'",
-    '- id: persistent-shell',
-    '  name: cordis:group',
-    '  group: true',
-    '  isolate:',
-    '    terminals: true',
-    '  config:',
-    '    - id: pty',
-    "      name: '@deepseek-ai/dsh-terminal'",
-    '    - id: terminal-bash',
-    "      name: '@deepseek-ai/dsh-terminal-bash'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '    - id: persistent-bash',
-    "      name: '@deepseek-ai/dsh-tool-bash-persistent'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '        description: Run commands in a bash shell. State is persistent across calls.',
-    '',
-  ].join('\n')
-  writeFileSync(join(dir, 'agent.cordis.yml'), text)
+/**
+ * The smoke preset's plugin subtree (0.2 host generation).
+ *
+ * 0.2.0-rc.2 removed the legacy user-preset DIRECTORY seam: `$DSH_HOME/
+ * .agent-presets/<id>/{preset.yml,agent.cordis.yml}` is no longer read by the
+ * host (upstream `@deepseek-ai/dsh-agent-preset` skill: "Nothing reads that
+ * directory any more"), and a preset is now an ordinary
+ * `@deepseek-ai/dsh-agent-preset` DECLARATION ROW carried by a patch layer —
+ * which is why this kit returns the subtree as data and mounts it through the
+ * public profile-patch seam in `writePatchFile()` below (same seam the team
+ * row and the p6t6 observability row use; no directory seam, no host patch).
+ *
+ * Content is unchanged from the 0.1.7 kit: persona + dsh-tool-fs + the
+ * minimal-style persistent shell group (bash stack). NO delegation group: the
+ * 0.1.5 spawn `subagent` row is a deferred per-agent own-layer install —
+ * un-restrictable and KNOWN_SENSITIVE under the Coverage Gate
+ * (followup-backlog item 2).
+ */
+function smokePresetPlugins() {
+  return [
+    {
+      id: 'persona',
+      name: '@deepseek-ai/dsh-persona',
+      config: {
+        suffix: 'Your working directory is {{cwd}}.',
+        prefix: 'You are a coding agent powered by the {{model}} model.',
+      },
+    },
+    { id: 'tool-fs', name: '@deepseek-ai/dsh-tool-fs' },
+    {
+      id: 'persistent-shell',
+      name: 'cordis:group',
+      group: true,
+      isolate: { terminals: true },
+      config: [
+        { id: 'pty', name: '@deepseek-ai/dsh-terminal' },
+        { id: 'terminal-bash', name: '@deepseek-ai/dsh-terminal-bash', config: { timeoutMs: 300000 } },
+        {
+          id: 'persistent-bash',
+          name: '@deepseek-ai/dsh-tool-bash-persistent',
+          config: { timeoutMs: 300000, description: 'Run commands in a bash shell. State is persistent across calls.' },
+        },
+      ],
+    },
+  ]
+}
+
+/** The 0.2 preset declaration row (roster identity = `config.id`). */
+function smokePresetDeclaration() {
+  return {
+    id: `preset-${SMOKE_PRESET_ID}`,
+    name: '@deepseek-ai/dsh-agent-preset',
+    config: {
+      id: SMOKE_PRESET_ID,
+      name: 'rc2 smoke',
+      description: `rc2 real-host smoke preset (run ${RUN_STAMP}); kit-authored via the public profile-patch seam.`,
+      order: 900,
+      plugins: smokePresetPlugins(),
+    },
+  }
 }
 
 function writePatchFile(home) {
   mkdirSync(join(home, 'profiles', 'web'), { recursive: true })
   const lines = [
-    `# rc2 real-host smoke patch layer (run ${RUN_STAMP}): production dsh-agent-team row (worktree dist) + p6t6 observability row — mounted ONLY through the public profile-patch seam.`,
+    `# rc2 real-host smoke patch layer (run ${RUN_STAMP}): production dsh-agent-team row (worktree dist) + p6t6 observability row + the rc2-smoke agent-preset DECLARATION ROW — mounted ONLY through the public profile-patch seam.`,
+    '# (0.2.0-rc.2: the legacy $DSH_HOME/.agent-presets/<id>/ directory seam is no longer read; a preset is a declaration row.)',
     '- insert:',
     ...yamlEmitItem({ id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig() }, 2),
     ...yamlEmitItem({ id: 'p6t6-team-tools', name: P6T6_ROW_NAME }, 2),
+    ...yamlEmitItem(smokePresetDeclaration(), 2),
     '',
   ]
   writeFileSync(join(home, 'profiles', 'web', 'cordis.patch.yml'), lines.join('\n'))
@@ -622,7 +665,7 @@ function spawnHost({ port, home, logPath, mockPort }) {
         env: {
           ...process.env,
           DSH_HOME: home,
-          DSH_CLIENT_COMMIT_HASH: 'fb2c4b9e69',
+          DSH_CLIENT_COMMIT_HASH: CLIENT_COMMIT_HASH,
           DEEPSEEK_BASE_URL: `http://127.0.0.1:${mockPort}`,
           DEEPSEEK_API_KEY: 'rc2-smoke-mock-key',
         },
@@ -655,8 +698,7 @@ function stopHost(h) {
 }
 
 async function bootHost({ port, home, mockPort, instanceLog }) {
-  writePatchFile(home)
-  writeSmokePreset(home)
+  writePatchFile(home)   // carries the team row, the p6t6 row AND the preset declaration row (0.2 seam)
   mkdirSync(BLUEPRINT_DIR, { recursive: true })
   writeFileSync(join(BLUEPRINT_DIR, 'rc2-anchor-a.yaml'), BP_ANCHOR_YAML)
   writeFileSync(join(home, 'p6t6-directive.json'), JSON.stringify({
@@ -741,7 +783,66 @@ function userTextOf(req) {
 }
 
 function toolMsgsOf(req) {
-  return (bodyOf(req)?.messages ?? []).filter((m) => m.role === 'tool')
+  // Tool RESULTS carried by a request, in conversation order, across host
+  // generations. The wire shape is generation-specific and the scripted chain
+  // counts these EXACTLY (one per executed call), so the adapter has to be
+  // precise rather than lenient:
+  //  - 0.1.x: dedicated `role: 'tool'` messages;
+  //  - 0.2.0-rc.2: the request goes through the pi-ai content-part wire —
+  //    results arrive as `tool_result` CONTENT PARTS inside ordinary messages
+  //    (no `role: 'tool'` message exists at all).
+  // Counting only the 0.1.x shape makes every chain step wait forever while
+  // the decide chain keeps re-issuing step 1's tool call — observed in run 4
+  // as a ~1 800-request mock storm with a growing context. Union by tool-call
+  // id, so a mixed or future shape cannot double-count either.
+  const messages = bodyOf(req)?.messages ?? []
+  const out = []
+  const seen = new Set()
+  for (const m of messages) {
+    if (m?.role === 'tool') {
+      const id = m.tool_call_id ?? m.toolCallId ?? m.id ?? null
+      if (id !== null && seen.has(id)) continue
+      if (id !== null) seen.add(id)
+      out.push(m)
+      continue
+    }
+    const content = m?.content
+    if (!Array.isArray(content)) continue
+    for (const p of content) {
+      if (p === null || typeof p !== 'object') continue
+      if (p.type !== 'tool_result' && p.type !== 'tool-result') continue
+      const id = p.tool_use_id ?? p.toolUseId ?? p.tool_call_id ?? p.id ?? null
+      if (id !== null && seen.has(id)) continue
+      if (id !== null) seen.add(id)
+      out.push(p)
+    }
+  }
+  return out
+}
+
+/** The textual payload of one tool result, whatever the generation's shape. */
+function toolResultTextOf(result) {
+  if (result === null || result === undefined) return ''
+  const content = typeof result === 'object' && 'content' in result ? result.content : result
+  return typeof content === 'string' ? content : JSON.stringify(content ?? '')
+}
+
+/**
+ * The instruction surface of a request (persona / system prompt): 0.1.x
+ * carried it as `role: 'system'` MESSAGES, 0.2.0-rc.2 sends it as the
+ * top-level `system` body key (string or content parts) — see the title-call
+ * note in the mock policy. Persona assertions must read the surface, not one
+ * generation's encoding of it.
+ */
+function systemTextOf(req) {
+  const body = bodyOf(req)
+  const top = body?.system
+  const topText = typeof top === 'string' ? top : JSON.stringify(top ?? '')
+  const messageText = (body?.messages ?? [])
+    .filter((m) => m?.role === 'system')
+    .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')))
+    .join('\n')
+  return `${topText}\n${messageText}`
 }
 
 /**
@@ -763,8 +864,33 @@ function makeDecide() {
     // Title-generation side calls (DSH derives the session title from the
     // queued human messages — they CARRY the markers, nested, so they must
     // never drive the scripted chain): a neutral text reply, no chain.
-    const firstMsg = (bodyOf(req)?.messages ?? [])[0]
-    if (typeof firstMsg?.content === 'string' && firstMsg.content.startsWith('Create a concise title')) {
+    //
+    // 0.2.0-rc.2 request-shape note: the auxiliary title dispatch no longer
+    // puts its instruction in a string `messages[0].content`. The host moves
+    // the instruction to the top-level `system` body key and the message
+    // content is a CONTENT-PARTS array (`[{"type":"text","text":"Generate the
+    // session title from this JSON array of human messages:\n[…]"}]`), so the
+    // old `typeof content === 'string' && startsWith('Create a concise title')`
+    // test never fires and the marker-carrying payload leaked into the
+    // scripted chain (`userTextOf` JSON-stringifies the parts). Both the
+    // instruction sites and both known phrasings are checked now, plus the
+    // generation-independent structural backstop below.
+    const body = bodyOf(req)
+    const firstMsg = (body?.messages ?? [])[0]
+    const firstText = typeof firstMsg?.content === 'string'
+      ? firstMsg.content
+      : JSON.stringify(firstMsg?.content ?? '')
+    const instruction = `${typeof body?.system === 'string' ? body.system : JSON.stringify(body?.system ?? '')}\n${firstText}`
+    if (instruction.includes('Create a concise title') || instruction.includes('Generate the session title')) {
+      return { kind: 'text', content: 'RC2 smoke session' }
+    }
+    // Structural backstop: an auxiliary (non-agent) dispatch carries no tool
+    // surface, while every scripted agent turn does (the S1 predicate itself
+    // requires `tools.length > 0`). Answering any toolless call neutrally
+    // keeps auxiliary dispatches out of the scripted chain in any generation;
+    // a toolless AGENT turn would surface as a loud mock-wait timeout, never
+    // as a silent pass.
+    if (body !== undefined && body.tools === undefined) {
       return { kind: 'text', content: 'RC2 smoke session' }
     }
     const text = userTextOf(req)
@@ -793,8 +919,9 @@ function makeDecide() {
           label: 'worker-b-1',
         })
         case 4: {
-          const id = extractInstanceId(toolMsgsOf(req)[3]?.content)
-          if (id === null) return { kind: 'text', content: `RC2_B_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[3]?.content).slice(0, 300)}` }
+          const bCreateResult = toolResultTextOf(toolMsgsOf(req)[3])
+          const id = extractInstanceId(bCreateResult)
+          if (id === null) return { kind: 'text', content: `RC2_B_EXTRACT_FAIL :: ${bCreateResult.slice(0, 300)}` }
           // EXPLICIT async: false — the 2026-09-27 ruling flipped the
           // no-argument default to async; this kit exercises blueprint
           // binding/persona, so it pins the sync path explicitly to keep
@@ -822,8 +949,9 @@ function makeDecide() {
           label: 'worker-b-1',
         })
         case 1: {
-          const id = extractInstanceId(toolMsgsOf(req)[0]?.content)
-          if (id === null) return { kind: 'text', content: `RC2_C_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          const cCreateResult = toolResultTextOf(toolMsgsOf(req)[0])
+          const id = extractInstanceId(cCreateResult)
+          if (id === null) return { kind: 'text', content: `RC2_C_EXTRACT_FAIL :: ${cCreateResult.slice(0, 300)}` }
           // EXPLICIT async: false (2026-09-27 ruling: sync is now opt-in)
           // — keeps this persona-isolation kit's behavior byte-identical.
           return toolCall('team_delegate', {
@@ -844,13 +972,100 @@ function makeDecide() {
 }
 
 /** Poll the in-process mock request log for the first request matching pred. */
+/**
+ * Resource guards (added after run 4).
+ *
+ * The kit drives a scripted chain where every model reply advances the chain
+ * by exactly one executed tool call, so a healthy run is small (~20-30 model
+ * requests in total) and every wait hits on its first or second poll. When a
+ * predicate cannot match the host's request shape the failure mode is the
+ * opposite: `decide` keeps answering with the SAME scripted branch while the
+ * context grows, and each downstream wait grinds its full 180-240 s timeout —
+ * run 4 produced ~1 800 model requests without information, and the useful
+ * signal was buried. These bounds convert that into one loud, well-documented
+ * failure:
+ *   - TOTAL_REQUEST_LIMIT: total model requests observed in this run;
+ *   - SAME_REPLY_LIMIT: the same scripted branch answered this many times in
+ *     a row (the chain is not a loop — no success path repeats a branch);
+ *   - CONSECUTIVE_MISS_LIMIT: this many waits in a row found nothing.
+ * Exceeding a bound can only FAIL the run (the original predicate, label and
+ * request evidence are written to storm-guard.json and the criteria list keeps
+ * its recorded results); it never turns a failure into a pass, and no bound
+ * sits anywhere near the passing path.
+ */
+const TOTAL_REQUEST_LIMIT = 600
+const SAME_REPLY_LIMIT = 15
+const CONSECUTIVE_MISS_LIMIT = 3
+const GUARD = {
+  decideCalls: 0,
+  lastReplySig: null,
+  sameReplyStreak: 0,
+  consecutiveMisses: 0,
+  lastWaitLabel: null,
+  lastRequests: [],
+}
+
+/** A reply signature that ignores the random tool-call ids. */
+function replySig(reply) {
+  if (reply === null || typeof reply !== 'object') return String(reply)
+  if (reply.kind === 'tool-call') {
+    return `tool:${(reply.toolCalls ?? []).map((t) => `${t.name}(${JSON.stringify(t.arguments ?? {})})`).join(',')}`
+  }
+  return `text:${String(reply.content ?? '').slice(0, 200)}`
+}
+
+function guardAbort(reason, extra) {
+  const dump = {
+    reason,
+    guard: { ...GUARD, lastReplySig: GUARD.lastReplySig, sameReplyStreak: GUARD.sameReplyStreak },
+    limits: { TOTAL_REQUEST_LIMIT, SAME_REPLY_LIMIT, CONSECUTIVE_MISS_LIMIT },
+    lastWaits: GUARD.lastRequests.slice(-12),
+    criteriaAtAbort: criteria.map((c) => ({ id: c.id, ok: c.ok })),
+    ...extra,
+  }
+  writeEvidence('storm-guard.json', dump)
+  log(`STORM GUARD: ${reason} (evidence: storm-guard.json; ${criteria.filter((c) => c.ok).length}/${criteria.length} criteria passed so far)`)
+  dieFatal(`storm guard: ${reason}`, 2)
+}
+
+/** Wrap the scripted decide so every reply passes the repetition guard. */
+function guardedDecide(req, decideFn) {
+  GUARD.decideCalls += 1
+  const reply = decideFn(req)
+  const sig = replySig(reply)
+  GUARD.sameReplyStreak = sig === GUARD.lastReplySig ? GUARD.sameReplyStreak + 1 : 1
+  GUARD.lastReplySig = sig
+  if (GUARD.sameReplyStreak >= SAME_REPLY_LIMIT) {
+    guardAbort(`the same scripted reply repeated ${GUARD.sameReplyStreak}× in a row (${sig.slice(0, 200)}) — the chain is not advancing; last wait: ${GUARD.lastWaitLabel ?? 'none'}`, {
+      lastRequest: { userTextHead: userTextOf(req).slice(0, 400), toolResultCount: toolMsgsOf(req).length, bodyKeys: Object.keys(bodyOf(req) ?? {}) },
+    })
+  }
+  return reply
+}
+
 async function waitForMock(mock, pred, timeoutMs, label) {
+  GUARD.lastWaitLabel = label
   const deadline = Date.now() + timeoutMs
   for (;;) {
     const hit = mock.requests.find(pred)
-    if (hit !== undefined) return hit
+    if (hit !== undefined) {
+      GUARD.consecutiveMisses = 0
+      return hit
+    }
+    GUARD.lastRequests = mock.requests.slice(-3).map((r) => ({
+      seq: r.seq,
+      userTextHead: r.body === null ? null : userTextOf(r).slice(0, 200),
+      toolResultCount: r.body === null ? null : toolMsgsOf(r).length,
+    }))
+    if (mock.requests.length > TOTAL_REQUEST_LIMIT) {
+      guardAbort(`${mock.requests.length} model requests exceeded TOTAL_REQUEST_LIMIT while waiting for "${label}"`, { waitingFor: label })
+    }
     if (Date.now() >= deadline) {
-      log(`mock wait timed out: ${label} (requests=${mock.requests.length})`)
+      GUARD.consecutiveMisses += 1
+      log(`mock wait timed out: ${label} (requests=${mock.requests.length}, consecutiveMisses=${GUARD.consecutiveMisses})`)
+      if (GUARD.consecutiveMisses >= CONSECUTIVE_MISS_LIMIT) {
+        guardAbort(`${GUARD.consecutiveMisses} consecutive mock waits timed out (last: "${label}") — the chain is not recovering; failing fast instead of spending the remaining legs' timeouts`, { waitingFor: label })
+      }
       return null
     }
     await new Promise((r) => setTimeout(r, 400))
@@ -1073,7 +1288,6 @@ async function main() {
   const PROBE_RUNTIME_FILE = join(WORKSPACE, 'runtime', 'forbidden.txt')
   mkdirSync(dirname(PROBE_RUNTIME_FILE), { recursive: true })
   writeFileSync(PROBE_RUNTIME_FILE, 'rc2-smoke-runtime-probe\n')
-  writeSmokePreset(HOME)
   log('world materialized (probe files in scratch workspace)')
 
   // Mock model.
@@ -1118,7 +1332,7 @@ async function main() {
   }
   const mock = await startMockModel({
     port: MOCK_PORT,
-    decide: decideDiag,
+    decide: (req) => guardedDecide(req, decideDiag),
     log: (l) => {
       try {
         writeFileSync(mockLog, l + '\n', { flag: 'a' })
@@ -1161,6 +1375,21 @@ async function main() {
         surface.includes('read') && surface.includes('bash'),
         `surface=${surface.length} missingManaged=[${missingManaged.join(',')}] denyList=[${denyList.join(',')}]`)
       writeEvidence('leg0-denylist.json', { denyList, missingManaged })
+      // L0c — the kit's own invariant, pinned as a criterion: `builtinToolDeny`
+      // is the BUILTIN surface minus managed/safe-unmanaged minus the plugin's
+      // own team tools, so no `team_*` name may ever land in it. On
+      // 0.2.0-rc.2 a stale TEAM_TOOL_CATALOG is fatal rather than harmless —
+      // the host fails closed (`tools.restrict() names unknown global tool
+      // '…'`) and the root (leader) agent never starts, which surfaces
+      // downstream as a dead S-leg chain. Fail here, loudly, with the stale
+      // names, instead of writing blueprints that cannot boot.
+      const teamNamesDenied = denyList.filter((n) => n.startsWith('team_'))
+      check('L0c', 'no plugin team tool falls into builtinToolDeny (kit catalog covers the live team surface)',
+        teamNamesDenied.length === 0,
+        `staleTeamCatalog=[${teamNamesDenied.join(',')}] surface=${surface.length}`)
+      if (teamNamesDenied.length !== 0) {
+        fail('L0c')
+      }
       // The saved blueprints (written after discovery — the deny list needs
       // the live surface; the row's blueprintDir was declared at boot).
       writeFileSync(join(BLUEPRINT_DIR, 'rc2-b.yaml'), savedBlueprintYaml(BP_B_ID, `You are the leader of the rc2 smoke B team. ${P_LEADER_B}`, `You are worker-b of the rc2 smoke B team. ${P_WORKER_B}`, denyList))
@@ -1200,6 +1429,17 @@ async function main() {
     }, 'rc2b')
     let createBError = null
     createBPending.catch((e) => { createBError = e }) // no unhandled rejection while in flight
+    // DIAG (0.2.0-rc.2 upgrade round): a create that settles EARLY — with a
+    // rejection or a non-ok body — used to be invisible until the S4a check,
+    // i.e. long after the S1/S2 mock waits had already timed out. (A create
+    // WITH initialWork legitimately holds its response until the leader turn
+    // goes idle, so a LATE settle is normal; an EARLY settle is the failure
+    // signal.) Logged only — the S4a check stays the authoritative
+    // criterion, nothing is weakened.
+    createBPending.then(
+      (r) => log(`DIAG team.create(B) settled early: status=${r?.status} body=${JSON.stringify(r?.body ?? r).slice(0, 600)}`),
+      (e) => log(`DIAG team.create(B) rejected early: ${String(e?.message ?? e)}`),
+    )
     const finishCreateB = async () => {
       const createB = createBError === null
         ? await createBPending
@@ -1220,10 +1460,7 @@ async function main() {
       fail('S1')
       check('S1', 'B leader turn started (model request observed)', false, `requests=${mock.requests.length}`)
     } else {
-      const systemPrompt = (bStart.body.messages ?? [])
-        .filter((m) => m.role === 'system')
-        .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')))
-        .join('\n')
+      const systemPrompt = systemTextOf(bStart)
       writeEvidence('s1-b-leader-request.json', { seq: bStart.seq, systemPrompt: systemPrompt.slice(0, 4000), tools: (bStart.body.tools ?? []).map((t) => t.function?.name ?? t.name) })
       check('S4b', 'B leader model request carries the BOUND blueprint B persona (not the row anchor A)',
         systemPrompt.includes(P_LEADER_B) && !systemPrompt.includes(P_LEADER_A),

@@ -88,7 +88,8 @@ const WORKTREE = resolve(KIT_DIR, '..', '..', '..')
 const MAIN_REPO = resolve(WORKTREE, '..', '..')
 const TESTUSE = join(MAIN_REPO, 'tests', 'deepseek-harness-test-use')
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
-const HOST_PIN = '46a7f68b0922371ce7144b668b90e377d8e799f4'
+import { TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'  // canonical test-infrastructure pin (docs/TEST_METHODS.md §1)
+const HOST_PIN = TEST_USE_BASELINE_SHA // canonical pin = tests/paths.mjs (moves with the pinned host generation)
 const BRANCH = 'fix/team-projection-recovery-20260927'
 const SOURCE_WORLD = join(MAIN_REPO, 'tests', 'homes', 'mpr-2026-09-27T08-35-52')
 const STORE_DIR = join(MAIN_REPO, '.pnpm-store')
