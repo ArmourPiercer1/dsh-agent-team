@@ -78,3 +78,33 @@ change: 47/47 guard tests (`sanitize-evidence` + `run-control` + `runner-wiring`
   produces the committed copy and `--verify` is read; no token-bearing file goes into the PR.
 - The title-dispatch repeat count (5 of 6 allowed for one state key) deserves a look before
   any longer chain, where it would plausibly reach the ceiling.
+
+## Measurement excerpt for independent review (added at `1720db2b`)
+
+Because "trust my prose" is not a review basis, the run now also ships a
+deterministic, credential-free excerpt:
+
+- generator: `tools/run5-oracle-digest.mjs` (whitelist fields only; emits lengths,
+  sha256 and marker-presence bits instead of text; scans its own output for
+  boot-token / `?token=` / authorization / bearer / api-key shapes and exits 2
+  without writing on any hit; no wall-clock, so re-running reproduces identical bytes)
+- output: `rc2-smoke-run5/run5-oracle-digest.json`
+  (sha256 `668ce17ab7fa784591a61388aa5d9ff2cb99eb8c2ef9252ed94a98570f9cb3ee`)
+
+Two revisions are named explicitly, because the run and the review lock are
+different trees: the run executed at **`65f07a26`** (inline readers: role-tool at
+lines 1545/1572/1620/1650, role-system at 1671/1714), while the reviewer locked
+**`00a9a391`**, which already contains the reader replacement and therefore shows
+zero inline sites and the `toolResultTextOf` / `systemTextOf` call sites instead.
+The digest hashes both blobs and lists every family call site, plus the per-criterion
+binding from each oracle id to the expression that produced its observation.
+
+**Open review point, recorded as the reviewer's finding and not defended away:** the
+replacement `toolResultTextOf` joins *every* tool result a request carries. With the
+cumulative counts in the digest (10 by seq 9, 15 by seq 11) a criterion such as S3b or
+S4c could be satisfied by an *earlier* result — including the S2 deny text — rather than
+by the result it means to observe. Reading by call identity / expected result is the
+correct fix, and the follow-up mixed-history regression is what proves it. That work
+belongs to the owner of the two frozen kit files; this round changed neither file
+(the digest records both as byte-identical to the locked head), and no second host run
+was started.
