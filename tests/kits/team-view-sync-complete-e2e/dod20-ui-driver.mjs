@@ -1237,9 +1237,25 @@ export const DIALOG_STATE_SOURCE = `(() => {
   return (${dialogStateFrom.toString()})(dlg)
 })()`
 
+/** Direct dependencies that carry `playwright` in the host tree, in the order
+ *  they are tried. The 0.2.0-rc.2 host does NOT link playwright at the test-use
+ *  root (the driver used to assume it did, so the live lane died with
+ *  `Cannot find module 'playwright'` before a browser ever opened); it is a
+ *  direct dependency of `apps/web` and `packages/experimental/inspector`. */
+const PLAYWRIGHT_HOST_DIRS = ['apps/web', 'packages/experimental/inspector']
+
 export function loadPlaywright (testuseDir) {
-  const req = createRequire(path.join(testuseDir, 'package.json'))
-  return req('playwright')
+  const tried = []
+  for (const dir of [testuseDir, ...PLAYWRIGHT_HOST_DIRS.map((d) => path.join(testuseDir, d))]) {
+    const manifest = path.join(dir, 'package.json')
+    tried.push(dir)
+    try {
+      return createRequire(manifest)('playwright')
+    } catch (e) {
+      if (e && e.code !== 'MODULE_NOT_FOUND') throw e
+    }
+  }
+  throw new Fatal(`playwright is not resolvable anywhere in the host tree — tried: ${tried.join(', ')}`)
 }
 
 /** The UiPage adapter over a real Playwright page — the SAME 14-method seam
