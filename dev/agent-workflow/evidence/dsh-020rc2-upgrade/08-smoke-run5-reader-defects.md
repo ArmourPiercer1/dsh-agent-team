@@ -9,7 +9,7 @@ This is **not** a host-compatibility PASS, and it is **not** a compaction diagno
 `run.log` contains no compaction dispatch at all (`grep -ci compact` → 0), so nothing was
 masked by that path either.
 
-## Containment behaved (measured, not asserted)
+## Containment behaved — single-observer VM measurements, not independently reproduced
 
 | | observed |
 | --- | --- |
@@ -20,10 +20,17 @@ masked by that path either.
 | owned cleanup | `RUN CONTROL: owned process group stopped (pid=38)` → `teardown: stopping host + mock` → `world removed` |
 | after the run | 0 listeners on 3180-3186 / 3491-3500; 0 kit/host/mock processes; `:3080` still the only 30xx listener (stable instance, probed `3080=401` before and after, never bound or written by me) |
 
+**Provenance of this table:** every row is a measurement I took in this VM after the run
+(`ss -ltnH`, filtered `ps -eo args`, `git status`, the kit's own `run-budget.json`), plus the
+`:3080` probe. It is one observer on one machine and has **not** been reproduced by an
+independent host or reviewer; treat the process/port rows as "reported by this VM", not as an
+independently verified fact. `run-budget.json` is the strongest row because the kit wrote it
+during the run rather than after it.
+
 The three older `tests/homes/rc2-smoke-*` worlds (14:16 / 14:29 / 14:41) are retained
 evidence from the earlier killed runs; this run's world was removed.
 
-## The five failures are the kit's own 0.1-envelope readers, not the host
+## The five failures sit on proven kit-side 0.1-envelope readers — which does not yet clear the host
 
 Four of the five criteria read the transcript with a **literal 0.1.x envelope lookup**:
 
@@ -38,14 +45,25 @@ carries the persona where `wire-shape.mjs`'s `systemText()` looks for it, not at
 (`result=` empty on S1a/S3b/S4c, `hasB=false hasA=false` on S4e, `hasC=false hasB=false` on
 S5b) — an empty read reported as a product failure.
 
-Two independent proofs, not inference from the code:
+**What is proven here is the reader defect, not the product outcome.** The two
+measurements below show that the expressions these criteria used return the empty string on
+this host generation, so their FAILs carry no information about persona binding, the
+post-approval execution path or create-member. They do **not** show that those dimensions
+work, and they do not exclude a host-side problem underneath — the same run is equally
+consistent with "reader blind" and "reader blind *and* the feature broken". Only a re-run
+with corrected, call-identity-specific oracles can separate those, and none has happened.
+
+Two measurements behind the reader claim, not inference from the code:
 
 1. `rc2-smoke-run5/s4-b-member-request.json` records `systemPrompt: ""` (len 0) for the B
-   member request at seq 9 — while `mock-requests.json` for that same seq 9 shows the
-   request arrived with the delegation marker, a runtime-context body and a reply
-   (`RC2_MEMBER_DONE` family). The request existed; only the extractor was blind.
+   member request at seq 9 — while `mock-requests.json` for that same seq 9 shows a request
+   carrying the B delegation marker and answered with the canned `RC2_MEMBER_B_DONE`. So the
+   member turn existed and the mock replied; what is NOT established is whether blueprint B's
+   persona reached that model call, because the recorded string is the output of the broken
+   extractor and the helper's output for that seq was never written to a file.
 2. The criteria that used the generation-aware helper on the same run passed: **S4b**
-   (`systemTextOf(leader)` → 4000-char persona, `hasB=true hasA=false`) and **S5c**
+   (`s1-b-leader-request.json` was written from `systemTextOf(bStart)` at kit line 1531 →
+   4000 chars of persona, `hasB=true hasA=false`) and **S5c**
    (`systemTextOf(bMemberAgain)` → "B member keeps B persona"). Same run, same host, same
    member turns — the helper sees the persona, the inline filter does not.
 
@@ -53,16 +71,25 @@ This is the trap the repo already documents for f15 ("marker-driven oracles writ
 older wire counting `role:tool` messages loop forever on this baseline"); the kit's *waiters*
 had been made generation-aware (`toolMsgsOf`), but six *assertions* had not.
 
-## Fixed, without relaxing a single claim
+## The replacement readers (still not a valid measurement)
 
-`rc2-real-host-smoke.mjs` now routes all of them through the existing, generation-aware
-readers — `toolResultTextOf()` (a thin join over `toolMsgsOf` + `wire-shape.toolResultText`)
-for S1a/S2a/S3b/S4c, and `systemTextOf()` for S4e/S5b. The required substrings are unchanged:
-probe content must still appear, `rc2-smoke` must still appear after the approval, the create
-result must still show no reject, and member B must carry B's persona **and not** A's (C not
-B's). No inline `role === 'tool'` / `role === 'system'` lookup remains in the kit. After the
-change: 47/47 guard tests (`sanitize-evidence` + `run-control` + `runner-wiring` regressions),
-24/24 wire-shape + fixture-invariants, `node --check` clean.
+`rc2-real-host-smoke.mjs` routes them through the existing generation-aware readers —
+`toolResultTextOf()` (a join over `toolMsgsOf` + `wire-shape.toolResultText`) for
+S1a/S2a/S3b/S4c and `systemTextOf()` for S4e/S5b. The required **substrings** are unchanged,
+and no inline `role === 'tool'` / `role === 'system'` lookup remains (47/47 guard tests,
+24/24 wire-shape + fixture-invariants, `node --check` clean).
+
+**But the claim "assertions unchanged in strength" was wrong, and the independent reviewer
+was right.** For the persona criteria `systemTextOf` is the intended single value, so those
+are equivalent-in-intent. For the tool-result criteria it is not: joining every tool result
+the request carries means S3b's and S4c's substring tests can be satisfied by an *earlier*
+result inside the same request — by size, the joined strings are the request's whole carried
+history (1 result for S1a's request at seq 5, 2 at seq 6, 3 for S3b at seq 7, and **4 for
+S4c at seq 8**, whose earlier entries include S2's deny text). That is a route to a **false
+pass**, i.e. a weaker oracle, not an equal one. Reading by call identity / expected result is
+the correct fix and it belongs to the owner of the two frozen kit files; the reviewer patch
+is pending upload. Until it lands and a run is executed, none of S1a/S2a/S3b/S4c counts as
+measured — the replacement code is an improvement in the right direction, not a result.
 
 ## What is still owed before anyone calls this suite green
 
@@ -72,10 +99,21 @@ change: 47/47 guard tests (`sanitize-evidence` + `run-control` + `runner-wiring`
   execution path and the create-member path is **unmeasured**: this run neither proved nor
   disproved them, because the oracles that would have measured them were reading the wrong
   envelope.
-- **Raw evidence is retained locally and NOT committed**: `rc2-smoke-run5/instance.log`,
-  `instance-tail.txt`, `mock.log` and `mock-requests.json` carry the run's live web boot
-  token. They stay under the evidence dir untracked until the (reviewer-patched) sanitizer
-  produces the committed copy and `--verify` is read; no token-bearing file goes into the PR.
+- **Raw evidence is retained locally and NOT committed.** Measured, not hedged: the live web
+  boot token (`?token=…`) occurs in exactly two files, `rc2-smoke-run5/instance.log` and
+  `instance-tail.txt`. `mock.log` and `mock-requests.json` contain only the run's *fixture*
+  markers (`requestToken=rc2-…`, which the excerpt's credential scan does not flag), but all
+  four stay untracked anyway until the (reviewer-patched) sanitizer produces the committed
+  copy and its `--verify` output has been read line by line. No token-bearing file goes into
+  the PR.
+- **Request bodies are gone: `role`/content shape and tool-result content per seq are
+  MISSING, and stay missing.** The mock recorder at `65f07a26` kept only
+  `seq / receivedAt / userText(300 chars) / toolMsgCount / reply`, so this run cannot state
+  the message shape of any request — including the two that the persona criteria depended on.
+  Nothing in the excerpt reconstructs those shapes: no synthesized entries, no "would have
+  been" rows, no re-derived bodies. If the shape matters, the recorder must persist a
+  whitelisted body digest and a later run must capture it; that is a kit change belonging to
+  the frozen-file owner.
 - The title-dispatch repeat count (5 of 6 allowed for one state key) deserves a look before
   any longer chain, where it would plausibly reach the ceiling.
 
@@ -88,8 +126,9 @@ deterministic, credential-free excerpt:
   sha256 and marker-presence bits instead of text; scans its own output for
   boot-token / `?token=` / authorization / bearer / api-key shapes and exits 2
   without writing on any hit; no wall-clock, so re-running reproduces identical bytes)
-- output: `rc2-smoke-run5/run5-oracle-digest.json`
-  (sha256 `668ce17ab7fa784591a61388aa5d9ff2cb99eb8c2ef9252ed94a98570f9cb3ee`)
+- output: `rc2-smoke-run5/run5-oracle-digest.json` (its sha256 is recorded in the commit
+  that last regenerated it, not here — a regenerated digest must not be cited from prose that
+  predates it)
 
 Two revisions are named explicitly, because the run and the review lock are
 different trees: the run executed at **`65f07a26`** (inline readers: role-tool at
