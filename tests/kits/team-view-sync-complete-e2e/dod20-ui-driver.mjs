@@ -1320,34 +1320,160 @@ export function createPlaywrightPage (page, cfg) {
   }
 }
 
+// ── BROWSER OWNERSHIP (review: never claim "every Chrome pid that appeared") ──────────────
+// The live lane owns EXACTLY ONE browser, identified by the handle Playwright gave us —
+// never by "pids not present in a before-snapshot", which would SIGKILL a Chrome the
+// operator started in parallel. Installed-API evidence (playwright-core 1.61.1, the runtime
+// this kit loads via --testuse):
+//   types.d.ts:16047-16196  BrowserType.launchServer({ args, chromiumSandbox, env, executablePath,
+//                           headless, host, port, timeout }) → Promise<BrowserServer>
+//   types.d.ts:18387-18437  BrowserServer.close() "Closes the browser gracefully and makes sure the
+//                           process is terminated"; .kill() "Kills the browser process and waits for
+//                           the process to exit"; .process() "Spawned browser application process";
+//                           .wsEndpoint() → the endpoint for BrowserType.connect()
+//   coreBundle.js:55837-55890  launchServer() runs the SAME playwright[…].launch() path (so the
+//                           chromiumSandbox → no `--no-sandbox` rule at coreBundle.js:42544 is
+//                           untouched) and wires browserServer.process/close/kill to
+//                           `browser.options.browserProcess`; coreBundle.js:42518 `defaultArgs`
+//                           always pushes `--remote-debugging-pipe`, and 42530 rejects a caller-
+//                           supplied one — so the pipe transport this guard asserts is exactly the
+//                           pre-existing one. connect() talks to the in-process PlaywrightServer on
+//                           a LOOPBACK ws endpoint (browserProcess ↔ server stays the pipe).
+// No sandbox weakening, no extra flags: the launch options below are the same four as before.
+export function browserHandleIdentity ({ pid, exeReal, argv, chromeReal }) {
+  const problems = []
+  if (!Number.isInteger(pid) || pid <= 1) problems.push('browser-handle-pid-invalid')
+  if (typeof exeReal !== 'string' || exeReal.length === 0) problems.push('browser-handle-exe-unreadable')
+  else if (exeReal !== chromeReal) problems.push(`browser-handle-exe-mismatch:${exeReal}!=${chromeReal}`)
+  const args = Array.isArray(argv) ? argv : []
+  if (args.length === 0) problems.push('browser-handle-argv-unreadable')
+  const weakFlagsFound = WEAK.filter((w) => args.some((a) => a === w || a.startsWith(w + '=')))
+  if (weakFlagsFound.length) problems.push('browser-weak-flags:' + weakFlagsFound.join(','))
+  if (args.some((a) => a.startsWith('--remote-debugging-port'))) problems.push('browser-remote-debugging-port-present')
+  if (!args.includes('--remote-debugging-pipe')) problems.push('browser-remote-debugging-pipe-absent')
+  return {
+    ok: problems.length === 0,
+    problems,
+    weakFlagsFound,
+    pipeTransport: {
+      remoteDebuggingPipe: args.includes('--remote-debugging-pipe'),
+      remoteDebuggingPort: args.some((a) => a.startsWith('--remote-debugging-port')),
+    },
+  }
+}
+
+/** Tear down ONLY the handle we launched. The only signalling channels used are our own
+ *  connection (`browser.close()` disconnects) and the owned server (`close()` graceful,
+ *  `kill()` forced) — no pid list, no scan, so no third-party process can be reached. */
+export async function teardownBrowserHandle ({
+  server = null, browser = null, contexts = [], sleep = async () => {}, isAlive = () => false,
+  graceMs = 8000, log = () => {},
+} = {}) {
+  const rep = { closePath: 'not-started', contextsClosed: 0, killCalled: false, aliveAfter: null, errors: [] }
+  for (const c of contexts) {
+    try { await c.close(); rep.contextsClosed += 1 } catch (e) { rep.errors.push('context-close:' + String(e && e.message || e).slice(0, 90)) }
+  }
+  if (browser) { try { await browser.close() } catch (e) { rep.errors.push('browser-disconnect:' + String(e && e.message || e).slice(0, 90)) } }
+  if (!server) { rep.closePath = 'no-handle'; return rep }
+  const proc = typeof server.process === 'function' ? server.process() : null
+  const pid = proc && Number.isInteger(proc.pid) ? proc.pid : null
+  let verdict = 'closed'
+  const closing = Promise.resolve().then(() => server.close())
+    .then(() => 'closed')
+    .catch((e) => { rep.errors.push('server-close:' + String(e && e.message || e).slice(0, 90)); return 'failed' })
+  verdict = await Promise.race([closing, sleep(graceMs).then(() => 'timeout')])
+  if (verdict !== 'closed' || (pid !== null && isAlive(pid))) {
+    rep.killCalled = true
+    try { await server.kill() } catch (e) { rep.errors.push('server-kill:' + String(e && e.message || e).slice(0, 90)) }
+    rep.closePath = verdict === 'closed' ? 'graceful-then-not-dead-killed' : `forced-after-${verdict}`
+  } else {
+    rep.closePath = 'graceful'
+  }
+  rep.aliveAfter = pid === null ? 'unknown' : isAlive(pid)
+  if (pid !== null) rep.pid = pid
+  log(`browser teardown: handle=${pid ?? 'unknown'} path=${rep.closePath} kill=${rep.killCalled} alive=${rep.aliveAfter}`)
+  return rep
+}
+
+/** The Playwright control server must be provably loopback-bound. Evidence for the semantics:
+ *  coreBundle.js:9640-9662 (WSServer.listen) — `hostname ??= "localhost"`, and the returned
+ *  endpoint is built from the ACTUAL bound address (`ws://<urlHostFromAddress(address)>:<port><path>`),
+ *  so checking the returned endpoint checks the bind, not our request. The same lines show a public
+ *  bind would also disable the server's Origin allow-list (`_allowedHosts … null disables the check`),
+ *  which is a second reason to bind an explicit loopback literal instead of relying on a name.
+ *  types.d.ts:16131 documents `host` ("accepting connections only from the loopback interface") and
+ *  :16149 documents `port` ("Defaults to 0 that picks any available port"). */
+export function browserServerEndpointGuard (endpoint) {
+  const problems = []
+  let shape = ''
+  let host = ''
+  let port = null
+  try {
+    const u = new URL(String(endpoint ?? ''))
+    host = u.hostname
+    port = u.port === '' ? null : Number(u.port)
+    if (u.protocol !== 'ws:') problems.push(`browser-server-protocol:${u.protocol}`)
+    if (!(host === '127.0.0.1' || host === '::1' || host === '[::1]')) problems.push(`browser-server-host-not-loopback:${host || '(empty)'}`)
+    if (!(Number.isInteger(port) && port > 0 && port < 65536)) problems.push(`browser-server-port-invalid:${String(port)}`)
+    // Only the shape is recordable: the path is the server's unguessable session guid.
+    shape = `ws://${host}:${String(port ?? '')}/<redacted-guid>`
+  } catch {
+    problems.push('browser-server-endpoint-unparsable')
+  }
+  return { ok: problems.length === 0, problems, shape, host, port }
+}
+
 export async function runLiveDriver (cfg, { log = (m) => process.stdout.write(m + '\n') } = {}) {
   if (!cfg.access || !cfg.smokeHost || !cfg.world || !cfg.out) throw new Error('--access --smoke-host --world --out are all required')
   if (!cfg.testWorkspace || !cfg.authorizedRoot) throw new Error('--test-workspace and --authorized-root are both required, explicit and absolute (review P6 — no defaults)')
   const { chromium } = loadPlaywright(cfg.testuse)
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-  const listChrome = () => { const r = []; for (const x of fs.readdirSync('/proc')) { if (/^\d+$/.test(x)) { try { const c = fs.readFileSync(`/proc/${x}/cmdline`, 'utf8'); if (c.includes(cfg.chrome)) r.push({ pid: Number(x), argv: c.split('\0').filter(Boolean) }) } catch { /* ignore */ } } } return r }
-  const baseline = new Set(listChrome().map((p) => p.pid))
+  // Ownership comes from the launch handle below, never from a /proc snapshot: a Chrome the
+  // operator (or another session) started in parallel is invisible to this lane by construction.
+  const chromeReal = (() => { try { return fs.realpathSync(cfg.chrome) } catch { return cfg.chrome } })()
+  const procAlive = (pid) => { try { process.kill(pid, 0); return true } catch { return false } }
+  const procExe = (pid) => { try { return fs.realpathSync(`/proc/${pid}/exe`) } catch { return '' } }
+  const procArgv = (pid) => { try { return fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0').filter(Boolean) } catch { return [] } }
+  let server = null
   let browser = null
-  const tree = []
-  const open = []
+  const contexts = []
+  const handle = { pid: null, exe: '', argv: [], identity: null, wsEndpointShape: '', endpoint: null }
   const coreCfg = {
     accessPath: cfg.access, smokeHostPath: cfg.smokeHost, world: cfg.world, out: cfg.out,
     testWorkspace: cfg.testWorkspace, authorizedRoot: cfg.authorizedRoot, railMaxX: cfg.railMaxX,
     tickMs: readProductTickMs(path.resolve(new URL('.', import.meta.url).pathname, '../../..')),
   }
   try {
-    browser = await chromium.launch({ executablePath: cfg.chrome, headless: true, chromiumSandbox: true, timeout: 30000 })
-    const launched = listChrome().filter((p) => !baseline.has(p.pid))
-    for (const p of launched) tree.push(p.pid)
-    const mainProc = launched.find((p) => !(p.argv || []).some((a) => a.startsWith('--type='))) || launched[0]
-    const argv = (mainProc && mainProc.argv) || []
-    if (WEAK.some((w) => argv.some((a) => a === w || a.startsWith(w + '='))) || argv.some((a) => a.startsWith('--remote-debugging-port'))) throw new Error('launch argv guard FAILED')
+    // `host`/`port` are explicit, not defaulted: the control server must be bound to the loopback
+    // literal (which also keeps Playwright's Host/Origin allow-list active), on an ephemeral port.
+    server = await chromium.launchServer({
+      executablePath: cfg.chrome, headless: true, chromiumSandbox: true, timeout: 30000,
+      host: '127.0.0.1', port: 0,
+    })
+    const rawEndpoint = typeof server.wsEndpoint === 'function' ? server.wsEndpoint() : ''
+    const endpoint = browserServerEndpointGuard(rawEndpoint)
+    if (!endpoint.ok) {
+      throw new Error('browser-server endpoint guard FAILED: ' + endpoint.problems.join('; ') + ' (control server is not provably loopback-bound; no leg ran)')
+    }
+    handle.wsEndpointShape = endpoint.shape
+    handle.endpoint = { host: endpoint.host, port: endpoint.port }
+    const proc = typeof server.process === 'function' ? server.process() : null
+    handle.pid = proc && Number.isInteger(proc.pid) ? proc.pid : null
+    handle.exe = handle.pid === null ? '' : procExe(handle.pid)
+    handle.argv = handle.pid === null ? [] : procArgv(handle.pid)
+    handle.identity = browserHandleIdentity({ pid: handle.pid, exeReal: handle.exe, argv: handle.argv, chromeReal })
+    // NO negative-then-continue: an unverifiable handle is fatal before a single leg runs.
+    if (!handle.identity.ok) {
+      throw new Error('browser-handle guard FAILED: ' + handle.identity.problems.join('; ') + ' (owned handle torn down in finally; no leg ran)')
+    }
+    log(`browser owned by handle: pid=${handle.pid} exe=${handle.exe} controlServer=${endpoint.shape} (Chrome<->server transport stays --remote-debugging-pipe, no CDP port)`)
+    browser = await chromium.connect(rawEndpoint, { timeout: 30000 })
     const out = await runDriverCore(coreCfg, {
       fs, realpathSync: fs.realpathSync, homedir: os.homedir, now: Date.now, sleep, log,
       tickMs: coreCfg.tickMs,
       openLeg: async (name, net) => {
         const ctx = await browser.newContext()
-        open.push(ctx)
+        contexts.push(ctx)
         const requestBindings = new Map()
         ctx.on('request', (r) => {
           const u = r.url(); if (!u.includes('/team-remote/')) return
@@ -1377,22 +1503,36 @@ export async function runLiveDriver (cfg, { log = (m) => process.stdout.write(m 
       },
     })
     out.env = {
-      launchArgvScrubbed: scrubEvidence(argv.join(' ')).slice(0, 1200),
-      weakFlagsFound: WEAK.filter((w) => argv.some((a) => a === w || a.startsWith(w + '='))),
-      pipeTransport: { remoteDebuggingPipe: argv.includes('--remote-debugging-pipe'), remoteDebuggingPort: argv.some((a) => a.startsWith('--remote-debugging-port')) },
-      chromeTree: tree.slice(),
+      launchArgvScrubbed: scrubEvidence(handle.argv.join(' ')).slice(0, 1200),
+      weakFlagsFound: handle.identity.weakFlagsFound,
+      pipeTransport: handle.identity.pipeTransport,
+      // ONE owned handle (pid + resolved exe), from launchServer().process(). The previous
+      // pid-SNAPSHOT claim is gone for good: it enumerated every Chrome process that appeared
+      // after a before-snapshot and SIGKILLed all of them, which could reach an unrelated Chrome.
+      browserHandle: {
+        pid: handle.pid, exe: handle.exe, identityOk: handle.identity.ok,
+        transport: 'launchServer+connect(loopback ws; browser<->server --remote-debugging-pipe)',
+        controlServer: handle.wsEndpointShape,
+        controlServerGuard: { ok: true, problems: [] },
+      },
     }
     // core wrote the record under the output dir already — rewrite once more so
     // the on-disk copy carries the env block too (values still scrubbed).
     try { fs.writeFileSync(path.join(cfg.out, 'dod20-driver-out.json'), JSON.stringify(redactOut(out), null, 1)) } catch { /* ignore */ }
     return { out, exitCode: summarize(out).exitCode }
   } finally {
-    for (const c of open) { try { await c.close() } catch { /* ignore */ } }
-    if (browser) { try { await browser.close() } catch { /* ignore */ } }
-    await sleep(1500)
-    for (const p of tree) { try { process.kill(p, 'SIGKILL') } catch { /* ignore */ } }
-    const gone = tree.map((p) => ({ pid: p, alive: (() => { try { process.kill(p, 0); return true } catch { return false } })() }))
-    log('chrome tree gone: ' + JSON.stringify(gone))
+    const teardown = await teardownBrowserHandle({ server, browser, contexts, sleep, isAlive: procAlive, graceMs: 8000, log })
+    try {
+      fs.writeFileSync(path.join(cfg.out, 'browser-handle.json'), JSON.stringify({
+        pid: handle.pid,
+        exe: handle.exe,
+        identityOk: handle.identity ? handle.identity.ok : false,
+        problems: handle.identity ? handle.identity.problems : ['identity-not-evaluated'],
+        weakFlagsFound: handle.identity ? handle.identity.weakFlagsFound : null,
+        pipeTransport: handle.identity ? handle.identity.pipeTransport : null,
+        teardown,
+      }, null, 1))
+    } catch { /* evidence is best-effort; the run verdict is unchanged */ }
   }
 }
 

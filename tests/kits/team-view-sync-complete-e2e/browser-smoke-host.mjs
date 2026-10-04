@@ -168,8 +168,31 @@ const HOST_PORT_MAX = 3186
 const MOCK_PORTS = [3496, 3497]
 const STABLE_PROBES = ['http://127.0.0.1:3080/', 'http://127.0.0.1:3180/']
 const BOOT_TIMEOUT_MS = 300_000
-const RUN_STAMP = `tvs-smoke-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}`
-const WORLD = join(MAIN, 'tests', 'homes', RUN_STAMP)
+const RUN_STAMP_REQUESTED = `tvs-smoke-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}`
+// EXCLUSIVE world provisioning (review C). The stamp has second granularity, so two runs started in
+// the same second used to land on the SAME tests/homes/<stamp> directory — and the seeding step did
+// `rmSync(WORLD)` before `cp -r`, deleting the OTHER run's live world (sessions, locks, durable
+// store) out from under it. Provisioning is now an atomic `mkdirSync` of the exact name: an
+// existing path is refused, never removed, and we fall forward to a suffixed name. Every
+// pre-existing world is left exactly as found; nothing here claims the carrier is what makes the
+// world fresh — the exclusivity is.
+function provisionWorldDir (homesRoot, base) {
+  const candidates = [base, `${base}-p${process.pid}`, ...Array.from({ length: 6 }, (_, i) => `${base}-p${process.pid}-${i + 2}`)]
+  for (const name of candidates) {
+    const dir = join(homesRoot, name)
+    try {
+      mkdirSync(dir)                       // non-recursive: an existing path => EEXIST, never touched
+      return { runStamp: name, world: dir, requested: base, collided: name !== base, exclusive: true }
+    } catch (e) {
+      if (e && e.code === 'EEXIST') continue
+      dieFatal(`cannot provision the test home ${dir}: ${e && e.message}`)
+    }
+  }
+  dieFatal(`cannot provision a fresh test home under ${homesRoot}: every candidate of ${base} already exists`)
+}
+const WORLD_PROVISION = provisionWorldDir(HOMES_ROOT, RUN_STAMP_REQUESTED)
+const RUN_STAMP = WORLD_PROVISION.runStamp          // == basename(WORLD), and the evidence-dir suffix
+const WORLD = WORLD_PROVISION.world
 const EVIDENCE_DIR = join(WORKTREE, 'dev', 'agent-workflow', 'evidence', 'team-view-sync-complete', `wp9b-browser-smoke-${RUN_STAMP}`)
 const INSTANCE_LOG = join(EVIDENCE_DIR, 'instance.log')
 
@@ -487,9 +510,12 @@ async function main() {
   log(`stable pre=${JSON.stringify(stablePre)} hostPort=${hostPort} mockPort=${mockPort}`)
 
   // ── seed the world (no spill blueprint — the T1 seed team is enough) ──────
-  log(`seeding world ${WORLD} from ${SRC_WORLD}`)
-  rmSync(WORLD, { recursive: true, force: true })
-  const cp = spawnSync('cp', ['-r', SRC_WORLD, WORLD], { encoding: 'utf8' })
+  log(`seeding world ${WORLD} from ${SRC_WORLD} (exclusive provisioning: requested=${WORLD_PROVISION.requested}${WORLD_PROVISION.collided ? ' -> suffixed because that name was taken; nothing was deleted' : ''})`)
+  // The directory is ours from the mkdir above, so it must still be empty: seeding into anything
+  // else would mean we did not create it. The copy writes CONTENTS (SRC/.), not a nested subdir.
+  const preSeed = readdirSync(WORLD)
+  if (preSeed.length !== 0) dieFatal(`world dir ${WORLD} is not empty (${preSeed.length} entries) — refusing to seed a directory this run did not exclusively create`)
+  const cp = spawnSync('cp', ['-r', `${SRC_WORLD}/.`, WORLD], { encoding: 'utf8' })
   if (cp.status !== 0) dieFatal(`world seed failed: ${cp.stderr}`)
   const sessionsRoot = join(WORLD, 'sessions')
   for (const top of readdirSync(sessionsRoot)) {
@@ -579,6 +605,7 @@ async function main() {
   // The retained evidence NEVER carries the launch token (scrubbed URL).
   writeFileSync(join(EVIDENCE_DIR, 'smoke-host.json'), JSON.stringify({
     runStamp: RUN_STAMP,
+    worldProvision: WORLD_PROVISION,
     origin,
     tokenUrl: scrub(tokenUrl),
     hostPort,
