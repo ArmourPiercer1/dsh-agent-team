@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { guardedDecide, requestStateKey, spawnHost, systemTextOf, userTextOf } from './rc2-real-host-smoke.mjs'
+import { guardedDecide, requestStateKey, spawnHost, systemTextOf, toolResultTextOf, userTextOf } from './rc2-real-host-smoke.mjs'
 import { createRunControl } from './run-control.mjs'
 import { extractInstanceId, toolResultEntries } from './wire-shape.mjs'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
@@ -126,4 +126,79 @@ test('tool transcripts cannot impersonate user scenario markers', () => {
   assert.equal(userTextOf({ seq: 1, req: body }), 'leader-marker')
   assert.equal(userTextOf({ body }), 'leader-marker')
   assert.equal(userTextOf({ messages: [{ role: 'user', content: 'worker-marker' }] }), 'worker-marker')
+})
+
+// Each sequential smoke oracle must read the result of its own call, not a
+// transcript-wide string. Joining history or matching only the tool name breaks
+// these tests: S1 and S2 both call read, but only S2 is deliberately denied.
+const smokeCalls = [
+  { id: 'read-allowed', name: 'read', text: 'probe rc2-smoke from the earlier read' },
+  { id: 'read-denied', name: 'read', text: 'denied by static rule', error: true },
+  { id: 'bash-approved', name: 'bash', text: 'rc2-smoke\n' },
+  { id: 'member-created', name: 'team_create_member', text: '{"member":{"instanceId":"inst-worker-b"}}' },
+]
+function smokeHistory(wire, calls) {
+  return { body: { system: 'leader B', tools: [{ name: 'read' }], messages: [
+    { role: 'user', content: 'leader scenario' },
+    ...calls.flatMap((call) => wire === 'classic' ? [
+      { role: 'assistant', content: null, tool_calls: [{ id: call.id, type: 'function', function: { name: call.name, arguments: '{}' } }] },
+      { role: 'tool', tool_call_id: call.resultId ?? call.id, content: call.text, is_error: call.error === true },
+    ] : [
+      { role: 'assistant', content: [{ type: 'tool_use', id: call.id, name: call.name, input: {} }] },
+      { role: 'user', content: [{ type: 'tool_result', tool_use_id: call.resultId ?? call.id, content: [{ type: 'text', text: call.text }], is_error: call.error === true }] },
+    ]),
+  ] } }
+}
+const readStep = (request, count, name, allowError = false) => toolResultTextOf(request, { expectedCount: count, expectedTool: name, allowError })
+for (const wire of ['classic', 'parts']) {
+  test(`${wire}: S4 create result excludes the earlier intentional deny`, () => {
+    const result = readStep(smokeHistory(wire, smokeCalls), 4, 'team_create_member')
+    assert.equal(result, smokeCalls[3].text)
+    assert.match(result, /member|created|inst-/)
+    assert.doesNotMatch(result, /reject|denied|error|unavailable|not found/i)
+  })
+  test(`${wire}: S3 cannot pass on rc2-smoke from an earlier read`, () => {
+    const calls = [...smokeCalls.slice(0, 2), { ...smokeCalls[2], text: 'wrong output' }]
+    const result = readStep(smokeHistory(wire, calls), 3, 'bash')
+    assert.equal(result.includes('rc2-smoke'), false)
+  })
+  test(`${wire}: S1/S2/S3 select their own call even with repeated tool names`, () => {
+    for (let index = 0; index < 3; index++) {
+      const call = smokeCalls[index]
+      assert.equal(readStep(smokeHistory(wire, smokeCalls.slice(0, index + 1)), index + 1, call.name, index === 1), call.text)
+    }
+  })
+  test(`${wire}: an error result cannot satisfy a positive output oracle`, () => {
+    const calls = [...smokeCalls.slice(0, 2), { ...smokeCalls[2], text: 'failed to run echo rc2-smoke', error: true }]
+    assert.throws(() => readStep(smokeHistory(wire, calls), 3, 'bash'), /error result/)
+  })
+  for (const [label, calls, count, name] of [
+    ['stale earlier id', [...smokeCalls.slice(0, 3), { ...smokeCalls[3], resultId: 'read-allowed' }], 4, 'team_create_member'],
+    ['unmatched id', [{ ...smokeCalls[0], resultId: 'unknown' }], 1, 'read'],
+    ['duplicate call id', [smokeCalls[0], { ...smokeCalls[1], id: 'read-allowed' }], 2, 'read'],
+    ['wrong tool name', smokeCalls.slice(0, 3), 3, 'team_create_member'],
+    ['missing expected result', smokeCalls.slice(0, 2), 3, 'bash'],
+    ['extra result', smokeCalls, 3, 'bash'],
+  ]) {
+    test(`${wire}: ${label} fails the oracle instead of guessing`, () => {
+      assert.throws(() => readStep(smokeHistory(wire, calls), count, name), /smoke oracle/)
+    })
+  }
+  test(`${wire}: a result without its assistant call is not attributable`, () => {
+    const request = smokeHistory(wire, smokeCalls.slice(0, 1))
+    request.body.messages = request.body.messages.filter((message) => message.role !== 'assistant')
+    assert.throws(() => readStep(request, 1, 'read'), /smoke oracle/)
+  })
+}
+
+test('actual S1/S2/S3/S4 call sites pin count and tool identity', () => {
+  const source = readFileSync(new URL('./rc2-real-host-smoke.mjs', import.meta.url), 'utf8')
+  for (const [stage, count, name] of [['S1', 1, 'read'], ['S2', 2, 'read'], ['S3', 3, 'bash'], ['S4', 4, 'team_create_member']]) {
+    assert.ok(source.includes(`toolResultTextOf(b${stage}, { expectedCount: ${count}, expectedTool: '${name}'`), `${stage} must use its own count and tool identity`)
+  }
+})
+
+test('captured host parts preserve a usable call/result association', () => {
+  const request = fixture('captured-0.2.0-rc.2/model-request-0.2.0-rc.2-agent-with-result-0003.json').request
+  assert.notEqual(readStep(request, 1, 'team_list_members'), '')
 })

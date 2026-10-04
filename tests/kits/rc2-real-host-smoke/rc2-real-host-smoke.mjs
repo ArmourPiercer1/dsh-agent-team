@@ -110,7 +110,6 @@ import {
   isChainTurn,
   systemText as wsSystemText,
   toolResultEntries,
-  toolResultText as wsToolResultText,
   extractInstanceId as strictExtractInstanceId,
 } from './wire-shape.mjs'
 import { TEAM_TOOL_CATALOG, deriveBuiltinToolDeny, materializeBcFixtures } from './fixture-invariants.mjs'
@@ -831,20 +830,35 @@ function toolMsgsOf(req) {
   return entries.map((e) => e.item)
 }
 
-/**
- * Text of every tool result carried by a request, in order.
- *
- * Three oracles (S1a, S3b, S4c) used to read `body.messages.find(m => m.role ===
- * 'tool')?.content` directly. That is the 0.1.x classic envelope. The pinned host
- * delivers tool results as content parts nested inside role:user messages, so the
- * inline lookup silently returned '' and the criteria failed with an empty
- * `result=` - a reader defect wearing the clothes of a product failure (the same
- * trap f15 records for its marker oracles). The waiter already used toolMsgsOf();
- * now the assertions read through the same generation-aware path. Nothing is
- * relaxed: the same substrings are still required.
- */
-function toolResultTextOf(req) {
-  return toolMsgsOf(req).map((item) => wsToolResultText(item)).join('\n')
+/** Read this sequential smoke step's result, never unrelated transcript text.
+ * Both wire generations retain call ids and names. Require one ordered result
+ * per call and the expected final tool, so a stale/duplicate result cannot prove
+ * progress. In particular, S2's intentional denial must not poison S4, and an
+ * earlier `rc2-smoke` string must not prove that S3's bash actually executed. */
+export function toolResultTextOf(req, { expectedCount, expectedTool, allowError = false }) {
+  const label = `smoke oracle ${expectedTool} step ${expectedCount}`
+  const body = bodyOf(req)
+  const decoded = assertWireShape(body, { label, expectToolResult: true })
+  const entries = toolResultEntries(body, { label })
+  if (!Number.isInteger(expectedCount) || expectedCount < 1
+    || entries.length !== expectedCount || decoded.toolUses.length !== expectedCount) {
+    throw new Error(`${label}: expected ${expectedCount} paired calls/results, got ${decoded.toolUses.length}/${entries.length}`)
+  }
+  const seen = new Set()
+  for (let index = 0; index < expectedCount; index++) {
+    const call = decoded.toolUses[index]
+    if (typeof call.id !== 'string' || call.id.trim() === '' || seen.has(call.id)
+      || entries[index].toolUseId !== call.id) {
+      throw new Error(`${label}: missing, duplicate, stale or out-of-order call/result id at ${index}`)
+    }
+    seen.add(call.id)
+  }
+  const last = entries[expectedCount - 1]
+  if (decoded.toolUses[expectedCount - 1].name !== expectedTool) {
+    throw new Error(`${label}: the final call is not ${expectedTool}`)
+  }
+  if (last.isError && !allowError) throw new Error(`${label}: error result cannot prove successful execution`)
+  return last.text
 }
 
 function toolEntriesOf(req, label) {
@@ -1559,7 +1573,7 @@ async function main() {
       fail('S1')
       check('S1', 'allow-subtree read executed (tool result returned to the model)', false, `requests=${mock.requests.length}`)
     } else {
-      const s1result = toolResultTextOf(bS1)
+      const s1result = toolResultTextOf(bS1, { expectedCount: 1, expectedTool: 'read' })
       check('S1a', 'S1: read team/test.md returned the probe content (executed, not blocked)',
         s1result.includes(PROBE_TEAM_CONTENT), `result=${s1result.slice(0, 200)}`)
       if (!s1result.includes(PROBE_TEAM_CONTENT)) fail('S1a')
@@ -1586,7 +1600,7 @@ async function main() {
       fail('S2')
       check('S2', 'deny-subtree read reached a decision (tool result returned to the model)', false, `requests=${mock.requests.length}`)
     } else {
-      const s2result = toolResultTextOf(bS2)
+      const s2result = toolResultTextOf(bS2, { expectedCount: 2, expectedTool: 'read', allowError: true })
       const s2state = await p6t6State(booted.port)
       writeEvidence('s2-state-after.json', s2state.body)
       const s2obs = (Array.isArray(s2state.body?.observations) ? s2state.body.observations : [])
@@ -1634,7 +1648,7 @@ async function main() {
           fail('S3')
           check('S3b', 'S3: bash executed after approval (tool result returned — NO target-stale)', false, `requests=${mock.requests.length}`)
         } else {
-          const s3result = toolResultTextOf(bS3)
+          const s3result = toolResultTextOf(bS3, { expectedCount: 3, expectedTool: 'bash' })
           check('S3b', 'S3: bash executed after approval — the echo output reached the model (guard passed, no target-stale)',
             s3result.includes('rc2-smoke'), `result=${s3result.slice(0, 200)}`)
           if (!s3result.includes('rc2-smoke')) fail('S3b')
@@ -1664,7 +1678,7 @@ async function main() {
       fail('S4c')
       check('S4c', 'S4: team_create_member(worker-b) executed (tool result returned)', false, `requests=${mock.requests.length}`)
     } else {
-      const s4result = toolResultTextOf(bS4)
+      const s4result = toolResultTextOf(bS4, { expectedCount: 4, expectedTool: 'team_create_member' })
       writeEvidence('s4-create-member-result.json', { result: s4result.slice(0, 2000) })
       const s4ok = /member|created|inst-/.test(s4result) && !/reject|denied|error|unavailable|not found/i.test(s4result)
       check('S4c', 'S4: first create of the B-only template worker-b SUCCEEDED (no post-commit reject)', s4ok, `result=${s4result.slice(0, 300)}`)
