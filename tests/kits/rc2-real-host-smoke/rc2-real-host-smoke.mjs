@@ -84,11 +84,16 @@
  * USAGE:
  *   node tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs \
  *     [--worktree <path>] [--testuse <path>] [--host-port N] \
- *     [--mock-port N] [--evidence-dir <path>] [--keep]
+ *     [--mock-port N] [--evidence-dir <path>] [--raw-evidence-dir <path>] [--keep]
  *   defaults: --worktree = the repo root containing this kit (4 levels up),
  *   --testuse = <worktree>/tests/deepseek-harness-test-use, host port =
  *   first free of 3491–3500, mock port = 3496, evidence dir =
  *   dev/agent-workflow/evidence/rc2-repair/smoke/rc2-smoke-<stamp>/.
+ *   --raw-evidence-dir: the PRIVATE gitignored sink for full RAW strict-
+ *   failure captures (dir 0700, files 0600). Without it raw captures are
+ *   written NOWHERE — the publishable evidence tree only ever holds the
+ *   non-sensitive status references; raw never inherits the evidence-dir
+ *   default and a sink equal to the evidence dir is rejected.
  *
  * EXIT: 0 = all criteria pass; 2 = a S-leg criterion failed (with the full
  * evidence dump); 1 = fatal (environment/boot/row).
@@ -98,7 +103,7 @@
  */
 
 import { spawn, spawnSync } from 'node:child_process'
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { chmodSync, closeSync, existsSync, fstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
@@ -173,6 +178,24 @@ const RUN_STAMP = new Date().toISOString().replace(/[:.]/g, '-').replace('T', 'T
 const RUN_DIR = EVIDENCE_DIR_ARG
   ? resolve(EVIDENCE_DIR_ARG)
   : join(WORKTREE, 'dev', 'agent-workflow', 'evidence', 'rc2-repair', 'smoke', `rc2-smoke-${RUN_STAMP}`)
+
+// Raw capture sink (review of be57d4b7, finding 1): the FULL raw capture
+// (call arguments, result texts, host tail) is written ONLY to an explicit
+// private sink — it NEVER inherits RUN_DIR, whose default is a publishable
+// evidence path. The operator points --raw-evidence-dir at a gitignored
+// private directory; the public evidence tree keeps only the non-sensitive
+// per-stage STATUS references (public copies go through sanitize-evidence).
+// A sink equal to RUN_DIR is rejected: raw must not leak into the tree that
+// is copied out as publishable.
+const RAW_EVIDENCE_DIR_ARG = argValue('raw-evidence-dir', null)
+const RAW_CAPTURE_SINK_DIR = RAW_EVIDENCE_DIR_ARG === null || resolve(RAW_EVIDENCE_DIR_ARG) === RUN_DIR
+  ? null
+  : resolve(RAW_EVIDENCE_DIR_ARG)
+/** Documented byte cap for one serialized raw capture (finding 4). */
+const RAW_CAPTURE_MAX_BYTES = 32 * 1024 * 1024
+/** Host-tail window: seek-and-read at most this many bytes (finding 4). */
+const HOST_TAIL_WINDOW_BYTES = 64 * 1024
+const HOST_TAIL_LINES = 40
 const HOME = join(WORKTREE, 'tests', 'homes', `rc2-smoke-${RUN_STAMP}`)
 const WORKSPACE = join(HOME, 'workspace')
 const BLUEPRINT_DIR = join(WORKTREE, `.rc2-smoke-blueprints-${RUN_STAMP}`)
@@ -230,6 +253,24 @@ function writeEvidence(name, content) {
   } catch { /* best-effort */ }
 }
 
+/**
+ * Non-sensitive references to the strict-failure STATUS files this process
+ * wrote (finding 3): the module-level recorder survives teardown's own
+ * failures, and `strictCaptureReferences()` merges it with what is actually
+ * on disk in RUN_DIR. Both the teardown summary and the fatal summary carry
+ * this list, so a failed run is never summarized without its capture state.
+ */
+const STRICT_CAPTURE_REFS = []
+export function strictCaptureReferences() {
+  const refs = new Set(STRICT_CAPTURE_REFS)
+  try {
+    for (const name of readdirSync(RUN_DIR)) {
+      if (name.startsWith('strict-failure-')) refs.add(name)
+    }
+  } catch { /* RUN_DIR may be gone; the recorder still reports the refs */ }
+  return [...refs].sort()
+}
+
 function dieFatal(msg, exitCode = 1) {
   log(`FATAL ${msg}`)
   writeEvidence('summary.json', { runStamp: RUN_STAMP, fatal: msg, criteria })
@@ -242,6 +283,25 @@ function dieFatal(msg, exitCode = 1) {
   }
   // Preflight (nothing started yet): a plain exit is safe.
   process.exit(exitCode)
+}
+
+/**
+ * The FINAL fatal summary (finding 3): the top-level main().catch rewrites
+ * summary.json when an error escapes the owner's finally, and that rewrite
+ * must not silently drop the strict-failure capture state — one shared
+ * builder for both final summaries (teardown and fatal), so the capture
+ * references ride through whichever path ends the run. `put` is injectable
+ * for regression tests; production calls use the default evidence writer.
+ */
+export function writeFatalSummary(fatalText, put = writeEvidence) {
+  put('summary.json', {
+    runStamp: RUN_STAMP,
+    fatal: String(fatalText),
+    criteria,
+    runControl: { aborted: RC.aborted(), violation: RC.violation(), budget: RC.budget.snapshot() },
+    strictFailureCaptures: strictCaptureReferences(),
+  })
+  return strictCaptureReferences()
 }
 
 // ── small http helpers (a2x kit shape) ──────────────────────────────────────
@@ -338,6 +398,69 @@ function logTail(logPath, n = 25) {
   } catch {
     return '<no log>'
   }
+}
+
+/**
+ * BOUNDED host-log tail (finding 4): never reads the whole file the way
+ * `logTail` does — seeks to (size - HOST_TAIL_WINDOW_BYTES) and reads at
+ * most that window, then keeps the last HOST_TAIL_LINES lines. A boundary
+ * may cut a line mid-way (diagnostic context, and the truncated flag says
+ * the window head is partial); unreadable files yield an error string, not
+ * a throw.
+ */
+function boundedLogTail(logPath) {
+  if (typeof logPath !== 'string' || logPath === '') return { text: '<no instance log>', truncated: false }
+  let fd = null
+  try {
+    fd = openSync(logPath, 'r')
+    const size = fstatSync(fd).size
+    const len = Math.min(size, HOST_TAIL_WINDOW_BYTES)
+    const start = size - len
+    const buf = Buffer.alloc(len)
+    let got = 0
+    while (got < len) {
+      const n = readSync(fd, buf, got, len - got, start + got)
+      if (n <= 0) break
+      got += n
+    }
+    const text = buf.subarray(0, got).toString('utf8')
+    return { text: text.split('\n').slice(-HOST_TAIL_LINES).join('\n'), truncated: size > len || start > 0 }
+  } catch (err) {
+    return { text: `<instance log unreadable: ${String(err?.message ?? err)}>`, truncated: false }
+  } finally {
+    if (fd !== null) {
+      try { closeSync(fd) } catch { /* already closed */ }
+    }
+  }
+}
+
+/**
+ * STRICT writer for RAW captures (finding 2): unlike the best-effort public
+ * `writeEvidence`, it REPORTS the truth. The private sink dir is forced to
+ * 0700 and each raw file to 0600 (explicit chmod after create, so umask
+ * cannot widen either). Success is only ever claimed when both the write
+ * and the mode enforcement actually returned — the caller keys `persisted`
+ * off this result and keeps its own error path intact.
+ */
+function writeRawCaptureStrict(dir, name, text) {
+  try {
+    mkdirSync(dir, { recursive: true, mode: 0o700 })
+    chmodSync(dir, 0o700)
+  } catch (err) {
+    return { ok: false, error: `sink dir unusable: ${String(err?.message ?? err)}` }
+  }
+  const path = join(dir, name)
+  try {
+    writeFileSync(path, text, { mode: 0o600 })
+  } catch (err) {
+    return { ok: false, error: `raw write failed: ${String(err?.message ?? err)}` }
+  }
+  try {
+    chmodSync(path, 0o600)
+  } catch (err) {
+    return { ok: false, error: `raw chmod failed: ${String(err?.message ?? err)}` }
+  }
+  return { ok: true, path }
 }
 
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
@@ -909,31 +1032,76 @@ function strictFailureDiagnostics(body, { label, expectedCount, expectedTool, al
 }
 
 /**
- * The kit's capture-before-assert seam (run 6). When a strict step oracle
- * throws, the exact error text died with the in-memory transcript: teardown
- * removes the world and `mock-requests.json` keeps only summary fields. This
- * factory returns the `onStrictFailure` hook wired into every strict step
- * call site; BEFORE the throw reaches teardown it writes one RAW file
- * `strict-failure-<stage>.json` to the run's evidence dir (which runs point
- * at the gitignored private raw directory; the public copy goes through
- * scripts/sanitize-evidence.mjs) with the associated call (id/name/
- * arguments), result (toolUseId/isError/full text), the oracle error, and
- * the host instance-log tail. It never changes the verdict: the oracle
- * re-throws identically, the hook is read-only, and hook faults are swallowed
- * by the oracle.
+ * The kit's capture-before-assert seam (run 6; repaired from the be57d4b7
+ * review). When a strict step oracle throws, the exact error text died with
+ * the in-memory transcript. This factory returns the `onStrictFailure` hook
+ * wired into every strict step call site; BEFORE the throw reaches teardown
+ * it captures the associated call (id/name/arguments), result
+ * (toolUseId/isError/full text), the oracle error, and a BOUNDED host tail
+ * (seek-read ≤ HOST_TAIL_WINDOW_BYTES, last HOST_TAIL_LINES lines, explicit
+ * truncated flag) as RAW file `strict-failure-<stage>.json`.
+ *   - RAW goes ONLY to the explicit private sink `rawSinkDir` (kit flag
+ *     --raw-evidence-dir; never RUN_DIR): dir forced 0700, files 0600, via
+ *     the strict writer that reports honestly — `persisted:true` is recorded
+ *     only after the write AND the mode enforcement actually succeeded;
+ *     with no sink configured the full capture is written NOWHERE.
+ *   - A serialized capture larger than rawMaxBytes (default
+ *     RAW_CAPTURE_MAX_BYTES = 32 MiB) is marked `capture-incomplete-oversize`
+ *     and NOT written — never passed off as complete.
+ *   - The PUBLIC evidence tree receives only the non-sensitive
+ *     `strict-failure-<stage>-status.json` reference (stage, oracle error,
+ *     persisted/status/bytes — never arguments, result texts or log tails).
+ * None of this can change the verdict: the oracle re-throws identically and
+ * a broken capture still cannot mask its error.
  */
-export function makeStrictFailureCapture({ stage, writeEvidence: put, log, instanceLog }) {
+export function makeStrictFailureCapture({ stage, rawSinkDir = null, statusEvidence, log, instanceLog, rawMaxBytes = RAW_CAPTURE_MAX_BYTES }) {
   return function onStrictFailure(diag) {
-    const instanceTail = typeof instanceLog === 'string' && instanceLog !== ''
-      ? logTail(instanceLog, 40)
-      : '<no instance log>'
-    put(`strict-failure-${stage}.json`, {
-      stage,
-      capturedAt: new Date().toISOString(),
-      ...diag,
-      instanceTail,
-    })
-    log(`strict oracle failure (${stage}): raw call/result capture + host tail persisted before the throw`)
+    const capturedAt = new Date().toISOString()
+    const rawName = `strict-failure-${stage}.json`
+    const statusName = `strict-failure-${stage}-status.json`
+    let status = ''
+    let persisted = false
+    let rawBytes = null
+    let writeError = null
+    if (rawSinkDir === null || rawSinkDir === undefined || rawSinkDir === '') {
+      status = 'raw-sink-unconfigured'
+    } else {
+      const tail = boundedLogTail(instanceLog)
+      const payload = {
+        stage, capturedAt, ...diag,
+        hostTail: tail.text,
+        hostTailTruncated: tail.truncated,
+        hostTailWindowBytes: HOST_TAIL_WINDOW_BYTES,
+      }
+      const text = JSON.stringify(payload, null, 2)
+      rawBytes = Buffer.byteLength(text)
+      if (rawBytes > rawMaxBytes) {
+        status = 'capture-incomplete-oversize'
+      } else {
+        const res = writeRawCaptureStrict(rawSinkDir, rawName, text)
+        if (res.ok) { persisted = true; status = 'persisted' }
+        else { status = 'capture-write-failed'; writeError = res.error }
+      }
+    }
+    // The non-sensitive public reference. The strict writer's honest result
+    // is the ONLY source of `persisted`; an IO failure here (public writer
+    // is best-effort) must not mask the oracle and only weakens discovery.
+    try {
+      statusEvidence(statusName, {
+        stage, capturedAt,
+        oracleLabel: diag.label,
+        oracleError: diag.error,
+        persisted, status,
+        rawEvidenceFile: persisted ? rawName : null,
+        rawBytes,
+        writeError,
+        callsCaptured: Array.isArray(diag.calls) ? diag.calls.length : null,
+        resultsCaptured: Array.isArray(diag.results) ? diag.results.length : null,
+        decodeNote: { callsError: diag.callsError !== null, resultsError: diag.resultsError !== null },
+      })
+      STRICT_CAPTURE_REFS.push(statusName)
+    } catch { /* best-effort status; the oracle error stays untouched */ }
+    log(`strict oracle failure (${stage}): raw capture status=${status}${persisted ? ` -> ${rawName}` : ' (no raw contents in public evidence)'}`)
   }
 }
 
@@ -1508,9 +1676,11 @@ async function main() {
   booted = await bootHost({ port: hostPort, home: HOME, mockPort: mock.port, instanceLog })
   // Capture-before-assert (run 6): every strict step oracle gets the raw
   // capture hook, so an error result / association failure persists its exact
-  // call+result+host tail to THIS run's evidence dir before teardown removes
-  // the world. The verdict itself is unchanged (the oracle re-throws).
-  const strictCapture = (stage) => makeStrictFailureCapture({ stage, writeEvidence, log, instanceLog })
+  // call+result+host tail to the PRIVATE raw sink (never this run's
+  // publishable evidence dir) before teardown removes the world. The verdict
+  // itself is unchanged (the oracle re-throws).
+  const strictCapture = (stage) => makeStrictFailureCapture({ stage, rawSinkDir: RAW_CAPTURE_SINK_DIR, statusEvidence: writeEvidence, log, instanceLog })
+  log(`raw capture sink: ${RAW_CAPTURE_SINK_DIR === null ? 'NOT CONFIGURED — raw captures are written nowhere, public evidence keeps status refs only (pass --raw-evidence-dir <private gitignored dir> to enable)' : RAW_CAPTURE_SINK_DIR}`)
   // Independent of every wait: the child this run spawned may not outlive the
   // run budget. Killing is by the bound handle only — never by port or pattern.
 
@@ -1884,13 +2054,11 @@ async function main() {
     if (booted !== null) writeEvidence('instance-tail.txt', logTail(booted.instanceLog, 120))
     writeEvidence('run-budget.json', { budget: RC.budget.snapshot(), violation: RC.violation(), limits: RC.budget.limits })
     // Strict-assert captures were written at the assert point (before this
-    // teardown); record their presence here so a reviewer can find the raw
-    // call/result evidence for the failed leg from summary.json alone.
-    let strictFailureCaptures = []
-    try {
-      strictFailureCaptures = readdirSync(RUN_DIR).filter((n) => n.startsWith('strict-failure-')).sort()
-    } catch { /* evidence best-effort */ }
-    if (strictFailureCaptures.length > 0) log(`teardown: strict-failure raw capture present: ${strictFailureCaptures.join(', ')}`)
+    // teardown); summary.json references ONLY the non-sensitive status files
+    // (raw content lives solely in the private sink). Shared with the fatal
+    // path via strictCaptureReferences() (finding 3).
+    const strictFailureCaptures = strictCaptureReferences()
+    if (strictFailureCaptures.length > 0) log(`teardown: strict-failure status references present: ${strictFailureCaptures.join(', ')}`)
     if (FLAG_KEEP || cleanupError !== null) {
       log(`--keep: world retained at ${HOME}`)
     } else {
@@ -1927,7 +2095,7 @@ async function main() {
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch((e) => {
   try {
     log(`FATAL uncaught: ${e.stack ?? e}`)
-    if (RUN_LOG !== null) writeEvidence('summary.json', { runStamp: RUN_STAMP, fatal: String(e.message ?? e), criteria, runControl: { aborted: RC.aborted(), violation: RC.violation(), budget: RC.budget.snapshot() } })
+    if (RUN_LOG !== null) writeFatalSummary(String(e.message ?? e))
   } catch { /* best-effort */ }
   // An abort means the owner's finally already stopped the child + mock; the
   // exit code only reports WHY the run ended (2 = budget/guard/failure path).

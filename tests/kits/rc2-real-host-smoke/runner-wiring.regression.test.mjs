@@ -1,9 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, readdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { guardedDecide, makeStrictFailureCapture, requestStateKey, spawnHost, systemTextOf, toolResultTextOf, userTextOf } from './rc2-real-host-smoke.mjs'
+import { guardedDecide, makeStrictFailureCapture, requestStateKey, spawnHost, strictCaptureReferences, systemTextOf, toolResultTextOf, userTextOf, writeFatalSummary } from './rc2-real-host-smoke.mjs'
 import { createRunControl } from './run-control.mjs'
 import { extractInstanceId, toolResultEntries } from './wire-shape.mjs'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
@@ -203,86 +203,184 @@ test('captured host parts preserve a usable call/result association', () => {
   assert.notEqual(readStep(request, 1, 'team_list_members'), '')
 })
 
-// ── capture-before-assert (run 6 forensics) ─────────────────────────────────
-// Run 6's third bash result was isError=true: the strict oracle correctly
-// aborted, but the exact error text died with the in-memory transcript —
-// teardown removes the world and mock-requests.json keeps only summary
-// fields. These tests pin the repair through the SAME seam the production
-// call sites use (the exported toolResultTextOf + the exported
-// makeStrictFailureCapture that main() wires at S1–S4): an error result must
-// BOTH persist associated raw evidence AND still throw the same verdict.
-const CAPTURE_ERROR_TEXT = 'rc2-capture-probe bash failure — head [spawn echo rc2-smoke exited 1] …middle… tail [no stderr]'
 
-function captureFixture() {
-  const evidenceDir = mkdtempSync(join(tmpdir(), 'rc2-strict-capture-'))
-  const worldDir = join(evidenceDir, 'world')
+// ── capture-before-assert (run 6 forensics; repaired per the be57d4b7 review) ─
+// The strict oracle persists RAW call/result evidence to an EXPLICIT PRIVATE
+// sink (never RUN_DIR's publishable default), through a STRICT writer that
+// only ever reports persisted:true on a real write+chmod success, with a
+// BOUNDED host tail and a documented size cap — and the original verdict is
+// re-thrown unchanged on every one of these paths. All tests drive the SAME
+// exported seam main() wires at S1–S4.
+const CAPTURE_ERROR_TEXT = 'rc2-capture-probe bash failure — head [spawn echo rc2-smoke exited 1] …middle… tail [no stderr]'
+const TAIL_MARKER = 'CAPTURE-TAIL-MARKER-last-line'
+
+function captureFixture({ rawSink = 'private', rawMaxBytes } = {}) {
+  const base = mkdtempSync(join(tmpdir(), 'rc2-strict-capture-'))
+  const publicDir = join(base, 'public-evidence')
+  mkdirSync(publicDir)
+  const worldDir = join(base, 'world')
   mkdirSync(worldDir)
-  const instanceLog = join(evidenceDir, 'instance.log')
+  const instanceLog = join(base, 'instance.log')
   writeFileSync(instanceLog, 'instance: bash tool faulted while executing echo rc2-smoke\n')
+  const rawSinkDir = rawSink === 'private' ? join(base, 'private-raw')
+    : rawSink === 'blocked' ? join(base, 'blocked-sink')
+    : undefined
+  if (rawSink === 'blocked') writeFileSync(rawSinkDir, 'a regular file cannot serve as the 0700 sink dir\n')
+  const statuses = []
   const capture = makeStrictFailureCapture({
     stage: 'S3',
-    writeEvidence: (name, content) => writeFileSync(join(evidenceDir, name), JSON.stringify(content, null, 2)),
+    rawSinkDir,
+    statusEvidence: (name, content) => {
+      statuses.push({ name, content })
+      writeFileSync(join(publicDir, name), JSON.stringify(content, null, 2))
+    },
     log() {},
     instanceLog,
+    ...(rawMaxBytes === undefined ? {} : { rawMaxBytes }),
   })
-  const read = () => JSON.parse(readFileSync(join(evidenceDir, 'strict-failure-S3.json'), 'utf8'))
-  return { evidenceDir, worldDir, capture, read }
+  const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => {
+    const p = join(d, e.name)
+    return e.isDirectory() ? walk(p) : [p]
+  })
+  return {
+    base,
+    publicDir,
+    worldDir,
+    instanceLog,
+    statuses,
+    capture,
+    status: () => statuses[statuses.length - 1].content,
+    rawPath: join(base, 'private-raw', 'strict-failure-S3.json'),
+    raw: () => JSON.parse(readFileSync(join(base, 'private-raw', 'strict-failure-S3.json'), 'utf8')),
+    failing: [...smokeCalls.slice(0, 2), { ...smokeCalls[2], text: CAPTURE_ERROR_TEXT, error: true }],
+    assertNoRawTextAnywhere: () => {
+      for (const p of walk(base)) {
+        assert.equal(readFileSync(p, 'utf8').includes(CAPTURE_ERROR_TEXT), false, `raw result text leaked into ${p}`)
+      }
+    },
+  }
 }
+const runFailingOracle = (f, wire = 'parts', request = null) => assert.throws(
+  () => toolResultTextOf(request ?? smokeHistory(wire, f.failing), { expectedCount: request ? 1 : 3, expectedTool: request ? 'read' : 'bash', onStrictFailure: f.capture }),
+  /smoke oracle/,
+)
 
 for (const wire of ['classic', 'parts']) {
-  test(`${wire}: an error result is captured as raw evidence AND still throws the strict verdict`, () => {
+  test(`${wire}: an error result persists RAW to the private sink (dir 0700/file 0600) AND still throws the strict verdict`, () => {
     const f = captureFixture()
     try {
-      const calls = [...smokeCalls.slice(0, 2), { ...smokeCalls[2], text: CAPTURE_ERROR_TEXT, error: true }]
-      assert.throws(
-        () => toolResultTextOf(smokeHistory(wire, calls), { expectedCount: 3, expectedTool: 'bash', onStrictFailure: f.capture }),
-        /smoke oracle bash step 3: error result cannot prove successful execution/,
-      )
-      const raw = f.read()
-      assert.equal(raw.stage, 'S3')
-      assert.equal(typeof raw.capturedAt, 'string')
-      assert.match(raw.error.message, /error result cannot prove successful execution/)
-      // The exact associated call: id/name/arguments of the failing step.
-      assert.equal(raw.calls.length, 3)
-      assert.equal(raw.calls[2].id, 'bash-approved')
-      assert.equal(raw.calls[2].name, 'bash')
-      assert.deepEqual(raw.calls[2].arguments, wire === 'classic' ? '{}' : {})
-      // The result: toolUseId/isError and the FULL error text (untruncated).
-      assert.equal(raw.results.length, 3)
-      assert.equal(raw.results[2].toolUseId, raw.calls[2].id)
-      assert.equal(raw.results[2].isError, true)
-      assert.equal(raw.results[2].text, CAPTURE_ERROR_TEXT)
-      assert.match(raw.instanceTail, /bash tool faulted/)
-      // Teardown removes the world afterwards — the raw evidence stays readable.
+      runFailingOracle(f, wire)
+      const rawFile = f.raw()
+      assert.equal(rawFile.stage, 'S3')
+      assert.equal(typeof rawFile.capturedAt, 'string')
+      assert.match(rawFile.error.message, /error result cannot prove successful execution/)
+      assert.equal(rawFile.calls[2].id, 'bash-approved')
+      assert.equal(rawFile.calls[2].name, 'bash')
+      assert.deepEqual(rawFile.calls[2].arguments, wire === 'classic' ? '{}' : {})
+      assert.equal(rawFile.results[2].toolUseId, rawFile.calls[2].id)
+      assert.equal(rawFile.results[2].isError, true)
+      assert.equal(rawFile.results[2].text, CAPTURE_ERROR_TEXT)
+      assert.equal(rawFile.hostTailTruncated, false)
+      assert.match(rawFile.hostTail, /bash tool faulted/)
+      assert.equal(statSync(join(f.base, 'private-raw')).mode & 0o777, 0o700)
+      assert.equal(statSync(f.rawPath).mode & 0o777, 0o600)
+      const st = f.status()
+      assert.equal(st.persisted, true)
+      assert.equal(st.status, 'persisted')
+      assert.equal(st.rawEvidenceFile, 'strict-failure-S3.json')
+      // The PUBLIC tree holds only the non-sensitive status reference.
+      assert.deepEqual(readdirSync(f.publicDir), ['strict-failure-S3-status.json'])
+      // Teardown removes the world afterwards — the private raw stays readable.
       rmSync(f.worldDir, { recursive: true, force: true })
-      assert.equal(f.read().results[2].text, CAPTURE_ERROR_TEXT)
-    } finally {
-      rmSync(f.evidenceDir, { recursive: true, force: true })
-    }
+      assert.equal(f.raw().results[2].text, CAPTURE_ERROR_TEXT)
+    } finally { rmSync(f.base, { recursive: true, force: true }) }
   })
 }
 
-test('a call/result association failure is captured with the decoded pair', () => {
+test('an association failure is captured with the decoded call/result pair', () => {
   const f = captureFixture()
   try {
-    const calls = [{ ...smokeCalls[0], resultId: 'unknown' }]
-    assert.throws(
-      () => toolResultTextOf(smokeHistory('parts', calls), { expectedCount: 1, expectedTool: 'read', onStrictFailure: f.capture }),
-      /smoke oracle read step 1: missing, duplicate, stale or out-of-order call\/result id at 0/,
-    )
-    const raw = f.read()
-    assert.equal(raw.calls[0].id, 'read-allowed')
-    assert.equal(raw.calls[0].name, 'read')
-    assert.equal(raw.results[0].toolUseId, 'unknown')
-    assert.equal(raw.results[0].isError, false)
-    assert.equal(raw.results[0].text, smokeCalls[0].text)
-  } finally { rmSync(f.evidenceDir, { recursive: true, force: true }) }
+    const request = smokeHistory('parts', [{ ...smokeCalls[0], resultId: 'unknown' }])
+    runFailingOracle(f, 'parts', request)
+    const rawFile = f.raw()
+    assert.match(rawFile.error.message, /smoke oracle read step 1: missing, duplicate, stale or out-of-order call\/result id at 0/)
+    assert.equal(rawFile.calls[0].id, 'read-allowed')
+    assert.equal(rawFile.calls[0].name, 'read')
+    assert.equal(rawFile.results[0].toolUseId, 'unknown')
+    assert.equal(rawFile.results[0].isError, false)
+    assert.equal(rawFile.results[0].text, smokeCalls[0].text)
+  } finally { rmSync(f.base, { recursive: true, force: true }) }
+})
+
+test('no private sink configured: raw content is written NOWHERE, only the status reference exists', () => {
+  const f = captureFixture({ rawSink: 'none' })
+  try {
+    runFailingOracle(f)
+    assert.equal(f.status().persisted, false)
+    assert.equal(f.status().status, 'raw-sink-unconfigured')
+    assert.equal(existsSync(join(f.base, 'private-raw')), false)
+    assert.deepEqual(readdirSync(f.publicDir), ['strict-failure-S3-status.json'])
+    f.assertNoRawTextAnywhere()
+  } finally { rmSync(f.base, { recursive: true, force: true }) }
+})
+
+test('a real writer failure reports capture-write-failed honestly and never fakes persisted:true', () => {
+  const f = captureFixture({ rawSink: 'blocked' })
+  try {
+    runFailingOracle(f)
+    const st = f.status()
+    assert.equal(st.persisted, false)
+    assert.equal(st.status, 'capture-write-failed')
+    assert.match(st.writeError, /sink dir unusable|raw write failed|raw chmod failed/)
+    assert.equal(existsSync(join(f.base, 'private-raw')), false)
+    assert.deepEqual(readdirSync(f.publicDir), ['strict-failure-S3-status.json'])
+    f.assertNoRawTextAnywhere()
+  } finally { rmSync(f.base, { recursive: true, force: true }) }
+})
+
+test('the host tail is a bounded window: a 200 KB single line becomes <=64 KiB with truncated:true', () => {
+  const f = captureFixture()
+  try {
+    writeFileSync(f.instanceLog, 'A'.repeat(200_000) + TAIL_MARKER + '\n')
+    runFailingOracle(f)
+    const rawFile = f.raw()
+    assert.ok(Buffer.byteLength(rawFile.hostTail) <= 64 * 1024, `tail was ${Buffer.byteLength(rawFile.hostTail)} bytes`)
+    assert.equal(rawFile.hostTailTruncated, true)
+    assert.ok(rawFile.hostTail.includes(TAIL_MARKER), 'the window must still hold the newest bytes')
+    assert.equal(rawFile.hostTailWindowBytes, 64 * 1024)
+  } finally { rmSync(f.base, { recursive: true, force: true }) }
+})
+
+test('an oversize capture is marked capture-incomplete-oversize and never written', () => {
+  const f = captureFixture({ rawMaxBytes: 512 })
+  try {
+    runFailingOracle(f)
+    const st = f.status()
+    assert.equal(st.persisted, false)
+    assert.equal(st.status, 'capture-incomplete-oversize')
+    assert.ok(st.rawBytes > 512)
+    assert.equal(existsSync(join(f.base, 'private-raw', 'strict-failure-S3.json')), false)
+  } finally { rmSync(f.base, { recursive: true, force: true }) }
+})
+
+test('the fatal summary keeps the strict-capture refs through the real writeFatalSummary path', () => {
+  const f = captureFixture()
+  try {
+    runFailingOracle(f)
+    const written = []
+    const refs = writeFatalSummary('synthetic fatal', (name, content) => written.push({ name, content }))
+    assert.equal(written.length, 1)
+    assert.equal(written[0].name, 'summary.json')
+    assert.equal(written[0].content.fatal, 'synthetic fatal')
+    assert.ok(written[0].content.strictFailureCaptures.includes('strict-failure-S3-status.json'),
+      'the top-level fatal rewrite must not drop the capture state')
+    assert.deepEqual(refs, written[0].content.strictFailureCaptures)
+  } finally { rmSync(f.base, { recursive: true, force: true }) }
 })
 
 test('a broken capture cannot mask or replace the strict oracle verdict', () => {
-  const calls = [...smokeCalls.slice(0, 2), { ...smokeCalls[2], text: 'boom', error: true }]
   assert.throws(
-    () => toolResultTextOf(smokeHistory('parts', calls), {
+    () => toolResultTextOf(smokeHistory('parts', [...smokeCalls.slice(0, 2), { ...smokeCalls[2], text: 'boom', error: true }]), {
       expectedCount: 3, expectedTool: 'bash',
       onStrictFailure: () => { throw new Error('capture exploded') },
     }),
@@ -295,13 +393,19 @@ test('a passing step never writes strict-failure evidence', () => {
   try {
     const result = toolResultTextOf(smokeHistory('parts', smokeCalls.slice(0, 1)), { expectedCount: 1, expectedTool: 'read', onStrictFailure: f.capture })
     assert.equal(result, smokeCalls[0].text)
-    assert.equal(readdirSync(f.evidenceDir).filter((n) => n.startsWith('strict-failure-')).length, 0)
-  } finally { rmSync(f.evidenceDir, { recursive: true, force: true }) }
+    assert.equal(f.statuses.length, 0)
+    assert.deepEqual(readdirSync(f.publicDir), [])
+    assert.equal(existsSync(join(f.base, 'private-raw')), false)
+  } finally { rmSync(f.base, { recursive: true, force: true }) }
 })
 
-test('every production strict call site wires the raw capture', () => {
+test('production wiring: S1-S4 hooks write to the private sink; fatal/teardown share the ref list', () => {
   const source = readFileSync(new URL('./rc2-real-host-smoke.mjs', import.meta.url), 'utf8')
   for (const stage of ['S1', 'S2', 'S3', 'S4']) {
     assert.ok(source.includes(`onStrictFailure: strictCapture('${stage}')`), `${stage} must wire the capture-before-assert hook`)
   }
+  assert.ok(source.includes('rawSinkDir: RAW_CAPTURE_SINK_DIR'), 'the production capture must target the explicit private sink, never RUN_DIR')
+  assert.ok(source.includes('RAW_EVIDENCE_DIR_ARG === null || resolve(RAW_EVIDENCE_DIR_ARG) === RUN_DIR'), 'a sink equal to the publishable evidence dir must be rejected')
+  assert.ok(source.includes('strictFailureCaptures: strictCaptureReferences()'), 'the fatal summary must carry the capture refs')
+  assert.ok(source.includes('writeFatalSummary(String(e.message ?? e))'), 'the top-level catch must route through the shared fatal summary')
 })
