@@ -835,30 +835,106 @@ function toolMsgsOf(req) {
  * per call and the expected final tool, so a stale/duplicate result cannot prove
  * progress. In particular, S2's intentional denial must not poison S4, and an
  * earlier `rc2-smoke` string must not prove that S3's bash actually executed. */
-export function toolResultTextOf(req, { expectedCount, expectedTool, allowError = false }) {
+export function toolResultTextOf(req, { expectedCount, expectedTool, allowError = false, onStrictFailure = null }) {
   const label = `smoke oracle ${expectedTool} step ${expectedCount}`
   const body = bodyOf(req)
-  const decoded = assertWireShape(body, { label, expectToolResult: true })
-  const entries = toolResultEntries(body, { label })
-  if (!Number.isInteger(expectedCount) || expectedCount < 1
-    || entries.length !== expectedCount || decoded.toolUses.length !== expectedCount) {
-    throw new Error(`${label}: expected ${expectedCount} paired calls/results, got ${decoded.toolUses.length}/${entries.length}`)
-  }
-  const seen = new Set()
-  for (let index = 0; index < expectedCount; index++) {
-    const call = decoded.toolUses[index]
-    if (typeof call.id !== 'string' || call.id.trim() === '' || seen.has(call.id)
-      || entries[index].toolUseId !== call.id) {
-      throw new Error(`${label}: missing, duplicate, stale or out-of-order call/result id at ${index}`)
+  try {
+    const decoded = assertWireShape(body, { label, expectToolResult: true })
+    const entries = toolResultEntries(body, { label })
+    if (!Number.isInteger(expectedCount) || expectedCount < 1
+      || entries.length !== expectedCount || decoded.toolUses.length !== expectedCount) {
+      throw new Error(`${label}: expected ${expectedCount} paired calls/results, got ${decoded.toolUses.length}/${entries.length}`)
     }
-    seen.add(call.id)
+    const seen = new Set()
+    for (let index = 0; index < expectedCount; index++) {
+      const call = decoded.toolUses[index]
+      if (typeof call.id !== 'string' || call.id.trim() === '' || seen.has(call.id)
+        || entries[index].toolUseId !== call.id) {
+        throw new Error(`${label}: missing, duplicate, stale or out-of-order call/result id at ${index}`)
+      }
+      seen.add(call.id)
+    }
+    const last = entries[expectedCount - 1]
+    if (decoded.toolUses[expectedCount - 1].name !== expectedTool) {
+      throw new Error(`${label}: the final call is not ${expectedTool}`)
+    }
+    if (last.isError && !allowError) throw new Error(`${label}: error result cannot prove successful execution`)
+    return last.text
+  } catch (err) {
+    // Capture-before-assert: the strict verdict above is correct and is
+    // RE-THROWN unchanged — this hook only copies the associated raw
+    // evidence out before the throw unwinds into teardown (run 6 lost the
+    // exact bash error text exactly this way). A broken capture can never
+    // mask or replace the oracle's error.
+    if (typeof onStrictFailure === 'function') {
+      try {
+        onStrictFailure(strictFailureDiagnostics(body, { label, expectedCount, expectedTool, allowError, err }))
+      } catch { /* capture must never mask the strict verdict */ }
+    }
+    throw err
   }
-  const last = entries[expectedCount - 1]
-  if (decoded.toolUses[expectedCount - 1].name !== expectedTool) {
-    throw new Error(`${label}: the final call is not ${expectedTool}`)
+}
+
+/**
+ * Best-effort re-decode of the strict reader's inputs for the raw capture:
+ * the paired calls (id/name/arguments) and results (toolUseId/isError/FULL
+ * text), plus the oracle error itself. Every decoder failure is recorded as
+ * a string on the diagnostics instead of throwing — capture is read-only
+ * forensics and must not add new failure modes to the run.
+ */
+function strictFailureDiagnostics(body, { label, expectedCount, expectedTool, allowError, err }) {
+  const diag = {
+    label, expectedCount, expectedTool, allowError,
+    error: { name: String(err?.name ?? 'Error'), message: String(err?.message ?? err) },
+    calls: null, callsError: null,
+    results: null, resultsError: null,
   }
-  if (last.isError && !allowError) throw new Error(`${label}: error result cannot prove successful execution`)
-  return last.text
+  try {
+    diag.calls = assertWireShape(body, { label: `${label} (capture)`, expectToolResult: true }).toolUses
+      .map((call) => ({
+        id: call.id ?? null,
+        name: call.name ?? null,
+        arguments: call.item?.input ?? call.item?.function?.arguments ?? null,
+      }))
+  } catch (captureErr) {
+    diag.callsError = String(captureErr?.message ?? captureErr)
+  }
+  try {
+    diag.results = toolResultEntries(body, { label: `${label} (capture)` })
+      .map((entry) => ({ toolUseId: entry.toolUseId ?? null, isError: entry.isError === true, text: entry.text }))
+  } catch (captureErr) {
+    diag.resultsError = String(captureErr?.message ?? captureErr)
+  }
+  return diag
+}
+
+/**
+ * The kit's capture-before-assert seam (run 6). When a strict step oracle
+ * throws, the exact error text died with the in-memory transcript: teardown
+ * removes the world and `mock-requests.json` keeps only summary fields. This
+ * factory returns the `onStrictFailure` hook wired into every strict step
+ * call site; BEFORE the throw reaches teardown it writes one RAW file
+ * `strict-failure-<stage>.json` to the run's evidence dir (which runs point
+ * at the gitignored private raw directory; the public copy goes through
+ * scripts/sanitize-evidence.mjs) with the associated call (id/name/
+ * arguments), result (toolUseId/isError/full text), the oracle error, and
+ * the host instance-log tail. It never changes the verdict: the oracle
+ * re-throws identically, the hook is read-only, and hook faults are swallowed
+ * by the oracle.
+ */
+export function makeStrictFailureCapture({ stage, writeEvidence: put, log, instanceLog }) {
+  return function onStrictFailure(diag) {
+    const instanceTail = typeof instanceLog === 'string' && instanceLog !== ''
+      ? logTail(instanceLog, 40)
+      : '<no instance log>'
+    put(`strict-failure-${stage}.json`, {
+      stage,
+      capturedAt: new Date().toISOString(),
+      ...diag,
+      instanceTail,
+    })
+    log(`strict oracle failure (${stage}): raw call/result capture + host tail persisted before the throw`)
+  }
 }
 
 function toolEntriesOf(req, label) {
@@ -1430,6 +1506,11 @@ async function main() {
   const instanceLog = join(RUN_DIR, 'instance.log')
   writeFileSync(instanceLog, '', { flag: 'w' })
   booted = await bootHost({ port: hostPort, home: HOME, mockPort: mock.port, instanceLog })
+  // Capture-before-assert (run 6): every strict step oracle gets the raw
+  // capture hook, so an error result / association failure persists its exact
+  // call+result+host tail to THIS run's evidence dir before teardown removes
+  // the world. The verdict itself is unchanged (the oracle re-throws).
+  const strictCapture = (stage) => makeStrictFailureCapture({ stage, writeEvidence, log, instanceLog })
   // Independent of every wait: the child this run spawned may not outlive the
   // run budget. Killing is by the bound handle only — never by port or pattern.
 
@@ -1573,7 +1654,7 @@ async function main() {
       fail('S1')
       check('S1', 'allow-subtree read executed (tool result returned to the model)', false, `requests=${mock.requests.length}`)
     } else {
-      const s1result = toolResultTextOf(bS1, { expectedCount: 1, expectedTool: 'read' })
+      const s1result = toolResultTextOf(bS1, { expectedCount: 1, expectedTool: 'read', onStrictFailure: strictCapture('S1') })
       check('S1a', 'S1: read team/test.md returned the probe content (executed, not blocked)',
         s1result.includes(PROBE_TEAM_CONTENT), `result=${s1result.slice(0, 200)}`)
       if (!s1result.includes(PROBE_TEAM_CONTENT)) fail('S1a')
@@ -1600,7 +1681,7 @@ async function main() {
       fail('S2')
       check('S2', 'deny-subtree read reached a decision (tool result returned to the model)', false, `requests=${mock.requests.length}`)
     } else {
-      const s2result = toolResultTextOf(bS2, { expectedCount: 2, expectedTool: 'read', allowError: true })
+      const s2result = toolResultTextOf(bS2, { expectedCount: 2, expectedTool: 'read', allowError: true, onStrictFailure: strictCapture('S2') })
       const s2state = await p6t6State(booted.port)
       writeEvidence('s2-state-after.json', s2state.body)
       const s2obs = (Array.isArray(s2state.body?.observations) ? s2state.body.observations : [])
@@ -1648,7 +1729,7 @@ async function main() {
           fail('S3')
           check('S3b', 'S3: bash executed after approval (tool result returned — NO target-stale)', false, `requests=${mock.requests.length}`)
         } else {
-          const s3result = toolResultTextOf(bS3, { expectedCount: 3, expectedTool: 'bash' })
+          const s3result = toolResultTextOf(bS3, { expectedCount: 3, expectedTool: 'bash', onStrictFailure: strictCapture('S3') })
           check('S3b', 'S3: bash executed after approval — the echo output reached the model (guard passed, no target-stale)',
             s3result.includes('rc2-smoke'), `result=${s3result.slice(0, 200)}`)
           if (!s3result.includes('rc2-smoke')) fail('S3b')
@@ -1678,7 +1759,7 @@ async function main() {
       fail('S4c')
       check('S4c', 'S4: team_create_member(worker-b) executed (tool result returned)', false, `requests=${mock.requests.length}`)
     } else {
-      const s4result = toolResultTextOf(bS4, { expectedCount: 4, expectedTool: 'team_create_member' })
+      const s4result = toolResultTextOf(bS4, { expectedCount: 4, expectedTool: 'team_create_member', onStrictFailure: strictCapture('S4') })
       writeEvidence('s4-create-member-result.json', { result: s4result.slice(0, 2000) })
       const s4ok = /member|created|inst-/.test(s4result) && !/reject|denied|error|unavailable|not found/i.test(s4result)
       check('S4c', 'S4: first create of the B-only template worker-b SUCCEEDED (no post-commit reject)', s4ok, `result=${s4result.slice(0, 300)}`)
@@ -1802,6 +1883,14 @@ async function main() {
     })))
     if (booted !== null) writeEvidence('instance-tail.txt', logTail(booted.instanceLog, 120))
     writeEvidence('run-budget.json', { budget: RC.budget.snapshot(), violation: RC.violation(), limits: RC.budget.limits })
+    // Strict-assert captures were written at the assert point (before this
+    // teardown); record their presence here so a reviewer can find the raw
+    // call/result evidence for the failed leg from summary.json alone.
+    let strictFailureCaptures = []
+    try {
+      strictFailureCaptures = readdirSync(RUN_DIR).filter((n) => n.startsWith('strict-failure-')).sort()
+    } catch { /* evidence best-effort */ }
+    if (strictFailureCaptures.length > 0) log(`teardown: strict-failure raw capture present: ${strictFailureCaptures.join(', ')}`)
     if (FLAG_KEEP || cleanupError !== null) {
       log(`--keep: world retained at ${HOME}`)
     } else {
@@ -1824,6 +1913,7 @@ async function main() {
       verdict: completed && !RC.aborted() && cleanupError === null && FAILS.length === 0 ? 'PASS' : 'FAIL',
       cleanupError: cleanupError === null ? null : String(cleanupError.message ?? cleanupError),
       runControl: { aborted: RC.aborted(), violation: RC.violation(), budget: RC.budget.snapshot() },
+      strictFailureCaptures,
     }
     writeEvidence('summary.json', summary)
     log(`VERDICT ${summary.verdict} — ${passed}/${criteria.length} criteria passed${FAILS.length > 0 ? `; failed: ${FAILS.join(',')}` : ''}`)
