@@ -100,7 +100,7 @@ function overflowHtml ({ expanded = false, n = 4 } = {}) {
 /** Rail WITHOUT the notice — the probe3 'rail-after-notice' state: the
  *  Ungrouped group is collapsed, so NOT A SINGLE session row is in the DOM. */
 export const RAIL_COLLAPSED = `
-<nav class="rail">
+<nav class="rail"><div class="list" role="tree" aria-label="Sessions">
   <span class="_25B0JG_localBuildTitle">DSH Local Build</span>
   <span class="_25B0JG_newSessionLabel">New Session</span>
   <span class="_25B0JG_panelTitle">Plugins</span>
@@ -108,14 +108,14 @@ export const RAIL_COLLAPSED = `
   ${groupHtml()}
   <span class="label">New Team</span>
   <span class="SNkpza_triggerLabel">Settings</span>
-</nav>`
+</div></nav>`
 
 /** Rail after the proven group-header click (probe3 'rail-after-ungrouped'):
  *  five rows render and the overflow button appears behind them. The canonical
  *  member/root targets are NOT among the first five — they hide behind
  *  'Show 4 more sessions'. */
 export const RAIL_EXPANDED = `
-<nav class="rail">
+<nav class="rail"><div class="list" role="tree" aria-label="Sessions">
   <span class="_25B0JG_localBuildTitle">DSH Local Build</span>
   <span class="_25B0JG_newSessionLabel">New Session</span>
   <span class="_25B0JG_panelTitle">Plugins</span>
@@ -129,12 +129,12 @@ export const RAIL_EXPANDED = `
   ${overflowHtml()}
   <span class="label">New Team</span>
   <span class="SNkpza_triggerLabel">Settings</span>
-</nav>`
+</div></nav>`
 
 /** Full list after the overflow click — all nine canonical rows, the hidden
  *  four (including member and root) now rendered. */
 export const RAIL_EXPANDED_ALL = `
-<nav class="rail">
+<nav class="rail"><div class="list" role="tree" aria-label="Sessions">
   <span class="_25B0JG_localBuildTitle">DSH Local Build</span>
   <span class="_25B0JG_newSessionLabel">New Session</span>
   <span class="_25B0JG_panelTitle">Plugins</span>
@@ -152,13 +152,13 @@ export const RAIL_EXPANDED_ALL = `
   ${overflowHtml({ expanded: true })}
   <span class="label">New Team</span>
   <span class="SNkpza_triggerLabel">Settings</span>
-</nav>`
+</div></nav>`
 
 /** Same nine rows in a DIFFERENT order (recency reorder between the title
  *  derivation and the click). Locate must remain id+title exact — never by
  *  index, never by "first row that looks like a session". */
 export const RAIL_REORDERED = `
-<nav class="rail">
+<nav class="rail"><div class="list" role="tree" aria-label="Sessions">
   ${groupHtml('Ungrouped', { expanded: true })}
   ${rowHtml(ROOT_TITLE)}
   ${rowHtml('ack:role-a:mpr-2026-10-01T13-21-34')}
@@ -170,7 +170,7 @@ export const RAIL_REORDERED = `
   ${rowHtml('ack:role-a-leader:mpr-2026-10-01T13-21-34')}
   ${rowHtml('ack:role-worker:create:mpr-2026-10-01T13-21-34')}
   <span class="label">New Team</span>
-</nav>`
+</div></nav>`
 
 /** Duplicate-title hazard: the hover tooltip repeats the row title next to the
  *  rail (probe3-after-rowclick.png). A tooltip carries NO data-row-key, so an
@@ -178,32 +178,32 @@ export const RAIL_REORDERED = `
  *  that the hazard is neutralized by SEMANTICS rather than by an exclusion
  *  list. (The genuinely ambiguous case is RAIL_DUPLICATE_KEY below.) */
 export const RAIL_DUPLICATE_TITLE = `
-<nav class="rail">
+<nav class="rail"><div class="list" role="tree" aria-label="Sessions">
   ${groupHtml('Ungrouped', { expanded: true })}
   ${rowHtml(MEMBER_TITLE)}
   ${rowHtml(ROOT_TITLE)}
   <div class="railTooltip"><span>${MEMBER_TITLE}</span><span>1h ago</span><span>Idle</span></div>
-</nav>`
+</div></nav>`
 
 /** Two RENDERED rows carrying the SAME data-row-key: an anomaly the product
  *  must never produce, and the one case where the driver refuses to pick. */
 export const RAIL_DUPLICATE_KEY = `
-<nav class="rail">
+<nav class="rail"><div class="list" role="tree" aria-label="Sessions">
   ${groupHtml('Ungrouped', { expanded: true })}
   ${rowHtml(MEMBER_TITLE)}
   ${rowHtml(MEMBER_TITLE, '1h', { id: MEMBER_ID })}
   ${rowHtml(ROOT_TITLE)}
-</nav>`
+</div></nav>`
 
 /** Target absent from the rail (e.g. the group was never expanded, or the
  *  session genuinely does not exist): NOT_RUN fail-closed — never a neighbor. */
 export const RAIL_TARGET_MISSING = `
-<nav class="rail">
+<nav class="rail"><div class="list" role="tree" aria-label="Sessions">
   ${groupHtml('Ungrouped', { expanded: true })}
   ${rowHtml('ack:role-expert:pre:mpr-2026-10-01T13-21-34')}
   ${rowHtml('ack:role-a:mpr-2026-10-01T13-21-34')}
   <span class="label">New Team</span>
-</nav>`
+</div></nav>`
 
 /** Internal Testing Notice overlay (driver-out.json first-load body text;
  *  probe3 proved the real button click via getByRole('button', Continue)). */

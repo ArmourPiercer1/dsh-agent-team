@@ -131,9 +131,19 @@ function makeWorld (opts = {}) {
       // aria-expanded / aria-selected of the owning row). The class prefix is
       // invented on purpose — a shipped css-module hash is compiler output and
       // rotates with the build (see dod20-ui-driver.mjs, RAIL ROW IDENTITY).
+      // The row KIND/ancestry the real collector reports, spelled out from the
+      // product rather than imported from the driver under test: rows live in a
+      // [role=tree] (AnimatedRows.tsx:171-176), session/group rows are
+      // role=treeitem (Rows.tsx:245-247, :589-597), the overflow row is a
+      // <button aria-expanded> (WorkspaceBrowser.tsx:582-586). rowSeq is a
+      // per-snapshot CONTAINER id (several leaves, one row).
+      const kindOfKey = (key) => key.startsWith('session:') ? 'session' : key.startsWith('workspace:') ? 'group' : key.startsWith('overflow:') ? 'overflow' : 'other'
+      let autoRowSeq = 0
       const leaf = (text, y, tag = 'span', cls = 'aB3xYz_title', region = 'rail', x = 20, sem = {}) => ({
-        tag, cls, role: sem.key ? 'treeitem' : '', text, x, y, w: 180, h: 20, region,
-        key: sem.key || '', expanded: sem.expanded ?? '', selected: sem.selected ?? '',
+        tag, cls, role: sem.key && tag !== 'button' ? 'treeitem' : '', text, x, y, w: 180, h: 20, region,
+        key: sem.key || '', rowKind: sem.key ? kindOfKey(sem.key) : '', treeSeq: sem.key ? 0 : null,
+        rowSeq: sem.key ? (sem.rowSeq ?? ++autoRowSeq) : null,
+        expanded: sem.expanded ?? '', selected: sem.selected ?? '',
       })
 
       const readData = (sel) => sel.relation === 'team-member'
@@ -257,6 +267,7 @@ function makeWorld (opts = {}) {
         async screenshot (name) { w.shots.push(leg + '/' + name) },
         async collectLeaves () {
           const out = []
+          autoRowSeq = 0 // fresh container identities per snapshot, like a fresh DOM
           let y = 78
           out.push(leaf('New Session', y, 'span', '_25B0JG_newSessionLabel')); y += 40
           out.push(leaf('Ungrouped', y, 'span', 'aB3xYz_title', 'rail', 20, { key: 'workspace:', expanded: st.rail === 'collapsed' ? 'false' : 'true' })); y += 34
@@ -450,6 +461,15 @@ function stdFiles (extra = {}) {
     proj(ROOT_ID, '/srv/x', ROOT_TITLE),
     proj(MEMBER_ID, '/srv/x', MEMBER_TITLE),
     proj(OTHER_ID, '/srv/x', 'ack:role-expert:pre:mpr-2026-10-01T13-21-34'),
+    // Workspace membership, in the store's real v2 shape (global.workspaceIds +
+    // tables.workspaces[<id>].sessionIds), transcribed from the retained
+    // acceptance world: exactly one workspace (`ws`) accounting for ONE unrelated
+    // session — so both canonical targets resolve to UNGROUPED_KEY === ''.
+    ['/world/storages/workspace.json', JSON.stringify({
+      unit: { name: 'workspace', version: 2 },
+      global: { initialized: true, workspaceIds: ['40d5679e-12f5-4f35-b417-0eab81103e1b'], archivedSessionIds: [], pinnedSessionIds: [] },
+      tables: { workspaces: { '40d5679e-12f5-4f35-b417-0eab81103e1b': { path: '/world/ws', title: 'ws', sessionIds: ['session-a3b9157c-d45b-425f-9e74-1a2c4b5567cb'], createdAt: '2026-10-05T18:51:17.695Z', updatedAt: '2026-10-05T18:51:17.724Z' } } },
+    })],
     ...Object.entries(extra),
   ])
   return files

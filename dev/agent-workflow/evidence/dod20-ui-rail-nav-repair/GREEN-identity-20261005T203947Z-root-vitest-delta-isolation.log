@@ -1,0 +1,11 @@
+# isolated re-runs of the root-vitest failing files (round 2, 2026-10-05T21:0XZ)
+packages/domain/test/t1-capability-schema.test.ts  exit=1   Tests 9 failed | 8 passed (17)
+packages/domain/test/t2-blueprint-hash.test.ts  exit=1   Tests 1 failed | 17 passed (18)
+packages/runtime/test/p6t3-mediation.test.ts  exit=1   Tests 5 failed | 2 passed (7)
+packages/runtime/test/p6t3-restart.test.ts  exit=1   Tests 2 failed | 3 passed (5)
+packages/runtime/test/p8s3b-result-effects.test.ts  exit=1   Tests no tests
+packages/runtime/test/t12a-b2-child-identity.test.ts  exit=1   Tests no tests
+packages/runtime/test/t12a-glue-handoff-ports.test.ts  exit=1   Tests no tests
+packages/runtime/test/d3-member-identity-context.test.ts  exit=1   Tests 1 failed | 4 passed (5)
+packages/tools/test/p6t6-actions.test.ts  exit=1   Tests 1 failed | 13 passed (14)
+packages/testkit/test/p4t6-session-event-scan.test.ts  exit=1   Tests 1 failed | 9 passed (10)

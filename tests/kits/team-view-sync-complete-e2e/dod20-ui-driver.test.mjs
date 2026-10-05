@@ -97,16 +97,16 @@ test('htmlLeaves: expanding the group renders rows and the overflow button appea
 
 // ── fixed navigation plan (no fallbacks, strict order) ─────────────────────
 test('navPlan: strict order notice → group-expand → overflow, and expand precedes overflow click', () => {
-  const collapsedPlan = navPlan({ hasNotice: true, railLeaves: htmlLeaves(F.RAIL_COLLAPSED) })
+  const collapsedPlan = navPlan({ hasNotice: true, railLeaves: htmlLeaves(F.RAIL_COLLAPSED), groupKey: '', groupKeyProven: true })
   assert.deepEqual(collapsedPlan.map((s) => s.step), ['dismiss-notice', 'expand-group'],
     'a rail reporting aria-expanded=false schedules the group click first')
-  const expandedPlan = navPlan({ hasNotice: false, railLeaves: htmlLeaves(F.RAIL_EXPANDED) })
+  const expandedPlan = navPlan({ hasNotice: false, railLeaves: htmlLeaves(F.RAIL_EXPANDED), groupKey: '', groupKeyProven: true })
   assert.deepEqual(expandedPlan.map((s) => s.step), ['expand-overflow'],
     'overflow is only scheduled once an aria-expanded=false overflow row actually rendered')
 })
 
 test('navPlan: no notice => no dismiss step; an already-expanded group is NEVER scheduled (the row is a toggle)', () => {
-  const plan = navPlan({ hasNotice: false, railLeaves: htmlLeaves(F.RAIL_EXPANDED_ALL) })
+  const plan = navPlan({ hasNotice: false, railLeaves: htmlLeaves(F.RAIL_EXPANDED_ALL), groupKey: '', groupKeyProven: true })
   assert.deepEqual(plan.map((s) => s.step), [],
     'clicking an aria-expanded=true project row COLLAPSES the tree — the v3 lesson is "open what reports itself closed", not "always click"')
 })

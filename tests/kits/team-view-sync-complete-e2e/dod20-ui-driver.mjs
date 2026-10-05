@@ -30,8 +30,13 @@
  * FIXED NAVIGATION ORDER (no fallbacks, fail-closed):
  *   1. dismiss the Internal Testing Notice IF present (real button click,
  *      assert-gone; present-but-undismissable = fail-closed);
- *   2. expand the sidebar Ungrouped group (the probe3:50 click, exactly once,
- *      skipped only when rows are ALREADY rendered — the click is a toggle);
+ *   2. expand THE TARGET'S OWN group — the row whose data-row-key is
+ *      `workspace:<expectedGroupKey>`, the group the read-only fixture data
+ *      accounts the session in (see RAIL ROW IDENTITY below). Exactly one click
+ *      per attempt, skipped when that row already reports aria-expanded="true"
+ *      (the row is a toggle), verified by re-reading aria-expanded;
+ *      then `overflow:<expectedGroupKey>` while IT reports false. Never
+ *      "whichever collapsed row comes first";
  *   3. click the 'Show N more sessions' overflow button while visible
  *      (it can only be visible post-expansion);
  *   4. locate the target by EXACT canonical title textContent (canonical
@@ -50,6 +55,52 @@
  *      data carries the expected relation (member: + memberInstanceId). A
  *      late/foreign/failed/uncorrelated response NEVER authenticates. At most
  *      ONE re-click of the SAME located row; still unverified => NOT_RUN.
+ *
+ * RAIL ROW IDENTITY (repair round 2; the reviewed commit this repairs is its
+ * parent 4bd13a9a580b177151d1769da3a38142e01211b8 — that commit and its evidence
+ * stay unchanged; this is a narrow descendant. A commit cannot contain its own
+ * hash, so the resulting newHEAD is recorded byte-exact (with its tree) in the
+ * round's transfer package: git/commit-metadata.txt and the receipt there —
+ * alongside the round notes under
+ * dev/agent-workflow/evidence/dod20-ui-rail-nav-repair/). Three defects the offline
+ * tests could not see at 4bd, and what replaces them:
+ *
+ *  1. POSITIONAL TRAVERSAL → TARGET IDENTITY. 4bd's navigate() clicked
+ *     `collapsedGroupRows(…)[0]` (up to 3) and the first
+ *     `aria-expanded="false"` overflow row anywhere: it opened strangers and
+ *     merely happened to reach the right group when Ungrouped rendered first.
+ *     The group is now DERIVED before any browser leg from the same read-only
+ *     world the titles come from — storages/workspace.json
+ *     (global.workspaceIds + tables.workspaces[<id>].sessionIds) through
+ *     deriveGroupKey(), the driver-side mirror of the pinned product's
+ *     owningGroupKey() (tree.ts:27-32, UNGROUPED_KEY === '' at tree.ts:19), and
+ *     the key is carried on every target. Missing/duplicate/unproven identity
+ *     fails closed (group-identity-missing / group-ambiguous / group-not_found)
+ *     BEFORE a single rail click; an unreadable membership store is a Fatal,
+ *     never a silent "assume Ungrouped".
+ *  2. UNSCOPED COLLECTOR → REAL-TREE SCOPING. 4bd treated any
+ *     `data-row-key` prefix in the whole document as a rail row. The pinned
+ *     product renders rows only inside AnimatedRows' `role="tree"` container
+ *     (rows/AnimatedRows.tsx:171-176; the search panel emits a SECOND distinct
+ *     one, rows/WorkspaceBrowser.tsx:790), with role="treeitem" on session/group
+ *     rows (rows/Rows.tsx:245-247, :589-597) and a <button aria-expanded>
+ *     overflow (rows/WorkspaceBrowser.tsx:582-586). The collector now reports
+ *     rowKind + treeSeq + rowSeq from that structure; a keyed element outside a
+ *     tree, or one whose role contradicts its prefix, is 'unscoped': never a
+ *     target, always counted in diagnostics, and a competing identity that makes
+ *     the locate AMBIGUOUS rather than letting document order decide. (The
+ *     previous round's own fixtures omitted the tree container, which is why the
+ *     unscoped collector passed — the markup is fixed first, in
+ *     dod20-ui-driver-fixtures.mjs and dod20-ui-rail-harness.mjs.)
+ *  3. LEAVES ARE NOT ROWS → ROW-CONTAINER IDENTITY. 4bd's locateSessionRow
+ *     counted matching-title LEAVES, so two visible containers sharing one
+ *     canonical data-row-key resolved FOUND when a single leaf matched. One row
+ *     legitimately renders several leaves (slot/title/time/actions), so
+ *     rowContainers/titleRows now count DISTINCT rowSeq values: two containers
+ *     for one canonical key are AMBIGUOUS before any click regardless of their
+ *     titles; so remain two real rows with equal titles and different ids
+ *     (original ambiguity policy intact); text without a row identity (hover
+ *     card) is still not a row.
  *
  * WINDOW BOUNDARIES (external review P1/P3): every boundary is a sequence or
  * timestamp captured at the exact real event —
@@ -114,6 +165,8 @@ export function htmlLeaves (html) {
     .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, '')
   const leaves = []
   const stack = []
+  let elementOrdinal = 0
+  let treeOrdinal = 0
   const push = (text) => {
     if (stack.length === 0) return
     const top = stack[stack.length - 1]
@@ -135,7 +188,13 @@ export function htmlLeaves (html) {
           const text = el.text.replace(/\s+/g, ' ').trim()
           if (text !== '' && !el.hasChild) {
             const row = [...stack].reverse().find((f) => f.key !== '') || el
-            leaves.push({ tag, cls: el.cls, role: el.role || row.role || '', text, key: row.key, expanded: row.expanded, selected: row.selected })
+            const tree = [...stack].reverse().find((f) => f.role === 'tree') || null
+            leaves.push({
+              tag, cls: el.cls, role: el.role || row.role || '', text, key: row.key,
+              rowKind: rowKindFrom({ key: row.key, role: row.role, tag: row.tag, treeSeq: tree ? tree.treeSeq : null }),
+              treeSeq: tree ? tree.treeSeq : null, rowSeq: row.rowSeq,
+              expanded: row.expanded, selected: row.selected,
+            })
           }
           if (stack.length > 0) stack[stack.length - 1].hasChild = true
           break
@@ -145,6 +204,7 @@ export function htmlLeaves (html) {
       const attrs = {}
       let a
       while ((a = attrRe.exec(rawAttrs || '')) !== null) attrs[a[1].toLowerCase()] = a[3] ?? a[4] ?? ''
+      if ((attrs.role || '') === 'tree') treeOrdinal += 1
       stack.push({
         tag,
         cls: attrs.class || '',
@@ -152,6 +212,8 @@ export function htmlLeaves (html) {
         key: attrs['data-row-key'] ?? '',
         expanded: attrs['aria-expanded'] ?? '',
         selected: attrs['aria-selected'] ?? '',
+        rowSeq: elementOrdinal++,
+        treeSeq: (attrs.role || '') === 'tree' ? treeOrdinal - 1 : (stack.length ? stack[stack.length - 1].treeSeq : null),
         text: '',
         hasChild: false,
       })
@@ -192,13 +254,49 @@ const OVERFLOW_LABEL_RE = /^(Show \d+ more sessions|展开其余 \d+ 个会话)$
 /** Rail chrome labels (probe3 rail dumps) that are never session rows. */
 export const CHROME_TEXTS = Object.freeze(['New Session', '新会话', 'Plugins', 'Workspaces', ...GROUP_TITLES, 'New Team', 'Settings', 'DSH Local Build'])
 
-/** Leaf records that belong to a sidebar ROW of a given kind, scoped to the
- *  actual session tree by data-row-key (never by class, x, or text). Region is
- *  deliberately NOT consulted: a rail row IS the tree, and a fixed x bound
- *  cannot be row identity (SIDEBAR_MIN 264 / DEFAULT 280 / MAX 420). */
+/** The row KIND a keyed element represents, from the product's own structure —
+ *  prefix + row role + real [role=tree] ancestry (see railCollectorSource for
+ *  the pinned lines). 'unscoped' means: carries a data-row-key but is NOT a row
+ *  of a real tree (main column, dialog, hover card, or a prefix/role mismatch),
+ *  so it can never be a target; the driver still counts it, because a visible
+ *  duplicate of the canonical key anywhere is a reason to refuse, not to pick. */
+export function rowKindFrom ({ key, role, tag, treeSeq } = {}) {
+  const k = String(key || '')
+  if (!k) return ''
+  if (!Number.isInteger(treeSeq)) return 'unscoped'
+  const r = String(role || '')
+  if (k.startsWith(SESSION_PREFIX)) return r === 'treeitem' ? 'session' : 'unscoped'
+  if (k.startsWith(GROUP_PREFIX)) return r === 'treeitem' ? 'group' : 'unscoped'
+  if (k.startsWith(OVERFLOW_PREFIX)) return String(tag || '').toLowerCase() === 'button' ? 'overflow' : 'unscoped'
+  return 'other'
+}
+
+export function rowKindOf (leaf) {
+  if (!leaf) return ''
+  const declared = typeof leaf.rowKind === 'string' ? leaf.rowKind : ''
+  if (declared) return declared
+  return rowKindFrom({ key: leaf.key, role: leaf.role, tag: leaf.tag, treeSeq: leaf.treeSeq })
+}
+
+/** Distinct ROW CONTAINERS of one kind (a row renders several leaves). Container
+ *  identity is the collector's per-snapshot rowSeq, falling back to key+tree for
+ *  records that predate it — never the leaf count. */
+export function rowContainers (leaves, kind, key) {
+  const seen = new Map()
+  for (const l of railRows(leaves, kind)) {
+    if (key !== undefined && String(l.key || '') !== key) continue
+    const id = Number.isInteger(l.rowSeq) ? 'r' + l.rowSeq : 'k' + String(l.key || '') + '@' + (Number.isInteger(l.treeSeq) ? l.treeSeq : '?')
+    if (!seen.has(id)) seen.set(id, l)
+  }
+  return [...seen.values()]
+}
+
+/** Leaf records that belong to a sidebar ROW of a given kind: real [role=tree]
+ *  ancestry + matching row role (never class, x, text, or a bare key prefix).
+ *  Region is deliberately NOT consulted: a fixed x bound cannot be row identity
+ *  (SIDEBAR_MIN 264 / DEFAULT 280 / MAX 420). */
 export function railRows (leaves, kind) {
-  const prefix = kind === 'group' ? GROUP_PREFIX : kind === 'session' ? SESSION_PREFIX : OVERFLOW_PREFIX
-  return (leaves || []).filter((l) => String(l.key || '').startsWith(prefix))
+  return (leaves || []).filter((l) => rowKindOf(l) === kind)
 }
 
 /** aria-expanded of the row a leaf belongs to: 'true' | 'false' | null.
@@ -210,26 +308,50 @@ export function rowExpanded (leaf) {
   return v === 'true' || v === 'false' ? v : null
 }
 
-/** Group rows the product reports as collapsed (aria-expanded="false"). */
-export function collapsedGroupRows (leaves) {
-  return railRows(leaves, 'group').filter((l) => rowExpanded(l) === 'false')
+/** Group rows the product reports as collapsed (aria-expanded="false"); when a
+ *  group KEY is given, only that group's row — never "the first collapsed one". */
+export function collapsedGroupRows (leaves, groupKey) {
+  const rows = railRows(leaves, 'group').filter((l) => rowExpanded(l) === 'false')
+  return groupKey === undefined ? rows : rows.filter((l) => String(l.key || '') === GROUP_PREFIX + groupKey)
 }
 
-/** The group-header leaf: the FIRST collapsed group row in document order.
- *  Its label is irrelevant (locale), its class is irrelevant (build hash). */
+/** THE group row for one expected group key: FOUND | NOT_FOUND | AMBIGUOUS.
+ *  Ambiguity (two containers claiming the same group key, in one or two trees)
+ *  is reported, never arbitrated by document order. */
+export function groupRowFor (leaves, groupKey) {
+  const key = GROUP_PREFIX + String(groupKey ?? '')
+  const containers = rowContainers(leaves, 'group', key)
+  if (containers.length === 0) return { status: 'NOT_FOUND', row: null, containers }
+  if (containers.length > 1) return { status: 'AMBIGUOUS', row: null, containers }
+  return { status: 'FOUND', row: containers[0], containers }
+}
+
+/** The overflow row of ONE group (WorkspaceBrowser.tsx:585 keys it
+ *  `overflow:<group.key>`), so a stranger group's overflow is unreachable. */
+export function overflowRowsFor (leaves, groupKey) {
+  const key = OVERFLOW_PREFIX + String(groupKey ?? '')
+  return rowContainers(leaves, 'overflow', key)
+}
+
+/** Header lookup for DIAGNOSTICS and locale-robustness assertions only —
+ *  navigation never uses it: navigate() acts on groupRowFor(expectedGroupKey),
+ *  so "the first collapsed group row" can no longer be anybody's target. */
 export function groupHeaderLeaf (leaves) {
   return collapsedGroupRows(leaves)[0] || null
 }
 
-/** True when the session tree reports at least one collapsed group. */
-export function groupCollapsed (leaves) {
-  return collapsedGroupRows(leaves).length > 0
+/** True when the session tree reports at least one collapsed group (optionally:
+ *  the EXPECTED group). */
+export function groupCollapsed (leaves, groupKey) {
+  return collapsedGroupRows(leaves, groupKey).length > 0
 }
 
-/** Overflow rows the product reports as NOT fully expanded. The localized
- *  label is recorded for diagnostics and never gates the click. */
-export function overflowPending (leaves) {
-  return railRows(leaves, 'overflow').some((l) => rowExpanded(l) === 'false')
+/** Overflow rows the product reports as NOT fully expanded, optionally limited
+ *  to the expected group. The localized label is recorded for diagnostics and
+ *  never gates the click. */
+export function overflowPending (leaves, groupKey) {
+  const rows = groupKey === undefined ? railRows(leaves, 'overflow') : overflowRowsFor(leaves, groupKey)
+  return rows.some((l) => rowExpanded(l) === 'false')
 }
 
 /** The fixed navigation script for one fresh context, as data. The ORDER is
@@ -237,11 +359,16 @@ export function overflowPending (leaves) {
  *  (Corrected 2026-10-05: the group step is scheduled by aria-expanded, not
  *  unconditionally — clicking an ALREADY-expanded project row is a toggle and
  *  would COLLAPSE the tree that v3 needed open.) */
-export function navPlan ({ hasNotice, railLeaves }) {
+export function navPlan ({ hasNotice, railLeaves, groupKey, groupKeyProven = false }) {
   const steps = []
   if (hasNotice) steps.push({ step: 'dismiss-notice', how: 'real click on getByRole(button, Continue), assert gone' })
-  if (groupCollapsed(railLeaves)) steps.push({ step: 'expand-group', how: 'one real click per aria-expanded=false group row, re-read aria-expanded after each; still false => fail-closed' })
-  if (overflowPending(railLeaves)) steps.push({ step: 'expand-overflow', how: 'one real click on an aria-expanded=false [data-row-key^=overflow:] row (exists only post-expansion), bounded' })
+  // A targeted leg expands NOTHING unless the fixture data proved which group
+  // owns the target: an unproven identity fails closed in navigate() instead of
+  // opening strangers. With a proven key, only THAT row's aria-expanded counts.
+  if (groupKeyProven) {
+    if (groupCollapsed(railLeaves, groupKey)) steps.push({ step: 'expand-group', how: 'one real click on the aria-expanded=false row whose data-row-key is workspace:<expectedGroupKey>, re-read after the click; still false => fail-closed' })
+    if (overflowPending(railLeaves, groupKey)) steps.push({ step: 'expand-overflow', how: 'one real click on the aria-expanded=false overflow:<expectedGroupKey> row (exists only post-expansion), bounded' })
+  }
   return steps
 }
 
@@ -251,19 +378,53 @@ export function navPlan ({ hasNotice, railLeaves }) {
  *  hover card or a header can repeat a title); key-only matching is
  *  insufficient (a renamed row left the canonical value). */
 export function locateSessionRow (leaves, { sessionId, title } = {}) {
+  const src = leaves || []
   const wantKey = SESSION_PREFIX + String(sessionId ?? '')
   const wantTitle = String(title ?? '').trim()
-  const byKey = (leaves || []).filter((l) => String(l.key || '') === wantKey)
-  const matches = byKey.filter((l) => l.text === wantTitle)
-  if (matches.length === 0) return { status: 'NOT_FOUND', leaf: null, matches: [], keyHits: byKey.length }
-  if (matches.length > 1) return { status: 'AMBIGUOUS', leaf: null, matches, keyHits: byKey.length }
-  return {
-    status: 'FOUND',
-    leaf: matches[0],
-    matches,
-    keyHits: byKey.length,
-    index: railRows(leaves, 'session').findIndex((l) => l === matches[0]),
+  const containerId = (l) => (Number.isInteger(l.rowSeq) ? 'r' + l.rowSeq : 'k' + String(l.key || '') + '@' + (Number.isInteger(l.treeSeq) ? l.treeSeq : '?'))
+  const sessionRows = railRows(src, 'session')
+  // DISTINCT ROW CONTAINERS, never leaves: one SessionNodeItem renders slot +
+  // title + elapsed-time (+ action) spans, and two containers may share a key.
+  const uniq = (list) => {
+    const seen = new Set(); const out = []
+    for (const l of list) { const id = containerId(l); if (!seen.has(id)) { seen.add(id); out.push(l) } }
+    return out
   }
+  const keyContainers = uniq(sessionRows.filter((l) => String(l.key || '') === wantKey))
+  const titleContainers = uniq(sessionRows.filter((l) => l.text === wantTitle))
+  // A visible canonical key OUTSIDE a real tree (main column, dialog, hover
+  // card with a row identity, or a prefix/role mismatch) is a competing
+  // identity: it may never become the target, and its presence refuses the
+  // locate instead of letting the in-tree row win by document order.
+  const foreign = src.filter((l) => String(l.key || '') === wantKey && rowKindOf(l) !== 'session')
+  const trees = [...new Set([...keyContainers, ...titleContainers].map((l) => l.treeSeq))].filter((t) => t !== null && t !== undefined)
+  const allLeavesOf = (c) => sessionRows.filter((l) => containerId(l) === containerId(c))
+  let status = 'NOT_FOUND'
+  let titleMismatch = false
+  if (keyContainers.length > 1) status = 'AMBIGUOUS'
+  else if (titleContainers.length > 1) status = 'AMBIGUOUS'
+  else if (keyContainers.length === 1 && foreign.length > 0) status = 'AMBIGUOUS'
+  else if (keyContainers.length === 1) {
+    if (titleContainers.some((l) => String(l.key || '') === wantKey)) status = 'FOUND'
+    else { status = 'NOT_FOUND'; titleMismatch = true }
+  }
+  const base = {
+    status,
+    leaf: null,
+    matches: keyContainers.length > 1 ? keyContainers : (keyContainers[0] ? allLeavesOf(keyContainers[0]) : []),
+    keyHits: keyContainers.length,
+    // `rowContainers` is the canonical-key ROW-CONTAINER count (the thing that
+    // must be 1 for a click); `keyHits` is kept as its historical alias.
+    keyContainers: keyContainers.length,
+    rowContainers: keyContainers.length,
+    titleRows: titleContainers.length,
+    titleMismatch,
+    unscopedKeyed: uniq(foreign).length,
+    trees,
+    index: keyContainers[0] ? rowContainers(src, 'session').findIndex((l) => containerId(l) === containerId(keyContainers[0])) : -1,
+  }
+  if (status === 'FOUND') base.leaf = keyContainers[0]
+  return base
 }
 
 /** EXACT-title locate among leaf records (legacy seam, kept for the pure-core
@@ -295,12 +456,23 @@ export function railDiagnostic (leaves, limit = 12) {
   const groups = distinct('group').map((l) => ({ key: l.key, expanded: rowExpanded(l), label: redactOut(String(l.text).slice(0, 40)) }))
   const sessions = distinct('session')
   const overflow = distinct('overflow').map((l) => ({ key: l.key, expanded: rowExpanded(l), labelMatchesI18nAllowlist: OVERFLOW_LABEL_RE.test(l.text) }))
+  const unscoped = []
+  const seenUnscoped = new Set()
+  for (const l of src) {
+    if (!l.key || rowKindOf(l) !== 'unscoped') continue
+    const id = String(l.key) + '@' + (Number.isInteger(l.rowSeq) ? l.rowSeq : '?')
+    if (seenUnscoped.has(id)) continue
+    seenUnscoped.add(id); unscoped.push(l)
+  }
   return {
     leaves: src.length,
     groups,
     collapsedGroups: collapsedGroupRows(src).length,
     sessionRows: sessions.length,
     overflowRows: overflow,
+    trees: new Set(railRows(src, 'session').map((l) => l.treeSeq)).size,
+    unscopedKeyed: unscoped.length,
+    unscopedKeys: unscoped.slice(0, limit).map((l) => ({ key: l.key, region: l.region || null, text: redactOut(String(l.text).slice(0, 40)) })),
     unkeyedLeaves: src.filter((l) => !l.key).length,
     sample: sessions.slice(0, limit).map((l) => ({ key: l.key, selected: l.selected || null, text: redactOut(String(l.text).slice(0, 48)) })),
   }
@@ -344,7 +516,7 @@ export function parseServerResponseEnvelope (text) {
  *  (record.rows.title.val per session id). Fail-closed on a missing/null
  *  title or any duplicate anywhere in the map — an ambiguous world title
  *  cannot be disambiguated in the rail. */
-export function canonicalTargets ({ projcache, rootId, memberIds }) {
+export function canonicalTargets ({ projcache, rootId, memberIds, membership }) {
   const titleOf = (id) => projcache[id]
   const pick = (id) => {
     const t = titleOf(id)
@@ -360,13 +532,27 @@ export function canonicalTargets ({ projcache, rootId, memberIds }) {
     members.push({ id, title: m.title })
   }
   const wanted = [rootId, ...memberIds].map((id) => ({ id, title: titleOf(id) }))
+  // Group identity is proven from the read-only fixture data HERE, so the rail
+  // step can act on the target's own workspace:<key> row (see deriveGroupKey).
+  const keyOf = (id) => membership === undefined
+    ? { groupKey: null, groupKeyProven: false }
+    : (() => {
+      const g = deriveGroupKey({ membership, sessionId: id })
+      return g.ok ? { groupKey: g.groupKey, groupKeyProven: true } : { groupKey: null, groupKeyProven: false, groupKeyReason: g.reason }
+    })()
+  for (const w of wanted) {
+    if (membership === undefined) continue
+    const g = keyOf(w.id)
+    if (!g.groupKeyProven) return { ok: false, reason: `workspace membership for ${w.id} is unproven: ${g.groupKeyReason} — refusing to navigate a rail we cannot identify` }
+  }
   for (const w of wanted) {
     const collisions = Object.entries(projcache).filter(([, t]) => t === w.title)
     if (collisions.length > 1) {
       return { ok: false, reason: `ambiguous duplicate title ${JSON.stringify(w.title)} shared by ${collisions.map(([id]) => id).join(', ')} — fail-closed before launch` }
     }
   }
-  return { ok: true, targets: { root: { id: rootId, title: root.title }, member: members[0] || null, members } }
+  const withKey = (t) => (t ? { ...t, ...keyOf(t.id) } : null)
+  return { ok: true, targets: { root: withKey({ id: rootId, title: root.title }), member: withKey(members[0] || null), members: members.map((m) => withKey(m)) } }
 }
 
 // ── dialog state: the REAL DirectoryBrowser structure (external review P2,
@@ -786,28 +972,60 @@ export async function navigate (page, net, leg, label, expected, io, out) {
   if (notice === 'present-undismissable') throw new FailClosed('notice-present-but-undismissable')
   if (notice === 'dismissed') steps.push('dismiss-notice')
   let collected = await page.collectLeaves()
-  // Expand the groups the product REPORTS as collapsed (aria-expanded='false'),
-  // one row per pass, re-reading the attribute after each real click. A click
-  // that does not flip aria-expanded fails closed instead of clicking deeper,
-  // and an already-expanded group is never clicked (the row is a TOGGLE).
-  for (let groupGuard = 0; groupGuard < 3; groupGuard += 1) {
-    if (expected && locateSessionRow(collected, expected).status === 'FOUND') break
-    const collapsed = collapsedGroupRows(collected)
-    if (collapsed.length === 0) break
-    const row = collapsed[0]
-    await page.clickLeaf(row)
-    await page.wait(1500)
-    collected = await page.collectLeaves()
-    if (collapsedGroupRows(collected).some((l) => l.key === row.key)) {
-      throw new FailClosed(`group-still-collapsed-after-click:${groupStepName(row.key).replace('expand-', '')}`, { groupKey: row.key, rail: railDiagnostic(collected) })
+  const groupKey = expected ? expected.groupKey : undefined
+  if (expected && expected.groupKeyProven !== true) {
+    // The group identity comes from the read-only fixture data (see
+    // readWorkspaceGroups/deriveGroupKey). Without it the driver has NO way to
+    // know which group owns the target, and "open the first collapsed row and
+    // hope" is exactly the positional traversal this repair removes.
+    throw new FailClosed('group-identity-missing', { sessionId: expected.sessionId, title: expected.title, rail: railDiagnostic(collected) })
+  }
+  if (expected) {
+    // Expand ONLY the expected group's own row, and only while it reports
+    // aria-expanded="false". A click that does not flip the attribute fails
+    // closed instead of clicking deeper; an already-expanded row is never
+    // clicked (the row is a TOGGLE and would collapse the tree).
+    for (let groupGuard = 0; groupGuard < 3; groupGuard += 1) {
+      if (locateSessionRow(collected, expected).status === 'FOUND') break
+      const g = groupRowFor(collected, groupKey)
+      if (g.status === 'AMBIGUOUS') throw new FailClosed('group-ambiguous', { expectedGroupKey: groupKey, containers: g.containers.length, rail: railDiagnostic(collected) })
+      if (g.status !== 'FOUND' || rowExpanded(g.row) !== 'false') break
+      await page.clickLeaf(g.row)
+      await page.wait(1500)
+      collected = await page.collectLeaves()
+      const after = groupRowFor(collected, groupKey)
+      if (after.status === 'AMBIGUOUS') throw new FailClosed('group-ambiguous', { expectedGroupKey: groupKey, containers: after.containers.length, rail: railDiagnostic(collected) })
+      if (after.status === 'FOUND' && rowExpanded(after.row) === 'false') {
+        throw new FailClosed(`group-still-collapsed-after-click:${groupStepName(GROUP_PREFIX + groupKey).replace('expand-', '')}`, { groupKey, rail: railDiagnostic(collected) })
+      }
+      steps.push(groupStepName(GROUP_PREFIX + groupKey))
     }
-    steps.push(groupStepName(row.key))
+  } else {
+    // This leg has NO rail target at all (E2 navigates for context only — its
+    // oracle is the workspace dialog plus the projection counters, never a row),
+    // so there is no identity to scope by. Its pre-existing behaviour is kept
+    // verbatim rather than "repaired" into a fail-closed that would change a
+    // passing leg: opening rows that report themselves collapsed, bounded, each
+    // verified, and NO locate is ever attempted on this path.
+    for (let groupGuard = 0; groupGuard < 3; groupGuard += 1) {
+      const collapsed = collapsedGroupRows(collected)
+      if (collapsed.length === 0) break
+      const row = collapsed[0]
+      await page.clickLeaf(row)
+      await page.wait(1500)
+      collected = await page.collectLeaves()
+      if (collapsedGroupRows(collected).some((l) => l.key === row.key)) {
+        throw new FailClosed(`group-still-collapsed-after-click:${groupStepName(row.key).replace('expand-', '')}`, { groupKey: row.key, rail: railDiagnostic(collected) })
+      }
+      steps.push(groupStepName(row.key))
+    }
   }
   let guard = 0
-  while (overflowPending(collected) && guard < 3) {
-    const btn = railRows(collected, 'overflow').find((l) => rowExpanded(l) === 'false')
-    if (!btn) break
-    await page.clickLeaf(btn)
+  while (guard < 3) {
+    const pending = (expected ? overflowRowsFor(collected, groupKey) : railRows(collected, 'overflow')).filter((l) => rowExpanded(l) === 'false')
+    if (pending.length > 1) throw new FailClosed('overflow-ambiguous', { expectedGroupKey: groupKey ?? null, containers: pending.length, rail: railDiagnostic(collected) })
+    if (pending.length === 0) break
+    await page.clickLeaf(pending[0])
     await page.wait(1200)
     collected = await page.collectLeaves()
     steps.push('expand-overflow')
@@ -825,15 +1043,21 @@ export async function navigate (page, net, leg, label, expected, io, out) {
     // unexpanded group and an unrendered tree were indistinguishable after the
     // fact. No HTML, no class hashes, no URLs/tokens — row keys + aria state.
     const rail = railDiagnostic(collected)
+    const group = groupRowFor(collected, groupKey)
     out.legs[label] = out.legs[label] || {}
-    out.legs[label].locateFailure = { status: hit.status, title: expected.title, sessionId: expected.sessionId, rail }
+    out.legs[label].locateFailure = { status: hit.status, expectedGroupKey: groupKey, groupStatus: group.status, title: expected.title, sessionId: expected.sessionId, rail }
     await page.screenshot(`shot-${label}-locate-${hit.status.toLowerCase()}.png`)
+    if (group.status === 'AMBIGUOUS') throw new FailClosed('group-ambiguous', { expectedGroupKey: groupKey, title: expected.title, sessionId: expected.sessionId, containers: group.containers.length, rail })
+    if (group.status === 'NOT_FOUND') throw new FailClosed('group-not_found', { expectedGroupKey: groupKey, title: expected.title, sessionId: expected.sessionId, railRowCount: rail.sessionRows, rail })
     throw new FailClosed(`locate-${hit.status.toLowerCase()}`, {
       title: expected.title,
       sessionId: expected.sessionId,
+      expectedGroupKey: groupKey,
+      titleMismatch: hit.titleMismatch,
       hits: (hit.matches || []).length,
       keyHits: hit.keyHits,
-      railRowCount: new Set(railRows(collected, 'session').map((l) => l.key)).size,
+      titleRows: hit.titleRows,
+      railRowCount: rail.sessionRows,
       rail,
     })
   }
@@ -964,6 +1188,47 @@ export function readProductTickMs (repoRoot, fsx = fs) {
 }
 
 /** Read the canonical title map, READ-ONLY, from the world's projcache. */
+/** READ-ONLY group identity for one session, taken from the same world the
+ *  titles come from and read BEFORE any browser leg: the Workspace store
+ *  <world>/storages/workspace.json (unit v2: global.workspaceIds +
+ *  tables.workspaces[<workspaceId>].sessionIds). The pinned product resolves a
+ *  session's browser group with owningGroupKey() — the first Workspace whose
+ *  sessionIds contains the id, else UNGROUPED_KEY === '' (tree.ts:19, :27-32) —
+ *  and that key is exactly the `data-row-key="workspace:<key>"` / 
+ *  `overflow:<key>` suffix (Rows.tsx:245, WorkspaceBrowser.tsx:585). Anything
+ *  short of proof (missing store, no tables, several claimants) is a REFUSAL:
+ *  defaulting to Ungrouped because "nothing claimed it in a file we could not
+ *  read" would be a guess wearing a fixture's clothes. */
+export function readWorkspaceGroups (worldDir, fsx = fs) {
+  const file = path.join(worldDir, 'storages', 'workspace.json')
+  let raw
+  try {
+    if (!fsx.existsSync(file)) return { ok: false, reason: `workspace membership store is missing (${file}) — group identity cannot be proven before the browser leg` }
+    raw = fsx.readFileSync(file, 'utf8')
+  } catch (e) {
+    return { ok: false, reason: `workspace membership store is unreadable (${file}): ${String((e && e.message) || e)}` }
+  }
+  let doc = null
+  try { doc = JSON.parse(raw) } catch (e) { return { ok: false, reason: `workspace membership store is unparseable (${file}): ${String((e && e.message) || e)}` } }
+  const tables = doc && doc.tables && doc.tables.workspaces
+  if (!tables || typeof tables !== 'object') return { ok: false, reason: `workspace membership store carries no tables.workspaces (${file}) — that is not proof that a session is Ungrouped` }
+  return { ok: true, membership: doc, file }
+}
+
+/** The group key one session belongs to, mirroring owningGroupKey(). Returns
+ *  { ok, groupKey } or { ok: false, reason }. Never "the first group in the
+ *  rail", never "whatever renders first". */
+export function deriveGroupKey ({ membership, sessionId } = {}) {
+  const id = String(sessionId ?? '')
+  if (!id) return { ok: false, reason: 'deriveGroupKey requires a canonical sessionId' }
+  const tables = membership && membership.tables && membership.tables.workspaces
+  if (!tables || typeof tables !== 'object') return { ok: false, reason: `workspace membership is missing or unreadable — refusing to assume the Ungrouped group for ${id}` }
+  const order = Array.isArray(membership.global && membership.global.workspaceIds) ? membership.global.workspaceIds : Object.keys(tables)
+  const claimants = order.filter((wid) => Array.isArray(tables[wid] && tables[wid].sessionIds) && tables[wid].sessionIds.includes(id))
+  if (claimants.length > 1) return { ok: false, reason: `${claimants.length} workspaces claim session ${id} (${claimants.join(', ')}) — owningGroupKey would silently take the first; the driver refuses instead of guessing` }
+  return { ok: true, groupKey: claimants.length === 1 ? claimants[0] : '' }
+}
+
 export function readProjcacheTitles (worldDir, fsx = fs) {
   const dir = path.join(worldDir, 'storages', 'session_projcache', 'sessions')
   const map = {}
@@ -1018,7 +1283,13 @@ export async function runDriverCore (cfg, io) {
     if (typeof launchUrl !== 'string' || !launchUrl.includes('?token=')) throw new Fatal('access record has no launchUrl with a token — refusing')
     let host
     try { host = JSON.parse(fsx.readFileSync(cfg.smokeHostPath, 'utf8')) } catch (e) { throw new Fatal('cannot read smoke-host.json: ' + String(e.message || e).slice(0, 120)) }
-    const targets = canonicalTargets({ projcache: readProjcacheTitles(cfg.world, fsx), rootId: host.t1, memberIds: [host.t1MemberSession] })
+    // Group identity is resolved from the SAME read-only fixture data as the
+    // titles, BEFORE any browser leg: an unprovable membership is a Fatal here,
+    // not a positional guess inside navigate().
+    const membershipRead = readWorkspaceGroups(cfg.world, fsx)
+    if (!membershipRead.ok) throw new Fatal('workspace membership unresolved before any browser leg: ' + membershipRead.reason)
+    const targets = canonicalTargets({ projcache: readProjcacheTitles(cfg.world, fsx), rootId: host.t1, memberIds: [host.t1MemberSession], membership: membershipRead.membership })
+    out.cfg.groupKeys = { member: targets.targets.member && targets.targets.member.groupKey, root: targets.targets.root && targets.targets.root.groupKey, source: membershipRead.file }
     if (!targets.ok) throw new Fatal(targets.reason)
     if (typeof cfg.testWorkspace !== 'string' || !cfg.testWorkspace.startsWith('/')) {
       throw new Fatal('--test-workspace must be given EXPLICITLY as an absolute path — an unnamed default directory is never authorized (review P6)')
@@ -1049,7 +1320,7 @@ export async function runDriverCore (cfg, io) {
       const page = leg.page
       await page.gotoApp(launchUrl)
       await page.wait(4500)
-      const nav = await navigate(page, net, 'E1', 'E1', { sessionId: targets.targets.member.id, title: targets.targets.member.title, relation: 'team-member', instance: host.t1MemberInstance }, io, out)
+      const nav = await navigate(page, net, 'E1', 'E1', { sessionId: targets.targets.member.id, title: targets.targets.member.title, groupKey: targets.targets.member.groupKey, groupKeyProven: targets.targets.member.groupKeyProven, relation: 'team-member', instance: host.t1MemberInstance }, io, out)
       const preClick = net.reqs('E1').filter((e) => e.seq <= nav.clickSeq).length
       out.legs.E1.navSteps = nav.steps
       out.legs.E1.clickSeq = nav.clickSeq
@@ -1094,7 +1365,7 @@ export async function runDriverCore (cfg, io) {
       const page = leg.page
       await page.gotoApp(launchUrl)
       await page.wait(4500)
-      const nav = await navigate(page, net, 'E3', 'E3E5', { sessionId: targets.targets.root.id, title: targets.targets.root.title, relation: 'team-root' }, io, out)
+      const nav = await navigate(page, net, 'E3', 'E3E5', { sessionId: targets.targets.root.id, title: targets.targets.root.title, groupKey: targets.targets.root.groupKey, groupKeyProven: targets.targets.root.groupKeyProven, relation: 'team-root' }, io, out)
       out.legs.E3E5.navSteps = nav.steps
       const w0 = nav.clickT // P3: the cold round IS in the window
       // LIVE-INCIDENT FIX (raw: teamTabHits=2 — dock label + role=tab share
@@ -1357,7 +1628,39 @@ export function parseArgs (argv) {
 export function railCollectorSource (railMaxX) {
   return `(() => {
     const out = []
-    const PREFIXES = ['session:', 'workspace:', 'overflow:']
+    // Row identity, pinned to the product's own structure
+    // (tests/deepseek-harness-test-use @ 639ed015):
+    //   * the sidebar row list is rendered by AnimatedRows, whose render() emits
+    //     <div role="tree" aria-label={t('section.sessions')}> — rows/AnimatedRows.tsx:171-176;
+    //     the search panel emits its OWN distinct <div role="tree"> — rows/WorkspaceBrowser.tsx:790;
+    //   * session rows are role="treeitem" (Rows.tsx:589-597), group rows are
+    //     role="treeitem" + aria-expanded (Rows.tsx:245-247), the overflow row is a
+    //     <button type="button"> + aria-expanded (WorkspaceBrowser.tsx:582-586);
+    //   * the ONLY data-row-key shapes upstream emits are empty / overflow:<key> /
+    //     workspace:<key> / session:<id> (grep over the pinned tree).
+    // A keyed element outside every [role=tree], or one whose row role does not
+    // match its prefix, is therefore NOT a rail row. It is still REPORTED (as
+    // rowKind 'unscoped') so a spoof shows up in diagnostics instead of silently
+    // becoming a target — and the driver treats it as a competing identity.
+    // rowSeq/treeSeq are per-snapshot container identities: several leaves
+    // (slot/title/time/actions) inside one row share one rowSeq, while two row
+    // containers that share a data-row-key get different rowSeq values.
+    const treeEls = document.querySelectorAll('[role="tree"]')
+    const treeId = new Map()
+    for (let i = 0; i < treeEls.length; i += 1) treeId.set(treeEls[i], i)
+    const rowEls = document.querySelectorAll('[data-row-key]')
+    const rowId = new Map()
+    for (let i = 0; i < rowEls.length; i += 1) rowId.set(rowEls[i], i)
+    const kindOf = (row, key) => {
+      if (!row) return ''
+      const treeEl = row.closest ? row.closest('[role="tree"]') : null
+      if (!treeEl) return 'unscoped'
+      const role = String(row.getAttribute('role') || '')
+      if (key.indexOf('session:') === 0) return role === 'treeitem' ? 'session' : 'unscoped'
+      if (key.indexOf('workspace:') === 0) return role === 'treeitem' ? 'group' : 'unscoped'
+      if (key.indexOf('overflow:') === 0) return row.tagName.toLowerCase() === 'button' && row.getAttribute('aria-expanded') !== null ? 'overflow' : 'unscoped'
+      return 'other'
+    }
     for (const e of document.querySelectorAll('*')) {
       const r = e.getBoundingClientRect()
       if (r.width === 0 || r.height === 0) continue
@@ -1366,10 +1669,16 @@ export function railCollectorSource (railMaxX) {
       if (!t || t.length > 200) continue
       const row = e.closest ? e.closest('[data-row-key]') : null
       const key = row ? String(row.getAttribute('data-row-key') || '') : ''
-      const inTree = PREFIXES.some((p) => key.indexOf(p) === 0)
-      const inRail = inTree || (r.x < ${railMaxX} && r.right <= ${railMaxX} + 8)
-      const inMain = !inRail && r.x >= ${railMaxX}
-      out.push({ tag: e.tagName.toLowerCase(), cls: String(e.className || '').slice(0, 80), role: e.getAttribute('role') || (row ? (row.getAttribute('role') || '') : ''), text: t, x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height), region: inRail ? 'rail' : 'main', key, expanded: row ? String(row.getAttribute('aria-expanded') ?? '') : '', selected: row ? String(row.getAttribute('aria-selected') ?? '') : '' })
+      const rowKind = kindOf(row, key)
+      const treeEl = row && row.closest ? row.closest('[role="tree"]') : null
+      const treeSeq = treeEl ? treeId.get(treeEl) : null
+      const rowSeq = row ? rowId.get(row) : null
+      // Region stays a GEOMETRY hint for diagnostics only. Row candidacy comes
+      // from rowKind; a real row is a real row at 264px, 280px or 420px
+      // (ui-layout/src/client/columns.ts SIDEBAR_MIN/DEFAULT/MAX).
+      const inRail = rowKind === 'session' || rowKind === 'group' || rowKind === 'overflow'
+        || (r.x < ${railMaxX} && r.right <= ${railMaxX} + 8)
+      out.push({ tag: e.tagName.toLowerCase(), cls: String(e.className || '').slice(0, 80), role: String(e.getAttribute('role') || (row ? (row.getAttribute('role') || '') : '')), text: t, x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height), region: inRail ? 'rail' : 'main', key, rowKind, treeSeq: treeSeq === undefined ? null : treeSeq, rowSeq: rowSeq === undefined ? null : rowSeq, expanded: row ? String(row.getAttribute('aria-expanded') ?? '') : '', selected: row ? String(row.getAttribute('aria-selected') ?? '') : '' })
     }
     return out
   })()`

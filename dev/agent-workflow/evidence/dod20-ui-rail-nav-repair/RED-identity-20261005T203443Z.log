@@ -1,0 +1,372 @@
+✖ identity: four unrelated collapsed groups in front — only workspace:<expectedKey> is opened (896.269561ms)
+✖ identity: a foreign group's overflow row is never clicked — only overflow:<expectedKey> (104.834484ms)
+✖ identity: the expected group in ANOTHER workspace is opened by its exact key, strangers untouched (120.039466ms)
+✖ identity: a MISSING expected group row fails closed with diagnostics, never a substitute group (49.847318ms)
+✖ identity: a DUPLICATE expected group row fails closed as group-ambiguous (29.984917ms)
+✖ identity: an UNPROVEN expected group fails closed before a single rail click (84.587164ms)
+✖ identity: navPlan schedules the group step only for the EXPECTED group row (39.218279ms)
+✖ membership: unaccounted sessions are Ungrouped, accounted ones are their workspaceId (0.304673ms)
+✖ membership: two workspaces claiming one session fail closed (no first-wins) (0.330581ms)
+✖ membership: an absent or unreadable workspace store fails closed — never a silent Ungrouped (0.212724ms)
+✖ membership: readWorkspaceGroups reads storages/workspace.json from the world dir only (0.229414ms)
+✖ membership: canonicalTargets carries the group key onto every target (or refuses) (0.86112ms)
+✖ scope: the rail rows are collected WITH their tree ancestor (faithful markup) (25.13855ms)
+✖ scope: a keyed session row OUTSIDE every tree is never the target (NOT_FOUND, no click) (25.224367ms)
+✖ scope: a keyed element without role=treeitem inside the tree is not a row either (46.631591ms)
+✖ scope: the SAME key in two distinct real trees stays AMBIGUOUS (the first tree is not preferred) (33.45823ms)
+✖ scope: the search tree alone may hold a row — and it is still a real tree, so it is found (61.957542ms)
+✖ rows: one container with slot/title/time/actions leaves is ONE row (38.677452ms)
+✖ rows: two containers sharing the canonical key are AMBIGUOUS even when only one keeps the canonical title (20.333231ms)
+✖ rows: two REAL rows with equal titles and different ids stay AMBIGUOUS (policy preserved, not weakened) (19.957795ms)
+✖ rows: a title repeated by a hover card (no row identity) is still ignored (35.893993ms)
+✖ rows: a same-id row whose title left the canonical value is NOT_FOUND, with the mismatch reported (57.540379ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 0
+ℹ fail 22
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1882.060666
+
+✖ failing tests:
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:75:1
+✖ identity: four unrelated collapsed groups in front — only workspace:<expectedKey> is opened (896.269561ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:831:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-rail-harness.mjs:333:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:82:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    diag: { title: 'ack:role-worker:deleg:mpr-2026-10-01T13-21-34', sessionId: 'session-team-child-52860b5a204e428e1cb00690a10eb02f', hits: 0, keyHits: 0, railRowCount: 9, rail: { leaves: 31, groups: [Array], collapsedGroups: 2, sessionRows: 9, overflowRows: [Array], unkeyedLeaves: 5, sample: [Array] } }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:90:1
+✖ identity: a foreign group's overflow row is never clicked — only overflow:<expectedKey> (104.834484ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:831:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-rail-harness.mjs:333:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:100:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { title: 'ack:role-worker:deleg:mpr-2026-10-01T13-21-34', sessionId: 'session-team-child-52860b5a204e428e1cb00690a10eb02f', hits: 0, keyHits: 0, railRowCount: 13, rail: { leaves: 35, groups: [Array], collapsedGroups: 0, sessionRows: 13, overflowRows: [Array], unkeyedLeaves: 5, sample: [Array] } }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:107:1
+✖ identity: the expected group in ANOTHER workspace is opened by its exact key, strangers untouched (120.039466ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   true,
+  +   true
+  -   false,
+  -   false
+    ]
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:115:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ true, true ],
+    expected: [ false, false ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:119:1
+✖ identity: a MISSING expected group row fails closed with diagnostics, never a substitute group (49.847318ms)
+  AssertionError [ERR_ASSERTION]: the reason must name the missing GROUP identity, not a generic locate miss: undefined
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:123:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:121:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /group-not_found/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:131:1
+✖ identity: a DUPLICATE expected group row fails closed as group-ambiguous (29.984917ms)
+  AssertionError [ERR_ASSERTION]: duplicate group identity must be named: undefined
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:140:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:138:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /group-ambiguous/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:146:1
+✖ identity: an UNPROVEN expected group fails closed before a single rail click (84.587164ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:148:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:156:1
+✖ identity: navPlan schedules the group step only for the EXPECTED group row (39.218279ms)
+  AssertionError [ERR_ASSERTION]: two strangers report collapsed while the target is open => no group step
+  + actual - expected
+  
+  + [
+  +   'expand-group'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:160:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 'expand-group' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:178:1
+✖ membership: unaccounted sessions are Ungrouped, accounted ones are their workspaceId (0.304673ms)
+  TypeError: D.deriveGroupKey is not a function
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:180:15)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:188:1
+✖ membership: two workspaces claiming one session fail closed (no first-wins) (0.330581ms)
+  TypeError: D.deriveGroupKey is not a function
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:190:15)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:195:1
+✖ membership: an absent or unreadable workspace store fails closed — never a silent Ungrouped (0.212724ms)
+  TypeError: D.deriveGroupKey is not a function
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:196:15)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:203:1
+✖ membership: readWorkspaceGroups reads storages/workspace.json from the world dir only (0.229414ms)
+  TypeError: D.readWorkspaceGroups is not a function
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:207:17)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:216:1
+✖ membership: canonicalTargets carries the group key onto every target (or refuses) (0.86112ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== ''
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:221:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:232:1
+✖ scope: the rail rows are collected WITH their tree ancestor (faithful markup) (25.13855ms)
+  AssertionError [ERR_ASSERTION]: every session row leaf reports WHICH tree it is in (treeSeq)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:238:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:242:1
+✖ scope: a keyed session row OUTSIDE every tree is never the target (NOT_FOUND, no click) (25.224367ms)
+  AssertionError [ERR_ASSERTION]: the spoof must not become the target: undefined
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:252:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:250:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /locate-not_found/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:260:1
+✖ scope: a keyed element without role=treeitem inside the tree is not a row either (46.631591ms)
+  AssertionError [ERR_ASSERTION]: a bare data-row-key is not row identity: undefined
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:266:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:264:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /locate-not_found/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:272:1
+✖ scope: the SAME key in two distinct real trees stays AMBIGUOUS (the first tree is not preferred) (33.45823ms)
+  AssertionError [ERR_ASSERTION]: the two candidates are in DIFFERENT trees
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:282:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:288:1
+✖ scope: the search tree alone may hold a row — and it is still a real tree, so it is found (61.957542ms)
+  FailClosed: selection-unverified-after-one-same-row-retry
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:863:9)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-rail-harness.mjs:333:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:295:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { verifyAttempt1: { verified: false, headerOk: false, networkOk: false, relationSeen: false, why: 'no-fresh-readstate-request', reqSeq: null, resSeq: null, clickT: 305, clickSeq: 0 }, verifyAttempt2: { verified: false, headerOk: false, networkOk: false, relationSeen: false, why: 'no-fresh-readstate-request', reqSeq: null, resSeq: null, clickT: 9125, clickSeq: 0 } }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:300:1
+✖ rows: one container with slot/title/time/actions leaves is ONE row (38.677452ms)
+  AssertionError [ERR_ASSERTION]: the locate reports ROWS, not leaves
+  
+  undefined !== 1
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:308:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:312:1
+✖ rows: two containers sharing the canonical key are AMBIGUOUS even when only one keeps the canonical title (20.333231ms)
+  AssertionError [ERR_ASSERTION]: duplicate canonical rows must be counted, not folded into "one match"
+  
+  undefined !== 2
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:324:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:331:1
+✖ rows: two REAL rows with equal titles and different ids stay AMBIGUOUS (policy preserved, not weakened) (19.957795ms)
+  AssertionError [ERR_ASSERTION]: two distinct row containers carry the exact canonical title
+  
+  undefined !== 2
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:342:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:349:1
+✖ rows: a title repeated by a hover card (no row identity) is still ignored (35.893993ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 1
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:354:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:357:1
+✖ rows: a same-id row whose title left the canonical value is NOT_FOUND, with the mismatch reported (57.540379ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(err instanceof FailClosed && /locate-not_found/.test(err.reason), err?.reason)
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs:360:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

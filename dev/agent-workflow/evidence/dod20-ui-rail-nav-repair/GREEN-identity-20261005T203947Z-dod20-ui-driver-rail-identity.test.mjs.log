@@ -1,0 +1,30 @@
+✔ identity: four unrelated collapsed groups in front — only workspace:<expectedKey> is opened (913.761007ms)
+✔ identity: a foreign group's overflow row is never clicked — only overflow:<expectedKey> (66.648231ms)
+✔ identity: the expected group in ANOTHER workspace is opened by its exact key, strangers untouched (31.813085ms)
+✔ identity: a MISSING expected group row fails closed with diagnostics, never a substitute group (30.541095ms)
+✔ identity: a DUPLICATE expected group row fails closed as group-ambiguous (21.471461ms)
+✔ identity: an UNPROVEN expected group fails closed before a single rail click (18.801277ms)
+✔ identity: navPlan schedules the group step only for the EXPECTED group row (37.963622ms)
+✔ membership: unaccounted sessions are Ungrouped, accounted ones are their workspaceId (1.291503ms)
+✔ membership: two workspaces claiming one session fail closed (no first-wins) (0.591364ms)
+✔ membership: an absent or unreadable workspace store fails closed — never a silent Ungrouped (0.451618ms)
+✔ membership: readWorkspaceGroups reads storages/workspace.json from the world dir only (0.81016ms)
+✔ membership: canonicalTargets carries the group key onto every target (or refuses) (1.150802ms)
+✔ scope: the rail rows are collected WITH their tree ancestor (faithful markup) (26.10076ms)
+✔ scope: a keyed session row OUTSIDE every tree is never the target (NOT_FOUND, no click) (22.254169ms)
+✔ scope: a keyed element without role=treeitem inside the tree is not a row either (21.90042ms)
+✔ scope: the SAME key in two distinct real trees stays AMBIGUOUS (the first tree is not preferred) (67.519867ms)
+✔ scope: the search tree alone may hold a row — and it is still a real tree, so it is found (36.970385ms)
+✔ rows: one container with slot/title/time/actions leaves is ONE row (37.721036ms)
+✔ rows: two containers sharing the canonical key are AMBIGUOUS even when only one keeps the canonical title (39.216176ms)
+✔ rows: two REAL rows with equal titles and different ids stay AMBIGUOUS (policy preserved, not weakened) (24.423532ms)
+✔ rows: a title repeated by a hover card (no row identity) is still ignored (19.426521ms)
+✔ rows: a same-id row whose title left the canonical value is NOT_FOUND, with the mismatch reported (27.028509ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1649.07309
