@@ -27,6 +27,18 @@
  * The HTML is HAND-MODELED on those observations (tag + class + text only; no
  * live file content was copied), so no credential-shaped evidence can enter
  * this repo through the fixtures.
+ *
+ * CORRECTED 2026-10-05, after the 2026-10-05T18-50-45Z lane died
+ * `locate-not_found` with railRowCount 0. The class names quoted above were
+ * read off a 0.1.7-rc.1-era page and are OBSOLETE AS STRINGS: a css-module
+ * prefix is compiler output (lightningcss pattern '[hash]_[local]', hashed
+ * from the file path), so it rotates with the host generation and the checkout
+ * path — it is a build detail, never a contract. These fixtures therefore carry
+ * the product's STABLE semantics (role=treeitem, data-row-key
+ * "workspace:"|"session:"|"overflow:", aria-expanded, aria-selected) with an
+ * INVENTED class prefix, and the rail tests are driven by the semantics alone.
+ * dod20-ui-driver-rail-dom.test.mjs runs the real serialized collector over
+ * this same shape in a real jsdom with real geometry.
  */
 
 export const ROOT_ID = 'session-mpr-t1-mpr-2026-10-01T13-21-34'
@@ -38,9 +50,51 @@ export const MEMBER_INSTANCE = 'inst-0iin89s0dvix'
 /** Rail chrome labels that are never session rows (probe-ui3-out.json). */
 export const CHROME_LABELS = Object.freeze(['New Session', 'Plugins', 'Workspaces', 'Ungrouped', 'New Team', 'Settings', 'DSH Local Build'])
 
-/** One rail row exactly as the shell renders it: title span + time span. */
-function rowHtml (title, time = '1h') {
-  return `<div class="W0d-vW_row"><span class="W0d-vW_title">${title}</span><span class="W0d-vW_time">${time}</span></div>`
+/** Rail title -> canonical session id, byte-exact from the retained acceptance
+ *  world (tests/homes/<world>/storages/session_projcache/sessions/<id>.json).
+ *  data-row-key is the ONLY place the product exposes a session id in the rail
+ *  DOM (Rows.tsx:589), so a faithful fixture must carry it. */
+export const RAIL_TITLE_TO_ID = Object.freeze({
+  [ROOT_TITLE]: ROOT_ID,
+  [MEMBER_TITLE]: MEMBER_ID,
+  'ack:role-a-leader:mpr-2026-10-01T13-21-34': 'session-mpr-ta-mpr-2026-10-01T13-21-34',
+  'ack:role-b-leader:mpr-2026-10-01T13-21-34': 'session-mpr-tb-mpr-2026-10-01T13-21-34',
+  'ack:role-a:mpr-2026-10-01T13-21-34': 'session-team-child-d9de2bb5f0a146971394aef7ba4920d0',
+  'ack:role-b:mpr-2026-10-01T13-21-34': 'session-team-child-99f55d74e63446f6137197e7eda0160c',
+  'ack:role-expert:pre:mpr-2026-10-01T13-21-34': 'session-team-child-259520eccdc5502ef43ef3f0762921e6',
+  'ack:role-worker:create:mpr-2026-10-01T13-21-34': 'session-team-child-9cad1397bef9632e3e1ebf73027145f9',
+  'ack:global-default:mpr-2026-10-01T13-21-34': 'session-team-child-06aa43ccaacb075f1817b151e64b9d52',
+})
+
+/* CSS-module class names in these fixtures are DELIBERATELY INVENTED. The real
+ * shipped prefix is compiler output (tsdown.client.ts -> lightningcss
+ * cssModules pattern '[hash]_[local]', hash derived from the file PATH): the
+ * 2026-10-01 run saw W0d-vW_title, the pinned 0.2.0-rc.2 bundle ships a
+ * different prefix. Any fixture that depended on a class would rotate with the
+ * build; inventing one here makes that dependence fail loudly instead. */
+const RAIL_CLS = 'aB3xYz'
+
+/** One rail row exactly as the pinned product renders it: role=treeitem +
+ *  data-row-key="session:<id>" + aria-selected on the CONTAINER, title span and
+ *  time span inside (Rows.tsx:589-640). */
+function rowHtml (title, time = '1h', { id, selected = false } = {}) {
+  const sid = id ?? RAIL_TITLE_TO_ID[title] ?? 'session-unknown'
+  return `<div class="${RAIL_CLS}_sessionRow" data-row-key="session:${sid}" role="treeitem" aria-selected="${selected}"><span class="${RAIL_CLS}_slot"></span><span class="${RAIL_CLS}_title">${title}</span><span class="${RAIL_CLS}_time">${time}</span></div>`
+}
+
+/** The project (group) row: Rows.tsx:245-247 — data-row-key is
+ *  'workspace:' + group.key and the UNGROUPED bucket's key is the EMPTY string
+ *  (tree.ts:19), so the ungrouped row is data-row-key="workspace:".
+ *  aria-expanded is the ONLY representation of the collapsed state. */
+function groupHtml (label = 'Ungrouped', { expanded = false, key = '' } = {}) {
+  return `<div class="${RAIL_CLS}_projectRow" data-row-key="workspace:${key}" role="treeitem" aria-expanded="${expanded}"><span class="${RAIL_CLS}_slot"></span><span class="${RAIL_CLS}_projectText"><span class="${RAIL_CLS}_title">${label}</span></span></div>`
+}
+
+/** The overflow control: WorkspaceBrowser.tsx:583-586. It exists only AFTER the
+ *  group is expanded, and aria-expanded reports whether the idle quota is spent
+ *  (the label is localized and therefore NOT state). */
+function overflowHtml ({ expanded = false, n = 4 } = {}) {
+  return `<button type="button" class="${RAIL_CLS}_sessionOverflowButton" data-row-key="overflow:" aria-expanded="${expanded}">${expanded ? 'Show less' : `Show ${n} more sessions`}</button>`
 }
 
 /** Rail WITHOUT the notice — the probe3 'rail-after-notice' state: the
@@ -51,7 +105,7 @@ export const RAIL_COLLAPSED = `
   <span class="_25B0JG_newSessionLabel">New Session</span>
   <span class="_25B0JG_panelTitle">Plugins</span>
   <span class="HVH6QW_sectionLabel">Workspaces</span>
-  <div class="W0d-vW_group"><span class="W0d-vW_title">Ungrouped</span></div>
+  ${groupHtml()}
   <span class="label">New Team</span>
   <span class="SNkpza_triggerLabel">Settings</span>
 </nav>`
@@ -66,13 +120,13 @@ export const RAIL_EXPANDED = `
   <span class="_25B0JG_newSessionLabel">New Session</span>
   <span class="_25B0JG_panelTitle">Plugins</span>
   <span class="HVH6QW_sectionLabel">Workspaces</span>
-  <div class="W0d-vW_group"><span class="W0d-vW_title">Ungrouped</span></div>
+  ${groupHtml('Ungrouped', { expanded: true })}
   ${rowHtml('ack:role-expert:pre:mpr-2026-10-01T13-21-34')}
   ${rowHtml('ack:role-b:mpr-2026-10-01T13-21-34')}
   ${rowHtml('ack:role-b-leader:mpr-2026-10-01T13-21-34')}
   ${rowHtml('ack:role-a:mpr-2026-10-01T13-21-34')}
   ${rowHtml('ack:role-a-leader:mpr-2026-10-01T13-21-34')}
-  <button class="HVH6QW_sessionOverflowButton">Show 4 more sessions</button>
+  ${overflowHtml()}
   <span class="label">New Team</span>
   <span class="SNkpza_triggerLabel">Settings</span>
 </nav>`
@@ -85,7 +139,7 @@ export const RAIL_EXPANDED_ALL = `
   <span class="_25B0JG_newSessionLabel">New Session</span>
   <span class="_25B0JG_panelTitle">Plugins</span>
   <span class="HVH6QW_sectionLabel">Workspaces</span>
-  <div class="W0d-vW_group"><span class="W0d-vW_title">Ungrouped</span></div>
+  ${groupHtml('Ungrouped', { expanded: true })}
   ${rowHtml('ack:role-expert:pre:mpr-2026-10-01T13-21-34')}
   ${rowHtml('ack:role-b:mpr-2026-10-01T13-21-34')}
   ${rowHtml('ack:role-b-leader:mpr-2026-10-01T13-21-34')}
@@ -95,17 +149,17 @@ export const RAIL_EXPANDED_ALL = `
   ${rowHtml(MEMBER_TITLE)}
   ${rowHtml('ack:role-worker:create:mpr-2026-10-01T13-21-34')}
   ${rowHtml(ROOT_TITLE)}
-  <button class="HVH6QW_sessionOverflowButton">Show less</button>
+  ${overflowHtml({ expanded: true })}
   <span class="label">New Team</span>
   <span class="SNkpza_triggerLabel">Settings</span>
 </nav>`
 
 /** Same nine rows in a DIFFERENT order (recency reorder between the title
- *  derivation and the click). Locate must remain title-exact — never by
+ *  derivation and the click). Locate must remain id+title exact — never by
  *  index, never by "first row that looks like a session". */
 export const RAIL_REORDERED = `
 <nav class="rail">
-  <div class="W0d-vW_group"><span class="W0d-vW_title">Ungrouped</span></div>
+  ${groupHtml('Ungrouped', { expanded: true })}
   ${rowHtml(ROOT_TITLE)}
   ${rowHtml('ack:role-a:mpr-2026-10-01T13-21-34')}
   ${rowHtml(MEMBER_TITLE)}
@@ -119,21 +173,33 @@ export const RAIL_REORDERED = `
 </nav>`
 
 /** Duplicate-title hazard: the hover tooltip repeats the row title next to the
- *  rail (probe3-after-rowclick.png). Two exact matches => AMBIGUOUS fail-closed,
- *  never "pick the first". */
+ *  rail (probe3-after-rowclick.png). A tooltip carries NO data-row-key, so an
+ *  id-scoped locate still finds exactly one row — this fixture is the proof
+ *  that the hazard is neutralized by SEMANTICS rather than by an exclusion
+ *  list. (The genuinely ambiguous case is RAIL_DUPLICATE_KEY below.) */
 export const RAIL_DUPLICATE_TITLE = `
 <nav class="rail">
-  <div class="W0d-vW_group"><span class="W0d-vW_title">Ungrouped</span></div>
+  ${groupHtml('Ungrouped', { expanded: true })}
   ${rowHtml(MEMBER_TITLE)}
   ${rowHtml(ROOT_TITLE)}
   <div class="railTooltip"><span>${MEMBER_TITLE}</span><span>1h ago</span><span>Idle</span></div>
+</nav>`
+
+/** Two RENDERED rows carrying the SAME data-row-key: an anomaly the product
+ *  must never produce, and the one case where the driver refuses to pick. */
+export const RAIL_DUPLICATE_KEY = `
+<nav class="rail">
+  ${groupHtml('Ungrouped', { expanded: true })}
+  ${rowHtml(MEMBER_TITLE)}
+  ${rowHtml(MEMBER_TITLE, '1h', { id: MEMBER_ID })}
+  ${rowHtml(ROOT_TITLE)}
 </nav>`
 
 /** Target absent from the rail (e.g. the group was never expanded, or the
  *  session genuinely does not exist): NOT_RUN fail-closed — never a neighbor. */
 export const RAIL_TARGET_MISSING = `
 <nav class="rail">
-  <div class="W0d-vW_group"><span class="W0d-vW_title">Ungrouped</span></div>
+  ${groupHtml('Ungrouped', { expanded: true })}
   ${rowHtml('ack:role-expert:pre:mpr-2026-10-01T13-21-34')}
   ${rowHtml('ack:role-a:mpr-2026-10-01T13-21-34')}
   <span class="label">New Team</span>

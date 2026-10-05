@@ -1,0 +1,232 @@
+✖ rail DOM (real collector, real navigate): locates the member past a COLLAPSED Ungrouped group and verifies selection (874.219681ms)
+✖ rail DOM: a changed CSS-module hash for css.title changes nothing (no shipped class is an identifier) (13.331663ms)
+✖ rail DOM: every supported sidebar width finds the row (SIDEBAR_MIN 264 / DEFAULT 280 / MAX 420) (16.315706ms)
+✖ rail DOM: Chinese locale expands the group and reveals the overflow with localized labels (21.206257ms)
+✖ rail DOM: overflow reveal is bounded and structural (data-row-key=overflow:*), and the collapse label is never clicked as an expander (25.737973ms)
+✖ rail DOM: an already-expanded group is never clicked (a toggle would collapse it) (32.215812ms)
+✖ rail DOM: expansion state is read from aria-expanded, never from a row count (17.733148ms)
+✖ rail DOM: a target in ANOTHER workspace is reached while Ungrouped stays collapsed (14.185557ms)
+✖ rail DOM: a no-op / still-collapsed click fails closed, it never clicks an arbitrary row (18.375684ms)
+✖ rail DOM: a missing target is locate-not_found fail-closed AND leaves scrubbed rail diagnostics plus one failure screenshot (31.965924ms)
+✖ rail DOM: a duplicate row carrying the SAME canonical id is AMBIGUOUS, never "pick the first" (24.659481ms)
+✖ rail DOM: a repeated TITLE outside the session tree (hover card, header) cannot make the locate ambiguous (17.706045ms)
+✖ rail DOM: a hidden duplicate row (zero box, display:none) is not a candidate (13.702502ms)
+✖ rail DOM: a rendered duplicate carrying the SAME canonical id outside the rail is AMBIGUOUS, never a silent pick (9.157374ms)
+✖ rail DOM: the exact canonical title is required — a same-id row with a different title fails closed (11.74033ms)
+✖ rail DOM: selection identity stays correlated — a row that renders but never produces a fresh readState round is unverified, never a navigation (8.169765ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 0
+ℹ fail 16
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1361.144421
+
+✖ failing tests:
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:332:1
+✖ rail DOM (real collector, real navigate): locates the member past a COLLAPSED Ungrouped group and verifies selection (874.219681ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:333:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:341:1
+✖ rail DOM: a changed CSS-module hash for css.title changes nothing (no shipped class is an identifier) (13.331663ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:343:15)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:350:1
+✖ rail DOM: every supported sidebar width finds the row (SIDEBAR_MIN 264 / DEFAULT 280 / MAX 420) (16.315706ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:352:15)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:359:1
+✖ rail DOM: Chinese locale expands the group and reveals the overflow with localized labels (21.206257ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:360:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:366:1
+✖ rail DOM: overflow reveal is bounded and structural (data-row-key=overflow:*), and the collapse label is never clicked as an expander (25.737973ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:367:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:374:1
+✖ rail DOM: an already-expanded group is never clicked (a toggle would collapse it) (32.215812ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:375:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:381:1
+✖ rail DOM: expansion state is read from aria-expanded, never from a row count (17.733148ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:384:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:390:1
+✖ rail DOM: a target in ANOTHER workspace is reached while Ungrouped stays collapsed (14.185557ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:391:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:401:1
+✖ rail DOM: a no-op / still-collapsed click fails closed, it never clicks an arbitrary row (18.375684ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:402:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:411:1
+✖ rail DOM: a missing target is locate-not_found fail-closed AND leaves scrubbed rail diagnostics plus one failure screenshot (31.965924ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:412:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:424:1
+✖ rail DOM: a duplicate row carrying the SAME canonical id is AMBIGUOUS, never "pick the first" (24.659481ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:434:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:441:1
+✖ rail DOM: a repeated TITLE outside the session tree (hover card, header) cannot make the locate ambiguous (17.706045ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:443:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:448:1
+✖ rail DOM: a hidden duplicate row (zero box, display:none) is not a candidate (13.702502ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:449:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:455:1
+✖ rail DOM: a rendered duplicate carrying the SAME canonical id outside the rail is AMBIGUOUS, never a silent pick (9.157374ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:457:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:468:1
+✖ rail DOM: the exact canonical title is required — a same-id row with a different title fails closed (11.74033ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:469:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:477:1
+✖ rail DOM: selection identity stays correlated — a row that renders but never produces a fresh readState round is unverified, never a navigation (8.169765ms)
+  TypeError: rectOf.clear is not a function
+      at layout (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:180:12)
+      at mountRail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:273:3)
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:478:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)

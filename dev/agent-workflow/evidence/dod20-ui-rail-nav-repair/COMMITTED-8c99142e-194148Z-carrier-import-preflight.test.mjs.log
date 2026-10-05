@@ -1,0 +1,14 @@
+✔ a carrier whose graph cannot resolve a bare specifier fails with the real code + specifier (75.380615ms)
+✔ a resolvable entry exporting the plugin contract passes and lists names only (72.50635ms)
+✔ an entry that imports fine but is not the team plugin (no apply) fails (70.914621ms)
+✔ a hung import is bounded by --timeout-ms instead of hanging the caller (1574.912378ms)
+✔ usage error without a file target (71.202699ms)
+✔ the preflight never echoes environment values (71.49938ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2039.693192

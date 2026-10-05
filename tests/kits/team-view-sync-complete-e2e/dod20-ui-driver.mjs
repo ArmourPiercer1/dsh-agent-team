@@ -103,7 +103,10 @@ import { redactLiveTokenFields, redactLiveTokenText } from './live-token-redact.
  *  the live lane never feeds page text through this; the dialog uses real DOM
  *  state, the rail uses the in-page collector). A leaf = element with
  *  non-empty DIRECT text and no child elements. Returns [{tag, cls, role,
- *  text}] in document order. */
+ *  text, key, expanded, selected}] in document order, where key/expanded/
+ *  selected mirror EXACTLY what railCollectorSource() reads from the nearest
+ *  [data-row-key] ancestor — a fixture that does not carry the product's
+ *  semantic attributes cannot pass a rail test, which is the point. */
 export function htmlLeaves (html) {
   const VOID = new Set(['br', 'hr', 'img', 'input', 'meta', 'link'])
   const src = String(html)
@@ -131,7 +134,8 @@ export function htmlLeaves (html) {
           const el = stack.splice(i)[0]
           const text = el.text.replace(/\s+/g, ' ').trim()
           if (text !== '' && !el.hasChild) {
-            leaves.push({ tag, cls: el.cls, role: el.role, text })
+            const row = [...stack].reverse().find((f) => f.key !== '') || el
+            leaves.push({ tag, cls: el.cls, role: el.role || row.role || '', text, key: row.key, expanded: row.expanded, selected: row.selected })
           }
           if (stack.length > 0) stack[stack.length - 1].hasChild = true
           break
@@ -141,7 +145,16 @@ export function htmlLeaves (html) {
       const attrs = {}
       let a
       while ((a = attrRe.exec(rawAttrs || '')) !== null) attrs[a[1].toLowerCase()] = a[3] ?? a[4] ?? ''
-      stack.push({ tag, cls: attrs.class || '', role: attrs.role || '', text: '', hasChild: false })
+      stack.push({
+        tag,
+        cls: attrs.class || '',
+        role: attrs.role || '',
+        key: attrs['data-row-key'] ?? '',
+        expanded: attrs['aria-expanded'] ?? '',
+        selected: attrs['aria-selected'] ?? '',
+        text: '',
+        hasChild: false,
+      })
     }
   }
   push(src.slice(last))
@@ -152,49 +165,145 @@ function decodeEntities (s) {
   return s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
 }
 
-const GROUP_TITLE = 'Ungrouped'
-const ROW_CLUE = 'W0d-vW_title'
-const OVERFLOW_RE = /^Show \d+ more sessions$/
+// ── RAIL ROW IDENTITY IS SEMANTIC, NEVER VISUAL ────────────────────────────
+// The pinned product renders on every sidebar row container:
+//   role="treeitem" + data-row-key + aria-expanded / aria-selected
+//     · project row  Rows.tsx:245-247  data-row-key={'workspace:' + group.key}
+//     · session row  Rows.tsx:589-597  data-row-key={'session:' + node.id}
+//     · overflow     WorkspaceBrowser.tsx:583-586  data-row-key={'overflow:' + group.key}
+//   and the session id exists in the DOM ONLY inside that data-row-key.
+// Class names are NOT identity: ui-workspace's css modules go through
+// tsdown.client.ts -> lightningcss cssModules:{pattern:'[hash]_[local]'}, and
+// [hash] is derived from the FILE PATH, so the shipped prefix rotates with the
+// host generation (the 2026-10-01 run saw css.title as `W0d-vW_title`; the
+// pinned 0.2.0-rc.2 bundle ships `_6kVdha_title`, and `W0d-vW` has ZERO hits
+// in it). The live 2026-10-05T18-50-45Z run died as `locate-not_found` with
+// railRowCount 0 for exactly that reason. Geometry is not identity either:
+// ui-layout/src/client/columns.ts allows the sidebar to be 264..420px.
+// Every label is localized (locales.ts:10/:32/:33 zh, :129/:151/:152 en), so
+// no state may be inferred from an English string either.
+const GROUP_PREFIX = 'workspace:'
+const SESSION_PREFIX = 'session:'
+const OVERFLOW_PREFIX = 'overflow:'
+/** Localized labels, kept for DIAGNOSTICS only — never a locator. */
+export const GROUP_TITLES = Object.freeze(['Ungrouped', '未分组'])
+const OVERFLOW_LABEL_RE = /^(Show \d+ more sessions|展开其余 \d+ 个会话)$/
 
 /** Rail chrome labels (probe3 rail dumps) that are never session rows. */
-export const CHROME_TEXTS = Object.freeze(['New Session', 'Plugins', 'Workspaces', GROUP_TITLE, 'New Team', 'Settings', 'DSH Local Build'])
+export const CHROME_TEXTS = Object.freeze(['New Session', '新会话', 'Plugins', 'Workspaces', ...GROUP_TITLES, 'New Team', 'Settings', 'DSH Local Build'])
 
-/** The group-header leaf (exact 'Ungrouped' text on a row-class span). */
+/** Leaf records that belong to a sidebar ROW of a given kind, scoped to the
+ *  actual session tree by data-row-key (never by class, x, or text). Region is
+ *  deliberately NOT consulted: a rail row IS the tree, and a fixed x bound
+ *  cannot be row identity (SIDEBAR_MIN 264 / DEFAULT 280 / MAX 420). */
+export function railRows (leaves, kind) {
+  const prefix = kind === 'group' ? GROUP_PREFIX : kind === 'session' ? SESSION_PREFIX : OVERFLOW_PREFIX
+  return (leaves || []).filter((l) => String(l.key || '').startsWith(prefix))
+}
+
+/** aria-expanded of the row a leaf belongs to: 'true' | 'false' | null.
+ *  GROUP STATE IS READ FROM THIS AND NOTHING ELSE — a collapsed group renders
+ *  zero session rows (WorkspaceBrowser.tsx:423 + expandedGroups :331-337), so
+ *  "no rows" alone cannot tell collapsed from empty. */
+export function rowExpanded (leaf) {
+  const v = String((leaf || {}).expanded ?? '').toLowerCase()
+  return v === 'true' || v === 'false' ? v : null
+}
+
+/** Group rows the product reports as collapsed (aria-expanded="false"). */
+export function collapsedGroupRows (leaves) {
+  return railRows(leaves, 'group').filter((l) => rowExpanded(l) === 'false')
+}
+
+/** The group-header leaf: the FIRST collapsed group row in document order.
+ *  Its label is irrelevant (locale), its class is irrelevant (build hash). */
 export function groupHeaderLeaf (leaves) {
-  return leaves.find((l) => l.text === GROUP_TITLE && String(l.cls || '').includes(ROW_CLUE)) || null
+  return collapsedGroupRows(leaves)[0] || null
 }
 
-/** True when the group header is visible but NO session row has rendered —
- *  the probe3 'rail-after-notice' state that made v3's locate impossible. */
+/** True when the session tree reports at least one collapsed group. */
 export function groupCollapsed (leaves) {
-  if (!groupHeaderLeaf(leaves)) return false
-  return !leaves.some((l) => String(l.cls || '').includes(ROW_CLUE) && l.text !== GROUP_TITLE)
+  return collapsedGroupRows(leaves).length > 0
 }
 
-/** The overflow button is visible (only ever AFTER group expansion). */
+/** Overflow rows the product reports as NOT fully expanded. The localized
+ *  label is recorded for diagnostics and never gates the click. */
 export function overflowPending (leaves) {
-  return leaves.some((l) => l.tag === 'button' && OVERFLOW_RE.test(l.text))
+  return railRows(leaves, 'overflow').some((l) => rowExpanded(l) === 'false')
 }
 
 /** The fixed navigation script for one fresh context, as data. The ORDER is
- *  frozen; each step carries a runtime predicate, never an alternate target. */
+ *  frozen; each step carries a runtime predicate, never an alternate target.
+ *  (Corrected 2026-10-05: the group step is scheduled by aria-expanded, not
+ *  unconditionally — clicking an ALREADY-expanded project row is a toggle and
+ *  would COLLAPSE the tree that v3 needed open.) */
 export function navPlan ({ hasNotice, railLeaves }) {
   const steps = []
   if (hasNotice) steps.push({ step: 'dismiss-notice', how: 'real click on getByRole(button, Continue), assert gone' })
-  steps.push({ step: 'expand-ungrouped-group', how: 'one real click on the Ungrouped group header, skipped ONLY when rows already rendered (click is a toggle); no rows after => fail-closed' })
-  if (overflowPending(railLeaves)) steps.push({ step: 'expand-overflow', how: 'one real click on the Show N more sessions button (exists only post-expansion)' })
+  if (groupCollapsed(railLeaves)) steps.push({ step: 'expand-group', how: 'one real click per aria-expanded=false group row, re-read aria-expanded after each; still false => fail-closed' })
+  if (overflowPending(railLeaves)) steps.push({ step: 'expand-overflow', how: 'one real click on an aria-expanded=false [data-row-key^=overflow:] row (exists only post-expansion), bounded' })
   return steps
 }
 
-/** EXACT-title locate among leaf records. status: FOUND | AMBIGUOUS |
- *  NOT_FOUND. Callers MUST treat anything but FOUND as fail-closed. */
+/** Locate THE row for one canonical session: exact data-row-key identity AND
+ *  exact canonical title. status: FOUND | AMBIGUOUS | NOT_FOUND — callers MUST
+ *  fail closed on anything but FOUND. Text-only matching is insufficient (a
+ *  hover card or a header can repeat a title); key-only matching is
+ *  insufficient (a renamed row left the canonical value). */
+export function locateSessionRow (leaves, { sessionId, title } = {}) {
+  const wantKey = SESSION_PREFIX + String(sessionId ?? '')
+  const wantTitle = String(title ?? '').trim()
+  const byKey = (leaves || []).filter((l) => String(l.key || '') === wantKey)
+  const matches = byKey.filter((l) => l.text === wantTitle)
+  if (matches.length === 0) return { status: 'NOT_FOUND', leaf: null, matches: [], keyHits: byKey.length }
+  if (matches.length > 1) return { status: 'AMBIGUOUS', leaf: null, matches, keyHits: byKey.length }
+  return {
+    status: 'FOUND',
+    leaf: matches[0],
+    matches,
+    keyHits: byKey.length,
+    index: railRows(leaves, 'session').findIndex((l) => l === matches[0]),
+  }
+}
+
+/** EXACT-title locate among leaf records (legacy seam, kept for the pure-core
+ *  suite). Row-scoped: only leaves that belong to a session row are
+ *  candidates, so chrome labels and hover-card text cannot win. status:
+ *  FOUND | AMBIGUOUS | NOT_FOUND. */
 export function locateTitle (leaves, title, { exclude = [] } = {}) {
   const want = String(title).trim()
-  const matches = leaves.filter((l) => l.text === want && !exclude.includes(l.text))
-  if (matches.length === 0) return { status: 'NOT_FOUND', leaf: null, matches: [] }
-  if (matches.length > 1) return { status: 'AMBIGUOUS', leaf: null, matches }
-  const rows = leaves.filter((l) => String(l.cls || '').includes(ROW_CLUE) && l.text !== GROUP_TITLE && !exclude.includes(l.text))
+  const rows = railRows(leaves, 'session')
+  const hasRowModel = rows.length > 0 || (leaves || []).some((l) => String(l.key || '').length > 0)
+  const candidates = hasRowModel ? rows : (leaves || [])
+  const matches = candidates.filter((l) => l.text === want && !exclude.includes(l.text))
+  if (matches.length === 0) return { status: 'NOT_FOUND', leaf: null, matches: [], index: -1 }
+  if (matches.length > 1) return { status: 'AMBIGUOUS', leaf: null, matches, index: -1 }
   return { status: 'FOUND', leaf: matches[0], matches, index: rows.indexOf(matches[0]) }
+}
+
+/** BOUNDED, SCRUBBED structural rail snapshot for a locate failure: what the
+ *  rail actually reported, in the product's own vocabulary. No HTML, no class
+ *  hashes, no URLs, no tokens — counts + row keys + aria state + clipped text
+ *  through the same redactor every other out field goes through. */
+export function railDiagnostic (leaves, limit = 12) {
+  const src = leaves || []
+  const distinct = (kind) => {
+    const seen = new Map()
+    for (const l of railRows(src, kind)) if (!seen.has(l.key)) seen.set(l.key, l)
+    return [...seen.values()]
+  }
+  const groups = distinct('group').map((l) => ({ key: l.key, expanded: rowExpanded(l), label: redactOut(String(l.text).slice(0, 40)) }))
+  const sessions = distinct('session')
+  const overflow = distinct('overflow').map((l) => ({ key: l.key, expanded: rowExpanded(l), labelMatchesI18nAllowlist: OVERFLOW_LABEL_RE.test(l.text) }))
+  return {
+    leaves: src.length,
+    groups,
+    collapsedGroups: collapsedGroupRows(src).length,
+    sessionRows: sessions.length,
+    overflowRows: overflow,
+    unkeyedLeaves: src.filter((l) => !l.key).length,
+    sample: sessions.slice(0, limit).map((l) => ({ key: l.key, selected: l.selected || null, text: redactOut(String(l.text).slice(0, 48)) })),
+  }
 }
 
 /** /team-remote client-request envelope -> params (probe3 wire shape). */
@@ -656,41 +765,77 @@ export function createNetworkLog () {
 const railLeavesOf = (leaves) => (leaves || []).filter((l) => l.region === 'rail')
 const mainLeavesOf = (leaves) => (leaves || []).filter((l) => l.region === 'main')
 
+/** Human-stable name for one group row's expand step (data-row-key driven). */
+function groupStepName (key) {
+  const k = String(key || '')
+  return 'expand-' + (k === GROUP_PREFIX.trimEnd() || k === GROUP_PREFIX ? 'ungrouped-group' : 'group-' + k.slice(GROUP_PREFIX.length))
+}
+
 /** THE fixed navigation (v1/v3 killer steps 1–3 + exact locate + verified
  *  selection). Returns the click boundary (clickT + clickSeq) the leg
  *  oracles use to delimit windows — navigation NEVER contributes to preClick
- *  after the click boundary (P1). */
-async function navigate (page, net, leg, label, expected, io, out) {
+ *  after the click boundary (P1).
+ *  Repaired 2026-10-05 (the 2026-10-05T18-50-45Z lane died locate-not_found
+ *  with railRowCount 0): every rail decision below is STRUCTURAL — the
+ *  product's own data-row-key / aria-expanded / aria-selected — never a
+ *  css-module class hash, never an English label, never a fixed x, never an
+ *  inferred row count. */
+export async function navigate (page, net, leg, label, expected, io, out) {
   const steps = []
   const notice = await page.dismissNoticeIfVisible()
   if (notice === 'present-undismissable') throw new FailClosed('notice-present-but-undismissable')
   if (notice === 'dismissed') steps.push('dismiss-notice')
-  let leaves = railLeavesOf(await page.collectLeaves())
-  steps.push('expand-ungrouped-group')
-  if (groupCollapsed(leaves)) {
-    const header = groupHeaderLeaf(leaves) || leaves.find((l) => l.text === GROUP_TITLE)
-    if (!header) throw new FailClosed('ungrouped-group-header-missing')
-    await page.clickLeaf(header)
+  let collected = await page.collectLeaves()
+  // Expand the groups the product REPORTS as collapsed (aria-expanded='false'),
+  // one row per pass, re-reading the attribute after each real click. A click
+  // that does not flip aria-expanded fails closed instead of clicking deeper,
+  // and an already-expanded group is never clicked (the row is a TOGGLE).
+  for (let groupGuard = 0; groupGuard < 3; groupGuard += 1) {
+    if (expected && locateSessionRow(collected, expected).status === 'FOUND') break
+    const collapsed = collapsedGroupRows(collected)
+    if (collapsed.length === 0) break
+    const row = collapsed[0]
+    await page.clickLeaf(row)
     await page.wait(1500)
-    leaves = railLeavesOf(await page.collectLeaves())
-    if (groupCollapsed(leaves)) throw new FailClosed('ungrouped-still-collapsed-after-click')
+    collected = await page.collectLeaves()
+    if (collapsedGroupRows(collected).some((l) => l.key === row.key)) {
+      throw new FailClosed(`group-still-collapsed-after-click:${groupStepName(row.key).replace('expand-', '')}`, { groupKey: row.key, rail: railDiagnostic(collected) })
+    }
+    steps.push(groupStepName(row.key))
   }
   let guard = 0
-  while (overflowPending(leaves) && guard < 3) {
-    const btn = leaves.find((l) => l.tag === 'button' && OVERFLOW_RE.test(l.text))
+  while (overflowPending(collected) && guard < 3) {
+    const btn = railRows(collected, 'overflow').find((l) => rowExpanded(l) === 'false')
+    if (!btn) break
     await page.clickLeaf(btn)
     await page.wait(1200)
-    leaves = railLeavesOf(await page.collectLeaves())
+    collected = await page.collectLeaves()
     steps.push('expand-overflow')
     guard += 1
+    if (expected && locateSessionRow(collected, expected).status === 'FOUND') break
   }
-  if (!expected) return { steps, leaves }
+  if (!expected) return { steps, leaves: railLeavesOf(collected) }
   await page.parkMouse()
   await page.wait(300)
-  leaves = railLeavesOf(await page.collectLeaves())
-  const hit = locateTitle(leaves, expected.title, { exclude: [GROUP_TITLE] })
+  collected = await page.collectLeaves()
+  const hit = locateSessionRow(collected, expected)
   if (hit.status !== 'FOUND') {
-    throw new FailClosed(`locate-${hit.status.toLowerCase()}`, { title: expected.title, hits: (hit.matches || []).length, railRowCount: leaves.filter((l) => String(l.cls || '').includes(ROW_CLUE) && l.text !== GROUP_TITLE).length })
+    // First locate failure leaves bounded, SCRUBBED STRUCTURAL evidence plus a
+    // screenshot: the 18-50-45Z run left neither, so a stale class, an
+    // unexpanded group and an unrendered tree were indistinguishable after the
+    // fact. No HTML, no class hashes, no URLs/tokens — row keys + aria state.
+    const rail = railDiagnostic(collected)
+    out.legs[label] = out.legs[label] || {}
+    out.legs[label].locateFailure = { status: hit.status, title: expected.title, sessionId: expected.sessionId, rail }
+    await page.screenshot(`shot-${label}-locate-${hit.status.toLowerCase()}.png`)
+    throw new FailClosed(`locate-${hit.status.toLowerCase()}`, {
+      title: expected.title,
+      sessionId: expected.sessionId,
+      hits: (hit.matches || []).length,
+      keyHits: hit.keyHits,
+      railRowCount: new Set(railRows(collected, 'session').map((l) => l.key)).size,
+      rail,
+    })
   }
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     const clickSeq = net.lastSeq() // preClick boundary: every entry BEFORE the click
@@ -712,7 +857,7 @@ async function navigate (page, net, leg, label, expected, io, out) {
     }
     out.legs[label] = out.legs[label] || {}
     out.legs[label]['verifyAttempt' + attempt] = { ...verified, clickT, clickSeq }
-    if (verified.verified) return { steps, leaves, clickT, clickSeq }
+    if (verified.verified) return { steps, leaves: railLeavesOf(collected), clickT, clickSeq }
     if (attempt === 1) await page.screenshot(`shot-${label}-verify-anomaly.png`)
   }
   throw new FailClosed('selection-unverified-after-one-same-row-retry', out.legs[label])
@@ -1203,20 +1348,28 @@ export function parseArgs (argv) {
   }
 }
 
-/** The rail leaf collector injected into the page: geometry-filtered leaf
- *  records shaped exactly like htmlLeaves() output plus x/y/w/h. */
+/** The rail leaf collector injected into the page: leaf records shaped exactly
+ *  like htmlLeaves() output plus geometry AND the row semantics the product
+ *  ships (data-row-key / aria-expanded / aria-selected of the nearest
+ *  [data-row-key] ancestor). A leaf inside a session-tree row is rail-scoped by
+ *  that key alone — the sidebar is 264..420px wide (columns.ts), so geometry
+ *  classifies chrome labels only and can never decide row identity. */
 export function railCollectorSource (railMaxX) {
   return `(() => {
     const out = []
+    const PREFIXES = ['session:', 'workspace:', 'overflow:']
     for (const e of document.querySelectorAll('*')) {
       const r = e.getBoundingClientRect()
       if (r.width === 0 || r.height === 0) continue
       if (e.children.length > 0) continue
       const t = (e.textContent || '').replace(/\\s+/g, ' ').trim()
       if (!t || t.length > 200) continue
-      const inRail = r.x < ${railMaxX} && r.right <= ${railMaxX} + 8
-      const inMain = r.x >= ${railMaxX}
-      out.push({ tag: e.tagName.toLowerCase(), cls: String(e.className || '').slice(0, 80), role: e.getAttribute('role') || '', text: t, x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height), region: inRail ? 'rail' : 'main' })
+      const row = e.closest ? e.closest('[data-row-key]') : null
+      const key = row ? String(row.getAttribute('data-row-key') || '') : ''
+      const inTree = PREFIXES.some((p) => key.indexOf(p) === 0)
+      const inRail = inTree || (r.x < ${railMaxX} && r.right <= ${railMaxX} + 8)
+      const inMain = !inRail && r.x >= ${railMaxX}
+      out.push({ tag: e.tagName.toLowerCase(), cls: String(e.className || '').slice(0, 80), role: e.getAttribute('role') || (row ? (row.getAttribute('role') || '') : ''), text: t, x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height), region: inRail ? 'rail' : 'main', key, expanded: row ? String(row.getAttribute('aria-expanded') ?? '') : '', selected: row ? String(row.getAttribute('aria-selected') ?? '') : '' })
     }
     return out
   })()`

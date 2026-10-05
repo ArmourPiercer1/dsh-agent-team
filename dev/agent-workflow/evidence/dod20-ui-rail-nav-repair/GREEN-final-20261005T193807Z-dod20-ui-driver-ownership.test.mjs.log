@@ -1,0 +1,20 @@
+✔ identity: the owned handle passes and reports the pipe transport (2.335881ms)
+✔ identity: a weak flag on the owned handle is a hard failure (0.569952ms)
+✔ identity: a CDP debug port on the owned handle is a hard failure (pipe is the only transport) (0.261552ms)
+✔ identity: no pipe transport, unreadable argv/exe, or a different executable is a hard failure (0.766284ms)
+✔ control server: a loopback-literal endpoint passes and is recorded as a redacted shape (0.411209ms)
+✔ control server: hostname, wildcard, or routable bind is a hard failure (0.443267ms)
+✔ teardown: graceful close of the owned handle only — no kill, and a decoy survives (9.634503ms)
+✔ teardown: a hung graceful close escalates to kill on the same handle (forced), decoy survives (49.085269ms)
+✔ teardown: close() that throws, or reports success while the process lives, still forces and reports both paths (2.410982ms)
+✔ teardown: no handle means nothing to signal — reported, never guessed at (0.347919ms)
+✔ source: the live lane contains no machine-wide Chrome enumeration and no list-based kill (1.14208ms)
+✔ source: the shared test home is provisioned exclusively and an existing world is never deleted (1.04871ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 293.042259
