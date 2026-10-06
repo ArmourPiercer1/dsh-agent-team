@@ -47,13 +47,29 @@ function trackedSources(): string[] {
     .filter((f) => !f.includes('/test/') && !f.includes('/dist/'))
 }
 
-/** Files that actually append ledger rows. Restricting the derivation to these
- *  removes reader/type/validation noise mechanically instead of by allow-list:
- *  a writer is a file that calls a ledger append, nothing more subtle. */
+/** The files the derivation polices: anything that can put a fact on the
+ *  ledger. Three independent shapes, because the review of the first version of
+ *  this guard found the narrow version blind to two of them — gating only on a
+ *  direct `putEntry` / `ledger.put` call skipped `action-router/work-execution.ts`
+ *  and `root-initial-work.ts` (which append through the positional
+ *  `commitDurableFact` funnel from another directory) and
+ *  `admission/actions.ts` (which writes a labelled literal with no direct
+ *  append call at all). Those were precisely the files holding the residual, so
+ *  the gate now follows every route to the ledger:
+ *    1. a direct ledger append,
+ *    2. a call into the durable-fact funnel,
+ *    3. a labelled `factType:` write site.
+ *  Reader / type / validation noise still falls out mechanically: client,
+ *  remote and the storage schema layer match none of the three. */
 function writerSources(files: readonly string[], sources: Map<string, string>): string[] {
+  const WRITER_SHAPES = [
+    /\bputEntry\s*\(|\bledger\.put\s*\(|\.put\(\s*entry\b|appendLedger/,
+    /\bcommitDurableFact\s*\(/,
+    /factType:\s*'[a-z0-9-]+'/,
+  ]
   return files.filter((f) => {
     const src = sources.get(f) ?? ''
-    return /\bputEntry\s*\(|\bledger\.put\s*\(|\.put\(\s*entry\b|appendLedger/.test(src)
+    return WRITER_SHAPES.some((shape) => shape.test(src))
   })
 }
 
@@ -385,21 +401,26 @@ describe('A4-PR0a: every fact type production can write is registered in the led
     expect(DERIVED.values.has('activity-interval-opened')).toBe(true)
     expect(DERIVED.values.has('optional-requirement-accepted')).toBe(true)
     // A sane floor: an under-collecting derivation is the failure mode.
-    expect(DERIVED.values.size).toBeGreaterThanOrEqual(17)
+    // 19 of the 20 registered types are reachable by the derivation; the one
+    // that is not is named by C1b, so the floor is exact rather than approximate.
+    expect(DERIVED.values.size).toBeGreaterThanOrEqual(19)
   })
 
   it('C1b: the residual — host keys no derived writer produces — stays exactly pinned', () => {
-    // Honest coverage statement: three registered types are written by paths
-    // this file's derivation does not model — they reach the ledger through the
-    // storage-side provisioning / root-admission paths rather than a
-    // `factType:`-labelled site or the plugin's durable-fact funnel. If that list changes, either the
+    // Honest coverage statement: exactly one registered type is outside the
+    // derivation, and it is named so that drift turns red instead of silent.
+    // An earlier version of this comment claimed
+    // these types reach the ledger by some path outside both a `factType:` label
+    // and the durable-fact funnel: WRONG, and the review caught it —
+    // `admission/actions.ts` writes `team-work-admitted` at a labelled site and
+    // the action-router writes `team-root-work-delivered` through the very
+    // funnel this file harvests. They were missing only because the writer gate
+    // was too narrow, which is why the gate now follows all three routes. If that list changes, either the
     // derivation got better (update the pin) or a writer moved silently
     // (investigate). Registered-but-never-derived is not a hazard; the hazard
     // this test exists for is derived-but-unregistered, policed by C2.
     const outside = [...HOST.keys()].filter((key) => !DERIVED.values.has(key)).sort()
-    expect(outside.join(',')).toBe(
-      'provision-member-instance,team-root-work-delivered,team-work-admitted',
-    )
+    expect(outside.join(',')).toBe('provision-member-instance')
   })
 
   it('C2: every derived fact type has a host category (the defect this PR fixes)', () => {
