@@ -594,7 +594,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
   - `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`
   - `BLUEPRINT_MIGRATION_REQUIRED`
 - Remove all PR1-PR6 transitional v1/v2 authorization branches.
-  - **Named inventory item (this was unowned until PR1).** The existential envelope-coverage aggregate at `packages/runtime/governance/permission-mutation.ts:1184-1206` is the *second* expansion-plane aggregate in the tree; the first is `effectiveAuthorityCeiling`. It is sanctioned by spec §5.2 **only until PR7**, and the round-5 comment at `:1204-1205` ("the covering envelope rule IS the authorization") is precisely the semantics Alpha.4 replaces with effective-ceiling evaluation. It appeared in no PR's file list, so under the one-writer rule it was invisible: PR7 owns it, and the A5-9 inventory count must state whether this file is inside the 18 or an explicit 19th.
+  - **Named inventory item (this was unowned until PR1).** The existential envelope-coverage aggregate at `packages/runtime/governance/permission-mutation.ts:1184-1206` is the *second* expansion-plane aggregate in the tree; the first is `effectiveAuthorityCeiling`. It is sanctioned by spec §5.2 **only until PR7**, and the round-5 comment at `:1204-1205` ("the covering envelope rule IS the authorization") is precisely the semantics Alpha.4 replaces with effective-ceiling evaluation. It appeared in no PR's file list, so under the one-writer rule it was invisible: PR7 owns it. **It is not part of the A5-9 fixture inventory** — that predicate counts Blueprint *fixture* sites and excludes `packages/**` sources by declaration, so asking whether this file is "in the 18" was my own category error (corrected by ADR X10). Two separate inventories, do not merge them.
 
 **Parallel lane A — domain cutover**
 - [ ] Write RED test that v1/v2 are rejected under final Alpha.4.
@@ -655,6 +655,7 @@ Anything else — rewriting a registry row, re-hashing, or hot-swapping a runnin
 - [ ] Commit.
 
 **Integration / final gate**
+- [ ] **`scripts/verify-blueprint-version-clean.mjs` must emit the site set by path, not compare against a remembered count (ADR X10).** Measured on `59d76d3a` the in-scope set is **20**: 14 kit files (not 16 — `stage2-observer.mjs`, `stage2-observer.test.mjs` and `team-projection-recovery-smoke.mjs` carry `schemaVersion` on SessionBinding DTOs or in prose and construct no Blueprint), plus `scripts/blueprint-authoring.mjs:92`, plus `packages/runtime/root-binding/harness/blueprint-source.mjs:30`, plus **four `packages/tools/harness/**` sites that no earlier count included**: `d4-restart-reopen.mjs:220`, `g5-member-e2e.mjs:267`, `run.mjs:214`, `t12-vertical.mjs:215`. Predicate: a string literal `schemaVersion: <digit>` in a file that also keys `blueprintId`, over `tests/kits/**` + `scripts/**` + `packages/**/harness/**`, excluding `dev/agent-workflow/evidence/**`. A bare digit scan would false-positive on `stage2-observer.test.mjs:214`.
 - [ ] Merge A+B first, then fixture lanes, then acceptance lane.
 - [ ] Run targeted Alpha.4 acceptance suite.
 - [ ] Run `pnpm typecheck`.
