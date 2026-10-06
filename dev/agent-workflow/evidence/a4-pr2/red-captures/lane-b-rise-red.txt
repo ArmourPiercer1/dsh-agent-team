@@ -1,0 +1,8 @@
+     × a grant that raises ask->allow is ONE rise region carrying the risen effect and the mutation width 3ms
+     × a tightening and an identity are NOT rises (the region partition reports nothing to gate) 1ms
+     × a REVEAL (removal that lets a lower rule answer) is a rise the classifier reports, not a no-op 0ms
+     × the extracted classifier and the Leader judgement never disagree about the same input 0ms
+     × an undeterminable region still beats an uncovered one (the refusal order is data, not luck) 0ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+TypeError: classifyPermissionRise is not a function
+TypeError: classifyPermissionRise is not a function
