@@ -32,11 +32,28 @@
  * Scoping discipline (plan A1.2.6): tracked sources only (`git ls-files`),
  * skipping tests, `dist`, `.d.ts`, and generated scratch — never a walk over
  * gitignored trees.
+ *
+ * Run it from the repo root (`pnpm vitest run packages/runtime/test/…`), like
+ * every other suite here: the tracked-path lookups are repo-root-relative, and
+ * a per-package invocation therefore fails LOUD ("the guard has no subject")
+ * rather than passing on an empty file set — the safe direction for a guard.
  */
 
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
+
+/** `noUncheckedIndexedAccess` makes every regex group `string | undefined`.
+ *  These patterns are anchored and the files they read are ours, so a missing
+ *  group means the PATTERN drifted — which for a guard is a silent loss of
+ *  coverage. Fail loud instead of casting the hole away. */
+function group(match: RegExpMatchArray, index: number): string {
+  const value = match[index]
+  if (value === undefined) {
+    throw new Error(`guard regex lost group ${index} — the extraction pattern drifted`)
+  }
+  return value
+}
 
 function trackedSources(): string[] {
   const out = execFileSync('git', ['ls-files', 'packages'], { encoding: 'utf8' })
@@ -102,7 +119,10 @@ function buildConstTables(sources: ReadonlyMap<string, string>): {
   const consts = new Map<string, string>()
   const constRe = /const\s+([A-Z_][A-Z0-9_]*)\s*(?::[^=]+)?=\s*'([^']+)'/g
   for (const src of sources.values()) {
-    for (const m of src.matchAll(constRe)) if (!consts.has(m[1])) consts.set(m[1], m[2])
+    for (const m of src.matchAll(constRe)) {
+      const name = group(m, 1)
+      if (!consts.has(name)) consts.set(name, group(m, 2))
+    }
   }
 
   const registries = new Map<string, Set<string>>()
@@ -110,9 +130,10 @@ function buildConstTables(sources: ReadonlyMap<string, string>): {
   const tableRe = /const\s+([A-Z_][A-Z0-9_]*FACT_TYPE[A-Z0-9_]*)[^=\n]*=\s*\{([\s\S]*?)\n\}/g
   for (const src of sources.values()) {
     for (const m of src.matchAll(tableRe)) {
+      const tableName = group(m, 1)
       const values = new Set<string>()
-      for (const entry of m[2].matchAll(/:\s*('[a-z0-9-]+'|[A-Z_][A-Z0-9_]*)\s*,?\s*$/gm)) {
-        const raw = entry[1]
+      for (const entry of group(m, 2).matchAll(/:\s*('[a-z0-9-]+'|[A-Z_][A-Z0-9_]*)\s*,?\s*$/gm)) {
+        const raw = group(entry, 1)
         if (raw.startsWith("'")) {
           values.add(raw.replace(/'/g, ''))
           continue
@@ -122,9 +143,9 @@ function buildConstTables(sources: ReadonlyMap<string, string>): {
           values.add(value)
           continue
         }
-        unresolvedRegistries.add(`${m[1]}.${raw}`)
+        unresolvedRegistries.add(`${tableName}.${raw}`)
       }
-      if (values.size > 0 && !registries.has(m[1])) registries.set(m[1], values)
+      if (values.size > 0 && !registries.has(tableName)) registries.set(tableName, values)
     }
   }
   return { consts, registries, unresolvedRegistries }
@@ -236,12 +257,13 @@ function harvestFunnelSites(
       const raw = args[3] ?? ''
       const literal = raw.match(/^'([a-z0-9-]+)'$/)
       if (literal) {
-        values.add(literal[1])
+        values.add(group(literal, 1))
         continue
       }
       const identifier = raw.match(/^([A-Za-z_][A-Za-z0-9_]*)$/)
-      if (identifier && consts.has(identifier[1])) {
-        values.add(consts.get(identifier[1]) as string)
+      const constName = identifier === null ? undefined : group(identifier, 1)
+      if (constName !== undefined && consts.has(constName)) {
+        values.add(consts.get(constName) as string)
         continue
       }
       unresolved.add(`${file}::commitDurableFact arg4 ${raw.slice(0, 24)}`)
@@ -267,15 +289,15 @@ function deriveWrittenFactTypes(
   for (const file of writers) {
     const src = sources.get(file) ?? ''
     for (const m of src.matchAll(/factType:\s*([^\n,}]+)/g)) {
-      const raw = m[1].trim()
+      const raw = group(m, 1).trim()
       const literal = raw.match(/^'([a-z0-9-]+)'$/)
       if (literal) {
-        values.add(literal[1])
+        values.add(group(literal, 1))
         continue
       }
       const identifier = raw.match(/^([A-Z_][A-Z0-9_]*)$/)
       if (identifier) {
-        const name = identifier[1]
+        const name = group(identifier, 1)
         if (consts.has(name)) {
           values.add(consts.get(name) as string)
           continue
@@ -288,8 +310,9 @@ function deriveWrittenFactTypes(
         continue
       }
       const registryAccess = raw.match(/^([A-Z_][A-Z0-9_]*)\[/)
-      if (registryAccess && registries.has(registryAccess[1])) {
-        for (const value of registries.get(registryAccess[1]) as Set<string>) values.add(value)
+      const registryName = registryAccess === null ? undefined : group(registryAccess, 1)
+      if (registryName !== undefined && registries.has(registryName)) {
+        for (const value of registries.get(registryName) as Set<string>) values.add(value)
         continue
       }
       // A dynamic write: the value comes from a variable, a call or a member
@@ -311,9 +334,10 @@ function parseHostMap(
   const globalConsts = new Map(consts)
   // The map's own file declares most of its keys; consts already covers it.
   const entries = new Map<string, string>()
-  for (const m of block[1].matchAll(/\[\s*('?[A-Za-z_][A-Za-z0-9_.]*'?)\s*,\s*'([a-z]+)'\s*\]/g)) {
-    const rawKey = m[1]
-    const category = m[2]
+  const mapBody = group(block, 1)
+  for (const m of mapBody.matchAll(/\[\s*('?[A-Za-z_][A-Za-z0-9_.]*'?)\s*,\s*'([a-z]+)'\s*\]/g)) {
+    const rawKey = group(m, 1)
+    const category = group(m, 2)
     if (rawKey.startsWith("'")) {
       entries.set(rawKey.replace(/'/g, ''), category)
       continue
@@ -333,7 +357,7 @@ function parseClientMap(sources: ReadonlyMap<string, string>): Set<string> {
   const block = src.match(/[A-Z_]*CATEGORY[A-Za-z_]*[^\n]*=[^\n]*\{([\s\S]*?)\n\}/)
   if (block === null) throw new Error('the client category map was not found — the guard has no subject')
   const keys = new Set<string>()
-  for (const m of block[1].matchAll(/'([a-z0-9-]+)'\s*:/g)) keys.add(m[1])
+  for (const m of group(block, 1).matchAll(/'([a-z0-9-]+)'\s*:/g)) keys.add(group(m, 1))
   return keys
 }
 
@@ -421,6 +445,16 @@ describe('A4-PR0a: every fact type production can write is registered in the led
     // this test exists for is derived-but-unregistered, policed by C2.
     const outside = [...HOST.keys()].filter((key) => !DERIVED.values.has(key)).sort()
     expect(outside.join(',')).toBe('provision-member-instance')
+  })
+
+  it('C1c: every closed-registry member resolved to a fact type', () => {
+    // The registries name their members through constants
+    // (`REQUIREMENT_FACT_TYPES.optionalRequirementAccepted:
+    // OPTIONAL_REQUIREMENT_ACCEPTED_FACT_TYPE`). If a member ever references
+    // something this file cannot resolve, the derivation would silently
+    // under-collect exactly the family the registry exists to close — so an
+    // unresolved member is red here, not dropped.
+    expect([...UNRESOLVED_REGISTRIES].sort()).toEqual([])
   })
 
   it('C2: every derived fact type has a host category (the defect this PR fixes)', () => {
