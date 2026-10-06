@@ -1,0 +1,17 @@
+# per-file failing-identity counts — AS RECORDED (pre-cleanup capture, HEAD 838e7711, base-under-test 2b86ee42)
+# report: root-vitest.json (run 2026-10-06T19:12:52Z); derived by node fail-set-normalize.mjs root-vitest.json
+# 33 identities = 28 TEST + 5 FILE over 13 files
+  9    packages/domain/test/t1-capability-schema.test.ts
+  1    packages/domain/test/t2-blueprint-hash.test.ts
+  8    packages/runtime/test/a2c7-subtree-matcher.test.ts
+  1    packages/runtime/test/d3-member-identity-context.test.ts
+  0  COLLECTION-OR-UNHANDLED  packages/runtime/test/p6t1-delegate.test.ts
+  5    packages/runtime/test/p6t3-mediation.test.ts
+  2    packages/runtime/test/p6t3-restart.test.ts
+  0  COLLECTION-OR-UNHANDLED  packages/runtime/test/p8s3b-result-effects.test.ts
+  0  COLLECTION-OR-UNHANDLED  packages/runtime/test/p8s6-principal.test.ts
+  0  COLLECTION-OR-UNHANDLED  packages/runtime/test/t12a-b2-child-identity.test.ts
+  0  COLLECTION-OR-UNHANDLED  packages/runtime/test/t12a-glue-handoff-ports.test.ts
+  1    packages/testkit/test/rc2-kit-pin-hygiene.test.ts
+  1    packages/tools/test/p6t6-actions.test.ts
+# suite totals: files=456 failedFiles=13 suites=1724 tests=5383 passed=5355 failed=28 pending=0 success=false

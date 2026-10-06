@@ -1,0 +1,3 @@
+# capture started 2026-10-06T19:12:32Z HEAD=838e7711698441bf401bab178d5f09b6d5aee46e BASE=838e7711
+# base-under-test = 2b86ee42 (tree-identical to 838e7711 for all non-docs paths)
+2b86ee423ac23e51b87216d399c5ca93a137c12d

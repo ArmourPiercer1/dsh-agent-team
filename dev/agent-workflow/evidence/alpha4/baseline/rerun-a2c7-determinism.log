@@ -1,0 +1,304 @@
+# a2c7-subtree-matcher determinism (two independent runs)
+# host=Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 node=v24.21.0
+
+## RUN 1  $ npx vitest run packages/runtime/test/a2c7-subtree-matcher.test.ts
+start_utc=2026-10-06T19:17:36Z
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests | 8 failed) 8ms
+     ✓ R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap) 1ms
+     ✓ R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees) 0ms
+     ✓ read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow) 0ms
+     ✓ bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed) 0ms
+     ✓ the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane) 1ms
+     ✓ the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject 0ms
+     ✓ a truly-unknown kind (glob) still rejects; exact and any are unchanged (any stays closed) 0ms
+     ✓ containsOperation=true matches; false never matches; rootKey is NEVER consulted 0ms
+     ✓ the tool must match; file-class operations only; deny > ask > allow with RULE provenance 0ms
+     ✓ exact and any are unchanged at A3 0ms
+     ✓ the root itself matches (directory root and file root) 0ms
+     ✓ a child and a deep descendant match (the subtree the exact lane could not express) 0ms
+     ✓ a sibling is a NON-MATCH (the default outcome, zero interference) 0ms
+     ✓ the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved) 0ms
+     ✓ any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny 0ms
+     × deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows 1ms
+     × deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next) 0ms
+     × deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped) 0ms
+     × deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract) 0ms
+     × allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny) 0ms
+     × ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default 0ms
+     × allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted) 0ms
+     × the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside 0ms
+     ✓ the real backend section ran (the prebuilt pinned lib is present on this host) 0ms
+     ✓ G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule 0ms
+     ✓ G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways 0ms
+     ✓ G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds 0ms
+     ✓ G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded) 0ms
+     ✓ G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling) 0ms
+     ✓ G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze) 0ms
+     ✓ G1 (real) the root itself matches on the real backend (contains(self) = true) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1610:30
+    1608|
+    1609|   it('deny > ask > allow: a subtree rule in ALL three lanes — the deny…
+    1610|     expect(FLOWS.g13DenyWins.decisionKind).toBe('deny')
+       |                              ^
+    1611|     expect(hasFrag(FLOWS.g13DenyWins.decisionReason, 'the template\'s …
+    1612|     expect((FLOWS.g13DenyWins.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1621:14
+    1619|   it('deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (…
+    1620|     const f = FLOWS.g15DenyUnresolvable
+    1621|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1622|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1623|     expect(hasFrag(f.decisionReason, 'src')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1633:14
+    1631|   it('deny subtree, containment UNDETERMINABLE (no opaque handle) → FA…
+    1632|     const f = FLOWS.g15DenyUndeterminable
+    1633|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1634|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1635|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1648:14
+    1646|   it('deny subtree, the containment seam FAULTS (throws) → undetermina…
+    1647|     const f = FLOWS.g15DenyContainsFault
+    1648|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1649|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1650|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1656:49
+    1654|
+    1655|   it('allow subtree, unresolvable root → NO positive grant → non-match…
+    1656|     expect(FLOWS.g15AllowUnresolvableDefaultAsk.decisionKind).toBe('al…
+       |                                                 ^
+    1657|     expect((FLOWS.g15AllowUnresolvableDefaultAsk.request) !== undefine…
+    1658|     expect(FLOWS.g15AllowUnresolvableDefaultAsk.nextCalls).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1669:14
+    1667|   it('ask subtree, unresolvable root → the rule contributes NOTHING (t…
+    1668|     const f = FLOWS.g15AskUnresolvable
+    1669|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1670|     expect(hasFrag(f.decisionReason, 'the template\'s default (deny)')…
+    1671|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1680:14
+    1678|   it('allow subtree, the containment seam FAULTS → undeterminable → no…
+    1679|     const f = FLOWS.g15AllowContainsFault
+    1680|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1681|     expect(hasFrag(f.decisionReason, 'the template\'s default (deny)')…
+    1682|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G16 — cold resume (dispose + fresh install; no stale canonical-rule cache) > the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1690:33
+    1688| describe('A2C-7 G16 — cold resume (dispose + fresh install; no stale c…
+    1689|   it('the fresh install follows the CURRENT topology: the stale target…
+    1690|     expect(FLOWS.g16T0ViaTarget.decisionKind).toBe('allow')
+       |                                 ^
+    1691|     expect((FLOWS.g16T0ViaTarget.request) === undefined).toBe(true)
+    1692|     const stale = FLOWS.g16StaleTargetNoMatch
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 23 passed (31)
+   Start at  03:17:37
+   Duration  7.80s (transform 764ms, setup 0ms, import 7.69s, tests 8ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+[exit=1]
+end_utc=2026-10-06T19:17:45Z
+
+## RUN 2  $ npx vitest run packages/runtime/test/a2c7-subtree-matcher.test.ts
+start_utc=2026-10-06T19:17:45Z
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests | 8 failed) 8ms
+     ✓ R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap) 1ms
+     ✓ R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees) 0ms
+     ✓ read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow) 0ms
+     ✓ bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed) 0ms
+     ✓ the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane) 1ms
+     ✓ the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject 0ms
+     ✓ a truly-unknown kind (glob) still rejects; exact and any are unchanged (any stays closed) 0ms
+     ✓ containsOperation=true matches; false never matches; rootKey is NEVER consulted 0ms
+     ✓ the tool must match; file-class operations only; deny > ask > allow with RULE provenance 0ms
+     ✓ exact and any are unchanged at A3 0ms
+     ✓ the root itself matches (directory root and file root) 0ms
+     ✓ a child and a deep descendant match (the subtree the exact lane could not express) 0ms
+     ✓ a sibling is a NON-MATCH (the default outcome, zero interference) 0ms
+     ✓ the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved) 0ms
+     ✓ any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny 0ms
+     × deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows 1ms
+     × deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next) 0ms
+     × deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped) 0ms
+     × deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract) 0ms
+     × allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny) 0ms
+     × ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default 0ms
+     × allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted) 0ms
+     × the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside 0ms
+     ✓ the real backend section ran (the prebuilt pinned lib is present on this host) 0ms
+     ✓ G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule 0ms
+     ✓ G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways 0ms
+     ✓ G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds 0ms
+     ✓ G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded) 0ms
+     ✓ G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling) 0ms
+     ✓ G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze) 0ms
+     ✓ G1 (real) the root itself matches on the real backend (contains(self) = true) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1610:30
+    1608|
+    1609|   it('deny > ask > allow: a subtree rule in ALL three lanes — the deny…
+    1610|     expect(FLOWS.g13DenyWins.decisionKind).toBe('deny')
+       |                              ^
+    1611|     expect(hasFrag(FLOWS.g13DenyWins.decisionReason, 'the template\'s …
+    1612|     expect((FLOWS.g13DenyWins.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1621:14
+    1619|   it('deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (…
+    1620|     const f = FLOWS.g15DenyUnresolvable
+    1621|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1622|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1623|     expect(hasFrag(f.decisionReason, 'src')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1633:14
+    1631|   it('deny subtree, containment UNDETERMINABLE (no opaque handle) → FA…
+    1632|     const f = FLOWS.g15DenyUndeterminable
+    1633|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1634|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1635|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1648:14
+    1646|   it('deny subtree, the containment seam FAULTS (throws) → undetermina…
+    1647|     const f = FLOWS.g15DenyContainsFault
+    1648|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1649|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1650|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1656:49
+    1654|
+    1655|   it('allow subtree, unresolvable root → NO positive grant → non-match…
+    1656|     expect(FLOWS.g15AllowUnresolvableDefaultAsk.decisionKind).toBe('al…
+       |                                                 ^
+    1657|     expect((FLOWS.g15AllowUnresolvableDefaultAsk.request) !== undefine…
+    1658|     expect(FLOWS.g15AllowUnresolvableDefaultAsk.nextCalls).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1669:14
+    1667|   it('ask subtree, unresolvable root → the rule contributes NOTHING (t…
+    1668|     const f = FLOWS.g15AskUnresolvable
+    1669|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1670|     expect(hasFrag(f.decisionReason, 'the template\'s default (deny)')…
+    1671|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1680:14
+    1678|   it('allow subtree, the containment seam FAULTS → undeterminable → no…
+    1679|     const f = FLOWS.g15AllowContainsFault
+    1680|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1681|     expect(hasFrag(f.decisionReason, 'the template\'s default (deny)')…
+    1682|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G16 — cold resume (dispose + fresh install; no stale canonical-rule cache) > the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1690:33
+    1688| describe('A2C-7 G16 — cold resume (dispose + fresh install; no stale c…
+    1689|   it('the fresh install follows the CURRENT topology: the stale target…
+    1690|     expect(FLOWS.g16T0ViaTarget.decisionKind).toBe('allow')
+       |                                 ^
+    1691|     expect((FLOWS.g16T0ViaTarget.request) === undefined).toBe(true)
+    1692|     const stale = FLOWS.g16StaleTargetNoMatch
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 23 passed (31)
+   Start at  03:17:45
+   Duration  7.70s (transform 669ms, setup 0ms, import 7.59s, tests 8ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+[exit=1]
+end_utc=2026-10-06T19:17:53Z

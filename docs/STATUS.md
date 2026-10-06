@@ -4,6 +4,10 @@
 > `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，已记录至 pre-alpha3 handoff closure 轮，2026-10-01）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
+> **2026-10-07 CURRENT 指针（权威 = graph.yaml `current_phase` + 日志末尾三条）**：当前阶段 = **Alpha.4 硬治理阶段**，实现基线 `master@2b86ee42…`（= PR #62 DSH 0.2.0-rc.2 宿主升级轮 merge，2026-10-06）。
+> 此前文档缺记的两轮已补齐：**Alpha.3 权限面 PR #57–#61 全部 MERGED**（durable permission_overlays / EffectivePermissionAssembler / `mutatePermission` + envelope / 生产入口强制 / notification 面；tools 13→15，Remote 方法 31）与 **0.2.0-rc.2 宿主升级轮**（pin `639ed01539…`，p4t6 = 971，基线债 = 20 failing tests + 3 collection-failing files，声明范围 differential zero-new-red）。
+> 未闭合事实（勿当作已完成）：**Alpha.3 九步人工验收 NOT_RUN**，经用户 2026-10-07 裁决推迟至 Alpha.4（计划 A1.6；「merge ≠ deployment」继续有效）；真实宿主 + 真实浏览器验收腿在本环境不可跑（test-use 宿主未构建 / 无可用 Chrome sandbox），按 A1.5 走「尝试→记录非阻塞约束」。
+> 执行协议变更：`docs/ROUTER_RULES.md` 新增 **§0 当期计划优先**（模型路由解绑；每 Gate 三 reviewer 与每任务 ≤3 次上限由计划的 PR 级审查循环取代；红线与 CORE PATCH BUDGET 0 不变）。`docs/plans` 自本轮起纳入 git 跟踪，已完成计划归档 `docs/plans/finished/`。
 > **最近更新**：2026-10-01 12:3xZ（**pre-Alpha.3 handoff closure 完成轮 + PR #51 MERGED + closure PR #52 已发布**；收口树 = 427219e4（= c19af195 + PR #51 squash）；test-infra PR #51 = **MERGED**（2026-10-01 12:27:37Z 用户授权 guarded SQUASH，final HEAD `4757112c…` → mergeSHA `427219e443ece4d57ac8558f13850c5f42ff8330`；内部 3 审 @ 4757112c delta 复审 3/3 PASS + 外部最终 delta PASS @ 509751ad + 外部精确-HEAD 审查 PASS @ 4757112c + 用户 per-HEAD 指令；最终 tree == 批准 HEAD 已验）；closure PR #52 = **DRAFT 已发布（无合并授权**，用户独立审查 + 内部 3 审在途；旧 HEAD 外审 BLOCK 4 项文档准确性 = 本次有界修订收口 A–D））。
 > **2026-10-02 CURRENT 指针**：master = `3262fbc8…`（PR #54 @ `57c044e3…` + PR #56 guarded squash）；**DoD#20(b) 真实浏览器渲染维度 CLOSED**（stage-2 run-7：observer 40/40、kit 16/16 criteria 59/0、真实 member 视角；marker=observation≠HumanAllow；carrier e63da125 = 本地环境证据未推送）；PR #52 / PR #60 均**无 merge 授权**；PR60 sole writer `183bfb0c-fd08-4224-b4c7-0b31eaa2ba7f` 修复批进行中。详见下方 2026-10-02 上次更新行与 SESSION_ROUTER_LOG 2026-10-02 条目。
 > pre-Alpha.3 handoff closure 完成轮（2026-10-01；本 closure 分支 task/pre-alpha3-handoff-closure，worktree .worktrees/handoff-closure，唯一 writer）：

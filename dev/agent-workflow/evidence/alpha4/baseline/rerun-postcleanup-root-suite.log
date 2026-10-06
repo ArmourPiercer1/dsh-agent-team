@@ -1,0 +1,41 @@
+# post-cleanup root-suite re-runs (2 consecutive, sequential)
+# git HEAD=cb19e0db66bc66000a42b95c344177811ea3a060 branch=docs/alpha4-governance-accept-20261007
+# uname=Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 node=v24.21.0 npx=11.19.0
+
+##### RUN 1
+$ npx vitest run --reporter=json --outputFile=dev/agent-workflow/evidence/alpha4/baseline/root-vitest-postcleanup-1.json
+start=2026-10-06T19:23:11Z
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+[pipeline exit=1]
+end=2026-10-06T19:23:28Z
+--- .tmp-fault after RUN 1:
+a3p1-seam-add-not-a-write a3p1-seam-add-trailing a3p1-seam-ghost-file a3p1-seam-prefix-hole a3p1-seam-version a3p1-tenth-compat-open a3p1-tenth-create-or-open a3p1-tenth-fresh-create a3p1-tenth-idempotent a3p1-tenth-meta-tampered a3p1-tenth-missing-old-table a3p1-tenth-old-stamp-missing a3p1-tenth-overlay-append a3p1-tenth-rows-without-stamp a3p1-tenth-stamp-tampered a3p1-tenth-undeclared-file f15-mcp-live-loss f15-mcp-live-loss-characterization mtm-a mtm-b mtm-d mtm-e mtm-l1 mtm-l2 mtm-l3 mtm-l4a mtm-l4b mtm-l4c mtm-l5 mtm-l6 mtm-l7 mtm-r1 mtm-r2 rmrcoo-boot 
+
+##### RUN 2
+$ npx vitest run --reporter=json --outputFile=dev/agent-workflow/evidence/alpha4/baseline/root-vitest-postcleanup-2.json
+start=2026-10-06T19:23:28Z
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+[pipeline exit=1]
+end=2026-10-06T19:23:47Z
+--- .tmp-fault after RUN 2:
+a3p1-seam-add-not-a-write a3p1-seam-add-trailing a3p1-seam-ghost-file a3p1-seam-prefix-hole a3p1-seam-version a3p1-tenth-compat-open a3p1-tenth-create-or-open a3p1-tenth-fresh-create a3p1-tenth-idempotent a3p1-tenth-meta-tampered a3p1-tenth-missing-old-table a3p1-tenth-old-stamp-missing a3p1-tenth-overlay-append a3p1-tenth-rows-without-stamp a3p1-tenth-stamp-tampered a3p1-tenth-undeclared-file f15-mcp-live-loss f15-mcp-live-loss-characterization mtm-a mtm-b mtm-d mtm-e mtm-l1 mtm-l2 mtm-l3 mtm-l4a mtm-l4b mtm-l4c mtm-l5 mtm-l6 mtm-l7 mtm-r1 mtm-r2 rmrcoo-boot 
+##### RUN 3 start=2026-10-06T19:24:22Z
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+end=2026-10-06T19:24:46Z
+##### RUN 4 start=2026-10-06T19:24:46Z
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+end=2026-10-06T19:25:08Z
+##### RUN 5 start=2026-10-06T19:25:08Z
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+end=2026-10-06T19:25:31Z

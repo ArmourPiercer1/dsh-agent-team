@@ -1,0 +1,15 @@
+Scope: all 10 workspace projects
+[EROFS] EROFS: read-only file system, symlink '../../../../../../dsh-plugins/dsh-agent-team' -> '/home/user/.local/share/pnpm/store/v11/projects/41a279baf2d512d9e5d0cc2f65a55783'
+
+pnpm: EROFS: read-only file system, symlink '../../../../../../dsh-plugins/dsh-agent-team' -> '/home/user/.local/share/pnpm/store/v11/projects/41a279baf2d512d9e5d0cc2f65a55783'
+    at async Object.symlink (node:internal/fs/promises:1707:10)
+    at async forceSymlink (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:131924:7)
+    at async registerProject (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:160676:3)
+    at async getContext (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:161210:5)
+    at async mutateModules (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:188774:13)
+    at async recursive (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:194827:124)
+    at async recursiveInstallThenUpdateWorkspaceState (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:195898:27)
+    at async installDeps (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:195697:7)
+    at async file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:304415:19
+    at async main4 (file:///home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:304383:30)
+INSTALL_MAIN_EXIT:226
