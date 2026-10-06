@@ -415,86 +415,185 @@ describe('the lane\'s storage edge is OWNED — one file, one module (A4-PR0)', 
 // ---------------------------------------------------------------------------
 
 describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-3)', () => {
+  /** Every way a TypeScript module can name another module. A single `from '…'`
+   *  pattern (the first draft of this leg) typechecks and lints clean while
+   *  missing `await import('node:fs')`, `require('…')`, a double-quoted
+   *  specifier and a side-effect import — so the leaf law would have been
+   *  policed by a guard that could not fail (review SF3). */
+  const SPECIFIER_PATTERNS: readonly RegExp[] = [
+    /\bfrom\s*['"]([^'"]+)['"]/g, // import/export … from '…'
+    /\bimport\s*\(\s*['"]([^'"]+)['"]/g, // dynamic import('…')
+    /\brequire\s*\(\s*['"]([^'"]+)['"]/g, // require('…')
+    /\bimport\s+['"]([^'"]+)['"]/g, // side-effect import '…'
+  ]
+
+  /** Comments removed, so "names a symbol" means code and not prose. Naive on
+   *  purpose (a string containing `//` is over-stripped): this can only make the
+   *  walk MISS a prose mention, never invent one, and every name below is
+   *  additionally checked in its call form. */
+  const codeOnly = (source: string): string =>
+    source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ')
+
+  /** Walk a directory tree, skipping only what is not source. */
+  const walkTs = (dir: string, into: string[]): string[] => {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry)
+      const st = statSync(full)
+      if (st.isDirectory()) {
+        if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+        walkTs(full, into)
+        continue
+      }
+      if (!entry.endsWith('.ts') || entry.endsWith('.d.ts') || entry.endsWith('.test.ts')) continue
+      into.push(full)
+    }
+    return into
+  }
+
   it('the domain lane declares no edge but its own interior', () => {
     // The leaf law, stated as the strongest thing that is true today: every
-    // module specifier inside `domain/authority-envelope` is INTERNAL to it.
-    // Not "no runtime imports" — NOTHING, so the vocabulary cannot acquire a
+    // module specifier inside `domain/authority-envelope` is INTERNAL to it. Not
+    // "no runtime imports" — NOTHING, so the vocabulary cannot acquire a
     // dependency by accretion the way `governance/` had to amend an allow-list
-    // twice above.
-    const offenders: string[] = []
-    const files = readdirSync(DOMAIN_ENVELOPE_DIR)
-      .filter((entry) => entry.endsWith('.ts') && !entry.endsWith('.d.ts'))
-      .sort()
-    // Non-vacuous: the lane really has sources (a walk over an empty directory
-    // is the classic green-that-means-nothing).
+    // twice above. RECURSIVE, because a lane that grows a subdirectory must not
+    // quietly leave it unwatched.
+    const files = walkTs(join(DOMAIN_ROOT, 'authority-envelope'), []).sort()
+    // Non-vacuity, twice over: the lane really has sources, and the recursive
+    // walk really reaches its `src/` directory (a walk that quietly stopped at
+    // the lane root would otherwise look clean)…
     expect(files.length).toBeGreaterThan(1)
-    for (const entry of files) {
-      const source = readFileSync(join(DOMAIN_ENVELOPE_DIR, entry), 'utf8')
-      for (const match of source.matchAll(/\bfrom '([^']+)'/g)) {
-        const specifier = match[1] ?? ''
-        if (specifier.startsWith('./')) continue
-        offenders.push(`${entry} -> ${specifier}`)
+    expect(files.some((file) => file.startsWith(`${DOMAIN_ENVELOPE_DIR}${sep}`)), 'the walk must cover the lane src directory').toBe(true)
+    // …and the patterns really fire on them. Without this a typo in any pattern
+    // above turns the leg green forever — the exact failure mode the first draft
+    // of this leg had.
+    let matchedSpecifiers = 0
+    const offenders: string[] = []
+    for (const file of files) {
+      // CODE ONLY: this lane's doc comments discuss imports at length, and a
+      // prose `import` two lines above a quoted word is not a module edge — the
+      // first run of this leg flagged `-> undetermined`, which is a doc-comment
+      // artifact. Stripping comments cannot INVENT an edge; it can only stop
+      // prose from counting as one, so the guard stays strict in the direction
+      // that matters.
+      const source = codeOnly(readFileSync(file, 'utf8'))
+      for (const pattern of SPECIFIER_PATTERNS) {
+        for (const match of source.matchAll(pattern)) {
+          matchedSpecifiers += 1
+          const specifier = match[1] ?? ''
+          if (specifier.startsWith('./')) continue
+          offenders.push(`${relative(DOMAIN_ROOT, file)} -> ${specifier}`)
+        }
       }
     }
+    expect(matchedSpecifiers, 'the specifier patterns matched nothing — the walk is vacuous, not clean').toBeGreaterThan(0)
     expect(offenders).toEqual([])
   })
 
-  it('PR1 ships the ceiling adapter UNWIRED: the barrel is its only importer', () => {
-    // The plan's own lane-C instruction — "keep the reader unused by production
-    // authorization in PR1" — is a claim about the import graph, so it is pinned
-    // as one (the A4-PR0 precedent: a lane that ships unwired says so in a test,
-    // because an accidental wiring in a later PR must fail something).
-    const importers: string[] = []
-    const visit = (dir: string): void => {
-      for (const entry of readdirSync(dir)) {
-        const full = join(dir, entry)
-        const st = statSync(full)
-        if (st.isDirectory()) {
-          if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
-          visit(full)
-          continue
+  it('PR1 ships the ceiling adapter UNWIRED: every new name has an audited consumer set', () => {
+    // The plan's lane-C instruction — "keep the reader unused by production
+    // authorization in PR1" — is the PR's headline claim, and the first draft of
+    // this leg checked two of the ~seventeen new names and none of the reader
+    // (review SF2): `governance/service.ts` calling `narrowingForApproval(...)`
+    // or `host.ts` calling `facts.teamHardEnvelope(...)` would have left every
+    // test green. So the claim is now pinned per NAME, with the consumer set
+    // stated rather than inferred. A new consumer must arrive here as an
+    // amendment, the way the consumer allow-list at the top of this file does.
+    const CEILING_LANE = ['governance/authority-ceiling.ts', 'governance/index.ts']
+    const DOMAIN_LANE = ['../domain/authority-envelope/src/authority-envelope.ts', '../domain/authority-envelope/src/index.ts']
+    const SURFACE: readonly (readonly [name: string, allowed: readonly string[]])[] = [
+      // The approval-plane adapter: the barrel plus its own module, nothing else.
+      ['bindingDocs', CEILING_LANE],
+      ['grantCeiling', CEILING_LANE],
+      ['AuthorityEnvelopeDocuments', CEILING_LANE],
+      ['AuthorityBindingError', CEILING_LANE],
+      ['AUTHORITY_CEILING_ERROR_CODES', CEILING_LANE],
+      ['AuthorityBindingProblem', CEILING_LANE],
+      ['AuthorityCeilingScope', CEILING_LANE],
+      // The three-way document read: also the plane that PRODUCES it, as a
+      // TYPE-ONLY alias (asserted type-only below — the alias is what makes
+      // `unavailable → undefined` unrepresentable, review SF1).
+      ['AuthorityDocumentRead', [...CEILING_LANE, join('src', 'plugin', 'permission-plane.ts')]],
+      ['AuthorityDocumentSlot', CEILING_LANE],
+      // The domain algebra: the domain lane, plus the ceiling adapter where it
+      // composes them. NOT the permission plane and NOT any decision path.
+      ['narrowingForApproval', [...DOMAIN_LANE, ...CEILING_LANE]],
+      ['meetAuthorityCeilings', [...DOMAIN_LANE, ...CEILING_LANE]],
+      ['meetAllAuthorityCeilings', [...DOMAIN_LANE, ...CEILING_LANE]],
+      ['CEILING_IDENTITY', [...DOMAIN_LANE, ...CEILING_LANE]],
+      ['CEILING_NO_AUTHORITY', DOMAIN_LANE],
+      ['effectiveAuthorityCeiling', DOMAIN_LANE],
+      ['parseAuthorityEnvelope', DOMAIN_LANE],
+      // The AST vocabulary: the domain lane and the ONE canonicalizer.
+      ['AuthorityEnvelopeAst', [...DOMAIN_LANE, join('src', 'plugin', 'permission-plane.ts')]],
+      ['AuthorityEnvelopeAstMatcher', [...DOMAIN_LANE, join('src', 'plugin', 'permission-plane.ts')]],
+      ['AuthorityHardCeilingRead', [join('src', 'plugin', 'permission-plane.ts')]],
+    ]
+    const consumersOf = (name: string): string[] => {
+      const hits: string[] = []
+      for (const pkg of ['runtime', 'tools', 'remote', 'client', 'domain'] as const) {
+        const pkgRoot = pkg === 'runtime' ? RUNTIME_ROOT : join(RUNTIME_ROOT, '..', pkg)
+        for (const file of walkTs(pkgRoot, [])) {
+          const source = codeOnly(readFileSync(file, 'utf8'))
+          // Call form OR import/type position — `\bname\b` on comment-stripped
+          // code, so a mention in prose cannot satisfy it and a real call cannot
+          // hide in a comment.
+          if (!new RegExp(`\\b${name}\\b`).test(source)) continue
+          // Paths are reported relative to the runtime root, so a domain-lane
+          // entry reads `../domain/…` — the allow-lists above are written in
+          // exactly that notation.
+          hits.push(relative(RUNTIME_ROOT, file))
         }
-        if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry.endsWith('.d.ts')) continue
-        if (!readFileSync(full, 'utf8').includes("from './authority-ceiling.js'")
-          && !readFileSync(full, 'utf8').includes('authority-ceiling.js')) continue
-        importers.push(relative(RUNTIME_ROOT, full))
+      }
+      return hits.sort()
+    }
+    const violations: string[] = []
+    for (const [name, allowed] of SURFACE) {
+      const allowedSet = new Set(allowed)
+      for (const file of consumersOf(name)) {
+        if (!allowedSet.has(file)) violations.push(`${name} referenced by ${file}`)
       }
     }
-    visit(RUNTIME_ROOT)
-    expect(importers).toEqual([`governance${sep}index.ts`])
-    // …and nothing outside the governance directory names the ceiling algebra
-    // at all, so PR2's wiring arrives as a reviewed edit, not a silent import.
-    const outside: string[] = []
+    expect(violations).toEqual([])
+
+    // The READER, whose consumer set is empty by design. `facts.teamHardEnvelope`
+    // is the name a PR2 wiring would call; a property DEFINITION is not a call,
+    // so the call form is what must be empty outside tests.
+    const readerCalls: string[] = []
     for (const pkg of ['runtime', 'tools', 'remote', 'client', 'domain'] as const) {
       const pkgRoot = pkg === 'runtime' ? RUNTIME_ROOT : join(RUNTIME_ROOT, '..', pkg)
-      const walk = (dir: string): void => {
-        for (const entry of readdirSync(dir)) {
-          const full = join(dir, entry)
-          const st = statSync(full)
-          if (st.isDirectory()) {
-            if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
-            walk(full)
-            continue
-          }
-          if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry.endsWith('.d.ts')) continue
-          const rel = relative(RUNTIME_ROOT, full)
-          if (rel.startsWith(`governance${sep}authority-ceiling.ts`)) continue
-          if (rel.startsWith(`governance${sep}index.ts`)) continue
-          const source = readFileSync(full, 'utf8')
-          // Match the ALGEBRA, not the English: `grantCeiling`/`bindingDocs` are
-          // this module's exported names, and a prose mention in a doc comment
-          // is not a call site.
-          if (/\b(grantCeiling|bindingDocs)\s*\(/.test(source)) outside.push(rel)
+      for (const file of walkTs(pkgRoot, [])) {
+        if (/\.teamHardEnvelope\s*\(/.test(codeOnly(readFileSync(file, 'utf8')))) {
+          readerCalls.push(relative(RUNTIME_ROOT, file))
         }
       }
-      try {
-        statSync(pkgRoot)
-      } catch {
-        continue
-      }
-      walk(pkgRoot)
     }
-    expect(outside).toEqual([])
+    expect(readerCalls, 'nothing may CALL the v3 hard-ceiling reader in PR1').toEqual([])
+    // And the plane's import of the ceiling module is TYPE-ONLY, so PR1 adds no
+    // runtime governance→plugin edge: the reader's alias must not become a load
+    // order dependency for a module the runtime does not otherwise use.
+    const planeSource = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'permission-plane.ts'), 'utf8')
+    expect(planeSource).toMatch(/^import type \{ AuthorityDocumentRead \} from '\.\.\/\.\.\/governance\/authority-ceiling\.js'$/m)
+    expect(planeSource).not.toMatch(/^import \{[^}]*\} from '\.\.\/\.\.\/governance\/authority-ceiling\.js'$/m)
+  })
+
+  it('the module itself has exactly the importers PR1 gave it', () => {
+    // The barrel re-exports the adapter (its declared surface) and the plane
+    // imports its TYPE (asserted above). Anything else importing
+    // `authority-ceiling.js` is a wiring, and a wiring in PR1 is out of scope.
+    const importers = new Set<string>()
+    for (const file of walkTs(RUNTIME_ROOT, [])) {
+      const source = readFileSync(file, 'utf8')
+      for (const match of source.matchAll(/\bfrom\s*['"]([^'"]*authority-ceiling\.js)['"]/g)) {
+        if ((match[1] ?? '').length === 0) continue
+        // A Set, because `governance/index.ts` re-exports the VALUE surface and
+        // the TYPE surface in two statements — two statements, one importer.
+        importers.add(relative(RUNTIME_ROOT, file))
+      }
+    }
+    expect([...importers].sort()).toEqual([
+      join('governance', 'index.ts'),
+      join('src', 'plugin', 'permission-plane.ts'),
+    ].sort())
   })
 
   it('the runtime consumes that grammar as ONE implementation, not a copy', () => {
@@ -508,7 +607,9 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // The ceiling adapter reaches the proposal vocabulary as a TYPE ONLY
     // (correction X5-E1): it needs the closed position union, not an edge to the
     // proposal write path. A value import here would be a storage-adjacent edge
-    // this file has not reviewed.
+    // this file has not reviewed. This is also the pin behind
+    // `BASELINE-CLOSURE.md`'s "no new governance→storage edge, the allow-list did
+    // not move" paragraph.
     expect(AUTHORITY_CEILING_SOURCE).toContain("import type { ProposalAuthorityPosition } from './proposal-store.js'")
     expect(AUTHORITY_CEILING_SOURCE).not.toMatch(/^import \{[^}]*\} from '\.\/proposal-store\.js'/m)
     expect(AUTHORITY_CEILING_SOURCE).not.toMatch(/from '\.\.\/\.\.\/storage\//)

@@ -56,6 +56,10 @@ import {
 // exists — so the lane goes RED on the ASSERTION (the v3 set is missing)
 // instead of dying at import time with nothing but a collection error.
 import * as blueprintSchema from '../blueprint/src/schema.js'
+// The negative fixture is imported rather than re-typed here so the derivation
+// below is checked against the SAME document the shared fixture feeds to the
+// pre-existing validation suite.
+import { NEG_SCHEMA_VERSION_MISMATCH } from '../blueprint/testdata/fixtures.js'
 import { expectCode } from './t2-helpers.js'
 
 // ---------------------------------------------------------------------------
@@ -265,6 +269,22 @@ const V2_GOLDEN_HASH = 'sha256:d6368916c88577e290fe0a929a48415d9f70d8f512db0c789
 describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched)', () => {
   it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge)', () => {
     expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, 3])
+    // The REFUSAL carries the set, DERIVED from this constant — which is what
+    // `testdata/fixtures.ts` means when it moves the witness to v4 and declines
+    // to pin the `supported` detail there. The derivation is pinned at the
+    // constant, not at the fixture: a future widening (or PR7's collapse to
+    // `[3]`) must move the error text with it, never strand a stale list in a
+    // message an operator reads.
+    let refused: unknown
+    try {
+      parseBlueprint(NEG_SCHEMA_VERSION_MISMATCH.source) // the fixture's text, verbatim
+    } catch (error) {
+      refused = error
+    }
+    expect(refused, 'schemaVersion 4 must still be refused').toBeDefined()
+    const error = refused as { code?: string; details?: { supported?: readonly number[] } }
+    expect(error.code).toBe('SCHEMA_VERSION_MISMATCH')
+    expect(error.details?.supported).toEqual([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS])
   })
 
   it('V2 a v3 document carrying both authority documents parses', () => {
@@ -335,11 +355,25 @@ describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched
     }, 'MALFORMED_DTO')
   })
 
-  it('V10 a v3 document parses with ZERO provider surface: the validator is pure (ADR A2-3)', () => {
-    // Nothing to inject — the point is that validation SUCCEEDED with no
-    // filesystem anywhere in the domain module. The negative control below
-    // (V11) shows the same grammar refusing on shape alone.
-    expect(v3.ok).toBe(true)
+  it('V10 the parse entry has NO provider surface — arity 1, source in, document out (ADR A2-3)', () => {
+    // Round-1 review nit: this leg used to assert `expect(v3.ok).toBe(true)`,
+    // which is a precondition of a dozen legs below and proves nothing about the
+    // claim in its own title. The claim (ADR A2-3: the shared grammar is a pure
+    // domain leaf, with no filesystem provider to inject) IS checkable, and the
+    // checkable form is the SEAM: `parseBlueprint(source: string)` takes exactly
+    // one parameter, so there is no argument position where a provider, a
+    // canonicalizer, or a `cwd` could arrive. A PR that widens the entry to
+    // accept one has to change this line and then say why in review.
+    //
+    // This is also what makes the v3 field safe to hash: the bytes of the hard
+    // envelope can only have come from the document, never from a host lookup —
+    // the same reason `buildAuthorityEnvelope` stays the single canonicalizer on
+    // the runtime side (X5-E2).
+    expect(parseBlueprint.length).toBe(1)
+    // And the v3 document this lane hashes did come from text alone: the parse
+    // outcome below is the one V3-V9 and V18-V20 all read, captured by
+    // `attempt()` with no second argument available to pass.
+    expect(v3.ok, failureOf(v3)).toBe(true)
   })
 
   it('V11 unknown rule field, out-of-vocabulary effect, and a duplicate pair all fail closed', () => {

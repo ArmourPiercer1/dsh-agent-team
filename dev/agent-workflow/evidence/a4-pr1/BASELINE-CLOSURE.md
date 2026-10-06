@@ -68,24 +68,80 @@ run 2) rather than on the allowance.
   (9 × `t1-capability-schema`, 1 × `t2-blueprint-hash`), byte-identical to the
   pre-work capture.
 
-## The dist drift this commit carries, and the part of it that is not PR1's
+## The dist this commit carries, and why it is emitted (corrected on review)
 
 `check:artifacts` compares the committed install surface with the rebuild output.
-This commit stages both categories it reported:
+At this HEAD the build is clean: `gates/check-artifacts-postcommit.txt` records
+exit 0, `OK: 1464 files` (base measured `OK: 1444 files`).
 
-* **PR1's own drift** — `packages/runtime/dist/packages/domain/blueprint/**`,
+**What PR1 added, and the mechanism that put it there.** Two categories, one
+cause — TypeScript emits every file in the program, and a `tsconfig` `include`
+does not gate *transitive* emission (ADR A5-19 states this; X5-E5 predicts this
+exact consequence for PR1 and rules that **PR1 owes a dist co-commit**, so the
+co-commit is per plan, not a workaround):
+
+* modules PR1 authored: `…/dist/packages/domain/authority-envelope/src/*` and
+  `…/dist/packages/runtime/governance/authority-ceiling.*`;
+* modules PR1 changed: `…/dist/packages/domain/blueprint/**`,
   `…/dist/packages/runtime/governance/{index,permission-mutation}.*`,
-  `…/dist/packages/runtime/src/plugin/permission-plane.*` (content drift), plus
-  the new `…/dist/packages/domain/authority-envelope/src/*` and
-  `…/dist/packages/runtime/governance/authority-ceiling.*` (produced, untracked).
-* **A4-PR0's leftover** — `…/dist/packages/runtime/governance/proposal-codes.*`
-  and `…/dist/packages/runtime/governance/proposal-store.*` are
-  `produced-but-untracked` with NO git history for those paths: PR0 committed the
-  two lane sources without their dist output. Consequence, stated plainly because
-  it is a premise that turned out false: **`pnpm run check:artifacts` cannot exit
-  0 on this branch at base**, independently of anything PR1 does. This commit
-  stages them too — generated artifacts of already-tracked sources, zero source
-  change — so the check passes for the whole tree. If the coordinator prefers PR0's
-  artifacts to land in a separate commit, the eight `proposal-*` paths can be
-  dropped from this commit without touching anything else; the trade is that the
-  check goes red again for those sixteen files.
+  `…/dist/packages/runtime/src/plugin/permission-plane.*`;
+* modules PR1 **reached**: `…/dist/packages/runtime/governance/proposal-codes.*`
+  and `…/dist/packages/runtime/governance/proposal-store.*` — **8 files**
+  (4 each: `.js`, `.js.map`, `.d.ts`, `.d.ts.map`).
+
+The reachability chain for the last category is worth writing down, because the
+first draft of this section explained it wrongly:
+
+1. `packages/runtime/governance/index.ts` gained a **value** re-export from
+   `./authority-ceiling.js`, so the barrel's program now includes that module;
+2. `authority-ceiling.ts:68` holds `import type { ProposalAuthorityPosition }
+   from './proposal-store.js'` — deliberately **type-only** (X5-E1: vocabulary,
+   not an edge), and `proposal-store.ts` in turn pulls `proposal-codes.ts`;
+3. program membership, not `include`, decides emission ⇒ both proposal modules
+   are emitted.
+
+At base `d21effba` the same barrel mentioned `proposal` **zero** times and no
+non-test source imported `proposal-store`, so neither module was in the program
+and no dist for them existed. **Therefore `pnpm run check:artifacts` was
+legitimately green at base, and this is where the record is corrected: the
+earlier claim in this file — "PR0 committed the two lane sources without their
+dist output", "check:artifacts cannot exit 0 at base" — is REFUTED.** PR0 left
+nothing untracked; the files became owed only when PR1's barrel re-export made
+them reachable. The count is 8, not 16: the first draft double-counted by
+treating each `.map` as a separate artifact beyond its module.
+
+**What this spends for PR5.** A4-6 anticipated these emission and assigned them
+to PR5 ("PR5 co-commits the emitted proposal files"). PR5 now owes **0** of
+them: they are in this commit, generated from already-tracked sources with zero
+source change. Nobody should re-add them at PR5, and PR5's file list should be
+read as discharged on this point.
+
+### No new `governance → storage` edge, and why the hygiene allow-list did not move
+
+The emission above is not an authorization edge, and the distinction is the
+reason this PR needed **no change** to the storage allow-list at
+`packages/runtime/test/a3p3-governance-lane-hygiene.test.ts` (`no
+governance-lane module imports storage outside the allow-listed edge`):
+
+* `authority-ceiling.ts` references `./proposal-store.js` under `import type`
+  only. It is erased at emit: `grep -n "require(" \
+  packages/runtime/dist/packages/runtime/governance/authority-ceiling.js` is
+  **empty**, and the reference survives only in the `.d.ts` (`:51`). A caller
+  also cannot smuggle a payload string into a parameter of that type — which is
+  what invariant #16's principal-from-payload ban needs, and why the type-only
+  form was chosen over a locally re-declared union.
+* The one real `governance → storage` value edge in the tree is
+  `proposal-store.ts:88`, which predates PR1 and is already the named, justified
+  entry in the allow-list (the "derive an identity through the module that owns
+  it" reasoning recorded there).
+* PR1's own runtime import into `governance/` goes the other way and is
+  **type-only in the direction that matters**: `permission-plane.ts` imports
+  `AuthorityDocumentRead` from `../../governance/authority-ceiling.js` as a type
+  (round-1 review SF1 needs that alias — the reader's three-way outcome and the
+  ceiling adapter's slot type must be ONE type or the collapse reopens). The
+  hygiene leg asserts that import is `import type` and that the module's only
+  two importers are `governance/index.ts` and that file.
+
+Both statements are machine-checked rather than asserted in prose: the storage
+leg and the new `the module itself has exactly the importers PR1 gave it` leg
+are in the 13/13 named-gate run in `gates/named-gate.txt`.

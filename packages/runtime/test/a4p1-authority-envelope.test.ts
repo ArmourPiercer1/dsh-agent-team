@@ -71,7 +71,12 @@ import type {
 } from '../../domain/authority-envelope/src/index.js'
 import { buildAuthorityEnvelope } from '../src/plugin/permission-plane.js'
 import { bindingDocs, grantCeiling } from '../governance/authority-ceiling.js'
-import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import type {
+  AuthorityDocumentRead,
+  AuthorityDocumentSlot,
+  AuthorityEnvelopeDocuments,
+} from '../governance/authority-ceiling.js'
+import type { AuthorityHardCeilingRead } from '../src/plugin/permission-plane.js'
 import type {
   GovernanceProposalEnvelopeAst,
   ProposalAuthorityPosition,
@@ -132,7 +137,26 @@ const runtimeNamesAreAliases: readonly [
   Assignable<PermissionResourceMatcher, AuthorityResourceMatcher>,
   Assignable<AuthorityResourceMatcher, PermissionResourceMatcher>,
   Assignable<PermissionMutationEnvelope, AuthorityEnvelope>,
-] = [true, true, true, true, true]
+  // The SIXTH entry, and the one that actually earns the "both directions"
+  // claim above (review SF4, X7-R3's fake-mode #2 verbatim): the five above
+  // cannot see a WIDENED re-spell of the PR0 name. If someone re-declares
+  // `PermissionMutationEnvelope` as a superset — an extra optional field, a
+  // broader `maximumEffect`, a matcher union with one more arm — every one of
+  // the five still holds, because `AuthorityEnvelope` stays assignable TO the
+  // widened type. Only this direction goes false.
+  Assignable<AuthorityEnvelope, PermissionMutationEnvelope>,
+] = [true, true, true, true, true, true]
+
+// SF1: `undefined` is NOT a document slot. This line is the pin — it compiles
+// only while `undefined` is unassignable to the slot, so a future widening back
+// to `AuthorityEnvelope | undefined` (the shape that makes `unavailable →
+// undefined` and therefore unlimited reach representable) stops the build
+// rather than passing every runtime test.
+type SlotAcceptsUndefined = undefined extends AuthorityDocumentSlot ? true : false
+const undefinedIsNotADocumentSlot: SlotAcceptsUndefined = false
+// (Asserted inside the SF1 leg below — a module-level `expect` that failed would
+// break COLLECTION of the whole file instead of reporting one red leg.)
+expect(undefinedIsNotADocumentSlot).toBe(false)
 
 // ---------------------------------------------------------------------------
 // fixtures
@@ -154,6 +178,29 @@ const WRITE_A_ASK = doc([{ operationClass: 'write', matcher: FILE('file:/a'), ma
 const WRITE_A_DENY = doc([{ operationClass: 'write', matcher: FILE('file:/a'), maximumEffect: 'deny' }])
 const READ_B_ALLOW = doc([{ operationClass: 'read', matcher: EXACT('file:/b'), maximumEffect: 'allow' }])
 
+/** A slot stated as the FACT it carries, not as a missing key. */
+const ABSENT = { status: 'absent' } as const
+const UNAVAILABLE = { status: 'unavailable' } as const
+
+/**
+ * A document set with BOTH slots stated. The optional arguments are a test
+ * convenience and nothing more: `AuthorityEnvelopeDocuments` requires both
+ * slots so a production caller cannot leave one out, and it does not accept
+ * `undefined` (review SF1) — because on the approval plane an empty bound set
+ * meets to the IDENTITY, `undefined` would make "this Team never declared a
+ * hard ceiling" and "we could not read the hard ceiling" the same value, and
+ * the second one answered with the identity is unlimited approval authority.
+ * A test that means absence writes `ABSENT`; a test that means a fault writes
+ * `UNAVAILABLE`; both are below.
+ */
+const docs = (slots: {
+  readonly hard?: AuthorityDocumentSlot
+  readonly mutation?: AuthorityDocumentSlot
+}): AuthorityEnvelopeDocuments => ({
+  teamHardEnvelope: slots.hard ?? ABSENT,
+  permissionMutationEnvelope: slots.mutation ?? ABSENT,
+})
+
 /** One scope reused across the whole file: a write under `/a`. */
 const SCOPE_A = { operationClass: 'write', matcher: FILE('file:/a/sub.txt') }
 
@@ -172,7 +219,7 @@ const UNDETERMINED: EffectiveCeiling = { status: 'undetermined', reason: 'contai
 
 /** THE blocking case (X5-E3). Written before the algebra existed. */
 const blocking = {
-  documents: { teamHardEnvelope: EMPTY, permissionMutationEnvelope: WRITE_A_ALLOW } as AuthorityEnvelopeDocuments,
+  documents: docs({ hard: EMPTY, mutation: WRITE_A_ALLOW }),
   get leader() {
     return grantCeiling('leader', this.documents, SCOPE_A, contains)
   },
@@ -184,22 +231,17 @@ const expansionOnEmpty = effectiveAuthorityCeiling(EMPTY, 'write', FILE('file:/a
 /** §7.4.1 positional binding, verbatim from spec:315. */
 const positionalLeader = grantCeiling(
   'leader',
-  { teamHardEnvelope: WRITE_A_ALLOW, permissionMutationEnvelope: WRITE_A_ASK },
+  docs({ hard: WRITE_A_ALLOW, mutation: WRITE_A_ASK }),
   SCOPE_A,
   contains,
 )
 const positionalHumanUser = grantCeiling(
   'human-user',
-  { teamHardEnvelope: WRITE_A_ALLOW, permissionMutationEnvelope: WRITE_A_ASK },
+  docs({ hard: WRITE_A_ALLOW, mutation: WRITE_A_ASK }),
   SCOPE_A,
   contains,
 )
-const humanUserCapped = grantCeiling(
-  'human-user',
-  { teamHardEnvelope: WRITE_A_ASK },
-  SCOPE_A,
-  contains,
-)
+const humanUserCapped = grantCeiling('human-user', docs({ hard: WRITE_A_ASK }), SCOPE_A, contains)
 
 /** A1-6: one undecidable same-class subtree rule poisons the whole scope —
  *  relevance filtering is forbidden, so a rule that "probably does not apply"
@@ -367,18 +409,18 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
   })
 
   it('grantCeiling never exceeds either binding document (meet over the approval plane only)', () => {
-    const leader = grantCeiling('leader', { teamHardEnvelope: WRITE_A_ALLOW, permissionMutationEnvelope: WRITE_A_ASK }, SCOPE_A, contains)
+    const leader = grantCeiling('leader', docs({ hard: WRITE_A_ALLOW, mutation: WRITE_A_ASK }), SCOPE_A, contains)
     expect(effectOf(leader)).toBe('ask')
     // Whichever document is removed, the ceiling can only stay or rise.
-    expect(effectOf(grantCeiling('leader', { permissionMutationEnvelope: WRITE_A_ASK }, SCOPE_A, contains))).toBe('ask')
-    expect(effectOf(grantCeiling('leader', { teamHardEnvelope: WRITE_A_ALLOW }, SCOPE_A, contains))).toBe('allow')
+    expect(effectOf(grantCeiling('leader', docs({ mutation: WRITE_A_ASK }), SCOPE_A, contains))).toBe('ask')
+    expect(effectOf(grantCeiling('leader', docs({ hard: WRITE_A_ALLOW }), SCOPE_A, contains))).toBe('allow')
     // A document that does not mention the scope contributes NOTHING to the
     // meet — it is not read as deny, and not read as no-authority either.
-    expect(effectOf(grantCeiling('leader', { teamHardEnvelope: READ_B_ALLOW, permissionMutationEnvelope: WRITE_A_ASK }, SCOPE_A, contains))).toBe('ask')
+    expect(effectOf(grantCeiling('leader', docs({ hard: READ_B_ALLOW, mutation: WRITE_A_ASK }), SCOPE_A, contains))).toBe('ask')
     // …and the meet is never BELOW what a single binding document says when the
     // other is silent about the scope (the "never greater than either envelope"
     // direction of ADR §29 #3, checked both ways).
-    const capped = grantCeiling('leader', { teamHardEnvelope: WRITE_A_DENY, permissionMutationEnvelope: WRITE_A_ALLOW }, SCOPE_A, contains)
+    const capped = grantCeiling('leader', docs({ hard: WRITE_A_DENY, mutation: WRITE_A_ALLOW }), SCOPE_A, contains)
     expect(effectOf(capped)).toBe('deny')
   })
 
@@ -390,7 +432,7 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
   })
 
   it('§7.4 bindingDocs is positional: Leader both documents, Human User hard only, Human Admin none', () => {
-    const both = { teamHardEnvelope: WRITE_A_ALLOW, permissionMutationEnvelope: WRITE_A_ASK }
+    const both = docs({ hard: WRITE_A_ALLOW, mutation: WRITE_A_ASK })
     expect(bindingDocs('leader', both).length).toBe(2)
     expect(bindingDocs('human-user', both).length).toBe(1)
     expect(bindingDocs('human-user', both)).toEqual([WRITE_A_ALLOW])
@@ -400,12 +442,12 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
     // The binding set is a function of the POSITION only — never of the
     // beneficiary, the carrier, or the request kind (ADR A5-1): the same call
     // with different documents keeps the same cardinality per position.
-    expect(bindingDocs('human-user', { teamHardEnvelope: WRITE_A_DENY }).length).toBe(1)
+    expect(bindingDocs('human-user', docs({ hard: WRITE_A_DENY })).length).toBe(1)
   })
 
   it('bindingDocs has an explicit arm for every position and NO default branch', () => {
     const positions: readonly ProposalAuthorityPosition[] = ['member', 'leader', 'human-user', 'human-admin']
-    const both = { teamHardEnvelope: WRITE_A_ALLOW, permissionMutationEnvelope: WRITE_A_ASK }
+    const both = docs({ hard: WRITE_A_ALLOW, mutation: WRITE_A_ASK })
     // Every member of the closed union is answered explicitly…
     const answered = positions.map((p) => {
       try {
@@ -423,6 +465,79 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
     }
   })
 
+  it('B1 (BLOCKING) — a position outside the closed union REFUSES, it does not bind nothing', () => {
+    // The four `case` arms above are what the compiler sees; this is what the
+    // RUNTIME sees. `ProposalAuthorityPosition` arrives from a durable proposal
+    // row and from caller-side casts, so a string outside the union walks past
+    // every arm to the post-`switch` refusal. What that line does is the whole
+    // difference between a closed table and an open one: `return []` there is
+    // type-invisible, keeps every OTHER test green, and routes through
+    // `grantCeiling`'s empty-bound-set branch to `CEILING_IDENTITY` — unlimited
+    // approval reach for a principal the table never heard of. So the refusal is
+    // pinned by CALLING it, not by trusting the types (invariant #16's own
+    // scenario: a cast payload).
+    // The double cast is deliberate and honest: a single `as` from a non-member
+    // literal is a compile error, and the value this leg is modeling is exactly
+    // one that got past the compiler.
+    const bogus = 'chief' as unknown as ProposalAuthorityPosition
+    const both = docs({ hard: WRITE_A_ALLOW, mutation: WRITE_A_ASK })
+    expect(() => bindingDocs(bogus, both)).toThrowError(/position-is-not-a-reviewer/)
+    // And down the path that matters: the ceiling for that principal is not
+    // computed at all. `grantCeiling` must propagate the refusal rather than
+    // meet over nothing.
+    expect(() => grantCeiling(bogus, both, SCOPE_A, contains)).toThrowError(/position-is-not-a-reviewer/)
+    let refused: unknown
+    try {
+      bindingDocs(bogus, both)
+    } catch (error) {
+      refused = error
+    }
+    expect((refused as { code?: string }).code, 'a bogus position is a binding defect, not an unavailable document').toBe(
+      'AUTHORITY_BINDING_DEFECT',
+    )
+  })
+
+  it('SF1 — an UNAVAILABLE document never becomes a ceiling, and `undefined` is not a slot', () => {
+    // The type-level pin, restated where a reader sees it: this is `false` by
+    // construction, and the file stops compiling the moment the slot widens to
+    // accept `undefined`.
+    expect(undefinedIsNotADocumentSlot).toBe(false)
+    // The reader's three-way outcome is the slot type, so a fault reaches the
+    // algebra as a fault. The dangerous alternative was `AuthorityEnvelope |
+    // undefined`: `unavailable → undefined` is the natural thing for a caller to
+    // write, and it is EXACTLY the value that means "no hard ceiling exists",
+    // whose answer on this plane is the identity. Same class as X5-E3: the
+    // identity is right, the absence channel is what leaks.
+    for (const reviewer of ['leader', 'human-user'] as const) {
+      let refused: unknown
+      try {
+        grantCeiling(reviewer, docs({ hard: UNAVAILABLE, mutation: WRITE_A_ALLOW }), SCOPE_A, contains)
+      } catch (error) {
+        refused = error
+      }
+      expect(refused, `${reviewer} must not be handed a ceiling computed from a document that could not be read`).toBeInstanceOf(Error)
+      const asError = refused as { code?: string; problem?: string }
+      expect(asError.problem).toBe('document-read-unavailable')
+      expect(asError.code).toBe('AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE')
+    }
+    // Absence still means absence — the two facts stay two facts.
+    expect(effectOf(grantCeiling('leader', docs({ hard: ABSENT, mutation: WRITE_A_ASK }), SCOPE_A, contains))).toBe('ask')
+    // Human Admin is bound by nothing, so a fault in a document that binds
+    // nobody cannot refuse it (spec §7.4:302; asserted so nobody "fixes" this
+    // into a refusal and changes the row).
+    expect(grantCeiling('human-admin', docs({ hard: UNAVAILABLE, mutation: WRITE_A_ALLOW }), SCOPE_A, contains)).toEqual(
+      CEILING_IDENTITY,
+    )
+    // The reader's outcome and the slot's outcome are ONE type: PR2 can forward
+    // `facts.teamHardEnvelope(...)` into `grantCeiling` with no unwrapping, which
+    // is what leaves no place to write the collapsing `?? undefined`.
+    const fromReader: AuthorityHardCeilingRead = { status: 'unavailable' }
+    const asSlot: AuthorityDocumentRead = fromReader
+    expect(() => grantCeiling('leader', docs({ hard: asSlot, mutation: WRITE_A_ALLOW }), SCOPE_A, contains)).toThrowError(
+      /document-read-unavailable/,
+    )
+  })
+
   it('bindingDocs — Member is not a reviewer of its own expansion', () => {
     // spec §7.4:307 — "a Member cannot review at all". There is no document set
     // to hand out, so the table REFUSES rather than inventing a fourth row or
@@ -430,7 +545,7 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
     // to consult for a reviewer that must not exist).
     let refused: unknown
     try {
-      bindingDocs('member', { teamHardEnvelope: WRITE_A_ALLOW, permissionMutationEnvelope: WRITE_A_ASK })
+      bindingDocs('member', docs({ hard: WRITE_A_ALLOW, mutation: WRITE_A_ASK }))
     } catch (error) {
       refused = error
     }
@@ -441,7 +556,7 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
     // grantCeiling inherits the refusal — it cannot be reached around.
     let ceilingRefused: unknown
     try {
-      grantCeiling('member', { teamHardEnvelope: WRITE_A_ALLOW }, SCOPE_A, contains)
+      grantCeiling('member', docs({ hard: WRITE_A_ALLOW }), SCOPE_A, contains)
     } catch (error) {
       ceilingRefused = error
     }
@@ -527,7 +642,9 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
   it('A3-9 the shared grammar is a LEAF — the AST vocabulary matches PR0 and blueprint, both directions', () => {
     expect([...astMatchesProposalNode]).toEqual([true, true])
     expect([...effectVocabularyIsOneSet]).toEqual([true, true])
-    expect([...runtimeNamesAreAliases]).toEqual([true, true, true, true, true])
+    // Six entries: the envelope alias is pinned in BOTH directions (SF4) — a
+    // widened re-spell of the PR0 name is invisible to the forward direction.
+    expect([...runtimeNamesAreAliases]).toEqual([true, true, true, true, true, true])
     // The kind set is the one PR0 froze (`PROPOSAL_ENVELOPE_AST_KINDS`).
     const proposalKinds: readonly string[] = ['exact', 'subtree', 'fingerprint']
     expect([...AUTHORITY_MATCHER_KINDS]).toEqual(proposalKinds)
@@ -562,7 +679,7 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
   it('a declared deny narrows to nothing, and absence never does (plan :26 — deny is terminal)', () => {
     // A DECLARED deny on the approval plane means no approval is legal at that
     // scope; it is reachable ONLY through a rule, never through its absence.
-    expect(effectOf(grantCeiling('leader', { teamHardEnvelope: WRITE_A_DENY }, SCOPE_A, contains))).toBe('deny')
+    expect(effectOf(grantCeiling('leader', docs({ hard: WRITE_A_DENY }), SCOPE_A, contains))).toBe('deny')
     expect(narrowingForApproval(EMPTY, SCOPE_A, contains)).toEqual(CEILING_IDENTITY)
     expect(effectOf(narrowingForApproval(WRITE_A_DENY, SCOPE_A, contains))).toBe('deny')
   })

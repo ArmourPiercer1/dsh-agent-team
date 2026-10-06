@@ -51,36 +51,98 @@ import type { AuthorityEnvelope, AuthorityResourceMatcher, EffectiveCeiling, Sub
 import type { ProposalAuthorityPosition } from './proposal-store.js';
 /** The refusal vocabulary of this module — closed, and named rather than inline. */
 export declare const AUTHORITY_CEILING_ERROR_CODES: Readonly<{
+    /** The reviewer/document BINDING is defective: a position the table gives no
+     *  documents to, or a value outside the closed position union. */
     readonly BINDING_DEFECT: "AUTHORITY_BINDING_DEFECT";
+    /** A document this reviewer IS bound by could not be read. Named separately
+     *  from a binding defect because the table is fine and the storage is not:
+     *  PR2 maps this to the terminal `authority-unavailable` outcome — which ADR
+     *  A1-7 keeps distinct from `authority-undetermined` and from `denied` — and
+     *  never to an identity. See {@link AuthorityDocumentRead}. */
+    readonly DOCUMENT_UNAVAILABLE: "AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE";
 }>;
-/** A defect in the reviewer/document binding itself, never a policy answer. */
+/** One refusal code of this module. */
+export type AuthorityCeilingErrorCode = (typeof AUTHORITY_CEILING_ERROR_CODES)[keyof typeof AUTHORITY_CEILING_ERROR_CODES];
+/** What went wrong, for a caller that branches rather than string-matches. */
 export type AuthorityBindingProblem = 
 /** The position is not a reviewer position at all, so no document binds it
- *  and no ceiling exists for it. Spec §7.4:307 for Member; a widening of the
- *  union without a written arm lands here too, loudly. */
-'position-is-not-a-reviewer';
-/** The refusal raised by {@link bindingDocs}. */
+ *  and no ceiling exists for it. Spec §7.4:307 for Member; a value outside
+ *  the closed union lands here too, loudly — see the note on the
+ *  post-`switch` refusal in {@link bindingDocs}. */
+'position-is-not-a-reviewer'
+/** A bound document's read failed. The ceiling is UNKNOWN, not wide. */
+ | 'document-read-unavailable';
+/** The refusal raised by {@link bindingDocs} and {@link grantCeiling}. */
 export declare class AuthorityBindingError extends Error {
-    readonly code: string;
+    readonly code: AuthorityCeilingErrorCode;
     readonly problem: AuthorityBindingProblem;
-    constructor(problem: AuthorityBindingProblem, detail: string);
+    constructor(code: AuthorityCeilingErrorCode, problem: AuthorityBindingProblem, detail: string);
 }
+/**
+ * The read outcome of one authority document, as the plane reports it
+ * (`src/plugin/permission-plane.ts` exports {@link AuthorityHardCeilingRead} as
+ * an alias of this type, so the reader's output can be handed to
+ * {@link grantCeiling} with no unwrapping and no intermediate `undefined`).
+ *
+ * WHY A THREE-WAY OUTCOME AND NOT `AuthorityEnvelope | undefined`.
+ * On the APPROVAL plane an absent document narrows NOTHING (ADR A1-4), and an
+ * empty bound set meets to the IDENTITY — the widest answer the algebra can
+ * give. So `undefined` is a channel that carries two opposite facts:
+ *
+ *     absent      → "this Team never declared a hard ceiling"  → identity is RIGHT
+ *     read failed → "we cannot tell what the ceiling is"        → identity is WRONG
+ *
+ * A one-channel type makes the second case representable, and a consumer that
+ * writes the natural `unavailable ? undefined : document` hands a Leader or a
+ * Human User UNLIMITED approval authority on a storage fault — with every test
+ * still green, because identity is the correct answer to the OTHER question.
+ * This is the same failure class as the fused-lookup hole (X5-E3): the identity
+ * is right, the ABSENCE CHANNEL is what leaks. `undefined` is therefore not a
+ * member of this union, and the slot type below does not accept it.
+ */
+export type AuthorityDocumentRead = 
+/** A document exists (possibly declaring `rules: []`, a legal v3 declaration
+ *  that the Human User has no runtime expansion authority). */
+{
+    readonly status: 'declared';
+    readonly document: AuthorityEnvelope;
+}
+/** The bound Blueprint does not carry the field — the v1/v2 case through the
+ *  bridge (ADR A2-4/A2-11). Stated, never defaulted. */
+ | {
+    readonly status: 'absent';
+}
+/** Unknown: the binding drifted, the read faulted, or the provider answered
+ *  with nothing. A consumer must fail closed; it may not fall back. */
+ | {
+    readonly status: 'unavailable';
+};
+/**
+ * One document slot of {@link AuthorityEnvelopeDocuments}: either the canonical
+ * document itself (the shorthand a caller holding a document uses), or the
+ * reader's outcome. NOT `undefined` — which is the point of the type.
+ */
+export type AuthorityDocumentSlot = AuthorityEnvelope | AuthorityDocumentRead;
 /**
  * The two authority documents a Team declares, in their canonical RUNTIME shape
  * (already canonicalized by `src/plugin/permission-plane.ts`, never here).
  *
- * Both are OPTIONAL at this layer for the PR1-PR6 bridge: a v1/v2 blueprint
- * carries no hard ceiling at all, and the absence is a typed `undefined`, not
- * an empty document (ADR A2-4/A2-11). A reader that substituted
- * `{ rules: [] }` for "this document does not exist" would change the answer on
- * the EXPANSION plane — where `rules: []` means "expand nothing" — which is why
- * the distinction is carried in the type rather than normalized away.
+ * BOTH SLOTS ARE REQUIRED, and each one is a three-way outcome rather than an
+ * optional document, because the dangerous move is the silent one: with
+ * `?: AuthorityEnvelope` a caller could write `{ teamHardEnvelope: undefined }`
+ * for a faulted read and get the identity. Here it must write one of
+ * `{ status: 'absent' }` / `{ status: 'unavailable' }` / the document, so the
+ * distinction survives to {@link bindingDocs} — which refuses on `unavailable`
+ * instead of narrowing it away. `a4p1-authority-envelope.test.ts` pins both
+ * halves: that `undefined` is not assignable, and that an `unavailable` slot
+ * never yields a ceiling.
  */
 export interface AuthorityEnvelopeDocuments {
     /** The Human User hard ceiling. v3-only, required at v3 (spec §3.2). */
-    readonly teamHardEnvelope?: AuthorityEnvelope | undefined;
-    /** The Leader expansion ceiling. Optional through the bridge (ADR A1-19). */
-    readonly permissionMutationEnvelope?: AuthorityEnvelope | undefined;
+    readonly teamHardEnvelope: AuthorityDocumentSlot;
+    /** The Leader expansion ceiling. Optional in the DOCUMENT, required in the
+     *  SLOT: a v1/v2 Team states `{ status: 'absent' }` (ADR A1-19). */
+    readonly permissionMutationEnvelope: AuthorityDocumentSlot;
 }
 /**
  * Which documents bind one reviewer position (spec §7.4:300-302, ADR A5-1).
@@ -114,6 +176,20 @@ export interface AuthorityCeilingScope {
  * document, and the caller's terminal outcome is `authority-undetermined`,
  * which must not carry `requiredAuthority` and must not mint an admin case
  * (ADR A1-7).
+ *
+ * TWO THINGS THIS FUNCTION DELIBERATELY DOES NOT DO, both for PR2 to own:
+ *  - it does not consult `mayReview`. An approval is legal iff
+ *    `mayReview(...) AND desiredEffect <= grantCeiling(...)` (ADR A3-2); the
+ *    ceiling half is here, the ladder half needs PR2's `authorityRank` and
+ *    PR3's case shape (X5-E1).
+ *  - it does not narrow a reviewer whose bound documents are all ABSENT. That
+ *    is the identity, and it is correct ON THIS PLANE — a v1/v2 Team declared
+ *    no hard ceiling. The same v1/v2 Team is capped to ZERO authority on the
+ *    expansion plane (`effectiveAuthorityCeiling` reads the absence as
+ *    `no-authority`), so a pre-v3 Leader may approve within the ladder and
+ *    still expand nothing. Reading only this ceiling and concluding "the Leader
+ *    may expand" is the one way to reintroduce the fused-lookup hole from the
+ *    other direction.
  */
 export declare function grantCeiling(reviewer: ProposalAuthorityPosition, documents: AuthorityEnvelopeDocuments, scope: AuthorityCeilingScope, subtreeContains?: SubtreeContains): EffectiveCeiling;
 //# sourceMappingURL=authority-ceiling.d.ts.map

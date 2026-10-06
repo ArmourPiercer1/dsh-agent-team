@@ -72,6 +72,7 @@ import type { GovernanceMutationService, GovernancePermissionLaneDeps } from '..
 import type { MemberLifecycleState } from '../../../contracts/src/index.js';
 import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js';
 import type { AuthorityEnvelope, AuthorityEnvelopeAst } from '../../../domain/authority-envelope/src/index.js';
+import type { AuthorityDocumentRead } from '../../governance/authority-ceiling.js';
 import type { MemberLifecycleReaderPort, PermissionDecisionLane, PermissionLifecycleMutationLane, PermissionLifecycleRestorePort } from '../../permission-lifecycle/index.js';
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js';
 /** The durable member-instance read surface the lifecycle facts come from. */
@@ -255,36 +256,29 @@ export declare function buildAuthorityEnvelope(document: AuthorityEnvelopeAst, c
     readonly canonicalize: (path: string, cwd: string) => Promise<string>;
 }): Promise<AuthorityEnvelope>;
 /**
- * The read outcome for the v3 `teamHardEnvelope`, and the reason it is a
- * three-way outcome rather than a document-or-undefined.
+ * The read outcome for the v3 `teamHardEnvelope` — an ALIAS of the ceiling
+ * adapter's {@link AuthorityDocumentRead}, so there is ONE name for the three
+ * facts a document read can report and, more importantly, so the reader's
+ * output can be handed to `grantCeiling`/`bindingDocs` WITHOUT an intermediate
+ * `undefined`. That intermediate is the hole this alias closes: on the approval
+ * plane absence means "narrows nothing" (ADR A1-4), and an empty bound set meets
+ * to the identity, so a `declared | absent` -or-`undefined` seam would let
+ * `unavailable → undefined` grant a Leader or a Human User UNLIMITED approval
+ * authority on a storage fault — with every test green, because `undefined` is
+ * the correct spelling of the OTHER fact (`absent`). The ceiling adapter
+ * refuses on `unavailable` instead, and its type does not accept `undefined`
+ * at all (review SF1 on PR1).
  *
- * On the APPROVAL plane "no document" means NO NARROWING (ADR A1-4) — the
- * widest reach a reviewer keeps. So a reader that collapsed a failed read into
- * `undefined` would widen approval authority on a storage fault, which is the
- * one direction a governance reader must never move. `unavailable` therefore
- * stays its own outcome (ADR A1-7's `authority-unavailable`, distinct from
- * `no-authority` and from `authority-undetermined`), and PR2's caller maps it to
- * a terminal outcome instead of to an identity.
- *
- * PR1 defines the contract and wires NOTHING to it: no production decision reads
- * the hard ceiling until PR2 (plan Task 1 lane C).
+ * The three facts:
+ *  - `declared` — a document exists (possibly declaring `rules: []`, which is a
+ *    legal v3 declaration, not an absence);
+ *  - `absent` — the bound Blueprint does not carry the field, exactly the v1/v2
+ *    case through the bridge (ADR A2-4/A2-11); NEVER synthesized from a missing
+ *    read;
+ *  - `unavailable` — the binding is unknown or a provider faulted: unknown, not
+ *    absent. A consumer must fail closed (ADR A1-7 keeps
+ *    `authority-unavailable` distinct from `authority-undetermined`).
  */
-export type AuthorityHardCeilingRead = 
-/** A v3 document exists (possibly declaring `rules: []`, which is a legal
- *  declaration meaning the Human User has no runtime expansion authority). */
-{
-    readonly status: 'declared';
-    readonly document: AuthorityEnvelope;
-}
-/** The bound Blueprint does not carry the field — exactly the v1/v2 case in
- *  the PR1-PR6 bridge. NEVER synthesized from a missing read. */
- | {
-    readonly status: 'absent';
-}
-/** The binding is unknown, drifted, or a provider faulted: unknown, not
- *  absent. A consumer must fail closed, not fall back to the identity. */
- | {
-    readonly status: 'unavailable';
-};
+export type AuthorityHardCeilingRead = AuthorityDocumentRead;
 export declare function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDeps): PermissionAuthorityFacts;
 //# sourceMappingURL=permission-plane.d.ts.map

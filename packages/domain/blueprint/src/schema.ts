@@ -59,10 +59,18 @@ export const BLUEPRINT_DOCUMENT_SCHEMA_VERSION = 1 as const
  * implementation bridge only** (ADR A2-11 — the same clause that demands the
  * v1/v2 hashable projection stay byte-identical, which is why widening the set
  * is safe, and why the new v3 field may enter `toHashableBlueprint` only
- * KEY-OMITTED). Alpha.4's final contract is `[3]`; `blueprint-v3-only`
- * enforcement lives in `scripts/verify-blueprint-version-clean.mjs`, which is
- * empty until the PR7 cutover — that fence, not this constant, is the
- * guarantee (ADR A5-19).
+ * KEY-OMITTED).
+ *
+ * Alpha.4's final contract is `[3]`, and THIS constant is not what guarantees
+ * it. The fence is a static scan, `scripts/verify-blueprint-version-clean.mjs`,
+ * which PR7 owns and which DOES NOT EXIST YET at PR1 — do not go looking for it
+ * or try to run it (ADR A3-16 owns it; ADR A5-9 restates its inventory as 18
+ * files under a stated predicate, and requires that PR7's gate invoke it BY
+ * NAME because nothing runs `scripts/*.mjs` implicitly). A3-16 also records why
+ * a runtime test cannot stand in for it: the affected fixtures are exactly the
+ * live-host/Chrome lanes already adjudicated as environment-blocked (A1.5).
+ * The v3-only switch itself lives in PR2's single adapter, selected by
+ * `schemaVersion` (ADR A5-12).
  */
 export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [1, 2, 3]
 

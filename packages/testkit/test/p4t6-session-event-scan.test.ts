@@ -1781,7 +1781,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // additionally asserted present BY PATH below, not inferred from the total.
     expect(scanResult.filesScanned).toBe(983)
     expect(scanResult.files.length).toBe(983)
-    // Each of the three is asserted present by path, not inferred from the total.
+    // Every path in this list — PR0's six and A4-PR1's five — is asserted present
+    // BY PATH, not inferred from the total: a total that moves for the wrong
+    // reason (one file added, one dropped) is otherwise indistinguishable from
+    // one that moved for the right one.
     for (const path of [
       'packages/runtime/governance/proposal-store.ts',
       'packages/runtime/governance/proposal-codes.ts',
