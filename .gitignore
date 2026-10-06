@@ -67,3 +67,22 @@ dev/agent-workflow/evidence/**/root-vitest*.json
 # V8 isolate / crash dumps are multi-MB and never a record
 *.log.isolate
 isolate-*.log
+
+# local scratch / caches (coordinator + worker), never committable — SESSION_ROUTER_LOG 2026-10-07
+# every PR gate asserts "tree clean after build"; 14 untracked-AND-unignored entries (incl. a 650 MB
+# store) made that signal unreachable, and this repo already had a git add -A accident (log 2026-10-07).
+# NOTE: packages/*/dist stays tracked on purpose (plan rule 8) — do not ignore it.
+.tmp-xdg/
+.tmp-pnpm-store/
+.tmp-npm-cache/
+.tmp-superpowers/
+.tmp-spill-compare/
+.tmp-scratch-backup-*/
+.tmp-local-evidence-backup/
+.pnpm-store-testuse/
+.dsh-vision-toolkit/
+.worktrees/
+*.tgz
+spike-run*.log
+.tmp-resolve-probe.mjs
+agent-sandbox-hotfix-*.sh
