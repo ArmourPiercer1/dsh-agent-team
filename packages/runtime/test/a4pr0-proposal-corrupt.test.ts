@@ -35,10 +35,11 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { parseRootSessionId } from '../../contracts/src/index.js'
+import { createBlueprintSnapshotRef, parseRootSessionId } from '../../contracts/src/index.js'
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../storage/schema/stores.js'
 import { readText, writeText } from '../../testkit/fault-injection/file-seam.mjs'
 import {
+  P6T4_NOW,
   P6T4_ROOT,
   P6T4_SEEDS,
   createP6T4World,
@@ -51,7 +52,9 @@ import {
 } from '../governance/proposal-store.js'
 import type {
   GovernanceProposalDraft,
+  GovernanceProposalLedgerRow,
   GovernanceProposalReadOutcome,
+  GovernanceProposalStoreDeps,
   ProposalReadCorrupt,
   ProposalReadRecord,
 } from '../governance/proposal-store.js'
@@ -59,6 +62,15 @@ import { GOVERNANCE_PROPOSAL_ERROR_CODES } from '../governance/proposal-codes.js
 
 const WORKER_ID = String(P6T4_SEEDS.worker.instanceId)
 const PROPOSAL_NOW = '2026-10-07T00:00:00.000Z'
+
+/** A SECOND, real TeamSession with no proposal rows. Leg 2's throw must not be
+ *  confused with "nothing to read", so the empty shape needs a witness that is
+ *  honestly empty: a Team that exists and has zero proposals (seeded below, the
+ *  way the store spec seeds a foreign Team). A root this world has no record for
+ *  would NOT do — the reader is a row filter over the durable ledger, not a
+ *  team-existence check, and the earlier comment here claimed more than the
+ *  fixture supported (reviewer SF-6d). */
+const EMPTY_TEAM_ROOT = 'session-root-a4pr0empty'
 
 const DRAFT: GovernanceProposalDraft = {
   targetMemberInstanceId: WORKER_ID,
@@ -125,15 +137,20 @@ type Captured = {
   readonly zeroGenerationWithSnapshot: CorruptShape
   /** Leg 1 — the row survives its own corruption. */
   readonly kindsInOrder: string[]
-  readonly listedSequences: number[]
+  /** What was appended, in append order — the expectation leg 3 pins to. */
+  readonly appendOrder: number[]
+  /** Leg 3 — the read's order is the LEDGER's order, not an implementation's. */
+  readonly readSequenceOrder: number[]
+  readonly durableSequenceOrder: number[]
+  readonly soundKindIndex: number
   readonly durableProposalRowCount: number
   readonly soundRowStillReadable: boolean
   /** Leg 2 — entry-level corruption. */
   readonly entryLevelThrew: boolean
   readonly entryLevelErrorName: string
+  readonly entryLevelErrorCode: string
   readonly entryLevelLedgerListThrew: boolean
-  readonly emptyReadIsNotTheSignal: boolean
-  /** Leg 1's contrast: a Team with no proposal rows really does read `[]`. */
+  /** Leg 1's contrast: a real Team with no proposal rows reads `[]`. */
   readonly emptyReadIsAbsent: boolean
   /** The store never mutates what it reads. */
   readonly readIsPure: boolean
@@ -144,16 +161,22 @@ const captured: Captured = await (async (): Promise<Captured> => {
   try {
     const ledger = world.domain.repositories.ledger
     const store = createGovernanceProposalStore({ ledger, now: () => PROPOSAL_NOW })
-    const sound = await store.appendProposal({ teamSessionId: P6T4_ROOT, proposal: DRAFT })
-
     const shape = (outcome: GovernanceProposalReadOutcome): CorruptShape => {
       if (outcome.kind !== 'corrupt-record') {
         throw new Error(`expected a corrupt-record outcome, got '${outcome.kind}'`)
       }
       return outcome
     }
+    // The order rows went into the ledger. The supersession rule this lane
+    // publishes ("a NEWER sequence for the same caseFingerprint supersedes")
+    // makes read order load-bearing, so the scenario appends its sound row in
+    // the MIDDLE and pins the read against this list (leg 3 / reviewer SF-3):
+    // an implementation that emitted all sound rows before corrupt ones would
+    // reproduce this exact order and pass.
+    const appendOrder: number[] = []
     const probe = async (mutate: (payload: Record<string, unknown>) => void): Promise<[CorruptShape, number]> => {
       const sequence = await putCorruptPayload(world, mutate)
+      appendOrder.push(sequence)
       const found = store
         .listProposals({ teamSessionId: P6T4_ROOT })
         .find((outcome) => outcome.sequence === sequence)
@@ -178,6 +201,11 @@ const captured: Captured = await (async (): Promise<Captured> => {
     const [foreignStatus] = await probe((payload) => {
       payload['status'] = 'approved'
     })
+    // The sound row lands BETWEEN corrupt rows (SF-3): five corrupt, then the
+    // one readable row, then eight more.
+    const sound = await store.appendProposal({ teamSessionId: P6T4_ROOT, proposal: DRAFT })
+    appendOrder.push(sound.sequence)
+
     const [wrongType] = await probe((payload) => {
       payload['baseGeneration'] = '0'
     })
@@ -209,16 +237,26 @@ const captured: Captured = await (async (): Promise<Captured> => {
     // Leg 1's other half: the corrupt rows are STILL LISTED, and the sound row
     // is still readable among them.
     const read = store.listProposals({ teamSessionId: P6T4_ROOT })
-    // What an ABSENCE legitimately looks like: a well-formed Team this world
-    // has no rows for reads as `[]`. Pinning that keeps `[]` meaning "no
-    // proposals" and nothing else — leg 2 must never borrow that shape.
-    const emptyReadMeansAbsence = store.listProposals({
-      teamSessionId: 'session-root-a4pr0-empty',
+    // What an ABSENCE legitimately looks like: a Team that EXISTS and has no
+    // proposals reads as `[]`. Pinning that keeps `[]` meaning "no proposals"
+    // and nothing else — leg 2 must never borrow that shape.
+    await world.domain.repositories.teamSessions.put({
+      rootSessionId: parseRootSessionId(EMPTY_TEAM_ROOT),
+      blueprint: createBlueprintSnapshotRef({
+        blueprintId: world.blueprint.blueprintId,
+        revision: world.blueprint.revision,
+        contentHash: world.blueprint.contentHash,
+      }),
+      defaultWorkspace: '/a4pr0/empty-team',
+      createdAt: P6T4_NOW,
+      generation: 1,
     })
-    const listedSequences = read.map((outcome) => outcome.sequence).sort((a, b) => a - b)
+    const emptyReadMeansAbsence = store.listProposals({ teamSessionId: EMPTY_TEAM_ROOT })
+    const readSequenceOrder = read.map((outcome) => outcome.sequence)
     const durableRows = ledger
       .list()
       .filter((entry) => entry.factType === GOVERNANCE_PROPOSAL_FACT_TYPE)
+    const durableSequenceOrder = durableRows.map((entry) => entry.sequence)
     const soundRowStillReadable = read.some(
       (outcome) =>
         outcome.kind === 'record' &&
@@ -273,12 +311,16 @@ const captured: Captured = await (async (): Promise<Captured> => {
         })
         let threw = false
         let errorName = 'did-not-throw'
-        let results: readonly GovernanceProposalReadOutcome[] = []
+        let errorCode = 'did-not-throw'
         try {
-          results = tamperedStore.listProposals({ teamSessionId: P6T4_ROOT })
+          tamperedStore.listProposals({ teamSessionId: P6T4_ROOT })
         } catch (error) {
           threw = true
           errorName = error instanceof Error ? error.name : String(error)
+          errorCode =
+            typeof (error as { code?: unknown }).code === 'string'
+              ? String((error as { code?: unknown }).code)
+              : 'no-code'
         }
         let ledgerListThrew = false
         try {
@@ -303,18 +345,16 @@ const captured: Captured = await (async (): Promise<Captured> => {
           nullSnapshotWithNonZeroGeneration,
           zeroGenerationWithSnapshot,
           kindsInOrder: read.map((outcome) => outcome.kind),
-          listedSequences,
+          appendOrder,
+          readSequenceOrder,
+          durableSequenceOrder,
+          soundKindIndex: read.findIndex((outcome) => outcome.kind === 'record'),
           durableProposalRowCount: durableRows.length,
           soundRowStillReadable,
           entryLevelThrew: threw,
           entryLevelErrorName: errorName,
+          entryLevelErrorCode: errorCode,
           entryLevelLedgerListThrew: ledgerListThrew,
-          // The empty array is the shape of "no proposals". A reader that
-          // caught leg 2's throw would return exactly that, so an empty read
-          // after tampering would BE the proof that the legs collapsed. On the
-          // honest path the read never returned at all (`threw`), and the only
-          // way this can be false is a reader that swallowed the throw.
-          emptyReadIsNotTheSignal: threw ? true : results.length > 0,
           emptyReadIsAbsent: emptyReadMeansAbsence.length === 0,
           readIsPure,
         }
@@ -328,6 +368,96 @@ const captured: Captured = await (async (): Promise<Captured> => {
     await destroyP6T1World(world)
   }
 })()
+
+
+// --- leg 3: the reader's own failure modes, through the structural port ------
+//
+// A durable JSON row cannot carry a BigInt or a cycle, and a real Team always
+// has at least the rows this scenario wrote. Both facts are why the two cases
+// below run through the lane's READER PORT rather than through the repository:
+// the port is the surface PR5 will wire, and a corrupt-record path that throws
+// (ADR A4-7: corruption is REPORTED) or that quietly returns `[]` would be
+// invisible to every durable fixture. Nothing here claims durability — the
+// durability legs are C1-C9 above.
+
+const OFF_CONTRACT_NOW = '2026-10-07T00:00:00.000Z'
+
+/** A ledger that hands back exactly the rows it is given. */
+function fixedReader(rows: readonly GovernanceProposalLedgerRow[]): GovernanceProposalStoreDeps {
+  return {
+    ledger: {
+      async allocateSequence(): Promise<number> {
+        throw new Error('this scenario reads; it never writes')
+      },
+      async put(): Promise<unknown> {
+        throw new Error('this scenario reads; it never writes')
+      },
+      list: () => rows,
+    },
+    now: () => OFF_CONTRACT_NOW,
+  }
+}
+
+function row(sequence: number, payload: Record<string, unknown>): GovernanceProposalLedgerRow {
+  return {
+    schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,
+    sequence,
+    rootSessionId: P6T4_ROOT,
+    factType: GOVERNANCE_PROPOSAL_FACT_TYPE,
+    payload,
+    createdAt: OFF_CONTRACT_NOW,
+  }
+}
+
+/** A value `JSON.stringify` cannot render, and one it refuses to render at all. */
+const circular: Record<string, unknown> = { name: 'loop' }
+circular['self'] = circular
+
+const unreadable = await (async (): Promise<{
+  readonly threw: boolean
+  readonly errorText: string
+  readonly outcomes: readonly CorruptShape[]
+  readonly count: number
+  /** How many of the listed outcomes were SOUND (the empty-read contrast). */
+  readonly soundListed: number
+}> => {
+  const store = createGovernanceProposalStore(
+    fixedReader([
+      // A BigInt in a closed-set field: the message builder used
+      // `JSON.stringify`, which THROWS on it (`TypeError: Do not know how to
+      // serialize a BigInt`) — a corruption the gate could not report (SF-5).
+      row(41, { ...soundPayload(), desiredEffect: 9007199254740993n }),
+      // A cycle in the same field: `JSON.stringify` throws on this too.
+      row(42, { ...soundPayload(), desiredEffect: circular }),
+      // And the A5-13 optionality defect, to prove the off-contract types are
+      // not special-cased: a KEY PRESENT with value `undefined` (the writer
+      // key-omits; a durable row that carries the key must be reported).
+      row(43, { ...soundPayload(), caseFingerprint: undefined }),
+    ]),
+  )
+  let threw = false
+  let errorText = ''
+  let outcomes: readonly CorruptShape[] = []
+  let soundListed = 0
+  let listed = 0
+  try {
+    const raw = store.listProposals({ teamSessionId: P6T4_ROOT })
+    listed = raw.length
+    soundListed = raw.filter((outcome) => outcome.kind === 'record').length
+    outcomes = raw.map((outcome: GovernanceProposalReadOutcome) => {
+      if (outcome.kind !== 'corrupt-record') {
+        throw new Error(`expected corrupt-record, got '${outcome.kind}'`)
+      }
+      return outcome
+    })
+  } catch (error) {
+    threw = true
+    errorText = error instanceof Error ? `${error.name}: ${error.message}` : String(error)
+  }
+  return { threw, errorText, outcomes, count: listed, soundListed }
+})()
+
+const unreadableBySequence = new Map(unreadable.outcomes.map((outcome) => [outcome.sequence, outcome]))
 
 // --- assertions ---------------------------------------------------------------
 
@@ -385,9 +515,26 @@ describe('A4-PR0 proposal corruption gate, leg 1 — typed corrupt outcome, row 
     expect(captured.kindsInOrder.filter((kind) => kind === 'corrupt-record').length).toBe(13)
     expect(captured.kindsInOrder.filter((kind) => kind === 'record')).toEqual(['record'])
     expect(captured.soundRowStillReadable).toBe(true)
-    expect(captured.listedSequences.length).toBe(captured.durableProposalRowCount)
-    expect(captured.listedSequences).toContain(captured.missingFieldSequence)
-    expect(captured.listedSequences).toContain(captured.soundSequence)
+    expect(captured.readSequenceOrder.length).toBe(captured.durableProposalRowCount)
+    expect(captured.readSequenceOrder).toContain(captured.missingFieldSequence)
+    expect(captured.readSequenceOrder).toContain(captured.soundSequence)
+  })
+
+  it('C6b the read order IS the ledger order — nothing is re-sorted by kind (SF-3)', () => {
+    // Load-bearing, not cosmetic: this lane publishes "a NEWER sequence for the
+    // same `caseFingerprint` supersedes", so whoever folds the read must be able
+    // to tell newer from older. The scenario appended its single sound row
+    // BETWEEN corrupt rows, so an implementation that grouped sound rows first
+    // (or corrupt rows first) produces a different list than this one.
+    expect(captured.soundKindIndex).toBe(5)
+    expect(captured.kindsInOrder[captured.soundKindIndex]).toBe('record')
+    expect(captured.readSequenceOrder).toEqual(captured.appendOrder)
+    expect(captured.readSequenceOrder).toEqual(captured.durableSequenceOrder)
+    // And the order is strictly increasing, i.e. it is the sequence order.
+    const ascending = captured.readSequenceOrder.every(
+      (sequence, index) => index === 0 || sequence > (captured.readSequenceOrder[index - 1] ?? -1),
+    )
+    expect(ascending).toBe(true)
   })
 
   it('C7 reading is pure: no read rewrites or removes a durable row', () => {
@@ -398,7 +545,13 @@ describe('A4-PR0 proposal corruption gate, leg 1 — typed corrupt outcome, row 
 describe('A4-PR0 proposal corruption gate, leg 2 — entry-level corruption throws (A4-7)', () => {
   it('C8 an unreadable ENTRY throws out of the read; it is never an empty list', () => {
     expect(captured.entryLevelThrew).toBe(true)
-    expect(captured.entryLevelErrorName).not.toBe('did-not-throw')
+    // The IDENTITY of the throw is part of the contract, not just its presence:
+    // a lane code here would mean the proposal parser ran (and lost), while
+    // `RECORD_INVALID` from the durable read is the proof that the failure is
+    // the ledger's and that this lane did not interpret it (`storage/schema/
+    // ledger.ts` normalizes every validation failure into that one code).
+    expect(captured.entryLevelErrorName).toBe('TeamDomainError')
+    expect(captured.entryLevelErrorCode).toBe('RECORD_INVALID')
   })
 
   it('C9 the throw is the durable read, before any proposal parser runs', () => {
@@ -407,15 +560,35 @@ describe('A4-PR0 proposal corruption gate, leg 2 — entry-level corruption thro
     expect(captured.entryLevelLedgerListThrew).toBe(true)
   })
 
-  it('C10 the two legs never collapse: an empty read is never the corrupt signal', () => {
-    // A `catch { return [] }` would satisfy leg 1 while turning leg 2 into
-    // "this team has no proposals" — a fabrication about a team whose ledger
-    // cannot be read (spec §25.2: proposal reads never go through a lenient
-    // parser).
-    expect(captured.emptyReadIsNotTheSignal).toBe(true)
-    // …and `[]` is not a shape leg 2 has to share: a Team without proposals
-    // really does read as an empty list, which is exactly why swallowing the
-    // throw would be a silent lie rather than a loud one.
+  it('C10 `[]` means absence, and only absence', () => {
+    // The two ways a read can answer "nothing" have to stay distinguishable,
+    // because a `catch { return [] }` would satisfy leg 1 while turning leg 2
+    // into "this team has no proposals" — a fabrication about a team whose
+    // ledger cannot be read (spec §25.2: proposal reads never go through a
+    // lenient parser). Asserted from both sides:
+    //  - a Team that exists with no proposal rows reads `[]` (so `[]` is a real
+    //    answer the lane is allowed to give), and
+    //  - a store whose rows are ALL corrupt lists every one of them (so the
+    //    corrupt path cannot degrade into that answer). This is the assertion
+    //    that can actually fail: an implementation that filtered out
+    //    unparseable rows would return `[]` here, with no sound row to hide it.
     expect(captured.emptyReadIsAbsent).toBe(true)
+    expect(unreadable.count).toBe(3)
+    expect(unreadable.soundListed).toBe(0)
+  })
+
+  it('C11 the corrupt path reports; it never fails by exception (SF-5)', () => {
+    // A corruption that cannot be rendered is still a corruption: the gate must
+    // hand back a typed outcome, not a `TypeError` from its own message builder.
+    expect(unreadable.threw, unreadable.errorText).toBe(false)
+    expect(unreadable.count).toBe(3)
+    const bigInt = unreadableBySequence.get(41)
+    expect(bigInt?.problem).toBe('value-not-in-closed-set')
+    expect(bigInt?.field).toBe('desiredEffect')
+    expect(bigInt?.message).toContain('9007199254740993')
+    expect(unreadableBySequence.get(42)?.problem).toBe('value-not-in-closed-set')
+    expect(unreadableBySequence.get(42)?.message).toContain('[object Object]')
+    expect(unreadableBySequence.get(43)?.problem).toBe('bad-string')
+    expect(unreadableBySequence.get(43)?.field).toBe('caseFingerprint')
   })
 })

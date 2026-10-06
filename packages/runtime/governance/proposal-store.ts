@@ -64,11 +64,35 @@ import {
   parseRootSessionId,
 } from '../../contracts/src/index.js'
 import { ISO_8601_TIMESTAMP_PATTERN } from '../../contracts/src/dto/common.js'
+// THE LANE'S ONE STORAGE EDGE, AND WHY. `proposal-store.ts` is the only file in
+// this directory that imports a runtime value from `packages/storage`, and it is
+// allow-listed by name in `test/a3p3-governance-lane-hygiene.test.ts`. The rule
+// this lane follows is: **derive an identity through the module that owns it,
+// and mirror everything that is merely a constraint.** The base pair of a
+// proposal record IS an overlay snapshot identity, so the derivation and the
+// bound that is derived from the same components come from its owner: a mirrored
+// copy of either drifts silently, and the drift is not a tightening but a row
+// that is durable and unreadable (the reviewer's SF-1: a hand-picked bound below
+// `PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH` refuses a legal max-length
+// identity). The neighbouring `permission-governance` lane already imports values
+// from this same module (`permission-governance/types.ts:29,38`), so this is not
+// a new kind of edge in the runtime tree — only a new first one in this
+// directory, which is why it is now named. Mirrors that stay mirrored, each
+// pinned against its owner by a test: the ledger row schema version, the id /
+// fingerprint field bounds, and `GOVERNANCE_PROPOSAL_OPERATION_ID_PATTERN`.
 import {
   PERMISSION_OVERLAY_EFFECT_VALUES,
+  PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH,
   isPermissionOverlayEffect,
   permissionOverlaySnapshotKey,
 } from '../../storage/schema/permission-overlay.js'
+// The A3-9 envelope path is the Blueprint/config grammar, and A3-9 makes THAT
+// shape authoritative (it is the one bound into the Blueprint `contentHash`), so
+// the path bound is read from its owner rather than mirrored: if the Blueprint
+// grammar widens, a proposal record must not become unable to name a path the
+// Blueprint accepts. Imported from the narrow module, not the package index, so
+// the lane does not pull the validator graph for one number.
+import { PERMISSION_PATH_MAX_LENGTH } from '../../domain/blueprint/src/schema.js'
 import type { PermissionOverlayEffect } from '../../storage/schema/permission-overlay.js'
 import {
   GOVERNANCE_PROPOSAL_ERROR_CODES,
@@ -171,8 +195,67 @@ export const PROPOSAL_ENVELOPE_AST_KINDS = ['exact', 'subtree', 'fingerprint'] a
 const ID_FIELD_MAX_LENGTH = 128
 
 /** The structural bound on a fingerprint-shaped field (mirrored from
- *  `storage/schema/field-rules.ts:23`). */
+ *  `storage/schema/field-rules.ts:23`; `a4pr0-proposal-store.test.ts` pins it
+ *  against the storage rule). A digest, so the id grammar fits it exactly. */
 const FINGERPRINT_FIELD_MAX_LENGTH = 256
+
+/**
+ * The durable `operationId` shape, MIRRORED and pinned (the same discipline as
+ * {@link GOVERNANCE_PROPOSAL_LEDGER_SCHEMA_VERSION}): the owner is
+ * `storage/schema/operation.ts:45`, which validates it in `parseLedgerEntry`
+ * (`storage/schema/ledger.ts:189-195`) — i.e. AFTER a sequence has been
+ * allocated. Without this check here, a caller's typo in an operation id would
+ * burn a ledger sequence and surface a storage `TeamDomainError` where this
+ * lane's contract promises a `MALFORMED_PROPOSAL` refusal with zero allocation.
+ */
+export const GOVERNANCE_PROPOSAL_OPERATION_ID_PATTERN = /^op-[a-z0-9]{1,32}$/
+
+/** Control characters, the only character class the Blueprint path grammar
+ *  rejects (mirroring `domain/blueprint/src/validate.ts:739-762`, which rejects
+ *  control characters, then a blank-after-trim, then the length bound — and
+ *  otherwise accepts spaces and any printable text). */
+// eslint-disable-next-line no-control-regex -- the grammar this lane mirrors is defined by control-character rejection
+const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/
+
+/**
+ * A legal A3-9 / Blueprint envelope path. NOT the id grammar: an envelope path is
+ * a resource path, and `fs.write:/My Documents/x` is a legal one. Rejecting
+ * internal whitespace here would make the record unable to express a path the
+ * Blueprint accepts — the same class of defect as a too-small bound (SF-2).
+ *
+ * The value is stored UNTRIMMED: trimming here would silently rewrite a durable
+ * value, and normalization belongs to the writer that owns the matcher
+ * (PR1's adapter), not to a record of what was proposed.
+ */
+function isPathShaped(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    !CONTROL_CHARACTERS.test(value) &&
+    value.trim().length > 0 &&
+    value.length <= PERMISSION_PATH_MAX_LENGTH
+  )
+}
+
+/**
+ * Render an off-contract value inside a REPORT, TOTALLY. A corrupt-record path
+ * must never fail by exception (ADR A4-7): `JSON.stringify` throws on a BigInt
+ * and on a circular structure, and a report that throws is a corruption that
+ * cannot be reported. Reached only through the structural reader port (a durable
+ * JSON row cannot carry a BigInt), which is exactly the port PR5 will wire.
+ */
+function describeValue(value: unknown): string {
+  try {
+    const json = JSON.stringify(value)
+    if (json !== undefined) return json
+  } catch {
+    /* fall through to the lossy render */
+  }
+  try {
+    return `${typeof value} ${String(value)}`
+  } catch {
+    return '<unprintable>'
+  }
+}
 
 // --- the record ---------------------------------------------------------------
 
@@ -404,7 +487,7 @@ function parseAst(raw: unknown): ParsedAst {
   const node = raw as Record<string, unknown>
   const kind = node['kind']
   if (kind !== 'exact' && kind !== 'subtree' && kind !== 'fingerprint') {
-    return problem('authorityEnvelopeAst', `${nodePath}.kind`, 'bad-ast-kind', `authorityEnvelopeAst.kind must be one of ${PROPOSAL_ENVELOPE_AST_KINDS.join(' | ')}, got ${JSON.stringify(kind)}`)
+    return problem('authorityEnvelopeAst', `${nodePath}.kind`, 'bad-ast-kind', `authorityEnvelopeAst.kind must be one of ${PROPOSAL_ENVELOPE_AST_KINDS.join(' | ')}, got ${describeValue(kind)}`)
   }
   const expected = kind === 'fingerprint' ? ['kind', 'fingerprint'] : ['kind', 'path']
   const keys = Object.keys(node)
@@ -424,8 +507,8 @@ function parseAst(raw: unknown): ParsedAst {
     return { ok: true, ast: { kind, fingerprint } }
   }
   const path = node['path']
-  if (!isIdShaped(path, FINGERPRINT_FIELD_MAX_LENGTH)) {
-    return problem('authorityEnvelopeAst', `${nodePath}.path`, 'bad-string', 'authorityEnvelopeAst.path must be a non-empty id-shaped string')
+  if (!isPathShaped(path)) {
+    return problem('authorityEnvelopeAst', `${nodePath}.path`, 'bad-path', `authorityEnvelopeAst.path must be a non-blank Blueprint path without control characters and of at most ${String(PERMISSION_PATH_MAX_LENGTH)} chars, got ${describeValue(path)}`)
   }
   return { ok: true, ast: { kind, path } }
 }
@@ -465,12 +548,15 @@ function parseProposalPayload(raw: unknown, teamSessionId: string): ParsedRecord
 
   const baseGeneration = payload['baseGeneration']
   if (typeof baseGeneration !== 'number' || !Number.isInteger(baseGeneration) || baseGeneration < 0 || !Number.isSafeInteger(baseGeneration)) {
-    return problem('baseGeneration', 'payload.baseGeneration', 'not-a-non-negative-integer', `baseGeneration must be a non-negative safe integer, got ${JSON.stringify(baseGeneration)}`)
+    return problem('baseGeneration', 'payload.baseGeneration', 'not-a-non-negative-integer', `baseGeneration must be a non-negative safe integer, got ${describeValue(baseGeneration)}`)
   }
 
   const baseSnapshotId = payload['baseSnapshotId']
-  if (baseSnapshotId !== null && !isIdShaped(baseSnapshotId, FINGERPRINT_FIELD_MAX_LENGTH)) {
-    return problem('baseSnapshotId', 'payload.baseSnapshotId', 'bad-string', 'baseSnapshotId must be null or a non-empty id-shaped string')
+  // The bound is the owner's DERIVED sum (session id + separator + instance id +
+  // separator + generation digits), not a hand-picked number: anything below it
+  // refuses a legal max-length identity and reports a durable row as corrupt.
+  if (baseSnapshotId !== null && !isIdShaped(baseSnapshotId, PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH)) {
+    return problem('baseSnapshotId', 'payload.baseSnapshotId', 'bad-string', `baseSnapshotId must be null or a non-empty id-shaped string of at most ${String(PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH)} chars`)
   }
   // A4-3: the pair is authoritative TOGETHER. `null` stands only with 0 (the
   // empty-history case of spec §24.5); a non-null id stands only with a
@@ -490,7 +576,7 @@ function parseProposalPayload(raw: unknown, teamSessionId: string): ParsedRecord
 
   const desiredEffect = payload['desiredEffect']
   if (!isPermissionOverlayEffect(desiredEffect)) {
-    return problem('desiredEffect', 'payload.desiredEffect', 'value-not-in-closed-set', `desiredEffect must be one of ${PERMISSION_OVERLAY_EFFECT_VALUES.join(' | ')}, got ${JSON.stringify(desiredEffect)}`)
+    return problem('desiredEffect', 'payload.desiredEffect', 'value-not-in-closed-set', `desiredEffect must be one of ${PERMISSION_OVERLAY_EFFECT_VALUES.join(' | ')}, got ${describeValue(desiredEffect)}`)
   }
 
   const ast = parseAst(payload['authorityEnvelopeAst'])
@@ -502,7 +588,7 @@ function parseProposalPayload(raw: unknown, teamSessionId: string): ParsedRecord
 
   const requiredAuthority = payload['requiredAuthority']
   if (!(PROPOSAL_AUTHORITY_POSITIONS as readonly unknown[]).includes(requiredAuthority)) {
-    return problem('requiredAuthority', 'payload.requiredAuthority', 'value-not-in-closed-set', `requiredAuthority must be one of ${PROPOSAL_AUTHORITY_POSITIONS.join(' | ')}, got ${JSON.stringify(requiredAuthority)}`)
+    return problem('requiredAuthority', 'payload.requiredAuthority', 'value-not-in-closed-set', `requiredAuthority must be one of ${PROPOSAL_AUTHORITY_POSITIONS.join(' | ')}, got ${describeValue(requiredAuthority)}`)
   }
 
   const caseFingerprint = payload['caseFingerprint']
@@ -512,12 +598,12 @@ function parseProposalPayload(raw: unknown, teamSessionId: string): ParsedRecord
 
   const status = payload['status']
   if (!(GOVERNANCE_PROPOSAL_STATUSES as readonly unknown[]).includes(status)) {
-    return problem('status', 'payload.status', 'value-not-in-closed-set', `status must be one of ${GOVERNANCE_PROPOSAL_STATUSES.join(' | ')} (a row is never rewritten; its standing changes only through newer facts), got ${JSON.stringify(status)}`)
+    return problem('status', 'payload.status', 'value-not-in-closed-set', `status must be one of ${GOVERNANCE_PROPOSAL_STATUSES.join(' | ')} (a row is never rewritten; its standing changes only through newer facts), got ${describeValue(status)}`)
   }
 
   const recordedAt = payload['recordedAt']
   if (typeof recordedAt !== 'string' || !ISO_8601_TIMESTAMP_PATTERN.test(recordedAt) || Number.isNaN(Date.parse(recordedAt))) {
-    return problem('recordedAt', 'payload.recordedAt', 'bad-timestamp', `recordedAt must be an ISO-8601 timestamp, got ${JSON.stringify(recordedAt)}`)
+    return problem('recordedAt', 'payload.recordedAt', 'bad-timestamp', `recordedAt must be an ISO-8601 timestamp, got ${describeValue(recordedAt)}`)
   }
 
   return {
@@ -577,6 +663,16 @@ export function createGovernanceProposalStore(
     args: GovernanceProposalAppendArgs,
   ): Promise<GovernanceProposalAppended> => {
     const teamSessionId = assertTeamSessionId(args.teamSessionId)
+    // Validated HERE, not by `parseLedgerEntry` later: the ledger validator runs
+    // after `allocateSequence()`, so leaving it there would burn a sequence and
+    // answer a caller's typo with a storage error instead of this lane's code.
+    if (args.operationId !== undefined && !GOVERNANCE_PROPOSAL_OPERATION_ID_PATTERN.test(args.operationId)) {
+      throw new GovernanceProposalError(
+        GOVERNANCE_PROPOSAL_ERROR_CODES.MALFORMED_PROPOSAL,
+        `operationId must match ${String(GOVERNANCE_PROPOSAL_OPERATION_ID_PATTERN)}, got ${describeValue(args.operationId)}`,
+        { problem: 'bad-operation-id', field: 'operationId', path: 'operationId' },
+      )
+    }
     const recordedAt = deps.now()
 
     // The payload is built first and parsed with the SAME parser the reader
