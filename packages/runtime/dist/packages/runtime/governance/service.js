@@ -54,7 +54,10 @@ import { MUTATION_ERROR_CODES, MutationError } from '../mutation/errors.js';
 import { normalizeStateView } from '../mutation/service.js';
 import { committedPolicyState } from '../effective-policy/index.js';
 import { assertCells, buildReissueRecord, buildTombstoneRecord, checkCellsAgainstEnvelope, checkCellsExternalHard, isNoChange, mergedSlotValues, mintRecordId, selectSlotWinner, slotIdentityOf, slotOf, } from './slot.js';
-import { authorizeLeaderPermissionMutation, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionStaticLayerFacts, planPermissionMutation, PERMISSION_MUTATION_ERROR_CODES, PermissionMutationError, } from './permission-mutation.js';
+import { PERMISSION_EFFECT_PRECEDENCE, authorizeCeilingBoundedPermissionRise, authorizeLeaderPermissionMutation, classifyPermissionRise, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionStaticLayerFacts, planPermissionMutation, PERMISSION_MUTATION_ERROR_CODES, PermissionMutationError, } from './permission-mutation.js';
+import { AUTHORITY_CEILING_ERROR_CODES, AuthorityBindingError, expansionCeiling, grantCeiling, } from './authority-ceiling.js';
+import { evaluateAuthorityCeiling } from './runtime-authority.js';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
 /** The storage duplicate code string (mirrors TEAM_DOMAIN_ERROR_CODES). */
 const STORAGE_RECORD_DUPLICATE = 'RECORD_DUPLICATE';
@@ -524,6 +527,43 @@ export function createGovernanceMutationService(deps) {
                     subtreeContains: lane.subtreeContains,
                 });
             }
+            // A4-PR2 lane C — THE v3 AUTHORITY-CEILING GATE (spec §7.4). Placed AFTER the
+            // Leader authorization above, which carries Alpha.3's context gate and the
+            // rise classification: a batch that cannot be EVALUATED must refuse as
+            // `EFFECT_CONTEXT_UNAVAILABLE`, and only a batch whose rises are decided may
+            // be refused for insufficient authority. Inverting the two re-creates the
+            // defect A3-3 closed — an unavailable read wearing an authorization label.
+            //
+            // The classification is recomputed here (pure, deterministic) rather than
+            // threaded out of the Leader step, so the Alpha.3 path stays byte-identical
+            // for v1/v2 Teams and the ceiling gate cannot observe a partially-consumed
+            // classification.
+            const authorityCeilingJudge = createPermissionAuthorityCeilingJudge({
+                ...(lane.subtreeContains === undefined ? {} : { subtreeContains: lane.subtreeContains }),
+            });
+            if (lane.authorityCeiling !== undefined) {
+                const ceilingContext = await lane.authorityCeiling(mutation.teamSessionId, mutation.memberInstanceId, actor);
+                // `undefined` = no v3 ceiling context for this target (the reader is the
+                // only place `schemaVersion === 3` is decided). NOT "the documents are
+                // empty": an empty document is a decided zero-authority answer and reaches
+                // the gate below as one.
+                if (ceilingContext !== undefined) {
+                    const ceilingFactsRaw = await lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId);
+                    const ceilingFacts = ceilingFactsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(ceilingFactsRaw);
+                    const ceilingClassification = classifyPermissionRise({
+                        latestRules: latest === undefined ? [] : latest.state.rules,
+                        plannedRules: plan.rules,
+                        mutationRules: mutation.rules,
+                        // The Leader's own envelope is NOT a ceiling: it is the document the
+                        // Leader owns, judged above by Alpha.3's coverage law. It is required by
+                        // the input type and never read without a coverage judge.
+                        envelope: parsePermissionMutationEnvelope({ rules: [] }),
+                        staticFacts: ceilingFacts,
+                        subtreeContains: lane.subtreeContains,
+                    });
+                    authorizeCeilingBoundedPermissionRise(ceilingClassification.rising, (region) => authorityCeilingJudge(ceilingContext, region));
+                }
+            }
             // 5. Commit ONE new FULL snapshot THROUGH the persistence-only port
             // (commit-before-ack; the derived snapshotId / chain terms are the
             // PR1 store's, never caller-supplied). A durable CAS conflict (the
@@ -566,6 +606,97 @@ export function createGovernanceMutationService(deps) {
         resetOverride,
         switchPolicyState,
         mutatePermission,
+    };
+}
+/**
+ * THE DUAL-CEILING JUDGE (A4-PR2 lane C): for one rising region, are BOTH
+ * authority ceilings at or above the risen effect? Exported because a ceiling law
+ * that is only reachable through `mutatePermission` gets tested against a replica
+ * of itself, and a replica passes while the real arithmetic is wrong (measured in
+ * this PR's mutation proofs: reading `no-authority` as "unrestricted" in THIS
+ * function went unnoticed by the first version of the suite).
+ *
+ * The two planes are computed SEPARATELY and never fused, never min()'d (ADR
+ * X7-R5, A1-4, A3-2): the expansion ceiling answers "may this position COMMIT this
+ * effect here", the approval ceiling answers "may it GRANT it", and they have
+ * opposite no-match semantics on purpose — so one lookup cannot stand in for the
+ * other.
+ */
+export function createPermissionAuthorityCeilingJudge(deps) {
+    const subtreeContains = deps.subtreeContains;
+    return (context, region) => {
+        const scope = { operationClass: region.operationClass, matcher: region.region };
+        // BOTH planes, computed SEPARATELY and never fused, never min()'d
+        // (ADR X7-R5, A1-4, A3-2): the expansion ceiling answers "may this
+        // position COMMIT this effect here", the approval ceiling answers "may
+        // it GRANT it". They have opposite no-match semantics on purpose, so one
+        // lookup cannot stand in for the other.
+        let approval;
+        let expansion;
+        try {
+            approval = grantCeiling(context.initiatorAuthority, context.documents, scope, subtreeContains);
+            expansion = expansionCeiling(context.initiatorAuthority, context.documents, scope, subtreeContains);
+        }
+        catch (error) {
+            // An unreadable ceiling document is the ONE error this gate maps: it
+            // refuses as CONTEXT and carries the inner code, because treating a
+            // faulted read as "no ceiling" would WIDEN authority on a storage
+            // fault. Anything else is a defect and propagates untouched.
+            if (error instanceof AuthorityBindingError &&
+                error.code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE) {
+                return { status: 'unavailable', code: error.code };
+            }
+            throw error;
+        }
+        // WHICH RUNG COULD APPROVE THIS RISE — lane A's evaluator, used here as a
+        // REFUSAL DETAIL ONLY. It is computed after the ceilings decided, and its
+        // own refusal is caught on purpose: the evaluator answers the APPROVAL
+        // question, and an unanswerable one (a `human-admin` beneficiary has no
+        // rung above it, so no reviewer position exists) must never change a
+        // ceiling decision nor turn a typed refusal into a crash.
+        const requiredAuthorityDetail = () => {
+            try {
+                const evaluation = evaluateAuthorityCeiling({
+                    beneficiaryAuthority: context.beneficiaryAuthority,
+                    initiatorAuthority: context.initiatorAuthority,
+                    operationClass: region.operationClass,
+                    matcher: region.region,
+                    desiredEffect: region.risenEffect,
+                    documents: context.documents,
+                    ...(subtreeContains === undefined ? {} : { subtreeContains: subtreeContains }),
+                });
+                return { requiredAuthority: evaluation.requiredAuthority ?? null };
+            }
+            catch {
+                return { requiredAuthority: null };
+            }
+        };
+        for (const [plane, ceiling] of [
+            ['expansion', expansion],
+            ['approval', approval],
+        ]) {
+            if (ceiling.status === 'undetermined') {
+                return { status: 'undetermined', plane, detail: { risenEffect: region.risenEffect } };
+            }
+            if (ceiling.status === 'no-authority') {
+                return {
+                    status: 'insufficient',
+                    plane,
+                    ceiling: 'no-authority',
+                    detail: requiredAuthorityDetail(),
+                };
+            }
+            if (PERMISSION_EFFECT_PRECEDENCE[ceiling.effect] <
+                PERMISSION_EFFECT_PRECEDENCE[region.risenEffect]) {
+                return {
+                    status: 'insufficient',
+                    plane,
+                    ceiling: ceiling.effect,
+                    detail: requiredAuthorityDetail(),
+                };
+            }
+        }
+        return { status: 'sufficient' };
     };
 }
 //# sourceMappingURL=service.js.map

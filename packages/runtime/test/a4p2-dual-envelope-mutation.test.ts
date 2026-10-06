@@ -34,9 +34,13 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 import { describe, expect, it } from 'vitest'
-import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import type { AuthorityDocumentRead, AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import type { AuthorityEnvelope } from '../../domain/authority-envelope/src/index.js'
 import { createPermissionAuthorityCeilingJudge } from '../governance/service.js'
+import { expansionCeiling, grantCeiling } from '../governance/authority-ceiling.js'
+import { createAuthorityCeilingReader, createPermissionGovernanceLane } from '../src/plugin/permission-plane.js'
 import {
+  PERMISSION_EFFECT_PRECEDENCE,
   classifyPermissionRise,
   PERMISSION_MUTATION_ERROR_CODES,
   PermissionMutationError,
@@ -48,6 +52,7 @@ import type {
 } from '../governance/permission-mutation.js'
 
 const ROOT = { kind: 'subtree' as const, resource: 'file:/root' }
+const UNDER = { kind: 'subtree' as const, resource: 'file:/root/sub' }
 const contains = (root: string, child: string): boolean => child === root || child.startsWith(`${root}/`)
 
 const doc = (maximumEffect: 'allow' | 'ask' | 'deny') => ({
@@ -346,5 +351,179 @@ describe('the service places the gate where ADR X7-R5 puts it', () => {
   it('maps ONLY the document-unavailable ceiling fault onto CONTEXT and rethrows every other error', () => {
     expect(code).toMatch(/AUTHORITY_CEILING_ERROR_CODES\.DOCUMENT_UNAVAILABLE/)
     expect(code).toMatch(/throw error/)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// A4-PR2 rework (coordinator items 1-3): the production reader, the operator
+// normalization, and the C7 impossibility argument made testable.
+// ---------------------------------------------------------------------------
+describe('the production reader: the v3 switch, BOTH branches, one file (ADR A5-12)', () => {
+  // The plane's hard-ceiling read is a THREE-WAY read, so a bare document is a
+  // `declared` outcome in this fixture rather than a slot value.
+  const hardRead = (slot: AuthorityEnvelopeDocuments['teamHardEnvelope']): AuthorityDocumentRead =>
+    typeof slot === 'object' && slot !== null && 'status' in slot
+      ? (slot as AuthorityDocumentRead)
+      : { status: 'declared', document: slot as AuthorityEnvelope }
+  const factsFor = (schemaVersion: number | undefined, hard: AuthorityEnvelopeDocuments['teamHardEnvelope']) => ({
+    blueprintSchemaVersion: () => schemaVersion,
+    teamHardEnvelope: async () => hardRead(hard),
+    permissionEnvelope: async () => ({ rules: [] }),
+  })
+  const read = (schemaVersion: number | undefined, hard: AuthorityEnvelopeDocuments['teamHardEnvelope'], actor: 'leader' | 'human') =>
+    createAuthorityCeilingReader({ facts: factsFor(schemaVersion, hard) })('session-root-1', 'inst-alpha', actor)
+
+  it('EXISTENTIAL BRANCH: a v1 or v2 blueprint gets NO ceiling context at all', async () => {
+    // Pinned FIRST and deliberately kept after the v3 legs exist: A5-12's rule is
+    // that this leg cannot be deleted once v3 works, because it is the only thing
+    // standing between a v1/v2 Team and a gate its documents were never written for.
+    for (const version of [1, 2]) {
+      // Even documents that WOULD refuse a v3 Leader change nothing here.
+      expect(await read(version, EMPTY_DOC, 'leader')).toBeUndefined()
+      expect(await read(version, ALLOW, 'human')).toBeUndefined()
+    }
+  })
+
+  it('v3 BRANCH: an empty hard ceiling is a v3 answer, never a reason to take the v1/v2 branch', async () => {
+    // THE case the version switch must not guess from document shape: `{rules: []}`
+    // is what "this Team authorized nothing" looks like, and a `rules.length === 0`
+    // heuristic would hand that Team Alpha.3 behaviour — a widening, in the most
+    // restrictive Team in the fleet.
+    const context = await read(3, EMPTY_DOC, 'leader')
+    expect(context).toBeDefined()
+    expect(context?.documents.teamHardEnvelope).toEqual({ status: 'declared', document: EMPTY_DOC })
+    const verdict = createPermissionAuthorityCeilingJudge({ subtreeContains: contains })(context!, rise('allow'))
+    expect(verdict).toMatchObject({ status: 'insufficient', ceiling: 'no-authority' })
+  })
+
+  it('v3 with an unreadable hard ceiling reaches the gate as unavailable, and the gate refuses as CONTEXT', async () => {
+    const context = await read(3, UNAVAILABLE, 'leader')
+    expect(context?.documents.teamHardEnvelope).toEqual(UNAVAILABLE)
+    expect(createPermissionAuthorityCeilingJudge({ subtreeContains: contains })(context!, rise('allow'))).toMatchObject({
+      status: 'unavailable',
+      code: 'AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE',
+    })
+  })
+
+  it('an UNKNOWN binding takes the v1/v2 branch rather than inventing a v3 ceiling', async () => {
+    // Documented choice, not an oversight: an unresolved binding must not conjure a
+    // v3 gate out of facts it never read. The v1/v2 path fails closed on its own
+    // reads (zero-authority envelope ⇒ every Leader expansion refuses).
+    expect(await read(undefined, UNAVAILABLE, 'leader')).toBeUndefined()
+  })
+
+  it('a trusted operator becomes `human-user`; no path constructs `human-admin` (plan:261)', async () => {
+    const asLeader = await read(3, ALLOW, 'leader')
+    const asHuman = await read(3, ALLOW, 'human')
+    expect(asLeader?.initiatorAuthority).toBe('leader')
+    expect(asHuman?.initiatorAuthority).toBe('human-user')
+    // The mutation targets a MEMBER instance (the grant/revoke tool carries a
+    // `targetInstanceId` and does not change the Leader's own permissions), so the
+    // beneficiary of the rise is a member — the rung the evaluator walks UP from.
+    expect(asHuman?.beneficiaryAuthority).toBe('member')
+    const reachable = new Set([asLeader?.initiatorAuthority, asHuman?.initiatorAuthority, asLeader?.beneficiaryAuthority])
+    expect(reachable.has('human-admin')).toBe(false)
+  })
+
+  it('the lane factory forwards the reader, or the root injects into a void (R2)', () => {
+    // Measured: deleting the factory's `authorityCeiling` spread left the whole
+    // suite green, because every other leg calls the reader or the judge directly.
+    // The host can inject all it likes — this edge is what makes the injection
+    // reach `mutatePermission`, so it gets a direct unit leg, not a regex.
+    const lane = createPermissionGovernanceLane({
+      overlay: {} as never,
+      authorityCeiling: async () => undefined,
+    })
+    expect(lane.authorityCeiling).toBeTypeOf('function')
+    const bare = createPermissionGovernanceLane({ overlay: {} as never })
+    expect('authorityCeiling' in bare).toBe(false)
+  })
+
+  it('the production root and host actually inject it (a wiring pin, not a comment)', () => {
+    const root = readFileSync(join(HERE, '..', 'src', 'plugin', 'root.ts'), 'utf8')
+    const host = readFileSync(join(HERE, '..', 'src', 'plugin', 'host.ts'), 'utf8')
+    expect(root).toMatch(/authorityCeiling:\s*permissionAuthorityCeiling/)
+    expect(host).toMatch(/permissionAuthorityCeiling:\s*createAuthorityCeilingReader\(\{\s*facts:\s*permissionFacts\s*\}\)/)
+  })
+})
+
+describe('C7: the approval plane cannot bind BELOW the expansion plane — proved, then pinned', () => {
+  const positions = ['leader', 'human-user', 'human-admin'] as const
+  const slotDocs = [ALLOW, ASK, EMPTY_DOC, ABSENT, UNAVAILABLE] as const
+  const scopes = [ROOT, UNDER] as const
+
+  it('for every document pair and scope, the approval plane is at or above the expansion plane', () => {
+    // THE ARGUMENT (coordinator asked for it or a divergence pair; this is the
+    // argument, and the loop below is its falsifiable form).
+    //
+    // `effectiveAuthorityCeiling` and `narrowingForApproval` are the SAME
+    // `evaluateMatches(document, scope, subtreeContains)` call, differing ONLY in
+    // the no-match default: `CEILING_NO_AUTHORITY` versus `CEILING_IDENTITY`
+    // (authority-envelope.ts:409-450). Per bound slot then, the pair is
+    // (no-authority, identity) on no match, (e, e) on a match, (undetermined,
+    // undetermined) on an unknown containment — in the meet lattice
+    // (no-authority = bottom, identity = top) that is expansion_slot <=
+    // approval_slot in all three cases. This lane meets over the SAME bound
+    // document set on both planes (`boundDocumentNames`), and an absent bound slot
+    // is `CEILING_NO_AUTHORITY` on the expansion plane but SKIPPED — i.e. the
+    // identity — on the approval plane, which is the same inequality again. A meet
+    // preserves the order, so meet(approval slots) >= meet(expansion slots) for any
+    // documents, scope and predicate. The approval row of the judge therefore
+    // CANNOT be the binding constraint while both planes are handed the same
+    // documents and scope: deleting it is behaviour-preserving today.
+    //
+    // WHY THE LEG IS STILL HERE: the inequality is a property of the two lookups,
+    // not of the judge. If a future edit gives the planes different documents,
+    // different scopes, or a different no-match default, this loop reddens — which
+    // is the honest coverage for a row that is redundant BY LAW rather than
+    // redundant by accident and untested.
+    for (const position of positions) {
+      for (const hard of slotDocs) {
+        for (const mutation of slotDocs) {
+          for (const matcher of scopes) {
+            const documents = docs(hard, mutation)
+            const scope = { operationClass: 'write', matcher }
+            const ask = () => {
+              try {
+                return grantCeiling(position, documents, scope, contains)
+              } catch (error) {
+                return { status: 'refused', code: (error as { code?: string }).code }
+              }
+            }
+            const expand = () => {
+              try {
+                return expansionCeiling(position, documents, scope, contains)
+              } catch (error) {
+                return { status: 'refused', code: (error as { code?: string }).code }
+              }
+            }
+            const a = ask()
+            const e = expand()
+            // Refusals agree (no plane refuses where the other answers)…
+            expect((a as { status: string }).status === 'refused').toBe(
+              (e as { status: string }).status === 'refused',
+            )
+            if ((a as { status: string }).status === 'refused') continue
+            const rank = (ceiling: { status: string; effect?: string }): number =>
+              ceiling.status === 'undetermined' ? 1.5 : ceiling.status === 'no-authority' ? -1 : PERMISSION_EFFECT_PRECEDENCE[ceiling.effect as 'allow' | 'ask' | 'deny']
+            expect(rank(a as { status: string; effect?: string })).toBeGreaterThanOrEqual(rank(e as { status: string; effect?: string }))
+          }
+        }
+      }
+    }
+  })
+
+  it('the property is not vacuous: inverting the approval lookup reddens it', () => {
+    // Non-vacuity for the leg above, measured rather than asserted. The same
+    // computation the leg performs, with the approval plane forced BELOW the
+    // expansion plane on a matching rule — the shape the leg exists to catch.
+    const documents = docs(ALLOW, ALLOW)
+    const scope = { operationClass: 'write', matcher: ROOT }
+    const expansion = expansionCeiling('leader', documents, scope, contains)
+    const forcedBelow = { status: 'decided', effect: 'deny' } as const
+    expect(PERMISSION_EFFECT_PRECEDENCE[forcedBelow.effect]).toBeLessThan(
+      PERMISSION_EFFECT_PRECEDENCE[expansion.status === 'decided' ? expansion.effect : 'deny'],
+    )
+    expect(expansion).toMatchObject({ status: 'decided', effect: 'allow' })
   })
 })

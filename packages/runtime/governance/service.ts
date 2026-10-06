@@ -716,7 +716,7 @@ export function createGovernanceMutationService(
         ...(lane.subtreeContains === undefined ? {} : { subtreeContains: lane.subtreeContains }),
       })
       if (lane.authorityCeiling !== undefined) {
-        const ceilingContext = await lane.authorityCeiling(mutation.teamSessionId, mutation.memberInstanceId)
+        const ceilingContext = await lane.authorityCeiling(mutation.teamSessionId, mutation.memberInstanceId, actor)
         // `undefined` = no v3 ceiling context for this target (the reader is the
         // only place `schemaVersion === 3` is decided). NOT "the documents are
         // empty": an empty document is a decided zero-authority answer and reaches

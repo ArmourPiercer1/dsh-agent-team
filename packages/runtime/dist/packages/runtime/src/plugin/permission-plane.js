@@ -122,9 +122,10 @@ export function createMemberLifecycleReader(rows, teamSessions) {
  *   policy ADR §6 does not carry).
  */
 export function createPermissionGovernanceLane(deps) {
-    const { overlay, fsContainsKeys, staticLayers, permissionEnvelope, targetGuard } = deps;
+    const { overlay, fsContainsKeys, staticLayers, permissionEnvelope, targetGuard, authorityCeiling } = deps;
     return {
         overlay,
+        ...(authorityCeiling === undefined ? {} : { authorityCeiling }),
         ...(staticLayers === undefined ? {} : { staticLayers }),
         ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
         ...(targetGuard === undefined ? {} : { targetGuard }),
@@ -433,6 +434,61 @@ export function createPermissionAuthorityFacts(deps) {
         staticLayers: async (teamSessionId, memberInstanceId) => staticLayers(teamSessionId, memberInstanceId),
         permissionEnvelope: async (teamSessionId, memberInstanceId) => permissionEnvelope(teamSessionId, memberInstanceId),
         teamHardEnvelope: async (teamSessionId, memberInstanceId) => teamHardEnvelope(teamSessionId, memberInstanceId),
+        blueprintSchemaVersion: (teamSessionId) => deps.resolveBlueprint(teamSessionId)?.schemaVersion,
+    };
+}
+/**
+ * THE v3 AUTHORITY-CEILING READER (A4-PR2 lane C, ADR A5-12, spec §7.4.1).
+ *
+ * Assembles the ceiling CONTEXT the governance service evaluates for one mutation
+ * target. It is a DATA assembler and nothing more: the ladder, the two planes and
+ * every refusal law live in the authority-ceiling lane, and the decision whether
+ * this Team is v3 lives HERE and nowhere else.
+ *
+ * THE VERSION SWITCH IS `schemaVersion === 3`, EXACTLY. Not "the reader was
+ * wired", not "the hard ceiling declares rules", not "the envelope is non-empty":
+ * a `{ rules: [] }` hard ceiling is a v3 Team that authorized NOTHING, and
+ * reading its emptiness as "must be a pre-v3 Team, skip the gate" is a relaxation
+ * in the forbidden direction, in the most restrictive Team in the fleet. The two
+ * branches — the v1/v2 existential (return `undefined`, Alpha.3 behaviour
+ * byte-identical) and the v3 branch — are both pinned in
+ * `test/a4p2-dual-envelope-mutation.test.ts` (A5-12: one file, so the existential
+ * leg cannot be deleted when the v3 leg starts passing).
+ *
+ * `undefined` from the version reader means the binding is UNKNOWN, and the
+ * answer is the v1/v2 branch on purpose: an unresolved binding must not conjure a
+ * v3 gate that invents authority facts it never read, and the v1/v2 path's own
+ * readers already fail closed (an unknown binding yields the zero-authority
+ * envelope, which refuses every Leader expansion). Choosing the OTHER branch here
+ * would make a storage fault read as "this Team is v3 and its ceiling is empty",
+ * i.e. an authority verdict invented from an absence.
+ */
+export function createAuthorityCeilingReader(deps) {
+    return async (teamSessionId, memberInstanceId, actor) => {
+        const schemaVersion = deps.facts.blueprintSchemaVersion(teamSessionId);
+        if (schemaVersion !== 3)
+            return undefined;
+        // The trusted operator is a HUMAN authority position (plan:261, ADR §7): there
+        // is NO production path that constructs a `human-admin`, and none appears
+        // here — the highest position this factory can ever name is `human-user`.
+        const initiatorAuthority = actor === 'leader' ? 'leader' : 'human-user';
+        const hard = await deps.facts.teamHardEnvelope(teamSessionId, memberInstanceId);
+        const envelope = await deps.facts.permissionEnvelope(teamSessionId, memberInstanceId);
+        return {
+            beneficiaryAuthority: 'member',
+            initiatorAuthority,
+            documents: {
+                teamHardEnvelope: hard,
+                // The Leader's own carrier keeps the ALPHA.3 posture: an absent carrier or
+                // an UNKNOWN binding reads as `{ rules: [] }`, which on the expansion plane
+                // is the ZERO-authority answer. Conflating fault-with-empty is safe in
+                // THIS slot precisely because it restricts; on the hard ceiling the same
+                // conflation would be a widening, so `teamHardEnvelope` keeps the three-way
+                // `declared | absent | unavailable` read and the ceiling lane refuses on
+                // `unavailable`.
+                permissionMutationEnvelope: { status: 'declared', document: envelope },
+            },
+        };
     };
 }
 /** The permission policy of one template of the bound Blueprint (the leader

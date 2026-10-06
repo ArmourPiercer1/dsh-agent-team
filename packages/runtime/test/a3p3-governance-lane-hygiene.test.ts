@@ -756,7 +756,11 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // into the rows the ceiling gate calls (this comment promised that amendment
       // in lane A) — and only those rows, so a later PR that reaches for
       // `evaluateAuthorityCeiling` from somewhere else still has to say so.
-      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES]],
+      // A4-PR2 rework: `src/plugin/permission-plane.ts` joins as the FIRST
+      // production consumer — it is where the ladder position of the acting
+      // surface is chosen (plan:261), which is precisely the mapping that must
+      // not be re-decided at each call site.
+      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts')]],
       ['AuthorityEvaluation', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationEvidence', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationInput', [RUNTIME_AUTHORITY, 'governance/index.ts']],
@@ -889,7 +893,18 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
         }
       }
     }
-    expect(readerCalls, 'nothing may CALL the v3 hard-ceiling reader in PR1').toEqual([])
+    // AMENDED by A4-PR2 (plan:260): PR1 shipped this reader UNUSED by design and
+    // pinned the call set EMPTY. PR2 wires it, so the pin moves from "nobody" to
+    // "exactly one, and it is the module ADR A5-12 names": `permission-plane.ts`.
+    // The law that survives the amendment is the important half — the governance
+    // SERVICE must never call the hard-ceiling reader itself, because a service
+    // that reads the document it is about to judge is a service that decides which
+    // Teams are v3 (ADR A5-12 puts that switch in the plane). Anything beyond this
+    // one file is still a violation.
+    expect(readerCalls, 'exactly one production caller of the v3 hard-ceiling reader').toEqual([
+      join('src', 'plugin', 'permission-plane.ts'),
+    ])
+    expect(readerCalls).not.toContain(join('governance', 'service.ts'))
     // And the plane's import of the ceiling module is TYPE-ONLY, so PR1 adds no
     // runtime governance→plugin edge: the reader's alias must not become a load
     // order dependency for a module the runtime does not otherwise use.

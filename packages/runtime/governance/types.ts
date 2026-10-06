@@ -231,6 +231,12 @@ export interface GovernancePermissionLaneDeps {
   readonly authorityCeiling?: (
     teamSessionId: string,
     memberInstanceId: string,
+    /** The acting surface, already normalized by the service from the closed
+     *  authority kind (`leader` | `operator` → `human`). The reader maps it to a
+     *  LADDER position — `leader` → `leader`, `human` → `human-user` (plan:261) —
+     *  because the ladder vocabulary must not leak into the tool/actor vocabulary
+     *  at every call site; it is translated in exactly one place. */
+    actor: 'leader' | 'human',
   ) => PermissionAuthorityCeilingContext | undefined | Promise<PermissionAuthorityCeilingContext | undefined>
 }
 
