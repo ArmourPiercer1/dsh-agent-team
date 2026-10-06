@@ -59,6 +59,8 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const RUNTIME_ROOT = join(HERE, '..')
 const MUTATION_SOURCE = readFileSync(join(HERE, '../governance/permission-mutation.ts'), 'utf8')
 const SERVICE_SOURCE = readFileSync(join(HERE, '../governance/service.ts'), 'utf8')
+const PROPOSAL_STORE_SOURCE = readFileSync(join(HERE, '../governance/proposal-store.ts'), 'utf8')
+const SLOT_SOURCE = readFileSync(join(HERE, '../governance/slot.ts'), 'utf8')
 
 describe('the governance lane stays loadable from the admission surface', () => {
   it('the admission constant tables are initialized when this lane loads', () => {
@@ -308,5 +310,81 @@ describe('the repository stays persistence-only from the CONSUMER side (ADR §1)
       }),
     ).sort()
     expect(keys).toEqual(['mutatePermission', 'resetOverride', 'setOverride', 'switchPolicyState'])
+  })
+})
+
+describe('the lane\'s storage edge is OWNED — one file, one module (A4-PR0)', () => {
+  // WHY THIS LEG EXISTS. A4-PR0 added `governance/proposal-store.ts`, whose
+  // imports a runtime value from `packages/storage` (`proposal-store.ts:88`: the
+  // snapshot-key derivation, its derived length bound, and the overlay effect
+  // vocabulary). Nothing above policed that: the narrow ban here forbids
+  // `storage/repositories/permission-overlays.js` and the kernel's own imports,
+  // so the edge would have gone forward unowned and the next PR would copy it by
+  // accident. (Review-round correction: this was NOT the directory's first
+  // storage value edge — `governance/slot.ts:56` has imported
+  // `TEAM_DOMAIN_SCHEMA_VERSION` from the storage schema barrel since alpha3 PR-A.
+  // Neither edge was policed, which is the actual finding; both are listed below
+  // so the set is now closed. `slot.ts` is recorded as PRE-EXISTING, not as
+  // something this round reviewed.) The decision, recorded in the commit that
+  // added the PR0 edge:
+  //
+  //   KEEP the edge, and name it. The rule this lane follows is DERIVE AN
+  //   IDENTITY THROUGH THE MODULE THAT OWNS IT, MIRROR EVERYTHING THAT IS ONLY
+  //   A CONSTRAINT. A proposal record's base pair IS an overlay snapshot
+  //   identity, written to be read back years later: a mirrored copy of the
+  //   derivation, or of the bound derived from the same components, drifts
+  //   silently and the drift is not a tightening — it is a durable row that
+  //   reads `corrupt-record`. That is not hypothetical: PR0 mirrored the bound
+  //   at 256 while the owner's sum is 310, and a legal max-length identity
+  //   (session id 255 + separator + instance id 37 + separator + generation)
+  //   could not be recorded at all (review SF-1). Constraints that are not
+  //   identities stay mirrored and pinned, exactly as the kernel does them
+  //   above: `GOVERNANCE_PROPOSAL_LEDGER_SCHEMA_VERSION` and
+  //   `GOVERNANCE_PROPOSAL_OPERATION_ID_PATTERN`.
+  //
+  // The edge is also not a new KIND of edge in the runtime tree: the overlay
+  // port's own lane already imports values from this same module
+  // (`permission-governance/types.ts:29,38`). What is new is only that it is in
+  // `governance/`, so it is now a reviewed allow-list entry rather than a
+  // silence. Any further storage import from this directory must arrive as an
+  // amendment to this leg, the way the consumer allow-list above does.
+  const ALLOWED_LANE_STORAGE_EDGE = new Map([
+    // A4-PR0, reviewed above.
+    ['proposal-store.ts', ['../../storage/schema/permission-overlay.js']],
+    // PRE-EXISTING since alpha3 PR-A (`governance/slot.ts:56`), listed to close
+    // the set — the slot CAS needs the durable row version. Not reviewed by
+    // A4-PR0; changing it must be deliberate.
+    ['slot.ts', ['../../storage/schema/index.js']],
+  ])
+
+  it('no governance-lane module imports storage outside the allow-listed edge', () => {
+    const offenders: string[] = []
+    const laneDir = join(RUNTIME_ROOT, 'governance')
+    for (const entry of readdirSync(laneDir).sort()) {
+      if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry.endsWith('.d.ts')) continue
+      const source = readFileSync(join(laneDir, entry), 'utf8')
+      for (const match of source.matchAll(/from '(\.\.\/\.\.\/storage\/[^']+)'/g)) {
+        const specifier = match[1] ?? ''
+        const allowed = ALLOWED_LANE_STORAGE_EDGE.get(entry) ?? []
+        if (!allowed.includes(specifier)) offenders.push(`${entry} -> ${specifier}`)
+      }
+    }
+    expect(offenders).toEqual([])
+  })
+
+  it('the allow-list is not vacuous, and no lane module reaches a repository', () => {
+    // The edge is really there (a leg that passes because nothing imports
+    // anything is not owning a dependency).
+    expect(PROPOSAL_STORE_SOURCE).toMatch(/from '\.\.\/\.\.\/storage\/schema\/permission-overlay\.js'/)
+    // Schema vocabulary only, never a REPOSITORY: a lane must not gain a
+    // durable-write path by reaching past its injected ports (import-specific —
+    // the modules document the ban in their own headers, so a bare text match
+    // would fire on the documentation).
+    for (const [name, source] of [['proposal-store.ts', PROPOSAL_STORE_SOURCE], ['slot.ts', SLOT_SOURCE], ['permission-mutation.ts', MUTATION_SOURCE], ['service.ts', SERVICE_SOURCE]]) {
+      expect(source, name).not.toMatch(/from '\.\.\/\.\.\/storage\/repositories\//)
+    }
+    // The kernel's own rule is untouched by this amendment: it mirrors its
+    // bound and keeps zero runtime edge to storage (the pin above).
+    expect(MUTATION_SOURCE).not.toMatch(/from '\.\.\/\.\.\/storage\//)
   })
 })

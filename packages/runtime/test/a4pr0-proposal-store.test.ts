@@ -39,8 +39,11 @@ import type { LedgerEntry } from '../../storage/schema/index.js'
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../storage/schema/stores.js'
 import {
   PERMISSION_OVERLAY_EFFECT_VALUES,
+  PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH,
   permissionOverlaySnapshotKey,
 } from '../../storage/schema/permission-overlay.js'
+import { OPERATION_ID_PATTERN } from '../../storage/schema/operation.js'
+import { PERMISSION_PATH_MAX_LENGTH } from '../../domain/blueprint/src/schema.js'
 import {
   P6T4_NOW,
   P6T4_ROOT,
@@ -56,12 +59,16 @@ import { createTeamDomainReadPort } from '../src/plugin/projection-source.js'
 import {
   GOVERNANCE_PROPOSAL_FACT_TYPE,
   GOVERNANCE_PROPOSAL_LEDGER_SCHEMA_VERSION,
+  GOVERNANCE_PROPOSAL_OPERATION_ID_PATTERN,
   GOVERNANCE_PROPOSAL_STATUSES,
   PROPOSAL_AUTHORITY_POSITIONS,
   createGovernanceProposalStore,
 } from '../governance/proposal-store.js'
 import type {
   GovernanceProposalDraft,
+  GovernanceProposalLedgerRow,
+  GovernanceProposalLedgerWriterPort,
+  GovernanceProposalLedgerReaderPort,
   GovernanceProposalReadOutcome,
   GovernanceProposalRecord,
   ProposalReadRecord,
@@ -471,3 +478,230 @@ describe('A4-PR0 governance proposal store (durable append / read / reopen)', ()
     expect(captured.derivedSnapshotId).toBe(`${P6T4_ROOT}#${WORKER_ID}#3`)
   })
 })
+
+// --- the contract-bounds scenario (review round SF-1, SF-2, SF-6) -----------
+//
+// The durable p6t4 world cannot express these three cases, and pretending
+// otherwise would mean weakening them:
+//
+//  * a LEGAL MAXIMAL identity (a 255-char TeamSession id and a 37-char
+//    MemberInstance id) whose derived snapshot identity is 295 chars — the case
+//    a hand-picked 256 bound refuses (reviewer SF-1);
+//  * an envelope path containing a SPACE, which the Blueprint grammar accepts;
+//  * a refusal that must leave the sequence counter UNMOVED, which needs a
+//    counter a durable repository does not expose without allocating one.
+//
+// All three belong to the writer/reader CONTRACT, and the structural ports exist
+// precisely so the contract can be exercised without a storage world. Nothing
+// here claims durability — `rows` is an in-memory array, and the durability half
+// of the same contract is S1/S7 on the real repository.
+type MemoryLedger = {
+  readonly port: GovernanceProposalLedgerWriterPort & GovernanceProposalLedgerReaderPort
+  readonly rows: GovernanceProposalLedgerRow[]
+  allocations(): number
+}
+
+function memoryLedger(): MemoryLedger {
+  const rows: GovernanceProposalLedgerRow[] = []
+  let allocated = 0
+  return {
+    rows,
+    allocations: () => allocated,
+    port: {
+      async allocateSequence(): Promise<number> {
+        allocated += 1
+        return 100 + allocated
+      },
+      async put(row: GovernanceProposalLedgerRow): Promise<unknown> {
+        rows.push(row)
+        return row
+      },
+      list: () => rows,
+    },
+  }
+}
+
+const MAX_LENGTH_TEAM = `session-root-${'a'.repeat(255 - 'session-root-'.length)}`
+const MAX_LENGTH_INSTANCE = `inst-${'a'.repeat(32)}`
+/** team(255) + '#' + instance(37) + '#' + generation digits(1). */
+const MAX_LENGTH_SNAPSHOT_ID = `${MAX_LENGTH_TEAM}#${MAX_LENGTH_INSTANCE}#3`
+
+type Bounds = {
+  readonly longSnapshotIsLegal: boolean
+  readonly longSnapshotLength: number
+  readonly longPairReadKind: string
+  readonly longPairSnapshotId: string | null
+  readonly spacePathProblem: string | undefined
+  readonly spacePathRoundTrips: boolean
+  readonly blankPathProblem: string | undefined
+  readonly controlCharPathProblem: string | undefined
+  readonly maxPathAccepted: boolean
+  readonly overLongPathProblem: string | undefined
+  readonly badOperationIdCode: string | undefined
+  readonly badOperationIdProblem: string | undefined
+  readonly badOperationIdAllocations: number
+  readonly badOperationIdRows: number
+}
+
+const bounds = await (async (): Promise<Bounds> => {
+  const fresh = (): { store: ReturnType<typeof createGovernanceProposalStore>; ledger: MemoryLedger } => {
+    const ledger = memoryLedger()
+    return {
+      ledger,
+      store: createGovernanceProposalStore({ ledger: ledger.port, now: () => PROPOSAL_NOW }),
+    }
+  }
+
+  // SF-1: a maximal legal identity, whose base pair is legitimately derivable.
+  const longLedger = fresh()
+  let longProblem: string | undefined
+  try {
+    await longLedger.store.appendProposal({
+      teamSessionId: MAX_LENGTH_TEAM,
+      operationId: 'op-a4pr0maximal',
+      proposal: {
+        targetMemberInstanceId: MAX_LENGTH_INSTANCE,
+        baseGeneration: 3,
+        baseSnapshotId: MAX_LENGTH_SNAPSHOT_ID,
+        desiredEffect: 'allow',
+        authorityEnvelopeAst: { kind: 'exact', path: 'shell.exec' },
+        requiredAuthority: 'human-admin',
+        caseFingerprint: 'case-a4pr0-maximal',
+      },
+    })
+  } catch (error) {
+    longProblem = isGovernanceProposalError(error)
+      ? String(error.details['problem'])
+      : `threw ${String(error)}`
+  }
+  const longRead = longLedger.store.listProposals({ teamSessionId: MAX_LENGTH_TEAM })
+  const longOutcome = longRead[0]
+
+  // SF-2: the path grammar is the Blueprint grammar, not the id grammar.
+  const pathProblems: Record<string, string | undefined> = {}
+  const pathAccepted: Record<string, boolean> = {}
+  const probePath = async (name: string, path: string): Promise<void> => {
+    const probe = fresh()
+    try {
+      await probe.store.appendProposal({
+        teamSessionId: P6T4_ROOT,
+        proposal: { ...DRAFT, authorityEnvelopeAst: { kind: 'exact', path } },
+      })
+      pathAccepted[name] = true
+      pathProblems[name] = undefined
+    } catch (error) {
+      pathAccepted[name] = false
+      pathProblems[name] = isGovernanceProposalError(error)
+        ? String(error.details['problem'])
+        : `threw ${String(error)}`
+    }
+  }
+  await probePath('space', 'fs.write:/My Documents/a report.txt')
+  await probePath('blank', '   ')
+  await probePath('control', 'fs.write:/tmp/\u0007bell')
+  await probePath('maxLength', `fs.write:/${'d'.repeat(PERMISSION_PATH_MAX_LENGTH - 'fs.write:/'.length)}`)
+  await probePath('overMaxLength', `fs.write:/${'d'.repeat(PERMISSION_PATH_MAX_LENGTH - 'fs.write:/'.length + 1)}`)
+  const spaceRead = await (async (): Promise<readonly GovernanceProposalReadOutcome[]> => {
+    const probe = fresh()
+    await probe.store.appendProposal({
+      teamSessionId: P6T4_ROOT,
+      proposal: { ...DRAFT, authorityEnvelopeAst: { kind: 'exact', path: 'fs.write:/My Documents/a report.txt' } },
+    })
+    return probe.store.listProposals({ teamSessionId: P6T4_ROOT })
+  })()
+  const spaceRecord = spaceRead[0]
+
+  // SF-6: a malformed operationId is THIS lane's refusal, and it allocates nothing.
+  const opLedger = fresh()
+  let opCode: string | undefined
+  let opProblem: string | undefined
+  try {
+    await opLedger.store.appendProposal({
+      teamSessionId: P6T4_ROOT,
+      operationId: 'op-A4PR0-0001',
+      proposal: DRAFT,
+    })
+  } catch (error) {
+    opCode = isGovernanceProposalError(error) ? error.code : undefined
+    opProblem = isGovernanceProposalError(error)
+      ? String(error.details['problem'])
+      : `threw ${String(error)}`
+  }
+
+  return {
+    longSnapshotIsLegal: longProblem === undefined,
+    longSnapshotLength: MAX_LENGTH_SNAPSHOT_ID.length,
+    longPairReadKind: longOutcome?.kind ?? 'no-outcome',
+    longPairSnapshotId:
+      longOutcome !== undefined && longOutcome.kind === 'record'
+        ? longOutcome.proposal.baseSnapshotId
+        : null,
+    spacePathProblem: pathProblems['space'],
+    spacePathRoundTrips:
+      spaceRecord !== undefined &&
+      spaceRecord.kind === 'record' &&
+      spaceRecord.proposal.authorityEnvelopeAst.kind === 'exact' &&
+      spaceRecord.proposal.authorityEnvelopeAst.path === 'fs.write:/My Documents/a report.txt',
+    blankPathProblem: pathProblems['blank'],
+    controlCharPathProblem: pathProblems['control'],
+    maxPathAccepted: pathAccepted['maxLength'] === true,
+    overLongPathProblem: pathProblems['overMaxLength'],
+    badOperationIdCode: opCode,
+    badOperationIdProblem: opProblem,
+    badOperationIdAllocations: opLedger.ledger.allocations(),
+    badOperationIdRows: opLedger.ledger.rows.length,
+  }
+})()
+
+describe('A4-PR0 contract bounds: the record can express the vocabulary it persists', () => {
+  it('B1 a maximal legal snapshot identity (295 chars) appends and reads back SOUND (SF-1)', () => {
+    // The bound a proposal record applies to `baseSnapshotId` must be the
+    // OWNER'S derived sum, not a hand-picked number: the value is derived as
+    // teamSessionId(<=255) + '#' + instanceId(<=37) + '#' + generation, and a
+    // smaller bound refuses a legal identity at append while a durable row of it
+    // would read back `corrupt-record` — a latent contract break, not a
+    // tightening (`storage/schema/permission-overlay.ts:195-219` says exactly
+    // this, and this is the test that would have caught PR0's 256).
+    expect(capturedLongFact()).toBe(310)
+    expect(bounds.longSnapshotLength).toBe(295)
+    expect(bounds.longSnapshotLength).toBeGreaterThan(256)
+    expect(bounds.longSnapshotIsLegal).toBe(true)
+    expect(bounds.longPairReadKind).toBe('record')
+    expect(bounds.longPairSnapshotId).toBe(MAX_LENGTH_SNAPSHOT_ID)
+    expect(bounds.longPairSnapshotId).toBe(
+      permissionOverlaySnapshotKey(MAX_LENGTH_TEAM, MAX_LENGTH_INSTANCE, 3),
+    )
+  })
+
+  it('B2 an envelope path with a space is SOUND; blank and control-char paths are refused (SF-2)', () => {
+    // A3-9 makes the Blueprint/config shape authoritative, and the Blueprint path
+    // grammar rejects control characters, a blank-after-trim, and lengths over
+    // PERMISSION_PATH_MAX_LENGTH — nothing else. `fs.write:/My Documents/x` is a
+    // path the Blueprint accepts, so a proposal record that cannot carry it is a
+    // broken substrate.
+    expect(bounds.spacePathProblem).toBeUndefined()
+    expect(bounds.spacePathRoundTrips).toBe(true)
+    expect(bounds.blankPathProblem).toBe('bad-path')
+    expect(bounds.controlCharPathProblem).toBe('bad-path')
+    expect(bounds.maxPathAccepted).toBe(true)
+    expect(bounds.overLongPathProblem).toBe('bad-path')
+  })
+
+  it('B3 a malformed operationId is a lane refusal that allocates nothing (SF-6)', () => {
+    // `parseLedgerEntry` would catch this too — one step too late, AFTER
+    // `allocateSequence()`, and with a storage error instead of a lane code.
+    expect(bounds.badOperationIdCode).toBe(GOVERNANCE_PROPOSAL_ERROR_CODES.MALFORMED_PROPOSAL)
+    expect(bounds.badOperationIdProblem).toBe('bad-operation-id')
+    expect(bounds.badOperationIdAllocations).toBe(0)
+    expect(bounds.badOperationIdRows).toBe(0)
+    // The mirror is checked, not aspirational (the kernel's discipline).
+    expect(GOVERNANCE_PROPOSAL_OPERATION_ID_PATTERN.source).toBe(OPERATION_ID_PATTERN.source)
+  })
+})
+
+/** The owner's derived bound, asserted as a number so a silent change to ANY of
+ *  its four components (255 + 1 + 37 + 1 + 16) turns this red rather than
+ *  quietly invalidating B1. */
+function capturedLongFact(): number {
+  return PERMISSION_OVERLAY_MAX_SNAPSHOT_ID_LENGTH
+}
