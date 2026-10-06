@@ -174,7 +174,10 @@ landed, so the pre- and post-fix sets are comparable rather than merely similar.
   A4-PR0a precedent (PR #64 / `9c6edb42`). After the review round the same three
   commands run green with **zero** artifact drift — the round touched lane sources and
   tests only, and the lane still emits nothing.
-- **Plan rule 10**: `pnpm -r run typecheck` green for all nine projects, and
+- **Plan rule 10**: `pnpm -r run typecheck` green (exit 0) for the eight packages that
+  declare a `typecheck` script — all nine packages except `packages/legacy`, which
+  declares none; this line said "nine projects" in the first round, which was the wrong
+  count and is corrected here rather than left in place:
   `pnpm exec eslint` clean on every created or modified file (`proposal-store.ts`,
   `proposal-codes.ts`, `src/plugin/projection-source.ts`,
   `client/src/model/ledger-adapter.ts`, the three new specs,
@@ -182,7 +185,7 @@ landed, so the pre- and post-fix sets are comparable rather than merely similar.
   No pre-existing failure was reported or needed, because none appeared. Re-run after
   the review round on the four files it touched (`proposal-store.ts`,
   `a4pr0-proposal-store.test.ts`, `a4pr0-proposal-corrupt.test.ts`,
-  `a3p3-governance-lane-hygiene.test.ts`): typecheck Done for all nine projects, eslint
+  `a3p3-governance-lane-hygiene.test.ts`): typecheck Done for all eight such packages, eslint
   clean.
 - **p4t6 pin**: `973 -> 978`, five scannable files (two lane sources + three specs), the
   arithmetic written in the comment, exact equality (no tolerance), and the five paths
