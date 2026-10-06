@@ -405,6 +405,13 @@ const PINNED_UNRESOLVED = [
   'packages/runtime/action-router/effects.ts::commitDurableFact arg4 factType',
   'packages/runtime/control/service.ts::string',
   'packages/runtime/requirements/facts.ts::RequirementFactType',
+  // A4-PR0's proposal store: the ledger-row PORT type and the corrupt-outcome
+  // type both annotate the member as a plain `string` (the port is structural,
+  // so it must not name a fact-type literal it does not own). Its one real
+  // write site is `factType: GOVERNANCE_PROPOSAL_FACT_TYPE`, which resolves
+  // through the constant table above — this entry is a type annotation, not a
+  // dynamic write.
+  'packages/runtime/governance/proposal-store.ts::string',
   'packages/storage/operations/journal.ts::row.intent.type',
 ] as const
 
@@ -420,13 +427,21 @@ describe('A4-PR0a: every fact type production can write is registered in the led
     ]) {
       expect(DERIVED.values.has(factType), `derived set is missing ${factType}`).toBe(true)
     }
+    // A4-PR0's proposal writer is constant-mediated in the same way
+    // (`factType: GOVERNANCE_PROPOSAL_FACT_TYPE` in
+    // `runtime/governance/proposal-store.ts`), so it must be in the derived set
+    // the moment it becomes a tracked source: that is what makes C2's
+    // derived-but-unregistered check cover the new lane at all. If this ever
+    // goes red while the lane still appends, the guard stopped seeing a writer.
+    expect(DERIVED.values.has('governance-proposal-recorded')).toBe(true)
     // Table-mediated writers must be collected too (activity + requirements).
     expect(DERIVED.values.has('activity-progress-recorded')).toBe(true)
     expect(DERIVED.values.has('activity-interval-opened')).toBe(true)
     expect(DERIVED.values.has('optional-requirement-accepted')).toBe(true)
     // A sane floor: an under-collecting derivation is the failure mode.
-    // 19 of the 20 registered types are reachable by the derivation; the one
-    // that is not is named by C1b, so the floor is exact rather than approximate.
+    // 20 of the 21 registered types are reachable by the derivation (the count
+    // includes A4-PR0's proposal fact); the one that is not is named by C1b, so
+    // the floor is exact rather than approximate.
     expect(DERIVED.values.size).toBeGreaterThanOrEqual(19)
   })
 

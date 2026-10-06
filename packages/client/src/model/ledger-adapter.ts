@@ -113,6 +113,15 @@ const FACT_TYPE_CATEGORY: Readonly<Record<string, LedgerCategoryValue>> = {
   'activity-interval-opened': 'progress',
   'activity-interval-closed': 'progress',
   'policy-state-transitioned': 'policy',
+  // A4-PR0 (ADR A5-22): mirror of the host category map, in the SAME commit as
+  // the host registration — the client's ledger summary must classify the row
+  // exactly as the host's fold does. A durable governance PROPOSAL is a
+  // statement about the Team's authority awaiting review, so it lands in the
+  // frozen `policy` category beside the policy-state transitions (ADR A3-7: no
+  // ninth category). No product surface writes one at PR0 (ADR A4-6); a row
+  // whose type is absent from this map simply carries no category client-side,
+  // and `a4pr0a-fact-type-closed-set.test.ts` C3 fails the drift.
+  'governance-proposal-recorded': 'policy',
   // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry (the
   // compatibility category's first production writer). A compatibility
   // CATEGORY — no new category. Hidden from the Events surface by
