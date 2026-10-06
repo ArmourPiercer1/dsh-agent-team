@@ -116,8 +116,30 @@ export {
 export type {
   AuthorityBindingProblem,
   AuthorityCeilingScope,
+  AuthorityDocumentName,
   AuthorityEnvelopeDocuments,
 } from './authority-ceiling.js'
+// Alpha.4 PR2 lane A — the RUNTIME AUTHORITY model: the ladder's two functions
+// (X5-E1 moved `mayReview`/`authorityRank` into the adapter beside the ceiling
+// they are paired with) and the minimum-authority evaluator. `boundDocumentNames`
+// is deliberately NOT re-exported: it exists so the evaluator's EVIDENCE can name
+// the binding row instead of reconstructing it, and a lane that treats it as
+// policy would be reading a table instead of asking the ceiling.
+export {
+  AUTHORITY_RANK,
+  authorityRank,
+  expansionCeiling,
+  isHigherAuthority,
+  mayReview,
+} from './authority-ceiling.js'
+export { evaluateAuthorityCeiling } from './runtime-authority.js'
+export type {
+  AuthorityEvaluation,
+  AuthorityEvaluationEvidence,
+  AuthorityEvaluationInput,
+  AuthorityEvaluationOutcome,
+  RuntimeAuthority,
+} from './runtime-authority.js'
 export type {
   GovernancePermissionLaneDeps,
   GovernancePermissionMutationArgs,

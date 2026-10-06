@@ -1,0 +1,33 @@
+=== RED CAPTURE: lane A — RuntimeAuthority ladder / mayReview / authorityRank / evaluateAuthorityCeiling ===
+command: pnpm vitest run packages/runtime/test/a4p2-authority-ceiling.test.ts
+cwd: /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr2
+HEAD: f55dd64d42be733a273ff9e3b22d5e3f7f872959
+dirty files: 2
+date: 2026-10-06T22:56:21Z
+
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr2
+
+ ❯ packages/runtime/test/a4p2-authority-ceiling.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p2-authority-ceiling.test.ts [ packages/runtime/test/a4p2-authority-ceiling.test.ts ]
+Error: Cannot find module '../governance/runtime-authority.js' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr2/packages/runtime/test/a4p2-authority-ceiling.test.ts
+ ❯ packages/runtime/test/a4p2-authority-ceiling.test.ts:46:1
+     44| } from '../governance/authority-ceiling.js'
+     45| import { AuthorityBindingError } from '../governance/authority-ceiling…
+     46| import {
+       | ^
+     47|   AUTHORITY_RANK,
+     48|   evaluateAuthorityCeiling,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  06:56:21
+   Duration  142ms (transform 37ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+EXIT CODE: 1
