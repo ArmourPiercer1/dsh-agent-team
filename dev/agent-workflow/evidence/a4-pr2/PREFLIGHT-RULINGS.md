@@ -17,7 +17,7 @@ needs it. Added to Task 2:
 | added | why it is mandatory | evidence |
 | --- | --- | --- |
 | Modify `packages/runtime/test/a3p3-governance-lane-hygiene.test.ts` | PR2's production files import `permission-mutation.ts` (at minimum `PermissionResourceMatcher`, even type-only); the consumer walk flags **`import type` too** | walk `:107-157`, skip-list `:134-141` |
-| Test create `packages/runtime/test/a4p2-ceiling-reachability.test.ts` | spec §7.4.1 names this file and its owning PR as PR2 lane A; X5-B1 struck the same duty from PR1 | spec `:311`; ADR X5-B1 |
+| Test create `packages/runtime/test/a4p2-ceiling-reachability.test.ts` | spec §7.4.1 names this file and its owning PR as PR2 lane A; **X5-E1** removed the §7.4.1 ceiling-test duty from PR1 (this row originally cited "X5-B1", a label that does not exist anywhere in X5 — corrected 2026-10-07 when an independent review checked my own citations, per Global Precedence rule 4) | spec `:311`; ADR X5-E1 |
 | Modify `packages/testkit/test/p4t6-session-event-scan.test.ts` + receipt | rule 8 / A5-17 continuous recompute authority; PR2 adds ≥3 scannable files over the pinned value | pin **978** at `p4t6-session-event-scan.test.ts:52` |
 | dist co-commit expectation line | PR2 wires `service.ts` → `authority-ceiling.ts`/`runtime-authority.ts`; transitive emission applies even though the runtime build include omits `governance` | A5-19 mechanism |
 
@@ -87,7 +87,7 @@ silence, because silently editing a file assigned to another PR is how two write
 | lane→storage value edge | yes, closed (scan `:360-373`; only a dynamic `import()` would slip) |
 | `permission-mutation.ts` consumers | yes — and it fires on `import type`, which is why R1 adds the hygiene test to the list |
 | A5-13 proposal payload | yes for record/vocabulary change (the three `a4pr0-*` suites); **adding a helper to `proposal-store.ts` reds nothing** — that is a review duty, not a test duty |
-| v1/v2 blueprint byte-identity | yes, but exactly **one** in-gate literal: `a3p4-pr4-production-entry-regression.test.ts:2115` (+ the out-of-gate kit `:389`) |
+| v1/v2 blueprint byte-identity | yes. **Update after PR1 landed:** the "exactly one in-gate literal" fact this row recorded is superseded — PR1 added two more literal goldens (`sha256:d25ea1cf…`, `sha256:d6368916…`) plus a v3 projection JSON literal, so drift in the hashable shape now has three in-gate literals. PR1 also proved the honest-provenance technique for literals: the golden legs pass **in the RED capture on the pre-change tree** (`red-captures/lane-a-red.txt:20`), which is the only way to show a literal was measured before the code it pins |
 | CONTEXT-before-EXPANSION ordering for the **new** v3 gate | **no** — only PR2's own RED can see it (R5) |
 
 ## Stale text repaired in place by this ruling (Global Precedence rule 3)
