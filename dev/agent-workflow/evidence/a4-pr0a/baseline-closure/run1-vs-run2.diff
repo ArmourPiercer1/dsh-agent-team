@@ -1,0 +1,3 @@
+14a15,16
+> TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P1: N=2 same-template parallel activations both succeed two COMMITTED operations, two members, two distinct child Sessions
+> TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P1: N=2 same-template parallel activations both succeed two activated results with distinct instance ids and child Sessions

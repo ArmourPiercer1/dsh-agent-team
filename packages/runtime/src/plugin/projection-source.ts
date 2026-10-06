@@ -205,6 +205,12 @@ const FACT_TEAM_COORDINATION_RECORDED = 'team-coordination-recorded'
 const FACT_CONTROL_REQUEST_RECORDED = 'control-request-recorded'
 const FACT_CONTROL_DECISION_RECORDED = 'control-decision-recorded'
 const FACT_CONTROL_ALLOW_CONSUMED = 'control-allow-consumed'
+// A4-PR0a: the inline-abort terminal mark, written by `abandonControlRequest`
+// (`control/service.ts`). It was the ONLY production-written fact type missing from
+// FACT_TYPE_CATEGORY below — and because the fold throws on any unmapped type on
+// EVERY projection read, a single abandoned inline request broke
+// `team.getProjection` for that Team permanently (the ledger is append-only).
+const FACT_CONTROL_REQUEST_ABANDONED = 'control-request-abandoned'
 const FACT_ACTIVITY_PROGRESS_RECORDED = 'activity-progress-recorded'
 const FACT_ACTIVITY_INTERVAL_OPENED = 'activity-interval-opened'
 const FACT_ACTIVITY_INTERVAL_CLOSED = 'activity-interval-closed'
@@ -230,6 +236,11 @@ const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new 
   [FACT_CONTROL_REQUEST_RECORDED, 'control'],
   [FACT_CONTROL_DECISION_RECORDED, 'control'],
   [FACT_CONTROL_ALLOW_CONSUMED, 'control'],
+  // A4-PR0a: the abandonment terminal mark — a control fact, paired with the
+  // request/decision rows it closes (same home the artifact-read grant repair
+  // chose for a non-ControlRequest control fact). The eight categories are frozen:
+  // no ninth category, and `totalEntries == sum(byCategory)` stays intact.
+  [FACT_CONTROL_REQUEST_ABANDONED, 'control'],
   // Durable authorization grant; not a ControlRequest/ControlDecision.
   [ARTIFACT_READ_GRANTED_FACT_TYPE, 'control'],
   [FACT_ACTIVITY_PROGRESS_RECORDED, 'progress'],
