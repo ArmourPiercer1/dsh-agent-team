@@ -36,11 +36,9 @@
 
 import { describe, expect, it } from 'vitest'
 import { parseRootSessionId } from '../../contracts/src/index.js'
-import type { LedgerEntry } from '../../storage/schema/index.js'
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../storage/schema/stores.js'
 import { readText, writeText } from '../../testkit/fault-injection/file-seam.mjs'
 import {
-  P6T4_NOW,
   P6T4_ROOT,
   P6T4_SEEDS,
   createP6T4World,

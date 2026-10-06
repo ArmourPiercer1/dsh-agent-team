@@ -146,6 +146,7 @@ function recordOf(outcome: GovernanceProposalReadOutcome): ProposalReadRecord {
 
 type Captured = {
   readonly appendedSequence: number
+  readonly lastAppendedSequence: number
   readonly appendedRecord: GovernanceProposalRecord
   readonly proposalRowCount: number
   readonly rowFactType: string
@@ -297,6 +298,9 @@ const captured: Captured = await (async (): Promise<Captured> => {
 
       return {
         appendedSequence: first.sequence,
+        // Three appends of the SAME base pair and case are three rows: the
+        // substrate dedupes nothing and rewrites nothing (append-only).
+        lastAppendedSequence: third.sequence,
         appendedRecord: first.record,
         proposalRowCount: proposalRows.length,
         rowFactType: firstRow.factType,
@@ -409,6 +413,10 @@ describe('A4-PR0 governance proposal store (durable append / read / reopen)', ()
     expect(captured.foreignTeamSurfacedCount).toBe(1)
     expect(captured.foreignTeamSequenceVisibleHere).toBe(false)
     expect(captured.foreignTeamProposalRowDurable).toBe(true)
+  })
+
+  it('S1b every append takes its own sequence — nothing dedupes or rewrites', () => {
+    expect(captured.lastAppendedSequence).toBeGreaterThan(captured.appendedSequence)
   })
 
   it('S6 a disagreeing base pair is refused before any write or allocation (A4-3)', () => {

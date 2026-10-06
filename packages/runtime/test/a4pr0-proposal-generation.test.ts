@@ -66,7 +66,6 @@ import { createPermissionOverlayRepositoryPort } from '../permission-governance/
 import type { PolicyEntry } from '../../domain/policy/src/index.js'
 import { permissionOverlaySnapshotKey } from '../../storage/schema/permission-overlay.js'
 import {
-  P6T4_NOW,
   P6T4_ROOT,
   P6T4_SEEDS,
   createP6T4World,
@@ -185,6 +184,11 @@ type Captured = {
   readonly overlayConflictCode: string | undefined
   readonly overlayConflictActual: unknown
   readonly proposalCountAfterConflicts: number
+  /** Durable writes the append itself produced (must be positive). */
+  readonly appendDurableWrites: number
+  /** Durable writes the two CAS refusals produced (must be zero). */
+  readonly casRefusalWrites: number
+  readonly slotRowsBeforeConflict: number
   readonly reopenedBaseGeneration: number
   readonly reopenedBaseSnapshotId: string | null
   readonly reopenedPairStillAgrees: boolean
@@ -280,6 +284,10 @@ const captured: Captured = await (async (): Promise<Captured> => {
     const slotRowsBeforeConflict = world.domain.repositories.overrides.list(P6T4_ROOT).length
 
     // --- the CAS probes AFTER the append (the durable non-disturbance proof) -
+    // Write counts are sampled around the two probes only: a refusal must not
+    // touch the durable medium at all, and the append's own writes (which sit
+    // BEFORE this sample point) must not be counted against it.
+    const writesAtCasStart = world.seam.writeCount
     let slotConflictCode: string | undefined
     let slotConflictActual: unknown
     try {
@@ -293,7 +301,7 @@ const captured: Captured = await (async (): Promise<Captured> => {
     } catch (error) {
       if (!isMutationError(error)) throw error
       slotConflictCode = error.code
-      slotConflictActual = error.details['actualGeneration']
+      slotConflictActual = error.details?.['actualGeneration']
     }
     const slotRowsAfterConflict = world.domain.repositories.overrides.list(P6T4_ROOT).length
 
@@ -315,6 +323,7 @@ const captured: Captured = await (async (): Promise<Captured> => {
       overlayConflictCode = error.code
       overlayConflictActual = error.details['actualGeneration']
     }
+    const writesAfterCas = world.seam.writeCount
 
     // A stale-but-internally-consistent pair stays a SOUND record: the reader
     // has no overlay to compare against, and the commit-time revalidation that
@@ -366,6 +375,9 @@ const captured: Captured = await (async (): Promise<Captured> => {
         overlayConflictCode,
         overlayConflictActual,
         proposalCountAfterConflicts: afterConflicts.length,
+        appendDurableWrites: writesAtCasStart - writesBefore,
+        casRefusalWrites: writesAfterCas - writesAtCasStart,
+        slotRowsBeforeConflict,
         reopenedBaseGeneration: reopenedRecord.baseGeneration,
         reopenedBaseSnapshotId: reopenedRecord.baseSnapshotId,
         reopenedPairStillAgrees:
@@ -407,8 +419,13 @@ describe('A4-PR0 the proposal record against the three generations (A4-2, A4-3)'
     expect(captured.slotGenerationAfter).toBe(captured.slotGenerationBefore)
     expect(captured.slotConflictCode).toBe(MUTATION_ERROR_CODES.OVERRIDE_GENERATION_CONFLICT)
     expect(captured.slotConflictActual).toBe(captured.slotGenerationBefore)
-    // Zero write: the refusal left the slot exactly as it found it.
+    // Zero write: the refusal left the slot exactly as it found it, and wrote
+    // nothing durable anywhere — while the proposal append itself demonstrably
+    // did write (so a zero here is not the trivial zero of a no-op scenario).
+    expect(captured.slotRowsAfterConflict).toBe(captured.slotRowsBeforeConflict)
     expect(captured.slotRowsAfterConflict).toBe(3)
+    expect(captured.casRefusalWrites).toBe(0)
+    expect(captured.appendDurableWrites).toBeGreaterThan(0)
   })
 
   it('G4 the overlay snapshot chain is untouched, and its CAS still refuses at the same number (c)', () => {
