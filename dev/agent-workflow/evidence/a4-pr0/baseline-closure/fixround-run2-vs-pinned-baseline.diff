@@ -1,0 +1,1 @@
+FIXED TEST packages/testkit/test/rc2-kit-pin-hygiene.test.ts::H2 the pin has exactly one declaration site only tests/paths.mjs assigns the baseline constants

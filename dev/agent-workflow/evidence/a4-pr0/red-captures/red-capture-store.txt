@@ -1,0 +1,47 @@
+A4-PR0 RED capture — the spec fails because the module does not exist yet
+=============================================================================
+Spec     : packages/runtime/test/a4pr0-proposal-store.test.ts
+Command  : CI=true pnpm vitest run packages/runtime/test/a4pr0-proposal-store.test.ts
+Taken at : 6010de69 on `feat/a4-pr0-proposal-substrate` (fix round, rebased onto
+           `7af7e654`), 2026-10-08.
+State    : `packages/runtime/governance/proposal-store.ts` moved OUT of the tree
+           for the duration of this run (`mv` to a path outside the package, then
+           moved back; `git status --porcelain` afterwards showed nothing but this
+           new evidence directory). That is exactly the permanent state of commit
+           `08d8acda` — the RED commit, whose tree the reviewer independently
+           confirmed has the three specs and no `proposal-store.ts`.
+
+PROVENANCE / LIMITS. This is a RE-CAPTURE at the fix round's HEAD, not the
+original 2026-10-07 pre-implementation log: the specs changed after the original
+RED (`9c4e38a8` removed now-dead imports and rewired the projection legs), so the
+reported import line differs from the line quoted in
+`../baseline-closure/SUMMARY.md`. What does not differ is the failure: the module
+cannot be resolved, the suite collects ZERO tests, and nothing else in the tree
+fails. The three specs fail with the identical error at their own import site.
+
+--- verbatim stdout+stderr below (no edits) -----------------------------------
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr0
+
+ ❯ packages/runtime/test/a4pr0-proposal-store.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4pr0-proposal-store.test.ts [ packages/runtime/test/a4pr0-proposal-store.test.ts ]
+Error: Cannot find module '../governance/proposal-store.js' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr0/packages/runtime/test/a4pr0-proposal-store.test.ts
+ ❯ packages/runtime/test/a4pr0-proposal-store.test.ts:59:1
+     57| import type { P6T1World } from './p6t1-helpers.js'
+     58| import { createTeamDomainReadPort } from '../src/plugin/projection-sou…
+     59| import {
+       | ^
+     60|   GOVERNANCE_PROPOSAL_FACT_TYPE,
+     61|   GOVERNANCE_PROPOSAL_LEDGER_SCHEMA_VERSION,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  05:05:13
+   Duration  897ms (transform 625ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
