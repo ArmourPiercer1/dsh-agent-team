@@ -917,7 +917,7 @@ Normative under **Global Precedence**; round-3 review (security lane BLOCK, arch
 - **A5-10 (N3, dead pointer) §21.1 says the opposite of what A3-13 quoted.** There is no "Team start blocked when governance authority is unmet" row anywhere in the spec; spec §21.1 reads "mismatch/undetermined → warning; acknowledgement allows startup". A3-13's start-gate rule is therefore **new normative text**, not a quote, and it is reconciled thus: a governance-authority state that is merely **incompatible or unresolved** for a v1/v2 Team stays warning-and-acknowledgeable (a hard block would make every unmigrated Team unstartable, contradicting the migration plan); a governance authority that is **unreadable or corrupt** at start blocks start, because nothing downstream can be trusted. §21.1 gains both rows in place.
 - **A5-11 (feasibility item 5) PR4 and PR5 both name `packages/tools/src/tools.ts`; they do not run in parallel.** PR4's A1.3 file list and PR5's task body collide, and the collision set named for the one concurrent pair did not include it. `packages/tools/src/tools.ts` is assigned to **PR4**, PR5 rebases onto PR4, and the file is added to the declared collision set and to the serialisation ranking.
 - **A5-12 (feasibility item 2) The dual-algebra window is explicit and owned.** Between PR1 and PR7 the repository contains two envelope algebras on purpose: v1/v2 paths keep existential coverage, v3 paths use `grantCeiling`. The version switch lives in the single adapter that PR2 owns (`src/plugin/permission-plane.ts`, which already builds the config-shaped AST at `:499-530`), selected by the document's `schemaVersion`, and PR2 must pin **both** branches in one test file so nobody "helpfully" deletes the existential leg early. §5.2 and ADR §"Why this decision was forced" are scoped to v3 in place, because under Global Precedence rule 2 an implementer reading the unscoped sentence would have changed live v1/v2 decisions inside PR1 and broken PR1's own no-behaviour-change gate.
-- **A5-13 (feasibility item 1) PR0's payload contract is frozen at PR0, and PR5 inherits it.** `packages/runtime/governance/proposal-store.ts` exports the record type in PR0 — subject `targetMemberInstanceId`, `baseGeneration: number`, `baseSnapshotId: string | null`, `desiredEffect`, `authorityEnvelopeAst` (the A3-9 AST), `requiredAuthority`, `caseFingerprint`, `status`, `recordedAt` — with **key-omitted optionality**, because the durable writer rejects `undefined` (`packages/storage/repositories/ledger.ts:202,206`: `assertPlainRecord` + `assertRemoteSafeJsonValue`). PR5 may extend the fingerprint inputs but may not rename or retype a field; if PR5 genuinely needs a different shape, that is a plan change, not an implementation detail. PR0's own files: `proposal-store.ts`, `proposal-codes.ts`, `packages/runtime/test/a4pr0-proposal-store.test.ts` (round-trip + restart), `a4pr0-proposal-corrupt.test.ts` (two-leg corrupt gate), `a4pr0-proposal-generation.test.ts` (A4-2 counter separation), branch `feat/a4-pr0-proposal-substrate`.
+- **A5-13 (feasibility item 1) PR0's payload contract is frozen at PR0, and PR5 inherits it.** `packages/runtime/governance/proposal-store.ts` exports the record type in PR0 — subject `targetMemberInstanceId`, `baseGeneration: number`, `baseSnapshotId: string | null`, `desiredEffect`, `authorityEnvelopeAst` (the A3-9 AST), `requiredAuthority`, `caseFingerprint`, `status`, `recordedAt` — with **key-omitted optionality**, because the durable writer rejects `undefined` (see the Execution-round corrections, X1, for the verified citations and a stronger reason than the one originally recorded). PR5 may extend the fingerprint inputs but may not rename or retype a field; if PR5 genuinely needs a different shape, that is a plan change, not an implementation detail. PR0's own files: `proposal-store.ts`, `proposal-codes.ts`, `packages/runtime/test/a4pr0-proposal-store.test.ts` (round-trip + restart), `a4pr0-proposal-corrupt.test.ts` (two-leg corrupt gate), `a4pr0-proposal-generation.test.ts` (A4-2 counter separation), branch `feat/a4-pr0-proposal-substrate`.
 - **A5-14 Named acceptance targets where the plan had none.** PR7 lane D gains `packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts`; PR6 names `packages/remote/src/handlers/team.ts` + `packages/remote/src/contracts/params.ts` (v8 `override.getPermissionAdministration`) and the pure diagnostic surface in `packages/runtime/governance/service.ts`.
 - **A5-15 Heading and count hygiene.** The plan's A2/A3 addenda were nested as `###` under `## Amendment A1`, which reads as A1 ⊃ A2 ⊃ A3 against the stated flat precedence: they are promoted to `##`. The baseline heading "Before PR1 implementation" becomes "Before A4-PR0a" (the baseline-diff is a PR0a/PR0 gate), and "all seven PRs" becomes "all nine PRs (PR0a, PR0, PR1…PR7)".
 
@@ -930,4 +930,46 @@ Normative under **Global Precedence**; round-3 review (security lane BLOCK, arch
 - **A5-20 (N18) Digest stability is bought with an audit gap, and the gap is surfaced.** Proposals are not attributed through `FACT_ADDRESSING_KEYS`, so a disposed member's retained history omits proposals about it; PR6's governance/audit surface states this in the UI contract rather than leaving readers to infer completeness.
 - **A5-21 (N10) An inserted PR is inserted everywhere or nowhere.** A4-PR0a now has a roadmap row, a task body with branch/file list/checkboxes/gate, a place in the merge order, review order, per-PR gates, push authority, the dist/artifact gate sentence, and the `p4t6` authority; the amendment sections in the plan are flat `##` siblings in precedence order (A2, A3, A4, A5) rather than nested children of A1; the PR count reads nine; the baseline heading reads "Before A4-PR0a".
 - **A5-22 (PR0a↔PR0 hazard) The writer of a fact type owns both category maps.** A4-PR0a's guard asserts host **and** client registration; if only a later PR may touch `packages/client/src/model/ledger-adapter.ts`, the PR that adds a fact type is red on a file it is forbidden to edit — which is precisely how the original defect survived. So: **every PR that writes a fact type registers it in both maps** (PR0a: abandonment; PR0: `governance-proposal-recorded`; PR3: `control-escalation-recorded`), and PR6 keeps what is actually its own — the rendering and Events-visibility layer (`INTERNAL_FACT_TYPES`, `TeamLedger.tsx`) plus the A5-20 audit-gap disclosure. PR6's file list shrinks by two one-line table entries and loses nothing it was for.
+
+### Execution-round corrections (A4-PR0a and A4-PR0, 2026-10-07)
+
+Numbered `X*` rather than `A6*` on purpose: these are the coordinator's execution-round corrections, not a
+third review round (rounds are capped at three by A1.1 and are spent). Rule 3 still applies — a correction
+that changes what an implementer executes from is applied in place at the section they execute from, and this
+block is additionally where the evidence lives. Full evidence, including the measured file:line sets:
+`dev/agent-workflow/evidence/a4-pr0/coordinator-rulings-and-corrections.md`.
+
+- **X1 — A5-13's citation named the wrong directory; the rule stands and its reason got stronger.** The two
+  validators are `packages/storage/schema/ledger.ts:202` (`payload: assertPlainRecord(record['payload'],
+  'payload')`) and `:206` (`assertRemoteSafeJsonValue(result)`); `assertRemoteSafeJsonValue` is defined at
+  `packages/contracts/src/remote-safe.ts:70`, whose header names `undefined` among rejected values, and
+  `RemoteSafeJsonValue` (:26) is a closed union excluding it. The stronger reason for key-omitted optionality:
+  `:206` validates the **deserialized** record too, so an explicitly-`undefined` key is not loudly rejected but
+  **silently absent on read-back**. Silent loss of a governance field is worse than a throw, which makes
+  key-omission mandatory rather than merely tidy.
+- **X2 — durable-vocabulary split for `requiredAuthority` (an ordering hole in A5-13 itself).** A5-13 freezes
+  `requiredAuthority` at PR0, and the spec types it `RuntimeAuthority` (spec:274, :281, :619), but
+  `RuntimeAuthority` is PR2's Produces (plan line 212); measured on `5d646bd2`, `RuntimeAuthority` and
+  `human-admin` each have zero non-test occurrences, so no ladder vocabulary exists to import. Neither A5-13
+  nor plan line 872 states a type for the field, so this is a gap, not a contradiction. Ruling: PR0 persists
+  `ProposalAuthorityPosition = 'member' | 'leader' | 'human-user' | 'human-admin'` — exactly those four
+  literals, closed set pinned by a test, **no ranking and no comparator in PR0** (ranking is PR2's evaluator,
+  and PR2's lane-A ceiling matrix is the A5-16 backstop that must precede the algebra; a PR0 comparator would
+  leave that matrix nothing to backstop). PR2's `RuntimeAuthority` must be definitionally identical and must
+  import or alias this union; **a second divergent ladder type is a plan change**, not an implementation detail.
+- **X3 — the same hole for `authorityEnvelopeAst`, resolved with A3-9's own pattern.** The shared grammar module
+  arrives at PR1 in `packages/domain`, so PR0 cannot import its AST type either. PR0 declares it structurally per
+  A3-9's frozen Blueprint/config shape and interprets nothing; PR1, as canonical owner, adds the compile-time
+  mutual-assignability test — exactly the mechanism A3-9 mandates for the effect vocabulary because `domain` may
+  not import `storage`/`runtime`. This is not a new invention: the shape is already shipped at
+  `packages/domain/blueprint/src/types.ts:330` (`exact`/`subtree` carry `path`, `fingerprint` carries
+  `fingerprint`; the operation class picks the legal variant, SHELL class pairing with `fingerprint` only), and
+  the runtime `{ kind, resource }` (`PermissionResourceMatcher`, `governance/permission-mutation.ts:272-276`) is
+  the adapter direction, not the grammar.
+- **X4 — A5-19 reconfirmed the hard way.** During PR0 an implementer re-derived the same false premise A5-19
+  corrected ("no `node:` builtins in `packages/**/*.ts`, only `.mjs`") and was about to encode it as a code
+  comment. Measured: `packages/runtime/artifact-read/digest.ts:25` imports `node:crypto` in a production lane
+  module, and the eslint block only grants node *globals* to explicit `.mjs` globs. The PR0 decision survived
+  for its real reason (spec §8.4 assigns fingerprint computation to PR5; A5-13 freezes `caseFingerprint` as a
+  record input). Recorded so the premise is not refuted a third time in PR5.
 

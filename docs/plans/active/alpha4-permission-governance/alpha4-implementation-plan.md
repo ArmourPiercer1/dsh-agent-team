@@ -869,7 +869,7 @@ Per-PR corrections to the file lists above (these supersede them):
 **Purpose:** a durable, restart-stable proposal record with an honest corrupt-read contract, and **zero product behaviour change** — nothing in the plugin calls it yet.
 
 **Files:**
-- Create: `packages/runtime/governance/proposal-store.ts` — the frozen record type (ADR A5-13): `targetMemberInstanceId`, `baseGeneration: number`, `baseSnapshotId: string | null`, `desiredEffect`, `authorityEnvelopeAst`, `requiredAuthority`, `caseFingerprint`, `status`, `recordedAt`; **key-omitted** optionality (the durable writer rejects `undefined`).
+- Create: `packages/runtime/governance/proposal-store.ts` — the frozen record type (ADR A5-13): `targetMemberInstanceId`, `baseGeneration: number`, `baseSnapshotId: string | null`, `desiredEffect`, `authorityEnvelopeAst`, `requiredAuthority`, `caseFingerprint`, `status`, `recordedAt`; **key-omitted** optionality (the durable writer rejects `undefined`). **Field types are NOT frozen by this line**: `requiredAuthority` and `authorityEnvelopeAst` name types that arrive in PR2 and PR1, so PR0 persists the durable vocabulary and interprets nothing — see ADR Execution-round corrections X2 and X3, which bind here.
 - Create: `packages/runtime/governance/proposal-codes.ts` — lane-local closed error-code table (A4-1); no value import from `src/plugin/**`.
 - Modify: `packages/runtime/src/plugin/projection-source.ts` — register fact type `governance-proposal-recorded` → `policy` (A3-7), so PR0a's closed-set guard stays green.
 - Create: `packages/runtime/test/a4pr0-proposal-store.test.ts` — round-trip + restart/reopen stability.
