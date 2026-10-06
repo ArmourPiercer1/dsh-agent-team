@@ -71,6 +71,8 @@ import type { PermissionMutationEnvelope, PermissionStaticLayerFacts } from '../
 import type { GovernanceMutationService, GovernancePermissionLaneDeps } from '../../governance/types.js';
 import type { MemberLifecycleState } from '../../../contracts/src/index.js';
 import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js';
+import type { AuthorityEnvelope, AuthorityEnvelopeAst } from '../../../domain/authority-envelope/src/index.js';
+import type { AuthorityDocumentRead } from '../../governance/authority-ceiling.js';
 import type { MemberLifecycleReaderPort, PermissionDecisionLane, PermissionLifecycleMutationLane, PermissionLifecycleRestorePort } from '../../permission-lifecycle/index.js';
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js';
 /** The durable member-instance read surface the lifecycle facts come from. */
@@ -204,11 +206,79 @@ export interface PermissionAuthorityFacts {
      *  the LANE deps may omit them (legacy), the production surface may not. */
     readonly staticLayers: (teamSessionId: string, memberInstanceId: string) => Promise<PermissionStaticLayerFacts | undefined>;
     readonly permissionEnvelope: (teamSessionId: string, memberInstanceId: string) => Promise<PermissionMutationEnvelope>;
+    /**
+     * The v3 Human User hard ceiling for one addressed member (A4-PR1, spec §3.2).
+     *
+     * THREE outcomes, never a document-or-undefined: on the approval plane an
+     * absent document means NO NARROWING, so a read that answered `undefined` for
+     * a FAULT would widen approval authority exactly when the storage layer is
+     * least trustworthy. See {@link AuthorityHardCeilingRead}.
+     *
+     * PR1 adds the READ and nothing else: no production decision consults it, and
+     * {@link PermissionAuthorityFacts.refresh} does not warm it (warming would
+     * fold a brand-new document into `healthy()` semantics that every v1/v2 Team
+     * still drives — that is PR2's call with a caller in front of it).
+     */
+    readonly teamHardEnvelope: (teamSessionId: string, memberInstanceId: string) => Promise<AuthorityHardCeilingRead>;
 }
 /**
  * Build the addressed-team, per-member authority readers (see the section
  * header for the three bindings and the fail-closed rules).
  * @param deps - the injected bound-Blueprint / member / canonicalizer sources.
  */
+/**
+ * THE one AST→runtime canonicalization of an authority document (plan Task 1:
+ * "single AST→runtime canonicalization"; ADR A2-3, correction X5-E2).
+ *
+ * Both v3 documents (`permissionMutationEnvelope`, `teamHardEnvelope`) pass
+ * through THIS function, which is what "one grammar, two documents" means at the
+ * boundary: identical mapping, identical provider discipline, one place for a
+ * reviewer to audit. The input is the DECLARED shape a hash-bound Blueprint
+ * carries; the output is the canonical `{ kind, resource }` document the kernel
+ * consumes, validated and frozen by `parsePermissionMutationEnvelope` — the same
+ * validation the mutation envelope has always had, so v1/v2 behavior is
+ * unchanged to the byte (ADR A2-4).
+ *
+ * THE PROVIDER DISCIPLINE, because it is the security-relevant part:
+ *  - a `fingerprint` matcher travels VERBATIM with ZERO provider calls — it
+ *    already IS the canonical operation identity, and passing it through a path
+ *    canonicalizer would let a filesystem answer rename an exec identity;
+ *  - an `exact`/`subtree` matcher is canonicalized AT THE GIVEN WORKSPACE BASIS,
+ *    and a provider that answers with nothing is a THROWN error, never an empty
+ *    key: an empty key would silently turn a rule into one that covers the wrong
+ *    (or every) resource.
+ *
+ * Exported so the discipline is testable directly
+ * (`a4p1-authority-envelope.test.ts` counts the provider calls); the production
+ * readers below are its only callers.
+ */
+export declare function buildAuthorityEnvelope(document: AuthorityEnvelopeAst, cwd: string, canonicalizer: {
+    readonly canonicalize: (path: string, cwd: string) => Promise<string>;
+}): Promise<AuthorityEnvelope>;
+/**
+ * The read outcome for the v3 `teamHardEnvelope` — an ALIAS of the ceiling
+ * adapter's {@link AuthorityDocumentRead}, so there is ONE name for the three
+ * facts a document read can report and, more importantly, so the reader's
+ * output can be handed to `grantCeiling`/`bindingDocs` WITHOUT an intermediate
+ * `undefined`. That intermediate is the hole this alias closes: on the approval
+ * plane absence means "narrows nothing" (ADR A1-4), and an empty bound set meets
+ * to the identity, so a `declared | absent` -or-`undefined` seam would let
+ * `unavailable → undefined` grant a Leader or a Human User UNLIMITED approval
+ * authority on a storage fault — with every test green, because `undefined` is
+ * the correct spelling of the OTHER fact (`absent`). The ceiling adapter
+ * refuses on `unavailable` instead, and its type does not accept `undefined`
+ * at all (review SF1 on PR1).
+ *
+ * The three facts:
+ *  - `declared` — a document exists (possibly declaring `rules: []`, which is a
+ *    legal v3 declaration, not an absence);
+ *  - `absent` — the bound Blueprint does not carry the field, exactly the v1/v2
+ *    case through the bridge (ADR A2-4/A2-11); NEVER synthesized from a missing
+ *    read;
+ *  - `unavailable` — the binding is unknown or a provider faulted: unknown, not
+ *    absent. A consumer must fail closed (ADR A1-7 keeps
+ *    `authority-unavailable` distinct from `authority-undetermined`).
+ */
+export type AuthorityHardCeilingRead = AuthorityDocumentRead;
 export declare function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDeps): PermissionAuthorityFacts;
 //# sourceMappingURL=permission-plane.d.ts.map

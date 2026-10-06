@@ -45,7 +45,7 @@
 import { assertRemoteSafeJsonValue, deepFreeze, LEGACY_FORBIDDEN_FIELDS, parseBlueprintId, parseBlueprintRevision, parseTemplateId, teamContractError, toRemoteSafeDetail, } from '../../../contracts/src/index.js';
 import { assertNoUnknownFields, assertPlainRecord, } from '../../../contracts/src/dto/common.js';
 import { assertRequirementType, isRequiredPersonaKind, REQUIRED_PERSONA_KIND_VALUES, } from '../../compatibility/src/requirement.js';
-import { BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_EXEC_MATCHER_FIELDS, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FIELDS, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FILE_MATCHER_FIELDS, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_RULE_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TEMPLATE_FIELDS_V2, BLUEPRINT_TOP_LEVEL_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS_V2, BLUEPRINT_V2_REQUIREMENT_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, PERMISSION_FINGERPRINT_MAX_LENGTH, PERMISSION_PATH_MAX_LENGTH, PERMISSION_POLICY_DEFAULTS, PERMISSION_POLICY_FIELDS, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_FIELDS, PERMISSION_TOOL_NAMES, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
+import { BLUEPRINT_AUTHORITY_ENVELOPE_EXEC_MATCHER_FIELDS, BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS, BLUEPRINT_AUTHORITY_ENVELOPE_FILE_MATCHER_FIELDS, BLUEPRINT_AUTHORITY_ENVELOPE_MATCHER_KINDS, BLUEPRINT_AUTHORITY_ENVELOPE_MAX_EFFECTS, BLUEPRINT_AUTHORITY_ENVELOPE_RULE_FIELDS, BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TEMPLATE_FIELDS_V2, BLUEPRINT_TOP_LEVEL_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS_V2, BLUEPRINT_TOP_LEVEL_FIELDS_V3, BLUEPRINT_V2_REQUIREMENT_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, PERMISSION_FINGERPRINT_MAX_LENGTH, PERMISSION_PATH_MAX_LENGTH, PERMISSION_POLICY_DEFAULTS, PERMISSION_POLICY_FIELDS, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_FIELDS, PERMISSION_TOOL_NAMES, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
 import { deriveContentHash } from './hash.js';
 import { parseModelPreferenceToken } from './model-preference.js';
@@ -183,7 +183,11 @@ function validateTemplate(raw, path, role, schemaVersion) {
     // field and fails loudly — the v1 validator is NOT tightened); v2
     // templates additionally accept the per-template structured requirement
     // field `requirements`.
-    const templateFields = schemaVersion === 2 ? BLUEPRINT_TEMPLATE_FIELDS_V2 : BLUEPRINT_TEMPLATE_FIELDS;
+    // A4-PR1: v3 inherits the v2 template shape UNCHANGED (the v3 delta is one
+    // top-level authority document, ADR A2-2), so the arm is written as "v1 gets
+    // the frozen v1 set" rather than "v2 gets v2" — a third version would
+    // otherwise silently fall back to the v1 template fields.
+    const templateFields = schemaVersion === 1 ? BLUEPRINT_TEMPLATE_FIELDS : BLUEPRINT_TEMPLATE_FIELDS_V2;
     assertNoUnknownFields(record, templateFields, `${path} (template)`);
     const templateId = parseTemplateId(requireField(record, 'templateId', path));
     const displayName = takeString(record, 'displayName', path, {
@@ -220,7 +224,7 @@ function validateTemplate(raw, path, role, schemaVersion) {
     // OMITS the key when it is `undefined`, so a v1 template (and a v2
     // template that declares none) hashes byte-identically to before §E.2 —
     // the same "absent => key omitted" discipline as the A1 `permissions` key.
-    const v2RequirementsRaw = schemaVersion === 2 ? takeArray(record, 'requirements', path) : undefined;
+    const v2RequirementsRaw = schemaVersion >= 2 ? takeArray(record, 'requirements', path) : undefined;
     const v2Requirements = v2RequirementsRaw === undefined
         ? undefined
         : validateV2Requirements(v2RequirementsRaw, `${path}.requirements`);
@@ -372,11 +376,17 @@ function validateEnvelope(raw, path) {
     return { allow, deny };
 }
 /**
- * Validate the Alpha.3 PR4 permission-EXPANSION authority carrier
- * (`permissionMutationEnvelope`, ADR §6 / design §4). The ONE explicit
- * Leader expansion ceiling — deliberately NOT the operation-token
- * {@link MutationEnvelope} above (D2: two concepts, one per concept, no
- * transformation between them).
+ * Validate ONE authority document of the shared v3 grammar — the Alpha.3 PR4
+ * Leader expansion ceiling (`permissionMutationEnvelope`, ADR §6 / design §4)
+ * or the Alpha.4 Human User hard ceiling (`teamHardEnvelope`, ADR A2-2 /
+ * spec §3.3). ONE function because it is ONE grammar (ADR A3-9): the two
+ * documents differ in the runtime role their rules play, never in shape,
+ * class pairing, or closedness. `carrier` is the field name, used ONLY in
+ * diagnostics so a refusal inside `teamHardEnvelope` never blames
+ * `permissionMutationEnvelope`.
+ *
+ * Neither is the operation-token {@link MutationEnvelope} above (D2: two
+ * concepts, one per concept, no transformation between them).
  *
  * The grammar mirrors the runtime kernel's own write-time gate
  * (`governance/permission-mutation.ts validateMatcher`): the
@@ -397,40 +407,40 @@ function validateEnvelope(raw, path) {
  * pair is ambiguous). A declared empty `rules` list is legal and means
  * exactly one thing: NO expansion authority.
  */
-function validatePermissionMutationEnvelope(raw, path) {
-    const record = assertPlainRecord(raw, `${path} (permission mutation envelope)`);
-    assertNoUnknownFields(record, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FIELDS, `${path} (permission mutation envelope)`);
+function validateAuthorityEnvelope(raw, path, carrier) {
+    const record = assertPlainRecord(raw, `${path} (${carrier})`);
+    assertNoUnknownFields(record, BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS, `${path} (${carrier})`);
     const rulesRaw = requireField(record, 'rules', path);
     if (!Array.isArray(rulesRaw)) {
-        throw teamContractError('MALFORMED_DTO', `field ${path}.rules must be an ARRAY of { operationClass, matcher, maximumEffect } (it may be empty — empty means NO Leader expansion authority), got ${rulesRaw === null ? 'null' : typeof rulesRaw}`, { path: `${path}.rules` });
+        throw teamContractError('MALFORMED_DTO', `field ${path}.rules must be an ARRAY of { operationClass, matcher, maximumEffect } (it may be empty — empty means NO expansion authority in the ${carrier}), got ${rulesRaw === null ? 'null' : typeof rulesRaw}`, { path: `${path}.rules` });
     }
     const rules = [];
     const seenPairs = new Set();
     rulesRaw.forEach((item, index) => {
         const rulePath = `${path}.rules[${index}]`;
         const rule = assertPlainRecord(item, `${rulePath} (envelope rule)`);
-        assertNoUnknownFields(rule, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_RULE_FIELDS, rulePath);
+        assertNoUnknownFields(rule, BLUEPRINT_AUTHORITY_ENVELOPE_RULE_FIELDS, rulePath);
         const operationClass = requireField(rule, 'operationClass', rulePath);
         if (typeof operationClass !== 'string' || !PERMISSION_TOOL_NAMES.includes(operationClass)) {
             throw teamContractError('MALFORMED_DTO', `field ${rulePath}.operationClass must be one of ${PERMISSION_TOOL_NAMES.join(' | ')} (the closed permission vocabulary), got ${JSON.stringify(operationClass)}`, { path: `${rulePath}.operationClass` });
         }
         const isShellTool = operationClass === 'bash' || operationClass === 'pwsh';
         const maximumEffect = requireField(rule, 'maximumEffect', rulePath);
-        if (typeof maximumEffect !== 'string' || !BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS.includes(maximumEffect)) {
-            throw teamContractError('MALFORMED_DTO', `field ${rulePath}.maximumEffect must be one of ${BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS.join(' | ')} (the §6 effect ceiling), got ${JSON.stringify(maximumEffect)}`, { path: `${rulePath}.maximumEffect` });
+        if (typeof maximumEffect !== 'string' || !BLUEPRINT_AUTHORITY_ENVELOPE_MAX_EFFECTS.includes(maximumEffect)) {
+            throw teamContractError('MALFORMED_DTO', `field ${rulePath}.maximumEffect must be one of ${BLUEPRINT_AUTHORITY_ENVELOPE_MAX_EFFECTS.join(' | ')} (the §6 effect ceiling), got ${JSON.stringify(maximumEffect)}`, { path: `${rulePath}.maximumEffect` });
         }
         const matcherRaw = requireField(rule, 'matcher', rulePath);
         const matcherRecord = assertPlainRecord(matcherRaw, `${rulePath}.matcher (envelope matcher)`);
         const kind = requireField(matcherRecord, 'kind', `${rulePath}.matcher`);
-        if (typeof kind !== 'string' || !BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS.includes(kind)) {
-            throw teamContractError('MALFORMED_DTO', `field ${rulePath}.matcher.kind must be one of ${BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS.join(' | ')} (no 'any' in this grammar — design §5), got ${JSON.stringify(kind)}`, { path: `${rulePath}.matcher.kind` });
+        if (typeof kind !== 'string' || !BLUEPRINT_AUTHORITY_ENVELOPE_MATCHER_KINDS.includes(kind)) {
+            throw teamContractError('MALFORMED_DTO', `field ${rulePath}.matcher.kind must be one of ${BLUEPRINT_AUTHORITY_ENVELOPE_MATCHER_KINDS.join(' | ')} (no 'any' in this grammar — design §5), got ${JSON.stringify(kind)}`, { path: `${rulePath}.matcher.kind` });
         }
         let matcher;
         if (isShellTool) {
             // Exec lane: fingerprint ONLY (design §5). A file matcher on a shell
             // class is refused HERE (the same mispairing the kernel refuses at
             // write time — never a silently inert authority rule).
-            assertNoUnknownFields(matcherRecord, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_EXEC_MATCHER_FIELDS, `${rulePath}.matcher`);
+            assertNoUnknownFields(matcherRecord, BLUEPRINT_AUTHORITY_ENVELOPE_EXEC_MATCHER_FIELDS, `${rulePath}.matcher`);
             if (kind !== 'fingerprint') {
                 throw teamContractError('MALFORMED_DTO', `field ${rulePath}.matcher.kind is rejected: the ${operationClass} operation class is shell-class — its matcher is the canonical 'fingerprint' EXACTLY (design §5: no subtree, no any, no path)`, { path: `${rulePath}.matcher.kind`, operationClass });
             }
@@ -450,7 +460,7 @@ function validatePermissionMutationEnvelope(raw, path) {
             // File lane: exact | subtree with a path (same path constraints as
             // the static lanes; runtime canonicalizes against the documented
             // envelope path basis — this layer never resolves or reinterprets).
-            assertNoUnknownFields(matcherRecord, BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FILE_MATCHER_FIELDS, `${rulePath}.matcher`);
+            assertNoUnknownFields(matcherRecord, BLUEPRINT_AUTHORITY_ENVELOPE_FILE_MATCHER_FIELDS, `${rulePath}.matcher`);
             if (kind === 'fingerprint') {
                 throw teamContractError('MALFORMED_DTO', `field ${rulePath}.matcher.kind is rejected: the ${operationClass} operation class is filesystem-class — its matcher is 'exact' | 'subtree' with a workspace path (design §5)`, { path: `${rulePath}.matcher.kind`, operationClass });
             }
@@ -472,7 +482,7 @@ function validatePermissionMutationEnvelope(raw, path) {
         }
         const pairKey = `${operationClass}\u0000${kind}\u0000${'path' in matcher ? matcher.path : matcher.fingerprint}`;
         if (seenPairs.has(pairKey)) {
-            throw teamContractError('MALFORMED_DTO', `duplicate permissionMutationEnvelope rule for (${operationClass}, ${kind} ${'path' in matcher ? matcher.path : matcher.fingerprint}) — one pair carries one ceiling`, { path: rulePath });
+            throw teamContractError('MALFORMED_DTO', `duplicate ${carrier} rule for (${operationClass}, ${kind} ${'path' in matcher ? matcher.path : matcher.fingerprint}) — one pair carries one ceiling`, { path: rulePath });
         }
         seenPairs.add(pairKey);
         rules.push({ operationClass, matcher, maximumEffect: maximumEffect });
@@ -763,7 +773,11 @@ export function validateBlueprintDocument(raw) {
     // document parses against the FROZEN v1 set (the v2 `teamRequirements`
     // field is an unknown field there — the v1 validator is NOT tightened); a
     // v2 document additionally accepts `teamRequirements`.
-    const topLevelFields = schemaVersion === 2 ? BLUEPRINT_TOP_LEVEL_FIELDS_V2 : BLUEPRINT_TOP_LEVEL_FIELDS;
+    const topLevelFields = schemaVersion === 3
+        ? BLUEPRINT_TOP_LEVEL_FIELDS_V3
+        : schemaVersion === 2
+            ? BLUEPRINT_TOP_LEVEL_FIELDS_V2
+            : BLUEPRINT_TOP_LEVEL_FIELDS;
     assertNoUnknownFields(record, topLevelFields, 'TeamBlueprint');
     // --- identity ------------------------------------------------------------
     const blueprintId = parseBlueprintId(requireField(record, 'blueprintId', '$'));
@@ -805,7 +819,7 @@ export function validateBlueprintDocument(raw) {
     // ABSENT in v1 documents (the field is not in the v1 closed set — an
     // unknown field there fails loudly). In a v2 document it is optional:
     // `undefined` when not declared, a (possibly empty) list when declared.
-    const teamRequirementsRaw = schemaVersion === 2 ? takeArray(record, 'teamRequirements', '$') : undefined;
+    const teamRequirementsRaw = schemaVersion >= 2 ? takeArray(record, 'teamRequirements', '$') : undefined;
     const teamRequirements = teamRequirementsRaw === undefined
         ? undefined
         : validateV2Requirements(teamRequirementsRaw, '$.teamRequirements');
@@ -831,17 +845,34 @@ export function validateBlueprintDocument(raw) {
         const envelope = validateEnvelope(requireField(entry, 'envelope', entryPath), `${entryPath}.envelope`);
         memberEnvelopes.push({ templateId, envelope });
     });
-    // --- Alpha.3 PR4 permission-EXPANSION authority carrier ---------------------
-    // The ONE explicit Leader expansion ceiling (ADR §6 / design §4), OPTIONAL
-    // at every document version and ABSENT-BY-DEFAULT: an absent field is a
-    // legal typed absence (no expansion authority), never a read failure. The
-    // key is OMITTED from the core (and therefore the content hash) when
-    // absent — the teamRequirements/permissions discipline, so every existing
-    // document hashes byte-identically.
+    // --- the two authority documents of the shared v3 grammar -------------------
+    // ADR A3-9: ONE validator, TWO documents. Both are ABSENT-BY-DEFAULT below
+    // v3 — an absent field is a legal typed absence (no declared ceiling), never
+    // a read failure — and the key is OMITTED from the core (and therefore the
+    // content hash) when absent, the teamRequirements/permissions discipline, so
+    // every existing v1/v2 document hashes byte-identically (ADR A2-11).
+    //
+    // At v3 both become REQUIRED, and each requirement is a distinct fact:
+    //  - `permissionMutationEnvelope` was optional at every earlier version and
+    //    stops being optional here — "a new hard requirement, not a retention"
+    //    (ADR A1-19, spec §3.2);
+    //  - `teamHardEnvelope` only exists at v3 and was never optional: "No
+    //    implicit default is permitted" (spec §3.2), because a defaulted hard
+    //    ceiling would be exactly the implicit wide grant ADR §5.1 forbids.
+    // Neither is defaulted when missing: the refusal is typed, before any
+    // canonicalization or authority reading exists.
+    if (schemaVersion === 3) {
+        requireField(record, 'permissionMutationEnvelope', '$');
+        requireField(record, 'teamHardEnvelope', '$');
+    }
     const permissionMutationEnvelopeRaw = takeRecord(record, 'permissionMutationEnvelope', '$');
     const permissionMutationEnvelope = permissionMutationEnvelopeRaw === undefined
         ? undefined
-        : validatePermissionMutationEnvelope(permissionMutationEnvelopeRaw, '$.permissionMutationEnvelope');
+        : validateAuthorityEnvelope(permissionMutationEnvelopeRaw, '$.permissionMutationEnvelope', 'permissionMutationEnvelope');
+    const teamHardEnvelopeRaw = takeRecord(record, 'teamHardEnvelope', '$');
+    const teamHardEnvelope = teamHardEnvelopeRaw === undefined
+        ? undefined
+        : validateAuthorityEnvelope(teamHardEnvelopeRaw, '$.teamHardEnvelope', 'teamHardEnvelope');
     // --- PolicyState definitions (field refs must resolve) ---------------------
     const policyStatesRaw = takeArray(record, 'policyStates', '$') ?? [];
     const policyStates = [];
@@ -949,6 +980,14 @@ export function validateBlueprintDocument(raw) {
         // teamRequirements discipline: `stripUndefined` omits the key, so every
         // non-declaring document hashes byte-identically).
         permissionMutationEnvelope,
+        // Alpha.4 v3 Human User hard ceiling (ADR A2-2). PRESENT-ONLY, exactly like
+        // the carrier above: `stripUndefined` omits the key for every v1/v2
+        // document, so the hashable projection of a v1/v2 blueprint is BYTE-
+        // IDENTICAL to what it was before v3 existed (ADR A2-11). Writing
+        // `teamHardEnvelope: null` for absent documents — the shape the
+        // absent-optional-single-field rule might suggest — would instead move
+        // every v1/v2 content hash and is exactly what that clause forbids.
+        teamHardEnvelope,
         policyStates,
         quotas,
         capabilityPolicy,
@@ -1019,15 +1058,16 @@ export function toHashableBlueprint(core) {
         // this field existed. Canonical JSON is key-sorted, so the projection
         // shape (not insertion order) is what the hash binds to.
         ...(core.permissionMutationEnvelope !== undefined
-            ? {
-                permissionMutationEnvelope: {
-                    rules: core.permissionMutationEnvelope.rules.map((rule) => ({
-                        operationClass: rule.operationClass,
-                        matcher: toHashableEnvelopeMatcher(rule.matcher),
-                        maximumEffect: rule.maximumEffect,
-                    })),
-                },
-            }
+            ? { permissionMutationEnvelope: toHashableAuthorityEnvelope(core.permissionMutationEnvelope) }
+            : {}),
+        // Alpha.4 v3 Human User hard ceiling. KEY-OMITTED and v3-ONLY — the two
+        // facts that keep ADR A2-11's byte-identity promise true: a v1/v2 core
+        // never carries the field (the validator only populates it at v3), so the
+        // spread contributes NOTHING to its projection and its hash is the hash it
+        // had before v3 existed. Projecting it as `null` for absent documents
+        // would move every v1/v2 content hash.
+        ...(core.teamHardEnvelope !== undefined
+            ? { teamHardEnvelope: toHashableAuthorityEnvelope(core.teamHardEnvelope) }
             : {}),
         policyStates: core.policyStates.map((state) => ({
             id: state.id,
@@ -1124,6 +1164,25 @@ function toHashableAllowDeny(entry) {
 }
 function toHashableEnvelope(envelope) {
     return { allow: [...envelope.allow], deny: [...envelope.deny] };
+}
+/**
+ * The hashable projection of ONE authority document. Both v3 authority
+ * documents project through this ONE function (ADR A3-9: one grammar, so one
+ * projection): rules in DECLARATION order (the hash binds content *and* rule
+ * order), each rule `{operationClass, matcher, maximumEffect}`.
+ *
+ * The projection is byte-identical to the inline projection this field had
+ * before v3 existed — extracting the helper changes the code path's NAME, not
+ * its output, which is what makes the shared builder safe under ADR A2-11.
+ */
+function toHashableAuthorityEnvelope(envelope) {
+    return {
+        rules: envelope.rules.map((rule) => ({
+            operationClass: rule.operationClass,
+            matcher: toHashableEnvelopeMatcher(rule.matcher),
+            maximumEffect: rule.maximumEffect,
+        })),
+    };
 }
 /**
  * The hashable projection of one PR4 expansion-carrier matcher. Each branch

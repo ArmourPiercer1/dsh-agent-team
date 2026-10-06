@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+ ✓ packages/runtime/test/a4p1-authority-envelope.test.ts (18 tests) 7ms
+ ✓ packages/runtime/test/a3p4-r4-authority-binding.test.ts (13 tests) 40ms
+ ✓ packages/runtime/test/a3p3-permission-mutation-authority.test.ts (21 tests) 53ms
+ ✓ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (12 tests) 39ms
+
+ Test Files  4 passed (4)
+      Tests  64 passed (64)
+   Start at  05:35:53
+   Duration  575ms (transform 1.23s, setup 0ms, import 1.64s, tests 138ms, environment 0ms)
+

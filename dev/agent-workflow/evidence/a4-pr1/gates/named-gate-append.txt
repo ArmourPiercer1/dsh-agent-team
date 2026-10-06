@@ -1,0 +1,21 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+ ✓ packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts (9 tests) 6ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 8ms
+ ✓ packages/domain/test/a4p1-blueprint-v3-governance.test.ts (20 tests) 18ms
+ ✓ packages/runtime/test/a4p1-authority-envelope.test.ts (20 tests) 21ms
+ ✓ packages/runtime/test/a3p4-r4-authority-binding.test.ts (17 tests) 148ms
+ ✓ packages/runtime/test/a3p3-permission-mutation-authority.test.ts (23 tests) 174ms
+ ✓ packages/runtime/test/a4pr0-proposal-store.test.ts (15 tests) 19ms
+ ✓ packages/runtime/test/a4pr0-proposal-corrupt.test.ts (12 tests) 18ms
+ ✓ packages/runtime/test/a4pr0-proposal-generation.test.ts (8 tests) 8ms
+ ✓ packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts (5 tests) 8ms
+ ✓ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (14 tests) 767ms
+     ✓ PR1 ships the ceiling adapter UNWIRED: every new name has an audited consumer set  671ms
+
+ Test Files  11 passed (11)
+      Tests  153 passed (153)
+   Start at  06:07:26
+   Duration  2.67s (transform 9.72s, setup 0ms, import 14.68s, tests 1.19s, environment 2ms)
+

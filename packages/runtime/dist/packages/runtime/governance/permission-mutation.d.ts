@@ -127,6 +127,7 @@
  *
  * @module @dsh-agent-team/runtime/governance/permission-mutation
  */
+import type { AuthorityEnvelope as AuthorityEnvelopeDocument, AuthorityEnvelopeRule as AuthorityEnvelopeRuleDocument, AuthorityResourceMatcher as AuthorityResourceMatcherDocument, CoverageVerdict as CoverageVerdictDocument, SubtreeContains as SubtreeContainsDocument } from '../../domain/authority-envelope/src/index.js';
 import type { PermissionOverlayEffect } from '../permission-governance/types.js';
 import type { PermissionOverlayRule, PermissionOverlaySnapshot } from '../permission-governance/types.js';
 /** The closed error-code vocabulary of the permission-mutation kernel. */
@@ -193,17 +194,18 @@ export type PermissionOperationClass = 'fs' | 'exec';
 export declare function classifyPermissionOperationClass(token: string): PermissionOperationClass | 'unknown';
 /** The closed matcher kinds (design §5; `any` deliberately absent). */
 export declare const PERMISSION_RESOURCE_MATCHER_KINDS: readonly ["exact", "subtree", "fingerprint"];
-/** One canonical resource matcher over OPAQUE canonical identities. */
-export type PermissionResourceMatcher = {
-    readonly kind: 'exact';
-    readonly resource: string;
-} | {
-    readonly kind: 'subtree';
-    readonly resource: string;
-} | {
-    readonly kind: 'fingerprint';
-    readonly resource: string;
-};
+/**
+ * One canonical resource matcher over OPAQUE canonical identities — the
+ * RUNTIME shape, and now an ALIAS of the domain's `AuthorityResourceMatcher`
+ * rather than a second declaration of it (ADR A3-9; the alias survives until
+ * PR7 deletes it, A1-18, so no caller in PR2-PR6 has to be renamed).
+ *
+ * It is NOT the document shape. `{ kind, path }` / `{ kind, fingerprint }` is
+ * the DECLARED AST (`AuthorityEnvelopeAstMatcher`), and the collapse into
+ * `resource` happens exactly once, in `src/plugin/permission-plane.ts`
+ * (`buildAuthorityEnvelope`) — never here, never in `domain` (ADR A2-3).
+ */
+export type PermissionResourceMatcher = AuthorityResourceMatcherDocument;
 /** Render one matcher into the deterministic carrier text of the overlay row
  *  (prefix at the FIRST colon; round-trips through
  *  {@link parsePermissionResourceText}). */
@@ -257,16 +259,20 @@ export type PermissionMutation = Readonly<PermissionMutationInput>;
 /** Validate + freeze one mutation input (the structural half of the write
  *  gate; authority and envelope are decided by the service around it). */
 export declare function parsePermissionMutation(raw: PermissionMutationInput): PermissionMutation;
-/** One envelope rule (design §4 recommended conceptual form, verbatim shape). */
-export interface PermissionEnvelopeRule {
-    readonly operationClass: string;
-    readonly matcher: PermissionResourceMatcher;
-    readonly maximumEffect: PermissionOverlayEffect;
-}
-/** The envelope document: the Leader's expansion authority for one team. */
-export interface PermissionMutationEnvelope {
-    readonly rules: readonly PermissionEnvelopeRule[];
-}
+/**
+ * One envelope rule (design §4 recommended conceptual form, verbatim shape) —
+ * an ALIAS of the domain rule since A4-PR1 (ADR A3-9/A1-18). The shape is
+ * unchanged to the last field; only the declaration moved, so the PR0 callers
+ * keep compiling and PR7 deletes the alias instead of migrating them.
+ */
+export type PermissionEnvelopeRule = AuthorityEnvelopeRuleDocument;
+/**
+ * The envelope document: the Leader's expansion authority for one team. An
+ * ALIAS of the domain document since A4-PR1 (ADR A3-9/A1-18) — the SAME
+ * structure the v3 `teamHardEnvelope` carries, because A3-9 made it one
+ * grammar: two documents, two roles, one shape.
+ */
+export type PermissionMutationEnvelope = AuthorityEnvelopeDocument;
 /** Validate + freeze one envelope document. An empty `rules` list is VALID
  *  and means exactly one thing: NO expansion authority (every Leader
  *  expansion refuses; tightenings are unaffected) — fail-closed default. */
@@ -275,15 +281,12 @@ export declare function parsePermissionMutationEnvelope(raw: unknown): Permissio
  *  backend namespace. Production injects the pinned public containment seam
  *  (the A2C-7 precedent: the frozen matcher itself never `startsWith` —
  *  `operation-permission/permission-resolver.ts` A2C-7 paragraph); tests
- *  inject a deterministic algebra. Absent → subtree coverage fails closed. */
-export type SubtreeContains = (root: string, child: string) => boolean;
-/** The outcome of one coverage question (the refusal detail stays explainable). */
-export interface CoverageVerdict {
-    readonly covers: boolean;
-    /** True when a subtree envelope matcher needed a containment verdict that
-     *  no injected predicate could give (fail-closed refusal, never a guess). */
-    readonly undeterminable: boolean;
-}
+ *  inject a deterministic algebra. Absent → subtree coverage fails closed.
+ *  ALIAS of the domain declaration (A3-9) — one concept, one name per plane. */
+export type SubtreeContains = SubtreeContainsDocument;
+/** The outcome of one coverage question (the refusal detail stays explainable).
+ *  ALIAS of the domain declaration (A3-9). */
+export type CoverageVerdict = CoverageVerdictDocument;
 /**
  * Does an envelope matcher cover a mutation matcher?
  *
@@ -297,7 +300,23 @@ export interface CoverageVerdict {
  *   predicate places under its root (identity counts as contained: a root
  *   covers itself); cross-class coverage never holds.
  */
-export declare function matcherCovers(envelope: PermissionResourceMatcher, target: PermissionResourceMatcher, subtreeContains?: SubtreeContains): CoverageVerdict;
+/**
+ * Does an envelope matcher cover a mutation matcher? ONE implementation for
+ * both algebras: this is the domain function itself, re-exported under the name
+ * Alpha.3 froze (`a4p1-authority-envelope.test.ts` pins them by `toBe`). A
+ * delegated copy would be a second algebra that could drift, and the fail-closed
+ * ORDER below is precisely the part that must not: identity is answered BEFORE
+ * the containment seam is consulted, so a missing predicate can never turn a
+ * provable identity into a non-match (the external round-2 correction that the
+ * consumption sites still depend on — `EXPANSION_OUTSIDE_ENVELOPE` and
+ * `EFFECT_CONTEXT_UNAVAILABLE` are different answers and the fold that
+ * separates them reads this verdict).
+ *
+ * The doc-comment that used to live on this declaration travels with the
+ * implementation to `authority-envelope.ts:matcherCovers`, where the rules are
+ * now stated once for both planes.
+ */
+export declare const matcherCovers: (envelope: PermissionResourceMatcher, target: PermissionResourceMatcher, subtreeContains?: SubtreeContains) => CoverageVerdict;
 /**
  * One rule of a declared static permission layer (the Template policy or the
  * Blueprint baseline), already canonicalized to THIS module's matcher grammar.

@@ -1,0 +1,11 @@
+--- repeat 1 ---
+× two activated results with distinct instance ids and child Sessions 4ms
+× two COMMITTED operations, two members, two distinct child Sessions 1ms
+Test Files  1 failed (1)
+Tests  2 failed | 7 passed (9)
+--- repeat 2 ---
+Test Files  1 passed (1)
+Tests  9 passed (9)
+--- repeat 3 ---
+Test Files  1 passed (1)
+Tests  9 passed (9)

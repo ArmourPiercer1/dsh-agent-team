@@ -29,4 +29,11 @@ export { isMutationError, MUTATION_ERROR_CODES, MutationError, } from '../mutati
 // ZERO production consumers until a later PR wires it — pinned by
 // test/a3p3-governance-lane-hygiene.test.ts).
 export { authorizeLeaderPermissionMutation, isPermissionMutationError, matcherCovers, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionResourceText, parsePermissionStaticLayerFacts, permissionEffectiveAnswer, PERMISSION_EFFECT_PRECEDENCE, PERMISSION_MUTATION_ERROR_CODES, PERMISSION_MUTATION_ERROR_CODE_VALUES, PERMISSION_MUTATION_KINDS, PERMISSION_RESOURCE_MATCHER_KINDS, PermissionMutationError, permissionEffectDirection, planPermissionMutation, renderPermissionResourceText, } from './permission-mutation.js';
+// Alpha.4 PR1 — the shared authority-ceiling adapter (ADR A3-9/A3-2, spec §7.4).
+// This barrel is how the lane exposes its own algebra; the GRAMMAR it consumes
+// is exported from `@dsh-agent-team/domain/authority-envelope` and is
+// deliberately NOT re-exported from here: a barrel that re-exports the domain
+// grammar would give every lane two names for one concept and a second import
+// path for the shape that is bound into a content hash.
+export { AUTHORITY_CEILING_ERROR_CODES, AuthorityBindingError, bindingDocs, grantCeiling, } from './authority-ceiling.js';
 //# sourceMappingURL=index.js.map

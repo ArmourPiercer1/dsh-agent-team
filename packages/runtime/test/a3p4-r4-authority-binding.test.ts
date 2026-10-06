@@ -64,6 +64,12 @@ interface FileRule {
 }
 
 interface BpOpts {
+  /** A4-PR1: the carrier under test is v3-only, so the fixture states the
+   *  document version explicitly instead of hard-coding 1 at line 109. */
+  readonly schemaVersion?: 1 | 2 | 3
+  /** The v3 `teamHardEnvelope` carrier lines (a SECOND document, never a
+   *  rename of the first — spec §3.2/§7.4). */
+  readonly hardCarrier?: readonly string[]
   readonly revision?: string
   /** YAML lines of the top-level permissionMutationEnvelope (absent = no carrier). */
   readonly carrier?: readonly string[]
@@ -106,7 +112,7 @@ function permsBlock(rules: readonly FileRule[], bash: 'allow' | 'deny' | undefin
 function bpSource(opts: BpOpts): string {
   return [
     '---',
-    'schemaVersion: 1',
+    `schemaVersion: ${String(opts.schemaVersion ?? 1)}`,
     'blueprintId: team.a3p4r4',
     `revision: "${opts.revision ?? '1'}"`,
     'leader:',
@@ -141,6 +147,7 @@ function bpSource(opts: BpOpts): string {
     '        items: []',
     ...(opts.workerWrite === undefined ? [] : permsBlock(opts.workerWrite, undefined, 6)),
     ...(opts.carrier ?? []),
+    ...(opts.hardCarrier ?? []),
     'teamEnvelope:',
     '  allow: [send-message]',
     '  deny: []',
@@ -570,5 +577,117 @@ describe('authorizeLeaderPermissionMutation envelope-only algebra (round 5): the
         subtreeContains: keyContainment,
       }),
     ).toThrowError(expect.objectContaining({ code: PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE }))
+  })
+})
+
+// ──────────────────────────────────────────────────────────────────────────
+// Group C (A4-PR1) — the v3 `teamHardEnvelope` READER. Nothing in production
+// authorization consults this document yet: PR1 wires no caller (plan Task 1),
+// and the v1/v2-vs-v3 switch in `buildEnvelope`'s consumers stays PR2's per ADR
+// A5-12. What is pinned here is the reader's CONTRACT, because PR2's decision
+// rests on three distinctions whose wrong side would each be green under a
+// naive `document ?? { rules: [] }` implementation:
+//   absent (a v1/v2 team)      ≠ declared-empty (a v3 team that says so)
+//   declared-empty             ≠ unavailable (a faulted or drifted read)
+// and on the APPROVAL plane the first two mean "narrows nothing" while the
+// third must mean "no answer" — an approval ceiling is the one place where
+// handing out the identity is the UNSAFE direction (ADR A1-4/A1-7/A2-4).
+// ──────────────────────────────────────────────────────────────────────────
+
+/** The v3 hard-ceiling carrier: same grammar as the mutation carrier, because
+ *  A3-9 made it ONE grammar — two documents, two roles, one shape. */
+function hardCarrierLines(rules: readonly (readonly string[] | string)[]): string[] {
+  // `.flat()` because a rule is a LINE GROUP, not a line — one element per rule
+  // keeps the call sites readable, and `join('\n')` upstream would otherwise
+  // render a whole rule as a comma-joined scalar (a YAML error far from its
+  // cause, which is exactly why this comment is here).
+  return ['teamHardEnvelope:', '  rules:', ...rules.flat()]
+}
+
+function hardRule(operationClass: string, matcherLines: readonly string[], maximumEffect: string): string[] {
+  return [`    - operationClass: ${operationClass}`, '      matcher:', ...matcherLines, `      maximumEffect: ${maximumEffect}`]
+}
+
+describe('createPermissionAuthorityFacts (A4-PR1): the v3 hard-ceiling reader is additive, and absence is not a fault', () => {
+  const v3Bp = (opts: { readonly hard: readonly (readonly string[] | string)[] }): string =>
+    bpSource({
+      revision: '1',
+      schemaVersion: 3,
+      carrier: fileCarrier('write', 'subtree', '/work/lead', 'allow'),
+      hardCarrier: hardCarrierLines(opts.hard),
+    })
+  const v3Harness = (hard: readonly (readonly string[] | string)[], faults?: number): Harness =>
+    harness({
+      blueprints: { [TEAM_A]: v3Bp({ hard }) },
+      templates: { [`${TEAM_A}|${WORKER}`]: 'worker' },
+      workspaces: { [`${TEAM_A}|${WORKER}`]: '/work/m1' },
+      ...(faults === undefined ? {} : { faults }),
+    })
+
+  it('C1 — a v1 Blueprint reads `absent`, and the reader NEVER synthesizes { rules: [] }', async () => {
+    const h = harness({
+      blueprints: { [TEAM_A]: bpSource({ revision: '1', carrier: fileCarrier('write', 'subtree', '/work/lead', 'allow') }) },
+      templates: { [`${TEAM_A}|${WORKER}`]: 'worker' },
+      workspaces: { [`${TEAM_A}|${WORKER}`]: '/work/m1' },
+    })
+    const read = await h.facts.teamHardEnvelope(TEAM_A, WORKER)
+    expect(read).toEqual({ status: 'absent' })
+    // The shape is the whole point: `{ rules: [] }` is a DECLARED ceiling that
+    // means "no runtime expansion authority at all", and a v1 team never
+    // declared it. Synthesizing one here would be a production authority change
+    // for every team that exists today (ADR A2-4: v1/v2 behavior identical),
+    // visible only months later as approvals that cannot be granted.
+    expect(JSON.stringify(read)).not.toContain('rules')
+    // …and the v1 read costs the fs provider NOTHING (no document, no work).
+    expect(h.calls()).toBe(0)
+  })
+
+  it('C2 — a v3 hard ceiling resolves file matchers at the TARGET WORKSPACE and carries a fingerprint verbatim', async () => {
+    const h = v3Harness([
+      hardRule('write', ['        kind: subtree', '        path: "src/**"'], 'ask'),
+      hardRule('bash', ['        kind: fingerprint', '        fingerprint: "sha256:deadbeef"'], 'deny'),
+    ])
+    const read = await h.facts.teamHardEnvelope(TEAM_A, WORKER)
+    expect(read.status).toBe('declared')
+    if (read.status !== 'declared') return
+    expect(read.document.rules.length).toBe(2)
+    const [fileRule, execRule] = read.document.rules
+    expect(fileRule?.matcher).toEqual({ kind: 'subtree', resource: '/work/m1/src/**' })
+    expect(fileRule?.maximumEffect).toBe('ask')
+    // The exec identity is the fingerprint: canonicalizing it through the PATH
+    // provider would let a filesystem answer rename an operation identity.
+    expect(execRule?.matcher).toEqual({ kind: 'fingerprint', resource: 'sha256:deadbeef' })
+    // Exactly one provider call for two rules — the counter is the assertion
+    // that "verbatim" is a fact about the code path, not about the output text.
+    expect(h.calls()).toBe(1)
+    // The hard ceiling is its OWN document: the mutation carrier on the same
+    // blueprint is untouched by this read (two documents, two readers).
+    const ceiling = await h.facts.permissionEnvelope(TEAM_A, WORKER)
+    expect(ceiling.rules.length).toBe(1)
+    expect(ceiling.rules[0]?.matcher).toEqual({ kind: 'subtree', resource: '/work/lead' })
+  })
+
+  it('C3 — a declared-empty v3 ceiling is `declared` with zero rules and ZERO provider calls', async () => {
+    const h = v3Harness(['    []'])
+    const read = await h.facts.teamHardEnvelope(TEAM_A, WORKER)
+    // `status: 'declared'` is the ONLY place a `{rules: []}` hard ceiling may
+    // come from: a document that says so. Absence (C1) and failure (C4) have
+    // their own outcomes and never borrow this one.
+    expect(read.status).toBe('declared')
+    if (read.status !== 'declared') return
+    expect(read.document).toEqual({ rules: [] })
+    expect(h.calls()).toBe(0)
+  })
+
+  it('C4 — a provider fault is `unavailable`, never `absent` (the widening this outcome exists to prevent)', async () => {
+    const h = v3Harness([hardRule('write', ['        kind: subtree', '        path: "src/**"'], 'ask')], 1)
+    const read = await h.facts.teamHardEnvelope(TEAM_A, WORKER)
+    expect(read).toEqual({ status: 'unavailable' })
+    // Same abstention slot that carries `NO_ENVELOPE` for the expansion reader,
+    // filled with the OPPOSITE polarity on purpose: a failed expansion read
+    // must mean zero authority, a failed approval-plane read must mean nothing
+    // except unknown. A consumer that maps `unavailable` onto the identity has
+    // widened approval authority exactly when storage is least trustworthy.
+    expect(JSON.stringify(read)).not.toContain('rules')
   })
 })

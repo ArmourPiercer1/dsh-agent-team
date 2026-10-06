@@ -40,6 +40,10 @@
  */
 
 import { describe, expect, it } from 'vitest'
+// A4-PR1: the grammar this kernel speaks is now DECLARED in the domain leaf and
+// imported here — the module under test and this import must be one instantiation.
+import * as domainEnvelope from '../../domain/authority-envelope/src/index.js'
+import * as kernel from '../governance/permission-mutation.js'
 import { createTeamOperationCoordinator } from '../coordination/index.js'
 import {
   createGovernanceMutationService,
@@ -62,6 +66,12 @@ import type {
   GovernanceTransitionCache,
   GovernanceTransitionCommit,
 } from '../governance/types.js'
+// PRE-EXISTING lint debt, repaired in passing by A4-PR1 (the PR1 gate lints
+// EVERY touched file, and this one was already dirty at base `3c310342`). The
+// import is not dead weight: the module header at :34 links the type, and
+// TSDoc resolves that link through this import — so it is kept and silenced,
+// not deleted.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { PermissionOverlayRepositoryPort } from '../permission-governance/port.js'
 import {
   FIXTURE_INSTANCE_ID,
@@ -124,7 +134,6 @@ const EXEC_FINGERPRINT = `sha256:${'a'.repeat(64)}`
 const OTHER_EXEC_FINGERPRINT = `sha256:${'b'.repeat(64)}`
 
 const NOW_A = '2026-10-05T10:00:00.000Z'
-const NOW_B = '2026-10-05T10:00:01.000Z'
 
 const LEADER = { kind: 'leader' } as const
 const HUMAN = { kind: 'operator' } as const
@@ -850,5 +859,67 @@ describe('authority and configuration boundaries', () => {
     } finally {
       await w.close()
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// A4-PR1 (ADR A3-9/A1-18). The authority grammar this kernel speaks was moved
+// DOWN into `packages/domain/authority-envelope` — the same vocabulary the v3
+// Blueprint hash carrier is written in — and the Alpha.3 names above survived as
+// ALIASES. Two facts are pinned here because both are invisible from outside and
+// both are the kind that "still work" after being broken:
+//   1. the alias is IDENTITY, not a structural copy. A copy agrees today and
+//      drifts tomorrow, and this vocabulary is bound into a content hash: the
+//      drift would not be a failing test, it would be a stored document whose
+//      meaning moved under it.
+//   2. the two parsers stay TWO. `parseAuthorityEnvelope` (domain) reads the
+//      DECLARED AST shape — `{ kind: 'exact', path }`, `{ kind: 'fingerprint',
+//      fingerprint }` — because that is the shape a hash binds; this module's
+//      parser reads the canonical RUNTIME shape — `{ kind, resource }` — because
+//      that is what a coverage comparison over canonical identities consumes.
+//      Neither can replace the other, and the collapse between them happens
+//      exactly once, in `src/plugin/permission-plane.ts` (correction X5-E2).
+// ---------------------------------------------------------------------------
+
+describe('the grammar is ONE shared domain leaf, and the two parsers stay two (A4-PR1)', () => {
+  it('the kernel names ARE the domain vocabulary, not a compatible re-declaration', () => {
+    expect(kernel.matcherCovers).toBe(domainEnvelope.matcherCovers)
+    expect(kernel.PERMISSION_EFFECT_PRECEDENCE).toBe(domainEnvelope.AUTHORITY_EFFECT_PRECEDENCE)
+    expect(kernel.PERMISSION_RESOURCE_MATCHER_KINDS).toBe(domainEnvelope.AUTHORITY_MATCHER_KINDS)
+    // The envelope this kernel produces is the document the ceiling algebra
+    // consumes — so a rule that parses here is readable there without a
+    // transformation, which is what "one grammar, two documents" has to mean.
+    const parsed = parsePermissionMutationEnvelope({
+      rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/a' }, maximumEffect: 'ask' }],
+    })
+    expect(domainEnvelope.narrowingForApproval(parsed, { operationClass: 'write', matcher: { kind: 'exact', resource: '/work/a' } }).status).toBe('decided')
+  })
+
+  it('this parser refuses the DECLARED AST shape it is not allowed to read', () => {
+    const astShaped = {
+      rules: [{ operationClass: 'write', matcher: { kind: 'exact', path: '/work/a' }, maximumEffect: 'ask' }],
+    }
+    expect(() => parsePermissionMutationEnvelope(astShaped)).toThrowError(
+      expect.objectContaining({
+        code: PERMISSION_MUTATION_ERROR_CODES.MALFORMED_ENVELOPE,
+        details: expect.objectContaining({ problem: 'matcher-resource-empty' }),
+      }),
+    )
+    // …and the domain parser refuses the RUNTIME shape right back. Both
+    // directions, or a silent one-sided coercion could be "fixed" by deleting
+    // one of these two refusals.
+    const runtimeShaped = {
+      rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/a' }, maximumEffect: 'ask' }],
+    }
+    const refusal = domainEnvelope.parseAuthorityEnvelope(runtimeShaped)
+    expect(refusal.ok).toBe(false)
+    if (refusal.ok) return
+    expect(refusal.problems.map((entry) => entry.problem)).toContain('matcher-identity-missing')
+    // And the AST shape it DOES accept, verbatim, without any canonicalization
+    // — no workspace exists at this layer to canonicalize against (ADR A2-3).
+    const accepted = domainEnvelope.parseAuthorityEnvelope(astShaped)
+    expect(accepted.ok).toBe(true)
+    if (!accepted.ok) return
+    expect(accepted.envelope).toEqual(astShaped)
   })
 })

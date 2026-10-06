@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+ ✓ packages/runtime/test/a3p5-permission-notification-lane-hygiene.test.ts (9 tests) 23ms
+ ✓ packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts (26 tests) 130ms
+ ✓ packages/runtime/test/a3p4-production-permission-plane.test.ts (7 tests) 77ms
+ ✓ packages/runtime/test/a3p5-permission-read-wiring.test.ts (12 tests) 134ms
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry resolves the addressed facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4E2-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ✓ packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts (17 tests) 225ms
+ ✓ packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts (13 tests) 403ms
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ✓ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts (20 tests) 614ms
+ ✓ packages/runtime/test/a3p5-permission-splice.test.ts (9 tests) 1935ms
+     ✓ changed:false commits no row and notifies nobody  416ms
+     ✓ a pure lifecycle restore commits the lifecycle row only: zero overlay writes, zero emissions  422ms
+
+ Test Files  8 passed (8)
+      Tests  113 passed (113)
+   Start at  06:06:10
+   Duration  3.34s (transform 6.38s, setup 0ms, import 9.10s, tests 3.54s, environment 1ms)
+

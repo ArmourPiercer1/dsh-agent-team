@@ -1,0 +1,211 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts (20 tests | 11 failed) 12ms
+     × V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge) 5ms
+     × V2 a v3 document carrying both authority documents parses 1ms
+     ✓ V3 the v3 document keeps the DECLARED AST shape: a file matcher carries `path`, never a canonical `resource` (ADR A2-3) 0ms
+     × V4 v3 REQUIRES teamHardEnvelope — absence is a typed refusal, never an implicit wide grant (spec §3.2) 1ms
+     × V5 v3 REQUIRES permissionMutationEnvelope (ADR A1-19: a new hard requirement at v3 only) 0ms
+     × V6 `rules: []` is a legal declaration in either document and survives validation (spec §3.4) 0ms
+     × V7 file classes accept exact AND subtree; the shell class accepts fingerprint (spec §3.3) 0ms
+     × V8 a shell-class rule with a file matcher is refused, never silently inert 0ms
+     × V9 a file-class rule with a fingerprint matcher is refused (no `any`, no cross-class pairing) 0ms
+     × V10 a v3 document parses with ZERO provider surface: the validator is pure (ADR A2-3) 0ms
+     × V11 unknown rule field, out-of-vocabulary effect, and a duplicate pair all fail closed 1ms
+     × V12 the v3 top-level closed set is EXACTLY the v2 set plus teamHardEnvelope 0ms
+     ✓ V13 a v2 document must STILL reject `teamHardEnvelope` (the version→closed-set mapping is version-gated) 0ms
+     ✓ V14 a v1 document rejects it too (the v1 validator stays frozen) 0ms
+     ✓ V15 v1/v2 still parse during the temporary bridge (ADR A2-4) 0ms
+     ✓ V16 GOLDEN: the v1 and v2 content hashes are BYTE-IDENTICAL to the pre-v3 literals (ADR A2-11) 0ms
+     ✓ V17 the v1/v2 hashable projections carry NO teamHardEnvelope key (key-omitted, not null) 0ms
+     ✓ V18 the v3 hash BINDS teamHardEnvelope: one bit of the hard envelope moves the hash 0ms
+     ✓ V19 the v3 projection carries teamHardEnvelope with the DECLARED AST shape (committed JSON) 0ms
+     ✓ V20 the v3 hash is still just deriveContentHash over the projection (no new hash mechanism) 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge)
+AssertionError: expected [ 1, 2 ] to deeply equal [ 1, 2, 3 ]
+
+- Expected
++ Received
+
+  [
+    1,
+    2,
+-   3,
+  ]
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:260:56
+    258| describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 u…
+    259|   it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (AD…
+    260|     expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, …
+       |                                                        ^
+    261|   })
+    262|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V2 a v3 document carrying both authority documents parses
+AssertionError: unsupported blueprint schema version 3; this build supports [1, 2]: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:264:34
+    262|
+    263|   it('V2 a v3 document carrying both authority documents parses', () =…
+    264|     expect(v3.ok, failureOf(v3)).toBe(true)
+       |                                  ^
+    265|     if (!v3.ok) return
+    266|     expect(v3.bp.schemaVersion).toBe(3)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V4 v3 REQUIRES teamHardEnvelope — absence is a typed refusal, never an implicit wide grant (spec §3.2)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:283:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V5 v3 REQUIRES permissionMutationEnvelope (ADR A1-19: a new hard requirement at v3 only)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:290:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V6 `rules: []` is a legal declaration in either document and survives validation (spec §3.4)
+AssertionError: unsupported blueprint schema version 3; this build supports [1, 2]: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:297:52
+    295|
+    296|   it('V6 `rules: []` is a legal declaration in either document and sur…
+    297|     expect(v3EmptyHard.ok, failureOf(v3EmptyHard)).toBe(true)
+       |                                                    ^
+    298|     if (!v3EmptyHard.ok) return
+    299|     expect(v3EmptyHard.bp.teamHardEnvelope?.rules).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V7 file classes accept exact AND subtree; the shell class accepts fingerprint (spec §3.3)
+AssertionError: unsupported blueprint schema version 3; this build supports [1, 2]: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:305:42
+    303|
+    304|   it('V7 file classes accept exact AND subtree; the shell class accept…
+    305|     expect(v3Exec.ok, failureOf(v3Exec)).toBe(true)
+       |                                          ^
+    306|     if (!v3Exec.ok) return
+    307|     const matcher = v3Exec.bp.teamHardEnvelope?.rules[0]?.matcher as R…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V8 a shell-class rule with a file matcher is refused, never silently inert
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:314:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V9 a file-class rule with a fingerprint matcher is refused (no `any`, no cross-class pairing)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:320:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V10 a v3 document parses with ZERO provider surface: the validator is pure (ADR A2-3)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:329:19
+    327|     // filesystem anywhere in the domain module. The negative control …
+    328|     // (V11) shows the same grammar refusing on shape alone.
+    329|     expect(v3.ok).toBe(true)
+       |                   ^
+    330|   })
+    331|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V11 unknown rule field, out-of-vocabulary effect, and a duplicate pair all fail closed
+AssertionError: expected 'SCHEMA_VERSION_MISMATCH' to be 'MALFORMED_DTO' // Object.is equality
+
+Expected: "MALFORMED_DTO"
+Received: "SCHEMA_VERSION_MISMATCH"
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:336:53
+    334|       expect(bad.ok).toBe(false)
+    335|       if (bad.ok) continue
+    336|       expect((bad.error as { code?: string }).code).toBe('MALFORMED_DT…
+       |                                                     ^
+    337|     }
+    338|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V12 the v3 top-level closed set is EXACTLY the v2 set plus teamHardEnvelope
+AssertionError: BLUEPRINT_TOP_LEVEL_FIELDS_V3 must be exported by the schema module: expected undefined to be defined
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:343:93
+    341|     const v2Set = new Set(BLUEPRINT_TOP_LEVEL_FIELDS_V2)
+    342|     const v3Fields = (blueprintSchema as Record<string, unknown>).BLUE…
+    343|     expect(v3Fields, 'BLUEPRINT_TOP_LEVEL_FIELDS_V3 must be exported b…
+       |                                                                                             ^
+    344|     const v3Set = new Set(v3Fields ?? [])
+    345|     const added = [...v3Set].filter((field) => !v2Set.has(field))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 9 passed (20)
+   Start at  05:20:57
+   Duration  373ms (transform 184ms, setup 0ms, import 256ms, tests 12ms, environment 0ms)
+

@@ -1,0 +1,14 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+stdout | packages/domain/test/zz-a4p1-hash-probe.tmp.test.ts > probe > prints hashes
+V1HASH=sha256:d25ea1cfb50079083fb0dbc0c6dc39fbc8d7f735aa1e5ae2226b8d054df972bc
+V2HASH=sha256:d6368916c88577e290fe0a929a48415d9f70d8f512db0c7895f7a6b12ead92d8
+
+ ✓ packages/domain/test/zz-a4p1-hash-probe.tmp.test.ts (1 test) 11ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  05:20:49
+   Duration  289ms (transform 150ms, setup 0ms, import 193ms, tests 11ms, environment 0ms)
+

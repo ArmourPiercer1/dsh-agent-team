@@ -305,11 +305,22 @@ export const NEG_SCHEMA_VERSION_MISMATCH: NegativeFixture = {
   // the intent (a well-formed integer outside the supported set fails
   // loudly with SCHEMA_VERSION_MISMATCH) is preserved, and the supported
   // set stays exactly [1, 2].
-  name: 'schemaVersion 3 is an integer but unsupported',
+  //
+  // A4-PR1 applies the SAME recorded move: ADR A2-11 widens the TEMPORARY
+  // PR1-PR6 bridge set to [1, 2, 3], so v3 stops being a witness of "outside
+  // the supported set" and the negative moves to v4. Only the witness value
+  // moves; the intent is untouched. What is NOT pinned here is the `supported`
+  // detail the error carries: it is DERIVED from
+  // `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS`, so it is pinned AT THE CONSTANT —
+  // V1 of a4p1-blueprint-v3-governance.test.ts asserts `error.details.supported`
+  // equals the constant for this very fixture, which is what stops a widening
+  // (or PR7's collapse to `[3]`) from stranding an old list inside a message an
+  // operator reads. This fixture pins the witness value and the code.
+  name: 'schemaVersion 4 is an integer but unsupported',
   code: 'SCHEMA_VERSION_MISMATCH',
   source: [
     '---',
-    'schemaVersion: 3',
+    'schemaVersion: 4',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',

@@ -1,0 +1,58 @@
+# mutation receipt M9-alias-respelled-locally — round-2 item 5: a structural re-spell that Assignability cannot see (X7-R3 fake-mode #1)
+# command:            pnpm vitest run packages/runtime/test/a3p3-governance-lane-hygiene.test.ts
+# injected mutation:  PERMISSION_EFFECT_PRECEDENCE re-declared with a literal copy of the table, import still present
+# expected red leg:   the runtime consumes that grammar as ONE implementation, not a copy
+# revert:             git checkout -- packages/runtime/governance/permission-mutation.ts
+# exit code:          1
+# verdict:            RED AS REQUIRED
+# ---- raw output follows (unmodified) ----
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+ ❯ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (16 tests | 1 failed) 798ms
+     ✓ the admission constant tables are initialized when this lane loads 1ms
+     ✓ the lane barrel and the permission-mutation module are ONE instantiation 0ms
+     ✓ the new module takes the vocabulary from LEAF modules only (no barrel edges) 1ms
+     ✓ no shipped source outside the governance lane and the PR4 permission-plane assembly imports the permission-mutation module 20ms
+     ✓ nothing imports the durable overlay store or its port outside the PR1 lane and this lane/test pair 15ms
+     ✓ the kernel mirrors the PR1 rule-set bound verbatim (a drift in either turns this red) 0ms
+     ✓ the permission path only touches append/latest/history on the port 1ms
+     ✓ the legacy service surface is EXACTLY the PR-A three methods plus the additive mutatePermission (D1) 0ms
+     ✓ no governance-lane module imports storage outside the allow-listed edge 1ms
+     ✓ the allow-list is not vacuous, and no lane module reaches a repository 0ms
+     ✓ the domain lane declares no edge but its own interior 1ms
+     ✓ every specifier pattern is exercised and reaches a verdict (round-2 item 3) 1ms
+     ✓ the comment stripper cannot delete code (round-2 item 1, a regression receipt) 1ms
+     ✓ PR1 ships the ceiling adapter UNWIRED: every new name has an audited consumer set  743ms
+     ✓ the module itself has exactly the importers PR1 gave it 7ms
+     × the runtime consumes that grammar as ONE implementation, not a copy 4ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  06:30:08
+   Duration  1.37s (transform 380ms, setup 0ms, import 481ms, tests 798ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p3-governance-lane-hygiene.test.ts > the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-3) > the runtime consumes that grammar as ONE implementation, not a copy
+AssertionError: expected { deny: +0, ask: 1, allow: 2 } to be { deny: +0, ask: 1, allow: 2 } // Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: { deny: +0, ask: 1, allow: 2 }
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:747:57
+    745|     expect(mutationModule.matcherCovers).toBe(domainEnvelope.matcherCo…
+    746|     expect(lane.matcherCovers).toBe(domainEnvelope.matcherCovers)
+    747|     expect(mutationModule.PERMISSION_EFFECT_PRECEDENCE).toBe(domainEnv…
+       |                                                         ^
+    748|     expect(mutationModule.PERMISSION_RESOURCE_MATCHER_KINDS).toBe(doma…
+    749|     // The ceiling adapter reaches the proposal vocabulary as a TYPE O…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

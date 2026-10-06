@@ -972,4 +972,45 @@ block is additionally where the evidence lives. Full evidence, including the mea
   module, and the eslint block only grants node *globals* to explicit `.mjs` globs. The PR0 decision survived
   for its real reason (spec §8.4 assigns fingerprint computation to PR5; A5-13 freezes `caseFingerprint` as a
   record input). Recorded so the premise is not refuted a third time in PR5.
+- **X5 — PR1 pre-flight: three plan holes of the same class as X2/X3, closed before any writer touched Task 1.**
+  A read-only audit of Task 1 against the real tree found the plan under-specified exactly where PR0 had needed
+  rulings — and in one place it would have broken **silently**:
+  - **X5-E1 (adapter scope).** Task 1 told PR1 to expose `mayReview`, but `mayReview` needs a ladder **rank**,
+    `authorityRank()` is PR2's Produces, and X2 reserves ranking to PR2 precisely so PR2's positional matrix has a
+    single source to backstop; its `case` input is PR3's additive field. PR1 exposes `bindingDocs` and
+    `grantCeiling` only, keyed by a **type-only** import of PR0's durable `ProposalAuthorityPosition` (X2's
+    vocabulary, zero runtime edge). Task 1's line is amended in place, and `authority-ceiling.ts` said "Create" in
+    both Task 1 and Task 2 — undecidable as written — so Task 2 now says Modify.
+  - **X5-E2 (one name, two shapes).** Spec §5.1 defines `AuthorityEnvelope`/`AuthorityEnvelopeRule` in the
+    `{ kind, resource }` shape while A3-9/§26.6 make `{ kind, path | fingerprint }` the canonical, hash-bound
+    winner. Both must exist, so they get two names: `AuthorityEnvelopeAst` (parser output, the target of PR0's
+    twin and of PR1's mutual-assignability test, **both directions**) and `AuthorityEnvelope` (canonicalized
+    runtime shape, which `permission-mutation.ts`'s existing `PermissionEnvelopeRule` aliases). A single
+    unqualified name silently forks either the hash grammar or the overlay kernel.
+  - **X5-E3 (the silent one).** Task 1's Produces named **one** ceiling lookup, but the two planes have opposite
+    no-match semantics: expansion returns `no-authority` on no match, while the approval plane must return the meet
+    **identity** ("an absent rule imposes no narrowing", A1-4). `no-authority` is meet-annihilating in the §24.2
+    table, so meeting over expansion results makes a binding document with `rules: []` destroy every legal approval
+    in the Team — the dead-lock A1-4 explicitly rejected, and undetectable in PR1 because PR1 has no consumer. The
+    domain therefore ships `narrowingForApproval` beside `effectiveAuthorityCeiling`, with a blocking RED test
+    (`{rules:[]}` hard envelope + matching mutation `allow` ⇒ grant `allow`) and the full meet table including
+    `undetermined` absorbing.
+  - **X5-E5 (file list against the tree).** Task 1 omitted `packages/domain/tsconfig.json` (its `include` would
+    keep the new kernel out of rule-10's typecheck) and `a3p3-governance-lane-hygiene.test.ts` (its roots lack
+    `'domain'`, so the new lane would ship unpoliced and **nothing would go red**), both already mandated by the
+    A3/A4 addenda; under the one-writer rule an omitted file is an uneditable file, so the omission had to be
+    repaired in the list itself. Also recorded: once `permission-plane.ts` imports the new domain module,
+    `pnpm build` emits `packages/runtime/dist/packages/domain/authority-envelope/**` transitively (the runtime build
+    include omits `governance`, A5-19), so **PR1 owes a dist co-commit** — unlike PR0's deliberate zero-dist
+    posture — and must not read that as a regression.
+- **X6 — a PR merges what was *pushed*, not what was *verified*.** The PR0 fix round was gated by the coordinator
+  at `4ab9bcfd` (9 suites / 91 tests, typecheck, eslint, zero artifact drift, the baseline captured twice at 22
+  identities, and an adversarial probe proving the new storage-edge guard leg refuses an unallow-listed import).
+  The implementer had been correctly instructed not to push, and the coordinator then merged PR #68 **without
+  pushing that head first**, so `master@17d40ea8` briefly carried A4-PR0 with SF-1 and SF-2 — both inside the
+  A5-13 payload contract — unfixed, and the guard leg that had just been proven working did not exist in `master`.
+  Recovered append-only by PR #69 (`master@d21effba`): no force-push, no amended commit, and PR #68's description
+  deliberately left as written rather than silently improved after the fact. Binding rule for the rest of this
+  phase: **push the verified head, then confirm `origin/master` contains those commit SHAs before declaring a PR
+  merged.** "Verified at X" and "merged X" are different claims, and only the second is a gate.
 

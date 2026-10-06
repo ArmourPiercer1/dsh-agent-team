@@ -1760,10 +1760,35 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // the constant moved; the GREEN run reports equality. Exact equality stays
     // (ADR A5-17): no tolerance, and the five paths are additionally asserted
     // present by path below rather than inferred from the total.
-    expect(scanResult.filesScanned).toBe(978)
-    expect(scanResult.files.length).toBe(978)
-    // Each of the three is asserted present by path, not inferred from the total.
-    for (const path of [
+    // 978 -> 983 (A4-PR1): this commit adds exactly five scannable tracked
+    // files, all inside the scanner's existing `packages/**/*.ts` scope — three
+    // lane sources plus two specs — with nothing generated, no new skip, no new
+    // exclusion and nothing removed:
+    //   packages/domain/authority-envelope/src/authority-envelope.ts   (the shared grammar: the domain LEAF ADR A3-9 requires)
+    //   packages/domain/authority-envelope/src/index.ts                (its barrel)
+    //   packages/runtime/governance/authority-ceiling.ts               (bindingDocs/grantCeiling, spec §7.4)
+    //   packages/domain/test/a4p1-blueprint-v3-governance.test.ts      (Blueprint v3 carrier + v1/v2 hash goldens)
+    //   packages/runtime/test/a4p1-authority-envelope.test.ts          (the two lookups + the meet + positional binding)
+    // Arithmetic: 978 + 5 = 983. Everything else this PR touches is an EDIT to
+    // already-counted files (blueprint schema/types/validate/index, the
+    // governance kernel + barrel, permission-plane, the domain tsconfig, the
+    // lane-hygiene and a3p3/a3p4 specs, testdata/fixtures.ts) — an edit is not
+    // an increment — and `dev/agent-workflow/evidence/**` plus `dist/**` are
+    // outside the scanned scope. RED raw
+    // `dev/agent-workflow/evidence/a4-pr1/gates/p4t6-RED.log` reported
+    // `expected 983 to be 978`; the GREEN raw is `gates/p4t6-GREEN.txt`. Exact
+    // equality stays (ADR A5-17): no tolerance, and the paths behind the movement
+    // are additionally asserted present BY PATH below, not inferred from the total.
+    expect(scanResult.filesScanned).toBe(983)
+    expect(scanResult.files.length).toBe(983)
+    // Every path in the two lists below is asserted present BY PATH, not inferred
+    // from the total: a total that moves for the wrong reason (one file added, one
+    // dropped) is otherwise indistinguishable from one that moved for the right
+    // one. NO COUNT IS WRITTEN IN PROSE ANYWHERE IN THIS BLOCK — this comment has
+    // been wrong three rounds running ("the three", then "six and five", while the
+    // list was thirteen), so the lists are the record and the arithmetic below is
+    // derived from them.
+    const SCANNED_PATHS_A4PR0: readonly string[] = [
       'packages/runtime/governance/proposal-store.ts',
       'packages/runtime/governance/proposal-codes.ts',
       'packages/runtime/test/a4pr0-proposal-store.test.ts',
@@ -1772,9 +1797,22 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/root-binding/harness/blueprint-source.mjs',
       'packages/runtime/root-binding/harness/bounded-run.mjs',
       'packages/runtime/root-binding/harness/bounded-run.regression.test.mjs',
-    ]) {
+    ]
+    const SCANNED_PATHS_A4PR1: readonly string[] = [
+      'packages/domain/authority-envelope/src/authority-envelope.ts',
+      'packages/domain/authority-envelope/src/index.ts',
+      'packages/runtime/governance/authority-ceiling.ts',
+      'packages/domain/test/a4p1-blueprint-v3-governance.test.ts',
+      'packages/runtime/test/a4p1-authority-envelope.test.ts',
+    ]
+    for (const path of [...SCANNED_PATHS_A4PR0, ...SCANNED_PATHS_A4PR1]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
+    // The tie between the two forms of the pin, and the only place a number is
+    // allowed to appear: A4-PR1 added exactly as many scannable files as the
+    // 978 -> 983 movement claims, and every one of them is named above. A file
+    // added without a name, or a name without a file, fails HERE.
+    expect(SCANNED_PATHS_A4PR1.length).toBe(983 - 978)
 
   })
 

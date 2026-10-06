@@ -333,6 +333,25 @@ export type BlueprintPermissionMutationEnvelopeMatcher =
   | { readonly kind: 'fingerprint'; readonly fingerprint: string }
 
 /**
+ * The v3 name for one AUTHORITY document (ADR A3-9: the grammar is shared, and
+ * the shared shape is the one below — `{ kind, path | fingerprint }`, the
+ * DECLARED identity a hash-bound document must carry).
+ *
+ * Both v3 authority documents are this one type:
+ * `permissionMutationEnvelope` (the Leader expansion ceiling) and
+ * `teamHardEnvelope` (the Human User hard ceiling, new at v3). They differ in
+ * their position in the runtime authority order, never in their shape. The
+ * names are aliases rather than restatements on purpose: a structural change
+ * to one document's grammar is a change to both, and a call site cannot
+ * accidentally treat the two as unrelated types.
+ */
+export type BlueprintAuthorityEnvelope = BlueprintPermissionMutationEnvelope
+/** One rule of either v3 authority document. */
+export type BlueprintAuthorityEnvelopeRule = BlueprintPermissionMutationEnvelopeRule
+/** The matcher of either v3 authority document (config/AST shape). */
+export type BlueprintAuthorityEnvelopeMatcher = BlueprintPermissionMutationEnvelopeMatcher
+
+/**
  * A PolicyState definition (Architecture §5.4, optional). Its `fields`
  * reference top-level blueprint fields that exist in this document
  * (Architecture §5.5: "PolicyState 不引用不存在的字段").
@@ -388,9 +407,13 @@ export interface TeamBlueprint {
    * The blueprint document schema version. `1` = the frozen v1 document
    * (the flat top-level {@link CapabilityRequirement} list only); `2` = the
    * structured requirement levels (plan §E.2: Team / Leader /
-   * MemberTemplate requirements in the compatibility vocabulary).
+   * MemberTemplate requirements in the compatibility vocabulary); `3` =
+   * Alpha.4 (ADR A2-2): the v2 shape plus the required `teamHardEnvelope`
+   * authority document, with `permissionMutationEnvelope` no longer optional
+   * (ADR A1-19). `3` is admitted for the PR1-PR6 bridge only (ADR A2-11); the
+   * Alpha.4 contract is v3-only and the PR7 cutover narrows the accepted set.
    */
-  readonly schemaVersion: 1 | 2
+  readonly schemaVersion: 1 | 2 | 3
   /** Stable logical identity (not a path, not a display name). */
   readonly blueprintId: BlueprintId
   /** Human-readable revision. */
@@ -434,6 +457,26 @@ export interface TeamBlueprint {
    * discipline): documents that do not declare it hash byte-identically.
    */
   readonly permissionMutationEnvelope?: BlueprintPermissionMutationEnvelope
+  /**
+   * The Alpha.4 `teamHardEnvelope` — the HUMAN USER hard expansion ceiling
+   * (ADR §3.2 runtime order: `Human Admin > Team Hard Envelope > Human User >
+   * Leader Permission Mutation Envelope > Leader > Member`; spec §3.2).
+   *
+   * v3-ONLY and REQUIRED at v3: `schemaVersion: 1 | 2` documents reject the
+   * key as an unknown field (the version-gated closed set), so its presence
+   * here is exactly the v3 population. `rules: []` is a legal declaration and
+   * means one thing — Human User has NO runtime expansion authority
+   * (spec §3.4); absence is never an implicit wide grant, which is why the
+   * field is required rather than defaulted.
+   *
+   * Like its sibling, it is PRESENT-ONLY in the content hash: the key is
+   * omitted from the hashable projection when the document does not carry it,
+   * so every v1/v2 blueprint keeps hashing byte-identically (ADR A2-11).
+   *
+   * PR1 carries and freezes it and NOTHING in production authorization reads
+   * it (plan Task 1 lane C).
+   */
+  readonly teamHardEnvelope?: BlueprintAuthorityEnvelope
   /** PolicyState definitions (unique ids, resolvable field refs). */
   readonly policyStates: readonly PolicyStateDefinition[]
   /** Instance/team quotas (absent = none declared). */
