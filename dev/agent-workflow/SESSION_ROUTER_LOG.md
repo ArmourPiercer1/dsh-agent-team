@@ -5234,6 +5234,16 @@ pre-e 线自 merge-base `aa8391ac` 之后未含 master 线的 2 条 w1a 日志�
 - **p4t6 pin 971 → 973**（本次恰好新增两个可扫描测试文件，算术 `958+7+3+3+2=973` 与 ADR A5-17「重算权威自 A4-PR0a 起」一致；仍是精确相等，不是放宽）。
 - **门禁状态**：`pnpm build` 全包绿；`build:composition` 按契约要求把漂移产物同提交登记（`client/composition-shim/client-bundle.js` + runtime dist 的 `projection-source.{js,js.map,d.ts.map}` 共 4 项）；全量 `pnpm vitest run` 在分支上运行中，随后连同等 baseline 身份集比对（只降不升）。
 
+
+## 2026-10-07 — A4-PR0a 合入（PR #64）；只读复核抓出我自己守卫里的一个盲区
+
+- **PR #64 已 MERGED**（`fix/a4-pr0a-ledger-category-closure`，commits `9c6edb42` 修复+两个测试+dist 同提交、`48fb0ecc` baseline 证据与 p4t6 标题纠偏、`d4c19654` 守卫门拓宽），master → `df1255f8`。本轮 GitHub merge 一次成功（与 PR #63 那次的 502/`Merge already in progress` 不同，两条路径都已留痕）。
+- **门禁事实**：三个测试文件 23 tests 绿；`check:artifacts` OK 1444 files；baseline 两次采集——run1 与权威 baseline **逐字节相同**（23 identities / 10 files，`diff` 空），run2 只多出两条已命名的 `p6t1-parallel` 容许 flake ⇒ 失败集只降不升（证据 `dev/agent-workflow/evidence/a4-pr0a/baseline-closure/`）。
+- **复核结论 PASS，但它抓到一个真问题（我的守卫自己就是那个盲区的受害者）**：`a4pr0a-fact-type-closed-set` 第一版把扫描范围限定在"直接调用 `putEntry`/`ledger.put` 的文件"，于是漏掉了 `action-router/work-execution.ts`、`root-initial-work.ts`（它们从另一个目录经位置参数漏斗 `commitDurableFact` 追加）和 `admission/actions.ts`（带标签字面量写点，根本没有直接 append 调用）——**而我那条 C1b 残余披露里的三个类型恰好全在这三个文件里**。也就是说：在这些文件里新增一个未登记事实类型，会让守卫所有断言全绿，同时永久打坏投影——正是 A4-4 这一类缺陷从守卫自己的洞里重新进来。现在门按"通往 ledger 的三条路"（直接 append / 漏斗调用 / 带标签写点）求并集，派生覆盖 20 个已登记类型中的 19 个，残余只剩 `provision-member-instance` 一个并被写死。
+- **复核同时证伪了我两处说法并就地改正**：(1) C1b 注释说那三个类型"不经带标签写点也不经漏斗"到达 ledger —— 错，事实相反，真正原因就是上面的门过窄；(2) 我在提交信息里写"纯字面量扫描只能收到 19 个中的 9 个"—— 实测纯字面量 3 个，加同文件常量与表 9 个，再加跨模块常量/闭合登记表/位置漏斗 19 个；方向与结论成立（必须解析标识符），数字口径松了，已在提交与 PR 正文更正。
+- **两条刻意不做、转交 PR6 的披露**：(1) `pendingControlCount` 仍把已 abandon 的请求算作 pending（`projection-source.ts:783-816` 只按 request/decision factType 配对，Alpha.3 既有语义，PR0a 是分类修复不动它）；(2) abandon 行在客户端仍是通用 Event 渲染（renderer case 早已存在，本轮只补分类），与 A5-7 已披露的临时形态一致。
+- **纪律**：本条与 graph 的合入记录、计划 Task 0a 的 8 个勾选项一并写在 PR0 分支上（1 task=1 branch=1 writer；PR0a 分支已随合入冻结，不再追加）。
+
 ## 2026-10-07 — PR #65：给门禁补上缺失的 typecheck 门，并登记 A4 执行轮的 X1-X4
 
 - **发现方式**：为 PR0 补门禁清单时去核对构建图，顺手在干净 master 上跑了 `pnpm -r run typecheck` —— 上一轮刚合入的
@@ -5255,4 +5265,3 @@ pre-e 线自 merge-base `aa8391ac` 之后未含 master 线的 2 条 w1a 日志�
 - **一条流程教训（写进 evidence，因为它会复发）**：我按 goal 轮次数推算出"写者跑了约 100 分钟"并准备 `interrupt_agent` 接管；
   真实时钟（`date` + 分支 reflog：创建 04:10:57、rebase 04:18:10、当时 04:22:56）显示它只跑了 **11 分钟**且行为正常。
   elapsed time 必须读时钟/reflog/mtime——轮次之间不存在可推算的时间间隔。错误的计时模型会在飞行中杀掉一个健康的写者。
-

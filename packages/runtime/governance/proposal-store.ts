@@ -1,0 +1,676 @@
+/**
+ * A4-PR0 — the durable governance proposal substrate (plan Task 0 / A4-PR0;
+ * ADR A5-13, A4-2, A4-3, A4-5, A4-6, A4-7; spec §8.4, §24.5, §25.2).
+ *
+ * WHAT THIS MODULE IS. A record of "someone proposes that this Member's
+ * permission overlay move to this effect, from THIS overlay position, and this
+ * is the authority that has to agree". It is a durable FACT and nothing else:
+ * it approves nothing, authorizes nothing, ranks nothing and mutates nothing.
+ * The durable permission chain is still written only by the permission
+ * mutation path (ADR §1); this module's output is an input to the decision
+ * that eventually reaches it, which is why it holds no overlay reference at
+ * all (ADR A4-3).
+ *
+ * NO PRODUCT SURFACE (ADR A4-6). Nothing in `src/plugin/**` imports this file,
+ * it is not re-exported from `governance/index.ts`, and the governance service
+ * factory gains no method — the fact type is registered in the two category
+ * maps because an UNREGISTERED type makes every projection read of that Team throw forever (the PR0a defect), not because any product path writes one yet.
+ *
+ * WHY THE PORTS ARE STRUCTURAL (ADR A4-6). The lane may not import a ledger
+ * repository TYPE from storage: storage's `LedgerRepository` is a class over a
+ * storage seam, and depending on it here would make the substrate untestable
+ * outside a storage domain and would put the proposal lane on the storage
+ * import list that `a3p3-governance-lane-hygiene.test.ts` exists to keep small.
+ * So the writer and reader ports below declare the ROW and the two or three
+ * MEMBERS this module actually touches. The adapter is named, not hidden:
+ * `packages/storage/repositories/ledger.ts`'s `LedgerRepository` satisfies
+ * both ports as it stands — `allocateSequence()`, `put()` and `list()` are
+ * already exactly these members over a structurally compatible row, and
+ * `a4pr0-proposal-store.test.ts` passes the real repository object with no
+ * shim, which is what makes "structural" a checked property rather than a
+ * claim. (`src/plugin/root.ts` wires the production ledger the same way for
+ * the override store, at `:2481`.)
+ *
+ * THE THREE GENERATIONS, AND WHICH ONE THIS RECORD CARRIES (ADR A4-2/A4-3).
+ * `baseGeneration` is the OVERLAY SNAPSHOT generation — the head of the chain
+ * the proposal was written against — and `baseSnapshotId` is that snapshot's
+ * derived identity beside it. It is NOT `team_sessions.generation` (the
+ * per-team stamp every ledger fact advances, so it would be stale before the
+ * record was read back) and NOT the override slot winner (a different plane).
+ * The pair is the proposal's claim about the world, so the pair must agree
+ * with itself: `null` stands only with `0` (spec §24.5's empty overlay
+ * history), and a non-null id must be the derived identity of that generation
+ * for that member. A pair that disagrees is CORRUPT, not stale — staleness is
+ * a comparison against the CURRENT head, which this module cannot perform
+ * because it holds no overlay; the revalidation that turns a stale pair into
+ * `mutation-stale` is PR5's, inside the mutation path that owns the overlay
+ * (ADR A4-3, spec §24.5).
+ *
+ * APPEND-ONLY STANDING. A row's `status` is `'pending'`, always, and the
+ * STORE stamps it — a caller cannot append a row claiming a different
+ * standing. Nothing ever rewrites a row, so a proposal's standing changes only
+ * through a NEWER fact (ADR A3-6, spec §26.4), and the answer to it is a
+ * Control decision with its own vocabulary (`allow | deny | stale-denied`,
+ * spec §11.3). A richer status vocabulary here would duplicate one of those
+ * two laws, which is why the set is closed at one value at PR0 and widening it
+ * is a plan-level change (ADR A5-13, A3-14 on dead names).
+ *
+ * @module @dsh-agent-team/runtime/governance/proposal-store
+ */
+
+import {
+  deepFreeze,
+  parseInstanceId,
+  parseRootSessionId,
+} from '../../contracts/src/index.js'
+import { ISO_8601_TIMESTAMP_PATTERN } from '../../contracts/src/dto/common.js'
+import {
+  PERMISSION_OVERLAY_EFFECT_VALUES,
+  isPermissionOverlayEffect,
+  permissionOverlaySnapshotKey,
+} from '../../storage/schema/permission-overlay.js'
+import type { PermissionOverlayEffect } from '../../storage/schema/permission-overlay.js'
+import {
+  GOVERNANCE_PROPOSAL_ERROR_CODES,
+  GovernanceProposalError,
+} from './proposal-codes.js'
+
+// --- the durable identity of the fact ----------------------------------------
+
+/**
+ * The fact type this lane writes. It lives in THIS lane because the writer
+ * lives here; the two category maps (`src/plugin/projection-source.ts` and the
+ * client's `model/ledger-adapter.ts`, ADR A5-22) name the same string, and
+ * `a4pr0a-fact-type-closed-set.test.ts` C1 fails if this one ever drifts from
+ * the map. The name carries `FACT_TYPE` on purpose: the guard's constant
+ * registry harvests constants named `*_FACT_TYPE*`, and a name outside that
+ * convention would make the guard blind to this writer.
+ */
+export const GOVERNANCE_PROPOSAL_FACT_TYPE = 'governance-proposal-recorded'
+
+/**
+ * The `schemaVersion` of the ledger ROW this writer builds, MIRRORED rather
+ * than imported. `LedgerRepository.put` re-validates it against storage's
+ * `TEAM_DOMAIN_SCHEMA_VERSION`, and `a4pr0-proposal-store.test.ts` pins the
+ * mirror against that constant — the same discipline as the permission
+ * kernel's mirrored rule-set bound, so the lane keeps no runtime edge to a
+ * storage repository module.
+ */
+export const GOVERNANCE_PROPOSAL_LEDGER_SCHEMA_VERSION = 2
+
+// --- the record's closed vocabularies ----------------------------------------
+
+/**
+ * The authority POSITIONS the `requiredAuthority` field may carry: the four
+ * positions ADR A5-1's ladder names (ADR execution-round correction X2).
+ *
+ * PR0 declares this structurally because the ladder does not exist yet:
+ * `RuntimeAuthority` with its `authorityRank()` / `isHigherAuthority()` /
+ * ceiling evaluator is PR2's product, and there is nothing on the tree to
+ * import today. TWO NAMED OBLIGATIONS follow, and they are PR2's, not
+ * suggestions:
+ *
+ *  1. PR2's `RuntimeAuthority` must be DEFINITIONALLY identical to this union
+ *     — assignable in both directions with no cast anywhere. Declaring a
+ *     second, divergent ladder type is a plan change.
+ *  2. PR2 must either import this union or alias its own name to it, so the
+ *     durable vocabulary and the runtime vocabulary stay one set.
+ *
+ * PR0 PERSISTS the position and INTERPRETS it not at all: no rank, no
+ * comparison, no ceiling, no "is this authority enough" helper lives in this
+ * file or in PR0. A comparator here would mean PR2's authority algebra ships
+ * with no RED of its own to prove it was written before the code it protects.
+ */
+export const PROPOSAL_AUTHORITY_POSITIONS = ['member', 'leader', 'human-user', 'human-admin'] as const
+
+/** One authority position a proposal may name as its required authority. */
+export type ProposalAuthorityPosition = (typeof PROPOSAL_AUTHORITY_POSITIONS)[number]
+
+/**
+ * The append-time standing of a proposal row. One value, on purpose: a row is
+ * never rewritten, so the standing of a proposal changes only through a newer
+ * fact (ADR A3-6, spec §26.4) and the ANSWER to it is a Control decision with
+ * its own closed vocabulary (spec §11.3). Any second value here would be a
+ * name nothing can ever write (ADR A3-14) or a duplicate of one of those two
+ * laws; widening the set is a plan-level change (ADR A5-13).
+ */
+export const GOVERNANCE_PROPOSAL_STATUSES = ['pending'] as const
+
+/** One proposal standing. */
+export type GovernanceProposalStatus = (typeof GOVERNANCE_PROPOSAL_STATUSES)[number]
+
+/**
+ * The `authorityEnvelopeAst` field: the A3-9 SHARED AST in its Blueprint/config
+ * shape — `{ kind, path }` for `exact`/`subtree`, `{ kind, fingerprint }` for
+ * `fingerprint` (ADR execution-round correction X3).
+ *
+ * The config shape wins because the AST is bound into the Blueprint
+ * `contentHash` (ADR A3-9): a second spelling would silently rewrite every
+ * existing hash (ADR A2-11). The RUNTIME matcher shape (`{ kind, resource }`)
+ * stays what the overlay chain stores, and the mapping between the two is the
+ * boundary adapter A3-9 assigns to PR1/PR2 and performs only through the
+ * injected containment seam — it is NOT done here, and nothing in PR0
+ * interprets the node: no validator, no containment, no class/matcher pairing
+ * (a record carries no operation class, so PR0 could not pair it honestly).
+ *
+ * ONE NODE PER ROW, GROUPED BY `caseFingerprint`: a proposal that addresses
+ * two envelope rules is two rows of one case (spec §8.4 lists the fingerprint
+ * INPUTS of a case; it does not describe the row set).
+ */
+export type GovernanceProposalEnvelopeAst =
+  | { readonly kind: 'exact'; readonly path: string }
+  | { readonly kind: 'subtree'; readonly path: string }
+  | { readonly kind: 'fingerprint'; readonly fingerprint: string }
+
+/** The AST kinds the shared grammar admits (closed; iteration is the audit). */
+export const PROPOSAL_ENVELOPE_AST_KINDS = ['exact', 'subtree', 'fingerprint'] as const
+
+/** The structural bound on an id-shaped field (mirrored from
+ *  `storage/schema/field-rules.ts:21`, pinned by test — same reason as the
+ *  row schema version above: no runtime edge to a storage module). */
+const ID_FIELD_MAX_LENGTH = 128
+
+/** The structural bound on a fingerprint-shaped field (mirrored from
+ *  `storage/schema/field-rules.ts:23`). */
+const FINGERPRINT_FIELD_MAX_LENGTH = 256
+
+// --- the record ---------------------------------------------------------------
+
+/**
+ * What a caller asks the store to record: the eight fields of the frozen
+ * record that are the CALLER's to choose.
+ *
+ * Two frozen fields are NOT here, and both are the store's to stamp:
+ *  - `status` — always `'pending'` at append (see the note above: a caller
+ *    that could choose it could append a row claiming an authority it has no
+ *    proof of);
+ *  - `recordedAt` — the store's clock, also written into the ledger row's
+ *    `createdAt`, so the two can never disagree and no caller can record a
+ *    proposal at a time of its choosing.
+ */
+export interface GovernanceProposalDraft {
+  /** The Member whose overlay the proposal addresses. The name is
+   *  `targetMemberInstanceId`, NOT `targetInstanceId`, on purpose: the four
+   *  `FACT_ADDRESSING_KEYS` of the read port
+   *  (`instanceId`/`targetInstanceId`/`recipientInstanceId`/
+   *  `deliveredToInstanceId`) drive DISPOSED retained-history attribution, and
+   *  a proposal is a statement about the TEAM's authority, not a fact that
+   *  belongs to a disposed member's retained share (ADR A4-5 — the disclosed
+   *  trade-off: a proposal row is never attributed to its target). */
+  readonly targetMemberInstanceId: string
+  /** The OVERLAY SNAPSHOT generation this proposal was written against
+   *  (ADR A4-2: this counter, not the session stamp, not the slot winner). */
+  readonly baseGeneration: number
+  /** The derived identity of that snapshot, or `null` for an EMPTY overlay
+   *  history — and then, and only then, with `baseGeneration: 0`
+   *  (spec §24.5). The pair is authoritative together (ADR A4-3). */
+  readonly baseSnapshotId: string | null
+  /** The effect the proposal asks the overlay to carry (the canonical overlay
+   *  effect vocabulary, ADR A5-3). */
+  readonly desiredEffect: PermissionOverlayEffect
+  /** The envelope node the proposal relies on, in the shared A3-9 shape. */
+  readonly authorityEnvelopeAst: GovernanceProposalEnvelopeAst
+  /** The authority position that has to agree (persisted, not interpreted). */
+  readonly requiredAuthority: ProposalAuthorityPosition
+  /** The approval-case identity this row belongs to (spec §8.4). Computed by
+   *  the caller, NEVER here: §8.4 makes proposal-fingerprint computation the
+   *  approval-plane's job, and A5-13 freezes this field as a record INPUT a
+   *  later PR may extend but not retype — a digest helper in the substrate
+   *  would quietly fix the input set that PR5 owns. */
+  readonly caseFingerprint: string
+}
+
+/** The durable record: the draft plus the two fields the store stamps. The
+ *  field NAMES are frozen by ADR A5-13 (plan line 872 freezes names, not
+ *  types); the payload of a `governance-proposal-recorded` row is exactly
+ *  these nine keys, no more and no fewer. */
+export interface GovernanceProposalRecord extends GovernanceProposalDraft {
+  /** The append-time standing; `'pending'`, stamped by the store. */
+  readonly status: GovernanceProposalStatus
+  /** When the store committed the row (the same stamp as the ledger row's
+   *  `createdAt`). */
+  readonly recordedAt: string
+}
+
+// --- the structural ports (ADR A4-6) -----------------------------------------
+
+/** The ledger row as this module sees it: the members it reads or writes, and
+ *  nothing else. `payload` stays `unknown`-shaped ON PURPOSE — this module
+ *  parses its own payload and never trusts another lane's. */
+export interface GovernanceProposalLedgerRow {
+  readonly schemaVersion: number
+  readonly sequence: number
+  readonly rootSessionId: string
+  readonly factType: string
+  readonly payload: Readonly<Record<string, unknown>>
+  readonly createdAt: string
+  readonly operationId?: string
+}
+
+/** The write half: allocate, then durably put. Two members because that is the
+ *  production writer's shape (the sequence is allocated before the row exists,
+ *  which is why validation must — and does — precede both). */
+export interface GovernanceProposalLedgerWriterPort {
+  allocateSequence(): Promise<number>
+  put(row: GovernanceProposalLedgerRow): Promise<unknown>
+}
+
+/** The read half: the whole ledger, in sequence order. Deliberately NOT a
+ *  filtered query — the row-level filter (root + fact type) is this module's
+ *  job, and the durable read's failure is allowed to propagate (ADR A4-7's
+ *  second leg). */
+export interface GovernanceProposalLedgerReaderPort {
+  list(): readonly GovernanceProposalLedgerRow[]
+}
+
+/** Everything the store needs (the whole interface — no optional port, so
+ *  there is no dormant half of this capability to mistake for a working one). */
+export interface GovernanceProposalStoreDeps {
+  readonly ledger: GovernanceProposalLedgerWriterPort & GovernanceProposalLedgerReaderPort
+  /** The store's clock (ISO-8601). No caller-supplied durable stamp exists. */
+  readonly now: () => string
+}
+
+// --- the read outcomes (ADR A4-7) --------------------------------------------
+
+/** One sound proposal row. */
+export interface ProposalReadRecord {
+  readonly kind: 'record'
+  /** The ledger sequence the row lives at (the ordering is the supersession
+   *  law: a newer sequence for the same `caseFingerprint` supersedes). */
+  readonly sequence: number
+  readonly teamSessionId: string
+  readonly operationId?: string
+  readonly proposal: GovernanceProposalRecord
+}
+
+/** One row of THIS fact type that is not a proposal record. Typed, located,
+ *  and the row stays in the list — reporting corruption must never hide it. */
+export interface ProposalReadCorrupt {
+  readonly kind: 'corrupt-record'
+  readonly code: typeof GOVERNANCE_PROPOSAL_ERROR_CODES.CORRUPT_RECORD
+  readonly sequence: number
+  /** The row's fact type (so a reader can tell which lane's row this is). */
+  readonly factType: string
+  /** Where the bad value lives, e.g. `payload.baseSnapshotId` or
+   *  `payload.authorityEnvelopeAst.kind`. */
+  readonly path: string
+  /** The record field at fault (the AST sub-path names its parent field). */
+  readonly field: string
+  /** The machine-readable reason, stable across versions. */
+  readonly problem: string
+  readonly message: string
+}
+
+/** What reading one proposal row yields. An ABSENCE of outcomes means
+ *  "no proposals", never "something was wrong": unreadable rows appear here as
+ *  `corrupt-record`, and a ledger that cannot be read at all throws (see
+ *  {@link GovernanceProposalStore.listProposals}). */
+export type GovernanceProposalReadOutcome = ProposalReadRecord | ProposalReadCorrupt
+
+/** One proposal's durable position, as appended. */
+export interface GovernanceProposalAppended {
+  readonly sequence: number
+  readonly record: GovernanceProposalRecord
+}
+
+/** What a caller may ask the store to append: the draft, the Team it belongs
+ *  to, and (optionally, key-omitted) the operation that produced it. */
+export interface GovernanceProposalAppendArgs {
+  readonly teamSessionId: string
+  readonly proposal: GovernanceProposalDraft
+  readonly operationId?: string
+}
+
+/** The durable proposal record store. */
+export interface GovernanceProposalStore {
+  /**
+   * Durably append one proposal row.
+   *
+   * Validation happens BEFORE `allocateSequence`, so a refusal leaves nothing
+   * behind: no row, no hole in the sequence counter, no session-stamp advance.
+   * @throws GovernanceProposalError (`MALFORMED_PROPOSAL`) for a record this
+   *   row cannot honestly carry.
+   */
+  appendProposal(args: GovernanceProposalAppendArgs): Promise<GovernanceProposalAppended>
+  /**
+   * Read this Team's proposal rows in ledger order, sound and corrupt alike.
+   *
+   * Entry-level unreadability is NOT caught: `list()` deserializes every row,
+   * so a corrupt ENTRY throws through this method (ADR A4-7's second leg).
+   * Returning `[]` there would claim "this Team has no proposals" about a
+   * ledger that could not be read at all (spec §25.2 — proposal reads never go
+   * through a lenient parser).
+   */
+  listProposals(query: { readonly teamSessionId: string }): readonly GovernanceProposalReadOutcome[]
+}
+
+// --- the strict parser --------------------------------------------------------
+
+/** The nine payload keys, in the record's declaration order (a missing-field
+ *  report names the FIRST one absent in this order). */
+const RECORD_FIELDS = [
+  'targetMemberInstanceId',
+  'baseGeneration',
+  'baseSnapshotId',
+  'desiredEffect',
+  'authorityEnvelopeAst',
+  'requiredAuthority',
+  'caseFingerprint',
+  'status',
+  'recordedAt',
+] as const
+
+type FieldProblem = {
+  readonly path: string
+  readonly field: string
+  readonly problem: string
+  readonly message: string
+}
+
+type ParsedRecord =
+  | { readonly ok: true; readonly record: GovernanceProposalRecord }
+  | ({ readonly ok: false } & FieldProblem)
+
+/** The AST's own discriminated result — the same two-shape discipline as
+ *  {@link ParsedRecord}, so `ok` is a discriminant rather than a property one
+ *  branch happens to lack. */
+type ParsedAst =
+  | { readonly ok: true; readonly ast: GovernanceProposalEnvelopeAst }
+  | ({ readonly ok: false } & FieldProblem)
+
+/** A hygienic id-shaped string: non-empty, bounded, no whitespace/control. */
+function isIdShaped(value: unknown, maxLength: number): value is string {
+  if (typeof value !== 'string' || value.length === 0 || value.length > maxLength) return false
+  // eslint-disable-next-line no-control-regex -- the structural bound this lane mirrors from storage/schema/field-rules.ts
+  return !/[\s\u0000-\u001f\u007f]/.test(value)
+}
+
+function problem(
+  field: string,
+  path: string,
+  kind: string,
+  message: string,
+): { ok: false } & FieldProblem {
+  return { ok: false, field, path, problem: kind, message }
+}
+
+/** The AST node, strictly: one of the three A3-9 shapes, exact key set. */
+function parseAst(raw: unknown): ParsedAst {
+  const nodePath = 'payload.authorityEnvelopeAst'
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    return problem('authorityEnvelopeAst', nodePath, 'not-a-plain-record', 'authorityEnvelopeAst must be a plain record carrying one A3-9 matcher node')
+  }
+  const node = raw as Record<string, unknown>
+  const kind = node['kind']
+  if (kind !== 'exact' && kind !== 'subtree' && kind !== 'fingerprint') {
+    return problem('authorityEnvelopeAst', `${nodePath}.kind`, 'bad-ast-kind', `authorityEnvelopeAst.kind must be one of ${PROPOSAL_ENVELOPE_AST_KINDS.join(' | ')}, got ${JSON.stringify(kind)}`)
+  }
+  const expected = kind === 'fingerprint' ? ['kind', 'fingerprint'] : ['kind', 'path']
+  const keys = Object.keys(node)
+  const unknown = keys.filter((key) => !expected.includes(key))
+  if (unknown.length > 0) {
+    return problem('authorityEnvelopeAst', `${nodePath}.${unknown[0] ?? 'kind'}`, 'unknown-field', `authorityEnvelopeAst of kind ${String(kind)} carries ${unknown.join(', ')}`)
+  }
+  const missing = expected.filter((key) => !keys.includes(key))
+  if (missing.length > 0) {
+    return problem('authorityEnvelopeAst', `${nodePath}.${missing[0] ?? 'kind'}`, 'missing-field', `authorityEnvelopeAst of kind ${String(kind)} is missing ${missing.join(', ')}`)
+  }
+  if (kind === 'fingerprint') {
+    const fingerprint = node['fingerprint']
+    if (!isIdShaped(fingerprint, FINGERPRINT_FIELD_MAX_LENGTH)) {
+      return problem('authorityEnvelopeAst', `${nodePath}.fingerprint`, 'bad-string', 'authorityEnvelopeAst.fingerprint must be a non-empty id-shaped string')
+    }
+    return { ok: true, ast: { kind, fingerprint } }
+  }
+  const path = node['path']
+  if (!isIdShaped(path, FINGERPRINT_FIELD_MAX_LENGTH)) {
+    return problem('authorityEnvelopeAst', `${nodePath}.path`, 'bad-string', 'authorityEnvelopeAst.path must be a non-empty id-shaped string')
+  }
+  return { ok: true, ast: { kind, path } }
+}
+
+/**
+ * Parse one payload STRICTLY (spec §25.2: a strict parser with a typed corrupt
+ * outcome, never a lenient read). `teamSessionId` is the LEDGER ROW's root —
+ * the base-pair check derives the snapshot identity from it and the target,
+ * which is why the payload carries no team field of its own.
+ */
+function parseProposalPayload(raw: unknown, teamSessionId: string): ParsedRecord {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    return problem('payload', 'payload', 'not-a-plain-record', 'a governance-proposal-recorded payload must be a plain record')
+  }
+  const payload = raw as Record<string, unknown>
+  const keys = Object.keys(payload)
+  const unknown = keys.filter((key) => !(RECORD_FIELDS as readonly string[]).includes(key))
+  if (unknown.length > 0) {
+    const field = unknown[0] ?? 'payload'
+    return problem(field, `payload.${field}`, 'unknown-field', `the proposal record set is closed; ${field} is not one of its fields (ADR A5-13)`)
+  }
+  const missing = RECORD_FIELDS.filter((field) => !(field in payload))
+  if (missing.length > 0) {
+    const field = missing[0] ?? 'payload'
+    return problem(field, `payload.${field}`, 'missing-field', `proposal record is missing ${field}`)
+  }
+
+  const target = payload['targetMemberInstanceId']
+  if (!isIdShaped(target, ID_FIELD_MAX_LENGTH)) {
+    return problem('targetMemberInstanceId', 'payload.targetMemberInstanceId', 'bad-string', 'targetMemberInstanceId must be a non-empty id-shaped string')
+  }
+  try {
+    parseInstanceId(target)
+  } catch {
+    return problem('targetMemberInstanceId', 'payload.targetMemberInstanceId', 'bad-instance-id', `targetMemberInstanceId is not a well-formed instance id: ${String(target)}`)
+  }
+
+  const baseGeneration = payload['baseGeneration']
+  if (typeof baseGeneration !== 'number' || !Number.isInteger(baseGeneration) || baseGeneration < 0 || !Number.isSafeInteger(baseGeneration)) {
+    return problem('baseGeneration', 'payload.baseGeneration', 'not-a-non-negative-integer', `baseGeneration must be a non-negative safe integer, got ${JSON.stringify(baseGeneration)}`)
+  }
+
+  const baseSnapshotId = payload['baseSnapshotId']
+  if (baseSnapshotId !== null && !isIdShaped(baseSnapshotId, FINGERPRINT_FIELD_MAX_LENGTH)) {
+    return problem('baseSnapshotId', 'payload.baseSnapshotId', 'bad-string', 'baseSnapshotId must be null or a non-empty id-shaped string')
+  }
+  // A4-3: the pair is authoritative TOGETHER. `null` stands only with 0 (the
+  // empty-history case of spec §24.5); a non-null id stands only with a
+  // generation >= 1 AND only as that generation's derived identity for THIS
+  // member in THIS team. A pair that disagrees is corrupt — never "stale",
+  // which is a comparison against the current head this module cannot make.
+  if (baseSnapshotId === null) {
+    if (baseGeneration !== 0) {
+      return problem('baseSnapshotId', 'payload.baseSnapshotId', 'base-pair-disagreement', `baseSnapshotId null stands only with baseGeneration 0 (the empty overlay history), got ${String(baseGeneration)}`)
+    }
+  } else {
+    const derived = baseGeneration === 0 ? null : deriveSnapshotId(teamSessionId, target, baseGeneration)
+    if (derived === null || derived !== baseSnapshotId) {
+      return problem('baseSnapshotId', 'payload.baseSnapshotId', 'base-pair-disagreement', `baseSnapshotId does not identify generation ${String(baseGeneration)} of this member's overlay chain (ADR A4-3: a pair that disagrees is corrupt, not stale)`)
+    }
+  }
+
+  const desiredEffect = payload['desiredEffect']
+  if (!isPermissionOverlayEffect(desiredEffect)) {
+    return problem('desiredEffect', 'payload.desiredEffect', 'value-not-in-closed-set', `desiredEffect must be one of ${PERMISSION_OVERLAY_EFFECT_VALUES.join(' | ')}, got ${JSON.stringify(desiredEffect)}`)
+  }
+
+  const ast = parseAst(payload['authorityEnvelopeAst'])
+  if (!ast.ok) {
+    // Both failure shapes are the same located-problem record, so the AST's
+    // verdict is reported as this payload's verdict unchanged.
+    return ast
+  }
+
+  const requiredAuthority = payload['requiredAuthority']
+  if (!(PROPOSAL_AUTHORITY_POSITIONS as readonly unknown[]).includes(requiredAuthority)) {
+    return problem('requiredAuthority', 'payload.requiredAuthority', 'value-not-in-closed-set', `requiredAuthority must be one of ${PROPOSAL_AUTHORITY_POSITIONS.join(' | ')}, got ${JSON.stringify(requiredAuthority)}`)
+  }
+
+  const caseFingerprint = payload['caseFingerprint']
+  if (!isIdShaped(caseFingerprint, FINGERPRINT_FIELD_MAX_LENGTH)) {
+    return problem('caseFingerprint', 'payload.caseFingerprint', 'bad-string', 'caseFingerprint must be a non-empty string of at most 256 chars, without whitespace or control characters')
+  }
+
+  const status = payload['status']
+  if (!(GOVERNANCE_PROPOSAL_STATUSES as readonly unknown[]).includes(status)) {
+    return problem('status', 'payload.status', 'value-not-in-closed-set', `status must be one of ${GOVERNANCE_PROPOSAL_STATUSES.join(' | ')} (a row is never rewritten; its standing changes only through newer facts), got ${JSON.stringify(status)}`)
+  }
+
+  const recordedAt = payload['recordedAt']
+  if (typeof recordedAt !== 'string' || !ISO_8601_TIMESTAMP_PATTERN.test(recordedAt) || Number.isNaN(Date.parse(recordedAt))) {
+    return problem('recordedAt', 'payload.recordedAt', 'bad-timestamp', `recordedAt must be an ISO-8601 timestamp, got ${JSON.stringify(recordedAt)}`)
+  }
+
+  return {
+    ok: true,
+    record: deepFreeze({
+      targetMemberInstanceId: target,
+      baseGeneration,
+      baseSnapshotId: baseSnapshotId as string | null,
+      desiredEffect,
+      authorityEnvelopeAst: ast.ast,
+      requiredAuthority: requiredAuthority as ProposalAuthorityPosition,
+      caseFingerprint,
+      status: status as GovernanceProposalStatus,
+      recordedAt,
+    }) as GovernanceProposalRecord,
+  }
+}
+
+/** The derived overlay snapshot identity of one generation, or `null` when the
+ *  identities make the derivation impossible (an embedded key separator) —
+ *  which is exactly the case the pair rule must refuse, never guess about. */
+function deriveSnapshotId(teamSessionId: string, memberInstanceId: string, generation: number): string | null {
+  try {
+    return permissionOverlaySnapshotKey(teamSessionId, memberInstanceId, generation)
+  } catch {
+    return null
+  }
+}
+
+// --- the store ----------------------------------------------------------------
+
+/**
+ * Build one proposal store over one durable ledger.
+ *
+ * @param deps - the ledger ports and the store's clock (see
+ *   {@link GovernanceProposalStoreDeps}).
+ * @returns the store surface ({@link GovernanceProposalStore}).
+ */
+export function createGovernanceProposalStore(
+  deps: GovernanceProposalStoreDeps,
+): GovernanceProposalStore {
+  const ledger = deps.ledger
+
+  const assertTeamSessionId = (raw: string): string => {
+    try {
+      return String(parseRootSessionId(raw))
+    } catch {
+      throw new GovernanceProposalError(
+        GOVERNANCE_PROPOSAL_ERROR_CODES.MALFORMED_PROPOSAL,
+        `teamSessionId is not a well-formed TeamSession id: ${String(raw)}`,
+        { problem: 'bad-team-session-id', field: 'teamSessionId', path: 'teamSessionId' },
+      )
+    }
+  }
+
+  const appendProposal = async (
+    args: GovernanceProposalAppendArgs,
+  ): Promise<GovernanceProposalAppended> => {
+    const teamSessionId = assertTeamSessionId(args.teamSessionId)
+    const recordedAt = deps.now()
+
+    // The payload is built first and parsed with the SAME parser the reader
+    // uses: what this store can write is exactly what its reader promises to
+    // read back, so the two can never drift apart by construction.
+    const payload: Record<string, unknown> = {
+      targetMemberInstanceId: args.proposal.targetMemberInstanceId,
+      baseGeneration: args.proposal.baseGeneration,
+      baseSnapshotId: args.proposal.baseSnapshotId,
+      desiredEffect: args.proposal.desiredEffect,
+      authorityEnvelopeAst: args.proposal.authorityEnvelopeAst,
+      requiredAuthority: args.proposal.requiredAuthority,
+      caseFingerprint: args.proposal.caseFingerprint,
+      status: 'pending',
+      recordedAt,
+    }
+    const parsed = parseProposalPayload(payload, teamSessionId)
+    if (!parsed.ok) {
+      throw new GovernanceProposalError(
+        GOVERNANCE_PROPOSAL_ERROR_CODES.MALFORMED_PROPOSAL,
+        parsed.message,
+        { problem: parsed.problem, field: parsed.field, path: parsed.path },
+      )
+    }
+
+    // Only now — after every check — is a sequence taken. A refusal must not
+    // burn an allocation.
+    const sequence = await ledger.allocateSequence()
+    const row: GovernanceProposalLedgerRow = {
+      schemaVersion: GOVERNANCE_PROPOSAL_LEDGER_SCHEMA_VERSION,
+      sequence,
+      rootSessionId: teamSessionId,
+      factType: GOVERNANCE_PROPOSAL_FACT_TYPE,
+      // A fresh object literal, not the parsed interface: an interface has no
+      // index signature, and the durable row carries a plain map (the parser
+      // accepts exactly these nine keys back, so nothing is widened silently).
+      payload: { ...parsed.record },
+      createdAt: recordedAt,
+      // KEY-OMITTED optionality (ADR A5-13): `undefined` is not a
+      // `RemoteSafeJsonValue`, and the durable validator re-checks the
+      // DESERIALIZED row too (`packages/storage/schema/ledger.ts:202,206`), so
+      // an explicit-`undefined` key would read back silently ABSENT rather
+      // than loudly wrong. The key is therefore simply not present.
+      ...(args.operationId !== undefined ? { operationId: args.operationId } : {}),
+    }
+    await ledger.put(row)
+    return deepFreeze({ sequence, record: parsed.record }) as GovernanceProposalAppended
+  }
+
+  const listProposals = (query: {
+    readonly teamSessionId: string
+  }): readonly GovernanceProposalReadOutcome[] => {
+    const teamSessionId = assertTeamSessionId(query.teamSessionId)
+    // NEVER wrapped in try/catch: a row that is not a valid ledger entry
+    // throws out of `list()` — see the interface doc (ADR A4-7 leg 2).
+    const outcomes: GovernanceProposalReadOutcome[] = []
+    for (const row of ledger.list()) {
+      if (row.factType !== GOVERNANCE_PROPOSAL_FACT_TYPE) continue
+      if (String(row.rootSessionId) !== teamSessionId) continue
+      const parsed = parseProposalPayload(row.payload, String(row.rootSessionId))
+      if (parsed.ok) {
+        outcomes.push(
+          deepFreeze({
+            kind: 'record' as const,
+            sequence: row.sequence,
+            teamSessionId,
+            ...(row.operationId !== undefined ? { operationId: row.operationId } : {}),
+            proposal: parsed.record,
+          }) as ProposalReadRecord,
+        )
+        continue
+      }
+      outcomes.push(
+        deepFreeze({
+          kind: 'corrupt-record' as const,
+          code: GOVERNANCE_PROPOSAL_ERROR_CODES.CORRUPT_RECORD,
+          sequence: row.sequence,
+          // The filter above makes this statically equal to the row's own
+          // fact type, and naming the constant (rather than passing the row's
+          // value through) is both exact and legible to the closed-set guard.
+          factType: GOVERNANCE_PROPOSAL_FACT_TYPE,
+          path: parsed.path,
+          field: parsed.field,
+          problem: parsed.problem,
+          message: parsed.message,
+        }) as ProposalReadCorrupt,
+      )
+    }
+    return deepFreeze(outcomes) as readonly GovernanceProposalReadOutcome[]
+  }
+
+  // The surface is a plain object, NOT deep-frozen: `deepFreeze` asserts
+  // lossless JSON and a method is a function (the same reason the control and
+  // governance services return a literal). The DATA this store hands back —
+  // records and read outcomes — is frozen where it is built.
+  return { appendProposal, listProposals }
+}

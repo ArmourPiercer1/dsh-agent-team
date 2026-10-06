@@ -124,6 +124,15 @@ export const TEAM_DOMAIN_READ_PORT_ERROR_CODES = {
 //   'activity-interval-opened'      runtime/activity ledger                  → progress
 //   'activity-interval-closed'      runtime/activity ledger                  → progress
 //   'policy-state-transitioned'     plugin/durable-mutation-store (R2-1)     → policy
+//   'governance-proposal-recorded'  runtime/governance/proposal-store.ts
+//                                   (A4-PR0 — a durable governance PROPOSAL:
+//                                   a statement about the Team's authority
+//                                   awaiting review, so a POLICY fact beside
+//                                   the policy-state transitions; no product
+//                                   surface writes one at PR0 — ADR A4-6 —
+//                                   and the registration exists precisely so
+//                                   the first future row cannot break every
+//                                   projection read of its Team forever)    → policy
 //   'capability-runtime-event'      runtime/readiness telemetry (pre-alpha3
 //                                   PR-C §C.7 — the durable capability
 //                                   readiness transition record; a
@@ -173,6 +182,17 @@ const FACT_ACTIVITY_PROGRESS_RECORDED = 'activity-progress-recorded';
 const FACT_ACTIVITY_INTERVAL_OPENED = 'activity-interval-opened';
 const FACT_ACTIVITY_INTERVAL_CLOSED = 'activity-interval-closed';
 const FACT_POLICY_STATE_TRANSITIONED = 'policy-state-transitioned';
+// A4-PR0 (ADR A3-6/A3-7/A4-6): the durable governance proposal, written by
+// `runtime/governance/proposal-store.ts`. MIRRORED as a literal here rather
+// than imported from the lane for the same reason every other row of this
+// table is a literal — this module is on the plugin's emit path, and the lane
+// module is deliberately not (ADR A4-6's no-`dist`-drift property). The mirror
+// is not aspirational: `a4pr0-proposal-store.test.ts` appends a row through
+// the LANE's constant and then reads the projection, so a drift between the
+// writer's name and this table throws `…_CATEGORY_UNKNOWN` in that test
+// instead of shipping (the exact failure A4-PR0a fixed for
+// `control-request-abandoned`).
+const FACT_GOVERNANCE_PROPOSAL_RECORDED = 'governance-proposal-recorded';
 const FACT_CAPABILITY_RUNTIME_EVENT = 'capability-runtime-event';
 // pre-alpha3 PR-E §E.5: the requirement / recovery durable facts (the closed
 // vocabulary lives in runtime/requirements/facts.ts; these mirror it here for
@@ -204,6 +224,10 @@ const FACT_TYPE_CATEGORY = new Map([
     [FACT_ACTIVITY_INTERVAL_OPENED, 'progress'],
     [FACT_ACTIVITY_INTERVAL_CLOSED, 'progress'],
     [FACT_POLICY_STATE_TRANSITIONED, 'policy'],
+    // A4-PR0: a proposal is a statement about the Team's authority awaiting
+    // review — a policy fact, in the FROZEN `policy` category (ADR A3-7: never a
+    // ninth category; `totalEntries == sum(byCategory)` stays intact).
+    [FACT_GOVERNANCE_PROPOSAL_RECORDED, 'policy'],
     // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry. The
     // compatibility category's first production writer (a compatibility
     // CATEGORY, not a new category — the closed 8-shape is unchanged).

@@ -12,8 +12,10 @@
  * an assertion, so an unmigrated file is a NAMED entry that a specific commit
  * must remove, and a newly-written legacy fixture fails the suite.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
   AGENT_PRESET_ROW_NAME,
@@ -32,14 +34,30 @@ import {
   testUseTree,
 } from '../../../tests/paths.mjs'
 
+// REPO_ROOT locates the pristine HOST RUNTIME tree. A linked worktree has no
+// copy of the gitignored `tests/deepseek-harness-test-use`, so this walks UP and
+// lands on the parent checkout — correct for `HOST` (the mandated runtime this
+// seam is checked against) and wrong for our own sources.
 const REPO_ROOT = findTestRepoRoot(process.cwd())
 if (REPO_ROOT === null) throw new Error('cannot locate a repo root containing tests/deepseek-harness-test-use')
 const HOST = testUseTree(REPO_ROOT)
 
+// WORKSPACE_ROOT is the tree UNDER REVIEW — the worktree this file lives in. The
+// kit / harness / plugin sources this guard audits are tracked, so they are
+// enumerated and read from here. A gitignored path is therefore out of the
+// subject by construction: the previous whole-tree walk reached the parent
+// checkout's generated `tests/homes/**` DSH_HOME worlds and reported ~954
+// offenders that were durable stores, not sources. Build output stays out too
+// (`dist` is tracked here), exactly as the old walk excluded it.
+const WORKSPACE_ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+  cwd: dirname(fileURLToPath(import.meta.url)),
+  encoding: 'utf8',
+}).trim()
+
 const read = (rel: string): string => readFileSync(join(HOST, rel), 'utf8')
 
 /** A PLUGIN-tree reader (the `read` helper above is the HOST tree). */
-const readPlugin = (rel: string): string => readFileSync(join(REPO_ROOT, rel), 'utf8')
+const readPlugin = (rel: string): string => readFileSync(join(WORKSPACE_ROOT, rel), 'utf8')
 
 /** Files migrated to the declaration-row seam; each entry is asserted strictly. */
 const MIGRATED_SOURCES = [
@@ -69,15 +87,16 @@ const NOT_YET_MIGRATED: Array<{ file: string; reason: string }> = [
  */
 const LEGACY_WRITE_LINE = /\b(?:mkdirSync|writeFileSync|rmSync|readdirSync|createWriteStream|join|resolve)\b[^\n]*\.agent-presets|\.agent-presets[^\n]*(?:mkdirSync|writeFileSync)/
 
-/** Every .mjs / .ts source under a directory, excluding build output. */
-function* walkSources(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir)) {
-    if (entry === 'node_modules' || entry === 'dist' || entry === '.tmp-faultscratch') continue
-    const full = join(dir, entry)
-    const st = statSync(full)
-    if (st.isDirectory()) yield* walkSources(full)
-    else if (/\.(mjs|ts)$/.test(entry)) yield full
-  }
+/** Every TRACKED .mjs / .ts source under a directory (build output excluded).
+ *  Tracked enumeration, not a filesystem walk: the subject of this guard is what
+ *  the repository ships, and a walk also sweeps whatever the last test run left
+ *  behind in a gitignored tree. */
+function trackedSources(relDir: string): string[] {
+  return execFileSync('git', ['ls-files', '--', relDir], { cwd: WORKSPACE_ROOT, encoding: 'utf8' })
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((rel) => rel.length > 0 && !rel.includes('/dist/') && /\.(mjs|ts)$/.test(rel))
+    .map((rel) => join(WORKSPACE_ROOT, rel))
 }
 
 /** Strip line comments so a mention in prose does not count as a write. */
@@ -261,10 +280,10 @@ describe('P6 the persona-import residue is closed, and the ledger stays empty', 
 
   it('no plugin source imports the invented export, and the four former importers use the probe', () => {
     const importers: string[] = []
-    for (const rel of walkSources(join(REPO_ROOT, 'packages'))) {
-      const source = readFileSync(rel, 'utf8')
+    for (const path of trackedSources('packages')) {
+      const source = readFileSync(path, 'utf8')
       if (/import\s*\{[^}]*\bPERSONA_SECTION\b[^}]*\}\s*from\s*'@deepseek-ai\/dsh-system-prompt'/.test(source)) {
-        importers.push(rel.slice(REPO_ROOT.length + 1))
+        importers.push(path.slice(WORKSPACE_ROOT.length + 1))
       }
     }
     expect(importers).toEqual([])
@@ -278,7 +297,7 @@ describe('P5 the migration ledger is an assertion, not a comment', () => {
   it('every migrated source has no legacy seam in code and no bare PERSONA_SECTION import', () => {
     expect(MIGRATED_SOURCES.length).toBeGreaterThan(0)
     for (const rel of MIGRATED_SOURCES) {
-      const source = readFileSync(resolve(REPO_ROOT, rel), 'utf8')
+      const source = readFileSync(resolve(WORKSPACE_ROOT, rel), 'utf8')
       const code = codeOnly(source)
       const offenders = code
         .split('\n')
@@ -315,7 +334,7 @@ describe('P5 the migration ledger is an assertion, not a comment', () => {
     const expected = NOT_YET_MIGRATED.map((entry) => entry.file).sort()
     const writers: string[] = []
     for (const rel of [...MIGRATED_SOURCES, ...expected]) {
-      const source = readFileSync(resolve(REPO_ROOT, rel), 'utf8')
+      const source = readFileSync(resolve(WORKSPACE_ROOT, rel), 'utf8')
       if (codeOnly(source).split('\n').some((line) => LEGACY_WRITE_LINE.test(line))) writers.push(rel)
     }
     // every still-listed file must STILL write the seam (otherwise the entry is
