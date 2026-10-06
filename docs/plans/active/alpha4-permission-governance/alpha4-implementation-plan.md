@@ -47,7 +47,7 @@ Before A4-PR0a (the baseline-diff is a PR0a and PR0 gate):
   - all new/changed targeted tests green;
   - `pnpm typecheck` green;
   - changed-file ESLint green;
-  - full `pnpm lint` introduces no new diagnostic identities relative to the recorded baseline;
+  - full `pnpm lint` introduces no new diagnostic identities relative to the recorded baseline (`dev/agent-workflow/evidence/a4-lint-baseline/`; note `pnpm lint` is deliberately RED at master until PR7 — 130 pre-existing errors, concentrated in test code — and the gate is identity-relative precisely so a governance PR never acquires a 44-file drive-by cleanup);
   - full `pnpm test` introduces no new failing test/collection identities relative to the recorded baseline.
 - [ ] **Every A4-PR1…PR7 gate** runs the artifact half of rule 8 — the older "after any client/composition change" framing was narrower than A1.2.8 and is superseded: run `pnpm build` (dist co-commit rule), `pnpm build:composition`, `pnpm check:artifacts`, recompute the `p4t6` scannable-file inventory pin, and the composition smoke relevant to the changed surface (client-leg smoke runs at base parity per Amendment A1.2.4). This applies to every PR1-PR7 gate, not only composition-touching ones.
 
@@ -660,7 +660,7 @@ Anything else — rewriting a registry row, re-hashing, or hot-swapping a runnin
 - [ ] Run targeted Alpha.4 acceptance suite.
 - [ ] Run `pnpm typecheck`.
 - [ ] Run changed-file ESLint.
-- [ ] Run full `pnpm lint` and compare diagnostic identities to baseline.
+- [ ] Run full `pnpm lint` and compare diagnostic identities to baseline — **the canonical Alpha.4 baseline is `dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-11e1609c.txt` (162 identities = 130 errors + 32 warnings, `sha256 da48f12f…`); closure is an identity diff with no new line, never the count (README in that directory states the predicate and the known gap that `fail-set.mjs` has no lint mode).**
 - [ ] Run full `pnpm test` and compare failing test/collection identities to baseline; Alpha.4 may remove baseline failures but must add none.
 - [ ] Run `pnpm build`.
 - [ ] Run `pnpm build:composition`.
