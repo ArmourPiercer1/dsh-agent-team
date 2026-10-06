@@ -22,6 +22,18 @@ export default tseslint.config(
       // working copy). Product lint coverage is unchanged; without this line a
       // local evidence mirror changes `pnpm lint` counts, which made an exact-base
       // comparison report +67 phantom errors in the 0.2.0-rc.2 round.
+      // Workspace scratch that lives INSIDE the repo root in this environment:
+      // pnpm stores, caches, XDG homes, evidence mirrors and test worlds. ESLint 9
+      // does not read .gitignore, so without these entries `eslint .` traverses them
+      // -- measured: 13 dot-directories were in lint scope at 11e1609c, and
+      // `.pnpm-store/v11/tmp/_tmp_*` files vanish between the directory scan and the
+      // read, so `pnpm lint` crashed with ENOENT (exit 2) instead of reporting.
+      // `.tmp-*/**` is a pattern so a new scratch directory cannot re-break the gate.
+      '.tmp-*/**',
+      '.pnpm-store/**',
+      '.pnpm-store-testuse/**',
+      '.agents/**',
+      '.dsh-vision-toolkit/**',
       '.private-raw-evidence/**',
       'dev/**',
       'docs/**',
