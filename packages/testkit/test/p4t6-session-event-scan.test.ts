@@ -1732,8 +1732,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // reported `expected 971 to be 968`; GREEN raw p4t6-GREEN-20261006.log. The
     // constant stays an exact equality: this closes an unfinished maintenance
     // inventory pin - it is not scanner weakening and not relabeled debt.
-    expect(scanResult.filesScanned).toBe(971)
-    expect(scanResult.files.length).toBe(971)
+    // 971 -> 973 (A4-PR0a): this commit adds exactly two scannable tracked test
+    // files, both inside the scanner's existing packages/**/*.ts scope, nothing
+    // generated and no new skip or exclusion:
+    //   packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts
+    //   packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts
+    // Arithmetic: 958 + 7 + 3 + 3 + 2 = 973. Both are added by THIS commit, so
+    // neither existed at the 971 pin; the RED run of this file reported
+    // `expected 973 to be 971` and the GREEN run reports equality. The constant
+    // stays an exact equality (ADR A5-17: the recompute authority starts at
+    // A4-PR0a - an added test file is a legitimate increment, and it is still
+    // pinned exactly, never widened with a tolerance).
+    expect(scanResult.filesScanned).toBe(973)
+    expect(scanResult.files.length).toBe(973)
     // Each of the three is asserted present by path, not inferred from the total.
     for (const path of [
       'packages/runtime/root-binding/harness/blueprint-source.mjs',

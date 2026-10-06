@@ -3585,6 +3585,10 @@ var __dshFactory = (require) => {
 			    'control-request-recorded': 'control',
 			    'control-decision-recorded': 'control',
 			    'control-allow-consumed': 'control',
+			    // A4-PR0a: mirror of the host category map — the inline-abort terminal mark.
+			    // The renderer already had a case for this fact type while the category map
+			    // did not, so an abandoned request degraded the client's ledger summary.
+			    'control-request-abandoned': 'control',
 			    // Strict-read durable authorization grant: a control-and-persistence
 			    // fact, NOT a control request/decision (it never enters the pairing
 			    // switch below, never increments a pending count, and is hidden from
