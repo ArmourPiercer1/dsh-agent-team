@@ -225,7 +225,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - [ ] Write the positional RED matrix keyed by **reviewer** position — `member < leader < human-user`, with a `human-admin` row that is bound by nothing (A5-1: binding is by reviewer position, not beneficiary shape; A5 addendum "Ceiling tests are positional"). Keep beneficiary variation as a second axis only; a per-shape matrix would re-test the retired model and leave the Admin row missing.
 - [ ] Pin self-approval rule: minimum approver must be strictly higher than beneficiary.
 - [ ] Pin the **expansion-plane** Leader ceiling = meet of (Leader `permissionMutationEnvelope`, `teamHardEnvelope`) via PR1's `effectiveAuthorityCeiling` — and state in the test name which plane it is. Do **not** reuse this result for approvals: the approval plane is PR1's `narrowingForApproval`, whose no-match case is the meet **identity** (ADR X5-E3); meeting expansion results there annihilates every legal approval whenever a binding document has `rules: []`. Leader is bound by **both** documents, Human User by `teamHardEnvelope` only, Human Admin by neither (A5-1).
-- [ ] Pin Human User ceiling = Team Hard envelope.
+- [ ] Pin the **expansion-plane** Human User ceiling = `teamHardEnvelope` only (never the Leader envelope, which is not a document that binds Human User — A5-1), same plane discipline as the row above: do not reuse the expansion result for `mayReview`/`grantCeiling`. Add the `human-admin` row here too: bound by neither document, so a pin that caps it is a relaxation in the forbidden direction.
 - [ ] Implement pure evaluator and run GREEN.
 - [ ] Commit.
 
