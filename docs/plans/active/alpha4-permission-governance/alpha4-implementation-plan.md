@@ -333,6 +333,9 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - [ ] Add terminal case outcome vocabulary needed by PR4/PR5:
   - operation: execution-succeeded / execution-unavailable / stale / denied / authority-unavailable / **authority-undetermined** (ADR A1-7 and spec §24.2; the task body had dropped it — `unavailable` means "no resolver/admission path today", `undetermined` means "the ceiling could not be computed", and A5-2 pins that undetermined makes `allow` never legal; conflating them reports an fs fault as an Admin escalation);
   - mutation: mutation-committed / mutation-no-change / mutation-stale / denied / authority-unavailable / **authority-undetermined** (same distinction; `unavailable` is the canonical spelling of §24.2's "unavailable" row, which §12/§21.7 also call `execution-unavailable`).
+- [ ] **Fix `pendingControlCount` to be abandon-aware (assigned to this lane by ADR X8; the duty had no owner before).** `packages/runtime/src/plugin/projection-source.ts:824-838` counts abandoned control requests as pending, and the comment at `:807-813` asserts a parity with the control service that the code does not have — a stale count is an authority-adjacent lie in the UI, so the comment must be corrected or the count fixed, never left as prose. Write the RED against a Team with one abandoned request first.
+- [ ] **Terminate a zero-leg case synchronously with `authority-unavailable` (ADR A1-12).** A case that can produce no review leg must reach a terminal state in the same call, not linger awaiting a reviewer who cannot exist.
+- [ ] **Record the interim disclosure:** escalation/abandonment rows render as **generic Events** until PR6 owns `INTERNAL_FACT_TYPES`. Naming the gap here is what stops PR6 from "discovering" it as a defect, and PR5 carries the parallel disclosure for proposal rows.
 - [ ] Commit.
 
 **Parallel lane C — Intervention core projection**
@@ -362,6 +365,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - Modify: `packages/runtime/src/plugin/live/agent-bindings.mjs`
 - Modify: `packages/runtime/src/plugin/root.ts`
 - Modify: `packages/runtime/control/service.ts` only through interfaces frozen in PR3; if new generic case method is needed, coordinator lands the interface commit before parallel lanes.
+- Modify: `packages/runtime/src/plugin/projection-source.ts` **and** `packages/client/src/model/ledger-adapter.ts:89-129` — **required iff lane C records the case terminal outcome as a ledger fact** (Task 4 step "Record case terminal outcome" implies it does). The rule that makes this mandatory is the one PR0a established at Task PR0a step 2 and ADR A5-6 restates: **the writer of a fact type owns BOTH category maps in the same PR**, because a runtime-registered fact with no client category renders as an unexplained generic row. If lane C instead reuses a fact type PR3 already registered, write that down in the PR description instead of editing these two files.
 - Test create: `packages/runtime/test/a4p4-operation-approval-authority.test.ts`
 - Test create: `packages/runtime/test/a4p4-operation-single-shot.test.ts`
 - Test create: `packages/runtime/test/a4p4-capability-vs-permission.test.ts`
@@ -425,6 +429,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - Modify: `packages/runtime/src/plugin/root.ts`
 - Modify: `packages/tools/src/tools.ts` only to consume the new result shape; do not fork a second mutation authority.
 - Modify: `packages/tools/src/types.ts`
+- Modify: `packages/runtime/src/plugin/projection-source.ts` + `packages/client/src/model/ledger-adapter.ts:89-129` **only if** the inline-commit path records a NEW fact type; PR5 otherwise reuses PR0's `governance-proposal-recorded`, whose two category entries already exist (PR0 landed both). Deciding this at dispatch, rather than at line-by-line implementation, is what keeps PR5 out of a file PR4 may be editing concurrently — see the PR4∥PR5 collision set.
 - Test create: `packages/runtime/test/a4p5-permission-mutation-proposal.test.ts`
 - Test create: `packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts`
 - Test create: `packages/runtime/test/a4p5-self-mutation.test.ts`
@@ -589,6 +594,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
   - `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`
   - `BLUEPRINT_MIGRATION_REQUIRED`
 - Remove all PR1-PR6 transitional v1/v2 authorization branches.
+  - **Named inventory item (this was unowned until PR1).** The existential envelope-coverage aggregate at `packages/runtime/governance/permission-mutation.ts:1184-1206` is the *second* expansion-plane aggregate in the tree; the first is `effectiveAuthorityCeiling`. It is sanctioned by spec §5.2 **only until PR7**, and the round-5 comment at `:1204-1205` ("the covering envelope rule IS the authorization") is precisely the semantics Alpha.4 replaces with effective-ceiling evaluation. It appeared in no PR's file list, so under the one-writer rule it was invisible: PR7 owns it, and the A5-9 inventory count must state whether this file is inside the 18 or an explicit 19th.
 
 **Parallel lane A — domain cutover**
 - [ ] Write RED test that v1/v2 are rejected under final Alpha.4.
