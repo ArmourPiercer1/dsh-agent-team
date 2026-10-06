@@ -93,6 +93,16 @@ export type AuthorityBindingProblem =
   | 'position-is-not-a-reviewer'
   /** A bound document's read failed. The ceiling is UNKNOWN, not wide. */
   | 'document-read-unavailable'
+  /** A slot was handed to the adapter that is not a slot at all — `undefined`,
+   *  `null`, a non-object. A caller defect, and it must arrive as a CODE: a bare
+   *  `TypeError` from `'rules' in slot` has `code === undefined`, which PR2's
+   *  code-based outcome mapping reads as "not one of mine" and rethrows out of
+   *  the governance path. */
+  | 'document-slot-missing'
+  /** A slot object whose `status` is outside the closed three-member union — a
+   *  value that escaped the compiler. Its ceiling is unknown, so it is reported
+   *  with the unavailable code, never as `absent`. */
+  | 'document-slot-unrecognized-status'
 
 /** The refusal raised by {@link bindingDocs} and {@link grantCeiling}. */
 export class AuthorityBindingError extends Error {
@@ -178,10 +188,44 @@ type ResolvedSlot =
   | { readonly present: true; readonly document: AuthorityEnvelope }
   | { readonly present: false; readonly reason: 'absent' | 'unavailable' }
 
-function resolveSlot(slot: AuthorityDocumentSlot): ResolvedSlot {
+function resolveSlot(
+  name: 'teamHardEnvelope' | 'permissionMutationEnvelope',
+  slot: AuthorityDocumentSlot,
+): ResolvedSlot {
+  // A slot that is not a slot. Without this line the check below is
+  // `TypeError: Cannot use 'in' operator`, an error with NO `code`, and the
+  // caller's `code`-based mapping treats it as an unrelated fault instead of a
+  // refusal. `undefined` is not in the SLOT TYPE (that is SF1), so this arm
+  // exists only for a value that arrived from JSON or a cast — which is exactly
+  // where the compiler has already stopped helping.
+  if (slot === undefined || slot === null || typeof slot !== 'object') {
+    throw new AuthorityBindingError(
+      AUTHORITY_CEILING_ERROR_CODES.BINDING_DEFECT,
+      'document-slot-missing',
+      `${name} was not given a document or a read outcome (received ${String(slot)}); absence is { status: 'absent' }, and neither fact may be spelled by omission`,
+    )
+  }
   if ('rules' in slot) return { present: true, document: slot }
-  if (slot.status === 'declared') return { present: true, document: slot.document }
-  return { present: false, reason: slot.status }
+  switch (slot.status) {
+    case 'declared':
+      return { present: true, document: slot.document }
+    case 'absent':
+    case 'unavailable':
+      return { present: false, reason: slot.status }
+  }
+  // NO FALL-THROUGH PAST THIS POINT — and this is the B1 bug one level up. The
+  // first draft ENDED with `return { present: false, reason: slot.status }`, so
+  // an unrecognized status was typed away but at runtime produced
+  // `reason: undefined`, which `boundDocument` counts as absent: a document that
+  // nobody can interpret contributes NOTHING, and an empty bound set meets to
+  // `CEILING_IDENTITY`. A malformed or future-versioned slot would therefore
+  // WIDEN authority — unlimited reach for whoever's document failed to parse.
+  // Refuse instead; `a4p1-authority-envelope.test.ts` exercises this arm.
+  throw new AuthorityBindingError(
+    AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE,
+    'document-slot-unrecognized-status',
+    `${name} carried an unrecognized status ${String((slot as { status?: unknown }).status)}; an uninterpretable document is UNKNOWN, and unknown is never absent`,
+  )
 }
 
 /**
@@ -206,7 +250,7 @@ function boundDocument(
   name: 'teamHardEnvelope' | 'permissionMutationEnvelope',
   slot: AuthorityDocumentSlot,
 ): AuthorityEnvelope | undefined {
-  const resolved = resolveSlot(slot)
+  const resolved = resolveSlot(name, slot)
   if (resolved.present) return resolved.document
   if (resolved.reason === 'unavailable') {
     throw new AuthorityBindingError(

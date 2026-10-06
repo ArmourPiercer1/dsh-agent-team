@@ -71,12 +71,34 @@ export class AuthorityBindingError extends Error {
         this.problem = problem;
     }
 }
-function resolveSlot(slot) {
+function resolveSlot(name, slot) {
+    // A slot that is not a slot. Without this line the check below is
+    // `TypeError: Cannot use 'in' operator`, an error with NO `code`, and the
+    // caller's `code`-based mapping treats it as an unrelated fault instead of a
+    // refusal. `undefined` is not in the SLOT TYPE (that is SF1), so this arm
+    // exists only for a value that arrived from JSON or a cast — which is exactly
+    // where the compiler has already stopped helping.
+    if (slot === undefined || slot === null || typeof slot !== 'object') {
+        throw new AuthorityBindingError(AUTHORITY_CEILING_ERROR_CODES.BINDING_DEFECT, 'document-slot-missing', `${name} was not given a document or a read outcome (received ${String(slot)}); absence is { status: 'absent' }, and neither fact may be spelled by omission`);
+    }
     if ('rules' in slot)
         return { present: true, document: slot };
-    if (slot.status === 'declared')
-        return { present: true, document: slot.document };
-    return { present: false, reason: slot.status };
+    switch (slot.status) {
+        case 'declared':
+            return { present: true, document: slot.document };
+        case 'absent':
+        case 'unavailable':
+            return { present: false, reason: slot.status };
+    }
+    // NO FALL-THROUGH PAST THIS POINT — and this is the B1 bug one level up. The
+    // first draft ENDED with `return { present: false, reason: slot.status }`, so
+    // an unrecognized status was typed away but at runtime produced
+    // `reason: undefined`, which `boundDocument` counts as absent: a document that
+    // nobody can interpret contributes NOTHING, and an empty bound set meets to
+    // `CEILING_IDENTITY`. A malformed or future-versioned slot would therefore
+    // WIDEN authority — unlimited reach for whoever's document failed to parse.
+    // Refuse instead; `a4p1-authority-envelope.test.ts` exercises this arm.
+    throw new AuthorityBindingError(AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE, 'document-slot-unrecognized-status', `${name} carried an unrecognized status ${String(slot.status)}; an uninterpretable document is UNKNOWN, and unknown is never absent`);
 }
 /**
  * Which documents bind one reviewer position (spec §7.4:300-302, ADR A5-1).
@@ -97,7 +119,7 @@ function resolveSlot(slot) {
  * and continues has made a decision the documents did not authorize.
  */
 function boundDocument(name, slot) {
-    const resolved = resolveSlot(slot);
+    const resolved = resolveSlot(name, slot);
     if (resolved.present)
         return resolved.document;
     if (resolved.reason === 'unavailable') {

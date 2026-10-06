@@ -1,0 +1,54 @@
+# mutation receipt M3-unavailable-folds-into-absent — SF1: a faulted read answered as absence (identity)
+# command:            pnpm vitest run packages/runtime/test/a4p1-authority-envelope.test.ts
+# injected mutation:  boundDocument's `unavailable` refusal disabled, so the slot is treated as absent
+# expected red leg:   SF1 — an UNAVAILABLE document never becomes a ceiling, and `undefined` is not a slot
+# revert:             reverse patch applied by this script
+# exit code:          1
+# verdict:            RED AS REQUIRED
+# ---- raw output follows (unmodified) ----
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+ ❯ packages/runtime/test/a4p1-authority-envelope.test.ts (21 tests | 1 failed) 11ms
+     ✓ X5-E3 (BLOCKING) an EMPTY hard envelope plus a matching allow mutation ceiling yields grantCeiling = allow, not no-authority 1ms
+     ✓ X5-E3a the EXPANSION lookup reads an empty document as NO-AUTHORITY, never as identity 0ms
+     ✓ X5-E3b the two lookups are never composed: grantCeiling meets ONLY narrowingForApproval 0ms
+     ✓ §5.3 monotonic restriction — adding a rule never raises a ceiling on either plane 0ms
+     ✓ grantCeiling never exceeds either binding document (meet over the approval plane only) 0ms
+     ✓ §7.4.1 positional binding — the mutation envelope does not bind a Human User (ADR A5-1) 0ms
+     ✓ §7.4 bindingDocs is positional: Leader both documents, Human User hard only, Human Admin none 0ms
+     ✓ bindingDocs has an explicit arm for every position and NO default branch 0ms
+     ✓ B1 (BLOCKING) — a position outside the closed union REFUSES, it does not bind nothing 1ms
+     × SF1 — an UNAVAILABLE document never becomes a ceiling, and `undefined` is not a slot 3ms
+     ✓ item 4 — a slot that is NOT a slot refuses with a code; it never meets to the identity 1ms
+     ✓ bindingDocs — Member is not a reviewer of its own expansion 0ms
+     ✓ §24.2 meet table — every pairing, including undetermined absorbing 1ms
+     ✓ A1-5 the lattice is total and ordered no-authority < deny < ask < allow 0ms
+     ✓ A1-6 an undecidable same-class subtree rule forces whole-scope undetermined (no relevance filtering) 0ms
+     ✓ matcherCovers keeps its fail-closed order: identity BEFORE the containment seam 0ms
+     ✓ one canonicalization — the plane resolves file paths and carries fingerprints verbatim 0ms
+     ✓ A3-9 the shared grammar is a LEAF — the AST vocabulary matches PR0 and blueprint, both directions 0ms
+     ✓ parseAuthorityEnvelope returns the DECLARED AST shape and refuses a malformed document 1ms
+     ✓ a declared deny narrows to nothing, and absence never does (plan :26 — deny is terminal) 0ms
+     ✓ a decided ceiling names the rules that decided it (matchedRules is provenance, not debug output) 0ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  06:29:45
+   Duration  441ms (transform 266ms, setup 0ms, import 340ms, tests 11ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p1-authority-envelope.test.ts > A4-PR1 lane B — the two lookups, and the meet that must never fuse them > SF1 — an UNAVAILABLE document never becomes a ceiling, and `undefined` is not a slot
+AssertionError: leader must not be handed a ceiling computed from a document that could not be read: expected undefined to be an instance of Error
+ ❯ packages/runtime/test/a4p1-authority-envelope.test.ts:535:115
+    533|         refused = error
+    534|       }
+    535|       expect(refused, `${reviewer} must not be handed a ceiling comput…
+       |                                                                                                                   ^
+    536|       const asError = refused as { code?: string; problem?: string }
+    537|       expect(asError.problem).toBe('document-read-unavailable')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

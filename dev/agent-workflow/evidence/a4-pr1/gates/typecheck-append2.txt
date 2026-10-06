@@ -1,0 +1,24 @@
+# gate:      pnpm -r run typecheck (8 packages with a typecheck script)
+# command:   pnpm -r run typecheck
+# cwd:       /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+# tree:      HEAD e84f3156dec62e660828bc068ad6ddc348f94fcc · dirty paths: 18
+# date:      2026-10-06T22:31:05Z
+# exit code: 0
+# ---- raw output follows (unmodified) ----
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done

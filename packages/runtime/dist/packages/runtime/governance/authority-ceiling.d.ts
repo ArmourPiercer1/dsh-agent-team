@@ -71,7 +71,17 @@ export type AuthorityBindingProblem =
  *  post-`switch` refusal in {@link bindingDocs}. */
 'position-is-not-a-reviewer'
 /** A bound document's read failed. The ceiling is UNKNOWN, not wide. */
- | 'document-read-unavailable';
+ | 'document-read-unavailable'
+/** A slot was handed to the adapter that is not a slot at all — `undefined`,
+ *  `null`, a non-object. A caller defect, and it must arrive as a CODE: a bare
+ *  `TypeError` from `'rules' in slot` has `code === undefined`, which PR2's
+ *  code-based outcome mapping reads as "not one of mine" and rethrows out of
+ *  the governance path. */
+ | 'document-slot-missing'
+/** A slot object whose `status` is outside the closed three-member union — a
+ *  value that escaped the compiler. Its ceiling is unknown, so it is reported
+ *  with the unavailable code, never as `absent`. */
+ | 'document-slot-unrecognized-status';
 /** The refusal raised by {@link bindingDocs} and {@link grantCeiling}. */
 export declare class AuthorityBindingError extends Error {
     readonly code: AuthorityCeilingErrorCode;

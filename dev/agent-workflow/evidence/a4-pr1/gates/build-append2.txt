@@ -1,0 +1,27 @@
+# gate:      pnpm build (all packages)
+# command:   pnpm build
+# cwd:       /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+# tree:      HEAD e84f3156dec62e660828bc068ad6ddc348f94fcc · dirty paths: 21
+# date:      2026-10-06T22:31:25Z
+# exit code: 0
+# ---- raw output follows (unmodified) ----
+$ pnpm -r run build
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done

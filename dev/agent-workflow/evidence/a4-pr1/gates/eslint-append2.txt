@@ -1,7 +1,7 @@
-# gate:      eslint over every touched non-dist file (17 files) — REGENERATED: this artifact was 0 bytes at e84f3156 because a clean run prints nothing, which is not evidence (round-2 review item 6)
+# gate:      eslint over every touched non-dist file (17 files, listed in the command line below)
 # command:   pnpm exec eslint packages/domain/authority-envelope/src/authority-envelope.ts packages/domain/authority-envelope/src/index.ts packages/domain/blueprint/src/schema.ts packages/domain/blueprint/src/types.ts packages/domain/blueprint/src/validate.ts packages/domain/blueprint/src/index.ts packages/domain/blueprint/testdata/fixtures.ts packages/domain/test/a4p1-blueprint-v3-governance.test.ts packages/runtime/governance/authority-ceiling.ts packages/runtime/governance/permission-mutation.ts packages/runtime/governance/index.ts packages/runtime/src/plugin/permission-plane.ts packages/runtime/test/a4p1-authority-envelope.test.ts packages/runtime/test/a3p3-permission-mutation-authority.test.ts packages/runtime/test/a3p4-r4-authority-binding.test.ts packages/runtime/test/a3p3-governance-lane-hygiene.test.ts packages/testkit/test/p4t6-session-event-scan.test.ts
 # cwd:       /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
-# tree:      HEAD e84f3156dec62e660828bc068ad6ddc348f94fcc · dirty paths: 20
-# date:      2026-10-06T22:31:21Z
+# tree:      HEAD e84f3156dec62e660828bc068ad6ddc348f94fcc · dirty paths: 19
+# date:      2026-10-06T22:31:19Z
 # exit code: 0
 # ---- raw output follows (unmodified) ----

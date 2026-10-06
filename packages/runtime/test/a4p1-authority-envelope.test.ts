@@ -71,6 +71,7 @@ import type {
 } from '../../domain/authority-envelope/src/index.js'
 import { buildAuthorityEnvelope } from '../src/plugin/permission-plane.js'
 import { bindingDocs, grantCeiling } from '../governance/authority-ceiling.js'
+import { AuthorityBindingError } from '../governance/authority-ceiling.js'
 import type {
   AuthorityDocumentRead,
   AuthorityDocumentSlot,
@@ -137,13 +138,24 @@ const runtimeNamesAreAliases: readonly [
   Assignable<PermissionResourceMatcher, AuthorityResourceMatcher>,
   Assignable<AuthorityResourceMatcher, PermissionResourceMatcher>,
   Assignable<PermissionMutationEnvelope, AuthorityEnvelope>,
-  // The SIXTH entry, and the one that actually earns the "both directions"
-  // claim above (review SF4, X7-R3's fake-mode #2 verbatim): the five above
-  // cannot see a WIDENED re-spell of the PR0 name. If someone re-declares
-  // `PermissionMutationEnvelope` as a superset — an extra optional field, a
-  // broader `maximumEffect`, a matcher union with one more arm — every one of
-  // the five still holds, because `AuthorityEnvelope` stays assignable TO the
-  // widened type. Only this direction goes false.
+  // The SIXTH direction, stated precisely (round-2 review item 5 — the first
+  // version of this comment oversold it). `Assignable<A, B>` is `[A] extends [B]`,
+  // so what the directions can and cannot see is:
+  //   * entry 5 (`PermissionMutationEnvelope` → `AuthorityEnvelope`) goes false
+  //     when the PR0 alias is NARROWED or changed incompatibly;
+  //   * entry 6 (this one) goes false when the PR0 alias is NARROWED relative to
+  //     the domain type — a dropped field, a tightened `maximumEffect`, a matcher
+  //     union with one arm removed;
+  //   * what NEITHER sees: an added OPTIONAL field on the alias, or any change
+  //     that keeps the two mutually assignable. Assignability is not identity, and
+  //     pretending otherwise would be this file's own version of a fake guard.
+  //   * what sees a locally RE-SPELLED structural copy — same shape, no import at
+  //     all, both directions true (X7-R3 fake-mode #1): NOT this tuple. That is
+  //     pinned by the import/alias-source assertions in
+  //     `a3p3-governance-lane-hygiene.test.ts` → `the runtime consumes that grammar
+  //     as ONE implementation, not a copy`, which requires
+  //     `permission-mutation.ts` to import the domain module and to define each
+  //     alias AS the imported name.
   Assignable<AuthorityEnvelope, PermissionMutationEnvelope>,
 ] = [true, true, true, true, true, true]
 
@@ -153,10 +165,12 @@ const runtimeNamesAreAliases: readonly [
 // undefined` and therefore unlimited reach representable) stops the build
 // rather than passing every runtime test.
 type SlotAcceptsUndefined = undefined extends AuthorityDocumentSlot ? true : false
-const undefinedIsNotADocumentSlot: SlotAcceptsUndefined = false
-// (Asserted inside the SF1 leg below — a module-level `expect` that failed would
-// break COLLECTION of the whole file instead of reporting one red leg.)
-expect(undefinedIsNotADocumentSlot).toBe(false)
+// The PIN is the compile error on this line, not a runtime assertion: if the slot
+// ever accepts `undefined`, the file stops compiling. It is `_`-prefixed because
+// nothing reads it — an `expect` here would only re-assert a literal (see the
+// note on `runtimeNamesAreAliases` above), and at module level it would break
+// COLLECTION of the whole file rather than report one red leg.
+const _undefinedIsNotADocumentSlot: SlotAcceptsUndefined = false
 
 // ---------------------------------------------------------------------------
 // fixtures
@@ -481,11 +495,15 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
     // one that got past the compiler.
     const bogus = 'chief' as unknown as ProposalAuthorityPosition
     const both = docs({ hard: WRITE_A_ALLOW, mutation: WRITE_A_ASK })
-    expect(() => bindingDocs(bogus, both)).toThrowError(/position-is-not-a-reviewer/)
+    // `has no written binding arm`, not `position-is-not-a-reviewer`: the two
+    // refusals share the latter word for word, so a mutation that forwarded bogus
+    // positions into `case 'member'` would still satisfy the looser matcher while
+    // destroying the distinction this leg exists to keep.
+    expect(() => bindingDocs(bogus, both)).toThrowError(/has no written binding arm/)
     // And down the path that matters: the ceiling for that principal is not
     // computed at all. `grantCeiling` must propagate the refusal rather than
     // meet over nothing.
-    expect(() => grantCeiling(bogus, both, SCOPE_A, contains)).toThrowError(/position-is-not-a-reviewer/)
+    expect(() => grantCeiling(bogus, both, SCOPE_A, contains)).toThrowError(/has no written binding arm/)
     let refused: unknown
     try {
       bindingDocs(bogus, both)
@@ -495,13 +513,12 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
     expect((refused as { code?: string }).code, 'a bogus position is a binding defect, not an unavailable document').toBe(
       'AUTHORITY_BINDING_DEFECT',
     )
+    // …and the Member refusal is still REACHABLE and still distinct, so the two
+    // messages above cannot be collapsed into one arm.
+    expect(() => bindingDocs('member', both)).toThrowError(/a Member is not a reviewer position/)
   })
 
   it('SF1 — an UNAVAILABLE document never becomes a ceiling, and `undefined` is not a slot', () => {
-    // The type-level pin, restated where a reader sees it: this is `false` by
-    // construction, and the file stops compiling the moment the slot widens to
-    // accept `undefined`.
-    expect(undefinedIsNotADocumentSlot).toBe(false)
     // The reader's three-way outcome is the slot type, so a fault reaches the
     // algebra as a fault. The dangerous alternative was `AuthorityEnvelope |
     // undefined`: `unavailable → undefined` is the natural thing for a caller to
@@ -536,6 +553,72 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
     expect(() => grantCeiling('leader', docs({ hard: asSlot, mutation: WRITE_A_ALLOW }), SCOPE_A, contains)).toThrowError(
       /document-read-unavailable/,
     )
+  })
+
+  it('item 4 — a slot that is NOT a slot refuses with a code; it never meets to the identity', () => {
+    // The B1 bug one level up. `resolveSlot` used to END with
+    // `return { present: false, reason: slot.status }`, so any slot whose
+    // `status` the switch did not recognize came back with `reason: undefined`,
+    // which `boundDocument` counts as ABSENT — contributing nothing, and an empty
+    // bound set meets to `CEILING_IDENTITY`. A malformed or future-versioned
+    // document therefore WIDENED the reviewer it was supposed to cap. And a
+    // literal `undefined` slot threw a bare `TypeError` out of `'rules' in slot`,
+    // whose `code` is `undefined` — invisible to PR2's code-based outcome mapping.
+    const missingSlot = undefined as unknown as AuthorityDocumentSlot
+    const nullSlot = null as unknown as AuthorityDocumentSlot
+    const bogusStatus = { status: 'maybe' } as unknown as AuthorityDocumentSlot
+    const nonsense = 'file:/a' as unknown as AuthorityDocumentSlot
+
+    // Written out by hand, NOT via `docs()`: that helper's `??` would silently
+    // turn an explicit `undefined` into `{ status: 'absent' }`, which is the very
+    // conflation this leg is about.
+    const cases: readonly (readonly [string, AuthorityDocumentSlot, string])[] = [
+      ['undefined', missingSlot, 'document-slot-missing'],
+      ['null', nullSlot, 'document-slot-missing'],
+      ['a string', nonsense, 'document-slot-missing'],
+      ['an unrecognized status', bogusStatus, 'document-slot-unrecognized-status'],
+    ]
+    for (const [label, slot, problem] of cases) {
+      let refused: unknown
+      try {
+        bindingDocs('leader', { teamHardEnvelope: slot, permissionMutationEnvelope: WRITE_A_ALLOW })
+      } catch (error) {
+        refused = error
+      }
+      // A TYPED refusal, not a TypeError: the class and a `code` are what PR2 maps
+      // onto a terminal outcome.
+      expect(refused, `${label} must not be silently absent`).toBeInstanceOf(AuthorityBindingError)
+      const asError = refused as { code?: string; problem?: string }
+      expect(asError.problem, label).toBe(problem)
+      expect(asError.code, `${label}: a refusal with no code is invisible to the mapping`).toBeDefined()
+      // And the same through the ceiling, where the danger lives: no ceiling is
+      // produced for a document nobody could interpret.
+      expect(
+        () => grantCeiling('leader', { teamHardEnvelope: slot, permissionMutationEnvelope: WRITE_A_ALLOW }, SCOPE_A, contains),
+        `${label} must not yield a ceiling`,
+      ).toThrowError(AuthorityBindingError)
+    }
+    // The slot-missing family is a CALLER defect (a binding defect); the
+    // unrecognized status is an UNKNOWN document (the unavailable code). They are
+    // different answers and stay different.
+    let missingCode: string | undefined
+    let statusProblemCode: string | undefined
+    try {
+      bindingDocs('human-user', { teamHardEnvelope: missingSlot, permissionMutationEnvelope: ABSENT })
+    } catch (error) {
+      missingCode = (error as AuthorityBindingError).code
+    }
+    try {
+      bindingDocs('human-user', { teamHardEnvelope: bogusStatus, permissionMutationEnvelope: ABSENT })
+    } catch (error) {
+      statusProblemCode = (error as AuthorityBindingError).code
+    }
+    expect(missingCode).toBe('AUTHORITY_BINDING_DEFECT')
+    expect(statusProblemCode).toBe('AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE')
+    // Human Admin still resolves to the identity for the SAME slots: an
+    // uninterpretable document cannot narrow a reviewer it does not bind, and it
+    // cannot be the reason that row changes (spec §7.4:302).
+    expect(bindingDocs('human-admin', { teamHardEnvelope: bogusStatus, permissionMutationEnvelope: ABSENT })).toEqual([])
   })
 
   it('bindingDocs — Member is not a reviewer of its own expansion', () => {

@@ -1,0 +1,28 @@
+# gate:      named gate (11 files: A4-PR1 lanes + the A4-PR0 proposal suite + p4t6 + governance hygiene)
+# command:   pnpm vitest run packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts packages/testkit/test/p4t6-session-event-scan.test.ts packages/domain/test/a4p1-blueprint-v3-governance.test.ts packages/runtime/test/a4p1-authority-envelope.test.ts packages/runtime/test/a3p4-r4-authority-binding.test.ts packages/runtime/test/a3p3-permission-mutation-authority.test.ts packages/runtime/test/a3p3-governance-lane-hygiene.test.ts packages/runtime/test/a4pr0-proposal-store.test.ts packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts packages/runtime/test/a4pr0-proposal-generation.test.ts packages/runtime/test/a4pr0-proposal-corrupt.test.ts
+# cwd:       /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+# tree:      HEAD e84f3156dec62e660828bc068ad6ddc348f94fcc · dirty paths: 16
+# date:      2026-10-06T22:30:52Z
+# exit code: 0
+# ---- raw output follows (unmodified) ----
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+ ✓ packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts (9 tests) 4ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 5ms
+ ✓ packages/domain/test/a4p1-blueprint-v3-governance.test.ts (20 tests) 5ms
+ ✓ packages/runtime/test/a4p1-authority-envelope.test.ts (21 tests) 12ms
+ ✓ packages/runtime/test/a3p4-r4-authority-binding.test.ts (17 tests) 60ms
+ ✓ packages/runtime/test/a3p3-permission-mutation-authority.test.ts (23 tests) 66ms
+ ✓ packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts (5 tests) 3ms
+ ✓ packages/runtime/test/a4pr0-proposal-store.test.ts (15 tests) 7ms
+ ✓ packages/runtime/test/a4pr0-proposal-generation.test.ts (8 tests) 3ms
+ ✓ packages/runtime/test/a4pr0-proposal-corrupt.test.ts (12 tests) 6ms
+ ✓ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (16 tests) 801ms
+     ✓ PR1 ships the ceiling adapter UNWIRED: every new name has an audited consumer set  749ms
+
+ Test Files  11 passed (11)
+      Tests  156 passed (156)
+   Start at  06:30:53
+   Duration  1.61s (transform 4.69s, setup 0ms, import 6.91s, tests 973ms, environment 1ms)
+

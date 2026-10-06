@@ -1,0 +1,59 @@
+# mutation receipt M1-host-window-wiring — round-2 item 1: the scan must see code inside the previously-eaten window
+# command:            pnpm vitest run packages/runtime/test/a3p3-governance-lane-hygiene.test.ts
+# injected mutation:  a grantCeiling/bindingDocs/facts.teamHardEnvelope wiring injected at host.ts:1099-1105
+# expected red leg:   PR1 ships the ceiling adapter UNWIRED: every new name has an audited consumer set
+# revert:             git checkout -- packages/runtime/src/plugin/host.ts
+# exit code:          1
+# verdict:            RED AS REQUIRED
+# ---- raw output follows (unmodified) ----
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+ ❯ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (16 tests | 1 failed) 410ms
+     ✓ the admission constant tables are initialized when this lane loads 1ms
+     ✓ the lane barrel and the permission-mutation module are ONE instantiation 0ms
+     ✓ the new module takes the vocabulary from LEAF modules only (no barrel edges) 1ms
+     ✓ no shipped source outside the governance lane and the PR4 permission-plane assembly imports the permission-mutation module 17ms
+     ✓ nothing imports the durable overlay store or its port outside the PR1 lane and this lane/test pair 11ms
+     ✓ the kernel mirrors the PR1 rule-set bound verbatim (a drift in either turns this red) 0ms
+     ✓ the permission path only touches append/latest/history on the port 1ms
+     ✓ the legacy service surface is EXACTLY the PR-A three methods plus the additive mutatePermission (D1) 0ms
+     ✓ no governance-lane module imports storage outside the allow-listed edge 1ms
+     ✓ the allow-list is not vacuous, and no lane module reaches a repository 0ms
+     ✓ the domain lane declares no edge but its own interior 1ms
+     ✓ every specifier pattern is exercised and reaches a verdict (round-2 item 3) 1ms
+     ✓ the comment stripper cannot delete code (round-2 item 1, a regression receipt) 1ms
+     × PR1 ships the ceiling adapter UNWIRED: every new name has an audited consumer set 365ms
+     ✓ the module itself has exactly the importers PR1 gave it 9ms
+     ✓ the runtime consumes that grammar as ONE implementation, not a copy 0ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  06:29:43
+   Duration  960ms (transform 368ms, setup 0ms, import 463ms, tests 410ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p3-governance-lane-hygiene.test.ts > the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-3) > PR1 ships the ceiling adapter UNWIRED: every new name has an audited consumer set
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "bindingDocs referenced by src/plugin/host.ts",
++   "grantCeiling referenced by src/plugin/host.ts",
++ ]
+
+ ❯ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:647:24
+    645|       }
+    646|     }
+    647|     expect(violations).toEqual([])
+       |                        ^
+    648|
+    649|     // NON-VACUITY, PER NAME (round-2 review item 2). A zero-consumer …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
