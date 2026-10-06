@@ -38,6 +38,12 @@ import {
   type PermissionMutationEnvelope,
   type PermissionStaticLayerFacts,
 } from '../governance/index.js'
+// A4-PR2 lane B: the extracted rise classification is an INTERNAL lane interface
+// (its consumer is `governance/service.ts`, same directory), so it is imported
+// from its module rather than through the barrel — the barrel's exported subset is
+// pinned in `a3p3-governance-lane-hygiene.test.ts` and PR2 has no business growing
+// it for a symbol nothing outside the lane calls.
+import { authorizeLeaderPermissionMutation, classifyPermissionRise, PERMISSION_EFFECT_PRECEDENCE } from '../governance/permission-mutation.js'
 import { assembleEffectivePermission } from '../effective-policy/index.js'
 import type {
   EffectivePermissionAssemblyInput,
@@ -930,5 +936,186 @@ describe('unknown subtree relation refuses typed — never a silent non-match (r
       await w.store.close()
       w.destroy()
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// A4-PR2 lane B — the rise classification, extracted from the Leader judgement
+// ---------------------------------------------------------------------------
+// WHY THIS BLOCK IS IN THE ALPHA.3 FILE AND NOT IN A NEW ONE: the plan schedules
+// lane B's regression here ("Add RED regression proving Alpha.3 revoke/reveal
+// behavior stays identical after extracting rise regions"), and the fact it
+// protects is precisely Alpha.3's — the revoke/reveal semantics this file already
+// owns. A new file would have had to re-derive this file's world to prove
+// something about a refactor of the code this file already exercises.
+//
+// The refactor moves the closed-region partition and the before/after comparison
+// out of `authorizeLeaderPermissionMutation` so the v3 ceiling gate can read the
+// SAME rise facts the Leader envelope judgement was computed from. Two properties
+// make that safe and both are pinned below: the RISE FACTS are unchanged, and the
+// REFUSAL ORDER is unchanged (an unevaluable region still beats an uncovered one,
+// because "we cannot tell" must never be reported as "you are not allowed").
+describe('A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused on', () => {
+  const exact = (resource: string) => ({ kind: 'exact' as const, resource })
+  const rule = (resource: string, effect: 'allow' | 'ask' | 'deny') => ({
+    operation: 'write',
+    // The durable carrier grammar (PR3): a matcher renders WITH its kind prefix,
+    // so a bare path is an unparsable carrier and refuses before anything is read.
+    resource: `exact:${resource}`,
+    effect,
+  })
+  const mutation = (resource: string, effect: 'allow' | 'ask' | 'deny') => ({
+    operationClass: 'write',
+    matcher: exact(resource),
+    effect,
+  })
+  const envelopeAt = (resource: string, maximumEffect: 'allow' | 'ask' | 'deny') => ({
+    rules: [{ operationClass: 'write', matcher: exact(resource), maximumEffect }],
+  })
+  const NO_STATIC = { layers: [] }
+
+  it('a grant that raises ask->allow is ONE rise region carrying the risen effect and the mutation width', () => {
+    const input = {
+      latestRules: [rule('file:/root/a', 'ask')],
+      plannedRules: [rule('file:/root/a', 'allow')],
+      mutationRules: [mutation('file:/root/a', 'allow')],
+      envelope: envelopeAt('file:/root/a', 'allow'),
+      staticFacts: NO_STATIC,
+    }
+    const classification = classifyPermissionRise(input)
+    expect(classification.rising.length).toBe(1)
+    expect(classification.rising[0]).toMatchObject({
+      operationClass: 'write',
+      risenEffect: 'allow',
+      regionText: 'exact:file:/root/a',
+    })
+    expect(classification.rising[0]?.before).toMatchObject({ status: 'decided', effect: 'ask' })
+    expect(classification.rising[0]?.after).toMatchObject({ status: 'decided', effect: 'allow' })
+    expect(classification.undeterminable).toEqual([])
+    // No coverage callback was given, so NO actor-specific judgement was made:
+    // this is the mode the v3 ceiling gate uses, and it never reports `unmet`.
+    expect(classification.unmet).toEqual([])
+  })
+
+  it('a tightening and an identity are NOT rises (the region partition reports nothing to gate)', () => {
+    const tighten = {
+      latestRules: [rule('file:/root/a', 'allow')],
+      plannedRules: [rule('file:/root/a', 'ask')],
+      mutationRules: [mutation('file:/root/a', 'ask')],
+      envelope: envelopeAt('file:/root/a', 'allow'),
+      staticFacts: NO_STATIC,
+    }
+    expect(classifyPermissionRise(tighten).rising).toEqual([])
+    const identity = { ...tighten, plannedRules: [rule('file:/root/a', 'allow')], latestRules: [rule('file:/root/a', 'allow')] }
+    expect(classifyPermissionRise(identity).rising).toEqual([])
+    expect(() => authorizeLeaderPermissionMutation(tighten)).not.toThrow()
+  })
+
+  it('a REVEAL (removal that lets a lower rule answer) is a rise the classifier reports, not a no-op', () => {
+    // The Alpha.3 reveal case in classification terms: removing the overlay `deny`
+    // leaves the static layer's `ask` answering, so the EFFECT rises deny->ask
+    // even though the mutation removes authority-looking text. If the extraction
+    // lost the reveal path, `rising` would be empty here and the v3 gate would
+    // silently stop gating reveals — the exact "no existing test can see it" class.
+    const reveal = {
+      latestRules: [rule('file:/root/a', 'deny')],
+      plannedRules: [],
+      mutationRules: [mutation('file:/root/a', 'deny')],
+      envelope: envelopeAt('file:/root/a', 'allow'),
+      staticFacts: {
+        // `default` is required: a static layer always states its fallback.
+        layers: [{ default: 'deny' as const, rules: [{ operationClass: 'write', matcher: exact('file:/root/a'), effect: 'ask' as const }] }],
+      },
+    }
+    const classification = classifyPermissionRise(reveal)
+    expect(classification.rising.length).toBe(1)
+    expect(classification.rising[0]?.risenEffect).toBe('ask')
+    // And the Actor-specific half still refuses when the envelope does not reach
+    // the risen effect: reveal is an expansion (Alpha.3's central finding).
+    expect(() => authorizeLeaderPermissionMutation(reveal)).not.toThrow()
+    const cannotAsk = { ...reveal, envelope: envelopeAt('file:/root/a', 'deny') }
+    let raised: unknown
+    try {
+      authorizeLeaderPermissionMutation(cannotAsk)
+    } catch (error) {
+      raised = error
+    }
+    expect((raised as { code?: string }).code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+    expect(classifyPermissionRise(cannotAsk, () => 'unmet').unmet.length).toBe(1)
+  })
+
+  it('the extracted classifier and the Leader judgement never disagree about the same input', () => {
+    // THE regression leg. Across a matrix of revoke/reveal/envelope shapes, the
+    // terminal answer of the unchanged entry point must correspond exactly to what
+    // the extracted classification reports: CONTEXT ⟺ something undeterminable,
+    // EXPANSION ⟺ something unmet and nothing undeterminable, OK ⟺ neither. If the
+    // refactor drops a case (a partition branch, an independence rule), this is
+    // where the two stop agreeing.
+    const cases = [
+      { latestRules: [rule('file:/root/a', 'ask')], plannedRules: [rule('file:/root/a', 'allow')], mutationRules: [mutation('file:/root/a', 'allow')], envelope: envelopeAt('file:/root/a', 'allow') },
+      { latestRules: [rule('file:/root/a', 'ask')], plannedRules: [rule('file:/root/a', 'allow')], mutationRules: [mutation('file:/root/a', 'allow')], envelope: envelopeAt('file:/root/other', 'allow') },
+      { latestRules: [rule('file:/root/a', 'ask')], plannedRules: [rule('file:/root/a', 'allow')], mutationRules: [mutation('file:/root/a', 'allow')], envelope: { rules: [] } },
+      { latestRules: [rule('file:/root/a', 'allow')], plannedRules: [rule('file:/root/a', 'deny')], mutationRules: [mutation('file:/root/a', 'deny')], envelope: { rules: [] } },
+      { latestRules: [], plannedRules: [rule('file:/root/a', 'allow')], mutationRules: [mutation('file:/root/a', 'allow')], envelope: envelopeAt('file:/root/a', 'allow') },
+      { latestRules: [rule('file:/root/a', 'deny')], plannedRules: [], mutationRules: [mutation('file:/root/a', 'deny')], envelope: envelopeAt('file:/root/a', 'allow') },
+    ]
+    for (const [index, base] of cases.entries()) {
+      const input = { ...base, staticFacts: NO_STATIC }
+      const classification = classifyPermissionRise(input, (region) => {
+        // The same judgement the Leader path applies internally, recomputed here
+        // from the region: an envelope rule must cover the mutation matcher.
+        const covers = input.envelope.rules.some(
+          (envelopeRule) =>
+            envelopeRule.operationClass === region.operationClass &&
+            envelopeRule.matcher.resource === region.mutationMatcher.resource &&
+            PERMISSION_EFFECT_PRECEDENCE[region.risenEffect] <= PERMISSION_EFFECT_PRECEDENCE[envelopeRule.maximumEffect],
+        )
+        return covers ? 'covered' : 'unmet'
+      })
+      let code: string | 'ok' = 'ok'
+      try {
+        authorizeLeaderPermissionMutation(input)
+      } catch (error) {
+        code = (error as { code?: string }).code ?? 'unknown'
+      }
+      const expected = classification.undeterminable.length > 0
+        ? 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE'
+        : classification.unmet.length > 0
+          ? 'PERMISSION_ENVELOPE_EXPANSION_DENIED'
+          : 'ok'
+      expect(code, `case ${String(index)}: classifier said ${JSON.stringify({ rising: classification.rising.length, unmet: classification.unmet.length, undeterminable: classification.undeterminable.length })}`).toBe(expected)
+    }
+  })
+
+  it('an undeterminable region still beats an uncovered one (the refusal order is data, not luck)', () => {
+    // Two mutation rules in one batch over UNKNOWN lower facts: one rises outside
+    // the envelope (an EXPANSION fact), one cannot be evaluated at all (a CONTEXT
+    // fact). Alpha.3 refuses CONTEXT, never EXPANSION — a caller routed on
+    // "get your envelope in order" would chase the wrong remedy when the truth is
+    // "we cannot evaluate this batch". The order used to fall out of the loop's
+    // shape; now it is carried by two arrays, which is exactly why it needs a leg.
+    const input = {
+      latestRules: [rule('file:/root/a', 'ask')],
+      plannedRules: [rule('file:/root/a', 'allow'), rule('file:/root/b', 'allow')],
+      mutationRules: [mutation('file:/root/a', 'allow'), mutation('file:/root/b', 'allow')],
+      envelope: envelopeAt('file:/root/nowhere', 'allow'),
+      // UNKNOWN lower facts — never conflated with `{ layers: [] }`.
+      staticFacts: undefined,
+    }
+    const classification = classifyPermissionRise(input, () => 'unmet')
+    expect(classification.unmet.length, 'the rising cell must be reported as unmet').toBe(1)
+    expect(classification.undeterminable.length, 'the unevaluable cell must be reported').toBe(1)
+    let raised: unknown
+    try {
+      authorizeLeaderPermissionMutation(input)
+    } catch (error) {
+      raised = error
+    }
+    expect((raised as { code?: string }).code).toBe('PERMISSION_EFFECT_CONTEXT_UNAVAILABLE')
+    // The problem label travels in the message (PermissionMutationError carries
+    // `code` + a message with the `(problem: …)` suffix + a remote-safe detail
+    // bag) — pinned here so a later refactor of the refusal cannot quietly
+    // retitle a context fault without tripping this leg.
+    expect(String((raised as Error).message)).toContain('problem: effect-context-unavailable')
   })
 })

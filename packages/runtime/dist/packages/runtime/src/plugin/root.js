@@ -332,7 +332,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionEnvelope, permissionStaticLayers, permissionCanonicalize, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionAuthorityCeiling, permissionEnvelope, permissionStaticLayers, permissionCanonicalize, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1813,6 +1813,7 @@ export function createTeamProductionRoot(params) {
             // UNKNOWN / zero-envelope / no-ceiling postures).
             ...(permissionStaticLayers === undefined ? {} : { staticLayers: permissionStaticLayers }),
             ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
+            ...(permissionAuthorityCeiling === undefined ? {} : { authorityCeiling: permissionAuthorityCeiling }),
         });
     const mutation = {
         // R2-1: the durable-backed store is exposed on the root surface (an

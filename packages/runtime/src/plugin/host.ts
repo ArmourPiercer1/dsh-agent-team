@@ -91,7 +91,7 @@ import type { TeamDomain } from '../../../storage/repositories/index.js'
 // repository (PR1 ADR §1).
 import { createPermissionOverlayRepositoryPort } from '../../permission-governance/index.js'
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js'
-import { createPermissionAuthorityFacts } from './permission-plane.js'
+import { createAuthorityCeilingReader, createPermissionAuthorityFacts } from './permission-plane.js'
 import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js'
 import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
 import type { TemplatePermissionPolicy } from '../../../domain/blueprint/src/index.js'
@@ -2440,6 +2440,10 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // injection is REMOVED — ADR §6 carries no second policy gate.)
     permissionEnvelope: permissionFacts.permissionEnvelope,
     permissionStaticLayers: permissionFacts.staticLayers,
+    // A4-PR2 lane C: the v3 authority-ceiling context reader (ADR A5-12). The v3 decision
+    // itself is NOT made here — this line injects the reader that makes it, from the
+    // SAME bound-Blueprint resolution every other permission fact is read through.
+    permissionAuthorityCeiling: createAuthorityCeilingReader({ facts: permissionFacts }),
     permissionCanonicalize,
     legacyInspect,
     // BP5 (issue #2 blueprint-loading, plan §9): the live catalog over the

@@ -73,6 +73,7 @@ import type { MemberLifecycleState } from '../../../contracts/src/index.js';
 import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js';
 import type { AuthorityEnvelope, AuthorityEnvelopeAst } from '../../../domain/authority-envelope/src/index.js';
 import type { AuthorityDocumentRead } from '../../governance/authority-ceiling.js';
+import type { PermissionAuthorityCeilingContext } from '../../governance/types.js';
 import type { MemberLifecycleReaderPort, PermissionDecisionLane, PermissionLifecycleMutationLane, PermissionLifecycleRestorePort } from '../../permission-lifecycle/index.js';
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js';
 /** The durable member-instance read surface the lifecycle facts come from. */
@@ -144,6 +145,11 @@ export declare function createPermissionGovernanceLane(deps: {
      *  production root wires the SAME shared assertion the mutation lane
      *  pre-checks — one lifecycle law, never a second gate. */
     readonly targetGuard?: GovernancePermissionLaneDeps['targetGuard'];
+    /** A4-PR2 lane C: the v3 authority-ceiling context reader, wired by the
+     *  production root from {@link createAuthorityCeilingReader}. Absent = the
+     *  deployment wired no ceiling reader, which is a WIRING fact and never the v3
+     *  signal (that decision is the reader's, in this module — ADR A5-12). */
+    readonly authorityCeiling?: GovernancePermissionLaneDeps['authorityCeiling'];
 }): GovernancePermissionLaneDeps;
 /**
  * The two PR4 lanes over the already-assembled authority + lifecycle path.
@@ -220,6 +226,15 @@ export interface PermissionAuthorityFacts {
      * still drives — that is PR2's call with a caller in front of it).
      */
     readonly teamHardEnvelope: (teamSessionId: string, memberInstanceId: string) => Promise<AuthorityHardCeilingRead>;
+    /**
+     * The bound Blueprint's `schemaVersion` for one team session, or `undefined`
+     * when the binding is UNKNOWN (no resolvable bound Blueprint). A4-PR2 added
+     * this because the v3 switch MUST live in this module (ADR A5-12): the
+     * governance service is forbidden from deciding v3 itself, and the only honest
+     * source of the version is the SAME bound-Blueprint resolution every other
+     * permission fact is read through — never a document-shape inference.
+     */
+    readonly blueprintSchemaVersion: (teamSessionId: string) => number | undefined;
 }
 /**
  * Build the addressed-team, per-member authority readers (see the section
@@ -281,4 +296,33 @@ export declare function buildAuthorityEnvelope(document: AuthorityEnvelopeAst, c
  */
 export type AuthorityHardCeilingRead = AuthorityDocumentRead;
 export declare function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDeps): PermissionAuthorityFacts;
+/**
+ * THE v3 AUTHORITY-CEILING READER (A4-PR2 lane C, ADR A5-12, spec §7.4.1).
+ *
+ * Assembles the ceiling CONTEXT the governance service evaluates for one mutation
+ * target. It is a DATA assembler and nothing more: the ladder, the two planes and
+ * every refusal law live in the authority-ceiling lane, and the decision whether
+ * this Team is v3 lives HERE and nowhere else.
+ *
+ * THE VERSION SWITCH IS `schemaVersion === 3`, EXACTLY. Not "the reader was
+ * wired", not "the hard ceiling declares rules", not "the envelope is non-empty":
+ * a `{ rules: [] }` hard ceiling is a v3 Team that authorized NOTHING, and
+ * reading its emptiness as "must be a pre-v3 Team, skip the gate" is a relaxation
+ * in the forbidden direction, in the most restrictive Team in the fleet. The two
+ * branches — the v1/v2 existential (return `undefined`, Alpha.3 behaviour
+ * byte-identical) and the v3 branch — are both pinned in
+ * `test/a4p2-dual-envelope-mutation.test.ts` (A5-12: one file, so the existential
+ * leg cannot be deleted when the v3 leg starts passing).
+ *
+ * `undefined` from the version reader means the binding is UNKNOWN, and the
+ * answer is the v1/v2 branch on purpose: an unresolved binding must not conjure a
+ * v3 gate that invents authority facts it never read, and the v1/v2 path's own
+ * readers already fail closed (an unknown binding yields the zero-authority
+ * envelope, which refuses every Leader expansion). Choosing the OTHER branch here
+ * would make a storage fault read as "this Team is v3 and its ceiling is empty",
+ * i.e. an authority verdict invented from an absence.
+ */
+export declare function createAuthorityCeilingReader(deps: {
+    readonly facts: Pick<PermissionAuthorityFacts, 'teamHardEnvelope' | 'permissionEnvelope' | 'blueprintSchemaVersion'>;
+}): (teamSessionId: string, memberInstanceId: string, actor: 'leader' | 'human') => Promise<PermissionAuthorityCeilingContext | undefined>;
 //# sourceMappingURL=permission-plane.d.ts.map

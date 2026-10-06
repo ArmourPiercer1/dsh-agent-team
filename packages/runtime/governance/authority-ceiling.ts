@@ -50,6 +50,8 @@
 
 import {
   CEILING_IDENTITY,
+  CEILING_NO_AUTHORITY,
+  effectiveAuthorityCeiling,
   meetAllAuthorityCeilings,
   narrowingForApproval,
 } from '../../domain/authority-envelope/src/index.js'
@@ -103,6 +105,24 @@ export type AuthorityBindingProblem =
    *  value that escaped the compiler. Its ceiling is unknown, so it is reported
    *  with the unavailable code, never as `absent`. */
   | 'document-slot-unrecognized-status'
+  /** A position value that the closed ladder gives no rank to — `undefined`, a
+   *  string from JSON, a position a later Alpha renames. Ranked as a DEFECT, not
+   *  as "rank 0" and not as "no rank, therefore not higher": `undefined > 0` is
+   *  `false`, which is indistinguishable from an ordinary refusal, and the whole
+   *  point of PR2's ladder is that "we do not know who this is" and "this
+   *  reviewer may not act" are DIFFERENT facts with different consequences. */
+  | 'position-outside-closed-ladder'
+  /** A Human Admin ASK: the ladder has no rung above the top, and no position may
+   *  approve its own elevation, so no candidate reviewer exists to evaluate. A
+   *  defective INPUT rather than an outcome — every arm of spec §7.3 presupposes
+   *  someone who could sign. Unreachable in Alpha.4, which ships no Human Admin
+   *  constructor (ADR A1-3). */
+  | 'ask-has-no-upper-rung'
+  /** The evaluator walked the whole closed ladder and nothing reached the effect.
+   *  Impossible while the top rung binds no document (its ceiling is the identity,
+   *  which reaches everything), so reaching it means the ladder was edited under
+   *  the evaluator — and the alternative it replaces is inventing a fifth rung. */
+  | 'no-rung-reached-effect'
 
 /** The refusal raised by {@link bindingDocs} and {@link grantCeiling}. */
 export class AuthorityBindingError extends Error {
@@ -189,7 +209,7 @@ type ResolvedSlot =
   | { readonly present: false; readonly reason: 'absent' | 'unavailable' }
 
 function resolveSlot(
-  name: 'teamHardEnvelope' | 'permissionMutationEnvelope',
+  name: AuthorityDocumentName,
   slot: AuthorityDocumentSlot,
 ): ResolvedSlot {
   // A slot that is not a slot. Without this line the check below is
@@ -229,13 +249,6 @@ function resolveSlot(
 }
 
 /**
- * Which documents bind one reviewer position (spec §7.4:300-302, ADR A5-1).
- *
- * Order is fixed (hard ceiling first) so the returned set is deterministic even
- * though `meet` is commutative — a governance read that varies between calls is
- * indistinguishable from one that drifts.
- */
-/**
  * Resolve one slot a position IS bound by.
  *
  * `absent` contributes nothing; `unavailable` REFUSES. Refusal — not a ceiling
@@ -247,7 +260,7 @@ function resolveSlot(
  * and continues has made a decision the documents did not authorize.
  */
 function boundDocument(
-  name: 'teamHardEnvelope' | 'permissionMutationEnvelope',
+  name: AuthorityDocumentName,
   slot: AuthorityDocumentSlot,
 ): AuthorityEnvelope | undefined {
   const resolved = resolveSlot(name, slot)
@@ -263,77 +276,252 @@ function boundDocument(
 }
 
 /**
+ * THE positional document table: which named document binds which position
+ * (spec §7.4:300-302, ADR A5-1). ONE table, read by both ceiling families.
+ *
+ * It is a table of NAMES rather than of resolved documents because the two
+ * planes read an ABSENT document in opposite ways — the approval plane skips it
+ * (no rule contributes no narrowing), the expansion plane reads it as
+ * NO-AUTHORITY (an undeclared ceiling authorizes nothing) — and two independently
+ * written tables would drift the moment one row is edited. The row order is fixed
+ * (hard ceiling first) so the resolved set is deterministic even though `meet` is
+ * commutative: a governance read that varies between calls is indistinguishable
+ * from one that drifts.
+ */
+const BOUND_AUTHORITY_DOCUMENTS: Readonly<
+  Record<ProposalAuthorityPosition, readonly AuthorityDocumentName[]>
+> = Object.freeze({
+  // Not a reviewer at all (spec §7.4:307). An EMPTY row here would be the silent
+  // version of a fourth ceiling, so the two readers below refuse on this row
+  // rather than meeting over nothing — an empty meet is the IDENTITY, which is
+  // the WIDEST ceiling the algebra has.
+  member: Object.freeze([]),
+  // Capped by BOTH. The Leader wrote the mutation envelope, so binding it to
+  // only its own document would be self-approval by construction; the hard
+  // ceiling is the Human User's restriction on it (round-2 F-N1).
+  leader: Object.freeze(['teamHardEnvelope', 'permissionMutationEnvelope'] as const),
+  // The mutation envelope does NOT bind a Human User: it is the Leader's ceiling,
+  // and reading it here would let a document the Leader wrote cap the reviewer
+  // who exists to overrule that Leader.
+  'human-user': Object.freeze(['teamHardEnvelope'] as const),
+  // Spec §7.4:302 — `{ }`, "top of ladder; no envelope binds it".
+  'human-admin': Object.freeze([]),
+})
+
+/**
+ * The NAMES of the documents that bind one position; refuses for a Member.
+ *
+ * Exported for the evaluator's evidence: a caller auditing WHY a Human User was
+ * not capped by the mutation envelope needs the row itself, not a reconstructed
+ * guess at it. Refuses exactly as {@link bindingDocs} does, so there is one
+ * refusal vocabulary for the table.
+ */
+export function boundDocumentNames(reviewer: ProposalAuthorityPosition): readonly AuthorityDocumentName[] {
+  // REACHED, AND ENFORCED. While `ProposalAuthorityPosition` is the closed
+  // four-member union this check is a compile-time impossibility for typed
+  // callers — but the position arrives from a PROPOSAL ROW and from caller-side
+  // casts, and a string that is not in the union walks straight in here at
+  // runtime. It must refuse. The alternative it replaces is the silent one: a
+  // `return []` for an unknown position routes to `grantCeiling`'s empty-set
+  // branch and yields `CEILING_IDENTITY`, i.e. UNLIMITED approval reach for a
+  // principal the table never heard of — reached exactly the way invariant #16
+  // worries about, by a cast payload, with the whole suite green.
+  // `a4p1-authority-envelope.test.ts:496-515` therefore pins this refusal by
+  // CALLING it (a bogus position throws), not by trusting the types; and there is
+  // no implicit fallback, because a fallback answers the question it was never
+  // given instead of refusing it (ADR A1-2).
+  if (typeof reviewer !== 'string' || !Object.hasOwn(BOUND_AUTHORITY_DOCUMENTS, reviewer)) {
+    throw new AuthorityBindingError(
+      AUTHORITY_CEILING_ERROR_CODES.BINDING_DEFECT,
+      'position-is-not-a-reviewer',
+      `reviewer position ${String(reviewer)} has no written binding arm`,
+    )
+  }
+  const names = BOUND_AUTHORITY_DOCUMENTS[reviewer]
+  if (names.length === 0 && reviewer !== 'human-admin') {
+    // Spec §7.4:307 — "a Member cannot review at all". Refusing is the only
+    // honest arm: returning a document set would create a ceiling for a reviewer
+    // that must not exist, and a later PR would consult it as if the table had
+    // authorized it. Only Human Admin is TABLE-AUTHORIZED to bind nothing.
+    // Restriction-preserving is NOT a licence to invent a row.
+    throw new AuthorityBindingError(
+      AUTHORITY_CEILING_ERROR_CODES.BINDING_DEFECT,
+      'position-is-not-a-reviewer',
+      'a Member is not a reviewer position, so no authority document binds it',
+    )
+  }
+  return names
+}
+
+/**
  * Which documents bind one reviewer position (spec §7.4:300-302, ADR A5-1).
  *
- * Order is fixed (hard ceiling first) so the returned set is deterministic even
- * though `meet` is commutative — a governance read that varies between calls is
- * indistinguishable from one that drifts.
+ * APPROVAL-plane reading: an ABSENT document is skipped, because on this plane a
+ * missing rule imposes no narrowing and the identity is the correct contribution.
+ * The expansion-plane reading of the same row is {@link expansionCeiling}.
  */
 export function bindingDocs(
   reviewer: ProposalAuthorityPosition,
   documents: AuthorityEnvelopeDocuments,
 ): readonly AuthorityEnvelope[] {
-  switch (reviewer) {
-    case 'leader': {
-      // Capped by BOTH. The Leader wrote the mutation envelope, so binding it
-      // to only its own document would be self-approval by construction; the
-      // hard ceiling is the Human User's restriction on it (round-2 F-N1).
-      const bound: AuthorityEnvelope[] = []
-      const hard = boundDocument('teamHardEnvelope', documents.teamHardEnvelope)
-      if (hard !== undefined) bound.push(hard)
-      const mutation = boundDocument('permissionMutationEnvelope', documents.permissionMutationEnvelope)
-      if (mutation !== undefined) bound.push(mutation)
-      return bound
-    }
-    case 'human-user': {
-      // The mutation envelope does NOT bind a Human User: it is the Leader's
-      // ceiling, and reading it here would let a document the Leader wrote cap
-      // the reviewer who exists to overrule that Leader.
-      const hard = boundDocument('teamHardEnvelope', documents.teamHardEnvelope)
-      return hard === undefined ? [] : [hard]
-    }
-    case 'human-admin': {
-      // Spec §7.4:302 — `{ }`, "top of ladder; no envelope binds it". The empty
-      // set is meaningful, not incidental: `meetAllAuthorityCeilings([])` is the
-      // identity, so Human Admin reach is the ladder's, unmodified. Note that
-      // the slots are NOT resolved here: a document that binds nobody cannot
-      // refuse, so a faulted hard-ceiling read does not narrow a Human Admin
-      // either. That is the spec's row, not an oversight — and it is why this
-      // arm returns rather than falls through.
-      return []
-    }
-    case 'member': {
-      // Spec §7.4:307 — "a Member cannot review at all". Refusing is the only
-      // honest arm: returning a document set would create a ceiling for a
-      // reviewer that must not exist, and a later PR would consult it as if the
-      // table had authorized it. Restriction-preserving is NOT a licence to
-      // invent a row.
-      throw new AuthorityBindingError(
-        AUTHORITY_CEILING_ERROR_CODES.BINDING_DEFECT,
-        'position-is-not-a-reviewer',
-        'a Member is not a reviewer position, so no authority document binds it',
-      )
-    }
+  const bound: AuthorityEnvelope[] = []
+  for (const name of boundDocumentNames(reviewer) as readonly AuthorityDocumentName[]) {
+    const resolved = boundDocument(name, documents[name])
+    if (resolved !== undefined) bound.push(resolved)
   }
-  // REACHED, AND ENFORCED. While `ProposalAuthorityPosition` is the closed
-  // four-member union this line is a compile-time impossibility for typed
-  // callers — but the position arrives from a PROPOSAL ROW and from caller-side
-  // casts, and a string that is not in the union walks straight down here at
-  // runtime. It must refuse. The alternative it replaces is the silent one: a
-  // `return []` here routes to `grantCeiling`'s empty-set branch and yields
-  // `CEILING_IDENTITY`, i.e. UNLIMITED approval reach for a principal the table
-  // never heard of — reached exactly the way invariant #16 worries about, by a
-  // cast payload, with the whole suite green. `a4p1-authority-envelope.test.ts`
-  // therefore pins this refusal by calling it (a bogus position throws), not by
-  // trusting the types; and there is no `default` arm above, because an implicit
-  // fallback branch is what ADR A1-2 forbids — a fallback answers the question
-  // it was never given instead of refusing it.
-  throw new AuthorityBindingError(
+  return bound
+}
+
+/**
+ * The EXPANSION-plane ceiling of one position: meet of
+ * `effectiveAuthorityCeiling` over the documents that bind it (ADR A1-4's
+ * expansion reading, spec §7.4; pinned by `a4p2-ceiling-reachability.test.ts`).
+ *
+ * WHY THIS IS NOT `grantCeiling` WITH THE OTHER LOOKUP SWAPPED IN. The two planes
+ * disagree about ABSENCE, and only here does that difference decide anything: a v3
+ * Team whose `teamHardEnvelope` declares no rule for this scope authorizes NO
+ * expansion (`no-authority`), where the same document imposes no narrowing when a
+ * Human User approves. Computing one and handing it to the other caller is the
+ * mistake correction X7-R5 rules out in both directions — it dead-locks every
+ * Leader approval on `{ rules: [] }`, and it authorizes a Leader expansion no
+ * document ever granted.
+ *
+ * An ABSENT bound document therefore contributes `CEILING_NO_AUTHORITY` rather
+ * than being skipped, and an `unavailable` one refuses with
+ * `AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE` exactly as on the approval plane.
+ * Human Admin binds nothing, so its expansion ceiling is the identity — the
+ * ladder's own reach, unmodified.
+ */
+export function expansionCeiling(
+  position: ProposalAuthorityPosition,
+  documents: AuthorityEnvelopeDocuments,
+  scope: AuthorityCeilingScope,
+  subtreeContains?: SubtreeContains,
+): EffectiveCeiling {
+  const names = boundDocumentNames(position) as readonly AuthorityDocumentName[]
+  if (names.length === 0) return CEILING_IDENTITY
+  const ceilings: EffectiveCeiling[] = []
+  for (const name of names) {
+    const resolved = resolveSlot(name, documents[name])
+    if (!resolved.present) {
+      if (resolved.reason === 'unavailable') {
+        throw new AuthorityBindingError(
+          AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE,
+          'document-read-unavailable',
+          `${name} could not be read, so the expansion ceiling is unknown and unknown never authorizes an expansion`,
+        )
+      }
+      // `absent` on THIS plane is not "no restriction". It is the absence of a
+      // grant, which the expansion plane spells `no-authority`.
+      ceilings.push(CEILING_NO_AUTHORITY)
+      continue
+    }
+    // NOTE the FLAT argument shape: the domain's expansion lookup takes
+    // `(envelope, operationClass, matcher)` while its approval lookup takes
+    // `(document, scope)`. Passing `scope` here is a compile error rather than a
+    // silent wrong-plane call, which is the good kind of asymmetry.
+    ceilings.push(effectiveAuthorityCeiling(resolved.document, scope.operationClass, scope.matcher, subtreeContains))
+  }
+  return meetAllAuthorityCeilings(ceilings)
+}
+
+/** The refusal for a value the closed ladder gives no rank to. */
+function outsideLadder(caller: string, value: unknown): AuthorityBindingError {
+  return new AuthorityBindingError(
     AUTHORITY_CEILING_ERROR_CODES.BINDING_DEFECT,
-    'position-is-not-a-reviewer',
-    `reviewer position ${String(reviewer)} has no written binding arm`,
+    'position-outside-closed-ladder',
+    `${caller}: ${JSON.stringify(value) ?? String(value)} is outside the closed authority ladder member < leader < human-user < human-admin, so it has no rank`,
   )
 }
+
+/**
+ * THE RUNTIME AUTHORITY LADDER, as a rank per position (plan Task 2 Produces:
+ * `authorityRank()`, added HERE because X5-E1 moved `mayReview` into this module
+ * and a `mayReview` with no rank cannot answer anything).
+ *
+ * An exhaustive `Record` over PR0's union, NOT a local array: `satisfies
+ * Record<ProposalAuthorityPosition, number>` is a COMPLETENESS check on an object
+ * literal (drop a key and it is a compile error), which is precisely the check
+ * `as const satisfies readonly ProposalAuthorityPosition[]` on an array does NOT
+ * give — a three-element array passes it and silently creates a second, shorter
+ * ordering with no rank for the position it dropped (correction X7-R3, fake-mode
+ * #3). The ladder VALUES live in `proposal-store.ts:148`; only the ORDER lives
+ * here, and `a4p2-authority-ceiling.test.ts` pins the two against each other in
+ * both directions.
+ */
+export const AUTHORITY_RANK = {
+  member: 0,
+  leader: 1,
+  'human-user': 2,
+  'human-admin': 3,
+} as const satisfies Record<ProposalAuthorityPosition, number>
+
+/**
+ * The rank of one authority position (plan Task 2 Produces).
+ *
+ * The post-index refusal is not decoration: an index into `AUTHORITY_RANK` is
+ * `undefined` for anything the type did not admit, and `undefined` POISONs every
+ * comparison below it into `false`. A `false` from `mayReview` reads as an
+ * ordinary refusal, so a proposal row naming a renamed position would look like
+ * "this reviewer may not act" when the truth is "we do not know who this is" —
+ * the same fact/consequence split `AuthorityDocumentRead` draws for documents.
+ */
+export function authorityRank(position: ProposalAuthorityPosition): number {
+  if (typeof position !== 'string' || !Object.hasOwn(AUTHORITY_RANK, position)) {
+    throw outsideLadder('authorityRank', position)
+  }
+  return AUTHORITY_RANK[position as ProposalAuthorityPosition]
+}
+
+/**
+ * Is `left` strictly higher than `right` on the ladder? (plan Task 2 Produces.)
+ *
+ * A comparison, not a policy: it answers nothing about documents. Equal ranks are
+ * NOT higher — that is what makes same-level approval impossible everywhere it is
+ * derived.
+ */
+export function isHigherAuthority(left: ProposalAuthorityPosition, right: ProposalAuthorityPosition): boolean {
+  return authorityRank(left) > authorityRank(right)
+}
+
+/**
+ * WHO MAY ACT (spec §7.4:299, ADR A3-2) — one of the two functions that are
+ * never combined into one `min()`.
+ *
+ *     mayReview(reviewer, beneficiary, requiredAuthority)
+ *
+ * The shape is FLAT with THREE REQUIRED PARAMETERS by ruling X7-R2: PR3 owns the
+ * `ApprovalCase` shape whose legs carry `reviewAuthority` /
+ * `beneficiaryAuthority` / `requiredAuthorityAtCreation` and map onto these three
+ * 1:1, so inventing a case type here would put a durable shape in a PR that does
+ * not own it — and a defaulted or optional `requiredAuthority` is SILENTLY
+ * PERMISSIVE, since the caller that forgets the third argument gets "any reviewer
+ * above the beneficiary may sign it" with no compile error and no red test.
+ *
+ * Two conditions, both necessary:
+ *  1. STRICTLY above the beneficiary — self-approval and same-level approval are
+ *     never legal (spec §7.4:309, ADR §11);
+ *  2. at or above the case's required authority — the ladder rung the evaluator
+ *     computed, which is where a CEILING can raise the bar but never lower it.
+ *
+ * It consults NO document. Whether what they may sign reaches the desired effect
+ * is {@link grantCeiling}'s question, and fusing the two is the error spec §7.4
+ * opens by naming them "two independent functions": a rank and a ceiling are
+ * different types answering different questions.
+ */
+export function mayReview(
+  reviewer: ProposalAuthorityPosition,
+  beneficiary: ProposalAuthorityPosition,
+  requiredAuthority: ProposalAuthorityPosition,
+): boolean {
+  const reviewerRank = authorityRank(reviewer)
+  const beneficiaryRank = authorityRank(beneficiary)
+  const requiredRank = authorityRank(requiredAuthority)
+  return reviewerRank > beneficiaryRank && reviewerRank >= requiredRank
+}
+
+/** The two authority documents a position can be bound by (spec §7.4:300-302). */
+export type AuthorityDocumentName = 'teamHardEnvelope' | 'permissionMutationEnvelope'
 
 /** The scope a ceiling is asked about. */
 export interface AuthorityCeilingScope {

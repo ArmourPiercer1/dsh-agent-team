@@ -170,6 +170,113 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
     expect(offenders).toEqual([])
   })
 
+  it('the SAME allow-list covers the governance BARREL, which the leg above cannot see (X9)', () => {
+    // THE HOLE, stated precisely. The leg above matches a per-MODULE specifier —
+    // `permission-mutation.js`. `governance/index.ts` re-exports 36 of the same
+    // names, so any production file in this repository could write
+    // `import { planPermissionMutation } from '../../governance/index.js'` and
+    // satisfy that leg exactly as written, with the suite green. The allow-list is
+    // only as wide as what the matcher can observe, and a matcher narrowed to
+    // per-file consumers to cut false positives had silently narrowed its own
+    // field of view — correction X9's exact shape (there, a comment-strip order ate
+    // 279 lines of `host.ts` and blinded the leg that was supposed to watch them).
+    //
+    // Covered here: value imports, TYPE-only imports, and namespace imports whose
+    // usage site is `lane.<name>(...)` — three windows, because a rule that only
+    // closes the first is closed again by the second. The name set is DERIVED from
+    // the barrel rather than written down, so a re-export added tomorrow is policed
+    // on the day it lands instead of the day someone remembers.
+    const barrelSource = readFileSync(join(RUNTIME_ROOT, 'governance', 'index.ts'), 'utf8')
+    const mutationNames = new Set<string>()
+    for (const block of barrelSource.matchAll(/export(?: type)? \{([^}]*)\} from '\.\/permission-mutation\.js'/g)) {
+      for (const entry of (block[1] ?? '').split(',')) {
+        const name = entry.trim().split(/\s+as\s+/).pop()?.trim()
+        if (name && /^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) mutationNames.add(name)
+      }
+    }
+    // A vacuous name set would make every assertion below green.
+    expect(mutationNames.size, 'the barrel export scan found nothing to police').toBeGreaterThan(8)
+
+    const strip = (source: string): string =>
+      source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+    /** Does this file reach a permission-mutation name through the barrel? */
+    const importsViaBarrel = (rel: string, source: string): boolean => {
+      const inLane = rel.startsWith(`governance${sep}`)
+      const barrelHere = inLane ? /from\s*['"]\.\/index\.js['"]/.test(source) : false
+      const barrelPath = /from\s*['"][^'"]*governance\/index\.js['"]/.test(source)
+      if (!barrelHere && !barrelPath) return false
+      const body = strip(source)
+      for (const name of mutationNames) {
+        if (new RegExp(`\\b${name}\\b`).test(body)) return true
+      }
+      return false
+    }
+    /** The COMBINED predicate: the module specifier window AND the barrel window.
+     *  One predicate, so "fixed in one place" cannot mean "open in the other". */
+    const reachesKernel = (rel: string, source: string): boolean =>
+      /governance\/permission-mutation\.js|permission-mutation\.js['"]/.test(source) || importsViaBarrel(rel, source)
+
+    const offenders: string[] = []
+    const visit = (dir: string): void => {
+      for (const entry of readdirSync(dir)) {
+        const full = join(dir, entry)
+        const st = statSync(full)
+        if (st.isDirectory()) {
+          if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+          visit(full)
+          continue
+        }
+        if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry.endsWith('.d.ts')) continue
+        const rel = relative(RUNTIME_ROOT, full)
+        if (rel.startsWith(`governance${sep}permission-mutation.ts`)) continue
+        if (rel.startsWith(`governance${sep}service.ts`)) continue
+        if (rel.startsWith(`governance${sep}types.ts`)) continue
+        if (rel.startsWith(`governance${sep}index.ts`)) continue
+        // PR4's audited assembly layer is the ONE production consumer, by barrel as
+        // well as by module — measured, not assumed: it is the only barrel importer
+        // in the tree that names a mutation symbol at all.
+        if (rel === join('src', 'plugin', 'permission-plane.ts')) continue
+        if (reachesKernel(rel, readFileSync(full, 'utf8'))) offenders.push(rel)
+      }
+    }
+    for (const pkg of ['runtime', 'tools', 'remote', 'client', 'domain']) {
+      const pkgRoot = pkg === 'runtime' ? RUNTIME_ROOT : join(RUNTIME_ROOT, '..', pkg)
+      try {
+        statSync(pkgRoot)
+      } catch {
+        continue
+      }
+      visit(pkgRoot)
+    }
+    expect(offenders).toEqual([])
+
+    // NON-VACUITY, ONE CASE PER WINDOW THE TIGHTENING CREATES. `root.ts` is the
+    // host for the injections because it is a REAL barrel importer that names no
+    // mutation symbol, so every hit below is produced by the injected line and
+    // nothing else — and the two precision cases are what stop this leg from
+    // flagging every barrel consumer in the repository.
+    const barrelHost = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'root.ts'), 'utf8')
+    const cases: readonly (readonly [label: string, rel: string, source: string, expected: boolean])[] = [
+      ['barrel value import', join('src', 'plugin', 'x.ts'), `${barrelHost}\nimport { planPermissionMutation } from '../../governance/index.js'\n`, true],
+      ['barrel TYPE import', join('src', 'plugin', 'x.ts'), `${barrelHost}\nimport type { PermissionMutationPlan } from '../../governance/index.js'\n`, true],
+      ['barrel NAMESPACE import used at a call site', join('src', 'plugin', 'x.ts'), `${barrelHost}\nimport * as lane from '../../governance/index.js'\nconst p = lane.planPermissionMutation\n`, true],
+      ['per-module import (the window the leg above already covers)', join('src', 'plugin', 'x.ts'), `${barrelHost}\nimport { planPermissionMutation } from '../../governance/permission-mutation.js'\n`, true],
+      ['barrel import of a NON-mutation name only', join('src', 'plugin', 'x.ts'), `${barrelHost}\nimport { createTeamRuntimeRoot } from '../../governance/index.js'\n`, false],
+      // The precision window the tightening creates: a LOCAL symbol that happens
+      // to share a name must not be flagged in a file that imports neither the
+      // module nor the barrel. Hosted on a source with no barrel import, because
+      // `root.ts` has one and the combination is exactly what the rule reads as an
+      // edge — which is the case above, not this one.
+      ['a same-named local with no governance import at all', join('src', 'plugin', 'x.ts'), `export const planPermissionMutation = 1\n`, false],
+      ['a mention inside a comment only', join('src', 'plugin', 'x.ts'), `${barrelHost}\n// planPermissionMutation is not imported here\n`, false],
+      ['a real call on a line that also carries a comment', join('src', 'plugin', 'x.ts'), `${barrelHost}\nconst p = planPermissionMutation // trailing comment\n`, true],
+      ['an in-lane `./index.js` barrel import', join('governance', 'something.ts'), `import { planPermissionMutation } from './index.js'\n`, true],
+    ]
+    for (const [label, rel, source, expected] of cases) {
+      expect(reachesKernel(rel, source), `the combined predicate is wrong about: ${label}`).toBe(expected)
+    }
+  })
+
   it('nothing imports the durable overlay store or its port outside the PR1 lane and this lane/test pair', () => {
     // The PR3 authority may reach the durable overlay ONLY through the PR1
     // port type; a direct import of the storage repository from a NEW
@@ -575,7 +682,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     expect(locales, 'client/locales.ts inside the 292-551 window was being stripped away').toContain("'intent.startHere'")
   })
 
-  it('PR1 ships the ceiling adapter UNWIRED: every new name has an audited consumer set', () => {
+  it('the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name', () => {
     // The plan's lane-C instruction — "keep the reader unused by production
     // authorization in PR1" — is the PR's headline claim, and the first draft of
     // this leg checked two of the new names and none of the reader
@@ -587,31 +694,86 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // amendment, the way the consumer allow-list at the top of this file does.
     const CEILING_LANE = ['governance/authority-ceiling.ts', 'governance/index.ts']
     const DOMAIN_LANE = ['../domain/authority-envelope/src/authority-envelope.ts', '../domain/authority-envelope/src/index.ts']
+    // A4-PR2 lane A amendment: the evaluator module joins the audited set as the
+    // adapter's FIRST consumer, and it is named per row below rather than
+    // wildcarded — the whole value of this leg is that a consumer set is STATED,
+    // so "the evaluator needed it" can never again be a reason not to look.
+    const RUNTIME_AUTHORITY = 'governance/runtime-authority.ts'
+    const CEILING_AND_EVALUATOR = [...CEILING_LANE, RUNTIME_AUTHORITY]
+    // A4-PR2 lane C amendment: the v3 mutation gate. `service.ts` is the FIRST
+    // consumer outside the ceiling lane itself — the row it joins is stated per
+    // name below, and it joins ONLY the names the gate calls. `types.ts` joins
+    // exactly the two types the lane's injected reader carries. Widening these two
+    // file names into a wildcard would have been the cheap move and would have
+    // destroyed the leg: the whole point is that a new consumer of the ladder has
+    // to be named.
+    const SERVICE = 'governance/service.ts'
+    const LANE_TYPES = 'governance/types.ts'
+    const CEILING_AND_GATE = [...CEILING_AND_EVALUATOR, SERVICE]
     // The list's COMPLETENESS is asserted below against the module's own export
     // scan, so this array cannot quietly fall behind the file it polices.
     const SURFACE: readonly (readonly [name: string, allowed: readonly string[]])[] = [
       // The approval-plane adapter: the barrel plus its own module, nothing else.
+      // Every row below that reads `CEILING_AND_EVALUATOR` moved there in
+      // A4-PR2 lane A: `runtime-authority.ts` is the adapter's first consumer, and
+      // it consumes the ceiling, the document-pair type, and the refusal
+      // vocabulary because an unevaluable document must reach it as a CODE (a bare
+      // TypeError has `code === undefined`, which the outcome mapping would read
+      // as "not one of mine" and rethrow out of the governance path).
       ['bindingDocs', CEILING_LANE],
-      ['grantCeiling', CEILING_LANE],
-      ['AuthorityEnvelopeDocuments', CEILING_LANE],
-      ['AuthorityBindingError', CEILING_LANE],
-      ['AUTHORITY_CEILING_ERROR_CODES', CEILING_LANE],
+      ['grantCeiling', CEILING_AND_GATE],
+      ['AuthorityEnvelopeDocuments', [...CEILING_AND_GATE, LANE_TYPES]],
+      ['AuthorityBindingError', CEILING_AND_GATE],
+      ['AUTHORITY_CEILING_ERROR_CODES', CEILING_AND_GATE],
       ['AuthorityBindingProblem', CEILING_LANE],
       ['AuthorityCeilingErrorCode', CEILING_LANE],
-      ['AuthorityCeilingScope', CEILING_LANE],
+      ['AuthorityCeilingScope', CEILING_AND_EVALUATOR],
       // The three-way document read: also the plane that PRODUCES it, as a
       // TYPE-ONLY alias (asserted type-only below — the alias is what makes
       // `unavailable → undefined` unrepresentable, review SF1).
       ['AuthorityDocumentRead', [...CEILING_LANE, join('src', 'plugin', 'permission-plane.ts')]],
       ['AuthorityDocumentSlot', CEILING_LANE],
+      // ---- A4-PR2 lane A: the ladder, the expansion plane, and the evaluator.
+      // The positional binding TABLE, now read by both planes (the reason it moved
+      // out of `bindingDocs`'s `switch` into one exhaustive `Record`: two tables
+      // drift, and A5-1 makes "which documents bind" a single fact).
+      ['AuthorityDocumentName', [...CEILING_AND_EVALUATOR, join('src', 'plugin', 'permission-plane.ts')]],
+      ['boundDocumentNames', CEILING_AND_EVALUATOR],
+      // The ladder. `AUTHORITY_RANK` is the one ordering in the repository, so its
+      // consumer set is short on purpose: anything that wants a rank calls
+      // `authorityRank` and gets the closed-set refusal with it.
+      ['AUTHORITY_RANK', CEILING_AND_EVALUATOR],
+      ['authorityRank', CEILING_AND_EVALUATOR],
+      ['isHigherAuthority', CEILING_AND_EVALUATOR],
+      // WHO MAY ACT — the ladder half of "legal approval", never fused with the
+      // ceiling half (ADR A3-2, spec §7.4).
+      ['mayReview', CEILING_AND_EVALUATOR],
+      // The EXPANSION-plane ceiling: the number `grantCeiling` must never be
+      // confused with (correction X7-R5). PR2 lane C's mutation gate is its next
+      // consumer and must arrive as another amendment to this row.
+      ['expansionCeiling', CEILING_AND_GATE],
+      // The evaluator module's own surface. Lane C wired `governance/service.ts`
+      // into the rows the ceiling gate calls (this comment promised that amendment
+      // in lane A) — and only those rows, so a later PR that reaches for
+      // `evaluateAuthorityCeiling` from somewhere else still has to say so.
+      // A4-PR2 rework: `src/plugin/permission-plane.ts` joins as the FIRST
+      // production consumer — it is where the ladder position of the acting
+      // surface is chosen (plan:261), which is precisely the mapping that must
+      // not be re-decided at each call site.
+      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts')]],
+      ['AuthorityEvaluation', [RUNTIME_AUTHORITY, 'governance/index.ts']],
+      ['AuthorityEvaluationEvidence', [RUNTIME_AUTHORITY, 'governance/index.ts']],
+      ['AuthorityEvaluationInput', [RUNTIME_AUTHORITY, 'governance/index.ts']],
+      ['AuthorityEvaluationOutcome', [RUNTIME_AUTHORITY, 'governance/index.ts']],
+      ['evaluateAuthorityCeiling', CEILING_AND_GATE],
       // The domain algebra: the domain lane, plus the ceiling adapter where it
       // composes them. NOT the permission plane and NOT any decision path.
       ['narrowingForApproval', [...DOMAIN_LANE, ...CEILING_LANE]],
       ['meetAuthorityCeilings', [...DOMAIN_LANE, ...CEILING_LANE]],
       ['meetAllAuthorityCeilings', [...DOMAIN_LANE, ...CEILING_LANE]],
       ['CEILING_IDENTITY', [...DOMAIN_LANE, ...CEILING_LANE]],
-      ['CEILING_NO_AUTHORITY', DOMAIN_LANE],
-      ['effectiveAuthorityCeiling', DOMAIN_LANE],
+      ['CEILING_NO_AUTHORITY', [...DOMAIN_LANE, ...CEILING_LANE]],
+      ['effectiveAuthorityCeiling', [...DOMAIN_LANE, ...CEILING_LANE]],
       ['parseAuthorityEnvelope', DOMAIN_LANE],
       // The AST vocabulary: the domain lane and the ONE canonicalizer.
       ['AuthorityEnvelopeAst', [...DOMAIN_LANE, join('src', 'plugin', 'permission-plane.ts')]],
@@ -659,13 +821,19 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // hand-maintained list is what let `AuthorityCeilingErrorCode` sit exported
     // and unpinned; deriving both directions makes an unpoliced export a failure
     // instead of an omission.
-    const adapterExports = [...AUTHORITY_CEILING_SOURCE.matchAll(/^export (?:const|function|class|interface|type) ([A-Za-z0-9_]+)/gm)]
-      .map((match) => match[1] ?? '')
-      .filter((name) => name.length > 0)
-      .sort()
+    // A4-PR2: the evaluator module is policed by the SAME rules as the adapter it
+    // consumes. Extending the scan (rather than writing a second list) is what
+    // keeps "every export is audited by name" true for a module that did not exist
+    // when this leg was written.
+    const RUNTIME_AUTHORITY_SOURCE = readFileSync(join(RUNTIME_ROOT, 'governance', 'runtime-authority.ts'), 'utf8')
+    const exportNames = (source: string): string[] =>
+      [...source.matchAll(/^export (?:const|function|class|interface|type) ([A-Za-z0-9_]+)/gm)]
+        .map((match) => match[1] ?? '')
+        .filter((name) => name.length > 0)
+    const adapterExports = [...exportNames(AUTHORITY_CEILING_SOURCE), ...exportNames(RUNTIME_AUTHORITY_SOURCE)].sort()
     expect(adapterExports.length, 'the export scan found nothing to police').toBeGreaterThan(8)
     const unpolishedExports = adapterExports.filter((name) => !policed.has(name))
-    expect(unpolishedExports, 'every export of authority-ceiling.ts must appear in SURFACE').toEqual([])
+    expect(unpolishedExports, 'every export of authority-ceiling.ts or runtime-authority.ts must appear in SURFACE').toEqual([])
     // …and the other direction: every policed name must be a real export of a
     // module in this graph, so a typo in the list cannot police nothing.
     const grammarSource = readFileSync(join(DOMAIN_ENVELOPE_DIR, 'authority-envelope.ts'), 'utf8')
@@ -688,14 +856,30 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     const barrelValueNames = Object.keys(lane).filter((name) => policed.has(name)).sort()
     expect(barrelValueNames).toEqual([
       'AUTHORITY_CEILING_ERROR_CODES',
+      'AUTHORITY_RANK',
       'AuthorityBindingError',
+      'authorityRank',
       'bindingDocs',
+      'evaluateAuthorityCeiling',
+      'expansionCeiling',
       'grantCeiling',
+      'isHigherAuthority',
+      'mayReview',
     ])
     const barrelTypeNames = [...readFileSync(join(RUNTIME_ROOT, 'governance', 'index.ts'), 'utf8').matchAll(/^export type \{([^}]*)\}/gm)]
       .flatMap((block) => (block[1] ?? '').split(',').map((entry) => entry.trim()).filter((entry) => policed.has(entry)))
       .sort()
-    expect(barrelTypeNames).toEqual(['AuthorityBindingProblem', 'AuthorityCeilingScope', 'AuthorityEnvelopeDocuments'])
+    expect(barrelTypeNames).toEqual([
+      'AuthorityBindingProblem',
+      'AuthorityCeilingScope',
+      'AuthorityDocumentName',
+      'AuthorityEnvelopeDocuments',
+      'AuthorityEvaluation',
+      'AuthorityEvaluationEvidence',
+      'AuthorityEvaluationInput',
+      'AuthorityEvaluationOutcome',
+      'RuntimeAuthority',
+    ])
 
     // The READER, whose consumer set is empty by design. `facts.teamHardEnvelope`
     // is the name a PR2 wiring would call; a property DEFINITION is not a call,
@@ -709,7 +893,18 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
         }
       }
     }
-    expect(readerCalls, 'nothing may CALL the v3 hard-ceiling reader in PR1').toEqual([])
+    // AMENDED by A4-PR2 (plan:260): PR1 shipped this reader UNUSED by design and
+    // pinned the call set EMPTY. PR2 wires it, so the pin moves from "nobody" to
+    // "exactly one, and it is the module ADR A5-12 names": `permission-plane.ts`.
+    // The law that survives the amendment is the important half — the governance
+    // SERVICE must never call the hard-ceiling reader itself, because a service
+    // that reads the document it is about to judge is a service that decides which
+    // Teams are v3 (ADR A5-12 puts that switch in the plane). Anything beyond this
+    // one file is still a violation.
+    expect(readerCalls, 'exactly one production caller of the v3 hard-ceiling reader').toEqual([
+      join('src', 'plugin', 'permission-plane.ts'),
+    ])
+    expect(readerCalls).not.toContain(join('governance', 'service.ts'))
     // And the plane's import of the ceiling module is TYPE-ONLY, so PR1 adds no
     // runtime governance→plugin edge: the reader's alias must not become a load
     // order dependency for a module the runtime does not otherwise use.
@@ -718,7 +913,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     expect(planeSource).not.toMatch(/^import \{[^}]*\} from '\.\.\/\.\.\/governance\/authority-ceiling\.js'$/m)
   })
 
-  it('the module itself has exactly the importers PR1 gave it', () => {
+  it('the ceiling module has exactly the importers PR1 + PR2 lane C gave it', () => {
     // The barrel re-exports the adapter (its declared surface) and the plane
     // imports its TYPE (asserted above). Anything else importing
     // `authority-ceiling.js` is a wiring, and a wiring in PR1 is out of scope.
@@ -732,8 +927,22 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
         importers.add(relative(RUNTIME_ROOT, file))
       }
     }
+    // A4-PR2 lane A: the evaluator joins the importers. It is the wiring the plan
+    // scheduled for this PR ("PR2 adds mayReview + authorityRank here", lane A owns
+    // the evaluator), and its direction is the reviewed one — governance →
+    // governance, no plugin or storage edge.
+    // A4-PR2 lane C: `governance/service.ts` and `governance/types.ts` join. This
+    // is the wiring the plan scheduled for THIS PR (lane C: "v3 direct permission
+    // mutation obeying both authority ceilings" — the gate lives in the service,
+    // the injected reader's contract in the lane types), and both edges are
+    // governance → governance: no plugin edge, no storage edge, and neither file
+    // reaches `narrowingForApproval` or the domain algebra (pinned by their SURFACE
+    // rows above, which list them only for the ceiling names the gate calls).
     expect([...importers].sort()).toEqual([
       join('governance', 'index.ts'),
+      join('governance', 'runtime-authority.ts'),
+      join('governance', 'service.ts'),
+      join('governance', 'types.ts'),
       join('src', 'plugin', 'permission-plane.ts'),
     ].sort())
   })

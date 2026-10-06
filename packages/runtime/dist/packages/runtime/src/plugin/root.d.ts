@@ -370,6 +370,14 @@ export interface TeamProductionRootParams {
      */
     readonly permissionStaticLayers?: GovernancePermissionLaneDeps['staticLayers'];
     /**
+     * A4-PR2 lane C (plan:260) — the v3 AUTHORITY-CEILING context reader, forwarded
+     * VERBATIM like the other two fact readers. The production host entry injects
+     * `createAuthorityCeilingReader` from `permission-plane.ts` (the v3 switch lives
+     * THERE, ADR A5-12); test/legacy assemblers may omit it, which keeps the lane at
+     * its Alpha.3 behaviour. Omission is a WIRING fact, never the v3 signal.
+     */
+    readonly permissionAuthorityCeiling?: GovernancePermissionLaneDeps['authorityCeiling'];
+    /**
      * pre-alpha3 PR4 ROUND 5 (FIX-2a) — the server-side canonicalizer for the
      * Leader's permission grant/revoke TOOL (the SAME fs-provider seam the
      * authority facts use). The tool NEVER trusts a client-supplied canonical

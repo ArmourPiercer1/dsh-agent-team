@@ -472,11 +472,28 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
     })
     expect(answered).toEqual(['refused', 2, 1, 0])
     // …and the module carries no `default:` arm to fall through into.
+    //
+    // PR2 AMENDMENT (A4-PR2 lane A): the four `case '<position>'` arms this leg
+    // used to scan for became one closed TABLE, because the expansion plane needs
+    // to read the SAME rows and a second `switch` would be a second table that can
+    // drift from the first — the exact drift A5-1 exists to prevent ("which
+    // documents bind is a function of the reviewer's position"). The guard's
+    // INTENT is unchanged and is now carried by three assertions: the table is
+    // declared as an exhaustive `Record` over the union (dropping a row is a
+    // COMPILE error, strictly stronger than scanning for a `case`), the module has
+    // no fallback arm, and the runtime refusal for a non-member position is still
+    // in the file — where the leg below enforces it by CALLING it.
+    // Mutation-proven in `dev/agent-workflow/evidence/a4-pr2/mutation-proofs/`:
+    // deleting a table row turns this leg's `answered` line red, and replacing the
+    // table's refusal with `return []` turns the B1 leg below red.
     const source = bindingDocsSource
     expect(source).not.toMatch(/\bdefault\s*:/)
-    for (const position of positions) {
-      expect(source, `missing explicit arm for ${position}`).toContain(`case '${position}'`)
-    }
+    expect(source, 'the positional binding table is no longer an exhaustive Record over PR0\'s union').toMatch(
+      /Record<\s*ProposalAuthorityPosition,\s*readonly AuthorityDocumentName\[\s*\]\s*>/,
+    )
+    expect(source, 'the table lost its written refusal for a position it does not know').toContain(
+      'has no written binding arm',
+    )
   })
 
   it('B1 (BLOCKING) — a position outside the closed union REFUSES, it does not bind nothing', () => {

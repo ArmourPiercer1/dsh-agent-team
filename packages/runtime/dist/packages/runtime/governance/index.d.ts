@@ -30,6 +30,9 @@ export type { MutationErrorCode } from '../mutation/errors.js';
 export { authorizeLeaderPermissionMutation, isPermissionMutationError, matcherCovers, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionResourceText, parsePermissionStaticLayerFacts, permissionEffectiveAnswer, PERMISSION_EFFECT_PRECEDENCE, PERMISSION_MUTATION_ERROR_CODES, PERMISSION_MUTATION_ERROR_CODE_VALUES, PERMISSION_MUTATION_KINDS, PERMISSION_RESOURCE_MATCHER_KINDS, PermissionMutationError, permissionEffectDirection, planPermissionMutation, renderPermissionResourceText, } from './permission-mutation.js';
 export type { CoverageVerdict, LeaderMutationAuthorizationInput, PermissionEnvelopeRule, PermissionEffectDirection, PermissionEffectiveAnswer, PermissionEffectiveAnswerQuery, PermissionMutation, PermissionMutationEnvelope, PermissionMutationErrorCode, PermissionMutationInput, PermissionMutationKind, PermissionMutationPlan, PermissionMutationRule, PermissionOperationClass, PermissionResourceMatcher, PermissionStaticLayer, PermissionStaticLayerFacts, PermissionStaticLayerRule, SubtreeContains, } from './permission-mutation.js';
 export { AUTHORITY_CEILING_ERROR_CODES, AuthorityBindingError, bindingDocs, grantCeiling, } from './authority-ceiling.js';
-export type { AuthorityBindingProblem, AuthorityCeilingScope, AuthorityEnvelopeDocuments, } from './authority-ceiling.js';
+export type { AuthorityBindingProblem, AuthorityCeilingScope, AuthorityDocumentName, AuthorityEnvelopeDocuments, } from './authority-ceiling.js';
+export { AUTHORITY_RANK, authorityRank, expansionCeiling, isHigherAuthority, mayReview, } from './authority-ceiling.js';
+export { evaluateAuthorityCeiling } from './runtime-authority.js';
+export type { AuthorityEvaluation, AuthorityEvaluationEvidence, AuthorityEvaluationInput, AuthorityEvaluationOutcome, RuntimeAuthority, } from './runtime-authority.js';
 export type { GovernancePermissionLaneDeps, GovernancePermissionMutationArgs, GovernancePermissionMutationResult, } from './types.js';
 //# sourceMappingURL=index.d.ts.map

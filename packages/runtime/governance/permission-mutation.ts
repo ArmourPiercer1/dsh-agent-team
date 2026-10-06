@@ -182,6 +182,17 @@ export const PERMISSION_MUTATION_ERROR_CODES = Object.freeze({
   GENERATION_CONFLICT: 'PERMISSION_OVERLAY_GENERATION_CONFLICT',
   /** The lane dependencies were not injected — the capability stays dormant. */
   NOT_CONFIGURED: 'PERMISSION_MUTATION_NOT_CONFIGURED',
+  /**
+   * A4-PR2 (v3 only): a DECIDED rise whose risen effect the actor's AUTHORITY
+   * CEILING decided below, on one of the two planes. ADDITIVE code — it never
+   * reuses `EXPANSION_OUTSIDE_ENVELOPE`, because "the Leader envelope does not
+   * cover this" (Alpha.3, a document the Leader owns) and "your authority position
+   * cannot reach this effect" (Alpha.4, a document the Team owns OVER the Leader)
+   * are different facts with different remedies; a caller that conflates them tells
+   * the operator to edit the wrong document. Until PR5 lands escalation this is a
+   * terminal refusal, not a pending item.
+   */
+  AUTHORITY_CEILING_INSUFFICIENT: 'PERMISSION_AUTHORITY_CEILING_INSUFFICIENT',
 } as const)
 
 /** One kernel error code. */
@@ -1107,8 +1118,71 @@ export interface LeaderMutationAuthorizationInput {
  * algebra below is the UNCONDITIONAL whole decision (coverage + target
  * effective before/after), byte-equal to the pre-round-4 envelope judgement.
  */
-export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void {
-  const { latestRules, plannedRules, mutationRules, envelope, staticFacts, subtreeContains } = input
+/**
+ * ONE RISING CLOSED-REGION CELL (A4-PR2 lane B): the fact "after this batch, this
+ * region of the target's effective permission set is HIGHER than before, at this
+ * effect", recorded independently of any actor's authorization.
+ *
+ * It exists because two gates consume the same classification and were about to
+ * compute it twice: the Alpha.3 Leader envelope check (width-conservative coverage
+ * of the mutation matcher) and the v3 dual-ceiling check (does the initiator's
+ * authority reach `risenEffect` on this scope). Two implementations of a
+ * closed-region partition is one partition too many — they drift, and the drift is
+ * invisible because each looks self-consistent on its own.
+ *
+ * `mutationMatcher` is the mutation rule's OWN matcher and `region` is the closed
+ * cell inside it. Both are carried because they answer different questions: the
+ * envelope judges the WIDTH (the whole mutation matcher), the ceiling judges the
+ * CELL (where the effect actually rose).
+ */
+export interface PermissionRiseRegion {
+  readonly operationClass: string
+  readonly mutationMatcher: PermissionResourceMatcher
+  readonly region: PermissionResourceMatcher
+  /** The rendered region, for the refusal/audit payload. */
+  readonly regionText: string
+  readonly before: PermissionEffectiveAnswer
+  readonly after: PermissionEffectiveAnswer
+  /** The effect the region would carry AFTER, strictly above `before`. */
+  readonly risenEffect: PermissionOverlayEffect
+  /** The exact detail payload a refusal about this cell carries. */
+  readonly detail: Record<string, unknown>
+}
+
+/** The actor-specific verdict on one rise, injected into the classification. */
+export type PermissionRiseCoverage = 'covered' | 'unmet' | 'coverage-unknown'
+
+/** The classification of a whole batch. `unmet` stays EMPTY when no coverage judge
+ *  was injected — emptiness there means "not asked", never "authorized", which is
+ *  why a caller that wants an authorization has to ask for one. */
+export interface PermissionRiseClassification {
+  readonly rising: readonly PermissionRiseRegion[]
+  readonly undeterminable: readonly { readonly detail: Record<string, unknown> }[]
+  readonly unmet: readonly { readonly detail: Record<string, unknown> }[]
+}
+
+/**
+ * CLASSIFY, DO NOT AUTHORIZE (A4-PR2 lane B). The closed-region partition, the
+ * complete-state before/after comparison, the provable-independence rules for
+ * unknown lower facts, and the pre-classification context gate — all of it here, in
+ * the order Alpha.3 established, with no actor-specific judgement unless a
+ * `coverage` judge is handed in.
+ *
+ * THE ORDER IS THE CONTRACT (ADR X7-R5). The pre-classification context gate runs
+ * before any cell is classified, and the caller that turns these arrays into
+ * refusals reports `undeterminable` before `unmet`. Moving the v3 ceiling check
+ * ahead of either would relabel a context fault as a ceiling refusal — the
+ * deny-masquerade class this file's §7.4 gate exists to kill — which is why the
+ * ceiling gate is DOWNSTREAM of this function and not inside it.
+ */
+export function classifyPermissionRise(
+  input: LeaderMutationAuthorizationInput,
+  coverage?: (region: PermissionRiseRegion) => PermissionRiseCoverage,
+): PermissionRiseClassification {
+  // `envelope` is deliberately NOT destructured: coverage is the caller's
+  // question, injected as `coverage` below. Reading it here would put an
+  // actor-specific authorization inside the fact-producing half — lane B's point.
+  const { latestRules, plannedRules, mutationRules, staticFacts, subtreeContains } = input
   const family: { readonly operationClass: string; readonly matcher: PermissionResourceMatcher }[] = []
   for (const rules of [latestRules, plannedRules]) {
     for (const rule of rules) {
@@ -1155,6 +1229,7 @@ export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthoriza
   }
   const undeterminable: { readonly detail: Record<string, unknown> }[] = []
   const unmet: { readonly detail: Record<string, unknown> }[] = []
+  const rising: PermissionRiseRegion[] = []
   for (const mutationRule of mutationRules) {
     const operationClass = mutationRule.operationClass
     const cells = cellsForRegion(operationClass, mutationRule.matcher, family, subtreeContains)
@@ -1181,39 +1256,42 @@ export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthoriza
       if (before.status === 'decided' && after.status === 'decided') {
         if (PERMISSION_EFFECT_PRECEDENCE[after.effect] <= PERMISSION_EFFECT_PRECEDENCE[before.effect]) continue // no rise (tightening or identity)
         const risen = after.effect
-        // Envelope coverage must itself be decidable: a subtree ENVELOPE
-        // matcher whose coverage of the mutation matcher is unknown without
-        // a predicate refuses as CONTEXT (X5) — never a mislabeled EXPANSION.
-        let covered = false
-        let coverageUnknown = false
-        for (const rule of envelope.rules) {
-          if (rule.operationClass !== operationClass) continue
-          if (PERMISSION_EFFECT_PRECEDENCE[risen] > PERMISSION_EFFECT_PRECEDENCE[rule.maximumEffect]) continue
-          const verdict = matcherCovers(rule.matcher, mutationRule.matcher, subtreeContains)
-          if (verdict.undeterminable) {
-            coverageUnknown = true
+        // The actor-specific coverage judgement is INJECTED (A4-PR2 lane B). It
+        // was inlined here until the v3 ceiling gate needed the same rise facts
+        // without the Leader envelope's answer; inlining it in both places meant
+        // the ceiling path either re-implemented this loop (a second copy that can
+        // drift) or ran this function and never saw the regions. With no callback
+        // the classifier reports the rises and judges nothing — the mode the
+        // ceiling gate uses, and why `unmet` stays EMPTY there rather than being
+        // guessed.
+        const riseRegion: PermissionRiseRegion = {
+          operationClass,
+          mutationMatcher: mutationRule.matcher,
+          region: cell.parent,
+          regionText: renderPermissionResourceText(cell.parent),
+          before,
+          after,
+          risenEffect: risen,
+          detail: cellDetail,
+        }
+        rising.push(riseRegion)
+        if (coverage !== undefined) {
+          const verdictKind = coverage(riseRegion)
+          if (verdictKind === 'covered') continue
+          // Envelope coverage must itself be decidable: a subtree ENVELOPE
+          // matcher whose coverage of the mutation matcher is unknown without
+          // a predicate refuses as CONTEXT (X5) — never a mislabeled EXPANSION.
+          if (verdictKind === 'coverage-unknown') {
+            undeterminable.push({
+              detail: {
+                ...cellDetail,
+                mutationMatcher: renderPermissionResourceText(mutationRule.matcher),
+                missing: 'subtree-containment',
+                why: 'a rise was found, but a subtree ENVELOPE matcher cannot be judged to cover the WHOLE mutation matcher without an injected containment predicate — typed context refusal, never a label on unknown coverage (zero write)',
+              },
+            })
             continue
           }
-          if (verdict.covers) {
-            covered = true
-            break
-          }
-        }
-        if (covered) continue
-        // (Round-5: the round-4 ceiling fold that lived here is REMOVED —
-        // the covering envelope rule IS the authorization.)
-        if (coverageUnknown) {
-          undeterminable.push({
-            detail: {
-              ...cellDetail,
-              mutationMatcher: renderPermissionResourceText(mutationRule.matcher),
-              missing: 'subtree-containment',
-              why: 'a rise was found, but a subtree ENVELOPE matcher cannot be judged to cover the WHOLE mutation matcher without an injected containment predicate — typed context refusal, never a label on unknown coverage (zero write)',
-            },
-          })
-          continue
-        }
-        {
           unmet.push({
             detail: {
               ...cellDetail,
@@ -1245,29 +1323,72 @@ export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthoriza
       })
     }
   }
-  // Deterministic fail-closed order: an unevaluable batch refuses as
-  // context-unavailable BEFORE a partial rise could be reported (the whole
-  // mutation is refused either way — zero write).
-  const firstUndeterminable = undeterminable[0]
+  return { rising, undeterminable, unmet }
+}
+
+/**
+ * THE ACTOR-SPECIFIC FINAL AUTHORIZATION (Alpha.3 §6, behaviour unchanged):
+ * classify the batch, then refuse. What remains here is the coverage judge for
+ * THIS actor's envelope and the two typed refusals, in the order that has always
+ * been enforced — an unevaluable batch refuses as `EFFECT_CONTEXT_UNAVAILABLE`
+ * BEFORE a partial rise can be reported as `EXPANSION_OUTSIDE_ENVELOPE`, because
+ * "we cannot evaluate this" and "this exceeds your envelope" are different facts
+ * with different remedies, and the first must never be dressed as the second.
+ */
+export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void {
+  const classification = classifyPermissionRise(input, leaderEnvelopeCoverage(input.envelope, input.subtreeContains))
+  const firstUndeterminable = classification.undeterminable[0]
   if (firstUndeterminable !== undefined) {
     refuse(
       PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
       'effect-context-unavailable',
-      `the effective before/after of at least one affected region cannot be decided without the missing context (${String(undeterminable.length)} region(s)) — zero write`,
+      `the effective before/after of at least one affected region cannot be decided without the missing context (${String(classification.undeterminable.length)} region(s)) — zero write`,
       firstUndeterminable.detail,
     )
   }
-  const firstUnmet = unmet[0]
+  const firstUnmet = classification.unmet[0]
   if (firstUnmet !== undefined) {
     refuse(
       PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
       'expansion-region-uncovered',
-      `a LEADER mutation raises the EFFECTIVE effect in ${String(unmet.length)} region(s) the envelope does not cover (ladder-strict; reveals included; all-or-nothing) — zero write`,
+      `a LEADER mutation raises the EFFECTIVE effect in ${String(classification.unmet.length)} region(s) the envelope does not cover (ladder-strict; reveals included; all-or-nothing) — zero write`,
       firstUnmet.detail,
     )
   }
 }
 
+/**
+ * The Leader's coverage judge: an envelope rule authorizes a rise only if it
+ * speaks this operation class, its `maximumEffect` reaches the risen effect
+ * (ladder-strict), and it covers the WHOLE mutation matcher — the
+ * width-conservative rule that stops a narrow envelope rule from authorizing a
+ * broader mutation. Moved out of the classification loop verbatim so the
+ * judgement has exactly one implementation and one place to be wrong.
+ */
+function leaderEnvelopeCoverage(
+  envelope: PermissionMutationEnvelope,
+  subtreeContains: SubtreeContains | undefined,
+): (region: PermissionRiseRegion) => PermissionRiseCoverage {
+  return (region) => {
+    let covered = false
+    let coverageUnknown = false
+    for (const rule of envelope.rules) {
+      if (rule.operationClass !== region.operationClass) continue
+      if (PERMISSION_EFFECT_PRECEDENCE[region.risenEffect] > PERMISSION_EFFECT_PRECEDENCE[rule.maximumEffect]) continue
+      const verdict = matcherCovers(rule.matcher, region.mutationMatcher, subtreeContains)
+      if (verdict.undeterminable) {
+        coverageUnknown = true
+        continue
+      }
+      if (verdict.covers) {
+        covered = true
+        break
+      }
+    }
+    if (covered) return 'covered'
+    return coverageUnknown ? 'coverage-unknown' : 'unmet'
+  }
+}
 // ---------------------------------------------------------------------------
 // The pure planning step: (authority snapshot, mutation) -> next snapshot
 // ---------------------------------------------------------------------------
@@ -1362,3 +1483,99 @@ export function planPermissionMutation(
  *  discipline), so the bound is mirrored here and PINNED equal by the PR3
  *  spec — drift makes the pin red, which is the point. */
 const MAX_RULES_BOUND = 256
+
+
+/**
+ * The actor's verdict on ONE rise, computed OUTSIDE this kernel (A4-PR2 lane C) by
+ * the authority-ceiling lane and handed in, so this module keeps zero knowledge of
+ * document storage while the ceiling law stays one law. The three non-`sufficient`
+ * states are NOT interchangeable and the refusal order below encodes that:
+ *
+ *  - `unavailable` — a ceiling document could not be READ. Refuses as CONTEXT.
+ *    Reading it as "no ceiling" would WIDEN the actor's authority on a storage
+ *    fault, the exact fail-open class ADR A1-7/SF1 exists to kill; reading it as
+ *    "insufficient" would tell a healthy-looking operator to apply for authority
+ *    they may already hold.
+ *  - `undetermined` — the document was read and the ANSWER is unanswerable (an
+ *    unknown subtree relation). Also CONTEXT: not-knowing is not a denial.
+ *  - `insufficient` — the documents decided, and the answer is below the risen
+ *    effect. This and only this is the new ceiling refusal.
+ */
+export type PermissionRiseCeilingVerdict =
+  | { readonly status: 'sufficient' }
+  | { readonly status: 'insufficient'; readonly plane: 'expansion' | 'approval'; readonly ceiling: string; readonly detail?: Record<string, unknown> }
+  | { readonly status: 'undetermined'; readonly plane: 'expansion' | 'approval'; readonly detail?: Record<string, unknown> }
+  | { readonly status: 'unavailable'; readonly code: string; readonly detail?: Record<string, unknown> }
+
+/**
+ * THE DUAL-CEILING GATE (spec §7.4, A4-PR2 lane C). Given the rise facts lane B
+ * extracts and a per-region ceiling verdict, refuse the batch unless EVERY rising
+ * region is covered by BOTH authority ceilings.
+ *
+ * CALLED AFTER, NEVER BEFORE, the context gate and the rise classification
+ * (ADR X7-R5): a batch whose regions cannot be evaluated must refuse as
+ * `EFFECT_CONTEXT_UNAVAILABLE`, and a batch that rises outside the actor's ceiling
+ * as `AUTHORITY_CEILING_INSUFFICIENT`. Running this gate first re-creates the
+ * defect A3-3 closed — an unavailable read wearing an authorization label, which a
+ * caller routes as "not allowed" and an operator answers by widening the document.
+ *
+ * Only RISES are gated. A ceiling caps EXPANSION (Alpha.3 §6 is the same law for
+ * the Leader envelope): a tightening commits no new authority, so requiring a grant
+ * to remove one would make a Team harder to restrict the more authority-free its
+ * actor is — the inverted incentive this whole lane exists to avoid. The boundary
+ * is recorded in the PR report rather than left implicit.
+ */
+export function authorizeCeilingBoundedPermissionRise(
+  rising: readonly PermissionRiseRegion[],
+  judge: (region: PermissionRiseRegion) => PermissionRiseCeilingVerdict,
+): void {
+  const verdicts: readonly { readonly region: PermissionRiseRegion; readonly verdict: PermissionRiseCeilingVerdict }[] = rising.map(
+    (region) => ({ region, verdict: judge(region) }),
+  )
+  for (const { region, verdict } of verdicts) {
+    if (verdict.status !== 'unavailable') continue
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      'authority-ceiling-document-unavailable',
+      `an authority-ceiling document could not be read while evaluating a rise to ${region.risenEffect} at ${region.regionText}: the ceiling is never guessed and never treated as absent (zero write)`,
+      {
+        operationClass: region.operationClass,
+        region: region.regionText,
+        risenEffect: region.risenEffect,
+        authorityCeilingCode: verdict.code,
+        ...verdict.detail,
+      },
+    )
+  }
+  for (const { region, verdict } of verdicts) {
+    if (verdict.status !== 'undetermined') continue
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      'authority-ceiling-undetermined',
+      `the ${verdict.plane} authority ceiling cannot decide the rise to ${region.risenEffect} at ${region.regionText} (an unknown containment relation is not a denial and not a grant; zero write)`,
+      {
+        operationClass: region.operationClass,
+        region: region.regionText,
+        risenEffect: region.risenEffect,
+        plane: verdict.plane,
+        ...verdict.detail,
+      },
+    )
+  }
+  for (const { region, verdict } of verdicts) {
+    if (verdict.status !== 'insufficient') continue
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
+      'authority-ceiling-insufficient',
+      `a v3 mutation raises the EFFECTIVE effect to ${region.risenEffect} at ${region.regionText}; the ${verdict.plane} authority ceiling reaches only ${verdict.ceiling} — higher authority is required, which is a REFUSAL until the escalation path lands (zero write)`,
+      {
+        operationClass: region.operationClass,
+        region: region.regionText,
+        risenEffect: region.risenEffect,
+        plane: verdict.plane,
+        ceiling: verdict.ceiling,
+        ...verdict.detail,
+      },
+    )
+  }
+}

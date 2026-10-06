@@ -49,7 +49,8 @@
  *
  * @module @dsh-agent-team/runtime/governance/service
  */
-import type { GovernanceMutationService, GovernanceMutationServiceDeps } from './types.js';
+import type { GovernanceMutationService, GovernanceMutationServiceDeps, PermissionAuthorityCeilingContext } from './types.js';
+import type { PermissionRiseCeilingVerdict, PermissionRiseRegion, SubtreeContains } from './permission-mutation.js';
 /**
  * Create the production governance mutation authority for one root.
  *
@@ -59,4 +60,21 @@ import type { GovernanceMutationService, GovernanceMutationServiceDeps } from '.
  * @returns the service surface ({@link GovernanceMutationService}).
  */
 export declare function createGovernanceMutationService(deps: GovernanceMutationServiceDeps): GovernanceMutationService;
+/**
+ * THE DUAL-CEILING JUDGE (A4-PR2 lane C): for one rising region, are BOTH
+ * authority ceilings at or above the risen effect? Exported because a ceiling law
+ * that is only reachable through `mutatePermission` gets tested against a replica
+ * of itself, and a replica passes while the real arithmetic is wrong (measured in
+ * this PR's mutation proofs: reading `no-authority` as "unrestricted" in THIS
+ * function went unnoticed by the first version of the suite).
+ *
+ * The two planes are computed SEPARATELY and never fused, never min()'d (ADR
+ * X7-R5, A1-4, A3-2): the expansion ceiling answers "may this position COMMIT this
+ * effect here", the approval ceiling answers "may it GRANT it", and they have
+ * opposite no-match semantics on purpose — so one lookup cannot stand in for the
+ * other.
+ */
+export declare function createPermissionAuthorityCeilingJudge(deps: {
+    readonly subtreeContains?: SubtreeContains;
+}): (context: PermissionAuthorityCeilingContext, region: PermissionRiseRegion) => PermissionRiseCeilingVerdict;
 //# sourceMappingURL=service.d.ts.map
