@@ -5233,3 +5233,26 @@ pre-e 线自 merge-base `aa8391ac` 之后未含 master 线的 2 条 w1a 日志�
 - **守卫诚实性三件套**：正向包含（四个 control 事实 + activity/requirement 家族必须在派生集里，防漏收）、**非空证明**（在进程内把本次新增的 abandon 登记删掉，断言 C2 立刻抓到，并断言未变异的映射报告为空）、残余披露 pin（`provision-member-instance` / `team-root-work-delivered` / `team-work-admitted` 三个已登记类型不在本文件的派生覆盖内，写死并说明原因——漂移会变成红灯而不是静默）。无法静态解析的动态写点 5 处逐条 pin，新增一个就必须过一次评审。
 - **p4t6 pin 971 → 973**（本次恰好新增两个可扫描测试文件，算术 `958+7+3+3+2=973` 与 ADR A5-17「重算权威自 A4-PR0a 起」一致；仍是精确相等，不是放宽）。
 - **门禁状态**：`pnpm build` 全包绿；`build:composition` 按契约要求把漂移产物同提交登记（`client/composition-shim/client-bundle.js` + runtime dist 的 `projection-source.{js,js.map,d.ts.map}` 共 4 项）；全量 `pnpm vitest run` 在分支上运行中，随后连同等 baseline 身份集比对（只降不升）。
+
+## 2026-10-07 — PR #65：给门禁补上缺失的 typecheck 门，并登记 A4 执行轮的 X1-X4
+
+- **发现方式**：为 PR0 补门禁清单时去核对构建图，顺手在干净 master 上跑了 `pnpm -r run typecheck` —— 上一轮刚合入的
+  A4-PR0a 守卫测试带着 **27 个 `noUncheckedIndexedAccess` 错误绿过了全部 CI**，因为本仓库**没有任何配置的门禁跑类型检查器**。
+  这不是偶发：`build` 用 `tsconfig.build.json`（include=src），不被 `src/**` import 的模块它永远看不见，而 Alpha.4 每个模块
+  在被接线前都是这个形状（PR0 的 proposal-store、PR1 的 authority-envelope lane 与 authority-ceiling 适配器）。
+- **修复合入**：PR #65 → master `5d646bd2`。`group()` 显式收窄替代 `as string` 断言；eslint 再抓出我"收集了却从未断言"的
+  `unresolvedRegistries` → 新增 **C1c**（闭合登记表成员必须全部解析成事实类型，否则守卫变红而非静默少收）。验证：
+  `pnpm -r run typecheck` 全绿、eslint 干净、两个 a4pr0a 文件 14 tests 绿、全量套件规范化后 25 identities
+  = baseline 23 + 仅两条已命名容许的 `p6t1-parallel`，只降不升。计划新增 **gate rule 10**（每门加跑 typecheck + eslint）。
+- **执行轮修正登记进 ADR（X1-X4，编号刻意不用 A6*：A1.1 的三轮审查已用尽）**。X1 修我自己 A5-13 的错引用并把理由改强——
+  `schema/ledger.ts:206` 校验的是**反序列化后的记录**，显式 `undefined` 键是回读时**静默消失**而非响亮拒绝，治理字段静默丢失
+  比抛错更糟，故 key-omitted 是强制而非整洁。X2/X3 是我冻结契约里的两个**阶次漏洞**：`requiredAuthority` 与
+  `authorityEnvelopeAst` 的类型分别要等 PR2/PR1 才存在（树中 `RuntimeAuthority`、`human-admin` 非测试出现均为 0）；裁决为
+  "落持久词汇 + 后继 PR 必须 import/alias + 编译期互等测试"，并禁止 PR0 长出排序器（否则 PR2 的 lane A 天花板矩阵失去背停对象）。
+  X4 = A5-19 的 `node:` 假前提在执行中被某实现者再次推出，用实测证据纠正。
+- **顺带修正记账不一致**：`graph.yaml` 里 `tasks.a4_pr0a.state` 仍停在 `IN_REVIEW`（PR #64 早已合并），`next_gate` 也还写着
+  PR0a 的门；两者已更新为 DONE-MERGED 与"A4-PR0 当前门"。记账文件自己也会腐烂，快照要与权威源一起核。
+- **一条流程教训（写进 evidence，因为它会复发）**：我按 goal 轮次数推算出"写者跑了约 100 分钟"并准备 `interrupt_agent` 接管；
+  真实时钟（`date` + 分支 reflog：创建 04:10:57、rebase 04:18:10、当时 04:22:56）显示它只跑了 **11 分钟**且行为正常。
+  elapsed time 必须读时钟/reflog/mtime——轮次之间不存在可推算的时间间隔。错误的计时模型会在飞行中杀掉一个健康的写者。
+
