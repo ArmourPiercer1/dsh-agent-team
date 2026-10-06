@@ -267,6 +267,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - [ ] Extend the hygiene consumer walk so a `governance/index.js` barrel import is checked against the same allow-list as a per-module import (X9 class).
 - [ ] Run all Alpha.3 permission-governance tests plus A4P2 tests (the Alpha.3 user-facing record lives at `dev/agent-workflow/evidence/alpha3-pr5-notification-projection/ALPHA3-PERMISSIONS-USER-FACING.md`).
 - [ ] Run the plan's full PR gate set, not a shortened version of it: **rule 10** `pnpm -r run typecheck` (exit 0 / **×8** — `packages/legacy` declares no `typecheck` script) + `pnpm exec eslint <changed files>`; **rule 8** `pnpm build && pnpm build:composition && pnpm run check:artifacts` with the drift co-committed in the same commit (PR2 wires `service.ts` → `authority-ceiling.ts`/`runtime-authority.ts`, so expect `packages/runtime/dist/packages/runtime/governance/{runtime-authority,authority-ceiling,service,index}.{js,d.ts,*.map}` transitively — the runtime build include omits `governance` but transitive emission still applies, A5-19; that is rule 8, not a regression); the `p4t6` scannable-file pin recompute (current value **983** (measured at `:1782-1783`; 978 was superseded by PR1 — see the arithmetic note at `p4t6:1763-1772`; the `it()` title at `:52` is stale prose, not a second pin), PR2 adds ≥3 files) with its receipt; and the full baseline diff captured **twice** per A1.2.3 (`rm -rf packages/testkit/test/.tmp-fault/` first), reference = **22 identities / 9 files**, bar `NEW=0`.
+- [ ] **Client lane (added by ADR X12; binding on Tasks 4, 5, 6 and 7, which are the tasks that touch client-visible surfaces):** `pnpm --filter @dsh-agent-team/client run test`. The root `vitest.config.ts` include is `packages/*/test/**/*.test.ts`, which matches **zero** of the client package's 27 `*.client.spec.ts(x)` files (`pnpm vitest list --filesOnly | grep -c 'spec.tsx'` → 0), so the root command has never executed them and `pnpm test` is **not** a full-suite claim. Baseline and the three pre-existing failures are recorded in `dev/agent-workflow/evidence/a4-client-baseline/` — including that **the citable 22-identity baseline is root-suite-scoped**, that the 3 failures are identical at base `d21effba` (so PR6 does not inherit blame for `team-governance.client.spec.tsx`, a file Task 6 edits), and that `s3-client-generation-spike.test.ts` is **worktree-location-dependent** (passes in a worktree, fails collection in the main checkout) and must not be "fixed" to suit either location.
 - [ ] Explicitly document the temporary PR2 behavior: “higher authority required” is still a refusal until PR5.
 - [ ] Open A4-PR2.
 
@@ -579,7 +580,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 **Integration / merge gate**
 - [ ] Merge A then B, then C/D after v8 contract is stable.
 - [ ] Run Remote version regression 1-8.
-- [ ] Run client tests, `pnpm build:composition`, `pnpm check:artifacts`, and composition smoke.
+- [ ] Run client tests with the exact command `pnpm --filter @dsh-agent-team/client run test` (**the bare phrase "Run client tests" named no command and no baseline; X12 measured that the root gate never ran this lane**), `pnpm build:composition`, `pnpm check:artifacts`, and composition smoke.
 - [ ] Run full baseline-diff gate.
 - [ ] Open A4-PR6.
 
