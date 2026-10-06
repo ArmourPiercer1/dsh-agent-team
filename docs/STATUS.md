@@ -4,6 +4,11 @@
 > `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，已记录至 pre-alpha3 handoff closure 轮，2026-10-01）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以
 > graph.yaml + 日志为准并当轮修正文档（R123 先例，AGENTS.md「状态与恢复」）。
+> **2026-10-07 执行轮 CURRENT 指针（权威 = graph.yaml `alpha4_governance_20261007` + 日志末尾三条）**：`master = 863c226d…`。Alpha.4 已从"计划验收"进入"逐 PR 执行"，本阶段已合入：**PR #63**（计划集验收 + `docs/plans` 由 gitignored 改 tracked + 历史补齐）、**PR #64**（A4-PR0a 台账类别闭合：`control-request-abandoned → control` 双表登记 + closed-set 守卫）、**PR #65**（补上本仓库缺失的 typecheck 门禁：`gate rule 10` = 每门加跑 `pnpm -r run typecheck` + eslint）、**PR #66**（执行轮记账：ADR `Execution-round corrections` X1–X4 + graph 状态修正）。
+> 当前在飞 = **A4-PR0**（branch `feat/a4-pr0-proposal-substrate`，基线 `5d646bd2`；governance 耐久提案基座 + 三个 RED 测试 + 同一 commit 内 host/client 双类别表登记，A5-22）；此后顺序 PR1 → PR2 → PR3 → PR4 → PR5 → PR6 → PR7，仅 PR4∥PR5 在 PR3 接口冻结后可并行。注意：`2b86ee42…` 是**计划验收时**的实现基线（下方 2026-10-07 指针所记），不是当前 PR 的 base。
+> ADR 新增 **X1–X4**（编号用 X* 而非 A6*，因 A1.1 的三轮审查上限已用尽）：X1 修 A5-13 的错引用并把 key-omitted 的理由改强（`schema/ledger.ts:206` 校验反序列化结果 ⇒ 显式 `undefined` 键回读时静默消失）；**X2/X3 = 我冻结契约里的两个阶次漏洞**（`requiredAuthority` 的类型是 PR2 的 Produces、`authorityEnvelopeAst` 的语法 PR1 才存在，树中 `RuntimeAuthority`/`human-admin` 非测试出现均为 0）及其裁决；X4 = A5-19 的 `node:` 假前提在执行中被再次推出后的实测反证。
+> 基线仍可引：`failing-identities-2b86ee42.txt` = 456 files / 5418 tests / **23 failing identities** / 10 files；#65 后全量规范化 = **25 identities = baseline 23 + 仅两条已命名容许的 `p6t1-parallel` flake**，只降不升。
+> 未闭合事实（勿当作已完成）：Alpha.3 九步人工验收仍 **NOT_RUN**（用户 2026-10-07 裁决推迟至 Alpha.4 阶段收口）；`tests/homes` 决议 = **保留**（worlds 被 tracked evidence 引用且被 kit 复用），要求的动作是把两个全树 hygiene scanner 收敛到 tracked 源，执行随 PR0 lane C。
 > **2026-10-07 CURRENT 指针（权威 = graph.yaml `current_phase` + 日志末尾三条）**：当前阶段 = **Alpha.4 硬治理阶段**，实现基线 `master@2b86ee42…`（= PR #62 DSH 0.2.0-rc.2 宿主升级轮 merge，2026-10-06）。
 > 此前文档缺记的两轮已补齐：**Alpha.3 权限面 PR #57–#61 全部 MERGED**（durable permission_overlays / EffectivePermissionAssembler / `mutatePermission` + envelope / 生产入口强制 / notification 面；tools 13→15，Remote 方法 31）与 **0.2.0-rc.2 宿主升级轮**（pin `639ed01539…`，p4t6 = 971，基线债 = 20 failing tests + 3 collection-failing files，声明范围 differential zero-new-red）。
 > 未闭合事实（勿当作已完成）：**Alpha.3 九步人工验收 NOT_RUN**，经用户 2026-10-07 裁决推迟至 Alpha.4（计划 A1.6；「merge ≠ deployment」继续有效）；真实宿主 + 真实浏览器验收腿在本环境不可跑（test-use 宿主未构建 / 无可用 Chrome sandbox），按 A1.5 走「尝试→记录非阻塞约束」。
