@@ -206,20 +206,25 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - Test create: `packages/runtime/test/a4p2-dual-envelope-mutation.test.ts`
 - Test update: `packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts`
 - Test update: `packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts`
+- Modify: `packages/runtime/test/a3p3-governance-lane-hygiene.test.ts` — **added by ADR X7-R1.** PR2's production files will import `permission-mutation.ts` (at minimum `PermissionResourceMatcher`, even type-only) and the consumer walk at `:107-157` flags that **including `import type`**, so without a reviewed skip-list entry PR2 cannot compile its own design. Storage/`permission-overlay.js` entries must NOT be added: the edge scan at `:360-373` already covers every `.ts` in `governance/` and PR2 needs no new storage edge.
+- Test create: `packages/runtime/test/a4p2-ceiling-reachability.test.ts` — **added by ADR X7-R1**: spec §7.4.1 names this file and its owning PR as PR2 lane A, and X5-B1 struck the same duty from PR1; the file was simply absent from this list, which under the one-writer rule makes it unwriteable.
+- Modify: `packages/testkit/test/p4t6-session-event-scan.test.ts` — **added by ADR X7-R1** (rule 8 / A5-17 continuous recompute authority; pin is **978** at `:52` and PR2 adds ≥3 scannable files) plus the recompute receipt line.
+- Text/pin owner for `packages/tools/src/tools.ts` — **undecidable in the plan as written (ADR X7-R4)**, so it is NOT silently assigned: A2-18 gives description-string updates to "the PR that changes the algebra" (= PR2), while A5-11 gives `tools.ts` to PR4. No test pins those strings today (verified: zero test hits), so whichever way this is ruled, PR2 must positively pin whatever wording ships in its own dual-envelope test. Do not edit `tools.ts` without the ruling.
 
 **Interfaces:**
 - Produces:
-  - `RuntimeAuthority = member | leader | human-user | human-admin`
+  - `RuntimeAuthority` — **not a re-spelled union.** It is `import type { ProposalAuthorityPosition } from './proposal-store.js'` aliased to that name (ADR X2/X7-R3), because X2 froze the four-position ladder at PR0 and forbids a second divergent ladder type. A locally re-typed `'member' | 'leader' | 'human-user' | 'human-admin'` is **structurally assignable both directions with no import at all**, so the mutual-assignability test alone cannot catch it: PR2 must also carry a source-scan leg (imports `./proposal-store.js`; contains no re-spelled ladder literals) and a positive containment leg (rank-map keys ≡ `PROPOSAL_AUTHORITY_POSITIONS`). Beware `as const satisfies readonly ProposalAuthorityPosition[]` on a local array — it passes with a *subset* and silently creates a second ordering.
   - `authorityRank()`
   - `isHigherAuthority()`
   - `evaluateAuthorityCeiling(input): AuthorityEvaluation`
   - reusable `PermissionRiseRegion` output from Alpha.3 before/after classification
+  - `mayReview(reviewer: RuntimeAuthority, beneficiary: RuntimeAuthority, requiredAuthority: RuntimeAuthority): boolean` — **ADR X7-R2**: flat parameters, all required, **no defaults** (a defaulted or optional `requiredAuthority` is silently permissive). PR2 must not invent an `ApprovalCase` type: PR3 owns that shape and its legs carry `reviewAuthority` / `beneficiaryAuthority` / `requiredAuthorityAtCreation`, which map onto these three parameters 1:1.
 - The evaluator returns minimum authority and evidence only; it knows nothing about resolver availability.
 
 **Parallel lane A — authority evaluator**
-- [ ] Write RED matrix for Member, Leader, Human User beneficiaries.
+- [ ] Write the positional RED matrix keyed by **reviewer** position — `member < leader < human-user`, with a `human-admin` row that is bound by nothing (A5-1: binding is by reviewer position, not beneficiary shape; A5 addendum "Ceiling tests are positional"). Keep beneficiary variation as a second axis only; a per-shape matrix would re-test the retired model and leave the Admin row missing.
 - [ ] Pin self-approval rule: minimum approver must be strictly higher than beneficiary.
-- [ ] Pin Leader ceiling = min(Leader envelope, Team Hard envelope).
+- [ ] Pin the **expansion-plane** Leader ceiling = meet of (Leader `permissionMutationEnvelope`, `teamHardEnvelope`) via PR1's `effectiveAuthorityCeiling` — and state in the test name which plane it is. Do **not** reuse this result for approvals: the approval plane is PR1's `narrowingForApproval`, whose no-match case is the meet **identity** (ADR X5-E3); meeting expansion results there annihilates every legal approval whenever a binding document has `rules: []`. Leader is bound by **both** documents, Human User by `teamHardEnvelope` only, Human Admin by neither (A5-1).
 - [ ] Pin Human User ceiling = Team Hard envelope.
 - [ ] Implement pure evaluator and run GREEN.
 - [ ] Commit.
@@ -238,6 +243,11 @@ Do not use “everyone edits the same service file and resolve conflicts later�
   - Human User v3 mutation inside Team Hard commits;
   - Human User outside Team Hard refuses;
   - v1/v2 behavior remains current Alpha.3 during transition.
+- [ ] **Gate placement is contractual (ADR X7-R5, evidence `dev/agent-workflow/evidence/a4-pr2/PREFLIGHT-RULINGS.md`)**:
+  - the dual-ceiling evaluation runs **after** the existing pre-classification context gate and rise classification, never before: a v3 ceiling check placed ahead of them relabels `EFFECT_CONTEXT_UNAVAILABLE` as a ceiling refusal, which is the deny-masquerade class (`permission-mutation.ts:1107-1185` is the code that must keep its order);
+  - ceiling-**undetermined** stays a CONTEXT-typed refusal; a **decided** insufficient ceiling gets a NEW additive error code — reusing `EXPANSION_OUTSIDE_ENVELOPE` for "Human User outside Team Hard" would make PR5's proposal routing key on a knowingly mislabeled code;
+  - v3 selection keys on `schemaVersion === 3` only — never on reader presence and never on `rules.length`, because v3 `{rules: []}` is a legal zero-expansion-authority document (§3.4; the A5-4 lesson);
+  - pin all of the above with a blocking RED in `a4p2-dual-envelope-mutation.test.ts`: **no existing test can see this ordering** (verified: the v3 gate does not exist yet), so if PR2 does not write it, nothing will ever go red.
 - [ ] Extend permission lane deps with Team Hard envelope reader.
 - [ ] Wire readers from `permission-plane.ts` / production root.
 - [ ] Normalize existing trusted operator to `human-user` in the new permission-authority path; do not expose Admin construction.
@@ -246,7 +256,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 **Integration / merge gate**
 - [ ] Integrate B before C so service consumes the new rise interface.
 - [ ] Run all Alpha.3 permission-governance tests plus A4P2 tests (the Alpha.3 user-facing record lives at `dev/agent-workflow/evidence/alpha3-pr5-notification-projection/ALPHA3-PERMISSIONS-USER-FACING.md`).
-- [ ] Run `pnpm typecheck`, changed-file lint, full baseline-diff tests.
+- [ ] Run the plan's full PR gate set, not a shortened version of it: **rule 10** `pnpm -r run typecheck` (exit 0 / **×8** — `packages/legacy` declares no `typecheck` script) + `pnpm exec eslint <changed files>`; **rule 8** `pnpm build && pnpm build:composition && pnpm run check:artifacts` with the drift co-committed in the same commit (PR2 wires `service.ts` → `authority-ceiling.ts`/`runtime-authority.ts`, so expect `packages/runtime/dist/packages/runtime/governance/{runtime-authority,authority-ceiling,service,index}.{js,d.ts,*.map}` transitively — the runtime build include omits `governance` but transitive emission still applies, A5-19; that is rule 8, not a regression); the `p4t6` scannable-file pin recompute (current value **978**, PR2 adds ≥3 files) with its receipt; and the full baseline diff captured **twice** per A1.2.3 (`rm -rf packages/testkit/test/.tmp-fault/` first), reference = **22 identities / 9 files**, bar `NEW=0`.
 - [ ] Explicitly document the temporary PR2 behavior: “higher authority required” is still a refusal until PR5.
 - [ ] Open A4-PR2.
 
