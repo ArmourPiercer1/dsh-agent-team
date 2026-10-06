@@ -45,6 +45,8 @@ import type {
 // Alpha.3 PR3 — the permission-mutation lane additions. The overlay
 // vocabulary is TYPE-ONLY (the PR2 discipline: no runtime edge from this
 // lane to the PR1 store); the kernel types come from the module next door.
+import type { AuthorityEnvelopeDocuments } from './authority-ceiling.js'
+import type { RuntimeAuthority } from './runtime-authority.js'
 import type { PermissionOverlayRepositoryPort } from '../permission-governance/port.js'
 import type { PermissionOverlaySnapshot } from '../permission-governance/types.js'
 import type {
@@ -211,6 +213,50 @@ export interface GovernancePermissionLaneDeps {
    * subtree-vs-boundary question fails closed.
    */
   readonly subtreeContains?: SubtreeContains
+  /**
+   * A4-PR2 lane C — the v3 AUTHORITY-CEILING context reader (spec §7.4). Read
+   * inside the serialized section like every other authority fact, and consulted
+   * ONLY as a ceiling: the reader answers "who is this mutation for, who is acting,
+   * and what do the two ceiling documents say", and the kernel refuses the batch if
+   * the risen effect is above either ceiling.
+   *
+   * ABSENT means the deployment wired no ceiling reader — the lane keeps behaving
+   * exactly as Alpha.3 shipped it. That is a WIRING fact and is deliberately NOT
+   * the v3 signal: v3 selection is `schemaVersion === 3` on the bound blueprint,
+   * nothing else (never reader presence, never `rules.length`, never "the hard
+   * ceiling is empty so this must be a pre-v3 team"). A v3 Team whose document is
+   * `{ rules: [] }` has ZERO expansion authority, which is an answer; a Team whose
+   * document cannot be read refuses.
+   */
+  readonly authorityCeiling?: (
+    teamSessionId: string,
+    memberInstanceId: string,
+  ) => PermissionAuthorityCeilingContext | undefined | Promise<PermissionAuthorityCeilingContext | undefined>
+}
+
+/**
+ * What the ceiling lane hands the governance service for ONE mutation target
+ * (A4-PR2). Deliberately DATA, never a verdict: the documents are read by the
+ * permission plane (which owns blueprint binding and the three-way
+ * declared/absent/unavailable read) and evaluated by the authority-ceiling lane
+ * (which owns the ladder and the two planes). A reader that returned a verdict
+ * would put the ladder in two modules.
+ *
+ * `documents` is the THREE-WAY document set: each bound slot is the parsed document,
+ * `'absent'` (the Team declared none — a legal zero-authority fact on the expansion
+ * plane, skipped on the approval plane), or `'unavailable'` (the read FAULTED:
+ * refusal, never a widening). `unavailable` is not representable as `undefined`
+ * here on purpose — `undefined` is the "no context at all" return of the reader.
+ */
+export interface PermissionAuthorityCeilingContext {
+  /** The authority POSITION of the member the mutation targets. */
+  readonly beneficiaryAuthority: RuntimeAuthority
+  /** The authority POSITION of the actor committing the mutation (`leader` for the
+   *  Leader surface, `human-user` for an authenticated operator; there is no
+   *  production constructor for `human-admin` in this PR). */
+  readonly initiatorAuthority: RuntimeAuthority
+  /** The two ceiling documents, three-way (see above). */
+  readonly documents: AuthorityEnvelopeDocuments
 }
 
 /** The service dependencies (every durable home injected). */

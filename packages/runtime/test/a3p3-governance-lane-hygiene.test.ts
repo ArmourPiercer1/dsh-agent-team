@@ -700,6 +700,16 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // so "the evaluator needed it" can never again be a reason not to look.
     const RUNTIME_AUTHORITY = 'governance/runtime-authority.ts'
     const CEILING_AND_EVALUATOR = [...CEILING_LANE, RUNTIME_AUTHORITY]
+    // A4-PR2 lane C amendment: the v3 mutation gate. `service.ts` is the FIRST
+    // consumer outside the ceiling lane itself — the row it joins is stated per
+    // name below, and it joins ONLY the names the gate calls. `types.ts` joins
+    // exactly the two types the lane's injected reader carries. Widening these two
+    // file names into a wildcard would have been the cheap move and would have
+    // destroyed the leg: the whole point is that a new consumer of the ladder has
+    // to be named.
+    const SERVICE = 'governance/service.ts'
+    const LANE_TYPES = 'governance/types.ts'
+    const CEILING_AND_GATE = [...CEILING_AND_EVALUATOR, SERVICE]
     // The list's COMPLETENESS is asserted below against the module's own export
     // scan, so this array cannot quietly fall behind the file it polices.
     const SURFACE: readonly (readonly [name: string, allowed: readonly string[]])[] = [
@@ -711,10 +721,10 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // TypeError has `code === undefined`, which the outcome mapping would read
       // as "not one of mine" and rethrow out of the governance path).
       ['bindingDocs', CEILING_LANE],
-      ['grantCeiling', CEILING_AND_EVALUATOR],
-      ['AuthorityEnvelopeDocuments', CEILING_AND_EVALUATOR],
-      ['AuthorityBindingError', CEILING_AND_EVALUATOR],
-      ['AUTHORITY_CEILING_ERROR_CODES', CEILING_AND_EVALUATOR],
+      ['grantCeiling', CEILING_AND_GATE],
+      ['AuthorityEnvelopeDocuments', [...CEILING_AND_GATE, LANE_TYPES]],
+      ['AuthorityBindingError', CEILING_AND_GATE],
+      ['AUTHORITY_CEILING_ERROR_CODES', CEILING_AND_GATE],
       ['AuthorityBindingProblem', CEILING_LANE],
       ['AuthorityCeilingErrorCode', CEILING_LANE],
       ['AuthorityCeilingScope', CEILING_AND_EVALUATOR],
@@ -741,17 +751,17 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // The EXPANSION-plane ceiling: the number `grantCeiling` must never be
       // confused with (correction X7-R5). PR2 lane C's mutation gate is its next
       // consumer and must arrive as another amendment to this row.
-      ['expansionCeiling', CEILING_AND_EVALUATOR],
-      // The evaluator module's own surface. Its consumer set is the module plus
-      // the barrel; `governance/service.ts` joins the rows it calls when lane C
-      // wires the mutation path — and only those rows, so a later PR that reaches
-      // for `evaluateAuthorityCeiling` from somewhere else still has to say so.
-      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts']],
+      ['expansionCeiling', CEILING_AND_GATE],
+      // The evaluator module's own surface. Lane C wired `governance/service.ts`
+      // into the rows the ceiling gate calls (this comment promised that amendment
+      // in lane A) — and only those rows, so a later PR that reaches for
+      // `evaluateAuthorityCeiling` from somewhere else still has to say so.
+      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES]],
       ['AuthorityEvaluation', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationEvidence', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationInput', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationOutcome', [RUNTIME_AUTHORITY, 'governance/index.ts']],
-      ['evaluateAuthorityCeiling', [RUNTIME_AUTHORITY, 'governance/index.ts']],
+      ['evaluateAuthorityCeiling', CEILING_AND_GATE],
       // The domain algebra: the domain lane, plus the ceiling adapter where it
       // composes them. NOT the permission plane and NOT any decision path.
       ['narrowingForApproval', [...DOMAIN_LANE, ...CEILING_LANE]],
@@ -888,7 +898,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     expect(planeSource).not.toMatch(/^import \{[^}]*\} from '\.\.\/\.\.\/governance\/authority-ceiling\.js'$/m)
   })
 
-  it('the module itself has exactly the importers PR1 gave it', () => {
+  it('the ceiling module has exactly the importers PR1 + PR2 lane C gave it', () => {
     // The barrel re-exports the adapter (its declared surface) and the plane
     // imports its TYPE (asserted above). Anything else importing
     // `authority-ceiling.js` is a wiring, and a wiring in PR1 is out of scope.
@@ -906,9 +916,18 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // scheduled for this PR ("PR2 adds mayReview + authorityRank here", lane A owns
     // the evaluator), and its direction is the reviewed one — governance →
     // governance, no plugin or storage edge.
+    // A4-PR2 lane C: `governance/service.ts` and `governance/types.ts` join. This
+    // is the wiring the plan scheduled for THIS PR (lane C: "v3 direct permission
+    // mutation obeying both authority ceilings" — the gate lives in the service,
+    // the injected reader's contract in the lane types), and both edges are
+    // governance → governance: no plugin edge, no storage edge, and neither file
+    // reaches `narrowingForApproval` or the domain algebra (pinned by their SURFACE
+    // rows above, which list them only for the ceiling names the gate calls).
     expect([...importers].sort()).toEqual([
       join('governance', 'index.ts'),
       join('governance', 'runtime-authority.ts'),
+      join('governance', 'service.ts'),
+      join('governance', 'types.ts'),
       join('src', 'plugin', 'permission-plane.ts'),
     ].sort())
   })

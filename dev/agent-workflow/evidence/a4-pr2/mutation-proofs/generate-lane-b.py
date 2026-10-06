@@ -24,7 +24,8 @@ def run(label, old, new, test=T):
     open(OUT,'w').write('\n'.join(lines)); shutil.copyfile(PRISTINE, PM); return failed
 r=[]
 r.append(run('N1 the classifier stopped reporting rise regions (the v3 ceiling gate would see nothing to gate)',
-  "        rising.push({\n          operationClass,", "        if (false) rising.push({\n          operationClass,"))
+  "        rising.push(riseRegion)",
+  "        // rising.push(riseRegion) — the ceiling gate is now blind"))
 r.append(run('N2 the refusal order was inverted (EXPANSION reported before CONTEXT)',
   "  const firstUndeterminable = classification.undeterminable[0]",
   "  const firstUnmet0 = classification.unmet[0]\n  if (firstUnmet0 !== undefined) {\n    refuse(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE, 'expansion-region-uncovered', 'inverted', firstUnmet0.detail)\n  }\n  const firstUndeterminable = classification.undeterminable[0]"))

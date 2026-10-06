@@ -1779,8 +1779,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `expected 983 to be 978`; the GREEN raw is `gates/p4t6-GREEN.txt`. Exact
     // equality stays (ADR A5-17): no tolerance, and the paths behind the movement
     // are additionally asserted present BY PATH below, not inferred from the total.
-    expect(scanResult.filesScanned).toBe(983)
-    expect(scanResult.files.length).toBe(983)
+    // A4-PR2 (lane A/B/C): one production module plus its three specs. The edited
+    // files (authority-ceiling.ts, permission-mutation.ts, service.ts, types.ts,
+    // tools.ts and the four amended specs) are EDITS, not increments, and are
+    // outside this list by the rule stated above.
+    const SCANNED_PATHS_A4PR2: readonly string[] = [
+      'packages/runtime/governance/runtime-authority.ts',
+      'packages/runtime/test/a4p2-authority-ceiling.test.ts',
+      'packages/runtime/test/a4p2-ceiling-reachability.test.ts',
+      'packages/runtime/test/a4p2-dual-envelope-mutation.test.ts',
+    ]
+    // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
+    // moves exactly when the named files exist and cannot move for an unnamed one.
+    expect(scanResult.filesScanned).toBe(983 + SCANNED_PATHS_A4PR2.length)
+    expect(scanResult.files.length).toBe(983 + SCANNED_PATHS_A4PR2.length)
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
     // dropped) is otherwise indistinguishable from one that moved for the right
@@ -1805,7 +1817,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/domain/test/a4p1-blueprint-v3-governance.test.ts',
       'packages/runtime/test/a4p1-authority-envelope.test.ts',
     ]
-    for (const path of [...SCANNED_PATHS_A4PR0, ...SCANNED_PATHS_A4PR1]) {
+    for (const path of [...SCANNED_PATHS_A4PR0, ...SCANNED_PATHS_A4PR1, ...SCANNED_PATHS_A4PR2]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
     // The tie between the two forms of the pin, and the only place a number is
@@ -1813,6 +1825,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // 978 -> 983 movement claims, and every one of them is named above. A file
     // added without a name, or a name without a file, fails HERE.
     expect(SCANNED_PATHS_A4PR1.length).toBe(983 - 978)
+    // The A4-PR2 tie, same form: the movement equals the named files, and every one
+    // of them is asserted present by path above.
+    expect(SCANNED_PATHS_A4PR2.length).toBe(987 - 983)
 
   })
 

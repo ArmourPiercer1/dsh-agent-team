@@ -182,6 +182,17 @@ export const PERMISSION_MUTATION_ERROR_CODES = Object.freeze({
   GENERATION_CONFLICT: 'PERMISSION_OVERLAY_GENERATION_CONFLICT',
   /** The lane dependencies were not injected — the capability stays dormant. */
   NOT_CONFIGURED: 'PERMISSION_MUTATION_NOT_CONFIGURED',
+  /**
+   * A4-PR2 (v3 only): a DECIDED rise whose risen effect the actor's AUTHORITY
+   * CEILING decided below, on one of the two planes. ADDITIVE code — it never
+   * reuses `EXPANSION_OUTSIDE_ENVELOPE`, because "the Leader envelope does not
+   * cover this" (Alpha.3, a document the Leader owns) and "your authority position
+   * cannot reach this effect" (Alpha.4, a document the Team owns OVER the Leader)
+   * are different facts with different remedies; a caller that conflates them tells
+   * the operator to edit the wrong document. Until PR5 lands escalation this is a
+   * terminal refusal, not a pending item.
+   */
+  AUTHORITY_CEILING_INSUFFICIENT: 'PERMISSION_AUTHORITY_CEILING_INSUFFICIENT',
 } as const)
 
 /** One kernel error code. */
@@ -1472,3 +1483,99 @@ export function planPermissionMutation(
  *  discipline), so the bound is mirrored here and PINNED equal by the PR3
  *  spec — drift makes the pin red, which is the point. */
 const MAX_RULES_BOUND = 256
+
+
+/**
+ * The actor's verdict on ONE rise, computed OUTSIDE this kernel (A4-PR2 lane C) by
+ * the authority-ceiling lane and handed in, so this module keeps zero knowledge of
+ * document storage while the ceiling law stays one law. The three non-`sufficient`
+ * states are NOT interchangeable and the refusal order below encodes that:
+ *
+ *  - `unavailable` — a ceiling document could not be READ. Refuses as CONTEXT.
+ *    Reading it as "no ceiling" would WIDEN the actor's authority on a storage
+ *    fault, the exact fail-open class ADR A1-7/SF1 exists to kill; reading it as
+ *    "insufficient" would tell a healthy-looking operator to apply for authority
+ *    they may already hold.
+ *  - `undetermined` — the document was read and the ANSWER is unanswerable (an
+ *    unknown subtree relation). Also CONTEXT: not-knowing is not a denial.
+ *  - `insufficient` — the documents decided, and the answer is below the risen
+ *    effect. This and only this is the new ceiling refusal.
+ */
+export type PermissionRiseCeilingVerdict =
+  | { readonly status: 'sufficient' }
+  | { readonly status: 'insufficient'; readonly plane: 'expansion' | 'approval'; readonly ceiling: string; readonly detail?: Record<string, unknown> }
+  | { readonly status: 'undetermined'; readonly plane: 'expansion' | 'approval'; readonly detail?: Record<string, unknown> }
+  | { readonly status: 'unavailable'; readonly code: string; readonly detail?: Record<string, unknown> }
+
+/**
+ * THE DUAL-CEILING GATE (spec §7.4, A4-PR2 lane C). Given the rise facts lane B
+ * extracts and a per-region ceiling verdict, refuse the batch unless EVERY rising
+ * region is covered by BOTH authority ceilings.
+ *
+ * CALLED AFTER, NEVER BEFORE, the context gate and the rise classification
+ * (ADR X7-R5): a batch whose regions cannot be evaluated must refuse as
+ * `EFFECT_CONTEXT_UNAVAILABLE`, and a batch that rises outside the actor's ceiling
+ * as `AUTHORITY_CEILING_INSUFFICIENT`. Running this gate first re-creates the
+ * defect A3-3 closed — an unavailable read wearing an authorization label, which a
+ * caller routes as "not allowed" and an operator answers by widening the document.
+ *
+ * Only RISES are gated. A ceiling caps EXPANSION (Alpha.3 §6 is the same law for
+ * the Leader envelope): a tightening commits no new authority, so requiring a grant
+ * to remove one would make a Team harder to restrict the more authority-free its
+ * actor is — the inverted incentive this whole lane exists to avoid. The boundary
+ * is recorded in the PR report rather than left implicit.
+ */
+export function authorizeCeilingBoundedPermissionRise(
+  rising: readonly PermissionRiseRegion[],
+  judge: (region: PermissionRiseRegion) => PermissionRiseCeilingVerdict,
+): void {
+  const verdicts: readonly { readonly region: PermissionRiseRegion; readonly verdict: PermissionRiseCeilingVerdict }[] = rising.map(
+    (region) => ({ region, verdict: judge(region) }),
+  )
+  for (const { region, verdict } of verdicts) {
+    if (verdict.status !== 'unavailable') continue
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      'authority-ceiling-document-unavailable',
+      `an authority-ceiling document could not be read while evaluating a rise to ${region.risenEffect} at ${region.regionText}: the ceiling is never guessed and never treated as absent (zero write)`,
+      {
+        operationClass: region.operationClass,
+        region: region.regionText,
+        risenEffect: region.risenEffect,
+        authorityCeilingCode: verdict.code,
+        ...verdict.detail,
+      },
+    )
+  }
+  for (const { region, verdict } of verdicts) {
+    if (verdict.status !== 'undetermined') continue
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+      'authority-ceiling-undetermined',
+      `the ${verdict.plane} authority ceiling cannot decide the rise to ${region.risenEffect} at ${region.regionText} (an unknown containment relation is not a denial and not a grant; zero write)`,
+      {
+        operationClass: region.operationClass,
+        region: region.regionText,
+        risenEffect: region.risenEffect,
+        plane: verdict.plane,
+        ...verdict.detail,
+      },
+    )
+  }
+  for (const { region, verdict } of verdicts) {
+    if (verdict.status !== 'insufficient') continue
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
+      'authority-ceiling-insufficient',
+      `a v3 mutation raises the EFFECTIVE effect to ${region.risenEffect} at ${region.regionText}; the ${verdict.plane} authority ceiling reaches only ${verdict.ceiling} — higher authority is required, which is a REFUSAL until the escalation path lands (zero write)`,
+      {
+        operationClass: region.operationClass,
+        region: region.regionText,
+        risenEffect: region.risenEffect,
+        plane: verdict.plane,
+        ceiling: verdict.ceiling,
+        ...verdict.detail,
+      },
+    )
+  }
+}
