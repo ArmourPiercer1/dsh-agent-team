@@ -109,7 +109,7 @@
  *   - WORLD: host = the pristine test-use checkout (DSH 0.1.5-rc.2 @
  *     fb2c4b9e69) launched as `node <testuse>/apps/cli/lib/bin.js web`
  *     with cwd = a scratch session workspace; env: DSH_HOME=<world home
- *     under tests/homes/>, DSH_CLIENT_COMMIT_HASH=fb2c4b9e69,
+ *     under tests/homes/>, DSH_CLIENT_COMMIT_HASH=<CLIENT_COMMIT_HASH from tests/paths.mjs>,
  *     DEEPSEEK_BASE_URL=<in-process mock model>. Plugin rows mounted ONLY
  *     through the public profile-patch seam (production row = the
  *     WORKTREE's dist — this is the C1 branch build; p6t6
@@ -167,7 +167,8 @@ const EVIDENCE_DIR_ARG = argValue('evidence-dir', null)
 
 // ── frozen facts ────────────────────────────────────────────────────────────
 
-const HOST_BASELINE_SHA = 'fb2c4b9e698e30edb738bca4cf0618587db7d203' // DSH 0.1.5-rc.2 release point
+import { TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH } from '../../../tests/paths.mjs'  // canonical test-infrastructure pin (docs/TEST_METHODS.md §1)
+const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // canonical pin = tests/paths.mjs (moves with the pinned host generation)
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 const DIST_RUNTIME = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages', 'runtime')
 const PRODUCTION_ROW_PATH = join(DIST_RUNTIME, 'src', 'plugin', 'host.js')
@@ -178,6 +179,8 @@ const PRODUCTION_ROW_NAME = pathToFileURL(PRODUCTION_ROW_PATH).href
 const GLUE_URL = pathToFileURL(GLUE_PATH).href
 const SEAM_URL = pathToFileURL(SEAM_PATH).href
 const P6T6_ROW_NAME = pathToFileURL(P6T6_PLUGIN_PATH).href
+
+import { presetDeclarationRow, smokePresetPlugins } from '../_shared/preset-seam.mjs'
 
 const SMOKE_PRESET_ID = 'rc2-smoke' // the rc2 kit's preset id (reused shape)
 const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
@@ -636,53 +639,37 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
   ].join('\n')
 }
 
-function writeSmokePreset(home) {
-  const dir = join(home, '.agent-presets', SMOKE_PRESET_ID)
-  mkdirSync(dir, { recursive: true })
-  const text = [
-    `# ${SMOKE_PRESET_ID} — C1 real-host smoke preset (run ${RUN_STAMP}).`,
-    '# Reused from the rc2 kit (public user-preset seam): persona +',
-    '# dsh-tool-fs + the minimal-style persistent shell group (bash',
-    '# stack). NO delegation group: the 0.1.5 spawn `subagent` row is a',
-    '# deferred per-agent own-layer install — un-restrictable and',
-    '# KNOWN_SENSITIVE under the Coverage Gate (followup-backlog 2/5/6).',
-    '- id: persona',
-    "  name: '@deepseek-ai/dsh-persona'",
-    '  config:',
-    '    suffix: Your working directory is {{cwd}}.',
-    '    prefix: >-',
-    '      You are a coding agent powered by the {{model}} model.',
-    '- id: tool-fs',
-    "  name: '@deepseek-ai/dsh-tool-fs'",
-    '- id: persistent-shell',
-    '  name: cordis:group',
-    '  group: true',
-    '  isolate:',
-    '    terminals: true',
-    '  config:',
-    '    - id: pty',
-    "      name: '@deepseek-ai/dsh-terminal'",
-    '    - id: terminal-bash',
-    "      name: '@deepseek-ai/dsh-terminal-bash'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '    - id: persistent-bash',
-    "      name: '@deepseek-ai/dsh-tool-bash-persistent'",
-    '      config:',
-    '        timeoutMs: 300000',
-    '        description: Run commands in a bash shell. State is persistent across calls.',
-    '',
-  ].join('\n')
-  writeFileSync(join(dir, 'agent.cordis.yml'), text)
+/**
+ * The kit's agent preset as a 0.2 DECLARATION ROW (was: a
+ * `$DSH_HOME/.agent-presets/<id>/agent.cordis.yml` directory, which no host
+ * generation >= 0.1.7 reads). Content is unchanged from the 0.1.7 kit: persona
+ * + dsh-tool-fs + the minimal-style persistent shell group (bash stack). NO
+ * delegation group: the 0.1.5 spawn `subagent` row is a deferred per-agent
+ * own-layer install - un-restrictable and KNOWN_SENSITIVE under the Coverage
+ * Gate (followup-backlog 2/5/6).
+ */
+function smokePresetDeclaration() {
+  return presetDeclarationRow({
+    id: SMOKE_PRESET_ID,
+    displayName: 'c1 smoke',
+    description: `C1 real-host smoke preset (run ${RUN_STAMP}); mounted through the public profile-patch seam.`,
+    plugins: smokePresetPlugins({
+      personaText: 'You are a coding agent powered by the {{model}} model.',
+      cwdSuffix: 'Your working directory is {{cwd}}.',
+      bashDescription: 'Run commands in a bash shell. State is persistent across calls.',
+    }),
+  })
 }
 
 function writePatchFile(home) {
   mkdirSync(join(home, 'profiles', 'web'), { recursive: true })
   const lines = [
     `# C1 real-host smoke patch layer (run ${RUN_STAMP}): production dsh-agent-team row (worktree dist — the C1 branch build) + p6t6 observability row — mounted ONLY through the public profile-patch seam.`,
+    '# (0.2.0-rc.2: a preset is a declaration row mounted on this seam; the retired user-preset directory is not read by the host.)',
     '- insert:',
     ...yamlEmitItem({ id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig() }, 2),
     ...yamlEmitItem({ id: 'p6t6-team-tools', name: P6T6_ROW_NAME }, 2),
+    ...yamlEmitItem(smokePresetDeclaration(), 2),
     '',
   ]
   writeFileSync(join(home, 'profiles', 'web', 'cordis.patch.yml'), lines.join('\n'))
@@ -704,7 +691,7 @@ function spawnHost({ port, home, logPath, mockPort }) {
         env: {
           ...process.env,
           DSH_HOME: home,
-          DSH_CLIENT_COMMIT_HASH: 'fb2c4b9e69',
+          DSH_CLIENT_COMMIT_HASH: CLIENT_COMMIT_HASH,
           DEEPSEEK_BASE_URL: `http://127.0.0.1:${mockPort}`,
           DEEPSEEK_API_KEY: 'c1-smoke-mock-key',
         },
@@ -738,7 +725,6 @@ function stopHost(h) {
 
 async function bootHost({ port, home, mockPort, instanceLog }) {
   writePatchFile(home)
-  writeSmokePreset(home)
   mkdirSync(BLUEPRINT_DIR, { recursive: true })
   writeFileSync(join(BLUEPRINT_DIR, 'c1-anchor.yaml'), BP_ANCHOR_YAML)
   writeFileSync(join(home, 'p6t6-directive.json'), JSON.stringify({
@@ -1215,8 +1201,7 @@ async function main() {
   rmSync(HOME, { recursive: true, force: true })
   rmSync(BLUEPRINT_DIR, { recursive: true, force: true })
   mkdirSync(WORKSPACE, { recursive: true })
-  writeSmokePreset(HOME)
-  log('world materialized (scratch workspace)')
+  log('world materialized (scratch workspace; the preset rides the patch layer written at boot)')
 
   // Mock model.
   const mockLog = join(RUN_DIR, 'mock.log')

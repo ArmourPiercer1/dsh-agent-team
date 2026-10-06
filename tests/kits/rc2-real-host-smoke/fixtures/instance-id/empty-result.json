@@ -1,0 +1,13 @@
+{
+  "__fixture": "NEGATIVE CASE: an empty payload (missing or empty content) must fail loudly, not return null/undefined/\"\".",
+  "result": {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": ""
+      }
+    ],
+    "is_error": false
+  }
+}

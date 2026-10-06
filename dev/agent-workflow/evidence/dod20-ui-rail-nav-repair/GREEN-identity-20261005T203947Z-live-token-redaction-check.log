@@ -1,0 +1,19 @@
+  PASS — liveToken field value is replaced by the mask (got "lt-v1-REDACTED")
+  PASS — the raw token appears nowhere in the persisted serialization
+  PASS — the raw token IS present in the un-redacted record (the leak this prevents)
+  PASS — criteria field 'relation' passes through unchanged (= "team-member")
+  PASS — criteria field 'teamSessionId' passes through unchanged (= "session-mpr-t1-mpr-2026-10-01T13-21-34")
+  PASS — criteria field 'memberInstanceId' passes through unchanged (= "inst-0iin89s0dvix")
+  PASS — criteria field 'disposed' passes through unchanged (= false)
+  PASS — criteria field 'durableGeneration' passes through unchanged (= 32)
+  PASS — field set is preserved (nothing added or dropped)
+  PASS — the original response object is untouched by redaction
+  PASS — nested liveToken values are masked
+  PASS — a token quoted inside free text is masked
+  PASS — non-credential values survive nesting untouched
+  PASS — a token-free record is byte-identical after redaction
+  PASS — redaction is idempotent
+  PASS — redactLiveTokenText masks a token inside a log string
+  PASS — smoke-host.json as the kit writes it carries no raw token
+  PASS — …and still records the member it verified
+live-token-redaction-check: all assertions green, exit=0

@@ -31,6 +31,10 @@ import {
   navPlan,
   locateTitle,
   groupCollapsed,
+  groupHeaderLeaf,
+  railRows,
+  locateSessionRow,
+  railDiagnostic,
   overflowPending,
   parseParams,
   parseRequestEnvelope,
@@ -59,12 +63,24 @@ import {
 import * as F from './dod20-ui-driver-fixtures.mjs'
 
 // ── DOM leaf parsing (pure, over static fixture HTML) ──────────────────────
-test('htmlLeaves: collapsed rail renders the Ungrouped header and ZERO session rows', () => {
+test('htmlLeaves: a collapsed group reports ITSELF collapsed (data-row-key + aria-expanded), and renders ZERO session rows', () => {
   const leaves = htmlLeaves(F.RAIL_COLLAPSED)
-  const un = leaves.find((l) => l.text === 'Ungrouped')
-  assert.ok(un, 'Ungrouped group header must be present (probe3 rail-after-notice)')
-  assert.equal(un.cls.includes('W0d-vW_title'), true)
-  assert.equal(groupCollapsed(leaves), true, 'no session-row leaf may exist pre-expansion')
+  const un = groupHeaderLeaf(leaves)
+  assert.ok(un, 'a group row reporting aria-expanded=false must be found (probe3 rail-after-notice)')
+  // CORRECTED 2026-10-05: the group is identified by the product's own
+  // semantics. The shipped class prefix rotates with the build — asserting it
+  // is what made the 2026-10-05T18-50-45Z lane blind (railRowCount 0).
+  assert.equal(un.key, 'workspace:', 'the ungrouped bucket key is the empty string (tree.ts:19)')
+  assert.equal(un.expanded, 'false', 'aria-expanded is the ONLY collapse evidence')
+  assert.equal(railRows(leaves, 'session').length, 0, 'a collapsed group renders no session rows')
+  assert.equal(groupCollapsed(leaves), true)
+})
+
+test('rail identity is locale-independent: the same collapsed group is found under the Chinese label', () => {
+  const zh = F.RAIL_COLLAPSED.replace('>Ungrouped<', '>未分组<')
+  const leaves = htmlLeaves(zh)
+  assert.equal(groupCollapsed(leaves), true, 'GROUP STATE IS AN ATTRIBUTE, never the English label')
+  assert.equal(groupHeaderLeaf(leaves).text, '未分组')
 })
 
 test('htmlLeaves: the v3 overflow-only expand is proven a no-op pre-expansion', () => {
@@ -80,18 +96,19 @@ test('htmlLeaves: expanding the group renders rows and the overflow button appea
 })
 
 // ── fixed navigation plan (no fallbacks, strict order) ─────────────────────
-test('navPlan: strict order notice → ungrouped-expand → overflow, and expand precedes overflow click', () => {
-  const plan = navPlan({ hasNotice: true, railLeaves: htmlLeaves(F.RAIL_EXPANDED) })
-  assert.deepEqual(plan.map((s) => s.step), ['dismiss-notice', 'expand-ungrouped-group', 'expand-overflow'])
-  const collapsedPlan = navPlan({ hasNotice: false, railLeaves: htmlLeaves(F.RAIL_COLLAPSED) })
-  assert.deepEqual(collapsedPlan.map((s) => s.step), ['expand-ungrouped-group'],
-    'a collapsed rail schedules the group click; overflow is only re-planned AFTER rows render')
+test('navPlan: strict order notice → group-expand → overflow, and expand precedes overflow click', () => {
+  const collapsedPlan = navPlan({ hasNotice: true, railLeaves: htmlLeaves(F.RAIL_COLLAPSED), groupKey: '', groupKeyProven: true })
+  assert.deepEqual(collapsedPlan.map((s) => s.step), ['dismiss-notice', 'expand-group'],
+    'a rail reporting aria-expanded=false schedules the group click first')
+  const expandedPlan = navPlan({ hasNotice: false, railLeaves: htmlLeaves(F.RAIL_EXPANDED), groupKey: '', groupKeyProven: true })
+  assert.deepEqual(expandedPlan.map((s) => s.step), ['expand-overflow'],
+    'overflow is only scheduled once an aria-expanded=false overflow row actually rendered')
 })
 
-test('navPlan: no notice => no dismiss step (never clicks a phantom button)', () => {
-  const plan = navPlan({ hasNotice: false, railLeaves: htmlLeaves(F.RAIL_EXPANDED_ALL) })
-  assert.deepEqual(plan.map((s) => s.step), ['expand-ungrouped-group'],
-    'group click is UNCONDITIONAL — probe3 proved it is required; skipping it is the v3 regression')
+test('navPlan: no notice => no dismiss step; an already-expanded group is NEVER scheduled (the row is a toggle)', () => {
+  const plan = navPlan({ hasNotice: false, railLeaves: htmlLeaves(F.RAIL_EXPANDED_ALL), groupKey: '', groupKeyProven: true })
+  assert.deepEqual(plan.map((s) => s.step), [],
+    'clicking an aria-expanded=true project row COLLAPSES the tree — the v3 lesson is "open what reports itself closed", not "always click"')
 })
 
 // ── title-exact rail location ───────────────────────────────────────────────
@@ -111,11 +128,51 @@ test('locateTitle: group reorder is irrelevant — locate stays title-exact', ()
   assert.equal(member.status, 'FOUND')
 })
 
-test('locateTitle: duplicate title (hover tooltip) => AMBIGUOUS fail-closed, never first-match', () => {
+test('locateTitle: a hover tooltip repeating the title is NOT a row — an id-scoped locate stays FOUND', () => {
+  // The old model needed an exclude list and still went AMBIGUOUS here. Row
+  // scope (data-row-key) removes the hazard: the tooltip carries no key.
   const leaves = htmlLeaves(F.RAIL_DUPLICATE_TITLE)
-  const hit = locateTitle(leaves, F.MEMBER_TITLE, { exclude: ['Ungrouped'] })
+  const hit = locateTitle(leaves, F.MEMBER_TITLE)
+  assert.equal(hit.status, 'FOUND', 'the tooltip span is not a session-tree row')
+  assert.equal(hit.leaf.key, 'session:' + F.MEMBER_ID)
+  const row = locateSessionRow(leaves, { sessionId: F.MEMBER_ID, title: F.MEMBER_TITLE })
+  assert.equal(row.status, 'FOUND')
+})
+
+test('locateSessionRow: two RENDERED rows with the same canonical key => AMBIGUOUS, never first-match', () => {
+  const leaves = htmlLeaves(F.RAIL_DUPLICATE_KEY)
+  const hit = locateSessionRow(leaves, { sessionId: F.MEMBER_ID, title: F.MEMBER_TITLE })
   assert.equal(hit.status, 'AMBIGUOUS')
   assert.equal(hit.matches.length, 2)
+})
+
+test('locateSessionRow: the canonical id AND the exact canonical title are both required', () => {
+  const leaves = htmlLeaves(F.RAIL_EXPANDED_ALL)
+  assert.equal(locateSessionRow(leaves, { sessionId: F.MEMBER_ID, title: 'renamed mid-run' }).status, 'NOT_FOUND')
+  assert.equal(locateSessionRow(leaves, { sessionId: 'session-does-not-exist', title: F.MEMBER_TITLE }).status, 'NOT_FOUND')
+  const ok = locateSessionRow(leaves, { sessionId: F.MEMBER_ID, title: F.MEMBER_TITLE })
+  assert.equal(ok.status, 'FOUND')
+  assert.equal(ok.leaf.selected, 'false', 'the pre-click row is unselected — selection is proven later, never assumed')
+})
+
+test('railDiagnostic: a credential-shaped row text is MASKED, never copied into the snapshot', () => {
+  const secret = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ012345'
+  const leaves = htmlLeaves(F.RAIL_EXPANDED.replace('>ack:role-a:mpr-2026-10-01T13-21-34<', `>launch?token=${secret}<`))
+  const wire = JSON.stringify(railDiagnostic(leaves))
+  assert.ok(!wire.includes(secret), 'a token must never be copied out of the DOM')
+  assert.match(wire, /token=SCRUBBED/)
+  assert.ok(!/launchUrl|"href"/.test(wire), 'the snapshot carries no launch-URL-shaped field')
+})
+
+test('railDiagnostic: bounded, structural, never raw markup', () => {
+  const leaves = htmlLeaves(F.RAIL_EXPANDED)
+  const d = railDiagnostic(leaves)
+  assert.equal(d.sessionRows, 5)
+  assert.equal(d.groups.length, 1)
+  assert.equal(d.groups[0].expanded, 'true')
+  assert.equal(d.overflowRows.length, 1)
+  assert.equal(d.sample.length, 5)
+  assert.ok(d.sample.every((r) => r.key.startsWith('session:') && !('cls' in r) && !('html' in r)))
 })
 
 test('locateTitle: prefix/suffix lookalikes never match — exact textContent only', () => {

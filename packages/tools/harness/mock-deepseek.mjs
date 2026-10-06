@@ -29,6 +29,68 @@
  */
 
 import { createServer } from 'node:http'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+/**
+ * Desensitization for model-request fixtures written out of the mock.
+ *
+ * A captured request is the ground truth for the host's wire shape, so a kit
+ * that wants a UNIT-verified decoder needs those envelopes as fixtures — but a
+ * raw envelope embeds everything the model call carried: absolute workspace
+ * paths (persona, tool results, `dsh_session_log`, `dsh_plugin_packages`),
+ * session ids, and any credential-shaped text. The mock logs credentials in its
+ * evidence and must not launder them into committed fixtures, so the rule lives
+ * HERE, in the component that captures them:
+ *
+ *   - boot tokens / query tokens,
+ *   - web session cookies (`dsh-auth-…`) and Cookie/Authorization headers,
+ *   - bearer / api-key values,
+ *   - absolute POSIX and Windows paths,
+ *   - the host-internal payload keys (`dsh_session_log`,
+ *     `dsh_plugin_packages`) — replaced by a presence marker, since they carry
+ *     host paths and no message-shape information,
+ *   - long strings truncated with an explicit `<TRUNCATED n>` marker so a
+ *     fixture never silently hides content it dropped.
+ *
+ * Exported so the redaction itself is unit-testable.
+ */
+export const FIXTURE_REDACTIONS = [
+  [/(https?:\/\/[^\s"'`]+?\?token=)[A-Za-z0-9_-]{8,}/g, '$1<REDACTED-TOKEN>'],
+  [/\b(token|api_key|apikey|access_token)=["']?[A-Za-z0-9_\-.=]{8,}/gi, '$1=<REDACTED>'],
+  [/dsh-auth-[A-Za-z0-9_-]{6,}(=[A-Za-z0-9._\-%=]{6,})?/g, 'dsh-auth-<REDACTED>=<REDACTED>'],
+  [/\bBearer\s+[A-Za-z0-9._-]{6,}/gi, 'Bearer <REDACTED>'],
+  [/\/(?:home|srv|Users|mnt|var|tmp|opt|workspace)\/[^\s"'`,)\]}\\]*/g, '<ABSOLUTE_PATH>'],
+  [/(?:[A-Za-z]:\\|\\\\)[^\s"'`,)\]}]+/g, '<ABSOLUTE_PATH>'],
+]
+
+/** Keys whose VALUES are host-internal payloads (paths, session logs). */
+export const FIXTURE_REDACTED_KEYS = new Set(['dsh_session_log', 'dsh_plugin_packages'])
+
+/**
+ * Deep-copy `value` with the redactions above applied.
+ * @param {unknown} value
+ * @param {{ maxTextLength?: number }} [opts]
+ */
+export function sanitizeForFixture(value, opts = {}) {
+  const maxTextLength = opts.maxTextLength ?? 1200
+  if (typeof value === 'string') {
+    let out = value
+    for (const [re, repl] of FIXTURE_REDACTIONS) out = out.replace(re, repl)
+    return out.length > maxTextLength ? `${out.slice(0, maxTextLength)}<TRUNCATED ${out.length - maxTextLength} chars>` : out
+  }
+  if (Array.isArray(value)) return value.map((item) => sanitizeForFixture(item, { maxTextLength }))
+  if (value !== null && typeof value === 'object') {
+    const out = {}
+    for (const [key, inner] of Object.entries(value)) {
+      out[key] = FIXTURE_REDACTED_KEYS.has(key)
+        ? `<REDACTED:${key} presence=${inner === undefined ? 'absent' : 'present'} chars=${(() => { try { return JSON.stringify(inner).length } catch { return -1 } })()}>`
+        : sanitizeForFixture(inner, { maxTextLength })
+    }
+    return out
+  }
+  return value
+}
 
 const MAX_BODY = 16 * 1024 * 1024
 
@@ -71,10 +133,44 @@ function splitArgs(argsJson) {
  *   - { kind: 'tool-call', toolCalls: [{ id: string, name: string, arguments: object|string }] }
  *   - { kind: 'error', status: number, message: string, code?: string, type?: string }
  * @param {function(string): void} [opts.log]
+ * @param {{ dir: string, select?: (record: object, body: object) => string | null, limit?: number, maxTextLength?: number }} [opts.fixtures]
+ *   DESENSITIZED FIXTURE CAPTURE for unit-verifiable decoders: after each
+ *   request is answered, `select(record, body)` may return a fixture name (e.g.
+ *   `'agent-with-result'`); returning null/undefined skips it. The written file
+ *   is `sanitizeForFixture`-ed (tokens, cookies, credentials, absolute paths,
+ *   host-internal payload keys removed; long strings truncated) plus the
+ *   scripted reply, and the run is capped by `limit` (default 16) so a looping
+ *   run cannot fill the disk. This is the ONLY sanctioned way for a kit to
+ *   publish a wire envelope: the raw capture never leaves the process.
  * @returns {Promise<{ port: number, requests: object[], close: () => Promise<void> }>}
  */
-export async function startMockModel({ port, decide, log = () => {} }) {
+export async function startMockModel({ port, decide, log = () => {}, fixtures = undefined }) {
   const requests = []
+  let fixturesWritten = 0
+  const writeFixture = (record, parsed, reply) => {
+    if (fixtures === undefined || typeof fixtures?.dir !== 'string') return
+    try {
+      const limit = fixtures.limit ?? 16
+      if (fixturesWritten >= limit) return
+      const picked = typeof fixtures.select === 'function' ? fixtures.select(record, parsed) : `req-${String(record.seq).padStart(4, '0')}`
+      if (typeof picked !== 'string' || picked.length === 0) return
+      const safe = picked.replace(/[^A-Za-z0-9._-]+/g, '-')
+      fixturesWritten += 1
+      mkdirSync(fixtures.dir, { recursive: true })
+      const path = join(fixtures.dir, `${safe}-${String(record.seq).padStart(4, '0')}.json`)
+      writeFileSync(path, JSON.stringify({
+        __fixture: 'desensitized model-request envelope captured by packages/tools/harness/mock-deepseek.mjs',
+        capturedAt: record.receivedAt,
+        seq: record.seq,
+        redactions: 'tokens, session cookies, bearer/api keys, absolute paths, dsh_session_log/dsh_plugin_packages payloads; long strings truncated with an explicit marker',
+        request: sanitizeForFixture(parsed, { maxTextLength: fixtures.maxTextLength ?? 1200 }),
+        reply: sanitizeForFixture(reply, { maxTextLength: fixtures.maxTextLength ?? 1200 }),
+      }, null, 2) + '\n')
+      log(`mock: ${record.seq} fixture -> ${path}`)
+    } catch (err) {
+      log(`mock: ${record.seq} fixture write failed: ${String((err && err.message) ?? err)}`)
+    }
+  }
   const server = createServer((req, res) => {
     let body = ''
     req.on('data', (chunk) => {
@@ -176,6 +272,7 @@ export async function startMockModel({ port, decide, log = () => {} }) {
       return
     }
     record.reply = reply
+    writeFixture(record, parsed, reply)
 
     if (reply.kind === 'error') {
       record.status = reply.status

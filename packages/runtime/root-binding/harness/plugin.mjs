@@ -91,7 +91,8 @@ import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'n
 import { join } from 'node:path'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
-import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+import { readPersonaSections } from './persona-probe.mjs'
+import { p5t5BlueprintSource } from './blueprint-source.mjs'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 
 // The TS resolution hook MUST be registered before the first dynamic TS
@@ -145,8 +146,14 @@ function readDirective() {
   }
   const bp = directive.blueprint
   if (bp === undefined || typeof bp.blueprintId !== 'string' || typeof bp.revision !== 'string' ||
-      typeof bp.contentHash !== 'string' || typeof bp.leaderPersona !== 'string') {
-    throw new Error('p5t5: directive.blueprint requires blueprintId/revision/contentHash/leaderPersona')
+      typeof bp.leaderPersona !== 'string') {
+    throw new Error('p5t5: directive.blueprint requires blueprintId/revision/leaderPersona')
+  }
+  // `contentHash` is no longer accepted as an assertion the harness makes up: the
+  // snapshot ref is derived from the parsed blueprint document (see
+  // blueprint-source.mjs). If a directive pins one anyway it must be the real one.
+  if (bp.contentHash !== undefined && typeof bp.contentHash !== 'string') {
+    throw new Error('p5t5: directive.blueprint.contentHash, when present, must be a string')
   }
   if (bp.defaultModel === undefined || typeof bp.defaultModel.provider !== 'string' ||
       typeof bp.defaultModel.model !== 'string') {
@@ -217,7 +224,15 @@ function diskFilesFor(sessionId) {
         files: entries.filter((e) => e.isFile()).map((e) => ({
           name: e.name,
           size: statSync(join(dir, e.name)).size,
-          final: e.name === 'session.jsonl.zstd',
+          // The durable session log carries its generation in the file name on 0.2
+          // (`session[.vN].jsonl`, compressed `…jsonl.zstd`; on the host see
+          // packages/session-query/session-log-export/src/archive.ts:7 and the host's
+          // own `session.v${version}.jsonl`), and the observed artifact is
+          // session.v4.jsonl.zstd. The unversioned 0.1 name is reported separately as
+          // `legacyFinal`, so a naming revert shows in the report rather than
+          // silently flipping this predicate.
+          final: e.name === 'session.v4.jsonl.zstd',
+          legacyFinal: e.name === 'session.jsonl.zstd',
         })),
       }
     }
@@ -283,6 +298,10 @@ let setupError = null
 let readHandle
 /** @type {object|null} the scenario ports shared by this boot (read handle + write port + surface). */
 let basePorts
+/** @type {object|null} the harness's real blueprint catalog (since P8-S2 the leader mint refuses without one). */
+let blueprintCatalog = null
+/** @type {{blueprintId: string, revision: string, contentHash: string}|null} the snapshot ref the parser derived. */
+let parsedBlueprintRef = null
 /** @type {Array<object>} every durable write of this boot (audit trail). */
 const writeLog = []
 /** @type {Map<string, {installed: string[], restored?: object, restoreEffect?: string}>} live residency bookkeeping. */
@@ -351,6 +370,7 @@ async function run(ctx) {
   const reposMod = await import('../../../storage/repositories/index.js')
   const binderMod = await import('../../agent-setup/binder/index.js')
   const rootMod = await import('../index.js')
+  const blueprintMod = await import('../../../domain/blueprint/src/index.js')
   const slotsMod = await import('./slots.mjs')
   modules = { binderMod, rootMod, slotsMod }
 
@@ -382,13 +402,53 @@ async function run(ctx) {
         return row
       })
     },
+    // The durable LeaderInstance mint (P8-S2). The harness wraps it for the same
+    // reason it wraps the other two: every durable write of the boot has to appear
+    // in writeLog, or the "an idempotent re-run performs ZERO durable writes"
+    // assertion would be counting a write it never saw.
+    putMemberInstance(input) {
+      return Promise.resolve(baseWritePort.putMemberInstance(input)).then((record) => {
+        writeLog.push({
+          op: 'putMemberInstance',
+          rootSessionId: record.rootSessionId ?? input.rootSessionId ?? null,
+          instanceId: record.instanceId ?? input.instanceId ?? null,
+          schemaVersion: record.schemaVersion ?? null,
+        })
+        return record
+      })
+    },
   }
 
   const surface = createSurface(ctx)
 
+  // ── the blueprint the root mints against: a real document, the real parser ─
+  // Since P8-S2 the leader mint is fail-closed (`blueprintCatalog` absent →
+  // ROOT_BINDING_LEADER_MINT_FAILED) and `resolveBoundBlueprint` compares the
+  // bound snapshot's contentHash with the resolved blueprint. So the harness must
+  // pin the hash the parser derives, not one it invents; the personas the run
+  // directive asserts are the ones this document carries, and that link is checked
+  // here instead of being assumed.
+  const parsedBlueprint = blueprintMod.parseBlueprint(p5t5BlueprintSource(directive.blueprint))
+  const parsedLeaderPersona = parsedBlueprint.leader?.persona
+  if (typeof parsedLeaderPersona !== 'string') {
+    throw new Error('p5t5: parsed blueprint has no string leader persona — the harness source builder and the schema disagree')
+  }
+  if (parsedLeaderPersona !== directive.blueprint.leaderPersona) {
+    throw new Error('p5t5: the parsed blueprint leader persona is not the persona the directive asserts (the harness would be asserting one thing and running another)')
+  }
+  if (directive.blueprint.contentHash !== undefined && directive.blueprint.contentHash !== parsedBlueprint.contentHash) {
+    throw new Error(`p5t5: directive.blueprint.contentHash ${directive.blueprint.contentHash} does not match the parsed blueprint ${parsedBlueprint.contentHash}`)
+  }
+  blueprintCatalog = blueprintMod.createBlueprintCatalog([parsedBlueprint])
+  parsedBlueprintRef = {
+    blueprintId: parsedBlueprint.blueprintId,
+    revision: parsedBlueprint.revision,
+    contentHash: parsedBlueprint.contentHash,
+  }
+
   // The scenario ports are shared; the binder consumes the read handle +
   // the write port + the surface; slots/guard are per scenario.
-  basePorts = { teamDomain: readHandle, writes, surface }
+  basePorts = { teamDomain: readHandle, writes, surface, blueprintCatalog }
 
   // ── host routes (public webServer seam; effect-cleanup on row stop) ──
   ctx.effect(() => webServer.register({
@@ -445,6 +505,8 @@ async function run(ctx) {
         const failure = {
           scenario,
           error: { name: error?.name ?? 'Error', message: String(error?.message ?? error), stack: error?.stack ?? null },
+          ...(error?.timings ? { timings: error.timings } : {}),
+          ...(error?.eventsAccessor !== undefined ? { eventsAccessor: error.eventsAccessor } : {}),
         }
         try {
           writeFileSync(join(directive.reportDir, `${scenario}.error.json`), JSON.stringify(failure, null, 2))
@@ -566,10 +628,16 @@ function makeGuard(scenarioId, liveFacts) {
   }
 }
 
-/** @returns {{blueprintId: string, revision: string, contentHash: string}} */
+/**
+ * The snapshot ref the root binding pins. Derived from the parsed blueprint
+ * document, never from a value the harness composed by hand (the durable
+ * "immutable snapshot" assertions only mean something if the hash is the real
+ * one; a hand-written hash could not fail).
+ * @returns {{blueprintId: string, revision: string, contentHash: string}}
+ */
 function blueprintRef() {
-  const bp = directive.blueprint
-  return { blueprintId: bp.blueprintId, revision: bp.revision, contentHash: bp.contentHash }
+  if (parsedBlueprintRef === null) throw new Error('p5t5: blueprint catalog was not built (setup did not complete)')
+  return parsedBlueprintRef
 }
 
 /**
@@ -609,6 +677,16 @@ async function runFreshScenario(ctx, scenarioId) {
     meta: { cwd: process.env.DSH_HOME },
   })
   residencyAgents.set(sid, handle)
+  // Phase timings. The first 0.2 run spent 205s inside this scenario and threw at
+  // the last step with no record of where the time went, which makes a bounded
+  // gate unusable. These are measurements, not assertions.
+  const timings = {}
+  // Hoisted so the catch can report it: the transcript accessor is discovered
+  // inside the try, and a const there is invisible to the handler.
+  let eventsAccessor = null
+  const t0 = Date.now()
+  const mark = (name) => { timings[name] = Date.now() - t0 }
+  mark('start')
   let built
   try {
     built = await modules.slotsMod.buildRealSlots({
@@ -621,6 +699,7 @@ async function runFreshScenario(ctx, scenarioId) {
       mcpPort: directive.mcpPort,
       stamp: `${scenarioId}-${directive.runStamp ?? process.pid}`,
     })
+    mark('afterBuildSlots')
 
     const liveFacts = { sessionExists: svc.sessions.get(SessionId(sid)) !== undefined }
     const ports = { ...basePorts, slots: built.slots, admissionGuard: makeGuard(scenarioId, liveFacts) }
@@ -631,6 +710,7 @@ async function runFreshScenario(ctx, scenarioId) {
         ? { defaultWorkspace: directive.blueprint.defaultWorkspace }
         : {}),
     })
+    mark('afterBind')
 
     // The persona slot's mount effect is async (post-publish preset
     // mount) — await it before verifying the assembled persona.
@@ -640,6 +720,8 @@ async function runFreshScenario(ctx, scenarioId) {
       .map((r) => String(r.reason?.message ?? r.reason))
 
     // Control-plane step (S1 only): the work gate is closed for S3, so no
+    mark('afterPendingEffects')
+    // Control-plane step (S1 only): the work gate is closed for S3, so no
     // model selection is made on a rejected root.
     if (scenarioId === 'S1') {
       built.modelSource.select(directive.blueprint.defaultModel)
@@ -648,17 +730,45 @@ async function runFreshScenario(ctx, scenarioId) {
     // ── public verification ────────────────────────────────────────────
     const scope = scopeOf(handle.agent.ctx)
     const assembly = await svc.systemPrompt.assemble({ scope })
-    const personaSection = assembly.sections.find((s) => s.name === PERSONA_SECTION)
+    mark('afterAssemble')
+    // The persona slot the preset's `prefix` renders into (see persona-probe.mjs).
+    const personaSection = readPersonaSections(assembly).prefixSection
     const expectedModel = directive.blueprint.defaultModel
     const toolNames = names(handle.agent.ctx.tools.schemas(handle.agent))
     const mcpToolName = 'mcp__p5t5mini__ping'
     const mcpVisible = scenarioId === 'S1' ? await waitForSchemaTool(handle, mcpToolName, 20_000) : null
+    mark('afterSchemaWait')
     const durable = await waitForDurable(sid, 30_000)
+    mark('afterDurableWait')
     const teamSession = readHandle.getTeamSession(sid)
     const bindingRow = readHandle.getSessionBinding(sid)
     const installedSlots = residency.get(sid)?.installed ?? []
     const setupEvents = eventsFor(sid)
-    const sessionEvents = handle.agent.session.events.map((ev) => ({ seq: ev.seq, type: ev.type }))
+    // 0.2 no longer exposes the transcript as `session.events` — attempt 3 of the
+    // first 0.2 run threw `Cannot read properties of undefined (reading 'map')`
+    // exactly here. Read whichever accessor the host actually publishes, and record
+    // WHICH one: quietly substituting an empty list would be indistinguishable from
+    // a session that genuinely produced no events.
+    const sessionObj = handle.agent.session
+    // The 0.2 Session class publishes its transcript as ownEvents() /
+    // snapshotEvents(from, to) (tests/deepseek-harness-test-use
+    // packages/core/session/src/index.ts:446); the 0.1 `.events` array is gone.
+    // 'model/selection' is still the event type name in the 0.2 SessionEventMap, so
+    // only the accessor moved — the assertion that consumes this is untouched.
+    const eventsSource = typeof sessionObj.ownEvents === 'function' ? 'ownEvents()'
+      : typeof sessionObj.events === 'function' ? 'events()'
+        : Array.isArray(sessionObj.events) ? 'events'
+          : typeof sessionObj.snapshotEvents === 'function' ? 'snapshotEvents()'
+            : 'ABSENT'
+    const rawEvents = eventsSource === 'ABSENT'
+      ? []
+      : eventsSource === 'ownEvents()' ? sessionObj.ownEvents()
+        : eventsSource === 'snapshotEvents()' ? sessionObj.snapshotEvents()
+          : eventsSource === 'events()' ? sessionObj.events()
+            : sessionObj.events
+    const sessionEvents = (rawEvents ?? []).map((ev) => ({ seq: ev.seq, type: ev.type }))
+    eventsAccessor = eventsSource
+    mark('afterEvents')
 
     const assertions = [
       {
@@ -743,7 +853,10 @@ async function runFreshScenario(ctx, scenarioId) {
           actual: sessionEvents,
         },
         {
-          name: 'durable: session log published as session.jsonl.zstd',
+          // Same semantics as the 0.1 assertion (a final compressed session log has
+          // been published for this session); only the artifact NAME in the label
+          // changed, because the artifact 0.2 publishes is generation-qualified.
+          name: 'durable: session log published as the v4 final artifact (session.v4.jsonl.zstd)',
           pass: durable.published === true,
           actual: durable,
         },
@@ -766,7 +879,10 @@ async function runFreshScenario(ctx, scenarioId) {
           actual: { teamSessionPresent: teamSession !== undefined, bindingKind: bindingRow?.kind ?? null },
         },
         {
-          name: 'durable: session log published as session.jsonl.zstd',
+          // Same semantics as the 0.1 assertion (a final compressed session log has
+          // been published for this session); only the artifact NAME in the label
+          // changed, because the artifact 0.2 publishes is generation-qualified.
+          name: 'durable: session log published as the v4 final artifact (session.v4.jsonl.zstd)',
           pass: durable.published === true,
           actual: durable,
         },
@@ -776,13 +892,21 @@ async function runFreshScenario(ctx, scenarioId) {
     return {
       scenario: scenarioId,
       sessionId: sid,
+      timings,
+      eventsAccessor,
       pass: assertions.every((a) => a.pass),
       assertions,
       bind: result.bind,
       durableState: result.durable,
       verification: {
         substrate: built.substrate,
-        persona: { present: personaSection !== undefined, textMatches: personaSection?.text === directive.blueprint.leaderPersona },
+        persona: {
+          present: personaSection !== undefined,
+          textMatches: personaSection?.text === directive.blueprint.leaderPersona,
+          // Reported, never merged into the persona text: the suffix slot is a
+          // different position in the prompt (after first-party guidance).
+          suffixPresent: readPersonaSections(assembly).suffixSection !== undefined,
+        },
         model: {
           current: built.modelRef.current ?? null,
           assembled: built.modelRef.assembled ?? null,
@@ -800,6 +924,14 @@ async function runFreshScenario(ctx, scenarioId) {
       obs: built.obs,
       mountFailures,
     }
+  } catch (error) {
+    // A bounded gate has to say WHERE it stopped, so the phase timings ride the
+    // throw instead of dying with the stack frame.
+    if (error !== null && typeof error === 'object') {
+      error.timings = timings
+      error.eventsAccessor = eventsAccessor
+    }
+    throw error
   } finally {
     if (built !== undefined) await modules.slotsMod.disposeSlotEffects(built.disposers)
     await handle.dispose()
@@ -865,9 +997,32 @@ async function runColdScenario(ctx) {
     // The first post-resume prompt assembly: the pending selection must
     // be captured at the assembly boundary (the §40.3 assembly boundary).
     const assembly = await svc.systemPrompt.assemble({ scope: scopeOf(handle.agent.ctx) })
-    const personaSection = assembly.sections.find((s) => s.name === PERSONA_SECTION)
+    // The persona slot the preset's `prefix` renders into (see persona-probe.mjs).
+    const personaSection = readPersonaSections(assembly).prefixSection
     const expectedModel = directive.blueprint.defaultModel
-    const sessionEvents = handle.agent.session.events.map((ev) => ({ seq: ev.seq, type: ev.type }))
+    // 0.2 no longer exposes the transcript as `session.events` — attempt 3 of the
+    // first 0.2 run threw `Cannot read properties of undefined (reading 'map')`
+    // exactly here. Read whichever accessor the host actually publishes, and record
+    // WHICH one: quietly substituting an empty list would be indistinguishable from
+    // a session that genuinely produced no events.
+    const sessionObj = handle.agent.session
+    // The 0.2 Session class publishes its transcript as ownEvents() /
+    // snapshotEvents(from, to) (tests/deepseek-harness-test-use
+    // packages/core/session/src/index.ts:446); the 0.1 `.events` array is gone.
+    // 'model/selection' is still the event type name in the 0.2 SessionEventMap, so
+    // only the accessor moved — the assertion that consumes this is untouched.
+    const eventsSource = typeof sessionObj.ownEvents === 'function' ? 'ownEvents()'
+      : typeof sessionObj.events === 'function' ? 'events()'
+        : Array.isArray(sessionObj.events) ? 'events'
+          : typeof sessionObj.snapshotEvents === 'function' ? 'snapshotEvents()'
+            : 'ABSENT'
+    const rawEvents = eventsSource === 'ABSENT'
+      ? []
+      : eventsSource === 'ownEvents()' ? sessionObj.ownEvents()
+        : eventsSource === 'snapshotEvents()' ? sessionObj.snapshotEvents()
+          : eventsSource === 'events()' ? sessionObj.events()
+            : sessionObj.events
+    const sessionEvents = (rawEvents ?? []).map((ev) => ({ seq: ev.seq, type: ev.type }))
     const setupEvents = eventsFor(sid)
     const teamSession = result.durable?.teamSession
     const assertions = [

@@ -1,0 +1,11 @@
+[2026-10-03T14:45:59.355Z] world=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/homes/wire-probe-2026-10-03T14-45-59 port=3493 mock=3498 root=session-rc2-smoke-root-2026-10-03T14-29-39 maxModelCalls=8
+[2026-10-03T14:46:00.864Z] booted at http://127.0.0.1:3493
+[2026-10-03T14:46:00.875Z] auth HTTP 303 cookieChars=224
+[2026-10-03T14:46:00.896Z] prompt HTTP 200 {"type":"server-response","rpcId":"wire-7j30jt","result":{"ok":true,"value":{"accepted":true}}}
+[2026-10-03T14:46:00.960Z] decide #1 bodyKeys=[model,stream,messages,max_tokens,thinking,output_config,system,tools,dsh_session_log,dsh_plugin_packages] hasTools=true classicToolMsgs=0 toolResultParts=0 shapes=[user:text+text]
+[2026-10-03T14:46:00.960Z] sending scripted tool call: team_list_members
+[2026-10-03T14:46:00.961Z] decide #2 bodyKeys=[model,stream,messages,max_tokens,thinking,system,dsh_session_log,dsh_plugin_packages] hasTools=false classicToolMsgs=0 toolResultParts=0 shapes=[user:text]
+[2026-10-03T14:46:01.062Z] decide #3 bodyKeys=[model,stream,messages,max_tokens,thinking,output_config,system,tools,dsh_session_log,dsh_plugin_packages] hasTools=true classicToolMsgs=0 toolResultParts=1 shapes=[user:text+text | assistant:tool_use | user:tool_result]
+[2026-10-03T14:46:01.062Z] SHAPE DUMPED toolResults: classic=0 parts=1 partFields=type,tool_use_id,content,is_error systemType=string
+[2026-10-03T14:46:01.396Z] done: dumped=true decideCalls=3
+[2026-10-03T14:46:02.598Z] world retained at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/homes/wire-probe-2026-10-03T14-45-59; instance log /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/dev/agent-workflow/evidence/dsh-020rc2-upgrade/diag/wire-probe-instance-2026-10-03T14-45-59.log

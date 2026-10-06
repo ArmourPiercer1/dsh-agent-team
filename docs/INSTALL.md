@@ -7,7 +7,7 @@
 
 | 项 | 要求 |
 | --- | --- |
-| DSH（deepseek-harness） | **0.1.2-rc.1**（`0.1.0-rc.1` stable 线已测基线；0.1.3-alpha.1 的插件契约已逐字节核验一致 —— `plugin.ts`/`profile.ts` 加载链同形）。**`master` 线（当前 `0.1.1-alpha.2`）要求 0.1.7-rc.1**（根 `peerDependencies` = `@deepseek-ai/dsh@0.1.7-rc.1`，2026-09-24 宿主升级轮；见 STATUS.md 2026-09-24/2026-09-25 行） |
+| DSH（deepseek-harness） | **0.1.2-rc.1**（`0.1.0-rc.1` stable 线已测基线；0.1.3-alpha.1 的插件契约已逐字节核验一致 —— `plugin.ts`/`profile.ts` 加载链同形）。**`master` 线（当前 `0.1.1-alpha.2`）要求 0.2.0-rc.2**（根 `peerDependencies` = exact `@deepseek-ai/dsh@0.2.0-rc.2`，2026-10-03 宿主升级轮；上一要求 0.1.7-rc.1 = 2026-09-24 轮。版本门由 `packages/testkit/test/plugin-dsh-compat.test.ts` 对宿主真实 evaluator 求值：exact-RC 接受、旧/后续版本拒绝、无 exemption 授予） |
 | Node | `^22.19.0 \|\| >=24.0.0`（repo `engines`） |
 | pnpm | `11.7.0`（repo `packageManager` pin） |
 | 模型 | 目标机器可用的真实 provider/model + DSH 凭据（真实功能测试必需；测试世界的假模型配置不可用于真测） |
@@ -29,7 +29,7 @@ pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#0.1.0-rc.
 ```
 
 如需跟踪最新 RC 修复，也可使用 `#stable`；不带 ref 时会安装 `master` 的 alpha 开发线
-（**注意：master 线要求 DSH 0.1.7-rc.1 宿主，见 §1 前提**）。
+（**注意：master 线要求 DSH 0.2.0-rc.2 宿主，见 §1 前提**）。
 
 ### 为什么不需要 allowBuilds（本 commit 起）
 
@@ -74,7 +74,8 @@ cd dsh-agent-team
 git checkout 0.1.0-rc.1  # 或 git checkout stable 跟踪最新 RC
 pnpm install              # row-owned 运行时依赖已声明（RC 基线：packages/runtime 5 ×
                           # @deepseek-ai/*@0.1.2-rc.1 + zod 4.4.3；master 线 0.1.1-alpha.2：
-                          # 7 × @deepseek-ai/*@0.1.7-rc.1 + yaml + zod 4.4.3 —— 均已在 npm
+                          # master 线 0.1.1-alpha.2 = 20 × @deepseek-ai/*@0.2.0-rc.2
+                          # （runtime 7 deps + 7 devDeps，client 6 devDeps）+ yaml + zod 4.4.3 —— 均已在 npm
                           # registry 发布、access:public）——新机器由 pnpm 直接安装，无需手工
                           # link / junction（R125(1b)）
 pnpm build              # 9 个包 tsc → packages/*/dist（legacy 包输出到 packages/runtime/dist，见 §2 产物表注）

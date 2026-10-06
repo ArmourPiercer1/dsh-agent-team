@@ -100,7 +100,8 @@ const MAIN = resolve(WORKTREE, '..', '..')
 let TESTUSE = join(WORKTREE, 'tests', 'deepseek-harness-test-use')
 // The gitignored test-use checkout exists only in the MAIN checkout.
 if (!existsSync(TESTUSE)) TESTUSE = join(MAIN, 'tests', 'deepseek-harness-test-use')
-const HOST_BASELINE_SHA = '46a7f68b0922371ce7144b668b90e377d8e799f4' // DSH 0.1.7-rc.1 release point
+import { TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'  // canonical test-infrastructure pin (docs/TEST_METHODS.md §1)
+const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // canonical pin = tests/paths.mjs (moves with the pinned host generation)
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 const SRC_WORLD = join(MAIN, 'tests', 'homes', 'mpr-2026-09-27T08-35-52')
 const T1 = 'session-mpr-t1-mpr-2026-09-27T08-35-52' // the seed world's bound team root

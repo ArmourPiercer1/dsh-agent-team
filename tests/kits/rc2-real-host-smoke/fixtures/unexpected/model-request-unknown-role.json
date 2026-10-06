@@ -1,0 +1,27 @@
+{
+  "__fixture": "SYNTHETIC negative case: a role neither generation uses. The decoder must refuse rather than treat the message as unknown-but-harmless.",
+  "request": {
+    "model": "m",
+    "stream": true,
+    "system": "persona",
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "role": "observer",
+        "content": [
+          {
+            "type": "text",
+            "text": "who is this?"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,152 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade
+
+ ❯ packages/testkit/test/plugin-dsh-compat.test.ts (7 tests | 6 failed) 90ms
+     × the pinned test-use runtime self-reports 0.1.7-rc.1 (the evaluator runs from the pinned generation) 76ms
+     × the root manifest declares the exact-RC DSH peer (and no other dsh* peer, no range) 2ms
+     × positive: runtime 0.1.7-rc.1 → compatible, the evaluator reports no issue (no exemption needed) 3ms
+     × negative: runtime 0.1.5-rc.2 → the evaluator reports the unmet peer with NO active exemption (the gate now rejects) 2ms
+     × negative: a later prerelease (0.1.7-rc.2) is also unmet — the exact-RC range does not widen 2ms
+     ✓ the vacuous-pass semantics are documented: a peerless manifest imposes no constraint (the pre-fix state the review closed) 1ms
+     × mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here) 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.1.7-rc.1 evaluator, test-use @ 639ed01539) > the pinned test-use runtime self-reports 0.1.7-rc.1 (the evaluator runs from the pinned generation)
+AssertionError: expected '0.2.0-rc.2' to be '0.1.7-rc.1' // Object.is equality
+
+Expected: "0.1.7-rc.1"
+Received: "0.2.0-rc.2"
+
+ ❯ packages/testkit/test/plugin-dsh-compat.test.ts:102:36
+    100|   it('the pinned test-use runtime self-reports 0.1.7-rc.1 (the evaluat…
+    101|     const { getDshRuntimeVersion } = await loadEvaluator()
+    102|     expect(getDshRuntimeVersion()).toBe(EXPECTED_RUNTIME)
+       |                                    ^
+    103|   })
+    104|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.1.7-rc.1 evaluator, test-use @ 639ed01539) > the root manifest declares the exact-RC DSH peer (and no other dsh* peer, no range)
+AssertionError: expected [ Array(1) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+    [
+      "@deepseek-ai/dsh",
+-     "0.1.7-rc.1",
++     "0.2.0-rc.2",
+    ],
+  ]
+
+ ❯ packages/testkit/test/plugin-dsh-compat.test.ts:108:22
+    106|     const peers = manifest.peerDependencies ?? {}
+    107|     const dshPeers = Object.entries(peers).filter(([name]) => name ===…
+    108|     expect(dshPeers).toEqual([
+       |                      ^
+    109|       ['@deepseek-ai/dsh', EXPECTED_PEER_RANGE],
+    110|     ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.1.7-rc.1 evaluator, test-use @ 639ed01539) > positive: runtime 0.1.7-rc.1 → compatible, the evaluator reports no issue (no exemption needed)
+AssertionError: expected { name: 'dsh-agent-team', …(4) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "exempted": false,
+  "name": "dsh-agent-team",
+  "peers": {
+    "@deepseek-ai/dsh": "0.2.0-rc.2",
+  },
+  "runtimeVersion": "0.1.7-rc.1",
+  "version": "0.1.1-alpha.2",
+}
+
+ ❯ packages/testkit/test/plugin-dsh-compat.test.ts:115:73
+    113|   it('positive: runtime 0.1.7-rc.1 → compatible, the evaluator reports…
+    114|     const { evaluatePluginCompatibility } = await loadEvaluator()
+    115|     expect(evaluatePluginCompatibility(manifest, {}, EXPECTED_RUNTIME)…
+       |                                                                         ^
+    116|   })
+    117|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.1.7-rc.1 evaluator, test-use @ 639ed01539) > negative: runtime 0.1.5-rc.2 → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)
+AssertionError: expected { '@deepseek-ai/dsh': '0.2.0-rc.2' } to deeply equal { '@deepseek-ai/dsh': '0.1.7-rc.1' }
+
+- Expected
++ Received
+
+  {
+-   "@deepseek-ai/dsh": "0.1.7-rc.1",
++   "@deepseek-ai/dsh": "0.2.0-rc.2",
+  }
+
+ ❯ packages/testkit/test/plugin-dsh-compat.test.ts:125:26
+    123|     expect(issue?.version).toBe(manifest.version)
+    124|     expect(issue?.runtimeVersion).toBe('0.1.5-rc.2')
+    125|     expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_R…
+       |                          ^
+    126|     expect(issue?.exempted).toBe(false)
+    127|     // The host-facing diagnostic names the plugin@version key the
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.1.7-rc.1 evaluator, test-use @ 639ed01539) > negative: a later prerelease (0.1.7-rc.2) is also unmet — the exact-RC range does not widen
+AssertionError: expected { '@deepseek-ai/dsh': '0.2.0-rc.2' } to deeply equal { '@deepseek-ai/dsh': '0.1.7-rc.1' }
+
+- Expected
++ Received
+
+  {
+-   "@deepseek-ai/dsh": "0.1.7-rc.1",
++   "@deepseek-ai/dsh": "0.2.0-rc.2",
+  }
+
+ ❯ packages/testkit/test/plugin-dsh-compat.test.ts:137:26
+    135|     const { evaluatePluginCompatibility } = await loadEvaluator()
+    136|     const issue = evaluatePluginCompatibility(manifest, {}, '0.1.7-rc.…
+    137|     expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_R…
+       |                          ^
+    138|     expect(issue?.exempted).toBe(false)
+    139|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.1.7-rc.1 evaluator, test-use @ 639ed01539) > mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here)
+AssertionError: expected { '@deepseek-ai/dsh': '0.2.0-rc.2' } to deeply equal { '@deepseek-ai/dsh': '0.1.7-rc.1' }
+
+- Expected
++ Received
+
+  {
+-   "@deepseek-ai/dsh": "0.1.7-rc.1",
++   "@deepseek-ai/dsh": "0.2.0-rc.2",
+  }
+
+ ❯ packages/testkit/test/plugin-dsh-compat.test.ts:158:26
+    156|     // erase it) — and this repo never supplies the exemption: the H1
+    157|     // real-host smoke asserts no compatibility.json grant exists.
+    158|     expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_R…
+       |                          ^
+    159|     expect(issue?.exempted).toBe(true)
+    160|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 1 passed (7)
+   Start at  14:06:51
+   Duration  221ms (transform 67ms, setup 0ms, import 28ms, tests 90ms, environment 0ms)
+
+EXIT=1

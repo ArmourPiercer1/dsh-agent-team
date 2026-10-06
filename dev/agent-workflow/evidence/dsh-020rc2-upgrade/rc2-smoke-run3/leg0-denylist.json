@@ -1,0 +1,12 @@
+{
+  "denyList": [
+    "team_archive_member",
+    "team_grant_permission",
+    "team_list_pending_control",
+    "team_revoke_permission"
+  ],
+  "missingManaged": [
+    "lsp",
+    "pwsh"
+  ]
+}

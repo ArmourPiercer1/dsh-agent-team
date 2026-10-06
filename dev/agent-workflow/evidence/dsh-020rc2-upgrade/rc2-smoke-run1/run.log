@@ -1,0 +1,22 @@
+[2026-10-03T14:14:23.702Z] rc2 real-host smoke — stamp 2026-10-03T14-14-23
+[2026-10-03T14:14:23.702Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade
+[2026-10-03T14:14:23.702Z] testuse=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use @ 639ed01539
+[2026-10-03T14:14:23.702Z] evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/dev/agent-workflow/evidence/dsh-020rc2-upgrade/rc2-smoke-run1
+[2026-10-03T14:14:23.748Z] ports: host=3491 mock=3496
+[2026-10-03T14:14:23.758Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-10-03T14:14:23.758Z] world materialized (probe files in scratch workspace)
+[2026-10-03T14:14:23.762Z] mock model listening on 3496
+[2026-10-03T14:14:25.274Z] FATAL row setup failed — setupError: binder overlay effect 'persona' failed during 'fresh-root' bind of session 'session-rc2-smoke-root-2026-10-03T14-14-23': the mounted root preset 'rc2-smoke' has an UNRESOLVED persona observation (source: none) — the preset seam cannot express the failure (fail closed); unknown preset 'rc2-smoke' (not in the live inventory)
+--- log tail ---
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3491/?token=<REDACTED-BOOT-TOKEN>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] bootstrap FAILED: TeamAgentBinderError: binder overlay effect 'persona' failed during 'fresh-root' bind of session 'session-rc2-smoke-root-2026-10-03T14-14-23': the mounted root preset 'rc2-smoke' has an UNRESOLVED persona observation (source: none) — the preset seam cannot express the failure (fail closed); unknown preset 'rc2-smoke' (not in the live inventory)
+    at TeamAgentBinder.overlayFailure (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/packages/runtime/dist/packages/runtime/agent-setup/binder/binder.js:331:16)
+    at TeamAgentBinder.bind (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/packages/runtime/dist/packages/runtime/agent-setup/binder/binder.js:279:32)
+    at TeamAgentBinder.bindFreshRoot (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/packages/runtime/dist/packages/runtime/agent-setup/binder/binder.js:150:21)
+    at bindFreshTeamRoot (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/packages/runtime/dist/packages/runtime/root-binding/fresh-root.js:198:25)
+    at async createAndStartTeam (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/packages/runtime/dist/packages/runtime/src/plugin/root.js:1597:24)
+    at async Object.boot (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/packages/runtime/dist/packages/runtime/src/plugin/root.js:2633:17)
+    at async bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/packages/runtime/dist/packages/runtime/src/plugin/host.js:2044:13)
+

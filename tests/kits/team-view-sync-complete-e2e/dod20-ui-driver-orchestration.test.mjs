@@ -126,7 +126,25 @@ function makeWorld (opts = {}) {
         const filtered = opts.dropMember ? shown.filter(([t]) => t !== MEMBER_TITLE) : shown
         return st.rail === 'expanded' ? filtered.slice(0, 2) : (opts.duplicateMemberTitle ? [...filtered, [MEMBER_TITLE, MEMBER_ID]] : filtered)
       }
-      const leaf = (text, y, tag = 'span', cls = 'W0d-vW_title', region = 'rail', x = 20) => ({ tag, cls, role: '', text, x, y, w: 180, h: 20, region })
+      // The fake UiPage emits EXACTLY the record shape railCollectorSource()
+      // produces: leaf geometry PLUS the row semantics (data-row-key /
+      // aria-expanded / aria-selected of the owning row). The class prefix is
+      // invented on purpose — a shipped css-module hash is compiler output and
+      // rotates with the build (see dod20-ui-driver.mjs, RAIL ROW IDENTITY).
+      // The row KIND/ancestry the real collector reports, spelled out from the
+      // product rather than imported from the driver under test: rows live in a
+      // [role=tree] (AnimatedRows.tsx:171-176), session/group rows are
+      // role=treeitem (Rows.tsx:245-247, :589-597), the overflow row is a
+      // <button aria-expanded> (WorkspaceBrowser.tsx:582-586). rowSeq is a
+      // per-snapshot CONTAINER id (several leaves, one row).
+      const kindOfKey = (key) => key.startsWith('session:') ? 'session' : key.startsWith('workspace:') ? 'group' : key.startsWith('overflow:') ? 'overflow' : 'other'
+      let autoRowSeq = 0
+      const leaf = (text, y, tag = 'span', cls = 'aB3xYz_title', region = 'rail', x = 20, sem = {}) => ({
+        tag, cls, role: sem.key && tag !== 'button' ? 'treeitem' : '', text, x, y, w: 180, h: 20, region,
+        key: sem.key || '', rowKind: sem.key ? kindOfKey(sem.key) : '', treeSeq: sem.key ? 0 : null,
+        rowSeq: sem.key ? (sem.rowSeq ?? ++autoRowSeq) : null,
+        expanded: sem.expanded ?? '', selected: sem.selected ?? '',
+      })
 
       const readData = (sel) => sel.relation === 'team-member'
         ? { relation: 'team-member', memberInstanceId: MEMBER_INSTANCE, liveToken: 'lt-v1-fakevalue' }
@@ -249,11 +267,12 @@ function makeWorld (opts = {}) {
         async screenshot (name) { w.shots.push(leg + '/' + name) },
         async collectLeaves () {
           const out = []
+          autoRowSeq = 0 // fresh container identities per snapshot, like a fresh DOM
           let y = 78
           out.push(leaf('New Session', y, 'span', '_25B0JG_newSessionLabel')); y += 40
-          out.push(leaf('Ungrouped', y)); y += 34
-          for (const [title] of rows()) { out.push(leaf(title, y)); y += 34 }
-          if (st.rail === 'expanded') out.push(leaf('Show 4 more sessions', y, 'button', 'HVH6QW_sessionOverflowButton'))
+          out.push(leaf('Ungrouped', y, 'span', 'aB3xYz_title', 'rail', 20, { key: 'workspace:', expanded: st.rail === 'collapsed' ? 'false' : 'true' })); y += 34
+          for (const [title, id] of rows()) { out.push(leaf(title, y, 'span', 'aB3xYz_title', 'rail', 20, { key: 'session:' + id, selected: st.selected && st.selected.id === id ? 'true' : 'false' })); y += 34 }
+          if (st.rail === 'expanded') out.push(leaf('Show 4 more sessions', y, 'button', 'aB3xYz_sessionOverflowButton', 'rail', 20, { key: 'overflow:', expanded: 'false' }))
           if (st.selected) {
             out.push(leaf(st.selected.id, 20, 'h1', 'sessionHeader', 'main', 400))
             if (st.selected.relation !== 'none') {
@@ -272,8 +291,10 @@ function makeWorld (opts = {}) {
         },
         async clickLeaf (l) {
           w.clicks.push(leg + ':' + l.text)
-          if (l.text === 'Ungrouped') { if (!opts.railStuckCollapsed) st.rail = 'expanded'; w.v += 20; return }
-          if (/^Show \d+ more sessions$/.test(l.text)) { st.rail = 'all'; w.v += 20; return }
+          // Clicks act on the ROW SEMANTICS the driver clicked, exactly as the
+          // product's onToggle would — never on a label string.
+          if (l.key === 'workspace:' || l.text === 'Ungrouped') { if (!opts.railStuckCollapsed) st.rail = 'expanded'; w.v += 20; return }
+          if (String(l.key || '').startsWith('overflow:') || /^Show \d+ more sessions$/.test(l.text)) { st.rail = 'all'; w.v += 20; return }
           if (l.text === 'New Session') {
             st.dialogOpen = true
             st.dialog = { crumbs: ['Home'], selected: null, pending: null }
@@ -298,7 +319,9 @@ function makeWorld (opts = {}) {
             return
           }
           if (l.text === 'Refresh team view') { doRefresh(); return }
-          const hit = rows().find(([title]) => title === l.text)
+          const hit = String(l.key || '').startsWith('session:')
+            ? rows().find(([title, id]) => id === l.key.slice('session:'.length) && title === l.text)
+            : rows().find(([title]) => title === l.text)
           if (hit) {
             st.selected = { id: hit[1], relation: hit[1] === ROOT_ID ? 'team-root' : 'team-member', title: hit[0] }
             w.v += 10
@@ -438,6 +461,15 @@ function stdFiles (extra = {}) {
     proj(ROOT_ID, '/srv/x', ROOT_TITLE),
     proj(MEMBER_ID, '/srv/x', MEMBER_TITLE),
     proj(OTHER_ID, '/srv/x', 'ack:role-expert:pre:mpr-2026-10-01T13-21-34'),
+    // Workspace membership, in the store's real v2 shape (global.workspaceIds +
+    // tables.workspaces[<id>].sessionIds), transcribed from the retained
+    // acceptance world: exactly one workspace (`ws`) accounting for ONE unrelated
+    // session — so both canonical targets resolve to UNGROUPED_KEY === ''.
+    ['/world/storages/workspace.json', JSON.stringify({
+      unit: { name: 'workspace', version: 2 },
+      global: { initialized: true, workspaceIds: ['40d5679e-12f5-4f35-b417-0eab81103e1b'], archivedSessionIds: [], pinnedSessionIds: [] },
+      tables: { workspaces: { '40d5679e-12f5-4f35-b417-0eab81103e1b': { path: '/world/ws', title: 'ws', sessionIds: ['session-a3b9157c-d45b-425f-9e74-1a2c4b5567cb'], createdAt: '2026-10-05T18:51:17.695Z', updatedAt: '2026-10-05T18:51:17.724Z' } } },
+    })],
     ...Object.entries(extra),
   ])
   return files

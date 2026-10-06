@@ -1,0 +1,12 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade
+
+ ✓ packages/testkit/test/rc2-kit-pin-hygiene.test.ts (7 tests) 565ms
+     ✓ only tests/paths.mjs assigns the baseline constants  426ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  04:55:27
+   Duration  901ms (transform 51ms, setup 0ms, import 81ms, tests 565ms, environment 0ms)
+

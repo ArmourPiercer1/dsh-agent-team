@@ -147,7 +147,7 @@ import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'n
 import { join } from 'node:path'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
-import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
+import { readPersonaSections } from '../../root-binding/harness/persona-probe.mjs'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 
 // The TS resolution hook MUST be registered before the first dynamic TS
@@ -888,12 +888,23 @@ async function settleMounts(effects) {
     .map((r) => String(r.reason?.message ?? r.reason))
 }
 
-/** @param {object} svc @param {object} handle @returns {Promise<object>} the assembly + persona section. */
+/**
+ * Assemble one member agent's prompt and read its persona slot.
+ *
+ * `personaSection` is the host's persona-PREFIX section - the slot
+ * `@deepseek-ai/dsh-persona` renders the preset's `prefix` into. The suffix slot
+ * is reported separately as `personaSuffixSection`; the two are different
+ * positions in the prompt and must not be concatenated to recover some
+ * single "persona section", which is not a thing the host has ever had.
+ *
+ * @param {object} svc @param {object} handle
+ * @returns {Promise<object>} the assembly + persona prefix/suffix sections.
+ */
 async function assemblePersona(svc, handle) {
   const scope = scopeOf(handle.agent.ctx)
   const assembly = await svc.systemPrompt.assemble({ scope })
-  const personaSection = assembly.sections.find((s) => s.name === PERSONA_SECTION)
-  return { scope, assembly, personaSection }
+  const probe = readPersonaSections(assembly)
+  return { scope, assembly, personaSection: probe.prefixSection, personaSuffixSection: probe.suffixSection }
 }
 
 /**

@@ -1,0 +1,25 @@
+✔ rail DOM (real collector, real navigate): locates the member past a COLLAPSED Ungrouped group and verifies selection (873.37142ms)
+✔ rail DOM: a changed CSS-module hash for css.title changes nothing (no shipped class is an identifier) (190.138098ms)
+✔ rail DOM: every supported sidebar width finds the row (SIDEBAR_MIN 264 / DEFAULT 280 / MAX 420) (186.762629ms)
+✔ rail DOM: Chinese locale expands the group and reveals the overflow with localized labels (82.715861ms)
+✔ rail DOM: overflow reveal is bounded and structural (data-row-key=overflow:*), and the collapse label is never clicked as an expander (57.474146ms)
+✔ rail DOM: an already-expanded group is never clicked (a toggle would collapse it) (36.839709ms)
+✔ rail DOM: expansion state is read from aria-expanded, never from a row count (28.816262ms)
+✔ rail DOM: a target in ANOTHER workspace is reached — no Ungrouped assumption (groups are opened in DOM order, each verified by aria-expanded) (44.423968ms)
+✔ rail DOM: a no-op / still-collapsed click fails closed, it never clicks an arbitrary row (19.967498ms)
+✔ rail DOM: a missing target is locate-not_found fail-closed AND leaves scrubbed rail diagnostics plus one failure screenshot (97.501985ms)
+✔ rail DOM: a duplicate row carrying the SAME canonical id is AMBIGUOUS, never "pick the first" (66.883066ms)
+✔ rail DOM: a repeated TITLE outside the session tree (hover card, header) cannot make the locate ambiguous (35.378509ms)
+✔ rail DOM: a hidden duplicate row (zero box, display:none) is not a candidate (39.306179ms)
+✔ rail DOM: two SIMULTANEOUSLY rendered rows with the SAME canonical id are AMBIGUOUS, never a silent pick (18.042701ms)
+✔ rail DOM: a second RENDERED row with the same canonical key anywhere in the document is AMBIGUOUS — the driver never picks one (upstream hover cards carry NO data-row-key, so a duplicated key is an anomaly, not a duplicate label) (17.068454ms)
+✔ rail DOM: the exact canonical title is required — a same-id row with a different title fails closed (55.208543ms)
+✔ rail DOM: selection identity stays correlated — a row that renders but never produces a fresh readState round is unverified, never a navigation (68.672243ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2048.318317

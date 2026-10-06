@@ -47,7 +47,6 @@ import {
   appendFileSync,
   writeFileSync,
 } from 'node:fs'
-import { createHash } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -59,6 +58,7 @@ import {
 import {
   CLIENT_COMMIT_HASH,
   findTestRepoRoot,
+  isSanctionedTestPort,
   TEST_HOME_ROOT_REL,
   TEST_USE_REL,
 } from '../../../../tests/paths.mjs'
@@ -68,11 +68,27 @@ import {
   waitForLogLine,
   waitForPortFree,
 } from '../../../../tests/characterization/lib/util.mjs'
+import {
+  AGENT_PRESET_ROW_NAME,
+  emitPatchLayer,
+  personaRow,
+  presetDeclarationRow,
+} from '../../../../tests/kits/_shared/preset-seam.mjs'
 import { captureGitState } from '../../../../tests/characterization/lib/tree-clean.mjs'
 import { closeMiniServer, startMiniMcpServer } from './mini-mcp.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WORKTREE_ROOT = resolve(HERE, '..', '..', '..', '..')
+
+/**
+ * Mini-MCP candidates. NOT 3481-3485: that block sits outside this repo's port
+ * policy (docs/TEST_METHODS.md — 3180-3186 / 3491-3500, :3080 forbidden), a drift
+ * from the pre-migration machine that pre-flight caught before any bind. The
+ * 3496-3500 half also keeps clear of the member-residency harness block
+ * (3491-3495). The ledger in bounded-run.regression.test.mjs fails the day a
+ * harness reaches outside tests/paths.mjs TEST_PORT_RANGES again.
+ */
+const DEFAULT_MCP_PORT_CANDIDATES = Object.freeze([3496, 3497, 3498, 3499, 3500])
 const STABLE_URL = 'http://127.0.0.1:3080/'
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
@@ -88,17 +104,26 @@ function tailText(text, lines = 12) {
 // ── argument parsing ────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { reportDir: null, scenarios: 'S1,S3,S4,S2', port: 3180 }
+  const args = { reportDir: null, scenarios: 'S1,S3,S4,S2', port: 3180, mcpPorts: null }
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i]
     if (token === '--report-dir') args.reportDir = argv[++i]
     else if (token === '--scenarios') args.scenarios = argv[++i]
     else if (token === '--port') args.port = Number.parseInt(argv[++i], 10)
+    else if (token === '--mcp-ports') args.mcpPorts = argv[++i].split(',').map((x) => Number.parseInt(x, 10))
     else throw new Error(`unknown argument: ${token}`)
   }
   if (args.reportDir === null) throw new Error('--report-dir is required')
   if (!Number.isInteger(args.port) || args.port < 1 || args.port > 65535) {
     throw new Error(`invalid --port: ${args.port}`)
+  }
+  if (!isSanctionedTestPort(args.port)) {
+    throw new Error(`--port ${args.port} is outside the sanctioned test ranges (docs/TEST_METHODS.md, tests/paths.mjs TEST_PORT_RANGES)`)
+  }
+  if (args.mcpPorts !== null) {
+    if (args.mcpPorts.length === 0 || args.mcpPorts.some((x) => !isSanctionedTestPort(x))) {
+      throw new Error(`--mcp-ports must all be sanctioned test ports, got ${JSON.stringify(args.mcpPorts)}`)
+    }
   }
   const selected = args.scenarios.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
   for (const s of selected) {
@@ -285,32 +310,45 @@ async function main() {
     })
     log('junction farm ready')
 
-    // ── user preset fixture (DSH_HOME-local persona preset) ─────────────────
+    // ── preset fixture: a DECLARATION ROW, mounted on the patch seam below ───
+    // This used to be `$DSH_HOME/.agent-presets/p5t5-team-persona/
+    // agent.cordis.yml` with `config: { text: … }`. Neither half survives the
+    // pinned host: the registry no longer reads that directory, and the persona
+    // plugin's schema takes `prefix` (required) / `suffix` / `complete` /
+    // `includeRuntimeContext` — there is no `text` key. Writing the old file was
+    // a fixture that LOOKED configured while the leader ran the shipped default
+    // preset, which is exactly what this harness asserts against.
     const presetId = 'p5t5-team-persona'
-    const presetDir = join(DSH_HOME, '.agent-presets', presetId)
-    mkdirSync(presetDir, { recursive: true })
-    writeFileSync(join(presetDir, 'agent.cordis.yml'), [
-      '# P5-T5 harness fixture: team leader persona preset (user preset, DSH_HOME-local).',
-      '- id: persona',
-      "  name: '@deepseek-ai/dsh-persona'",
-      '  config:',
-      `    text: ${LEADER_PERSONA}`,
-      '',
-    ].join('\n'))
-    log(`user preset written: ${presetId}`)
+    const presetRow = presetDeclarationRow({
+      id: presetId,
+      displayName: 'P5-T5 team leader persona',
+      description: 'P5-T5 root-binding harness persona preset (public profile-patch seam).',
+      plugins: [personaRow({ text: LEADER_PERSONA })],
+    })
+    log(`preset declaration built: ${presetId}`)
 
-    // ── mini MCP server (127.0.0.1, ports 3481-3485 candidates) ─────────────
-    const mini = await startMiniMcpServer([3481, 3482, 3483, 3484, 3485])
+    // Default candidates sit in the 3491-3500 half of the range, clear of the
+    // member-residency harness's 3491-3495 block so the two can coexist.
+    // ── mini MCP server (127.0.0.1, ports inside the documented test range) ─
+    const mcpCandidates = args.mcpPorts ?? DEFAULT_MCP_PORT_CANDIDATES
+    // These candidates were 3481-3485, which is outside this repo's own port
+    // policy (docs/TEST_METHODS.md: 3180-3186 / 3491-3500, never 3080) — a
+    // leftover from the pre-migration machine, caught by pre-flight rather than
+    // by running. `bounded-run.regression.test.mjs` now fails if any harness
+    // binds outside the sanctioned ranges again.
+    const mini = await startMiniMcpServer(mcpCandidates)
     summary.ports.mcp = mini.port
     log(`mini MCP server up on 127.0.0.1:${mini.port}`)
 
     // ── blueprint + capability directive data ────────────────────────────────
+    // No contentHash here on purpose: the snapshot ref is derived from the parsed
+    // blueprint document the harness builds from these personas
+    // (blueprint-source.mjs + plugin.mjs). A hand-composed hash of an ad-hoc JSON
+    // blob could never disagree with anything, which is what made the old
+    // "immutable snapshot" assertion unfalsifiable.
     const blueprint = {
       blueprintId: 'P5T5-BP-REAL',
       revision: '1',
-      contentHash: `sha256-${createHash('sha256')
-        .update(JSON.stringify({ id: 'P5T5-BP-REAL', leaderPersona: LEADER_PERSONA, memberPersonas: { p5t5worker: MEMBER_PERSONA } }))
-        .digest('hex')}`,
       leaderPersona: LEADER_PERSONA,
       memberPersonas: { p5t5worker: MEMBER_PERSONA },
       defaultModel: { provider: 'p5t5-static', model: 'p5t5-model-v1' },
@@ -345,6 +383,13 @@ async function main() {
 
     // ── boot driver ──────────────────────────────────────────────────────────
     const row = { id: 'p5t5-root-binding', name: pathToFileURL(join(HERE, 'plugin.mjs')).href }
+
+    /** Write the whole profile patch layer (rows with nested config). */
+    function writePatchLayer(instance, rows, header) {
+      mkdirSync(instance.profileDir, { recursive: true })
+      writeFileSync(instance.patchFile, emitPatchLayer({ header, rows }))
+      return instance.patchFile
+    }
 
     /** Fetch + tolerant JSON parse (records the raw body when not JSON). */
     const fetchJson = async (url, init, timeoutMs) => {
@@ -415,7 +460,21 @@ async function main() {
       try {
         const profile = await ensureProfile({ instance, log, timeoutMs: 90_000 })
         record.profile = profile
-        instance.mountRows([row], [`P5-T5 harness patch layer (boot ${boot}): the p5t5-root-binding row is mounted ONLY through this public profile-patch seam.`])
+        // DshInstance.mountRows() writes { id, name } pairs only; a preset
+        // declaration needs nested config, so the layer is emitted here and both
+        // rows go down the same public seam in one write.
+        writePatchLayer(instance, [row, presetRow], [
+          `P5-T5 harness patch layer (boot ${boot}): the p5t5-root-binding row AND the ${presetId} preset declaration row, mounted ONLY through this public profile-patch seam.`,
+          '# (0.2.0-rc.2: a preset is a declaration row here; the retired user-preset directory is not read by the host.)',
+        ])
+        {
+          const patchText = readFileSync(instance.patchFile, 'utf8')
+          const teamRowSeen = patchText.includes(row.id)
+          const presetRowSeen = patchText.includes(AGENT_PRESET_ROW_NAME) && patchText.includes(`id: "${presetId}"`)
+          record.patchLayer = { bytes: patchText.length, teamRow: teamRowSeen, presetRow: presetRowSeen }
+          if (!teamRowSeen) noteFailure(`boot ${boot}: patch layer lost the plugin row`)
+          if (!presetRowSeen) noteFailure(`boot ${boot}: patch layer lost the ${presetId} preset declaration row`)
+        }
         writeDirective(boot)
         const started = await instance.start({ timeoutMs: 120_000 })
         record.url = started.url

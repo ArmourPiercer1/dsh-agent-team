@@ -1,0 +1,52 @@
+{
+  "__fixture": "RECONSTRUCTED (not a live capture) from the 0.1.7-rc.1 request evidence this kit recorded before the upgrade: dedicated role:\"tool\" messages carry results, the instruction is a leading system message, content is a plain string.",
+  "provenance": "shape per packages/tools/harness/mock-deepseek.mjs recordings under dev/agent-workflow/evidence/rc2-repair/ (0.1.7 generation); values are synthetic",
+  "request": {
+    "model": "rc2-smoke-model",
+    "stream": true,
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are the leader of the rc2 smoke B team. RC2_B_PERSONA"
+      },
+      {
+        "role": "user",
+        "content": "RC2_SMOKE_B_LEADER_TASK"
+      },
+      {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "call-1",
+            "type": "function",
+            "function": {
+              "name": "read",
+              "arguments": "{\"file_path\":\"team/notes.txt\"}"
+            }
+          }
+        ]
+      },
+      {
+        "role": "tool",
+        "tool_call_id": "call-1",
+        "content": "note contents"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read",
+          "parameters": {
+            "type": "object"
+          }
+        }
+      }
+    ]
+  },
+  "reply": {
+    "kind": "text",
+    "content": "RC2_SMOKE_B_DONE"
+  }
+}

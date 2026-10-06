@@ -1,0 +1,1023 @@
+{
+  "schema": "dsh-agent-team.rc2-oracle-attribution/1",
+  "purpose": "Credential-free measurement excerpt behind evidence 08 (smoke run 5). Supports independent review of the six-oracle attribution; it is not a compatibility verdict.",
+  "provenance": {
+    "ran_at_head": "65f07a26fe7a8ad1a034cfba16d16ab0859438ad",
+    "locked_head_for_review": "00a9a3910cc6ac4711c7cd078be7fcebabbe468c",
+    "runner_fix_commit": "d4ff5f0b9759b3a309e172fa9f201a02998fed98",
+    "patch_apply_commit": "97efc2d62f03af606181722c228ab23f876aa200",
+    "run_stamp": "2026-10-03T16-28-45",
+    "run_verdict_from_log": "VERDICT FAIL — 14/19 criteria passed; failed: S1a,S3b,S4c,S4e,S5b",
+    "raw_folder_status": "private: rc2-smoke-run5/instance.log and instance-tail.txt carry the live web boot token and are NOT committed",
+    "inputs": [
+      {
+        "path": "rc2-smoke-run5/mock-requests.json",
+        "bytes": 9954,
+        "sha256": "6f768c1fc57025dcdc603517fe533cd8c4d29b40212e0efd90bc9497c26e1758"
+      },
+      {
+        "path": "rc2-smoke-run5/run.log",
+        "bytes": 7385,
+        "sha256": "90513f1cd0070de439bdf31f987d36e7c2b1f60de3a0e40dae53f9f7e91d4d79"
+      },
+      {
+        "path": "rc2-smoke-run5/run-budget.json",
+        "bytes": 986,
+        "sha256": "99bf205dd24fc683cd5d9ecbb6caca037d715461770c6f29b0f7a068f911344a"
+      },
+      {
+        "path": "rc2-smoke-run5/s1-b-leader-request.json",
+        "bytes": 4309,
+        "sha256": "219144ab6b04c7ead7fc3f62e63f0c919a819135f35e46b20cad42c731029c25"
+      },
+      {
+        "path": "rc2-smoke-run5/s4-b-member-request.json",
+        "bytes": 36,
+        "sha256": "a2e74f9b431e65a3ef1d33f0dc9027bbed553c13c6832f97b032e3faa17df7a9"
+      }
+    ]
+  },
+  "budget": {
+    "source_file": "rc2-smoke-run5/run-budget.json",
+    "total_requests": 17,
+    "scenario_requests": 0,
+    "consecutive_misses": 0,
+    "per_session_max_observed": 6,
+    "per_state_max_observed": 5,
+    "limits_recorded_by_the_run": {
+      "totalRequests": 120,
+      "perSessionRequests": 40,
+      "perScenarioRequests": 25,
+      "sameStateRepeats": 6,
+      "consecutiveMisses": 2,
+      "childLifetimeMs": 1200000
+    },
+    "measurement_origin": "run-budget.json was written by the kit during the run. The post-run process/port census and the :3080 probe quoted in evidence 08 are single-observer measurements taken in this VM (ss -ltnH, filtered ps -eo args); they have NOT been independently reproduced and should be read as reported-by-this-host.",
+    "violation_recorded_by_the_run": null,
+    "abort_history_entries": 0
+  },
+  "sources": [
+    {
+      "sha": "65f07a26fe7a8ad1a034cfba16d16ab0859438ad",
+      "path": "tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs",
+      "bytes": 90009,
+      "sha256": "81921e4e03b306de13360fb9bb92bf8fca8c3978f8eddcb4f7b976856f825e4f",
+      "lines": 1817,
+      "extractor_sites": {
+        "inline_role_tool": [
+          {
+            "line": 1545,
+            "text": "const s1result = String(bS1.body.messages.find((m) => m.role === 'tool')?.content ?? '')"
+          },
+          {
+            "line": 1572,
+            "text": "const s2result = String(bS2.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')"
+          },
+          {
+            "line": 1620,
+            "text": "const s3result = String(bS3.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')"
+          },
+          {
+            "line": 1650,
+            "text": "const s4result = String(bS4.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')"
+          }
+        ],
+        "inline_role_system": [
+          {
+            "line": 1671,
+            "text": ".filter((mm) => mm.role === 'system')"
+          },
+          {
+            "line": 1714,
+            "text": ".filter((mm) => mm.role === 'system')"
+          }
+        ],
+        "generation_aware_tool_results": [
+          {
+            "line": 819,
+            "text": "function toolMsgsOf(req) {"
+          },
+          {
+            "line": 824,
+            "text": "entries = toolResultEntries(body, { label: 'count' })"
+          },
+          {
+            "line": 835,
+            "text": "return toolResultEntries(bodyOf(req), { label })"
+          },
+          {
+            "line": 874,
+            "text": "const tools = toolMsgsOf(req).length"
+          },
+          {
+            "line": 1108,
+            "text": "if (miss !== null) RC.reportViolation(miss, { waitingFor: label, lastRequests: mock.requests.slice(-5).map((r) => ({ seq: r.seq, userTextHead: r.body === null ?"
+          },
+          {
+            "line": 1365,
+            "text": "nToolMsgs: r.body !== null ? toolMsgsOf(r).length : null,"
+          },
+          {
+            "line": 1525,
+            "text": "const bStart = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 0 && (r.body?.tools ?? []).length > 0,"
+          },
+          {
+            "line": 1540,
+            "text": "const bS1 = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 1, 180_000, 'B chain step 1 (S1 read exec"
+          },
+          {
+            "line": 1567,
+            "text": "const bS2 = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 2, 180_000, 'B chain step 2 (S2 read exec"
+          },
+          {
+            "line": 1591,
+            "text": "const bS3Issued = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 2 && JSON.stringify(r.reply ?? '')."
+          },
+          {
+            "line": 1613,
+            "text": "const bS3 = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 3, 240_000, 'B chain step 3 complete (bas"
+          },
+          {
+            "line": 1645,
+            "text": "const bS4 = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 4, 240_000, 'B chain step 4 (create_membe"
+          },
+          {
+            "line": 1659,
+            "text": "const bS4d = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 5, 240_000, 'B chain step 5 (delegate ex"
+          },
+          {
+            "line": 1683,
+            "text": "const bDone = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 5 && (r.reply?.kind === 'text' ? r.repl"
+          },
+          {
+            "line": 1771,
+            "text": "toolMsgCount: toolMsgsOf(r).length,"
+          }
+        ],
+        "generation_aware_system_text": [
+          {
+            "line": 814,
+            "text": "export function systemTextOf(req) {"
+          },
+          {
+            "line": 816,
+            "text": "return body === null ? '' : wsSystemText(body)"
+          },
+          {
+            "line": 1015,
+            "text": "return stateKeyOf({ purpose, systemText: wsSystemText(body), toolResults: decoded.toolResults.length })"
+          },
+          {
+            "line": 1530,
+            "text": "const systemPrompt = systemTextOf(bStart)"
+          },
+          {
+            "line": 1731,
+            "text": "const bMemberSystemAgain = systemTextOf(bMemberAgain)"
+          }
+        ]
+      }
+    },
+    {
+      "sha": "00a9a3910cc6ac4711c7cd078be7fcebabbe468c",
+      "path": "tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs",
+      "bytes": 90571,
+      "sha256": "7ff509e98f18c29c3f4dceef8f7fe96258c1ea1536e1db4e6b53c6e42f0ec74f",
+      "lines": 1832,
+      "extractor_sites": {
+        "inline_role_tool": [],
+        "inline_role_system": [],
+        "generation_aware_tool_results": [
+          {
+            "line": 820,
+            "text": "function toolMsgsOf(req) {"
+          },
+          {
+            "line": 825,
+            "text": "entries = toolResultEntries(body, { label: 'count' })"
+          },
+          {
+            "line": 842,
+            "text": "* trap f15 records for its marker oracles). The waiter already used toolMsgsOf();"
+          },
+          {
+            "line": 847,
+            "text": "return toolMsgsOf(req).map((item) => wsToolResultText(item)).join('\\n')"
+          },
+          {
+            "line": 852,
+            "text": "return toolResultEntries(bodyOf(req), { label })"
+          },
+          {
+            "line": 891,
+            "text": "const tools = toolMsgsOf(req).length"
+          },
+          {
+            "line": 1125,
+            "text": "if (miss !== null) RC.reportViolation(miss, { waitingFor: label, lastRequests: mock.requests.slice(-5).map((r) => ({ seq: r.seq, userTextHead: r.body === null ?"
+          },
+          {
+            "line": 1382,
+            "text": "nToolMsgs: r.body !== null ? toolMsgsOf(r).length : null,"
+          },
+          {
+            "line": 1542,
+            "text": "const bStart = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 0 && (r.body?.tools ?? []).length > 0,"
+          },
+          {
+            "line": 1557,
+            "text": "const bS1 = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 1, 180_000, 'B chain step 1 (S1 read exec"
+          },
+          {
+            "line": 1584,
+            "text": "const bS2 = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 2, 180_000, 'B chain step 2 (S2 read exec"
+          },
+          {
+            "line": 1608,
+            "text": "const bS3Issued = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 2 && JSON.stringify(r.reply ?? '')."
+          },
+          {
+            "line": 1630,
+            "text": "const bS3 = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 3, 240_000, 'B chain step 3 complete (bas"
+          },
+          {
+            "line": 1662,
+            "text": "const bS4 = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 4, 240_000, 'B chain step 4 (create_membe"
+          },
+          {
+            "line": 1676,
+            "text": "const bS4d = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 5, 240_000, 'B chain step 5 (delegate ex"
+          },
+          {
+            "line": 1701,
+            "text": "const bDone = await waitForMock(mock, (r) => r.body !== null && userTextOf(r).includes(MK_B) && toolMsgsOf(r).length === 5 && (r.reply?.kind === 'text' ? r.repl"
+          },
+          {
+            "line": 1786,
+            "text": "toolMsgCount: toolMsgsOf(r).length,"
+          }
+        ],
+        "generation_aware_system_text": [
+          {
+            "line": 815,
+            "text": "export function systemTextOf(req) {"
+          },
+          {
+            "line": 817,
+            "text": "return body === null ? '' : wsSystemText(body)"
+          },
+          {
+            "line": 1032,
+            "text": "return stateKeyOf({ purpose, systemText: wsSystemText(body), toolResults: decoded.toolResults.length })"
+          },
+          {
+            "line": 1547,
+            "text": "const systemPrompt = systemTextOf(bStart)"
+          },
+          {
+            "line": 1689,
+            "text": "// happened to live in 0.1.x. S4b and S5c already used systemTextOf(), which"
+          },
+          {
+            "line": 1691,
+            "text": "const bMemberSystem = systemTextOf(bMember)"
+          },
+          {
+            "line": 1731,
+            "text": "const cMemberSystem = systemTextOf(cMember)"
+          },
+          {
+            "line": 1746,
+            "text": "const bMemberSystemAgain = systemTextOf(bMemberAgain)"
+          }
+        ]
+      }
+    },
+    {
+      "sha": "00a9a3910cc6ac4711c7cd078be7fcebabbe468c",
+      "path": "tests/kits/rc2-real-host-smoke/wire-shape.mjs",
+      "bytes": 21363,
+      "sha256": "2df80e16080e199ee1f86e0808cbbb7a8da28bcd1803dc2a9448e426a7930f72",
+      "lines": 498,
+      "extractor_sites": {
+        "inline_role_tool": [],
+        "inline_role_system": [
+          {
+            "line": 404,
+            "text": ".filter((m) => m?.role === 'system')"
+          }
+        ],
+        "generation_aware_tool_results": [
+          {
+            "line": 304,
+            "text": "export function toolResultEntries(body, context = {}) {"
+          }
+        ],
+        "generation_aware_system_text": []
+      }
+    }
+  ],
+  "criterion_extractors": [
+    {
+      "criterion": "S1a",
+      "at_ran_at": {
+        "line": 1545,
+        "through_line": 1545,
+        "variable": "s1result",
+        "expression": "String(bS1.body.messages.find((m) => m.role === 'tool')?.content ?? '')"
+      },
+      "at_locked_head": {
+        "line": 1562,
+        "through_line": 1562,
+        "variable": "s1result",
+        "expression": "toolResultTextOf(bS1)"
+      }
+    },
+    {
+      "criterion": "S2a",
+      "at_ran_at": {
+        "line": 1572,
+        "through_line": 1572,
+        "variable": "s2result",
+        "expression": "String(bS2.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')"
+      },
+      "at_locked_head": {
+        "line": 1589,
+        "through_line": 1589,
+        "variable": "s2result",
+        "expression": "toolResultTextOf(bS2)"
+      }
+    },
+    {
+      "criterion": "S3b",
+      "at_ran_at": {
+        "line": 1620,
+        "through_line": 1620,
+        "variable": "s3result",
+        "expression": "String(bS3.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')"
+      },
+      "at_locked_head": {
+        "line": 1637,
+        "through_line": 1637,
+        "variable": "s3result",
+        "expression": "toolResultTextOf(bS3)"
+      }
+    },
+    {
+      "criterion": "S4b",
+      "at_ran_at": {
+        "line": 1530,
+        "through_line": 1530,
+        "variable": "systemPrompt",
+        "expression": "systemTextOf(bStart)"
+      },
+      "at_locked_head": {
+        "line": 1547,
+        "through_line": 1547,
+        "variable": "systemPrompt",
+        "expression": "systemTextOf(bStart)"
+      }
+    },
+    {
+      "criterion": "S4c",
+      "at_ran_at": {
+        "line": 1650,
+        "through_line": 1650,
+        "variable": "s4result",
+        "expression": "String(bS4.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')"
+      },
+      "at_locked_head": {
+        "line": 1667,
+        "through_line": 1667,
+        "variable": "s4result",
+        "expression": "toolResultTextOf(bS4)"
+      }
+    },
+    {
+      "criterion": "S4e",
+      "at_ran_at": {
+        "line": 1670,
+        "through_line": 1673,
+        "variable": "bMemberSystem",
+        "expression": "(bMember.body.messages ?? []) .filter((mm) => mm.role === 'system') .map((mm) => (typeof mm.content === 'string' ? mm.content : JSON.stringify(mm.content ?? ''))) .join('\\n')"
+      },
+      "at_locked_head": {
+        "line": 1691,
+        "through_line": 1691,
+        "variable": "bMemberSystem",
+        "expression": "systemTextOf(bMember)"
+      }
+    },
+    {
+      "criterion": "S5b",
+      "at_ran_at": {
+        "line": 1713,
+        "through_line": 1716,
+        "variable": "cMemberSystem",
+        "expression": "(cMember.body.messages ?? []) .filter((mm) => mm.role === 'system') .map((mm) => (typeof mm.content === 'string' ? mm.content : JSON.stringify(mm.content ?? ''))) .join('\\n')"
+      },
+      "at_locked_head": {
+        "line": 1731,
+        "through_line": 1731,
+        "variable": "cMemberSystem",
+        "expression": "systemTextOf(cMember)"
+      }
+    },
+    {
+      "criterion": "S5c",
+      "at_ran_at": {
+        "line": 1731,
+        "through_line": 1731,
+        "variable": "bMemberSystemAgain",
+        "expression": "systemTextOf(bMemberAgain)"
+      },
+      "at_locked_head": {
+        "line": 1746,
+        "through_line": 1746,
+        "variable": "bMemberSystemAgain",
+        "expression": "systemTextOf(bMemberAgain)"
+      }
+    }
+  ],
+  "criteria": [
+    {
+      "criterion": "L0",
+      "verdict": "pass",
+      "name": "discovery captured the surface; read + bash present (minimal-style preset: 5/7 managed is the expected shape)",
+      "detail_sha256": "509afd58748fedbe725e5d0183edd13d06a1365f585dbc42a6c5a53705cbf6d4",
+      "detail_chars": 48,
+      "extractor_report": "surface=20 missingManaged=[lsp,pwsh] denyList=[]",
+      "seq_stamp": "2026-10-03T16:28:47.833Z"
+    },
+    {
+      "criterion": "L0c",
+      "verdict": "pass",
+      "name": "B/C fixture pre-flight passed (deny list names only non-team, non-managed tools)",
+      "detail_sha256": "a39e8c9b0542fb7a6b5d74dd55cab2bb9545b5b05e47f955fba9e9281f6d262c",
+      "detail_chars": 11,
+      "extractor_report": "denyList=[]",
+      "seq_stamp": "2026-10-03T16:28:47.834Z"
+    },
+    {
+      "criterion": "S1a",
+      "verdict": "fail",
+      "name": "S1: read team/test.md returned the probe content (executed, not blocked)",
+      "detail_sha256": "fd7d53aedc8fbed81917b79bd49fe1388ae5b4fb552d64abb1c2583f135e1d98",
+      "detail_chars": 7,
+      "extractor_report": "result=",
+      "seq_stamp": "2026-10-03T16:28:48.235Z"
+    },
+    {
+      "criterion": "S1b",
+      "verdict": "pass",
+      "name": "S1: static allow decision observed (decision:allow, rule provenance",
+      "detail_sha256": "3ffc99a7dc7e193b0a384d70788cdf0587b0c9ccddee33357e99e1bdfa0a1eba",
+      "detail_chars": 454,
+      "extractor_report": "subtree hit, no canonicalization failure) —",
+      "seq_stamp": "2026-10-03T16:28:48.239Z"
+    },
+    {
+      "criterion": "S1c",
+      "verdict": "pass",
+      "name": "S1: no control request created for the allow-lane read",
+      "detail_sha256": "0c937121e5d51dc5a561b5f0247ccbbf04bf829710044b7779093353a2dc5e14",
+      "detail_chars": 11,
+      "extractor_report": "requests=[]",
+      "seq_stamp": "2026-10-03T16:28:48.239Z"
+    },
+    {
+      "criterion": "S2a",
+      "verdict": "pass",
+      "name": "S2: deny-subtree read produced an explicit static deny (decision:deny, NOT a canonicalization failure)",
+      "detail_sha256": "0af45bc926fedeb48c1f0f6c8fba240fc8945af10224eb3671e4b02f55a03ef3",
+      "detail_chars": 318,
+      "extractor_report": "result=",
+      "seq_stamp": "2026-10-03T16:28:48.241Z"
+    },
+    {
+      "criterion": "S3a",
+      "verdict": "pass",
+      "name": "S3: scripted approval recorded a durable allow (human principal, boot root)",
+      "detail_sha256": "c0aaad82e26cb8c8dd1cd1ae37053c97d5980e427a4b575c11c951c7d52d18d7",
+      "detail_chars": 416,
+      "extractor_report": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rc2s3-djnkrjrdcz\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"r",
+      "seq_stamp": "2026-10-03T16:28:48.256Z"
+    },
+    {
+      "criterion": "S3b",
+      "verdict": "fail",
+      "name": "S3: bash executed after approval",
+      "detail_sha256": "31251e963b85a5b0fdea18a6e2ac9e008f3dca35659cbc784e42ef3c6919b843",
+      "detail_chars": 75,
+      "extractor_report": "the echo output reached the model (guard passed, no target-stale) — result=",
+      "seq_stamp": "2026-10-03T16:28:48.656Z"
+    },
+    {
+      "criterion": "S3c",
+      "verdict": "pass",
+      "name": "S3: last-mile guard verdict allowed:true for the approved leader request (NO target-stale",
+      "detail_sha256": "eca5bb3de89c503854d25c2849e12197608b212f31931f1822108f3b60604cdb",
+      "detail_chars": 179,
+      "extractor_report": "A6 proof) —",
+      "seq_stamp": "2026-10-03T16:28:48.660Z"
+    },
+    {
+      "criterion": "S4a",
+      "verdict": "pass",
+      "name": "team.create (B, bound blueprint) succeeds on the fresh root",
+      "detail_sha256": "79763b973978b033dbfabdd8803104b92e71315f582e9597fd62838aa099e7f3",
+      "detail_chars": 416,
+      "extractor_report": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rc2b-33cpodpxox\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-r",
+      "seq_stamp": "2026-10-03T16:28:48.661Z"
+    },
+    {
+      "criterion": "S4b",
+      "verdict": "pass",
+      "name": "B leader model request carries the BOUND blueprint B persona (not the row anchor A)",
+      "detail_sha256": "bdcb9c5b2c44bfb26d97fcab712ddcdeb7103a651f598210792c493ac03d2873",
+      "detail_chars": 20,
+      "extractor_report": "hasB=true hasA=false",
+      "seq_stamp": "2026-10-03T16:28:48.235Z"
+    },
+    {
+      "criterion": "S4c",
+      "verdict": "fail",
+      "name": "S4: first create of the B-only template worker-b SUCCEEDED (no post-commit reject)",
+      "detail_sha256": "fd7d53aedc8fbed81917b79bd49fe1388ae5b4fb552d64abb1c2583f135e1d98",
+      "detail_chars": 7,
+      "extractor_report": "result=",
+      "seq_stamp": "2026-10-03T16:28:48.661Z"
+    },
+    {
+      "criterion": "S4d",
+      "verdict": "pass",
+      "name": "S4: team_delegate executed (tool result returned)",
+      "detail_sha256": "a378970d94498be8d8567ada961aed04d2812717f97e1adab0a5f52f11ec29bf",
+      "detail_chars": 29,
+      "extractor_report": "delegate tool result observed",
+      "seq_stamp": "2026-10-03T16:28:48.661Z"
+    },
+    {
+      "criterion": "S4e",
+      "verdict": "fail",
+      "name": "S4: the B member carries blueprint B worker persona (binder resolved the BOUND blueprint)",
+      "detail_sha256": "8d0f493ed04d078bf92489b9c945eaf87c5c580d3e44845260fc8021704a657a",
+      "detail_chars": 21,
+      "extractor_report": "hasB=false hasA=false",
+      "seq_stamp": "2026-10-03T16:28:48.661Z"
+    },
+    {
+      "criterion": "S4f",
+      "verdict": "pass",
+      "name": "S4: the B leader turn completed (final text RC2_SMOKE_B_DONE)",
+      "detail_sha256": "157223a1cf1db4b582094d002794eae7a8d2897fd786021c4372e7ceda6e23ff",
+      "detail_chars": 11,
+      "extractor_report": "requests=11",
+      "seq_stamp": "2026-10-03T16:28:48.661Z"
+    },
+    {
+      "criterion": "S5a",
+      "verdict": "pass",
+      "name": "team.create (C, same row, blueprint C) succeeds",
+      "detail_sha256": "9f88f31f018c9a50d6c031eaf9eec17537d782c7d74e99992abcc57ea4224e86",
+      "detail_chars": 316,
+      "extractor_report": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rc2c-klvafv1fvv\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-r",
+      "seq_stamp": "2026-10-03T16:28:49.052Z"
+    },
+    {
+      "criterion": "S5b",
+      "verdict": "fail",
+      "name": "S5: the C member carries blueprint C worker persona (root-scoped resolution)",
+      "detail_sha256": "1d475245e56cacd6cc288dc83d0ace1d5521e94517529473a0f1b470ef1072c9",
+      "detail_chars": 21,
+      "extractor_report": "hasC=false hasB=false",
+      "seq_stamp": "2026-10-03T16:28:49.052Z"
+    },
+    {
+      "criterion": "S5c",
+      "verdict": "pass",
+      "name": "S5: the B member still carries B worker persona (no cross-team leak)",
+      "detail_sha256": "b7f5283b032b18fbceaf24b8da924c242685532b1dce8128bc8c92b8fb75e9cb",
+      "detail_chars": 23,
+      "extractor_report": "requests=17 memberReq=9",
+      "seq_stamp": "2026-10-03T16:28:49.052Z"
+    },
+    {
+      "criterion": "S5d",
+      "verdict": "pass",
+      "name": "S5: the C leader turn completed (final text RC2_SMOKE_C_DONE)",
+      "detail_sha256": "c0329b6b1c97ca9473d6dc8dcdc2a9ecbe026dfa1da8585ca7dcf154b02dc8f9",
+      "detail_chars": 11,
+      "extractor_report": "requests=17",
+      "seq_stamp": "2026-10-03T16:28:49.052Z"
+    }
+  ],
+  "per_request": [
+    {
+      "seq": 1,
+      "received_at": "2026-10-03T16:28:47.501Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [],
+      "reply_kind": "text",
+      "reply_markers": []
+    },
+    {
+      "seq": 2,
+      "received_at": "2026-10-03T16:28:47.504Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 118,
+      "user_text_truncated_by_recorder": false,
+      "user_text_markers": [],
+      "reply_kind": "text",
+      "reply_markers": []
+    },
+    {
+      "seq": 3,
+      "received_at": "2026-10-03T16:28:47.919Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_B"
+      ],
+      "reply_kind": "tool-call",
+      "reply_markers": []
+    },
+    {
+      "seq": 4,
+      "received_at": "2026-10-03T16:28:47.924Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 242,
+      "user_text_truncated_by_recorder": false,
+      "user_text_markers": [
+        "RC2MK_B"
+      ],
+      "reply_kind": "text",
+      "reply_markers": []
+    },
+    {
+      "seq": 5,
+      "received_at": "2026-10-03T16:28:47.982Z",
+      "tool_results_via_generation_aware_reader": 1,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_B"
+      ],
+      "reply_kind": "tool-call",
+      "reply_markers": []
+    },
+    {
+      "seq": 6,
+      "received_at": "2026-10-03T16:28:47.992Z",
+      "tool_results_via_generation_aware_reader": 2,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_B"
+      ],
+      "reply_kind": "tool-call",
+      "reply_markers": []
+    },
+    {
+      "seq": 7,
+      "received_at": "2026-10-03T16:28:48.276Z",
+      "tool_results_via_generation_aware_reader": 3,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_B"
+      ],
+      "reply_kind": "tool-call",
+      "reply_markers": []
+    },
+    {
+      "seq": 8,
+      "received_at": "2026-10-03T16:28:48.321Z",
+      "tool_results_via_generation_aware_reader": 4,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_B"
+      ],
+      "reply_kind": "tool-call",
+      "reply_markers": []
+    },
+    {
+      "seq": 9,
+      "received_at": "2026-10-03T16:28:48.384Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_B",
+        "RC2MK_BMEM"
+      ],
+      "reply_kind": "text",
+      "reply_markers": []
+    },
+    {
+      "seq": 10,
+      "received_at": "2026-10-03T16:28:48.387Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 178,
+      "user_text_truncated_by_recorder": false,
+      "user_text_markers": [
+        "RC2MK_B",
+        "RC2MK_BMEM"
+      ],
+      "reply_kind": "text",
+      "reply_markers": []
+    },
+    {
+      "seq": 11,
+      "received_at": "2026-10-03T16:28:48.456Z",
+      "tool_results_via_generation_aware_reader": 5,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_B"
+      ],
+      "reply_kind": "text",
+      "reply_markers": []
+    },
+    {
+      "seq": 12,
+      "received_at": "2026-10-03T16:28:48.736Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_C"
+      ],
+      "reply_kind": "tool-call",
+      "reply_markers": []
+    },
+    {
+      "seq": 13,
+      "received_at": "2026-10-03T16:28:48.737Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 242,
+      "user_text_truncated_by_recorder": false,
+      "user_text_markers": [
+        "RC2MK_C"
+      ],
+      "reply_kind": "text",
+      "reply_markers": []
+    },
+    {
+      "seq": 14,
+      "received_at": "2026-10-03T16:28:48.827Z",
+      "tool_results_via_generation_aware_reader": 1,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_C"
+      ],
+      "reply_kind": "tool-call",
+      "reply_markers": []
+    },
+    {
+      "seq": 15,
+      "received_at": "2026-10-03T16:28:48.883Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_C",
+        "RC2MK_CMEM"
+      ],
+      "reply_kind": "text",
+      "reply_markers": []
+    },
+    {
+      "seq": 16,
+      "received_at": "2026-10-03T16:28:48.884Z",
+      "tool_results_via_generation_aware_reader": 0,
+      "user_text_chars": 178,
+      "user_text_truncated_by_recorder": false,
+      "user_text_markers": [
+        "RC2MK_C",
+        "RC2MK_CMEM"
+      ],
+      "reply_kind": "text",
+      "reply_markers": []
+    },
+    {
+      "seq": 17,
+      "received_at": "2026-10-03T16:28:48.958Z",
+      "tool_results_via_generation_aware_reader": 2,
+      "user_text_chars": 300,
+      "user_text_truncated_by_recorder": true,
+      "user_text_markers": [
+        "RC2MK_C"
+      ],
+      "reply_kind": "text",
+      "reply_markers": []
+    }
+  ],
+  "prompt_measurements": [
+    {
+      "label": "leader_request",
+      "oracle": "S4b/S1a",
+      "source_file": "rc2-smoke-run5/s1-b-leader-request.json",
+      "seq": 3,
+      "produced_by": {
+        "variable": "systemPrompt",
+        "extractor": "generation-aware systemTextOf helper",
+        "line": 1530,
+        "source_line": "const systemPrompt = systemTextOf(bStart)"
+      },
+      "chars": 4000,
+      "sha256": "d507682cd3cbb4ca3fa94b060d88e658d0094502ca13706394eb4ebaec6e5a19",
+      "markers": {
+        "shipped_deployment_persona": true,
+        "leader_B_persona": true,
+        "leader_A_persona": false,
+        "worker_B_persona": false,
+        "worker_A_persona": false,
+        "worker_C_persona": false
+      },
+      "tools_recorded": 11
+    },
+    {
+      "label": "member_request",
+      "oracle": "S4e",
+      "source_file": "rc2-smoke-run5/s4-b-member-request.json",
+      "seq": 9,
+      "produced_by": {
+        "variable": "bMemberSystem",
+        "extractor": "inline filter role === 'system' (the 0.1 envelope)",
+        "line": 1670,
+        "source_line": "const bMemberSystem = (bMember.body.messages ?? [])"
+      },
+      "chars": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "markers": {
+        "shipped_deployment_persona": false,
+        "leader_B_persona": false,
+        "leader_A_persona": false,
+        "worker_B_persona": false,
+        "worker_A_persona": false,
+        "worker_C_persona": false
+      },
+      "tools_recorded": null
+    }
+  ],
+  "tool_result_join_scope": {
+    "join_scope": "one request body (not the run, not the session)",
+    "criterion_to_request": [
+      {
+        "criterion": "S1a",
+        "request_variable": "bS1",
+        "waiter_required_tool_results": 1,
+        "matched_seq": 5,
+        "earlier_results_inside_the_same_request": 0,
+        "derivation": "const bS1 = await waitForMock(... toolMsgsOf(r).length === 1) at ran-at line 1540 + the recorded toolMsgCount"
+      },
+      {
+        "criterion": "S2a",
+        "request_variable": "bS2",
+        "waiter_required_tool_results": 2,
+        "matched_seq": 6,
+        "earlier_results_inside_the_same_request": 1,
+        "derivation": "const bS2 = await waitForMock(... toolMsgsOf(r).length === 2) at ran-at line 1567 + the recorded toolMsgCount"
+      },
+      {
+        "criterion": "S3b",
+        "request_variable": "bS3",
+        "waiter_required_tool_results": 3,
+        "matched_seq": 7,
+        "earlier_results_inside_the_same_request": 2,
+        "derivation": "const bS3 = await waitForMock(... toolMsgsOf(r).length === 3) at ran-at line 1613 + the recorded toolMsgCount"
+      },
+      {
+        "criterion": "S4c",
+        "request_variable": "bS4",
+        "waiter_required_tool_results": 4,
+        "matched_seq": 8,
+        "earlier_results_inside_the_same_request": 3,
+        "derivation": "const bS4 = await waitForMock(... toolMsgsOf(r).length === 4) at ran-at line 1645 + the recorded toolMsgCount"
+      }
+    ],
+    "pollution_consequence": "For S3b the joined string carries the S1 and S2 results alongside the bash output; for S4c it carries S1-S3, which includes the S2 deny text. A substring test against the join can therefore pass on an earlier result - a weaker oracle than the criterion intends.",
+    "removed_metric": "cumulative_results_by_seq - a cross-request running total (10 by seq 9, 15 by seq 11) describing the run rather than any request. No criterion reads a cross-request total, so the figure neither supported nor weakened the pollution point and it has been dropped."
+  },
+  "per_criterion_attribution": [
+    {
+      "criterion": "S1a",
+      "verdict": "fail",
+      "status": "reader_defect_proven_outcome_unverified",
+      "evidence": [
+        "criterion_extractors: at 65f07a26 the value came from body.messages.find(m => m.role === \"tool\")",
+        "the waiter that produced this request required 1 tool result and the recorded toolMsgCount at seq 5 is 1, so a result was carried on the wire",
+        "criteria[S1a].extractor_report is `result=` (empty)"
+      ],
+      "does_not_establish": "that reading team/test.md returned the probe content; only that this reader could not have seen it"
+    },
+    {
+      "criterion": "S2a",
+      "verdict": "pass",
+      "status": "pass_on_a_different_lane",
+      "evidence": [
+        "the assertion is over the durable observation lane (alpha2-perm canonicalized / decision rows), which is separate from the transcript reader",
+        "criteria[S2a].extractor_report is `result=` (empty) even though the verdict is pass"
+      ],
+      "does_not_establish": "anything about the tool-result path; the static-deny observation is what passed"
+    },
+    {
+      "criterion": "S3b",
+      "verdict": "fail",
+      "status": "reader_defect_proven_outcome_unverified",
+      "evidence": [
+        "same expression class as S1a",
+        "its waiter required 3 tool results and the recorded toolMsgCount at seq 7 is 3",
+        "S3a (the durable approval row) passed, which is the observation lane, not the transcript"
+      ],
+      "does_not_establish": "that the approved bash output reached the model. Note too that the current replacement joins S1/S2 results inside this same request, so it can satisfy this criterion on an earlier result"
+    },
+    {
+      "criterion": "S4c",
+      "verdict": "fail",
+      "status": "reader_defect_proven_outcome_unverified",
+      "evidence": [
+        "same expression class as S1a",
+        "its waiter required 4 tool results and the recorded toolMsgCount at seq 8 is 4 - seq 11 / 5 results is a later request and is NOT what S4c read"
+      ],
+      "does_not_establish": "that create-member succeeded or failed on 0.2. Adjacent criteria do not cover it either: S4a is the team.create control-plane call on the fresh root and S4d is only \"delegate tool result observed\" - neither is a durable member-record or roster proof"
+    },
+    {
+      "criterion": "S4e",
+      "verdict": "fail",
+      "status": "reader_defect_proven_outcome_unverified",
+      "evidence": [
+        "prompt_measurements[member_request seq 9]: the persisted value came from the inline role === \"system\" filter and is 0 characters",
+        "the same run S4b shows the generation-aware helper returning 4000 characters on the leader request"
+      ],
+      "does_not_establish": "that blueprint B persona was or was not bound on the member call; the helper output for that seq was never persisted"
+    },
+    {
+      "criterion": "S5b",
+      "verdict": "fail",
+      "status": "reader_defect_proven_outcome_unverified",
+      "evidence": [
+        "same inline expression class as S4e, on the C member request",
+        "S5c, reading through systemTextOf on the same run, passed"
+      ],
+      "does_not_establish": "that blueprint C persona resolution works root-scoped"
+    },
+    {
+      "criterion": "S4b",
+      "verdict": "pass",
+      "status": "control_for_the_helper_lane",
+      "evidence": [
+        "criterion_extractors: systemTextOf(bStart) at both revisions",
+        "prompt_measurements[leader_request seq 3] records that the persisted string came from that helper call: 4000 characters, B leader persona present, A absent"
+      ],
+      "does_not_establish": "the member-side persona question in S4e; it shows the helper lane works on a leader request"
+    },
+    {
+      "criterion": "S5c",
+      "verdict": "pass",
+      "status": "control_for_the_helper_lane",
+      "evidence": [
+        "criterion_extractors: systemTextOf(bMemberAgain) at both revisions"
+      ],
+      "does_not_establish": "the C-persona question in S5b; it shows the helper lane works on a member request"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs",
+      "sha256_at_locked_head": "7ff509e98f18c29c3f4dceef8f7fe96258c1ea1536e1db4e6b53c6e42f0ec74f",
+      "identical_in_current_worktree": true,
+      "note": "read-only for this digest; the pending two-file reader patch belongs to the reviewer"
+    },
+    {
+      "path": "tests/kits/rc2-real-host-smoke/runner-wiring.regression.test.mjs",
+      "sha256_at_locked_head": "99e55e90e111df11da6348ec6a0176c467aeccf07a86e2e5b6c965bf88c0bfd6",
+      "identical_in_current_worktree": true,
+      "note": "read-only for this digest; the pending two-file reader patch belongs to the reviewer"
+    }
+  ],
+  "attribution_rules": [
+    "A criterion is attributed to the reader, not the host, only where the same run recorded a generation-aware count > 0 (per_request.tool_results_via_generation_aware_reader) or a passing sibling criterion (S4b, S5c) that used the helper on the same request.",
+    "Nothing in this file is evidence that persona binding, post-approval execution or create-member work on 0.2. It is evidence about what the two extractors reported."
+  ],
+  "gaps": [
+    "MISSING, not estimated: the mock recorder at the ran-at revision kept seq/receivedAt/userText(300 chars)/toolMsgCount/reply only - no message array, no role/content shape, no tool-result content. Nothing in this file reconstructs them: no synthesized entries, no placeholders presented as data, no re-derived bodies. A field that cannot be measured is reported as missing, and the only honest fix is a whitelisted body digest in the recorder plus a later run.",
+    "For the member request only the inline-reader output was persisted (chars 0). The generation-aware systemTextOf output for that same seq was never written to a file, so the helper side is evidenced indirectly: S4b and S5c passed through systemTextOf on the same run, and the waiter for that request matched on userTextOf plus a tool/tool-count condition.",
+    "toolMsgCount is the generation-aware count, so this run cannot state what a 0.1 role:tool count would have been; the claim that the 0.1 lookup is empty rests on the kit check lines (result= / hasB=false) plus the source expressions quoted under sources[]."
+  ],
+  "corrections_in_this_revision": [
+    "cumulative_results_by_seq removed: it was a cross-request running total (10 by seq 9, 15 by seq 11) and no criterion reads one; the join under review is inside a single request body.",
+    "S4c re-bound from seq 11 / 5 results to seq 8 / 4 results: its waiter (bS4) requires toolMsgsOf(r).length === 4, and seq 11 is a later request (the delegate-result step).",
+    "leader prompt provenance corrected: s1-b-leader-request.json was written from systemTextOf(bStart) (the generation-aware helper), not the inline role-system filter; only the member file came from the inline filter. The provenance is now derived from the writeEvidence call and the assignment behind it rather than asserted.",
+    "S4a / S4d roles corrected: S4a is the team.create control-plane call on the fresh root, S4d is \"delegate tool result observed\". Neither is a durable member-record or roster proof, so the earlier claim that they showed the create path was fine has been dropped.",
+    "attribution wording narrowed throughout to reader_defect_proven_outcome_unverified: a proven empty read says nothing about whether the feature works, and it does not exclude a host-side problem underneath.",
+    "superseded first revision: sha256 668ce17ab7fa784591a61388aa5d9ff2cb99eb8c2ef9252ed94a98570f9cb3ee (kept in git history at 1720db2b)."
+  ],
+  "reproduce": "node dev/agent-workflow/evidence/dsh-020rc2-upgrade/tools/run5-oracle-digest.mjs  (deterministic; diff against the committed file)"
+}

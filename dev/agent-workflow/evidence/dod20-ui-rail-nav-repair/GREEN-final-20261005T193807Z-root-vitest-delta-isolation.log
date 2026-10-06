@@ -1,0 +1,14 @@
+# Characterisation of the 2 files that are NEW in this run's root-vitest failing set
+# (vs ../dsh-020rc2-upgrade/logs/root-vitest-current-e89063c8-plus.log): p6t1-parallel, rc2-persona-probe
+# Neither file reads tests/kits (grep -c 'tests/kits' -> 0 in both). Repeated isolated runs:
+run1:  Tests 1 failed | 21 passed (22)
+run$i failing:      × five activated results, five COMMITTED operations, five members, five child Sessions 7ms
+run2:  Tests 2 failed | 20 passed (22)
+run$i failing:      × two activated results with distinct instance ids and child Sessions 8ms
+run$i failing:      × two COMMITTED operations, two members, two distinct child Sessions 1ms
+run3:  Tests 22 passed (22)
+run4:  Tests 1 failed | 21 passed (22)
+run$i failing:      × five activated results, five COMMITTED operations, five members, five child Sessions 7ms
+# => intermittent: the same two p6t1-parallel 'distinct child Sessions' assertions fail on
+#    some runs and pass on others, with and without this change present. Not attributed to
+#    this commit; recorded as observed flakiness in packages/runtime.

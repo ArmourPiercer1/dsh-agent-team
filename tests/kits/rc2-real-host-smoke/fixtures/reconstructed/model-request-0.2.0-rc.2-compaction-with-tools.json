@@ -1,0 +1,68 @@
+{
+  "__fixture": "BUILT FROM THE 0.2.0-rc.2 SOURCE, not a live capture: packages/compaction/compaction-basic/src/summarizer.ts:145-161 replays the conversation (system prompt, leading messages AND `tools`) and appends one user message whose content is [{type:\"text\",text:COMPACTION_INSTRUCTION}]; the internal purpose:\"compaction\" option never reaches the wire. A live capture would need a plugin-side compaction threshold seam (recorded as a gap).",
+  "provenance": "structure per packages/compaction/compaction-basic/src/summarizer.ts (COMPACTION_INSTRUCTION at :32-34); instruction text abbreviated, values synthetic",
+  "request": {
+    "model": "rc2-smoke-model",
+    "stream": true,
+    "system": "You are the leader of the rc2 smoke B team. RC2_B_PERSONA",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "RC2_SMOKE_B_LEADER_TASK"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "call-1",
+            "name": "read",
+            "input": {
+              "file_path": "team/notes.txt"
+            }
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "tool_result",
+            "tool_use_id": "call-1",
+            "content": "note contents",
+            "is_error": false
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "You are now acting as a compaction engine for this AI coding assistant. Condense the conversation ABOVE into a structured checkpoint that lets another model resume the work with no loss of essential context.\n\nOutput EXACTLY the Markdown structure below: keep every section, in order."
+          }
+        ]
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read",
+          "parameters": {
+            "type": "object"
+          }
+        }
+      }
+    ]
+  },
+  "reply": {
+    "kind": "text",
+    "content": "## Primary Request and Intent\n- (synthetic summary)"
+  }
+}

@@ -74,6 +74,12 @@ import { createHash } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { register } from 'node:module'
+import {
+  AGENT_PRESET_ROW_NAME,
+  emitPatchLayer,
+  personaRow,
+  presetDeclarationRow,
+} from '../../../../tests/kits/_shared/preset-seam.mjs'
 
 import {
   CLIENT_COMMIT_HASH,
@@ -362,24 +368,25 @@ async function main() {
     })
     log('junction farm ready (shared packages/runtime/node_modules)')
 
-    // ── user preset fixtures (DSH_HOME-local persona presets) ───────────────
+    // ── preset fixtures: DECLARATION ROWS on the profile-patch seam ─────────
+    // Retired shape (both files, `config: { text: ... }`) is unread by the pinned
+    // host: the preset registry no longer registers $DSH_HOME/.agent-presets
+    // directories, and the persona plugin's schema is
+    // prefix (required) / suffix / complete / includeRuntimeContext — no `text`
+    // key. Leader and member personas stay distinct, as P5-T6 asserts them.
     const leaderPresetId = 'p5t6-leader-persona'
     const memberPresetId = 'p5t6-member-persona'
-    const writePreset = (presetId, text) => {
-      const presetDir = join(DSH_HOME, '.agent-presets', presetId)
-      mkdirSync(presetDir, { recursive: true })
-      writeFileSync(join(presetDir, 'agent.cordis.yml'), [
-        `# P5-T6 harness fixture: ${presetId} persona preset (user preset, DSH_HOME-local).`,
-        '- id: persona',
-        "  name: '@deepseek-ai/dsh-persona'",
-        '  config:',
-        `    text: ${text}`,
-        '',
-      ].join('\n'))
-    }
-    writePreset(leaderPresetId, LEADER_PERSONA)
-    writePreset(memberPresetId, MEMBER_PERSONA)
-    log(`user presets written: ${leaderPresetId}, ${memberPresetId}`)
+    const personaPresetRow = (presetId, displayName, text) => presetDeclarationRow({
+      id: presetId,
+      displayName,
+      description: `P5-T6 member-residency harness persona preset (public profile-patch seam).`,
+      plugins: [personaRow({ text })],
+    })
+    const presetRows = [
+      personaPresetRow(leaderPresetId, 'P5-T6 leader persona', LEADER_PERSONA),
+      personaPresetRow(memberPresetId, 'P5-T6 member persona', MEMBER_PERSONA),
+    ]
+    log(`preset declarations built: ${leaderPresetId}, ${memberPresetId}`)
 
     // ── mini MCP server (127.0.0.1, ports 3491-3495 candidates) ─────────────
     mini = await startMiniMcpServer([3491, 3492, 3493, 3494, 3495])
@@ -524,9 +531,28 @@ async function main() {
       try {
         const profile = await ensureProfile({ instance, log, timeoutMs: 90_000 })
         record.profile = profile
-        instance.mountRows(rows, [
-          `P5-T6 harness patch layer (boot ${boot}): ${rows.map((r) => r.id).join(', ')} mounted ONLY through this public profile-patch seam.`,
-        ])
+        // One write, one seam: plugin rows plus the two persona preset
+        // declaration rows. DshInstance.mountRows() cannot express the nested
+        // `config` a declaration row needs, so the layer is emitted here.
+        mkdirSync(instance.profileDir, { recursive: true })
+        writeFileSync(
+          instance.patchFile,
+          emitPatchLayer({
+            header: [
+              `P5-T6 harness patch layer (boot ${boot}): ${[...rows.map((r) => r.id), ...presetRows.map((r) => r.config.id)].join(', ')} mounted ONLY through this public profile-patch seam.`,
+              '# (0.2.0-rc.2: presets are declaration rows here; the retired user-preset directory is not read by the host.)',
+            ],
+            rows: [...rows, ...presetRows],
+          }),
+        )
+        {
+          const patchText = readFileSync(instance.patchFile, 'utf8')
+          const missing = [...rows.map((r) => r.id), leaderPresetId, memberPresetId].filter((id) => !patchText.includes(id))
+          record.patchLayer = { bytes: patchText.length, missing }
+          if (missing.length > 0) {
+            noteFailure(`boot ${boot}: patch layer is missing ${missing.join(', ')} (${AGENT_PRESET_ROW_NAME} must be present for each preset)`)
+          }
+        }
         if (opts.t5Directive !== undefined) {
           writeFileSync(join(DSH_HOME, 'p5t5-directive.json'), JSON.stringify(opts.t5Directive, null, 2))
         }

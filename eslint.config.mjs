@@ -18,6 +18,11 @@ export default tseslint.config(
       '**/node_modules/**',
       '.worktrees/**',
       'references/**',
+      // Gitignored raw-evidence scratch (sanitizer inputs, incl. its .sanitized-tmp
+      // working copy). Product lint coverage is unchanged; without this line a
+      // local evidence mirror changes `pnpm lint` counts, which made an exact-base
+      // comparison report +67 phantom errors in the 0.2.0-rc.2 round.
+      '.private-raw-evidence/**',
       'dev/**',
       'docs/**',
       'tests/**',

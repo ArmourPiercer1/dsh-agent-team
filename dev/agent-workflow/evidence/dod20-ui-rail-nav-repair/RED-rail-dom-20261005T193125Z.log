@@ -1,0 +1,198 @@
+✖ rail DOM (real collector, real navigate): locates the member past a COLLAPSED Ungrouped group and verifies selection (815.677282ms)
+✖ rail DOM: a changed CSS-module hash for css.title changes nothing (no shipped class is an identifier) (19.559094ms)
+✖ rail DOM: every supported sidebar width finds the row (SIDEBAR_MIN 264 / DEFAULT 280 / MAX 420) (20.332215ms)
+✖ rail DOM: Chinese locale expands the group and reveals the overflow with localized labels (20.348851ms)
+✖ rail DOM: overflow reveal is bounded and structural (data-row-key=overflow:*), and the collapse label is never clicked as an expander (20.747649ms)
+✖ rail DOM: an already-expanded group is never clicked (a toggle would collapse it) (20.941621ms)
+✔ rail DOM: expansion state is read from aria-expanded, never from a row count (50.144961ms)
+✖ rail DOM: a target in ANOTHER workspace is reached while Ungrouped stays collapsed (17.467169ms)
+✔ rail DOM: a no-op / still-collapsed click fails closed, it never clicks an arbitrary row (18.63464ms)
+✖ rail DOM: a missing target is locate-not_found fail-closed AND leaves scrubbed rail diagnostics plus one failure screenshot (32.760688ms)
+✖ rail DOM: a duplicate row carrying the SAME canonical id is AMBIGUOUS, never "pick the first" (14.565421ms)
+✖ rail DOM: a repeated TITLE outside the session tree (hover card, header) cannot make the locate ambiguous (10.967145ms)
+✖ rail DOM: a hidden duplicate row (zero box, display:none) is not a candidate (10.380288ms)
+✖ rail DOM: a rendered duplicate carrying the SAME canonical id outside the rail is AMBIGUOUS, never a silent pick (18.558893ms)
+✔ rail DOM: the exact canonical title is required — a same-id row with a different title fails closed (14.623017ms)
+✖ rail DOM: selection identity stays correlated — a row that renders but never produces a fresh readState round is unverified, never a navigation (10.792866ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 3
+ℹ fail 13
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1268.805562
+
+✖ failing tests:
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:332:1
+✖ rail DOM (real collector, real navigate): locates the member past a COLLAPSED Ungrouped group and verifies selection (815.677282ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:693:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:327:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:334:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    diag: { title: 'ack:role-worker:deleg:mpr-2026-10-01T13-21-34', hits: 0, railRowCount: 2 }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:341:1
+✖ rail DOM: a changed CSS-module hash for css.title changes nothing (no shipped class is an identifier) (19.559094ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:693:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:327:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:344:21)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { title: 'ack:role-leader:mpr-2026-10-01T13-21-34', hits: 0, railRowCount: 0 }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:350:1
+✖ rail DOM: every supported sidebar width finds the row (SIDEBAR_MIN 264 / DEFAULT 280 / MAX 420) (20.332215ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:693:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:327:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:353:21)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { title: 'ack:role-worker:deleg:mpr-2026-10-01T13-21-34', hits: 0, railRowCount: 2 }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:359:1
+✖ rail DOM: Chinese locale expands the group and reveals the overflow with localized labels (20.348851ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:693:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:327:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:361:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { title: 'ack:role-worker:deleg:mpr-2026-10-01T13-21-34', hits: 0, railRowCount: 3 }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:366:1
+✖ rail DOM: overflow reveal is bounded and structural (data-row-key=overflow:*), and the collapse label is never clicked as an expander (20.747649ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:693:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:327:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:368:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { title: 'ack:role-leader:mpr-2026-10-01T13-21-34', hits: 0, railRowCount: 2 }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:374:1
+✖ rail DOM: an already-expanded group is never clicked (a toggle would collapse it) (20.941621ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:693:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:327:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:376:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { title: 'ack:role-worker:deleg:mpr-2026-10-01T13-21-34', hits: 0, railRowCount: 7 }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:390:1
+✖ rail DOM: a target in ANOTHER workspace is reached while Ungrouped stays collapsed (17.467169ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:693:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:327:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:395:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { title: 'ack:role-worker:deleg:mpr-2026-10-01T13-21-34', hits: 0, railRowCount: 1 }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:411:1
+✖ rail DOM: a missing target is locate-not_found fail-closed AND leaves scrubbed rail diagnostics plus one failure screenshot (32.760688ms)
+  AssertionError [ERR_ASSERTION]: bounded rail diagnostics expected
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:417:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:413:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:424:1
+✖ rail DOM: a duplicate row carrying the SAME canonical id is AMBIGUOUS, never "pick the first" (14.565421ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /locate-ambiguous/. Input:
+  
+  'locate-not_found'
+  
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:436:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:435:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'locate-not_found',
+    expected: /locate-ambiguous/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:441:1
+✖ rail DOM: a repeated TITLE outside the session tree (hover card, header) cannot make the locate ambiguous (10.967145ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:693:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:327:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:444:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { title: 'ack:role-worker:deleg:mpr-2026-10-01T13-21-34', hits: 0, railRowCount: 2 }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:448:1
+✖ rail DOM: a hidden duplicate row (zero box, display:none) is not a candidate (10.380288ms)
+  FailClosed: locate-not_found
+      at navigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs:693:11)
+      at async runNavigate (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:327:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:450:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    diag: { title: 'ack:role-worker:deleg:mpr-2026-10-01T13-21-34', hits: 0, railRowCount: 2 }
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:455:1
+✖ rail DOM: a rendered duplicate carrying the SAME canonical id outside the rail is AMBIGUOUS, never a silent pick (18.558893ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:461:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:477:1
+✖ rail DOM: selection identity stays correlated — a row that renders but never produces a fresh readState round is unverified, never a navigation (10.792866ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /selection-unverified/. Input:
+  
+  'locate-not_found'
+  
+      at Object.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:481:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs:479:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'locate-not_found',
+    expected: /selection-unverified/,
+    operator: 'match',
+    diff: 'simple'
+  }

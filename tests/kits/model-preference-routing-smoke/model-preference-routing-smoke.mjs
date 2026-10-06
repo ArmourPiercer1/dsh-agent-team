@@ -180,7 +180,7 @@ const P6T6_ROW_NAME = pathToFileURL(P6T6_ROW_PATH).href
 const STABLE_URLS = ['http://127.0.0.1:3080', 'http://127.0.0.1:3180'] // FORBIDDEN to bind; probe only
 const HOST_PORT_CANDIDATES = [3181, 3182, 3183, 3184, 3185, 3186]
 const MOCK_PORT = 3496
-const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // 46a7f68b0922371ce7144b668b90e377d8e799f4 (0.1.7-rc.1)
+const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // generation lives ONLY in tests/paths.mjs; never restate it here
 
 // The row static baseline (the deployment model every member WOULD run if
 // the modelPreference route were broken).
