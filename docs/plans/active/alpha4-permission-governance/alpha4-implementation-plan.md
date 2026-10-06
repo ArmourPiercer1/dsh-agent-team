@@ -877,14 +877,14 @@ Per-PR corrections to the file lists above (these supersede them):
 - Create: `packages/runtime/test/a4pr0-proposal-generation.test.ts` — pins A4-2: a proposal append advances `team_sessions.generation` and does **not** disturb the governance overlay CAS (`OVERRIDE_GENERATION_CONFLICT` semantics).
 - Carry: `scripts/fail-set.mjs` from `chore/a4-fail-set-tool` @ `5710eff6` (lane C).
 
-- [ ] RED first: the three test files fail for the absence of the module.
-- [ ] Implement the store against structural writer/reader ports (no ledger repository type import, no `./permission-mutation.js` import, no new method on `createGovernanceMutationService`).
-- [ ] **No re-export** from `governance/index.ts` (A4-6): nothing emits, `check:artifacts` stays green, PR5 wires and co-commits dist.
-- [ ] Confirm the `p4t6` inventory is already correct from PR0a and recompute only if this PR adds more scannable files (A5-17: the authority is continuous, the recompute is per-PR).
-- [ ] Register `governance-proposal-recorded` in the **client** category map too (ADR A5-22: the writer owns both maps), so PR0a's guard does not go red on a file PR0 was not allowed to touch.
-- [ ] Scope the two whole-tree hygiene scanners to tracked sources (lane C, A1.2.6).
-- [ ] Baseline per A1.2.3; the failing set moves only downward; named-flake allowance is additive-only (A1.2.4).
-- [ ] `pnpm build && pnpm run build:composition && pnpm run check:artifacts` green; commit.
+- [x] RED first: the three test files fail for the absence of the module.
+- [x] Implement the store against structural writer/reader ports (no ledger repository type import, no `./permission-mutation.js` import, no new method on `createGovernanceMutationService`).
+- [x] **No re-export** from `governance/index.ts` (A4-6): nothing emits, `check:artifacts` stays green, PR5 wires and co-commits dist.
+- [x] Confirm the `p4t6` inventory is already correct from PR0a and recompute only if this PR adds more scannable files (A5-17: the authority is continuous, the recompute is per-PR).
+- [x] Register `governance-proposal-recorded` in the **client** category map too (ADR A5-22: the writer owns both maps), so PR0a's guard does not go red on a file PR0 was not allowed to touch.
+- [x] Scope the two whole-tree hygiene scanners to tracked sources (lane C, A1.2.6).
+- [x] Baseline per A1.2.3; the failing set moves only downward; named-flake allowance is additive-only (A1.2.4).
+- [x] `pnpm build && pnpm run build:composition && pnpm run check:artifacts` green; commit.
 
 **Gate:** round-trip + restart green; corrupt gate has both legs (typed corrupt outcome with the row still listed; entry-level corruption asserts a throw, never an empty read); a proposal append advances the session stamp and leaves the overlay CAS intact; plugin behaviour byte-identical (no product surface change); baseline moves only downward.
 
