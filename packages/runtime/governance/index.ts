@@ -101,6 +101,23 @@ export type {
   PermissionStaticLayerRule,
   SubtreeContains,
 } from './permission-mutation.js'
+// Alpha.4 PR1 — the shared authority-ceiling adapter (ADR A3-9/A3-2, spec §7.4).
+// This barrel is how the lane exposes its own algebra; the GRAMMAR it consumes
+// is exported from `@dsh-agent-team/domain/authority-envelope` and is
+// deliberately NOT re-exported from here: a barrel that re-exports the domain
+// grammar would give every lane two names for one concept and a second import
+// path for the shape that is bound into a content hash.
+export {
+  AUTHORITY_CEILING_ERROR_CODES,
+  AuthorityBindingError,
+  bindingDocs,
+  grantCeiling,
+} from './authority-ceiling.js'
+export type {
+  AuthorityBindingProblem,
+  AuthorityCeilingScope,
+  AuthorityEnvelopeDocuments,
+} from './authority-ceiling.js'
 export type {
   GovernancePermissionLaneDeps,
   GovernancePermissionMutationArgs,

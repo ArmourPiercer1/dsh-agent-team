@@ -305,11 +305,18 @@ export const NEG_SCHEMA_VERSION_MISMATCH: NegativeFixture = {
   // the intent (a well-formed integer outside the supported set fails
   // loudly with SCHEMA_VERSION_MISMATCH) is preserved, and the supported
   // set stays exactly [1, 2].
-  name: 'schemaVersion 3 is an integer but unsupported',
+  //
+  // A4-PR1 applies the SAME recorded move: ADR A2-11 widens the TEMPORARY
+  // PR1-PR6 bridge set to [1, 2, 3], so v3 stops being a witness of "outside
+  // the supported set" and the negative moves to v4. Only the witness value
+  // moves; the intent is untouched. The `supported` detail this error carries
+  // is derived from the constant (asserted exactly in
+  // a4p1-blueprint-v3-governance.test.ts), not pinned here.
+  name: 'schemaVersion 4 is an integer but unsupported',
   code: 'SCHEMA_VERSION_MISMATCH',
   source: [
     '---',
-    'schemaVersion: 3',
+    'schemaVersion: 4',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',

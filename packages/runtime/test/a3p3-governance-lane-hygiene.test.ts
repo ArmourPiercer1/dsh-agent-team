@@ -49,6 +49,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import * as lane from '../governance/index.js'
 import * as mutationModule from '../governance/permission-mutation.js'
+import * as domainEnvelope from '../../domain/authority-envelope/src/index.js'
 import { PERMISSION_OVERLAY_MAX_RULES } from '../../storage/schema/permission-overlay.js'
 import { createTeamOperationCoordinator } from '../coordination/index.js'
 import type { OverrideStorePort, OverrideRecordView } from '../mutation/override-admission.js'
@@ -61,6 +62,11 @@ const MUTATION_SOURCE = readFileSync(join(HERE, '../governance/permission-mutati
 const SERVICE_SOURCE = readFileSync(join(HERE, '../governance/service.ts'), 'utf8')
 const PROPOSAL_STORE_SOURCE = readFileSync(join(HERE, '../governance/proposal-store.ts'), 'utf8')
 const SLOT_SOURCE = readFileSync(join(HERE, '../governance/slot.ts'), 'utf8')
+// A4-PR1: the ceiling adapter and the domain grammar it consumes. Read as TEXT
+// because the law is about the IMPORT GRAPH, which no runtime assertion can see.
+const AUTHORITY_CEILING_SOURCE = readFileSync(join(HERE, '../governance/authority-ceiling.ts'), 'utf8')
+const DOMAIN_ROOT = join(RUNTIME_ROOT, '..', 'domain')
+const DOMAIN_ENVELOPE_DIR = join(DOMAIN_ROOT, 'authority-envelope', 'src')
 
 describe('the governance lane stays loadable from the admission surface', () => {
   it('the admission constant tables are initialized when this lane loads', () => {
@@ -117,7 +123,15 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
     // (Round-3 note: the first amendment, recorded in
     // `dev/agent-workflow/evidence/alpha3-pr4-permission-lifecycle/`.)
     const offenders: string[] = []
-    const roots = ['runtime', 'tools', 'remote', 'client']
+    // A4-PR1 (ADR A3-9/A2-3): `domain` joins the walk. The direction law —
+    // runtime consumes domain, NEVER the reverse — is only real if something
+    // looks. A domain module that imported this kernel would not merely be a
+    // layering smell: it would put the content-hashed grammar behind a runtime
+    // dependency, so a governance edit could change what a stored blueprint
+    // hash MEANS. Domain files are never skipped below (no allow-list entry may
+    // ever be added for them — the correct fix for a hit here is to move the
+    // vocabulary DOWN, not to permit the edge).
+    const roots = ['runtime', 'tools', 'remote', 'client', 'domain']
     const visit = (dir: string): void => {
       for (const entry of readdirSync(dir)) {
         const full = join(dir, entry)
@@ -386,5 +400,117 @@ describe('the lane\'s storage edge is OWNED — one file, one module (A4-PR0)', 
     // The kernel's own rule is untouched by this amendment: it mirrors its
     // bound and keeps zero runtime edge to storage (the pin above).
     expect(MUTATION_SOURCE).not.toMatch(/from '\.\.\/\.\.\/storage\//)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// A4-PR1 (ADR A3-9/A2-3, plan Task 1 lane B): the shared authority grammar was
+// moved DOWN into `packages/domain/authority-envelope` so the Blueprint hash
+// carrier and the governance algebra cannot hold two copies of one vocabulary.
+// The move is only an improvement while the DIRECTION holds, and a direction is
+// not visible to any runtime assertion — `import type` erases, and a value edge
+// from domain back to runtime would load fine right up until the day a stored
+// blueprint hash meant something else. So the import graph is policed here, in
+// the file that already owns this lane\'s dependency law.
+// ---------------------------------------------------------------------------
+
+describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-3)', () => {
+  it('the domain lane declares no edge but its own interior', () => {
+    // The leaf law, stated as the strongest thing that is true today: every
+    // module specifier inside `domain/authority-envelope` is INTERNAL to it.
+    // Not "no runtime imports" — NOTHING, so the vocabulary cannot acquire a
+    // dependency by accretion the way `governance/` had to amend an allow-list
+    // twice above.
+    const offenders: string[] = []
+    const files = readdirSync(DOMAIN_ENVELOPE_DIR)
+      .filter((entry) => entry.endsWith('.ts') && !entry.endsWith('.d.ts'))
+      .sort()
+    // Non-vacuous: the lane really has sources (a walk over an empty directory
+    // is the classic green-that-means-nothing).
+    expect(files.length).toBeGreaterThan(1)
+    for (const entry of files) {
+      const source = readFileSync(join(DOMAIN_ENVELOPE_DIR, entry), 'utf8')
+      for (const match of source.matchAll(/\bfrom '([^']+)'/g)) {
+        const specifier = match[1] ?? ''
+        if (specifier.startsWith('./')) continue
+        offenders.push(`${entry} -> ${specifier}`)
+      }
+    }
+    expect(offenders).toEqual([])
+  })
+
+  it('PR1 ships the ceiling adapter UNWIRED: the barrel is its only importer', () => {
+    // The plan's own lane-C instruction — "keep the reader unused by production
+    // authorization in PR1" — is a claim about the import graph, so it is pinned
+    // as one (the A4-PR0 precedent: a lane that ships unwired says so in a test,
+    // because an accidental wiring in a later PR must fail something).
+    const importers: string[] = []
+    const visit = (dir: string): void => {
+      for (const entry of readdirSync(dir)) {
+        const full = join(dir, entry)
+        const st = statSync(full)
+        if (st.isDirectory()) {
+          if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+          visit(full)
+          continue
+        }
+        if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry.endsWith('.d.ts')) continue
+        if (!readFileSync(full, 'utf8').includes("from './authority-ceiling.js'")
+          && !readFileSync(full, 'utf8').includes('authority-ceiling.js')) continue
+        importers.push(relative(RUNTIME_ROOT, full))
+      }
+    }
+    visit(RUNTIME_ROOT)
+    expect(importers).toEqual([`governance${sep}index.ts`])
+    // …and nothing outside the governance directory names the ceiling algebra
+    // at all, so PR2's wiring arrives as a reviewed edit, not a silent import.
+    const outside: string[] = []
+    for (const pkg of ['runtime', 'tools', 'remote', 'client', 'domain'] as const) {
+      const pkgRoot = pkg === 'runtime' ? RUNTIME_ROOT : join(RUNTIME_ROOT, '..', pkg)
+      const walk = (dir: string): void => {
+        for (const entry of readdirSync(dir)) {
+          const full = join(dir, entry)
+          const st = statSync(full)
+          if (st.isDirectory()) {
+            if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+            walk(full)
+            continue
+          }
+          if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry.endsWith('.d.ts')) continue
+          const rel = relative(RUNTIME_ROOT, full)
+          if (rel.startsWith(`governance${sep}authority-ceiling.ts`)) continue
+          if (rel.startsWith(`governance${sep}index.ts`)) continue
+          const source = readFileSync(full, 'utf8')
+          // Match the ALGEBRA, not the English: `grantCeiling`/`bindingDocs` are
+          // this module's exported names, and a prose mention in a doc comment
+          // is not a call site.
+          if (/\b(grantCeiling|bindingDocs)\s*\(/.test(source)) outside.push(rel)
+        }
+      }
+      try {
+        statSync(pkgRoot)
+      } catch {
+        continue
+      }
+      walk(pkgRoot)
+    }
+    expect(outside).toEqual([])
+  })
+
+  it('the runtime consumes that grammar as ONE implementation, not a copy', () => {
+    // Identity, not equality: a re-declared copy that agrees today is the drift
+    // this whole lane exists to prevent (the same reason the pin above compares
+    // PERMISSION_EFFECT_PRECEDENCE by `toBe`).
+    expect(mutationModule.matcherCovers).toBe(domainEnvelope.matcherCovers)
+    expect(lane.matcherCovers).toBe(domainEnvelope.matcherCovers)
+    expect(mutationModule.PERMISSION_EFFECT_PRECEDENCE).toBe(domainEnvelope.AUTHORITY_EFFECT_PRECEDENCE)
+    expect(mutationModule.PERMISSION_RESOURCE_MATCHER_KINDS).toBe(domainEnvelope.AUTHORITY_MATCHER_KINDS)
+    // The ceiling adapter reaches the proposal vocabulary as a TYPE ONLY
+    // (correction X5-E1): it needs the closed position union, not an edge to the
+    // proposal write path. A value import here would be a storage-adjacent edge
+    // this file has not reviewed.
+    expect(AUTHORITY_CEILING_SOURCE).toContain("import type { ProposalAuthorityPosition } from './proposal-store.js'")
+    expect(AUTHORITY_CEILING_SOURCE).not.toMatch(/^import \{[^}]*\} from '\.\/proposal-store\.js'/m)
+    expect(AUTHORITY_CEILING_SOURCE).not.toMatch(/from '\.\.\/\.\.\/storage\//)
   })
 })

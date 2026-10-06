@@ -138,6 +138,23 @@ import {
   FILE_PERMISSION_TOOL_VALUES,
   SHELL_PERMISSION_TOOL_VALUES,
 } from '../operation-permission/types.js'
+// A4-PR1 (ADR A3-9/A2-3): the authority grammar and the effect lattice moved to
+// `packages/domain/authority-envelope`, and this module is now a CONSUMER of
+// them. The import is safe in a way most lane imports are not: that module is a
+// LEAF (it imports nothing), so it cannot participate in the initialization
+// cycle this file's header warns about, and it is not a barrel edge.
+import {
+  AUTHORITY_EFFECT_PRECEDENCE,
+  AUTHORITY_MATCHER_KINDS,
+  matcherCovers as sharedMatcherCovers,
+} from '../../domain/authority-envelope/src/index.js'
+import type {
+  AuthorityEnvelope as AuthorityEnvelopeDocument,
+  AuthorityEnvelopeRule as AuthorityEnvelopeRuleDocument,
+  AuthorityResourceMatcher as AuthorityResourceMatcherDocument,
+  CoverageVerdict as CoverageVerdictDocument,
+  SubtreeContains as SubtreeContainsDocument,
+} from '../../domain/authority-envelope/src/index.js'
 import type { PermissionOverlayEffect } from '../permission-governance/types.js'
 import type { PermissionOverlayRule, PermissionOverlaySnapshot } from '../permission-governance/types.js'
 
@@ -218,11 +235,14 @@ function refuse(
  * An effect change is an EXPANSION iff the rank goes UP, a TIGHTENING iff it
  * goes DOWN, IDENTITY otherwise.
  */
-export const PERMISSION_EFFECT_PRECEDENCE = Object.freeze({
-  deny: 0,
-  ask: 1,
-  allow: 2,
-} as const satisfies Record<PermissionOverlayEffect, number>)
+// ALIAS, not a copy (ADR A1-18). `a3p3-governance-lane-hygiene.test.ts:77` pins
+// this name and the domain object by `toBe` — OBJECT IDENTITY — so the two
+// ladders cannot drift into two tables that merely agree today. The `satisfies
+// Record<PermissionOverlayEffect, number>` check that used to live here travels
+// with the declaration into `domain`, where the vocabulary is re-declared and
+// structurally pinned to the storage owner's type by
+// `a4p1-authority-envelope.test.ts` (both directions).
+export const PERMISSION_EFFECT_PRECEDENCE = AUTHORITY_EFFECT_PRECEDENCE
 
 /** One §6 direction. */
 export type PermissionEffectDirection = 'expansion' | 'tightening' | 'identity'
@@ -266,13 +286,20 @@ export function classifyPermissionOperationClass(token: string): PermissionOpera
 // ---------------------------------------------------------------------------
 
 /** The closed matcher kinds (design §5; `any` deliberately absent). */
-export const PERMISSION_RESOURCE_MATCHER_KINDS = ['exact', 'subtree', 'fingerprint'] as const
+export const PERMISSION_RESOURCE_MATCHER_KINDS = AUTHORITY_MATCHER_KINDS
 
-/** One canonical resource matcher over OPAQUE canonical identities. */
-export type PermissionResourceMatcher =
-  | { readonly kind: 'exact'; readonly resource: string }
-  | { readonly kind: 'subtree'; readonly resource: string }
-  | { readonly kind: 'fingerprint'; readonly resource: string }
+/**
+ * One canonical resource matcher over OPAQUE canonical identities — the
+ * RUNTIME shape, and now an ALIAS of the domain's `AuthorityResourceMatcher`
+ * rather than a second declaration of it (ADR A3-9; the alias survives until
+ * PR7 deletes it, A1-18, so no caller in PR2-PR6 has to be renamed).
+ *
+ * It is NOT the document shape. `{ kind, path }` / `{ kind, fingerprint }` is
+ * the DECLARED AST (`AuthorityEnvelopeAstMatcher`), and the collapse into
+ * `resource` happens exactly once, in `src/plugin/permission-plane.ts`
+ * (`buildAuthorityEnvelope`) — never here, never in `domain` (ADR A2-3).
+ */
+export type PermissionResourceMatcher = AuthorityResourceMatcherDocument
 
 /** The prefix that renders one matcher kind into the carrier text. */
 const MATCHER_PREFIX: Readonly<Record<PermissionResourceMatcher['kind'], string>> = Object.freeze({
@@ -558,17 +585,21 @@ export function parsePermissionMutation(raw: PermissionMutationInput): Permissio
 // The §6 envelope (the ONE canonical permission-change envelope model)
 // ---------------------------------------------------------------------------
 
-/** One envelope rule (design §4 recommended conceptual form, verbatim shape). */
-export interface PermissionEnvelopeRule {
-  readonly operationClass: string
-  readonly matcher: PermissionResourceMatcher
-  readonly maximumEffect: PermissionOverlayEffect
-}
+/**
+ * One envelope rule (design §4 recommended conceptual form, verbatim shape) —
+ * an ALIAS of the domain rule since A4-PR1 (ADR A3-9/A1-18). The shape is
+ * unchanged to the last field; only the declaration moved, so the PR0 callers
+ * keep compiling and PR7 deletes the alias instead of migrating them.
+ */
+export type PermissionEnvelopeRule = AuthorityEnvelopeRuleDocument
 
-/** The envelope document: the Leader's expansion authority for one team. */
-export interface PermissionMutationEnvelope {
-  readonly rules: readonly PermissionEnvelopeRule[]
-}
+/**
+ * The envelope document: the Leader's expansion authority for one team. An
+ * ALIAS of the domain document since A4-PR1 (ADR A3-9/A1-18) — the SAME
+ * structure the v3 `teamHardEnvelope` carries, because A3-9 made it one
+ * grammar: two documents, two roles, one shape.
+ */
+export type PermissionMutationEnvelope = AuthorityEnvelopeDocument
 
 /** Validate + freeze one envelope document. An empty `rules` list is VALID
  *  and means exactly one thing: NO expansion authority (every Leader
@@ -631,16 +662,13 @@ export function parsePermissionMutationEnvelope(raw: unknown): PermissionMutatio
  *  backend namespace. Production injects the pinned public containment seam
  *  (the A2C-7 precedent: the frozen matcher itself never `startsWith` —
  *  `operation-permission/permission-resolver.ts` A2C-7 paragraph); tests
- *  inject a deterministic algebra. Absent → subtree coverage fails closed. */
-export type SubtreeContains = (root: string, child: string) => boolean
+ *  inject a deterministic algebra. Absent → subtree coverage fails closed.
+ *  ALIAS of the domain declaration (A3-9) — one concept, one name per plane. */
+export type SubtreeContains = SubtreeContainsDocument
 
-/** The outcome of one coverage question (the refusal detail stays explainable). */
-export interface CoverageVerdict {
-  readonly covers: boolean
-  /** True when a subtree envelope matcher needed a containment verdict that
-   *  no injected predicate could give (fail-closed refusal, never a guess). */
-  readonly undeterminable: boolean
-}
+/** The outcome of one coverage question (the refusal detail stays explainable).
+ *  ALIAS of the domain declaration (A3-9). */
+export type CoverageVerdict = CoverageVerdictDocument
 
 /**
  * Does an envelope matcher cover a mutation matcher?
@@ -655,29 +683,27 @@ export interface CoverageVerdict {
  *   predicate places under its root (identity counts as contained: a root
  *   covers itself); cross-class coverage never holds.
  */
-export function matcherCovers(
+/**
+ * Does an envelope matcher cover a mutation matcher? ONE implementation for
+ * both algebras: this is the domain function itself, re-exported under the name
+ * Alpha.3 froze (`a4p1-authority-envelope.test.ts` pins them by `toBe`). A
+ * delegated copy would be a second algebra that could drift, and the fail-closed
+ * ORDER below is precisely the part that must not: identity is answered BEFORE
+ * the containment seam is consulted, so a missing predicate can never turn a
+ * provable identity into a non-match (the external round-2 correction that the
+ * consumption sites still depend on — `EXPANSION_OUTSIDE_ENVELOPE` and
+ * `EFFECT_CONTEXT_UNAVAILABLE` are different answers and the fold that
+ * separates them reads this verdict).
+ *
+ * The doc-comment that used to live on this declaration travels with the
+ * implementation to `authority-envelope.ts:matcherCovers`, where the rules are
+ * now stated once for both planes.
+ */
+export const matcherCovers: (
   envelope: PermissionResourceMatcher,
   target: PermissionResourceMatcher,
   subtreeContains?: SubtreeContains,
-): CoverageVerdict {
-  if (envelope.kind === 'fingerprint' || target.kind === 'fingerprint') {
-    const covers = envelope.kind === 'fingerprint' && target.kind === 'fingerprint' && envelope.resource === target.resource
-    return { covers, undeterminable: false }
-  }
-  if (envelope.kind === 'exact') {
-    return { covers: target.kind === 'exact' && envelope.resource === target.resource, undeterminable: false }
-  }
-  // envelope.kind === 'subtree'
-  // Identity FIRST (external round 2): a subtree covers its own resource and
-  // the exact point at its root — provable WITHOUT any predicate. The old
-  // ordering marked even this pair unknown whenever the predicate was absent,
-  // and the consumption sites then dropped the rule as a non-match.
-  if (envelope.resource === target.resource) return { covers: true, undeterminable: false }
-  if (subtreeContains === undefined) {
-    return { covers: false, undeterminable: true }
-  }
-  return { covers: subtreeContains(envelope.resource, target.resource), undeterminable: false }
-}
+) => CoverageVerdict = sharedMatcherCovers
 
 // ---------------------------------------------------------------------------
 // The STATIC LAYER context — injected facts, never injected judgement

@@ -53,8 +53,18 @@ export const BLUEPRINT_DOCUMENT_SCHEMA_VERSION = 1 as const
  * shape). A v1 document parses by the OLD closed schema UNCHANGED — the v2
  * rules are applied ONLY to `schemaVersion: 2` documents (the v1 validator is
  * frozen and must not be tightened into v2 rules).
+ *
+ * `3` = Alpha.4 ADR A2-2: the v2 document plus the required `teamHardEnvelope`
+ * authority document. **This set is `[1, 2, 3]` for the temporary PR1-PR6
+ * implementation bridge only** (ADR A2-11 — the same clause that demands the
+ * v1/v2 hashable projection stay byte-identical, which is why widening the set
+ * is safe, and why the new v3 field may enter `toHashableBlueprint` only
+ * KEY-OMITTED). Alpha.4's final contract is `[3]`; `blueprint-v3-only`
+ * enforcement lives in `scripts/verify-blueprint-version-clean.mjs`, which is
+ * empty until the PR7 cutover — that fence, not this constant, is the
+ * guarantee (ADR A5-19).
  */
-export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [1, 2]
+export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [1, 2, 3]
 
 /**
  * The exact closed field set of a blueprint document (top level).
@@ -135,6 +145,32 @@ export const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS: readonly string
   'deny',
 ]
 
+/**
+ * The TWO v3 authority documents are ONE grammar (ADR A3-9, spec §3.3): the
+ * Leader expansion ceiling (`permissionMutationEnvelope`, optional through the
+ * PR1-PR6 bridge) and the Human User hard ceiling (`teamHardEnvelope`,
+ * required at v3) are shaped identically, class-paired identically and closed
+ * identically — only their POSITION in the runtime authority order differs
+ * (ADR §3.2).
+ *
+ * These names exist so the second carrier never grows a forked copy of the
+ * closed sets: they are the SAME frozen arrays reached by a second name, so a
+ * grammar change lands on both documents by construction, and the naming
+ * collision is recorded here rather than improvised at a call site
+ * (ADR A2-17).
+ */
+export const BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS = BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FIELDS
+/** @see {@link BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS} — one rule of either document. */
+export const BLUEPRINT_AUTHORITY_ENVELOPE_RULE_FIELDS = BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_RULE_FIELDS
+/** @see {@link BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS} — file-class matcher. */
+export const BLUEPRINT_AUTHORITY_ENVELOPE_FILE_MATCHER_FIELDS = BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_FILE_MATCHER_FIELDS
+/** @see {@link BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS} — shell-class matcher. */
+export const BLUEPRINT_AUTHORITY_ENVELOPE_EXEC_MATCHER_FIELDS = BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_EXEC_MATCHER_FIELDS
+/** @see {@link BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS} — closed matcher kinds (no `any`). */
+export const BLUEPRINT_AUTHORITY_ENVELOPE_MATCHER_KINDS = BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS
+/** @see {@link BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS} — the closed ceiling ladder. */
+export const BLUEPRINT_AUTHORITY_ENVELOPE_MAX_EFFECTS = BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS
+
 /** Max length of one exec fingerprint in the carrier (structural bound). */
 export const PERMISSION_FINGERPRINT_MAX_LENGTH = 256
 
@@ -190,6 +226,23 @@ export const BLUEPRINT_V2_REQUIREMENT_FIELDS: readonly string[] = [
 export const BLUEPRINT_TOP_LEVEL_FIELDS_V2: readonly string[] = [
   ...BLUEPRINT_TOP_LEVEL_FIELDS,
   'teamRequirements',
+]
+
+/**
+ * The exact closed field set of a schema-v3 blueprint document (top level).
+ *
+ * A4-PR1 (ADR A2-2): v3 is the v2 document plus exactly ONE key,
+ * `teamHardEnvelope`. It is derived from {@link BLUEPRINT_TOP_LEVEL_FIELDS_V2}
+ * rather than restated, so the two sets cannot drift apart by editing one of
+ * them. Everything else about v3 is a REQUIREMENT change, not a shape change:
+ * `permissionMutationEnvelope` stops being optional (ADR A1-19) and
+ * `teamHardEnvelope` never was optional (spec §3.2, "No implicit default is
+ * permitted"). Requiredness is checked in `validate.ts` — closedness and
+ * requiredness are different questions with different diagnostics.
+ */
+export const BLUEPRINT_TOP_LEVEL_FIELDS_V3: readonly string[] = [
+  ...BLUEPRINT_TOP_LEVEL_FIELDS_V2,
+  'teamHardEnvelope',
 ]
 
 /**

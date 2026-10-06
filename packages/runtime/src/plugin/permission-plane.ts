@@ -84,6 +84,17 @@ import type { GovernanceMutationService, GovernancePermissionLaneDeps } from '..
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js'
 import type { MemberLifecycleState } from '../../../contracts/src/index.js'
 import type { TeamBlueprint, TemplatePermissionPolicy } from '../../../domain/blueprint/src/index.js'
+// A4-PR1 (plan Task 1 lane C, ADR A2-3 + correction X5-E2): the ONE AST→runtime
+// canonicalization for BOTH v3 authority documents lives in this file, next to
+// `buildEnvelope` — this is the only layer that owns a workspace to canonicalize
+// against, `domain` is forbidden from manufacturing canonical keys, and a second
+// mapping anywhere else is precisely what X5-E2 rules out.
+import type {
+  AuthorityEnvelope,
+  AuthorityEnvelopeAst,
+  AuthorityEnvelopeAstMatcher,
+  AuthorityEnvelopeRule,
+} from '../../../domain/authority-envelope/src/index.js'
 import { createPermissionDecisionLane, createPermissionLifecycleMutationLane } from '../../permission-lifecycle/index.js'
 import type {
   MemberLifecycleReaderPort,
@@ -365,6 +376,23 @@ export interface PermissionAuthorityFacts {
     teamSessionId: string,
     memberInstanceId: string,
   ) => Promise<PermissionMutationEnvelope>
+  /**
+   * The v3 Human User hard ceiling for one addressed member (A4-PR1, spec §3.2).
+   *
+   * THREE outcomes, never a document-or-undefined: on the approval plane an
+   * absent document means NO NARROWING, so a read that answered `undefined` for
+   * a FAULT would widen approval authority exactly when the storage layer is
+   * least trustworthy. See {@link AuthorityHardCeilingRead}.
+   *
+   * PR1 adds the READ and nothing else: no production decision consults it, and
+   * {@link PermissionAuthorityFacts.refresh} does not warm it (warming would
+   * fold a brand-new document into `healthy()` semantics that every v1/v2 Team
+   * still drives — that is PR2's call with a caller in front of it).
+   */
+  readonly teamHardEnvelope: (
+    teamSessionId: string,
+    memberInstanceId: string,
+  ) => Promise<AuthorityHardCeilingRead>
 }
 
 const DECLARED_NONE: PermissionStaticLayerFacts = { layers: [] }
@@ -407,6 +435,91 @@ function bindingsEqual(a: BindingTuple, b: BindingTuple): boolean {
  * header for the three bindings and the fail-closed rules).
  * @param deps - the injected bound-Blueprint / member / canonicalizer sources.
  */
+/**
+ * THE one AST→runtime canonicalization of an authority document (plan Task 1:
+ * "single AST→runtime canonicalization"; ADR A2-3, correction X5-E2).
+ *
+ * Both v3 documents (`permissionMutationEnvelope`, `teamHardEnvelope`) pass
+ * through THIS function, which is what "one grammar, two documents" means at the
+ * boundary: identical mapping, identical provider discipline, one place for a
+ * reviewer to audit. The input is the DECLARED shape a hash-bound Blueprint
+ * carries; the output is the canonical `{ kind, resource }` document the kernel
+ * consumes, validated and frozen by `parsePermissionMutationEnvelope` — the same
+ * validation the mutation envelope has always had, so v1/v2 behavior is
+ * unchanged to the byte (ADR A2-4).
+ *
+ * THE PROVIDER DISCIPLINE, because it is the security-relevant part:
+ *  - a `fingerprint` matcher travels VERBATIM with ZERO provider calls — it
+ *    already IS the canonical operation identity, and passing it through a path
+ *    canonicalizer would let a filesystem answer rename an exec identity;
+ *  - an `exact`/`subtree` matcher is canonicalized AT THE GIVEN WORKSPACE BASIS,
+ *    and a provider that answers with nothing is a THROWN error, never an empty
+ *    key: an empty key would silently turn a rule into one that covers the wrong
+ *    (or every) resource.
+ *
+ * Exported so the discipline is testable directly
+ * (`a4p1-authority-envelope.test.ts` counts the provider calls); the production
+ * readers below are its only callers.
+ */
+export async function buildAuthorityEnvelope(
+  document: AuthorityEnvelopeAst,
+  cwd: string,
+  canonicalizer: { readonly canonicalize: (path: string, cwd: string) => Promise<string> },
+): Promise<AuthorityEnvelope> {
+  const rules: AuthorityEnvelopeRule[] = []
+  for (const rule of document.rules) {
+    const matcher: AuthorityEnvelopeAstMatcher = rule.matcher
+    if (matcher.kind === 'fingerprint') {
+      // Exec lane: verbatim, never canonicalized, never widened (design §5).
+      rules.push({
+        operationClass: rule.operationClass,
+        matcher: { kind: 'fingerprint', resource: matcher.fingerprint },
+        maximumEffect: rule.maximumEffect,
+      })
+      continue
+    }
+    // File lane: exact | subtree — canonicalized at the target basis.
+    const key = await canonicalizer.canonicalize(matcher.path, cwd)
+    if (typeof key !== 'string' || key.length === 0) {
+      throw new Error(
+        `permission authority envelope: the fs provider returned no canonical key for ${JSON.stringify(matcher.path)}`,
+      )
+    }
+    rules.push({
+      operationClass: rule.operationClass,
+      matcher: { kind: matcher.kind, resource: key },
+      maximumEffect: rule.maximumEffect,
+    })
+  }
+  return parsePermissionMutationEnvelope({ rules })
+}
+
+/**
+ * The read outcome for the v3 `teamHardEnvelope`, and the reason it is a
+ * three-way outcome rather than a document-or-undefined.
+ *
+ * On the APPROVAL plane "no document" means NO NARROWING (ADR A1-4) — the
+ * widest reach a reviewer keeps. So a reader that collapsed a failed read into
+ * `undefined` would widen approval authority on a storage fault, which is the
+ * one direction a governance reader must never move. `unavailable` therefore
+ * stays its own outcome (ADR A1-7's `authority-unavailable`, distinct from
+ * `no-authority` and from `authority-undetermined`), and PR2's caller maps it to
+ * a terminal outcome instead of to an identity.
+ *
+ * PR1 defines the contract and wires NOTHING to it: no production decision reads
+ * the hard ceiling until PR2 (plan Task 1 lane C).
+ */
+export type AuthorityHardCeilingRead =
+  /** A v3 document exists (possibly declaring `rules: []`, which is a legal
+   *  declaration meaning the Human User has no runtime expansion authority). */
+  | { readonly status: 'declared'; readonly document: AuthorityEnvelope }
+  /** The bound Blueprint does not carry the field — exactly the v1/v2 case in
+   *  the PR1-PR6 bridge. NEVER synthesized from a missing read. */
+  | { readonly status: 'absent' }
+  /** The binding is unknown, drifted, or a provider faulted: unknown, not
+   *  absent. A consumer must fail closed, not fall back to the identity. */
+  | { readonly status: 'unavailable' }
+
 export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDeps): PermissionAuthorityFacts {
   const providerVersion = deps.providerVersion ?? ((): string => SINGLE_PROVIDER)
   // ROUND 5 (FIX-4, parent ruling + R-A): there is NO cross-call document
@@ -498,39 +611,39 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
    *  zero-authority (a legal typed absence, zero fs calls). */
   async function buildEnvelope(blueprint: TeamBlueprint, cwd: string): Promise<PermissionMutationEnvelope> {
     const carrier = blueprint.permissionMutationEnvelope
+    // An absent carrier stays a typed `NO_ENVELOPE` (zero authority, ZERO fs
+    // calls): the short-circuit is load-bearing, not a micro-optimization — it
+    // is what keeps `a3p4-r4-authority-binding.test.ts`'s "absent carrier is a
+    // legal typed absence" leg honest about provider silence.
     if (carrier === undefined || carrier.rules.length === 0) return NO_ENVELOPE
-    const rules: {
-      readonly operationClass: string
-      readonly matcher: { readonly kind: 'exact' | 'subtree' | 'fingerprint'; readonly resource: string }
-      readonly maximumEffect: 'allow' | 'ask' | 'deny'
-    }[] = []
-    for (const rule of carrier.rules) {
-      if (rule.matcher.kind === 'fingerprint') {
-        // Exec lane: the canonical fingerprint IS the identity — verbatim,
-        // never canonicalized, never widened (design §5).
-        rules.push({
-          operationClass: rule.operationClass,
-          matcher: { kind: 'fingerprint', resource: rule.matcher.fingerprint },
-          maximumEffect: rule.maximumEffect,
-        })
-        continue
-      }
-      // File lane: exact | subtree — canonicalized at the target basis.
-      const key = await deps.canonicalize(rule.matcher.path, cwd)
-      if (typeof key !== 'string' || key.length === 0) {
-        throw new Error(
-          `permission authority envelope: the fs provider returned no canonical key for ${JSON.stringify(rule.matcher.path)}`,
-        )
-      }
-      rules.push({
-        operationClass: rule.operationClass,
-        matcher: { kind: rule.matcher.kind, resource: key },
-        maximumEffect: rule.maximumEffect,
-      })
-    }
-    return parsePermissionMutationEnvelope({ rules })
+    // DELEGATED to the one canonicalization both documents share. The rule
+    // mapping, the fingerprint-verbatim lane, and the empty-key refusal are
+    // byte-for-byte the code this function used to contain inline.
+    return buildAuthorityEnvelope(carrier, cwd, deps)
   }
 
+  /** The v3 Human User hard ceiling, read the SAME fresh-per-decision way as
+   *  the mutation envelope (no cache, drift → abstain). Three facts decide the
+   *  outcome and none of them is interchangeable with another:
+   *   - the field is ABSENT (`schemaVersion: 1 | 2`): a typed absence the
+   *     reader reports as `absent` and never as an empty document — an empty
+   *     document would be read on the expansion plane as "expand nothing", and
+   *     the two planes must not be able to disagree about what absence means;
+   *   - the field is present with `rules: []` (legal at v3): `declared`, with an
+   *     EMPTY document — the only place a `{rules: []}` hard ceiling is allowed
+   *     to come from is a document that says so;
+   *   - the read itself failed or the binding drifted: `unavailable`, because on
+   *     the approval plane absence widens reach and a fault must never widen it. */
+  async function readHardCeiling(blueprint: TeamBlueprint, cwd: string): Promise<AuthorityHardCeilingRead> {
+    const document = blueprint.teamHardEnvelope
+    if (document === undefined) return { status: 'absent' }
+    if (document.rules.length === 0) {
+      // Legal, declared, and EMPTY — canonicalized without touching the fs
+      // provider at all (there is nothing to resolve).
+      return { status: 'declared', document: parsePermissionMutationEnvelope({ rules: [] }) }
+    }
+    return { status: 'declared', document: await buildAuthorityEnvelope(document, cwd, deps) }
+  }
   /** The shared read path (round 5): build FRESH on every call — no cache —
    *  then RE-VALIDATE the binding tuple across the canonicalization await
    *  (drift → abstain; never serve a mixed-identity document). The outcome
@@ -584,6 +697,20 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
       NO_ENVELOPE,
     ).then((r) => r.value)
 
+  // The v3 hard ceiling (A4-PR1). `readFresh`'s abstention value is
+  // `unavailable` — the SAME slot that carries `NO_ENVELOPE` above, filled with
+  // the opposite polarity on purpose: an abstained expansion read must mean zero
+  // authority, and an abstained approval-plane read must mean nothing at all
+  // except "unknown". Handing the identity out here would be the widening this
+  // outcome type exists to prevent.
+  const teamHardEnvelope: PermissionAuthorityFacts['teamHardEnvelope'] = (teamSessionId, memberInstanceId) =>
+    readFresh<AuthorityHardCeilingRead>(
+      teamSessionId,
+      memberInstanceId,
+      async (blueprint, tuple) => readHardCeiling(blueprint, tuple.cwd),
+      { status: 'unavailable' },
+    ).then((r) => r.value)
+
   return {
     async refresh() {
       const targets = deps.bootWarmTargets?.() ?? []
@@ -621,6 +748,8 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
       staticLayers(teamSessionId, memberInstanceId),
     permissionEnvelope: async (teamSessionId, memberInstanceId) =>
       permissionEnvelope(teamSessionId, memberInstanceId),
+    teamHardEnvelope: async (teamSessionId, memberInstanceId) =>
+      teamHardEnvelope(teamSessionId, memberInstanceId),
   }
 }
 

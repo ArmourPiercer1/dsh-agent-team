@@ -1,0 +1,25 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1
+
+ ❯ packages/runtime/test/a4p1-authority-envelope.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p1-authority-envelope.test.ts [ packages/runtime/test/a4p1-authority-envelope.test.ts ]
+Error: Cannot find module '../../domain/authority-envelope/src/index.js' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr1/packages/runtime/test/a4p1-authority-envelope.test.ts
+ ❯ packages/runtime/test/a4p1-authority-envelope.test.ts:49:1
+     47| import { describe, expect, it } from 'vitest'
+     48|
+     49| import {
+       | ^
+     50|   AUTHORITY_EFFECT_PRECEDENCE,
+     51|   AUTHORITY_OPERATION_CLASSES,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  05:29:09
+   Duration  121ms (transform 23ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

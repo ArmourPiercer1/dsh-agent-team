@@ -8,6 +8,12 @@
     "src",
     "blueprint/src",
     "policy/src",
+    // A4-PR1 (ADR A3-9): the shared authority-envelope grammar lives here, in
+    // the domain layer, so the Blueprint document layer can describe its own
+    // authority fields without importing the runtime. Without this entry the
+    // new module is typechecked by nothing at all — a lane that looks green and
+    // guards nothing. Runtime emits it transitively through its own build.
+    "authority-envelope/src",
     "test",
     "vitest.config.ts"
   ]
