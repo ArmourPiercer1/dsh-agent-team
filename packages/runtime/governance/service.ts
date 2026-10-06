@@ -106,12 +106,13 @@ import {
   planPermissionMutation,
   PERMISSION_MUTATION_ERROR_CODES,
   PermissionMutationError,
-  // PRE-EXISTING lint debt, silenced rather than deleted in passing by A4-PR2 (the
-  // PR gate lints EVERY touched file, and this one was already dirty at base
-  // `f55dd64d` — verified by linting the base revision, not assumed). The type is
-  // referenced by this module's TSDoc links, so deleting the import would break the
-  // documentation reference rather than remove a dependency.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // PRE-EXISTING DEAD IMPORT, left exactly as base `f55dd64d` has it (measured:
+  // linting the base revision reports this name, `PermissionOverlayRule` and
+  // `LEADER_INSTANCE_ID` as unused, and a grep shows no `{@link}` reference either —
+  // an earlier note here claimed these were documentation anchors, which was false).
+  // Not deleted in passing and not muted: retiring a baseline lint identity is a
+  // lint-closure change with its own identity diff, not a side effect of a governance
+  // PR, and a disable comment would hide the debt instead of paying it.
   type PermissionStaticLayerFacts,
 } from './permission-mutation.js'
 import {
@@ -121,11 +122,9 @@ import {
   grantCeiling,
 } from './authority-ceiling.js'
 import { evaluateAuthorityCeiling } from './runtime-authority.js'
-// PRE-EXISTING lint debt, same as above (A4-PR2, base `f55dd64d`): both are
-// documentation/contract anchors rather than call sites.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// PRE-EXISTING DEAD IMPORTS, same posture as the one above: present at base, unused
+// at base, unused here, left untouched rather than muted.
 import type { PermissionOverlayRule } from '../permission-governance/types.js'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 
 /** The storage duplicate code string (mirrors TEAM_DOMAIN_ERROR_CODES). */

@@ -57,7 +57,6 @@ import { assertCells, buildReissueRecord, buildTombstoneRecord, checkCellsAgains
 import { PERMISSION_EFFECT_PRECEDENCE, authorizeCeilingBoundedPermissionRise, authorizeLeaderPermissionMutation, classifyPermissionRise, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionStaticLayerFacts, planPermissionMutation, PERMISSION_MUTATION_ERROR_CODES, PermissionMutationError, } from './permission-mutation.js';
 import { AUTHORITY_CEILING_ERROR_CODES, AuthorityBindingError, expansionCeiling, grantCeiling, } from './authority-ceiling.js';
 import { evaluateAuthorityCeiling } from './runtime-authority.js';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
 /** The storage duplicate code string (mirrors TEAM_DOMAIN_ERROR_CODES). */
 const STORAGE_RECORD_DUPLICATE = 'RECORD_DUPLICATE';
