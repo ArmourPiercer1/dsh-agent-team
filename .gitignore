@@ -1,5 +1,7 @@
+# docs/plans 于 2026-10-07 起纳入版本管理（计划与备忘历史恢复）；
+# 仅继续忽略 Windows ADS 残留 junk
+*:Zone.Identifier
 references/
-docs/plans
 .worktrees/
 .pnpm-store/
 
@@ -57,3 +59,11 @@ packages/testkit/test/.tmp-fault/
 .*-blueprints-*/
 
 .tmp-faultscratch/
+
+# Raw vitest JSON run reports stay out of git (multi-MB each); the record is the
+# normalized identity list + human-readable logs. Regenerate only if a receipt is needed.
+dev/agent-workflow/evidence/**/root-vitest*.json
+
+# V8 isolate / crash dumps are multi-MB and never a record
+*.log.isolate
+isolate-*.log

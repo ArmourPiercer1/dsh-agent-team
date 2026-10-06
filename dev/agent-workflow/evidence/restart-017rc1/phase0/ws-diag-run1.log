@@ -1,0 +1,163 @@
+host up: http://127.0.0.1:3493
+cookie acquired: true
+WS CONNECTED
+[+2522ms] tx op=0x1 fin=1 len=79 "{\"type\":\"open\",\"streamId\":\"ev-diag\",\"endpoint\":\"$events\",\"payload\":{\"args\":{}}}"
+[+2524ms] rx op=0x1 fin=1 len=140 "{\"type\":\"item\",\"streamId\":\"ev-diag\",\"value\":{\"type\":\"ready\",\"clientId\":\"eadf778f"
+PING received — sending PONG
+[+3525ms] rx op=0x9 fin=1 len=0 ""
+[+3525ms] tx op=0xa fin=1 len=0 ""
+[+4023ms] tx op=0x1 fin=1 len=180 "{\"type\":\"open\",\"streamId\":\"fol-diag\",\"endpoint\":\"session/follow\",\"payload\":{\"arg"
+holding 100s — watching frames...
+[+4030ms] rx op=0x1 fin=1 len=213 "{\"type\":\"error\",\"streamId\":\"fol-diag\",\"error\":{\"code\":\"session/not-found\",\"messa"
+PING received — sending PONG
+[+5526ms] rx op=0x9 fin=1 len=0 ""
+[+5526ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+7527ms] rx op=0x9 fin=1 len=0 ""
+[+7527ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+9528ms] rx op=0x9 fin=1 len=0 ""
+[+9528ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+11527ms] rx op=0x9 fin=1 len=0 ""
+[+11527ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+13526ms] rx op=0x9 fin=1 len=0 ""
+[+13526ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+15526ms] rx op=0x9 fin=1 len=0 ""
+[+15526ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+17526ms] rx op=0x9 fin=1 len=0 ""
+[+17526ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+19526ms] rx op=0x9 fin=1 len=0 ""
+[+19526ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+21526ms] rx op=0x9 fin=1 len=0 ""
+[+21526ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+23527ms] rx op=0x9 fin=1 len=0 ""
+[+23527ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+25527ms] rx op=0x9 fin=1 len=0 ""
+[+25527ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+27528ms] rx op=0x9 fin=1 len=0 ""
+[+27528ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+29529ms] rx op=0x9 fin=1 len=0 ""
+[+29529ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+31530ms] rx op=0x9 fin=1 len=0 ""
+[+31530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+33530ms] rx op=0x9 fin=1 len=0 ""
+[+33530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+35530ms] rx op=0x9 fin=1 len=0 ""
+[+35530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+37530ms] rx op=0x9 fin=1 len=0 ""
+[+37530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+39529ms] rx op=0x9 fin=1 len=0 ""
+[+39530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+41531ms] rx op=0x9 fin=1 len=0 ""
+[+41531ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+43529ms] rx op=0x9 fin=1 len=0 ""
+[+43529ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+45529ms] rx op=0x9 fin=1 len=0 ""
+[+45529ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+47530ms] rx op=0x9 fin=1 len=0 ""
+[+47530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+49530ms] rx op=0x9 fin=1 len=0 ""
+[+49530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+51530ms] rx op=0x9 fin=1 len=0 ""
+[+51530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+53530ms] rx op=0x9 fin=1 len=0 ""
+[+53530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+55530ms] rx op=0x9 fin=1 len=0 ""
+[+55530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+57530ms] rx op=0x9 fin=1 len=0 ""
+[+57530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+59530ms] rx op=0x9 fin=1 len=0 ""
+[+59530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+61530ms] rx op=0x9 fin=1 len=0 ""
+[+61530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+63529ms] rx op=0x9 fin=1 len=0 ""
+[+63530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+65530ms] rx op=0x9 fin=1 len=0 ""
+[+65530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+67531ms] rx op=0x9 fin=1 len=0 ""
+[+67531ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+69530ms] rx op=0x9 fin=1 len=0 ""
+[+69531ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+71531ms] rx op=0x9 fin=1 len=0 ""
+[+71531ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+73529ms] rx op=0x9 fin=1 len=0 ""
+[+73529ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+75529ms] rx op=0x9 fin=1 len=0 ""
+[+75529ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+77530ms] rx op=0x9 fin=1 len=0 ""
+[+77530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+79530ms] rx op=0x9 fin=1 len=0 ""
+[+79530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+81530ms] rx op=0x9 fin=1 len=0 ""
+[+81530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+83530ms] rx op=0x9 fin=1 len=0 ""
+[+83530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+85530ms] rx op=0x9 fin=1 len=0 ""
+[+85530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+87530ms] rx op=0x9 fin=1 len=0 ""
+[+87530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+89531ms] rx op=0x9 fin=1 len=0 ""
+[+89531ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+91530ms] rx op=0x9 fin=1 len=0 ""
+[+91530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+93530ms] rx op=0x9 fin=1 len=0 ""
+[+93530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+95530ms] rx op=0x9 fin=1 len=0 ""
+[+95530ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+97531ms] rx op=0x9 fin=1 len=0 ""
+[+97531ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+99531ms] rx op=0x9 fin=1 len=0 ""
+[+99531ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+101531ms] rx op=0x9 fin=1 len=0 ""
+[+101532ms] tx op=0xa fin=1 len=0 ""
+PING received — sending PONG
+[+103528ms] rx op=0x9 fin=1 len=0 ""
+[+103528ms] tx op=0xa fin=1 len=0 ""
+frames captured: 106 → /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/restart-017rc1/phase0/ws-diag/frames.json
+[+104023ms] tcp op=0x0 fin=0 len=22 "socket close (FIN/RST)"

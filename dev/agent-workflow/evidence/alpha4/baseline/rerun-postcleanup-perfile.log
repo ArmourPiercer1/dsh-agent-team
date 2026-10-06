@@ -1,0 +1,70 @@
+# post-cleanup per-file proofs (sequential, single-file isolation) 2026-10-06T19:26:21Z
+# git HEAD=cb19e0db66bc66000a42b95c344177811ea3a060
+
+## [1] rc2-kit-pin-hygiene: 3 isolated runs
+--- isolated run 1
+     ✓ there is something to scan 1ms
+     ✓ code lines carry no 40-hex SHA other than the pinned baseline 20ms
+     ✓ code lines carry no release-candidate literal other than the pinned version 14ms
+     ✓ no code line hardcodes "test-use pristine @ <short sha>" instead of the pin 12ms
+     × only tests/paths.mjs assigns the baseline constants 3730ms
+     ✓ the pinned values are the 0.2.0-rc.2 triple this round migrated to 0ms
+     ✓ the plugin upstream-resolver names the legacy path exactly, not references/* 0ms
+AssertionError: expected [ …(954) ] to deeply equal []
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+--- isolated run 2
+     ✓ there is something to scan 1ms
+     ✓ code lines carry no 40-hex SHA other than the pinned baseline 23ms
+     ✓ code lines carry no release-candidate literal other than the pinned version 17ms
+     ✓ no code line hardcodes "test-use pristine @ <short sha>" instead of the pin 12ms
+     × only tests/paths.mjs assigns the baseline constants 3700ms
+     ✓ the pinned values are the 0.2.0-rc.2 triple this round migrated to 0ms
+     ✓ the plugin upstream-resolver names the legacy path exactly, not references/* 0ms
+AssertionError: expected [ …(954) ] to deeply equal []
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+--- isolated run 3
+     ✓ there is something to scan 1ms
+     ✓ code lines carry no 40-hex SHA other than the pinned baseline 21ms
+     ✓ code lines carry no release-candidate literal other than the pinned version 16ms
+     ✓ no code line hardcodes "test-use pristine @ <short sha>" instead of the pin 15ms
+     × only tests/paths.mjs assigns the baseline constants 3635ms
+     ✓ the pinned values are the 0.2.0-rc.2 triple this round migrated to 1ms
+     ✓ the plugin upstream-resolver names the legacy path exactly, not references/* 1ms
+AssertionError: expected [ …(954) ] to deeply equal []
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+
+## [2] p6t1-delegate + p8s6-principal (post-cleanup)
+ ✓ packages/runtime/test/p6t1-delegate.test.ts (15 tests) 5ms
+ ✓ packages/runtime/test/p8s6-principal.test.ts (20 tests) 4ms
+ Test Files  2 passed (2)
+      Tests  35 passed (35)
+[exit=0]
+
+## [3] a2c7-subtree-matcher: 2 isolated runs (post-cleanup)
+--- isolated run 1
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+--- isolated run 2
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+
+## [4] p6t1-parallel (the run3 flake) isolated
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+
+## [5] the three PR#62-known collection errors (isolated, error text captured above in rerun-groups-1-2-known.log [3])
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: sessionPersistence.exists public seam is unavailable
+ FAIL  packages/runtime/test/t12a-b2-child-identity.test.ts [ packages/runtime/test/t12a-b2-child-identity.test.ts ]
+Error: agent-bindings: capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member) (code: capability-template-unresolved)
+ FAIL  packages/runtime/test/t12a-glue-handoff-ports.test.ts [ packages/runtime/test/t12a-glue-handoff-ports.test.ts ]
+TeamContractError: blueprint document must start with a --- frontmatter delimiter line
+ Test Files  3 failed (3)
+      Tests  no tests

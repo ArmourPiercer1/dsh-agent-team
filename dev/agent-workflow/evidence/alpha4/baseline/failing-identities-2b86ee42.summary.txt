@@ -1,0 +1,19 @@
+# per-file failing-identity counts — Alpha.4 root-suite baseline, FINAL STATE after the scratch cleanup
+# tree: base-under-test 2b86ee42, capture HEAD cb19e0db (delta 2b86ee42..cb19e0db touches no test/source path); Linux 6.18.33.2 x86_64 (WSL2), node v24.21.0, vitest 4.1.11
+# report: root-vitest-postcleanup-2.json (run 2026-10-06T19:23:29Z) = the MODAL identity set of 5 consecutive full runs (runs 2 and 5); runs 1/3/4 add only the unstable identities listed in BASELINE.md section 6
+# derived mechanically by: node fail-set-normalize.mjs root-vitest-postcleanup-2.json  (stdout -> failing-identities-2b86ee42.txt, this stderr block -> this file)
+# columns: <named-failure count>  <COLLECTION-OR-UNHANDLED marker when the file emitted no test>  <relpath>
+# 23 identities = 20 TEST + 3 FILE over 10 files
+  9    packages/domain/test/t1-capability-schema.test.ts
+  1    packages/domain/test/t2-blueprint-hash.test.ts
+  1    packages/runtime/test/d3-member-identity-context.test.ts
+  5    packages/runtime/test/p6t3-mediation.test.ts
+  2    packages/runtime/test/p6t3-restart.test.ts
+  0  COLLECTION-OR-UNHANDLED  packages/runtime/test/p8s3b-result-effects.test.ts
+  0  COLLECTION-OR-UNHANDLED  packages/runtime/test/t12a-b2-child-identity.test.ts
+  0  COLLECTION-OR-UNHANDLED  packages/runtime/test/t12a-glue-handoff-ports.test.ts
+  1    packages/testkit/test/rc2-kit-pin-hygiene.test.ts
+  1    packages/tools/test/p6t6-actions.test.ts
+# suite totals: files=456 failedFiles=10 suites=1732 tests=5418 passed=5398 failed=20 pending=0 success=false
+# identity diff vs the as-recorded capture (see failing-identities-2b86ee42.as-recorded-838e7711.txt): 10 identities removed, 0 added
+#   (added lines: none)

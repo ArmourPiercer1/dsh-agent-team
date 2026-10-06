@@ -55,13 +55,20 @@ gitignored) — this section is a pointer summary, not the authority:
 
 - **Current RC baseline:** `0.1.0-rc.1` (`origin/stable` @ `b0e5aeb4`, unchanged). This release freezes the manually tested and Playwright-validated Team vNext product as the baseline for future work.
 - **Current master (alpha):** `0.1.1-alpha.2` (all 9 packages) at master @
-  `31ad828d` (2026-10-01 re-verified = origin/master) — the pre-Alpha.3 refactor
+  `2b86ee42` (2026-10-07 verified = origin/master; = Alpha.3 permission series
+  PR #57–#61 + DSH 0.2.0-rc.2 host-upgrade PR #62, both fully merged) — the pre-Alpha.3 refactor
   series (PR-0 #37 + A #38 + B #39 + C #40 + D #41 + E #42 + w1a #43 + F15 #44 +
   F #45) is fully merged on master via series-closure merge `533dfcbb`
   (2026-09-30) + bookkeeping `5e1832a3` + skill sync `31ad828d`. Host pin
   `@deepseek-ai/dsh@0.2.0-rc.2` (root `peerDependencies`; moved from `0.1.7-rc.1`
   in the 2026-10-03 host upgrade round). `0.1.1-alpha.1`
   (frozen 2026-09-11) is superseded.
+  **Superseded (2026-10-07):** the "master @ `31ad828d`" pointer above is history —
+  Alpha.3 permission PR #57 `9e2ac40d` / #58 `8525b951` / #59 `d8953d6a` /
+  #60 `940cd841` / #61 `6b2f401b` and the host-upgrade PR #62 `2b86ee42` landed
+  after it. Per-round pointers are no longer maintained in this file: the sole
+  sources are `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`
+  (snapshot: `docs/STATUS.md`).
   **Superseded (2026-10-01 handoff closure):** the 2026-09-28 lines "master @
   `e22c659a`" and "Open PR = **PR #22**" — PR #22 is CLOSED as superseded
   (plan §8.6; the persona kind-matching semantics re-landed inside PR-E #42 of

@@ -1,0 +1,58 @@
+# controlled reproduction: re-create the residue and show it reproduces the recorded failures EXACTLY
+# start 2026-10-06T19:28:38Z; donor = packages/testkit/test/.tmp-fault/a3p1-tenth-idempotent (a stamped team_domain left by the suite, same shape as the poisoning dirs)
+
+donor stamps: 10 rows
+
+## R1: plant donor at packages/testkit/test/.tmp-fault/p6t1x-d1 and run p6t1-delegate
+ FAIL  packages/runtime/test/p6t1-delegate.test.ts [ packages/runtime/test/p6t1-delegate.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t1-delegate.test.ts:67:17
+ Test Files  1 failed (1)
+      Tests  no tests
+
+## R2: plant donor at packages/testkit/test/.tmp-fault/a2c7-g13 and run a2c7-subtree-matcher
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+
+## R3: remove the planted residue and re-run both (expect green)
+ ✓ packages/runtime/test/p6t1-delegate.test.ts (15 tests) 8ms
+ ✓ packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests) 9ms
+ Test Files  2 passed (2)
+      Tests  46 passed (46)
+## residue left by R3:
+(none)
+# end 2026-10-06T19:28:59Z
+# R2-full: controlled reproduction, uncut output (vitest run a2c7 with a planted stamped world at packages/testkit/test/.tmp-fault/a2c7-g13)
+# start 2026-10-06T19:29:15Z
+[exit=1]
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next)
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped)
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract)
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny)
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted)
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G16 — cold resume (dispose + fresh install; no stale canonical-rule cache) > the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside
+ Test Files  1 failed (1)
+      Tests  8 failed | 23 passed (31)
+# residue after the poisoned run (this is the self-perpetuating step):
+a2c7-g13
+# cleaning the planted dir:
+(none after clean)
+# end 2026-10-06T19:29:23Z
+IDENTICAL: the planted-residue reproduction yields byte-identical a2c7 identities to the recorded baseline (8/8)

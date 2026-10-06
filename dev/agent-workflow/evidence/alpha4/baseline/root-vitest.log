@@ -1,0 +1,3 @@
+$ vitest run --reporter=json --outputFile=dev/agent-workflow/evidence/alpha4/baseline/root-vitest.json
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/alpha4/baseline/root-vitest.json
+[ELIFECYCLE] Test failed. See above for more details.

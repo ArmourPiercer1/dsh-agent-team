@@ -1,0 +1,72 @@
+=== state of packages/testkit/test/.tmp-fault before cleanup (2026-10-06T19:20:52Z) ===
+total 152
+drwxr-xr-x 38 user user 4096 Oct  7 03:17 .
+drwxr-xr-x  3 user user 4096 Oct  6 14:27 ..
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 a2c7-g13
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-seam-add-not-a-write
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-seam-add-trailing
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-seam-ghost-file
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-seam-prefix-hole
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-seam-version
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-compat-open
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-create-or-open
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-fresh-create
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-idempotent
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-meta-tampered
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-missing-old-table
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-old-stamp-missing
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-overlay-append
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-rows-without-stamp
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-stamp-tampered
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 a3p1-tenth-undeclared-file
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 f15-mcp-live-loss
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 f15-mcp-live-loss-characterization
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-a
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-b
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-d
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-e
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-l1
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-l2
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-l3
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-l4a
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-l4b
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-l4c
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-l5
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-l6
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-l7
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-r1
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 mtm-r2
+drwxr-xr-x  3 user user 4096 Oct  7 03:12 p6t1x-d1
+drwxr-xr-x  3 user user 4096 Oct  7 03:13 rmrcoo-boot
+
+=== implicated scratch content (a2c7-* , p6t1x-d1) ===
+-- packages/testkit/test/.tmp-fault/a2c7-g13
+13	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain.meta.json
+2	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/blueprint_registry.json
+2	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/compatibility.json
+2	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/ledger.json
+722	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/member_instances.json
+2	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/operations.json
+2	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/overrides.json
+2	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/permission_overlays.json
+1253	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/schema_meta.json
+104	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/session_bindings.json
+345	packages/testkit/test/.tmp-fault/a2c7-g13/team_domain/team_sessions.json
+   team_domain.meta.json: {"version":2}
+   stamp rows: 10 2026-10-06T19:12:42.840Z
+   team_sessions rows: 1
+-- packages/testkit/test/.tmp-fault/p6t1x-d1
+13	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain.meta.json
+2	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/blueprint_registry.json
+2	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/compatibility.json
+2	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/ledger.json
+2	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/member_instances.json
+2	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/operations.json
+2	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/overrides.json
+2	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/permission_overlays.json
+1253	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/schema_meta.json
+2	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/session_bindings.json
+2	packages/testkit/test/.tmp-fault/p6t1x-d1/team_domain/team_sessions.json
+   team_domain.meta.json: {"version":2}
+   stamp rows: 10 2026-10-06T19:12:42.837Z
+   team_sessions rows: 0
