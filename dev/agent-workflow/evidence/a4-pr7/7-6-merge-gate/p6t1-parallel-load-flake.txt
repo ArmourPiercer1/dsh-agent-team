@@ -1,0 +1,11 @@
+### E1 p6t1-parallel alone at HEAD
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+### E2 whole suite again at HEAD
+E2 vitest exit=1
+[fail-set] captured 22 identities (19 failing tests, 3 collection-failing files) from 1 report(s)
+E2 base->run2 diff:
+0
+E2 run1->run2 diff:
+3
+### done

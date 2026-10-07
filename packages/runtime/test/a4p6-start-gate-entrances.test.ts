@@ -77,9 +77,19 @@ const HANDOFF_PREFIX = 'session-handoff-'
 
 const WARN_INTERVENTION = 'int-warn-entrance'
 
+/**
+ * The bound Blueprint every entrance resolves against. 7.4 migration
+ * 2026-10-08: v1 → v3 with BOTH authority documents stated. This file's
+ * subject is the START GATE at every real entrance (typed refusal, zero
+ * agent start, re-drivable refusal) — it drives no permission mutation and
+ * no approval, so the authority documents state `rules: []`: the fail-closed
+ * explicit zero on the expansion plane, and nothing removed on the approval
+ * plane. The capability lanes are unchanged; the gate itself is a stub the
+ * document's version never consults.
+ */
 const DOC = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: A4P6R1-BP',
   'revision: "1"',
   'leader:',
@@ -101,6 +111,10 @@ const DOC = [
   '    envelope:',
   '      allow: [send-message]',
   '      deny: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: The A4P6R1 default state.',

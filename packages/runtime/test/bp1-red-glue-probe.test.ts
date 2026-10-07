@@ -54,13 +54,20 @@ const BP1_B_WORKER_PERSONA = 'You are member tpl-t12a of the BP1-B team.'
 /**
  * Team B's bound snapshot document (the world's blueprint store entry,
  * plan §11.1: the row's bound snapshot ref resolves through the saved
- * source, hash equality verified). A valid closed-v1 document carrying
+ * source, hash equality verified). A valid closed-v3 document carrying
  * the SAME member template id (`tpl-t12a`) with the deliberately
  * different persona — the DESIRED source for a Team B member.
+ *
+ * 7.4 migration 2026-10-08: v1 → v3 with BOTH authority documents stated
+ * (the probe never performs a permission mutation or approval, so both
+ * rule sets are `[]` — zero authority, never filler authority; the
+ * persona split the probe drives is capability/prompt surface, unchanged).
+ * The boot anchor stays the bridge's `team.t12a` — a different lane's
+ * file, and coexistence of versions is exactly what the pre-flip bridge is.
  */
 const BP1_B_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: BP1-B',
   'revision: "1"',
   'leader:',
@@ -71,6 +78,10 @@ const BP1_B_SOURCE = [
   '    persona: "You are member tpl-t12a of the BP1-B team."',
   'requirements: []',
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',

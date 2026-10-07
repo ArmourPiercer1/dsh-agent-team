@@ -1,0 +1,96 @@
+##### probe-d4-restart-reopen — PRE-MIGRATION source: git show 280e3145^:packages/tools/harness/d4-restart-reopen.mjs (reproducible) #####
+  "file": "packages/tools/harness/d4-restart-reopen.mjs",
+  "documentVersionLine": "schemaVersion: 1",
+  "documentSha256": "edf4e83adb44ff16b9a5bbd0f20a905b83abfad018d5bebc61743b46eaffa028",
+    "schemaVersion": 1,
+    "blueprintId": "d4v2-bp",
+    "contentHash": "sha256:ffe5a1681a57a4f5de052eb4ffb8c985528aa12954bcc7c001ba55d0cae53625"
+      "label": "as-authored",
+      "outcome": "PARSED (no refusal)"
+      "label": "version forged to 9",
+      "outcome": "refused",
+      "code": "SCHEMA_VERSION_MISMATCH",
+      "label": "teamHardEnvelope carrier deleted",
+      "outcome": "no such carrier in this document: no \"teamHardEnvelope:\" carrier line in the document"
+      "label": "permissionMutationEnvelope carrier deleted",
+      "outcome": "no such carrier in this document: no \"permissionMutationEnvelope:\" carrier line in the document"
+
+##### probe-g5-member-e2e — PRE-MIGRATION source: git show bfca3353^:packages/tools/harness/g5-member-e2e.mjs (reproducible) #####
+  "file": "packages/tools/harness/g5-member-e2e.mjs",
+  "documentVersionLine": "schemaVersion: 1",
+  "documentSha256": "a9a744ad558b1fc319b37c01d0bea5be3d39419e8aa7e3650b9aa018e7c94551",
+    "schemaVersion": 1,
+    "blueprintId": "g5a-bp",
+    "contentHash": "sha256:db644b600c96189ab47e44718ea630ca82d226904265ebd2f35f093357c0c550"
+      "label": "as-authored",
+      "outcome": "PARSED (no refusal)"
+      "label": "version forged to 9",
+      "outcome": "refused",
+      "code": "SCHEMA_VERSION_MISMATCH",
+      "label": "teamHardEnvelope carrier deleted",
+      "outcome": "no such carrier in this document: no \"teamHardEnvelope:\" carrier line in the document"
+      "label": "permissionMutationEnvelope carrier deleted",
+      "outcome": "no such carrier in this document: no \"permissionMutationEnvelope:\" carrier line in the document"
+
+##### probe-run — PRE-MIGRATION source: git show 1a7c30eb^:packages/tools/harness/run.mjs (reproducible) #####
+  "file": "packages/tools/harness/run.mjs",
+  "documentVersionLine": "schemaVersion: 1",
+  "documentSha256": "b33937734bbe29477e46cf72d636bb06104210f9fa9927ff843f0e67cea11806",
+    "schemaVersion": 1,
+    "blueprintId": "P6T6-BP",
+    "contentHash": "sha256:35ade6577ed506374003a0e033e9ba2d836b1d181c563ed0bcc2764fd13a76b7"
+      "label": "as-authored",
+      "outcome": "PARSED (no refusal)"
+      "label": "version forged to 9",
+      "outcome": "refused",
+      "code": "SCHEMA_VERSION_MISMATCH",
+      "label": "teamHardEnvelope carrier deleted",
+      "outcome": "no such carrier in this document: no \"teamHardEnvelope:\" carrier line in the document"
+      "label": "permissionMutationEnvelope carrier deleted",
+      "outcome": "no such carrier in this document: no \"permissionMutationEnvelope:\" carrier line in the document"
+
+##### probe-t12-vertical — PRE-MIGRATION source: git show 476cae32^:packages/tools/harness/t12-vertical.mjs (reproducible) #####
+  "file": "packages/tools/harness/t12-vertical.mjs",
+      "documentVersionLine": "schemaVersion: 1",
+      "documentSha256": "70cc435032a170ba518c2feb4a74d91884296ddddaaf429ec4d027d5c1033539",
+        "schemaVersion": 1,
+        "blueprintId": "t12v-bp-a",
+        "contentHash": "sha256:65ab058de01e891968d6d0c4e75861cbbf177a301108bca22f54a549abb02936"
+          "label": "as-authored",
+          "outcome": "PARSED (no refusal)"
+          "label": "version forged to 9",
+          "outcome": "refused",
+          "code": "SCHEMA_VERSION_MISMATCH",
+          "label": "teamHardEnvelope carrier deleted",
+          "outcome": "no such carrier in this document: no \"teamHardEnvelope:\" carrier line in the document"
+          "label": "permissionMutationEnvelope carrier deleted",
+          "outcome": "no such carrier in this document: no \"permissionMutationEnvelope:\" carrier line in the document"
+      "documentVersionLine": "schemaVersion: 1",
+      "documentSha256": "e85fb73a88fe66db22b52e5e146926497d53f9b67afa1b14b76ce789a426a82c",
+        "schemaVersion": 1,
+        "blueprintId": "t12v-bp-b",
+        "contentHash": "sha256:4749e6eacb1522a3f571f1a3365ed1384abb10ecb7f607e74f187d7455d1f1ec"
+          "label": "as-authored",
+          "outcome": "PARSED (no refusal)"
+          "label": "version forged to 9",
+          "outcome": "refused",
+          "code": "SCHEMA_VERSION_MISMATCH",
+          "label": "teamHardEnvelope carrier deleted",
+          "outcome": "no such carrier in this document: no \"teamHardEnvelope:\" carrier line in the document"
+          "label": "permissionMutationEnvelope carrier deleted",
+          "outcome": "no such carrier in this document: no \"permissionMutationEnvelope:\" carrier line in the document"
+      "documentVersionLine": "schemaVersion: 1",
+      "documentSha256": "89f3311ff8d2f43e5feb7a86ecc508b7cbcc1a15a2dcc189c8d7bf780d86c095",
+        "schemaVersion": 1,
+        "blueprintId": "t12v-bp-c",
+        "contentHash": "sha256:af47d8dce6ed61983bd7567a90aa0d084db25639a3f9d978c6fe29045d08d96a"
+          "label": "as-authored",
+          "outcome": "PARSED (no refusal)"
+          "label": "version forged to 9",
+          "outcome": "refused",
+          "code": "SCHEMA_VERSION_MISMATCH",
+          "label": "teamHardEnvelope carrier deleted",
+          "outcome": "no such carrier in this document: no \"teamHardEnvelope:\" carrier line in the document"
+          "label": "permissionMutationEnvelope carrier deleted",
+          "outcome": "no such carrier in this document: no \"permissionMutationEnvelope:\" carrier line in the document"
+

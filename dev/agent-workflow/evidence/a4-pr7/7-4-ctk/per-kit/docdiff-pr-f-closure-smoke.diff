@@ -1,0 +1,66 @@
+--- tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::main (pre)
++++ tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::main (post)
+@@ -13,7 +13,7 @@
+     complete: true
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-F gap smoke team. Nonce prf-2026-10-07T20-45-40. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
++  persona: "You are the leader of the PR-F gap smoke team. Nonce prf-2026-10-07T20-50-33. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
+   capabilities:
+     teamTools:
+       kind: allow
+--- tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::subagent (pre)
++++ tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::subagent (post)
+@@ -4,7 +4,7 @@
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-F subagent-surface team. Nonce prf-2026-10-07T20-45-40. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
++  persona: "You are the leader of the PR-F subagent-surface team. Nonce prf-2026-10-07T20-50-33. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
+   capabilities:
+     teamTools:
+       kind: allow
+--- tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::spill (pre)
++++ tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::spill (post)
+@@ -4,7 +4,7 @@
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-F spill team (nonce prf-2026-10-07T20-45-40). When given a work unit, do exactly what it says, then answer with the done marker."
++  persona: "You are the leader of the PR-F spill team (nonce prf-2026-10-07T20-50-33). When given a work unit, do exactly what it says, then answer with the done marker."
+   capabilities:
+     teamTools:
+       kind: allow
+--- tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::iso (pre)
++++ tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::iso (post)
+@@ -9,7 +9,7 @@
+     complete: true
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-E isolation team. Nonce prf-2026-10-07T20-45-40. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
++  persona: "You are the leader of the PR-E isolation team. Nonce prf-2026-10-07T20-50-33. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
+   capabilities:
+     teamTools:
+       kind: allow
+--- tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::persona (pre)
++++ tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::persona (post)
+@@ -9,7 +9,7 @@
+     complete: true
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-F persona team. Nonce prf-2026-10-07T20-45-40. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
++  persona: "You are the leader of the PR-F persona team. Nonce prf-2026-10-07T20-50-33. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
+   capabilities:
+     teamTools:
+       kind: allow
+--- tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::BP_ANCHOR_YAML (post)
+@@ -4,7 +4,7 @@
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-F gap smoke boot team. prf-2026-10-07T20-45-40 is the run nonce."
++  persona: "You are the leader of the PR-F gap smoke boot team. prf-2026-10-07T20-50-33 is the run nonce."
+ members: []
+ requirements: []
+ memberEnvelopes: []

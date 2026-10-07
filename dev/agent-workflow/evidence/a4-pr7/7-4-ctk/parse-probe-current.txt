@@ -1,0 +1,45 @@
+tests/mock/scripts/boot.mjs :: BLUEPRINT_DOC: v3; probe(v9) refused=true
+tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: saved/empty-deny: v3; probe(v9) refused=true
+tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: saved/deny: v3; probe(v9) refused=true
+tests/kits/exec-contract-live-smoke/blueprint.mjs :: scenario/exec-token-false: v3; probe(v9) refused=true
+tests/kits/exec-contract-live-smoke/blueprint.mjs :: scenario/exec-token-true: v3; probe(v9) refused=true
+tests/kits/exec-contract-live-smoke/blueprint.mjs :: anchor: v3; probe(v9) refused=true
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs :: f15: v3; probe(v9) refused=true
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs :: saved: v3; probe(v9) refused=true
+tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs :: main: v3; probe(v9) refused=true
+tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs :: role: v3; probe(v9) refused=true
+tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs :: T_PS: v3; probe(v9) refused=true
+tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs :: BOOT_SAVED: v3; probe(v9) refused=true
+tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs :: mcp-team: v3; probe(v9) refused=true
+tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs :: workflow-team: v3; probe(v9) refused=true
+tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs :: saved/empty-deny: v3; probe(v9) refused=true
+tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs :: saved/deny: v3; probe(v9) refused=true
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: main: v2; probe(v9) refused=true
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: iso: v2; probe(v9) refused=true
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: persona: v2; probe(v9) refused=true
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: BP_ANCHOR_YAML: v1; probe(v9) refused=true
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: V1_ANCHOR_SOURCE: v1 anchor hash MATCHES pinned 6a7fba9f…
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: main: v2; probe(v9) refused=true
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: subagent: v2; probe(v9) refused=true
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: spill: v1; probe(v9) refused=true
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: iso: v2; probe(v9) refused=true
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: persona: v2; probe(v9) refused=true
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: BP_ANCHOR_YAML: v1; probe(v9) refused=true
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: V1_ANCHOR_SOURCE: v1 anchor hash MATCHES pinned 6a7fba9f…
+tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs :: saved/empty-deny: v3; probe(v9) refused=true
+tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs :: saved/deny: v3; probe(v9) refused=true
+tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs :: saved/empty-deny: v3; probe(v9) refused=true
+tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs :: saved/deny: v3; probe(v9) refused=true
+tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs :: TVS: v3; probe(v9) refused=true
+tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs :: saved/empty-deny: v3; probe(v9) refused=true
+tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs :: saved/deny: v3; probe(v9) refused=true
+ALL-OK (current)

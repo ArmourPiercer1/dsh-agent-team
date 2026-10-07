@@ -600,7 +600,7 @@ function teamRowConfig() {
  */
 const BP_ANCHOR_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BP_ANCHOR_ID}`,
   'revision: "1"',
   'leader:',
@@ -611,6 +611,10 @@ const BP_ANCHOR_YAML = [
   `    persona: "You are a worker of the rc2 smoke boot team. ${P_WORKER_A}"`,
   'memberEnvelopes: []',
   'requirements: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',
@@ -640,7 +644,7 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     : ['    builtinToolDeny:', ...denyList.map((n) => `      - ${n}`)]
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     'leader:',
@@ -693,6 +697,10 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     '        - send-message',
     '        - report-progress',
     '      deny: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates: []',
     'metadata: {}',
     '---',

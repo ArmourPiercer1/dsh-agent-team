@@ -1,0 +1,7 @@
+control = pre-hardening (9c30448a)
+==> E  Tests  58 passed (58)              sha-ok=YES
+==> F  Tests  58 passed (58)              sha-ok=YES
+==> D  Tests  58 passed (58)              sha-ok=YES
+==> G  Tests  58 passed (58)              sha-ok=YES
+==> A  Tests  1 failed | 57 passed (58)   sha-ok=YES
+==> C  Tests  1 failed | 57 passed (58)   sha-ok=YES

@@ -217,7 +217,7 @@ const M3 = `D4V2_B2_T3_${NONCE}` // boot 2: ROOT_B Leader turn after the ordinar
 
 const BLUEPRINT_DOC = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BLUEPRINT_ID}`,
   `revision: "${BLUEPRINT_REVISION}"`,
   'leader:',
@@ -247,6 +247,19 @@ const BLUEPRINT_DOC = [
   '        - send-message',
   '        - report-progress',
   '      deny: []',
+  // Alpha.4 (A4-PR7 §7.4, pre-flip half): at schema version 3 both authority
+  // documents are required and neither is ever defaulted. `rules: []` is the
+  // narrowest legal value and it is what this harness always declared — the v1
+  // document carried neither carrier, and an absent carrier is a typed absence
+  // meaning zero expansion authority, the same ceiling the reader derives from a
+  // declared-empty one. What D4 proves is that a durable team root survives a
+  // host restart and reopens with the closed wire row shape; it opens no
+  // permission expansion, so any rule written here would be authority the
+  // harness never exercises.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: "The d4v2 default state."',

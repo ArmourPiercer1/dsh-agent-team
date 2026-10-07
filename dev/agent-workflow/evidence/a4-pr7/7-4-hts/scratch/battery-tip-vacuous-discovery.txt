@@ -1,0 +1,27 @@
+MUTATION A (expect red): every dirty line prints its FIRST site as `L<line>` — the `=v<version>` is gone   first dirty line : OFFENDING cordis.patch.yml :: L60 
+==> A  Tests  1 failed | 57 passed (58)   leg=[the fence reports sites, not a bare count, and names a file the reader can open] sha-ok=YES
+    AssertionError: report must print EXACTLY the sites of cordis.patch.yml: expected [ 'L60' ] to deepl
+MUTATION B (expect red): packages/domain/test/a1-permission-policy.test.ts disappears from the naming while its sites stay in the result   first dirty line : OFFENDING cordis.patch.yml :: L60=v1 
+==> B  Tests  58 passed (58)              leg=[none] sha-ok=YES
+    
+MUTATION C (expect red): packages/domain/test/blueprint-v1-frozen-resume.test.ts L76 alone loses its suffix — a token that also occurs elsewhere   first dirty line : OFFENDING cordis.patch.yml :: L60=v1 
+==> C  Tests  58 passed (58)              leg=[none] sha-ok=YES
+    
+MUTATION E (expect red): a PHANTOM site `L99999=v1` is appended to every dirty path: printed, never found   first dirty line : OFFENDING cordis.patch.yml :: L60=v1, L99999=v1 
+==> E  Tests  1 failed | 57 passed (58)   leg=[the fence reports sites, not a bare count, and names a file the reader can open] sha-ok=YES
+    AssertionError: report must print EXACTLY the sites of cordis.patch.yml: expected [ 'L60=v1', 'L9999
+MUTATION F (expect red): the first site of cordis.patch.yml is printed TWICE on its own line   first dirty line : OFFENDING cordis.patch.yml :: L60=v1, L60=v1 
+==> F  Tests  1 failed | 57 passed (58)   leg=[the fence reports sites, not a bare count, and names a file the reader can open] sha-ok=YES
+    AssertionError: report must print EXACTLY the sites of cordis.patch.yml: expected [ 'L60=v1', 'L60=v
+MUTATION D (expect red): the CLI truncates long OFFENDING lines on stdout; the returned string stays whole   first dirty line : OFFENDING cordis.patch.yml :: L60=v1 
+==> D  Tests  1 failed | 57 passed (58)   leg=[invoking the script by name is a real gate: non-zero exit while dirty sites exist] sha-ok=YES
+    AssertionError: expected 'scan: blueprint document-version fenc…' to be 'scan: blueprint document-
+MUTATION G (expect red): the dirty tally under-reports its SITE count by one (file count untouched)   first dirty line : OFFENDING cordis.patch.yml :: L60=v1 
+==> G  Tests  1 failed | 57 passed (58)   leg=[the fence reports sites, not a bare count, and names a file the reader can open] sha-ok=YES
+    AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'RESULT dirty(75 file
+MUTATION I (expect green): BY DESIGN: a path prints its sites in reverse order — order on the line is not the contract   first dirty line : OFFENDING cordis.patch.yml :: L60=v1 
+==> I  Tests  58 passed (58)              leg=[none] sha-ok=YES
+    
+MUTATION J (expect green): BY DESIGN: PROSE reorders its own tokens — prose is another leg and is not gated   first dirty line : OFFENDING cordis.patch.yml :: L60=v1 
+==> J  Tests  58 passed (58)              leg=[none] sha-ok=YES
+    

@@ -22,7 +22,7 @@
  *   10 Member controlled bash recovery    — E.12 S7
  *   11 cancel approval → durable abandon  — E.12 S10 (abort leg)
  *   12 v1 frozen Blueprint cold resume    — E.12 S13
- *   13 v2 Blueprint create/resume         — E.12 S1 (v2 create) + F15 C1 + G1
+ *   13 v3 Blueprint create/resume         — E.12 S1 (v2 create) + F15 C1 + G1
  *   14 persona `ptc` regression           — G5 (the registry `ptc` preset actually mounted on the real host — the C.8 actual-mount donor; gate lane POST-RESOLUTION: finding PR-F-G5 (v2 kind subject vs provider preset-id lookup -> typed FATAL) was resolved on master by the persona-kind work (A-contract PR #46) — the create under the mounted ptc is now ACCEPTED with the persona genuinely satisfied (true OPEN, T9 durable team-root with positive durableGeneration); the fail-closed direction is asserted cross-kit (E.12 S12b leg + merged suite; this kit has no bare-preset cell of its own))
  *   15 dual Team isolation                — E.12 S14
  *   16 spill ArtifactReadGrant regression — G6 (read-spill → `artifact-read-granted` ledger fact)
@@ -85,7 +85,7 @@
  *  G0  preflight                       — worktree dist present; test-use
  *       pristine @ baseline (porcelain empty + HEAD); :3080/:3180 401
  *       baseline (the stable instances are NEVER touched); ports free.
- *  G1  world: v2 team + 3 mini-MCPs    — the E.12 main world shape
+ *  G1  world: v3 team + 3 mini-MCPs    — the E.12 main world shape
  *       (team-level required mcp_repo/3492 + leader team-scope required
  *       mcp_leaderreq/3491 + worker required mcp_web/3493; the leader mounts
  *       every configured server so the team-scoped fibers are proable; the
@@ -249,6 +249,7 @@ import {
   parseLedgerEntry,
   serializeLedgerSequenceCounter,
 } from '../../../packages/runtime/dist/packages/storage/schema/ledger.js'
+import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../packages/runtime/dist/packages/storage/schema/stores.js'
 import { canonicalJsonStringify } from '../../../packages/runtime/dist/packages/contracts/src/remote-safe.js'
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
@@ -354,10 +355,10 @@ const BLUEPRINT_DIR = join(HOME, 'blueprints') // saved sources live IN the worl
 const WORLD_FILE = join(HOME, 'storages', 'team_domain.json')
 
 const ROOT = `session-prf-boot-${RUN_STAMP}` // the row anchor's boot root
-const T = `session-prf-main-${RUN_STAMP}` // the main gap team (v2)
+const T = `session-prf-main-${RUN_STAMP}` // the main gap team (v3)
 const T2 = `session-prf-iso-${RUN_STAMP}` // (inherited fixture — E.12 S14 covers dual-team isolation; not created here)
-const T9 = `session-prf-persona-${RUN_STAMP}` // the persona ptc team (v2) — G5
-const TSUB = `session-prf-subagent-${RUN_STAMP}` // the subagent-surface fail-closed team (v2) — G9
+const T9 = `session-prf-persona-${RUN_STAMP}` // the persona ptc team (v3) — G5
+const TSUB = `session-prf-subagent-${RUN_STAMP}` // the subagent-surface fail-closed team (v3) — G9
 const T13 = `session-prf-v1-${RUN_STAMP}` // (inherited fixture — E.12 S13 covers frozen v1; not created here)
 
 const BP_MAIN_ID = 'team.prf-main'
@@ -784,7 +785,7 @@ function seedFact(rootSessionId, factType, payload) {
   }
   const seq = maxSeq + 1
   const entry = {
-    schemaVersion: 2,
+    schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,
     sequence: seq,
     rootSessionId,
     factType,
@@ -799,7 +800,7 @@ function seedFact(rootSessionId, factType, payload) {
   // form too: leaving it stale makes the host's next allocation collide
   // with the seeded sequence.
   ledger[LEDGER_SEQUENCE_COUNTER_KEY] = serializeLedgerSequenceCounter({
-    schemaVersion: 2,
+    schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,
     kind: 'ledger-sequence-counter',
     value: seq,
   })
@@ -1168,11 +1169,11 @@ const UNMANAGED_BUILTINS = [
   'update_goal', 'web_fetch', 'web_search', 'workflow',
 ]
 
-/** The main scenario team (v2): the requirement matrix under test. */
+/** The main scenario team (v3): the requirement matrix under test. */
 function mainTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     `blueprintId: ${BP_MAIN_ID}`,
     'revision: "1"',
     'teamRequirements:',
@@ -1314,6 +1315,10 @@ function mainTeamBlueprintYaml() {
     '    envelope:',
     '      allow:',
     '        - request-control',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-F main team default state."',
@@ -1336,10 +1341,10 @@ function mainTeamBlueprintYaml() {
   ].join('\n')
 }
 
-/** The isolation team (v2): NARROWER requirements (repo only) — the S14
+/** The isolation team (v3): NARROWER requirements (repo only) — the S14
  *  proof that per-ROOT durable state is isolated even though the world
  *  facts (row level) are shared. */
-/** The subagent-surface team (v2): the G9 subject — the worker declares
+/** The subagent-surface team (v3): the G9 subject — the worker declares
  *  the strict permission surface WITHOUT the unmanaged builtinToolDeny set:
  *  on the 0.1.7-rc.1 host the A2C-2 coverage gate (19 unmanaged tools, 12
  *  known-sensitive incl. subagent_fork) must fail the worker's setup
@@ -1349,7 +1354,7 @@ function mainTeamBlueprintYaml() {
 function subagentTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     `blueprintId: ${BP_SUB_ID}`,
     'revision: "1"',
     'leader:',
@@ -1410,6 +1415,10 @@ function subagentTeamBlueprintYaml() {
     '    envelope:',
     '      allow:',
     '        - request-control',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-F subagent-surface team default state."',
@@ -1426,7 +1435,7 @@ function subagentTeamBlueprintYaml() {
   ].join('\n')
 }
 
-/** The spill team (v1, the PR#35 real-spill fixture — the proven E2E
+/** The spill team (v3, the PR#35 real-spill fixture shape — the proven E2E
  *  writer path; the run-3 worker-read variant produced NO durable fact).
  *  Leader-only: the A2C-1 shell contract rejects a positive whole-tool
  *  `bash` allow for MEMBER templates; the leader allow-lane whole-tool
@@ -1443,7 +1452,7 @@ function subagentTeamBlueprintYaml() {
 function spillTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${BP_SPILL_ID}`,
     'revision: "1"',
     'leader:',
@@ -1477,6 +1486,10 @@ function spillTeamBlueprintYaml() {
     '    - bash',
     '  deny: []',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates: []',
     'metadata: {}',
     '---',
@@ -1487,7 +1500,7 @@ function spillTeamBlueprintYaml() {
 function isoTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     `blueprintId: ${BP_ISO_ID}`,
     'revision: "1"',
     'teamRequirements:',
@@ -1554,6 +1567,10 @@ function isoTeamBlueprintYaml() {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-E isolation team default state."',
@@ -1570,11 +1587,11 @@ function isoTeamBlueprintYaml() {
   ].join('\n')
 }
 
-/** The persona team (v2): the S12 `ptc` regression subject. */
+/** The persona team (v3): the S12 `ptc` regression subject. */
 function personaTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     `blueprintId: ${BP_PERSONA_ID}`,
     'revision: "1"',
     'teamRequirements:',
@@ -1641,6 +1658,10 @@ function personaTeamBlueprintYaml() {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-F persona team default state."',
@@ -1657,11 +1678,11 @@ function personaTeamBlueprintYaml() {
   ].join('\n')
 }
 
-/** The row anchor: a plain LEGACY v1 leader (no capabilities, no
+/** The row anchor: a plain LEGACY-shape leader (no capabilities, no
  *  requirements) — the directive root (C.10 pattern). */
 const BP_ANCHOR_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BP_ANCHOR_ID}`,
   'revision: "1"',
   'leader:',
@@ -1670,6 +1691,10 @@ const BP_ANCHOR_YAML = [
   'members: []',
   'requirements: []',
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',

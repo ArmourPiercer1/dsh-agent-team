@@ -1,0 +1,60 @@
+--- tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs::BP_ANCHOR_YAML (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.mpr-anchor
+ revision: "1"
+ leader:
+@@ -8,6 +8,10 @@
+ members: []
+ requirements: []
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs::main (pre)
++++ tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs::main (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.mpr-main
+ revision: "1"
+ leader:
+@@ -51,6 +51,10 @@
+   deny:
+     - delete-team
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: default
+     description: "MPR main default state."
+--- tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs::role (pre)
++++ tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs::role (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.mpr-role
+ revision: "1"
+ leader:
+@@ -46,6 +46,10 @@
+   deny:
+     - delete-team
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: default
+     description: "MPR cross-root default state."

@@ -1,0 +1,42 @@
+--- tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs::saved (pre)
++++ tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs::saved (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.mgis
+ revision: "1"
+ leader:
+@@ -29,6 +29,10 @@
+   deny:
+     - delete-team
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: default
+     description: "mcp-initial-grant smoke default state."
+--- tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs::BP_ANCHOR_YAML (post)
+@@ -1,13 +1,17 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.mgis-anchor
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the mgis smoke boot team. MGIS_BOOT_mgis-2026-10-07T20-45-40 is the probe marker."
++  persona: "You are the leader of the mgis smoke boot team. MGIS_BOOT_mgis-2026-10-07T20-50-32 is the probe marker."
+ members: []
+ requirements: []
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---

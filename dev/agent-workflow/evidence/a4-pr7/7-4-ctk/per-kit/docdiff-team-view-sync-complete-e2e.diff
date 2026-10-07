@@ -1,0 +1,20 @@
+--- tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs::TVS (pre)
++++ tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs::TVS (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.tvs-spill
+ revision: "1"
+ leader:
+@@ -64,6 +64,10 @@
+     - bash
+   deny: []
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---

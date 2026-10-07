@@ -214,7 +214,7 @@ const SPILL_PROMPT =
  */
 const TVS_BLUEPRINT_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BLUEPRINT_ID}`,
   'revision: "1"',
   'leader:',
@@ -290,6 +290,10 @@ const TVS_BLUEPRINT_YAML = [
   '    - bash',
   '  deny: []',
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',

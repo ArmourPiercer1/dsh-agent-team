@@ -245,7 +245,7 @@ function yamlEmitItem(item, indent) {
 
 const BLUEPRINT_DOC = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BLUEPRINT_ID}`,
   'revision: "1"',
   'leader:',
@@ -292,6 +292,13 @@ const BLUEPRINT_DOC = [
   '        - request-control',
   '        - resolve-control',
   '      deny: []',
+  // v3 requires both authority envelopes explicitly (no implicit default);
+  // rules: [] declares NO mutation-expansion authority — the narrowest
+  // reading of this dtest world, which exercises team mechanics only.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: "The dtest default state."',
