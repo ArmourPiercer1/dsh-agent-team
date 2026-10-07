@@ -1,0 +1,166 @@
+POST-TIGHTENING RE-VERIFICATION — A4-PR7 Task 7.5 lane
+======================================================
+
+Written for someone who has not seen the conversation. The session that produced this
+lane had `danger-full-access`; the human is switching it to `workspace-write`. Run these
+in order, from the task worktree root, and compare each observable. Every command here
+writes ONLY inside the repository working tree; the three that would otherwise write
+outside it are given with the flag that redirects them (and the failure they produce
+without it, so a regression is recognizable rather than mysterious).
+
+Worktree root for everything below:
+    cd /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75
+(branch `feat/a4-pr75-smoke-gate`; never the main checkout, never another worktree.)
+
+Common prefix, required on every pnpm/npm invocation in this repo (it is what keeps the
+tool caches inside the workspace):
+    export CI=true
+    export XDG_CACHE_HOME=/home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/cache
+    export XDG_DATA_HOME=/home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/data
+    export XDG_CONFIG_HOME=/home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/config
+
+  1. test -d /home/user/dsh-plugins/dsh-agent-team/.tmp-pnpm-store && echo STORE_PRESENT
+     -> prints STORE_PRESENT. The store lives in the workspace precisely so that installs
+        need neither network nor `$HOME`. If it is gone, this lane can no longer be
+        re-installed offline and the re-verification is blocked, not failed.
+
+  2. pnpm install --offline --store-dir=/home/user/dsh-plugins/dsh-agent-team/.tmp-pnpm-store \
+       --ignore-scripts --frozen-lockfile --config.confirmModulesPurge=false
+     -> exit 0, "Scope: all 10 workspace projects", "Already up to date". `--offline` is
+        the point: it proves the whole install is served from the in-workspace store, so
+        tightening costs this lane nothing. WITHOUT `--store-dir` pnpm reaches for the
+        global store and its metadata cache under `$HOME` and dies on the file sandbox
+        (and `--frozen-lockfile` must stay: dropping it invites a lockfile write, which
+        this task's ruling forbids in the diff).
+
+  3. git status --porcelain
+     -> exactly the 11 paths this task owns (7 scripts: composition-smoke.mjs,
+        composition-smoke-closure.mjs(+.d.mts), composition-smoke-bundle.mjs(+.d.mts),
+        client-composition-surface.mjs(+.d.mts), build-client-composition.mjs,
+        check-artifacts-committed.mjs; 2 test files; the evidence files) plus nothing
+        else. Anything under `packages/client/composition-shim/` or
+        `packages/runtime/dist/` appearing here means a rebuild produced drift that has
+        to be co-committed (A5-19), not that the gate is broken.
+
+  4. pnpm -r run typecheck
+     -> exit 0 with 8 lines `typecheck: Done` and ZERO lines matching `error TS`. A count
+        below 8 means a workspace package was skipped (an install that partially failed
+        under the tighter sandbox), which is a different problem from a type error.
+
+  5. pnpm run build
+     -> exit 0. Writes only `packages/*/dist` inside the tree (`packages/client/dist` is
+        gitignored; `packages/runtime/dist` is a committed artifact). This must run
+        before step 7: with no build output the client entry does not exist, and the
+        smoke correctly reports FAIL there rather than SKIP.
+
+  6. pnpm run build:composition
+     -> exit 0, and its last line is the check:artifacts line from step 7. Expect
+        `build-client-composition: 95 modules, 12 css files` and
+        `externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store,
+        @deepseek-ai/dsh-client-ui-primitives]`; the externals line comes from
+        `scripts/client-composition-surface.mjs`, which is the same constant the smoke
+        asserts the artifact against.
+
+  7. pnpm run check:artifacts
+     -> exit 0, `[check-artifacts-committed] OK: 1508 files; committed install-surface
+        artifacts match the fresh build (incl. 1 glue placement(s))`. A non-zero exit here
+        after a rebuild means the committed mirror lagged the source — co-commit the
+        rebuilt artifacts, do not edit the gate.
+
+  8. pnpm smoke:composition
+     -> exit 0, and this exact shape on stdout:
+          PASS host plugin (packages/runtime): … (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+          SKIP client plugin (packages/client): host module closure unavailable — 17
+            unresolvable: @shikijs/langs, anser, clsx, katex, … simple-icons
+          9 lines `PASS client bundle <check-id> (packages/client/composition-shim): …`
+          PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin …
+        Three ways this can legitimately differ, each meaning something:
+          - SKIP with a DIFFERENT count -> this workspace's install surface changed; the
+            number is measured, not written down, so re-read it and record it, do not
+            "fix" it.
+          - the client line becomes PASS -> someone made the upstream closure resolvable
+            here (e.g. installed the missing packages); the load-side checks are then
+            really running, which is the intended end state.
+          - SKIP disappearing WITHOUT a PASS, or the count going to 0 while the packages
+            are still absent -> the classifier broke; treat as a gate defect.
+        Note this step needs NO network and NO `$HOME` write; it reads build output and
+        the workspace node_modules only.
+
+  9. pnpm exec vitest run packages/testkit/test/a4p75-composition-smoke-classification.test.ts
+     -> 21 passed. It writes only under `packages/testkit/test/.tmp-fault/a4p75-*`
+        (gitignored, inside the workspace) and removes it in `afterAll`. If the sandbox
+        blocks that write, the failure is a SANDBOX artifact and must be reported as
+        such, not as a red assertion — and do not "fix" it by pointing the scratch at
+        `/tmp`, which is outside the workspace.
+
+ 10. pnpm exec vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+     -> 10 passed. It fails with `expected 1021 to be 1020` if this lane's new scannable
+        file is present while the declared pin was not advanced: that is the pin
+        mechanism working, and the fix is the named list plus the total, never the count
+        alone.
+
+ 11. pnpm --filter @dsh-agent-team/client run test
+     -> exit 1, `3 failed | 876 passed (879)` in 2 files
+        (`test/team-creation-panel.client.spec.tsx` 2, `test/team-governance.client.spec.tsx`
+        1). These three are the pre-existing baseline trio, not this task.
+
+ 12. rm -rf packages/testkit/test/.tmp-fault/ && pnpm test
+     -> exit 1, `10 failed files / 21 failed tests` (of 488 files / 6072 tests), the
+        failing identities being the baseline set: `t1-capability-schema` x9,
+        `p6t3-mediation` x5, `p6t3-restart` x2, `p6t1-parallel` x2 (declared flake band
+        1-3, so 20-22 total is the same set), `t2-blueprint-hash` x1,
+        `d3-member-identity-context` x1, `p6t6-actions` x1 — plus the 3 zero-test
+        collection files (`p8s3b-result-effects` etc.). Any NEW identity is this lane's
+        problem. The `rm -rf` clears the fault-injection scratch worlds; leaving them
+        behind makes the run flaky in a way that has nothing to do with the code.
+
+ 13. npm_config_loglevel=error npm_config_update_notifier=false \
+       node scripts/lint-identities.mjs \
+       --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+     -> `lint-identities: 160 identity lines, 76 distinct` and `new 0, resolved 0`.
+        `npm_config_update_notifier=false` is not cosmetic: without it npm touches
+        `~/.npm/_update-notifier-last-checked` and the file sandbox refuses, which looks
+        like a lint failure but is a permissions failure.
+
+ 14. pnpm exec eslint scripts/composition-smoke.mjs scripts/composition-smoke-closure.mjs \
+       scripts/composition-smoke-bundle.mjs scripts/client-composition-surface.mjs \
+       scripts/build-client-composition.mjs scripts/check-artifacts-committed.mjs \
+       scripts/composition-smoke-closure.d.mts scripts/composition-smoke-bundle.d.mts \
+       scripts/client-composition-surface.d.mts \
+       packages/testkit/test/a4p75-composition-smoke-classification.test.ts \
+       packages/testkit/test/p4t6-session-event-scan.test.ts
+     -> exit 0, no output. Zero `eslint-disable`, zero `@ts-ignore`, zero
+        `@ts-expect-error` in this task's diff — a mute and a fix must not produce
+        identical gate output, which is the whole doctrine of this round.
+
+THINGS THIS LANE DELIBERATELY DOES NOT RE-RUN UNDER workspace-write
+  - The public registry probe (`7-5-registry-probe.txt`). It needs NETWORK. It is
+    captured in full, so the claim is reviewable without re-running it. If it must be
+    re-run, set `npm_config_cache=/home/user/dsh-plugins/dsh-agent-team/.tmp-npm-cache`
+    or npm writes `~/.npm`.
+  - `git fetch` / any push. Refs were warmed before the switch
+    (`origin/master` = `991348e0…`, `origin/stable` = `b0e5aeb4…`). A `git push --dry-run`
+    for this branch succeeded BEFORE the switch, and it needs the session's HTTPS auth
+    path — pushing is outside this lane's authority anyway (AGENTS.md red line: no push),
+    so nothing here waits on it.
+  - Any host boot. This lane never starts a DSH instance: it touches no port, no
+    `tests/homes/*`, no `:3080` instance. The host-side acceptance run that the SKIP
+    points at is Task 7.6/7.7, and when that runs it must keep DSH_HOME in-workspace at
+    `tests/homes/<world>` (TEST_METHODS §7) — which is already a workspace-write-safe
+    convention.
+  - The host-tree CONTROL scan quoted in `7-5-client-closure-scan.txt` §5. It READ the
+    main checkout's `tests/deepseek-harness-test-use/` install tree and wrote nothing;
+    reads inside the workspace stay allowed under `workspace-write`, so it reproduces.
+
+WHAT WOULD ACTUALLY BREAK, and what it would mean
+  - Step 2 without `--store-dir`, or without the XDG exports: pnpm reaches for `$HOME`
+    and the run dies inside the installer. Not a code failure; re-run with the prefix.
+  - Step 8 printing the client line as PASS: the closure became resolvable; the gate is
+    now checking MORE, and the SKIP disappears honestly.
+  - Step 8 exiting 0 while printing NO line for the client step: the three-state
+    classifier regressed into a mute. That is the failure mode this whole task exists to
+    prevent; treat it as a blocker, not a flake.
+  - Step 7 exiting non-zero after step 6: the committed install-surface mirror moved.
+    Rebuild and co-commit; never widen or silence the check.
+  - Step 9/12 failing to create `packages/testkit/test/.tmp-fault/`: sandbox artifact,
+    report it as such with the exact errno.

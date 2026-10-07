@@ -1,0 +1,74 @@
+A4-PR7 Task 7.5 — the client load step, measured
+(SIMULATED / MACHINE evidence. This is not a human acceptance pass.)
+
+captured: 2026-10-07T17:12:28.888Z   worktree: .worktrees/a4-pr75   base: 991348e0
+node v24.21.0, pnpm 11.7.0, strict virtual store
+
+1. THE PUBLISHED UPSTREAM PACKAGE (the only client-graph package that is not ours)
+   path: node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives
+   name=@deepseek-ai/dsh-client-ui-primitives version=0.2.0-rc.2
+   dependencies: null (the field is ABSENT, not empty)
+   sha256(lib/index.js): 6b551f0039ae2632   size: 530719 B
+   peerDependencies: {"@deepseek-ai/cordis":"~4.0.4"}
+   exports["."]: {"types":"./lib/types/index.d.ts","default":"./lib/index.js"}   lib/index.js: 530719 B
+
+2. BARE PACKAGES STATICALLY IMPORTED BY lib/index.js: 23
+   resolvable  @deepseek-ai/dsh-client-store
+   resolvable  @deepseek-ai/dsh-util-code-language
+   resolvable  @deepseek-ai/dsh-util-workspace-path
+   MISSING      @shikijs/langs
+   MISSING      anser
+   MISSING      clsx
+   resolvable  diff
+   MISSING      katex
+   MISSING      mdast-util-from-markdown
+   MISSING      mdast-util-gfm
+   MISSING      mdast-util-math
+   MISSING      micromark-core-commonmark
+   MISSING      micromark-extension-gfm
+   MISSING      micromark-extension-math
+   MISSING      micromark-factory-space
+   MISSING      micromark-util-character
+   MISSING      micromark-util-classify-character
+   MISSING      micromark-util-sanitize-uri
+   MISSING      micromark-util-symbol
+   resolvable  react
+   resolvable  react-dom
+   MISSING      shiki
+   MISSING      simple-icons
+
+   resolvable in this workspace: 6   unresolvable: 17
+   Every one of the 23 is UNDECLARED by the published manifest (no dependencies field).
+   The ones that resolve here do so because they are OUR devDependencies or pnpm
+   hoist-fallback entries under node_modules/.pnpm/node_modules — not because a
+   host closure is complete. Nothing in this list is a dependency WE omitted.
+
+3. THE SCAN THE GATE ITSELF RUNS (the client entry)
+   entry: packages/client/dist/packages/client/src/plugin/client.js (emitted by pnpm build; packages/client/dist is gitignored,
+   so a fresh clone must build before the smoke can say anything at all — the
+   gate reports that as FAIL, never as SKIP.)
+   visited=125 truncated=false ownUnresolved=0
+   upstreamUnresolved=17 untraversed=0
+   The OWN zone is empty: the unresolvable set is entirely upstream, which is
+   what makes this step skippable instead of red. Had our own entry imported an
+   undeclared package, the same scan would have made the step FAIL.
+
+4. THE FIRST FAILURE A BARE NODE PROCESS SEES
+   Cannot find package 'clsx' imported from <...>/dsh-client-ui-primitives/lib/index.js
+   clsx is the FIRST of the 17, not the whole story: the plan’s proposed fix
+   (pnpm add clsx@2.1.1, later discarded by the coordinator) moves the failure to
+   simple-icons, then to the next of the 17. Pinning clsx would have made a
+   non-check look green.
+
+5. HOST-SIDE CONTROL — THE SAME BYTES, IN THE HOST TREE (measured at the same moment)
+   <host>/packages/client/ui-primitives/lib/index.js is BYTE-IDENTICAL to the
+   installed tarball copy above: sha256 6b551f0039ae2632…, 530719 B on both sides,
+   23 identical bare imports. In the host tree the identical scan reports
+   own=0 unresolved, upstream=0 unresolved (23/23 resolve, visited=273).
+   The host keeps ui-primitives as a WORKSPACE package (version 0.2.0-rc.2) and
+   installs its 23 imports into the host tree (node_modules/.pnpm: 1392 entries,
+   incl. clsx@2.1.1, anser@2.3.5, katex@0.16.47, simple-icons@16.31.0, shiki@2.5.0).
+   Same bytes, same imports, different install surface: the gap belongs to this
+   repository, not to the package, and not to any dependency this repo forgot.
+   The claim "not even the host that ships it can load it" is FALSE; this receipt
+   exists partly so that claim does not survive into the records.

@@ -1,0 +1,91 @@
+A4-PR7 Task 7.5 — pnpm smoke:composition, before and after (verbatim)
+(SIMULATED / MACHINE evidence. Not a human acceptance pass; human acceptance stays BLOCKED/NOT_RUN.)
+
+=============================================================================== BEFORE (base 991348e0, two states: PASS or FAIL)
+command: pnpm smoke:composition   (after pnpm build; packages/client/dist is gitignored, so a
+         fresh clone without a build cannot even reach the client step)
+exit: 1
+
+  $ node scripts/composition-smoke.mjs
+  [dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+  [dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+  PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+  FAIL client plugin (packages/client): Cannot find package 'clsx' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  Did you mean to import "clsx/dist/clsx.js"?
+  FAIL composition-smoke
+  file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:225
+    throw new Error('composition smoke failed')
+          ^
+  
+  Error: composition smoke failed
+  
+  Node.js v24.21.0
+  [ELIFECYCLE] Command failed with exit code 1.
+
+  The client FAIL line is the whole finding: the gate was failing on a THIRD-PARTY
+  package that no configuration of this workspace can install, and it had been
+  failing for that reason since the client entry stopped being a skeleton.
+
+=============================================================================== AFTER (three states: PASS / FAIL / SKIP)
+command: pnpm smoke:composition
+exit: 0
+
+  $ node scripts/composition-smoke.mjs
+  [dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+  [dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+  PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+  SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+  PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+  PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): packages/client/composition-shim/client-bundle.js is inside an install surface check:artifacts compares
+  PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+  PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+  PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+  PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+  PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+  PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+  PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+  PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+  1 PASS (host plugin, unchanged from before), 1 SKIP that names itself and its 17
+  packages, 9 PASS on the composed artifact that the old gate never looked at, and a
+  summary line that refuses to read the SKIP as a pass.
+
+=============================================================================== THE REST OF THE GATE BATTERY (final tree)
+
+pnpm -r run typecheck            exit 0 — 8x 'typecheck: Done', 0x 'error TS'
+pnpm run build                   exit 0
+pnpm run build:composition       exit 0 (95 modules, 12 css, externals=[react,
+                                   react/jsx-runtime, @deepseek-ai/dsh-client-store,
+                                   @deepseek-ai/dsh-client-ui-primitives])
+pnpm run check:artifacts         exit 0 — OK: 1508 files, 1 glue placement
+                                   and the rebuild is BYTE-IDENTICAL to the committed
+                                   artifacts (cmp on client-bundle.js and the shim
+                                   package.json), i.e. scripts/composition-smoke.mjs
+                                   is not dist-mapped and no artifact co-commit is
+                                   needed for this change
+eslint (10 changed files)        exit 0, no output — zero mutes; lint-identities:
+                                   160 identity lines / 76 distinct, new 0, resolved 0
+client lane test                 exit 1 — 3 failed / 876 passed (879), 2 failed files:
+                                   test/team-creation-panel.client.spec.tsx (2) and
+                                   test/team-governance.client.spec.tsx (1); the three
+                                   names are the baseline trio (blueprint-detail persona
+                                   probe, runtime-preset probe re-run, override-reset
+                                   scope-instance pull), unchanged by this task
+new test file                    21 passed (it evaluates the real 1.26 MB bundle, so it
+                                   is the slow test in the testkit lane by design)
+p4t6-session-event-scan          10 passed after its declared pin moved 1020 -> 1021
+                                   (this task adds one scannable file under packages/**;
+                                   see 7-5-p4t6-pin.txt for the intermediate red)
+whole-repo pnpm test             exit 1 — 9 failed files / 479 passed (488 files),
+      (after clearing .tmp-fault)  19 failed / 6032 passed (6051 tests). Failing identities:
+                                   t1-capability-schema x9, p6t3-mediation x5,
+                                   p6t3-restart x2, t2-blueprint-hash x1,
+                                   d3-member-identity-context x1, p6t6-actions x1 —
+                                   plus the three 0-test collection files
+                                   (p8s3b-result-effects, t12a-b2-child-identity,
+                                   t12a-glue-handoff-ports). NO NEW IDENTITY vs the
+                                   baseline set; p6t1-parallel did not fire this run,
+                                   which is inside its declared 1-3 flake band (the
+                                   recorded base/post unions run 19-23 for this reason).
+                                   The delta vs the merged-tree capture is exactly
+                                   6030 -> 6051 total tests = this lane's new file.

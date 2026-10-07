@@ -158,3 +158,49 @@ The mutation sweep was NOT re-run, and the honest reason is recorded rather than
 assumed: no production line of this branch changed in the merge — `7-r1-s2-merge-shape.txt`
 proves it file by file — and a mutation proof measures a production change that is
 still byte-identical to the one already measured.
+
+## Task 7.5 (`7-5-client-closure-scan`, `7-5-mutations`, …): the composition smoke stops lying
+
+Task 7.5 as written in the plan said "`pnpm smoke:composition` fails on the missing `clsx`
+dependency" and prescribed adding pins. The ruling executed here is the opposite, and the
+plan line stays wrong until the coordinator's records commit (`docs/**` is not this
+lane's to edit): **no pin was added, and neither `packages/client/package.json` nor
+`pnpm-lock.yaml` is in the diff.** What the round actually changed is the gate.
+
+| file | the claim it supports |
+| --- | --- |
+| `7-5-client-closure-scan.txt` | the measurement that replaces the plan's diagnosis. `@deepseek-ai/dsh-client-ui-primitives@0.2.0-rc.2` has **no `dependencies` field at all** and one peer (`@deepseek-ai/cordis@~4.0.4`), while its `lib/index.js` statically imports **23** bare packages: **6 resolve** in this workspace and **17 do not**, and the scan the gate itself runs reports `ownUnresolved=0` — every unresolvable specifier is asked for by a third-party file, none by ours. §4 records that `clsx` is only the first of the 17 (pinning it moves the error to `simple-icons`), and §5 is the control that settles the causal story: the host's `lib/index.js` is **byte-identical** (sha256 `6b551f0039ae2632…`, 530719 B) and the identical scan **in the host tree resolves 23/23**. Same bytes, same imports, different install surface. |
+| `7-5-registry-probe.txt` | the public-registry half of the same correction, captured while network was available: `0.2.0-rc.2` is published for all four `@deepseek-ai` client packages (`dist-tags.latest` is stale for every one of them — a stale dist-tag is an `npm view` artifact, not a missing version), and `dependencies` is empty for all four at that version. Records too that re-running it needs network plus an in-workspace npm cache. |
+| `7-5-smoke-three-state.txt` | `pnpm smoke:composition` verbatim before and after. Before: `FAIL client plugin … Cannot find package 'clsx' …`, exit 1 — a red gate that had been failing for a reason no configuration of this workspace can fix, since the client entry stopped being a skeleton. After: `PASS host plugin` (unchanged, still a real check), `SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: <the 17 names>`, nine `PASS client bundle <check-id>` lines, and a summary that says out loud `1 step NOT RUN and NOT passed`. Exit 0. Same file carries the rest of the battery on the final tree: typecheck 8 `Done` / 0 `error TS`, `build` / `build:composition` / `check:artifacts` `OK: 1508 files` with the rebuild **byte-identical** (so no artifact co-commit), eslint exit 0 with zero mutes, `lint-identities` 160 / 76 distinct / `new 0, resolved 0`, client lane 3 failed / 876 passed (the same baseline trio). |
+| `7-5-mutations.txt` | **fifteen** mutations, each one an assertion driven red and then reverted (tracked files by `git checkout`, the built entry restored byte-for-byte, the rebuilt bundle re-compared byte-identical). The two the brief asked for by name: **M-c** puts an undeclared import in OUR built entry while the real 17-package gap is present — `FAIL … our own artifact imports specifiers this workspace cannot resolve (no-such-own-dep-75)`, exit 1, i.e. the skip path cannot launder our own bug; **M-m** breaks the entry's syntax with the real gap present (link fails before evaluation, so a module-scope *throw* is unobservable — see M-a2) — `FAIL … a reason that is not a missing upstream package (Unexpected token ':')`, exit 1. Plus **F1**, which makes the closure fake-resolvable and turns the SKIP into `PASS client plugin …`, proving the skip is conditional and the contract checks really run; **M-a3** puts a module-scope throw in the committed BUNDLE — the class the SKIP structurally cannot see — and the offline check turns it red; and one red per offline assertion (row id renamed by one character, `apply` export renamed, plugin name drift, external added, external swapped, shim path typo, shim version drift, composition file removed, placed glue moved). |
+| `7-5-p4t6-pin.txt` | this lane's own intermediate red, kept rather than hidden: adding a scannable test file moved `p4t6`'s derived total to `expected 1021 to be 1020`, fixed by the mechanism the file prescribes (name the path in `SCANNED_PATHS_A4PR7`, move the PR7 total), not by touching the total alone. |
+| `7-5-post-tightening-reverify.txt` | the command-by-command checklist to re-run after the session is switched to `workspace-write`, with the expected observable for each and what a regression would mean. Nothing in this lane needs network any more: the install is proven `--offline` from the in-workspace store, the registry probe is captured above, and the lane does not push. |
+
+### The offline composition-surface checks, and the line between them and the SKIP
+
+A gate that stops checking has to be replaced by a gate that checks, so the nine
+`client bundle <check-id>` arms verify the composed artifact
+(`packages/client/composition-shim/`) — the thing a real host actually loads — with **no
+upstream closure at all**: the bundle's only bare specifiers are the four module-table
+externals. They cover the defect classes the coordinator named: a missing plugin-row
+export (`plugin-row-exports`), a wrong artifact or manifest path
+(`composition-output-present`, `manifest-targets-resolve`,
+`composition-bundle-is-install-surface`, `shim-recorded-values` — asserted against the
+manifests the builder itself writes, and against `INSTALL_SURFACES` shared with
+`check-artifacts-committed.mjs` rather than restated), our own top-level code throwing
+(`bundle-module-graph-evaluates`), drift in what the bundle may require
+(`external-specifier-set`, read both from the emitted `__extReq` text and from an
+evaluation that runs even when the load step skips), and a glue/seam mismatch against
+`packages/runtime/dist` (`derived-urls-resolve`, which derives the URLs with the built
+host's own `defaultGlueUrl` / `defaultSeamUrlCandidates` and compares the result to
+`PLACEMENTS`). Row shape is established by **evaluation** in a `node:vm` context with an
+inert module table — the bundle is a `window.__ModuleLoader__.load` script, not a module,
+and it touches `document` while its graph evaluates, so `import()` cannot read it; the
+stub surface is deliberately minimal so the check cannot rot into a mock that asserts
+nothing, and its own `apply` was never trusted for the fail-loud contract (that stays on
+the load step, where the real upstream exists).
+
+The honest limit, stated where it belongs: **this removes a gate that was not testing
+anything; it does not make the client plugin verifiable in this workspace.** Driving the
+real client row inside a real host is Task 7.6/7.7, and human acceptance stays
+`BLOCKED` / `NOT_RUN`.

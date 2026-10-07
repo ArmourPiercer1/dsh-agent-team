@@ -51,9 +51,14 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { PLACEMENTS } from './place-dist-glue.mjs';
+import { INSTALL_SURFACES } from './client-composition-surface.mjs';
 
 const ROOT = process.cwd();
-const PATHS = ['packages/runtime/dist', 'packages/client/composition-shim'];
+// One home for the surface list: client-composition-surface.mjs, which the
+// composition smoke imports too (it must be able to ask whether the artifact it
+// checked is inside a surface that ships). A literal here and a literal there
+// drift the moment a third surface is added.
+const PATHS = [...INSTALL_SURFACES];
 const SEP = path.sep;
 
 function git(...args) {

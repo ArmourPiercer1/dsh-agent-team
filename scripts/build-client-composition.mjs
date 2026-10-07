@@ -51,6 +51,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 
+import {
+  CLIENT_BUNDLE_FILENAME,
+  CLIENT_MODULE_TABLE_EXTERNALS,
+  CLIENT_NODE_HALF_FILENAME,
+  CLIENT_SHIM_ROW_ID,
+  ROOT_BUNDLE_ROW_ID,
+} from './client-composition-surface.mjs'
+
 const [,, pkgDir, outDir] = process.argv
 if (!pkgDir || !outDir) {
   console.error('usage: node build-client-composition.mjs <client-pkg-dir> <out-dir>')
@@ -66,7 +74,7 @@ if (typeof packageVersion !== 'string' || packageVersion.length === 0) {
 // window.__s8Probe hook). Harness-side only; the product bundle never carries it.
 const PROBE = process.argv.slice(2).includes('--probe')
 
-const PLUGIN_ID = '@dsh-agent-team/client'
+const PLUGIN_ID = CLIENT_SHIM_ROW_ID
 // plugin-bundle-form: the git-install bundle form names its client row by the
 // ROOT package (`dsh-agent-team` — nearestPackage walk from the row's module
 // lands on the root manifest), while the manual shim form names it by the
@@ -75,13 +83,8 @@ const PLUGIN_ID = '@dsh-agent-team/client'
 // registration stays inert (the client module system materializes factories
 // on first import and never errors on unclaimed ids — verified against
 // packages/client/modules/src/client/system.ts in the test-use host).
-const ROOT_PLUGIN_ID = 'dsh-agent-team'
-const EXTERNALS = new Set([
-  'react',
-  'react/jsx-runtime',
-  '@deepseek-ai/dsh-client-store',
-  '@deepseek-ai/dsh-client-ui-primitives',
-])
+const ROOT_PLUGIN_ID = ROOT_BUNDLE_ROW_ID
+const EXTERNALS = new Set(CLIENT_MODULE_TABLE_EXTERNALS)
 
 function die(msg) {
   console.error(`build-client-composition: ${msg}`)
@@ -577,7 +580,7 @@ const nodeHalf = [
   '}',
   '',
 ].join('\n')
-writeFileSync(join(OUT, 'index.js'), nodeHalf)
+writeFileSync(join(OUT, CLIENT_NODE_HALF_FILENAME), nodeHalf)
 
 const shimPkg = {
   name: PLUGIN_ID,
@@ -586,8 +589,8 @@ const shimPkg = {
   type: 'module',
   description: 'S8 composition shim: dsh.client manifest + ./client export for the P9 client bundle (product package.json untouched per D-T9-11/T10 pin).',
   exports: {
-    '.': './index.js',
-    './client': './client-bundle.js',
+    '.': `./${CLIENT_NODE_HALF_FILENAME}`,
+    './client': `./${CLIENT_BUNDLE_FILENAME}`,
     './package.json': './package.json',
   },
   // Nested `dsh.client` (not a flat "dsh.client" key) — the node-half
@@ -597,13 +600,13 @@ const shimPkg = {
       platform: 'web',
     },
   },
-  files: ['client-bundle.js', 'index.js'],
+  files: [CLIENT_BUNDLE_FILENAME, CLIENT_NODE_HALF_FILENAME],
 }
 writeFileSync(join(OUT, 'package.json'), JSON.stringify(shimPkg, null, 2) + '\n')
 
 console.log(`build-client-composition: ${order.length} modules, ${cssFiles.size} css files`)
 console.log(`build-client-composition: entry=${ENTRY_ID}`)
 console.log(`build-client-composition: externals=[${[...EXTERNALS].join(', ')}]`)
-console.log(`build-client-composition: wrote ${join(OUT, 'client-bundle.js')} (${Buffer.byteLength(bundleText)} B)`)
-console.log(`build-client-composition: wrote ${join(OUT, 'index.js')} (node half)`)
+console.log(`build-client-composition: wrote ${join(OUT, CLIENT_BUNDLE_FILENAME)} (${Buffer.byteLength(bundleText)} B)`)
+console.log(`build-client-composition: wrote ${join(OUT, CLIENT_NODE_HALF_FILENAME)} (node half)`)
 console.log(`build-client-composition: wrote ${join(OUT, 'package.json')}`)
