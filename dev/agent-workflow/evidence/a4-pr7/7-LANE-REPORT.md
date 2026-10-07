@@ -29,6 +29,7 @@ runs and Alpha.4's migration obligation is not yet enforced in the product.
 | `9d3ca9ba`(see note) | Task 7.6 follow-up: the lint-identity leg found 2 new identities this lane had introduced (a dead `parseBlueprint` import in `root.ts`; a deleted-control leftover in the lane test), fixed without a mute, and the open-document `team.create` positive control replaced the dead variable. Lane 55/55, runtime typecheck clean. |
 | `d6921d90`, `55482e4d` | Task 7.5 (partial): the v3-only fence `scripts/verify-blueprint-version-clean.mjs` **plus the test that calls it**, with a two-directional deferral list; `scripts/lint-identities.mjs` + root `lint:identities`; the fence's `.d.mts`; p4t6 pin moved by path. |
 | `dad34225` | The 7.3 blast-radius measurement and the 7.6 receipts-as-run. |
+| `60c300bc` | Task 7.6: the lint-identity leg found two identities this lane had introduced, fixed without a mute; `pnpm -r run typecheck` 8/8 with 0 `error TS`; the open-document `team.create` positive control replaces a deleted control (lane 55/55). |
 
 ## 3. What did not land, and exactly what is owed
 
@@ -55,13 +56,18 @@ runs and Alpha.4's migration obligation is not yet enforced in the product.
    `pnpm-lock.yaml` would look done and break `--frozen-lockfile`. Consequence:
    `pnpm smoke:composition` was not run and nothing here claims the A1.2.7 leg is
    passable.
-5. **7.6.** Run and passing: whole-repo failed-test identities identical to baseline
-   (19 = 19, same six files, same counts); runtime suite identity-identical to its
-   baseline; the three PR7 lanes green; the fence's own scan output. One new 0-test
-   suite (`packages/tools/test/c1-list-pending-control.test.ts`, cause not claimed,
-   details in the receipts note). **Not run:** the post-fix 8/8 typecheck re-run, root
-   `pnpm test` twice, the client lane, the `pnpm lint` identity diff, `pnpm build` /
-   `build:composition` / `check:artifacts` / `smoke:composition`, Remote 1–8.
+5. **7.6.** Run and passing: **`pnpm -r run typecheck` = 8/8 `typecheck: Done`, 0
+   `error TS`, exit 0**; **the whole-repo lint identity diff = `new 0, resolved 0`** —
+   and its FIRST run reported `new 2`, both authored by this lane (a dead
+   `parseBlueprint` import in `root.ts`, a deleted-control leftover in the lane test),
+   both fixed without a mute, which is the argument for the normaliser being a script.
+   Whole-repo failed-test identities identical to baseline (19 = 19, same six files,
+   same per-file counts); runtime suite identity-identical to its baseline; the three
+   PR7 lanes green (55 / 9 / 10); the fence's own scan output. One new 0-test suite
+   (`packages/tools/test/c1-list-pending-control.test.ts`, cause not claimed, details
+   in the receipts note). **Not run:** root `pnpm test` twice, the client lane,
+   `pnpm build` / `build:composition` / `check:artifacts` / `smoke:composition`,
+   Remote 1–8.
 6. **`docs/STATUS.md`** is in Task 7's `Files:` list but `docs/**` is off-limits to
    this writer → hand-off, not an omission.
 
@@ -84,6 +90,19 @@ runs and Alpha.4's migration obligation is not yet enforced in the product.
    hardcodes `matcher: { kind: 'exact', resource: resourceKey }`, so a shell-class
    narrowing declared at fingerprint shape is invisible to the ASK and to the 7.0
    recheck that reuses the ask's point.
+
+## 4b. Two operational hazards, recorded because they cost real time
+
+- **The repository tracks a scratch artifact**:
+  `.tmp-t12a-b2-home/sessions/test-profile/session-team-child-0921…/session.jsonl.zstd`
+  is a tracked file inside a scratch directory, so the documented remedy for the
+  `.tmp-fault` flake class — clear the scratch residue — deletes TRACKED content and
+  surfaces as a working-tree deletion. Restored here (`git ls-files .tmp-t12a-b2-home`
+  = 1, tree clean); hygiene should `git rm --cached` it. A committed scratch tree is a
+  trap for every later writer and a plausible mechanism for the stale-medium failures.
+- **`.tmp-fault` contains zero tracked files** (measured), so clearing it cannot
+  explain the new `c1-list-pending` failure — stated to stop the next writer chasing
+  that theory.
 
 ## 5. What Task 7.7 needs from a human
 
