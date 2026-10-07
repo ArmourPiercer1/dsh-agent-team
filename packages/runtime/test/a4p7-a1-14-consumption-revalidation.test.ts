@@ -36,11 +36,18 @@
  *      the same scope is still refused as already-consumed (7.0 must not turn
  *      the single-shot into a standing grant).
  *
- * WHAT THIS FILE DOES NOT DO: it does not read the authority documents itself.
- * The service consumes a CLOSED VERDICT port (the plane reads documents; the
- * control lane consumes verdicts — ADR A5-12, one reader per answer), so these
- * scenarios drive the verdict directly and the algebra behind it is pinned by
- * the plane/routing tests.
+ * THE HARNESS HAS TWO HALVES, AND BOTH ARE PROVED. A1-A6 drive a CLOSED VERDICT
+ * port whose verdict the scenario dictates: that isolates the control lane (the
+ * service must refuse, consume nothing, and run the check inside the lock, no
+ * matter WHICH document produced the verdict). The P group then drives the real
+ * production port — `createControlAuthorityRevalidation`, the function the
+ * composition actually injects — over authority DOCUMENTS, so the end-to-end
+ * ADR A1-14 claim ("an allow signed under a ceiling that has since risen cannot
+ * be spent") is proved by the wiring, not by a stub of it. The algebra in
+ * between is pinned by `a4p4-operation-approval-authority.test.ts`.
+ *
+ * WHAT THIS FILE DOES NOT DO: it does not re-derive the ladder walk, and it
+ * never mints an authority answer of its own.
  *
  * RUNNER CONSTRAINTS: async scenarios run at module level with top-level
  * await; `it` bodies are synchronous (this repo's plain-node shim).
@@ -52,6 +59,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import {
+  CONTROL_AUTHORITY_RECHECK_KINDS,
   CONTROL_DECISION_VALUES,
   CONTROL_EXECUTION_COUPLINGS,
   CONTROL_GUARD_BLOCK_REASONS,
@@ -62,10 +70,16 @@ import type {
   ApprovalCaseIdentityInput,
   ControlAuthorityRecheck,
   ControlAuthorityRecheckInput,
+  ControlAuthorityRecheckPort,
   ControlOperationScope,
   ControlRequestRecord,
   ControlService,
 } from '../control/index.js'
+// The production consumption-point port (the composition's wiring, not a stub).
+import { createControlAuthorityRevalidation } from '../src/plugin/permission-plane.js'
+import type { OperationApprovalFacts, OperationApprovalFactsReader } from '../operation-permission/index.js'
+import type { AuthorityEnvelope } from '../../domain/authority-envelope/src/index.js'
+import type { AuthorityEnvelopeDocuments } from '../governance/index.js'
 import type { P6T1World } from './p6t1-helpers.js'
 import {
   P6T4_NOW,
@@ -179,7 +193,7 @@ function scopeOf(
 
 /** Open the case and have the Leader allow it, under a `still-sufficient` sky. */
 async function grantedAllow(
-  env: Env,
+  env: { readonly service: ControlService },
   correlation: string,
   operationFingerprint: string,
   authorityScope: ControlAuthorityScopeInput,
@@ -545,5 +559,289 @@ describe('A1-14 — the consumption point re-runs the ceiling for the persisted 
     expect(a5.callsAfterFirst).toBe(1)
     expect(a5.second).toMatchObject({ allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED })
     expect(a5.rows).toBe(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// The P group — the PRODUCTION port, over real authority documents.
+//
+// A1-A6 prove the control lane honours whatever verdict it is handed. That is
+// necessary and not sufficient: the composition injects ONE specific function
+// (`createControlAuthorityRevalidation` in `src/plugin/permission-plane.ts`),
+// and a lane that obeys a verdict is worthless if the function handed to it
+// always says "covered". So the P group wires THAT function over documents and
+// proves the three things only the wiring can prove:
+//
+//  P1  the port says `still-sufficient` for documents that still justify the
+//      sign-off, and the operation runs — the port has no permissive default,
+//      but it is not a blanket refusal either;
+//  P2  the same allow, with the narrowing MOVED from the Leader's own document
+//      into the Human User's hard document, is a RISE: the guard refuses by name
+//      and consumes nothing, and moving it back spends the ORIGINAL allow
+//      exactly once. This is ADR A1-14's sentence end to end, documents to
+//      durable ledger, with no verdict typed in by the test;
+//  P3  no v3 documents at all (`undefined`) is `undetermined` — the reader's
+//      "the plane had nothing to say" never becomes "authority is fine";
+//  P4  a reader that THROWS is `undetermined` too, and the throw never escapes
+//      the guard as a generic failure;
+//  P5  the port's own input law: it asks the reader the question the DURABLE ROW
+//      poses (`actingAsLeader` comes from the row's beneficiary, never from a
+//      re-read keyboard role), it refuses a question it cannot answer BEFORE
+//      reading anything, and it reports a beneficiary that disagrees with the
+//      row as a wiring defect rather than an authority answer.
+// ---------------------------------------------------------------------------
+
+/** A declared document that narrows one operation class + resource to `ask`. */
+function cappedAtAsk(operationClass: string, resource: string): AuthorityEnvelope {
+  return {
+    rules: [{ operationClass, matcher: { kind: 'exact', resource }, maximumEffect: 'ask' }],
+  }
+}
+
+/**
+ * The sky under which the persisted point (`read` on file A) is STILL covered by
+ * a Leader signature: real v3 documents, real rules — and none of them touches
+ * this point (the cap sits on file B). The operation-approval plane reads an
+ * absent rule as NO narrowing, so the required rung for file A is the
+ * beneficiary's own, and a Leader signature covers it with room to spare. The
+ * narrowing being REMOVED is the ceiling going DOWN, which can never strand an
+ * approval: an allow signed at a rung that is now strictly above what the point
+ * requires spends its one-shot and runs.
+ */
+const UNNARROWED: AuthorityEnvelopeDocuments = {
+  teamHardEnvelope: { status: 'absent' },
+  permissionMutationEnvelope: { status: 'declared', document: cappedAtAsk(TOOL_NAME, FILE_B) },
+}
+
+/**
+ * The drift: the Leader's OWN ceiling document now caps THIS point at `ask`. The
+ * Leader cannot lift a ceiling it set — the ladder walks past it (pinned in
+ * `a4p4-operation-approval-authority.test.ts` as `roseBecauseInsufficient:
+ * ['leader']`) — so the rung that can now sign is the Human User: strictly above
+ * the `leader` rung the leg was signed at.
+ */
+const CAPPED_BY_LEADER_DOC: AuthorityEnvelopeDocuments = {
+  teamHardEnvelope: { status: 'absent' },
+  permissionMutationEnvelope: { status: 'declared', document: cappedAtAsk(TOOL_NAME, FILE_A) },
+}
+
+const MEMBER_FACTS: OperationApprovalFacts = {
+  beneficiaryAuthority: 'member',
+  documents: UNNARROWED,
+}
+
+interface FactsHarness {
+  readonly port: ControlAuthorityRecheckPort
+  readonly reads: Parameters<OperationApprovalFactsReader>[0][]
+  set(next: OperationApprovalFacts | undefined): void
+  failWith(message: string): void
+}
+
+/** The production port over a facts reader the scenario controls. */
+function planeRecheck(initial: OperationApprovalFacts | undefined): FactsHarness {
+  let current = initial
+  let failure: string | undefined
+  const reads: Parameters<OperationApprovalFactsReader>[0][] = []
+  const reader: OperationApprovalFactsReader = async (input) => {
+    reads.push(input)
+    if (failure !== undefined) throw new Error(failure)
+    return current
+  }
+  return {
+    port: createControlAuthorityRevalidation({ operationApprovalFacts: reader }),
+    reads,
+    set: (next) => {
+      failure = undefined
+      current = next
+    },
+    failWith: (message) => {
+      failure = message
+    },
+  }
+}
+
+async function createPlaneEnv(name: string): Promise<{
+  readonly world: P6T1World
+  readonly service: ControlService
+  readonly facts: FactsHarness
+}> {
+  const world = await createP6T4World(name, ['leader', 'worker'])
+  const facts = planeRecheck(MEMBER_FACTS)
+  const service = createControlService({
+    teamDomain: world.domain,
+    blueprintCatalog: world.catalog,
+    externalPolicyFacts: world.ports.externalPolicyFacts,
+    now: () => P6T4_NOW,
+    authorityRevalidation: facts.port,
+  })
+  return { world, service, facts }
+}
+
+const RECHECK_INPUT: ControlAuthorityRecheckInput = {
+  rootSessionId: P6T4_ROOT,
+  instanceId: WORKER_ID,
+  beneficiaryAuthority: 'member',
+  reviewAuthority: 'leader',
+  requestedEffect: 'allow',
+  authorityScope: SCOPE_A,
+}
+
+const p1 = await (async () => {
+  const env = await createPlaneEnv('a4p7-p1')
+  try {
+    await grantedAllow(env, 'corr-a4p7-p1', FP_A, SCOPE_A)
+    const readsAtGrant = env.facts.reads.length
+    const verdict = await env.service.guardOperation(scopeOf('corr-a4p7-p1', FP_A, SCOPE_A))
+    const rows = (await env.service.listControlState(P6T4_ROOT)).consumptions.length
+    return { readsAtGrant, verdict, rows, read: env.facts.reads[0] }
+  } finally {
+    await destroyP6T1World(env.world)
+  }
+})()
+
+const p2 = await (async () => {
+  const env = await createPlaneEnv('a4p7-p2')
+  try {
+    await grantedAllow(env, 'corr-a4p7-p2', FP_A, SCOPE_A)
+    // The drift is a DOCUMENT change, not a verdict change.
+    env.facts.set({ beneficiaryAuthority: 'member', documents: CAPPED_BY_LEADER_DOC })
+    const risen = await env.service.guardOperation(scopeOf('corr-a4p7-p2', FP_A, SCOPE_A))
+    const rowsAfterRise = (await env.service.listControlState(P6T4_ROOT)).consumptions.length
+    // And the drift reverses: the ORIGINAL allow was never spent by the refusal.
+    env.facts.set(MEMBER_FACTS)
+    const restored = await env.service.guardOperation(scopeOf('corr-a4p7-p2', FP_A, SCOPE_A))
+    const rowsAfterRestore = (await env.service.listControlState(P6T4_ROOT)).consumptions.length
+    return { risen, rowsAfterRise, restored, rowsAfterRestore }
+  } finally {
+    await destroyP6T1World(env.world)
+  }
+})()
+
+const p3 = await (async () => {
+  const env = await createPlaneEnv('a4p7-p3')
+  try {
+    await grantedAllow(env, 'corr-a4p7-p3', FP_A, SCOPE_A)
+    env.facts.set(undefined)
+    const verdict = await env.service.guardOperation(scopeOf('corr-a4p7-p3', FP_A, SCOPE_A))
+    const rows = (await env.service.listControlState(P6T4_ROOT)).consumptions.length
+    return { verdict, rows }
+  } finally {
+    await destroyP6T1World(env.world)
+  }
+})()
+
+const p4 = await (async () => {
+  const env = await createPlaneEnv('a4p7-p4')
+  try {
+    await grantedAllow(env, 'corr-a4p7-p4', FP_A, SCOPE_A)
+    env.facts.failWith('the authority document store is on fire')
+    let thrown = 'did-not-throw'
+    let verdict: unknown
+    try {
+      verdict = await env.service.guardOperation(scopeOf('corr-a4p7-p4', FP_A, SCOPE_A))
+    } catch (error: unknown) {
+      thrown = error instanceof Error ? error.message : String(error)
+    }
+    const rows = (await env.service.listControlState(P6T4_ROOT)).consumptions.length
+    return { thrown, verdict, rows }
+  } finally {
+    await destroyP6T1World(env.world)
+  }
+})()
+
+const p5 = await (async () => {
+  // (a) a row asking for an effect this recheck cannot answer: refused BEFORE
+  // any document is read, because the refusal is about the question.
+  const harness = planeRecheck(MEMBER_FACTS)
+  const askVerdict = await harness.port({ ...RECHECK_INPUT, requestedEffect: 'ask' })
+  const readsAfterAsk = harness.reads.length
+  // (b) `actingAsLeader` comes from the ROW's beneficiary.
+  await harness.port({ ...RECHECK_INPUT, beneficiaryAuthority: 'leader' })
+  const leaderRead = harness.reads[harness.reads.length - 1]
+  // (c) facts whose beneficiary disagrees with the row are a WIRING defect, and
+  // the closed diagnosis is `undetermined` — never a coverage answer.
+  const mismatched = planeRecheck({ beneficiaryAuthority: 'leader', documents: UNNARROWED })
+  const mismatchVerdict = await mismatched.port(RECHECK_INPUT)
+  // (d) the two coverage verdicts, with the diagnostic the plane owns.
+  const covered = await planeRecheck(MEMBER_FACTS).port(RECHECK_INPUT)
+  const risen = await planeRecheck({
+    beneficiaryAuthority: 'member',
+    documents: CAPPED_BY_LEADER_DOC,
+  }).port(RECHECK_INPUT)
+  // (e) a document that could not be READ is not an empty one.
+  const unavailable = await planeRecheck({
+    beneficiaryAuthority: 'member',
+    documents: {
+      teamHardEnvelope: { status: 'unavailable', reason: 'authority-ceiling-document-unavailable' },
+      permissionMutationEnvelope: { status: 'absent' },
+    },
+  }).port(RECHECK_INPUT)
+  return { askVerdict, readsAfterAsk, leaderRead, mismatchVerdict, covered, risen, unavailable }
+})()
+
+describe('A4-PR7 7.0 P group — the production revalidation port over documents', () => {
+  it('P1: fresh documents that no longer narrow the point permit the consumption', () => {
+    // The recheck is not consulted at the request or the decision: it is a
+    // property of the CONSUMPTION write and nothing else.
+    expect(p1.readsAtGrant).toBe(0)
+    expect(p1.verdict).toMatchObject({ allowed: true })
+    expect(p1.rows).toBe(1)
+    expect(p1.read).toEqual({
+      teamSessionId: P6T4_ROOT,
+      memberInstanceId: WORKER_ID,
+      actingAsLeader: false,
+    })
+  })
+
+  it('P2: a narrowing that moved UP the ladder strands the allow, and costs nothing', () => {
+    expect(p2.risen).toMatchObject({
+      allowed: false,
+      reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_RISEN,
+    })
+    expect(p2.rowsAfterRise).toBe(0)
+    expect(p2.restored.allowed).toBe(true)
+    expect(p2.rowsAfterRestore).toBe(1)
+  })
+
+  it('P3: no v3 documents is `undetermined`, never "covered"', () => {
+    expect(p3.verdict).toMatchObject({
+      allowed: false,
+      reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+    })
+    expect(p3.rows).toBe(0)
+  })
+
+  it('P4: a reader that throws refuses by name; no fault escapes as a generic failure', () => {
+    expect(p4.thrown).toBe('did-not-throw')
+    expect(p4.verdict).toMatchObject({
+      allowed: false,
+      reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+    })
+    expect(p4.rows).toBe(0)
+  })
+
+  it('P5: the port asks the durable row\'s question and refuses unanswerable ones', () => {
+    expect(p5.askVerdict).toMatchObject({
+      kind: CONTROL_AUTHORITY_RECHECK_KINDS.UNDETERMINED,
+      reason: 'requested-effect-not-answerable',
+    })
+    expect(p5.readsAfterAsk).toBe(0)
+    expect(p5.leaderRead?.actingAsLeader).toBe(true)
+    expect(p5.mismatchVerdict).toMatchObject({
+      kind: CONTROL_AUTHORITY_RECHECK_KINDS.UNDETERMINED,
+      reason: 'authority-facts-malformed',
+    })
+    expect(p5.covered).toEqual({ kind: CONTROL_AUTHORITY_RECHECK_KINDS.STILL_SUFFICIENT })
+    expect(p5.risen).toMatchObject({
+      kind: CONTROL_AUTHORITY_RECHECK_KINDS.AUTHORITY_RISEN,
+      requiredNow: 'human-user',
+    })
+    const risenDetail = String((p5.risen as { detail?: unknown }).detail ?? '')
+    expect(risenDetail).toContain('human-user')
+    expect(risenDetail).toContain('leader')
+    expect(p5.unavailable).toMatchObject({
+      kind: CONTROL_AUTHORITY_RECHECK_KINDS.UNDETERMINED,
+      reason: 'authority-document-unavailable',
+    })
   })
 })
