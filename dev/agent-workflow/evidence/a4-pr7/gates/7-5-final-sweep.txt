@@ -1,0 +1,38 @@
+### FINAL POST-COMMIT VERIFICATION SWEEP @ 17fbd17d0e891f862f42e3c39c980f9fab42d6ef  (2026-10-07T17:15:47Z)
+### SIMULATED / MACHINE evidence — not a human acceptance pass
+
+$ pnpm -r run typecheck
+  exit=0 | typecheck: Done = 8 | error TS = 0
+
+$ pnpm run check:artifacts
+  [check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+
+$ pnpm smoke:composition
+  exit=0
+  PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+  SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+  PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+  PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): packages/client/composition-shim/client-bundle.js is inside an install surface check:artifacts compares
+  PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+  PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+  PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+  PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+  PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+  PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+  PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+  PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+$ pnpm exec vitest run <new test> + p4t6
+   Test Files  2 passed (2)
+        Tests  31 passed (31)
+
+$ pnpm exec eslint <11 changed files>
+  exit=0
+
+$ node scripts/lint-identities.mjs --diff <baseline>
+  lint-identities: 160 identity lines, 76 distinct (target .)
+  baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+
+$ git status --porcelain
+  ?? dev/agent-workflow/evidence/a4-pr7/gates/7-5-final-sweep.txt
+  (empty above = tree clean at the committed state)
