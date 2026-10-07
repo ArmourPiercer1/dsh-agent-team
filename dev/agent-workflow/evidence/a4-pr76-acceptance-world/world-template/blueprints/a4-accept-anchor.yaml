@@ -1,0 +1,53 @@
+---
+# ============================================================================
+# SIMULATED / MACHINE acceptance world — row ANCHOR blueprint (NOT the human
+# pass). schemaVersion 3: both authority documents are REQUIRED at v3
+# (packages/domain/blueprint/src/validate.ts:1335-1337). The anchor declares
+# EMPTY ceilings (declared-empty = "no expansion authority", distinct from
+# absent) and selects NO team tools: the acceptance surface lives on
+# a4.accept.team, not on the boot-row anchor.
+# ============================================================================
+schemaVersion: 3
+blueprintId: a4.accept.anchor
+revision: "1"
+displayName: A4 acceptance anchor
+description: "SIMULATED/MACHINE acceptance world boot anchor (a4-pr76). Not the human pass."
+leader:
+  templateId: leader
+  displayName: Anchor
+  persona: "You are the boot-row anchor of the A4 acceptance world. No work is assigned to you."
+  capabilities:
+    teamTools:
+      kind: allow
+      items: []
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+members: []
+requirements: []
+teamEnvelope:
+  allow: []
+  deny: []
+memberEnvelopes: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates:
+  - id: default
+    description: "A4 acceptance anchor default PolicyState."
+quotas:
+  team:
+    maxInstances: 2
+    maxConcurrent: 2
+  members:
+    maxInstances: 1
+    maxConcurrent: 1
+metadata:
+  acceptanceWorld: a4-pr76
+  label: SIMULATED-MACHINE-ACCEPTANCE-NOT-HUMAN-PASS
+---
