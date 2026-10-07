@@ -58,10 +58,18 @@ const RESUME_PROBE_ROOT = 'session-bp1rednofit'
 /**
  * The row anchor Blueprint (A). The row's `blueprintSource` — the
  * bootstrap/compatibility anchor that stays required.
+ *
+ * 7.4 migration 2026-10-08: v1 → v3 with BOTH authority documents stated.
+ * The rule sets are `[]` because this fixture never performs a permission
+ * mutation or an approval — the probes drive the catalog and the remote
+ * mount, so the documents that reproduce its intended permissions state
+ * ZERO authority (expansion plane: "may expand nothing"; approval plane:
+ * removes nothing), never filler authority. Capability lanes unchanged;
+ * B and C derive from A by identity replacement, so they carry v3 too.
  */
 const BLUEPRINT_A_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: BP1-RED-A',
   'revision: "1"',
   'leader:',
@@ -96,6 +104,10 @@ const BLUEPRINT_A_SOURCE = [
   '        - send-message',
   '        - report-progress',
   '      deny: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: The BP1-RED-A default state.',
