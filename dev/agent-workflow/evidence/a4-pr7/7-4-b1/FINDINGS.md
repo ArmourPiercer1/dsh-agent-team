@@ -8,9 +8,9 @@ Final head at this writing: `3e9f5d20` (7 commits: 6 migration groups + ratchet 
 
 ## 1. Per-file dispositions (before → after, scan-verified)
 
-Before = `scratch/b1/scan-before.txt` (base `a2059c73`): `dirty(120 files, 259 sites)
+Before = `transcripts/scan-before.txt` (base `a2059c73`): `dirty(120 files, 259 sites)
 unknown(16,24) advisory(12,18) refused(52,115) prose(5,5)`, exit 1.
-After = head (`scratch/b1/scan-after-witness.txt`): `dirty(107,234) unknown(0,0)
+After = head (`transcripts/scan-after-witness.txt`): `dirty(107,234) unknown(0,0)
 adjudicated(16,24) advisory(12,16) refused(52,115) prose(5,5)`, exit 1.
 (The unknown→adjudicated migration is the fence's own ledger landing, not B1 work.
 advisory −2 = the two cutover `v99` `toMatchObject` advisories retired when the probes
@@ -21,7 +21,7 @@ base `a2059c73`. At B1's actual LANE BASE — the post-ledger master the branch 
 onto — the fence already printed `unknown(0,0)` plus `adjudicated(16,24)`: the same
 24 sites, nothing hidden, reclassified. A dispatch message quoted the older pair; any
 `unknown`/`adjudicated` number quoted onward (e.g. at §7.6) should read the lane-base
-pair `unknown(0,0) adjudicated(16,24)`. `scratch/b1/scan-before.txt` keeps the literal
+pair `unknown(0,0) adjudicated(16,24)`. `transcripts/scan-before.txt` keeps the literal
 `a2059c73` output for archaeology.
 
 | file (packages/runtime/test/) | before OFFENDING | disposition | after |
@@ -117,8 +117,8 @@ while three B1 files mint retired-version witnesses from its bytes) unblocked by
 Measurement (both sides, identical mutation = the phase-2 factory shape
 `schemaVersion: 3` + empty envelope documents; restore by `cp`, sha256
 `0d2231eca8e3b25b…` verified OK each time):
-BEFORE `scratch/b1/witness-coupling-BEFORE-rewrite.txt`: 3 files / 13 tests red
-(a4f1 ×4, v8 ×1, cutover ×8). AFTER `scratch/b1/witness-coupling-AFTER-rewrite.txt`:
+BEFORE `transcripts/witness-coupling-BEFORE-rewrite.txt`: 3 files / 13 tests red
+(a4f1 ×4, v8 ×1, cutover ×8). AFTER `transcripts/witness-coupling-AFTER-rewrite.txt`:
 107/107 GREEN under the same mutation; clean-tree 107/107; scan classes byte-identical
 (`dirty(107,234) advisory(12,16)`) — owned builders declare versions through template
 reads, zero new sites. Wrapper advisory pin followed the line shift 547→584 (mechanical,
@@ -146,13 +146,17 @@ same class/count; earlier 571→547 was the v99-retirement shift — both moves 
 
 ## 6. Gate transcripts (final head `3e9f5d20`)
 
+Transcript files cited below as `transcripts/X` were recorded live at worktree
+`scratch/b1/X`; committed copies live in this directory (see `transcripts/README.md`;
+commit bodies predating this move cite the original scratch paths).
+
 - scan before/after RESULT lines: §1.
-- migrated specs individually: `scratch/b1/specs-individual-final.txt` (13/13 green);
-  as one set: `scratch/b1/specs-set-final.txt` (13 files, 190/190).
+- migrated specs individually: `transcripts/specs-individual-final.txt` (13/13 green);
+  as one set: `transcripts/specs-set-final.txt` (13 files, 190/190).
 - wrapper `a4p7-blueprint-version-clean`: 58/58 green (DEFERRALS = 13 B1 rows removed by
   path; production-entry row retained).
 - `p4t6-session-event-scan`: 10/10. `pnpm -r run typecheck`: exit 0
-  (`scratch/b1/typecheck-final.txt`).
+  (`transcripts/typecheck-final.txt`).
 - **eslint, stated as both facts (review correction — do NOT paraphrase this as
   "clean"):** literal `npx eslint` over the 13 migrated files + the wrapper reports
   **10 problems (5 errors / 5 warnings)** in THREE migrated files:
@@ -163,7 +167,7 @@ same class/count; earlier 571→547 was the v99-retirement shift — both moves 
   1e/2w (`no-explicit-any@L231`, unused-disable L228/240). **All ten are pre-existing:
   identical rule+file identities at base (reviewer re-measured; base lines 141/260/227)
   and, verified here per file, identical usage counts of the flagged names between
-  merge-base and HEAD** (`scratch/b1/eslint-head.json`). The untouched STOP file
+  merge-base and HEAD** (`transcripts/eslint-head.json`). The untouched STOP file
   carries 11e/2w of its own and is not in the three above — B1 edited nothing there.
   Zero new debt; **the operative gate is `lint-identities --diff` → new 0, resolved 0**,
   which is what closes; the earlier word "clean" was true of the gate and false of the
@@ -187,7 +191,7 @@ Numbers supersede §1/§6 as the merge contract; earlier sections are history, n
   designed; the `cutover:584` pin line is byte-unchanged by the merge (sha256 aea0b830…).
 - wrapper 58/58; 13 migrated specs as one set 190/190 (witness decoupling pays off on
   the merged tree: the factory's era is a cdom-owned question and my specs do not care);
-  p4t6 10/10; typecheck exit 0 (`scratch/b1/typecheck-merged.txt`);
+  p4t6 10/10; typecheck exit 0 (`transcripts/typecheck-merged.txt`);
   lint-identities: new 0, resolved 0 (76 distinct, unchanged).
 - root `pnpm test`: baseline name-set holds (9 files/19 tests + 3 collection-time files),
   plus exactly two additions, both attributed: **p6t1-parallel ×2 = the documented
@@ -197,7 +201,7 @@ Numbers supersede §1/§6 as the merge contract; earlier sections are history, n
   prints no PASS here; master-side bookkeeping, not B1, not a merge interaction).
 - leg hardening §4 addendum: derivation asserted as the ANCHORED declaration line
   (comment-echo lies die — R1 transcript); M1 bare-argument absence asserted, audited
-  zero matches in-file before committing (`scratch/b1/m1-regex-audit.txt`; R2 transcript
+  zero matches in-file before committing (`transcripts/m1-regex-audit.txt`; R2 transcript
   shows the M1 shape slipping the colon-keyed check and reddening M1 alone). Both red
   transcripts must preserve line counts: a line-shifting mutation reddens the line-
   number-sensitive advisory PIN first (measured, then the mutation was reshaped).

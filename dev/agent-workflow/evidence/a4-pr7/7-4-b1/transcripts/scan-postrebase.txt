@@ -1,0 +1,87 @@
+OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: L26=v1, L72=v1, L242=v1, L264=v1, L286=v1, L323=v4, L344=v1, L362=v1, L383=v1, L403=v1, L424=v1, L445=v1, L466=v1, L487=v1, L512=v1, L535=v1, L560=v1, L586=v1, L612=v1, L635=v1, L659=v1, L682=v1, L707=v1, L732=v1, L756=v1, L779=v1, L801=v1, L823=v1, L854=v1, L1241=v1, L1264=v1, L1287=v1, L1299=v1, L1313=v1
+OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: L118=v1, L248=v1, L275=v1, L380=v2, L398=v1, L416=v1, L458=v1, L460=v1, L462=v1
+OFFENDING packages/runtime/root-binding/harness/blueprint-source.mjs :: L30=v1
+OFFENDING packages/runtime/test/a2c1-pwsh-permission.test.ts :: L211=v1, L248=v1
+OFFENDING packages/runtime/test/a2c3-inspect-operation-permission.test.ts :: L114=v1, L463=v1
+OFFENDING packages/runtime/test/a2c7-subtree-matcher.test.ts :: L569=v1, L1473=v1, L1494=v1
+OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: L118=v1, L491=v1, L843=v1, L1128=v1
+OFFENDING packages/runtime/test/a6a-production-wiring.test.ts :: L103=v1, L198=v1
+OFFENDING packages/runtime/test/alpha2-explicit-agent-setup.test.ts :: L83=v1
+OFFENDING packages/runtime/test/bound-blueprint-persona-helpers.ts :: L55=v1, L73=v1, L94=v1, L112=v1
+OFFENDING packages/runtime/test/consent-scope-hash-binding.test.ts :: L130=v2
+OFFENDING packages/runtime/test/control-abandon-without-resolve-envelope.test.ts :: L121=v1
+OFFENDING packages/runtime/test/control-subject-cross-kind-alias.test.ts :: L60=v1
+OFFENDING packages/runtime/test/d2-s6-ensure-root-live.test.ts :: L402=v1
+OFFENDING packages/runtime/test/exec-contract-dual-gate.test.ts :: L491=v1, L626=v1
+OFFENDING packages/runtime/test/f1-webserver-shim-isolation.test.ts :: L123=v1
+OFFENDING packages/runtime/test/f15-mcp-live-loss-characterization.test.ts :: L97=v1
+OFFENDING packages/runtime/test/f15-mcp-live-loss.test.ts :: L143=v1
+OFFENDING packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts :: L2115=v2
+OFFENDING packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts :: L116=v2
+OFFENDING packages/runtime/test/leader-recovery-next-boundary-exit.test.ts :: L51=v2
+OFFENDING packages/runtime/test/leader-template-required-boundary.test.ts :: L77=v2
+OFFENDING packages/runtime/test/mcp-blueprint-initial-grant.test.ts :: L121=v1
+OFFENDING packages/runtime/test/mcp-supply-config.test.ts :: L320=v1
+OFFENDING packages/runtime/test/mcp-target-materialization-unit.test.ts :: L88=v2
+OFFENDING packages/runtime/test/mcp-target-materialization.test.ts :: L188=v2
+OFFENDING packages/runtime/test/model-activation-step8.test.ts :: L88=v1
+OFFENDING packages/runtime/test/model-blueprint-initial-routing.test.ts :: L73=v1
+OFFENDING packages/runtime/test/model-inspect-config.test.ts :: L47=v1
+OFFENDING packages/runtime/test/multi-mcp-wiring.test.ts :: L157=v1
+OFFENDING packages/runtime/test/p6t1-checks.test.ts :: L393=v1, L427=v1, L556=v1
+OFFENDING packages/runtime/test/p6t1-helpers.ts :: L107=v1
+OFFENDING packages/runtime/test/p6t1-parallel.test.ts :: L42=v1
+OFFENDING packages/runtime/test/p6t2-helpers.ts :: L82=v1
+OFFENDING packages/runtime/test/p6t3-helpers.ts :: L70=v1
+OFFENDING packages/runtime/test/p6t4-helpers.ts :: L84=v1
+OFFENDING packages/runtime/test/p8s3b-result-effects.test.ts :: L414=v1
+OFFENDING packages/runtime/test/p8s5a-host-loadability.test.ts :: L76=v1
+OFFENDING packages/runtime/test/p8s5a-production-assembly.test.ts :: L97=v1
+OFFENDING packages/runtime/test/p8s6-pagination.test.ts :: L76=v1
+OFFENDING packages/runtime/test/p8s6-principal.test.ts :: L104=v1
+OFFENDING packages/runtime/test/p8s6-projection.test.ts :: L74=v1
+OFFENDING packages/runtime/test/p8s6-push-reconnect.test.ts :: L61=v1
+OFFENDING packages/runtime/test/p8s6-remote-commands.test.ts :: L77=v1
+OFFENDING packages/runtime/test/p8s7r2-effective-config.test.ts :: L171=v1
+OFFENDING packages/runtime/test/p8s7r2-model-state.test.ts :: L148=v1
+OFFENDING packages/runtime/test/p8s7r2-policy-state-durable.test.ts :: L80=v1
+OFFENDING packages/runtime/test/p8s7r4-fork-describe.test.ts :: L93=v1
+OFFENDING packages/runtime/test/p8s7r4-handoff-wiring.test.ts :: L72=v1
+OFFENDING packages/runtime/test/pbf-default-artifact-urls.test.ts :: L37=v1
+OFFENDING packages/runtime/test/persona-kind-provider-preflight.test.ts :: L159=v2, L181=v2
+OFFENDING packages/runtime/test/prf-inspect-same-source.test.ts :: L68=v1
+OFFENDING packages/runtime/test/rc2a1-fs-containment.test.ts :: L164=v1
+OFFENDING packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts :: L209=v1, L221=v1, L237=v1, L256=v1, L278=v2
+OFFENDING packages/runtime/test/requirement-probe-blueprint-scoping.test.ts :: L182=v1, L199=v1
+OFFENDING packages/runtime/test/rmr-create-or-open-boot.test.ts :: L70=v1
+OFFENDING packages/runtime/test/rmr-remote-mount-race.test.ts :: L71=v1
+OFFENDING packages/runtime/test/startup-all-templates-real-authority.test.ts :: L86=v2
+OFFENDING packages/runtime/test/startup-consent-production.test.ts :: L97=v2
+OFFENDING packages/runtime/test/startup-preflight-production-create.test.ts :: L113=v2
+OFFENDING packages/runtime/test/startup-template-disable-production.test.ts :: L99=v2
+OFFENDING packages/runtime/test/t12a-h1-nullable-mcp.test.ts :: L81=v1
+OFFENDING packages/runtime/test/t12a-live-bridge.mjs :: L1347=v1
+OFFENDING packages/runtime/test/t12b1-real-create.test.ts :: L53=v1
+OFFENDING packages/runtime/test/t12b2-resume-separation.test.ts :: L65=v1
+OFFENDING packages/runtime/test/t12b6-handoff-agent-start.test.ts :: L86=v1
+OFFENDING packages/runtime/test/t12m4-remote-mount.test.ts :: L63=v1
+OFFENDING packages/runtime/test/t14h-probe-merge.test.ts :: L114=v1
+OFFENDING packages/runtime/test/t4a-capability-wiring.test.ts :: L109=v1
+OFFENDING packages/runtime/test/tcm-m2-workspace-attach.test.ts :: L320=v1
+OFFENDING packages/runtime/test/team-compatibility-scope.test.ts :: L149=v1, L206=v1, L727=v1
+OFFENDING packages/runtime/test/team-session-startup-fence.test.ts :: L87=v1
+OFFENDING packages/runtime/test/template-disable-no-requirements-gate.test.ts :: L73=v2
+OFFENDING packages/testkit/test/bp1h-blueprint-authoring.test.ts :: L128=v1
+OFFENDING packages/testkit/test/t6-10-composition-pipeline.test.ts :: L64=v1
+OFFENDING packages/testkit/test/t6-7-fresh-per-delegation.test.ts :: L63=v1
+OFFENDING packages/tools/harness/d4-restart-reopen.mjs :: L220=v1
+OFFENDING packages/tools/harness/g5-member-e2e.mjs :: L267=v1
+OFFENDING packages/tools/harness/run.mjs :: L214=v1
+OFFENDING packages/tools/harness/t12-vertical.mjs :: L215=v1, L1844=v2
+RESULT dirty(97 files, 188 sites)
+RESULT unknown(0 files, 0 sites)
+RESULT advisory(9 files, 12 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT adjudicated(16 files, 24 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
