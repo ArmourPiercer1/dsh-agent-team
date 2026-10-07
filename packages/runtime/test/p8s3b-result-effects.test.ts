@@ -416,10 +416,20 @@ async function createGlueWorld(params: {
     // a position on each plane (a no-match answers `no-authority` on the
     // expansion plane and identity on the approval plane). This world is
     // root-direct: the only production producer of `permissionAuthorityCeiling`
-    // is the plugin host, so no ceiling reader consults the pair. NOTE: this
-    // file is RED AT BASE by name (`sessionPersistence.exists public seam is
-    // unavailable`, agent-bindings.mjs:888) — the migration is by inspection,
-    // with the parse witness recorded in evidence/a4-pr7/7-4-b2a/.
+    // is the plugin host, so no ceiling reader consults the pair.
+    // This file is RED AT BASE by name: `durableSessionExists` refuses to run
+    // while `sessionPersistence.exists` is not a function
+    // (src/plugin/live/agent-bindings.mjs:887-890, message at :889), so the suite
+    // never collects and NO probe can discriminate this document. The migration
+    // therefore rests on a parse witness, not on a green run
+    // (evidence/a4-pr7/7-4-b2a/FINDINGS.md §8; tools/p8s3b-parse-witness.probe.test.ts):
+    // the base document parses at the version it declared, this one parses at the
+    // supported version, and the frozen results differ in exactly three keys —
+    // schemaVersion 1 -> 3, and the two envelopes undefined -> { rules: [] }.
+    // RE-RUN DUTY: that witness proves the document is content-preserving AS
+    // PARSED. It proves nothing about what the glue DOES with a supported-version
+    // document once the `sessionPersistence.exists` seam lands. Whoever unblocks
+    // that seam re-runs this file and re-verifies this document end to end.
     blueprintSource: [
       '---',
       'schemaVersion: 3',
