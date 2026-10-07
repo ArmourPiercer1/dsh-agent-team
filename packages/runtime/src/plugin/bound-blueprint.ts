@@ -50,7 +50,9 @@
  */
 
 import type { TeamBlueprint } from '../../../domain/blueprint/src/index.js'
-import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
+
+import { classifyBlueprintAnchor } from './blueprint-authority.js'
+import { TeamPluginError } from './types.js'
 import type { BlueprintSnapshotRef, TeamSessionRecordDto } from '../../../contracts/src/index.js'
 
 /**
@@ -100,7 +102,29 @@ export function createBoundBlueprintResolver(
       // Case 2 (the documented legacy binding, NOT a boot fallback):
       // pre-repair legacy rows predate per-team binding, so their bound
       // blueprint is the row anchor BY DEFINITION.
-      return parseBlueprint(options.anchorBlueprintSource)
+      //
+      // A4-PR7 Task 7.2 (A1-20(c) + A1-21): "by definition the anchor" also
+      // means "by definition it inherits the anchor's version state" — and this
+      // is the ONE resolver arm that never touched the Blueprint authority, so it
+      // is the arm where a v1/v2 Team could still be walked into a running
+      // Team (or into the domain parser's generic `SCHEMA_VERSION_UNSUPPORTED`,
+      // which names a broken document instead of a owed migration). Classifying
+      // the anchor here, rather than strong-parsing it blind, makes case 2
+      // refuse with the SAME typed name case 3 gets from the authority — one
+      // contract, two arms, no operator-visible fork.
+      const anchor = classifyBlueprintAnchor(options.anchorBlueprintSource)
+      if (anchor.status === 'refused') {
+        throw new TeamPluginError(anchor.code, anchor.headline, {
+          teamRootSessionId: teamRootSid,
+          reason: 'bound-anchor-refused',
+          migrationRequired: anchor.migrationRequired,
+          ...(anchor.identity !== undefined ? { ...anchor.identity } : {}),
+          ...(anchor.schemaVersion !== undefined
+            ? { schemaVersion: anchor.schemaVersion }
+            : {}),
+        })
+      }
+      return anchor.blueprint
     }
     // Case 3: the bound ref resolves through the authority — an
     // unresolvable identity or a content hash the authority cannot

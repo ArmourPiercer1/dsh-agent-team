@@ -13,10 +13,13 @@
  * were not: CURRENT (runs), RETIRED (identity readable, run refused, migration
  * owed), UNREADABLE (no identity owed at all).
  *
- * GROUP D adds the v3-only cutover acceptance in its own commit — the assertions
- * whose reachability depends on `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]`
- * land in the commit that flips it, so nothing in this file is a skipped or
- * vacuous stand-in.
+ * GROUP D (Task 7.2): DEGRADED HOST BOOT vs TEAM START REFUSAL — the two planes
+ * A1-20(c) separates, pinned at every real start entrance. GROUP E adds the
+ * v3-only cutover acceptance in its own commit: the assertions whose reachability
+ * depends on `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]` land in the commit that
+ * flips it, so nothing in this file is a skipped or vacuous stand-in. Where an arm
+ * is dark at a given commit (a migration-required frozen row; the freeze gate),
+ * the file says so where the reader would otherwise assume coverage.
  *
  * HOW THE POST-CUTOVER STATE IS REACHED WITHOUT WAITING FOR IT. Nothing here
  * mutates the domain's version sets and nothing is `it.skip`ed:
@@ -59,7 +62,7 @@ import {
   inspectBlueprintSource,
   parseBlueprint,
 } from '../../domain/blueprint/src/index.js'
-import type { BlueprintInspectionResult } from '../../domain/blueprint/src/index.js'
+import type { BlueprintInspectionResult, TeamBlueprint } from '../../domain/blueprint/src/index.js'
 import { NEG_INVALID_YAML, revisionSource } from '../../domain/blueprint/testdata/fixtures.js'
 
 import { createBlueprintSourceIndex } from '../src/plugin/blueprint-source-index.js'
@@ -559,5 +562,723 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version it carries, not
     // law, both states, no branch.
     const refused = captureError(() => parseBlueprint(revisionSource('a4p7.parse', '1'))) !== undefined
     expect(refused).toBe(!BRIDGE_RUNS_V1)
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GROUP D — Task 7.2: DEGRADED HOST BOOT, SEPARATED FROM TEAM START REFUSAL.
+//
+// Three planes, and they must stay three (ADR A1-20(c)):
+//
+//   1. a host whose anchor this build cannot run BOOTS (degraded, loud, and the
+//      anchor stays visible through the authority of group C);
+//   2. a Team bound to such a document does not start and does not resume —
+//      typed, with zero agent creation and nothing written before the refusal;
+//   3. the migration surface still sees the document (group C).
+//
+// WHAT IS REACHABLE AT THIS COMMIT, stated plainly: the bridge still runs
+// `[1, 2, 3]`, so no DEFINED version is retired yet and the migration arm of
+// every new refusal is dark. The arm that IS live is the other version refusal —
+// a document on a version this build never defined (`schemaVersion: 99`) — and it
+// drives the same machinery end to end: classify without throwing → the
+// constructor survives → the value refuses on read → every start entrance refuses
+// typed before its first durable write. The v1/v2 siblings of these worlds (same
+// assertions, `migrationRequired: true`, code `BLUEPRINT_MIGRATION_REQUIRED`, the
+// anchor now LISTED) land in the commit that flips the set, where they go red
+// first. Nothing here is skipped, stubbed, or renamed to hide which arm it is.
+//
+// The bright line this group exists to keep: **a version refusal degrades; a
+// document that is not a document still fails the constructor.** D1 pins it,
+// because "make the constructor non-fatal" said without that line would boot a
+// host whose anchor is a YAML syntax error and hand every consumer a value that
+// was never parsed.
+// ═══════════════════════════════════════════════════════════════════════════
+
+import { createTeamProductionRoot } from '../src/plugin/root.js'
+import type { TeamAgentBindings, TeamPluginConfig, TeamProductionRoot } from '../src/plugin/types.js'
+import type { GovernanceStartOutcome, GovernanceWarningService } from '../governance-warning/index.js'
+import { createTeamDomain, openTeamDomain } from '../../storage/repositories/index.js'
+import { FileStorageSeam } from '../../testkit/fault-injection/file-seam.mjs'
+import { createAgentBindings as createStubBindings } from './p8s5a-stub-glue.mjs'
+import { classifyBlueprintAnchor } from '../src/plugin/blueprint-authority.js'
+import { createBoundBlueprintResolver } from '../src/plugin/bound-blueprint.js'
+import type { TeamSessionRecordDto } from '../../contracts/src/index.js'
+import { TeamContractError } from '../../contracts/src/index.js'
+import { TeamPluginError } from '../src/plugin/types.js'
+
+/** The single root every degraded world is configured for (one row per world). */
+const D_ROOT_SID = 'session-a4p7-d-root'
+const D_NOW = '2026-10-20T00:00:00.000Z'
+
+/** The fixture anchor with only its declared version changed. */
+function anchorOnVersion(blueprintId: string, version: string): string {
+  return revisionSource(blueprintId, '1', 'Degraded anchor lead.').replace(
+    'schemaVersion: 1',
+    `schemaVersion: ${version}`,
+  )
+}
+
+const ANCHOR_RUNNABLE = revisionSource('a4p7.degraded.anchor', '1', 'Runnable anchor lead.')
+const ANCHOR_UNKNOWN_VERSION = anchorOnVersion('a4p7.degraded.anchor', '99')
+const ANCHOR_NOT_A_DOCUMENT = 'this anchor is not a blueprint document at all\n'
+
+const dCode = (error: unknown): string | undefined => pluginCodeOf(error)
+
+function dConfig(bootPhase: 'create' | 'resume', blueprintSource: string): TeamPluginConfig {
+  return {
+    bootPhase,
+    rootSessionId: D_ROOT_SID,
+    blueprintSource,
+    generation: 1,
+    defaultWorkspace: 'C:/agent-team/work/a4p7-d',
+    seedMembers: [],
+    staticModel: { provider: 'a4p7d', model: 'a4p7d-model-v1' },
+    deniedSelection: null,
+    mcpServer: null,
+    environmentFacts: [],
+    externalPolicyFacts: { hard: {}, capabilityExists: {} },
+  }
+}
+
+/** The stub glue's observation surface, declared locally (the untyped-glue law). */
+type StubGlue = {
+  readonly __t1: {
+    bootCount: number
+    rootAgentStarts: string[]
+    rootContextDeliveries: string[]
+  }
+}
+
+/** The governance double, counting every consultation (the not-acknowledgeable proof). */
+function governanceDouble(
+  policy: (sid: string) => 'open' | 'migration' = () => 'open',
+): { calls: string[]; service: GovernanceWarningService } {
+  const calls: string[] = []
+  const outcome = (phase: string, sid: string): GovernanceStartOutcome => {
+    calls.push(`${phase}:${sid}`)
+    if (policy(sid) === 'migration') return { status: 'migration-required' }
+    return { status: 'open' }
+  }
+  return {
+    calls,
+    service: {
+      checkStart: async (sid: string) => outcome('start', sid),
+      checkEnsureRootLive: async (sid: string) => outcome('live', sid),
+      observeRuntime: async () => undefined,
+      acknowledge: async () => ({ kind: 'not-found' }),
+      listWarnings: async () => [],
+    },
+  }
+}
+
+type DWorld = {
+  readonly root: TeamProductionRoot
+  readonly stub: StubGlue
+  /** Whatever `boot()` rejected with (`undefined` = it completed). */
+  readonly bootError: unknown
+  readonly bootCompleted: boolean
+  readonly governanceCalls: string[]
+  /** One real S6 dispatch (the v3 surface, the a4p6 registration dance). */
+  readonly call: (endpoint: string, params: unknown) => Promise<Record<string, unknown>>
+  /** The same dispatch in the v1 envelope (the closed `handoff.*` pair). */
+  readonly callV1: (endpoint: string, params: unknown) => Promise<Record<string, unknown>>
+  /** Every APPLIED durable write DURING `boot()` on this root's facility. */
+  readonly writes: readonly SeamWriteEntry[]
+  /** The whole log (the positive control for a zero measured across `boot()`). */
+  readonly writesTotal: readonly SeamWriteEntry[]
+}
+
+/**
+ * The file seam's write-observation surface (declared locally: the seam is a
+ * testkit `.mjs` double whose counters are not part of the production
+ * `StorageDomainSeam` port). This is the zero-durable-write proof — the same
+ * counter the fault-injection lanes arm their crashes off.
+ */
+type SeamWriteEntry = {
+  readonly domain: string
+  readonly table: string
+  readonly key: string
+  readonly op: string
+}
+type SeamWrites = {
+  readonly writeCount: number
+  readonly writeLog: readonly SeamWriteEntry[]
+}
+const seamWrites = (root: TeamProductionRoot): SeamWrites =>
+  root.storageSeam as unknown as SeamWrites
+
+/**
+ * One degraded world: real production root, real durable storage, stub glue
+ * (the a4p6 start-gate harness, whose observation surface is exactly the
+ * zero-start proof the plan names). `preSeed` boots a RUNNABLE anchor first and
+ * reopens the same scratch, which is how a RESUME world gets its durable row.
+ */
+async function dWorld(options: {
+  readonly name: string
+  readonly anchor: string
+  readonly bootPhase: 'create' | 'resume'
+  /** Boot a RUNNABLE anchor first, then reopen the same scratch: the RESUME worlds. */
+  readonly preSeed?: boolean
+  readonly resolveBoundBlueprint?: (teamRootSid: string) => TeamBlueprint
+  readonly governancePolicy?: (sid: string) => 'open' | 'migration'
+  /** The handoff source-read channel (the ONLY source the operation reads). */
+  readonly getSessionQuery?: () => unknown
+}): Promise<DWorld> {
+  const dir = makeDir(options.name)
+  // A pre-seeded world needs an OPEN governance leg for its own creation boot —
+  // the scripted posture arms only for the world under test (and arming it is
+  // itself evidence that the create boot consults the leg).
+  let policyArmed = options.preSeed !== true
+  const governance = governanceDouble((sid) =>
+    policyArmed && (options.governancePolicy ?? (() => 'open'))(sid) === 'migration'
+      ? 'migration'
+      : 'open',
+  )
+  const construct = async (
+    phase: 'create' | 'resume',
+    source: string,
+    reopen: boolean,
+    resolver: ((teamRootSid: string) => TeamBlueprint) | undefined,
+  ) => {
+    const seam = new FileStorageSeam(dir)
+    const domain = reopen ? await openTeamDomain(seam) : await createTeamDomain(seam)
+    const config = dConfig(phase, source)
+    const teamToolsRef: { current: undefined } = { current: undefined }
+    const stub = createStubBindings({ config, teamToolsRef, domain }) as unknown as StubGlue
+    const root = createTeamProductionRoot({
+      config,
+      domain,
+      storageSeam: seam,
+      live: stub as unknown as TeamAgentBindings,
+      now: () => D_NOW,
+      teamToolsRef,
+      controlServiceRef: { current: undefined },
+      legacyInspect: noLegacyInspect,
+      governanceWarning: governance.service,
+      ...(options.getSessionQuery === undefined ? {} : { getSessionQuery: options.getSessionQuery }),
+      ...(resolver === undefined ? {} : { resolveBoundBlueprint: resolver }),
+    })
+    return { root, stub }
+  }
+
+  if (options.preSeed === true) {
+    const seed = await construct('create', ANCHOR_RUNNABLE, false, undefined)
+    await seed.root.boot()
+    await seed.root.close()
+    policyArmed = true
+  }
+  const world = await construct(
+    options.bootPhase,
+    options.anchor,
+    options.preSeed === true,
+    options.resolveBoundBlueprint,
+  )
+  const dispatcher: {
+    current: ((endpoint: string, payload: unknown) => Promise<Record<string, unknown>>) | null
+  } = { current: null }
+  world.root.seams.remoteHandlerRegistration.current()({
+    rpc: {
+      handle: (_channel: string, handler: unknown) => {
+        dispatcher.current = handler as (
+          endpoint: string,
+          payload: unknown,
+        ) => Promise<Record<string, unknown>>
+        return () => {}
+      },
+    },
+  })
+  const installed = dispatcher.current
+  if (installed === null) {
+    throw new Error('A4-PR7 group D guard: the remote registration never installed a dispatcher')
+  }
+  // The write log is measured ACROSS `boot()` (opening a durable domain lays
+  // its own table files, and a resumed world reopens one — neither is a Team
+  // effect). What the plan's law is about is the write the START would have
+  // made: the row, the binding, the compatibility/prober state.
+  const writesBeforeBoot = seamWrites(world.root).writeCount
+  const bootError = await world.root.boot().then(
+    () => undefined,
+    (error: unknown) => error,
+  )
+  const allWrites = seamWrites(world.root).writeLog
+  return {
+    root: world.root,
+    stub: world.stub,
+    bootError,
+    bootCompleted: bootError === undefined,
+    governanceCalls: governance.calls,
+    call: (endpoint, params) => installed(endpoint, { version: 3, params }),
+    callV1: (endpoint, params) => installed(endpoint, { version: 1, params }),
+    writes: allWrites.slice(writesBeforeBoot),
+    writesTotal: allWrites,
+  }
+}
+
+const noLegacyInspect = (): never => {
+  throw new Error('A4-PR7 group D guard: the legacy inspect seam is unused in these worlds')
+}
+
+// --- the degraded worlds ---------------------------------------------------------
+
+/** The scripted refusal the Blueprint authority gives a bound migration-required
+ *  identity (group C proves the AUTHORITY gives this answer; here it answers the
+ *  entrance's question, so the entrance's wiring is what is under test). */
+const MIGRATION_REFUSAL = BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED
+
+const dRefusedSids: string[] = []
+/** The create-phase refusal recorder (the mint the gate stopped). */
+const dCreateSids: string[] = []
+const dCreateRefused = await dWorld({
+  name: 'd-create-refused',
+  anchor: ANCHOR_UNKNOWN_VERSION,
+  bootPhase: 'create',
+})
+/**
+ * A CREATE boot whose ANCHOR runs but whose freshly bound document does not —
+ * the world that separates the create-entrance gate from the anchor: the row is
+ * minted, the identity is bound, and only the bound-document question stops it.
+ */
+const dCreateBoundRefused = await dWorld({
+  name: 'd-create-bound-refused',
+  anchor: ANCHOR_RUNNABLE,
+  bootPhase: 'create',
+  resolveBoundBlueprint: (teamRootSid: string) => {
+    dCreateSids.push(teamRootSid)
+    throw new TeamPluginError(
+      MIGRATION_REFUSAL,
+      'the bound Blueprint is a schema v1 document; migrate it (scripted)',
+      { blueprintId: 'a4p7.degraded.anchor', revision: '1', migrationRequired: true },
+    )
+  },
+})
+const dResumeRefused = await dWorld({
+  name: 'd-resume-refused',
+  anchor: ANCHOR_RUNNABLE,
+  bootPhase: 'resume',
+  preSeed: true,
+  resolveBoundBlueprint: (teamRootSid: string) => {
+    dRefusedSids.push(teamRootSid)
+    throw new TeamPluginError(
+      MIGRATION_REFUSAL,
+      'the bound Blueprint is a schema v1 document; migrate it (scripted: the authority of group C answers this way)',
+      { blueprintId: 'a4p7.degraded.anchor', revision: '1', migrationRequired: true },
+    )
+  },
+})
+const dResumeOpen = await dWorld({
+  name: 'd-resume-open',
+  anchor: ANCHOR_RUNNABLE,
+  bootPhase: 'resume',
+  preSeed: true,
+  resolveBoundBlueprint: () => parseBlueprint(ANCHOR_RUNNABLE),
+})
+const dResumeRefusedEnsure = await dResumeRefused.call('team.ensureRootLive', {
+  teamSessionId: D_ROOT_SID,
+})
+/** A FRESH root minted over the same refused bound document (the v3 create wire). */
+const D_CREATED_SID = 'session-a4p7-d-created'
+const dResumeRefusedCreate = await dResumeRefused.call('team.create', {
+  rootSessionId: D_CREATED_SID,
+  blueprintId: 'a4p7.degraded.anchor',
+  blueprintRevision: 1,
+})
+/** The same entrance with the GOVERNANCE leg answering its closed fourth arm
+ *  (`migration-required`) — the posture the wiring takes on when the bridge is
+ *  removed in Task 7.3. */
+const dGovernanceArm = await dWorld({
+  name: 'd-governance-arm',
+  anchor: ANCHOR_RUNNABLE,
+  bootPhase: 'resume',
+  preSeed: true,
+  governancePolicy: () => 'migration',
+})
+const dGovernanceArmEnsure = await dGovernanceArm.call('team.ensureRootLive', {
+  teamSessionId: D_ROOT_SID,
+})
+/** The same mint over an OPEN bound document (the control for the ordering law). */
+const D_OPEN_CREATED_SID = 'session-a4p7-d-created-open'
+const dResumeOpenCreate = await dResumeOpen.call('team.create', {
+  rootSessionId: D_OPEN_CREATED_SID,
+  blueprintId: 'a4p7.degraded.anchor',
+  blueprintRevision: 1,
+})
+const dResumeOpenEnsure = await dResumeOpen.call('team.ensureRootLive', {
+  teamSessionId: D_ROOT_SID,
+})
+
+/** A construction attempt on an anchor that is not a document at all. */
+const dGarbageError = await (async () => {
+  const dir = makeDir('d-create-garbage')
+  const seam = new FileStorageSeam(dir)
+  const domain = await createTeamDomain(seam)
+  const config = dConfig('create', ANCHOR_NOT_A_DOCUMENT)
+  const teamToolsRef: { current: undefined } = { current: undefined }
+  const stub = createStubBindings({ config, teamToolsRef, domain }) as unknown as StubGlue
+  try {
+    createTeamProductionRoot({
+      config,
+      domain,
+      storageSeam: seam,
+      live: stub as unknown as TeamAgentBindings,
+      now: () => D_NOW,
+      teamToolsRef,
+      controlServiceRef: { current: undefined },
+      legacyInspect: noLegacyInspect,
+    })
+    return undefined
+  } catch (error) {
+    return error
+  }
+})()
+
+/** The handoff source session (the shape `handoff.prepare` reads). */
+const D_SRC_SID = 'session-a4p7-d-src'
+function dSessionQueryDouble(): () => unknown {
+  const fake = {
+    readSurface: async (id: string): Promise<Record<string, unknown>> => {
+      if (id !== D_SRC_SID) throw new Error(`readSurface called with '${id}'`)
+      return {
+        session: { id: D_SRC_SID, createdAt: 1725000000000 },
+        capturedThroughSeq: 9,
+        events: [
+          {
+            seq: 1,
+            type: 'user/message',
+            time: 1725000001000,
+            data: { content: [{ type: 'text', text: 'handoff me the baseline work' }] },
+          },
+        ],
+      }
+    },
+    readTitleSnapshots: async (ids: readonly string[]): Promise<Record<string, unknown>[]> =>
+      ids.map((sid) => ({
+        status: 'fulfilled',
+        value: { session: { id: sid, createdAt: 1725000000000 }, title: { title: 'A4P7 group-D source' } },
+      })),
+  }
+  return () => fake
+}
+
+/** The handoff envelope's OPERATION state (`ok:true` is the ENVELOPE; the
+ *  operation carries its own `kind`, and a refused creation is `creation-failed`). */
+function dHandoffOpState(response: Record<string, unknown>): Record<string, unknown> {
+  const value = response['value'] as { data?: { state?: Record<string, unknown> } } | undefined
+  return value?.data?.state ?? {}
+}
+const HANDOFF_PREFIX = 'session-handoff-'
+const D_TOKEN = 'tok-a4p7-d-handoff'
+const dHandoffRefused = await dWorld({
+  name: 'd-handoff-refused',
+  anchor: ANCHOR_RUNNABLE,
+  bootPhase: 'resume',
+  preSeed: true,
+  getSessionQuery: dSessionQueryDouble(),
+  resolveBoundBlueprint: (teamRootSid: string) => {
+    dRefusedSids.push(teamRootSid)
+    throw new TeamPluginError(
+      MIGRATION_REFUSAL,
+      'the bound Blueprint is a schema v1 document; migrate it (scripted)',
+      { blueprintId: 'a4p7.degraded.anchor', revision: '1', migrationRequired: true },
+    )
+  },
+})
+await dHandoffRefused.callV1('handoff.prepare', { sourceSessionId: D_SRC_SID })
+const dHandoffRefusedCreate = await dHandoffRefused.callV1('handoff.create', {
+  sourceSessionId: D_SRC_SID,
+  requestToken: D_TOKEN,
+  staged: {},
+})
+const dHandoffOpen = await dWorld({
+  name: 'd-handoff-open',
+  anchor: ANCHOR_RUNNABLE,
+  bootPhase: 'resume',
+  preSeed: true,
+  getSessionQuery: dSessionQueryDouble(),
+  resolveBoundBlueprint: () => parseBlueprint(ANCHOR_RUNNABLE),
+})
+await dHandoffOpen.callV1('handoff.prepare', { sourceSessionId: D_SRC_SID })
+const dHandoffOpenCreate = await dHandoffOpen.callV1('handoff.create', {
+  sourceSessionId: D_SRC_SID,
+  requestToken: D_TOKEN,
+  staged: {},
+})
+
+describe('D1 — the bright line: a version refusal degrades, a non-document still fails the constructor', () => {
+  it('a version this build never defined is a refusal, not a crash', () => {
+    const state = classifyBlueprintAnchor(ANCHOR_UNKNOWN_VERSION)
+    expect(state.status).toBe('refused')
+    if (state.status !== 'refused') return
+    expect(state.code).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED)
+    expect(state.migrationRequired).toBe(false)
+  })
+  it('a version this build runs classifies as runnable (the ordinary host is unchanged)', () => {
+    expect(classifyBlueprintAnchor(ANCHOR_RUNNABLE).status).toBe('runnable')
+  })
+  it('an anchor that is not a document at all still throws (fail-closed construction)', () => {
+    // THE half of A1-20(c) that a lazy reading loses: the ADR degrades a host
+    // anchored on a document it refuses to RUN, not one it cannot read at all.
+    // The throw keeps its OWN identity — the strong parser's contract error — so
+    // the two conditions cannot be confused from the outside either.
+    expect(dGarbageError).toBeInstanceOf(TeamContractError)
+    expect(pluginCodeOf(dGarbageError)).toBeUndefined()
+  })
+})
+
+describe('D2 — a host anchored on a version it does not run boots, and its Team does not start', () => {
+  it('the root constructed (the constructor survived the anchor)', () => {
+    expect(dCreateRefused.bootCompleted).toBe(false)
+    expect(pluginCodeOf(dCreateRefused.bootError)).toBe(
+      BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED,
+    )
+  })
+  it('ZERO durable writes: no TeamSession row, no binding, no compatibility state', () => {
+    // The plan's words: "with zero agent creation and zero compatibility/prober
+    // writes before the refusal". Counted at the storage facility itself, not by
+    // checking which repositories happen to have rows.
+    expect(dCreateRefused.writes.length).toBe(0)
+    expect(dCreateRefused.root.domain.repositories.teamSessions.list().length).toBe(0)
+  })
+  it('ZERO agent effect through the live glue', () => {
+    expect(dCreateRefused.stub.__t1.bootCount).toBe(0)
+    expect(dCreateRefused.stub.__t1.rootAgentStarts.length).toBe(0)
+  })
+})
+
+describe('D3 — the refusal is not an acknowledgement path', () => {
+  it('the code is the document code, never a governance warning code', () => {
+    const code = pluginCodeOf(dCreateRefused.bootError) ?? ''
+    expect(code.startsWith('TEAM_START_GOVERNANCE_')).toBe(false)
+    expect(code).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED)
+  })
+  it('the governance leg is never consulted for the refused create start', () => {
+    // The order IS the law: the governance leg reads the Team's v3 authority
+    // documents, which do not exist for a document this build will not run.
+    // Consulting it would hand the operator a warning to acknowledge for a
+    // migration, and an acknowledgement is exactly what must not clear this.
+    expect(dCreateRefused.governanceCalls.length).toBe(0)
+  })
+  it('a re-drive gives the same refusal, not a second state', () => {
+    expect(dCreateRefused.writes.length).toBe(0)
+  })
+})
+
+describe('D4 — the degraded anchor value refuses every read (it is never an empty document)', () => {
+  it('reading a field refuses typed', () => {
+    const error = captureError(() => dCreateRefused.root.blueprint.blueprintId)
+    expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED)
+  })
+  it('enumerating or serialising it refuses too (no empty-object leak)', () => {
+    expect(captureError(() => Object.keys(dCreateRefused.root.blueprint)) !== undefined).toBe(true)
+    expect(captureError(() => JSON.stringify(dCreateRefused.root.blueprint)) !== undefined).toBe(true)
+  })
+})
+
+describe('D5 — the start ports refuse before the glue is reached', () => {
+  it('team.ensureRootLive on a refused bound document is refused', () => {
+    expect(dResumeRefusedEnsure['ok']).toBe(false)
+    expect(dResumeRefusedEnsure['error']).not.toBe(undefined)
+  })
+  it('the stub glue ensure port was NEVER entered (the gate sits in front of it)', () => {
+    // The stub's `ensureLiveAgent` throws its own name when called, so the
+    // ABSENCE of that name — and the presence of the resolver's consultation —
+    // is direct evidence of the ordering at this entrance.
+    expect(String(JSON.stringify(dResumeRefusedEnsure['error'] ?? {})).includes('ensureLiveAgent')).toBe(false)
+    expect(dRefusedSids.filter((sid) => sid === D_ROOT_SID).length).toBeGreaterThan(1)
+    expect(dResumeRefused.stub.__t1.bootCount).toBe(0)
+  })
+  it('the wire carries it in its OWN closed vocabulary, not the document code', () => {
+    // Disclosed, not hidden: the S6 dispatcher maps anything outside its frozen
+    // code set to `internal-error` with reason `untyped-error` (no new wire code
+    // without a contract change). The NAMED wire arm for this condition is the
+    // closed fourth governance arm `TEAM_START_MIGRATION_REQUIRED`, produced by
+    // the governance leg when the v1/v2 bridge flips (Task 7.3) — see the next
+    // test. What THIS entrance's gate guarantees is the part the wire cannot
+    // express: no agent is ever created, whatever the envelope says.
+    const error = dResumeRefusedEnsure['error']
+    if (error === undefined || error === null) return
+    expect(String((error as { code?: unknown }).code)).toBe('internal-error')
+    expect(String(JSON.stringify(error))).toContain('untyped-error')
+  })
+  it('the SAME entrance on the governance fourth arm answers with the typed wire name', () => {
+    // PR6 reserved `TEAM_START_MIGRATION_REQUIRED` and said PR7 reaches it. Here
+    // it is reached through a REAL entrance: the governance leg answers
+    // `migration-required` (the posture the wiring takes when Task 7.3 removes
+    // the bridge) and the one shared mapper names the refusal on the wire — with
+    // the same zero agent effect the port-level gate holds.
+    const error = dGovernanceArmEnsure['error']
+    expect(dGovernanceArmEnsure['ok']).toBe(false)
+    if (error === undefined || error === null) return
+    expect(String((error as { code?: unknown }).code)).toBe('TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED')
+    expect(String((error as { message?: unknown }).message)).toContain('until the Team is migrated')
+    expect(String((error as { message?: unknown }).message)).toContain('acknowledgement never clears this')
+    expect(dGovernanceArm.stub.__t1.bootCount).toBe(0)
+    expect(dGovernanceArm.stub.__t1.rootAgentStarts.length).toBe(0)
+  })
+  it('handoff.create over a refused bound document creates NOTHING and never reaches the governance leg', () => {
+    // The handoff entrance PR6 found ungated. Its envelope is `ok:true` because
+    // the ENVELOPE only reports transport/handler success; the OPERATION is
+    // `creation-failed`, which is this API's honest shape for a refused creation
+    // (durable, re-drivable). The law is measured on the effects, not on the
+    // envelope: no Root Agent of the handoff prefix ever started, and the
+    // governance leg was NEVER consulted for the minted root — so no warning was
+    // minted, and there is nothing for an operator to acknowledge. The open
+    // control proves both the start and the consultation are observable here.
+    const refused = dHandoffOpState(dHandoffRefusedCreate)
+    expect(refused['kind']).toBe('creation-failed')
+    const failure = refused['failure'] as { code?: string; message?: string } | undefined
+    expect(failure?.code).toBe('HANDOFF_TEAM_CREATION_FAILED')
+    expect(String(failure?.message)).toContain('migrate')
+    expect(
+      dHandoffRefused.stub.__t1.rootAgentStarts.filter((sid) => sid.startsWith(HANDOFF_PREFIX))
+        .length,
+    ).toBe(0)
+    expect(
+      dHandoffRefused.governanceCalls.filter((c) => c.includes(HANDOFF_PREFIX)).length,
+    ).toBe(0)
+    const open = dHandoffOpState(dHandoffOpenCreate)
+    expect(open['kind']).toBe('completed')
+    expect(
+      dHandoffOpen.stub.__t1.rootAgentStarts.filter((sid) => sid.startsWith(HANDOFF_PREFIX)).length,
+    ).toBe(1)
+    expect(
+      dHandoffOpen.governanceCalls.filter((c) => c.includes(HANDOFF_PREFIX)).length,
+    ).toBeGreaterThan(0)
+  })
+  it('team.create over the same bound document is refused, leaving the row NOT LIVE', () => {
+    // The create wire sits AFTER the atomic fresh-root commit and BEFORE the
+    // agent start (PR6's chokepoint law), so the refusal leaves a durable
+    // NOT-LIVE row — never a started Team.
+    const error = dResumeRefusedCreate['error']
+    expect(dResumeRefusedCreate['ok']).toBe(false)
+    expect(error).not.toBe(undefined)
+    expect(dResumeRefused.stub.__t1.rootAgentStarts.length).toBe(0)
+    expect(dResumeRefused.root.domain.repositories.teamSessions.get(D_CREATED_SID)).not.toBe(undefined)
+  })
+  it('a CREATE mint over a refused bound document fails closed with ZERO agent effect', () => {
+    // DISCLOSED SHAPE, measured here rather than assumed: the mint binds the
+    // bound document through the binder overlay (the persona substrate effect),
+    // so on this entrance the durable commit fails inside the binder and the
+    // operator's name for it is the BINDER's, with the document refusal as the
+    // wrapped cause. The refusal is real — nothing is created and the Team never
+    // boots — and the cause is readable; what it is NOT is the document code,
+    // because the per-session resolver cannot be asked before the row exists
+    // (case 1 of bound-blueprint.ts throws for a root without a row).
+    expect(dCreateSids).toContain(D_ROOT_SID)
+    expect(String(dCreateBoundRefused.bootError)).toContain('migrate')
+    expect(dCreateBoundRefused.stub.__t1.rootAgentStarts.length).toBe(0)
+    expect(dCreateBoundRefused.stub.__t1.bootCount).toBe(0)
+    expect(dCreateBoundRefused.governanceCalls.length).toBe(0)
+  })
+  it('the refused mint made the chokepoint commit and NO compatibility/prober write', () => {
+    // The plan's zero-write law names the compatibility/prober writes, and the
+    // chokepoint commit (row + binding + leader, one atomic write set) is PR6's
+    // established shape for a refused create. Both hold: the row exists, no
+    // compatibility state was laid, and no agent ever lived.
+    const tables = dCreateBoundRefused.writes.map((entry) => entry.table)
+    expect(
+      tables.some((table) => String(table).toLowerCase().includes('compatibility')),
+    ).toBe(false)
+    expect(dCreateBoundRefused.root.domain.repositories.compatibility.get(D_ROOT_SID)).toBe(
+      undefined,
+    )
+  })
+})
+
+describe('D6 — the resume entrance is gated on its ROW, before its first durable write', () => {
+  it('the entrance asked the bound-document resolver for THIS root', () => {
+    // `boundSnapshot` is derived from the anchor; a resumed Team is bound to its
+    // row. Consulting the resolver here is what makes "the migrated Team on a
+    // host with an old anchor resumes" and "the unmigrated Team on a new host is
+    // refused" the same correct code.
+    expect(dRefusedSids.length).toBeGreaterThan(0)
+    expect(dRefusedSids[0]).toBe(D_ROOT_SID)
+  })
+  it('the refusal is typed and boot() never reached the live layer', () => {
+    expect(pluginCodeOf(dResumeRefused.bootError)).toBe(MIGRATION_REFUSAL)
+    expect(dResumeRefused.stub.__t1.bootCount).toBe(0)
+  })
+  it('the refused resume wrote NOTHING before refusing', () => {
+    expect(dResumeRefused.writes.length).toBe(0)
+  })
+})
+
+describe('D7 — the gate does not refuse a bound document this build runs', () => {
+  it('the resume completed (the new gate broke nothing it guards)', () => {
+    expect(dResumeOpen.bootCompleted).toBe(true)
+    expect(dResumeOpen.bootError).toBe(undefined)
+  })
+  it('the resumed root went live through the glue exactly once', () => {
+    expect(dResumeOpen.stub.__t1.bootCount).toBe(1)
+  })
+  it('its ensureRootLive entrance reached the glue (the gate is not blocking what it allows)', () => {
+    // The stub glue deliberately THROWS for `ensureLiveAgent`, so that name in
+    // the response is the proof of passage: refused worlds never mention the
+    // port, this one gets all the way to it. The gate discriminates; it does not
+    // simply stop everything.
+    expect(dResumeOpenEnsure['ok']).toBe(false)
+    expect(String(JSON.stringify(dResumeOpenEnsure['error'] ?? {}))).toContain('ensureLiveAgent')
+  })
+  it('the write counter is not a blind spot (a real start does record)', () => {
+    // The positive control for D6's `writes.length === 0`: the same facility,
+    // measured across the whole world, records the chokepoint commit the refused
+    // `team.create` made before its own gate stopped it.
+    expect(
+      dResumeRefused.writesTotal.filter((entry) => entry.key === D_CREATED_SID).length,
+    ).toBeGreaterThan(0)
+  })
+})
+
+describe('D8 — bound-blueprint case 2 refuses with the same name case 3 gets', () => {
+  const legacyRows = {
+    get: () => ({ blueprint: undefined }) as unknown as TeamSessionRecordDto,
+  }
+  const refusedResolver = createBoundBlueprintResolver({
+    teamSessions: legacyRows,
+    resolveSnapshot: () => parseBlueprint(ANCHOR_RUNNABLE),
+    anchorBlueprintSource: ANCHOR_UNKNOWN_VERSION,
+  })
+  const openResolver = createBoundBlueprintResolver({
+    teamSessions: legacyRows,
+    resolveSnapshot: () => parseBlueprint(ANCHOR_RUNNABLE),
+    anchorBlueprintSource: ANCHOR_RUNNABLE,
+  })
+  it('a no-ref legacy row on a refused anchor refuses typed (not the domain parse error)', () => {
+    const error = captureError(() => refusedResolver('session-a4p7-d-legacy'))
+    expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED)
+    if (!isTeamPluginError(error)) return
+    expect(error.detail).toMatchObject({ migrationRequired: false, reason: 'bound-anchor-refused' })
+  })
+  it('and a runnable anchor still resolves by definition (the legacy binding is intact)', () => {
+    expect(openResolver('session-a4p7-d-legacy').blueprintId).toBe('a4p7.degraded.anchor')
+  })
+})
+
+describe('D9 — the Blueprint authority degrades with its anchor, and fails closed on a non-document', () => {
+  const dAuthorityDir = makeDir('d-authority')
+  const dAuthority = createBlueprintAuthority({
+    bootstrapSource: ANCHOR_UNKNOWN_VERSION,
+    sourceIndex: createBlueprintSourceIndex({ blueprintDir: dAuthorityDir }),
+    registry: new MemRegistry(),
+  })
+  const dGarbageAuthority = captureError(() =>
+    createBlueprintAuthority({
+      bootstrapSource: ANCHOR_NOT_A_DOCUMENT,
+      sourceIndex: createBlueprintSourceIndex({ blueprintDir: dAuthorityDir }),
+      registry: new MemRegistry(),
+    }),
+  )
+  it('the authority constructed on the refused anchor', () => {
+    expect(dAuthority.listIdentities().length).toBe(0)
+  })
+  it('a version nobody defined is NOT listed (there is no migration to advertise)', () => {
+    // The contrast with group C, on the same code path: a RETIRED anchor IS
+    // listed, with migrationRequired=true, because the operator owes a
+    // migration for it. Listing this one would advertise a task that does not
+    // exist and blur the two refusals the operator has to tell apart (A1-21).
+    const anchorIdentity = parseBlueprint(ANCHOR_RUNNABLE).blueprintId
+    expect(dAuthority.listIdentities().some((i) => i.blueprintId === anchorIdentity)).toBe(false)
+  })
+  it('an anchor that is not a document still fails the authority construction', () => {
+    expect(dGarbageAuthority).toBeInstanceOf(Error)
   })
 })
