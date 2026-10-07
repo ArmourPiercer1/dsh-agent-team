@@ -1,17 +1,34 @@
 # A4-PR7 §7.4 (pre-flip half) — lane **C-tools+harness** findings
 
-**Branch** `feat/a4-74-hts-fixtures` (worktree `.worktrees/a4-74-hts`), rebased onto `origin/master` =
-`5ea79126` (fence round 3 + R3.5, merged at `0af1bd63`, docs on top).
-Six commits on the base, nothing pushed: the five file commits `94831a22`, `280e3145`, `bfca3353`,
-`1a7c30eb`, `476cae32`, then this evidence commit on top.
+**Branch** `feat/a4-74-hts-fixtures` (worktree `.worktrees/a4-74-hts`), **rebased onto
+`origin/master` = `ff9218a3`** as the coordinator ruled; the lane was originally cut from `5ea79126`
+(fence round 3 + R3.5, merged at `0af1bd63`). Eight commits on the base, nothing pushed: the five
+file commits `528b552c`, `2e22a43d`, `9a3aa5ef`, `3f303e78`, `94202668`, then the findings commit
+`235c4962`, the control rewrite `561c3164`, the typecheck fix `2ead5aa1`, and the evidence commit
+for the post-approval round. Old → new SHAs for every one: the map in
+[The rebase](#the-rebase).
+
+**Two lessons this lane earned the hard way, stated where a reader will hit them first.**
+(1) **vitest strips types without checking them.** A spec leg can be syntactically live, pass 58/58,
+and be semantically unchecked: `pnpm -r run typecheck` was the only thing that read this test file's
+types, and it exited 2 on two errors in a leg whose runtime behaviour every mutation in this file
+had just "proved" (`noUncheckedIndexedAccess` makes `RegExpExecArray` capture groups
+`string | undefined`, so `off !== null` narrows nothing — `2ead5aa1`). A green test run is not
+evidence about types, and an older green typecheck quote is not evidence about a file that did not
+exist yet. (2) **A mutation table means nothing without the green baseline run that follows it.**
+The first battery here "caught" all three mutations because the leg threw a TypeError on the way in
+(`!== undefined` tested against `RegExp.exec`'s `null`); only the required all-green control run
+showed the leg had been dead rather than sharp.
+
+SHAs are post-rebase (old → new in [The rebase](#the-rebase)).
 
 | # | file | plan-named site | disposition | commit |
 |---|------|-----------------|-------------|--------|
-| 1 | [`packages/runtime/root-binding/harness/blueprint-source.mjs`](../../../../packages/runtime/root-binding/harness/blueprint-source.mjs) | scanned at `:30` (now `:31`) | migrate-by-hand | `94831a22` |
-| 2 | [`packages/tools/harness/d4-restart-reopen.mjs`](../../../../packages/tools/harness/d4-restart-reopen.mjs) | `:220` | migrate-by-hand | `280e3145` |
-| 3 | [`packages/tools/harness/g5-member-e2e.mjs`](../../../../packages/tools/harness/g5-member-e2e.mjs) | `:267` | migrate-by-hand | `bfca3353` |
-| 4 | [`packages/tools/harness/run.mjs`](../../../../packages/tools/harness/run.mjs) | `:214` | migrate-by-hand | `1a7c30eb` |
-| 5 | [`packages/tools/harness/t12-vertical.mjs`](../../../../packages/tools/harness/t12-vertical.mjs) | `:215` (+ a measured second site `:1844`) | migrate-by-hand + delete-lie (the second site) | `476cae32` |
+| 1 | [`packages/runtime/root-binding/harness/blueprint-source.mjs`](../../../../packages/runtime/root-binding/harness/blueprint-source.mjs) | scanned at `:30` (now `:31`) | migrate-by-hand | `528b552c` |
+| 2 | [`packages/tools/harness/d4-restart-reopen.mjs`](../../../../packages/tools/harness/d4-restart-reopen.mjs) | `:220` | migrate-by-hand | `2e22a43d` |
+| 3 | [`packages/tools/harness/g5-member-e2e.mjs`](../../../../packages/tools/harness/g5-member-e2e.mjs) | `:267` | migrate-by-hand | `9a3aa5ef` |
+| 4 | [`packages/tools/harness/run.mjs`](../../../../packages/tools/harness/run.mjs) | `:214` | migrate-by-hand | `3f303e78` |
+| 5 | [`packages/tools/harness/t12-vertical.mjs`](../../../../packages/tools/harness/t12-vertical.mjs) | `:215` (+ a measured second site `:1844`) | migrate-by-hand + delete-lie (the second site) | `94202668` |
 
 Every migrated document carries the two v3-required authority documents as
 `rules: []`, which is the narrowest legal value and — this is the part each commit argues
@@ -469,11 +486,31 @@ in the §7.6 receipts:
 cd .worktrees/a4-74-hts
 node --check packages/tools/harness/t12-vertical.mjs            # …and the other four
 node dev/agent-workflow/evidence/a4-pr7/7-4-hts/probes/probe-t12-vertical.mjs   # after-state
-git show 476cae32^:packages/tools/harness/t12-vertical.mjs > /tmp/t12-before.mjs
-node dev/agent-workflow/evidence/a4-pr7/7-4-hts/probes/probe-t12-vertical.mjs /tmp/t12-before.mjs
+# before-state: scratch INSIDE the repo — in this harness /tmp is private per command,
+# so a `> /tmp/…` handoff between two commands silently loses the file.
+git show 94202668^:packages/tools/harness/t12-vertical.mjs \
+  > dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch/t12-before.mjs
+node dev/agent-workflow/evidence/a4-pr7/7-4-hts/probes/probe-t12-vertical.mjs \
+  dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch/t12-before.mjs
 node scripts/verify-blueprint-version-clean.mjs
 pnpm exec vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts
+
+# the control's teeth (D3): mutate the report producer, run the wrapper, restore, verify sha
+S=dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch
+git show 5ea79126:scripts/verify-blueprint-version-clean.mjs > $S/fence-script-pristine.mjs
+sha256sum $S/fence-script-pristine.mjs      # must equal $S/fence-script-sha.txt
+for m in A B C; do
+  node $S/mutate-fence.mjs $m
+  pnpm exec vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts   # must be RED
+  node $S/mutate-fence.mjs restore
+  sha256sum scripts/verify-blueprint-version-clean.mjs                              # must match
+done
+pnpm exec vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts     # green baseline
+node $S/control-empty-set-probe.mjs                                                 # the empty-set answer
 ```
+
+The last line of that loop is not a courtesy: without a green baseline after the restores, a
+"red" under mutation is indistinguishable from a dead leg (see lesson (2) at the top).
 
 Probes load the parser from `packages/runtime/dist/packages/domain/blueprint/src/index.js` (the
 committed dist mirror of the v3 validator) and evaluate the document **as the file builds it** —
