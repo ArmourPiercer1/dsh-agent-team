@@ -24,8 +24,16 @@
  * THE RULE THIS IMPLEMENTS (plan ADR X12, "a gate step that cannot be run is
  * not a gate step", plus the addition that it must never be reported as a
  * pass): a step that cannot be executed prints `SKIP` with the reason and the
- * named packages, on every run, and exits 0 — while any failure that is NOT
- * the missing upstream closure prints `FAIL` and exits non-zero. A mute and a
+ * named packages, on every run — and the RUN FAILS. Repaired in the 7.6
+ * skip-fails round: this paragraph claimed a skip "exits 0" and the code did
+ * exactly that, which is how a gate whose client leg never ran kept reporting
+ * green (measured at this change's base: footer `… 1 step NOT RUN and NOT
+ * passed …` beside exit 0, and the same shape at `--config.hoist=false` with 25
+ * unresolvable packages). `SKIP` stays the honest CLASSIFICATION — the category
+ * that separates "this workspace cannot run the step" from "the step ran and
+ * found a defect" — and it is never a passing gate any more; a failure that is
+ * NOT the missing upstream closure prints `FAIL` and exits non-zero as before.
+ * A mute and a
  * fix must not produce identical output, and this repo has already closed a
  * gate by silencing it (the six `eslint-disable no-explicit-any` in A4-PR6), so
  * the classification is deliberately conservative: it skips ONLY when the real
@@ -134,7 +142,10 @@ export const RESOLUTION_ERROR_CODES = Object.freeze([
  * `pnpm smoke:composition` output with and without it is the same bytes
  * (md5 026e462608899aecdb47f326905e4f31: same 17 named packages, nine PASS arms, exit 0), and a walk that
  * swaps only this pattern sees 0 specifiers it had not seen before. Receipt
- * `7-5-review-round-mutations.txt`, FIX 2 section.
+ * `7-5-review-round-mutations.txt`, FIX 2 section. The `exit 0` in that receipt
+ * is the pre-7.6 verdict, not the current one: the same bytes now exit 1, which
+ * is the point of the skip-fails round, and the no-op claim this sentence makes
+ * is about the printed output being identical with and without the allowance.
  */
 const STATEMENT_START = /^[ \t]*(?:import|export)\b/
 /** `from '<spec>'` / `import '<spec>'` / `import('<spec>')` inside a statement. */

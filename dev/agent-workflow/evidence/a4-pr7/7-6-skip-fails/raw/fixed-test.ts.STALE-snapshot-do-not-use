@@ -38,19 +38,6 @@
  * Resolution errors here are captured from a child `node` process, because the
  * test runner's own resolver disagrees with Node about directory imports and
  * subpath exports — pinning the runner would have tested the wrong thing.
- *
- * SKIP-FAILS ROUND (A4-PR7 7.6) added the two describes at the bottom of this
- * file. They exist because the sentence above — "a gate must not be able to go
- * quiet" — was only ever enforced about the PRINTING, never about the VERDICT:
- * the gate printed `1 step NOT RUN and NOT passed` in complete honesty and
- * exited **0** beside it, so everything downstream that reads the exit code
- * (Task 7.6's machine gate, any `&&` chain, any CI) inherited a green from a run
- * that had verified one arm fewer than it claimed. The new legs drive the whole
- * gate script end to end over three fixture repositories — every arm runnable,
- * one arm skipped, one arm genuinely broken — because the contract that failed
- * was a process exit code, and no in-process call into `checkCompositionSurface`
- * can produce one. See the block above `GATE_ROOT` for the contract they pin and
- * for why the synthetic skip is injected as a FILE rather than as a switch.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
@@ -1180,15 +1167,10 @@ const GATE_SCRIPT_FILES = [
 const EXPECTED_STEP_LINES = PLUGIN_TARGETS.length + REQUIRED_CHECK_IDS.length
 
 /** The closure-gated arm, located by ROLE — the flag, never the label text. */
-function closureGatedArm(): CompositionSmokeTarget {
-  const found = PLUGIN_TARGETS.find((target) => target.closureGate === true)
-  if (found === undefined) {
-    throw new Error('the arm list carries no closure-gated target, so there is no step a skip verdict could be about')
-  }
-  return found
+const CLIENT_ARM = PLUGIN_TARGETS.find((target) => target.closureGate === true)
+if (CLIENT_ARM === undefined) {
+  throw new Error('the arm list carries no closure-gated target, so there is no step a skip verdict could be about')
 }
-
-const CLIENT_ARM: CompositionSmokeTarget = closureGatedArm()
 
 function sha256Of(file: string): string {
   return createHash('sha256').update(readFileSync(file)).digest('hex')

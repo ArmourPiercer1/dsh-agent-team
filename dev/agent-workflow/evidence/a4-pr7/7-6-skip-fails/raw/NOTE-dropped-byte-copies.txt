@@ -1,0 +1,10 @@
+The three `snap-*/before` byte copies (the pre-mutation originals of the files
+each real-defect mutation edited) were dropped from this evidence directory to
+keep it a committable size — `snap-renamed-plugin-name/before` alone was 1.3 MB.
+Each is recoverable byte-for-byte from the base commit, and its digest is pinned:
+
+  git show a2059c738419430362004a1a6085a010876502a5:<path> | sha256sum -c < the file's before.sha256
+
+`before.sha256` / `after.sha256` in each snapshot directory are retained, and every
+restore in this round was verified by `cp` from these manifests (never
+`git checkout --`), so the mutation receipts stay checkable without the copies.

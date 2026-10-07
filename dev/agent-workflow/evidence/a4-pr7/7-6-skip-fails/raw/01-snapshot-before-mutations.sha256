@@ -1,0 +1,4 @@
+ee315922f47c288c818725b83f9a1d0df1843d47e7210589df6f6af0b0199a0c  scripts/composition-smoke.mjs
+3f57dcd35079b81feab5cea68a37ee43e395c0f7e990f8cf8291934e7cd2a02c  scripts/composition-smoke-bundle.mjs
+dd813c984eb25c56783b16712925d2c7cc7da998259b42a90ee17dfc10f8c1cd  scripts/composition-smoke-closure.mjs
+299b378b9c716b1f11499b01ad0bfae6b22c996c0104affc510758847520edc1  packages/client/dist/packages/client/src/plugin/client.js
