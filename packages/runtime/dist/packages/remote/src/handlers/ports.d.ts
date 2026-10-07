@@ -45,6 +45,15 @@ export interface RemoteCatalogPort {
      * read. The state is not selectable by contract version, and it never selects the
      * authority algebra — the A5-12 law is about the wire version, and this is a read
      * of the bound document's version, which is the one thing that law says to read.
+     *
+     * `schemaVersion` is the version the BLUEPRINT DOCUMENT declares, read out of the
+     * stored document. Finding F1 is why that sentence exists: a durable registry row
+     * carries its own `schemaVersion`, which is the TeamDomain L3 row stamp and is
+     * never a document version, so it is not carried onto this surface at all. When
+     * the stored document cannot declare one, the field is ABSENT and the state is
+     * `unreadable` — absence is the honest rendering of "this build cannot know",
+     * where a default would hand the operator a version to migrate from that nobody
+     * ever read.
      * @returns one record per blueprint.
      */
     list(): readonly RemoteSafeRecord[];

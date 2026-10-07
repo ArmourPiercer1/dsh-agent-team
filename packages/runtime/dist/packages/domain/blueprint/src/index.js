@@ -22,7 +22,7 @@ DEFINED_BLUEPRINT_DOCUMENT_VERSIONS, RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
 // in a second file is the fork A1-21 exists to prevent.
 BLUEPRINT_VERSION_REFUSAL_CODES, BLUEPRINT_VERSION_REFUSAL_CODE_VALUES, } from './schema.js';
 export { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
-export { inspectBlueprintSource } from './inspect.js';
+export { declaredBlueprintSchemaVersion, inspectBlueprintSource } from './inspect.js';
 export { deriveContentHash, sha256Hex } from './hash.js';
 export { parseBlueprint, toHashableBlueprint, validateBlueprintDocument, } from './validate.js';
 export { parseModelPreferenceToken, } from './model-preference.js';

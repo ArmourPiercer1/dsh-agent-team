@@ -1924,6 +1924,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4ESCALATE: readonly string[] = [
       'packages/runtime/test/a4-escalate-act-truth.test.ts',
     ]
+    // A4-F1 (`fix/a4-f1-row-vs-document-version`): the boundary test for finding F1
+    // — a storage row's L3 stamp is not a Blueprint document version, and a row that
+    // cannot know the version says so instead of printing a number. Exactly one new
+    // scannable file; every other path that fix touched is an EDIT to a path this
+    // scan already counts, and an edit is not an increment.
+    const SCANNED_PATHS_A4F1: readonly string[] = [
+      'packages/runtime/test/a4f1-row-version-not-document-version.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
@@ -1934,7 +1942,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR5.length +
         SCANNED_PATHS_A4PR6.length +
         SCANNED_PATHS_A4PR7.length +
-        SCANNED_PATHS_A4ESCALATE.length,
+        SCANNED_PATHS_A4ESCALATE.length +
+        SCANNED_PATHS_A4F1.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -1944,7 +1953,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR5.length +
         SCANNED_PATHS_A4PR6.length +
         SCANNED_PATHS_A4PR7.length +
-        SCANNED_PATHS_A4ESCALATE.length,
+        SCANNED_PATHS_A4ESCALATE.length +
+        SCANNED_PATHS_A4F1.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -1980,6 +1990,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4PR6,
       ...SCANNED_PATHS_A4PR7,
       ...SCANNED_PATHS_A4ESCALATE,
+      ...SCANNED_PATHS_A4F1,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2031,6 +2042,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // ladders look sequential — renumbering a tie is exactly how a pin starts
     // agreeing with a wrong tree. The merged total is the sum of the lists above;
     // it is derived by the two `toBe` sums and deliberately not written here.
+    // The A4-F1 tie, same form: the movement equals the one file this lane names,
+    // asserted present by path in the loop above. Its endpoints are this lane's OWN
+    // advancing total on the branch it landed on, so — like the two above — neither
+    // number is this merged tree's total; the derived sums compute that and this
+    // comment does not write it.
+    expect(SCANNED_PATHS_A4F1.length).toBe(1023 - 1022)
 
   })
 

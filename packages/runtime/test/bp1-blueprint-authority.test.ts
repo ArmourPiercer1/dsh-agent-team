@@ -105,7 +105,6 @@ class MemRegistry implements BlueprintRegistryPort {
       throw error
     }
     const row: BlueprintRegistryRecordView = {
-      schemaVersion: 2,
       blueprintId: input.blueprintId,
       revision: input.revision,
       contentHash: input.contentHash,
@@ -364,10 +363,18 @@ const w3cHashY = parseBlueprint(revisionSource('bp1.toctou', '1', 'TOCTOU lead Y
 describe('bp1 authority: freeze barrier semantics (plan §8 freezeSnapshot)', () => {
   it('a clean freeze appends the row with the exact parsed source text + the injected clock', () => {
     expect(w3FrozenRow).not.toBe(undefined)
-    expect(w3FrozenRow?.schemaVersion).toBe(2)
+    expect(w3FrozenRow?.blueprintId).toBe('bp1.frozen')
+    expect(w3FrozenRow?.revision).toBe('1')
     expect(w3FrozenRow?.contentHash).toBe(w3V1Ref.contentHash)
     expect(w3FrozenRow?.source).toBe(W3_SAVED_V1)
     expect(w3FrozenRow?.frozenAt).toBe(W1_NOW)
+    // F1: the row carries NO version field any more, and this runtime double must
+    // not gain one. The TeamDomain L3 stamp belongs to the storage record and is
+    // pinned there (`packages/storage/test/bp1-blueprint-registry.test.ts` —
+    // `rAlpha1.schemaVersion` is `2`); here it would only ever restate what this
+    // double stamped itself, and that number is exactly what must never be read
+    // back as a document version. What the row DOES owe the version question is
+    // its stored text — `source` above, byte-for-byte the parsed document.
     expect(w3Registry.list().length).toBe(1) // the idempotent second freeze added nothing
   })
 

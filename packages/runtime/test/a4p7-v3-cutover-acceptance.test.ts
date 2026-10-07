@@ -152,15 +152,15 @@ class MemRegistry implements BlueprintRegistryPort {
  * and checks its hash first, the integrity mismatch fires instead and the
  * operator is told their registry is corrupt when the truth is that a document
  * needs migrating. The wrong hash is the tripwire for that reordering.
+ *
+ * NO VERSION FIELD (finding F1): a row's version question is answered by the
+ * document in `source`, so a fixture that wants a row on version N writes N into
+ * the source. There is deliberately nothing else here to set it on — the storage
+ * row's L3 stamp (`TEAM_DOMAIN_SCHEMA_VERSION`) is not part of this view, because
+ * reading it as a document version is the defect F1 is.
  */
-function rowOf(
-  blueprintId: string,
-  revision: string,
-  schemaVersion: number,
-  source: string,
-): BlueprintRegistryRecordView {
+function rowOf(blueprintId: string, revision: string, source: string): BlueprintRegistryRecordView {
   return {
-    schemaVersion,
     blueprintId,
     revision,
     contentHash: 'sha256:a4p7-fixture-hash-is-not-the-source-hash',
@@ -533,21 +533,31 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
 })
 
 // =============================================================================
-// Group C2 — a frozen row is classified by the version the ROW carries (no
-// source read), so the unknown-version arm of A1-21 is reachable today
+// Group C2 — a frozen row is classified by the version its stored DOCUMENT
+// declares (finding F1: NOT by any number riding on the row), so the
+// unknown-version arm of A1-21 is reachable today
 // =============================================================================
 
 const W2 = makeDir('w2')
 const W2_ANCHOR = revisionSource('a4p7.anchor2', '1', 'Anchor two.')
-const W2_ROW_SOURCE = revisionSource('a4p7.frozen-unknown', '7', 'Frozen unknown-version lead.')
+// The row is on version 99 BECAUSE ITS STORED TEXT SAYS SO. Before F1 this fixture
+// put `99` in a row field and left a v1 document in `source`, which is not a state
+// production can reach (a freeze stores the bytes it just parsed) and which asserted
+// the very conflation F1 is: a number beside the identity standing in for the
+// document's version. Declaring it in the document is the only way this arm exists
+// — a hand-edited or corrupt store — and it leaves every assertion below untouched.
+const W2_ROW_SOURCE = revisionSource('a4p7.frozen-unknown', '7', 'Frozen unknown-version lead.').replace(
+  'schemaVersion: 1',
+  'schemaVersion: 99',
+)
 const w2Authority = createBlueprintAuthority({
   bootstrapSource: W2_ANCHOR,
   sourceIndex: cutoverIndex(createBlueprintSourceIndex({ blueprintDir: W2 })),
-  registry: new MemRegistry([rowOf('a4p7.frozen-unknown', '7', 99, W2_ROW_SOURCE)]),
+  registry: new MemRegistry([rowOf('a4p7.frozen-unknown', '7', W2_ROW_SOURCE)]),
 })
 const w2Listed = w2Authority.listIdentities()
 
-describe('a4p7 7.1 C2: a frozen row is classified by the version it carries, not by its text', () => {
+describe('a4p7 7.1 C2: a frozen row is classified by the version its document declares, and by nothing else', () => {
   it('a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal', () => {
     // The two A1-21 names, produced by adjacent code over the same list, kept
     // apart by the STATE that reaches the wire.
@@ -572,9 +582,13 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version it carries, not
   })
 
   it('that refusal is not the registry-integrity refusal the row would otherwise produce', () => {
-    // The fixture row's contentHash is wrong on purpose (see `rowOf`). Reading the
-    // stored text before classifying the version would report a corrupt registry
-    // for a document that merely needs a different build.
+    // The fixture row's contentHash is wrong on purpose (see `rowOf`). The version
+    // is read from the stored text at IDENTITY level (frontmatter only — no strong
+    // parse, no hash comparison); if the STRONG parse and its hash check ran first,
+    // the operator would be told their registry is corrupt for a document that
+    // merely needs a different build. F1 moved where the version comes from and did
+    // NOT move this ordering: the gate still runs before a single byte is parsed
+    // for resolution.
     const error = captureError(() => w2Authority.resolve('a4p7.frozen-unknown', '7'))
     expect(pluginCodeOf(error)).not.toBe('TEAM_BLUEPRINT_SNAPSHOT_MISMATCH')
     expect(pluginCodeOf(error)).not.toBe('TEAM_BLUEPRINT_FILE_UNREADABLE')

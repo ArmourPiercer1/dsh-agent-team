@@ -105,7 +105,7 @@ export type {
 } from './types.js'
 
 export { decodeYamlFrontmatter, splitFrontmatter } from './parse.js'
-export { inspectBlueprintSource } from './inspect.js'
+export { declaredBlueprintSchemaVersion, inspectBlueprintSource } from './inspect.js'
 export type {
   BlueprintInspectionDiagnostic,
   BlueprintInspectionResult,
