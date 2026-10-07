@@ -1,0 +1,22 @@
+root suite identity comparison, final source state (post-rebuild, post-lint-cleanup)
+
+baseline identity list: this directory, root-failing-identities-base-run2.txt (22 test
+identities + one stray summary line; copied verbatim from the baseline run this
+lane was told to compare against — the file is not the lane's own output)
+run3 identities: 22   run4 identities: 23
+
+run3 == run1 == run2 (byte-identical identity sets): yes
+run4 - run3 (one extra identity):
+FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+
+run4 - baseline (identities not in the baseline): the single p6t1-parallel line above
+baseline - run4 (baseline identities now passing): none
+
+p6t1-parallel flake evidence (5 standalone runs of the single file, this tree):
+  run1: Tests  9 passed (9)
+  run2: Tests  1 failed | 8 passed (9)
+  run3: Tests  9 passed (9)
+  run4: Tests  9 passed (9)
+  run5: Tests  9 passed (9)
+=> the failing id is the same one run4 of the root suite caught; it is a
+   pre-existing flake (it is in the pre-change baseline failing-file list too).

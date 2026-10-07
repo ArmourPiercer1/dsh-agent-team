@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-escalation.test.ts (0 test)
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  08:59:48
+   Duration  940ms (transform 641ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts [ test/a4p3-approval-escalation.test.ts ]
+ControlError: ControlService: request 'ctrl-16bwp4c1g0j12l061vqwm1lx' already carries a durable decision (the first decision is authoritative)
+ ❯ control/service.ts:1955:15
+    1953|       }
+    1954|       if (state.decisions.some((d) => d.payload.requestId === args.req…
+    1955|         throw new ControlError(
+       |               ^
+    1956|           CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED,
+    1957|           `ControlService: request '${args.requestId}' already carries…
+ ❯ action-router/effects.ts:336:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+

@@ -1,0 +1,62 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ✓ test/a4p3-intervention-projection.test.ts (32 tests) 10ms
+ ✓ test/p6t4-restart.test.ts (4 tests) 4ms
+ ❯ test/control-legacy-row-compat.test.ts (5 tests | 1 failed) 9ms
+     ✓ S1: a legacy request row carries the derived instance subject; legacy AND subject retries are idempotent (byte-identical key) 1ms
+     ✓ S2: a legacy row keeps legacy semantics — the review keys stay ABSENT 0ms
+     ✓ S3: a restart re-parses the legacy row — the derived subject and the decided state survive 0ms
+     ✓ S4 (KEY): a synthetic pre-PR-D row (no subject anywhere) is parsed, matched byte-identically and consumed exactly once by the guard 0ms
+     × S5 (A4-PR3): a pre-Alpha.4 row is not an approval case on ANY new surface, and its notification text is unchanged 6ms
+ ✓ test/a4p3-approval-case.test.ts (17 tests) 6ms
+ ✓ test/a4p3-approval-escalation.test.ts (37 tests) 9ms
+ ✓ test/f9-control-exactly-once.test.ts (10 tests) 4ms
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 104 passed (105)
+   Start at  09:00:19
+   Duration  1.13s (transform 4.20s, setup 0ms, import 5.87s, tests 41ms, environment 1ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/control-legacy-row-compat.test.ts > pre-alpha3 PR-D D.2 — legacy row compatibility > S5 (A4-PR3): a pre-Alpha.4 row is not an approval case on ANY new surface, and its notification text is unchanged
+AssertionError: expected '[team-control requestId=ctrl-0zlkyi00…' to contain 'approvalCase: case-abc'
+
+- Expected
++ Received
+
+- approvalCase: case-abc
++ [team-control requestId=ctrl-0zlkyi00pykixf059w7ou1um]
++ A Team member operation is waiting for Leader approval.
++
++ requestId: ctrl-0zlkyi00pykixf059w7ou1um
++ requester: inst-p6t4seedw01
++ subject: instance inst-p6t4seedw01
++ target: inst-p6t4seedw01
++ tool: fs.write
++
++ Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
++ Recover or inspect pending requests with `team_list_pending_control`.
++ If you already decided or escalated an earlier leg of approvalCase case-abc, you cannot act on this case again.
+
+ ❯ test/control-legacy-row-compat.test.ts:355:24
+    353|     expect(s5.legacyText).not.toContain('approvalCase:')
+    354|     expect(s5.legacyText).not.toContain('leg:')
+    355|     expect(s5.legText).toContain('approvalCase: case-abc')
+       |                        ^
+    356|     expect(s5.legText).toContain('leg: 1')
+    357|     expect(s5.legText).toContain('reviewAuthority: leader')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+× S5 (A4-PR3): a pre-Alpha.4 row is not an approval case on ANY new surface, and its notification text is unchanged 6ms

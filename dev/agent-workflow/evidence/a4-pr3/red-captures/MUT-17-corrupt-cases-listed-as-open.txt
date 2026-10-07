@@ -1,0 +1,40 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ✓ test/a4p3-intervention-projection.test.ts (31 tests) 13ms
+ ✓ test/control-legacy-row-compat.test.ts (5 tests) 4ms
+ ✓ test/p6t4-restart.test.ts (4 tests) 5ms
+ ❯ test/a4p3-approval-case.test.ts (0 test)
+ ✓ test/a4p3-approval-escalation.test.ts (30 tests) 6ms
+ ✓ test/f9-control-exactly-once.test.ts (10 tests) 4ms
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  80 passed (80)
+   Start at  08:32:04
+   Duration  1.15s (transform 4.27s, setup 0ms, import 5.00s, tests 32ms, environment 1ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-case.test.ts [ test/a4p3-approval-case.test.ts ]
+TypeError: Cannot read properties of undefined (reading 'status')
+ ❯ control/service.ts:3933:24
+    3931|         // chain is surfaced by `readApprovalCaseState`, never guessed…
+    3932|         if ((false as boolean) && read.kind !== 'case') continue
+    3933|         if (read.state.status !== 'open') continue
+       |                        ^
+    3934|         if (
+    3935|           args.subject !== undefined &&
+ ❯ action-router/effects.ts:336:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+

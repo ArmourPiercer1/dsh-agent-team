@@ -1,0 +1,131 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-escalation.test.ts (26 tests | 5 failed) 12ms
+     × the closed decision-reason vocabulary carries `escalated` beside `external-policy` 5ms
+     × an escalated terminal deny survives the production reader 1ms
+     × the inline waiter settles on the escalated deny instead of hanging 1ms
+     ✓ the escalated deny authorizes nothing at the guard 0ms
+     ✓ writes exactly one control-escalation-recorded leg fact with the frozen A3-12(ii) payload 0ms
+     × closes the escalating leg with a deny carrying reason `escalated` 0ms
+     ✓ raises a NEW leg: same case, next ordinal, risen authority, never the parent id (A1-10) 0ms
+     ✓ an escalated case authorizes nothing while its current leg is the closed one 0ms
+     ✓ the risen leg decided by the risen reviewer authorizes the operation exactly once 0ms
+     ✓ the closed leg can never be decided again (terminal legs stay terminal) 0ms
+     ✓ the case state reads the whole chain, and a restart reconstructs it 0ms
+     ✓ refuses to escalate a terminal leg, with zero durable side effects 0ms
+     ✓ refuses to escalate a pre-Alpha.4 row (no case to rise) 0ms
+     ✓ refuses an identity without exactly one fingerprint (spec 11.1, A1-15) 0ms
+     ✓ a leg whose reviewer cannot exist terminates synchronously with ZERO leg rows (A1-12) 0ms
+     ✓ a rise to Human Admin writes the closing leg only and reports authority-unavailable (spec 11.6) 0ms
+     ✓ `escalate` is a reviewer action and is absent from the decision vocabulary 0ms
+     ✓ a durable row carrying `escalate` as its decision authorizes nothing 0ms
+     ✓ the guard decision dispatch is exhaustive with a typed refusal default 0ms
+     ✓ the terminal-reason vocabulary is closed and adds no new status or decision value 0ms
+     ✓ the escalation successor table is exhaustive over the ladder and never re-spells it 0ms
+     ✓ every terminal reason maps to a deny — a close cannot mint authority (A2-8) 0ms
+     ✓ a terminal outcome round-trips through the production reader with its reason 0ms
+     ✓ a terminal outcome authorizes nothing and is written at most once 0ms
+     ✓ a terminalReason outside the closed set is refused, not stored 0ms
+     × the escalated reason is a decision REASON, and the ladder names come from the owner 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > the escalated-reason read gate (A5-5, preflight no-red finding 2) > the closed decision-reason vocabulary carries `escalated` beside `external-policy`
+AssertionError: expected [ 'external-policy' ] to deeply equal [ 'escalated', 'external-policy' ]
+
+- Expected
++ Received
+
+  [
+-   "escalated",
+    "external-policy",
+  ]
+
+ ❯ test/a4p3-approval-escalation.test.ts:225:56
+    223|     // No test enumerated this vocabulary before PR3, and an unpinned …
+    224|     // is not "merely undocumented" — it is a dropped row.
+    225|     expect([...CONTROL_DECISION_REASON_VALUES].sort()).toEqual(['escal…
+       |                                                        ^
+    226|   })
+    227|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > the escalated-reason read gate (A5-5, preflight no-red finding 2) > an escalated terminal deny survives the production reader
+AssertionError: the escalated deny row must be readable: expected undefined to be defined
+ ❯ test/a4p3-approval-escalation.test.ts:230:65
+    228|   it('an escalated terminal deny survives the production reader', () =…
+    229|     const decision = hazard.state.decisions.find((row) => row.requestI…
+    230|     expect(decision, 'the escalated deny row must be readable').toBeDe…
+       |                                                                 ^
+    231|     expect(decision?.decision).toBe(CONTROL_DECISION_VALUES.DENY)
+    232|     expect(decision?.reason).toBe('escalated')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > the escalated-reason read gate (A5-5, preflight no-red finding 2) > the inline waiter settles on the escalated deny instead of hanging
+AssertionError: expected 'never-settled' to be 'settled' // Object.is equality
+
+Expected: "settled"
+Received: "never-settled"
+
+ ❯ test/a4p3-approval-escalation.test.ts:236:32
+    234|
+    235|   it('the inline waiter settles on the escalated deny instead of hangi…
+    236|     expect(hazard.waiter.kind).toBe('settled')
+       |                                ^
+    237|     if (hazard.waiter.kind === 'settled') {
+    238|       expect(hazard.waiter.decision.reason).toBe('escalated')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > an escalation closes the current leg and raises the next one (A5-5, A1-10) > closes the escalating leg with a deny carrying reason `escalated`
+AssertionError: expected undefined to be 'escalated' // Object.is equality
+
+- Expected:
+"escalated"
+
++ Received:
+undefined
+
+ ❯ test/a4p3-approval-escalation.test.ts:353:29
+    351|     const closing = escalation.after.decisions.find((d) => d.requestId…
+    352|     expect(closing?.decision).toBe(CONTROL_DECISION_VALUES.DENY)
+    353|     expect(closing?.reason).toBe('escalated')
+       |                             ^
+    354|     expect(escalation.outcome.terminalDecision.decisionSequence).toBe(…
+    355|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > the frozen PR3 leg vocabularies (A2-8, A5-16) > the escalated reason is a decision REASON, and the ladder names come from the owner
+AssertionError: expected undefined to be 'escalated' // Object.is equality
+
+- Expected:
+"escalated"
+
++ Received:
+undefined
+
+ ❯ test/a4p3-approval-escalation.test.ts:722:48
+    720|
+    721|   it('the escalated reason is a decision REASON, and the ladder names …
+    722|     expect(CONTROL_DECISION_REASONS.ESCALATED).toBe('escalated')
+       |                                                ^
+    723|     expect(CONTROL_DECISION_VALUE_VALUES).not.toContain('escalated')
+    724|     expect(CONTROL_ESCALATION_SUCCESSOR['human-user']).toBe('human-adm…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 21 passed (26)
+   Start at  08:11:41
+   Duration  1.04s (transform 631ms, setup 0ms, import 925ms, tests 12ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

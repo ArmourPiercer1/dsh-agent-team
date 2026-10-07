@@ -29,11 +29,13 @@ import type {
 import {
   P6T4_ROOT,
   P6T4_SEEDS,
+  controlFacts,
   createFakeToolPipeline,
   createP6T4Service,
   createP6T4World,
   destroyP6T1World,
   expectFirst,
+  humanCaller,
   leaderCaller,
   makeScope,
   memberCaller,
@@ -195,6 +197,145 @@ let s3: {
   }
 }
 
+// --- scenario 4: an approval CASE chain reconstructs across the restart (A4-PR3) -----
+//
+// The case is a DERIVED view (ADR A1-17): everything a fresh service reports
+// about it must come out of the leg rows, the terminal decision rows and the
+// escalation facts — never out of anything the previous instance held. So the
+// restart is asserted at the CASE surface: the ordinal chain, the escalation,
+// the `reviewedBy` principals, the case-level (not leg-level) pending list, the
+// refusal of the closed leg, and exactly-once consumption of the risen leg's
+// allow AFTER a second restart.
+let s4: {
+  readonly approvalCaseId: string
+  readonly ordinalsAfterRestart: readonly (number | undefined)[]
+  readonly escalationCount: number
+  readonly reviewedByCount: number
+  readonly currentLegOrdinal: number | undefined
+  readonly statusAfterRestart: string
+  readonly openCaseCount: number
+  readonly retriedLegOrdinal: number | undefined
+  readonly closedLegResolveCode: string
+  readonly guardReasonAfterRestart: string
+  readonly allowFirst: boolean
+  readonly allowSecondReason: string
+  readonly guardAfterSecondRestart: string
+  readonly consumptionCount: number
+}
+{
+  const world = await createP6T4World('p6t4-rst-4', ['leader', 'worker'])
+  const scope = makeScope({ correlation: 'corr-p6t4-rst-4', operationFingerprint: 'fp-p6t4-rst-4' })
+  try {
+    const service = createP6T4Service(world)
+    const created = await service.requestApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      reviewAuthority: 'leader',
+      requiredAuthorityAtCreation: 'leader',
+      identity: {
+        subject: { kind: 'instance', instanceId: WORKER_ID },
+        beneficiaryAuthority: 'member',
+        requestedEffect: 'ask',
+        operationFingerprint: 'fp-p6t4-rst-4',
+        correlation: scope.correlation,
+      },
+      actionName: scope.actionName,
+      toolName: scope.toolName,
+    })
+    if (created.kind !== 'leg') throw new Error('the case needs a first leg')
+    const approvalCaseId = created.leg.approvalCaseId ?? 'missing'
+    const escalated = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: created.leg.requestId,
+      reason: 'the leader recuses',
+    })
+    const nextRequestId = escalated.nextLeg?.requestId ?? 'missing'
+    const restarted = await restartP6T1World(world)
+    let captured: Omit<typeof s4, never>
+    try {
+      const fresh = createP6T4Service(restarted)
+      const read = await fresh.readApprovalCaseState({ rootSessionId: P6T4_ROOT, approvalCaseId })
+      if (read.kind !== 'case') throw new Error(`the case must survive the restart, got ${read.kind}`)
+      const openCases = await fresh.listOpenApprovalCases({ rootSessionId: P6T4_ROOT })
+      const retried = await fresh.requestApprovalLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER_ID),
+        kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+        reviewAuthority: 'leader',
+        requiredAuthorityAtCreation: 'leader',
+        identity: {
+          subject: { kind: 'instance', instanceId: WORKER_ID },
+          beneficiaryAuthority: 'member',
+          requestedEffect: 'ask',
+          operationFingerprint: 'fp-p6t4-rst-4',
+          correlation: scope.correlation,
+        },
+        actionName: scope.actionName,
+        toolName: scope.toolName,
+      })
+      let closedLegResolveCode = 'did-not-throw'
+      try {
+        await fresh.resolveControl({
+          rootSessionId: P6T4_ROOT,
+          caller: humanCaller(),
+          requestId: created.leg.requestId,
+          decision: CONTROL_DECISION_VALUES.ALLOW,
+        })
+      } catch (error) {
+        closedLegResolveCode =
+          typeof error === 'object' && error !== null && 'code' in error
+            ? String((error as { code: unknown }).code)
+            : 'unknown-error'
+      }
+      const guardAfterRestart = await fresh.guardOperation(scope)
+      await fresh.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: humanCaller(),
+        requestId: nextRequestId,
+        decision: CONTROL_DECISION_VALUES.ALLOW,
+      })
+      const firstAllow = await fresh.guardOperation(scope)
+      const secondAllow = await fresh.guardOperation(scope)
+      const secondRestart = await restartP6T1World(restarted)
+      let guardAfterSecondRestart = 'unsettled'
+      let consumptionCount = -1
+      try {
+        const again = createP6T4Service(secondRestart)
+        const guard = await again.guardOperation(scope)
+        guardAfterSecondRestart =
+          guard.allowed === true ? 'ALLOWED-AGAIN' : guard.reason
+        consumptionCount = controlFacts(secondRestart, 'control-allow-consumed').length
+      } finally {
+        await destroyP6T1World(secondRestart)
+      }
+      captured = {
+        approvalCaseId,
+        ordinalsAfterRestart: read.state.legs.map((leg) => leg.legOrdinal),
+        escalationCount: read.state.escalations.length,
+        reviewedByCount: read.state.reviewedBy.length,
+        currentLegOrdinal: read.state.currentLeg?.legOrdinal,
+        statusAfterRestart: read.state.status,
+        openCaseCount: openCases.length,
+        retriedLegOrdinal: retried.kind === 'leg' ? retried.leg.legOrdinal : undefined,
+        closedLegResolveCode,
+        guardReasonAfterRestart:
+          guardAfterRestart.allowed === true ? 'ALLOWED' : guardAfterRestart.reason,
+        allowFirst: firstAllow.allowed,
+        allowSecondReason: secondAllow.allowed === true ? 'ALLOWED-AGAIN' : secondAllow.reason,
+        guardAfterSecondRestart,
+        consumptionCount,
+      }
+    } finally {
+      await destroyP6T1World(restarted)
+    }
+    s4 = captured
+  } finally {
+    /* the restarted worlds own the store; each destroyed above */
+  }
+}
+
 describe('p6t4 restart (MUST-TEST: pending request + recorded decision recover)', () => {
   it('pending request + recorded decision survive the restart; the unconsumed allow is recovered and consumed exactly once', () => {
     expect(s1.recoveredRequest.requestId).toBe(s1.requestId)
@@ -221,6 +362,25 @@ describe('p6t4 restart (MUST-TEST: pending request + recorded decision recover)'
     expect(s2.verdict.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED)
     expect(s2.consumptions).toBe(1)
     expect(s2.executed).toBe(0)
+  })
+
+  it('an approval case reconstructs across TWO restarts: the chain, the escalation, the reviewedBy set and exactly one consumption (A4-PR3)', () => {
+    expect(s4.ordinalsAfterRestart).toEqual([1, 2])
+    expect(s4.escalationCount).toBe(1)
+    expect(s4.reviewedByCount).toBe(1)
+    expect(s4.currentLegOrdinal).toBe(2)
+    expect(s4.statusAfterRestart).toBe('open')
+    // A1-11: the pending list is per CASE, not per leg.
+    expect(s4.openCaseCount).toBe(1)
+    // The retry after the restart returns the CURRENT leg — never a third row.
+    expect(s4.retriedLegOrdinal).toBe(2)
+    // The escalated-away leg is terminal: a fresh service refuses to decide it.
+    expect(s4.closedLegResolveCode).toBe('CONTROL_REQUEST_DECIDED')
+    expect(s4.guardReasonAfterRestart).toBe(CONTROL_GUARD_BLOCK_REASONS.REQUEST_PENDING)
+    expect(s4.allowFirst).toBe(true)
+    expect(s4.allowSecondReason).toBe(CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED)
+    expect(s4.guardAfterSecondRestart).toBe(CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED)
+    expect(s4.consumptionCount).toBe(1)
   })
 
   it('a pending request across the restart: the fresh service reports request-pending, then resolves and executes', () => {

@@ -172,7 +172,8 @@ import { withTeamLock } from '../action-router/index.js';
 import { TEAM_DOMAIN_ERROR_CODES, isTeamDomainError, } from '../../storage/schema/index.js';
 import { deterministicToken } from '../../storage/provisioning/index.js';
 import { CONTROL_ERROR_CODES, ControlError, } from './errors.js';
-import { CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_EXECUTION_COUPLINGS, CONTROL_EXECUTION_COUPLING_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, CONTROL_REQUEST_KIND_VALUES, CONTROL_RESOLVER_ROLES, CONTROL_SUBJECT_KINDS, } from './types.js';
+import { PERMISSION_OVERLAY_EFFECT_VALUES, } from '../../storage/schema/permission-overlay.js';
+import { APPROVAL_CASE_IDENTITY_PROBLEMS, APPROVAL_CASE_READ_PROBLEMS, CONTROL_CASE_OUTCOMES, CONTROL_CASE_TERMINAL_OUTCOMES, CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_REASONS, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_EXECUTION_COUPLINGS, CONTROL_EXECUTION_COUPLING_VALUES, CONTROL_LEG_TERMINAL_REASON_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, CONTROL_REQUEST_KIND_VALUES, CONTROL_RESOLVER_ROLES, CONTROL_SUBJECT_KINDS, controlEscalationSuccessor, hasAuthorityResolver, isProposalAuthorityPosition, } from './types.js';
 // --- closed fact vocabulary (kebab; p4t6-scanner safe by construction) -------------
 /** The durable ControlRequest fact family. */
 const FACT_REQUEST = 'control-request-recorded';
@@ -183,6 +184,10 @@ const FACT_CONSUMPTION = 'control-allow-consumed';
 /** The durable abandon fact family (pre-alpha3 PR-D, D.4 — the additive
  *  close of an inline-coupling request on abort; the terminal mark). */
 const FACT_ABANDONMENT = 'control-request-abandoned';
+/** The Alpha.4 approval-case leg fact (ADR A3-12(ii): a LEG fact, not a
+ *  decision — `escalate` never enters the decision vocabulary, and the row
+ *  says who moved WHICH leg of WHICH case where). */
+const FACT_ESCALATION = 'control-escalation-recorded';
 /** The reused closed specs of the facade action registry (module
  *  invariant: the closed registry always carries both). */
 function closedActionSpecOf(name) {
@@ -473,6 +478,56 @@ function parseRequestPayload(value) {
         !CONTROL_EXECUTION_COUPLING_VALUES.includes(executionCoupling)) {
         return undefined;
     }
+    // The Alpha.4 leg fields. ABSENT on every pre-Alpha.4 row; a row that
+    // carries a case id is held to the STRICT rule (ADR A2-9), and any
+    // present-but-invalid value fails the row closed (ABSENT) — the caller
+    // (`loadControlState`) then files it as a CORRUPT LEG rather than silently
+    // dropping it, because a leg of an approval case is an authority-bearing
+    // row and a half-read one must never look like a complete one.
+    const approvalCaseId = value['approvalCaseId'];
+    if (approvalCaseId !== undefined && (typeof approvalCaseId !== 'string' || approvalCaseId.length === 0)) {
+        return undefined;
+    }
+    const legOrdinal = value['legOrdinal'];
+    if (legOrdinal !== undefined && (typeof legOrdinal !== 'number' || !Number.isInteger(legOrdinal) || legOrdinal < 1)) {
+        return undefined;
+    }
+    const reviewAuthority = value['reviewAuthority'];
+    if (reviewAuthority !== undefined && !isProposalAuthorityPosition(reviewAuthority)) {
+        return undefined;
+    }
+    const requiredAuthorityAtCreation = value['requiredAuthorityAtCreation'];
+    if (requiredAuthorityAtCreation !== undefined &&
+        !isProposalAuthorityPosition(requiredAuthorityAtCreation)) {
+        return undefined;
+    }
+    const beneficiaryAuthority = value['beneficiaryAuthority'];
+    if (beneficiaryAuthority !== undefined && !isProposalAuthorityPosition(beneficiaryAuthority)) {
+        return undefined;
+    }
+    const requestedEffect = value['requestedEffect'];
+    if (requestedEffect !== undefined &&
+        !PERMISSION_OVERLAY_EFFECT_VALUES.includes(requestedEffect)) {
+        return undefined;
+    }
+    const previousRequestId = value['previousRequestId'];
+    if (previousRequestId !== undefined && (typeof previousRequestId !== 'string' || previousRequestId.length === 0)) {
+        return undefined;
+    }
+    const mutationProposalFingerprint = value['mutationProposalFingerprint'];
+    if (mutationProposalFingerprint !== undefined &&
+        (typeof mutationProposalFingerprint !== 'string' || mutationProposalFingerprint.length === 0)) {
+        return undefined;
+    }
+    // The strict half of ADR A2-9: a row that NAMES a case is an
+    // authority-bearing leg, and a leg without its ordinal or its reviewing
+    // authority is not a leg with a missing detail — it is a leg that cannot be
+    // ordered or decided. Such a row fails the parse (ABSENT) and is filed by
+    // `loadControlState` as a corrupt leg, so neither the case read NOR the
+    // guard and never a default can act on it.
+    if (approvalCaseId !== undefined && (legOrdinal === undefined || reviewAuthority === undefined)) {
+        return undefined;
+    }
     return {
         requestId,
         kind: kind,
@@ -496,6 +551,22 @@ function parseRequestPayload(value) {
         ...(executionCoupling !== undefined
             ? { executionCoupling: executionCoupling }
             : {}),
+        ...(approvalCaseId !== undefined ? { approvalCaseId } : {}),
+        ...(legOrdinal !== undefined ? { legOrdinal } : {}),
+        ...(reviewAuthority !== undefined
+            ? { reviewAuthority: reviewAuthority }
+            : {}),
+        ...(requiredAuthorityAtCreation !== undefined
+            ? { requiredAuthorityAtCreation: requiredAuthorityAtCreation }
+            : {}),
+        ...(beneficiaryAuthority !== undefined
+            ? { beneficiaryAuthority: beneficiaryAuthority }
+            : {}),
+        ...(requestedEffect !== undefined
+            ? { requestedEffect: requestedEffect }
+            : {}),
+        ...(previousRequestId !== undefined ? { previousRequestId } : {}),
+        ...(mutationProposalFingerprint !== undefined ? { mutationProposalFingerprint } : {}),
     };
 }
 /** Parse an abandon payload (malformed rows are treated as ABSENT). */
@@ -549,6 +620,15 @@ function parseDecisionPayload(value) {
     const note = value['note'];
     if (note !== undefined && typeof note !== 'string')
         return undefined;
+    // Alpha.4 A4-PR3 (ADR A2-8): the additive terminal reason. An
+    // out-of-vocabulary value fails the row closed (ABSENT) exactly like every
+    // other field of an authority-bearing row — a close whose WHY is not one of
+    // the three closed reasons is not reportable.
+    const terminalReason = value['terminalReason'];
+    if (terminalReason !== undefined &&
+        !CONTROL_LEG_TERMINAL_REASON_VALUES.includes(terminalReason)) {
+        return undefined;
+    }
     return {
         requestId,
         decision: decision,
@@ -557,6 +637,9 @@ function parseDecisionPayload(value) {
         requestSequence,
         ...(reason !== undefined ? { reason: reason } : {}),
         ...(note !== undefined ? { note } : {}),
+        ...(terminalReason !== undefined
+            ? { terminalReason: terminalReason }
+            : {}),
     };
 }
 /** Parse a consumption payload (malformed rows are treated as ABSENT). */
@@ -581,6 +664,34 @@ function parseConsumptionPayload(value) {
     return { requestId, decisionSequence, scope, consumedAt };
 }
 /** Is `caller` a well-formed facade ActionCaller? */
+/** Parse an escalation leg payload (malformed rows are treated as ABSENT). */
+function parseEscalationPayload(value) {
+    if (!isPlainObject(value))
+        return undefined;
+    const approvalCaseId = value['approvalCaseId'];
+    const legOrdinal = value['legOrdinal'];
+    const previousRequestId = value['previousRequestId'];
+    const escalatedBy = parseCallerRef(value['escalatedBy']);
+    if (typeof approvalCaseId !== 'string' || approvalCaseId.length === 0)
+        return undefined;
+    if (typeof legOrdinal !== 'number' || !Number.isInteger(legOrdinal) || legOrdinal < 1) {
+        return undefined;
+    }
+    if (typeof previousRequestId !== 'string' || previousRequestId.length === 0)
+        return undefined;
+    if (escalatedBy === undefined)
+        return undefined;
+    const reason = value['reason'];
+    if (reason !== undefined && typeof reason !== 'string')
+        return undefined;
+    return {
+        approvalCaseId,
+        legOrdinal,
+        previousRequestId,
+        escalatedBy,
+        ...(reason !== undefined ? { reason } : {}),
+    };
+}
 function isActionCaller(caller) {
     if (!isPlainObject(caller))
         return false;
@@ -825,13 +936,22 @@ export function createControlService(options) {
         const decisions = [];
         const consumptions = [];
         const abandonments = [];
+        const corruptLegs = [];
+        const escalations = [];
         for (const entry of repositories.ledger.list()) {
             if (String(entry.rootSessionId) !== root)
                 continue;
             if (entry.factType === FACT_REQUEST) {
                 const payload = parseRequestPayload(entry.payload);
-                if (payload !== undefined)
+                if (payload !== undefined) {
                     requests.push({ entry, payload });
+                }
+                else if (isPlainObject(entry.payload) &&
+                    typeof entry.payload['approvalCaseId'] === 'string') {
+                    // A leg row the strict parse refused: reported, never defaulted (see
+                    // `ControlState.corruptLegs`).
+                    corruptLegs.push({ entry, payload: entry.payload });
+                }
             }
             else if (entry.factType === FACT_DECISION) {
                 const payload = parseDecisionPayload(entry.payload);
@@ -848,13 +968,20 @@ export function createControlService(options) {
                 if (payload !== undefined)
                     abandonments.push({ entry, payload });
             }
+            else if (entry.factType === FACT_ESCALATION) {
+                const payload = parseEscalationPayload(entry.payload);
+                if (payload !== undefined)
+                    escalations.push({ entry, payload });
+            }
         }
         const bySequence = (a, b) => a.entry.sequence - b.entry.sequence;
         requests.sort(bySequence);
         decisions.sort(bySequence);
         consumptions.sort(bySequence);
         abandonments.sort(bySequence);
-        return { requests, decisions, consumptions, abandonments };
+        escalations.sort(bySequence);
+        corruptLegs.sort(bySequence);
+        return { requests, corruptLegs, decisions, consumptions, abandonments, escalations };
     }
     function scopeOf(entry, payload) {
         return {
@@ -912,6 +1039,24 @@ export function createControlService(options) {
             ...(payload.executionCoupling !== undefined
                 ? { executionCoupling: payload.executionCoupling }
                 : {}),
+            ...(payload.approvalCaseId !== undefined ? { approvalCaseId: payload.approvalCaseId } : {}),
+            ...(payload.legOrdinal !== undefined ? { legOrdinal: payload.legOrdinal } : {}),
+            ...(payload.reviewAuthority !== undefined
+                ? { reviewAuthority: payload.reviewAuthority }
+                : {}),
+            ...(payload.requiredAuthorityAtCreation !== undefined
+                ? { requiredAuthorityAtCreation: payload.requiredAuthorityAtCreation }
+                : {}),
+            ...(payload.beneficiaryAuthority !== undefined
+                ? { beneficiaryAuthority: payload.beneficiaryAuthority }
+                : {}),
+            ...(payload.requestedEffect !== undefined ? { requestedEffect: payload.requestedEffect } : {}),
+            ...(payload.previousRequestId !== undefined
+                ? { previousRequestId: payload.previousRequestId }
+                : {}),
+            ...(payload.mutationProposalFingerprint !== undefined
+                ? { mutationProposalFingerprint: payload.mutationProposalFingerprint }
+                : {}),
         };
     }
     function toAbandonmentRecord(entry, payload) {
@@ -934,6 +1079,9 @@ export function createControlService(options) {
             createdAt: entry.createdAt,
             ...(payload.reason !== undefined ? { reason: payload.reason } : {}),
             ...(payload.note !== undefined ? { note: payload.note } : {}),
+            ...(payload.terminalReason !== undefined
+                ? { terminalReason: payload.terminalReason }
+                : {}),
         };
     }
     function toConsumptionRecord(entry, payload) {
@@ -990,6 +1138,7 @@ export function createControlService(options) {
             requestSequence: args.requestSequence,
             ...(args.reason !== undefined ? { reason: args.reason } : {}),
             ...(args.note !== undefined ? { note: args.note } : {}),
+            ...(args.terminalReason !== undefined ? { terminalReason: args.terminalReason } : {}),
         };
         const sequence = await putEntry({
             schemaVersion: 2,
@@ -1009,8 +1158,44 @@ export function createControlService(options) {
             createdAt: options.now(),
             ...(args.reason !== undefined ? { reason: args.reason } : {}),
             ...(args.note !== undefined ? { note: args.note } : {}),
+            ...(args.terminalReason !== undefined ? { terminalReason: args.terminalReason } : {}),
         };
         return record;
+    }
+    /**
+     * The leg KEY inside a scope key (spec 11.3). The legs of one case share a
+     * scope — same subject, action, correlation and fingerprint — so the leg
+     * ordinal must join the identity of the request row, or leg 2 would collide
+     * with leg 1 and the retry would hand back the SUPERSEDED leg. A row with no
+     * case has the empty key, which is what keeps every pre-Alpha.4 request id
+     * byte-identical.
+     */
+    function legKeyOf(value) {
+        return value.approvalCaseId === undefined
+            ? ''
+            : `${value.approvalCaseId}\u0000${value.legOrdinal ?? 0}`;
+    }
+    /**
+     * The leg fields as a writer spreads them (into a durable payload or into
+     * the record it returns). ABSENT stays ABSENT — a legless request writes
+     * exactly the pre-Alpha.4 row, and the one writer is what keeps the payload
+     * and the record from disagreeing about which fields exist.
+     */
+    function legFieldsOf(leg) {
+        if (leg === undefined)
+            return {};
+        return {
+            approvalCaseId: leg.approvalCaseId,
+            legOrdinal: leg.legOrdinal,
+            reviewAuthority: leg.reviewAuthority,
+            requiredAuthorityAtCreation: leg.requiredAuthorityAtCreation,
+            ...(leg.previousRequestId !== undefined ? { previousRequestId: leg.previousRequestId } : {}),
+            beneficiaryAuthority: leg.beneficiaryAuthority,
+            requestedEffect: leg.requestedEffect,
+            ...(leg.mutationProposalFingerprint !== undefined
+                ? { mutationProposalFingerprint: leg.mutationProposalFingerprint }
+                : {}),
+        };
     }
     // --- requestControl ------------------------------------------------------------------
     async function requestControl(args) {
@@ -1130,7 +1315,11 @@ export function createControlService(options) {
         const outcome = await withTeamLock(teamLocks, root, async () => {
             const state = loadControlState(root);
             const key = scopeKey(root, subjectIdentityOf(subject), args.actionName, args.toolName, args.correlation, args.operationFingerprint);
-            const existing = state.requests.find((r) => scopeKey(String(r.entry.rootSessionId), subjectIdentityOf(r.payload.subject), r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint) === key);
+            // Alpha.4 A4-PR3 (spec 11.3): the leg joins the idempotency key, so a
+            // retry of leg 1 returns leg 1 and leg 2 is a NEW row rather than a
+            // collision on the case's first request id.
+            const legKey = legKeyOf(args.leg ?? {});
+            const existing = state.requests.find((r) => scopeKey(String(r.entry.rootSessionId), subjectIdentityOf(r.payload.subject), r.payload.actionName, r.payload.toolName, r.payload.correlation, r.payload.operationFingerprint) === key && legKeyOf(r.payload) === legKey);
             if (existing !== undefined) {
                 // Idempotent: the same logical request returns its EXISTING row
                 // (regardless of requester; a decided row says `decided` — a new
@@ -1139,7 +1328,7 @@ export function createControlService(options) {
                 // only — the pending-list tool is the recovery path).
                 return { record: toRequestRecord(existing.entry, existing.payload, state), created: false };
             }
-            const requestId = requestIdOf(key);
+            const requestId = requestIdOf(legKey === '' ? key : `${key}\u0000${legKey}`);
             const requester = callerRefOf(caller);
             const payload = {
                 requestId,
@@ -1166,6 +1355,7 @@ export function createControlService(options) {
                 ...(args.executionCoupling !== undefined
                     ? { executionCoupling: args.executionCoupling }
                     : {}),
+                ...legFieldsOf(args.leg),
             };
             const sequence = await putEntry({
                 schemaVersion: 2,
@@ -1205,6 +1395,7 @@ export function createControlService(options) {
                     ...(args.executionCoupling !== undefined
                         ? { executionCoupling: args.executionCoupling }
                         : {}),
+                    ...legFieldsOf(args.leg),
                 },
                 created: true,
             };
@@ -1719,12 +1910,33 @@ export function createControlService(options) {
             if (matching.length === 0) {
                 return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST };
             }
+            // Alpha.4 A4-PR3 (spec 11.3, ADR A1-10): the legs of one case share a
+            // scope, so a scope match can name several of them. Only the CURRENT
+            // (highest-ordinal) leg is eligible to authorize anything: a superseded
+            // leg carries a durable terminal deny and must never come back as the
+            // row that executes the operation. Rows with no case are unaffected —
+            // for them this filter keeps everything.
+            const candidates = matching.filter((row) => {
+                const caseId = row.payload.approvalCaseId;
+                if (caseId === undefined)
+                    return true;
+                let current;
+                for (const other of matching) {
+                    if (other.payload.approvalCaseId !== caseId)
+                        continue;
+                    const ordinal = other.payload.legOrdinal ?? 0;
+                    if (current === undefined || ordinal > (current.payload.legOrdinal ?? 0)) {
+                        current = other;
+                    }
+                }
+                return current?.payload.requestId === row.payload.requestId;
+            });
             const unconsumedAllows = [];
             let fallback = {
                 allowed: false,
                 reason: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
             };
-            for (const request of matching) {
+            for (const request of candidates) {
                 // Abandonment (pre-alpha3 PR-D, D.4): the durable abandon fact
                 // is the TERMINAL mark (like `stale-denied`) — an immediate
                 // block verdict even over a durable `allow` recorded BEFORE the
@@ -1750,21 +1962,40 @@ export function createControlService(options) {
                     };
                     continue;
                 }
-                if (decision.payload.decision === CONTROL_DECISION_VALUES.STALE_DENIED) {
-                    return {
-                        allowed: false,
-                        reason: CONTROL_GUARD_BLOCK_REASONS.REQUEST_STALE,
-                        requestId: request.payload.requestId,
-                        decisionSequence: decision.entry.sequence,
-                    };
-                }
-                if (decision.payload.decision === CONTROL_DECISION_VALUES.DENY) {
-                    return {
-                        allowed: false,
-                        reason: CONTROL_GUARD_BLOCK_REASONS.DECISION_DENY,
-                        requestId: request.payload.requestId,
-                        decisionSequence: decision.entry.sequence,
-                    };
+                // Alpha.4 A4-PR3: the decision value is switched EXHAUSTIVELY, with a
+                // last-line-of-defence default. The reader already refuses a row whose
+                // `decision` is outside the closed vocabulary, so reaching `default`
+                // means the two readers disagreed — and a block verdict is the only
+                // safe answer to that (`packages/tools/guard.ts` blocks on every
+                // reason but `no-request`, so an unrecognized value cannot execute).
+                switch (decision.payload.decision) {
+                    case CONTROL_DECISION_VALUES.STALE_DENIED: {
+                        return {
+                            allowed: false,
+                            reason: CONTROL_GUARD_BLOCK_REASONS.REQUEST_STALE,
+                            requestId: request.payload.requestId,
+                            decisionSequence: decision.entry.sequence,
+                        };
+                    }
+                    case CONTROL_DECISION_VALUES.DENY: {
+                        return {
+                            allowed: false,
+                            reason: CONTROL_GUARD_BLOCK_REASONS.DECISION_DENY,
+                            requestId: request.payload.requestId,
+                            decisionSequence: decision.entry.sequence,
+                        };
+                    }
+                    case CONTROL_DECISION_VALUES.ALLOW: {
+                        break;
+                    }
+                    default: {
+                        return {
+                            allowed: false,
+                            reason: CONTROL_GUARD_BLOCK_REASONS.DECISION_UNRECOGNIZED,
+                            requestId: request.payload.requestId,
+                            decisionSequence: decision.entry.sequence,
+                        };
+                    }
                 }
                 // decision === 'allow'
                 // Lane disjointness (pre-alpha3 PR-D review B2 / D.4 coupling
@@ -2211,6 +2442,853 @@ export function createControlService(options) {
             throw error;
         }
     }
+    // --- Alpha.4 approval cases (A4-PR3) ------------------------------------------------
+    //
+    // The operations below add the approval-CASE dimension to the existing
+    // durable Control plane. Nothing here is a second authority path: every
+    // write re-enters the SAME helpers the pre-Alpha.4 operations use
+    // (`resolveCaller` / `resolveTeamAndTarget` / `enforceEnvelope` /
+    // `commitDecision` / the one request-row writer), the legacy
+    // `requestControl` / `resolveControl` / `guardOperation` flows stay
+    // byte-identical for rows that carry no case, and the case itself remains
+    // a DERIVED view over durable rows (ADR A1-17) — there is no case table.
+    /** Are two durable caller refs the same principal? */
+    function sameCallerRef(a, b) {
+        if (a.kind !== b.kind)
+            return false;
+        if (a.kind === 'human' && b.kind === 'human')
+            return a.humanId === b.humanId;
+        if (a.kind === 'instance' && b.kind === 'instance')
+            return a.instanceId === b.instanceId;
+        return false;
+    }
+    /**
+     * The canonical key of a frozen case identity (spec 11.1). The team and
+     * the carrier kind participate, so two Teams never share a case id and a
+     * case never changes carrier under a steady id (acceptance 21.11).
+     */
+    function caseIdentityKeyOf(input) {
+        return [
+            input.root,
+            input.kind,
+            subjectIdentityOf(input.identity.subject),
+            input.identity.beneficiaryAuthority,
+            input.identity.requestedEffect,
+            input.identity.operationFingerprint ?? '',
+            input.identity.mutationProposalFingerprint ?? '',
+            input.identity.correlation,
+        ].join('\u0000');
+    }
+    /**
+     * The derived case id (ADR A2-7: case identity is server-derived, never
+     * caller-accepted). Hashing the frozen identity is what makes a retry of
+     * the same logical flow land on the SAME case instead of minting a second
+     * one, while a new invocation (a new correlation, per the single-shot
+     * invariant 12.2) opens a new case.
+     */
+    function approvalCaseIdOf(root, kind, identity) {
+        return `case-${deterministicToken(caseIdentityKeyOf({ root, kind, identity }), 24)}`;
+    }
+    /**
+     * The strict identity check of spec 11.1, as a CLOSED problem list (A2-9:
+     * an authority-bearing write is strict, and the refusal is typed rather
+     * than a prose message).
+     *
+     * @param kind - the carrier kind (decides WHICH fingerprint is required).
+     * @param identity - the caller-supplied frozen identity.
+     * @returns the refusal reason, or undefined when the identity is well-formed.
+     */
+    function caseIdentityProblemOf(kind, identity) {
+        const problems = APPROVAL_CASE_IDENTITY_PROBLEMS;
+        if (parseSubject(identity.subject) === undefined)
+            return problems.SUBJECT_MALFORMED;
+        if (!PERMISSION_OVERLAY_EFFECT_VALUES.includes(identity.requestedEffect)) {
+            return problems.EFFECT_UNKNOWN;
+        }
+        if (!isProposalAuthorityPosition(identity.beneficiaryAuthority)) {
+            return problems.AUTHORITY_POSITION_UNKNOWN;
+        }
+        const hasOperation = typeof identity.operationFingerprint === 'string' && identity.operationFingerprint.length > 0;
+        const hasMutation = typeof identity.mutationProposalFingerprint === 'string' &&
+            identity.mutationProposalFingerprint.length > 0;
+        // "Exactly one of operation/mutation proposal fingerprints is present."
+        if (hasOperation === hasMutation)
+            return problems.FINGERPRINT_CARDINALITY;
+        if (kind === CONTROL_REQUEST_KINDS.ENVELOPE_MUTATION && !hasMutation) {
+            return problems.MUTATION_FINGERPRINT_REQUIRED;
+        }
+        if (kind !== CONTROL_REQUEST_KINDS.ENVELOPE_MUTATION && !hasOperation) {
+            // A1-15: "an `allow` recorded without one may not be consumed" — the
+            // cheapest place to honour that is to never write such a row.
+            return problems.OPERATION_FINGERPRINT_REQUIRED;
+        }
+        return undefined;
+    }
+    /** The durable escalation leg fact, from its stored row. */
+    function toEscalationRecord(entry, payload) {
+        return {
+            approvalCaseId: payload.approvalCaseId,
+            legOrdinal: payload.legOrdinal,
+            previousRequestId: payload.previousRequestId,
+            escalatedBy: payload.escalatedBy,
+            ...(payload.reason !== undefined ? { reason: payload.reason } : {}),
+            escalationSequence: entry.sequence,
+            createdAt: entry.createdAt,
+        };
+    }
+    /** The identity fields a leg row carries (ABSENT parts read as ''). */
+    function legIdentityKeyOf(payload) {
+        return [
+            subjectIdentityOf(payload.subject),
+            payload.beneficiaryAuthority ?? '',
+            payload.requestedEffect ?? '',
+            payload.operationFingerprint ?? '',
+            payload.mutationProposalFingerprint ?? '',
+            payload.correlation,
+        ].join('\u0000');
+    }
+    /**
+     * WHICH closed read problem a corrupt leg row is (ADR A2-9): the most
+     * specific reason the row cannot be reconstructed, named from the row itself
+     * rather than reported as one undifferentiated corruption. The order is the
+     * order of consequences — no ordinal means the chain cannot be ordered, no
+     * review authority means nobody can be told who decides, and a row missing
+     * its identity members cannot be compared to the frozen case identity.
+     */
+    function corruptLegProblemOf(payload) {
+        const problems = APPROVAL_CASE_READ_PROBLEMS;
+        const ordinal = payload['legOrdinal'];
+        if (typeof ordinal !== 'number' || !Number.isInteger(ordinal) || ordinal < 1) {
+            return problems.LEG_ORDINAL;
+        }
+        if (!isProposalAuthorityPosition(payload['reviewAuthority'])) {
+            return problems.REVIEW_AUTHORITY;
+        }
+        if (typeof payload['beneficiaryAuthority'] !== 'string' ||
+            !isProposalAuthorityPosition(payload['beneficiaryAuthority']) ||
+            typeof payload['requestedEffect'] !== 'string' ||
+            !PERMISSION_OVERLAY_EFFECT_VALUES.includes(payload['requestedEffect'])) {
+            return problems.IDENTITY_DISAGREEMENT;
+        }
+        return problems.CHAIN_BROKEN;
+    }
+    /**
+     * The derived state of one approval case (ADR A1-17: derived, never
+     * stored). Every corruption is a TYPED problem with the offending
+     * sequence — a case whose chain cannot be trusted is reported, never
+     * repaired by guessing (A2-9).
+     *
+     * @param state - the freshly loaded durable state.
+     * @param approvalCaseId - the case to derive.
+     * @returns the case, or the typed read problem.
+     */
+    function buildApprovalCaseState(state, approvalCaseId) {
+        const problems = APPROVAL_CASE_READ_PROBLEMS;
+        const legs = state.requests
+            .filter((row) => row.payload.approvalCaseId === approvalCaseId)
+            .sort((a, b) => (a.payload.legOrdinal ?? 0) - (b.payload.legOrdinal ?? 0));
+        const problem = (kind, detail, sequence) => ({
+            kind: 'problem',
+            problem: kind,
+            approvalCaseId,
+            ...(sequence !== undefined ? { sequence } : {}),
+            detail,
+        });
+        // A row that names this case but that the strict parser refused is a
+        // CORRUPT leg, and it is reported FIRST: a case with one damaged leg and
+        // two readable ones is not a healthy case, and a case whose only leg is
+        // damaged is not a missing case (ADR A2-9 — reported, never defaulted).
+        for (const row of state.corruptLegs) {
+            if (row.payload['approvalCaseId'] !== approvalCaseId)
+                continue;
+            return problem(corruptLegProblemOf(row.payload), `a leg row of case '${approvalCaseId}' is corrupt and cannot be reconstructed`, row.entry.sequence);
+        }
+        if (legs.length === 0) {
+            return problem(problems.NOT_FOUND, 'no durable leg row carries this approvalCaseId');
+        }
+        const first = legs[0];
+        const lastLeg = legs[legs.length - 1];
+        if (first === undefined || lastLeg === undefined) {
+            // Unreachable — `legs.length === 0` returned above. `noUncheckedIndexedAccess`
+            // cannot see that, and a guard is cheaper than a non-null assertion on an
+            // authority-bearing read.
+            return problem(problems.NOT_FOUND, 'no durable leg row carries this approvalCaseId');
+        }
+        const ordinals = new Set();
+        for (const leg of legs) {
+            const ordinal = leg.payload.legOrdinal;
+            if (ordinal === undefined) {
+                return problem(problems.LEG_ORDINAL, `leg row '${leg.payload.requestId}' carries an approvalCaseId without a legOrdinal`, leg.entry.sequence);
+            }
+            if (ordinals.has(ordinal)) {
+                return problem(problems.CHAIN_BROKEN, `leg ordinal ${ordinal} appears more than once in case '${approvalCaseId}'`, leg.entry.sequence);
+            }
+            ordinals.add(ordinal);
+            if (leg.payload.reviewAuthority === undefined) {
+                return problem(problems.REVIEW_AUTHORITY, `leg row '${leg.payload.requestId}' carries no reviewAuthority — nobody may be told who decides it`, leg.entry.sequence);
+            }
+        }
+        for (let ordinal = 1; ordinal <= legs.length; ordinal += 1) {
+            if (!ordinals.has(ordinal)) {
+                return problem(problems.CHAIN_BROKEN, `case '${approvalCaseId}' is missing leg ${ordinal} (ordinals: [${[...ordinals].join(', ')}])`);
+            }
+        }
+        const firstKey = legIdentityKeyOf(first.payload);
+        if (first.payload.beneficiaryAuthority === undefined || first.payload.requestedEffect === undefined) {
+            return problem(problems.IDENTITY_DISAGREEMENT, `the first leg of case '${approvalCaseId}' carries no frozen identity`, first.entry.sequence);
+        }
+        for (const leg of legs) {
+            if (legIdentityKeyOf(leg.payload) !== firstKey) {
+                return problem(problems.IDENTITY_DISAGREEMENT, `leg row '${leg.payload.requestId}' disagrees with the frozen case identity (A1-10)`, leg.entry.sequence);
+            }
+        }
+        const escalations = state.escalations.filter((row) => row.payload.approvalCaseId === approvalCaseId);
+        const current = lastLeg;
+        const records = legs.map((leg) => toRequestRecord(leg.entry, leg.payload, state));
+        const currentRecord = records[records.length - 1];
+        if (currentRecord === undefined) {
+            // Unreachable: `records` is `legs.map`, and `legs` is non-empty.
+            return problem(problems.NOT_FOUND, 'no durable leg row carries this approvalCaseId');
+        }
+        const terminalDecision = state.decisions.find((d) => d.payload.requestId === current.payload.requestId);
+        const currentStatus = currentRecord.status;
+        const reviewedBy = [];
+        for (const leg of legs) {
+            // The CURRENT leg is not "already acted on": its reviewer still holds
+            // it. Everything before it is (spec 11.4: "old reviewer can no longer
+            // act on this case"; ADR 24.5: the set is of PRINCIPALS, not legs).
+            if (leg === current)
+                continue;
+            const decision = state.decisions.find((d) => d.payload.requestId === leg.payload.requestId);
+            if (decision !== undefined && !reviewedBy.some((r) => sameCallerRef(r, decision.payload.decider))) {
+                reviewedBy.push(decision.payload.decider);
+            }
+            const escalation = escalations.find((e) => e.payload.previousRequestId === leg.payload.requestId);
+            if (escalation !== undefined && !reviewedBy.some((r) => sameCallerRef(r, escalation.payload.escalatedBy))) {
+                reviewedBy.push(escalation.payload.escalatedBy);
+            }
+        }
+        const identity = {
+            approvalCaseId,
+            subject: first.payload.subject,
+            beneficiaryAuthority: first.payload.beneficiaryAuthority,
+            requestedEffect: first.payload.requestedEffect,
+            ...(first.payload.operationFingerprint !== undefined
+                ? { operationFingerprint: first.payload.operationFingerprint }
+                : {}),
+            ...(first.payload.mutationProposalFingerprint !== undefined
+                ? { mutationProposalFingerprint: first.payload.mutationProposalFingerprint }
+                : {}),
+            correlation: first.payload.correlation,
+        };
+        const status = currentStatus === 'abandoned' ? 'abandoned' : currentStatus === 'decided' ? 'decided' : 'open';
+        return {
+            kind: 'case',
+            state: {
+                identity,
+                legs: records,
+                escalations: escalations.map((e) => toEscalationRecord(e.entry, e.payload)),
+                currentLeg: currentRecord,
+                status,
+                ...(terminalDecision !== undefined
+                    ? { terminalDecision: toDecisionRecord(terminalDecision.entry, terminalDecision.payload) }
+                    : {}),
+                reviewedBy,
+            },
+        };
+    }
+    /**
+     * The lock-held leg-row writer (A4-PR3).
+     *
+     * PRECONDITION: the caller holds this team's per-team lock. `withTeamLock`
+     * is a queue, not a reentrant lock, so the risen leg of an escalation
+     * CANNOT go through the public `requestControl` from inside the
+     * escalation's own lock hold — it would queue behind itself. This writer
+     * produces a row byte-comparable to the public path's (the same scope key,
+     * the same leg-key extension of the request id, the same `legFieldsOf`
+     * projection) and performs NO authority step of its own: the risen leg is
+     * created BY THE SERVICE as the consequence of an escalation whose caller
+     * has already passed the resolve-control gate, and a PENDING leg
+     * authorizes nothing (the guard's exhaustive switch is what decides).
+     */
+    async function writeLegRowLocked(input) {
+        const key = scopeKey(input.root, subjectIdentityOf(input.subject), input.actionName, input.toolName, input.correlation, input.operationFingerprint);
+        const legKey = legKeyOf(input.leg);
+        const state = loadControlState(input.root);
+        const existing = state.requests.find((row) => scopeKey(String(row.entry.rootSessionId), subjectIdentityOf(row.payload.subject), row.payload.actionName, row.payload.toolName, row.payload.correlation, row.payload.operationFingerprint) === key && legKeyOf(row.payload) === legKey);
+        if (existing !== undefined) {
+            return toRequestRecord(existing.entry, existing.payload, state);
+        }
+        const requestId = requestIdOf(legKey === '' ? key : `${key}\u0000${legKey}`);
+        const payload = {
+            requestId,
+            kind: input.kind,
+            requester: input.requester,
+            subject: input.subject,
+            ...(input.subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+                ? { targetInstanceId: input.subject.instanceId }
+                : {}),
+            actionName: input.actionName,
+            correlation: input.correlation,
+            ...(input.toolName !== undefined ? { toolName: input.toolName } : {}),
+            ...(input.capabilityDomain !== undefined ? { capabilityDomain: input.capabilityDomain } : {}),
+            ...(input.operationFingerprint !== undefined
+                ? { operationFingerprint: input.operationFingerprint }
+                : {}),
+            ...(input.summary !== undefined ? { summary: input.summary } : {}),
+            ...(input.executionCoupling !== undefined
+                ? { executionCoupling: input.executionCoupling }
+                : {}),
+            ...legFieldsOf(input.leg),
+        };
+        const sequence = await putEntry({
+            schemaVersion: 2,
+            sequence: await allocateSequence(),
+            rootSessionId: input.root,
+            factType: FACT_REQUEST,
+            payload,
+            createdAt: options.now(),
+        });
+        // The return value is READ BACK from the durable row rather than
+        // assembled here: a leg writer that reports a record the reader could not
+        // produce is exactly the writer/reader disagreement A2-9 forbids.
+        const after = loadControlState(input.root);
+        const written = after.requests.find((row) => row.payload.requestId === requestId && legKeyOf(row.payload) === legKey);
+        if (written === undefined) {
+            throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'ControlService: the leg row just written does not parse back (writer/reader disagreement)', { stage: 'leg', requestId, sequence });
+        }
+        return toRequestRecord(written.entry, written.payload, after);
+    }
+    // --- requestApprovalLeg --------------------------------------------------------------
+    async function requestApprovalLeg(args) {
+        const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'requestApprovalLeg');
+        if (!isActionCaller(args.caller)) {
+            throw malformed('requestApprovalLeg', 'caller', 'caller must be {kind:human,humanId} or {kind:instance,instanceId}');
+        }
+        if (!CONTROL_REQUEST_KIND_VALUES.includes(args.kind)) {
+            throw malformed('requestApprovalLeg', 'kind', `unknown control request kind ${JSON.stringify(args.kind)}`);
+        }
+        const identityProblem = caseIdentityProblemOf(args.kind, args.identity);
+        if (identityProblem !== undefined) {
+            throw malformed('requestApprovalLeg', 'identity', `the approval case identity is refused (${identityProblem}); exactly one fingerprint is required and every vocabulary value must be closed-set`);
+        }
+        if (!isProposalAuthorityPosition(args.reviewAuthority)) {
+            throw malformed('requestApprovalLeg', 'reviewAuthority', `reviewAuthority outside the closed ladder: ${JSON.stringify(args.reviewAuthority)}`);
+        }
+        if (!isProposalAuthorityPosition(args.requiredAuthorityAtCreation)) {
+            throw malformed('requestApprovalLeg', 'requiredAuthorityAtCreation', `requiredAuthorityAtCreation outside the closed ladder: ${JSON.stringify(args.requiredAuthorityAtCreation)}`);
+        }
+        const approvalCaseId = approvalCaseIdOf(root, args.kind, args.identity);
+        // ADR A1-12 — a case whose reviewer cannot exist terminates HERE, before
+        // any wait: in Alpha.4 the top of the ladder has no resolver, so an OPEN
+        // leg would be exactly the fake pending Admin request acceptance 21.10
+        // forbids. Amended by audit F2: the termination writes a leg row that is
+        // BORN TERMINAL plus its deny, so it is durable and auditable and still
+        // never pending (the open-case read and the fold both skip decided rows).
+        if (!hasAuthorityResolver(args.reviewAuthority)) {
+            // ADR A1-12 / audit F2: the termination is DURABLE. The leg row the close
+            // writes is born terminal — decided in the same transaction — so the case
+            // is observable and auditable while still never appearing pending (which
+            // is what acceptance 21.10 forbids). Not a `return` without the write: an
+            // unobservable termination cannot be reported, closed by a later lane, or
+            // awaited by A5-5's inline waiter.
+            await closeZeroReviewCaseLocked({
+                root,
+                approvalCaseId,
+                decider: callerRefOf(resolveCaller(repositories, root, args.caller)),
+                terminalReason: 'resolver-unavailable',
+                note: `no resolver exists for reviewAuthority '${args.reviewAuthority}' in Alpha.4 (ADR A1-12, spec 11.6)`,
+                newCase: {
+                    kind: args.kind,
+                    reviewAuthority: args.reviewAuthority,
+                    actionName: args.actionName,
+                    ...(args.toolName !== undefined ? { toolName: args.toolName } : {}),
+                    caller: args.caller,
+                    identity: args.identity,
+                },
+            });
+            return {
+                kind: CONTROL_CASE_TERMINAL_OUTCOMES.AUTHORITY_UNAVAILABLE,
+                approvalCaseId,
+                reviewAuthority: args.reviewAuthority,
+                requiredAuthority: args.requiredAuthorityAtCreation,
+                detail: `no resolver exists for reviewAuthority '${args.reviewAuthority}' in Alpha.4 — the case terminated synchronously with a durable terminal deny and was never open for review (ADR A1-12, spec 11.6)`,
+            };
+        }
+        const leg = await requestControl({
+            rootSessionId: root,
+            caller: args.caller,
+            kind: args.kind,
+            subject: args.identity.subject,
+            actionName: args.actionName,
+            ...(args.toolName !== undefined ? { toolName: args.toolName } : {}),
+            ...(args.capabilityDomain !== undefined ? { capabilityDomain: args.capabilityDomain } : {}),
+            correlation: args.identity.correlation,
+            ...(args.identity.operationFingerprint !== undefined
+                ? { operationFingerprint: args.identity.operationFingerprint }
+                : {}),
+            ...(args.summary !== undefined ? { summary: args.summary } : {}),
+            ...(args.executionCoupling !== undefined
+                ? { executionCoupling: args.executionCoupling }
+                : {}),
+            leg: {
+                approvalCaseId,
+                legOrdinal: 1,
+                reviewAuthority: args.reviewAuthority,
+                requiredAuthorityAtCreation: args.requiredAuthorityAtCreation,
+                beneficiaryAuthority: args.identity.beneficiaryAuthority,
+                requestedEffect: args.identity.requestedEffect,
+                ...(args.identity.mutationProposalFingerprint !== undefined
+                    ? { mutationProposalFingerprint: args.identity.mutationProposalFingerprint }
+                    : {}),
+            },
+        });
+        // A retry of a flow whose case has already risen returns the case's
+        // CURRENT leg, never the closed first leg: the caller must never be
+        // handed a terminal row to wait on (the same reasoning as A5-5).
+        const read = await readApprovalCaseState({ rootSessionId: root, approvalCaseId });
+        if (read.kind === 'case' && read.state.currentLeg !== undefined) {
+            return { kind: 'leg', leg: read.state.currentLeg };
+        }
+        return { kind: 'leg', leg };
+    }
+    // --- escalateApprovalLeg -------------------------------------------------------------
+    async function escalateApprovalLeg(args) {
+        const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'escalateApprovalLeg');
+        if (typeof args.requestId !== 'string' || args.requestId.length === 0) {
+            throw malformed('escalateApprovalLeg', 'requestId', 'requestId must be a non-empty string');
+        }
+        if (args.reason !== undefined && typeof args.reason !== 'string') {
+            throw malformed('escalateApprovalLeg', 'reason', 'reason must be a string when present');
+        }
+        // The SAME authority steps as a decision (spec 24.4: "two entrances, one
+        // write path") — escalation is a reviewer act, so it is gated exactly
+        // like `resolveControl`, and never through a second, softer gate.
+        const caller = resolveCaller(repositories, root, args.caller);
+        const resolved = resolveTeamAndTarget(repositories, options.blueprintCatalog, {
+            rootSessionId: root,
+            action: ACTION_NAMES.RESOLVE_CONTROL,
+            caller: args.caller,
+            requestToken: args.requestId,
+        }, RESOLVE_CONTROL_SPEC);
+        return withTeamLock(teamLocks, root, async () => {
+            const state = loadControlState(root);
+            const leg = state.requests.find((row) => row.payload.requestId === args.requestId);
+            if (leg === undefined) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND, `ControlService: no durable control request '${args.requestId}' in team '${root}' (an escalation without a leg)`, { rootSessionId: root, requestId: args.requestId });
+            }
+            if (state.abandonments.some((a) => a.payload.requestId === args.requestId)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: request '${args.requestId}' is durably abandoned — an escalated-away leg cannot be re-opened and an abandoned leg cannot be escalated (zero durable side effects)`, { rootSessionId: root, requestId: args.requestId });
+            }
+            if (state.decisions.some((d) => d.payload.requestId === args.requestId)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED, `ControlService: request '${args.requestId}' already carries a durable decision — a terminal leg is terminal (zero durable side effects)`, { rootSessionId: root, requestId: args.requestId });
+            }
+            const approvalCaseId = leg.payload.approvalCaseId;
+            const legOrdinal = leg.payload.legOrdinal;
+            const reviewAuthority = leg.payload.reviewAuthority;
+            if (approvalCaseId === undefined || legOrdinal === undefined || reviewAuthority === undefined) {
+                throw malformed('escalateApprovalLeg', 'approvalCaseId', `request '${args.requestId}' is a pre-Alpha.4 row with no approval-case identity — there is no case to rise (escalation requires a leg row)`);
+            }
+            const allowedRoles = CONTROL_RESOLVER_ROLES[leg.payload.kind];
+            if (!allowedRoles.includes(caller.role)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: role '${caller.role}' is not a resolver for kind '${leg.payload.kind}' (allowed: [${allowedRoles.join(', ')}])`, {
+                    rootSessionId: root,
+                    requestId: args.requestId,
+                    kind: leg.payload.kind,
+                    role: caller.role,
+                    allowedRoles: [...allowedRoles],
+                });
+            }
+            enforceEnvelope(RESOLVE_CONTROL_SPEC, callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)));
+            const decider = callerRefOf(caller);
+            // Spec 11.4 / ADR A1-10 + 24.5 — a principal who already acted on an
+            // EARLIER leg of this case has handed the case up and cannot take it
+            // back down (the durable backing of "escalated reviewer cannot later
+            // allow", acceptance 21.5).
+            const caseRows = state.requests.filter((row) => row.payload.approvalCaseId === approvalCaseId);
+            for (const earlier of caseRows) {
+                if ((earlier.payload.legOrdinal ?? 0) >= legOrdinal)
+                    continue;
+                const decided = state.decisions.find((d) => d.payload.requestId === earlier.payload.requestId);
+                if (decided !== undefined && sameCallerRef(decided.payload.decider, decider)) {
+                    throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: this principal already decided leg ${earlier.payload.legOrdinal} of case '${approvalCaseId}' — an escalated-away reviewer cannot act on the case again`, { rootSessionId: root, requestId: args.requestId, approvalCaseId, legOrdinal: earlier.payload.legOrdinal });
+                }
+                const escalated = state.escalations.find((e) => e.payload.previousRequestId === earlier.payload.requestId);
+                if (escalated !== undefined && sameCallerRef(escalated.payload.escalatedBy, decider)) {
+                    throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: this principal already escalated leg ${earlier.payload.legOrdinal} of case '${approvalCaseId}' — an escalated-away reviewer cannot act on the case again`, { rootSessionId: root, requestId: args.requestId, approvalCaseId, legOrdinal: earlier.payload.legOrdinal });
+                }
+            }
+            const scope = scopeOf(leg.entry, leg.payload);
+            // WRITE 1 of 3 (ADR A5-5): the terminal deny carrying the additive
+            // reason `escalated`. This is the row that makes the inline waiter
+            // settle; if it were written with an out-of-vocabulary reason the read
+            // gate would drop it and the waiter would hang.
+            const terminalDecision = await commitDecision({
+                requestId: args.requestId,
+                value: CONTROL_DECISION_VALUES.DENY,
+                decider,
+                scope,
+                requestSequence: leg.entry.sequence,
+                reason: CONTROL_DECISION_REASONS.ESCALATED,
+                ...(args.reason !== undefined ? { note: args.reason } : {}),
+            });
+            // WRITE 2 of 3: the additive leg fact, payload FROZEN at the A3-12(ii)
+            // five fields (`note` deliberately does NOT join the payload — the
+            // reviewer's evidence text lives on the terminal decision row).
+            const escalationPayload = {
+                approvalCaseId,
+                legOrdinal,
+                previousRequestId: args.requestId,
+                escalatedBy: decider,
+                ...(args.reason !== undefined ? { reason: args.reason } : {}),
+            };
+            const escalationSequence = await putEntry({
+                schemaVersion: 2,
+                sequence: await allocateSequence(),
+                rootSessionId: root,
+                factType: FACT_ESCALATION,
+                payload: escalationPayload,
+                createdAt: options.now(),
+            });
+            const escalation = {
+                approvalCaseId,
+                legOrdinal,
+                previousRequestId: args.requestId,
+                escalatedBy: decider,
+                ...(args.reason !== undefined ? { reason: args.reason } : {}),
+                escalationSequence,
+                createdAt: options.now(),
+            };
+            // WRITE 3 of 3 — the risen leg, SKIPPED at the top of the ladder
+            // (spec 11.6): the case terminates instead of waiting for a reviewer
+            // that cannot exist.
+            // Legality of the rise comes from the FROZEN LADDER (spec 21.5), not
+            // from a caller-supplied "someone can review this" flag: a successor
+            // that exists on the ladder but has no resolver in Alpha.4 terminates
+            // the case exactly like the top of the ladder does (ADR A1-12).
+            const successor = controlEscalationSuccessor(reviewAuthority);
+            if (successor === null || !hasAuthorityResolver(successor)) {
+                return {
+                    escalation,
+                    terminalDecision,
+                    caseOutcome: CONTROL_CASE_OUTCOMES.AUTHORITY_UNAVAILABLE,
+                };
+            }
+            const nextLeg = await writeLegRowLocked({
+                root,
+                kind: leg.payload.kind,
+                requester: leg.payload.requester,
+                subject: leg.payload.subject,
+                actionName: leg.payload.actionName,
+                ...(leg.payload.toolName !== undefined ? { toolName: leg.payload.toolName } : {}),
+                ...(leg.payload.capabilityDomain !== undefined
+                    ? { capabilityDomain: leg.payload.capabilityDomain }
+                    : {}),
+                correlation: leg.payload.correlation,
+                ...(leg.payload.operationFingerprint !== undefined
+                    ? { operationFingerprint: leg.payload.operationFingerprint }
+                    : {}),
+                ...(leg.payload.summary !== undefined ? { summary: leg.payload.summary } : {}),
+                ...(leg.payload.executionCoupling !== undefined
+                    ? { executionCoupling: leg.payload.executionCoupling }
+                    : {}),
+                leg: {
+                    approvalCaseId,
+                    legOrdinal: legOrdinal + 1,
+                    reviewAuthority: successor,
+                    requiredAuthorityAtCreation: leg.payload.requiredAuthorityAtCreation ?? successor,
+                    previousRequestId: args.requestId,
+                    beneficiaryAuthority: leg.payload.beneficiaryAuthority ?? successor,
+                    requestedEffect: leg.payload.requestedEffect ?? 'ask',
+                    ...(leg.payload.mutationProposalFingerprint !== undefined
+                        ? { mutationProposalFingerprint: leg.payload.mutationProposalFingerprint }
+                        : {}),
+                },
+            });
+            return {
+                escalation,
+                terminalDecision,
+                nextLeg,
+                caseOutcome: CONTROL_CASE_OUTCOMES.ESCALATED,
+            };
+        });
+    }
+    // --- readApprovalCaseState / listOpenApprovalCases -----------------------------------
+    async function readApprovalCaseState(args) {
+        const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'readApprovalCaseState');
+        if (typeof args.approvalCaseId !== 'string' || args.approvalCaseId.length === 0) {
+            throw malformed('readApprovalCaseState', 'approvalCaseId', 'approvalCaseId must be a non-empty string');
+        }
+        return withTeamLock(teamLocks, root, async () => {
+            if (repositories.teamSessions.get(root) === undefined) {
+                throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND, `ControlService: no TeamSession record for root session '${root}'`, { rootSessionId: root });
+            }
+            return buildApprovalCaseState(loadControlState(root), args.approvalCaseId);
+        });
+    }
+    async function listOpenApprovalCases(args) {
+        const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'listOpenApprovalCases');
+        return withTeamLock(teamLocks, root, async () => {
+            if (repositories.teamSessions.get(root) === undefined) {
+                throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND, `ControlService: no TeamSession record for root session '${root}'`, { rootSessionId: root });
+            }
+            const state = loadControlState(root);
+            const caseIds = [];
+            for (const row of state.requests) {
+                const caseId = row.payload.approvalCaseId;
+                if (caseId === undefined || caseIds.includes(caseId))
+                    continue;
+                caseIds.push(caseId);
+            }
+            const summaries = [];
+            for (const caseId of caseIds) {
+                const read = buildApprovalCaseState(state, caseId);
+                // A corrupt case is NOT listed as open (fail closed: an unreadable
+                // chain is surfaced by `readApprovalCaseState`, never guessed here).
+                if (read.kind !== 'case')
+                    continue;
+                if (read.state.status !== 'open')
+                    continue;
+                if (args.subject !== undefined &&
+                    subjectIdentityOf(read.state.identity.subject) !== subjectIdentityOf(args.subject)) {
+                    continue;
+                }
+                const currentLeg = read.state.currentLeg;
+                if (currentLeg === undefined)
+                    continue;
+                summaries.push({ state: read.state, carrierKind: currentLeg.kind });
+            }
+            return summaries;
+        });
+    }
+    // --- appendTerminalOutcome -----------------------------------------------------------
+    /**
+     * The FROZEN mapping from a terminal reason to the durable decision value
+     * it must be recorded with (ADR A2-8). Exported through the barrel so
+     * PR4/PR5 never choose a decision value for a terminal close themselves:
+     * every reason maps to `deny`, which is the structural statement that a
+     * close the reviewer did not choose can never mint authority.
+     *
+     * @param _terminalReason - the closed terminal reason.
+     * @returns the decision value the terminal row carries.
+     */
+    function terminalDecisionValueFor(_terminalReason) {
+        return CONTROL_DECISION_VALUES.DENY;
+    }
+    async function appendTerminalOutcome(args) {
+        const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'appendTerminalOutcome');
+        if (typeof args.requestId !== 'string' || args.requestId.length === 0) {
+            throw malformed('appendTerminalOutcome', 'requestId', 'requestId must be a non-empty string');
+        }
+        if (!CONTROL_LEG_TERMINAL_REASON_VALUES.includes(args.terminalReason)) {
+            throw malformed('appendTerminalOutcome', 'terminalReason', `terminalReason outside the closed set: ${JSON.stringify(args.terminalReason)}`);
+        }
+        if (args.note !== undefined && typeof args.note !== 'string') {
+            throw malformed('appendTerminalOutcome', 'note', 'note must be a string when present');
+        }
+        const caller = resolveCaller(repositories, root, args.caller);
+        const resolved = resolveTeamAndTarget(repositories, options.blueprintCatalog, {
+            rootSessionId: root,
+            action: ACTION_NAMES.RESOLVE_CONTROL,
+            caller: args.caller,
+            requestToken: args.requestId,
+        }, RESOLVE_CONTROL_SPEC);
+        return withTeamLock(teamLocks, root, async () => {
+            const state = loadControlState(root);
+            const leg = state.requests.find((row) => row.payload.requestId === args.requestId);
+            if (leg === undefined) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND, `ControlService: no durable control request '${args.requestId}' in team '${root}' (a terminal outcome without a leg)`, { rootSessionId: root, requestId: args.requestId });
+            }
+            if (state.abandonments.some((a) => a.payload.requestId === args.requestId)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: request '${args.requestId}' is durably abandoned — a terminal outcome is written at most once (zero durable side effects)`, { rootSessionId: root, requestId: args.requestId });
+            }
+            if (state.decisions.some((d) => d.payload.requestId === args.requestId)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED, `ControlService: request '${args.requestId}' already carries a durable decision — a terminal outcome is written at most once (zero durable side effects)`, { rootSessionId: root, requestId: args.requestId });
+            }
+            const allowedRoles = CONTROL_RESOLVER_ROLES[leg.payload.kind];
+            if (!allowedRoles.includes(caller.role)) {
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: role '${caller.role}' is not a resolver for kind '${leg.payload.kind}' (allowed: [${allowedRoles.join(', ')}])`, { rootSessionId: root, requestId: args.requestId, role: caller.role });
+            }
+            enforceEnvelope(RESOLVE_CONTROL_SPEC, callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)));
+            return await commitDecision({
+                requestId: args.requestId,
+                value: terminalDecisionValueFor(args.terminalReason),
+                decider: callerRefOf(caller),
+                scope: scopeOf(leg.entry, leg.payload),
+                requestSequence: leg.entry.sequence,
+                terminalReason: args.terminalReason,
+                ...(args.note !== undefined ? { note: args.note } : {}),
+            });
+        });
+    }
+    /**
+     * The ONE locked writer of a born-terminal close (audit F2). Both entry
+     * points route through it, so a case that cannot be reviewed has exactly one
+     * durable shape anywhere in the plane: a leg row at ordinal 1 carrying the
+     * frozen identity and naming the rung that could not review it, plus its
+     * terminal `deny`, in one transaction.
+     *
+     * Idempotency is the CASE, not the call: a second close returns the closure
+     * the first one wrote, and the idempotent return is READ BACK from the durable
+     * rows so a retry cannot report something the ledger does not hold.
+     */
+    async function closeZeroReviewCaseLocked(input) {
+        return withTeamLock(teamLocks, input.root, async () => {
+            const state = loadControlState(input.root);
+            for (const leg of state.requests) {
+                if (leg.payload.approvalCaseId !== input.approvalCaseId)
+                    continue;
+                const decision = state.decisions.find((row) => row.payload.requestId === leg.payload.requestId);
+                if (decision === undefined) {
+                    // The case has a leg with no decision: that leg is REVIEWABLE, and a
+                    // reviewable leg belongs to `appendTerminalOutcome`, never here.
+                    throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, `ControlService: case '${input.approvalCaseId}' has an open leg '${leg.payload.requestId}' — close it with appendTerminalOutcome, not with a zero-review close (zero durable side effects)`, { rootSessionId: input.root, approvalCaseId: input.approvalCaseId });
+                }
+                return {
+                    approvalCaseId: input.approvalCaseId,
+                    leg: toRequestRecord(leg.entry, leg.payload, state),
+                    terminalDecision: toDecisionRecord(decision.entry, decision.payload),
+                };
+            }
+            const newCase = input.newCase;
+            if (newCase === undefined) {
+                // Nothing to close and no identity to write from: the caller named a
+                // case that does not exist.
+                throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND, `ControlService: no durable leg row carries approvalCaseId '${input.approvalCaseId}' — closing a case that was never opened needs the identity form (zero durable side effects)`, { rootSessionId: input.root, approvalCaseId: input.approvalCaseId });
+            }
+            const written = await writeLegRowLocked({
+                root: input.root,
+                kind: newCase.kind,
+                requester: callerRefOf(resolveCaller(repositories, input.root, newCase.caller)),
+                subject: newCase.identity.subject,
+                actionName: newCase.actionName,
+                ...(newCase.toolName !== undefined ? { toolName: newCase.toolName } : {}),
+                correlation: newCase.identity.correlation,
+                ...(newCase.identity.operationFingerprint !== undefined
+                    ? { operationFingerprint: newCase.identity.operationFingerprint }
+                    : {}),
+                leg: {
+                    approvalCaseId: input.approvalCaseId,
+                    legOrdinal: 1,
+                    reviewAuthority: newCase.reviewAuthority,
+                    requiredAuthorityAtCreation: newCase.reviewAuthority,
+                    beneficiaryAuthority: newCase.identity.beneficiaryAuthority,
+                    requestedEffect: newCase.identity.requestedEffect,
+                    ...(newCase.identity.mutationProposalFingerprint !== undefined
+                        ? { mutationProposalFingerprint: newCase.identity.mutationProposalFingerprint }
+                        : {}),
+                },
+            });
+            // Re-read inside the lock: the scope snapshot and both records come from
+            // the row the ledger holds, never from a reconstruction.
+            const after = loadControlState(input.root);
+            const row = after.requests.find((r) => r.payload.requestId === written.requestId);
+            if (row === undefined) {
+                throw durableFailure('zero-review leg row read-back', new Error(`requestId '${written.requestId}' written into case '${input.approvalCaseId}' is absent from the re-read state`));
+            }
+            const terminalDecision = await commitDecision({
+                requestId: row.payload.requestId,
+                value: terminalDecisionValueFor(input.terminalReason),
+                decider: input.decider,
+                scope: scopeOf(row.entry, row.payload),
+                requestSequence: row.entry.sequence,
+                terminalReason: input.terminalReason,
+                ...(input.note !== undefined ? { note: input.note } : {}),
+            });
+            return {
+                approvalCaseId: input.approvalCaseId,
+                leg: toRequestRecord(row.entry, row.payload, after),
+                terminalDecision,
+            };
+        });
+    }
+    async function closeApprovalCaseWithoutLeg(args) {
+        const stage = 'closeApprovalCaseWithoutLeg';
+        const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, stage);
+        if (!isActionCaller(args.caller)) {
+            throw malformed(stage, 'caller', 'caller must be {kind:human,humanId} or {kind:instance,instanceId}');
+        }
+        if (!CONTROL_LEG_TERMINAL_REASON_VALUES.includes(args.terminalReason)) {
+            throw malformed(stage, 'terminalReason', `terminalReason outside the closed set: ${JSON.stringify(args.terminalReason)}`);
+        }
+        if (args.note !== undefined && typeof args.note !== 'string') {
+            throw malformed(stage, 'note', 'note must be a string when present');
+        }
+        const hasIdentity = args.identity !== undefined;
+        const hasCaseId = typeof args.approvalCaseId === 'string' && args.approvalCaseId.length > 0;
+        if (hasIdentity === hasCaseId) {
+            throw malformed(stage, 'identity', 'exactly one of `identity` (a case that may not exist yet) or `approvalCaseId` (an existing case) is required');
+        }
+        const kind = args.carrier?.kind ?? CONTROL_REQUEST_KINDS.LEADER_APPROVAL;
+        if (hasIdentity) {
+            if (args.carrier === undefined) {
+                throw malformed(stage, 'carrier', 'closing by identity writes a leg row and therefore needs {kind, reviewAuthority, actionName}');
+            }
+            const identityProblem = caseIdentityProblemOf(kind, args.identity);
+            if (identityProblem !== undefined) {
+                throw malformed(stage, 'identity', `the approval case identity is refused (${identityProblem}); exactly one fingerprint is required and every vocabulary value must be closed-set`);
+            }
+            if (!isProposalAuthorityPosition(args.carrier.reviewAuthority)) {
+                throw malformed(stage, 'carrier.reviewAuthority', `reviewAuthority outside the closed ladder: ${JSON.stringify(args.carrier.reviewAuthority)}`);
+            }
+        }
+        else if (args.carrier !== undefined) {
+            throw malformed(stage, 'carrier', 'closing an EXISTING case by id writes nothing, so `carrier` must be absent');
+        }
+        const approvalCaseId = hasIdentity
+            ? approvalCaseIdOf(root, kind, args.identity)
+            : args.approvalCaseId;
+        const caller = resolveCaller(repositories, root, args.caller);
+        // The closed resolver-role table decides who may close, exactly as it decides
+        // who may decide. The asymmetry that lets this be the ONLY gate is that a
+        // close can never write anything but a `deny`.
+        const allowedRoles = CONTROL_RESOLVER_ROLES[kind];
+        if (!allowedRoles.includes(caller.role)) {
+            throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: role '${caller.role}' may not close an approval case of kind '${kind}' (allowed: [${allowedRoles.join(', ')}]) — a zero-review close only ever denies, and it is still the resolver's act to make`, { rootSessionId: root, approvalCaseId, role: caller.role });
+        }
+        const resolved = resolveTeamAndTarget(repositories, options.blueprintCatalog, {
+            rootSessionId: root,
+            action: ACTION_NAMES.RESOLVE_CONTROL,
+            caller: args.caller,
+            requestToken: approvalCaseId,
+        }, RESOLVE_CONTROL_SPEC);
+        enforceEnvelope(RESOLVE_CONTROL_SPEC, callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)));
+        return await closeZeroReviewCaseLocked({
+            root,
+            approvalCaseId,
+            decider: callerRefOf(caller),
+            terminalReason: args.terminalReason,
+            ...(args.note !== undefined ? { note: args.note } : {}),
+            ...(hasIdentity
+                ? {
+                    newCase: {
+                        kind,
+                        reviewAuthority: args.carrier.reviewAuthority,
+                        actionName: args.carrier.actionName,
+                        ...(args.carrier?.toolName !== undefined ? { toolName: args.carrier.toolName } : {}),
+                        caller: args.caller,
+                        identity: args.identity,
+                    },
+                }
+                : {}),
+        });
+    }
+    async function findApprovalCaseByIdentity(args) {
+        const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'findApprovalCaseByIdentity');
+        const kind = args.kind ?? CONTROL_REQUEST_KINDS.LEADER_APPROVAL;
+        const identityProblem = caseIdentityProblemOf(kind, args.identity);
+        if (identityProblem !== undefined) {
+            throw malformed('findApprovalCaseByIdentity', 'identity', `the approval case identity is refused (${identityProblem}); exactly one fingerprint is required and every vocabulary value must be closed-set`);
+        }
+        return withTeamLock(teamLocks, root, async () => {
+            const state = loadControlState(root);
+            const derived = approvalCaseIdOf(root, kind, args.identity);
+            // DERIVED, then VERIFIED against the durable rows (A2-7): a lookup that
+            // only derived would answer `found` for a case that was never opened.
+            const owned = state.requests.some((row) => row.payload.approvalCaseId === derived);
+            return owned ? { kind: 'found', approvalCaseId: derived } : { kind: 'none' };
+        });
+    }
     return {
         requestControl,
         resolveControl,
@@ -2221,6 +3299,14 @@ export function createControlService(options) {
         awaitControlDecision,
         commitEffectIfAuthorized,
         persistAbandonCloseLocked,
+        requestApprovalLeg,
+        escalateApprovalLeg,
+        readApprovalCaseState,
+        listOpenApprovalCases,
+        appendTerminalOutcome,
+        terminalDecisionValueFor,
+        closeApprovalCaseWithoutLeg,
+        findApprovalCaseByIdentity,
     };
 }
 //# sourceMappingURL=service.js.map

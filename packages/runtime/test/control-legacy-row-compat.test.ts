@@ -27,17 +27,21 @@
 import { describe, expect, it } from 'vitest'
 import {
   CONTROL_DECISION_VALUES,
+  CONTROL_ERROR_CODES,
   CONTROL_REQUEST_KINDS,
 } from '../control/index.js'
+import { renderLeaderApprovalNotification } from '../control/leader-notification.js'
 import {
   P6T4_ROOT,
   P6T4_SEEDS,
+  assertControlCode,
   controlFacts,
   createFakeToolPipeline,
   createP6T4Service,
   createP6T4World,
   destroyP6T1World,
   leaderCaller,
+  memberCaller,
   restartP6T1World,
   writeRawControlFact,
 } from './p6t4-helpers.js'
@@ -231,6 +235,87 @@ let s4: {
   }
 }
 
+// --- scenario 5: A4-PR3 — a pre-Alpha.4 row keeps every pre-Alpha.4 surface -------------
+//
+// The additive leg fields must not create a second reading of a legacy row.
+// Each assertion below is a surface A4-PR3 ADDS, checked against a row that
+// predates it: the pending CASE list, the escalation entry point, the case read
+// and the notification text. A legacy row appearing in any of them — or the
+// text changing — would mean the discriminator (`approvalCaseId` presence, ADR
+// X8-R2) leaked into a behaviour.
+let s5: {
+  readonly openCases: number
+  readonly escalateCode: string
+  readonly caseReadKind: string
+  readonly legacyText: string
+  readonly legText: string
+  readonly guardAllowed: boolean
+}
+{
+  const world = await createP6T4World('ctl-leg-5', ['leader', 'worker'])
+  try {
+    const service = createP6T4Service(world)
+    const request = await service.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      targetInstanceId: WORKER_ID,
+      actionName: 'write-file',
+      toolName: 'fs.write',
+      correlation: 'corr-leg-5',
+    })
+    const openCases = await service.listOpenApprovalCases({ rootSessionId: P6T4_ROOT })
+    let escalateCode = 'did-not-throw'
+    try {
+      await service.escalateApprovalLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: request.requestId,
+      })
+    } catch (error) {
+      escalateCode = assertControlCode(error, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED).code
+    }
+    const caseRead = await service.readApprovalCaseState({
+      rootSessionId: P6T4_ROOT,
+      approvalCaseId: 'case-legacy-has-none',
+    })
+    const decision = await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: request.requestId,
+      decision: CONTROL_DECISION_VALUES.ALLOW,
+    })
+    const guard = await service.guardOperation({
+      rootSessionId: P6T4_ROOT,
+      targetInstanceId: WORKER_ID,
+      actionName: 'write-file',
+      toolName: 'fs.write',
+      correlation: 'corr-leg-5',
+    })
+    // The notification: a legacy row and the SAME row carrying leg fields
+    // differ by exactly the leg lines; a legacy row alone must render the
+    // pre-Alpha.4 bytes (the C1 goldens depend on it).
+    const legacyText = renderLeaderApprovalNotification(request)
+    const legText = renderLeaderApprovalNotification({
+      ...request,
+      approvalCaseId: 'case-abc',
+      legOrdinal: 1,
+      reviewAuthority: 'leader',
+    })
+    void decision
+    s5 = {
+      openCases: openCases.length,
+      escalateCode,
+      caseReadKind: caseRead.kind,
+      legacyText,
+      legText,
+      guardAllowed: guard.allowed,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+}
+
 describe('pre-alpha3 PR-D D.2 — legacy row compatibility', () => {
   it('S1: a legacy request row carries the derived instance subject; legacy AND subject retries are idempotent (byte-identical key)', () => {
     expect(s1.subject).toEqual({ kind: 'instance', instanceId: WORKER_ID })
@@ -253,5 +338,28 @@ describe('pre-alpha3 PR-D D.2 — legacy row compatibility', () => {
     expect(s4.firstAllowed).toBe(true)
     expect(s4.secondReason).toBe('allow-consumed')
     expect(s4.consumptionFacts).toBe(1)
+  })
+
+  it('S5 (A4-PR3): a pre-Alpha.4 row is not an approval case on ANY new surface, and its notification text is unchanged', () => {
+    // A1-11: the pending list spans CASES; a legacy row is not one.
+    expect(s5.openCases).toBe(0)
+    // The escalation entry point refuses it (no case identity to raise).
+    expect(s5.escalateCode).toBe(CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED)
+    // The case read reports the truth instead of inventing a case.
+    expect(s5.caseReadKind).toBe('problem')
+    // The legacy allow still authorizes exactly as before A4-PR3.
+    expect(s5.guardAllowed).toBe(true)
+    // The text: leg lines are ADDITIVE, and a legacy row's bytes are untouched.
+    expect(s5.legacyText).not.toContain('approvalCase:')
+    expect(s5.legacyText).not.toContain('leg:')
+    expect(s5.legText).toContain('approvalCase: case-abc')
+    expect(s5.legText).toContain('leg: 1')
+    expect(s5.legText).toContain('reviewAuthority: leader')
+    // Everything the pre-Alpha.4 text said BEFORE the decide-instruction
+    // block must survive verbatim in the leg text. The head is asserted
+    // non-empty first: an `?? ''` alone would pass on a missing separator.
+    const legacyHead = s5.legacyText.split('\nDecide with')[0] ?? ''
+    expect(legacyHead.length > 0).toBe(true)
+    expect(s5.legText.startsWith(legacyHead)).toBe(true)
   })
 })

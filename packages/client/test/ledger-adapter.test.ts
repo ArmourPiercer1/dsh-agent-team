@@ -200,6 +200,85 @@ describe('adaptTeamLedger — entry rows', () => {
     expect('category' in row).toBe(false)
   })
 
+  it('A4-PR3: an escalation row maps to `control` — the VALUE, not just the key (ADR X8-R3)', () => {
+    // The drift this pins is the one no existing gate can see:
+    // `a4pr0a-fact-type-closed-set.test.ts` compares the two category maps'
+    // KEY SETS, so a client row pointing at `policy` (or a missing row, which
+    // the header documents as "carries NO category") is invisible there. The
+    // category is X8-R3's corrected ruling: an escalation closes a control
+    // LEG exactly as `control-request-abandoned` closes a control REQUEST, so
+    // it sits beside the rows it closes — never in `policy` beside
+    // `governance-proposal-recorded`.
+    const model = adaptTeamLedger(
+      [
+        entry(1, 'control-escalation-recorded', {
+          requestId: 'r2',
+          rootSessionId: 'root-1',
+          approvalCaseId: 'case-1',
+          previousRequestId: 'r1',
+          escalatedAt: '2026-08-29T00:00:01.000Z',
+        }),
+      ],
+      true,
+    )
+    const row = must(model.entries[0], 'escalation row')
+    expect(row.factType).toBe('control-escalation-recorded')
+    expect(row.category).toBe('control')
+    // And it is a MARK, not a request: it opens no chain and badges nothing.
+    expect(model.controls.length).toBe(0)
+    expect(model.pendingControlByInstance).toEqual({})
+  })
+
+  it('A4-PR3: a full escalation reads as closed leg 1, one plain row, pending leg 2', () => {
+    // The composition half of the same duty: the client must read the
+    // escalation exactly as the host fold does — the terminal DENY row (with
+    // reason `escalated`) closes leg 1, the escalation row is a plain entry,
+    // and the RISEN leg is the only pending item. A `policy` category or a
+    // pairing case for the escalation row would corrupt this view.
+    const model = adaptTeamLedger(
+      [
+        entry(1, 'control-request-recorded', {
+          requestId: 'r1',
+          targetInstanceId: 'i1',
+          actionName: 'a',
+          correlation: 'c1',
+          approvalCaseId: 'case-1',
+          legOrdinal: 1,
+          reviewAuthority: 'leader',
+        }),
+        entry(2, 'control-decision-recorded', {
+          requestId: 'r1',
+          decision: 'deny',
+          reason: 'escalated',
+          scope: { targetInstanceId: 'i1', actionName: 'a', requestSequence: 1 },
+        }),
+        entry(3, 'control-escalation-recorded', {
+          requestId: 'r2',
+          approvalCaseId: 'case-1',
+          previousRequestId: 'r1',
+        }),
+        entry(4, 'control-request-recorded', {
+          requestId: 'r2',
+          targetInstanceId: 'i1',
+          actionName: 'a',
+          correlation: 'c1',
+          approvalCaseId: 'case-1',
+          legOrdinal: 2,
+          reviewAuthority: 'human-user',
+        }),
+      ],
+      true,
+    )
+    expect(model.controls.length).toBe(2)
+    const first = must(model.controls[0], 'leg 1 chain')
+    expect(first.pending).toBe(false)
+    expect(must(first.decision, 'leg 1 decision').value).toBe('deny')
+    const second = must(model.controls[1], 'leg 2 chain')
+    expect(second.pending).toBe(true)
+    expect(model.pendingControlByInstance).toEqual({ i1: 1 })
+    expect(must(model.entries[2], 'escalation row').category).toBe('control')
+  })
+
   it('a non-integer sequence or non-string factType skips the row (fail-safe)', () => {
     const model = adaptTeamLedger(
       [
