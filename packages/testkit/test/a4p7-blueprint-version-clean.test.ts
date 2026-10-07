@@ -575,6 +575,25 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // the file grew its byte-owned v1 witness builder — the bridge line shifted
     // 547 -> 584; its class and count are unchanged.)
     expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 584)).toContain('toMatchObject')
+    // Re-anchor safety (coordinator ruling, authorized addition): the pin above is a
+    // re-anchor, not a shift — the laundering it first named (a v99 `schemaVersion`
+    // literal in a toMatchObject argument) was RETIRED by B1's migration, and a pin
+    // can only prove the retirement if the retirement is ASSERTED, not narrated. So
+    // the tree knows both halves: (1) the text the old pin named is ABSENT from the
+    // file; (2) the replacement value is DERIVED from the domain's own version set —
+    // strip the derivation back to a literal and this leg goes red even though the
+    // fence can no longer see a value hidden behind a constant. That red is the whole
+    // safety argument: absence without derivation is just laundering that moved out
+    // of the fence's sight. (The absence check is a REGEX, not a string literal: a
+    // literal here would re-materialize the very site shape the fence hunts, and the
+    // first draft proved it — the fence filed the wrapper itself dirty at once.)
+    const cutoverSrc = readFileSync(
+      resolve(REPO_ROOT, 'packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts'),
+      'utf8',
+    )
+    expect(cutoverSrc, 're-anchored pin: the old v99 laundering site must be GONE, not re-labelled').not.toMatch(/schemaVersion:\s*99\b/)
+    expect(cutoverSrc, 're-anchored pin: the replacement must be COMPUTED from the domain set').toContain('Math.max(...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS)')
+    expect(cutoverSrc, 're-anchored pin: the site must speak the constant, not a digit').toContain('schemaVersion: VERSION_NOBODY_DEFINED')
   })
 
   it('unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated', () => {
