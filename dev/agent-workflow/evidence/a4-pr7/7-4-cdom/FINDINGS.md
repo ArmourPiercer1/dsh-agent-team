@@ -89,6 +89,20 @@ Flagged so the root-suite comparison by failing name cannot hide anything.
 
 ## 5. STOP: `packages/domain/blueprint/testdata/fixtures.ts` — two readings, both documented
 
+> **RATIFIED by the coordinator.** Ruling, three phases:
+> **Phase 1 — B-lane:** rewrite the three `.replace('schemaVersion: 1', …)` derivations in
+> `a4f1-row-version-not-document-version.test.ts`, `a4p7-v3-cutover-acceptance.test.ts`,
+> `a4p7-v8-catalog-migration-state.test.ts` onto witnesses those files OWN (a builder or
+> literal with the version under test named as a constant); they do NOT touch fixtures.ts;
+> they must MEASURE — not assert — that the factory's digit has no influence on their
+> witnesses afterwards.
+> **Phase 2 — fence/wrapper owner (named dependency: one PR, one owner):** fixtures.ts → v3 +
+> `rules: []` envelopes, this wrapper's archetype-test pin updated IN THE SAME PR, and the
+> factory's FULL consumer set enumerated (not only the three measured here — a fourth
+> consumer found at merge time reopens this).
+> **Phase 3 — this lane:** the file stays DIRTY until both land; its DEFERRALS row says so
+> in those terms and cites this section (row text updated on this branch).
+
 The pre-flip ruling makes the factory A-class ("migrate-by-hand regardless of probe"), but
 two independent, measured constraints make a pre-flip v3 migration impossible INSIDE this
 lane's authority:
@@ -126,6 +140,19 @@ same PR (it is fence code). Until then the DEFERRALS row stands and the lane is 
 this lane proved migration is cross-lane, with numbers.
 
 ## 6. Deviations and environment notes (full disclosure)
+
+- **The fence flagged its own author while writing the Phase-3 DEFERRALS text (kept, with
+  the incident).** The first draft of the fixtures.ts deferral justification quoted the
+  derivations literally — `replace("schemaVersion: 1", ...)` — and the scan classified the
+  WRAPPER ITSELF dirty: `OFFENDING packages/testkit/test/a4p7-blueprint-version-clean.test.ts
+  :: L229=v1` (`dirty(111, 214)`), and the wrapper's own guard test
+  `the fence needs no exemption for its own author` turned red, together with
+  `the dirty set is EXACTLY the recorded Task 7.4 deferral set`. The row was rewritten to
+  describe the derivations without the literal carrier; scan is back to
+  `dirty(110, 213)`, the wrapper is named by zero classes, 58/58 green. The lesson is the
+  ruling's, demonstrated live: the mechanism makes its own author a citizen — describing a
+  retired-version carrier in prose is safe (prose class / no digit), quoting one is not,
+  and the guard catches it whether the author is a lane worker or the fence maintainer.
 
 - **`git checkout <path>` once, a no-op**: while iterating on the a1 migration I ran
   `git checkout packages/domain/test/a1-permission-policy.test.ts` against a file whose
