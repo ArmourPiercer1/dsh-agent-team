@@ -406,3 +406,111 @@ describe('F9 (control authority, F9H-T2): the unauthorized agent is rejected wit
     expect(request.status).toBe('decided')
   })
 })
+
+// --- scenario 3: exactly-once across an APPROVAL CASE chain (A4-PR3) -------------------
+//
+// An approval CASE adds a chain of legs to the same invocation, so the
+// exactly-once law has to be re-pinned where it could plausibly break: the
+// terminal `deny` that escalation writes must not be consumable, the risen leg
+// must be the ONLY thing that can authorize, and a terminal close written by
+// the service (`appendTerminalOutcome`, a close the reviewer did NOT choose)
+// must never mint an allow (ADR A2-8). Consumption is asserted as a COUNT of
+// durable `control-allow-consumed` rows, never inferred from a verdict.
+let s3: {
+  readonly pendingReasonAfterEscalation: string
+  readonly consumptionsAfterEscalation: number
+  readonly firstAllowed: boolean
+  readonly secondReason: string
+  readonly consumptionsAfterAllow: number
+  readonly terminalVerdictReason: string
+  readonly terminalValue: string
+  readonly consumptionsAfterTerminal: number
+}
+{
+  const world = await createP6T4World('f9-case-1', ['leader', 'worker'])
+  try {
+    const service = createP6T4Service(world)
+    const identity = {
+      subject: { kind: 'instance', instanceId: WORKER_ID } as const,
+      beneficiaryAuthority: 'member' as const,
+      requestedEffect: 'ask' as const,
+    }
+    const ask = async (correlation: string, fingerprint: string) => {
+      const scope = makeScope({ correlation, operationFingerprint: fingerprint })
+      const created = await service.requestApprovalLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER_ID),
+        kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+        reviewAuthority: 'leader',
+        requiredAuthorityAtCreation: 'leader',
+        identity: { ...identity, operationFingerprint: fingerprint, correlation },
+        actionName: scope.actionName,
+        toolName: scope.toolName,
+      })
+      if (created.kind !== 'leg') throw new Error('the case needs a leg')
+      return { scope, leg: created.leg }
+    }
+    const chain = await ask('corr-f9-case-1', 'fp-f9-case-1')
+    const escalated = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: chain.leg.requestId,
+      reason: 'the leader recuses',
+    })
+    const guardWhileRisen = await service.guardOperation(chain.scope)
+    // Captured HERE, not in the outcome literal below: a count read at the end
+    // of the scenario would silently be the FINAL count, and every
+    // "consumed exactly once" claim would become unfalsifiable.
+    const consumptionsAfterEscalation = controlFacts(world, 'control-allow-consumed').length
+    await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: humanCaller(),
+      requestId: escalated.nextLeg?.requestId ?? 'missing',
+      decision: CONTROL_DECISION_VALUES.ALLOW,
+    })
+    const first = await service.guardOperation(chain.scope)
+    const second = await service.guardOperation(chain.scope)
+    const consumptionsAfterAllow = controlFacts(world, 'control-allow-consumed').length
+    // A second case, closed by the service rather than by a reviewer.
+    const other = await ask('corr-f9-case-2', 'fp-f9-case-2')
+    const terminal = await service.appendTerminalOutcome({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: other.leg.requestId,
+      terminalReason: 'resolver-unavailable',
+      note: 'the resolver disappeared before anyone could decide',
+    })
+    const guardOfTerminal = await service.guardOperation(other.scope)
+    const consumptionsAfterTerminal = controlFacts(world, 'control-allow-consumed').length
+    s3 = {
+      pendingReasonAfterEscalation:
+        guardWhileRisen.allowed === true ? 'ALLOWED' : guardWhileRisen.reason,
+      consumptionsAfterEscalation,
+      firstAllowed: first.allowed,
+      secondReason: second.allowed === true ? 'ALLOWED-AGAIN' : second.reason,
+      consumptionsAfterAllow,
+      terminalVerdictReason:
+        guardOfTerminal.allowed === true ? 'ALLOWED' : guardOfTerminal.reason,
+      terminalValue: terminal.decision,
+      consumptionsAfterTerminal,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+}
+
+describe('A4-PR3 (exactly-once across an approval case): escalation adds no second authorization', () => {
+  it('a risen case authorizes nothing until the RISEN leg is decided, and consumes exactly once after', () => {
+    expect(s3.pendingReasonAfterEscalation).toBe(CONTROL_GUARD_BLOCK_REASONS.REQUEST_PENDING)
+    expect(s3.consumptionsAfterEscalation).toBe(0)
+    expect(s3.firstAllowed).toBe(true)
+    expect(s3.secondReason).toBe(CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED)
+    expect(s3.consumptionsAfterAllow).toBe(1)
+  })
+
+  it('a terminal close the reviewer did not choose is a deny and can never be consumed (ADR A2-8)', () => {
+    expect(s3.terminalValue).toBe(CONTROL_DECISION_VALUES.DENY)
+    expect(s3.terminalVerdictReason).toBe(CONTROL_GUARD_BLOCK_REASONS.DECISION_DENY)
+    expect(s3.consumptionsAfterTerminal).toBe(1)
+  })
+})

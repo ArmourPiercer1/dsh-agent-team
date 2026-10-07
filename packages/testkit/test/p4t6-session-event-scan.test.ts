@@ -1789,10 +1789,40 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p2-ceiling-reachability.test.ts',
       'packages/runtime/test/a4p2-dual-envelope-mutation.test.ts',
     ]
+    // A4-PR3 (lane A/B/C): four lane sources plus four specs, all inside the
+    // scanner's existing `packages/**/*.ts` scope, nothing generated and nothing
+    // removed. The `intervention/` lane ships UNWIRED by design (ADR A4-6's
+    // zero-dist posture restated at plan line 302: it is deliberately NOT in
+    // `packages/runtime/tsconfig.build.json`, and the test asserting that is
+    // `packages/runtime/test/a4p3-intervention-projection.test.ts`), so the four
+    // sources are counted exactly as any other lane source is. Everything else
+    // this PR touches is an EDIT to an already-counted file
+    // (control/types.ts, control/service.ts, control/index.ts,
+    // control/leader-notification.ts, src/plugin/projection-source.ts,
+    // packages/client/src/model/ledger-adapter.ts and the amended specs) — an
+    // edit is not an increment — and `dist/**` plus
+    // `dev/agent-workflow/evidence/**` stay outside the scanned scope.
+    // Arithmetic: 987 + 8 = 995. RED raw
+    // `dev/agent-workflow/evidence/a4-pr3/red-captures/RED-04-p4t6-file-count-pin.txt`
+    // reported `expected 994 to be 987`. The eighth file is
+    // `a4p3-intervention-lane-hygiene.test.ts`, which the FREEZE AUDIT (finding F4,
+    // against the pre-amendment freeze) required: the plan names it at line 305, so
+    // the pin moved 994 -> 995 — and it moved for a NAMED file, which is what the
+    // tie below is for.
+    const SCANNED_PATHS_A4PR3: readonly string[] = [
+      'packages/runtime/intervention/types.ts',
+      'packages/runtime/intervention/derivation.ts',
+      'packages/runtime/intervention/projection.ts',
+      'packages/runtime/intervention/index.ts',
+      'packages/runtime/test/a4p3-approval-case.test.ts',
+      'packages/runtime/test/a4p3-approval-escalation.test.ts',
+      'packages/runtime/test/a4p3-intervention-projection.test.ts',
+      'packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
-    expect(scanResult.filesScanned).toBe(983 + SCANNED_PATHS_A4PR2.length)
-    expect(scanResult.files.length).toBe(983 + SCANNED_PATHS_A4PR2.length)
+    expect(scanResult.filesScanned).toBe(983 + SCANNED_PATHS_A4PR2.length + SCANNED_PATHS_A4PR3.length)
+    expect(scanResult.files.length).toBe(983 + SCANNED_PATHS_A4PR2.length + SCANNED_PATHS_A4PR3.length)
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
     // dropped) is otherwise indistinguishable from one that moved for the right
@@ -1817,7 +1847,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/domain/test/a4p1-blueprint-v3-governance.test.ts',
       'packages/runtime/test/a4p1-authority-envelope.test.ts',
     ]
-    for (const path of [...SCANNED_PATHS_A4PR0, ...SCANNED_PATHS_A4PR1, ...SCANNED_PATHS_A4PR2]) {
+    for (const path of [
+      ...SCANNED_PATHS_A4PR0,
+      ...SCANNED_PATHS_A4PR1,
+      ...SCANNED_PATHS_A4PR2,
+      ...SCANNED_PATHS_A4PR3,
+    ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
     // The tie between the two forms of the pin, and the only place a number is
@@ -1828,6 +1863,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // The A4-PR2 tie, same form: the movement equals the named files, and every one
     // of them is asserted present by path above.
     expect(SCANNED_PATHS_A4PR2.length).toBe(987 - 983)
+    // The A4-PR3 tie, same form: the movement equals the named files, and every
+    // one of them is asserted present by path above.
+    expect(SCANNED_PATHS_A4PR3.length).toBe(995 - 987)
 
   })
 

@@ -1,0 +1,80 @@
+# runtime lane suites, review-fix round — same 13 files as runtime-suites-final.txt
+# $ cd packages/runtime && npx vitest run test/a3p3-governance-lane-hygiene.test.ts test/a4p3-approval-case.test.ts
+#   test/a4p3-approval-escalation.test.ts test/a4p3-intervention-lane-hygiene.test.ts test/a4p3-intervention-projection.test.ts
+#   test/c1-control-notification.test.ts test/c1-leader-notification-glue.test.ts test/c1-production-wiring.test.ts
+#   test/c1-restart-recovery.test.ts test/control-legacy-row-compat.test.ts test/f9-control-exactly-once.test.ts
+#   test/mcp-target-materialization.test.ts test/p6t4-restart.test.ts
+# exit=0; 13 files / 198 tests passed (was 13 / 168 before the fidelity-review fixes: +20 escalation, +10 case)
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ M-bM-^\M-^S test/a4p3-intervention-lane-hygiene.test.ts (9 tests) 11ms
+ M-bM-^\M-^S test/c1-control-notification.test.ts (8 tests) 6ms
+ M-bM-^\M-^S test/a4p3-intervention-projection.test.ts (32 tests) 11ms
+ M-bM-^\M-^S test/control-legacy-row-compat.test.ts (5 tests) 6ms
+ M-bM-^\M-^S test/p6t4-restart.test.ts (4 tests) 4ms
+ M-bM-^\M-^S test/a4p3-approval-case.test.ts (28 tests) 9ms
+ M-bM-^\M-^S test/c1-restart-recovery.test.ts (2 tests) 3ms
+ M-bM-^\M-^S test/f9-control-exactly-once.test.ts (10 tests) 8ms
+ M-bM-^\M-^S test/c1-leader-notification-glue.test.ts (5 tests) 3ms
+ M-bM-^\M-^S test/a4p3-approval-escalation.test.ts (57 tests) 11ms
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ M-bM-^\M-^S test/c1-production-wiring.test.ts (5 tests) 3ms
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ M-bM-^\M-^S test/a3p3-governance-lane-hygiene.test.ts (17 tests) 1456ms
+     M-bM-^\M-^S the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name  1370ms
+stderr | test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time M-bM-^@M-^T the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ M-bM-^\M-^S test/mcp-target-materialization.test.ts (16 tests) 8ms
+
+ Test Files  13 passed (13)
+      Tests  198 passed (198)
+   Start at  09:33:17
+   Duration  2.42s (transform 9.76s, setup 0ms, import 15.88s, tests 1.54s, environment 1ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

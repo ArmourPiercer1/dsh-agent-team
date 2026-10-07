@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-escalation.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts [ test/a4p3-approval-escalation.test.ts ]
+ReferenceError: controlFacts is not defined
+ ❯ test/a4p3-approval-escalation.test.ts:833:64
+    831|     const adminGuard = await service.guardOperation(adminScope)
+    832|     const adminRows = {
+    833|       requests: controlFacts(world, 'control-request-recorded').length,
+       |                                                                ^
+    834|       decisions: controlFacts(world, 'control-decision-recorded').leng…
+    835|     }
+ ❯ test/a4p3-approval-escalation.test.ts:798:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  08:38:38
+   Duration  979ms (transform 640ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+=== RED-06b (the load-bearing capture; supersedes the first RED-06 draft) ===
+Method: this is a RE-ESTABLISHED RED, not a pre-implementation one — the members
+were already written when the audit landed. The two factory exports
+`closeApprovalCaseWithoutLeg` and `findApprovalCaseByIdentity` were REMOVED from
+the production `return` of `createControlService` (production code only), the
+frozen suite was run, and the exports were restored. It shows exactly the state
+the audit found: with no frozen close path, the durable-close and identity-lookup
+tests have nothing to call.
+The first RED-06 capture in this file recorded `ReferenceError: controlFacts is
+not defined` — a missing helper import in the test, NOT the missing member. That
+capture was not a valid RED and is kept only because evidence is append-only.
+
+ Test Files  1 failed (1)
+      Tests  no tests
+TypeError: service.closeApprovalCaseWithoutLeg is not a function

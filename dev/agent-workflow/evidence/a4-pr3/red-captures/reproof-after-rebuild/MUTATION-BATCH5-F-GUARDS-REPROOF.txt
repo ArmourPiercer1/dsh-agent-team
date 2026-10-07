@@ -1,0 +1,21 @@
+=== MUT-25b-createdAt-fallback-empty (valid re-run of MUT-25a) ===
+     × a case state whose rows carry no createdAt projects NO item 4ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 113 passed (114)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { …(12) } to be undefined
+
+=== MUT-31-zero-review-close-mints-allow ===
+     × the A1-12 path leaves a readable case and nothing pending 5ms
+     × the public close writes one case, is idempotent, and never authorizes 1ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  2 failed | 112 passed (114)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected true to be false // Object.is equality
+AssertionError: expected 'allow' to be 'deny' // Object.is equality
+
+=== MUT-32-zero-review-close-not-idempotent ===
+ Test Files  1 failed | 6 passed (7)
+      Tests  77 passed (77)
+ControlError: ControlService: no durable leg row carries approvalCaseId 'case-1thck751hqtzx21yh38ov00m' — closing a case that was never opened needs the identity form (zero durable side effects)
+    4069|         throw new ControlError(

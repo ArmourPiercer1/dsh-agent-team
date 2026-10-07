@@ -1,0 +1,59 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-case.test.ts (18 tests | 1 failed) 8ms
+     ✓ refuses a case carrying BOTH fingerprints, with zero durable side effects 1ms
+     ✓ refuses a mutation-kind case with no mutation fingerprint and an operation case with an empty one 0ms
+     ✓ refuses every non-closed-set vocabulary value in the identity 0ms
+     ✓ derives the case id from the identity and keeps the caller out of it (A2-7) 1ms
+     ✓ is idempotent per invocation and separates cases by correlation 0ms
+     ✓ reads an open case: one leg, no escalations, nothing reviewed yet 0ms
+     ✓ lists the open case, honours the subject filter, and never lists another subject 0ms
+     ✓ carries the risen leg in the SAME case and records who already acted 0ms
+     ✓ leaves a decided case out of the open list but keeps it readable 0ms
+     ✓ reconstructs the whole chain from the durable rows after a restart 0ms
+     ✓ names a leg row without a leg ordinal as a leg-ordinal problem 0ms
+     ✓ names an off-ladder review authority as a review-authority problem 0ms
+     ✓ names two legs that disagree about the frozen identity as an identity disagreement 0ms
+     ✓ names a duplicated ordinal as a broken chain 0ms
+     ✓ reports an unknown case as not-found 0ms
+     ✓ lists the healthy case anyway: one corrupt case does not poison the read plane 0ms
+     × refuses to authorize on a row the case read refuses, even with a durable allow (A2-9) 3ms
+     ✓ refuses to authorize an operation whose case is corrupt 0ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 passed (18)
+   Start at  09:02:22
+   Duration  907ms (transform 604ms, setup 0ms, import 806ms, tests 8ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the corrupt durable shapes are reported, never defaulted (A2-9) > refuses to authorize on a row the case read refuses, even with a durable allow (A2-9)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/a4p3-approval-case.test.ts:659:29
+    657|     expect(corrupt.unusable.problem).toBe(APPROVAL_CASE_READ_PROBLEMS.…
+    658|     const verdict = corrupt.guardOfUnusable
+    659|     expect(verdict.allowed).toBe(false)
+       |                             ^
+    660|     if (verdict.allowed === true) return
+    661|     expect(verdict.reason).toBe('no-request')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+× refuses to authorize on a row the case read refuses, even with a durable allow (A2-9) 3ms

@@ -1,0 +1,88 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-escalation.test.ts (30 tests | 2 failed) 14ms
+     ✓ the closed decision-reason vocabulary carries `escalated` beside `external-policy` 2ms
+     ✓ an escalated terminal deny survives the production reader 0ms
+     ✓ the inline waiter settles on the escalated deny instead of hanging 0ms
+     ✓ the escalated deny authorizes nothing at the guard 1ms
+     ✓ writes exactly one control-escalation-recorded leg fact with the frozen A3-12(ii) payload 0ms
+     ✓ closes the escalating leg with a deny carrying reason `escalated` 0ms
+     ✓ raises a NEW leg: same case, next ordinal, risen authority, never the parent id (A1-10) 0ms
+     × an escalated case authorizes nothing while its current leg is the closed one 4ms
+     × the risen leg decided by the risen reviewer authorizes the operation exactly once 1ms
+     ✓ the escalated-away reviewer cannot take the risen leg, with zero side effects (spec 11.4) 0ms
+     ✓ the closed leg can never be decided again (terminal legs stay terminal) 0ms
+     ✓ the case state reads the whole chain, and a restart reconstructs it 0ms
+     ✓ refuses to escalate a terminal leg, with zero durable side effects 0ms
+     ✓ refuses to escalate an abandoned leg, with zero durable side effects 0ms
+     ✓ an abandoned leg reports the abandon even to a caller who is not a resolver 0ms
+     ✓ refuses to escalate a pre-Alpha.4 row (no case to rise) 0ms
+     ✓ refuses an identity without exactly one fingerprint (spec 11.1, A1-15) 0ms
+     ✓ a leg whose reviewer cannot exist terminates synchronously with ZERO leg rows (A1-12) 0ms
+     ✓ a rise to Human Admin writes the closing leg only and reports authority-unavailable (spec 11.6) 0ms
+     ✓ `escalate` is a reviewer action and is absent from the decision vocabulary 0ms
+     ✓ a durable row carrying `escalate` as its decision authorizes nothing 0ms
+     ✓ the production reader drops the row outright (the first of the three gates) 0ms
+     ✓ the guard decision dispatch is exhaustive with a typed refusal default 0ms
+     ✓ the terminal-reason vocabulary is closed and adds no new status or decision value 0ms
+     ✓ the escalation successor table is exhaustive over the ladder and never re-spells it 0ms
+     ✓ every terminal reason maps to a deny — a close cannot mint authority (A2-8) 0ms
+     ✓ a terminal outcome round-trips through the production reader with its reason 0ms
+     ✓ a terminal outcome authorizes nothing and is written at most once 0ms
+     ✓ a terminalReason outside the closed set is refused, not stored 0ms
+     ✓ the escalated reason is a decision REASON, and the ladder names come from the owner 0ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 28 passed (30)
+   Start at  08:17:00
+   Duration  1.01s (transform 653ms, setup 0ms, import 894ms, tests 14ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > an escalation closes the current leg and raises the next one (A5-5, A1-10) > an escalated case authorizes nothing while its current leg is the closed one
+AssertionError: expected 'decision-deny' to be 'request-pending' // Object.is equality
+
+Expected: "request-pending"
+Received: "decision-deny"
+
+ ❯ test/a4p3-approval-escalation.test.ts:419:28
+    417|     const verdict = escalation.guardAfterEscalation as ControlGuardVer…
+    418|     expect(verdict.allowed).toBe(false)
+    419|     expect(verdict.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.REQUEST_PE…
+       |                            ^
+    420|     expect(escalation.after.consumptions).toHaveLength(0)
+    421|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > an escalation closes the current leg and raises the next one (A5-5, A1-10) > the risen leg decided by the risen reviewer authorizes the operation exactly once
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p3-approval-escalation.test.ts:425:73
+    423|   it('the risen leg decided by the risen reviewer authorizes the opera…
+    424|     expect(escalation.allowed?.decision).toBe(CONTROL_DECISION_VALUES.…
+    425|     expect((escalation.guardAfterAllow as ControlGuardVerdict).allowed…
+       |                                                                         ^
+    426|     expect(escalation.guardSecond?.allowed).toBe(false)
+    427|     expect(escalation.guardSecond?.reason).toBe(CONTROL_GUARD_BLOCK_RE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+× an escalated case authorizes nothing while its current leg is the closed one 4ms
+× the risen leg decided by the risen reviewer authorizes the operation exactly once 1ms

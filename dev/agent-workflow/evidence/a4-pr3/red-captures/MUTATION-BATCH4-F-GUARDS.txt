@@ -1,0 +1,117 @@
+=== MUT-20a-escalate-never-legal ===
+     × an insufficient reviewer may deny or escalate, and may never allow 5ms
+     × a sufficient non-admin reviewer may allow, escalate or deny 1ms
+     × a HUMAN-USER leg keeps escalate although Alpha.4 has no Admin resolver (spec 21.5, audit F1) 1ms
+     × projects one item per open CASE, bound to the operation fingerprint 1ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  4 failed | 109 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'deny' ] to deeply equal [ 'escalate', 'deny' ]
+AssertionError: expected [ 'allow', 'deny' ] to deeply equal [ 'allow', 'escalate', 'deny' ]
+AssertionError: expected [ 'allow', 'deny' ] to deeply equal [ 'allow', 'escalate', 'deny' ]
+AssertionError: expected [ 'allow', 'deny' ] to deeply equal [ 'allow', 'escalate', 'deny' ]
+
+=== MUT-20b-escalate-always-legal ===
+     × a top-of-ladder reviewer may allow or deny only (no rung above) 6ms
+     × insufficient reach at the top of the ladder leaves DENY alone 1ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  2 failed | 111 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'allow', 'escalate', 'deny' ] to deeply equal [ 'allow', 'deny' ]
+AssertionError: expected [ 'escalate', 'deny' ] to deeply equal [ 'deny' ]
+
+=== MUT-21-a112-close-removed ===
+     × a leg whose reviewer cannot exist terminates synchronously, durably and never pending (A1-12) 4ms
+     × the A1-12 path leaves a readable case and nothing pending 1ms
+     × the public close writes one case, is idempotent, and never authorizes 1ms
+     × a terminated case is reachable from the identity that produced it 1ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  4 failed | 109 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected +0 to be 1 // Object.is equality
+AssertionError: expected 'problem' to be 'case' // Object.is equality
+AssertionError: expected { requests: 1, decisions: 1 } to deeply equal { requests: 2, decisions: 2 }
+AssertionError: expected { kind: 'none' } to deeply equal { kind: 'found', …(1) }
+
+=== MUT-22-open-leg-close-allowed ===
+     × a member cannot close somebody else's case, and an open leg is appendTerminalOutcome's 3ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 112 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+Error: assertControlCode: expected ControlError 'CONTROL_REQUEST_MALFORMED', got TypeError: Cannot read properties of undefined (reading 'entry')
+    519|   if (!isControlError(error)) {
+    521|       `assertControlCode: expected ControlError '${code}', got ${descr…
+
+=== MUT-23-close-authority-gate-removed ===
+     × a member cannot close somebody else's case, and an open leg is appendTerminalOutcome's 3ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 112 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+Error: assertControlCode: expected ControlError 'CONTROL_RESOLVER_NOT_AUTHORIZED', got undefined
+    519|   if (!isControlError(error)) {
+    521|       `assertControlCode: expected ControlError '${code}', got ${descr…
+
+=== MUT-24-identity-lookup-unverified ===
+     × an identity that never produced a case is reported as absent, not guessed 4ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 112 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 'found' to be 'none' // Object.is equality
+
+=== MUT-25-createdAt-fallback-empty ===
+ Test Files  1 failed | 6 passed (7)
+      Tests  82 passed (82)
+
+=== MUT-26-throwing-reader-synthesizes ===
+     × a reader that THROWS yields no legal actions and no published authority (spec §18.3, audit F6) 5ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 112 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'allow', 'escalate', 'deny' ] to deeply equal []
+
+=== MUT-27-case-outcome-name-drift ===
+     × `escalated` is a frozen CASE OUTCOME, and every terminal outcome is one (audit F7) 4ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 112 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 'rose', 'authority-unavailable' ] to deeply equal [ Array(2) ]
+
+=== MUT-28-escalation-fact-category-removed ===
+     × C1b: the residual — host keys no derived writer produces — stays exactly pinned 3ms
+     × C2: every derived fact type has a host category (the defect this PR fixes) 2ms
+     × C3: the host map is mirrored on the client (the ledger summary must classify identically) 1ms
+     × C4: the eight frozen categories are exactly eight, and nothing maps outside them 1ms
+     × C6: the guard is non-vacuous — removing the abandonment entry is caught 1ms
+ Test Files  1 failed (1)
+      Tests  5 failed | 4 passed (9)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 'control-escalation-rose,provision-mem…' to be 'provision-member-instance' // Object.is equality
+AssertionError: expected 'control-escalation-recorded' to be '' // Object.is equality
+AssertionError: expected 'control-escalation-rose' to be '' // Object.is equality
+AssertionError: expected undefined to be 'control' // Object.is equality
+AssertionError: expected [ 'control-escalation-recorded' ] to deeply equal []
+
+=== MUT-29-reverse-edge-added ===
+     × no source outside intervention/** imports the intervention lane 7ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 112 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected '/home/user/dsh-plugins/dsh-agent-team…' not to match /from\s+'[^']*intervention\//
+  isControlError,
+        : `permission denied: canonicalization failed for tool \"${name}\" (unexpected canonicalizer failure: ${
+        reason: `permission denied: the static permission resolution failed (unexpected resolver failure: ${
+          reason: `permission denied: the dynamic permission decision failed (unexpected read-plane failure: ${
+                reason: `permission denied: the external policy recheck failed (unexpected check failure: ${
+            reason: `permission denied: the external policy recheck failed (unexpected check failure: ${
+      const reason = isControlError(error)
+      if (isControlError(error) && error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED) {
+      if (isControlError(error) && error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED) {
+        reason: `permission denied: the approval wait failed (unexpected wait failure: ${
+        reason: `permission denied: the last-mile guard failed (unexpected guard failure: ${
+
+=== MUT-30-barrel-widened ===
+     × the type exports are the frozen set 5ms
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 112 passed (113)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ …(26) ] to deeply equal [ 'ControlRowShape', …(24) ]

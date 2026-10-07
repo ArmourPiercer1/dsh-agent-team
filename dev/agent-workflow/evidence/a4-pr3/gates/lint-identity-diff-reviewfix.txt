@@ -1,0 +1,5 @@
+# lint identity multiset diff vs the frozen baseline
+# baseline: dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-11e1609c.txt (162 lines)
+# now:      lint-identities-reviewfix.txt (162 lines)
+# (eslint exits 1 on the baseline too: the 162 pre-existing identities ARE the baseline)
+diff exit=0 (0 = identical, no new lint identity, no mute used)

@@ -1,0 +1,138 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-escalation.test.ts (37 tests | 4 failed) 13ms
+     ✓ the closed decision-reason vocabulary carries `escalated` beside `external-policy` 1ms
+     ✓ an escalated terminal deny survives the production reader 0ms
+     ✓ the inline waiter settles on the escalated deny instead of hanging 0ms
+     ✓ the escalated deny authorizes nothing at the guard 0ms
+     ✓ writes exactly one control-escalation-recorded leg fact with the frozen A3-12(ii) payload 0ms
+     ✓ the DURABLE payload is five members; the DERIVED record adds exactly two (audit F12) 0ms
+     ✓ closes the escalating leg with a deny carrying reason `escalated` 0ms
+     ✓ raises a NEW leg: same case, next ordinal, risen authority, never the parent id (A1-10) 0ms
+     ✓ an escalated case authorizes nothing while its current leg is the closed one 0ms
+     ✓ the risen leg decided by the risen reviewer authorizes the operation exactly once 0ms
+     ✓ the escalated-away reviewer cannot take the risen leg, with zero side effects (spec 11.4) 0ms
+     ✓ the closed leg can never be decided again (terminal legs stay terminal) 0ms
+     ✓ the case state reads the whole chain, and a restart reconstructs it 0ms
+     ✓ refuses to escalate a terminal leg, with zero durable side effects 0ms
+     ✓ refuses to escalate an abandoned leg, with zero durable side effects 0ms
+     ✓ an abandoned leg reports the abandon even to a caller who is not a resolver 0ms
+     ✓ refuses to escalate a pre-Alpha.4 row (no case to rise) 0ms
+     ✓ refuses an identity without exactly one fingerprint (spec 11.1, A1-15) 0ms
+     × a leg whose reviewer cannot exist terminates synchronously, durably and never pending (A1-12) 4ms
+     ✓ a rise to Human Admin writes the closing leg only and reports authority-unavailable (spec 11.6) 0ms
+     ✓ `escalate` is a reviewer action and is absent from the decision vocabulary 0ms
+     ✓ a durable row carrying `escalate` as its decision authorizes nothing 0ms
+     ✓ the production reader drops the row outright (the first of the three gates) 0ms
+     ✓ the guard decision dispatch is exhaustive with a typed refusal default 0ms
+     × the A1-12 path leaves a readable case and nothing pending 0ms
+     × the public close writes one case, is idempotent, and never authorizes 2ms
+     ✓ a member cannot close somebody else's case, and an open leg is appendTerminalOutcome's 0ms
+     × a terminated case is reachable from the identity that produced it 0ms
+     ✓ an identity that never produced a case is reported as absent, not guessed 0ms
+     ✓ the terminal-reason vocabulary is closed and adds no new status or decision value 0ms
+     ✓ the escalation successor table is exhaustive over the ladder and never re-spells it 0ms
+     ✓ every terminal reason maps to a deny — a close cannot mint authority (A2-8) 0ms
+     ✓ a terminal outcome round-trips through the production reader with its reason 0ms
+     ✓ a terminal outcome authorizes nothing and is written at most once 0ms
+     ✓ a terminalReason outside the closed set is refused, not stored 0ms
+     ✓ `escalated` is a frozen CASE OUTCOME, and every terminal outcome is one (audit F7) 0ms
+     ✓ the escalated reason is a decision REASON, and the ladder names come from the owner 0ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 33 passed (37)
+   Start at  08:59:58
+   Duration  979ms (transform 647ms, setup 0ms, import 873ms, tests 13ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > escalation refuses what it must and terminates what cannot be reviewed > a leg whose reviewer cannot exist terminates synchronously, durably and never pending (A1-12)
+AssertionError: expected 'leg' to be 'authority-unavailable' // Object.is equality
+
+Expected: "authority-unavailable"
+Received: "leg"
+
+ ❯ test/a4p3-approval-escalation.test.ts:683:38
+    681|
+    682|   it('a leg whose reviewer cannot exist terminates synchronously, dura…
+    683|     expect(refusals.noAdminLeg.kind).toBe(CONTROL_CASE_TERMINAL_OUTCOM…
+       |                                      ^
+    684|     // A1-12 REDEFINED by audit F2: "zero leg rows" was an unobservable
+    685|     // termination. The close now writes a leg row that is BORN TERMIN…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > a case with no reviewable leg is still durable and still authorizes nothing (audit F2) > the A1-12 path leaves a readable case and nothing pending
+AssertionError: expected 'leg' to be 'authority-unavailable' // Object.is equality
+
+Expected: "authority-unavailable"
+Received: "leg"
+
+ ❯ test/a4p3-approval-escalation.test.ts:990:35
+    988| describe('a case with no reviewable leg is still durable and still aut…
+    989|   it('the A1-12 path leaves a readable case and nothing pending', () =…
+    990|     expect(zeroLeg.adminLeg.kind).toBe(CONTROL_CASE_TERMINAL_OUTCOMES.…
+       |                                   ^
+    991|     // The termination is OBSERVABLE: the case reads back, it does not…
+    992|     expect(zeroLeg.adminRead.kind).toBe('case')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > a case with no reviewable leg is still durable and still authorizes nothing (audit F2) > the public close writes one case, is idempotent, and never authorizes
+AssertionError: expected { requests: 2, decisions: 1 } to deeply equal { requests: 2, decisions: 2 }
+
+- Expected
++ Received
+
+  {
+-   "decisions": 2,
++   "decisions": 1,
+    "requests": 2,
+  }
+
+ ❯ test/a4p3-approval-escalation.test.ts:1013:36
+    1011|       zeroLeg.closed.terminalDecision.decisionSequence,
+    1012|     )
+    1013|     expect(zeroLeg.rowsAfterClose).toEqual({ requests: 2, decisions: 2…
+       |                                    ^
+    1014|     expect(zeroLeg.pendingAfterClose).toBe(0)
+    1015|     expect(zeroLeg.closedRead.kind).toBe('case')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > a case is found by its frozen identity, decided or not (audit F3) > a terminated case is reachable from the identity that produced it
+AssertionError: expected { kind: 'found', …(1) } to deeply equal { kind: 'found', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "approvalCaseId": "unexpected-leg",
++   "approvalCaseId": "case-1k2jwrj1x73v401f1mym50ik",
+    "kind": "found",
+  }
+
+ ❯ test/a4p3-approval-escalation.test.ts:1046:27
+    1044| describe('a case is found by its frozen identity, decided or not (audi…
+    1045|   it('a terminated case is reachable from the identity that produced i…
+    1046|     expect(zeroLeg.found).toEqual({ kind: 'found', approvalCaseId: zer…
+       |                           ^
+    1047|   })
+    1048|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+× a leg whose reviewer cannot exist terminates synchronously, durably and never pending (A1-12) 4ms
+× the A1-12 path leaves a readable case and nothing pending 0ms
+× the public close writes one case, is idempotent, and never authorizes 2ms
+× a terminated case is reachable from the identity that produced it 0ms

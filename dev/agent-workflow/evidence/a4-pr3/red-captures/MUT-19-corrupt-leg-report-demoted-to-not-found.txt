@@ -1,0 +1,96 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ✓ test/a4p3-intervention-projection.test.ts (31 tests) 13ms
+ ✓ test/control-legacy-row-compat.test.ts (5 tests) 6ms
+ ✓ test/p6t4-restart.test.ts (4 tests) 3ms
+ ❯ test/a4p3-approval-case.test.ts (17 tests | 3 failed) 15ms
+     ✓ refuses a case carrying BOTH fingerprints, with zero durable side effects 1ms
+     ✓ refuses a mutation-kind case with no mutation fingerprint and an operation case with an empty one 0ms
+     ✓ refuses every non-closed-set vocabulary value in the identity 0ms
+     ✓ derives the case id from the identity and keeps the caller out of it (A2-7) 1ms
+     ✓ is idempotent per invocation and separates cases by correlation 1ms
+     ✓ reads an open case: one leg, no escalations, nothing reviewed yet 1ms
+     ✓ lists the open case, honours the subject filter, and never lists another subject 1ms
+     ✓ carries the risen leg in the SAME case and records who already acted 1ms
+     ✓ leaves a decided case out of the open list but keeps it readable 0ms
+     ✓ reconstructs the whole chain from the durable rows after a restart 0ms
+     × names a leg row without a leg ordinal as a leg-ordinal problem 5ms
+     × names an off-ladder review authority as a review-authority problem 1ms
+     ✓ names two legs that disagree about the frozen identity as an identity disagreement 0ms
+     ✓ names a duplicated ordinal as a broken chain 0ms
+     ✓ reports an unknown case as not-found 0ms
+     × lists the healthy case anyway: one corrupt case does not poison the read plane 2ms
+     ✓ refuses to authorize an operation whose case is corrupt 0ms
+ ✓ test/a4p3-approval-escalation.test.ts (30 tests) 10ms
+ ✓ test/f9-control-exactly-once.test.ts (10 tests) 4ms
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  3 failed | 94 passed (97)
+   Start at  08:32:07
+   Duration  1.16s (transform 4.14s, setup 0ms, import 5.90s, tests 51ms, environment 1ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the corrupt durable shapes are reported, never defaulted (A2-9) > names a leg row without a leg ordinal as a leg-ordinal problem
+AssertionError: expected 'case' to be 'problem' // Object.is equality
+
+Expected: "problem"
+Received: "case"
+
+ ❯ test/a4p3-approval-case.test.ts:560:36
+    558| describe('the corrupt durable shapes are reported, never defaulted (A2…
+    559|   it('names a leg row without a leg ordinal as a leg-ordinal problem',…
+    560|     expect(corrupt.noOrdinal.kind).toBe('problem')
+       |                                    ^
+    561|     if (corrupt.noOrdinal.kind !== 'problem') return
+    562|     expect(corrupt.noOrdinal.problem).toBe(APPROVAL_CASE_READ_PROBLEMS…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the corrupt durable shapes are reported, never defaulted (A2-9) > names an off-ladder review authority as a review-authority problem
+Error: an off-ladder leg must be a problem, got case
+ ❯ test/a4p3-approval-case.test.ts:568:13
+    566|   it('names an off-ladder review authority as a review-authority probl…
+    567|     if (corrupt.offLadder.kind !== 'problem') {
+    568|       throw new Error(`an off-ladder leg must be a problem, got ${corr…
+       |             ^
+    569|     }
+    570|     expect(corrupt.offLadder.problem).toBe(APPROVAL_CASE_READ_PROBLEMS…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the corrupt durable shapes are reported, never defaulted (A2-9) > lists the healthy case anyway: one corrupt case does not poison the read plane
+AssertionError: expected [ …(3) ] to deeply equal [ 'case-0x4fpd30im7zxc1raafkd1u9' ]
+
+- Expected
++ Received
+
+  [
++   "case-1scvlwf1id7ctk1da0mbh0ir",
++   "case-1ci5r0l0ndxqj20r6nf2z13r",
+    "case-0x4fpd30im7zxc1raafkd1u9",
+  ]
+
+ ❯ test/a4p3-approval-case.test.ts:595:82
+    593|
+    594|   it('lists the healthy case anyway: one corrupt case does not poison …
+    595|     expect(corrupt.list.map((summary) => summary.state.identity.approv…
+       |                                                                                  ^
+    596|       corrupt.healthyCaseId,
+    597|     ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+× names a leg row without a leg ordinal as a leg-ordinal problem 5ms
+× names an off-ladder review authority as a review-authority problem 1ms
+× lists the healthy case anyway: one corrupt case does not poison the read plane 2ms

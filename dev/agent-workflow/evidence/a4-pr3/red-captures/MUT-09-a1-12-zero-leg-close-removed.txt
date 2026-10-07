@@ -1,0 +1,68 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-escalation.test.ts (30 tests | 1 failed) 10ms
+     ✓ the closed decision-reason vocabulary carries `escalated` beside `external-policy` 1ms
+     ✓ an escalated terminal deny survives the production reader 0ms
+     ✓ the inline waiter settles on the escalated deny instead of hanging 0ms
+     ✓ the escalated deny authorizes nothing at the guard 0ms
+     ✓ writes exactly one control-escalation-recorded leg fact with the frozen A3-12(ii) payload 0ms
+     ✓ closes the escalating leg with a deny carrying reason `escalated` 0ms
+     ✓ raises a NEW leg: same case, next ordinal, risen authority, never the parent id (A1-10) 0ms
+     ✓ an escalated case authorizes nothing while its current leg is the closed one 0ms
+     ✓ the risen leg decided by the risen reviewer authorizes the operation exactly once 0ms
+     ✓ the escalated-away reviewer cannot take the risen leg, with zero side effects (spec 11.4) 0ms
+     ✓ the closed leg can never be decided again (terminal legs stay terminal) 0ms
+     ✓ the case state reads the whole chain, and a restart reconstructs it 0ms
+     ✓ refuses to escalate a terminal leg, with zero durable side effects 0ms
+     ✓ refuses to escalate an abandoned leg, with zero durable side effects 0ms
+     ✓ an abandoned leg reports the abandon even to a caller who is not a resolver 0ms
+     ✓ refuses to escalate a pre-Alpha.4 row (no case to rise) 0ms
+     ✓ refuses an identity without exactly one fingerprint (spec 11.1, A1-15) 0ms
+     × a leg whose reviewer cannot exist terminates synchronously with ZERO leg rows (A1-12) 4ms
+     ✓ a rise to Human Admin writes the closing leg only and reports authority-unavailable (spec 11.6) 0ms
+     ✓ `escalate` is a reviewer action and is absent from the decision vocabulary 0ms
+     ✓ a durable row carrying `escalate` as its decision authorizes nothing 0ms
+     ✓ the production reader drops the row outright (the first of the three gates) 0ms
+     ✓ the guard decision dispatch is exhaustive with a typed refusal default 0ms
+     ✓ the terminal-reason vocabulary is closed and adds no new status or decision value 0ms
+     ✓ the escalation successor table is exhaustive over the ladder and never re-spells it 0ms
+     ✓ every terminal reason maps to a deny — a close cannot mint authority (A2-8) 0ms
+     ✓ a terminal outcome round-trips through the production reader with its reason 0ms
+     ✓ a terminal outcome authorizes nothing and is written at most once 0ms
+     ✓ a terminalReason outside the closed set is refused, not stored 0ms
+     ✓ the escalated reason is a decision REASON, and the ladder names come from the owner 0ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 29 passed (30)
+   Start at  08:17:07
+   Duration  939ms (transform 610ms, setup 0ms, import 841ms, tests 10ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > escalation refuses what it must and terminates what cannot be reviewed > a leg whose reviewer cannot exist terminates synchronously with ZERO leg rows (A1-12)
+AssertionError: expected 'leg' to be 'authority-unavailable' // Object.is equality
+
+Expected: "authority-unavailable"
+Received: "leg"
+
+ ❯ test/a4p3-approval-escalation.test.ts:636:38
+    634|
+    635|   it('a leg whose reviewer cannot exist terminates synchronously with …
+    636|     expect(refusals.noAdminLeg.kind).toBe(CONTROL_CASE_TERMINAL_OUTCOM…
+       |                                      ^
+    637|     expect(refusals.caseRows).toBe(0)
+    638|     expect(CONTROL_UNRESOLVABLE_AUTHORITIES).toEqual(['human-admin'])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+× a leg whose reviewer cannot exist terminates synchronously with ZERO leg rows (A1-12) 4ms

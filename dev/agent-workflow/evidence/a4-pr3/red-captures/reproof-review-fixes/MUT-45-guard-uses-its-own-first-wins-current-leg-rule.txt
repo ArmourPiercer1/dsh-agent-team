@@ -1,0 +1,212 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-case.test.ts (28 tests | 2 failed) 10ms
+     ✓ refuses a case carrying BOTH fingerprints, with zero durable side effects 1ms
+     ✓ refuses a mutation-kind case with no mutation fingerprint and an operation case with an empty one 0ms
+     ✓ refuses every non-closed-set vocabulary value in the identity 0ms
+     ✓ derives the case id from the identity and keeps the caller out of it (A2-7) 1ms
+     ✓ is idempotent per invocation and separates cases by correlation 0ms
+     ✓ reads an open case: one leg, no escalations, nothing reviewed yet 0ms
+     ✓ lists the open case, honours the subject filter, and never lists another subject 0ms
+     ✓ carries the risen leg in the SAME case and records who already acted 0ms
+     ✓ leaves a decided case out of the open list but keeps it readable 0ms
+     ✓ reconstructs the whole chain from the durable rows after a restart 0ms
+     ✓ names a leg row without a leg ordinal as a leg-ordinal problem 0ms
+     ✓ names an off-ladder review authority as a review-authority problem 0ms
+     ✓ names two legs that disagree about the frozen identity as an identity disagreement 0ms
+     ✓ names a duplicated ordinal as a broken chain 0ms
+     ✓ reports an unknown case as not-found 0ms
+     ✓ lists the healthy case anyway: one corrupt case does not poison the read plane 0ms
+     ✓ refuses to authorize on a row the case read refuses, even with a durable allow (A2-9) 0ms
+     ✓ refuses to authorize an operation whose case is corrupt 0ms
+     ✓ the scenario reached a risen leg to test against 0ms
+     ✓ resolveControl, appendTerminalOutcome and escalateApprovalLeg agree 0ms
+     ✓ no entrance wrote anything, and the operation stayed unauthorized 0ms
+     ✓ the refusal binds the principal who acted, not every principal 0ms
+     ✓ the case is corrupt (the read names the problem the retry must not paper over) 0ms
+     ✓ the retry is refused typed, naming that problem 0ms
+     ✓ no leg is handed back, and nothing is written 0ms
+     ✓ the scenario really built the split: a durable allow and a broken chain 0ms
+     × the guard does not proceed on the row the reader refused 4ms
+     × and it burns no approval doing so 1ms
+ ❯ test/a4p3-approval-escalation.test.ts (57 tests | 4 failed) 16ms
+     ✓ the closed decision-reason vocabulary carries `escalated` beside `external-policy` 1ms
+     ✓ an escalated terminal deny survives the production reader 0ms
+     ✓ the inline waiter settles on the escalated deny instead of hanging 0ms
+     ✓ the escalated deny authorizes nothing at the guard 0ms
+     ✓ writes exactly one control-escalation-recorded leg fact with the frozen A3-12(ii) payload 0ms
+     ✓ the DURABLE payload is five members; the DERIVED record adds exactly two (audit F12) 0ms
+     ✓ closes the escalating leg with a deny carrying reason `escalated` 0ms
+     ✓ raises a NEW leg: same case, next ordinal, risen authority, never the parent id (A1-10) 0ms
+     × an escalated case authorizes nothing while its current leg is the closed one 4ms
+     × the risen leg decided by the risen reviewer authorizes the operation exactly once 1ms
+     ✓ the escalated-away reviewer cannot take the risen leg, with zero side effects (spec 11.4) 0ms
+     ✓ the closed leg can never be decided again (terminal legs stay terminal) 0ms
+     ✓ the case state reads the whole chain, and a restart reconstructs it 0ms
+     ✓ refuses to escalate a terminal leg, with zero durable side effects 0ms
+     ✓ refuses to escalate an abandoned leg, with zero durable side effects 0ms
+     ✓ an abandoned leg reports the abandon even to a caller who is not a resolver 0ms
+     ✓ refuses to escalate a pre-Alpha.4 row (no case to rise) 0ms
+     ✓ refuses an identity without exactly one fingerprint (spec 11.1, A1-15) 0ms
+     ✓ a leg whose reviewer cannot exist terminates synchronously, durably and never pending (A1-12) 0ms
+     ✓ a rise to Human Admin writes the closing leg only and reports authority-unavailable (spec 11.6) 0ms
+     ✓ `escalate` is a reviewer action and is absent from the decision vocabulary 0ms
+     ✓ a durable row carrying `escalate` as its decision authorizes nothing 0ms
+     ✓ the production reader drops the row outright (the first of the three gates) 0ms
+     ✓ the guard decision dispatch is exhaustive with a typed refusal default 0ms
+     ✓ the A1-12 path leaves a readable case and nothing pending 0ms
+     ✓ the public close writes one case, is idempotent, and never authorizes 0ms
+     ✓ a member cannot close somebody else's case, and an open leg is appendTerminalOutcome's 0ms
+     ✓ a terminated case is reachable from the identity that produced it 0ms
+     ✓ an identity that never produced a case is reported as absent, not guessed 0ms
+     ✓ the terminal-reason vocabulary is closed and adds no new status or decision value 0ms
+     ✓ the escalation successor table is exhaustive over the ladder and never re-spells it 0ms
+     ✓ every terminal reason maps to a deny — a close cannot mint authority (A2-8) 0ms
+     ✓ a terminal outcome round-trips through the production reader with its reason 0ms
+     ✓ a terminal outcome authorizes nothing and is written at most once 0ms
+     ✓ a terminalReason outside the closed set is refused, not stored 0ms
+     ✓ `escalated` is a frozen CASE OUTCOME, and every terminal outcome is one (audit F7) 0ms
+     ✓ the escalated reason is a decision REASON, and the ladder names come from the owner 0ms
+     ✓ resolveControl(escalated-away reviewer, risen leg, `allow`) is refused typed 0ms
+     ✓ the refused allow wrote NOTHING at all 0ms
+     ✓ appendTerminalOutcome by the same principal is refused with the SAME code (one law, one home) 0ms
+     × neither refusal authorizes or consumes anything 0ms
+     × the refusals do not wedge the case — the risen rung still decides it exactly once 0ms
+     ✓ the identity lookup answers `found` for a case whose only leg is corrupt 0ms
+     ✓ and the case read then names the typed problem, not a missing case 0ms
+     ✓ rising a leg that carries no frozen identity is refused typed 0ms
+     ✓ and no leg row is written with an invented beneficiary 0ms
+     ✓ the fault surfaces the typed durable-write failure and claims no closure 0ms
+     ✓ the fault leaves exactly the partial state: a leg row and no deny 0ms
+     ✓ the retry completes the close instead of being refused by its own partial state 0ms
+     ✓ the completed case is durable-terminal: nothing pending, nothing open, nothing authorized 0ms
+     ✓ the fault surfaces the typed durable-write failure 0ms
+     ✓ the partial state is fail-closed for the operation: denied `escalated`, nothing consumable 0ms
+     ✓ the leg fact is durable while the risen leg is absent, and the case is not open 0ms
+     ✓ the retry is refused DECIDED — this lane does NOT reconcile a faulted rise (disclosed) 0ms
+     ✓ (A) a decided earlier leg refuses, with no escalation fact in the world 0ms
+     ✓ (B) an escalated earlier leg refuses, with no decision row on it 0ms
+     ✓ the law binds the principal who acted — a fresh reviewer still decides 0ms
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 79 passed (85)
+   Start at  09:30:44
+   Duration  983ms (transform 1.18s, setup 0ms, import 1.71s, tests 26ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the guard uses the case read’s current-leg law (one law, one home) > the guard does not proceed on the row the reader refused
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/a4p3-approval-case.test.ts:946:36
+    944|
+    945|   it('the guard does not proceed on the row the reader refused', () =>…
+    946|     expect(tieBreak.guard.allowed).toBe(false)
+       |                                    ^
+    947|     if (tieBreak.guard.allowed === true) return
+    948|     expect(tieBreak.guard.reason).toBe('request-pending')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the guard uses the case read’s current-leg law (one law, one home) > and it burns no approval doing so
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ test/a4p3-approval-case.test.ts:952:35
+    950|
+    951|   it('and it burns no approval doing so', () => {
+    952|     expect(tieBreak.consumptions).toBe(0)
+       |                                   ^
+    953|   })
+    954| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > an escalation closes the current leg and raises the next one (A5-5, A1-10) > an escalated case authorizes nothing while its current leg is the closed one
+AssertionError: expected 'decision-deny' to be 'request-pending' // Object.is equality
+
+Expected: "request-pending"
+Received: "decision-deny"
+
+ ❯ test/a4p3-approval-escalation.test.ts:466:36
+    464|     const verdict = escalation.guardAfterEscalation as ControlGuardVer…
+    465|     expect(verdict.allowed).toBe(false)
+    466|     expect(blockReasonOf(verdict)).toBe(CONTROL_GUARD_BLOCK_REASONS.RE…
+       |                                    ^
+    467|     expect(escalation.after.consumptions).toHaveLength(0)
+    468|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > an escalation closes the current leg and raises the next one (A5-5, A1-10) > the risen leg decided by the risen reviewer authorizes the operation exactly once
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p3-approval-escalation.test.ts:472:73
+    470|   it('the risen leg decided by the risen reviewer authorizes the opera…
+    471|     expect(escalation.allowed?.decision).toBe(CONTROL_DECISION_VALUES.…
+    472|     expect((escalation.guardAfterAllow as ControlGuardVerdict).allowed…
+       |                                                                         ^
+    473|     expect(escalation.guardSecond?.allowed).toBe(false)
+    474|     expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > every decision entrance refuses the escalated-away reviewer (spec 21.5, 24.5; ADR A1-10) > neither refusal authorizes or consumes anything
+AssertionError: expected 'decision-deny' to be 'request-pending' // Object.is equality
+
+Expected: "request-pending"
+Received: "decision-deny"
+
+ ❯ test/a4p3-approval-escalation.test.ts:1232:60
+    1230|   it('neither refusal authorizes or consumes anything', () => {
+    1231|     expect(selfDecision.guardAfterAttempts.allowed).toBe(false)
+    1232|     expect(blockReasonOf(selfDecision.guardAfterAttempts)).toBe(
+       |                                                            ^
+    1233|       CONTROL_GUARD_BLOCK_REASONS.REQUEST_PENDING,
+    1234|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts > every decision entrance refuses the escalated-away reviewer (spec 21.5, 24.5; ADR A1-10) > the refusals do not wedge the case — the risen rung still decides it exactly once
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p3-approval-escalation.test.ts:1242:50
+    1240|       CONTROL_DECISION_VALUES.ALLOW,
+    1241|     )
+    1242|     expect(selfDecision.guardAfterRisen.allowed).toBe(true)
+       |                                                  ^
+    1243|     expect(selfDecision.state.consumptions).toHaveLength(1)
+    1244|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

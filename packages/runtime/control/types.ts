@@ -112,6 +112,20 @@
 import type { RemoteSafeJsonValue } from '../../contracts/src/index.js'
 import type { CapabilityName } from '../../domain/policy/src/index.js'
 import type { ActionCaller } from '../admission/index.js'
+// Alpha.4 (A4-PR3) — the approval-case ladder and the requested effect are
+// DERIVED THROUGH THE MODULES THAT OWN THEIR VOCABULARY (ADR X7-R3: a
+// re-spelled ladder union passes every structural test, so the only legal
+// spelling is the owner's alias). Both edges are `import type`: they are
+// erased at emit, so the Control plane gains no runtime edge to the
+// governance lane and `dist/packages/runtime/control/**` stays the only
+// emitted control surface.
+// `ProposalAuthorityPosition` IS the runtime ladder: ADR X7-R3 makes
+// `RuntimeAuthority` a type alias of it, and the a3p3 governance-lane
+// hygiene pin allows the NAME `RuntimeAuthority` in exactly four files,
+// with "sanctioned route: none" for widening that set — so the Control lane
+// names the durable owner, never the alias.
+import type { ProposalAuthorityPosition } from '../governance/proposal-store.js'
+import type { PermissionOverlayEffect } from '../../storage/schema/permission-overlay.js'
 
 // --- request kinds ------------------------------------------------------------------
 
@@ -197,6 +211,22 @@ export const CONTROL_DECISION_REASONS = {
    *  operation's capability cell (recorded as a `deny` decision —
    *  Architecture 25.4 / invariant 34). */
   EXTERNAL_POLICY: 'external-policy',
+  /**
+   * The reviewer ESCALATED the case: this row is the terminal decision of
+   * the closing leg (Alpha.4 A4-PR3, ADR A5-5, spec 11.3). It is a `deny`
+   * — never a fourth decision value (A2-1 / A3-3) — written in the SAME
+   * durable transaction as the `control-escalation-recorded` leg fact and
+   * the risen leg, so a closing leg is never left pending.
+   *
+   * WHY THIS VALUE IS LOAD-BEARING: `parseDecisionPayload` fails closed by
+   * DROPPING the whole row when `reason` is outside this closed set
+   * (service.ts:727-730). An `escalated` deny written while this vocabulary
+   * lacked the value would be invisible at read time: the leg would look
+   * PENDING forever, `awaitControlDecision` would never settle, and the
+   * escalation would hang with nothing red. Pinned by
+   * `a4p3-approval-escalation.test.ts` (preflight no-red finding 2).
+   */
+  ESCALATED: 'escalated',
 } as const
 
 /** One of the closed durable-decision reasons. */
@@ -204,6 +234,421 @@ export type ControlDecisionReason = (typeof CONTROL_DECISION_REASONS)[keyof type
 
 /** Every durable-decision reason value, for membership checks. */
 export const CONTROL_DECISION_REASON_VALUES: readonly string[] = Object.values(CONTROL_DECISION_REASONS)
+
+/**
+ * The closed reviewer-ACTION vocabulary (Alpha.4 A4-PR3, spec 11.5, ADR
+ * A2-1 / A3-3).
+ *
+ * This is a DIFFERENT axis from {@link CONTROL_DECISION_VALUES}: `escalate`
+ * is an action a reviewer may take, whose durable consequence is the
+ * additive leg fact plus a terminal `deny`/`escalated` decision row on the
+ * closing leg. `escalate` MUST NOT enter `CONTROL_DECISION_VALUES` (A2-1):
+ * a fourth decision value would make the first `escalate` row an implicit
+ * approval at any consumer that branches "if deny … else allow".
+ */
+export const CONTROL_REVIEW_ACTIONS = {
+  ALLOW: 'allow',
+  DENY: 'deny',
+  ESCALATE: 'escalate',
+} as const
+
+/** One of the closed reviewer actions. */
+export type ControlReviewAction = (typeof CONTROL_REVIEW_ACTIONS)[keyof typeof CONTROL_REVIEW_ACTIONS]
+
+/** Every reviewer action, for membership checks. */
+export const CONTROL_REVIEW_ACTION_VALUES: readonly string[] = Object.values(CONTROL_REVIEW_ACTIONS)
+
+// --- Alpha.4 approval cases and review legs (A4-PR3) -----------------------------------
+
+/**
+ * The authority ladder a review leg is bound to, expressed as the
+ * escalation ROUTING table of spec 11.4 ("new request leg is created for
+ * the next RuntimeAuthority").
+ *
+ * The type is the exhaustive `Record`, so the table's KEY SET is the ladder
+ * vocabulary the compiler can see: a rung added to
+ * {@link ProposalAuthorityPosition} without a successor here is a compile
+ * error, and nothing here re-spells the ladder union (ADR X7-R3). It is
+ * deliberately NOT a ranking: `AUTHORITY_RANK` in
+ * `governance/authority-ceiling.ts` stays the one ordering in the
+ * repository (ADR X2), and this module never compares two rungs — it only
+ * answers "who does this case rise to next", which is a routing fact of the
+ * approval plane, not a ceiling fact.
+ *
+ * `null` is the top of the ladder: a leg raised from it has no reviewer to
+ * rise to, which is exactly the `authority-unavailable` case of spec 11.6 /
+ * ADR A1-12 (Human Admin has no production constructor in Alpha.4).
+ */
+export const CONTROL_ESCALATION_SUCCESSOR: Record<
+  ProposalAuthorityPosition,
+  ProposalAuthorityPosition | null
+> = {
+  member: 'leader',
+  leader: 'human-user',
+  'human-user': 'human-admin',
+  'human-admin': null,
+}
+
+/**
+ * Fail-closed membership test for a durable ladder value.
+ *
+ * A durable row naming anything else is CORRUPT, never defaulted: an
+ * unknown review authority on a leg would otherwise read back as a leg
+ * nobody can decide (A2-9 strictness at the Control boundary). Implemented
+ * against {@link CONTROL_ESCALATION_SUCCESSOR}'s own key set, so the test
+ * cannot drift from the ladder.
+ *
+ * @param value - the candidate value.
+ * @returns whether `value` is one of the ladder positions.
+ */
+export function isProposalAuthorityPosition(value: unknown): value is ProposalAuthorityPosition {
+  return (
+    typeof value === 'string' &&
+    Object.prototype.hasOwnProperty.call(CONTROL_ESCALATION_SUCCESSOR, value)
+  )
+}
+
+/**
+ * The rung a case rises to from `position` (spec 11.4), or `null` at the
+ * top of the ladder (spec 11.6).
+ *
+ * @param position - the closing leg's review authority.
+ * @returns the successor position, or null when there is none.
+ */
+export function controlEscalationSuccessor(
+  position: ProposalAuthorityPosition,
+): ProposalAuthorityPosition | null {
+  return CONTROL_ESCALATION_SUCCESSOR[position]
+}
+
+/**
+ * The ladder rungs this build has NO resolver for (Alpha.4).
+ *
+ * ADR A1-12 names the fact literally: "cases whose required authority is
+ * `human-admin` (unimplementable in Alpha.4)" must terminate synchronously
+ * rather than wait for a reviewer who cannot exist — and acceptance 21.10
+ * forbids an Admin case from reconstructing "as a fake pending Admin
+ * request". This is an AVAILABILITY disclosure, not a ranking and not a
+ * subset of the ladder vocabulary: the rungs stay
+ * {@link ProposalAuthorityPosition}'s, and the table is the single place
+ * that says which of them nobody can be. It only ever REMOVES a leg
+ * (never authorizes one), so it cannot relax a ceiling.
+ *
+ * Human Admin authentication is an explicit Alpha.4 non-goal (spec 23); a
+ * later PR that ships an Admin resolver removes the entry here and the two
+ * synchronous-close gates in `service.ts` start admitting the rung.
+ */
+export const CONTROL_UNRESOLVABLE_AUTHORITIES: readonly ProposalAuthorityPosition[] = [
+  'human-admin',
+]
+
+/**
+ * Does this rung have a resolver in the current build?
+ *
+ * @param position - the ladder position to ask about.
+ * @returns false exactly for {@link CONTROL_UNRESOLVABLE_AUTHORITIES}.
+ */
+export function hasAuthorityResolver(position: ProposalAuthorityPosition): boolean {
+  return !CONTROL_UNRESOLVABLE_AUTHORITIES.includes(position)
+}
+
+/**
+ * The closed `terminalReason` vocabulary (Alpha.4 A4-PR3, ADR A2-8,
+ * spec 25.5): the reasons a leg terminates for, carried ADDITIVELY on the
+ * terminal decision row instead of becoming a new decision value or a new
+ * request status.
+ *
+ * `stale-denied` keeps its exact present meaning (the TARGET was terminal),
+ * and `escalated` is a decision REASON (CONTROL_DECISION_REASONS), not a
+ * terminal reason — so no value here duplicates either. Drift reasons were
+ * otherwise homeless: A2-8 forbids inventing a fourth decision value for
+ * them, and a fourth `ControlRequestStatus` would break every consumer that
+ * switches on the three-value status.
+ */
+export const CONTROL_LEG_TERMINAL_REASONS = {
+  /** The authority the case needs is no longer the authority the leg was
+   *  written against (A2-8: the DRIFT, not the target, terminated the
+   *  leg). */
+  AUTHORITY_DRIFT: 'authority-drift',
+  /** The resource identity behind the frozen fingerprint moved
+   *  (A2-13 / 25.6: key inequality after resolve, same-path recreate
+   *  included). */
+  RESOURCE_IDENTITY_DRIFT: 'resource-identity-drift',
+  /** No resolver exists for the authority this case needs (ADR A1-12,
+   *  spec 11.6) — the case terminates instead of waiting. */
+  RESOLVER_UNAVAILABLE: 'resolver-unavailable',
+} as const
+
+/** One of the closed leg terminal reasons. */
+export type ControlLegTerminalReason =
+  (typeof CONTROL_LEG_TERMINAL_REASONS)[keyof typeof CONTROL_LEG_TERMINAL_REASONS]
+
+/** Every leg terminal reason, for membership checks. */
+export const CONTROL_LEG_TERMINAL_REASON_VALUES: readonly string[] = Object.values(
+  CONTROL_LEG_TERMINAL_REASONS,
+)
+
+/**
+ * The FROZEN identity of one approval case (spec 11.1), read back from the
+ * durable leg rows that carry it.
+ *
+ * A2-7: every field is DERIVED SERVER-SIDE from the leg rows — no caller
+ * ever supplies an `ApprovalCaseIdentity` to a write path. `approvalCaseId`
+ * is the deterministic identity hash of the frozen fields (see
+ * `service.ts`), which is what makes a retry of the same logical flow land
+ * on the same case instead of minting a second one.
+ *
+ * Exactly one of the two fingerprints is present:
+ * `operationFingerprint` iff the case is an operation case, and
+ * `mutationProposalFingerprint` iff it is an `envelope-mutation` case
+ * (spec 11.1 — "exactly one of operation/mutation proposal fingerprints is
+ * present").
+ */
+export interface ApprovalCaseIdentity {
+  /** The stable case id (derived; see above). */
+  readonly approvalCaseId: string
+  /** The canonical subject the case is about. */
+  readonly subject: ControlSubject
+  /** Whose authority the case would raise (beneficiary, not reviewer). */
+  readonly beneficiaryAuthority: ProposalAuthorityPosition
+  /** The overlay effect the case asks for. */
+  readonly requestedEffect: PermissionOverlayEffect
+  /** Present iff this is an operation case. */
+  readonly operationFingerprint?: string
+  /** Present iff this is an `envelope-mutation` case. */
+  readonly mutationProposalFingerprint?: string
+  /** The caller's correlation token (per-invocation identity). */
+  readonly correlation: string
+}
+
+/**
+ * The caller-visible shape of {@link ApprovalCaseIdentity} at creation:
+ * every field except the derived `approvalCaseId` (A2-7 — the id is never
+ * caller-chosen).
+ */
+export type ApprovalCaseIdentityInput = Omit<ApprovalCaseIdentity, 'approvalCaseId'>
+
+/** The closed reasons an identity input can be refused for. */
+export const APPROVAL_CASE_IDENTITY_PROBLEMS = {
+  /** Neither or both fingerprints present (spec 11.1). */
+  FINGERPRINT_CARDINALITY: 'fingerprint-cardinality',
+  /** An operation case without an operationFingerprint (ADR A1-15). */
+  OPERATION_FINGERPRINT_REQUIRED: 'operation-fingerprint-required',
+  /** A mutation case naming no proposal fingerprint. */
+  MUTATION_FINGERPRINT_REQUIRED: 'mutation-proposal-fingerprint-required',
+  /** A ladder value outside the closed vocabulary (A2-9). */
+  AUTHORITY_POSITION_UNKNOWN: 'authority-position-unknown',
+  /** An effect outside the closed overlay effect vocabulary (A2-9). */
+  EFFECT_UNKNOWN: 'effect-unknown',
+  /** A subject that is not one of the closed canonical subjects. */
+  SUBJECT_MALFORMED: 'subject-malformed',
+} as const
+
+/** One closed identity-refusal reason. */
+export type ApprovalCaseIdentityProblem =
+  (typeof APPROVAL_CASE_IDENTITY_PROBLEMS)[keyof typeof APPROVAL_CASE_IDENTITY_PROBLEMS]
+
+/**
+ * The additive `control-escalation-recorded` leg fact (ADR A3-12(ii),
+ * spec 11.3/11.4): the durable record that a reviewer raised the case.
+ *
+ * The payload field set is FROZEN at exactly
+ * `{ approvalCaseId, legOrdinal, previousRequestId, escalatedBy, reason }`
+ * (A3-12(ii)); `previousRequestId` is the ONLY parent pointer (A3-12(iii)
+ * — no `parentCaseId`, no copied identity blob: the chain is reconstructed
+ * from the leg rows, each of which carries the frozen identity).
+ */
+export interface ControlEscalationRecord {
+  /** The case that rose. */
+  readonly approvalCaseId: string
+  /** The ordinal of the leg this escalation CLOSED. */
+  readonly legOrdinal: number
+  /** The requestId of the closed leg (A1-10: escalation never reuses it). */
+  readonly previousRequestId: string
+  /** Who escalated (a principal, not a leg — ADR A1-10 / 24.5). */
+  readonly escalatedBy: ControlCallerRef
+  /** Evidence text (never authority). */
+  readonly reason?: string
+  /** The ledger sequence of this leg fact. */
+  readonly escalationSequence: number
+  /** Fact creation time, ISO-8601. */
+  readonly createdAt: string
+}
+
+/**
+ * The derived state of one approval case, reconstructed from durable rows
+ * only (ADR A1-17: the case is a DERIVED view; nothing here is a second
+ * durable authority).
+ */
+export interface ApprovalCaseState {
+  /** The frozen identity, read off the first leg. */
+  readonly identity: ApprovalCaseIdentity
+  /** Every leg of the case in ascending `legOrdinal` order. */
+  readonly legs: readonly ControlRequestRecord[]
+  /** Every escalation leg fact in ascending ordinal order. */
+  readonly escalations: readonly ControlEscalationRecord[]
+  /** The highest-ordinal leg — the one a reviewer may still act on. */
+  readonly currentLeg?: ControlRequestRecord
+  /** The case outcome: `open` while the current leg is pending, `decided`
+   *  when it carries a decision, `abandoned` when it carries the abandon
+   *  mark (the abandon fact stays the terminal mark of ITS LEG only —
+   *  A1-10: an abandon never closes a case). */
+  readonly status: 'open' | 'decided' | 'abandoned'
+  /** The terminal decision of the current leg, when it has one. */
+  readonly terminalDecision?: ControlDecisionRecord
+  /**
+   * The principals that have ALREADY acted on an earlier leg of this case
+   * (ADR A1-10 / 24.5: a set of principals, not of legs). A principal in
+   * this set may not act on a later leg — that is the durable backing for
+   * "an escalated-away reviewer cannot come back and allow" (spec 11.4).
+   */
+  readonly reviewedBy: readonly ControlCallerRef[]
+}
+
+/** The closed reasons `readApprovalCaseState` can refuse to build a case. */
+export const APPROVAL_CASE_READ_PROBLEMS = {
+  /** No durable row carries the requested case id. */
+  NOT_FOUND: 'not-found',
+  /** A leg row carries a case id but no / a corrupt leg ordinal. */
+  LEG_ORDINAL: 'leg-ordinal',
+  /** A leg row's review authority is outside the closed ladder. */
+  REVIEW_AUTHORITY: 'review-authority',
+  /** Two legs of one case disagree about the frozen identity (A1-10). */
+  IDENTITY_DISAGREEMENT: 'identity-disagreement',
+  /** A leg ordinal appears twice, or the chain is not a 1-based sequence. */
+  CHAIN_BROKEN: 'chain-broken',
+} as const
+
+/** One closed case-read problem. */
+export type ApprovalCaseReadProblem =
+  (typeof APPROVAL_CASE_READ_PROBLEMS)[keyof typeof APPROVAL_CASE_READ_PROBLEMS]
+
+/** The typed read outcome for one approval case (A2-9: corrupt, never guess). */
+export type ApprovalCaseReadOutcome =
+  | { readonly kind: 'case'; readonly state: ApprovalCaseState }
+  | {
+      readonly kind: 'problem'
+      readonly problem: ApprovalCaseReadProblem
+      readonly approvalCaseId: string
+      readonly sequence?: number
+      readonly detail: string
+    }
+
+/**
+ * The terminal outcome of a case that can produce no reviewable leg, or of
+ * an escalation that has no rung left to rise to (ADR A1-12, spec 11.6).
+ *
+ * It is a RESULT, not a status: `authority-unavailable` is never an
+ * InterventionItem status (ADR X8-R2) and never a request status
+ * (`ControlRequestStatus` stays the three-value vocabulary).
+ */
+export const CONTROL_CASE_TERMINAL_OUTCOMES = {
+  /** No resolver exists / no rung left (spec 11.6). */
+  AUTHORITY_UNAVAILABLE: 'authority-unavailable',
+} as const
+
+/** One closed case terminal outcome. */
+export type ControlCaseTerminalOutcome =
+  (typeof CONTROL_CASE_TERMINAL_OUTCOMES)[keyof typeof CONTROL_CASE_TERMINAL_OUTCOMES]
+
+/**
+ * The CALLER-VISIBLE outcome of raising a leg (ADR A3-12(i); audit F7).
+ *
+ * `escalated` appears HERE and nowhere else in the vocabularies: it is not a
+ * decision value (ADR A2-1 keeps `allow | deny | stale-denied` closed), not a
+ * request status, and not a terminal outcome — the case CONTINUED, at the rung
+ * above. Before this table existed the cell was a bare string literal in
+ * `ControlEscalationOutcome`, so a caller had no frozen vocabulary to switch on
+ * and `terminalDecisionValueFor` could not name it (it takes a terminal reason,
+ * and an escalation is not one).
+ *
+ * Every terminal outcome is also a case outcome (`authority-unavailable` is the
+ * one Alpha.4 has), and the containment is pinned by
+ * `a4p3-approval-escalation.test.ts` so the two tables cannot drift apart.
+ */
+export const CONTROL_CASE_OUTCOMES = {
+  /** A leg closed and the case ROSE: a new leg exists at the next rung. */
+  ESCALATED: 'escalated',
+  /** The case closed because no rung (or no resolver) is left (spec 11.6). */
+  AUTHORITY_UNAVAILABLE: CONTROL_CASE_TERMINAL_OUTCOMES.AUTHORITY_UNAVAILABLE,
+} as const
+
+/** One closed caller-visible case outcome of a leg raise. */
+export type ControlCaseOutcome = (typeof CONTROL_CASE_OUTCOMES)[keyof typeof CONTROL_CASE_OUTCOMES]
+
+/** The closed case-outcome vocabulary, for membership tests and pins. */
+export const CONTROL_CASE_OUTCOME_VALUES: readonly string[] = Object.values(CONTROL_CASE_OUTCOMES)
+
+/** The result of raising a leg: a leg row, or a synchronous terminal close. */
+export type ControlRequestLegOutcome =
+  | { readonly kind: 'leg'; readonly leg: ControlRequestRecord }
+  | {
+      readonly kind: ControlCaseTerminalOutcome
+      readonly approvalCaseId: string
+      readonly reviewAuthority: ProposalAuthorityPosition
+      readonly requiredAuthority: ProposalAuthorityPosition
+      readonly detail: string
+    }
+
+/** The result of one escalation of one leg. */
+export interface ControlEscalationOutcome {
+  /** The additive leg fact (A3-12(ii) payload). */
+  readonly escalation: ControlEscalationRecord
+  /** The terminal `deny` + reason `escalated` on the closing leg (A5-5). */
+  readonly terminalDecision: ControlDecisionRecord
+  /** The risen leg, or ABSENT when the case terminated instead (spec 11.6). */
+  readonly nextLeg?: ControlRequestRecord
+  /** `escalated` when a leg rose; `authority-unavailable` when the case
+   *  closed because no rung is left (spec 11.6, ADR A1-12). A member of the
+   *  frozen {@link CONTROL_CASE_OUTCOMES} table (audit F7). */
+  readonly caseOutcome: ControlCaseOutcome
+}
+
+/**
+ * The result of closing a case that never had a REVIEWABLE leg (A4-PR3,
+ * audit F2).
+ *
+ * WHY a leg row is written at all. The earlier design wrote nothing, which made
+ * an ADR A1-12 termination unobservable: `appendTerminalOutcome` needs a
+ * requestId, the open-case list skips rows without a case identity, and a
+ * terminated case that leaves no row cannot be reported, audited or closed by
+ * a later lane. The close therefore writes the leg row AND its terminal deny in
+ * one transaction, so every durable field is TRUE (the case did arrive, at this
+ * rung, and did close) and nothing is invented. Acceptance 21.10 is untouched:
+ * the leg is BORN terminal, so the case never appears pending anywhere — not in
+ * `listOpenApprovalCases`, not in the host fold's `pendingControlCount`, not to
+ * the guard (which reports the durable deny).
+ */
+export interface ControlCaseClosure {
+  /** The case this close terminates (derived from the identity, A2-7). */
+  readonly approvalCaseId: string
+  /** The leg row the close wrote: born terminal, never open for review. */
+  readonly leg: ControlRequestRecord
+  /** The terminal `deny` the close wrote (never any other value). */
+  readonly terminalDecision: ControlDecisionRecord
+}
+
+/**
+ * The outcome of resolving a frozen approval-case IDENTITY to the case that
+ * owns it (ADR A2-7: derived, never caller-chosen; audit F3).
+ *
+ * A DECIDED case is excluded from `listOpenApprovalCases`, so without this
+ * lookup a second implementer holding an operation fingerprint has no frozen
+ * path back to its case.
+ */
+export type ApprovalCaseIdentityLookup =
+  | { readonly kind: 'found'; readonly approvalCaseId: string }
+  | { readonly kind: 'none' }
+
+/** One entry of the open-case list (ADR A1-11: the pending list spans
+ *  cases, not one carrier kind). */
+export interface ApprovalCaseSummary {
+  /** The derived case state (same shape as a single-case read). */
+  readonly state: ApprovalCaseState
+  /** The carrier kind of the current leg (compatibility carrier only —
+   *  ADR A2-17 / spec 19: it is NOT the reviewer semantics). */
+  readonly carrierKind: ControlRequestKind
+}
 
 // --- canonical subject (pre-alpha3 PR-D, D.2) --------------------------------------------
 
@@ -430,6 +875,37 @@ export interface ControlRequestRecord {
    * GUARDED flow (byte-identical for old rows).
    */
   readonly executionCoupling?: ControlExecutionCoupling
+  // --- Alpha.4 review-leg fields (A4-PR3; spec 11.2, ADR A2-7 / A2-8) -----------------
+  //
+  // EVERY field below is ADDITIVE: absent = a pre-Alpha.4 row, which must
+  // reconstruct byte-identically into today's behaviour (pinned by
+  // `control-legacy-row-compat.test.ts`). None of them is caller-authoritative
+  // for a decision: `reviewAuthority` says who may decide the leg, and
+  // `requiredAuthorityAtCreation` is PROVENANCE ONLY — the fresh required
+  // authority is always re-derived (spec 11.2, and PR4's consumption-point
+  // recheck at A1-14 is what actually gates execution).
+  /** The approval case this leg belongs to (spec 11.1). Present ⇒ the row
+   *  is an Alpha.4 LEG row, which is also the strict/legacy row
+   *  discriminator (ADR X8-R2). */
+  readonly approvalCaseId?: string
+  /** The 1-based ordinal of this leg inside its case (A1-10: leg identity =
+   *  `f(approvalCaseId, legOrdinal, previousRequestId)`). */
+  readonly legOrdinal?: number
+  /** The ladder position this leg was written for — who may decide it. */
+  readonly reviewAuthority?: ProposalAuthorityPosition
+  /** The ladder position the case needed when this leg was created
+   *  (provenance only; never re-read as authority). */
+  readonly requiredAuthorityAtCreation?: ProposalAuthorityPosition
+  /** The leg this one rose from (spec 11.2, A3-12(iii): the ONLY parent
+   *  pointer). Absent on the first leg. */
+  readonly previousRequestId?: string
+  /** Whose authority the case raises (spec 11.1, frozen for the case). */
+  readonly beneficiaryAuthority?: ProposalAuthorityPosition
+  /** The overlay effect the case asks for (spec 11.1, frozen). */
+  readonly requestedEffect?: PermissionOverlayEffect
+  /** The mutation proposal fingerprint, for `envelope-mutation` cases only
+   *  (exactly-one-fingerprint rule, spec 11.1). */
+  readonly mutationProposalFingerprint?: string
   /** The request's durable state, DERIVED at read time from the durable
    *  facts: `pending` while no decision fact and no abandon fact exists
    *  for the requestId, `decided` once a decision fact does (and no
@@ -462,6 +938,19 @@ export interface ControlDecisionRecord {
   /** The decider's free-form note (evidence text; NOT authority data;
    *  distinct from the closed `reason` vocabulary). */
   readonly note?: string
+  /**
+   * Why this TERMINAL row closed the leg, when the close was a drift or an
+   * unavailable-resolver close rather than a reviewer's refusal (Alpha.4
+   * A4-PR3, ADR A2-8, spec 25.5). ABSENT = an ordinary allow/deny and every
+   * pre-Alpha.4 row.
+   *
+   * This is the destination A2-8 names for authority/identity drift: those
+   * reasons were otherwise forced into a new decision value or a new
+   * request status, both of which A2-8 forbids. Like `reason` it is on the
+   * DECISION row — the leg row is immutable (append-only ledger), so the
+   * terminal mark lives on the row that terminates it.
+   */
+  readonly terminalReason?: ControlLegTerminalReason
   /** The exact scope snapshot the decision authorizes (allow) or refuses
    *  (deny/stale-denied) — frozen at decision time. */
   readonly scope: ControlOperationScope
@@ -554,6 +1043,21 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
    *  consumption fact is NOT written (the one-shot allow is not burned —
    *  "prefer zero allow consumption", invariant 34). */
   EXTERNAL_POLICY: 'external-policy',
+  /**
+   * The durable decision row for this scope carries a decision value
+   * OUTSIDE the closed `CONTROL_DECISION_VALUES` vocabulary — the typed
+   * refusal of the guard's exhaustive decision switch (Alpha.4 A4-PR3,
+   * ADR A2-1 / spec 25.1).
+   *
+   * Before this value existed the switch was `if stale-denied / if deny`,
+   * then a comment and a FALL THROUGH to authorization: any fourth value
+   * (the `escalate` row A2-1 forbids is the named example) would have been
+   * an IMPLICIT approval. Reaching this reason requires a row the read gate
+   * did not already drop — it is the guard's own last line of defence, and
+   * `packages/tools/guard.ts` fails closed for every reason but
+   * `no-request`, so an unrecognized value can never execute.
+   */
+  DECISION_UNRECOGNIZED: 'decision-unrecognized',
 } as const
 
 /** One of the closed guard block reasons. */
@@ -993,4 +1497,218 @@ export interface ControlService {
     readonly rootSessionId: string
     readonly requestId: string
   }): Promise<void>
+  /**
+   * Alpha.4 A4-PR3 — create (or IDEMPOTENTLY RECOVER) the first review leg
+   * of one approval case (spec 11.1/11.2, ADR A1-10, A2-7).
+   *
+   * Every case/leg field is derived server-side (A2-7): the
+   * `approvalCaseId` is the deterministic identity hash of the frozen
+   * identity, and the leg's `requestId` extends the existing scope-key
+   * derivation with the case id and the ordinal, so a retry of the same
+   * invocation returns the SAME leg instead of minting a second one
+   * (A1-10: "idempotency of `requestControl` is preserved by the leg
+   * ordinal"). Only the FIRST leg is created here — a risen leg is created
+   * exclusively by {@link escalateApprovalLeg}, which owns the
+   * `previousRequestId` link.
+   *
+   * `reviewAuthority` must be a rung this build can actually reach. Human
+   * Admin has no resolver in Alpha.4, so a leg written for it is REFUSED
+   * with the synchronous `authority-unavailable` outcome and ZERO durable
+   * side effects (ADR A1-12: termination happens before any leg row is
+   * written; such a case must never enter `wait-for-response`).
+   *
+   * The caller's role and envelope are checked exactly as
+   * {@link requestControl} checks them (no second authority path), and the
+   * request row keeps its existing meaning for every pre-Alpha.4 consumer.
+   * @param input.rootSessionId - the team (root) session id.
+   * @param input.caller - the requesting principal (host-authenticated).
+   * @param input.kind - the CARRIER kind (compatibility carrier only; not
+   *   the reviewer semantics — ADR A2-17, spec 19).
+   * @param input.reviewAuthority - the rung this leg is written for.
+   * @param input.requiredAuthorityAtCreation - provenance only.
+   * @param input.identity - the frozen case identity WITHOUT the derived
+   *   `approvalCaseId` (spec 11.1; exactly one fingerprint).
+   * @param input.actionName - the operation action name (scope identity).
+   * @param input.toolName - the tool name when the scope names one.
+   * @param input.capabilityDomain - the capability cell when known.
+   * @param input.summary - human-readable review summary.
+   * @param input.executionCoupling - `guarded | inline` (same semantics as
+   *   {@link requestControl}).
+   * @resolves the leg, or the synchronous terminal outcome (A1-12).
+   */
+  requestApprovalLeg(input: {
+    readonly rootSessionId: string
+    readonly caller: ActionCaller
+    readonly kind: ControlRequestKind
+    readonly reviewAuthority: ProposalAuthorityPosition
+    readonly requiredAuthorityAtCreation: ProposalAuthorityPosition
+    readonly identity: ApprovalCaseIdentityInput
+    readonly actionName: string
+    readonly toolName?: string
+    readonly capabilityDomain?: CapabilityName
+    readonly summary?: string
+    readonly executionCoupling?: ControlExecutionCoupling
+  }): Promise<ControlRequestLegOutcome>
+  /**
+   * Alpha.4 A4-PR3 — escalate one leg (spec 11.4, ADR A1-10, A3-3, A3-12,
+   * A5-5). THREE durable writes in ONE team-chain transaction:
+   *
+   * 1. the terminal `deny` decision on the closing leg with the additive
+   *    reason `escalated` (A5-5 — the reason that makes
+   *    `awaitControlDecision` settle instead of hanging);
+   * 2. the additive `control-escalation-recorded` leg fact with the frozen
+   *    A3-12(ii) payload `{ approvalCaseId, legOrdinal, previousRequestId,
+   *    escalatedBy, reason }`;
+   * 3. the risen leg at the next rung of
+   *    {@link CONTROL_ESCALATION_SUCCESSOR} — same case id, same frozen
+   *    identity, NEW requestId, `previousRequestId` = the closed leg
+   *    (A1-10: escalation never reuses the parent request id).
+   *
+   * When the next rung does not exist (the top of the ladder: Human Admin,
+   * which has no resolver in Alpha.4) write 3 is SKIPPED and the outcome is
+   * `authority-unavailable` (spec 11.6) — the case terminates rather than
+   * leaving a pending leg nobody can decide.
+   *
+   * Refusals, each with ZERO durable side effects: the leg is unknown,
+   * already terminal (decided, abandoned or escalated), a pre-Alpha.4 row
+   * with no case identity, or the caller is outside the kind's closed
+   * resolver roles or already in the case's `reviewedBy` set (spec 11.4:
+   * "old reviewer can no longer act on this case").
+   * @param input.rootSessionId - the team (root) session id.
+   * @param input.caller - the escalating reviewer.
+   * @param input.requestId - the leg to close.
+   * @param input.reason - evidence text (never authority).
+   * @resolves the leg fact, the terminal decision and the risen leg.
+   */
+  escalateApprovalLeg(input: {
+    readonly rootSessionId: string
+    readonly caller: ActionCaller
+    readonly requestId: string
+    readonly reason?: string
+  }): Promise<ControlEscalationOutcome>
+  /**
+   * Alpha.4 A4-PR3 — read one approval case, derived from durable rows
+   * only, with a TYPED problem outcome (A2-9: an authority-bearing read is
+   * strict — a leg row that carries a case id without a leg ordinal, an
+   * off-ladder review authority, two legs that disagree about the frozen
+   * identity, or a broken ordinal chain is CORRUPT, never defaulted).
+   * @param input.rootSessionId - the team (root) session id.
+   * @param input.approvalCaseId - the case to read.
+   * @resolves `kind: 'case'` with the derived state, or `kind: 'problem'`.
+   */
+  readApprovalCaseState(input: {
+    readonly rootSessionId: string
+    readonly approvalCaseId: string
+  }): Promise<ApprovalCaseReadOutcome>
+  /**
+   * Alpha.4 A4-PR3 — list the cases with a PENDING current leg (ADR
+   * A1-11: the pending list spans approval CASES, not the single
+   * `leader-approval` carrier kind). A case whose current leg is decided,
+   * abandoned or escalated away is not open; a case that terminated with
+   * `authority-unavailable` never appears as a fake pending Admin item
+   * (acceptance 21.10).
+   * @param input.rootSessionId - the team (root) session id.
+   * @param input.subject - optional subject filter (same canonical subject
+   *   identity as the operation scope).
+   * @resolves one summary per open case, in first-leg sequence order.
+   */
+  listOpenApprovalCases(input: {
+    readonly rootSessionId: string
+    readonly subject?: ControlSubject
+  }): Promise<readonly ApprovalCaseSummary[]>
+  /**
+   * Alpha.4 A4-PR3 — close one leg with a TERMINAL outcome that the
+   * reviewer did not choose (ADR A2-8: authority/identity drift and the
+   * unavailable-resolver close live in `terminalReason`, they do NOT
+   * become a fourth decision value or a fourth request status).
+   *
+   * The written decision value is never caller-chosen: a terminal close is
+   * structurally a `deny` (the frozen mapping
+   * `terminalDecisionValueFor` in `service.ts`), because a terminal outcome
+   * is the one place an `allow` must be impossible (spec 11.3: "escalate
+   * grants zero authority" generalizes to every non-reviewer close).
+   * Refusals with zero side effects mirror {@link resolveControl}: unknown
+   * request, already terminal, caller outside the resolver roles.
+   * @param input.rootSessionId - the team (root) session id.
+   * @param input.caller - the principal recording the close.
+   * @param input.requestId - the leg to close.
+   * @param input.terminalReason - a closed {@link ControlLegTerminalReason}.
+   * @param input.note - evidence text (never authority).
+   * @resolves the terminal decision row.
+   */
+  appendTerminalOutcome(input: {
+    readonly rootSessionId: string
+    readonly caller: ActionCaller
+    readonly requestId: string
+    readonly terminalReason: ControlLegTerminalReason
+    readonly note?: string
+  }): Promise<ControlDecisionRecord>
+  /**
+   * Alpha.4 A4-PR3 — the FROZEN mapping from a terminal reason to the
+   * durable decision value it must be recorded with (ADR A2-8). Every
+   * terminal reason maps to `deny`: exposing the mapping (rather than
+   * letting a caller pick a value) is what makes "a close the reviewer did
+   * not choose mints authority" impossible to express. Exposed for the
+   * PR4/PR5 lanes and pinned by `a4p3-approval-escalation.test.ts`.
+   * @param terminalReason - a closed {@link ControlLegTerminalReason}.
+   * @returns the decision value the terminal row carries.
+   */
+  terminalDecisionValueFor(terminalReason: ControlLegTerminalReason): ControlDecisionValue
+  /**
+   * Alpha.4 A4-PR3 — terminate a case that can produce NO reviewable leg, and
+   * make the termination DURABLE (ADR A1-12, A2-8, spec 11.6; audit F2).
+   *
+   * TWO input forms, exactly one of which is accepted:
+   * - `identity` + `carrier`: the case may not exist yet (the A1-12 case). The
+   *   case id is DERIVED from the identity (A2-7), the born-terminal leg row and
+   *   its terminal deny are written, and the closure is returned. A retry of the
+   *   same call is idempotent: it returns the same closure and writes nothing.
+   * - `approvalCaseId`: the case must already exist. A terminal case returns its
+   *   existing closure (idempotent); a case with an OPEN leg is REFUSED, because
+   *   that leg is reviewable and `appendTerminalOutcome` owns it.
+   *
+   * `carrier` names what the leg row must say (carrier kind, the rung that
+   * could not review, the operation). It is required with `identity` and
+   * forbidden with `approvalCaseId` — a leg row cannot be written from a
+   * fingerprint alone, and inventing those fields would be the fabrication this
+   * lane exists to avoid.
+   *
+   * Authority: the caller must be a resolver of `carrier.kind` (the same closed
+   * `CONTROL_RESOLVER_ROLES` table the resolve path uses), so a member cannot
+   * close somebody else's case. The asymmetry is deliberate and is why the check
+   * is the only authority gate: a close can ONLY ever write a `deny` (see
+   * {@link terminalDecisionValueFor}), so a mistaken caller costs a refusal,
+   * never a grant.
+   * @param input - the case (by identity or id) and the closed terminal reason.
+   * @returns the closure: the derived case id, the leg row and the deny.
+   */
+  closeApprovalCaseWithoutLeg(input: {
+    readonly rootSessionId: string
+    readonly caller: ActionCaller
+    readonly approvalCaseId?: string
+    readonly identity?: ApprovalCaseIdentityInput
+    readonly carrier?: {
+      readonly kind: ControlRequestKind
+      readonly reviewAuthority: ProposalAuthorityPosition
+      readonly actionName: string
+      readonly toolName?: string
+    }
+    readonly terminalReason: ControlLegTerminalReason
+    readonly note?: string
+  }): Promise<ControlCaseClosure>
+  /**
+   * Alpha.4 A4-PR3 — resolve a frozen approval-case identity to its case
+   * (ADR A2-7, spec 11.1; audit F3). Derived, never caller-chosen: the id is
+   * recomputed from the identity and then VERIFIED against the durable rows, so
+   * a caller cannot assert a case id it does not own, and a decided case (which
+   * the open-case list cannot show) is still reachable.
+   * @param input.rootSessionId - the team (root) session id.
+   * @param input.identity - the frozen identity (exactly one fingerprint).
+   * @returns `found` with the case id, or `none`.
+   */
+  findApprovalCaseByIdentity(input: {
+    readonly rootSessionId: string
+    readonly identity: ApprovalCaseIdentityInput
+    readonly kind?: ControlRequestKind
+  }): Promise<ApprovalCaseIdentityLookup>
 }

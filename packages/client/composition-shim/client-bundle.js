@@ -3589,6 +3589,21 @@ var __dshFactory = (require) => {
 			    // The renderer already had a case for this fact type while the category map
 			    // did not, so an abandoned request degraded the client's ledger summary.
 			    'control-request-abandoned': 'control',
+			    // A4-PR3 (ADR A5-22's mirror rule, with the category CORRECTED by X8-R3):
+			    // the additive escalation-leg mark, written by `control/service.ts`
+			    // `escalateApprovalLeg`. It lands in `control` — the same reasoning as the
+			    // abandon row above: an escalation closes a control LEG and opens the risen
+			    // one, it is not a governance PROPOSAL, so it does not belong beside
+			    // `governance-proposal-recorded` in `policy` (the original A5-6 rationale
+			    // did not transfer). Registration in this map and in the host's
+			    // `projection-source.ts` ship in the SAME commit, and the VALUE is pinned by
+			    // `ledger-adapter.test.ts` — `a4pr0a-fact-type-closed-set.test.ts` compares
+			    // the two maps' KEY SETS only, so without that pin a `policy` value here
+			    // would classify the row differently from the host, invisibly.
+			    // It deliberately enters the pairing switch NOWHERE: the terminal `deny`
+			    // decision row (reason `escalated`) is what closes leg 1, and the risen leg
+			    // is an ordinary request row — so no pending count can double-count a case.
+			    'control-escalation-recorded': 'control',
 			    // Strict-read durable authorization grant: a control-and-persistence
 			    // fact, NOT a control request/decision (it never enters the pairing
 			    // switch below, never increments a pending count, and is hidden from

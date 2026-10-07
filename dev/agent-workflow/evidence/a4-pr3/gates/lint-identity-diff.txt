@@ -1,0 +1,11 @@
+pnpm lint (= eslint .) identity diff vs dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-11e1609c.txt
+command: npx eslint . -f json, identity = '<error|warning> <ruleId|(parse-fatal)> <repo-relative-file>', sorted multiset
+
+after  this lane : 162 identities
+baseline        : 162 identities
+
+comm -13 baseline after (NEW)  : (empty)
+comm -23 baseline after (GONE) : (empty)
+
+=> the identity diff is EMPTY. `pnpm lint` itself exits 1 for both trees
+   (the baseline carries errors); no lint mute was added anywhere.

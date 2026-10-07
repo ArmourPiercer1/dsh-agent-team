@@ -1,0 +1,87 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ✓ test/a4p3-intervention-projection.test.ts (32 tests) 11ms
+ ✓ test/control-legacy-row-compat.test.ts (5 tests) 4ms
+ ❯ test/p6t4-restart.test.ts (4 tests | 1 failed) 8ms
+     ✓ pending request + recorded decision survive the restart; the unconsumed allow is recovered and consumed exactly once 2ms
+     ✓ a pre-restart consumption survives: the guard reports allow-consumed over the reopened domain 0ms
+     × an approval case reconstructs across TWO restarts: the chain, the escalation, the reviewedBy set and exactly one consumption (A4-PR3) 4ms
+     ✓ a pending request across the restart: the fresh service reports request-pending, then resolves and executes 0ms
+ ❯ test/a4p3-approval-case.test.ts (17 tests | 1 failed) 11ms
+     ✓ refuses a case carrying BOTH fingerprints, with zero durable side effects 2ms
+     ✓ refuses a mutation-kind case with no mutation fingerprint and an operation case with an empty one 0ms
+     ✓ refuses every non-closed-set vocabulary value in the identity 0ms
+     ✓ derives the case id from the identity and keeps the caller out of it (A2-7) 1ms
+     ✓ is idempotent per invocation and separates cases by correlation 0ms
+     ✓ reads an open case: one leg, no escalations, nothing reviewed yet 0ms
+     ✓ lists the open case, honours the subject filter, and never lists another subject 0ms
+     ✓ carries the risen leg in the SAME case and records who already acted 0ms
+     ✓ leaves a decided case out of the open list but keeps it readable 0ms
+     × reconstructs the whole chain from the durable rows after a restart 4ms
+     ✓ names a leg row without a leg ordinal as a leg-ordinal problem 0ms
+     ✓ names an off-ladder review authority as a review-authority problem 0ms
+     ✓ names two legs that disagree about the frozen identity as an identity disagreement 0ms
+     ✓ names a duplicated ordinal as a broken chain 0ms
+     ✓ reports an unknown case as not-found 0ms
+     ✓ lists the healthy case anyway: one corrupt case does not poison the read plane 0ms
+     ✓ refuses to authorize an operation whose case is corrupt 0ms
+ ✓ test/a4p3-approval-escalation.test.ts (37 tests) 8ms
+ ✓ test/f9-control-exactly-once.test.ts (10 tests) 4ms
+
+ Test Files  2 failed | 4 passed (6)
+      Tests  2 failed | 103 passed (105)
+   Start at  09:00:16
+   Duration  1.15s (transform 4.24s, setup 0ms, import 5.95s, tests 46ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the approval case reads (A1-11, A2-9) > reconstructs the whole chain from the durable rows after a restart
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ test/a4p3-approval-case.test.ts:553:36
+    551|     const retried = healthy.retriedLeg
+    552|     if (retried.kind !== 'leg') throw new Error('the retry must return…
+    553|     expect(retried.leg.legOrdinal).toBe(2)
+       |                                    ^
+    554|     expect(healthy.rowsAfterRetry).toBe(healthy.rowsBeforeRetry)
+    555|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/p6t4-restart.test.ts > p6t4 restart (MUST-TEST: pending request + recorded decision recover) > an approval case reconstructs across TWO restarts: the chain, the escalation, the reviewedBy set and exactly one consumption (A4-PR3)
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ test/p6t4-restart.test.ts:376:34
+    374|     expect(s4.openCaseCount).toBe(1)
+    375|     // The retry after the restart returns the CURRENT leg — never a t…
+    376|     expect(s4.retriedLegOrdinal).toBe(2)
+       |                                  ^
+    377|     // The escalated-away leg is terminal: a fresh service refuses to …
+    378|     expect(s4.closedLegResolveCode).toBe('CONTROL_REQUEST_DECIDED')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+× an approval case reconstructs across TWO restarts: the chain, the escalation, the reviewedBy set and exactly one consumption (A4-PR3) 4ms
+× reconstructs the whole chain from the durable rows after a restart 4ms

@@ -1,0 +1,88 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/client
+
+ ❯ test/ledger-adapter.test.ts (32 tests | 2 failed) 11ms
+     ✓ keeps the frozen wire values and attaches the category from the 12-fact mirror 1ms
+     ✓ TCM-M3: the Root initial work pair maps to the existing `team` category (no new category) 0ms
+     ✓ an unknown fact type omits the category (never guessed) 0ms
+     × A4-PR3: an escalation row maps to `control` — the VALUE, not just the key (ADR X8-R3) 4ms
+     × A4-PR3: a full escalation reads as closed leg 1, one plain row, pending leg 2 1ms
+     ✓ a non-integer sequence or non-string factType skips the row (fail-safe) 0ms
+     ✓ a null payload passes through as an empty record 0ms
+     ✓ the input is re-sorted by sequence defensively and never mutated 0ms
+     ✓ pairs the decision onto its request by requestId (pending flips, decision block set) 0ms
+     ✓ a duplicate request keeps the first draft (requestSequence = first entry) 0ms
+     ✓ an orphan decision is emitted only from the writer scope (no invented values) 0ms
+     ✓ an orphan decision without a full writer scope is skipped (nothing invented) 0ms
+     ✓ a request with broken identity leaves is skipped from the chains (rows keep it) 0ms
+     ✓ chains sort by requestSequence (requests first, then orphans by their sequence) 0ms
+     ✓ a grant is classified `control` and its raw payload is preserved 0ms
+     ✓ a grant creates NO control chain and adds NO pending count 0ms
+     ✓ mixed with one real pending request: ONLY that request is counted 0ms
+     ✓ a delivered message carries the recipient pair and NO from (the fact names no sender) 0ms
+     ✓ the delivered fallback is deliveredToInstanceId when recipientInstanceId is absent 0ms
+     ✓ a delivered message without subject or recipient is skipped 0ms
+     ✓ a coordination message is emitted only for the send-message action (from = caller) 0ms
+     ✓ pairs the close onto its open by correlation (first close stands) 0ms
+     ✓ a close without a loaded open is skipped (no invented interval) 0ms
+     ✓ an open without correlation or instance is skipped 0ms
+     ✓ under partial: progress is [] and pendingControlByInstance is {} even with real facts 0ms
+     ✓ under complete: progress rows are emitted (broken facts skipped) 0ms
+     ✓ under complete: pendingControlByInstance counts only the unpaired requests, per target instance 0ms
+     ✓ under complete: member rows get the per-instance badge (clean instance = known zero) 0ms
+     ✓ under partial: the badges stay null (unknown, never a guess) 0ms
+     ✓ F11-T4: 50 of 68 loaded (frontier 118) is partial — no pending badges; 68 of 68 is complete — the tail request badges 0ms
+     ✓ F11-T4: the §7.3 gate flips exactly at full load (67/68 stays partial despite the loaded request) 0ms
+     ✓ F11-T6 case 9: total known vs null — a null total never claims complete (no early completion), a known total counts loaded entries, not the frontier 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/ledger-adapter.test.ts > adaptTeamLedger — entry rows > A4-PR3: an escalation row maps to `control` — the VALUE, not just the key (ADR X8-R3)
+AssertionError: expected undefined to be 'control' // Object.is equality
+
+- Expected:
+"control"
+
++ Received:
+undefined
+
+ ❯ test/ledger-adapter.test.ts:226:26
+    224|     const row = must(model.entries[0], 'escalation row')
+    225|     expect(row.factType).toBe('control-escalation-recorded')
+    226|     expect(row.category).toBe('control')
+       |                          ^
+    227|     // And it is a MARK, not a request: it opens no chain and badges n…
+    228|     expect(model.controls.length).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/ledger-adapter.test.ts > adaptTeamLedger — entry rows > A4-PR3: a full escalation reads as closed leg 1, one plain row, pending leg 2
+AssertionError: expected undefined to be 'control' // Object.is equality
+
+- Expected:
+"control"
+
++ Received:
+undefined
+
+ ❯ test/ledger-adapter.test.ts:279:63
+    277|     expect(second.pending).toBe(true)
+    278|     expect(model.pendingControlByInstance).toEqual({ i1: 1 })
+    279|     expect(must(model.entries[2], 'escalation row').category).toBe('co…
+       |                                                               ^
+    280|   })
+    281|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 30 passed (32)
+   Start at  08:20:30
+   Duration  166ms (transform 49ms, setup 16ms, import 47ms, tests 11ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

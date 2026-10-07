@@ -1,0 +1,114 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ✓ test/a4p3-intervention-projection.test.ts (32 tests) 9ms
+ ✓ test/control-legacy-row-compat.test.ts (5 tests) 4ms
+ ✓ test/p6t4-restart.test.ts (4 tests) 4ms
+ ❯ test/a4p3-approval-case.test.ts (18 tests | 4 failed) 12ms
+     ✓ refuses a case carrying BOTH fingerprints, with zero durable side effects 1ms
+     ✓ refuses a mutation-kind case with no mutation fingerprint and an operation case with an empty one 0ms
+     ✓ refuses every non-closed-set vocabulary value in the identity 0ms
+     ✓ derives the case id from the identity and keeps the caller out of it (A2-7) 1ms
+     ✓ is idempotent per invocation and separates cases by correlation 0ms
+     ✓ reads an open case: one leg, no escalations, nothing reviewed yet 0ms
+     ✓ lists the open case, honours the subject filter, and never lists another subject 0ms
+     ✓ carries the risen leg in the SAME case and records who already acted 0ms
+     ✓ leaves a decided case out of the open list but keeps it readable 0ms
+     ✓ reconstructs the whole chain from the durable rows after a restart 0ms
+     × names a leg row without a leg ordinal as a leg-ordinal problem 4ms
+     × names an off-ladder review authority as a review-authority problem 0ms
+     ✓ names two legs that disagree about the frozen identity as an identity disagreement 0ms
+     ✓ names a duplicated ordinal as a broken chain 0ms
+     ✓ reports an unknown case as not-found 0ms
+     × lists the healthy case anyway: one corrupt case does not poison the read plane 2ms
+     × refuses to authorize on a row the case read refuses, even with a durable allow (A2-9) 0ms
+     ✓ refuses to authorize an operation whose case is corrupt 0ms
+ ✓ test/a4p3-approval-escalation.test.ts (37 tests) 9ms
+ ✓ test/f9-control-exactly-once.test.ts (10 tests) 4ms
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  4 failed | 102 passed (106)
+   Start at  09:02:27
+   Duration  1.13s (transform 4.29s, setup 0ms, import 5.87s, tests 41ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the corrupt durable shapes are reported, never defaulted (A2-9) > names a leg row without a leg ordinal as a leg-ordinal problem
+AssertionError: expected 'case' to be 'problem' // Object.is equality
+
+Expected: "problem"
+Received: "case"
+
+ ❯ test/a4p3-approval-case.test.ts:610:36
+    608| describe('the corrupt durable shapes are reported, never defaulted (A2…
+    609|   it('names a leg row without a leg ordinal as a leg-ordinal problem',…
+    610|     expect(corrupt.noOrdinal.kind).toBe('problem')
+       |                                    ^
+    611|     if (corrupt.noOrdinal.kind !== 'problem') return
+    612|     expect(corrupt.noOrdinal.problem).toBe(APPROVAL_CASE_READ_PROBLEMS…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the corrupt durable shapes are reported, never defaulted (A2-9) > names an off-ladder review authority as a review-authority problem
+Error: an off-ladder leg must be a problem, got case
+ ❯ test/a4p3-approval-case.test.ts:618:13
+    616|   it('names an off-ladder review authority as a review-authority probl…
+    617|     if (corrupt.offLadder.kind !== 'problem') {
+    618|       throw new Error(`an off-ladder leg must be a problem, got ${corr…
+       |             ^
+    619|     }
+    620|     expect(corrupt.offLadder.problem).toBe(APPROVAL_CASE_READ_PROBLEMS…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the corrupt durable shapes are reported, never defaulted (A2-9) > lists the healthy case anyway: one corrupt case does not poison the read plane
+AssertionError: expected [ …(3) ] to deeply equal [ 'case-0x4fpd30im7zxc1raafkd1u9' ]
+
+- Expected
++ Received
+
+  [
++   "case-1scvlwf1id7ctk1da0mbh0ir",
++   "case-1ci5r0l0ndxqj20r6nf2z13r",
+    "case-0x4fpd30im7zxc1raafkd1u9",
+  ]
+
+ ❯ test/a4p3-approval-case.test.ts:645:82
+    643|
+    644|   it('lists the healthy case anyway: one corrupt case does not poison …
+    645|     expect(corrupt.list.map((summary) => summary.state.identity.approv…
+       |                                                                                  ^
+    646|       corrupt.healthyCaseId,
+    647|     ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > the corrupt durable shapes are reported, never defaulted (A2-9) > refuses to authorize on a row the case read refuses, even with a durable allow (A2-9)
+AssertionError: expected 'not-found' to be 'leg-ordinal' // Object.is equality
+
+Expected: "leg-ordinal"
+Received: "not-found"
+
+ ❯ test/a4p3-approval-case.test.ts:657:38
+    655|       throw new Error(`the unusable leg must be a problem, got ${corru…
+    656|     }
+    657|     expect(corrupt.unusable.problem).toBe(APPROVAL_CASE_READ_PROBLEMS.…
+       |                                      ^
+    658|     const verdict = corrupt.guardOfUnusable
+    659|     expect(verdict.allowed).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+× names a leg row without a leg ordinal as a leg-ordinal problem 4ms
+× names an off-ladder review authority as a review-authority problem 0ms
+× lists the healthy case anyway: one corrupt case does not poison the read plane 2ms
+× refuses to authorize on a row the case read refuses, even with a durable allow (A2-9) 0ms

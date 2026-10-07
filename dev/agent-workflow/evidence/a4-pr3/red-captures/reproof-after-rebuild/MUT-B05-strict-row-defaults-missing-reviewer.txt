@@ -1,0 +1,73 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-intervention-projection.test.ts (32 tests | 1 failed) 10ms
+     ✓ the operation terminal-outcome vocabulary is closed and keeps both authority failures distinct 1ms
+     ✓ the mutation terminal-outcome vocabulary is closed 0ms
+     ✓ the reviewer-action vocabulary is allow/deny/escalate and is not the decision vocabulary 0ms
+     ✓ an insufficient reviewer may deny or escalate, and may never allow 0ms
+     ✓ a sufficient non-admin reviewer may allow, escalate or deny 0ms
+     ✓ a top-of-ladder reviewer may allow or deny only (no rung above) 1ms
+     ✓ a HUMAN-USER leg keeps escalate although Alpha.4 has no Admin resolver (spec 21.5, audit F1) 0ms
+     ✓ insufficient reach at the top of the ladder leaves DENY alone 0ms
+     ✓ an undetermined ceiling never makes allow legal, and is reported as undetermined (A5-2) 0ms
+     ✓ a principal who already acted on the case has no legal action at all (spec §11.4) 0ms
+     ✓ a leg whose rung has no resolver offers nothing (ADR A1-12) 0ms
+     ✓ requiredAuthorityAtCreation is provenance only: it is not an input to the law (spec §11.2) 0ms
+     ✓ an undetermined ceiling is absorbing: it outranks every other axis (A5-2) 0ms
+     ✓ an approved operation cannot execute its way past a missing resolver 0ms
+     ✓ unavailable and undetermined are DIFFERENT outcomes (ADR A1-7, X8) 0ms
+     ✓ the remaining cells are the decision, then staleness, then execution 0ms
+     ✓ an approved mutation that changed nothing reports mutation-no-change (acceptance 21.6) 0ms
+     ✓ `approvalCaseId` presence alone selects the strict shape 0ms
+     × a strict row missing reviewAuthority is corrupt, never defaulted 3ms
+     ✓ a legacy row is never judged by the strict rules 0ms
+     ✓ projects one item per open CASE, bound to the operation fingerprint 1ms
+     ✓ asks the injected reader for the CURRENT leg, never a caller-supplied authority 0ms
+     ✓ a reader that THROWS yields no legal actions and no published authority (spec §18.3, audit F6) 0ms
+     ✓ offers NO legal action when no reader is wired (spec §18.3) 0ms
+     ✓ an escalated case keeps the SAME item id at the risen leg and authority 0ms
+     ✓ a decided case is resolved and informational, holding nothing back 0ms
+     ✓ an abandoned leg maps to `stale` and drops out of the open projection 0ms
+     ✓ a zero-leg A1-12 case projects as one informational authority-unavailable item 0ms
+     ✓ the projection carries no authority: mutating an item cannot change a guard verdict 0ms
+     ✓ a case state whose rows carry no createdAt projects NO item 0ms
+     ✓ an escalation row does not break the read plane and lands in `control` 0ms
+     ✓ `pendingControlCount` does not count an abandoned request as pending (X8 duty) 0ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 passed (32)
+   Start at  09:00:10
+   Duration  964ms (transform 645ms, setup 0ms, import 859ms, tests 10ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-intervention-projection.test.ts > the strict / legacy row discriminator > a strict row missing reviewAuthority is corrupt, never defaulted
+AssertionError: expected undefined to be 'missing-review-authority' // Object.is equality
+
+- Expected:
+"missing-review-authority"
+
++ Received:
+undefined
+
+ ❯ test/a4p3-intervention-projection.test.ts:573:75
+    571|
+    572|   it('a strict row missing reviewAuthority is corrupt, never defaulted…
+    573|     expect(strictRowProblem({ approvalCaseId: 'case-1', legOrdinal: 1 …
+       |                                                                           ^
+    574|     expect(strictRowProblem({ approvalCaseId: 'case-1', legOrdinal: 1,…
+    575|     expect(strictRowProblem({ approvalCaseId: 'case-1', reviewAuthorit…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+--- tests coloured by this flip ---
+× a strict row missing reviewAuthority is corrupt, never defaulted 3ms

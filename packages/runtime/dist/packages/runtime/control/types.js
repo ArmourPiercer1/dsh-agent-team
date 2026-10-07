@@ -179,9 +179,215 @@ export const CONTROL_DECISION_REASONS = {
      *  operation's capability cell (recorded as a `deny` decision —
      *  Architecture 25.4 / invariant 34). */
     EXTERNAL_POLICY: 'external-policy',
+    /**
+     * The reviewer ESCALATED the case: this row is the terminal decision of
+     * the closing leg (Alpha.4 A4-PR3, ADR A5-5, spec 11.3). It is a `deny`
+     * — never a fourth decision value (A2-1 / A3-3) — written in the SAME
+     * durable transaction as the `control-escalation-recorded` leg fact and
+     * the risen leg, so a closing leg is never left pending.
+     *
+     * WHY THIS VALUE IS LOAD-BEARING: `parseDecisionPayload` fails closed by
+     * DROPPING the whole row when `reason` is outside this closed set
+     * (service.ts:727-730). An `escalated` deny written while this vocabulary
+     * lacked the value would be invisible at read time: the leg would look
+     * PENDING forever, `awaitControlDecision` would never settle, and the
+     * escalation would hang with nothing red. Pinned by
+     * `a4p3-approval-escalation.test.ts` (preflight no-red finding 2).
+     */
+    ESCALATED: 'escalated',
 };
 /** Every durable-decision reason value, for membership checks. */
 export const CONTROL_DECISION_REASON_VALUES = Object.values(CONTROL_DECISION_REASONS);
+/**
+ * The closed reviewer-ACTION vocabulary (Alpha.4 A4-PR3, spec 11.5, ADR
+ * A2-1 / A3-3).
+ *
+ * This is a DIFFERENT axis from {@link CONTROL_DECISION_VALUES}: `escalate`
+ * is an action a reviewer may take, whose durable consequence is the
+ * additive leg fact plus a terminal `deny`/`escalated` decision row on the
+ * closing leg. `escalate` MUST NOT enter `CONTROL_DECISION_VALUES` (A2-1):
+ * a fourth decision value would make the first `escalate` row an implicit
+ * approval at any consumer that branches "if deny … else allow".
+ */
+export const CONTROL_REVIEW_ACTIONS = {
+    ALLOW: 'allow',
+    DENY: 'deny',
+    ESCALATE: 'escalate',
+};
+/** Every reviewer action, for membership checks. */
+export const CONTROL_REVIEW_ACTION_VALUES = Object.values(CONTROL_REVIEW_ACTIONS);
+// --- Alpha.4 approval cases and review legs (A4-PR3) -----------------------------------
+/**
+ * The authority ladder a review leg is bound to, expressed as the
+ * escalation ROUTING table of spec 11.4 ("new request leg is created for
+ * the next RuntimeAuthority").
+ *
+ * The type is the exhaustive `Record`, so the table's KEY SET is the ladder
+ * vocabulary the compiler can see: a rung added to
+ * {@link ProposalAuthorityPosition} without a successor here is a compile
+ * error, and nothing here re-spells the ladder union (ADR X7-R3). It is
+ * deliberately NOT a ranking: `AUTHORITY_RANK` in
+ * `governance/authority-ceiling.ts` stays the one ordering in the
+ * repository (ADR X2), and this module never compares two rungs — it only
+ * answers "who does this case rise to next", which is a routing fact of the
+ * approval plane, not a ceiling fact.
+ *
+ * `null` is the top of the ladder: a leg raised from it has no reviewer to
+ * rise to, which is exactly the `authority-unavailable` case of spec 11.6 /
+ * ADR A1-12 (Human Admin has no production constructor in Alpha.4).
+ */
+export const CONTROL_ESCALATION_SUCCESSOR = {
+    member: 'leader',
+    leader: 'human-user',
+    'human-user': 'human-admin',
+    'human-admin': null,
+};
+/**
+ * Fail-closed membership test for a durable ladder value.
+ *
+ * A durable row naming anything else is CORRUPT, never defaulted: an
+ * unknown review authority on a leg would otherwise read back as a leg
+ * nobody can decide (A2-9 strictness at the Control boundary). Implemented
+ * against {@link CONTROL_ESCALATION_SUCCESSOR}'s own key set, so the test
+ * cannot drift from the ladder.
+ *
+ * @param value - the candidate value.
+ * @returns whether `value` is one of the ladder positions.
+ */
+export function isProposalAuthorityPosition(value) {
+    return (typeof value === 'string' &&
+        Object.prototype.hasOwnProperty.call(CONTROL_ESCALATION_SUCCESSOR, value));
+}
+/**
+ * The rung a case rises to from `position` (spec 11.4), or `null` at the
+ * top of the ladder (spec 11.6).
+ *
+ * @param position - the closing leg's review authority.
+ * @returns the successor position, or null when there is none.
+ */
+export function controlEscalationSuccessor(position) {
+    return CONTROL_ESCALATION_SUCCESSOR[position];
+}
+/**
+ * The ladder rungs this build has NO resolver for (Alpha.4).
+ *
+ * ADR A1-12 names the fact literally: "cases whose required authority is
+ * `human-admin` (unimplementable in Alpha.4)" must terminate synchronously
+ * rather than wait for a reviewer who cannot exist — and acceptance 21.10
+ * forbids an Admin case from reconstructing "as a fake pending Admin
+ * request". This is an AVAILABILITY disclosure, not a ranking and not a
+ * subset of the ladder vocabulary: the rungs stay
+ * {@link ProposalAuthorityPosition}'s, and the table is the single place
+ * that says which of them nobody can be. It only ever REMOVES a leg
+ * (never authorizes one), so it cannot relax a ceiling.
+ *
+ * Human Admin authentication is an explicit Alpha.4 non-goal (spec 23); a
+ * later PR that ships an Admin resolver removes the entry here and the two
+ * synchronous-close gates in `service.ts` start admitting the rung.
+ */
+export const CONTROL_UNRESOLVABLE_AUTHORITIES = [
+    'human-admin',
+];
+/**
+ * Does this rung have a resolver in the current build?
+ *
+ * @param position - the ladder position to ask about.
+ * @returns false exactly for {@link CONTROL_UNRESOLVABLE_AUTHORITIES}.
+ */
+export function hasAuthorityResolver(position) {
+    return !CONTROL_UNRESOLVABLE_AUTHORITIES.includes(position);
+}
+/**
+ * The closed `terminalReason` vocabulary (Alpha.4 A4-PR3, ADR A2-8,
+ * spec 25.5): the reasons a leg terminates for, carried ADDITIVELY on the
+ * terminal decision row instead of becoming a new decision value or a new
+ * request status.
+ *
+ * `stale-denied` keeps its exact present meaning (the TARGET was terminal),
+ * and `escalated` is a decision REASON (CONTROL_DECISION_REASONS), not a
+ * terminal reason — so no value here duplicates either. Drift reasons were
+ * otherwise homeless: A2-8 forbids inventing a fourth decision value for
+ * them, and a fourth `ControlRequestStatus` would break every consumer that
+ * switches on the three-value status.
+ */
+export const CONTROL_LEG_TERMINAL_REASONS = {
+    /** The authority the case needs is no longer the authority the leg was
+     *  written against (A2-8: the DRIFT, not the target, terminated the
+     *  leg). */
+    AUTHORITY_DRIFT: 'authority-drift',
+    /** The resource identity behind the frozen fingerprint moved
+     *  (A2-13 / 25.6: key inequality after resolve, same-path recreate
+     *  included). */
+    RESOURCE_IDENTITY_DRIFT: 'resource-identity-drift',
+    /** No resolver exists for the authority this case needs (ADR A1-12,
+     *  spec 11.6) — the case terminates instead of waiting. */
+    RESOLVER_UNAVAILABLE: 'resolver-unavailable',
+};
+/** Every leg terminal reason, for membership checks. */
+export const CONTROL_LEG_TERMINAL_REASON_VALUES = Object.values(CONTROL_LEG_TERMINAL_REASONS);
+/** The closed reasons an identity input can be refused for. */
+export const APPROVAL_CASE_IDENTITY_PROBLEMS = {
+    /** Neither or both fingerprints present (spec 11.1). */
+    FINGERPRINT_CARDINALITY: 'fingerprint-cardinality',
+    /** An operation case without an operationFingerprint (ADR A1-15). */
+    OPERATION_FINGERPRINT_REQUIRED: 'operation-fingerprint-required',
+    /** A mutation case naming no proposal fingerprint. */
+    MUTATION_FINGERPRINT_REQUIRED: 'mutation-proposal-fingerprint-required',
+    /** A ladder value outside the closed vocabulary (A2-9). */
+    AUTHORITY_POSITION_UNKNOWN: 'authority-position-unknown',
+    /** An effect outside the closed overlay effect vocabulary (A2-9). */
+    EFFECT_UNKNOWN: 'effect-unknown',
+    /** A subject that is not one of the closed canonical subjects. */
+    SUBJECT_MALFORMED: 'subject-malformed',
+};
+/** The closed reasons `readApprovalCaseState` can refuse to build a case. */
+export const APPROVAL_CASE_READ_PROBLEMS = {
+    /** No durable row carries the requested case id. */
+    NOT_FOUND: 'not-found',
+    /** A leg row carries a case id but no / a corrupt leg ordinal. */
+    LEG_ORDINAL: 'leg-ordinal',
+    /** A leg row's review authority is outside the closed ladder. */
+    REVIEW_AUTHORITY: 'review-authority',
+    /** Two legs of one case disagree about the frozen identity (A1-10). */
+    IDENTITY_DISAGREEMENT: 'identity-disagreement',
+    /** A leg ordinal appears twice, or the chain is not a 1-based sequence. */
+    CHAIN_BROKEN: 'chain-broken',
+};
+/**
+ * The terminal outcome of a case that can produce no reviewable leg, or of
+ * an escalation that has no rung left to rise to (ADR A1-12, spec 11.6).
+ *
+ * It is a RESULT, not a status: `authority-unavailable` is never an
+ * InterventionItem status (ADR X8-R2) and never a request status
+ * (`ControlRequestStatus` stays the three-value vocabulary).
+ */
+export const CONTROL_CASE_TERMINAL_OUTCOMES = {
+    /** No resolver exists / no rung left (spec 11.6). */
+    AUTHORITY_UNAVAILABLE: 'authority-unavailable',
+};
+/**
+ * The CALLER-VISIBLE outcome of raising a leg (ADR A3-12(i); audit F7).
+ *
+ * `escalated` appears HERE and nowhere else in the vocabularies: it is not a
+ * decision value (ADR A2-1 keeps `allow | deny | stale-denied` closed), not a
+ * request status, and not a terminal outcome — the case CONTINUED, at the rung
+ * above. Before this table existed the cell was a bare string literal in
+ * `ControlEscalationOutcome`, so a caller had no frozen vocabulary to switch on
+ * and `terminalDecisionValueFor` could not name it (it takes a terminal reason,
+ * and an escalation is not one).
+ *
+ * Every terminal outcome is also a case outcome (`authority-unavailable` is the
+ * one Alpha.4 has), and the containment is pinned by
+ * `a4p3-approval-escalation.test.ts` so the two tables cannot drift apart.
+ */
+export const CONTROL_CASE_OUTCOMES = {
+    /** A leg closed and the case ROSE: a new leg exists at the next rung. */
+    ESCALATED: 'escalated',
+    /** The case closed because no rung (or no resolver) is left (spec 11.6). */
+    AUTHORITY_UNAVAILABLE: CONTROL_CASE_TERMINAL_OUTCOMES.AUTHORITY_UNAVAILABLE,
+};
+/** The closed case-outcome vocabulary, for membership tests and pins. */
+export const CONTROL_CASE_OUTCOME_VALUES = Object.values(CONTROL_CASE_OUTCOMES);
 // --- canonical subject (pre-alpha3 PR-D, D.2) --------------------------------------------
 /**
  * The closed CANONICAL subject kinds of a control operation scope
@@ -282,6 +488,21 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
      *  consumption fact is NOT written (the one-shot allow is not burned —
      *  "prefer zero allow consumption", invariant 34). */
     EXTERNAL_POLICY: 'external-policy',
+    /**
+     * The durable decision row for this scope carries a decision value
+     * OUTSIDE the closed `CONTROL_DECISION_VALUES` vocabulary — the typed
+     * refusal of the guard's exhaustive decision switch (Alpha.4 A4-PR3,
+     * ADR A2-1 / spec 25.1).
+     *
+     * Before this value existed the switch was `if stale-denied / if deny`,
+     * then a comment and a FALL THROUGH to authorization: any fourth value
+     * (the `escalate` row A2-1 forbids is the named example) would have been
+     * an IMPLICIT approval. Reaching this reason requires a row the read gate
+     * did not already drop — it is the guard's own last line of defence, and
+     * `packages/tools/guard.ts` fails closed for every reason but
+     * `no-request`, so an unrecognized value can never execute.
+     */
+    DECISION_UNRECOGNIZED: 'decision-unrecognized',
 };
 /** Every guard block reason value, for membership checks. */
 export const CONTROL_GUARD_BLOCK_REASON_VALUES = Object.values(CONTROL_GUARD_BLOCK_REASONS);

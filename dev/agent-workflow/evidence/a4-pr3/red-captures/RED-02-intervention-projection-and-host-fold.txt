@@ -1,0 +1,29 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-intervention-projection.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-intervention-projection.test.ts [ test/a4p3-intervention-projection.test.ts ]
+Error: TEAM_PROJECTION_SOURCE_LEDGER_CATEGORY_UNKNOWN: ledger sequence 3 of TeamSession 'session-root-p6t1' carries fact type 'control-escalation-recorded' with no mapping to the eight frozen ledger categories — refusing to misclassify
+ ❯ ledgerSummaryOf src/plugin/projection-source.ts:800:15
+
+ ❯ Object.readProjectionSource src/plugin/projection-source.ts:438:20
+ ❯ readProjection test/a4p3-intervention-projection.test.ts:104:54
+ ❯ test/a4p3-intervention-projection.test.ts:246:24
+ ❯ test/a4p3-intervention-projection.test.ts:128:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  08:18:26
+   Duration  921ms (transform 636ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

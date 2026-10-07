@@ -84,8 +84,51 @@ export function renderLeaderApprovalNotification(request) {
     const summary = bounded(request.summary);
     if (summary !== undefined)
         lines.push(`summary: ${summary}`);
+    // A4-PR3 — the leg lines, present ONLY for an Alpha.4 leg row. A pre-Alpha.4
+    // request renders byte-identically to before (the C1 goldens in
+    // `c1-leader-notification-glue.test.ts` / `c1-production-wiring.test.ts`
+    // stay exact, which is the point: the additive fields must not rewrite the
+    // text of a row that has no case).
+    const leg = legLinesOf(request);
+    lines.push(...leg);
     lines.push('', 'Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.', 'Recover or inspect pending requests with `team_list_pending_control`.');
+    if (request.approvalCaseId !== undefined) {
+        // Escalation is ROUTING, never authority (ADR A1-10): the reviewer that
+        // raised the case has no act left on it. The text says so because the
+        // alternative is a Leader that re-discovers the rule by being refused.
+        lines.push(`If you already decided or escalated an earlier leg of approvalCase ${request.approvalCaseId}, you cannot act on this case again.`);
+    }
     return lines.join('\n');
+}
+/**
+ * The leg-aware display lines of one request (A4-PR3).
+ *
+ * EMPTY for a pre-Alpha.4 row — that is the compatibility contract, not an
+ * accident: the notification is the Leader's model-visible input, and a text
+ * change for rows that gained no fields would be a behaviour change smuggled
+ * in with an additive schema.
+ *
+ * WHY NO NOTIFICATION EXISTS FOR A RISEN LEG: the delivery seam is
+ * "notify the LEADER", and a risen leg belongs to the rung above (Human User /
+ * Human Admin), so the leader-facing text would be a lie. An escalated case is
+ * therefore recovered through `team_list_pending_control` (and, from A4-PR6,
+ * the InterventionItem surface) — a disclosed interim limitation, not an
+ * oversight.
+ *
+ * @param request - the durable request record.
+ * @returns the additional display lines, in order.
+ */
+function legLinesOf(request) {
+    if (request.approvalCaseId === undefined)
+        return [];
+    return [
+        `approvalCase: ${request.approvalCaseId}`,
+        ...(request.legOrdinal !== undefined ? [`leg: ${String(request.legOrdinal)}`] : []),
+        ...(request.reviewAuthority !== undefined ? [`reviewAuthority: ${request.reviewAuthority}`] : []),
+        ...(request.previousRequestId !== undefined
+            ? [`escalatedFrom: ${request.previousRequestId}`]
+            : []),
+    ];
 }
 /**
  * The notifier factory (the control service's `requestNotification` port

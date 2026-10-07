@@ -220,6 +220,18 @@ const FACT_CONTROL_ALLOW_CONSUMED = 'control-allow-consumed'
 // EVERY projection read, a single abandoned inline request broke
 // `team.getProjection` for that Team permanently (the ledger is append-only).
 const FACT_CONTROL_REQUEST_ABANDONED = 'control-request-abandoned'
+// A4-PR3 (ADR A5-6 as corrected by X8-R3): the additive ESCALATION leg fact,
+// written by `control/service.ts` `escalateApprovalLeg`. Its category is
+// `control`, NOT `policy` — the original A5-6 rationale ("same as
+// `governance-proposal-recorded`") does not transfer, because escalation
+// closes a control LEG exactly the way `control-request-abandoned` closes a
+// control REQUEST, and guard C4 of `a4pr0a-fact-type-closed-set.test.ts`
+// exists to assert that request/leg-closing rows sit beside the rows they
+// close. Mirrored as a literal for the same reason as every row above: this
+// module is on the plugin's emit path and the Control lane's constant is the
+// writer's, so the closed-set guard test — not this table — is what catches a
+// drift between the two.
+const FACT_CONTROL_ESCALATION_RECORDED = 'control-escalation-recorded'
 const FACT_ACTIVITY_PROGRESS_RECORDED = 'activity-progress-recorded'
 const FACT_ACTIVITY_INTERVAL_OPENED = 'activity-interval-opened'
 const FACT_ACTIVITY_INTERVAL_CLOSED = 'activity-interval-closed'
@@ -256,6 +268,7 @@ const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new 
   [FACT_CONTROL_REQUEST_RECORDED, 'control'],
   [FACT_CONTROL_DECISION_RECORDED, 'control'],
   [FACT_CONTROL_ALLOW_CONSUMED, 'control'],
+  [FACT_CONTROL_ESCALATION_RECORDED, 'control'],
   // A4-PR0a: the abandonment terminal mark — a control fact, paired with the
   // request/decision rows it closes (same home the artifact-read grant repair
   // chose for a non-ControlRequest control fact). The eight categories are frozen:
@@ -804,13 +817,23 @@ export function createTeamDomainReadPort(
       byCategory[category] += 1
     }
 
-    // pendingControlCount: the entry shape DOES distinguish pending — a
-    // request fact is pending while no decision fact carries its
-    // requestId (exactly the control service's loadControlState
-    // derivation: a request whose requestId matches no decision is
-    // 'pending'). A request fact whose payload requestId is missing or
-    // non-string is EXCLUDED from the count, mirroring the control
-    // service's parse guards (malformed facts are ignored, never counted).
+    // pendingControlCount — FIXED IN A4-PR3 (the duty ADR X8 assigned to this
+    // lane; it had no owner before). The entry shape distinguishes pending by
+    // TWO terminal marks, exactly as the control service does, and the parity
+    // this comment used to CLAIM without the code having it was an
+    // authority-adjacent lie in the UI:
+    //   * a decision row for the requestId (this fold already consulted it),
+    //     and
+    //   * an ABANDONMENT row for the requestId, which the control service
+    //     treats as terminal and checks BEFORE the decided test
+    //     (`control/service.ts` `resolveControl`/`guardOperation`: the abandon
+    //     fact beats a decision, and `abandonControlRequest` documents it as
+    //     the terminal mark). An abandoned request is therefore NOT pending.
+    // A request whose payload requestId is missing or non-string is EXCLUDED,
+    // mirroring the service's parse guards (malformed facts are ignored,
+    // never counted). A4-PR3's escalation rows close a LEG and always carry
+    // the terminal decision row this set already reads, so they need no
+    // third rule here — that is why `previousRequestId` is not consulted.
     const decidedRequestIds = new Set<string>()
     for (const entry of rootEntries) {
       if (entry.factType !== FACT_CONTROL_DECISION_RECORDED) {
@@ -821,13 +844,27 @@ export function createTeamDomainReadPort(
         decidedRequestIds.add(requestId)
       }
     }
+    const abandonedRequestIds = new Set<string>()
+    for (const entry of rootEntries) {
+      if (entry.factType !== FACT_CONTROL_REQUEST_ABANDONED) {
+        continue
+      }
+      const requestId = stringField(entry.payload, 'requestId')
+      if (requestId !== undefined) {
+        abandonedRequestIds.add(requestId)
+      }
+    }
     let pendingControlCount = 0
     for (const entry of rootEntries) {
       if (entry.factType !== FACT_CONTROL_REQUEST_RECORDED) {
         continue
       }
       const requestId = stringField(entry.payload, 'requestId')
-      if (requestId !== undefined && !decidedRequestIds.has(requestId)) {
+      if (
+        requestId !== undefined &&
+        !decidedRequestIds.has(requestId) &&
+        !abandonedRequestIds.has(requestId)
+      ) {
         pendingControlCount += 1
       }
     }

@@ -1,0 +1,26 @@
+=== BUILD ===
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+=== BUILD:COMPOSITION ===
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/leader-notification.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/projection-source.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/projection-source.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/projection-source.js.map
+[ELIFECYCLE] Command failed with exit code 1.
+=== CHECK:ARTIFACTS ===
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/projection-source.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/projection-source.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/projection-source.js.map
+[ELIFECYCLE] Command failed with exit code 1.

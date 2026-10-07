@@ -480,6 +480,15 @@ describe('A4-PR0a: every fact type production can write is registered in the led
   it('C3: the host map is mirrored on the client (the ledger summary must classify identically)', () => {
     const missing = [...HOST.keys()].filter((value) => !CLIENT.has(value)).sort()
     expect(missing.join(', ')).toBe('')
+    // A4-PR3, plan Task 3 "Test update": POSITIVE CONTAINMENT for
+    // `control-escalation-recorded` (A4-4/A5-16). C1 is a floor plus a `.has()`
+    // list that never named the escalation row, and C2/C3 compare KEY SETS — so
+    // this guard is green whether or not the row is registered, which is precisely
+    // why containment is asserted positively here: the writer of a fact type owns
+    // BOTH maps in the same commit (X8-R1), and a missing mirror files the row in
+    // the wrong Events category with nothing red (A5-6 / X8-R3).
+    expect(HOST.has('control-escalation-recorded')).toBe(true)
+    expect(CLIENT.has('control-escalation-recorded')).toBe(true)
   })
 
   it('C4: the eight frozen categories are exactly eight, and nothing maps outside them', () => {
@@ -488,6 +497,12 @@ describe('A4-PR0a: every fact type production can write is registered in the led
     // Abandonment lives in `control`, beside the request/decision rows it
     // closes — not in a new category (ADR A3-7).
     expect(HOST.get('control-request-abandoned')).toBe('control')
+    // A4-PR3: the same rule for the escalation leg fact, asserted as a VALUE —
+    // key presence would pass a row filed under `policy` or `team` (X8-R3). The
+    // client mirror's VALUE is pinned in the client suite
+    // (`packages/client/test/ledger-adapter.test.ts`), because C3 above compares
+    // key sets only.
+    expect(HOST.get('control-escalation-recorded')).toBe('control')
   })
 
   it('C5: unresolved dynamic writers stay exactly the reviewed set', () => {
