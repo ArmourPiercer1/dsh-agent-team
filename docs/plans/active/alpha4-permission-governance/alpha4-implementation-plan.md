@@ -688,6 +688,15 @@ Every fact type PR6 introduces — `governance-proposal-recorded`, `control-esca
 
 #### Files (complete surface; every entry is unconditional unless marked)
 
+**Files added by ruling (2026-10-08, from A4-PR7's measured dry-run flip at `b75c2830`) — authoritative for the 7.3 flip, verified by the coordinator against the branch, not copied from the writer's report.**
+
+- The five files whose `blueprint.schemaVersion === 2` comparisons the narrowing to `3` proves **dead** (these are the entire typecheck delta of the dry-run flip: exactly 5 errors, no others): `packages/runtime/activation/provider.ts:821`, `packages/runtime/admission/requirement-gate.ts:460`, `packages/runtime/compatibility/blueprint.ts:81`, `packages/runtime/requirements/creation-preflight.ts:217`, `packages/runtime/requirements/scope-requirements.ts:108`.
+- **Four further `=== 2` comparison sites that the dry-run did *not* prove dead but that the flip must still account for**, because a comparison that keeps compiling against a narrowed union can keep silently lying: `packages/runtime/projection/fold.ts:94` and `:106`, `packages/runtime/projection/service.ts:92` (a `1 | 2` annotation), `packages/runtime/src/plugin/host.ts:2511`. Ownership is granted here so no one has to stop and ask mid-flip.
+- **The A1-18 test surface is two files, not seven**: `packages/runtime/test/a3p3-permission-mutation-authority.test.ts` and `packages/runtime/test/a4p1-authority-envelope.test.ts` are the only tracked tests referencing A1-18. The alias set is **exactly two lines** (`governance/permission-mutation.ts:605,613`); the domain `BlueprintPermissionMutationEnvelope*` family is **not** an alias -- it types the live `permissionMutationEnvelope` field (the Leader ceiling) and **survives** v3 beside `teamHardEnvelope`.
+- **`leaderEnvelopeCoverage` has exactly one reference in the whole tracked tree: its own definition** in `packages/runtime/governance/permission-mutation.ts` (plus its `dist` output). No test, no pin, no caller. Its removal is therefore a **one-file** change, and any claim that it is guarded by a source-shape pin is false -- verify with `git grep -ln leaderEnvelopeCoverage -- '*.ts' ':!*dist*'` before believing a count of test files. `effectiveAuthorityCeiling()` and `narrowingForApproval()` are **kept**; only this Alpha.3 existential aggregate goes.
+
+
+
 **7.0 — A1-14 consumption revalidation:**
 
 - Modify: `packages/runtime/control/types.ts` — `ControlOperationScope` (`:753`) and `ApprovalCaseIdentity` gain `authorityScope`.
