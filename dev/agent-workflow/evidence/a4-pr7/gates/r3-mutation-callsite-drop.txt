@@ -1,0 +1,73 @@
+# MUTATION M-callsite (fix 2 proof): drop the threaded field AT THE CALL SITE only.
+# packages/runtime/control/service.ts, the port call inside recheckConsumedAuthority:
+#   -  commandFingerprint: row.operationFingerprint,
+#   +  (line deleted; the field itself stays in ControlAuthorityRecheckInput)
+# The parent's requirement was that the mutation fail on WIRING, not on compilation,
+# so the type keeps the field. With the field REQUIRED (7d047dcb) the compiler now
+# catches exactly this -- see r3-mutation-M1-drop-key-typecheck.txt -- so the
+# behavioural mutant is recorded here from the state before that commit, where the
+# field was optional and the deletion compiled clean.
+# RESULT (packages/runtime lane run): 3 failed | 75 passed, all 75 pre-existing tests
+# green. The three red are S1 (expected 'authority-risen', got
+# 'authority-undetermined'), S2 (documents that do not narrow this command must permit;
+# got authority-undetermined) and S4 (expected undefined to be 'fp-a4p7-a').
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p7-a1-14-consumption-revalidation.test.ts > A4-PR7 7.0 S group — the shell class at the production seam (RULING 4, threaded) > S1: a shell command narrowed AFTER the allow refuses as `authority-risen` and consumes nothing
+AssertionError: expected 'authority-undetermined' to be 'authority-risen' // Object.is equality
+
+Expected: "authority-risen"
+Received: "authority-undetermined"
+
+ ❯ test/a4p7-a1-14-consumption-revalidation.test.ts:1056:31
+    1054|       )
+    1055|     }
+    1056|     expect(s1.refused.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORI…
+       |                               ^
+    1057|     expect(s1.rowsAfterRefusal).toBe(0)
+    1058|     // The refusal is a refusal, not a burn: the same allow spends onc…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a4p7-a1-14-consumption-revalidation.test.ts > A4-PR7 7.0 S group — the shell class at the production seam (RULING 4, threaded) > S2: the same shell row with no narrowing on ITS command consumes once (`still-sufficient`)
+Error: documents that do not narrow this command must permit; got {"allowed":false,"reason":"authority-undetermined","requestId":"ctrl-04a8etw1pcpwx71fuwteq07u","decisionSequence":2}
+ ❯ test/a4p7-a1-14-consumption-revalidation.test.ts:1074:13
+    1072|     // costume: the recheck has no permissive default AND no blanket r…
+    1073|     if (s2.verdict.allowed !== true) {
+    1074|       throw new Error(`documents that do not narrow this command must …
+       |             ^
+    1075|     }
+    1076|     expect(s2.rows).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a4p7-a1-14-consumption-revalidation.test.ts > A4-PR7 7.0 S group — the shell class at the production seam (RULING 4, threaded) > S4: the guard hands the port the ROW's command fingerprint, not a re-derived one
+AssertionError: S1: the row's operationFingerprint must be threaded: expected undefined to be 'fp-a4p7-a' // Object.is equality
+
+- Expected:
+"fp-a4p7-a"
+
++ Received:
+undefined
+
+ ❯ test/a4p7-a1-14-consumption-revalidation.test.ts:1115:100
+    1113|     ]) {
+    1114|       if (input === undefined) throw new Error(`${name}: the recheck n…
+    1115|       expect(input.commandFingerprint, `${name}: the row's operationFi…
+       |                                                                                                    ^
+    1116|       // And it is the DURABLE point that travels, kind included: the …
+    1117|       // exact key the ASK persisted, not the invocation now arriving.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 11 passed (14)
+   Start at  21:48:48
+   Duration  1.77s (transform 1.22s, setup 0ms, import 1.64s, tests 11ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

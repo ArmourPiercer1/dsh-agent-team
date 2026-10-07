@@ -174,17 +174,25 @@ function identityOf(
 
 type ControlAuthorityScopeInput = NonNullable<ApprovalCaseIdentityInput['authorityScope']>
 
+/**
+ * The operation lane's `toolName` is a lane name, not an authority identity
+ * (`authorityPointOf` persists `operationClass` + the tool-level exact key), so
+ * the scenarios pass it explicitly: the file class drives `read`, the shell
+ * class drives `bash`, which is the class whose ceiling narrowing exists only at
+ * `fingerprint` shape.
+ */
 function scopeOf(
   correlation: string,
   operationFingerprint: string,
   authorityScope: ControlAuthorityScopeInput,
+  toolName: string = TOOL_NAME,
 ): ControlOperationScope {
   return {
     rootSessionId: P6T4_ROOT,
     subject: SUBJECT,
     targetInstanceId: WORKER_ID,
     actionName: ACTION_NAME,
-    toolName: TOOL_NAME,
+    toolName,
     correlation,
     operationFingerprint,
     authorityScope,
@@ -197,6 +205,7 @@ async function grantedAllow(
   correlation: string,
   operationFingerprint: string,
   authorityScope: ControlAuthorityScopeInput,
+  toolName: string = TOOL_NAME,
 ): Promise<ControlRequestRecord> {
   const created = await env.service.requestApprovalLeg({
     rootSessionId: P6T4_ROOT,
@@ -206,7 +215,7 @@ async function grantedAllow(
     requiredAuthorityAtCreation: 'leader',
     identity: identityOf(correlation, operationFingerprint, authorityScope),
     actionName: ACTION_NAME,
-    toolName: TOOL_NAME,
+    toolName,
     executionCoupling: CONTROL_EXECUTION_COUPLINGS.GUARDED,
   })
   if (created.kind !== 'leg') {
@@ -684,6 +693,10 @@ const RECHECK_INPUT: ControlAuthorityRecheckInput = {
   reviewAuthority: 'leader',
   requestedEffect: 'allow',
   authorityScope: SCOPE_A,
+  // The field is required (see `control/types.ts`). This group's point is
+  // FILE-class, where the candidate set is the point alone whatever the
+  // command identity is, so its value cannot move any P-group verdict.
+  commandFingerprint: FP_A,
 }
 
 const p1 = await (async () => {
@@ -843,5 +856,280 @@ describe('A4-PR7 7.0 P group — the production revalidation port over documents
       kind: CONTROL_AUTHORITY_RECHECK_KINDS.UNDETERMINED,
       reason: 'authority-document-unavailable',
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// The S group — the SHELL class at the production seam (RULING 4, threaded).
+//
+// Every scenario above this line is FILE-class, and that is precisely why it
+// could not see the defect this group exists to see. A file-class scope's
+// persisted point (`read` on `file:///fileA.txt`) is a shape the documents can
+// answer directly, so the recheck derives the same answer whether or not the
+// row's command fingerprint travels with it. A SHELL-class scope is different
+// in kind, not in degree:
+//
+//   * `authorityPointOf` persists the TOOL-level exact key
+//     (`operation-permission/pre-execute-adapter.ts:821`), so a shell row's
+//     point is `bash` on `bash:tool`;
+//   * a shell-class narrowing can only be declared at `fingerprint` shape
+//     (`packages/domain/blueprint/src/validate.ts:699`);
+//   * coverage between those two shapes is a DECISIVE `{covers:false}`
+//     (`packages/domain/authority-envelope/src/authority-envelope.ts:218-222`),
+//     not an absorbing `undetermined`.
+//
+// So a shell recheck that asks only the persisted point is not "the narrower
+// question" — it is a question no rule can answer, which the meet then reports
+// as the ladder default. The whole class the candidate-set ruling was written
+// for would have had a consumption recheck that can never answer `stale`. The
+// only thing standing between that and a merged tree is one line at
+// `control/service.ts` passing the row's `operationFingerprint` into the port,
+// and this group is the test that line is checked against: S1/S2 drive the
+// PRODUCTION port through `guardOperation` with a shell row, and S3/S4 pin the
+// seam itself so a refusal here can only be attributed to the wiring.
+//
+// WHY `guardOperation` AND NOT JUST THE PORT: the ruling's demand was a
+// PRODUCTION-SEAM test. The port alone proves the plane can compute a verdict;
+// only the guard proves the verdict is obeyed where the one-shot is spent, and
+// that a refusal costs nothing.
+// ---------------------------------------------------------------------------
+
+/** The shell lane's `toolName`, and the tool-level key it persists. */
+const SHELL_TOOL = 'bash'
+const SHELL_TOOL_KEY = 'bash:tool'
+
+/** VERBATIM what `authorityPointOf` persists for a shell operation: the
+ *  tool-level EXACT key. Not a fixture invention — the production shape. */
+const SHELL_POINT = {
+  operationClass: SHELL_TOOL,
+  matcher: { kind: 'exact', resource: SHELL_TOOL_KEY },
+} as const
+
+/** The same class and command persisted in the other shape, for contrast. */
+const SHELL_POINT_FP = {
+  operationClass: SHELL_TOOL,
+  matcher: { kind: 'fingerprint', resource: FP_A },
+} as const
+
+/** A Leader-declared ceiling capping ONE COMMAND (fingerprint shape, the only
+ *  shape a shell-class rule may take) at `ask`. */
+function commandCappedAtAsk(operationClass: string, fingerprint: string): AuthorityEnvelope {
+  return {
+    rules: [{ operationClass, matcher: { kind: 'fingerprint', resource: fingerprint }, maximumEffect: 'ask' }],
+  }
+}
+
+/** The rise: the command this row IS gets narrowed after the allow was signed. */
+const SHELL_COMMAND_CAPPED: AuthorityEnvelopeDocuments = {
+  teamHardEnvelope: { status: 'absent' },
+  permissionMutationEnvelope: {
+    status: 'declared',
+    document: commandCappedAtAsk(SHELL_TOOL, FP_A),
+  },
+}
+
+/** No rise: the same document shape, capping a DIFFERENT command. The rung this
+ *  row needs is the beneficiary's own, which the Leader signature covers. */
+const SHELL_OTHER_COMMAND_CAPPED: AuthorityEnvelopeDocuments = {
+  teamHardEnvelope: { status: 'absent' },
+  permissionMutationEnvelope: {
+    status: 'declared',
+    document: commandCappedAtAsk(SHELL_TOOL, FP_B),
+  },
+}
+
+const SHELL_FACTS: OperationApprovalFacts = {
+  beneficiaryAuthority: 'member',
+  documents: SHELL_OTHER_COMMAND_CAPPED,
+}
+
+interface ShellEnv {
+  readonly world: P6T1World
+  readonly service: ControlService
+  readonly facts: FactsHarness
+  /** Every input the PRODUCTION port was handed, in order. */
+  readonly inputs: ControlAuthorityRecheckInput[]
+}
+
+/** The composition's own wiring: the production port, over documents the
+ *  scenario owns, recorded so the seam itself is observable. */
+async function createShellEnv(name: string, initial: OperationApprovalFacts): Promise<ShellEnv> {
+  const world = await createP6T4World(name, ['leader', 'worker'])
+  const facts = planeRecheck(initial)
+  const inputs: ControlAuthorityRecheckInput[] = []
+  const port: ControlAuthorityRecheckPort = async (input) => {
+    inputs.push(input)
+    return facts.port(input)
+  }
+  const service = createControlService({
+    teamDomain: world.domain,
+    blueprintCatalog: world.catalog,
+    externalPolicyFacts: world.ports.externalPolicyFacts,
+    now: () => P6T4_NOW,
+    authorityRevalidation: port,
+  })
+  return { world, service, facts, inputs }
+}
+
+const SHELL_RECHECK_INPUT: ControlAuthorityRecheckInput = {
+  rootSessionId: P6T4_ROOT,
+  instanceId: WORKER_ID,
+  beneficiaryAuthority: 'member',
+  reviewAuthority: 'leader',
+  requestedEffect: 'allow',
+  authorityScope: SHELL_POINT,
+  // The production shape: the row travels with its command. The key is required
+  // on this input (`control/types.ts`), so the unthreaded call in S3 has to
+  // STATE the absence — which is what makes the runtime refusal a typed,
+  // reachable arm instead of dead code behind a cast.
+  commandFingerprint: FP_A,
+}
+
+const s1 = await (async () => {
+  const env = await createShellEnv('a4p7-s1', {
+    beneficiaryAuthority: 'member',
+    documents: SHELL_COMMAND_CAPPED,
+  })
+  try {
+    await grantedAllow(env, 'corr-a4p7-s1', FP_A, SHELL_POINT, SHELL_TOOL)
+    const callsAtGrant = env.inputs.length
+    const refused = await env.service.guardOperation(
+      scopeOf('corr-a4p7-s1', FP_A, SHELL_POINT, SHELL_TOOL),
+    )
+    const rowsAfterRefusal = consumptionRows(env.world)
+    // Reverse the drift. A refusal that spent the one-shot would strand the
+    // operation with no approval left and nobody to ask again.
+    env.facts.set(SHELL_FACTS)
+    const restored = await env.service.guardOperation(
+      scopeOf('corr-a4p7-s1', FP_A, SHELL_POINT, SHELL_TOOL),
+    )
+    const rowsAfterRestore = consumptionRows(env.world)
+    return {
+      callsAtGrant,
+      refused,
+      rowsAfterRefusal,
+      restored,
+      rowsAfterRestore,
+      input: env.inputs[0],
+    }
+  } finally {
+    await destroyP6T1World(env.world)
+  }
+})()
+
+const s2 = await (async () => {
+  const env = await createShellEnv('a4p7-s2', SHELL_FACTS)
+  try {
+    await grantedAllow(env, 'corr-a4p7-s2', FP_A, SHELL_POINT, SHELL_TOOL)
+    const verdict = await env.service.guardOperation(
+      scopeOf('corr-a4p7-s2', FP_A, SHELL_POINT, SHELL_TOOL),
+    )
+    const rows = consumptionRows(env.world)
+    return { verdict, rows, calls: env.inputs.length, input: env.inputs[0] }
+  } finally {
+    await destroyP6T1World(env.world)
+  }
+})()
+
+const s3 = await (async () => {
+  // Same row, same documents, one difference: whether the command identity
+  // travelled with it. This isolates the mechanism from everything else in the
+  // lane, and it is the measurement that makes S1's refusal unambiguous.
+  const threaded = await planeRecheck({
+    beneficiaryAuthority: 'member',
+    documents: SHELL_COMMAND_CAPPED,
+  }).port(SHELL_RECHECK_INPUT)
+  const notThreaded = await planeRecheck({
+    beneficiaryAuthority: 'member',
+    documents: SHELL_COMMAND_CAPPED,
+  }).port({ ...SHELL_RECHECK_INPUT, commandFingerprint: undefined })
+  // The point that already names its command needs no threading to answer
+  // honestly — which is the control showing the gap is about the MISSING
+  // candidate, not about shell rules being unreadable in principle.
+  const fingerprintPoint = await planeRecheck({
+    beneficiaryAuthority: 'member',
+    documents: SHELL_COMMAND_CAPPED,
+  }).port({ ...SHELL_RECHECK_INPUT, authorityScope: SHELL_POINT_FP })
+  return { threaded, notThreaded, fingerprintPoint }
+})()
+
+describe('A4-PR7 7.0 S group — the shell class at the production seam (RULING 4, threaded)', () => {
+  it('S1: a shell command narrowed AFTER the allow refuses as `authority-risen` and consumes nothing', () => {
+    if (s1.refused.allowed !== false) {
+      throw new Error(
+        `a shell-class rise must refuse; got ${JSON.stringify(s1.refused)} — ` +
+          'the row\'s command fingerprint almost certainly stopped reaching the port',
+      )
+    }
+    expect(s1.refused.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_RISEN)
+    expect(s1.rowsAfterRefusal).toBe(0)
+    // The refusal is a refusal, not a burn: the same allow spends once when the
+    // narrowing goes away, so nothing about the fix turns a drift into a
+    // second denial nobody voted on.
+    if (s1.restored.allowed !== true) {
+      throw new Error(`the unspent allow must still authorize; got ${JSON.stringify(s1.restored)}`)
+    }
+    expect(s1.rowsAfterRestore).toBe(1)
+    // A consumption-point duty: not consulted at the request or the decision.
+    expect(s1.callsAtGrant).toBe(0)
+  })
+
+  it('S2: the same shell row with no narrowing on ITS command consumes once (`still-sufficient`)', () => {
+    // The negative control. Without it, S1 would be satisfied by a guard that
+    // refuses every shell operation, which is a different bug in the same
+    // costume: the recheck has no permissive default AND no blanket refusal.
+    if (s2.verdict.allowed !== true) {
+      throw new Error(`documents that do not narrow this command must permit; got ${JSON.stringify(s2.verdict)}`)
+    }
+    expect(s2.rows).toBe(1)
+    expect(s2.calls).toBe(1)
+  })
+
+  it('S3: the seam itself — THREADED answers `authority-risen`; a row that does not travel with its command is a NAMED REFUSAL, never coverage', () => {
+    // The delta RULING 4 exists for, as data. Before the fix this call answered
+    // `still-sufficient`: with no fingerprint the candidate set was the
+    // persisted tool-level point ALONE, which no shell rule can cover
+    // (`authority-envelope.ts:218-222`), so the meet reported the ladder default
+    // and a rise on the command read as coverage — a false pass on the same row
+    // under the same documents. Two changes close it and both are asserted here:
+    // the field is threaded (S4), and a refusal is TERMINAL in the recheck, so
+    // "cannot name the command" is now an `undetermined` naming the wiring fault
+    // instead of an answer computed from a shape no author ever wrote.
+    expect(s3.threaded).toMatchObject({
+      kind: CONTROL_AUTHORITY_RECHECK_KINDS.AUTHORITY_RISEN,
+      requiredNow: 'human-user',
+    })
+    expect(s3.notThreaded).toMatchObject({
+      kind: CONTROL_AUTHORITY_RECHECK_KINDS.UNDETERMINED,
+      reason: 'shell-point-missing',
+    })
+    // Control: a persisted point that already names the command answers
+    // honestly with no threading at all, so the delta above is the missing
+    // candidate and not a shell rule being unreadable.
+    expect(s3.fingerprintPoint).toMatchObject({
+      kind: CONTROL_AUTHORITY_RECHECK_KINDS.AUTHORITY_RISEN,
+      requiredNow: 'human-user',
+    })
+  })
+
+  it('S4: the guard hands the port the ROW\'s command fingerprint, not a re-derived one', () => {
+    // Wiring, asserted rather than assumed. The two behavioural scenarios above
+    // fail if this stops holding; this one says WHICH line broke.
+    for (const [name, input] of [
+      ['S1', s1.input] as const,
+      ['S2', s2.input] as const,
+    ]) {
+      if (input === undefined) throw new Error(`${name}: the recheck never ran`)
+      expect(input.commandFingerprint, `${name}: the row's operationFingerprint must be threaded`).toBe(FP_A)
+      // The KEY is present, not merely truthy: the input's contract is that a
+      // caller states the command identity or states its absence, so a call site
+      // that quietly stops naming it is visible here.
+      expect(Object.keys(input)).toContain('commandFingerprint')
+      // And it is the DURABLE point that travels, kind included: the tool-level
+      // exact key the ASK persisted, not the invocation now arriving.
+      expect(input.authorityScope).toEqual(SHELL_POINT)
+      expect(input.reviewAuthority).toBe('leader')
+      expect(input.beneficiaryAuthority).toBe('member')
+    }
   })
 })

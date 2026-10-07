@@ -1,0 +1,62 @@
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 95 modules, 12 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7c/packages/client/composition-shim/client-bundle.js (1259739 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7c/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7c/packages/client/composition-shim/package.json
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/index.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/index.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/index.js
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/index.js.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/inspect.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/inspect.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/inspect.js
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/inspect.js.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.js
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/index.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/index.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/index.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/index.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/approval-routing.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/approval-routing.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/approval-routing.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/approval-routing.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/index.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/index.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/index.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/index.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+[ELIFECYCLE] Command failed with exit code 1.
