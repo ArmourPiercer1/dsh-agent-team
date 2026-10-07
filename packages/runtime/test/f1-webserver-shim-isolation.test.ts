@@ -101,6 +101,14 @@ class F1ConnectionService extends Service {
 
 /** The webServer service double (records registered routes). */
 function makeWebServerDouble() {
+  // A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+  // supported version, and the two envelope documents that version REQUIRES are
+  // declared — in their zero form `rules: []`, which is a POSITION: on the
+  // expansion plane a no-match answers `no-authority`, on the approval plane a
+  // no-match is identity. Unlike most of this lane's fixtures this world boots
+  // through `hostEntry.apply`, where the ceiling reader IS live, so the zeros are
+  // a claim: this file drives no permission mutation and no approval-driven
+  // operation, so an empty hard document narrows nothing it exercises.
   const routes: Array<{ kind: string; path: string }> = []
   return {
     routes,
@@ -120,7 +128,7 @@ function rowConfig(defaultWorkspace: string) {
     rootSessionId: F1_ROOT_SID,
     blueprintSource: [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: F1-BP',
       'revision: "1"',
       'leader:',
@@ -130,6 +138,10 @@ function rowConfig(defaultWorkspace: string) {
       'memberEnvelopes: []',
       'policyStates: []',
       'metadata: {}',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       '---',
       '',
     ].join('\n'),

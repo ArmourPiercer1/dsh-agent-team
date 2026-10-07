@@ -101,6 +101,15 @@ import {
 
 // --- the A2C-3 fixture blueprint (bound snapshot) ------------------------------
 
+// A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+// supported version, and the two envelope documents that version REQUIRES are
+// declared — in their zero form `rules: []`, which is a POSITION: on the
+// expansion plane a no-match answers `no-authority` (the document claims no
+// expansion authority for its Leader), on the approval plane a no-match is
+// identity (it removes no rung). The zeros are honest here rather than
+// convenient: this world is built root-direct, and the only production producer
+// of `permissionAuthorityCeiling` is the plugin host, so no ceiling reader ever
+// consults these documents. (The same disposition covers every document below.)
 /**
  * The A2C-3 fixture blueprint: the P6-T2 id/envelope/quota surface with
  * `capabilities` blocks added — the `worker` template carries a static
@@ -111,7 +120,7 @@ import {
  */
 export const A2C3_BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: A2C3-BP',
   'revision: "1"',
   'leader:',
@@ -225,6 +234,10 @@ export const A2C3_BLUEPRINT_SOURCE = [
   '    maxInstances: 2',
   '    maxConcurrent: 2',
   'metadata: {}',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   '---',
   '',
 ].join('\n')
@@ -460,7 +473,7 @@ const A2C3_RT: RemoteResponse = await (async () => {
  *  legacy control). */
 const A2C3_MCP_BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: A2C3-MCP-BP',
   'revision: "1"',
   'leader:',
@@ -499,6 +512,10 @@ const A2C3_MCP_BLUEPRINT_SOURCE = [
   'memberEnvelopes: []',
   'policyStates: []',
   'metadata: {}',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   '---',
   '',
 ].join('\n')

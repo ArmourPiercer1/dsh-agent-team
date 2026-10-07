@@ -206,9 +206,17 @@ const BASH_ASK_POLICY: TemplatePermissionPolicy = {
 // --- the Blueprint schema probe sources (plan §5.3 rule contract) --------------
 
 function a2c1BlueprintSource(permissionLines: string[]): string {
+  // A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+  // supported version, and the two envelope documents that version REQUIRES are
+  // declared — in their zero form `rules: []`, which is a POSITION: on the
+  // expansion plane a no-match answers `no-authority`, on the approval plane a
+  // no-match is identity. The zeros are honest here rather than convenient:
+  // nothing in this file boots a world from this document — it is fed to the
+  // parser / the production wiring surface, which reads declared fields, not an
+  // authority posture — so the pair satisfies the grammar and claims nothing.
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: a2c1-probe',
     'revision: "1"',
     'leader:',
@@ -231,6 +239,10 @@ function a2c1BlueprintSource(permissionLines: string[]): string {
     'memberEnvelopes: []',
     'policyStates: []',
     'metadata: {}',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     '---',
     '',
   ].join('\n')
@@ -245,7 +257,7 @@ function a2c1BlueprintSource(permissionLines: string[]): string {
 function a2c1MemberBlueprintSource(permissionLines: string[]): string {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: a2c1-probe',
     'revision: "1"',
     'leader:',
@@ -270,6 +282,10 @@ function a2c1MemberBlueprintSource(permissionLines: string[]): string {
     'memberEnvelopes: []',
     'policyStates: []',
     'metadata: {}',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     '---',
     '',
   ].join('\n')

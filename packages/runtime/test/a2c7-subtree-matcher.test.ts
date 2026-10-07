@@ -280,6 +280,14 @@ interface FakeAgentCtx {
 
 function makeFakeAgentCtx(): FakeAgentCtx {
   const listeners: PreExecuteListener[] = []
+  // A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+  // supported version, and the two envelope documents that version REQUIRES are
+  // declared — in their zero form `rules: []`, which is a POSITION: on the
+  // expansion plane a no-match answers `no-authority`, on the approval plane a
+  // no-match is identity. The zeros are honest here rather than convenient:
+  // nothing in this file boots a world from this document — it is fed to the
+  // parser / the production wiring surface, which reads declared fields, not an
+  // authority posture — so the pair satisfies the grammar and claims nothing.
   const guards: GuardFn[] = []
   const on = (event: string, listener: PreExecuteListener): (() => void) => {
     void event
@@ -566,7 +574,7 @@ const R: Record<string, unknown> = await (async () => {
   const blueprintSource = (permissionLines: string[]): string =>
     [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: a2c7-probe',
       'revision: "1"',
       'leader:',
@@ -589,6 +597,10 @@ const R: Record<string, unknown> = await (async () => {
       'memberEnvelopes: []',
       'policyStates: []',
       'metadata: {}',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       '---',
     ].join('\n')
 
@@ -1470,7 +1482,7 @@ describe('A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, 
   it('the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane)', () => {
     const bashExact = runParse(
       [
-        '---', 'schemaVersion: 1', 'blueprintId: a2c7-probe', 'revision: "1"',
+        '---', 'schemaVersion: 3', 'blueprintId: a2c7-probe', 'revision: "1"',
         'leader:', '  templateId: leader', '  persona: "Lead."', '  capabilities:',
         '    teamTools:', '      kind: allow', '      items: []',
         '    builtinToolDeny: []', '    skills:', '      kind: allow', '      items: []',
@@ -1478,7 +1490,7 @@ describe('A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, 
         '    permissions:', '      default: deny', '      allow: []', '      ask:',
         '        - tool: bash', '          resource:', '            kind: exact', '            path: x',
         '      deny: []',
-        'members: []', 'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'metadata: {}', '---',
+        'members: []', 'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', '---',
       ].join('\n'),
     )
     expect(bashExact.code).toBe('MALFORMED_DTO')
@@ -1491,7 +1503,7 @@ describe('A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, 
     // byte-identical.
     const bashAnyAllow = runParse(
       [
-        '---', 'schemaVersion: 1', 'blueprintId: a2c7-probe', 'revision: "1"',
+        '---', 'schemaVersion: 3', 'blueprintId: a2c7-probe', 'revision: "1"',
         'leader:', '  templateId: leader', '  persona: "Lead."',
         'members:', '  - templateId: worker', '    persona: "Worker."', '    capabilities:',
         '      teamTools:', '        kind: allow', '        items: []',
@@ -1500,7 +1512,7 @@ describe('A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, 
         '      permissions:', '        default: ask', '        allow:',
         '          - tool: bash', '            resource:', '              kind: any',
         '        ask: []', '        deny: []',
-        'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'metadata: {}', '---',
+        'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', '---',
       ].join('\n'),
     )
     expect(bashAnyAllow.code).toBe('MALFORMED_DTO')
