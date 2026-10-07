@@ -1,0 +1,92 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b
+
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-m2-persona.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (0 test)
+ ❯ packages/runtime/test/t4a-capability-wiring.test.ts (0 test)
+ ✓ packages/runtime/test/t12m4-remote-mount.test.ts (9 tests) 3ms
+stdout | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-rc2a1-a: anchor templates declaring capabilities.permissions = ["leader"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor rc2a1.bp@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ✓ packages/runtime/test/rc2a1-fs-containment.test.ts (6 tests) 3ms
+
+ Test Files  4 failed | 2 passed (6)
+      Tests  15 passed (15)
+   Start at  06:21:25
+   Duration  1.72s (transform 4.59s, setup 0ms, import 3.10s, tests 7ms, environment 1ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "connection" public service is malformed: expected connection.rpc.handle to be a function; a headless host should not provide a partial service
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2920:11)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): webserver: route /team-remote is already registered
+    at mountRemoteNow (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1542:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2925:27)
+
+stderr | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] bootstrap FAILED: Error: agent-bindings: alpha.2 permission fs containment unavailable for 'session-rc2a1-b' (the fs provider exposes no public contains() seam while the template declares exact/subtree file permission (the containment authority is incomplete), instanceId=inst-leader) (code: alpha2-permission-fs-containment-unavailable)
+    at permissionFsContainmentUnavailable (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:4368:19)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:2391:19
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:990:18
+    at makeHandle (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/t12a-live-bridge.mjs:870:7)
+    at Object.create (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/t12a-live-bridge.mjs:902:22)
+    at Object.runOwned (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/team-session-activation.ts:571:16)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:1023:16
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:814:14
+    at singleFlightTeamActivation (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:818:14)
+    at runOwnedActivation (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:1021:12)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/t12a-b2-child-identity.test.ts [ packages/runtime/test/t12a-b2-child-identity.test.ts ]
+ FAIL  packages/runtime/test/t12a-h1-nullable-mcp.test.ts [ packages/runtime/test/t12a-h1-nullable-mcp.test.ts ]
+ FAIL  packages/runtime/test/t12a-m2-persona.test.ts [ packages/runtime/test/t12a-m2-persona.test.ts ]
+ FAIL  packages/runtime/test/t4a-capability-wiring.test.ts [ packages/runtime/test/t4a-capability-wiring.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/t12a-live-bridge.mjs:1454:18
+ ❯ getBoundBlueprint packages/runtime/src/plugin/live/agent-bindings.mjs:1807:19
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:1847:23
+ ❯ resolveConsumptionViews packages/runtime/src/plugin/live/agent-bindings.mjs:1210:27
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1992:76
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:998:20
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:870:60
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
