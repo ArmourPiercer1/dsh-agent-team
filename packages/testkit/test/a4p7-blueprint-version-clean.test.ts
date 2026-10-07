@@ -486,8 +486,14 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     const printed = new Map<string, Set<string>>()
     for (const line of report.split('\n')) {
       const off = /^OFFENDING (.+?) :: (.*)$/.exec(line)
-      if (off !== null) {
-        printed.set(off[1], new Set(off[2].split(', ').map((token) => token.trim())))
+      // Named locals, not `off[1]`: this package compiles with
+      // noUncheckedIndexedAccess, and `tsc` is the only thing that reads a test
+      // file's types — `expect(off !== null)` alone still leaves the groups
+      // `string | undefined` (caught by `pnpm -r run typecheck`, not by vitest).
+      const offPath = off?.[1]
+      const offSites = off?.[2]
+      if (offPath !== undefined && offSites !== undefined) {
+        printed.set(offPath, new Set(offSites.split(', ').map((token) => token.trim())))
       }
     }
     for (const path of dirtyPaths) {
