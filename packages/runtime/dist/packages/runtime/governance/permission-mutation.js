@@ -724,6 +724,47 @@ function cellsForRegion(operationClass, scope, family, subtreeContains) {
     return visit(scope) === 'ok' ? cells : 'undeterminable';
 }
 /**
+ * EVERY POINT A RISE CLAIMS, in the order they must be asked: the CELL first
+ * (`region`, where the effective answer actually rose), then the WIDTH the mutation
+ * matcher claims (`region.mutationMatcher`) when it is a different question.
+ *
+ * THE ORDER IS NOT COSMETIC (A4-PR7 §7.3 review, blocking 2). A caller that walks
+ * this list and returns the FIRST refusal reports the CELL's identity — the
+ * `regionText`/`detail` payload the pre-P1 code produced — so every refusal that
+ * existed before the width was added stays byte-identical. Reversing it turns a
+ * cell refusal into a width refusal: same deny, different name, different audit
+ * payload, and no test that only exercises a cell-only refusal can see it. Pinned
+ * by the both-points-refuse leg and the dedupe leg of
+ * `test/a4p7-carrier-width-under-ceiling.test.ts`, and made red by the
+ * order-reversal mutant recorded in
+ * `dev/agent-workflow/evidence/a4-pr7/7-3-prereq/transcripts/36-mutant-p1-reverse.txt`.
+ *
+ * THE DEDUPE IS NOT AN OPTIMIZATION. The region partition is a set cover, so a
+ * single mutation rule yields `mutationMatcher === region` in the common case;
+ * without the comparison an exact-matcher rise would be asked twice and — because
+ * both questions are the same — could report a duplicated question in a refusal
+ * detail. One comparison, and the exact case keeps today's single-question shape.
+ *
+ * WHY BOTH CONSUMERS SHARE THIS LIST. The expansion-plane judge
+ * (`governance/service.ts`, `createPermissionAuthorityCeilingJudge`) is where
+ * asking the width CLOSES a real gap: a document that reaches the cell but not the
+ * whole matcher used to authorize the wider mutation. The approval planner
+ * (`buildApprovalAsk`) prices its rung over the SAME list, which is
+ * MEASURED behaviour-neutral on that plane, not a second fix: a document rule that
+ * matches a width also matches every cell inside it, and the approval plane reads a
+ * non-matching rule as "no narrowing", so the cell is always the stricter question
+ * there and no rung under-asks (`a4p7-approved-retry-ceiling-at-commit.test.ts`
+ * prices six document shapes both ways to pin that). It is shared because the two
+ * must not be able to drift into pricing different point sets — that drift, not
+ * today's arithmetic, is how this lane could one day sign a width it never priced.
+ */
+export function permissionRiseClaimedPoints(region) {
+    return region.mutationMatcher.kind === region.region.kind &&
+        region.mutationMatcher.resource === region.region.resource
+        ? [region.region]
+        : [region.region, region.mutationMatcher];
+}
+/**
  * CLASSIFY, DO NOT AUTHORIZE (A4-PR2 lane B). The closed-region partition, the
  * complete-state before/after comparison, the provable-independence rules for
  * unknown lower facts, and the pre-classification context gate — all of it here, in

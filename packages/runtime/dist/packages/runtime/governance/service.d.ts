@@ -78,7 +78,9 @@ export declare function createGovernanceMutationService(deps: GovernanceMutation
  * matcher it claims — the closed CELL (`region.region`, where the effect actually
  * rose) AND the whole WIDTH of the mutation rule that produced it
  * (`region.mutationMatcher`) — and both ceilings must reach the risen effect at
- * every one of them.
+ * every one of them. The list itself is `permissionRiseClaimedPoints`, shared with
+ * the approval-rung pricing in `buildApprovalAsk` for exactly the reason below: the
+ * hole is the algebra, and an algebra with two owners drifts.
  *
  * IT IS A SET, NOT A SWAP, AND THAT IS THE POINT. Substituting the wide matcher for
  * the cell would be one line and would LOOSEN the ceiling: a wider question is

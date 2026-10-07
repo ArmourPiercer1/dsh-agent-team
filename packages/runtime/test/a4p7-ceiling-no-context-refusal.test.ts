@@ -78,7 +78,11 @@ import type {
 import type { OverrideRecordView, OverrideStorePort, PolicyReader } from '../mutation/index.js'
 import type { PolicyStateTransitionRecord } from '../mutation/types.js'
 import type { GovernanceTransitionCache, GovernanceTransitionCommit } from '../governance/types.js'
-import { createAuthorityCeilingReader } from '../src/plugin/permission-plane.js'
+import { createAuthorityCeilingReader, createPermissionAuthorityFacts } from '../src/plugin/permission-plane.js'
+import type { PermissionAuthorityFacts } from '../src/plugin/permission-plane.js'
+import { routeOperationApproval } from '../operation-permission/index.js'
+import { OPERATION_APPROVAL_REFUSAL_REASONS } from '../operation-permission/index.js'
+import { createOperationApprovalFactsReader } from '../operation-permission/index.js'
 import type { AuthorityHardCeilingRead } from '../src/plugin/permission-plane.js'
 import { FIXTURE_INSTANCE_ID, FIXTURE_TEAM_SESSION_ID, openWorld } from './permission-overlay-helpers.js'
 
@@ -164,6 +168,14 @@ async function openWorldAtEntry(
      *  consults it. Default covers the claimed cell, so Alpha.3 has nothing to say
      *  and the ceiling gate is the only law left standing. */
     readonly carrier?: PermissionMutationEnvelope
+    /** FU-3: replace the harness facts with the PRODUCTION
+     *  `createPermissionAuthorityFacts`, so a leg can drive the seam's own
+     *  bound-Blueprint route (including a resolver that THROWS) instead of the
+     *  four-function object above. */
+    readonly factsOverride?: Pick<
+      PermissionAuthorityFacts,
+      'teamHardEnvelope' | 'permissionEnvelope' | 'blueprintSchemaVersion' | 'blueprintContentHash'
+    >
   } = {},
 ) {
   const world = await openWorld(`a4p7nc-${Math.random().toString(36).slice(2, 8)}`)
@@ -176,7 +188,7 @@ async function openWorldAtEntry(
     teamHardEnvelope: async (): Promise<AuthorityHardCeilingRead> => hardCeiling,
     permissionEnvelope: async () => carrier,
   }
-  const reader = createAuthorityCeilingReader({ facts })
+  const reader = createAuthorityCeilingReader({ facts: options.factsOverride ?? facts })
   const deps: GovernanceMutationServiceDeps = {
     chain: createTeamOperationCoordinator(),
     overrides: new NoopOverrides(),
@@ -405,6 +417,138 @@ describe('the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 
       expect(error?.code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
       expect(error?.details?.['authorityCeilingCode'], 'refused before the ceiling was consulted').toBeUndefined()
       expect(await w.listRules()).toBeUndefined()
+    } finally {
+      await w.close()
+    }
+  })
+
+  it('10. a bound-Blueprint read that THROWS is the same refusal, not a crash (review FU-3)', async () => {
+    // The facts above are `undefined` from a resolver that ANSWERS `undefined`.
+    // This leg drives the third way a binding fails: the injected resolver THROWS.
+    // It is driven through the PRODUCTION `createPermissionAuthorityFacts`, not the
+    // harness object, because the gap was in that seam: the ceiling reader calls
+    // `blueprintSchemaVersion` SYNCHRONOUSLY, so before the seam normalized the
+    // fault the exception escaped the reader, escaped the verdict mapping in
+    // `mutatePermission`, and aborted the mutation with NO code and nothing for a
+    // caller to route on — a storage fault wearing no label at all. MEASURED RED at
+    // base (transcript `40-fu3-leg10-red-at-base-throwing-resolver.txt`): the
+    // escaped exception is the plain fixture Error, so the leg failed on
+    // `expected undefined to be 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE'` — there
+    // was no code at all to route on, which IS the defect.
+    //
+    // The seam now answers a faulted resolution the way `host.ts` already answers it
+    // at its own wrapper: UNKNOWN. And this file already pins what UNKNOWN does —
+    // the CONTEXT refusal, zero write, nothing minted. No new behaviour, one fewer
+    // way to crash.
+    const facts = createPermissionAuthorityFacts({
+      resolveBlueprint: () => {
+        throw new Error('fixture: the bound Blueprint read faulted')
+      },
+      memberTemplateId: () => 'template-under-test',
+      memberWorkspace: () => '/srv/a4p7-noctx',
+      canonicalize: async (path: string) => path,
+    })
+    const w = await openWorldAtEntry(V3_ANCHORED, { factsOverride: facts })
+    try {
+      const error = await w.mutateOperator(RISE)
+      expect(error?.code).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE)
+      expect(await w.listRules(), 'a faulted resolution must not write').toBeUndefined()
+      // And the seam's own answer, asked directly: the refusal is a CONTEXT answer
+      // with both document slots unreadable — never `undefined` (which is the
+      // pre-v3 skip), never a throw.
+      const context = await w.reader(FIXTURE_TEAM_SESSION_ID, FIXTURE_INSTANCE_ID, 'human')
+      expect(context, 'a faulted binding is a refusal, not a skipped gate').toBeDefined()
+      expect(context?.blueprintContentHash, 'nothing was read, so no anchor may exist').toBeUndefined()
+      const documents = context?.documents as Record<string, { status?: string }> | undefined
+      expect(documents?.['teamHardEnvelope']?.status).toBe('unavailable')
+      expect(documents?.['permissionMutationEnvelope']?.status).toBe('unavailable')
+    } finally {
+      await w.close()
+    }
+  })
+
+  it('11. the abstention reaches the OPERATION lane too, and flips its arm on purpose (review FU-1)', async () => {
+    // The mutation lane is not this reader\'s only consumer. The operation lane
+    // routes an approval ask off the SAME ceiling context, and its port has always
+    // read `undefined` as "this plane has nothing to say — take the frozen legacy
+    // routing" (`a4p4-operation-approval-authority.test.ts` A8/A15: `legacy` +
+    // `not-authority-v3`). Prerequisite 3 removed that answer for an unreadable
+    // binding, so the legacy arm cannot survive this branch — and what replaces it
+    // is the DENYING arm, never a wider one.
+    //
+    // This leg drives the PRODUCTION pair (the real facts seam → the real ceiling
+    // reader → the real operation facts reader → the real router), because A4-PR4
+    // pinned the adapter with a FAKE port: nothing else in the suite can see the
+    // substitution. Recorded here as INTENDED flip-window behaviour: the arm moves,
+    // the authority does not widen (both arms deny, nothing is written, and a v3
+    // Team that merely has no ceiling documents is untouched — leg 5 owns that).
+    const facts = createPermissionAuthorityFacts({
+      resolveBlueprint: () => undefined, // unresolvable bound Blueprint: UNKNOWN
+      memberTemplateId: () => 'template-under-test',
+      memberWorkspace: () => '/srv/a4p7-noctx',
+      canonicalize: async (path: string) => path,
+    })
+    const operationFactsReader = createOperationApprovalFactsReader({
+      ceiling: createAuthorityCeilingReader({ facts }),
+    })
+    const memberFacts = await operationFactsReader({
+      teamSessionId: FIXTURE_TEAM_SESSION_ID,
+      memberInstanceId: FIXTURE_INSTANCE_ID,
+      actingAsLeader: false,
+    })
+    // (a) The port no longer answers "nothing to say"; it answers a refusal.
+    expect(memberFacts, 'an unreadable binding is FACTS, not the absence of them').toBeDefined()
+    const arm = routeOperationApproval({
+      operationClass: 'read',
+      resourceKey: FILE,
+      initiatorAuthority: 'member',
+      facts: memberFacts,
+    })
+    // (b) The arm it flips TO: undetermined, naming the unreadable document —
+    //     `authority-undetermined`, the reason the read FAULTED, and (by A7\'s
+    //     pinned shape) no required rung and no carrier to route on.
+    expect(arm.kind).toBe('authority-undetermined')
+    if (arm.kind !== 'authority-undetermined') return
+    expect(arm.reason).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE)
+    expect('requiredAuthority' in arm).toBe(false)
+    expect('carrierKind' in arm).toBe(false)
+    // (c) Rule 2 is untouched: a Leader install is still never routed off these
+    //     facts, so it still takes the frozen legacy arm. The flip is the unknown
+    //     binding, not a re-scoping of who may be routed.
+    const leaderFacts = await operationFactsReader({
+      teamSessionId: FIXTURE_TEAM_SESSION_ID,
+      memberInstanceId: FIXTURE_INSTANCE_ID,
+      actingAsLeader: true,
+    })
+    expect(leaderFacts).toBeUndefined()
+    expect(
+      routeOperationApproval({
+        operationClass: 'read',
+        resourceKey: FILE,
+        initiatorAuthority: 'leader',
+        facts: leaderFacts,
+      }).kind,
+    ).toBe('legacy')
+  })
+
+  it('12. a MALFORMED static document refuses the whole mutation, once, before any point (review FU-2)', async () => {
+    // The posture the review asked to guarantee, observed at the real entry: the
+    // static-layer document is PARSED once by the caller (`service.ts:1222` for the
+    // ceiling gate, `:1181` for the Alpha.3 block, `:719` for the ask) and a
+    // malformed one refuses the mutation as MALFORMED_ENVELOPE with ZERO WRITE.
+    // It is never absorbed into the per-point judge's fault answer
+    // (`requiredAuthority: null`), which is the shape the review was guarding
+    // against: a document nobody could read would otherwise have been classified
+    // against a silently-empty lower layer and answered as an authorization
+    // verdict.
+    const w = await openWorldAtEntry(V3_ANCHORED, {
+      staticFacts: { layers: 'not-an-array' } as unknown as PermissionStaticLayerFacts,
+    })
+    try {
+      const error = await w.mutateOperator(RISE)
+      expect(error?.code).toBe(PERMISSION_MUTATION_ERROR_CODES.MALFORMED_ENVELOPE)
+      expect(error?.details?.['problem']).toBe('static-facts-layers-array')
+      expect(await w.listRules(), 'a parse fault must not write').toBeUndefined()
     } finally {
       await w.close()
     }

@@ -392,4 +392,141 @@ describe('the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deleti
       detail: { requiredAuthority: 'human-admin' },
     })
   })
+
+  // THE ORDER IS THE LAW, AND THIS IS THE LEG THAT OWNS THE SENTENCE IN
+  // `service.ts` ("the cell is asked FIRST, so every refusal this gate issued
+  // before this change keeps its plane, its ceiling value and its rung
+  // byte-identically"). Without these two legs that sentence survives a COMPLETE
+  // REVERSAL OF THE POINT ORDER — measured: reversing the list left all 14 spec
+  // files green — which makes it a claim nobody owns rather than documentation.
+  // The order becomes observable only when BOTH points refuse with DIFFERENT
+  // identities, so this fixture is built for exactly that: the hard document
+  // ALLOWS the cell, the mutation envelope document CAPS it at `ask`, and neither
+  // says anything about the rest of SUB.
+  const CELL_ASKED_WIDTH_SILENT: AuthorityEnvelopeDocuments = {
+    teamHardEnvelope: {
+      status: 'declared',
+      document: oneRule(exact(FILE), 'allow'),
+    } as AuthorityEnvelopeDocuments['teamHardEnvelope'],
+    permissionMutationEnvelope: {
+      status: 'declared',
+      document: oneRule(exact(FILE), 'ask'),
+    } as AuthorityEnvelopeDocuments['permissionMutationEnvelope'],
+  }
+  const CELL_CONTEXT: PermissionAuthorityCeilingContext = {
+    beneficiaryAuthority: 'member',
+    initiatorAuthority: 'leader',
+    documents: CELL_ASKED_WIDTH_SILENT,
+  }
+
+  it('when BOTH points refuse, the refusal keeps the CELL\'s identity, not the width\'s', () => {
+    const region = classifyPermissionRise(ceilingOnlyInput()).rising[0]!
+    expect(region.region).toEqual(exact(FILE))
+    expect(region.mutationMatcher).toEqual(subtree(SUB))
+    const judge = createPermissionAuthorityCeilingJudge({ subtreeContains: contains })
+
+    // THE WIDTH'S OWN ANSWER, measured here rather than asserted from memory: ask
+    // it as a single-point region and it refuses with a DIFFERENT ceiling value and
+    // a DIFFERENT rung. `no-authority` / `leader` is the width's voice; `ask` /
+    // `human-user` below is the cell's. Two identities that differ in both fields
+    // are what make the order falsifiable — a fixture where both points refuse
+    // identically would keep passing under any order.
+    const widthOnly = judge(CELL_CONTEXT, { ...region, region: region.mutationMatcher })
+    expect(widthOnly).toEqual({
+      status: 'insufficient',
+      plane: 'expansion',
+      ceiling: 'no-authority',
+      detail: { requiredAuthority: 'leader' },
+    })
+    expect(widthOnly).not.toEqual({
+      status: 'insufficient',
+      plane: 'expansion',
+      ceiling: 'ask',
+      detail: { requiredAuthority: 'human-user' },
+    })
+
+    // AND THE REAL REGION — two claimed points — answers with the CELL, because
+    // the cell is asked first and the first refusal is the refusal. This is the
+    // byte-identical pre-change identity: before the width was ever asked, the
+    // only question available was the cell's, so pinning the cell here pins the
+    // past. A reversal returns the object asserted above instead.
+    const verdict = judge(CELL_CONTEXT, region)
+    expect(verdict).toEqual({
+      status: 'insufficient',
+      plane: 'expansion',
+      ceiling: 'ask',
+      detail: { requiredAuthority: 'human-user' },
+    })
+    let raised: unknown
+    try {
+      authorizeCeilingBoundedPermissionRise([region], (r) => judge(CELL_CONTEXT, r))
+    } catch (error) {
+      raised = error
+    }
+    const details = (raised as { details?: Record<string, unknown> } | undefined)?.details
+    expect(details?.ceiling).toBe('ask')
+    expect(details?.plane).toBe('expansion')
+    expect(details?.region).toBe(`exact:${FILE}`)
+  })
+
+  it('the dedupe: a region whose cell IS its width asks ONE question and answers today\'s refusal', () => {
+    // The common case (a cell produced by the one mutation rule that contains it)
+    // must cost exactly one ceiling question and answer exactly what it answered
+    // before this lane. Pinned separately from the leg above because the dedupe is
+    // where an implementation could either drop the cell (loosening) or ask it
+    // twice (a refusal whose identity depends on list order).
+    const single = classifyPermissionRise({
+      ...ceilingOnlyInput(),
+      plannedRules: [{ operation: 'write', resource: `exact:${FILE}`, effect: 'allow' as const }],
+      mutationRules: [{ operationClass: 'write', matcher: exact(FILE), effect: 'allow' as const }],
+    }).rising
+    expect(single).toHaveLength(1)
+    const region = single[0]!
+    expect(region.mutationMatcher).toEqual(region.region)
+    const judge = createPermissionAuthorityCeilingJudge({ subtreeContains: contains })
+    expect(judge(CELL_CONTEXT, region)).toEqual({
+      status: 'insufficient',
+      plane: 'expansion',
+      ceiling: 'ask',
+      detail: { requiredAuthority: 'human-user' },
+    })
+  })
+
+  it('12. the malformed-static posture: a parse fault is ONCE, OUTSIDE the point loop (review FU-2)', () => {
+    // The review read `judgeCeilingPoint` as parsing the static-layer document
+    // INSIDE its per-point `try`, whose fault answer is `requiredAuthority: null`.
+    // MEASURED, it does not: the parses are once per mutation
+    // (`governance/service.ts:719` for the ask, `:1181` for the Leader block,
+    // `:1222` for the ceiling gate) and `judgeCeilingPoint` only reads
+    // `grantCeiling`/`expansionCeiling` (transcript
+    // `41-fu2-premise-check-parse-sites.txt`). The posture the review asked to
+    // restore is therefore the posture the code has — and this leg pins it where it
+    // can actually be observed: a malformed static document refuses the whole
+    // mutation as MALFORMED_ENVELOPE, ONCE, and the rise gate never reaches the
+    // point loop at all. A per-point parse would have produced per-point faults
+    // wearing the judge's fault answer, which is a different (and unwritable)
+    // sentence to pin.
+    const rising = classifyPermissionRise(ceilingOnlyInput()).rising
+    expect(rising).toHaveLength(1)
+    expect(() =>
+      authorizeCeilingBoundedPermissionRise(rising, () => {
+        throw new Error('a malformed static document must stop the mutation BEFORE any point is judged')
+      }),
+      // The throw above is the point: the gate PROPAGATES a fault raised at a point
+      // — it has no per-point catch that could absorb a parse fault into the
+      // judge's `requiredAuthority: null` fault answer.
+    ).toThrow(/BEFORE any point is judged/)
+    // MEASURED while writing this leg, and disclosed rather than fixed: the
+    // CLASSIFIER is not defensive the way the PARSER is — handed
+    // `{ layers: 'not-an-array' }` it dies on `layer.rules is not iterable`
+    // (a TypeError, not a typed refusal) instead of naming the shape. Nothing in
+    // this repository can reach it: every production `lane.staticLayers` answer is
+    // built through `parsePermissionStaticLayerFacts`
+    // (`src/plugin/permission-plane.ts:674`) and `service.ts` parses again on
+    // arrival, so the kernel only ever sees parsed facts. It is recorded here
+    // because the review asked whether validation happens once and outside the
+    // loop: the VALIDATION is the parser's, and it is; the kernel's own posture on
+    // an unparsed input is a TypeError, which is the honest answer to give the
+    // next reader of this seam.
+  })
 })

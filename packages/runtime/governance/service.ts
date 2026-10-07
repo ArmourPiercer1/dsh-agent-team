@@ -104,6 +104,7 @@ import {
   parsePermissionMutation,
   parsePermissionMutationEnvelope,
   parsePermissionStaticLayerFacts,
+  permissionRiseClaimedPoints,
   planPermissionMutation,
   PERMISSION_MUTATION_ERROR_CODES,
   PermissionMutationError,
@@ -726,14 +727,27 @@ export function createGovernanceMutationService(
       }).rising
       if (rising.length === 0) return undefined
       const beneficiary = beneficiaryAuthorityForTarget(perm.memberInstanceId)
+      // THE RUNG IS PRICED OVER THE SAME POINTS THE CEILING GATE JUDGES (A4-PR7
+      // §7.3 review, BLOCKING-1). MEASURED, this is not a second fix. On the
+      // approval plane a rule that does not match reads as NO NARROWING rather
+      // than as no authority, so any cap a document puts on a width it also puts
+      // on the cell inside it, and the batch asks the HIGHEST rung any matcher
+      // needs: the cell is always the stricter question, and six document shapes
+      // priced both ways answer with the same rung
+      // (`test/a4p7-approved-retry-ceiling-at-commit.test.ts` pins that algebra).
+      // What the shared helper buys is structural, not behavioural: the gate and
+      // the ask cannot drift into pricing different point sets, which is the only
+      // way this lane could come to sign a width it never priced.
       const planApproval = planPermissionMutationApproval({
         beneficiaryAuthority: beneficiary,
         documents: ctx.documents,
-        regions: rising.map((region) => ({
-          operationClass: region.operationClass,
-          matcher: region.region,
-          risenEffect: region.risenEffect,
-        })),
+        regions: rising.flatMap((region) =>
+          permissionRiseClaimedPoints(region).map((matcher) => ({
+            operationClass: region.operationClass,
+            matcher,
+            risenEffect: region.risenEffect,
+          })),
+        ),
         ...(lane.subtreeContains === undefined ? {} : { subtreeContains: lane.subtreeContains }),
       })
       if (planApproval.status !== 'required') return undefined
@@ -915,9 +929,52 @@ export function createGovernanceMutationService(
         return terminalStale(approvalCaseId, base, { problem: 'rise-structure-drift' })
       }
       const approvedRung = state.currentLeg?.reviewAuthority
+      // THE CEILING IS RE-ASKED HERE, AT COMMIT TIME (A4-PR7 §7.3 review,
+      // BLOCKING-1). Everything above revalidates the APPROVAL: the durable
+      // identity, the rise digest, the decision a reviewer made. THIS line is the
+      // CEILING: `fresh.required` is the rung the CURRENT documents demand,
+      // recomputed from fresh reads at EVERY CLAIMED POINT of the rise (cell and
+      // width, the same `permissionRiseClaimedPoints` set the direct gate judges),
+      // against `approvedRung` — what the reviewer actually signed. A durable
+      // approval can sit for as long as it takes while the authority documents
+      // change underneath it, so pricing the ceiling when the proposal was MINTED
+      // would price a world that may no longer exist by the time this append runs,
+      // in either direction.
+      //
+      // WHY THE RAW COMMIT GATE IS NOT RE-RUN HERE — MEASURED, NOT PREFERRED. The
+      // tempting one-liner is `authorizeCeilingBoundedPermissionRise(fresh.rising,
+      // …)`, the unapproved commit gate. It is wrong, and A4-PR5's own lane proves
+      // it: this ask exists BECAUSE that gate refused (A1-8 routes a DECIDED
+      // insufficient rise to a durable proposal precisely because `no-authority`
+      // on the expansion plane means "not impossible — a PROPOSAL"), so re-asking
+      // the unapproved gate after the approval refuses again and no approved commit
+      // can ever land. Run against `a4p5-permission-mutation-inline-commit.test.ts`
+      // it turned three pinned legs red, starting with "commits EXACTLY ONE
+      // snapshot with the planned rules" (evidence
+      // 37-b1-literal-reask-breaks-pr5-inline-commit.txt). The ceiling law the
+      // approval lane may use is the RUNG law: which authority, at what rung,
+      // reaches this rise at these points, today.
+      //
+      // TERMINAL SEMANTICS OF THIS REFUSAL — decided here, pinned by
+      // `test/a4p7-approved-retry-ceiling-at-commit.test.ts`:
+      //  - it does NOT append: control returns before `appendPlannedSnapshot`, so
+      //    the overlay chain is untouched and nothing can append twice; the caller
+      //    gets `mutation-stale` naming the problem — never `changed: true`, never
+      //    a pending reason, never a silently-consumed approval.
+      //  - it does NOT consume the approval: the case keeps its terminal
+      //    `resolved(allow)` untouched. A reviewer's decision is durable state
+      //    this lane may not rewrite, and burning it here would turn the refusal
+      //    into a no-op — an approval spent on a commit that never happened, the
+      //    laundering shape this lane exists to close. Widen the documents and the
+      //    NEXT retry re-prices the ceiling and commits, with the ceiling's own
+      //    consent this time, not the approval's memory of it.
+      //  - it does NOT re-mint: this is a return, not a throw escaping the minting
+      //    catch, and no leg-creation call is reachable from here. A retry of the
+      //    same mutation against the same unchanged world refuses the same way.
       if (approvedRung === undefined || authorityRank(fresh.required) > authorityRank(approvedRung)) {
-        // Tightenings never rise: the ceiling narrowed between the approval
-        // and this retry — what the reviewer approved, nobody now can.
+        // Tightenings never rise: the ceiling narrowed between the approval and
+        // this retry — at the cell OR across the claimed width — so what the
+        // reviewer approved, nobody now can.
         return terminalStale(approvalCaseId, base, {
           problem: 'ceiling-narrowed-past-approved-rung',
           ...(state.currentLeg === undefined ? {} : { approvedRung }),
@@ -1382,7 +1439,9 @@ function judgeCeilingPoint(
  * matcher it claims — the closed CELL (`region.region`, where the effect actually
  * rose) AND the whole WIDTH of the mutation rule that produced it
  * (`region.mutationMatcher`) — and both ceilings must reach the risen effect at
- * every one of them.
+ * every one of them. The list itself is `permissionRiseClaimedPoints`, shared with
+ * the approval-rung pricing in `buildApprovalAsk` for exactly the reason below: the
+ * hole is the algebra, and an algebra with two owners drifts.
  *
  * IT IS A SET, NOT A SWAP, AND THAT IS THE POINT. Substituting the wide matcher for
  * the cell would be one line and would LOOSEN the ceiling: a wider question is
@@ -1410,18 +1469,14 @@ export function createPermissionAuthorityCeilingJudge(deps: {
 }): (context: PermissionAuthorityCeilingContext, region: PermissionRiseRegion) => PermissionRiseCeilingVerdict {
   const subtreeContains = deps.subtreeContains
   return (context, region) => {
-    // The closed-region partition is a SET COVER, not a disjoint partition: a cell is
-    // usually produced by the ONE mutation rule whose matcher contains it, so
-    // `mutationMatcher` equals `region` in the common case and the dedupe below makes
-    // that case ask exactly one question — byte-identical arithmetic to before this
-    // change, at the cost of one comparison.
-    const points: PermissionResourceMatcher[] = []
-    for (const matcher of [region.region, region.mutationMatcher]) {
-      if (!points.some((seen) => seen.kind === matcher.kind && seen.resource === matcher.resource)) {
-        points.push(matcher)
-      }
-    }
-    for (const matcher of points) {
+    // The closed-region partition is a SET COVER, not a disjoint partition: a cell
+    // is usually produced by the ONE mutation rule whose matcher contains it, so
+    // `mutationMatcher` equals `region` in the common case and the dedupe inside
+    // `permissionRiseClaimedPoints` makes that case ask exactly one question —
+    // byte-identical arithmetic to before this change, at the cost of one
+    // comparison. The point set is owned THERE, because the approval rung is
+    // priced over the same points and the two must not be able to drift.
+    for (const matcher of permissionRiseClaimedPoints(region)) {
       const verdict = judgeCeilingPoint(context, region, matcher, subtreeContains)
       if (verdict !== undefined) return verdict
     }

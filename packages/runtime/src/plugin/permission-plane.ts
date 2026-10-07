@@ -621,6 +621,29 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
     }
   }
 
+  /** THE bound-Blueprint read, normalized ONCE for every site this factory reads
+   *  it (the binding tuple, the schema version, the anchor). A resolver that
+   *  THROWS is a FAULTED read, and a faulted read is UNKNOWN — the same answer an
+   *  unresolvable binding already gives, and the same answer `host.ts` gives at its
+   *  own wrapper ("UNKNOWN facts (typed refusal downstream), never a fall-back to
+   *  the row anchor").
+   *
+   *  The wrapper belongs to the SEAM, not only to that wiring (A4-PR7 §7.3 review,
+   *  follow-up 3): the ceiling reader calls `blueprintSchemaVersion` SYNCHRONOUSLY,
+   *  so an unwrapped host's exception used to escape the reader, escape the verdict
+   *  mapping in `mutatePermission`, and abort the mutation with no typed answer at
+   *  all — a storage fault wearing no label at all, which is the class A1-7 exists
+   *  to kill. Now every fault lands on `unreadableAuthorityCeilingContext`, which
+   *  refuses with `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE` and zero write. Pinned by
+   *  leg 10 of `test/a4p7-ceiling-no-context-refusal.test.ts`. */
+  function resolveBlueprintOf(teamSessionId: string): TeamBlueprint | undefined {
+    try {
+      return deps.resolveBlueprint(teamSessionId)
+    } catch {
+      return undefined
+    }
+  }
+
   /** Read the CURRENT binding tuple for one (team, member), or `undefined`
    *  when any binding is UNKNOWN (unresolvable bound Blueprint, no member
    *  row, no workspace). Never guesses. */
@@ -628,7 +651,7 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
     teamSessionId: string,
     memberInstanceId: string,
   ): { tuple: BindingTuple; blueprint: TeamBlueprint } | undefined {
-    const blueprint = deps.resolveBlueprint(teamSessionId)
+    const blueprint = resolveBlueprintOf(teamSessionId)
     if (blueprint === undefined) return undefined
     const isLeader = memberInstanceId === LEADER_INSTANCE_ID
     const templateId = isLeader
@@ -846,9 +869,9 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
       permissionEnvelopeState(teamSessionId, memberInstanceId),
     teamHardEnvelope: async (teamSessionId, memberInstanceId) =>
       teamHardEnvelope(teamSessionId, memberInstanceId),
-    blueprintSchemaVersion: (teamSessionId) => deps.resolveBlueprint(teamSessionId)?.schemaVersion,
+    blueprintSchemaVersion: (teamSessionId) => resolveBlueprintOf(teamSessionId)?.schemaVersion,
     blueprintContentHash: (teamSessionId) =>
-      deps.resolveBlueprint(teamSessionId)?.contentHash as string | undefined,
+      resolveBlueprintOf(teamSessionId)?.contentHash as string | undefined,
   }
 }
 
