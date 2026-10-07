@@ -177,13 +177,16 @@ Three files, `916 insertions(+), 1 deletion(-)`:
 
 **Dev, not runtime, and that is the point.** Plan §7.5 describes closing this leg as shipping "the
 missing `clsx` *runtime* dependency"; what ships is 17 **dev**Dependencies and no `dependencies` field
-anywhere, and the two statements are reconciled by one fact — nothing we publish consumes these packages
-at runtime: the tarball `npm pack --dry-run` would produce is byte-for-byte the same set before and after
-(1533 entries, `unpackedSize` 11176289, empty diff: §5), and `packages/client` — the only package that
-could have consumed them — is `"private": true` and is not in the root `files` list, so its manifest is
-not even shipped. The dependency exists to make a *test-time* module graph resolvable, which is exactly
-what a devDependency is for; a runtime `dependency` here would have put host internals into the published
-install surface, which is the one thing this repo's red line forbids.
+anywhere, and one measurement reconciles them: nothing we publish consumes these packages at runtime.
+`npm pack --dry-run --json` yields the identical tarball before and after this change, re-measured at the
+delivered base (entry count 1533 and `unpackedSize` 11176289 on both sides, and an empty diff of the
+per-entry `(size, path)` set); the only `packages/client/*` content that tarball carries is 3 built
+`composition-shim` entries, and `packages/client/package.json` — the manifest holding the 17 — appears in
+it **0 times**, the package being `"private": true` and so unpublishable in its own right. The dependency
+exists to make a *test-time* module graph resolvable, which is exactly what a devDependency is for; a
+runtime `dependency` here would have put host internals into the published install surface, which is the
+one thing this repo's red line forbids. (For whoever amends §7.5's wording: what it calls a "runtime
+dependency" is a dependency of the runtime *module graph at test time*, not of the published package.)
 
 **The overrides are load-bearing, not decoration.** A lockfile records the `overrides` it was built
 with in its `settings:`; shipping the produced lockfile *without* the corresponding workspace entries
