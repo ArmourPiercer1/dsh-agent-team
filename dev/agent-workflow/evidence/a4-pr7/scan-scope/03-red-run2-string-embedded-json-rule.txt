@@ -1,0 +1,97 @@
+
+ RUN  v4.1.8 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-scanscope
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (40 tests | 2 failed | 37 skipped) 7ms
+     ↓ the scan ran (a scan that could not run is never reported as clean)
+     ↓ invoking the script by name is a real gate: non-zero exit while dirty sites exist
+     ↓ a directory that is not a repository reports not-run with exit 2, never clean
+     ↓ the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path)
+     ↓ every deferred path is still dirty (a migrated path must leave the list)
+     ↓ the fence needs no exemption for its own author
+     ↓ the fence reports sites, not a bare count, and names a file the reader can open
+     ↓ the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line
+     ↓ packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path
+     ↓ the named namespace traps are never reported as Blueprint sites
+     ↓ the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused
+     ↓ the REFUSED lines are visible with their namespace, so a refusal is auditable
+     ↓ unknown is empty on the current tree (every shape classifies or is refused with evidence)
+     ↓ the scope function is the plan's list plus the measured third class — no more, no less
+     ↓ f01 YAML-string carrier is DIRTY (the type system cannot see it)
+     ↓ f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here)
+     ↓ f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it)
+     ↓ f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide)
+     ↓ f05 untyped .mjs object literal is DIRTY (nothing type-checks the file)
+     ↓ f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions)
+     ↓ f07 overlay/projection-service option is REFUSED (projection-envelope)
+     ↓ f08 projection wire envelope is REFUSED (projection-envelope)
+     ↓ f09 session-binding row is REFUSED (session-binding)
+     ↓ f10 MemberInstance row is REFUSED (member-instance-record)
+     ↓ f11 registry ROW stamp is REFUSED (registry-row, F1: row stamp != document version)
+     ↓ f12 ledger row is REFUSED (ledger-row)
+     ↓ f13 TeamSessionRecordDto row is REFUSED (team-session-record)
+     ↓ f14 governance-override row is REFUSED (governance-override)
+     ↓ f15 approval-case + operation rows are REFUSED (governance-ledger)
+     ↓ f16 artifact-grant payload is REFUSED (artifact-grant-payload)
+     ↓ f17 prose document without the blueprintId half is not a site at all
+     ↓ f18 ambiguous hybrid shape is UNKNOWN and gates (no silent drop, no guessed verdict)
+     ↓ f19 JSON data is DIRTY (data is never type-checked)
+     ↓ f20 YAML config blueprintSource block is DIRTY (cordis.patch.yml shape)
+     ↓ f21 supported-version fixtures stay clean in every carrier (reading decision)
+     × f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string) 5ms
+     × f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId) 1ms
+     ✓ f24 string-carried YAML WITH document siblings stays DIRTY (no ns hit, no refusal) 0ms
+     ↓ the fixture corpus exists and every fixture was exercised
+     ↓ a real in-scope file that keys blueprintId WITHOUT a version literal is not a site
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string)
+AssertionError: (f22-trap-string-embedded-session-record.txt, rule: string-embedded-json — a hand-built serialized record inside a TS): expected exactly [refused], got ["dirty:L5=v1(string-carrier-in-typed-file)"]: expected [ 'dirty' ] to deeply equal [ 'refused' ]
+
+- Expected
++ Received
+
+  [
+-   "refused",
++   "dirty",
+  ]
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:164:5
+    162|       present.map((k) => `${k}:${c[k].map((s) => `L${s.line}=v${s.vers…
+    163|     )}`,
+    164|   ).toEqual([want])
+       |     ^
+    165|   if (f.namespace !== undefined && want === 'refused') {
+    166|     expect(c.refused[0]?.ns, `${f.name}: refused but not by namespace …
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:586:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId)
+AssertionError: (f23-trap-string-embedded-binding.txt, rule: string-embedded-json binding row — the serialized SessionBinding): expected exactly [refused], got []: expected [] to deeply equal [ 'refused' ]
+
+- Expected
++ Received
+
+- [
+-   "refused",
+- ]
++ []
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:164:5
+    162|       present.map((k) => `${k}:${c[k].map((s) => `L${s.line}=v${s.vers…
+    163|     )}`,
+    164|   ).toEqual([want])
+       |     ^
+    165|   if (f.namespace !== undefined && want === 'refused') {
+    166|     expect(c.refused[0]?.ns, `${f.name}: refused but not by namespace …
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:594:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed | 37 skipped (40)
+   Start at  03:08:01
+   Duration  257ms (transform 34ms, setup 0ms, import 166ms, tests 7ms, environment 0ms)
+

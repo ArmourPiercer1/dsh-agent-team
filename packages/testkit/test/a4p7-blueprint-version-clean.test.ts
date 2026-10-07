@@ -111,9 +111,10 @@ function loadFixtures(): Fixture[] {
     for (; i < lines.length; i += 1) {
       // ALL leading `;;` lines are header (key lines plus their wrapped
       // continuation lines); content starts at the first non-`;;` line.
-      if (!lines[i].startsWith(';;')) break
-      const m = /^;;\s*([a-z]+):\s*(.*)$/.exec(lines[i])
-      if (m !== null) header.set(m[1], m[2])
+      const h = lines[i]
+      if (h === undefined || !h.startsWith(';;')) break
+      const m = /^;;\s*([a-z]+):\s*(.*)$/.exec(h)
+      if (m !== null && m[1] !== undefined) header.set(m[1], m[2] ?? '')
     }
     return {
       name,
