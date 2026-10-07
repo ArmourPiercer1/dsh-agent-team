@@ -1852,10 +1852,15 @@ describe('GROUP F - the candidate set the ceiling meets (RULING 4 closure)', () 
   // not run: the safe direction, but a real behavioural change, so it is
   // asserted here rather than discovered by an operator.
   //
-  // Blast radius at this commit: no shipped fixture or test document declares
-  // a shell-class envelope rule below `allow` -- checked by path over
-  // `packages/domain/blueprint/testdata/fixtures.ts` and the runtime fixtures,
-  // so nothing that runs today moves. This test is the case that COULD.
+  // Blast radius at this commit, MEASURED rather than asserted: of every file in
+  // the repo that declares an envelope rule, the only ones pairing a shell-class
+  // `operationClass` with a `maximumEffect` below `allow` are
+  // `a4p1-authority-envelope.test.ts:308,326,731` -- parser and canonicalizer
+  // fixtures fed to `parseAuthorityEnvelope` / `buildAuthorityEnvelope`, which
+  // never reach a routing decision -- and this group. `packages/domain/blueprint
+  // /testdata/fixtures.ts` declares no `operationClass` at all, and no YAML or
+  // JSON fixture declares a fingerprint matcher. So nothing that routes today
+  // moves. This test is the case that COULD, and it states the outcome.
   // -------------------------------------------------------------------------
   it('DISCLOSURE: a declared shell narrowing below `allow` now bites, and the rung it demands has no Alpha.4 resolver', () => {
     const documents = hardCapping(commandCap(shellFingerprint, 'ask'))
