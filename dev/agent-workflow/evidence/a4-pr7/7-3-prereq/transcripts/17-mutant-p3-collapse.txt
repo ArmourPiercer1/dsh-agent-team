@@ -1,0 +1,80 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.config" without a file extension (.vitest-mutant.config.ts:1:20). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (9 tests | 4 failed) 46ms
+     × 1. an UNREADABLE binding refuses a rising operator mutation with ZERO WRITE 13ms
+     × 2. the refusal is the CONTEXT law, not an authorization law, and it mints nothing 5ms
+     ✓ 3. a v3 binding whose ANCHOR vanished takes the same refusal, not the skip 5ms
+     ✓ 4. a TIGHTENING under the same unreadable binding still commits 3ms
+     ✓ 5. a DECIDED v1/v2 binding still answers NO context and the same rise commits (A5-12 existential) 4ms
+     ✓ 6. a readable, anchored v3 binding commits the same rise (the refusal is specific) 3ms
+     × 7. the reader has THREE answers, and the abstention is not the existential one 5ms
+     × 8. a Leader rise the carrier COVERS also refused (the fail-open was not operator-only) 4ms
+     ✓ 9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched) 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 1. an UNREADABLE binding refuses a rising operator mutation with ZERO WRITE
+AssertionError: a rise under an unreadable ceiling must not commit: expected undefined to be defined
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:244:75
+    242|     try {
+    243|       const error = await w.mutateOperator(RISE)
+    244|       expect(error, 'a rise under an unreadable ceiling must not commi…
+       |                                                                           ^
+    245|       expect(await w.listRules(), 'the refusal must be non-cosmetic: z…
+    246|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 2. the refusal is the CONTEXT law, not an authorization law, and it mints nothing
+AssertionError: expected undefined to be 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' // Object.is equality
+
+- Expected:
+"PERMISSION_EFFECT_CONTEXT_UNAVAILABLE"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:261:27
+    259|     try {
+    260|       const error = await w.mutateOperator(RISE)
+    261|       expect(error?.code).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_…
+       |                           ^
+    262|       expect(error?.code).not.toBe(PERMISSION_MUTATION_ERROR_CODES.AUT…
+    263|       expect(error?.details?.['authorityCeilingCode']).toBe('AUTHORITY…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 7. the reader has THREE answers, and the abstention is not the existential one
+AssertionError: an unreadable binding is not a pre-v3 Team: expected undefined to be defined
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:348:72
+    346|     try {
+    347|       const abstention = await unreadable.reader(FIXTURE_TEAM_SESSION_…
+    348|       expect(abstention, 'an unreadable binding is not a pre-v3 Team')…
+       |                                                                        ^
+    349|       expect(abstention?.documents.teamHardEnvelope).toEqual({ status:…
+    350|       expect(abstention?.documents.permissionMutationEnvelope).toEqual…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 8. a Leader rise the carrier COVERS also refused (the fail-open was not operator-only)
+AssertionError: a Leader rise under an unreadable ceiling must not commit: expected undefined to be defined
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:384:82
+    382|     try {
+    383|       const error = await w.mutateLeader(RISE)
+    384|       expect(error, 'a Leader rise under an unreadable ceiling must no…
+       |                                                                                  ^
+    385|       expect(error?.code).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_…
+    386|       expect(await w.listRules()).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 5 passed (9)
+   Start at  03:46:51
+   Duration  1.50s (transform 1.05s, setup 18ms, import 1.30s, tests 46ms, environment 0ms)
+

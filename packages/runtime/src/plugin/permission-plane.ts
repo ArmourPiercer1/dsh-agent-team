@@ -853,6 +853,52 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
 }
 
 /**
+ * THE CEILING CONTEXT OF A BINDING THAT CANNOT BE READ (A4-PR7 §7.5 prerequisite 3).
+ *
+ * This is what the reader answers when it CANNOT ASSEMBLE a context, and it is a
+ * REFUSAL, not an absence. Before it, both unresolvable-binding branches of this
+ * factory returned `undefined` — the same value a DECIDED v1/v2 Team gets — and the
+ * governance service read that as "no v3 ceiling gate for you" and committed. Measured
+ * at the real entry with this reader wired the way `host.ts` wires it: a mutation that
+ * RISES, for a Team whose bound Blueprint cannot be resolved, COMMITTED on the operator
+ * surface (where Alpha.3's Leader block never runs), and it COMMITTED for a Leader too
+ * whenever the carrier COVERS the claimed cell — because `leaderEnvelopeCoverage` only
+ * ever speaks where the carrier FAILS to cover (leg 9 of
+ * `a4p7-ceiling-no-context-refusal.test.ts` pins that case, legs 1 and 8 pin the two
+ * that committed). So the aggregate 7.3 deletes was never the guard here, and deleting
+ * it would have widened the hole from "some Leaders" to every branch
+ * (`evidence/a4-ceiling-coverage/FINDINGS.md` cases (f)/(h) recorded the operator half).
+ *
+ * IT INVENTS NOTHING. The two positions are functions of inputs the caller already
+ * named (the target's identity and the acting surface), and the documents are declared
+ * `unavailable` — the vocabulary this repository already has for "the read FAULTED:
+ * refusal, never a widening". Nothing is read, so nothing is claimed. The ceiling
+ * lane turns these slots into `AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE`, the rise gate
+ * maps that to `EFFECT_CONTEXT_UNAVAILABLE` with ZERO WRITE, and no fingerprint is
+ * ever minted from them (the ask path answers "no ask" on an unavailable plan), so the
+ * anchorless-fingerprint law this branch used to serve by staying silent is served by
+ * the refusal instead: an unreadable context can no longer be a durable row at all.
+ *
+ * NO ANCHOR, DELIBERATELY: `blueprintContentHash` is absent because there is no
+ * resolvable Blueprint to name. The fingerprint law binds an absent anchor as the
+ * distinct `null`, which is exactly the value that must stay unreachable from
+ * production — and it does, because nothing downstream of a refusal mints anything.
+ */
+function unreadableAuthorityCeilingContext(
+  memberInstanceId: string,
+  actor: 'leader' | 'human',
+): PermissionAuthorityCeilingContext {
+  return {
+    beneficiaryAuthority: beneficiaryAuthorityForTarget(memberInstanceId),
+    initiatorAuthority: actor === 'leader' ? 'leader' : 'human-user',
+    documents: {
+      teamHardEnvelope: { status: 'unavailable' },
+      permissionMutationEnvelope: { status: 'unavailable' },
+    },
+  }
+}
+
+/**
  * THE v3 AUTHORITY-CEILING READER (A4-PR2 lane C, ADR A5-12, spec §7.4.1).
  *
  * Assembles the ceiling CONTEXT the governance service evaluates for one mutation
@@ -870,13 +916,23 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
  * `test/a4p2-dual-envelope-mutation.test.ts` (A5-12: one file, so the existential
  * leg cannot be deleted when the v3 leg starts passing).
  *
- * `undefined` from the version reader means the binding is UNKNOWN, and the
- * answer is the v1/v2 branch on purpose: an unresolved binding must not conjure a
- * v3 gate that invents authority facts it never read, and the v1/v2 path's own
- * readers already fail closed (an unknown binding yields the zero-authority
- * envelope, which refuses every Leader expansion). Choosing the OTHER branch here
- * would make a storage fault read as "this Team is v3 and its ceiling is empty",
- * i.e. an authority verdict invented from an absence.
+ * THREE ANSWERS, AND THE MIDDLE ONE IS THE ONE THAT MATTERS.
+ *  1. `schemaVersion` is 1 or 2 — a DECIDED pre-v3 Team: `undefined`, the
+ *     existential branch, Alpha.3 behaviour byte-identical. That answer is a fact
+ *     about the DOCUMENT, and it dies with the cutover, when no document below 3
+ *     can be bound at all.
+ *  2. `schemaVersion` is `undefined`, or it is 3 but the content hash no longer
+ *     resolves: `unreadableAuthorityCeilingContext` above — a refusal. `undefined`
+ *     from this seam has ALWAYS meant "no resolvable bound Blueprint" (a resolvable
+ *     v1/v2 document answers 1 or 2), so it never meant "pre-v3 Team" and cannot be
+ *     allowed to keep buying a skipped gate. Post-cutover it is the ONLY thing the
+ *     branch can mean, which is why it must not be carrying a silent commit into
+ *     the window where the ceiling gate is the last law standing.
+ *  3. `schemaVersion === 3` with a resolvable hash: the real v3 context, unchanged.
+ *
+ * The distinction the old two-answer shape erased is the one A5-12 exists to keep:
+ * "this Team is not governed by the v3 ceiling" and "nobody can tell" are different
+ * facts with different remedies, and only the first is allowed to skip a gate.
  */
 export function createAuthorityCeilingReader(deps: {
   readonly facts: Pick<PermissionAuthorityFacts, 'teamHardEnvelope' | 'permissionEnvelope' | 'blueprintSchemaVersion' | 'blueprintContentHash'>
@@ -887,20 +943,29 @@ export function createAuthorityCeilingReader(deps: {
 ) => Promise<PermissionAuthorityCeilingContext | undefined> {
   return async (teamSessionId, memberInstanceId, actor) => {
     const schemaVersion = deps.facts.blueprintSchemaVersion(teamSessionId)
-    if (schemaVersion !== 3) return undefined
+    // THE EXISTENTIAL BRANCH, and only for a document that DECIDES it: a resolvable
+    // v1/v2 Blueprint answers 1 or 2 here, and only those two answers may skip the v3
+    // gate (Alpha.3 behaviour, byte-identical, until the cutover retires them).
+    if (schemaVersion === 1 || schemaVersion === 2) return undefined
+    // Anything else that is not 3 — `undefined` (no resolvable bound Blueprint) or a
+    // version this build does not know — is NOT a pre-v3 Team, and it does not get a
+    // skipped gate. See {@link unreadableAuthorityCeilingContext}.
+    if (schemaVersion !== 3) return unreadableAuthorityCeilingContext(memberInstanceId, actor)
     // A4-PR5 (rebase round, parent plan-wiring item): THE FINGERPRINT ANCHOR.
     // The hash resolves through the SAME bound-Blueprint route that just chose
     // the v3 branch — the two reads share one resolution law, so an anchor is
     // present for every v3 context this factory can honestly answer with. An
     // `undefined` hash here means the binding went unresolvable between the
-    // reads (the binding vanished mid-flight): that is the SAME unresolved-
-    // binding state whose documented answer above is the existential branch,
-    // and it takes it — a v3 gate must never stamp an ANCHORLESS fingerprint,
-    // because then "bound to a Blueprint" and "silently skipped" are once more
-    // indistinguishable in the durable row (pinned in
-    // test/a4p5-permission-mutation-proposal.test.ts, the anchor group).
+    // reads (the binding vanished mid-flight). It used to take the existential
+    // branch, which made "bound to a Blueprint" and "silently skipped"
+    // indistinguishable at the one place that could tell; it now takes the
+    // refusal, which serves the anchor law better than the skip ever did — a v3
+    // gate still never stamps an ANCHORLESS fingerprint, because nothing mints a
+    // fingerprint off a refusal (pinned in
+    // test/a4p5-permission-mutation-proposal.test.ts, the anchor group, and in
+    // test/a4p2-dual-envelope-mutation.test.ts at the real entry).
     const blueprintContentHash = deps.facts.blueprintContentHash(teamSessionId)
-    if (blueprintContentHash === undefined) return undefined
+    if (blueprintContentHash === undefined) return unreadableAuthorityCeilingContext(memberInstanceId, actor)
     // The trusted operator is a HUMAN authority position (plan:261, ADR §7): there
     // is NO production path that constructs a `human-admin`, and none appears
     // here — the highest position this factory can ever name is `human-user`.

@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (9 tests) 36ms
+
+ Test Files  2 passed (2)
+      Tests  19 passed (19)
+   Start at  03:46:18
+   Duration  995ms (transform 751ms, setup 0ms, import 1.15s, tests 41ms, environment 0ms)
+
