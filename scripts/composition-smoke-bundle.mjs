@@ -28,8 +28,33 @@
  *     `packages/runtime/dist`                -> `derived-urls-resolve`
  *   - drift in what the bundle requires      -> `external-specifier-set`
  *   - an arm that stopped being reported,    -> `REQUIRED_CHECK_IDS` and
- *     so PASS could print over a check set       `checkSetDifferences`, applied
- *     that quietly shrank or changed its name    by `composition-smoke.mjs`
+ *     stopped being PRINTED, or changed its        `renderSurfaceStepLines`,
+ *     name, so `PASS composition-smoke` could      applied by
+ *     print over a gate that had quietly             `composition-smoke.mjs`
+ *     shrunk
+ *
+ * THE THREE MUTES THIS HAD, and which are closed by construction rather than by
+ * discipline (a review found the first closed and the next two still open, so the
+ * distinction is worth stating instead of implying):
+ *   1. an arm stops being REPORTED. Closed mechanically: the line set is built by
+ *      iterating `REQUIRED_CHECK_IDS`, so an absent check becomes a printed FAIL
+ *      ("never reported") instead of an absent line.
+ *   2. a reported arm stops being PRINTED (a filter at the print site: measured,
+ *      that printed the healthy output minus one line and exited 0). Closed
+ *      mechanically, because nothing iterates the returned checks any more — the
+ *      only iteration is over required ids — and the caller re-derives the
+ *      printed set from the very array it prints, so a filter upstream of that
+ *      derivation is itself a red line.
+ *   3. an author deletes an id from `REQUIRED_CHECK_IDS`, drops its `record()`
+ *      call, or filters BETWEEN the caller's last derivation and `console.log`.
+ *      Not closable inside this program: the guard and the guarded thing are the
+ *      same text. That one is author-visible by policy, which is why the id list
+ *      is a named set in one place with its reason attached, and why every change
+ *      to it needs its own red proof.
+ *
+ * What is asserted mechanically is asserted about LINES, not about the array a
+ * function returned: the earlier guard validated the returned array and the print
+ * site was free to disagree with it.
  *
  * HOW the bundle is read, and why. The bundle is the upstream client wire
  * format: one `var __dshFactory = (require) => { … }` plus
@@ -53,6 +78,7 @@ import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import vm from 'node:vm'
 
+import { collectExportTargets } from './composition-smoke-closure.mjs'
 import {
   CLIENT_BUNDLE_FILENAME,
   CLIENT_BUNDLE_INSTALL_PATH,
@@ -92,6 +118,10 @@ const BUNDLE_REQUIRE_CALL = /__extReq\(\s*['"]([^'"]+)['"]\s*\)/g
  * It is a SET OF NAMES, not a count: an arm may only be added or retired by
  * editing this list in the same commit as its `record()` call and its red
  * proof, and a renamed id fails on both sides at once.
+ *
+ * This list is also what the output is PRINTED from — see
+ * {@link renderSurfaceStepLines}. Reporting and printing cannot diverge, because
+ * there is one iteration and it is over these names.
  */
 export const REQUIRED_CHECK_IDS = Object.freeze([
   'composition-output-present',
@@ -118,18 +148,77 @@ export function checkSetDifferences(checks) {
 }
 
 /**
+ * One line of this step's output, and whether it is green.
+ *
+ * The step's output is built HERE, by iterating {@link REQUIRED_CHECK_IDS}, and
+ * never by iterating what `checkCompositionSurface` returned. That is the whole
+ * point: the previous version printed `surface.checks` and separately compared
+ * that same array against the required set, so a filter at the print site —
+ * `surface.checks.filter((c) => c.id !== 'external-specifier-set')` — produced
+ * the healthy output minus one line at exit 0 while the guard stayed satisfied,
+ * because the guard was reading the array and the terminal was reading something
+ * else. An id that is required has to appear here or the run is red, whatever the
+ * arms decided to report.
+ */
+export function renderSurfaceStepLines(surface, compositionDir) {
+  const checks = surface?.checks ?? []
+  const byId = new Map()
+  for (const check of checks) {
+    if (!byId.has(check.id)) byId.set(check.id, check)
+  }
+  const label = (id) => `client bundle ${id} (${compositionDir})`
+  const lines = []
+  for (const id of REQUIRED_CHECK_IDS) {
+    const check = byId.get(id)
+    if (check === undefined) {
+      lines.push({
+        id,
+        ok: false,
+        text: `FAIL ${label(id)}: never reported — an arm that stopped reporting is a closed gate, not a green one`,
+      })
+      continue
+    }
+    const ok = check.ok === true
+    lines.push({ id, ok, text: `${ok ? 'PASS' : 'FAIL'} ${label(id)}: ${check.detail}` })
+  }
+  const { unexpected } = checkSetDifferences(checks)
+  if (unexpected.length > 0) {
+    lines.push({
+      id: 'check-set',
+      ok: false,
+      text: `FAIL client bundle check-set (${compositionDir}): reported but not required [${unexpected.join(', ')}] — `
+        + 'an arm that changed its name reads as one that disappeared',
+    })
+  }
+  return lines
+}
+
+/**
  * Every artifact path the BUILT shim manifest advertises, repo-relative and
  * normalised. This is what a consumer of the package is told to load — the
  * `exports` targets and the `files` entries of the manifest sitting on disk in
  * the composition directory, not a path this module was handed.
+ *
+ * An `exports` VALUE is flattened, not type-tested: `{ "import": "../outside/x.js" }`
+ * tells a consumer to load exactly that file, and reading only string values made
+ * every nested target invisible to both path arms (measured: a conditional target
+ * outside both install surfaces printed `all 4 path(s) … land inside an install
+ * surface` and passed, where the flat form of the same path printed 5 and failed).
+ * A value with nothing readable inside it is still ADVERTISED, with `path: null`,
+ * so the arms say so instead of counting one fewer path.
  */
 export function advertisedShimPaths(shimManifest, compositionDir) {
   const advertised = []
   const manifest = shimManifest !== null && typeof shimManifest === 'object' ? shimManifest : {}
   const exportsField = typeof manifest.exports === 'object' && manifest.exports !== null ? manifest.exports : {}
-  for (const [key, target] of Object.entries(exportsField)) {
-    if (typeof target !== 'string') continue
-    advertised.push({ label: `exports[${key}]`, path: normaliseRepoPath(join(compositionDir, target)) })
+  for (const [key, value] of Object.entries(exportsField)) {
+    const collected = collectExportTargets(value, `exports[${key}]`)
+    for (const entry of collected.targets) {
+      advertised.push({ label: entry.label, path: normaliseRepoPath(join(compositionDir, entry.target)) })
+    }
+    if (collected.targets.length === 0 || !collected.understood) {
+      advertised.push({ label: `exports[${key}]`, path: null })
+    }
   }
   for (const entry of Array.isArray(manifest.files) ? manifest.files : []) {
     if (typeof entry !== 'string') continue
@@ -339,20 +428,22 @@ export async function checkCompositionSurface(options) {
   const rootManifest = readJson(rootManifestFile)
   const shimManifest = readJson(manifestFile)
   const advertised = advertisedShimPaths(shimManifest, expectations.compositionDir)
+  const unreadable = advertised.filter((entry) => entry.path === null)
   const outsideSurface = advertised.filter(
-    (entry) => !installSurfaces.some((surface) => isInsideSurface(entry.path, surface)),
+    (entry) => entry.path !== null && !installSurfaces.some((surface) => isInsideSurface(entry.path, surface)),
   )
   const surfaceProblems = []
   if (advertised.length === 0) {
     surfaceProblems.push('the built shim manifest advertises no `exports`/`files` path at all, so nothing about it is known to ship')
   }
+  surfaceProblems.push(...unreadable.map((entry) => `${entry.label} has no readable string target, so nothing can be shown to ship`))
   surfaceProblems.push(...outsideSurface.map((entry) => `${entry.label} -> ${entry.path}`))
   record(
     'composition-bundle-is-install-surface',
     surfaceProblems.length === 0,
     surfaceProblems.length === 0
       ? `all ${advertised.length} path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (${installSurfaces.join(', ')})`
-      : `advertised artifact path is outside every install surface (${installSurfaces.join(', ') || 'none given'}): ${surfaceProblems.join('; ')} — a path outside the tracked surface ships to nobody and no artifact gate sees it`,
+      : `the built shim manifest advertises something this check cannot pass (${installSurfaces.join(', ') || 'none given'}): ${surfaceProblems.join('; ')} — a path outside the tracked surface ships to nobody and no artifact gate sees it, and an unreadable target is not checked at all`,
   )
 
   // ── 2. every manifest path the artifact advertises resolves on disk ─────
@@ -361,18 +452,30 @@ export async function checkCompositionSurface(options) {
     record('shim-recorded-values', false, 'the shim manifest is unreadable or missing')
   } else {
     const broken = []
-    for (const [key, target] of Object.entries(rootManifest.exports ?? {})) {
-      if (typeof target !== 'string') continue
-      if (!fileExists(join(repoRoot, ...target.replace(/^\.\//, '').split('/')))) broken.push(`root exports[${key}] -> ${target}`)
+    // Nested and conditional values are flattened for the same reason as
+    // `advertisedShimPaths`: the string inside `{ import: … }` is the file that
+    // consumer is actually sent to. A value with no readable string is reported,
+    // not skipped — skipping it is what made a nested path uncheckable, and an
+    // `exports` value with nothing readable in it is broken under Node anyway.
+    const manifestTargets = (manifest, which, base, exists) => {
+      for (const [key, value] of Object.entries(manifest.exports ?? {})) {
+        const collected = collectExportTargets(value, `exports[${key}]`)
+        if (collected.targets.length === 0 || !collected.understood) {
+          broken.push(`${which} exports[${key}] has no readable string target`)
+          continue
+        }
+        for (const entry of collected.targets) {
+          if (entry.target === './package.json') continue
+          if (!exists(join(base, ...entry.target.replace(/^\.\//, '').split('/')))) broken.push(`${which} ${entry.label} -> ${entry.target}`)
+        }
+      }
     }
+    manifestTargets(rootManifest, 'root', repoRoot, fileExists)
     for (const entry of rootManifest.files ?? []) {
       if (typeof entry !== 'string') continue
       if (!existsSync(join(repoRoot, ...entry.split('/')))) broken.push(`root files[${entry}]`)
     }
-    for (const [key, target] of Object.entries(shimManifest.exports ?? {})) {
-      if (typeof target !== 'string' || target === './package.json') continue
-      if (!fileExists(join(compositionDir, ...target.replace(/^\.\//, '').split('/')))) broken.push(`shim exports[${key}] -> ${target}`)
-    }
+    manifestTargets(shimManifest, 'shim', compositionDir, fileExists)
     for (const entry of shimManifest.files ?? []) {
       if (typeof entry !== 'string') continue
       if (!fileExists(join(compositionDir, entry))) broken.push(`shim files[${entry}]`)

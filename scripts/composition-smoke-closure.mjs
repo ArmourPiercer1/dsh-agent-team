@@ -4,9 +4,10 @@
  *
  * WHY THIS FILE EXISTS. `pnpm smoke:composition` loaded our built client entry
  * with plain Node and called it a check. The entry statically imports
- * `@deepseek-ai/dsh-client-ui-primitives`, whose published manifest declares
- * `dependencies: {}` (measured at 0.2.0-rc.2, both on disk and in the public
- * registry packument — its only declared dependency is the
+ * `@deepseek-ai/dsh-client-ui-primitives`, whose published manifest has no
+ * `dependencies` KEY AT ALL (measured at 0.2.0-rc.2, both on disk and in the
+ * public registry packument — not `dependencies: {}`, which would be a declared
+ * empty set; nothing is declared, and the only dependency of any kind is the
  * `@deepseek-ai/cordis` PEER) while its `lib/index.js` statically imports 23
  * distinct bare packages. Six of those happen to be installed in this
  * workspace as our own devDependencies or through pnpm's `.pnpm/node_modules`
@@ -56,10 +57,19 @@
  *     `findPackageDirectory`): `exports` CONDITIONS are not evaluated, so a
  *     subpath a package publishes only under a `require` or `types` condition
  *     counts as present. Again the skip direction.
- * The two shapes that were blind when this file was reviewed and are blind no
- * more — a dangling subpath of an installed package, and an own import that is
- * indented rather than at column 0 — are each pinned by a test that is red
- * without the code below.
+ *   - The legacy (no-`exports`) branch PROBES WIDER than Node: ESM legacy
+ *     resolution tries the exact path only, while this also tries `+.js`,
+ *     `+.mjs`, `+.cjs`, `+.json`, `+.node` and `/index.*`. That over-reporting
+ *     yields a false "present", never a false failure, so it too can only cost a
+ *     SKIP. It is kept because CommonJS-shaped fixtures are common and a false
+ *     red would train people to distrust the gate.
+ * A third shape was blind at the second review and is blind no more: a subpath
+ * covered by a wildcard `exports` key whose MAPPED TARGET does not exist
+ * (`"./src/*": "./src/*"` pointing at nothing). Matching the key on prefix and
+ * suffix alone answered "covered" without ever looking at the value, and three
+ * of the pinned client packages publish `./src/*`, so only exact-key imports
+ * were protected. Every shape above either biases toward skipping or is now
+ * closed; what is closed is pinned by a test that is red without the code below.
  */
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { builtinModules } from 'node:module'
@@ -246,66 +256,197 @@ export function resolvePackageEntryFile(packageDirectory, specifier, io = {}) {
 }
 
 /**
- * Does this package directory actually have the SUBPATH `specifier` asks for?
+ * The string targets one `exports` VALUE advertises, each labelled with the
+ * condition path that leads to it, plus whether the shape was understood.
  *
- * `true` — a miss, i.e. Node could not resolve this specifier at all — is
- * claimed only under Node's own two hard rules:
- *   - the manifest has an `exports` field and no key covers the subpath.
- *     `exports` is a gate, not a hint: with a string `exports` only `.` is
- *     published, and with an object `exports` an uncovered subpath is
- *     `ERR_PACKAGE_PATH_NOT_EXPORTED` EVEN IF the file sits on disk (measured
- *     against Node 24 in the review-round receipt).
- *   - there is no `exports` field and nothing Node's legacy path resolution
- *     would find: the exact name, the name plus a recognised extension, or
- *     `<name>/index.*`.
- *
- * Everything else is `false` = "do not call this a miss", including a covered
- * exports key whose target file is absent (that is `untraversed`: present,
- * mapped by the manifest, not followed by this scan) and an unreadable
- * manifest (unknown is never evidence of absence). Conditions are not
- * evaluated, so a subpath exported only for `require` reads as present — the
- * skip-direction limit named in this file's header.
+ * `exports` values nest — `{ "import": "./a.js", "require": "./b.js" }` and
+ * `[ "./a.js", { types: "./a.d.ts" } ]` are both legal — and EVERY string in
+ * them is a path a consumer can be sent to, so every one is a fact this gate may
+ * need. When a shape cannot be modelled (a non-string leaf, an empty condition
+ * object, nesting past the depth cap) this returns `understood: false` and the
+ * caller must report a BAIL rather than read the shape as evidence of presence:
+ * "I could not tell" is never "it is fine".
  */
-export function packageSubpathIsMissing(packageDirectory, specifier, io = {}) {
+export function collectExportTargets(value, label = 'exports', depth = 0) {
+  const targets = []
+  if (typeof value === 'string') return { targets: [{ label, target: value }], understood: true }
+  if (value === null || typeof value !== 'object' || depth > 8) return { targets, understood: false }
+  let understood = true
+  if (Array.isArray(value)) {
+    if (value.length === 0) return { targets, understood: false }
+    for (const [index, item] of value.entries()) {
+      const nested = collectExportTargets(item, `${label}[${index}]`, depth + 1)
+      targets.push(...nested.targets)
+      understood = understood && nested.understood
+    }
+    return { targets, understood }
+  }
+  const entries = Object.entries(value)
+  if (entries.length === 0) return { targets, understood: false }
+  for (const [key, nested] of entries) {
+    const child = collectExportTargets(nested, `${label}.${key}`, depth + 1)
+    targets.push(...child.targets)
+    understood = understood && child.understood
+  }
+  return { targets, understood }
+}
+
+/**
+ * The target an `exports` KEY maps `subpath` to, or null when the key does not
+ * match it. Node's rule for patterns: the key's single `*` captures the middle
+ * of the subpath and that text is substituted into the value's single `*`.
+ *
+ * Measured against Node 24 with `@deepseek-ai/dsh-client-store`, which publishes
+ * `"./src/*": "./src/*"`: a subpath the pattern covers but whose mapped file is
+ * absent is `ERR_MODULE_NOT_FOUND`, not "exported"; a subpath no key covers is
+ * `ERR_PACKAGE_PATH_NOT_EXPORTED`; and `./package.json`, which resolves but
+ * needs an import attribute, is `ERR_IMPORT_ATTRIBUTE_MISSING` — a different
+ * class, and correctly NOT a miss here, because the file exists.
+ */
+export function exportPatternTarget(key, target, subpath) {
+  if (typeof target !== 'string') return null
+  const starAt = key.indexOf('*')
+  if (starAt === -1) {
+    // No `*` in the key means Node matches it by exact equality; a value that
+    // itself contains `*` under such a key is not a mapping this function can
+    // perform, so it maps to nothing rather than to something guessed.
+    if (key !== subpath || target.includes('*')) return null
+    return target
+  }
+  const prefix = key.slice(0, starAt)
+  const suffix = key.slice(starAt + 1)
+  if (subpath.length < prefix.length + suffix.length) return null
+  if (!subpath.startsWith(prefix) || !subpath.endsWith(suffix)) return null
+  const captured = subpath.slice(prefix.length, subpath.length - suffix.length)
+  return target.includes('*') ? target.replace('*', captured) : target
+}
+
+/**
+ * Can Node resolve the SUBPATH `specifier` asks for out of a package directory
+ * that exists? `{ missing, bail, why }`: `missing: true` claims Node could not
+ * resolve it at all, and `bail` says why nothing is claimed.
+ *
+ * `missing` is asserted only on Node's own rules, each measured rather than
+ * reasoned about:
+ *   - an `exports` field exists and NO key covers the subpath →
+ *     `ERR_PACKAGE_PATH_NOT_EXPORTED`, even if the file sits on disk.
+ *     `exports` is a gate, not a hint.
+ *   - a key covers it, exact or via a pattern, and EVERY target that key maps
+ *     to is absent → `ERR_MODULE_NOT_FOUND`. A pattern key is now mapped through
+ *     its VALUE and the mapped file is looked for. Answering "covered" from the
+ *     key's prefix and suffix alone used to launder a dangling subpath of any
+ *     package that publishes a wildcard, and the wildcards here are not exotic:
+ *     the three `@deepseek-ai/dsh-client-*` packages installed in this workspace
+ *     (store, ui-primitives, locale — read off their installed manifests) each
+ *     publish `./src/*`, the store's being `"./src/*": "./src/*"`, so before this
+ *     only exact-key imports were protected. `@deepseek-ai/dsh` is not installed
+ *     here, so nothing is claimed about its map.
+ *   - no `exports` field, and nothing legacy resolution would find.
+ *
+ * The legacy branch is deliberately WIDER than Node's ESM resolver, which probes
+ * the exact path only: this also tries `+.js/.mjs/.cjs/.json/.node` and
+ * `/index.*`. That over-reporting can only ever produce a false "present", i.e.
+ * it can only cost a SKIP — the direction the header's blind-spot list is about.
+ *
+ * Anything this cannot model is a `bail`: an unreadable manifest, an `exports`
+ * value with no readable string target, an `exports` field that is neither
+ * string nor object, or a pattern whose mapped targets are absent while an
+ * unmodelled value sits beside them. Bails are counted and printed in the SKIP
+ * detail (see `formatSkipDetail`), because a silent bail is the same mute this
+ * file exists to close. Conditions are still not evaluated, so a subpath
+ * exported only for `require` reads as present.
+ */
+export function packageSubpathVerdict(packageDirectory, specifier, io = {}) {
   const fileExists = io.fileExists ?? ((p) => existsSync(p) && statSync(p).isFile())
   const readJson = io.readJson ?? ((p) => JSON.parse(readFileSync(p, 'utf8')))
+  const resolvesIn = (target) => fileExists(join(packageDirectory, ...String(target).replace(/^\.\//, '').split('/')))
   const name = packageNameOf(specifier)
-  if (name === null) return false
+  if (name === null) return { missing: false, bail: null, why: null }
   const rest = specifier.slice(name.length).split('/').filter(Boolean)
-  if (rest.length === 0) return false
+  if (rest.length === 0) return { missing: false, bail: null, why: null }
   const subpath = `./${rest.join('/')}`
-  const target = join(packageDirectory, ...rest)
   let manifest
   try {
     manifest = readJson(join(packageDirectory, 'package.json'))
   } catch {
-    return false
+    return { missing: false, bail: 'the package manifest is unreadable, so nothing about its `exports` is known', why: null }
   }
   const exportsField = manifest !== null && typeof manifest === 'object'
     ? manifest.exports ?? null
     : null
-  if (exportsField !== null && exportsField !== undefined) {
-    if (typeof exportsField === 'string') return true
-    if (typeof exportsField !== 'object') return false
-    const keys = Object.keys(exportsField)
-    if (keys.includes(subpath)) return false
-    // `"./*": "./dist/*"` and friends can cover the subpath; any possible
-    // match is treated as covered, which keeps this conservative.
-    for (const key of keys) {
-      if (!key.includes('*')) continue
-      const [prefix = '', suffix = ''] = key.split('*')
-      if (subpath.startsWith(prefix) && subpath.endsWith(suffix) && subpath.length >= prefix.length + suffix.length) return false
+
+  if (exportsField === null || exportsField === undefined) {
+    const legacyTarget = join(packageDirectory, ...rest)
+    if (fileExists(legacyTarget)) return { missing: false, bail: null, why: null }
+    for (const ext of ['.js', '.mjs', '.cjs', '.json', '.node']) {
+      if (fileExists(`${legacyTarget}${ext}`)) return { missing: false, bail: null, why: null }
     }
-    return true
+    for (const index of ['/index.js', '/index.mjs', '/index.cjs', '/index.json']) {
+      if (fileExists(`${legacyTarget}${index}`)) return { missing: false, bail: null, why: null }
+    }
+    return {
+      missing: true,
+      bail: null,
+      why: `no \`exports\` field and no legacy target for '${subpath}' (exact, +.js/.mjs/.cjs/.json/.node, /index.*)`,
+    }
   }
-  if (fileExists(target)) return false
-  for (const ext of ['.js', '.mjs', '.cjs', '.json', '.node']) {
-    if (fileExists(`${target}${ext}`)) return false
+
+  if (typeof exportsField === 'string') {
+    return { missing: true, bail: null, why: "the manifest publishes a single string `exports`, so only '.' is exported" }
   }
-  for (const index of ['/index.js', '/index.mjs', '/index.cjs', '/index.json']) {
-    if (fileExists(`${target}${index}`)) return false
+  if (typeof exportsField !== 'object') {
+    return { missing: false, bail: `\`exports\` is ${typeof exportsField}, which is not a shape this check can read`, why: null }
   }
-  return true
+
+  const keys = Object.keys(exportsField)
+
+  // Exact keys win over patterns, exactly as they do in Node.
+  if (keys.includes(subpath)) {
+    const collected = collectExportTargets(exportsField[subpath], `exports[${subpath}]`)
+    if (collected.targets.length === 0) {
+      return { missing: false, bail: `exports[${subpath}] has no string target this check can read`, why: null }
+    }
+    if (collected.targets.some((entry) => resolvesIn(entry.target))) return { missing: false, bail: null, why: null }
+    const absent = collected.targets.map((entry) => `${entry.label} -> ${entry.target}`).join(', ')
+    if (!collected.understood) {
+      return { missing: false, bail: `exports[${subpath}] mixes an unreadable value with absent targets (${absent})`, why: null }
+    }
+    return { missing: true, bail: null, why: `exact key maps to no existing file: ${absent}` }
+  }
+
+  const patternKeys = keys.filter((key) => key.includes('*'))
+  const mapped = []
+  let sawUnunderstood = false
+  for (const key of patternKeys) {
+    const collected = collectExportTargets(exportsField[key], `exports[${key}]`)
+    if (!collected.understood) sawUnunderstood = true
+    for (const entry of collected.targets) {
+      const resolved = exportPatternTarget(key, entry.target, subpath)
+      if (resolved === null) continue
+      mapped.push({ label: entry.label, target: resolved, present: resolvesIn(resolved) })
+    }
+  }
+  if (mapped.length === 0) {
+    if (patternKeys.length > 0 && sawUnunderstood) {
+      return { missing: false, bail: `exports has ${patternKeys.length} pattern key(s) whose value this check cannot map`, why: null }
+    }
+    return { missing: true, bail: null, why: `no \`exports\` key covers '${subpath}' (keys: ${keys.join(', ') || 'none'})` }
+  }
+  if (mapped.some((entry) => entry.present)) return { missing: false, bail: null, why: null }
+  const absent = mapped.map((entry) => `${entry.label} -> ${entry.target}`).join(', ')
+  if (sawUnunderstood) {
+    return { missing: false, bail: `pattern-covered but absent (${absent}) with an unreadable value beside it, so no claim is made`, why: null }
+  }
+  return { missing: true, bail: null, why: `pattern-covered but absent: ${absent}` }
+}
+
+/**
+ * The boolean view of {@link packageSubpathVerdict}: true only when Node could
+ * not resolve the subpath at all. A bail is NOT a miss — unknown is never
+ * evidence of absence — but a bail is counted and printed, never swallowed.
+ */
+export function packageSubpathIsMissing(packageDirectory, specifier, io = {}) {
+  return packageSubpathVerdict(packageDirectory, specifier, io).missing
 }
 
 /**
@@ -350,7 +491,14 @@ export function scanModuleClosure(options) {
     truncated: false,
     ownUnresolved: [],
     upstreamUnresolved: [],
+    // `untraversed` is a COUNT of things this scan could not follow, and a count
+    // that reaches no output is how R1 stayed invisible: a run with one
+    // untraversed specifier printed a line byte-identical to a run with none.
+    // The item lists are what make that impossible now — `formatSkipDetail`
+    // prints them, so anything landing here changes the gate's output.
     untraversed: 0,
+    untraversedItems: [],
+    subpathBails: [],
   }
   if (!fileExists(entryFile)) {
     result.reason = `entry file missing: ${entryFile}`
@@ -409,13 +557,19 @@ export function scanModuleClosure(options) {
         recordUnresolved()
         continue
       }
-      // Present package, subpath that cannot resolve. This is the same defect
-      // class as an undeclared dependency and is reported in the same place:
-      // the IMPORTER's zone. Counting it as `untraversed` instead is what let a
-      // dangling subpath in our own artifact ride along with the host's gap.
-      if (packageSubpathIsMissing(packageDirectory, specifier, { fileExists, readJson: io.readJson })) {
+      // Present package, subpath Node could not resolve. Same defect class as an
+      // undeclared dependency, reported in the same place: the IMPORTER's zone.
+      // Counting it as `untraversed` instead is what let a dangling subpath in
+      // our own artifact ride along with the host's gap.
+      const subpathVerdict = packageSubpathVerdict(packageDirectory, specifier, { fileExists, readJson: io.readJson })
+      if (subpathVerdict.missing) {
         recordUnresolved()
         continue
+      }
+      if (subpathVerdict.bail !== null && !result.subpathBails.some((item) => item.specifier === specifier)) {
+        // Not a miss — this check could not read the shape. Recorded and printed,
+        // never swallowed: an unreported bail is the mute this file exists to close.
+        result.subpathBails.push({ specifier, importer: file, zone, reason: subpathVerdict.bail })
       }
       const key = `${packageDirectory}::${specifier}`
       if (seenPackages.has(key)) continue
@@ -423,6 +577,14 @@ export function scanModuleClosure(options) {
       const entry = resolvePackageEntryFile(packageDirectory, specifier, { fileExists, readJson: io.readJson })
       if (entry === null) {
         result.untraversed += 1
+        if (!result.untraversedItems.some((item) => item.specifier === specifier)) {
+          result.untraversedItems.push({
+            specifier,
+            importer: file,
+            zone,
+            reason: subpathVerdict.why ?? 'present package, but no manifest target this scan could follow',
+          })
+        }
         continue
       }
       queue.push(entry)
@@ -536,7 +698,7 @@ export function classifyClosureStep(input) {
   if (closure !== null && closure.ran && closure.truncated) {
     return {
       status: 'fail',
-      why: `the closure scan hit its file cap after ${closure.visitedFiles} files, so it cannot certify this repo's own artifact clean — a SKIP here would claim an unscanned graph (raise maxFiles or fix the graph, never the classification)`,
+      why: `the closure scan hit its file cap after ${closure.visitedFiles} files, so it cannot certify this repo's own artifact clean — a SKIP here would claim an unscanned graph. The ceiling is the 4000-file default of scanModuleClosure, applied at the scanModuleClosure call site in scripts/composition-smoke.mjs; there is no environment or CLI knob (measured: grep -nE 'process\\.env|argv|maxFiles' scripts/composition-smoke.mjs matches nothing), so the remedy is to raise that argument there or to shrink the graph — never to relax this classification. Measured headroom: 125 files for this repo's client closure, and 273 in the host tree where the same closure resolves (dev/agent-workflow/evidence/a4-pr7/gates/7-5-round2-raw/N3-truncation-message.txt and 7-5-client-closure-scan.txt section 5) — both far under 4000.`,
     }
   }
   const importerIsUpstream = isInsideNodeModules(failure.importer)
@@ -567,8 +729,31 @@ export function upstreamMissingPackages(closure, loadErrorPackage) {
  * The SKIP wording. It names the count and every package, in sorted order: an
  * unexplained SKIP is the lint-mute failure mode in a different costume.
  */
-export function formatSkipDetail(missing) {
-  return `host module closure unavailable — ${missing.length} unresolvable: ${missing.join(', ')}`
+/** Cap so a pathological graph cannot make the SKIP line unbounded. */
+function namedList(items, limit = 5) {
+  const shown = items.slice(0, limit).join(', ')
+  return items.length > limit ? `${shown}, +${items.length - limit} more` : shown
+}
+
+/**
+ * The SKIP line. It names every unresolvable package AND everything the scan
+ * could not traverse or could not judge, because a SKIP whose text is identical
+ * whether or not the scan found something is how a laundered defect looks:
+ * measured, `untraversed: 0` and `untraversed: 1` used to produce the exact same
+ * characters. Silence about the second and third lists is therefore not an
+ * option — a defect in this class now has to change the printed line.
+ */
+export function formatSkipDetail(missing, extra = {}) {
+  const parts = [`host module closure unavailable — ${missing.length} unresolvable: ${missing.join(', ')}`]
+  const untraversed = (extra.untraversed ?? []).map((item) => `${item.specifier} (asked for by ${item.importer})`)
+  if (untraversed.length > 0) {
+    parts.push(`${untraversed.length} UNTRAVERSED — present package, no manifest target this scan could follow: ${namedList(untraversed)}`)
+  }
+  const bails = (extra.bails ?? []).map((item) => `${item.specifier} (${item.reason})`)
+  if (bails.length > 0) {
+    parts.push(`${bails.length} SUBPATH CHECK BAIL — an \`exports\` shape this check cannot read, so nothing is claimed about it: ${namedList(bails)}`)
+  }
+  return parts.join(' | ')
 }
 
 /** Relative path helper kept here so the two smoke modules phrase paths alike. */

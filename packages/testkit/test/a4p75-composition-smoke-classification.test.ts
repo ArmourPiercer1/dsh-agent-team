@@ -48,16 +48,21 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import {
   classifyClosureStep,
+  collectExportTargets,
+  exportPatternTarget,
   formatSkipDetail,
   isInsideNodeModules,
   packageSubpathIsMissing,
+  packageSubpathVerdict,
   resolutionFailureOf,
   scanModuleClosure,
 } from '../../../scripts/composition-smoke-closure.mjs'
 import {
   REQUIRED_CHECK_IDS,
+  advertisedShimPaths,
   checkCompositionSurface,
   checkSetDifferences,
+  renderSurfaceStepLines,
   staticExternalRequests,
 } from '../../../scripts/composition-smoke-bundle.mjs'
 import {
@@ -119,6 +124,8 @@ const CLEAN_CLOSURE = {
   ownUnresolved: [],
   upstreamUnresolved: [],
   untraversed: 0,
+  untraversedItems: [],
+  subpathBails: [],
 } as const
 
 // ── closure fixtures ────────────────────────────────────────────────────────
@@ -149,6 +156,75 @@ const UPSTREAM_WITH_UNDECLARED_DEPS = {
 
 const OWN_UNDECLARED_IMPORT =
   "import { missing } from '@a4p75/own-missing'\nexport const ownSide = missing\n"
+
+/**
+ * The three round-2 fixtures: a wildcard-covered subpath whose mapped target
+ * is absent, a present package with no followable target, and an `exports`
+ * value this check cannot read. A helper because the classifier's `afterAll`
+ * deletes SCRATCH, and the describes that read these run after it — a fixture
+ * that is gone reads as a scan that found nothing, which is the exact
+ * confusion this round is about.
+ */
+function writeRound3ClosureFixtures(root: string): void {
+  for (const caseName of ['wildcard', 'untraversed', 'bail']) {
+    // Each fixture is its own ESM package, exactly as in the classifier's
+    // `beforeAll`: without it the `.js` files inherit whatever `type` the
+    // nearest manifest declares, and a SyntaxError stands in for the error
+    // under test.
+    write(join(root, caseName, 'package.json'), JSON.stringify({ name: `@a4p75/fixture-${caseName}`, type: 'module' }, null, 2))
+  }
+  // (9) the SECOND-round laundering case: the subpath IS covered, by a
+  //     wildcard `exports` key, and the file the pattern maps it to does not
+  //     exist. Matching the key on prefix and suffix alone answered "covered",
+  //     so our own dangling import rode along with the host's gap and printed
+  //     a SKIP byte-identical to a healthy one. The real artifact reached this
+  //     exact shape through `@deepseek-ai/dsh-client-store`, which publishes
+  //     `"./src/*": "./src/*"`.
+  for (const caseName of ['wildcard', 'untraversed', 'bail']) {
+    for (const [rel, text] of Object.entries(UPSTREAM_WITH_UNDECLARED_DEPS)) {
+      write(join(root, caseName, rel), text)
+    }
+}
+write(join(root, 'wildcard/node_modules/@a4p75/wild/package.json'), JSON.stringify({
+  name: '@a4p75/wild',
+  version: '1.0.0',
+  type: 'module',
+  exports: { '.': './index.js', './src/*': './src/*' },
+}))
+write(join(root, 'wildcard/node_modules/@a4p75/wild/index.js'), 'export const wild = 1\n')
+write(join(root, 'wildcard/node_modules/@a4p75/wild/src/real.js'), 'export const real = 1\n')
+// Non-entry own file again: the entry itself is linked before the host's gap
+// is even reached, so an own defect in a chunk is the shape that used to vanish.
+write(join(root, 'wildcard/dist/own-side.js'), "import { nope } from '@a4p75/wild/src/nope.js'\nexport const ownSide = nope\n")
+write(join(root, 'wildcard/dist/entry.js'), "import { up } from '@a4p75/upstream'\nimport { ownSide } from './own-side.js'\nexport const clientEntry = up + ownSide\n")
+
+// (10) a present package whose `exports["."]` target is absent: nothing here
+//      is a miss, but the scan cannot follow it either. It lands in
+//      `untraversed`, which is only worth anything once the SKIP line prints
+//      it — see the test that reads this fixture.
+write(join(root, 'untraversed/node_modules/@a4p75/broken-entry/package.json'), JSON.stringify({
+  name: '@a4p75/broken-entry',
+  version: '1.0.0',
+  type: 'module',
+  exports: { '.': './lib/absent.js' },
+}))
+write(join(root, 'untraversed/node_modules/@a4p75/broken-entry/lib/present.js'), 'export const present = 1\n')
+write(join(root, 'untraversed/dist/own-side.js'), "import { z } from '@a4p75/broken-entry'\nexport const ownSide = z\n")
+write(join(root, 'untraversed/dist/entry.js'), "import { up } from '@a4p75/upstream'\nimport { ownSide } from './own-side.js'\nexport const clientEntry = up + ownSide\n")
+
+// (11) an `exports` value this check cannot read. Not a miss — a BAIL — and
+//      the bail has to reach the output, or "I could not tell" is once again
+//      a silent pass.
+write(join(root, 'bail/node_modules/@a4p75/odd/package.json'), JSON.stringify({
+  name: '@a4p75/odd',
+  version: '1.0.0',
+  type: 'module',
+  exports: { '.': './index.js', './src/*': { import: 42 } },
+}))
+write(join(root, 'bail/node_modules/@a4p75/odd/index.js'), 'export const odd = 1\n')
+write(join(root, 'bail/dist/own-side.js'), "import { whatever } from '@a4p75/odd/src/whatever.js'\nexport const ownSide = whatever\n")
+write(join(root, 'bail/dist/entry.js'), "import { up } from '@a4p75/upstream'\nimport { ownSide } from './own-side.js'\nexport const clientEntry = up + ownSide\n")
+}
 
 describe('composition-smoke three-state classifier', () => {
   beforeAll(() => {
@@ -219,6 +295,8 @@ describe('composition-smoke three-state classifier', () => {
     //     parses. Node's message names the directory and then the importer.
     write(join(root, 'dirimport/somedir/index.js'), 'export const dir = 1\n')
     write(join(root, 'dirimport/dist/entry.js'), "import { dir } from '../somedir'\nexport const clientEntry = dir\n")
+
+    writeRound3ClosureFixtures(root)
   })
 
   afterAll(() => {
@@ -426,14 +504,176 @@ describe('composition-smoke three-state classifier', () => {
     expect(packageSubpathIsMissing(legacy, '@a4p75/legacy/lib/nope.js')).toBe(true)
     // An unreadable manifest is unknown, and unknown is never a miss.
     expect(packageSubpathIsMissing(join(SCRATCH, 'closure/no-such-dir'), '@a4p75/x/y')).toBe(false)
-    // Pattern exports (`./features/*`) cover what an exact-key lookup would miss.
+    // Pattern exports (`./features/*`) cover what an exact-key lookup would
+    // miss — but "covered" is a claim about the file the pattern maps to, not
+    // about the key. The assertions here used to be the laundering itself:
+    // `@a4p75/pat/features/a.js` mapped to a `dist/` that did not exist and was
+    // called present, because the key matched on prefix and suffix alone. Node
+    // answers `ERR_MODULE_NOT_FOUND` for that shape (measured against
+    // `@deepseek-ai/dsh-client-store`'s `"./src/*": "./src/*"`), so that is what
+    // is pinned now, in both directions.
     const patterned = join(SCRATCH, 'closure/patterned/node_modules/@a4p75/pat')
     write(join(patterned, 'package.json'), JSON.stringify({ name: '@a4p75/pat', version: '1.0.0', exports: { '.': './index.js', './*': './dist/*' } }))
-    expect(packageSubpathIsMissing(patterned, '@a4p75/pat/features/a.js')).toBe(false)
+    write(join(patterned, 'dist/exists.js'), 'export const exists = 1\n')
+    // `./*` -> `./dist/*`, so `@a4p75/pat/exists.js` is `dist/exists.js`.
+    expect(packageSubpathIsMissing(patterned, '@a4p75/pat/exists.js')).toBe(false)
+    expect(packageSubpathIsMissing(patterned, '@a4p75/pat/nope.js')).toBe(true)
+    // A key that matches but whose value cannot be read is a bail, not a miss.
+    expect(packageSubpathIsMissing(patterned, '@a4p75/pat/nope.js', {
+      fileExists: () => false,
+      readJson: () => ({ name: '@a4p75/pat', exports: { './*': { import: 42 } } }),
+    })).toBe(false)
     // A string `exports` publishes `.` only: every subpath is unpublished.
     const stringy = join(SCRATCH, 'closure/stringy/node_modules/@a4p75/str')
     write(join(stringy, 'package.json'), JSON.stringify({ name: '@a4p75/str', version: '1.0.0', exports: './index.js' }))
     expect(packageSubpathIsMissing(stringy, '@a4p75/str/anything.js')).toBe(true)
+  })
+})
+
+describe('composition-smoke exports pattern mapping (round 2 R1)', () => {
+  beforeAll(() => {
+    writeRound3ClosureFixtures(join(SCRATCH, 'closure'))
+  })
+
+  it('does not launder a wildcard-covered subpath of an installed package', () => {
+    const root = join(SCRATCH, 'closure/wildcard')
+    const entryFile = join(root, 'dist/entry.js')
+    const closure = scanModuleClosure({ entryFile, repoRoot: root })
+    // The review-round shape, third variant: the key matched, the mapped file did
+    // not exist, and the answer given was "covered".
+    expect(closure.ownUnresolved.map((entry) => entry.specifier)).toEqual(['@a4p75/wild/src/nope.js'])
+    expect(closure.ownUnresolved[0]?.zone).toBe('own')
+    expect(closure.ownUnresolved[0]?.importer).toContain(join('dist', 'own-side.js'))
+    expect(closure.untraversed).toBe(0)
+    expect(closure.subpathBails).toEqual([])
+    // And the gate question, on the real import attempt: the host's gap still
+    // wins Node's link race, so ONLY the scan can keep this red. Measured on the
+    // real artifact, this exact shape printed output identical to a healthy run
+    // at exit 0 (round-2 receipt R1).
+    const loadError = nodeResolutionError(entryFile)
+    expect(loadError.code).toBe('ERR_MODULE_NOT_FOUND')
+    expect(loadError.message).toContain('@a4p75/no-such-clsx')
+    const decision = classifyClosureStep({ entryExists: true, closure, loadError })
+    expect(decision.status).toBe('fail')
+    expect(decision.why).toContain('@a4p75/wild/src/nope.js')
+    // The file the pattern DID map to an existing file stays unremarkable, so
+    // this is a claim about the absent target and not a ban on pattern exports.
+    const ok = packageSubpathVerdict(join(root, 'node_modules/@a4p75/wild'), '@a4p75/wild/src/real.js')
+    expect(ok.missing).toBe(false)
+    expect(ok.bail).toBeNull()
+  })
+
+  const ioWith = (files: readonly string[], exportsField: unknown) => ({
+    fileExists: (target: string) => files.some((rel) => target.endsWith(rel)),
+    readJson: () => ({ name: '@a4p75/any', exports: exportsField }),
+  })
+
+  it('maps a pattern key through its VALUE and looks for the mapped file', () => {
+    const io = ioWith(['dist/exists.js'], { './*': './*' })
+    const present = packageSubpathVerdict('/pkg', '@a4p75/any/dist/exists.js', io)
+    expect(present.missing).toBe(false)
+    expect(present.bail).toBeNull()
+    const absent = packageSubpathVerdict('/pkg', '@a4p75/any/dist/nope.js', io)
+    expect(absent.missing).toBe(true)
+    // The name of the mapped target, not just of the specifier: the reader has
+    // to be able to see WHICH file the manifest sent the resolver to.
+    expect(absent.why).toContain('exports[./*] -> ./dist/nope.js')
+  })
+
+  it('maps through conditional and array values, every string being a real path', () => {
+    const conditional = ioWith(['lib/real.js'], { './*': { import: './*' } })
+    expect(packageSubpathVerdict('/pkg', '@a4p75/any/lib/real.js', conditional).missing).toBe(false)
+    const nestedAbsent = packageSubpathVerdict('/pkg', '@a4p75/any/lib/nope.js', conditional)
+    expect(nestedAbsent.missing).toBe(true)
+    expect(nestedAbsent.why).toContain('exports[./*].import -> ./lib/nope.js')
+    // A candidate array: present under one condition is present.
+    const candidates = ioWith(['lib/real.js'], { './*': [{ types: './*.d.ts' }, { import: './*' }] })
+    expect(packageSubpathVerdict('/pkg', '@a4p75/any/lib/real.js', candidates).missing).toBe(false)
+  })
+
+  it('bails, never claims, on a shape it cannot read — and an unmodelled value cannot hide an absent one', () => {
+    const unreadable = packageSubpathVerdict('/pkg', '@a4p75/any/src/x.js', ioWith([], { './src/*': { import: 42 } }))
+    expect(unreadable.missing).toBe(false)
+    expect(unreadable.bail).toContain('cannot map')
+    // The hard case: the readable half maps to nothing. Reporting a miss would
+    // be honest about that half, but a bail is what keeps the check from
+    // over-reporting on a package whose shape it does not understand — and the
+    // bail is printed, so the run still changes text.
+    const mixed = packageSubpathVerdict('/pkg', '@a4p75/any/src/x.js', ioWith([], { './src/*': [{ import: './gone/*' }, { weird: null }] }))
+    expect(mixed.missing).toBe(false)
+    expect(mixed.bail).toContain('pattern-covered but absent')
+    // An exact key with no readable target is a bail for the same reason.
+    const emptyKey = packageSubpathVerdict('/pkg', '@a4p75/any/x.js', ioWith([], { './x.js': {} }))
+    expect(emptyKey.missing).toBe(false)
+    expect(emptyKey.bail).toContain('no string target')
+  })
+
+  it('substitutes the captured text into the value, the way Node does', () => {
+    expect(exportPatternTarget('./src/*', './src/*', './src/deep/x.js')).toBe('./src/deep/x.js')
+    expect(exportPatternTarget('./*', './dist/features/*.js', './a')).toBe('./dist/features/a.js')
+    expect(exportPatternTarget('./src/*', './fixed.js', './src/a.js')).toBe('./fixed.js')
+    // A key that does not cover the subpath maps to nothing at all.
+    expect(exportPatternTarget('./src/*', './src/*', './lib/a.js')).toBeNull()
+    expect(exportPatternTarget('./exact', './lib/a.js', './other')).toBeNull()
+    expect(collectExportTargets({ import: './a.js', require: ['./b.js', { types: './c.d.ts' }] }).targets)
+      .toEqual([
+        { label: 'exports.import', target: './a.js' },
+        { label: 'exports.require[0]', target: './b.js' },
+        { label: 'exports.require[1].types', target: './c.d.ts' },
+      ])
+    expect(collectExportTargets({}).understood).toBe(false)
+    expect(collectExportTargets([]).understood).toBe(false)
+    expect(collectExportTargets(null).understood).toBe(false)
+  })
+})
+
+describe('composition-smoke what-the-scan-held-back (round 2 N2)', () => {
+  const SKIP_MISSING = ['@a4p75/no-such-clsx', '@a4p75/deep-missing']
+
+  beforeAll(() => {
+    writeRound3ClosureFixtures(join(SCRATCH, 'closure'))
+  })
+
+  it('prints the untraversed specifiers, so a held-back scan is not silent', () => {
+    const root = join(SCRATCH, 'closure/untraversed')
+    const entryFile = join(root, 'dist/entry.js')
+    const closure = scanModuleClosure({ entryFile, repoRoot: root })
+    expect(closure.untraversed).toBe(1)
+    expect(closure.untraversedItems.map((item: { specifier: string }) => item.specifier)).toEqual(['@a4p75/broken-entry'])
+    // Still a SKIP: a present-but-unfollowable target is not our defect, and the
+    // upstream gap that wins the link race is not either.
+    const loadError = nodeResolutionError(entryFile)
+    expect(classifyClosureStep({ entryExists: true, closure, loadError }).status).toBe('skip')
+    // And the line it prints says so. This is the whole point of the item lists:
+    // before them, `untraversed: 0` and `untraversed: 1` printed the same
+    // characters, which is how a laundered defect looked at the gate.
+    const clean = formatSkipDetail(SKIP_MISSING, { untraversed: [] })
+    const held = formatSkipDetail(SKIP_MISSING, { untraversed: closure.untraversedItems })
+    expect(clean).toBe(`host module closure unavailable — 2 unresolvable: ${SKIP_MISSING.join(', ')}`)
+    expect(held).not.toBe(clean)
+    expect(held).toContain('1 UNTRAVERSED')
+    expect(held).toContain('@a4p75/broken-entry')
+  })
+
+  it('prints a bail it took, and does not turn that bail into an own-zone failure', () => {
+    const root = join(SCRATCH, 'closure/bail')
+    const closure = scanModuleClosure({ entryFile: join(root, 'dist/entry.js'), repoRoot: root })
+    // A bail is not a miss: the own zone stays clean, because nothing was proven.
+    expect(closure.ownUnresolved).toEqual([])
+    expect(closure.subpathBails.map((item: { specifier: string }) => item.specifier)).toEqual(['@a4p75/odd/src/whatever.js'])
+    const loadError = nodeResolutionError(join(root, 'dist/entry.js'))
+    const decision = classifyClosureStep({ entryExists: true, closure, loadError })
+    expect(decision.status).toBe('skip')
+    const line = formatSkipDetail(decision.missing ?? [], { bails: closure.subpathBails })
+    expect(line).toContain('1 SUBPATH CHECK BAIL')
+    expect(line).toContain('@a4p75/odd/src/whatever.js')
+    // Capped: a pathological graph must not make the line unbounded.
+    const many = Array.from({ length: 7 }, (_unused, index) => ({
+      specifier: `@a4p75/many${index}/x`, importer: 'i', zone: 'own' as const, reason: 'r',
+    }))
+    const capped = formatSkipDetail([], { bails: many })
+    expect(capped).toContain('+2 more')
+    expect(capped).not.toContain('@a4p75/many6/x')
   })
 })
 
@@ -450,6 +690,16 @@ interface SurfaceOptions {
    */
   pluginExports?: Partial<{ name: string; apply: string; inject: string }>
   bundleAdvertisedAs?: string
+  /**
+   * Advertise the bundle through a CONDITIONAL value
+   * (`{ "import": <bundleAdvertisedAs> }`) instead of a bare string. A
+   * conditional target is the file a consumer under the `import` condition
+   * actually loads, so both path arms have to see it; reading only string values
+   * made every nested target invisible to them.
+   */
+  bundleAdvertisedConditionally?: boolean
+  /** Advertise an `exports` value with nothing readable inside it. */
+  unreadableExportValue?: boolean
   shimVersion?: string
   platform?: string
   glueRel?: string
@@ -512,7 +762,10 @@ function buildSurface(caseName: string, options: SurfaceOptions = {}) {
     type: 'module',
     exports: {
       '.': `./${CLIENT_NODE_HALF_FILENAME}`,
-      './client': options.bundleAdvertisedAs ?? `./${CLIENT_BUNDLE_FILENAME}`,
+      './client': options.bundleAdvertisedConditionally === true
+        ? { import: options.bundleAdvertisedAs ?? `./${CLIENT_BUNDLE_FILENAME}` }
+        : options.bundleAdvertisedAs ?? `./${CLIENT_BUNDLE_FILENAME}`,
+      ...(options.unreadableExportValue === true ? { './broken': { import: null } } : {}),
       './package.json': './package.json',
     },
     dsh: { client: { platform: options.platform ?? 'web' } },
@@ -644,6 +897,67 @@ describe('composition-smoke offline composition surface', () => {
     expect(readCheck(checks, 'manifest-targets-resolve').ok).toBe(true)
   })
 
+  it('is red when a CONDITIONAL export target lies outside the install surface', async () => {
+    // The same defect as the test above, written the way a real builder writes
+    // it. Flattening the value is what makes the arm able to see it: measured on
+    // the real artifact, `{ import: '../outside/…' }` printed
+    // `all 4 path(s) … land inside an install surface` and passed, where the
+    // flat form of the identical path printed 5 and failed.
+    const outside = '../dist/packages/client/src/plugin/client.js'
+    const { checks } = await surfaceOf({
+      bundleAdvertisedAs: outside,
+      bundleAdvertisedConditionally: true,
+      extraFiles: ['packages/client/dist/packages/client/src/plugin/client.js'],
+    }, 'conditional-outside')
+    const check = readCheck(checks, 'composition-bundle-is-install-surface')
+    expect(check.ok).toBe(false)
+    // Labelled by the condition path, so the reader knows which manifest entry
+    // to go fix.
+    expect(check.detail).toContain('exports[./client].import')
+    expect(readCheck(checks, 'manifest-targets-resolve').ok).toBe(true)
+  })
+
+  it('is red when a CONDITIONAL export target does not exist, and sees it in both arms', async () => {
+    const { checks } = await surfaceOf({
+      bundleAdvertisedAs: './gone.js',
+      bundleAdvertisedConditionally: true,
+    }, 'conditional-missing')
+    expect(readCheck(checks, 'manifest-targets-resolve').ok).toBe(false)
+    expect(readCheck(checks, 'manifest-targets-resolve').detail).toContain('shim exports[./client].import -> ./gone.js')
+    // Inside the surface, so the surface arm stays green: the two questions are
+    // still asked separately.
+    expect(readCheck(checks, 'composition-bundle-is-install-surface').ok).toBe(true)
+  })
+
+  it('is red when an export value has nothing readable in it, rather than counting one fewer path', async () => {
+    // Skipping a non-string value is what made a nested path uncheckable. An
+    // unreadable value is still advertised, so it has to be reported as
+    // "nothing can be shown to ship", not silently dropped from the count.
+    const { checks } = await surfaceOf({ unreadableExportValue: true }, 'unreadable-value')
+    const surface = readCheck(checks, 'composition-bundle-is-install-surface')
+    expect(surface.ok).toBe(false)
+    expect(surface.detail).toContain('exports[./broken] has no readable string target')
+    expect(readCheck(checks, 'manifest-targets-resolve').detail).toContain('shim exports[./broken] has no readable string target')
+  })
+
+  it('flattens conditional export values into the paths it checks', () => {
+    const paths = advertisedShimPaths({
+      exports: {
+        '.': './index.js',
+        './client': { types: './client.d.ts', import: '../outside/client.js' },
+        './broken': { import: null },
+      },
+      files: ['bundle.js'],
+    }, 'packages/client/composition-shim')
+    expect(paths.map((entry: { label: string; path: string | null }) => [entry.label, entry.path])).toEqual([
+      ['exports[.]', 'packages/client/composition-shim/index.js'],
+      ['exports[./client].types', 'packages/client/composition-shim/client.d.ts'],
+      ['exports[./client].import', 'packages/client/outside/client.js'],
+      ['exports[./broken]', null],
+      ['files[bundle.js]', 'packages/client/composition-shim/bundle.js'],
+    ])
+  })
+
   it('is red when the built manifest advertises nothing at all', async () => {
     // An empty advertised set would make the containment loop vacuously green;
     // "we know of no path" is not evidence that everything ships.
@@ -686,6 +1000,46 @@ describe('composition-smoke required arm set', () => {
     expect(checkSetDifferences(renamed).unexpected).toEqual(['plugin-row-exportz'])
     // The pre-fix state this guard exists for: no arms at all.
     expect(checkSetDifferences([]).missing.length).toBe(REQUIRED_CHECK_IDS.length)
+  })
+
+  it('prints one line per required id, in the required order, whatever the arms report', () => {
+    const complete = REQUIRED_CHECK_IDS.map(arm)
+    const lines = renderSurfaceStepLines({ checks: complete }, 'packages/client/composition-shim')
+    // The line set is built FROM the required ids, so what can be reported and
+    // what can be printed are the same list. Order too: the healthy output is
+    // stable whatever order the arms happened to record in.
+    expect(lines.map((line: { id: string }) => line.id)).toEqual([...REQUIRED_CHECK_IDS])
+    expect(lines.every((line: { ok: boolean }) => line.ok)).toBe(true)
+    // Reported in a different order than required, printed in the required one:
+    // the order of the output comes from the id list, not from the arms. Without
+    // this, an implementation that just echoed `surface.checks` in report order
+    // would satisfy the assertion above by luck.
+    const shuffled = [...REQUIRED_CHECK_IDS].reverse().map(arm)
+    expect(renderSurfaceStepLines({ checks: shuffled }, 'x').map((line: { id: string }) => line.id))
+      .toEqual([...REQUIRED_CHECK_IDS])
+    expect(lines[0]?.text).toMatch(/^PASS client bundle composition-output-present \(packages\/client\/composition-shim\): /)
+  })
+
+  it('prints a FAIL for an arm that stopped reporting, instead of no line', () => {
+    const dropped = REQUIRED_CHECK_IDS.map(arm).filter((check) => check.id !== 'plugin-row-exports')
+    const lines = renderSurfaceStepLines({ checks: dropped }, 'packages/client/composition-shim')
+    expect(lines.map((line: { id: string }) => line.id)).toEqual([...REQUIRED_CHECK_IDS])
+    const line = lines.find((candidate: { id: string }) => candidate.id === 'plugin-row-exports')
+    expect(line?.ok).toBe(false)
+    expect(line?.text).toContain('never reported')
+    // Nothing at all reported is the same failure at full width.
+    const nothing = renderSurfaceStepLines({ checks: [] }, 'packages/client/composition-shim')
+    expect(nothing.every((entry: { ok: boolean }) => entry.ok === false)).toBe(true)
+    expect(nothing.length).toBe(REQUIRED_CHECK_IDS.length)
+  })
+
+  it('prints a FAIL for an arm that renamed itself', () => {
+    const renamed = REQUIRED_CHECK_IDS.map((id) => arm(id === 'plugin-row-exports' ? 'plugin-row-exportz' : id))
+    const lines = renderSurfaceStepLines({ checks: renamed }, 'packages/client/composition-shim')
+    expect(lines.find((line: { id: string }) => line.id === 'plugin-row-exports')?.ok).toBe(false)
+    const checkSet = lines.find((line: { id: string }) => line.id === 'check-set')
+    expect(checkSet?.ok).toBe(false)
+    expect(checkSet?.text).toContain('reported but not required [plugin-row-exportz]')
   })
 
   it('requires by id every arm this repository actually reports', async () => {

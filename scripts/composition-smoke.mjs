@@ -69,9 +69,10 @@
  * acceptance run (plan Task 7.6/7.7), not this script.
  *
  * Output: one PASS/FAIL/SKIP line per step plus a final summary line. The
- * bundle arms are additionally required by NAME (`REQUIRED_CHECK_IDS`): an
- * expected arm that is not reported is a FAIL line of its own, because a step
- * that stopped reporting would otherwise vanish into the summary.
+ * bundle arms are additionally required by NAME (`REQUIRED_CHECK_IDS`), and the
+ * name list is what the lines are BUILT from, twice over: an arm that is not
+ * reported gets a FAIL line of its own, and a required id that produced no line
+ * at all fails as never-printed. Nothing iterates the arms' own result.
  * Exit code: 0 with no FAIL (a SKIP is allowed), 1 on any FAIL.
  *
  * Run: `pnpm smoke:composition` (or `node scripts/composition-smoke.mjs`)
@@ -89,7 +90,12 @@ import {
   formatSkipDetail,
   scanModuleClosure,
 } from './composition-smoke-closure.mjs'
-import { checkCompositionSurface, checkSetDifferences } from './composition-smoke-bundle.mjs'
+import {
+  DEFAULT_EXPECTATIONS,
+  REQUIRED_CHECK_IDS,
+  checkCompositionSurface,
+  renderSurfaceStepLines,
+} from './composition-smoke-bundle.mjs'
 
 // Asset specifiers in the client graph resolve to an inert module (see
 // header); must be registered before the first target import below.
@@ -253,6 +259,22 @@ async function checkPluginContract(mod, target) {
   }
 }
 
+/**
+ * The SKIP line for a closure-gated step: the named missing packages PLUS
+ * everything the scan held back (unresolved-but-present targets, `exports`
+ * shapes it could not read). Both extra lists are capped inside
+ * `formatSkipDetail`; both are printed whenever they are non-empty, so a scan
+ * that found something cannot produce the same characters as one that found
+ * nothing.
+ */
+function formatSkipLine(label, decision, closure) {
+  const detail = formatSkipDetail(decision.missing, {
+    untraversed: closure?.untraversedItems ?? [],
+    bails: closure?.subpathBails ?? [],
+  })
+  return `SKIP ${label}: ${detail}`
+}
+
 let failed = false
 const skipped = []
 
@@ -291,7 +313,12 @@ for (const target of targets) {
   const decision = classifyClosureStep({ entryExists, closure, loadError })
   if (decision.status === 'skip') {
     skipped.push(target.label)
-    console.log(`SKIP ${target.label}: ${formatSkipDetail(decision.missing)}`)
+    // The held-back lists travel with the SKIP because a SKIP whose text is the
+    // same whether or not the scan found something is how a laundered defect
+    // looks: measured, `untraversed: 0` and `untraversed: 1` used to print the
+    // identical line, which is exactly how a dangling wildcard-covered subpath
+    // stayed invisible behind the host's gap.
+    console.log(formatSkipLine(target.label, decision, closure))
     continue
   }
   if (decision.status === 'fail') {
@@ -321,31 +348,37 @@ try {
     hostModule,
     gluePlacementDist: PLACEMENTS[0]?.dist ?? null,
   })
-  for (const check of surface.checks) {
-    const label = `client bundle ${check.id} (packages/client/composition-shim)`
-    if (check.ok) {
-      console.log(`PASS ${label}: ${check.detail}`)
-    } else {
-      failed = true
-      console.log(`FAIL ${label}: ${check.detail}`)
-    }
+  const compositionDir = DEFAULT_EXPECTATIONS.compositionDir
+  // Built from `REQUIRED_CHECK_IDS`, never from `surface.checks`, so an arm that
+  // stopped reporting is a printed FAIL rather than an absent line (measured
+  // before that guard existed: dropping one arm printed 8 PASS lines at exit 0,
+  // and returning no arms at all printed 0 lines at exit 0).
+  const lines = renderSurfaceStepLines(surface, compositionDir)
+  // And closed a second time, on the LINES rather than on the array the arms
+  // returned. The first guard compared `surface.checks` against the required set
+  // while the terminal iterated something else, so a print-site filter
+  // (`surface.checks.filter((c) => c.id !== 'external-specifier-set')`) printed
+  // the healthy output minus one line at exit 0 with the guard satisfied. This
+  // derivation sits after every upstream filter and reads the same array the loop
+  // below prints, so any filter that hides a required arm hides it from here too,
+  // and here is a FAIL. Not closed by this, and not claimable as closed: deleting
+  // an id from `REQUIRED_CHECK_IDS`, dropping its `record()`, or filtering
+  // between this line and the loop — those are author-visible by policy, and the
+  // reasoning is in `composition-smoke-bundle.mjs`. Both halves measured: the same
+  // filter placed upstream of this derivation prints a `never-printed` FAIL at
+  // exit 1; placed below it, it prints the healthy output minus one line at exit 0.
+  // That second result is the residual window, recorded here so nobody has to
+  // rediscover it or mistake the guard for total closure.
+  const unprinted = REQUIRED_CHECK_IDS.filter((id) => !lines.some((line) => line.id === id))
+  for (const line of lines) {
+    if (!line.ok) failed = true
+    console.log(line.text)
   }
-  // The arms a caller must SEE. Printing one line per returned check and
-  // failing only on `ok === false` means an arm that is never returned is not
-  // a red line, it is a missing line — and a missing line still ends in
-  // `PASS composition-smoke`. Measured before this guard: dropping one arm
-  // printed 8 PASS lines and exit 0; returning no arms at all printed 0 lines
-  // and exit 0. The required set is named in `composition-smoke-bundle.mjs`,
-  // by id, in both directions (a renamed arm fails as missing AND unexpected).
-  const arms = checkSetDifferences(surface.checks)
-  if (arms.missing.length > 0 || arms.unexpected.length > 0) {
+  if (unprinted.length > 0) {
     failed = true
-    const parts = []
-    if (arms.missing.length > 0) parts.push(`never reported [${arms.missing.join(', ')}]`)
-    if (arms.unexpected.length > 0) parts.push(`reported but not required [${arms.unexpected.join(', ')}]`)
     console.log(
-      `FAIL client bundle check-set (packages/client/composition-shim): ${parts.join('; ')} — `
-      + 'an arm that stopped reporting is a closed gate, not a green one',
+      `FAIL client bundle never-printed (${compositionDir}): required arm(s) [${unprinted.join(', ')}] produced no line — `
+      + 'a check whose result is never printed is a check that is off',
     )
   }
 } catch (error) {
