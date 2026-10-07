@@ -233,7 +233,6 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['packages/domain/test/t2-blueprint-hash.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/domain/test/t2-blueprint-v2-hash.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/domain/test/t2-blueprint-v2-requirements.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/domain/test/t2-blueprint-validation.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/a2c1-pwsh-permission.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/a2c3-inspect-operation-permission.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/a2c7-subtree-matcher.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
