@@ -847,5 +847,6 @@ alpha4_governance_20261007:
     - "18 个治理 code 的命名消息表（约 6 文件 / 120–160 行）；当前 client 面原样渲染 `${code}: ${message}`（#110）"
     - "p6t1-parallel ±1–3 flake 的诊断（含 quota-race 身份）；在诊断之前它是声明式容差，不是可修 bug"
     - "旧客户端治理 code 渲染的评估（门控实际按 method version，不按 code version；#110 更正）"
-    - "escalate 若确需新的 outcome 词汇 = wire/method version 裁决，属人类（#113 记录测量前置）"
+    - "escalate：**只有 act-outcome 那一半**是 wire/method version 裁决（属人类）。v8 的 **item status** 里 `authority-unavailable` 已经存在且被校验器接受（`remote/src/contracts/types.ts:438`、`remote/src/handlers/intervention.ts:105`），投影器与生产注入缝都是活的（`intervention/derivation.ts:546`、`intervention/projection.ts:155-171`、`src/plugin/s6-remote.ts:2204-2215`），client 也已能渲染终态行（`client/src/model/team-interventions.ts:69-71`）——**缺的只是生产者**。所以『告知操作者』那一半在 Alpha.4 内可做、零契约升版（更正：此前 #115 记录把它整条写成了人类裁决）"
+    - "把 escalate 的终止关闭呈现为终态 `authority-unavailable` InterventionItem（生产者注入，无契约 bump）；它会与 `a4-escalate-act-truth.test.ts:414` 的 tripwire 冲突，**那是设计好的复审门**，不是反对意见"
     - "docs/STATUS.md 与 graph.yaml 的每轮指针刷新已在本轮补齐一次；后续轮次若再滞后，按 R123 先例当轮修正"
