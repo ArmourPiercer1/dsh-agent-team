@@ -225,11 +225,16 @@ describe('6.A the gate on the wire (team.ensureRootLive re-entry path)', () => {
   })
 })
 
-describe('6.A the gate sits at exactly the three control points (source law)', () => {
+describe('6.A the gate sits at the three WIRE control points (source law)', () => {
   it('BOTH team.create sites call the gate after the durable bind and BEFORE startRootAgent', () => {
-    const gateCalls = [...S6_SOURCE.matchAll(/governanceStartGate\(/g)].length
-    // 1 definition + 3 call sites: v1 create, v2 create, ensureRootLive.
-    expect(gateCalls).toBe(4)
+    // A4-PR6 review round 1: the OCCURRENCE COUNT of `governanceStartGate(`
+    // is retired — a count cannot see an entrance moving OUT of this file
+    // (that is exactly how the handoff/boot starts slipped past it). The
+    // whole-entrance law is now BEHAVIOURAL:
+    // `a4p6-start-gate-entrances.test.ts` starts a Team through each real
+    // entrance (wire create/ensure plus handoff/boot) and asserts the
+    // typed refusal and zero start. What remains here is the ORDER leg
+    // (the gate runs after the durable bind and before the start port).
     const starts = S6_SOURCE.split('await startRootAgent(requestedRootSessionId)')
     expect(starts.length - 1).toBe(2) // exactly the two create sites
     for (const [index, part] of starts.slice(0, -1).entries()) {
