@@ -33,6 +33,27 @@ import {
   MINIMAL_BLUEPRINT_SOURCE,
 } from '../blueprint/testdata/fixtures.js'
 
+/**
+ * §7.4 carrier migration (pre-flip half): a version stamp this product has
+ * NEVER defined — the witness below for `schemaVersion-unsupported` whose
+ * message must still say which versions it supports. The digit 99 IS the
+ * claim (the defined set is [1,2,3] before AND after the §7.3 flip; only the
+ * SUPPORTED bridge narrows), so it is neither promotable to v3 nor
+ * invertible to a refusal pre-flip; it moves from the YAML string to a typed
+ * code position and the bytes handed to the inspector are unchanged.
+ */
+const NEVER_DEFINED_VERSION = 99
+
+/**
+ * The declared stamp of the `MINIMAL_BLUEPRINT_SOURCE` factory fixture —
+ * still v1 pre-flip (fixtures.ts is byte-coupled to cross-lane consumers;
+ * its migration is a flip-PR move, see evidence 7-4-cdom FINDINGS). The
+ * expected identity below mirrors that fixture's bytes as a LIVE claim, so
+ * it tracks the factory, not this file's choice: change this constant only
+ * together with fixtures.ts.
+ */
+const MINIMAL_FACTORY_DECLARED_VERSION = 1
+
 function rejectedReason(result: BlueprintInspectionResult): string {
   if (result.status !== 'rejected') {
     throw new Error('guard: expected a rejected outcome')
@@ -55,7 +76,7 @@ describe('bp1 inspector: the structural stage (splitFrontmatter / decodeYaml)', 
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') throw new Error('guard')
     expect(result.identity).toEqual({
-      schemaVersion: 1,
+      schemaVersion: MINIMAL_FACTORY_DECLARED_VERSION,
       blueprintId: 'team.min',
       revision: '1',
     })
@@ -82,7 +103,7 @@ describe('bp1 inspector: the structural stage (splitFrontmatter / decodeYaml)', 
   })
 
   it('rejects an unclosed frontmatter (the strong reason, verbatim)', () => {
-    const result = inspectBlueprintSource(['---', 'schemaVersion: 1', 'blueprintId: team.x'].join('\n'))
+    const result = inspectBlueprintSource(['---', 'schemaVersion: 3', 'blueprintId: team.x'].join('\n'))
     expect(result.status).toBe('rejected')
     expect(rejectedReason(result)).toBe('frontmatter-unclosed')
   })
@@ -125,44 +146,44 @@ describe('bp1 inspector: the identity field checks', () => {
   })
 
   it('rejects a non-integer schemaVersion', () => {
-    const result = inspectBlueprintSource(doc(['schemaVersion: 1.5', 'blueprintId: team.x', 'revision: "1"']))
+    const result = inspectBlueprintSource(doc(['schemaVersion: 3.5', 'blueprintId: team.x', 'revision: "1"']))
     expect(result.status).toBe('rejected')
     expect(rejectedReason(result)).toBe('schemaVersion-unsupported')
   })
 
   it('rejects an unsupported schemaVersion (the strong closed set is reused)', () => {
-    const result = inspectBlueprintSource(doc(['schemaVersion: 99', 'blueprintId: team.x', 'revision: "1"']))
+    const result = inspectBlueprintSource(doc([`schemaVersion: ${NEVER_DEFINED_VERSION}`, 'blueprintId: team.x', 'revision: "1"']))
     expect(result.status).toBe('rejected')
     expect(rejectedReason(result)).toBe('schemaVersion-unsupported')
     expect(rejectedMessage(result).indexOf('supports') >= 0).toBe(true)
   })
 
   it('rejects a missing blueprintId', () => {
-    const result = inspectBlueprintSource(doc(['schemaVersion: 1', 'revision: "1"']))
+    const result = inspectBlueprintSource(doc(['schemaVersion: 3', 'revision: "1"']))
     expect(result.status).toBe('rejected')
     expect(rejectedReason(result)).toBe('blueprintId-invalid')
   })
 
   it('rejects a blueprintId with the reserved @ (the contracts grammar)', () => {
-    const result = inspectBlueprintSource(doc(['schemaVersion: 1', 'blueprintId: "team@1"', 'revision: "1"']))
+    const result = inspectBlueprintSource(doc(['schemaVersion: 3', 'blueprintId: "team@1"', 'revision: "1"']))
     expect(result.status).toBe('rejected')
     expect(rejectedReason(result)).toBe('blueprintId-invalid')
   })
 
   it('rejects a missing revision', () => {
-    const result = inspectBlueprintSource(doc(['schemaVersion: 1', 'blueprintId: team.x']))
+    const result = inspectBlueprintSource(doc(['schemaVersion: 3', 'blueprintId: team.x']))
     expect(result.status).toBe('rejected')
     expect(rejectedReason(result)).toBe('revision-invalid')
   })
 
   it('rejects a non-string revision (YAML numbers are NOT revisions)', () => {
-    const result = inspectBlueprintSource(doc(['schemaVersion: 1', 'blueprintId: team.x', 'revision: 7']))
+    const result = inspectBlueprintSource(doc(['schemaVersion: 3', 'blueprintId: team.x', 'revision: 7']))
     expect(result.status).toBe('rejected')
     expect(rejectedReason(result)).toBe('revision-invalid')
   })
 
   it('accepts a multi-part human revision (the grammar allows it)', () => {
-    const result = inspectBlueprintSource(doc(['schemaVersion: 1', 'blueprintId: team.x', 'revision: "2026.09-r1"']))
+    const result = inspectBlueprintSource(doc(['schemaVersion: 3', 'blueprintId: team.x', 'revision: "2026.09-r1"']))
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') throw new Error('guard')
     expect(result.identity.revision).toBe('2026.09-r1')
@@ -177,17 +198,21 @@ describe('bp1 inspector: the identity/strong split (plan §5 test 3)', () => {
     // must carry exactly one complete LeaderTemplate — the strong parser
     // rejects. The inspector must NOT run that check.
     const noLeader = ['---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.split',
       'revision: "1"',
       'members: []',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       '---',
       ''].join('\n')
     const inspection = inspectBlueprintSource(noLeader)
     expect(inspection.status).toBe('ok')
     if (inspection.status !== 'ok') throw new Error('guard')
     expect(inspection.identity).toEqual({
-      schemaVersion: 1,
+      schemaVersion: 3,
       blueprintId: 'team.split',
       revision: '1',
     })
@@ -200,7 +225,7 @@ describe('bp1 inspector: the identity/strong split (plan §5 test 3)', () => {
     // IDENTITY-LEVEL document (the fields parse) that the strong parser's
     // closure check rejects.
     const dangling = ['---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.dangling',
       'revision: "1"',
       'leader:',
@@ -214,6 +239,10 @@ describe('bp1 inspector: the identity/strong split (plan §5 test 3)', () => {
       '    envelope:',
       '      allow: []',
       '      deny: []',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       '---',
       ''].join('\n')
     const inspection = inspectBlueprintSource(dangling)
