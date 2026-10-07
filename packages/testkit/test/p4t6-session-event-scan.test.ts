@@ -1892,12 +1892,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p6-driven-principal-act.test.ts',
     ]
     // A4-PR7 (feat/a4-pr7-v3-cutover): A1-14's consumption-point revalidation
-    // suite. This list grows with every scannable file PR7 adds, and the
-    // advancing total below moves exactly when this list does — never for a file
-    // that is not named here, and never by hand.
+    // suite, the v3-cutover acceptance lane, and the Task 7.5 fence wrapper. This
+    // list grows with every scannable file PR7 adds, and the advancing total below
+    // moves exactly when this list does — never for a file that is not named here,
+    // and never by hand. The fence SCRIPT (`scripts/verify-blueprint-version-clean
+    // .mjs`) is deliberately absent: this scan covers the nine package directories,
+    // and a root-level script is outside its scope (the wrapper test is inside, and
+    // it is what makes the script a gate — ADR A5-9).
     const SCANNED_PATHS_A4PR7: readonly string[] = [
       'packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts',
       'packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts',
+      'packages/testkit/test/a4p7-blueprint-version-clean.test.ts',
     ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
@@ -1986,7 +1991,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // only when the A4-PR7 list above grows, and the by-path loop above is what
     // proves each named path really is in the scan (a total that moved for a
     // dropped file instead of an added one fails there, not here).
-    expect(SCANNED_PATHS_A4PR7.length).toBe(1018 - 1016)
+    expect(SCANNED_PATHS_A4PR7.length).toBe(1019 - 1016)
 
   })
 
