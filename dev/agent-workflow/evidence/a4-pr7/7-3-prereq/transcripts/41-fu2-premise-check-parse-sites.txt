@@ -1,0 +1,21 @@
+FU-2 premise check: is staticFacts parsed INSIDE the per-point try whose catch answers requiredAuthority: null?
+
+$ git diff origin/master...HEAD -- packages/runtime/governance/service.ts | grep -nE '^[+-].*(parse|staticFacts)'
+(no +/- line above means this branch added and removed NO parse and no staticFacts read)
+
+$ grep -n 'parsePermissionStaticLayerFacts' packages/runtime/governance/service.ts
+106:  parsePermissionStaticLayerFacts,
+719:      const staticFacts = factsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(factsRaw)
+1181:        const staticFacts = factsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(factsRaw)
+1222:          const ceilingFacts = ceilingFactsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(ceilingFactsRaw)
+
+$ sed -n '/^function judgeCeilingPoint/,/^}/p' ... the per-point body, try/catch sites:
+13:  let approval: ReturnType<typeof grantCeiling>
+14:  let expansion: ReturnType<typeof expansionCeiling>
+15:  try {
+16:    approval = grantCeiling(context.initiatorAuthority, context.documents, scope, subtreeContains)
+17:    expansion = expansionCeiling(context.initiatorAuthority, context.documents, scope, subtreeContains)
+18:  } catch (error) {
+40:    try {
+51:    } catch {
+52:      return { requiredAuthority: null }

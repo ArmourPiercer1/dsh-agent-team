@@ -1,0 +1,65 @@
+--- tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs::BP_ANCHOR_YAML (post)
+@@ -1,15 +1,19 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.rc2-anchor-a
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the rc2 smoke boot team. RC2SMK_A_LEADER_2026-10-07T20-45-40"
++  persona: "You are the leader of the rc2 smoke boot team. RC2SMK_A_LEADER_2026-10-07T20-50-33"
+ members:
+   - templateId: worker-a
+-    persona: "You are a worker of the rc2 smoke boot team. RC2SMK_A_WORKER_2026-10-07T20-45-40"
++    persona: "You are a worker of the rc2 smoke boot team. RC2SMK_A_WORKER_2026-10-07T20-50-33"
+ memberEnvelopes: []
+ requirements: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs::saved/empty-deny (pre)
++++ tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs::saved/empty-deny (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.rc2
+ revision: "1"
+ leader:
+@@ -57,6 +57,10 @@
+         - send-message
+         - report-progress
+       deny: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs::saved/deny (pre)
++++ tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs::saved/deny (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.rc2
+ revision: "1"
+ leader:
+@@ -58,6 +58,10 @@
+         - send-message
+         - report-progress
+       deny: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---

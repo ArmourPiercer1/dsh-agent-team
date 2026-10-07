@@ -353,12 +353,29 @@ describe('the PRODUCTION fingerprint anchor (rebase-round pin: a bound value, ne
     expect(anchored).not.toBe(skipped)
   })
 
-  it('a v3 binding resolving WITHOUT a content hash answers NO context — an anchorless proposal cannot exist', async () => {
-    // The documented unresolved-binding posture (the same branch an unknown
-    // version takes): the fingerprint law keeps `null` as a DISTINCT bound
-    // value for pre-PR5 rows; PRODUCTION cannot reach it, and this leg is the
-    // proof it cannot.
-    expect(await productionReader(undefined)(P6T4_ROOT, WORKER_ID, 'human')).toBeUndefined()
+  it('a v3 binding resolving WITHOUT a content hash answers an unreadable ceiling — an anchorless proposal still cannot exist', async () => {
+    // INVERTED by A4-PR7 §7.5 prerequisite 3, with what it asserted quoted where it
+    // stood:
+    //
+    //   expect(await productionReader(undefined)(P6T4_ROOT, WORKER_ID, 'human')).toBeUndefined()
+    //
+    // The LAW this leg guards is untouched and is served better: the fingerprint law
+    // keeps `null` as a DISTINCT bound value for pre-PR5 rows, and PRODUCTION cannot
+    // reach it. It used to be unreachable because the reader abstained into the
+    // pre-v3 branch — which also skipped the ceiling gate entirely, so the same
+    // answer let a RISE commit with no ceiling evaluated (measured at the entry:
+    // `a4p7-ceiling-no-context-refusal.test.ts` legs 1-3). Now the answer is an
+    // unreadable ceiling, which no rise can pass and no fingerprint can be minted
+    // from: there is still no anchorless durable row, and now there is no
+    // unevaluated one either. The anchor itself stays absent — nothing resolvable
+    // exists to anchor to.
+    const context = await productionReader(undefined)(P6T4_ROOT, WORKER_ID, 'human')
+    expect(context, 'a v3 binding that cannot be read is not a pre-v3 Team').toBeDefined()
+    expect(context?.documents).toEqual({
+      teamHardEnvelope: { status: 'unavailable' },
+      permissionMutationEnvelope: { status: 'unavailable' },
+    })
+    expect(context?.blueprintContentHash).toBeUndefined()
   })
 })
 

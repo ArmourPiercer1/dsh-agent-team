@@ -1,0 +1,49 @@
+REBASE ROUND 2 — master moved again during the review round, and this time it collided
+with this lane in the ONE file both lanes edit.
+
+origin/master advanced 79aeddb2 -> ff9218a3 (5 merges). The relevant one is
+0a4f5029 'A4 [red+green]: check:artifacts cannot report OK over an empty produced set —
+exit 2 names the count and the three ways; p4t6 +1 by list, not by hand', which added
+SCANNED_PATHS_A4ARTIFACTS to p4t6 in exactly the region this lane edits (the new lane
+list, the two derived sums, the presence-spread, and the per-lane tie ladder).
+
+$ git merge-tree --write-tree --name-only origin/master HEAD
+  5595adb58ff858335d0b6fbaca3dd9b3270627a8
+  packages/testkit/test/p4t6-session-event-scan.test.ts
+  CONFLICT (content): Merge conflict in packages/testkit/test/p4t6-session-event-scan.test.ts
+  (one file, four hunks — nothing semantic collided; no governance/operation/source overlap)
+
+WHAT THE LADDER LOOKS LIKE NOW — each lane's tie is its OWN endpoint on the base it
+landed on, so the two lanes' numbers do not need to agree with each other:
+  master:      expect(SCANNED_PATHS_A4SURFACE.length).toBe(1024 - 1023)   (untouched)
+  master:      expect(SCANNED_PATHS_A4ARTIFACTS.length).toBe(1025 - 1024) (untouched)
+  this lane:   expect(SCANNED_PATHS_A4P7PRE.length).toBe(1028 - 1025)    (3 files)
+Nothing earlier was renumbered; the base 1025 is the merged tree's own derived total
+(measured: the scan reported 1028 with this lane's three paths present, so the merged
+tree underneath is 1025 exactly as master's own tie says).
+
+THE TRAP THAT REPRODUCED A THIRD TIME (and this is why the resolution was measured, not
+typed): a mechanical keep-both-sides resolution of the two derived sums yields
+
+        SCANNED_PATHS_A4SURFACE.length +
+        SCANNED_PATHS_A4ARTIFACTS.length,
+        SCANNED_PATHS_A4P7PRE.length,
+
+which is not a sum — it is a COMMA EXPRESSION inside .toBe(...), so the assertion takes
+two arguments and the evaluated expected value is the sum WITHOUT this lane's term.
+It fails as
+  AssertionError: expected 1028 to be 1025
+— the same class of defect this lane already documented once (deviation 5). Repaired
+at every stop so no commit carries the comma form, and the fix is visible as
+  ... SCANNED_PATHS_A4ARTIFACTS.length +
+  ... SCANNED_PATHS_A4P7PRE.length,
+
+COMMIT-BY-COMMIT DISCIPLINE: an interactive `edit` pass made each of the lane's three
+commits self-consistent on the new base, with p4t6 measured at each stop —
+  20230014  1 named file   toBe(1026 - 1025)   10 passed / 10
+  ba1d5db9  2 named files  toBe(1027 - 1025)   10 passed / 10
+  d6352de2  3 named files  toBe(1028 - 1025)   10 passed / 10
+so no intermediate commit is red and no total was ever hand-written.
+
+Everything else the review round landed is byte-identical to what was reviewed
+(source, specs, transcripts 34-44); only p4t6's region changed under the rebase.

@@ -1,0 +1,78 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.config" without a file extension (.vitest-mutant.config.ts:1:20). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (9 tests | 3 failed) 41ms
+     ✓ 1. an UNREADABLE binding refuses a rising operator mutation with ZERO WRITE 15ms
+     × 2. the refusal is the CONTEXT law, not an authorization law, and it mints nothing 6ms
+     × 3. a v3 binding whose ANCHOR vanished takes the same refusal, not the skip 3ms
+     ✓ 4. a TIGHTENING under the same unreadable binding still commits 3ms
+     ✓ 5. a DECIDED v1/v2 binding still answers NO context and the same rise commits (A5-12 existential) 2ms
+     ✓ 6. a readable, anchored v3 binding commits the same rise (the refusal is specific) 3ms
+     × 7. the reader has THREE answers, and the abstention is not the existential one 5ms
+     ✓ 8. a Leader rise the carrier COVERS also refused (the fail-open was not operator-only) 2ms
+     ✓ 9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched) 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 2. the refusal is the CONTEXT law, not an authorization law, and it mints nothing
+AssertionError: expected 'PERMISSION_AUTHORITY_CEILING_INSUFFIC…' to be 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' // Object.is equality
+
+Expected: "PERMISSION_EFFECT_CONTEXT_UNAVAILABLE"
+Received: "PERMISSION_AUTHORITY_CEILING_INSUFFICIENT"
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:261:27
+    259|     try {
+    260|       const error = await w.mutateOperator(RISE)
+    261|       expect(error?.code).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_…
+       |                           ^
+    262|       expect(error?.code).not.toBe(PERMISSION_MUTATION_ERROR_CODES.AUT…
+    263|       expect(error?.details?.['authorityCeilingCode']).toBe('AUTHORITY…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 3. a v3 binding whose ANCHOR vanished takes the same refusal, not the skip
+AssertionError: expected 'PERMISSION_AUTHORITY_CEILING_INSUFFIC…' to be 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' // Object.is equality
+
+Expected: "PERMISSION_EFFECT_CONTEXT_UNAVAILABLE"
+Received: "PERMISSION_AUTHORITY_CEILING_INSUFFICIENT"
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:281:27
+    279|       const error = await w.mutateOperator(RISE)
+    280|       expect(error, 'an anchorless v3 read must not commit a rise').to…
+    281|       expect(error?.code).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_…
+       |                           ^
+    282|       expect(await w.listRules()).toBeUndefined()
+    283|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 7. the reader has THREE answers, and the abstention is not the existential one
+AssertionError: expected { status: 'absent' } to deeply equal { status: 'unavailable' }
+
+- Expected
++ Received
+
+  {
+-   "status": "unavailable",
++   "status": "absent",
+  }
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:349:54
+    347|       const abstention = await unreadable.reader(FIXTURE_TEAM_SESSION_…
+    348|       expect(abstention, 'an unreadable binding is not a pre-v3 Team')…
+    349|       expect(abstention?.documents.teamHardEnvelope).toEqual({ status:…
+       |                                                      ^
+    350|       expect(abstention?.documents.permissionMutationEnvelope).toEqual…
+    351|       expect(abstention?.blueprintContentHash, 'no resolvable Blueprin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 6 passed (9)
+   Start at  03:46:55
+   Duration  1.08s (transform 741ms, setup 15ms, import 923ms, tests 41ms, environment 0ms)
+

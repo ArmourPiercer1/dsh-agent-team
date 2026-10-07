@@ -1,0 +1,90 @@
+REBASE ROUND 2 onto origin/master ff9218a3 (master moved again during the review round:
+  5 merges, incl. 0a4f5029 which extended p4t6 with SCANNED_PATHS_A4ARTIFACTS in the SAME region this
+  lane edits).
+
+$ git log --oneline -6
+5b26d3a2 docs(a4-pr7/7.3): review-round final gates -- root pnpm test identical by failing name, committed-tree confirmation
+30496f81 docs(a4-pr7/7.3): review-round findings and transcripts 34-44
+d6352de2 fix(a4-pr7/7.3): own the ceiling at the commit boundary and at the point set (review round)
+ba1d5db9 fix(a4-pr7-7.3pre): an unreadable binding answers a ceiling it cannot satisfy, and refuses
+20230014 fix(a4-pr7-7.3pre): the ceiling is asked at the width the mutation claims; the width pin lands
+ff9218a3 Merge pull request #139 from ArmourPiercer1/fix/a4-check-artifacts-nonempty
+
+$ the lane's own p4t6 tie, per commit (each measured at its own edit stop)
+  20230014 (1 named file)  -> expect(SCANNED_PATHS_A4P7PRE.length).toBe(1026 - 1025)   10 passed
+  ba1d5db9 (2 named files)  -> expect(SCANNED_PATHS_A4P7PRE.length).toBe(1027 - 1025)   10 passed
+  d6352de2 (3 named files)  -> expect(SCANNED_PATHS_A4P7PRE.length).toBe(1028 - 1025)   10 passed
+  No earlier lane's endpoint was renumbered; master's own A4ARTIFACTS tie stays 1025 - 1024.
+  The rebase collision ALSO reproduced the comma-operator trap a third time: the mechanical
+  keep-both-sides resolution left `...A4ARTIFACTS.length,` followed by another term, which is
+  a COMMA EXPRESSION, not a sum — it made .toBe() take two arguments and silently dropped
+  every term after it (`expected 1028 to be 1025`). Repaired at all three stops; the derived
+  sums now end in `... + SCANNED_PATHS_A4P7PRE.length,` and measure 1028.
+
+=== runtime + testkit, rebased tip ===
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 17ms
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed) 8ms
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 11ms
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:604:23
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1992:76
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:998:20
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1040:14
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1025:20
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:814:20
+ ❯ packages/runtime/test/t12a-live-bridge.mjs:1454:18
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1992:76
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:998:20
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:451:50
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+ ❯ packages/runtime/test/p6t3-restart.test.ts:404:18
+ ❯ packages/runtime/test/p6t3-restart.test.ts:451:21
+ Test Files  6 failed | 367 passed (373)
+      Tests  8 failed | 4302 passed (4310)
+
+=== root pnpm test, rebased tip ===
+ ❯ packages/domain/test/t1-capability-schema.test.ts (17 tests | 9 failed)
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts (18 tests | 1 failed)
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed)
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed)
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed)
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed)
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:604:23
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1992:76
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:998:20
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1040:14
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1025:20
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:814:20
+ ❯ packages/runtime/test/t12a-live-bridge.mjs:1454:18
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1992:76
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:998:20
+ ❯ packages/domain/test/t1-capability-schema.test.ts:152:23
+ ❯ packages/domain/test/t1-capability-schema.test.ts:163:23
+ ❯ packages/domain/test/t1-capability-schema.test.ts:181:23
+ ❯ packages/domain/test/t1-capability-schema.test.ts:257:17
+ ❯ packages/domain/test/t1-capability-schema.test.ts:313:23
+ ❯ packages/domain/test/t1-capability-schema.test.ts:329:23
+ ❯ packages/domain/test/t1-capability-schema.test.ts:349:23
+ ❯ packages/domain/test/t1-capability-schema.test.ts:359:23
+ ❯ packages/domain/test/t1-capability-schema.test.ts:376:23
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts:116:29
+ ❯ packages/tools/test/p6t6-actions.test.ts:893:46
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:451:50
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+ ❯ packages/runtime/test/p6t3-restart.test.ts:404:18
+ ❯ packages/runtime/test/p6t3-restart.test.ts:451:21
+ Test Files  9 failed | 486 passed (495)
+      Tests  19 failed | 6183 passed (6202)

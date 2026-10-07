@@ -1,0 +1,3 @@
+tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs :: mcp-team: v3; probe(v9) refused=true
+tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs :: workflow-team: v3; probe(v9) refused=true
+tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true

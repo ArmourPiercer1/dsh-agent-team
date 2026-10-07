@@ -208,24 +208,8 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['packages/tools/harness/run.mjs', 'C-tools+harness (plan-named site, harness/run.mjs:214)'],
   ['packages/tools/harness/t12-vertical.mjs', 'C-tools+harness (plan-named site, harness/t12-vertical.mjs:215; also emits a v2 document; the L1838 occurrence is comment prose, not a site)'],
   ['packages/runtime/root-binding/harness/blueprint-source.mjs', 'C-runtime-fixtures (bounded-run harness Blueprint source)'],
-  ['packages/testkit/test/bp1h-blueprint-authoring.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/testkit/test/t6-10-composition-pipeline.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/testkit/test/t6-7-fresh-per-delegation.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['scripts/blueprint-authoring.mjs', 'C-testkit (the blueprint authoring script)'],
-  ['tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/exec-contract-live-smoke/blueprint.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs', 'C-testkit (kit fixture; also emits a v2 document)'],
-  ['tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs', 'C-testkit (kit fixture; also emits a v2 document)'],
-  ['tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs', 'C-testkit (kit fixture; also carries the V1 anchor contentHash literal that 7.3 re-pins)'],
-  ['tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs', 'C-testkit (kit fixture; also carries the V1 anchor contentHash literal that 7.3 re-pins)'],
-  ['tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 1 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
+  ['tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 2 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
   ['packages/domain/blueprint/testdata/fixtures.ts', 'C-domain STOP, ratified by the coordinator: stays dirty pending (1) the B-lane witness-ownership rewrite of the three revisionSource(...) derivations that splice the factory\'s declared-version line into their v1/v2/99 witnesses (a4f1-row-version-not-document-version, a4p7-v3-cutover-acceptance, a4p7-v8-catalog-migration-state) and (2) the coupled fixtures.ts -> v3 plus empty-rules-envelope PR that updates this file\'s own archetype test in the same PR, owned by the fence/wrapper owner, enumerating the factory\'s full consumer set. Measured evidence: dev/agent-workflow/evidence/a4-pr7/7-4-cdom/FINDINGS.md §5 (v3 without envelopes fails a consumer at COLLECTION; with them, 39 witness tests across the three deriving files). Deliberately avoids quoting the literal carrier pattern here: the fence flags its own author — an earlier draft of this justification made THIS file a dirty site.'],
   ['packages/runtime/test/a2c1-pwsh-permission.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/a2c3-inspect-operation-permission.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
@@ -310,9 +294,8 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['packages/runtime/test/team-compatibility-scope.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/team-session-startup-fence.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/template-disable-no-requirements-gate.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — raised to coordinator; carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
+  ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — C-testkit STOPPED, file byte-identical: this is the legacy .md teammate-file format\'s OWN version axis, not a TeamBlueprint document (L380 is a NEGATIVE test of which legacy versions the adapter rejects); migrating would delete the adapter\'s acceptance proof. Awaiting the fence\'s dirty-class adjudication row — disposition recorded in dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 3 (legitimate non-Blueprint version axis pending adjudication; owner: fence owner + §7.3 emitter). Carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
   ['cordis.patch.yml', 'SCOPE ADDITION (measured 2026-10-08: the root composition patch\'s blueprintSource block is a live v1 document emitter, cordis.patch.yml:58-62) — NO §7.4 lane row — raised to coordinator'],
-  ['tests/mock/scripts/boot.mjs', 'C-testkit scope addition (measured 2026-10-08: mock-boot YAML emitter outside every prior scan)'],
 ])
 
 /**
@@ -580,7 +563,6 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
       'the very literal the probe caught lying must SAY so',
     ).toContain('as-unknown-as')
     expect(named('packages/runtime/test/p5t5-helpers.ts', 80)).toContain('annotated TeamBlueprint')
-    expect(named('packages/testkit/test/bp1h-blueprint-authoring.test.ts', 95)).toContain('toEqual')
     expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 571)).toContain('toMatchObject')
   })
 

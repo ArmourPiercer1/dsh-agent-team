@@ -1,0 +1,2 @@
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs :: f15: v3; probe(v9) refused=true
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true

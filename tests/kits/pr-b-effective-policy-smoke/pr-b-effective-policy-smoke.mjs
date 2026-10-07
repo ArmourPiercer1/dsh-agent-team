@@ -685,7 +685,7 @@ function testUseClean() {
 
 // ── the T-PS saved-source blueprint ────────────────────────────────────────
 const T_PS_BLUEPRINT_YAML = `---
-schemaVersion: 1
+schemaVersion: 3
 blueprintId: ${T_PS_BLUEPRINT}
 revision: "1"
 displayName: "PR-B policy-state smoke team"
@@ -708,6 +708,10 @@ teamEnvelope:
   deny:
     - delete-team
 memberEnvelopes: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
 policyStates:
   - id: default
     description: "Default state (no model pin)."
@@ -745,7 +749,7 @@ metadata: {}
 // production patch.
 const BOOT_SAVED_REVISION = '2'
 const BOOT_BLUEPRINT_SAVED_YAML = `---
-schemaVersion: 1
+schemaVersion: 3
 blueprintId: ${BOOT_BLUEPRINT}
 revision: "${BOOT_SAVED_REVISION}"
 displayName: "PR-B C3 positive boot blueprint (saved source rev 2)"
@@ -758,6 +762,10 @@ members:
     persona: "PR-B C3 positive worker (no modelPreference; the policyState model cell wins the model lane)."
 requirements: []
 memberEnvelopes: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
 policyStates:
   - id: strict
     description: "PR-B C3 positive: a non-default state in the bound blueprint so the closed set includes it."

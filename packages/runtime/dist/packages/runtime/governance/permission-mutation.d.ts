@@ -457,9 +457,16 @@ export interface LeaderMutationAuthorizationInput {
  * invisible because each looks self-consistent on its own.
  *
  * `mutationMatcher` is the mutation rule's OWN matcher and `region` is the closed
- * cell inside it. Both are carried because they answer different questions: the
- * envelope judges the WIDTH (the whole mutation matcher), the ceiling judges the
- * CELL (where the effect actually rose).
+ * cell inside it. Both are carried because they are DIFFERENT QUESTIONS, and after
+ * A4-PR7 §7.5 prerequisite (1) neither law answers with one lookup any more: the
+ * Alpha.3 envelope judge still asks the WIDTH (the whole mutation matcher), and the
+ * v3 ceiling judge now asks EVERY point the rise claims — the CELL (where the effect
+ * actually rose) and that same WIDTH — refusing at either. Asking the cell alone let a
+ * narrow document authorize a broader mutation; asking the width alone is WORSE,
+ * because a wider question is answered by fewer rules, so a document that caps the
+ * cell while granting the subtree would reach the risen effect at the width and not
+ * at the cell. `governance/service.ts` carries that arithmetic and
+ * `test/a4p7-carrier-width-under-ceiling.test.ts` pins both directions.
  */
 export interface PermissionRiseRegion {
     readonly operationClass: string;
@@ -474,6 +481,42 @@ export interface PermissionRiseRegion {
     /** The exact detail payload a refusal about this cell carries. */
     readonly detail: Record<string, unknown>;
 }
+/**
+ * EVERY POINT A RISE CLAIMS, in the order they must be asked: the CELL first
+ * (`region`, where the effective answer actually rose), then the WIDTH the mutation
+ * matcher claims (`region.mutationMatcher`) when it is a different question.
+ *
+ * THE ORDER IS NOT COSMETIC (A4-PR7 §7.3 review, blocking 2). A caller that walks
+ * this list and returns the FIRST refusal reports the CELL's identity — the
+ * `regionText`/`detail` payload the pre-P1 code produced — so every refusal that
+ * existed before the width was added stays byte-identical. Reversing it turns a
+ * cell refusal into a width refusal: same deny, different name, different audit
+ * payload, and no test that only exercises a cell-only refusal can see it. Pinned
+ * by the both-points-refuse leg and the dedupe leg of
+ * `test/a4p7-carrier-width-under-ceiling.test.ts`, and made red by the
+ * order-reversal mutant recorded in
+ * `dev/agent-workflow/evidence/a4-pr7/7-3-prereq/transcripts/36-mutant-p1-reverse.txt`.
+ *
+ * THE DEDUPE IS NOT AN OPTIMIZATION. The region partition is a set cover, so a
+ * single mutation rule yields `mutationMatcher === region` in the common case;
+ * without the comparison an exact-matcher rise would be asked twice and — because
+ * both questions are the same — could report a duplicated question in a refusal
+ * detail. One comparison, and the exact case keeps today's single-question shape.
+ *
+ * WHY BOTH CONSUMERS SHARE THIS LIST. The expansion-plane judge
+ * (`governance/service.ts`, `createPermissionAuthorityCeilingJudge`) is where
+ * asking the width CLOSES a real gap: a document that reaches the cell but not the
+ * whole matcher used to authorize the wider mutation. The approval planner
+ * (`buildApprovalAsk`) prices its rung over the SAME list, which is
+ * MEASURED behaviour-neutral on that plane, not a second fix: a document rule that
+ * matches a width also matches every cell inside it, and the approval plane reads a
+ * non-matching rule as "no narrowing", so the cell is always the stricter question
+ * there and no rung under-asks (`a4p7-approved-retry-ceiling-at-commit.test.ts`
+ * prices six document shapes both ways to pin that). It is shared because the two
+ * must not be able to drift into pricing different point sets — that drift, not
+ * today's arithmetic, is how this lane could one day sign a width it never priced.
+ */
+export declare function permissionRiseClaimedPoints(region: PermissionRiseRegion): readonly PermissionResourceMatcher[];
 /** The actor-specific verdict on one rise, injected into the classification. */
 export type PermissionRiseCoverage = 'covered' | 'unmet' | 'coverage-unknown';
 /** The classification of a whole batch. `unmet` stays EMPTY when no coverage judge
