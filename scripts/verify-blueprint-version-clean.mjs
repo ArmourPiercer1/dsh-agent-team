@@ -346,10 +346,8 @@ function countNumericFormVariants(result, text) {
 }
 const DOC_SHAPE_MARKERS = /displayName|policyStates|teamEnvelope|teamHardEnvelope|requirements/
 const IDENTITY_TRIPLE = ['blueprintId', 'revision', 'contentHash']
-// Round 4: keys a schema-valid TeamBlueprint document CAN carry — a witness
-// drawn from this set proves nothing foreign (the admission rule's forbidden
-// set). DOC_ONLY_KEYS is defined below and merged in via lazy init below.
-const FORBIDDEN_WITNESS_KEYS = new Set([...IDENTITY_TRIPLE, 'schemaVersion'])
+// DOC_ONLY_KEYS is a CLASSIFIER input (refusal evidence below); the witness
+// rule that consumed a forbidden-key SET is retired with the class (R3).
 const DOC_ONLY_KEYS = new Set([
   'displayName',
   'description',
@@ -365,7 +363,6 @@ const DOC_ONLY_KEYS = new Set([
   'capabilityPolicy',
   'metadata',
 ])
-for (const k of DOC_ONLY_KEYS) FORBIDDEN_WITNESS_KEYS.add(k)
 
 // Round 4 FIX 1 (adversarial review of 70745ef7): a hand-typed allowlist of
 // keys is a snapshot of what the author thought of — mine was 9/9 correct
@@ -378,111 +375,13 @@ for (const k of DOC_ONLY_KEYS) FORBIDDEN_WITNESS_KEYS.add(k)
 // assumption breaks, the fence refuses to run — an admission rule that
 // cannot enumerate the document keys must not admit anything.
 const ADJ_MAX_RANGE_LINES = 12
-// Round 5 FIX 1 (second adversarial round): the first derivation anchored on
-// a NAMING CONVENTION (`BLUEPRINT_*FIELDS*`), and a document key living in an
-// unprefixed set (`resource` in PERMISSION_RULE_FIELDS) stayed a working
-// witness — laundering cost one ledger row and NO source edit at all. The
-// forbidden set is now anchored on what the VALIDATOR ACTUALLY ENFORCES:
-// every second argument of validate.ts's assertNoUnknownFields call sites
-// (aliases followed to schema exports, inline literals absorbed). And the
-// completeness invariant is NOT "the set looks big enough" — renaming one
-// export used to leave the run exit 1 with a smaller set (fail-OPEN on
-// PARTIAL failure). The invariant is: every set the validator consults was
-// FOUND; a shortfall is a not-run naming the missing sets. A gate whose
-// safety property degrades in the permissive direction on a typo is a catch
-// that defaults to allow.
-const ADJ_CONSULT_MIN = 10
-const ADJ_IDENTITY_RADIUS = 40
-const ADJ_TRIPLE_KEYS = ['blueprintId', 'revision', 'contentHash']
-export function deriveSchemaWitnessForbidden(cwd) {
-  let schemaText
-  let validateText
-  try {
-    schemaText = readFileSync(resolve(cwd, 'packages/domain/blueprint/src/schema.ts'), 'utf8')
-    validateText = readFileSync(resolve(cwd, 'packages/domain/blueprint/src/validate.ts'), 'utf8')
-  } catch (e) {
-    return { error: `field-set extraction refused: schema.ts/validate.ts unreadable (${String(e)}) — fail-closed` }
-  }
-  const lists = new Map()
-  for (const m of schemaText.matchAll(
-    /export const ((?:BLUEPRINT|PERMISSION)_[A-Z0-9_]*FIELDS(?:_V\d)?)\s*:[^=]*=\s*\[([\s\S]*?)\]/g,
-  )) {
-    lists.set(String(m[1]), String(m[2]))
-  }
-  // pure alias exports (`export const AUTHORITY = PERMISSION_MUTATION_ENVELOPE`):
-  // the validator consults the alias; enforcement lives in the target.
-  const aliasOf = new Map()
-  for (const m of schemaText.matchAll(
-    /export const ((?:BLUEPRINT|PERMISSION)_[A-Z0-9_]*FIELDS(?:_V\d)?)\s*=\s*((?:BLUEPRINT|PERMISSION)[A-Z0-9_]*FIELDS(?:_V\d)?)/g,
-  )) {
-    aliasOf.set(String(m[1]), String(m[2]))
-  }
-  const absorbed = new Set()
-  const seen = new Set()
-  const absorbBody = (body) => {
-    for (const s2 of body.matchAll(/'([A-Za-z_$][A-Za-z0-9_$]*)'/g)) absorbed.add(String(s2[1]))
-    for (const r of body.matchAll(/\.\.\.((?:BLUEPRINT|PERMISSION)[A-Z0-9_]*FIELDS(?:_V\d)?)/g)) {
-      const name = String(r[1])
-      if (seen.has(name)) continue
-      seen.add(name)
-      const dep = lists.get(name)
-      if (dep !== undefined) absorbBody(dep)
-    }
-  }
-  const consulted = new Set()
-  for (const m of validateText.matchAll(/assertNoUnknownFields\(\s*[^,]+?,\s*([A-Za-z_$][A-Za-z0-9_$]*|\[[^\]]*\])/g)) {
-    const arg = String(m[1])
-    if (arg.startsWith('[')) {
-      for (const s3 of arg.matchAll(/'([A-Za-z_$][A-Za-z0-9_$]*)'/g)) absorbed.add(String(s3[1]))
-    } else consulted.add(arg)
-  }
-  if (consulted.size < ADJ_CONSULT_MIN) {
-    return {
-      error: `field-set extraction refused: validate.ts consults only ${String(consulted.size)} named field sets (< ${String(ADJ_CONSULT_MIN)}) — assertNoUnknownFields was restructured beyond the extractor; fail-closed rather than admit on a silently shrunken set`,
-    }
-  }
-  const resolveSet = (name) => {
-    const alias = aliasOf.get(name)
-    if (alias !== undefined) return resolveSet(alias)
-    const direct = lists.get(name)
-    if (direct !== undefined) {
-      if (!seen.has(name)) {
-        seen.add(name)
-        absorbBody(direct)
-      }
-      return true
-    }
-    // local alias in validate.ts (`const templateFields =` with NO semicolon
-    // at this style): window-scan the initializer text for the schema names it
-    // mentions. Spilling a few lines past the initializer over-absorbs at
-    // worst — over-absorption only ever WIDENS the forbidden set (safe side).
-    const decl = new RegExp(`(const|let)\\s+${name}\\s*=`).exec(validateText)
-    if (decl === null) return false
-    const win = validateText.slice(decl.index, decl.index + 500)
-    let ok = true
-    let touched = false
-    for (const r of win.matchAll(/((?:BLUEPRINT|PERMISSION)[A-Z0-9_]*FIELDS(?:_V\d)?)/g)) {
-      touched = true
-      if (!resolveSet(String(r[1]))) ok = false
-    }
-    return touched && ok
-  }
-  const missing = []
-  for (const name of consulted) if (!resolveSet(name)) missing.push(name)
-  if (missing.length > 0) {
-    return {
-      error: `field-set extraction refused: validate.ts consults field sets the extractor could not find: ${missing.join(', ')} — a renamed or restructured set would SILENTLY SHRINK the forbidden witness set (fail-open), so the run stops here naming the missing sets (round-5 fix 1)`,
-    }
-  }
-  for (const anchor of ['blueprintId', 'members', 'templateId', 'resource', 'persona']) {
-    if (!absorbed.has(anchor)) {
-      return {
-        error: `field-set extraction refused: every validator set resolved but anchor key "${anchor}" is absent — the extraction shape no longer matches what the validator enforces; fail-closed (round-5 fix 1)`,
-      }
-    }
-  }
-  return { keys: absorbed, sets: consulted.size }
-}
+// (R3 retirement): the witness-key extraction (deriveSchemaWitnessForbidden,
+// R=40 radius constants) left with the class. The completeness invariant it
+// enforced was SELF-REFERENTIAL — it demanded that the sets its own regex
+// found be found — see FINDINGS section 10 for the fail-open demonstration
+// (six sets behind a behaviour-identical second validator helper: 16 sets to
+// 10, no error, suite green). ADJ_MAX_RANGE_LINES stays: the 12-line evidence
+// window is the UNKNOWN-row rule, independent of the retired class.
 
 // --- the line state machine -------------------------------------------------------
 // Tracks line/block comments, single/double-quoted strings (terminated at
@@ -1221,76 +1120,39 @@ export function classifyText(path, text) {
  * and `:99999-100000` — basename+any-digit checked nothing checkable);
  * any violation names the offending keys and exits 2. Silence keeps
  * costing a written, path-named, VERIFIABLE row.
- * ROUND 4 ITEM 1 — the second row kind, `intentionally-dirty` (same file,
- * same three-part key, SAME evidence rule — no second tier of proof). Its
- * value must additionally carry `owner:` and `retirement-check:` (an
- * executable step, in the style of 7-3-flip/intentional-retired.md) and the
- * ADMISSION RULE below; ledgered sites print as a seventh NON-GATING class
- * INTENTIONALLY-DIRTY — always printed, always counted, never silencing.
- * Closure now reads: dirty empty AND no unadjudicated unknown AND every
- * dirty-class row's evidence still validates — the last clause is not a
- * ceremony, it is enforced on every run (a rotting row is a not-run, not a
- * quiet pass), and a row is REMOVED by executing its retirement-check, never
- * by relaxing what admits one.
- *
- * THE ADMISSION RULE, said out loud because it is the whole difference
- * between a register and a trapdoor: a version literal belongs in this
- * register precisely when its digit is READ BY ANOTHER NAMESPACE'S RUNTIME,
- * and the site itself must prove it — the cited range (a window of at most
- * 12 lines: fix 2, because a witness 400 lines from the site is not evidence
- * ABOUT the site) must contain a witness key, IN CODE OR STRINGS (round-5
- * fix 2: the fence's own line-state machine masks comments — reading the
- * range raw charges the "visible code diff" on the least-reviewed line type
- * in a diff; the reviewer's B3 case's only in-window `role:` was
- * `// role: no blueprint here`), that NO schema-valid TeamBlueprint document
- * may carry. The forbidden set is DERIVED at run time from what the
- * VALIDATOR ACTUALLY ENFORCES (round-5 fix 1): every second argument of
- * validate.ts's assertNoUnknownFields call sites — schema exports, pure
- * alias exports, local aliases and inline literals all absorbed. The first
- * derivation anchored on a NAMING CONVENTION (`BLUEPRINT_*FIELDS*`) and
- * missed `resource`, which lives unprefixed in PERMISSION_RULE_FIELDS: a
- * document key the validator enforces stayed a working witness, because a
- * name-prefix is what the author of the extraction thought of, not what the
- * validator consults. Completeness is now an INVARIANT, not a size guess:
- * every consulted set must be FOUND, and a shortfall is a not-run naming the
- * missing sets — a gate whose safety property degrades in the PERMISSIVE
- * direction on a typo is the same defect class as a `catch` that defaults to
- * allow. p7t6 qualifies under the test: its digits are the legacy `.md`
- * teammate-file axis (role:/name:/id: front matter — `role` is in NO field
- * set the validator consults, re-derived every run), and retiring them would
- * delete the adapter's acceptance proof, not a Blueprint version. A literal
- * someone merely FINDS INCONVENIENT has no such witness: its enclosing
- * object is keyed by Blueprint's own fields, and its lawful disposition is
- * migration, not registration.
- *
- * THE COST CLAIM, CORRECTED NOT SOFTENED (TWICE — adversarial reviews of
- * 70745ef7 and 4b7ca211). v1 claimed laundering "costs a VISIBLE code diff";
- * MEASURED FALSE at 70745ef7: it cost ONE LEDGER STRING (a key the typed set
- * forgot, replay cases A/B/H/P). v2 claimed the corrected cost was "planting
- * a fake foreign key adjacent to the site"; MEASURED FALSE at 4b7ca211 too:
- * `resource` — enforced by the validator, invisible to the naming-convention
- * extraction — was already adjacent in five live files, so laundering cost
- * one ledger row and NO source edit at all (reproduction: replay `r45` mode,
- * case R5-resource-doc, admitted at exit 1). What is true after the round-5
- * fixes: the witness must be outside the VALIDATOR-DERIVED key set, present
- * as code or string (not comment) inside a 12-line window, and the site must
- * sit outside any identity-triple cluster (blueprintId/revision/contentHash
- * within 40 lines — WINDOW-INDEPENDENT, because the window is the attacker's
- * choice). MEASURED RESIDUE, stated not hidden: NO RADIUS IS COMPLETE — a
- * lane can always add filler between YAML keys to push the triple past any
- * R, and this fence deliberately does NOT grow a mini-YAML parser to close
- * it (every one of these documents is an Array.join of one-line string
- * literals; a parser would defend the shapes its author predicted, and a
- * fence whose correctness depends on parsing what it scans has swapped one
- * trust problem for a bigger one). So the truest sentence available, kept
- * verbatim because it is the honest boundary: *what the fence can honestly
- * guarantee is only that laundering requires a source edit in the same diff
- * as the row, and that the row is a reviewable string rather than an
- * invisible mute.* NEXT TO IT, THE RETIREMENT CONDITION: if a future round
- * decides that guarantee is not worth having, the correct move is to RETIRE
- * THE CLASS AND KEEP THOSE SITES DIRTY, not to keep widening the radius —
- * a mechanism with a stated retirement condition is a tool and one without
- * is a ratchet.
+ * THE `intentionally-dirty` CLASS IS RETIRED (R3 decision, 2026-10-08; the
+ * full reasoning in 7-4-cdom/FINDINGS.md section 10). It was a seventh,
+ * non-gating class: a ledger row could annotate a DIRTY site on a foreign
+ * version axis and move it out of the gated set, with an ADMISSION RULE
+ * requiring a witness key no Blueprint document may carry. Four rounds of
+ * adversarial review ended the same way each round — every tightening moved
+ * the cost of laundering, none raised it above a ledger row. The measurement
+ * that decided it (scan-scope/60-witness-census-transcript.txt): 59 of 87
+ * dirty sites admitted SOME witness under the final rule (reviewer's
+ * independent census: 63 of 87), including the SHIPPED COMPOSITION —
+ * cordis.patch.yml::L60::v1 admitted via an ordinary sibling key. Two of this
+ * file's own sentences are kept HERE, QUOTED AND REFUTED, not softened:
+ *   (1) "A literal someone merely FINDS INCONVENIENT has no such witness:
+ *        its enclosing object is keyed by Blueprint's own fields" — FALSE on
+ *        the census: the ordinary keys of a document's own file (`source:`,
+ *        `items:`, `code:`) were admissible witnesses in 59+ of 87 sites.
+ *   (2) "laundering requires a source edit in the same diff as the row" —
+ *        TRUE of the GATE only because a wrapper assertion pinned the class's
+ *        population to p7t6, and that pin was never stated beside it. A
+ *        mechanism whose safety rests on pinning its own population is not
+ *        enforcing anything; the pin is enforcing it, and relaxing the pin is
+ *        the same single edit that opens the trapdoor.
+ * The retirement condition this file wrote in round 5 is now the reason this
+ * paragraph exists instead of a fifth fix: "if a future round decides that
+ * guarantee is not worth having, the correct move is to RETIRE THE CLASS AND
+ * KEEP THOSE SITES DIRTY". A mechanism with a stated retirement condition is
+ * a tool; the clause did its job, which is the whole point of writing one.
+ * The row kind is therefore REFUSED as not-run (not silently ignored): old
+ * rows must fail loudly, and every former dirty-class site — all 9 of p7t6's,
+ * which were its entire honest population — is DIRTY again, gated, with its
+ * DEFERRALS row and executable retirement check as the honest state. The
+ * attack corpus that produced this decision lives on WITHOUT an admission
+ * path: scan-scope/61-fence-attack-suite.mjs.
  *
  * The ledger file itself must be GIT-TRACKED (round 3.5 G4: the override
  * is the mute with a name on it — with dirty suppressed post-§7.4, a
@@ -1336,9 +1198,6 @@ function loadAdjudications(cwd) {
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return { error: `adjudication ledger must be an object keyed "<path>::L<line>::v<version>" (${file})` }
   }
-  const derivedDocKeys = deriveSchemaWitnessForbidden(cwd)
-  if ('error' in derivedDocKeys) return { error: derivedDocKeys.error }
-  const witnessForbidden = new Set([...FORBIDDEN_WITNESS_KEYS, ...derivedDocKeys.keys])
   // Fix 5b: every defect prints ITS OWN reason. "fail the hand-verified rule"
   // for no-such-file, no-such-line and not-a-version-site alike is a not-run
   // the operator has to debug by reading the fence's source.
@@ -1407,70 +1266,15 @@ function loadAdjudications(cwd) {
     // invalid dirty row is as fatal to the run as an invalid unknown row:
     // same file, same proof standard, zero second tier.
     if (ev.trimStart().startsWith('intentionally-dirty:')) {
-      const field = (n) => {
-        const fm = new RegExp(`(?:^|; )${n}:\\s*([^;]+)`).exec(ev)
-        return fm === null ? '' : (fm[1] ?? '').trim()
-      }
-      let missing = ''
-      for (const n of ['owner', 'retirement-check', 'foreign-axis']) {
-        if (field(n) === '') missing = n
-      }
-      if (missing !== '') {
-        bad.push(`${key} — dirty-class row missing required field: ${missing}`)
-        continue
-      }
-      const witness = field('witness-key')
-      if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(witness)) {
-        bad.push(`${key} — witness-key must be a bare identifier, got "${witness}"`)
-        continue
-      }
-      if (witnessForbidden.has(witness)) {
-        bad.push(
-          `${key} — witness key "${witness}" is a TeamBlueprint document key (derived from schema.ts field lists) — a foreign axis must be FOREIGN, not forgotten by a list`,
-        )
-        continue
-      }
-      // Round 5 FIX 2: the witness must be found in CODE or STRINGS, never in
-      // a comment — the fence's own line-state machine masks comments, and
-      // reading the range raw would charge the "visible code diff" on the
-      // least-reviewed line type in a diff (reviewer B3: the only in-window
-      // `role:` was `// role: no blueprint here`).
-      const st = lineStates(text)
-      const codeCited = lines
-        .slice(a - 1, b)
-        .map((L, idx) => {
-          const kinds = (st.states[a - 1 + idx] ?? { kinds: [] }).kinds
-          let outLine = ''
-          for (let ci = 0; ci < L.length; ci += 1) outLine += kinds[ci] === K_COMMENT ? ' ' : L[ci]
-          return outLine
-        })
-        .join('\n')
-      if (
-        !new RegExp('(?:^|[^A-Za-z0-9_$]|\\\\n)' + witness + '\\s*:').test(codeCited)
-      ) {
-        bad.push(
-          `${key} — witness key "${witness}" not present in cited range ${String(a)}-${String(b)} (code/string only — a comment is not evidence about a site)`,
-        )
-        continue
-      }
-      // Round 5 radius decision (R=40, WINDOW-INDEPENDENT): the identity
-      // triple clustered around the site is the shape of a TeamBlueprint
-      // document whatever range the row cites — a window-scoped class test
-      // is worthless because the window is the attacker's choice. NO RADIUS
-      // IS COMPLETE: filler between YAML keys defeats any R (measured
-      // residue; retirement condition in the header).
-      const radA = Math.max(0, siteLine - 1 - ADJ_IDENTITY_RADIUS)
-      const radB = Math.min(lines.length, siteLine + ADJ_IDENTITY_RADIUS)
-      const radiusText = lines.slice(radA, radB).join('\n')
-      const tripleHits = ADJ_TRIPLE_KEYS.filter((tk) =>
-        new RegExp('(?:^|[^A-Za-z0-9_$]|\\\\n)' + tk + '\\s*:').test(radiusText),
+      // R3 (2026-10-08): the class is RETIRED — census in
+      // scan-scope/60-witness-census-transcript.txt, reasoning in FINDINGS
+      // section 10. A retired kind that silently tolerated its old rows
+      // could be re-enabled by forgetting it was retired; so its rows fail
+      // the run LOUDLY, and the site keeps its honest class: DIRTY, gated.
+      bad.push(
+        `${key} — the intentionally-dirty row kind is RETIRED (R3 2026-10-08): its witness rule admitted the majority of dirty sites (census 59-63 of 87, shipped composition included); delete this row — the site stays DIRTY with its DEFERRALS row and retirement-check`,
       )
-      if (tripleHits.length === ADJ_TRIPLE_KEYS.length) {
-        bad.push(
-          `${key} — site sits inside an identity-triple cluster: ${ADJ_TRIPLE_KEYS.join(', ')} all appear within ${String(ADJ_IDENTITY_RADIUS)} lines of L${String(siteLine)} — the shape of a TeamBlueprint document; this row is refused and the site stays dirty`,
-        )
-        continue
-      }
+      continue
     }
   }
   if (bad.length > 0) {
@@ -1490,7 +1294,6 @@ export function scanBlueprintVersionSites() {
     advisory: [],
     unknown: [],
     adjudicated: [],
-    intentionallyDirty: [],
     blindKeyHalf: 0,
     blindDocMarked: 0,
     blindNonTyped: 0,
@@ -1583,25 +1386,6 @@ export function scanBlueprintVersionSites() {
     result.refused.push(...c.refused)
     result.prose.push(...c.prose)
   }
-  // FIX 5a: the GATE refuses what the test would later complain about. A
-  // dirty-class row is a statement ABOUT a gated site; where the fence does
-  // not classify the site dirty, the row is either stale or a hatch, and
-  // neither belongs in a file that every lane rebases over. Checked BEFORE
-  // the split consumes matches, against the full classified dirty set.
-  {
-    const dirtySiteKeys = new Set(
-      result.dirty.map((s) => `${s.path}::L${String(s.line)}::v${String(s.version)}`),
-    )
-    const foreign = []
-    for (const [key, ev] of adj.ledger) {
-      if (ev.trimStart().startsWith('intentionally-dirty:') && !dirtySiteKeys.has(key)) foreign.push(key)
-    }
-    if (foreign.length > 0) {
-      result.ran = false
-      result.reason = `dirty-class ledger rows for sites the fence does not classify dirty: ${foreign.slice(0, 8).join(', ')}${foreign.length > 8 ? ` (+${String(foreign.length - 8)} more)` : ''} — an annotation must annotate a real gated site`
-      return result
-    }
-  }
   // Part C: ledgered unknowns leave the gated set for the ADJUDICATED class.
   for (const site of result.unknown) {
     const key = `${site.path}::L${String(site.line)}::v${String(site.version)}`
@@ -1616,26 +1400,8 @@ export function scanBlueprintVersionSites() {
       (u) => !done.has(`${u.path}::L${String(u.line)}::v${String(u.version)}`),
     )
   }
-  // Round 4 item 1: ledgered DIRTY sites (kind `intentionally-dirty`) leave
-  // the gated set for the always-printed, never-gating class. Kinds are
-  // pinned by the site's own class: an unknown-kind row cannot annotate a
-  // dirty site and vice versa — the split below reads the value's prefix.
-  for (const site of result.dirty) {
-    const key = `${site.path}::L${String(site.line)}::v${String(site.version)}`
-    const evidence = adj.ledger.get(key)
-    if (evidence !== undefined && evidence.trimStart().startsWith('intentionally-dirty:'))
-      result.intentionallyDirty.push({ ...site, evidence })
-  }
-  if (result.intentionallyDirty.length > 0) {
-    const done = new Set(
-      result.intentionallyDirty.map((x) => `${x.path}::L${String(x.line)}::v${String(x.version)}`),
-    )
-    result.dirty = result.dirty.filter(
-      (d) => !done.has(`${d.path}::L${String(d.line)}::v${String(d.version)}`),
-    )
-  }
   const byLine = (a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : a.line - b.line)
-  for (const k of ['dirty', 'advisory', 'unknown', 'adjudicated', 'intentionallyDirty', 'refused', 'prose']) result[k].sort(byLine)
+  for (const k of ['dirty', 'advisory', 'unknown', 'adjudicated', 'refused', 'prose']) result[k].sort(byLine)
   return result
 }
 
@@ -1686,16 +1452,9 @@ export function formatReport(result) {
   )
   lines.push(`blueprint-keyed files with version digits: ${String(keyed.size)}`)
   lines.push(
-    'GATE: dirty + UNADJUDICATED unknown only. Closure = dirty empty AND no unadjudicated unknown AND every intentionally-dirty row still validating (checked every run; a row leaves by executing its retirement-check, never by relaxing admission). adjudicated/intentionally-dirty/refused/prose print for dispatch and audit, never gated.',
+    'GATE: dirty + UNADJUDICATED unknown only. Closure = dirty empty AND no unadjudicated unknown. adjudicated/refused/prose print for dispatch and audit, never gated. (The seventh class intentionally-dirty was RETIRED in R3 2026-10-08 — its row kind is a not-run; FINDINGS section 10.)',
   )
   lines.push(...groupByPath(result.dirty, (p, ss) => `OFFENDING ${p} :: ${ss.map(where).join(', ')}`))
-  lines.push(
-    ...groupByPath(
-      result.intentionallyDirty,
-      (p, ss) =>
-        `INTENTIONALLY-DIRTY ${p} :: ${ss.map((s) => `L${String(s.line)}=v${String(s.version)} (${s.evidence})`).join(', ')}`,
-    ),
-  )
   lines.push(...groupByPath(result.unknown, (p, ss) => `UNKNOWN ${p} :: ${ss.map(whereWhy).join(', ')}`))
   lines.push(
     ...groupByPath(result.advisory, (p, ss) => `ADVISORY ${p} :: ${ss.map(whereWhy).join(', ')}`),
@@ -1712,7 +1471,6 @@ export function formatReport(result) {
   const tally = (arr) =>
     `${String(new Set(arr.map((s) => s.path)).size)} files, ${String(arr.length)} sites`
   lines.push(`RESULT dirty(${tally(result.dirty)})`)
-  lines.push(`RESULT intentionally-dirty(${tally(result.intentionallyDirty)})`)
   lines.push(`RESULT unknown(${tally(result.unknown)})`)
   lines.push(`RESULT advisory(${tally(result.advisory)})`)
   lines.push(`RESULT refused(${tally(result.refused)})`)

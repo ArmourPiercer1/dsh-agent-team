@@ -269,19 +269,15 @@ const LEDGER_ALL: Record<string, string> = JSON.parse(
   readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8'),
 ) as Record<string, string>
 /**
- * Two row kinds, ONE file, ONE key form, ONE evidence rule (round 4 item 1):
- * plain rows adjudicate UNKNOWNs; `intentionally-dirty:` rows annotate a
- * non-Blueprint version axis with owner + retirement-check + a foreign-axis
- * witness. The kind is the value's prefix — there is no second tier of
- * proof and no second file.
+ * ONE ledger, ONE key form, ONE evidence rule. The second row kind
+ * (`intentionally-dirty:`) was RETIRED (R3, 2026-10-08, FINDINGS §10): its
+ * admission rule accepted the majority of dirty sites (census: 59/87 lower
+ * bound here, 63/87 reviewer-derived; the shipped cordis composition among
+ * them), and the class's real safety was a wrapper assertion pinning its
+ * population to p7t6 — one edit away from being a launderer. The fence now
+ * REFUSES the retired kind as not-run (leg below); sites stay dirty.
  */
-const isDirtyRow = (v: string): boolean => v.trimStart().startsWith('intentionally-dirty:')
-const UNKNOWN_LEDGER: ReadonlyMap<string, string> = new Map(
-  Object.entries(LEDGER_ALL).filter(([, v]) => !isDirtyRow(v)),
-)
-const DIRTY_LEDGER: ReadonlyMap<string, string> = new Map(
-  Object.entries(LEDGER_ALL).filter(([, v]) => isDirtyRow(v)),
-)
+const UNKNOWN_LEDGER: ReadonlyMap<string, string> = new Map(Object.entries(LEDGER_ALL))
 
 
 interface ScanRun {
@@ -292,7 +288,6 @@ interface ScanRun {
   advisory: Array<{ path: string; line: number; why?: string }>
   unknown: Array<{ path: string; line: number; why?: string }>
   adjudicated: Array<{ path: string; line: number; version: number; evidence: string }>
-  intentionallyDirty: Array<{ path: string; line: number; version: number; evidence: string }>
   refused: Array<{ path: string; line: number; ns?: string; why?: string }>
   prose: Array<{ path: string; line: number }>
 }
@@ -309,7 +304,6 @@ const run: ScanRun = {
   advisory: rawRun.advisory ?? [],
   unknown: rawRun.unknown ?? [],
   adjudicated: rawRun.adjudicated ?? [],
-  intentionallyDirty: rawRun.intentionallyDirty ?? [],
   refused: rawRun.refused ?? [],
   prose: rawRun.prose ?? [],
 }
@@ -382,12 +376,11 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
   })
 
   it('every deferred path is still dirty (a migrated path must leave the list)', () => {
-    // Round 4 item 1: an `intentionally-dirty` LEDGER row moves a site out of
-    // the GATING dirty set but does not launder the DEFERRALS obligation — the
-    // path must still be present as dirty or annotated, and the row itself is
-    // removed only by executing its retirement-check. A deleted row with an
-    // unexecuted check returns the site to dirty and this test stays honest.
-    const owed = new Set([...dirtyPaths, ...[...new Set(run.intentionallyDirty.map((x) => x.path))]])
+    // R3 retirement: the dirty-class kind is gone, so DEFERRALS honesty is
+    // ONE sentence again — every deferred path must appear in the GATED
+    // dirty set. p7t6's nine sites returning to dirty is this rule working,
+    // not a regression (FINDINGS §10).
+    const owed = new Set(dirtyPaths)
     const stale = [...DEFERRALS.keys()].filter((p) => !owed.has(p))
     expect(stale).toEqual([])
   })
@@ -732,6 +725,29 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expect(report).not.toContain('round-1 audit')
   })
 
+  it('the blind-spot line names the numeric-form family the text predicate does not read', () => {
+    expect(report).toMatch(/SCOPE-NOTE blind spot:.*numeric-form family/)
+    expect(report).toMatch(/\+N/)
+    expect(report).toMatch(/parser refusing|runtime/i)
+  })
+
+  it('the RETIRED intentionally-dirty row kind is refused as not-run — a retired class never silently ignores its old rows (R3)', () => {
+    // The class is gone (R3, 2026-10-08; FINDINGS §10): the census showed its
+    // admission rule accepting the majority of dirty sites — including the
+    // shipped cordis composition — so `p7t6` is dirty again and this row kind
+    // is REFUSED, loudly, not ignored. A retired mechanism that silently
+    // tolerated its own rows could be re-enabled by forgetting it existed.
+    const retired = {
+      'packages/legacy/test/p7t6-teammates-adapter.test.ts::L118::v1':
+        'intentionally-dirty: legacy .md teammate-file version axis; foreign-axis: legacy-team-teammate-md; witness-key: role; owner: historical; retirement-check: n/a; hand-verified packages/legacy/test/p7t6-teammates-adapter.test.ts:118-122',
+    }
+    const r = spawnScratchLedger(retired)
+    expect(r.out).toContain('RESULT not-run')
+    expect(r.out, 'the refusal must name the retirement, not a generic validation error').toMatch(/RETIRED/)
+    expect(r.out).toContain('p7t6')
+    expect(r.status).toBe(2)
+  })
+
   const SCRATCH_DIR = resolve(REPO_ROOT, '.tmp-faultscratch')
 function scratchLedgerPath(name: string, obj: Record<string, string>): string {
   // G1 rule: legs create their own world — nothing in this file may depend
@@ -752,322 +768,6 @@ function spawnScratchLedger(obj: Record<string, string>): { out: string; status:
   return { out: spawned.stdout + spawned.stderr, status: spawned.status ?? -1 }
 }
 
-describe('intentionally-dirty rows: the dirty-class annotation with an admission rule', () => {
-  const P7 = 'packages/legacy/test/p7t6-teammates-adapter.test.ts'
-  const P7KEY = `${P7}::L118::v1`
-  const dirtyRow = (cite: string, fields?: Partial<Record<string, string>>): string => {
-    const f = {
-      'intentionally-dirty': 'legacy .md teammate-file version axis (intentional-retired.md row 3)',
-      'foreign-axis': 'legacy-team-teammate-md',
-      'witness-key': 'role',
-      owner: 'fence owner (ledger row) + 7.3 (emitter)',
-      'retirement-check': 'run the p7t6 adapter suite and re-read intentional-retired.md row 3',
-    } as Record<string, string>
-    Object.assign(f, fields ?? {})
-    return Object.entries(f).map(([k, v]) => `${k}: ${v}`).join('; ') + `; ${cite}`
-  }
-  const honestP7Row = dirtyRow(`hand-verified ${P7}:118-122`)
-
-  it('the tree: the ledger is DERIVED from the fence classification — p7t6 fully annotated, OFFENDING empty, one non-gating class line', () => {
-    const p7Sites = [...run.dirty, ...run.intentionallyDirty]
-      .filter((d) => d.path === P7)
-      .map((d) => `${d.path}::L${String(d.line)}::v${String(d.version)}`)
-    // (d) half one: the GATE sees exactly the dirty sites that have no row.
-    for (const key of p7Sites) expect(DIRTY_LEDGER.has(key), `ungated but unrowed: ${key}`).toBe(true)
-    const foreignRows = [...DIRTY_LEDGER.keys()].filter((k) => !p7Sites.includes(k))
-    expect(foreignRows, 'a dirty row for anything still dirty is an escape hatch').toEqual([])
-    // honest annotation: derived, never hardcoded
-    const derived = (classifyText as NonNullable<typeof classifyText>)(
-      P7,
-      readFileSync(resolve(REPO_ROOT, P7), 'utf8'),
-    ).dirty
-    // FIX 3 (adversarial review): set equality against the fence's own
-    // classification is the RULE; the hardcoded 9s this replaces made the
-    // derivation a tautology for exactly the rows it exists to check, and a
-    // laundered 10th row reddened a COUNT instead of refusing the row.
-    const derivedKeys = derived
-      .map((d) => `${P7}::L${String(d.line)}::v${String(d.version)}`)
-      .sort()
-    expect([...DIRTY_LEDGER.keys()].sort()).toEqual(derivedKeys)
-    expect(
-      run.intentionallyDirty.map((x) => `${x.path}::L${String(x.line)}::v${String(x.version)}`).sort(),
-    ).toEqual(derivedKeys)
-    for (const [k, v] of DIRTY_LEDGER.entries()) {
-      for (const field of ['owner:', 'retirement-check:', 'witness-key:', 'foreign-axis:'])
-        expect(v, `dirty row missing ${field}: ${k}`).toContain(field)
-    }
-    const derivedFiles = new Set(derivedKeys.map((k) => k.split('::')[0] ?? '')).size
-    expect(report).toContain(
-      `RESULT intentionally-dirty(${String(derivedFiles)} files, ${String(derivedKeys.length)} sites)`,
-    )
-    expect(report).toContain(`INTENTIONALLY-DIRTY ${P7}`)
-    const offending = report.split('\n').filter((l) => l.startsWith(`OFFENDING ${P7} `))
-    expect(offending, 'annotated sites leave the gated OFFENDING print, never the record').toEqual([])
-  })
-
-  it('(a) a dirty row whose cited range does not contain the site line is NOT-RUN naming the key', () => {
-    const r = spawnScratchLedger({ ...LEDGER_ALL, [P7KEY]: dirtyRow(`hand-verified ${P7}:245-250`) })
-    expect(r.out).toContain('RESULT not-run')
-    expect(r.out).toContain(P7KEY)
-    expect(r.status).toBe(2)
-  })
-
-  it('(b) a TeamBlueprint DOCUMENT site is refused as a dirty-class row — every flavor, distinct reasons', () => {
-    // The reviewer's target: the live v1 emitter the archetype legs pin DIRTY.
-    const FIXDOC = 'packages/domain/blueprint/testdata/fixtures.ts'
-    const docSite = run.dirty.find((d) => d.path === FIXDOC && d.version === 1)
-    expect(docSite, 'the v1 emitter must stay DIRTY — FINDINGS §5; if it left dirty this whole leg is vacuous').toBeTruthy()
-    const line0 = docSite?.line ?? 0
-    const docKey = `${FIXDOC}::L${String(line0)}::v1`
-    const docLines = readFileSync(resolve(REPO_ROOT, FIXDOC), 'utf8').split('\n')
-    // A window that genuinely CONTAINS the word, found not hardcoded; if the
-    // file moves so no such window exists inside the 12-line cap, the leg
-    // says so loudly instead of testing nothing.
-    const around = (w: string): string => {
-      const idx = docLines.findIndex(
-        (l, i) => Math.abs(i + 1 - line0) <= 11 && new RegExp(`\\b${w}\\s*:`).test(l),
-      )
-      expect(idx, `no "${w}:" within 12 lines of the site — leg proves nothing`).toBeGreaterThan(-1)
-      return `hand-verified ${FIXDOC}:${String(Math.min(line0, idx + 1))}-${String(Math.max(line0, idx + 1))}`
-    }
-    // FIX 1: keys a schema-valid document carries are forbidden witnesses.
-    // FIX 4 (round 5): the flavors are DERIVED from the same validator-
-    // anchored extraction the fence consults, intersected with the tokens
-    // that actually appear in the site's window — never enumerated from the
-    // incident report ("a test written from the incident report protects the
-    // incident, not the class": the leak survived review because the test
-    // copied the reviewer's imagination). If a permission key starts living
-    // beside this site tomorrow, this leg inherits it without an edit.
-    const derived = deriveForbidden?.(REPO_ROOT)
-    expect(derived, 'the fence must export its extraction for the wrapper').toBeDefined()
-    expect(derived?.error).toBeUndefined()
-    const docKeys = derived?.keys ?? new Set<string>()
-    expect(docKeys.has('resource'), 'validator-enforced `resource` must be a forbidden witness — the round-5 leak class').toBe(true)
-    const flavors: string[] = []
-    for (let idx = Math.max(0, line0 - 12); idx < Math.min(docLines.length, line0 + 11); idx += 1) {
-      for (const m of (docLines[idx] ?? '').matchAll(/([A-Za-z_$][A-Za-z0-9_$]*)\s*:/g)) {
-        const tok = String(m[1])
-        if (tok !== 'schemaVersion' && docKeys.has(tok) && !flavors.includes(tok)) flavors.push(tok)
-      }
-    }
-    for (const must of ['members', 'templateId', 'persona']) {
-      expect(flavors, `derived flavors must include ${must} if it is both validator-enforced and in-window`).toContain(must)
-    }
-    for (const w of flavors) {
-      const r = spawnScratchLedger({ ...LEDGER_ALL, [docKey]: dirtyRow(around(w), { 'witness-key': w }) })
-      expect(r.out, `document key ${w} must be refused AS a document key`).toContain(
-        'is a TeamBlueprint document key',
-      )
-      expect(r.out).toContain(docKey)
-      expect(r.status).toBe(2)
-    }
-    // A legitimate foreign witness in a window that does not contain it:
-    // refused with ITS OWN reason, not the generic sentence.
-    const rn = spawnScratchLedger({
-      ...LEDGER_ALL,
-      [docKey]: dirtyRow(`hand-verified ${FIXDOC}:${String(line0)}-${String(line0 + 2)}`, {
-        'witness-key': 'role',
-      }),
-    })
-    expect(rn.out).toContain('not present in cited range')
-    expect(rn.status).toBe(2)
-    // Case P's width half: a LEGITIMATE `role` four hundred lines away is not
-    // evidence about the site — the 12-line window is what refuses it.
-    const p7lines = readFileSync(resolve(REPO_ROOT, P7), 'utf8').split('\n').length
-    const rw = spawnScratchLedger({
-      ...LEDGER_ALL,
-      [P7KEY]: dirtyRow(`hand-verified ${P7}:1-${String(p7lines)}`, { 'witness-key': 'role' }),
-    })
-    expect(rw.out).toContain('wider than the 12-line evidence window')
-    expect(rw.status).toBe(2)
-  })
-
-  it('round-5 radius (R=40, window-independent): a site inside an identity-triple cluster is refused whatever range the row cites', () => {
-    // The reviewer's decision adopted: "take the radius rule at R=40 and do
-    // not pretend it is a boundary". NO RADIUS IS COMPLETE — filler between
-    // YAML keys defeats any R — this leg pins the rule, the header states the
-    // residue and the retirement condition. The site is built here (scratch
-    // world, G1), untracked, cited with a CLEAN narrow window: only the
-    // radius, not the window, can see the document.
-    const SV = 'schema' + 'Version:'
-    writeFileSync(
-      resolve(SCRATCH_DIR, 'r5-radius-doc.ts'),
-      [
-        '// constructed: a TeamBlueprint-shaped cluster the radius must catch',
-        'const doc = [',
-        "  '---',",
-        `  '${SV} 1',`, // line 4 = the site
-        "  'blueprintId: R5-RADIUS',",
-        "  'revision: 1',",
-        "  'contentHash: abc',",
-        "  '  role: leader',", // line 8: legitimate foreign witness, string-carried
-        "  'members: []',",
-        "].join('\\n')",
-        '',
-      ].join('\n'),
-    )
-    const r = spawnScratchLedger({
-      ['.tmp-faultscratch/r5-radius-doc.ts::L4::v1']: dirtyRow(
-        'hand-verified .tmp-faultscratch/r5-radius-doc.ts:1-10',
-        { 'witness-key': 'role' },
-      ),
-    })
-    expect(
-      r.out,
-      'blueprintId/revision/contentHash within 40 lines is document shape whatever the cited range says',
-    ).toContain('identity-triple cluster')
-    expect(r.status).toBe(2)
-  })
-
-  it('round-5 B3: a comment is not evidence — comment-only witness refused, string-carried witness admitted (reason differential)', () => {
-    // The fence's own line-state machine masks comments in the cited range.
-    // Both files are untracked scratch sites, so BOTH end at exit 2 — the
-    // differential is the REASON: the comment file is refused AT ADMISSION
-    // ('code/string only'), the string file PASSES admission and dies at the
-    // unrelated foreign-site guard. Reason-level, not exit-level, proof.
-    const SV = 'schema' + 'Version:'
-    writeFileSync(
-      resolve(SCRATCH_DIR, 'r5-witness-comment.ts'),
-      [
-        '// B3 shape: the only role: in the window is a comment',
-        'const doc = [',
-        "  '---',",
-        `  '${SV} 1',`, // line 4 = the site
-        "].join('\\n')",
-        '// role: no blueprint here', // line 6 — comment only
-        '',
-      ].join('\n'),
-    )
-    writeFileSync(
-      resolve(SCRATCH_DIR, 'r5-witness-code.ts'),
-      [
-        '// control: the same witness carried by a STRING (string = carrier)',
-        'const doc = [',
-        "  '---',",
-        `  '${SV} 1',`, // line 4 = the site
-        "  'role: leader',", // line 5 — string evidence
-        "].join('\\n')",
-        '',
-      ].join('\n'),
-    )
-    const rc = spawnScratchLedger({
-      ['.tmp-faultscratch/r5-witness-comment.ts::L4::v1']: dirtyRow(
-        'hand-verified .tmp-faultscratch/r5-witness-comment.ts:1-6',
-      ),
-    })
-    expect(rc.out, 'a comment is not evidence about a site').toContain('code/string only')
-    expect(rc.status).toBe(2)
-    const rk = spawnScratchLedger({
-      ['.tmp-faultscratch/r5-witness-code.ts::L4::v1']: dirtyRow(
-        'hand-verified .tmp-faultscratch/r5-witness-code.ts:1-5',
-      ),
-    })
-    expect(
-      rk.out,
-      'the string witness passes admission — refusal here is the foreign-site guard, NOT the witness rule',
-    ).toContain('does not classify dirty')
-    expect(rk.out).not.toContain('code/string only')
-    expect(rk.status).toBe(2)
-  })
-
-  it('round-5 fix 1 fail-closed: a renamed consulted field set is a not-run NAMING the missing set, never a silently smaller forbidden set', () => {
-    // The PARTIAL-failure half of the completeness invariant: the old
-    // deriver degraded in the PERMISSIVE direction on a rename — the same
-    // defect class as a catch that defaults to allow. Scratch tree: the
-    // extractor only reads these two files, no git needed.
-    const root = resolve(SCRATCH_DIR, 'extract-tree')
-    mkdirSync(resolve(root, 'packages/domain/blueprint/src'), { recursive: true })
-    const schemaReal = readFileSync(resolve(REPO_ROOT, 'packages/domain/blueprint/src/schema.ts'), 'utf8')
-    const validateReal = readFileSync(resolve(REPO_ROOT, 'packages/domain/blueprint/src/validate.ts'), 'utf8')
-    writeFileSync(resolve(root, 'packages/domain/blueprint/src/schema.ts'), schemaReal)
-    writeFileSync(resolve(root, 'packages/domain/blueprint/src/validate.ts'), validateReal)
-    const okRun = deriveForbidden?.(root)
-    expect(okRun?.error).toBeUndefined()
-    expect(okRun?.sets, 'every consulted set resolves on the real tree').toBeGreaterThanOrEqual(10)
-    writeFileSync(
-      resolve(root, 'packages/domain/blueprint/src/schema.ts'),
-      schemaReal.replaceAll('BLUEPRINT_TEMPLATE_FIELDS', 'BLUEPRINT_TEMPLATE_FIELDS_RENAMED'),
-    )
-    const badRun = deriveForbidden?.(root)
-    expect(badRun?.error, 'partial extraction must REFUSE to run, not proceed on a smaller set').toBeDefined()
-    expect(badRun?.error).toContain('could not find')
-    expect(badRun?.error).toContain('templateFields')
-  })
-
-  it('the FENCE refuses a dirty-class row at a site it does not classify dirty — the gate, not the suite, is the first responder', () => {
-    // The reviewer's N-case: line exists, witness genuinely in range, key
-    // valid — but the fence does not classify the site dirty. `70745ef7`
-    // accepted this silently and left it to a wrapper assertion.
-    const firstRowLine = 118
-    const ghostLine = `${P7}::L${String(firstRowLine + 1)}::v1`
-    expect(
-      [...run.dirty, ...run.intentionallyDirty].some((d) => d.path === P7 && d.line === firstRowLine + 1),
-      'L119 must not be a classified site for this leg to mean anything',
-    ).toBe(false)
-    const r = spawnScratchLedger({
-      ...LEDGER_ALL,
-      [ghostLine]: dirtyRow(`hand-verified ${P7}:118-122`, { 'witness-key': 'role' }),
-    })
-    expect(r.out).toContain('does not classify dirty')
-    expect(r.out).toContain(ghostLine)
-    expect(r.status).toBe(2)
-  })
-
-  it('the three citation defects print THREE distinct reasons (a not-run must be diagnosable)', () => {
-    const ghost = spawnScratchLedger({
-      ...LEDGER_ALL,
-      'packages/nowhere/test/ghost.test.ts::L10::v1': dirtyRow(
-        'hand-verified packages/nowhere/test/ghost.test.ts:10',
-        { 'witness-key': 'role' },
-      ),
-    })
-    expect(ghost.out).toContain('no such file')
-    expect(ghost.status).toBe(2)
-    const far = spawnScratchLedger({
-      ...LEDGER_ALL,
-      [`${P7}::L99999::v1`]: dirtyRow(`hand-verified ${P7}:99999`, { 'witness-key': 'role' }),
-    })
-    expect(far.out).toContain('no such line')
-    expect(far.status).toBe(2)
-    expect(ghost.out).not.toContain('no such line')
-    expect(far.out).not.toContain('no such file')
-  })
-
-  it('(c) dropping a row sends THAT site back to dirty with its own L=v and gates', () => {
-    const victim = `${P7}::L380::v2`
-    const without: Record<string, string> = { ...LEDGER_ALL }
-    expect(without[victim], 'the v2 row must exist in the tree ledger').toBeTruthy()
-    delete without[victim]
-    const r = spawnScratchLedger(without)
-    const offendingLine = r.out.split('\n').find((l) => l.startsWith(`OFFENDING ${P7} ::`)) ?? ''
-    expect(offendingLine, 'the dropped row must return its OWN site to OFFENDING').toContain('L380=v2')
-    expect(r.status).toBe(1)
-    expect(r.out).toContain('RESULT intentionally-dirty(') // the class prints even now
-  })
-
-  it('(d) an honest dirty row does not gate, but every unrowed dirty site still does — annotation, not bypass', () => {
-    const withRow = spawnScratchLedger({ ...LEDGER_ALL, [P7KEY]: honestP7Row })
-    expect(withRow.out).not.toContain('RESULT not-run')
-    expect(withRow.status, 'gate status unchanged by an honest row: ' + withRow.out.slice(0, 300)).toBe(1)
-    const offendingCount = withRow.out.split('\n').filter((l) => l.startsWith('OFFENDING ')).length
-    // FIX 4 (adversarial review, applied as the reviewer wrote it): `>100` was
-    // the plan's own X10 violation — a count standing in for a contract — and
-    // it went red BECAUSE §7.4 succeeded (109 -> 92 -> 74 OFFENDING lines).
-    // These two assert the contract directly: dirty gates, and every dirty
-    // path keeps printing its OFFENDING line, at any future count.
-    expect(offendingCount, 'dirty sites with no row MUST still gate').toBeGreaterThan(0)
-    expect(offendingCount, 'every dirty path must still print an OFFENDING line').toBe(
-      new Set(run.dirty.map((d) => d.path)).size,
-    )
-    expect(withRow.out).toContain('INTENTIONALLY-DIRTY')
-  })
-
-  it('the blind-spot line names the numeric-form family the text predicate does not read', () => {
-    expect(report).toMatch(/SCOPE-NOTE blind spot:.*numeric-form family/)
-    expect(report).toMatch(/\+N/)
-    expect(report).toMatch(/parser refusing|runtime/i)
-  })
-})
 
 // --- scope boundary -------------------------------------------------------
 
