@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-artifacts-nonempty
+
+ ❯ packages/testkit/test/a4-artifacts-nonempty.test.ts (4 tests | 1 failed | 3 skipped) 121ms
+     × the reported world: artifacts ignored away -> non-zero, names the produced-set count and all three ways 116ms
+     ↓ a produced set of one matching file still passes exactly as before
+     ↓ a genuinely drifted file still prints the existing content-drift message (semantics untouched)
+     ↓ a missing install-surface directory keeps its existing ERROR (walk failure is not the new guard)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4-artifacts-nonempty.test.ts > check:artifacts cannot report success over an empty produced set > the reported world: artifacts ignored away -> non-zero, names the produced-set count and all three ways
+AssertionError: the old false green must never print again: expected '[check-artifacts-committed] OK: 0 fil…' not to match /OK: 0 files/
+
+- Expected:
+/OK: 0 files/
+
++ Received:
+"[check-artifacts-committed] OK: 0 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+"
+
+ ❯ packages/testkit/test/a4-artifacts-nonempty.test.ts:125:69
+    123|     const producedCount = INSTALL_SURFACES.length + PLACEMENTS.length
+    124|     const r = runChecker(root)
+    125|     expect(r.out, 'the old false green must never print again').not.to…
+       |                                                                     ^
+    126|     expect(r.status, `must not exit 0 over nothing: ${r.out}`).not.toB…
+    127|     // names the produced-set count...
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 skipped (4)
+   Start at  05:03:38
+   Duration  375ms (transform 54ms, setup 0ms, import 71ms, tests 121ms, environment 0ms)
+

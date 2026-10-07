@@ -1942,6 +1942,34 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4SURFACE: readonly string[] = [
       'packages/runtime/test/a4-surface-authority-unavailable.test.ts',
     ]
+    // a4-check-artifacts-nonempty (fix/a4-check-artifacts-nonempty): the ONE new
+    // scannable file of this lane — the check:artifacts non-emptiness spec. The
+    // lane's other path (scripts/check-artifacts-committed.mjs) is an EDIT to a
+    // root-level script this scan does not cover (scripts/** is outside the nine
+    // package dirs), and an edit is not an increment. The total below moves
+    // because this line does.
+    const SCANNED_PATHS_A4ARTIFACTS: readonly string[] = [
+      'packages/testkit/test/a4-artifacts-nonempty.test.ts',
+    ]
+    // A4-PR7 §7.5 prerequisites (branch `feat/a4-73-prerequisites`, the 7.3 window):
+    // the carrier-width pin the ceiling-coverage probe parked as
+    // `dev/agent-workflow/evidence/a4-ceiling-coverage/a4p7-carrier-width-under-ceiling.test.ts.inert`,
+    // landed here as a live spec. Its inertion note named THIS entry as the reason it
+    // could not land in the probe's own commit: a landed test without its path here
+    // moves the derived total with nothing asserting why. The second path is the
+    // §7.5(3) spec — the ceiling's no-context branch pinned as a refusal at the real
+    // entry. The third path is the 7.3-review spec: the ceiling re-asked at the
+    // commit boundary of an APPROVED retry, over the same claimed-point set the
+    // direct gate judges. Everything else the prerequisites and the review round
+    // changed (the ceiling asking the width the mutation claims, the reader's
+    // abstention answer, the shared `permissionRiseClaimedPoints` point algebra,
+    // the `PermissionRiseRegion` doc) is an EDIT to a path this scan already
+    // counts, and an edit is not an increment.
+    const SCANNED_PATHS_A4P7PRE: readonly string[] = [
+      'packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts',
+      'packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts',
+      'packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
@@ -1954,7 +1982,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR7.length +
         SCANNED_PATHS_A4ESCALATE.length +
         SCANNED_PATHS_A4F1.length +
-        SCANNED_PATHS_A4SURFACE.length,
+        SCANNED_PATHS_A4SURFACE.length +
+        SCANNED_PATHS_A4ARTIFACTS.length +
+        SCANNED_PATHS_A4P7PRE.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -1966,7 +1996,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR7.length +
         SCANNED_PATHS_A4ESCALATE.length +
         SCANNED_PATHS_A4F1.length +
-        SCANNED_PATHS_A4SURFACE.length,
+        SCANNED_PATHS_A4SURFACE.length +
+        SCANNED_PATHS_A4ARTIFACTS.length +
+        SCANNED_PATHS_A4P7PRE.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2004,6 +2036,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4ESCALATE,
       ...SCANNED_PATHS_A4F1,
       ...SCANNED_PATHS_A4SURFACE,
+      ...SCANNED_PATHS_A4ARTIFACTS,
+      ...SCANNED_PATHS_A4P7PRE,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2071,6 +2105,24 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (evidence a4-surface/p4t6-PRE-EXTEND-RED.txt: `expected 1022 to be
     // 1021` before the list existed) was taken on the pre-rebase base.
     expect(SCANNED_PATHS_A4SURFACE.length).toBe(1024 - 1023)
+    // The a4-check-artifacts-nonempty tie, same form: the movement equals the
+    // named files in SCANNED_PATHS_A4ARTIFACTS, each asserted present by path in
+    // the loop above. The endpoints are this lane's OWN advancing total on the
+    // base it landed on (the merged tree measured 1024 before this spec joined
+    // and the increment's RED capture read `expected 1025 to be 1024` with the
+    // file present but the list absent); neither number is written for the
+    // merged tree by hand — the derived sums above compute that.
+    expect(SCANNED_PATHS_A4ARTIFACTS.length).toBe(1025 - 1024)
+    // The A4-PR7 §7.5-prerequisites tie, same form: the movement equals the three
+    // files this lane names, each asserted present by path in the loop above. Its
+    // endpoints are THIS lane's own advancing total on the base it landed on: the
+    // merged tree reached 1025 through the a4-surface and a4-check-artifacts lanes
+    // (each with its own line above), and this review round adds the third named file
+    // on top of the two the prerequisites landed. No earlier lane's endpoint was
+    // renumbered to make the ladders look sequential, and this comment writes neither
+    // number for the merged tree — the derived sums above compute that, and a landed
+    // file without its path here turns the sum RED rather than silently moving it.
+    expect(SCANNED_PATHS_A4P7PRE.length).toBe(1028 - 1025)
 
   })
 

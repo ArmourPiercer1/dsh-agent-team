@@ -1,0 +1,25 @@
+--- P0 FIXED gate, untouched suite (control: green)
+    gate=706fdf749689 exit=0 :: 1 passed | 52 skipped (53)
+--- P1 BASE gate, untouched suite (the defect)
+    gate=ee315922f47c exit=1 :: 1 failed | 52 skipped (53)
+--- P2 BASE gate, DELETED: expect(skipped.status).not.toBe(0)
+    gate=ee315922f47c exit=1 :: 1 failed | 52 skipped (53)
+--- P2 BASE gate, DELETED: expect(skipped.failures).toHaveLength(1)
+    gate=ee315922f47c exit=1 :: 1 failed | 52 skipped (53)
+--- P2 BASE gate, DELETED: expect(skipped.stdout).not.toContain('PASS composition-smoke')
+    gate=ee315922f47c exit=1 :: 1 failed | 52 skipped (53)
+--- P3 BASE gate, real-repo leg untouched
+    gate=ee315922f47c exit=1 :: 1 failed | 52 skipped (53)
+--- P3b BASE gate, real-repo exit assertion DELETED
+    gate=ee315922f47c exit=0 :: 1 passed | 52 skipped (53)
+--- P3c FIXED gate, real-repo leg restored
+    gate=706fdf749689 exit=0 :: 1 passed | 52 skipped (53)
+--- P4 FIXED gate, SKIP line RENUMBED (report goes quiet)
+    gate=3b65e221e389 exit=1 :: 1 failed | 52 skipped (53)
+--- P5 FIXED gate, footer wording REWORDED
+    gate=82b9b267673a exit=1 :: 1 failed | 52 skipped (53)
+--- P6 FIXED gate, verdict forced always-red
+    gate=d76fe5b8643d exit=1 :: 1 failed | 52 skipped (53)
+--- P7 FIXED gate, skip clause REMOVED (the bug re-added)
+    gate=36f39041a471 exit=1 :: 1 failed | 52 skipped (53)
+=== restored: gate=True test=True

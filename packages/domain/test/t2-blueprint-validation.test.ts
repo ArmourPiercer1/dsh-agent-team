@@ -36,7 +36,7 @@ describe('t2 validation: whole-document, all-or-nothing', () => {
   it('rejects a document with two independent violations in one pass', () => {
     const src = [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.min',
       'revision: "1"',
       'extraField: 1',
@@ -47,6 +47,10 @@ describe('t2 validation: whole-document, all-or-nothing', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       'quotas:',
       '  team:',
       '    maxInstances: 0',
@@ -65,7 +69,7 @@ describe('t2 validation: whole-document, all-or-nothing', () => {
 /** A valid minimal document as a plain JS object (no YAML involved). */
 function jsDoc(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    schemaVersion: 1,
+    schemaVersion: 3,
     blueprintId: 'team.min',
     revision: '1',
     leader: { templateId: 'leader', persona: 'Lead.' },
@@ -73,6 +77,8 @@ function jsDoc(overrides: Record<string, unknown> = {}): Record<string, unknown>
     requirements: [],
     memberEnvelopes: [],
     policyStates: [],
+    permissionMutationEnvelope: { rules: [] },
+    teamHardEnvelope: { rules: [] },
     metadata: {},
     ...overrides,
   }

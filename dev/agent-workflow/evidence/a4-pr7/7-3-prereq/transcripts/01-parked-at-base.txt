@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ✓ packages/runtime/test/scratch-a4p7-width.test.ts (3 tests) 11ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  03:25:14
+   Duration  866ms (transform 619ms, setup 0ms, import 776ms, tests 11ms, environment 0ms)
+

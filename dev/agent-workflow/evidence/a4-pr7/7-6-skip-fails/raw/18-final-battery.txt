@@ -1,0 +1,16 @@
+### FINAL battery, run against the committed tree (post teeth-harness restore incident)
+### sha256:
+706fdf749689952cae5e57ce94e4ff96d3f703f437306bfe9178892e65245366  scripts/composition-smoke.mjs
+a31deaf89be4d83d090916235db1ae8f0f2190dbdf5e96b1ccb00b9192ef56ef  scripts/composition-smoke-closure.mjs
+dd55ffd23f719b639cd6b1fc646f32171ba4bd298b1bae00ec44741a610e5410  scripts/composition-smoke-targets.mjs
+8fe7b7c21ce8c986106477cd7858c9bf264eeca65cb1597d52be1917e6fe85aa  packages/testkit/test/a4p75-composition-smoke-classification.test.ts
+### gate exit=1 footer:
+FAIL composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+      Tests  53 passed (53)
+   Start at  04:49:48
+   Duration  2.77s (transform 1.24s, setup 0ms, import 91ms, tests 2.59s, environment 0ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+### eslint exit=0
+$ tsc -p tsconfig.json
+### testkit typecheck exit=0

@@ -25,11 +25,27 @@ import {
   toHashableBlueprint,
 } from '../blueprint/src/index.js'
 import { expectCode } from './t2-helpers.js'
+import type { TeamBlueprint } from '../blueprint/src/index.js'
+
+/**
+ * §7.4 carrier migration (pre-flip half): the subject of THIS suite is the
+ * v1 document contract — "a v1 document created before PR-E resumes
+ * byte-identically" is only true of a document that IS v1. Promoting these
+ * fixtures to v3 would delete the proof, and invert-to-refusal is a post-
+ * flip move (v1 is still SUPPORTED today: the bridge is [1,2,3]). So the
+ * DOCUMENT stays v1 and the CARRIER moves: the digit lives at a typed code
+ * position, and the YAML line interpolates from it byte-identically.
+ * `TeamBlueprint['schemaVersion']` is exactly the type §7.3's cutover
+ * narrows to `3` — at the flip this line becomes a COMPILE ERROR pointing
+ * at this file, where the companion move is this suite's planned
+ * delete-or-invert (plan §7.3), decided by the flip PR, not silently here.
+ */
+const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
 
 /** A v1 document with a persona string + a flat capability requirement. */
 const V1_SOURCE: readonly string[] = [
   '---',
-  'schemaVersion: 1',
+  `schemaVersion: ${V1_DOCUMENT_VERSION}`,
   'blueprintId: team.v1.frozen',
   'revision: "1"',
   'leader:',
@@ -73,7 +89,7 @@ describe('E.11 blueprint-v1-frozen-resume: the v1 schema is frozen', () => {
   it('a v2 `teamRequirements` field is still rejected on a v1 document (frozen closed field sets)', () => {
     const src = [
       '---',
-      'schemaVersion: 1',
+      `schemaVersion: ${V1_DOCUMENT_VERSION}`,
       'blueprintId: team.v1.v2-field',
       'revision: "1"',
       'teamRequirements:',

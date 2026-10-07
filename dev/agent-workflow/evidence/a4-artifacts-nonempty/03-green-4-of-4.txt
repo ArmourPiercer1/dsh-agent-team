@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-artifacts-nonempty
+
+ ✓ packages/testkit/test/a4-artifacts-nonempty.test.ts (4 tests) 219ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  05:03:50
+   Duration  339ms (transform 21ms, setup 0ms, import 30ms, tests 219ms, environment 0ms)
+

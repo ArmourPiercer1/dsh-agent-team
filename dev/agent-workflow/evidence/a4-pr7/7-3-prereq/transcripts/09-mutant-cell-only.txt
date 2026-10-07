@@ -1,0 +1,66 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.config" without a file extension (.vitest-mutant.config.ts:1:24). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (5 tests | 2 failed) 27ms
+     ✓ a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write 15ms
+     ✓ the SAME mutation with a carrier as wide as the matcher commits (the refusal is width, not the documents) 4ms
+     × the ceiling is asked at the WIDTH the mutation claims, not only at the rising cell 4ms
+     × at the real entry, with NO Alpha.3 Leader law in the way, the width refusal commits nothing 3ms
+     ✓ asking the width never LOOSENS the cell: a cell the ceiling does not reach still refuses 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts > the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deletion guard) > the ceiling is asked at the WIDTH the mutation claims, not only at the rising cell
+AssertionError: expected { status: 'sufficient' } to deeply equal { status: 'insufficient', …(3) }
+
+- Expected
++ Received
+
+  {
+-   "ceiling": "no-authority",
+-   "detail": {
+-     "requiredAuthority": "leader",
+-   },
+-   "plane": "expansion",
+-   "status": "insufficient",
++   "status": "sufficient",
+  }
+
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts:305:36
+    303|     // deletion of `leaderEnvelopeCoverage` is NOT part of it and is s…
+    304|     // it.
+    305|     expect(judge(context, region)).toEqual({
+       |                                    ^
+    306|       status: 'insufficient',
+    307|       plane: 'expansion',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts > the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deletion guard) > at the real entry, with NO Alpha.3 Leader law in the way, the width refusal commits nothing
+AssertionError: expected undefined to be 'PERMISSION_AUTHORITY_CEILING_INSUFFIC…' // Object.is equality
+
+- Expected:
+"PERMISSION_AUTHORITY_CEILING_INSUFFICIENT"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts:344:62
+    342|         (raised: unknown) => raised,
+    343|       )
+    344|       expect((error as { code?: string } | undefined)?.code).toBe(PERM…
+       |                                                              ^
+    345|       expect((error as { details?: Record<string, unknown> } | undefin…
+    346|       expect((error as { details?: Record<string, unknown> } | undefin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  03:31:18
+   Duration  927ms (transform 650ms, setup 11ms, import 801ms, tests 27ms, environment 0ms)
+

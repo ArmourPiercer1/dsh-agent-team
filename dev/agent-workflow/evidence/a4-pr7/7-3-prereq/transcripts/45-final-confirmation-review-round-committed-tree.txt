@@ -1,0 +1,48 @@
+FINAL CONFIRMATION, review round, committed tree
+
+$ git log --oneline -4
+37bcb0b2 docs(a4-pr7/7.3): review-round findings and transcripts 34-44
+d6797d3e fix(a4-pr7/7.3): own the ceiling at the commit boundary and at the point set (review round)
+c1aa0532 fix(a4-pr7-7.3pre): an unreadable binding answers a ceiling it cannot satisfy, and refuses
+2aacfca0 fix(a4-pr7-7.3pre): the ceiling is asked at the width the mutation claims; the width pin lands
+
+$ git status --porcelain (transcripts 45/46 pending commit only)
+?? dev/agent-workflow/evidence/a4-pr7/7-3-prereq/transcripts/45-final-confirmation-review-round-committed-tree.txt
+?? dev/agent-workflow/evidence/a4-pr7/7-3-prereq/transcripts/46-root-pnpm-test-review-round.txt
+
+$ grep SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS schema.ts (must stay [1,2,3])
+75:export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [1, 2, 3]
+$ git diff e8dcfd7d HEAD -- schema.ts | wc -l
+0
+
+$ git diff origin/master...HEAD --stat -- packages/runtime/governance/permission-mutation.ts | tail -1
+ 1 file changed, 54 insertions(+), 3 deletions(-)
+
+$ pnpm check:artifacts
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+
+$ lane spec files at the committed tree
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a4p2-dual-envelope-mutation.test.ts (26 tests) 14ms
+ ✓ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (8 tests) 19ms
+ ✓ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (12 tests) 44ms
+ ✓ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts (12 tests) 88ms
+ ✓ packages/runtime/test/a4p4-operation-approval-authority.test.ts (16 tests) 5ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts (33 tests) 130ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts (23 tests) 184ms
+ Test Files  8 passed (8)
+      Tests  140 passed (140)
+
+root pnpm test (transcript 46) compared BY FAILING NAME to the baseline:
+ ❯ packages/domain/test/t1-capability-schema.test.ts (17 tests | 9 failed)
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts (18 tests | 1 failed)
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed)
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed)
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed)
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts (0 test)
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts (0 test)
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed)
+ Test Files  9 failed | 485 passed (494)
+      Tests  19 failed | 6162 passed (6181)

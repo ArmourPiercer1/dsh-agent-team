@@ -1,0 +1,54 @@
+--- P1 BASE gate, untouched suite
+    Tests  1 failed | 52 skipped (53)
+    AssertionError: expected +0 not to be +0 // Object.is equality
+    1347|
+    1348|   it('exits non-zero when a step is skipped, and still prints the SKIP…
+    1349|     expect(skipped.status).not.toBe(0)
+    1350|     // The SKIP line keeps naming the step and why, unchanged: the fix…
+--- P2 BASE gate, DELETED: expect(skipped.status).not.toBe(0)
+    Tests  1 failed | 52 skipped (53)
+    AssertionError: expected [] to have a length of 1 but got +0
+    1353|     expect(skipped.skips[0]).toContain('@a4p75/no-such-clsx')
+    1354|     // And the red is attributable to that one step and nothing else.
+    1355|     expect(skipped.failures).toHaveLength(1)
+    1356|     expect(skipped.failures[0]).toBe(
+--- P2 BASE gate, DELETED: expect(skipped.failures).toHaveLength(1)
+    Tests  1 failed | 52 skipped (53)
+    AssertionError: expected undefined to be 'FAIL composition-smoke — 1 step NOT R…' // Object.is equality
+    1353|     expect(skipped.skips[0]).toContain('@a4p75/no-such-clsx')
+    1354|     // And the red is attributable to that one step and nothing else.
+    1355|     expect(skipped.failures[0]).toBe(
+    1356|       `FAIL composition-smoke — 1 step NOT RUN and NOT passed: ${CLIEN…
+--- P2 BASE gate, DELETED: expect(skipped.failures[0]).toBe(
+    Tests  no tests
+--- P2 BASE gate, DELETED: expect(skipped.stdout).not.toContain('PASS composition-smoke')
+    Tests  no tests
+--- P4 FIXED gate, SKIP line RENUMBED
+    Tests  1 failed | 52 skipped (53)
+    AssertionError: expected [] to have a length of 1 but got +0
+    1350|     // The SKIP line keeps naming the step and why, unchanged: the fix…
+    1351|     // verdict, never a quieter report of the skip.
+    1352|     expect(skipped.skips).toHaveLength(1)
+    1353|     expect(skipped.skips[0]).toContain(CLIENT_ARM.label)
+--- P5 FIXED gate, footer REWORDED
+    Tests  1 failed | 52 skipped (53)
+    AssertionError: expected 'FAIL composition-smoke — 1 step NOT R…' to be 'FAIL composition-smoke — 1 step NOT R…' // Obje
+    1355|     // And the red is attributable to that one step and nothing else.
+    1356|     expect(skipped.failures).toHaveLength(1)
+    1357|     expect(skipped.failures[0]).toBe(
+    1358|       `FAIL composition-smoke — 1 step NOT RUN and NOT passed: ${CLIEN…
+--- P6 FIXED gate, verdict forced always-red
+    Tests  1 failed | 52 skipped (53)
+    AssertionError: expected 'FAIL composition-smoke' to be 'PASS composition-smoke' // Object.is equality
+    1339|     // fix would be unfalsifiable — every "skip is red" leg passes tri…
+    1340|     // nothing in the suite can ever print a green footer.
+    1341|     expect(green.footer).toBe('PASS composition-smoke')
+    1342|     expect(green.status).toBe(0)
+--- P7 FIXED gate, bug RE-ADDED
+    Tests  1 failed | 52 skipped (53)
+    AssertionError: expected +0 not to be +0 // Object.is equality
+    1347|
+    1348|   it('exits non-zero when a step is skipped, and still prints the SKIP…
+    1349|     expect(skipped.status).not.toBe(0)
+    1350|     // The SKIP line keeps naming the step and why, unchanged: the fix…
+=== restored

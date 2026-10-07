@@ -1,0 +1,42 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (10 tests | 1 failed) 32ms
+     ✓ 1. an UNREADABLE binding refuses a rising operator mutation with ZERO WRITE 6ms
+     ✓ 2. the refusal is the CONTEXT law, not an authorization law, and it mints nothing 2ms
+     ✓ 3. a v3 binding whose ANCHOR vanished takes the same refusal, not the skip 2ms
+     ✓ 4. a TIGHTENING under the same unreadable binding still commits 3ms
+     ✓ 5. a DECIDED v1/v2 binding still answers NO context and the same rise commits (A5-12 existential) 2ms
+     ✓ 6. a readable, anchored v3 binding commits the same rise (the refusal is specific) 2ms
+     ✓ 7. the reader has THREE answers, and the abstention is not the existential one 5ms
+     ✓ 8. a Leader rise the carrier COVERS also refused (the fail-open was not operator-only) 2ms
+     ✓ 9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched) 2ms
+     × 10. a bound-Blueprint read that THROWS is the same refusal, not a crash (review FU-3) 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 10. a bound-Blueprint read that THROWS is the same refusal, not a crash (review FU-3)
+AssertionError: expected undefined to be 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' // Object.is equality
+
+- Expected:
+"PERMISSION_EFFECT_CONTEXT_UNAVAILABLE"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:450:27
+    448|     try {
+    449|       const error = await w.mutateOperator(RISE)
+    450|       expect(error?.code).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_…
+       |                           ^
+    451|       expect(await w.listRules(), 'a faulted resolution must not write…
+    452|       // And the seam's own answer, asked directly: the refusal is a C…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  05:11:15
+   Duration  1.23s (transform 880ms, setup 0ms, import 1.10s, tests 32ms, environment 0ms)
+

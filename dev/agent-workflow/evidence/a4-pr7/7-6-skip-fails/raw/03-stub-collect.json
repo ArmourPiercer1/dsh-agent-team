@@ -1,0 +1,217 @@
+{
+  "unresolvableAtBase": 20,
+  "rows": [
+    {
+      "package": "simple-icons",
+      "specifiers": [
+        "simple-icons"
+      ],
+      "namedExports": [
+        "siAliexpress",
+        "siApple",
+        "siBaidu",
+        "siBilibili",
+        "siCsdn",
+        "siDuckduckgo",
+        "siEbay",
+        "siFacebook",
+        "siGithub",
+        "siGitlab",
+        "siGoogle",
+        "siInstagram",
+        "siJuejin",
+        "siMdnwebdocs",
+        "siNetflix",
+        "siNpm",
+        "siPypi",
+        "siQq",
+        "siQuora",
+        "siReddit",
+        "siSinaweibo",
+        "siSpotify",
+        "siStackoverflow",
+        "siTaobao",
+        "siTelegram",
+        "siTiktok",
+        "siV2ex",
+        "siWechat",
+        "siWhatsapp",
+        "siWikipedia",
+        "siX",
+        "siYcombinator",
+        "siYoutube",
+        "siZhihu"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "shiki",
+      "specifiers": [
+        "shiki/core",
+        "shiki/engine/javascript"
+      ],
+      "namedExports": [
+        "createCssVariablesTheme",
+        "createHighlighterCoreSync",
+        "createJavaScriptRegexEngine",
+        "defaultJavaScriptRegexConstructor"
+      ],
+      "default": false,
+      "importerCount": 2
+    },
+    {
+      "package": "@shikijs/langs",
+      "specifiers": [
+        "@shikijs/langs/json",
+        "@shikijs/langs/shellscript",
+        "@shikijs/langs/typescript"
+      ],
+      "namedExports": [],
+      "default": true,
+      "importerCount": 3
+    },
+    {
+      "package": "anser",
+      "specifiers": [
+        "anser"
+      ],
+      "namedExports": [],
+      "default": true,
+      "importerCount": 1
+    },
+    {
+      "package": "mdast-util-from-markdown",
+      "specifiers": [
+        "mdast-util-from-markdown"
+      ],
+      "namedExports": [
+        "fromMarkdown"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "mdast-util-gfm",
+      "specifiers": [
+        "mdast-util-gfm"
+      ],
+      "namedExports": [
+        "gfmFromMarkdown"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "mdast-util-math",
+      "specifiers": [
+        "mdast-util-math"
+      ],
+      "namedExports": [
+        "mathFromMarkdown"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "micromark-extension-gfm",
+      "specifiers": [
+        "micromark-extension-gfm"
+      ],
+      "namedExports": [
+        "gfm"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "micromark-extension-math",
+      "specifiers": [
+        "micromark-extension-math"
+      ],
+      "namedExports": [
+        "math"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "micromark-core-commonmark",
+      "specifiers": [
+        "micromark-core-commonmark"
+      ],
+      "namedExports": [
+        "attention"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "micromark-util-character",
+      "specifiers": [
+        "micromark-util-character"
+      ],
+      "namedExports": [
+        "markdownLineEnding",
+        "unicodePunctuation"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "micromark-util-classify-character",
+      "specifiers": [
+        "micromark-util-classify-character"
+      ],
+      "namedExports": [
+        "classifyCharacter"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "micromark-util-symbol",
+      "specifiers": [
+        "micromark-util-symbol"
+      ],
+      "namedExports": [
+        "codes",
+        "constants",
+        "types"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "micromark-factory-space",
+      "specifiers": [
+        "micromark-factory-space"
+      ],
+      "namedExports": [
+        "factorySpace"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "micromark-util-sanitize-uri",
+      "specifiers": [
+        "micromark-util-sanitize-uri"
+      ],
+      "namedExports": [
+        "normalizeUri"
+      ],
+      "default": false,
+      "importerCount": 1
+    },
+    {
+      "package": "katex",
+      "specifiers": [
+        "katex"
+      ],
+      "namedExports": [],
+      "default": true,
+      "importerCount": 1
+    }
+  ]
+}

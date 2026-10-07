@@ -1,0 +1,10 @@
+# PROOF: the single eslint error in 29-eslint-changed-files.txt is PRE-EXISTING on master e8dcfd7d, not introduced by this branch.
+# Method: eslint the master copy of governance/service.ts under the same config.
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre/packages/runtime/governance/__tmp_master_service_check.ts
+  117:8  error  'PermissionStaticLayerFacts' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (1 error, 0 warnings)
+
+# and my branch never touched that type's usage:
+^ lines mentioning PermissionStaticLayerFacts: 0
