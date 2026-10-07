@@ -536,3 +536,41 @@ already bound to in place (frozen revisions replay their stored source).
   (known-sensitive unmanaged → coverage gate FATAL — §5.2).
 - Expecting an edited file to change an already-created team — it does not.
 - Authoring into a directory that no `blueprintDir` config points at.
+
+---
+
+## Alpha.4 adjudications affecting what you may author (2026-10-08)
+
+**(1) Blueprint document versions — v3 only after the Alpha.4 PR7 §7.3 cutover.**
+The sections above describe the **v1** and **v2** document shapes; they remain
+correct for reading and diagnosing existing blueprints. Once §7.3 lands,
+`SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]`: a v1/v2 blueprint is **not
+migrated for you**. It is still *listed* in `catalog.list` with
+`migrationState: 'migration-required'`, and its **start/resume is refused with
+zero agent creation and no acknowledgement path** — a confirmation dialog is not
+a migration. **Alpha.4 ships no migrator** (user adjudication, 2026-10-08):
+migration is a manual authoring task, and the field-by-field semantics live in
+`docs/plans/active/alpha4-permission-governance/` (ADR + spec), not here. When
+authoring anything new, author the current supported version and declare the
+hard envelope explicitly — do not rely on a pre-v3 default.
+
+**(2) A shell-class rule narrowed below `allow` is a one-way door in Alpha.4.**
+If an envelope or member overlay caps a shell-class command at `ask`, executing
+that command requires the rung that owns the envelope, i.e. **Human Admin**, and
+Alpha.4 has **no Human Admin resolver**: `CONTROL_UNRESOLVABLE_AUTHORITIES =
+['human-admin']`, so the control case is closed **synchronously** as
+`authority-unavailable` with a leg row that is *born terminal* plus its terminal
+deny (ADR A1-12) — never a pending item, never retried, and **nothing at runtime
+can release it**. There is no approval affordance to click. The narrowing itself
+succeeds; the door only closes.
+
+  Authoring rule that follows: do **not** author a blueprint that depends on a
+  shell-class command being escalated above `ask`, and do not design a workflow
+  whose happy path is "narrow it now, approve it later". If a blueprint needs a
+  shell command gated, gate it at the **blueprint** layer with an explicit
+  envelope rule at the intended effect, so the decision is made at authoring
+  time rather than at execution time by a resolver that does not exist. No
+  fixture or shipped blueprint configuration does this today; the first real
+  host that writes one hits it cold, which is why it is written here. **Tracked
+  as a post-Alpha.4 item** (a Human Admin resolver, or a pre-flight refusal of
+  envelope declarations that create the door).
