@@ -3,7 +3,7 @@
  * verify-blueprint-version-clean.mjs — A4-PR7 Task 7.5: the v3-only fence.
  *
  * WHAT IT CHECKS. After the v3-only cutover (Task 7.3) a Blueprint document that
- * declares `schemaVersion: 1` or `schemaVersion: 2` is a RETIRED document: this
+ * declares schemaVersion 1 or 2 is a RETIRED document: this
  * product reads its identity and refuses to run it. So a fixture, a harness, or a
  * kit that still authors a v1/v2 document is not "an old test" — it is a live
  * emitter of documents the product will refuse, i.e. a maintenance lie that stays

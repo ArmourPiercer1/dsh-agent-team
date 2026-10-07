@@ -111,6 +111,16 @@ describe('a4p7 blueprint document-version fence (Task 7.5)', () => {
     expect(stale).toEqual([])
   })
 
+  it('the fence needs no exemption for its own author', () => {
+    // A scanner that exempts its own source is one line away from exempting
+    // anything, so the fence's own script must not appear in its findings — it is
+    // written so that its prose never spells the literal it hunts for. (When this
+    // test fails because someone documented a version literal in the header, fix
+    // the prose; do NOT add a self-exclusion.)
+    expect(foundPaths).not.toContain('scripts/verify-blueprint-version-clean.mjs')
+    expect(foundPaths.filter((p) => p.startsWith('scripts/verify-blueprint-version-clean'))).toEqual([])
+  })
+
   it('the fence reports sites, not a bare count, and names a file the reader can open', () => {
     // The plan's X10 law: the contract is the path set, so the report must carry
     // paths and line numbers. `run.mjs` is a named Task 7.4 site — the positive
