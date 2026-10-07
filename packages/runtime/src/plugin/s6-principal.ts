@@ -429,6 +429,25 @@ export function createServerPrincipalDerivation(
     if (MUTATION_METHODS.has(method)) return deriveMutationActor(method, params)
     if (method === 'compatibility.ack') return deriveAckCaller(params)
     if (method === 'team.resolveControl') return deriveControlCaller(method, params)
+    // A4-PR6 §6.B (ADR A1-2): `intervention.act` is a governance-WRITING
+    // method (plan classification: the catalog's
+    // `REMOTE_GOVERNANCE_WRITING_METHODS`) and is therefore EXPLICITLY
+    // routed here — it must never fall into the host-operator default
+    // below. Its v8 wire body is closed to
+    // `{teamSessionId, interventionId, action, note?}` and carries NO
+    // identity or authority claim (the unknown-field gate rejects any), so
+    // the derivation is the `team.resolveControl` mirror exactly: the
+    // decider is the host operator of the ADDRESSED, owned root
+    // (invariant-9 channel), and the CONTROL/WARNING plane entries the act
+    // routes into decide whether that caller may take the action
+    // (`CONTROL_RESOLVER_NOT_AUTHORIZED` and the warning-arm refusals are
+    // that decision — this layer derives WHO, never WHETHER). Reads
+    // (`intervention.list` / `.get`, `override.getPermissionAdministration`)
+    // write nothing and stay host-initiated reads. The A1-2 completeness
+    // law — every classified governance-writing method appears in an
+    // explicit route — is pinned by
+    // `packages/remote/test/a4p6-remote-v8.test.ts` (source law).
+    if (method === 'intervention.act') return deriveControlCaller(method, params)
     // Every other method (queries, team.create, lifecycle, handoff, legacy,
     // catalog, intent) is a host-initiated operation: the host operator.
     return { kind: 'human', humanId: rootSessionId }

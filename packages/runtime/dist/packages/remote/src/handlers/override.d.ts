@@ -10,12 +10,22 @@
  * @module @dsh-agent-team/remote/handlers/override
  */
 import type { RemoteMethodParams } from '../contracts/params.js';
-import type { RemoteOverridePort } from './ports.js';
+import type { RemoteInterventionPort, RemoteOverridePort } from './ports.js';
 /**
  * The override category handler (`override.get`, `override.set`,
  * `override.reset`).
  */
-export declare function createRemoteOverrideHandler(deps: RemoteOverridePort): (method: string, params: RemoteMethodParams) => {
+export declare function createRemoteOverrideHandler(deps: RemoteOverridePort, 
+/** A4-PR6 §6.B: the v8 governance read seam (the permission-
+ *  administration read lives in THIS category — it reads the override
+ *  plane's documents — while its port lives on the single v8 seam).
+ *  Optional: pre-v8 callers and fakes compile and behave byte-for-byte;
+ *  an unwired surface answers the v8 read with a typed refusal. */
+governance?: RemoteInterventionPort): (method: string, params: RemoteMethodParams) => {
+    readonly data: {
+        administration: import("../contracts/remote-safe.js").RemoteSafeRecord;
+    };
+} | {
     data: {
         override: import("../contracts/remote-safe.js").RemoteSafeRecord | null;
         record?: undefined;

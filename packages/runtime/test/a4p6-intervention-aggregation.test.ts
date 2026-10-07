@@ -253,3 +253,320 @@ describe('A4-PR6 aggregation — one list, two planes, zero vocabulary bleed', (
     expect(items).toHaveLength(1) // team-level items ignore the subject filter (they are the TEAM's)
   })
 })
+
+// ---------------------------------------------------------------------------
+// 6.B — the v8 surface on the PRODUCTION wire: the real s6 dispatcher (the
+// entry's closed envelope + version chain included) over a real P6T4 world
+// (real ControlService case rows) and a REAL governance-warning service.
+// Nothing here mocks the planes the wire claims to expose.
+// ---------------------------------------------------------------------------
+
+import { createS6RemoteDispatcher, createS6RemotePorts } from '../src/plugin/s6-remote.js'
+import type { S6RemoteOptions } from '../src/plugin/s6-remote.js'
+import type { ServerPrincipalDerivation } from '../src/plugin/types.js'
+import { REMOTE_CONTRACT_VERSION_V8 } from '../../remote/src/index.js'
+import type { RemoteResponse } from '../../remote/src/index.js'
+import { humanCaller } from './p6t4-helpers.js'
+
+const W8_HUMAN = 'human-a4p6-wire'
+
+function errorOf8(response: RemoteResponse): Record<string, unknown> {
+  if (response.ok) throw new Error('A4-PR6 wire: expected an error result')
+  return response.error as unknown as Record<string, unknown>
+}
+function dataOf8(response: RemoteResponse): Record<string, unknown> {
+  if (!response.ok) throw new Error(`A4-PR6 wire: expected success, got ${JSON.stringify(response.error)}`)
+  return response.value.data as unknown as Record<string, unknown>
+}
+
+const W8 = await (async () => {
+  const world = await createP6T4World('a4p6-wire-1', ['leader', 'worker'])
+  try {
+    const control = createP6T4Service(world)
+    const scope = makeScope({ correlation: 'corr-a4p6-wire', operationFingerprint: 'fp-a4p6-wire' })
+    const created = await control.requestApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      reviewAuthority: 'leader',
+      requiredAuthorityAtCreation: 'leader',
+      identity: {
+        subject: { kind: 'instance', instanceId: WORKER_ID },
+        beneficiaryAuthority: 'member',
+        requestedEffect: 'ask',
+        operationFingerprint: 'fp-a4p6-wire',
+        correlation: scope.correlation,
+      },
+      actionName: scope.actionName,
+      toolName: scope.toolName,
+      summary: 'a4p6 v8 wire case',
+    })
+    if (created.kind !== 'leg') throw new Error('the wire case must have a leg')
+    const approvalCaseId = created.leg.approvalCaseId ?? 'missing'
+    const legRequestId = created.leg.requestId
+    // Case B exists for the ESCALATE arm: the durable ladder law says a
+    // principal that escalated a leg away may never act on that case again
+    // (`assertNoActOnEarlierLeg`) — so the escalate sequence needs its own
+    // case, and its follow-up act doubles as the server-side-refusal probe.
+    const recused = await control.requestApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      reviewAuthority: 'leader',
+      requiredAuthorityAtCreation: 'leader',
+      identity: {
+        subject: { kind: 'instance', instanceId: WORKER_ID },
+        beneficiaryAuthority: 'member',
+        requestedEffect: 'ask',
+        operationFingerprint: 'fp-a4p6-recused',
+        correlation: 'corr-a4p6-recused',
+      },
+      actionName: scope.actionName,
+      toolName: scope.toolName,
+      summary: 'a4p6 v8 recusal case',
+    })
+    if (recused.kind !== 'leg') throw new Error('the recusal case must have a leg')
+    const recusedCaseId = recused.leg.approvalCaseId ?? 'missing'
+    const recusedLegRequestId = recused.leg.requestId
+
+    const { service } = makeWarningService()
+    const gate = await service.checkStart(P6T4_ROOT)
+    if (gate.status !== 'warning-required') throw new Error(`expected a warning, got ${gate.status}`)
+
+    const escalateCalls: { requestId: string; callerKind: string }[] = []
+    const resolveCalls: { requestId: string; callerKind: string; callerId: string; decision: string }[] = []
+    const opts = {
+      rootSessionId: P6T4_ROOT,
+      repositories: { teamSessions: { get: () => ({}) } } as never,
+      governanceWarning: service,
+      interventionControl: control,
+      interventionEscalate: async (args: { rootSessionId: string; caller: { kind: string; humanId?: string }; requestId: string; reason?: string }) => {
+        escalateCalls.push({ requestId: args.requestId, callerKind: args.caller.kind })
+        return (await control.escalateApprovalLeg({
+          rootSessionId: args.rootSessionId,
+          caller: args.caller as never,
+          requestId: args.requestId,
+          ...(args.reason !== undefined ? { reason: args.reason } : {}),
+        })) as never
+      },
+      resolveControl: async (args: { rootSessionId: string; caller: { kind: string; humanId?: string }; requestId: string; decision: 'allow' | 'deny'; note?: string }) => {
+        resolveCalls.push({
+          requestId: args.requestId,
+          callerKind: args.caller.kind,
+          callerId: String(args.caller.humanId),
+          decision: args.decision,
+        })
+        return (await control.resolveControl({
+          rootSessionId: args.rootSessionId,
+          caller: args.caller as never,
+          requestId: args.requestId,
+          decision: args.decision,
+          ...(args.note !== undefined ? { note: args.note } : {}),
+        })) as never
+      },
+      requiredAuthorityFacts: async () => facts(),
+      // A RICH record with authority-bearing extras: the wire must show
+      // exactly the six closed cells (the strip is the imported remote law).
+      permissionAdministration: async ({ rootSessionId }: { rootSessionId: string }) =>
+        ({
+          teamSessionId: rootSessionId,
+          memberInstanceId: WORKER_ID,
+          source: 'overlay',
+          generation: 7,
+          effective: { rules: [] },
+          diagnostics: [],
+          grantCeiling: { sneaky: true },
+          reviewerIdentity: W8_HUMAN,
+          openRequestIds: ['req-never-on-wire'],
+        }) as never,
+    } as unknown as S6RemoteOptions
+    const ports = createS6RemotePorts(opts)
+    const principal: ServerPrincipalDerivation = () => Promise.resolve(humanCaller(W8_HUMAN)) as never
+    const dispatch = createS6RemoteDispatcher(ports, principal)
+    const v8 = (endpoint: string, params: Record<string, unknown>): Promise<RemoteResponse> =>
+      dispatch(endpoint as never, { version: REMOTE_CONTRACT_VERSION_V8, params } as never)
+
+    const list = await v8('intervention.list', { teamSessionId: P6T4_ROOT })
+    const warnGet = await v8('intervention.get', {
+      teamSessionId: P6T4_ROOT,
+      interventionId: gate.interventionId,
+    })
+    const missingGet = await v8('intervention.get', {
+      teamSessionId: P6T4_ROOT,
+      interventionId: 'int-does-not-exist',
+    })
+    const allowOnWarning = await v8('intervention.act', {
+      teamSessionId: P6T4_ROOT,
+      interventionId: gate.interventionId,
+      action: 'allow',
+    })
+    const ack = await v8('intervention.act', {
+      teamSessionId: P6T4_ROOT,
+      interventionId: gate.interventionId,
+      action: 'acknowledge',
+      note: 'seen by the operator',
+    })
+    const listAfterAck = await v8('intervention.list', { teamSessionId: P6T4_ROOT })
+    const administration = await v8('override.getPermissionAdministration', {
+      teamSessionId: P6T4_ROOT,
+    })
+    const adminScoped = await v8('override.getPermissionAdministration', {
+      teamSessionId: P6T4_ROOT,
+      memberInstanceId: WORKER_ID,
+    })
+    const allow = await v8('intervention.act', {
+      teamSessionId: P6T4_ROOT,
+      interventionId: `int-${approvalCaseId}`,
+      action: 'allow',
+      note: 'the reviewer signs',
+    })
+    const listAfterDecide = await v8('intervention.list', { teamSessionId: P6T4_ROOT })
+    const staleAct = await v8('intervention.act', {
+      teamSessionId: P6T4_ROOT,
+      interventionId: `int-${approvalCaseId}`,
+      action: 'deny',
+    })
+    const escalate = await v8('intervention.act', {
+      teamSessionId: P6T4_ROOT,
+      interventionId: `int-${recusedCaseId}`,
+      action: 'escalate',
+    })
+    const recusedAct = await v8('intervention.act', {
+      teamSessionId: P6T4_ROOT,
+      interventionId: `int-${recusedCaseId}`,
+      action: 'allow',
+    })
+
+    // The UNWIRED world: the same dispatcher, the v8 methods refused typed.
+    const barePorts = createS6RemotePorts({
+      rootSessionId: P6T4_ROOT,
+      repositories: { teamSessions: { get: () => ({}) } } as never,
+    } as unknown as S6RemoteOptions)
+    const bare = createS6RemoteDispatcher(barePorts, principal)
+    const bareList = await bare('intervention.list', {
+      version: REMOTE_CONTRACT_VERSION_V8,
+      params: { teamSessionId: P6T4_ROOT },
+    } as never)
+    const bareAdmin = await bare('override.getPermissionAdministration', {
+      version: REMOTE_CONTRACT_VERSION_V8,
+      params: { teamSessionId: P6T4_ROOT },
+    } as never)
+
+    return {
+      list, warnGet, missingGet, allowOnWarning, ack, listAfterAck,
+      administration, adminScoped, escalate, allow, listAfterDecide, staleAct,
+      recusedAct, bareList, bareAdmin, escalateCalls, resolveCalls,
+      warningInterventionId: gate.interventionId,
+      approvalInterventionId: `int-${approvalCaseId}`,
+      recusedInterventionId: `int-${recusedCaseId}`,
+      legRequestId,
+      recusedLegRequestId,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes)', () => {
+  it('intervention.list serves BOTH planes through the closed wire shape, control first', () => {
+    const items = dataOf8(W8.list)['items'] as Record<string, unknown>[]
+    expect(items).toHaveLength(3)
+    const controlRows = items.filter((item) => item['source'] != null && (item['source'] as Record<string, unknown>)['kind'] === 'control-case')
+    expect(controlRows).toHaveLength(2)
+    // The projection order law: control items FIRST (durable-case order),
+    // every adapter after.
+    const warningIndex = items.findIndex((item) => item['kind'] === 'warning')
+    expect(warningIndex).toBe(items.length - 1)
+    const approval = items.find((item) => item['interventionId'] === W8.approvalInterventionId) as Record<string, unknown>
+    expect(approval['responseBehavior']).toBe('wait-for-response')
+    expect(approval['legalActions']).toEqual(['allow', 'escalate', 'deny'])
+    const warning = items[warningIndex] as Record<string, unknown>
+    expect(warning['source']).toMatchObject({ kind: 'governance-warning' })
+    expect(warning['responseBehavior']).toBe('informational')
+    expect(warning['legalActions']).toEqual(['acknowledge'])
+    expect(warning['blockScope']).toBeNull()
+  })
+
+  it('intervention.get addresses one projected item; an absent id is the typed INTERVENTION_NOT_FOUND', () => {
+    expect(dataOf8(W8.warnGet)['item']).toMatchObject({
+      interventionId: W8.warningInterventionId,
+      kind: 'warning',
+    })
+    const err = errorOf8(W8.missingGet)
+    expect(err['code']).toBe('INTERVENTION_NOT_FOUND')
+  })
+
+  it('act routes by the ITEM class: an approval action on a warning id is refused BEFORE any write', () => {
+    const err = errorOf8(W8.allowOnWarning)
+    expect(err['code']).toBe('malformed-params')
+    expect((err['details'] as Record<string, unknown>)['reason']).toBe('action-plane-mismatch')
+  })
+
+  it('acknowledge is the warning arm ONLY: the closed receipt, then the item re-presents as acknowledged with zero actions', () => {
+    expect(dataOf8(W8.ack)).toEqual({ outcome: 'acknowledged' })
+    const items = dataOf8(W8.listAfterAck)['items'] as Record<string, unknown>[]
+    const warning = items.find((item) => item['kind'] === 'warning') as Record<string, unknown>
+    expect(warning['status']).toBe('acknowledged')
+    expect(warning['legalActions']).toEqual([])
+  })
+
+  it('allow drives the EXISTING control entry with the DERIVED caller — never a client claim', () => {
+    expect(Object.keys(dataOf8(W8.allow))).toEqual(['outcome'])
+    expect(dataOf8(W8.allow)['outcome']).toBe('decided')
+    // (The recused case's LATER refused attempt also enters this seam —
+    // the assertion names THIS case's fresh leg id, not the call count.)
+    const calls = W8.resolveCalls.filter((c) => c.requestId === W8.legRequestId)
+    expect(calls).toHaveLength(1)
+    const call = calls[0] as { callerKind: string; callerId: string; decision: string }
+    expect(call.callerKind).toBe('human')
+    expect(call.callerId).toBe(W8_HUMAN)
+    expect(call.decision).toBe('allow')
+  })
+
+  it('escalate pushes the DURABLE leg (fresh routing), and the recused reviewer is refused SERVER-SIDE', () => {
+    expect(dataOf8(W8.escalate)).toEqual({ outcome: 'escalated' })
+    expect(W8.escalateCalls).toEqual([{ requestId: W8.recusedLegRequestId, callerKind: 'human' }])
+    // The ladder's own law (assertNoActOnEarlierLeg): the principal that
+    // escalated leg 1 away may never act on the case again. The refusal is
+    // the control plane's typed code riding the wire UNCHANGED — this is
+    // the server-side refusal, not a filtered UI.
+    const err = errorOf8(W8.recusedAct)
+    expect(err['code']).toBe('CONTROL_RESOLVER_NOT_AUTHORIZED')
+  })
+
+  it('a decided case LEAVES the open projection: the same interventionId afterwards is INTERVENTION_NOT_FOUND, not a stale decision', () => {
+    expect(errorOf8(W8.staleAct)['code']).toBe('INTERVENTION_NOT_FOUND')
+    const items = dataOf8(W8.listAfterDecide)['items'] as Record<string, unknown>[]
+    const approvals = items.filter((item) => item['kind'] === 'approval')
+    // Case A is decided (gone); the RECUSED case re-projects at its risen
+    // leg — the projection follows the durable rows, both directions.
+    expect(approvals).toHaveLength(1)
+    expect(approvals[0]?.['interventionId']).toBe(W8.recusedInterventionId)
+  })
+
+  it('the administration read STRIPS to exactly the six closed wire cells; the extras never ride', () => {
+    for (const response of [W8.administration, W8.adminScoped]) {
+      const administration = dataOf8(response)['administration'] as Record<string, unknown>
+      expect(Object.keys(administration).sort()).toEqual([
+        'diagnostics',
+        'effective',
+        'generation',
+        'memberInstanceId',
+        'source',
+        'teamSessionId',
+      ])
+      expect(administration).not.toHaveProperty('grantCeiling')
+      expect(administration).not.toHaveProperty('reviewerIdentity')
+      expect(administration).not.toHaveProperty('openRequestIds')
+    }
+    expect((dataOf8(W8.adminScoped)['administration'] as Record<string, unknown>)['memberInstanceId']).toBe(WORKER_ID)
+  })
+
+  it('an UNWIRED v8 surface refuses its four methods typed (internal-error / port-unwired) — never a partial success', () => {
+    for (const response of [W8.bareList, W8.bareAdmin]) {
+      const err = errorOf8(response)
+      expect(err['code']).toBe('internal-error')
+      expect((err['details'] as Record<string, unknown>)['reason']).toBe('port-unwired')
+    }
+  })
+})

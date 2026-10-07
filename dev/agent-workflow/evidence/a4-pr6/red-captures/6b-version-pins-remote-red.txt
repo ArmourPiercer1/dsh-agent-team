@@ -1,0 +1,7 @@
+     × rejects an unsupported contract version with the frozen boundary code 2ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/t12m4-remote-mount.test.ts > T12-M4 the production Remote mount (host.ts wiring) > rejects an unsupported contract version with the frozen boundary code
+    378|   it('rejects an unsupported contract version with the frozen boundary…
+    380|     expect(wireVersion.error.code).toBe('contract-version-unsupported')
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)

@@ -63,6 +63,7 @@ import {
   REMOTE_V5_ONLY_METHODS,
   REMOTE_V6_ONLY_METHODS,
   REMOTE_V7_ONLY_METHODS,
+  REMOTE_V8_ONLY_METHODS,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   type RemoteErrorResult,
   type RemoteSafeRecord,
@@ -248,8 +249,8 @@ const RT = await (async () => {
 // ---------------------------------------------------------------------------
 
 describe('D1 (remote contract v3): catalog facts', () => {
-  it('the catalog is the 31-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(31)
+  it('the catalog is the 35-method versioned union (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only + 4 v8-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(35)
     expect(REMOTE_METHOD_NAMES.includes('team.listRoots')).toBe(true)
     expect(REMOTE_METHOD_NAMES.includes('team.ensureRootLive')).toBe(true)
     // F9: the v4-only method is in the union; the frozen v1 methods are
@@ -261,10 +262,10 @@ describe('D1 (remote contract v3): catalog facts', () => {
     // team-view-sync-complete (Phase 2): the v6-only method is in the
     // union
     expect(REMOTE_METHOD_NAMES.includes('team.getReadState')).toBe(true)
-    expect(REMOTE_METHOD_NAMES.length - REMOTE_V2_ONLY_METHODS.length - REMOTE_V3_ONLY_METHODS.length - REMOTE_V4_ONLY_METHODS.length - REMOTE_V5_ONLY_METHODS.length - REMOTE_V6_ONLY_METHODS.length - REMOTE_V7_ONLY_METHODS.length).toBe(23)
+    expect(REMOTE_METHOD_NAMES.length - REMOTE_V2_ONLY_METHODS.length - REMOTE_V3_ONLY_METHODS.length - REMOTE_V4_ONLY_METHODS.length - REMOTE_V5_ONLY_METHODS.length - REMOTE_V6_ONLY_METHODS.length - REMOTE_V7_ONLY_METHODS.length - REMOTE_V8_ONLY_METHODS.length).toBe(23)
   })
 
-  it('the v1 baseline constant is still 1 and the supported set is [1, 2, 3, 4, 5, 6, 7] (the team-view-sync-complete v6 bump + the pre-alpha3 W1 fix-A v7 bump, which adds NO method)', () => {
+  it('the v1 baseline constant is still 1 and the supported set is [1, 2, 3, 4, 5, 6, 7, 8] (the team-view-sync-complete v6 bump, the pre-alpha3 W1 fix-A v7 bump which adds NO method, and the A4-PR6 v8 bump which adds the closed intervention plane)', () => {
     expect(REMOTE_CONTRACT_VERSION).toBe(1)
     expect(REMOTE_CONTRACT_VERSION_V2).toBe(2)
     expect(REMOTE_CONTRACT_VERSION_V3).toBe(3)
@@ -272,7 +273,7 @@ describe('D1 (remote contract v3): catalog facts', () => {
     expect(REMOTE_CONTRACT_VERSION_V5).toBe(5)
     expect(REMOTE_CONTRACT_VERSION_V6).toBe(6)
     expect(REMOTE_CONTRACT_VERSION_V7).toBe(7)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7])
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
   })
 
   it('the closed v3-only set is exactly the two D1 methods; the closed v4-only set is exactly team.resolveControl; the closed v5-only set is exactly team.prepareOrdinaryOpen; the closed v6-only set is exactly team.getReadState', () => {

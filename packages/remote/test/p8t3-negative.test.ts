@@ -4,7 +4,7 @@
  * upstream / session-log source at all.
  *
  * Three proofs:
- *   1. The owned-file scan: exactly the 30 `packages/remote/src` files are
+ *   1. The owned-file scan: exactly the 31 `packages/remote/src` files are
  *      scanned, every import specifier is relative, and rules R1–R6 report
  *      zero violations.
  *   2. Positive controls: synthetic texts (built by the scanner, never
@@ -32,7 +32,8 @@ import {
 } from './p8t3-negative-scan.mjs'
 import { makeFakePorts } from './p8t3-helpers.js'
 
-/** The exact 30 P8-T3-owned source files, in the scanner's sorted order. */
+/** The exact 31 owned source files (A4-PR6 §6.B adds `intervention.ts`),
+ *  in the scanner's sorted order. */
 const P8T3_EXPECTED_FILES = [
   'packages/remote/src/contracts/catalog.ts',
   'packages/remote/src/contracts/errors.ts',
@@ -49,6 +50,7 @@ const P8T3_EXPECTED_FILES = [
   'packages/remote/src/handlers/dispatch.ts',
   'packages/remote/src/handlers/handoff.ts',
   'packages/remote/src/handlers/intent.ts',
+  'packages/remote/src/handlers/intervention.ts',
   'packages/remote/src/handlers/legacy.ts',
   'packages/remote/src/handlers/member.ts',
   'packages/remote/src/handlers/override.ts',
@@ -98,9 +100,9 @@ const P8T3_EXPECTED_PORT_KEYS = [
 ]
 
 describe('P8-T3 negative scan (Brief §87–96)', () => {
-  it('scans exactly the 30 owned packages/remote/src files', () => {
+  it('scans exactly the 31 owned packages/remote/src files', () => {
     const scan = scanP8T3OwnedFiles()
-    expect(scan.files.length).toBe(30)
+    expect(scan.files.length).toBe(31)
     expect(scan.files).toEqual(P8T3_EXPECTED_FILES)
   })
 

@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/a4p6-governance-warning.test.ts > A4-PR6 vocabulary freeze: three distinct action planes > the reviewer plane is exactly allow|deny|escalate and NEVER contains acknowledge
+ FAIL  test/a4p6-governance-warning.test.ts > A4-PR6 vocabulary freeze: three distinct action planes > the warning plane is exactly {acknowledge} and is disjoint from the reviewer plane
+      Tests  2 failed | 16 passed (18)

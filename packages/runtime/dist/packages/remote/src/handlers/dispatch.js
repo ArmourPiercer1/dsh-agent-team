@@ -44,12 +44,14 @@ import { createRemoteCatalogHandler } from './catalog.js';
 import { createRemoteCompatibilityHandler } from './compatibility.js';
 import { createRemoteHandoffHandler } from './handoff.js';
 import { createRemoteIntentHandler } from './intent.js';
+import { createRemoteInterventionHandler } from './intervention.js';
 import { createRemoteLegacyHandler } from './legacy.js';
 import { createRemoteMemberHandler } from './member.js';
 import { createRemoteOverrideHandler } from './override.js';
 import { createRemotePolicyStateHandler } from './policy-state.js';
 import { createRemoteTeamHandler } from './team.js';
-/** Wire the twenty ports into the nine category handlers. */
+/** Wire the ports into the category handlers (v8: the twenty-first optional
+ *  intervention seam joins the ten categories). */
 function buildCategoryHandlers(deps) {
     return {
         [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
@@ -71,12 +73,24 @@ function buildCategoryHandlers(deps) {
             admission: deps.admission,
             lifecycle: deps.lifecycle,
         }),
-        [REMOTE_CATEGORIES.OVERRIDE]: createRemoteOverrideHandler(deps.override),
+        [REMOTE_CATEGORIES.OVERRIDE]: createRemoteOverrideHandler(deps.override, deps.intervention),
         [REMOTE_CATEGORIES.POLICY_STATE]: createRemotePolicyStateHandler(deps.policyState),
         [REMOTE_CATEGORIES.COMPATIBILITY]: createRemoteCompatibilityHandler(deps.compatibility),
         [REMOTE_CATEGORIES.HANDOFF]: createRemoteHandoffHandler(deps.handoff),
         [REMOTE_CATEGORIES.LEGACY]: createRemoteLegacyHandler(deps.legacy),
+        // A4-PR6 §6.B (contract v8): the intervention plane. An UNWIRED seam
+        // (pre-v8 surfaces) answers the v8-only methods with the typed
+        // `internal-error` / `port-unwired` refusal — never a partial success,
+        // never a v1-v7 side effect (those methods route elsewhere).
+        [REMOTE_CATEGORIES.INTERVENTION]: createRemoteInterventionHandler(deps.intervention ?? unwiredInterventionPort()),
     };
+}
+/** The typed refusal of an unwired v8 seam (see `buildCategoryHandlers`). */
+function unwiredInterventionPort() {
+    const refuse = () => {
+        throw remoteContractError('internal-error', 'the v8 intervention seam is unwired on this surface — zero read, zero verb', { reason: 'port-unwired' });
+    };
+    return { list: refuse, get: refuse, act: refuse, permissionAdministration: refuse };
 }
 /**
  * The CLOSED backing-service error-code vocabulary invariant 4b may pass
@@ -299,6 +313,14 @@ export const REMOTE_BACKING_ERROR_CODES = [
     // (`intervention.list` / `intervention.act`) that makes the warning arm
     // operable. `TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED` is the closed
     // PR7 arm (unreachable through the PR6 bridge, pinned).
+    // A4-PR6 §6.B (contract v8): the intervention lane's own typed refusal —
+    // an act/get against an intervention id the server does not currently
+    // project. Closed v8 addition; the act authority refusals REUSE the
+    // frozen CONTROL_* codes (the authority law lives in the control plane —
+    // this lane routes to it, it does not re-decide), and the governance-
+    // start gate codes below ride EVERY contract version (plan ruling: the
+    // gate protects all versions; v8 only adds the operable surface).
+    'INTERVENTION_NOT_FOUND',
     'TEAM_REMOTE_TEAM_START_GOVERNANCE_WARNING',
     'TEAM_REMOTE_TEAM_START_GOVERNANCE_CORRUPT',
     'TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED',

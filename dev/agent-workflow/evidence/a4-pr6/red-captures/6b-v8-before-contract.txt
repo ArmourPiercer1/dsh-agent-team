@@ -1,0 +1,206 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6
+
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts (12 tests | 12 failed) 12ms
+     × v8 is a supported version that ADDS to the ladder (v1–v7 stay members) 4ms
+     × the catalog gains exactly the INTERVENTION category and the four v8-only methods 1ms
+     × availability: v1–v7 refuse every v8-only method; v8 admits everything 0ms
+     × every v8 method param set is CLOSED: an identity or authority smuggle is unknown-field before any port runs 2ms
+     × intervention.act action is the closed four; any other value is malformed-params 1ms
+     × intervention.list carries the CLOSED item shape field-for-field at v8 (presence pinned on the wire) 0ms
+     × intervention.act answers with the closed outcome ONLY — no authority or decision field rides back 0ms
+     × getPermissionAdministration is a server-side STRIP: authority-bearing and round-trippable fields never reach the wire 0ms
+     × typed refusals survive the wire: INTERVENTION_NOT_FOUND passes, CONTROL_RESOLVER_NOT_AUTHORIZED passes, out-of-vocabulary degrades 1ms
+     × an unwired intervention seam is a typed refusal, never a partial success 1ms
+     × ADR A1-2 enumeration: every governance-writing catalog method is EXPLICITLY principal-routed in s6-principal.ts (source law) 0ms
+     × v1–v7 behavior is preserved at the shared seams: the v7 guard field stays v7+ only at override.set 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > v8 is a supported version that ADDS to the ladder (v1–v7 stay members)
+AssertionError: expected undefined to be 8 // Object.is equality
+
+- Expected:
+8
+
++ Received:
+undefined
+
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:147:16
+    145| describe('A4-PR6 §6.B: the Remote contract v8 surface', () => {
+    146|   it('v8 is a supported version that ADDS to the ladder (v1–v7 stay me…
+    147|     expect(V8).toBe(8)
+       |                ^
+    148|     expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS]).toEqual([1, 2, 3, …
+    149|     expect(parseRemoteContractVersion(8)).toBe(8)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > the catalog gains exactly the INTERVENTION category and the four v8-only methods
+AssertionError: expected undefined to be 'intervention' // Object.is equality
+
+- Expected:
+"intervention"
+
++ Received:
+undefined
+
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:154:44
+    152|
+    153|   it('the catalog gains exactly the INTERVENTION category and the four…
+    154|     expect(REMOTE_CATEGORIES.INTERVENTION).toBe('intervention')
+       |                                            ^
+    155|     expect([...REMOTE_V8_ONLY_METHODS].sort()).toEqual([
+    156|       'intervention.act',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > availability: v1–v7 refuse every v8-only method; v8 admits everything
+TypeError: REMOTE_V8_ONLY_METHODS is not iterable
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:180:28
+    178|   it('availability: v1–v7 refuse every v8-only method; v8 admits every…
+    179|     for (const version of [1, 2, 3, 4, 5, 6, 7]) {
+    180|       for (const method of REMOTE_V8_ONLY_METHODS) {
+       |                            ^
+    181|         expect(isRemoteMethodAvailableInVersion(method, version), `${m…
+    182|         const error = (() => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > every v8 method param set is CLOSED: an identity or authority smuggle is unknown-field before any port runs
+AssertionError: intervention.list + {"asRole":"human-admin"}: expected 'unknown-method' to be 'unknown-field' // Object.is equality
+
+Expected: "unknown-field"
+Received: "unknown-method"
+
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:221:70
+    219|       for (const smuggle of smuckles) {
+    220|         const error = expectError(await dispatch(method, v8Wire({ ...b…
+    221|         expect(error.code, `${method} + ${JSON.stringify(smuggle)}`).t…
+       |                                                                      ^
+    222|       }
+    223|       expect(port.calls.length, 'a rejected request never reaches the …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > intervention.act action is the closed four; any other value is malformed-params
+AssertionError: allow: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:234:35
+    232|         v8Wire({ teamSessionId: SID, interventionId: 'int-x', action }…
+    233|       )
+    234|       expect(response.ok, action).toBe(true)
+       |                                   ^
+    235|     }
+    236|     for (const action of ['approve', 'force-allow', 'ACK', 'abandon', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > intervention.list carries the CLOSED item shape field-for-field at v8 (presence pinned on the wire)
+Error: expected success
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:248:29
+    246|     const { dispatch } = makeDispatcher({ intervention: port })
+    247|     const response = await dispatch('intervention.list', v8Wire({ team…
+    248|     if (!response.ok) throw new Error('expected success')
+       |                             ^
+    249|     expect(response.value.provenance.contractVersion).toBe(8)
+    250|     const data = response.value.data as { items: Record<string, unknow…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > intervention.act answers with the closed outcome ONLY — no authority or decision field rides back
+Error: expected success
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:280:29
+    278|       v8Wire({ teamSessionId: SID, interventionId: 'int-x', action: 'a…
+    279|     )
+    280|     if (!response.ok) throw new Error('expected success')
+       |                             ^
+    281|     const data = response.value.data as Record<string, unknown>
+    282|     expect(data).toEqual({ outcome: 'acknowledged' })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > getPermissionAdministration is a server-side STRIP: authority-bearing and round-trippable fields never reach the wire
+Error: expected success
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:288:29
+    286|     const { dispatch } = makeDispatcher({ intervention: fakeInterventi…
+    287|     const response = await dispatch('override.getPermissionAdministrat…
+    288|     if (!response.ok) throw new Error('expected success')
+       |                             ^
+    289|     const admin = (response.value.data as { administration: Record<str…
+    290|     expect(Object.keys(admin).sort()).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > typed refusals survive the wire: INTERVENTION_NOT_FOUND passes, CONTROL_RESOLVER_NOT_AUTHORIZED passes, out-of-vocabulary degrades
+AssertionError: expected 'unknown-method' to be 'INTERVENTION_NOT_FOUND' // Object.is equality
+
+Expected: "INTERVENTION_NOT_FOUND"
+Received: "unknown-method"
+
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:314:71
+    312|     // the not-found lane (closed v8 backing code)
+    313|     expect((await refusal('INTERVENTION_NOT_FOUND')).ok).toBe(false)
+    314|     expect(expectError(await refusal('INTERVENTION_NOT_FOUND')).code).…
+       |                                                                       ^
+    315|     // the member negative: the runtime control plane refuses a caller
+    316|     // without the leg's authority with THIS code — on the wire it sta…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > an unwired intervention seam is a typed refusal, never a partial success
+AssertionError: expected 'unknown-method' to be 'internal-error' // Object.is equality
+
+Expected: "internal-error"
+Received: "unknown-method"
+
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:328:24
+    326|     const { dispatch } = makeDispatcher()
+    327|     const error = expectError(await dispatch('intervention.list', v8Wi…
+    328|     expect(error.code).toBe('internal-error')
+       |                        ^
+    329|     expect(await dispatch('team.getProjection', v8Wire({ teamSessionId…
+    330|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > ADR A1-2 enumeration: every governance-writing catalog method is EXPLICITLY principal-routed in s6-principal.ts (source law)
+TypeError: REMOTE_GOVERNANCE_WRITING_METHODS is not iterable
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:338:16
+    336|     // complete BY CLASSIFICATION, so a method nobody thought to name
+    337|     // still has to appear in an explicit route.
+    338|     expect([...REMOTE_GOVERNANCE_WRITING_METHODS].sort()).toEqual([
+       |                ^
+    339|       'intervention.act',
+    340|       'override.mutatePermission',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > v1–v7 behavior is preserved at the shared seams: the v7 guard field stays v7+ only at override.set
+AssertionError: expected 'malformed-params' to be 'unknown-field' // Object.is equality
+
+Expected: "unknown-field"
+Received: "malformed-params"
+
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:376:43
+    374|       },
+    375|     )
+    376|     expect(expectError(withGuardV1).code).toBe('unknown-field')
+       |                                           ^
+    377|   })
+    378| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  12 failed (12)
+   Start at  15:38:46
+   Duration  240ms (transform 112ms, setup 0ms, import 138ms, tests 12ms, environment 0ms)
+

@@ -48,6 +48,12 @@ import { REMOTE_PROJECTION_FIELDS, } from '../../../remote/src/contracts/types.j
 import { REMOTE_CONTRACT_VERSION, REMOTE_CONTRACT_VERSION_V2, } from '../../../remote/src/contracts/version.js';
 import { PROJECTION_SHAPES, TEAM_CREATE_FLAVORS, projectionShapeOf, teamCreateFlavorOf, withLiveProjectionFreshness, } from '../../../remote/src/contracts/semantic.js';
 import { REMOTE_BACKING_ERROR_CODE_SET } from '../../../remote/src/handlers/dispatch.js';
+// A4-PR6 §6.B — the CLOSED-shape validation laws of the intervention wire
+// DTOs live in the remote package's handler (one law, two dispatchers: the
+// generic dispatcher runs it on its port edge, this production lane runs the
+// SAME functions on the same port edge — a drift between the two would be a
+// contract bug the tests of either lane could not see).
+import { validateAdministration as validateRemotePermissionAdministration, validateItem as validateRemoteInterventionItem, } from '../../../remote/src/handlers/intervention.js';
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js';
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
 import { createLedgerPageTracker } from '../../../remote/src/push/ledger-page.js';
@@ -777,6 +783,40 @@ export function createS6RemotePorts(options) {
      * propagate UNCHANGED — invariant 4b (every resolveControl-reachable
      * code is a member of the closed backing vocabulary).
      */
+    // A4-PR6 §6.B — the ONE projection read for list/get: the projection
+    // kit over the reserved options. An unwired CONTROL source is the only
+    // wiring gap that can make the reads meaningless, so it refuses with
+    // the typed `internal-error` (reason `port-unwired`); an absent warning
+    // service or facts reader is a LEGAL world (no warning items; items with
+    // no facts carry no legal actions — spec 18.3's honest absence), and the
+    // projection answers accordingly.
+    async function projectForRoot(root, caller) {
+        const control = options.interventionControl;
+        if (control === undefined) {
+            throw remoteContractError('internal-error', 'intervention.list: the control source is unwired on this surface — zero read', { reason: 'port-unwired' });
+        }
+        const callerRef = caller.kind === 'human' ? caller.humanId : root;
+        const factsReader = options.requiredAuthorityFacts;
+        const items = await projectInterventions({
+            rootSessionId: root,
+            control,
+            ...(options.governanceWarning === undefined
+                ? {}
+                : {
+                    adapters: [
+                        createGovernanceWarningSourceAdapter({
+                            list: (teamSessionId) => options.governanceWarning.listWarnings(teamSessionId),
+                        }),
+                    ],
+                }),
+            ...(factsReader === undefined
+                ? {}
+                : {
+                    reader: (readerInput) => factsReader(root, callerRef, readerInput),
+                }),
+        });
+        return items.map((item, index) => validateRemoteInterventionItem(item, `items[${index}]`));
+    }
     async function resolveControl(requestedTeamSessionId, requestId, decision, note, caller) {
         const teamSessionId = assertBoundRoot('team.resolveControl', requestedTeamSessionId);
         const port = options.resolveControl;
@@ -1967,6 +2007,115 @@ export function createS6RemotePorts(options) {
             },
         },
         // --- 12/12 legacy: the frozen read-only reader (fail-closed without a home) -----
+        // A4-PR6 §6.B (contract v8) — the intervention plane. The projection
+        // reads (list/get) run the ONE projection kit over the reserved
+        // options; the verb entry (act) is a FRESH ROUTER onto the two
+        // authoritative planes — warnings fold into the governance-warning
+        // lane's acknowledge, approval legs drive the EXISTING control
+        // service entries (no decision logic is re-implemented here, A1-2).
+        // Every refusal that has a frozen wire code propagates UNCHANGED
+        // (invariant 4b); only the wiring gaps mint the typed `internal-error`
+        // (reason `port-unwired`), mirroring the generic lane.
+        intervention: {
+            async list(request) {
+                const root = assertBoundRoot('intervention.list', request.teamSessionId);
+                return projectForRoot(root, request.caller);
+            },
+            async get(request) {
+                const root = assertBoundRoot('intervention.get', request.teamSessionId);
+                const items = await projectForRoot(root, request.caller);
+                const item = items.find((candidate) => candidate['interventionId'] === request.interventionId);
+                if (item === undefined) {
+                    throw remoteContractError('INTERVENTION_NOT_FOUND', `intervention.get: no intervention item '${request.interventionId}' is currently projected for team '${root}'`, { interventionId: request.interventionId });
+                }
+                return item;
+            },
+            async act(request) {
+                const root = assertBoundRoot('intervention.act', request.teamSessionId);
+                if (request.interventionId.startsWith('int-warn-')) {
+                    // The WARNING plane's verb entry. `acknowledge` is the ONLY
+                    // action this arm exists for; an approval action addressed at a
+                    // warning id is a misused verb entry, refused BEFORE any write
+                    // (and vice versa below). The service folds the durable
+                    // acknowledgement fact itself — this lane holds no ack logic.
+                    if (request.action !== 'acknowledge') {
+                        throw remoteContractError('malformed-params', `intervention.act: action '${request.action}' does not address a governance warning (the warning plane knows only 'acknowledge')`, { reason: 'action-plane-mismatch' });
+                    }
+                    if (options.governanceWarning === undefined) {
+                        throw remoteContractError('internal-error', 'intervention.act: the governance-warning lane is unwired on this surface — zero write', { reason: 'port-unwired' });
+                    }
+                    const callerPrincipalId = request.caller.kind === 'human' ? request.caller.humanId : root;
+                    const outcome = await options.governanceWarning.acknowledge({
+                        teamSessionId: root,
+                        interventionId: request.interventionId,
+                        callerPrincipalId,
+                        ...(request.note !== undefined ? { note: request.note } : {}),
+                    });
+                    if (outcome.kind === 'not-found') {
+                        throw remoteContractError('INTERVENTION_NOT_FOUND', `intervention.act: no warning item '${request.interventionId}' is currently projected for team '${root}'`, { interventionId: request.interventionId });
+                    }
+                    if (outcome.kind === 'not-acknowledgeable') {
+                        // The item is VISIBLE (the corrupt/migration state is exactly
+                        // what the client must see) but the act identity does not
+                        // exist to acknowledge — the projection has no ack-able row.
+                        // PR6 ruling: refuse under the intervention plane's own frozen
+                        // NOT_FOUND code with the discriminating reason in details,
+                        // rather than minting new frozen codes mid-contract-change.
+                        throw remoteContractError('INTERVENTION_NOT_FOUND', `intervention.act: warning '${request.interventionId}' is not acknowledgeable (${outcome.reason})`, { interventionId: request.interventionId, reason: 'not-acknowledgeable', cause: outcome.reason });
+                    }
+                    return { outcome: outcome.kind };
+                }
+                // The APPROVAL arm: id is `int-<approvalCaseId>`; the CURRENT leg's
+                // requestId is re-read FRESH (a stale leg id is never accepted).
+                if (options.interventionControl === undefined) {
+                    throw remoteContractError('internal-error', 'intervention.act: the control source is unwired on this surface — zero write', { reason: 'port-unwired' });
+                }
+                const approvalCaseId = request.interventionId.slice('int-'.length);
+                const summaries = await options.interventionControl.listOpenApprovalCases({
+                    rootSessionId: root,
+                });
+                const summary = summaries.find((candidate) => candidate.state.identity.approvalCaseId === approvalCaseId);
+                const currentLeg = summary?.state.currentLeg;
+                if (currentLeg === undefined) {
+                    throw remoteContractError('INTERVENTION_NOT_FOUND', `intervention.act: no OPEN approval case backs '${request.interventionId}' on team '${root}' (the case left the open projection — decided or never existed)`, { interventionId: request.interventionId });
+                }
+                if (request.action === 'acknowledge') {
+                    throw remoteContractError('malformed-params', "intervention.act: action 'acknowledge' does not address an approval leg (the reviewer plane knows allow/deny/escalate)", { reason: 'action-plane-mismatch' });
+                }
+                if (request.action === 'escalate') {
+                    if (options.interventionEscalate === undefined) {
+                        throw remoteContractError('internal-error', 'intervention.act: the escalate closure is unwired on this surface — zero write', { reason: 'port-unwired' });
+                    }
+                    await options.interventionEscalate({
+                        rootSessionId: root,
+                        caller: request.caller,
+                        requestId: currentLeg.requestId,
+                        ...(request.note !== undefined ? { reason: request.note } : {}),
+                    });
+                    return { outcome: 'escalated' };
+                }
+                // allow | deny: the EXISTING v4 control entry (bound-root guard,
+                // typed unwired refusal, durable exactly-once semantics — ALL
+                // reused, nothing re-implemented).
+                await resolveControl(root, currentLeg.requestId, request.action === 'allow' ? 'allow' : 'deny', request.note, request.caller);
+                return { outcome: 'decided' };
+            },
+            async permissionAdministration(request) {
+                const root = assertBoundRoot('override.getPermissionAdministration', request.teamSessionId);
+                if (options.permissionAdministration === undefined) {
+                    throw remoteContractError('internal-error', 'override.getPermissionAdministration: the v8 governance read seam is unwired on this surface — zero read', { reason: 'port-unwired' });
+                }
+                const rich = await options.permissionAdministration({
+                    rootSessionId: root,
+                    ...(request.memberInstanceId !== undefined
+                        ? { memberInstanceId: request.memberInstanceId }
+                        : {}),
+                });
+                // THE STRIP runs here, at the port edge — the same function the
+                // generic dispatcher's handler runs (imported, not mirrored).
+                return validateRemotePermissionAdministration(rich, 'administration');
+            },
+        },
         legacy: {
             async inspect(dshHome, workspaceCwd, projectDir) {
                 if (options.legacyHome === undefined) {
@@ -2396,6 +2545,20 @@ function buildS6CategoryHandlers(ports, principal) {
                     };
                     return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.override.getPermission(request, caller)).then((result) => ({ data: result }));
                 }
+                case 'override.getPermissionAdministration': {
+                    // A4-PR6 §6.B (contract v8): the administration read of the
+                    // override plane. A READ — the principal is the DERIVED
+                    // caller by the EXISTING default (no new derivation branch);
+                    // the STRIP to the closed wire fields runs at the port edge
+                    // (the imported law), so authority-bearing cells cannot ride.
+                    const readParams = params;
+                    return ports.intervention.permissionAdministration({
+                        teamSessionId: readParams.teamSessionId,
+                        ...(readParams.memberInstanceId !== undefined
+                            ? { memberInstanceId: readParams.memberInstanceId }
+                            : {}),
+                    }).then((administration) => ({ data: { administration } }));
+                }
                 default:
                     return Promise.reject(new Error(`override handler routed an unknown method: ${method}`));
             }
@@ -2467,6 +2630,43 @@ function buildS6CategoryHandlers(ports, principal) {
                 }
                 default:
                     return Promise.reject(new Error(`legacy handler routed an unknown method: ${method}`));
+            }
+        }),
+        // A4-PR6 §6.B (contract v8) — the intervention category. list/get are
+        // READS: the principal rides the EXISTING default derivation (host
+        // human), and the derived caller feeds the caller-relative facts
+        // reader. act is the single GOVERNANCE-WRITING verb of the plane: its
+        // caller is the DERIVED principal (`s6-principal.ts` routes
+        // `intervention.act` explicitly — the wire carries no actor claim and
+        // the closed four-value `action` selects only the ENTRY, never a
+        // permission). Responses are the closed wire cells; every backing
+        // refusal propagates UNCHANGED (invariant 4b).
+        [REMOTE_CATEGORIES.INTERVENTION]: ((method, params, envelope) => {
+            switch (method) {
+                case 'intervention.list': {
+                    const listParams = params;
+                    return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.intervention.list({ teamSessionId: listParams.teamSessionId, caller })).then((items) => ({ data: { items } }));
+                }
+                case 'intervention.get': {
+                    const getParams = params;
+                    return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.intervention.get({
+                        teamSessionId: getParams.teamSessionId,
+                        caller,
+                        interventionId: getParams.interventionId,
+                    })).then((item) => ({ data: { item } }));
+                }
+                case 'intervention.act': {
+                    const actParams = params;
+                    return Promise.resolve(principal({ method, request: envelope })).then((caller) => ports.intervention.act({
+                        teamSessionId: actParams.teamSessionId,
+                        caller,
+                        interventionId: actParams.interventionId,
+                        action: actParams.action,
+                        ...(actParams.note !== undefined ? { note: actParams.note } : {}),
+                    })).then((receipt) => ({ data: { outcome: receipt.outcome } }));
+                }
+                default:
+                    return Promise.reject(new Error(`intervention handler routed an unknown method: ${method}`));
             }
         }),
     };

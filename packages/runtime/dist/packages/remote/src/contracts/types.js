@@ -52,4 +52,67 @@ export const REMOTE_LEDGER_ENTRY_FIELDS = [
     'schemaVersion',
     'sequence',
 ];
+// ---------------------------------------------------------------------------
+// A4-PR6 §6.B — contract v8 wire DTOs (the closed intervention-plane shapes)
+// ---------------------------------------------------------------------------
+/**
+ * The closed authority-ladder position cell (mirror of the runtime
+ * `PROPOSAL_AUTHORITY_POSITIONS`; the ordering law is NOT mirrored — the
+ * wire carries a position NAME, never a rank, and every comparison is
+ * server-side).
+ */
+export const REMOTE_INTERVENTION_AUTHORITY_POSITIONS = [
+    'member',
+    'leader',
+    'human-user',
+    'human-admin',
+];
+/** The frozen top-level field set of a wire item (closed value — the
+ *  handler validates every port item against it, presence AND absence). */
+export const REMOTE_INTERVENTION_ITEM_FIELDS = [
+    'interventionId',
+    'kind',
+    'responseBehavior',
+    'blockScope',
+    'source',
+    'status',
+    'legalActions',
+    'derivationReasons',
+    'createdAt',
+    'requiredAuthority',
+    'currentReviewAuthority',
+    'fingerprint',
+    'updatedAt',
+    'lastObservedAt',
+    'observationCount',
+];
+/** The closed `source` field set (null cells typed, never absent). */
+export const REMOTE_INTERVENTION_SOURCE_FIELDS = [
+    'kind',
+    'id',
+    'requestId',
+    'legOrdinal',
+    'carrierKind',
+];
+/**
+ * The `intervention.act` wire outcome (v8). CLOSED set — the response
+ * carries NOTHING else: no authority, no legal actions, no decision
+ * record (the next `intervention.list`/`get` re-derives the full state;
+ * the act response is a receipt, not a projection).
+ */
+export const REMOTE_INTERVENTION_ACT_OUTCOMES = [
+    'decided',
+    'escalated',
+    'acknowledged',
+    'already-acknowledged',
+];
+/** The closed field set of the administration wire value. */
+export const REMOTE_PERMISSION_ADMINISTRATION_FIELDS = [
+    'teamSessionId',
+    'memberInstanceId',
+    'generation',
+    'source',
+    'effective',
+    'diagnostics',
+];
 //# sourceMappingURL=types.js.map

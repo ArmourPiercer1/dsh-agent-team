@@ -573,6 +573,37 @@ export interface S6RemoteLegacyPort {
 /** The sixteen production ports (the frozen twelve + the T12-V16 messaging
  *  coordinator port + the two TCM vNext §15.6 create-flavor ports + the
  *  D1 remote-contract-v3 `team.listRoots` port). */
+/**
+ * A4-PR6 §6.B (contract v8) — the intervention-plane read/verb seam of the
+ * production ports. The `caller` is ALWAYS the derived principal (never a
+ * client claim); the wire params carry no actor field. `list`/`get` return
+ * items ALREADY validated through the remote package's closed-shape law;
+ * the verb arms return only the closed receipt cell.
+ */
+export interface S6RemoteInterventionPort {
+    list(request: {
+        readonly teamSessionId: string;
+        readonly caller: ActionCaller;
+    }): Promise<readonly RemoteSafeRecord[]>;
+    get(request: {
+        readonly teamSessionId: string;
+        readonly caller: ActionCaller;
+        readonly interventionId: string;
+    }): Promise<RemoteSafeRecord>;
+    act(request: {
+        readonly teamSessionId: string;
+        readonly caller: ActionCaller;
+        readonly interventionId: string;
+        readonly action: string;
+        readonly note?: string;
+    }): Promise<{
+        readonly outcome: string;
+    }>;
+    permissionAdministration(request: {
+        readonly teamSessionId: string;
+        readonly memberInstanceId?: string;
+    }): Promise<RemoteSafeRecord>;
+}
 export interface S6RemotePorts {
     readonly catalog: S6RemoteCatalogPort;
     readonly intent: S6RemoteIntentPort;
@@ -605,6 +636,8 @@ export interface S6RemotePorts {
     readonly compatibility: S6RemoteCompatibilityPort;
     readonly handoff: S6RemoteHandoffPort;
     readonly legacy: S6RemoteLegacyPort;
+    /** A4-PR6 §6.B (contract v8): the governance read/verb seam. */
+    readonly intervention: S6RemoteInterventionPort;
     /** T12-V16 — the P6-T3 messaging coordinator behind `member.send`:
      *  facade admission + LIVE delivery at admission time (the window-latch
      *  fix; t12v-finding-360s-first-turn.md). The bound-root guard lives in
@@ -948,6 +981,32 @@ export interface S6RemoteOptions {
      * `principalAlreadyActed` is caller-relative (spec 24.5).
      */
     readonly requiredAuthorityFacts?: (teamSessionId: string, callerRef: string, input: RequiredAuthorityReaderInput) => Promise<RequiredAuthorityFacts | undefined>;
+    /**
+     * A4-PR6 §6.B — the escalate arm of `intervention.act`: the control
+     * service's `escalateApprovalLeg` (the ONE authoritative entry for
+     * "this leg recuses upward"; the wire never re-implements ladder
+     * arithmetic — A1-2). Absent: `escalate` fails closed with the typed
+     * `internal-error` (reason `port-unwired`), never a silent leg push.
+     */
+    readonly interventionEscalate?: (args: {
+        readonly rootSessionId: string;
+        readonly caller: ActionCaller;
+        readonly requestId: string;
+        readonly reason?: string;
+    }) => Promise<RemoteSafeRecord>;
+    /**
+     * A4-PR6 §6.B — the RICH permission-administration record behind the
+     * v8-only `override.getPermissionAdministration`. The record may carry
+     * whatever the permission plane holds; the s6 port STRIPS it through the
+     * remote package's closed-field law before anything reaches the wire
+     * (the strip is the handler law, not the caller's politeness). Absent:
+     * the read fails closed with the typed `internal-error` (reason
+     * `port-unwired`).
+     */
+    readonly permissionAdministration?: (args: {
+        readonly rootSessionId: string;
+        readonly memberInstanceId?: string;
+    }) => Promise<RemoteSafeRecord>;
     /**
      * C1 (restart-recovery, guide §10.2) — the one-shot ordinary activation
      * permit armer behind the host-side `team.prepareOrdinaryOpen` (the D3

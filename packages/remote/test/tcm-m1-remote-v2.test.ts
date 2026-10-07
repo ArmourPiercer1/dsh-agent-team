@@ -48,6 +48,7 @@ import {
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
   REMOTE_CONTRACT_VERSION_V7,
+  REMOTE_CONTRACT_VERSION_V8,
   REMOTE_CONTRACT_ERROR_CODES,
   REMOTE_METHOD_NAMES,
   REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS,
@@ -567,7 +568,7 @@ describe('TCM M1: backing error allow-list (the seven team-create v2 codes)', ()
 // ---------------------------------------------------------------------------
 
 describe('TCM M1: catalog facts (versioned union, closed)', () => {
-  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 + C1 v5 + team-view-sync v6 + pre-alpha3 W1 fix-A v7 bumps extend the supported set (v7 adds NO method)', () => {
+  it('the frozen v1 baseline constant stays 1, v2 is a distinct stamp, and the D1 v3 + F9 v4 + C1 v5 + team-view-sync v6 + pre-alpha3 W1 fix-A v7 + A4-PR6 v8 bumps extend the supported set (v7 adds NO method; v8 adds the closed intervention plane)', () => {
     expect(REMOTE_CONTRACT_VERSION).toBe(1)
     expect(REMOTE_CONTRACT_VERSION_V2).toBe(2)
     expect(REMOTE_CONTRACT_VERSION_V3).toBe(3)
@@ -575,11 +576,12 @@ describe('TCM M1: catalog facts (versioned union, closed)', () => {
     expect(REMOTE_CONTRACT_VERSION_V5).toBe(5)
     expect(REMOTE_CONTRACT_VERSION_V6).toBe(6)
     expect(REMOTE_CONTRACT_VERSION_V7).toBe(7)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7])
+    expect(REMOTE_CONTRACT_VERSION_V8).toBe(8)
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
   })
 
-  it('the closed catalog is the versioned union: 31 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(31)
+  it('the closed catalog is the versioned union: 35 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only + 4 v8-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(35)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     // the D1 (Team D1-D6 repair v2) v3-only closed set
     expect([...REMOTE_V3_ONLY_METHODS].sort()).toEqual(['team.ensureRootLive', 'team.listRoots'])

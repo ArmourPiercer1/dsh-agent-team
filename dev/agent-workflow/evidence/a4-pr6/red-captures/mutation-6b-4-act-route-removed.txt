@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > ADR A1-2 enumeration: every governance-writing catalog method is EXPLICITLY principal-routed in s6-principal.ts (source law)
+AssertionError: s6-principal.ts routes 'intervention.act' explicitly: expected false to be true // Object.is equality
+      Tests  1 failed | 11 passed (12)

@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > act routes by the ITEM class: an approval action on a warning id is refused BEFORE any write
+AssertionError: expected { outcome: 'already-acknowledged' } to deeply equal { outcome: 'acknowledged' }
+      Tests  2 failed | 13 passed (15)

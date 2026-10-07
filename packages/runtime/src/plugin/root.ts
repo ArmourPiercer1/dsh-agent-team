@@ -267,6 +267,14 @@ import {
   lateBoundPermissionMutationApprovalPort,
 } from '../../governance/index.js'
 import type { GovernancePermissionLaneDeps, PermissionMutationApprovalPort } from '../../governance/index.js'
+// A4-PR6 §6.B — the fresh required-authority facts reader for the v8
+// intervention projection. The reader is a KERNEL CONSUMER: it walks the
+// approval-plane ceiling through the FROZEN planner (the same reviewed
+// `evaluateAuthorityCeiling` consumer the PR2 mutation lane runs — no new
+// kernel import edge is minted here) and answers the closed fact bag the
+// projection's legality law consumes. The authority ordering is read
+// through the exported rank law, never a second ordering.
+import { authorityRank, planPermissionMutationApproval } from '../../governance/index.js'
 // pre-alpha3 PR4 (plan "PR4: Grant/Revoke/Lifecycle", production entry
 // wiring): the production PERMISSION PLANE assembly (the overlay port's
 // lane deps + the two lifecycle lanes). The root owns the wiring only —
@@ -3311,6 +3319,135 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         ...(note !== undefined ? { note } : {}),
       })
       return record as unknown as RemoteSafeRecord
+    },
+    // A4-PR6 §6.B (contract v8) — the intervention plane's production
+    // wiring. The CONTROL source is the SAME A25 control service (read
+    // slice: listOpenApprovalCases — never a second case store); the
+    // escalate arm is the SAME service's escalateApprovalLeg (the ONE
+    // authoritative upward-recusal entry); the facts reader walks the
+    // ceiling through the FROZEN planner over the SAME permission-plane
+    // ceiling-context port the governance mutation lane reads. The
+    // administration read folds the durable overlay snapshot + the team's
+    // envelope-consistency warnings into a RICH record the s6 port STRIPS
+    // to the closed wire fields (the strip is the remote package's law,
+    // imported, not mirrored).
+    interventionControl: control,
+    interventionEscalate: async ({ rootSessionId, caller, requestId, reason }) => {
+      const result = await control.escalateApprovalLeg({
+        rootSessionId,
+        caller,
+        requestId,
+        ...(reason !== undefined ? { reason } : {}),
+      })
+      return result as unknown as RemoteSafeRecord
+    },
+    ...(permissionAuthorityCeiling === undefined
+      ? {}
+      : {
+          // The caller-relative required-authority facts reader behind the
+          // projection's legality law (A1-7 freshness through the FROZEN
+          // planner — a kernel consumer on the audited rank law, a3p3
+          // per-name row amended in the same commit). The freshness law at
+          // DECISION time is owned by the control/service entries (PR2
+          // apply path, guard consumption); what THIS reader walks, fresh,
+          // is the case's own FINGERPRINT scope against the CURRENT ceiling
+          // documents: a narrowing added after case creation that touches
+          // this exact ask identity RAISES the required rung here, which is
+          // what pulls `allow` off the offered actions before the operator
+          // clicks. Honest absence (audit F6): no ceiling context, no
+          // durable fingerprint, a faulted read, or a malformed ask answer
+          // `undefined` — the projection then publishes no requiredAuthority
+          // and no actions, never a substitute rung.
+          requiredAuthorityFacts: async (teamSessionId, callerRef, input) => {
+            const fingerprint = input.mutationProposalFingerprint ?? input.operationFingerprint
+            if (fingerprint === undefined) return undefined
+            const instanceId =
+              input.subject.kind === 'instance' ? input.subject.instanceId : LEADER_INSTANCE_ID
+            const context = await permissionAuthorityCeiling(teamSessionId, instanceId, 'human')
+            if (context === undefined) return undefined
+            let plan
+            try {
+              plan = planPermissionMutationApproval({
+                beneficiaryAuthority: input.beneficiaryAuthority,
+                documents: context.documents,
+                regions: [
+                  {
+                    operationClass: input.actionName,
+                    matcher: { kind: 'fingerprint', resource: fingerprint },
+                    risenEffect: input.requestedEffect,
+                  },
+                ],
+              })
+            } catch {
+              // The mapped document fault AND the ladder-defect throw both
+              // mean "no facts readable for this scope" — never a stand-in.
+              return undefined
+            }
+            if (plan.status === 'unavailable') return undefined
+            // The LIVE FLOOR: the walk can only RAISE the leg's own rung (a
+            // fresh narrowing never lowers what the case already requires).
+            const required =
+              plan.status === 'required' &&
+              authorityRank(plan.requiredAuthority) > authorityRank(input.reviewAuthority)
+                ? plan.requiredAuthority
+                : input.reviewAuthority
+            let alreadyActed = false
+            try {
+              const read = await control.readApprovalCaseState({
+                rootSessionId: teamSessionId,
+                approvalCaseId: input.approvalCaseId,
+              })
+              if (read.kind !== 'case') return undefined
+              alreadyActed = read.state.reviewedBy.some(
+                (ref) => ref.kind === 'human' && ref.humanId === callerRef,
+              )
+            } catch {
+              return undefined
+            }
+            return {
+              requiredAuthority: required,
+              reviewerAtOrAboveRequiredAuthority:
+                authorityRank(input.reviewAuthority) >= authorityRank(required),
+              // The frozen walk ENDS at a rung whose decided ceiling reaches
+              // the risen effect — `required` is that answer; `undetermined`
+              // rides its own fact, never folded in here.
+              desiredEffectWithinGrantCeiling: plan.status === 'required',
+              ceilingUndetermined: plan.status === 'undetermined',
+              principalAlreadyActed: alreadyActed,
+              // Alpha.4 ships no Human Admin resolver (ADR A1-3): a top-rung
+              // leg has no resolver to act, and the projection says so (A1-12).
+              resolverExists: input.reviewAuthority !== 'human-admin',
+            }
+          },
+        }),
+    permissionAdministration: async ({ rootSessionId, memberInstanceId }) => {
+      // The team-level administration read addresses the Leader instance
+      // (the canonical team position); an explicit memberInstanceId
+      // addresses that instance's overlay. Absent overlay = the
+      // blueprint default is what governs — a positive answer, not a gap.
+      const instanceId = memberInstanceId ?? LEADER_INSTANCE_ID
+      const snapshot =
+        permissionOverlay === undefined
+          ? undefined
+          : await permissionOverlay.latest({ teamSessionId: rootSessionId, memberInstanceId: instanceId })
+      const warnings =
+        params.governanceWarning === undefined
+          ? []
+          : await params.governanceWarning.listWarnings(rootSessionId)
+      return {
+        teamSessionId: rootSessionId,
+        memberInstanceId: instanceId,
+        source: snapshot === undefined ? 'blueprint-default' : 'overlay',
+        generation: snapshot?.metadata.generation ?? null,
+        effective: snapshot?.state ?? { rules: [] },
+        diagnostics: warnings.map((warning) => ({
+          code: 'envelope-consistency',
+          kind: warning.kind,
+          verdict: warning.verdict,
+          fingerprint: warning.fingerprint,
+          acknowledged: warning.acknowledged,
+        })),
+      } as unknown as RemoteSafeRecord
     },
     // D1 (Team D1-D6 repair v2, remote contract v3) — the read-only
     // durable root ownership list behind the v3-only team.listRoots: the

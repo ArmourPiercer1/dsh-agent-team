@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > the administration read STRIPS to exactly the six closed wire cells; the extras never ride
+AssertionError: expected [ 'diagnostics', 'effective', …(7) ] to deeply equal [ 'diagnostics', 'effective', …(4) ]
+      Tests  1 failed | 14 passed (15)

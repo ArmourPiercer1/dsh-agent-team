@@ -815,7 +815,13 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // (service for the commit-boundary check, approval for the batch max).
       // A4-PR4: the operation router compares fresh-document rungs through
       // THE ladder ordering rather than re-spelling one.
-      ['authorityRank', [...CEILING_AND_EVALUATOR, SERVICE, PERMISSION_APPROVAL]],
+      // A4-PR6 §6.B (reviewed amendment): the root assembly's required-authority
+      // facts reader takes the ladder through THE exported rank law — the v8
+      // intervention projection compares the leg's rung against the fresh walk's
+      // rung, and a second ordering table is exactly what this row exists to
+      // keep singular. No decision path is added: the reader only SHAPES which
+      // actions the projection offers.
+      ['authorityRank', [...CEILING_AND_EVALUATOR, SERVICE, PERMISSION_APPROVAL, join('src', 'plugin', 'root.ts')]],
       ['isHigherAuthority', [...CEILING_AND_EVALUATOR, OPERATION_ROUTING]],
       // WHO MAY ACT — the ladder half of "legal approval", never fused with the
       // ceiling half (ADR A3-2, spec §7.4).
