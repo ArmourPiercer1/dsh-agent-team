@@ -88,6 +88,9 @@ const classifyText = (fence as Record<string, unknown>).classifyText as
 const isScanScopePath = (fence as Record<string, unknown>).isScanScopePath as
   | ((path: string) => boolean)
   | undefined
+const deriveForbidden = (fence as Record<string, unknown>).deriveSchemaWitnessForbidden as
+  | ((cwd: string) => { keys?: Set<string>; sets?: number; error?: string })
+  | undefined
 
 /** Fixture corpus: `;; key: value` header lines, then verbatim content. */
 interface Fixture {
@@ -861,9 +864,30 @@ describe('intentionally-dirty rows: the dirty-class annotation with an admission
       expect(idx, `no "${w}:" within 12 lines of the site — leg proves nothing`).toBeGreaterThan(-1)
       return `hand-verified ${FIXDOC}:${String(Math.min(line0, idx + 1))}-${String(Math.max(line0, idx + 1))}`
     }
-    // FIX 1: keys a schema-valid document carries are forbidden witnesses —
-    // members, templateId, persona are TeamBlueprint fields, not foreign axes.
-    for (const w of ['members', 'templateId', 'persona']) {
+    // FIX 1: keys a schema-valid document carries are forbidden witnesses.
+    // FIX 4 (round 5): the flavors are DERIVED from the same validator-
+    // anchored extraction the fence consults, intersected with the tokens
+    // that actually appear in the site's window — never enumerated from the
+    // incident report ("a test written from the incident report protects the
+    // incident, not the class": the leak survived review because the test
+    // copied the reviewer's imagination). If a permission key starts living
+    // beside this site tomorrow, this leg inherits it without an edit.
+    const derived = deriveForbidden?.(REPO_ROOT)
+    expect(derived, 'the fence must export its extraction for the wrapper').toBeDefined()
+    expect(derived?.error).toBeUndefined()
+    const docKeys = derived?.keys ?? new Set<string>()
+    expect(docKeys.has('resource'), 'validator-enforced `resource` must be a forbidden witness — the round-5 leak class').toBe(true)
+    const flavors: string[] = []
+    for (let idx = Math.max(0, line0 - 12); idx < Math.min(docLines.length, line0 + 11); idx += 1) {
+      for (const m of (docLines[idx] ?? '').matchAll(/([A-Za-z_$][A-Za-z0-9_$]*)\s*:/g)) {
+        const tok = String(m[1])
+        if (tok !== 'schemaVersion' && docKeys.has(tok) && !flavors.includes(tok)) flavors.push(tok)
+      }
+    }
+    for (const must of ['members', 'templateId', 'persona']) {
+      expect(flavors, `derived flavors must include ${must} if it is both validator-enforced and in-window`).toContain(must)
+    }
+    for (const w of flavors) {
       const r = spawnScratchLedger({ ...LEDGER_ALL, [docKey]: dirtyRow(around(w), { 'witness-key': w }) })
       expect(r.out, `document key ${w} must be refused AS a document key`).toContain(
         'is a TeamBlueprint document key',
@@ -890,6 +914,118 @@ describe('intentionally-dirty rows: the dirty-class annotation with an admission
     })
     expect(rw.out).toContain('wider than the 12-line evidence window')
     expect(rw.status).toBe(2)
+  })
+
+  it('round-5 radius (R=40, window-independent): a site inside an identity-triple cluster is refused whatever range the row cites', () => {
+    // The reviewer's decision adopted: "take the radius rule at R=40 and do
+    // not pretend it is a boundary". NO RADIUS IS COMPLETE — filler between
+    // YAML keys defeats any R — this leg pins the rule, the header states the
+    // residue and the retirement condition. The site is built here (scratch
+    // world, G1), untracked, cited with a CLEAN narrow window: only the
+    // radius, not the window, can see the document.
+    const SV = 'schema' + 'Version:'
+    writeFileSync(
+      resolve(SCRATCH_DIR, 'r5-radius-doc.ts'),
+      [
+        '// constructed: a TeamBlueprint-shaped cluster the radius must catch',
+        'const doc = [',
+        "  '---',",
+        `  '${SV} 1',`, // line 4 = the site
+        "  'blueprintId: R5-RADIUS',",
+        "  'revision: 1',",
+        "  'contentHash: abc',",
+        "  '  role: leader',", // line 8: legitimate foreign witness, string-carried
+        "  'members: []',",
+        "].join('\\n')",
+        '',
+      ].join('\n'),
+    )
+    const r = spawnScratchLedger({
+      ['.tmp-faultscratch/r5-radius-doc.ts::L4::v1']: dirtyRow(
+        'hand-verified .tmp-faultscratch/r5-radius-doc.ts:1-10',
+        { 'witness-key': 'role' },
+      ),
+    })
+    expect(
+      r.out,
+      'blueprintId/revision/contentHash within 40 lines is document shape whatever the cited range says',
+    ).toContain('identity-triple cluster')
+    expect(r.status).toBe(2)
+  })
+
+  it('round-5 B3: a comment is not evidence — comment-only witness refused, string-carried witness admitted (reason differential)', () => {
+    // The fence's own line-state machine masks comments in the cited range.
+    // Both files are untracked scratch sites, so BOTH end at exit 2 — the
+    // differential is the REASON: the comment file is refused AT ADMISSION
+    // ('code/string only'), the string file PASSES admission and dies at the
+    // unrelated foreign-site guard. Reason-level, not exit-level, proof.
+    const SV = 'schema' + 'Version:'
+    writeFileSync(
+      resolve(SCRATCH_DIR, 'r5-witness-comment.ts'),
+      [
+        '// B3 shape: the only role: in the window is a comment',
+        'const doc = [',
+        "  '---',",
+        `  '${SV} 1',`, // line 4 = the site
+        "].join('\\n')",
+        '// role: no blueprint here', // line 6 — comment only
+        '',
+      ].join('\n'),
+    )
+    writeFileSync(
+      resolve(SCRATCH_DIR, 'r5-witness-code.ts'),
+      [
+        '// control: the same witness carried by a STRING (string = carrier)',
+        'const doc = [',
+        "  '---',",
+        `  '${SV} 1',`, // line 4 = the site
+        "  'role: leader',", // line 5 — string evidence
+        "].join('\\n')",
+        '',
+      ].join('\n'),
+    )
+    const rc = spawnScratchLedger({
+      ['.tmp-faultscratch/r5-witness-comment.ts::L4::v1']: dirtyRow(
+        'hand-verified .tmp-faultscratch/r5-witness-comment.ts:1-6',
+      ),
+    })
+    expect(rc.out, 'a comment is not evidence about a site').toContain('code/string only')
+    expect(rc.status).toBe(2)
+    const rk = spawnScratchLedger({
+      ['.tmp-faultscratch/r5-witness-code.ts::L4::v1']: dirtyRow(
+        'hand-verified .tmp-faultscratch/r5-witness-code.ts:1-5',
+      ),
+    })
+    expect(
+      rk.out,
+      'the string witness passes admission — refusal here is the foreign-site guard, NOT the witness rule',
+    ).toContain('does not classify dirty')
+    expect(rk.out).not.toContain('code/string only')
+    expect(rk.status).toBe(2)
+  })
+
+  it('round-5 fix 1 fail-closed: a renamed consulted field set is a not-run NAMING the missing set, never a silently smaller forbidden set', () => {
+    // The PARTIAL-failure half of the completeness invariant: the old
+    // deriver degraded in the PERMISSIVE direction on a rename — the same
+    // defect class as a catch that defaults to allow. Scratch tree: the
+    // extractor only reads these two files, no git needed.
+    const root = resolve(SCRATCH_DIR, 'extract-tree')
+    mkdirSync(resolve(root, 'packages/domain/blueprint/src'), { recursive: true })
+    const schemaReal = readFileSync(resolve(REPO_ROOT, 'packages/domain/blueprint/src/schema.ts'), 'utf8')
+    const validateReal = readFileSync(resolve(REPO_ROOT, 'packages/domain/blueprint/src/validate.ts'), 'utf8')
+    writeFileSync(resolve(root, 'packages/domain/blueprint/src/schema.ts'), schemaReal)
+    writeFileSync(resolve(root, 'packages/domain/blueprint/src/validate.ts'), validateReal)
+    const okRun = deriveForbidden?.(root)
+    expect(okRun?.error).toBeUndefined()
+    expect(okRun?.sets, 'every consulted set resolves on the real tree').toBeGreaterThanOrEqual(10)
+    writeFileSync(
+      resolve(root, 'packages/domain/blueprint/src/schema.ts'),
+      schemaReal.replaceAll('BLUEPRINT_TEMPLATE_FIELDS', 'BLUEPRINT_TEMPLATE_FIELDS_RENAMED'),
+    )
+    const badRun = deriveForbidden?.(root)
+    expect(badRun?.error, 'partial extraction must REFUSE to run, not proceed on a smaller set').toBeDefined()
+    expect(badRun?.error).toContain('could not find')
+    expect(badRun?.error).toContain('templateFields')
   })
 
   it('the FENCE refuses a dirty-class row at a site it does not classify dirty — the gate, not the suite, is the first responder', () => {

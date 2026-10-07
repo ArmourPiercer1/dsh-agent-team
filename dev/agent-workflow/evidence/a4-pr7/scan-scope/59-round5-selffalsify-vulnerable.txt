@@ -1,0 +1,13 @@
+FAIL A-doc-members          exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-A-doc-members.js"
+FAIL B-doc-templateid       exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-B-doc-templateid"
+FAIL H-doc-persona          exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-H-doc-persona.js"
+FAIL P-wide-range           exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-P-wide-range.jso"
+FAIL O-doc-narrow           exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-O-doc-narrow.jso"
+FAIL N-not-a-dirty-site     exit=2 admitted=false reason="RESULT not-run :: dirty-class ledger rows for sites the fence does not classify dirty: packages/legacy/test/p7t6-teammates-adapter.test.ts::L119::v1 —"
+FAIL L-no-such-line         exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-L-no-such-line.j"
+FAIL G-no-such-file         exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-G-no-such-file.j"
+ok   CONTROL-honest-p7t6    exit=1 admitted=true 
+FAIL R5-resource-doc        exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-R5-resource-doc."
+ok   R5-radius-doc          exit=2 admitted=false reason="RESULT not-run :: dirty-class ledger rows for sites the fence does not classify dirty: .tmp-rr/r5-doc.ts::L4::v1 — an annotation must annotate a real "
+FAIL R5-comment-witness     exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-R5-comment-witne"
+mode=vulnerable verdict=10 MISMATCHES

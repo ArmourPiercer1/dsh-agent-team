@@ -204,3 +204,56 @@ is not over-corrected. What the review CONFIRMED and what must therefore SURVIVE
 - §5 of this file stands: `packages/domain/blueprint/testdata/fixtures.ts` and the other
   document-bearing files must STAY dirty — post-fix, a ledger row can no longer launder
   them (reviewer cases A/B/H/P all exit 2; replay: `scan-scope/53-acceptance-replay.mjs fixed`).
+
+## §9 Round 5 (re-review of `4b7ca211`): the register was STILL a trapdoor — validator-anchored now
+
+The reviewer's headline, adopted verbatim as this round's target:
+**"the register is still a trapdoor for a document site, and laundering now costs one ledger row
+and no source edit at all"** — `witness-key: resource` against sites whose window holds a
+permissions block (their count: seven (site,key) pairs; measured **five** live pairs after the
+`5a2053ff` merge — the count predates it, and the replay now DERIVES the pairs from the fence's
+own output so the number can never go stale). Root cause, theirs: "my fix moved the cost from one
+invisible string to a different invisible string… I derived a forbidden set from a *naming
+convention* (`BLUEPRINT_*FIELDS*`) instead of from what the validator actually enforces."
+
+- **Fix 1 (validator-anchored, fail-closed on PARTIAL failure)**: "extract from the call sites,
+  require that the found set equals the consulted set, and make any shortfall a not-run naming the
+  missing set. A gate whose safety property degrades in the *permissive* direction on a typo is the
+  same defect class as a `catch` that defaults to allow." Every second argument of
+  `validate.ts`'s `assertNoUnknownFields` call sites is now extracted — schema lists, pure alias
+  exports, local aliases (no-semicolon style included), inline literals absorbed. Measured:
+  16 consulted sets, 53 keys; `resource`/`persona` forbidden, `role` outside the union — the nine
+  honest `p7t6` rows survive unchanged (`intentionally-dirty(1 files, 9 sites)` before and after).
+- **Fix 2 (a comment is not evidence)**: the witness must be found in code or strings — the fence's
+  own line-state machine masks comments in the cited range (reviewer B3: the only in-window
+  `role:` was `// role: no blueprint here`; the "visible code diff" "can be paid on the
+  least-reviewed line type in a diff"). The `not present in cited range` phrase is kept; a
+  parenthetical states the rule. Reason-differential proof: comment-witness scratch site refuses at
+  ADMISSION ('code/string only'), string-witness scratch site passes admission and dies at the
+  unrelated foreign-site guard ('does not classify dirty').
+- **The radius decision (the reviewer's, adopted with its price)**: "take the radius rule, at R=40,
+  and do not pretend it is a boundary." Window-independent identity-triple cluster test — a site
+  with `blueprintId`/`revision`/`contentHash` within 40 lines is refused whatever range the row
+  cites, because the window is the attacker's choice. NO mini-YAML parser was built — "every one of
+  these documents is an `Array.join` of one-line string literals… **Do not build the parser**."
+  The header states the measured residue — "**no radius is complete: a lane can always add filler
+  between YAML keys**" — next to the truest sentence available, verbatim: "*what the fence can
+  honestly guarantee is only that laundering requires a source edit in the same diff as the row,
+  and that the row is a reviewable string rather than an invisible mute*" — and next to THAT the
+  retirement option: "if a future round decides that guarantee is not worth having, the correct
+  move is to **retire the class and keep those sites dirty**, not to keep widening the radius…
+  a mechanism with a stated retirement condition is a tool and one without is a ratchet."
+- **Fix 4 (the test must cover the class, not the incident)**: leg (b)'s flavors are derived from
+  the fence's own exported extraction intersected with the site's window. "The leak survived review
+  precisely because the test copied the reviewer's imagination… **A test written from the incident
+  report protects the incident, not the class.**"
+
+Keep-list (§8, carried and re-verified):
+- The replay is SELF-FALSIFYING — "the mode label is an expectation, not a switch": `vulnerable`
+  against the round-5 fence is exit 1 with 10 mismatches (8 at round 4.5; 2 new cases joined the
+  demonstration); `fixed` is 17/17 as expected, including the five derived live `resource` pairs,
+  all refused `is a TeamBlueprint document key` (evidence 57–59).
+- Fix-4-era verification survived a master that moved mid-review: `merge-tree` clean at
+  `7e9f7544`, `OFFENDING lines = 74`, wrapper 66/66 materialised (69/69 after round-5 legs).
+- "`prose` is the one class that removes a *printed* site from dispatch, so a future line-state bug
+  would be a silent stop-reporting rather than a false clean — **that is coverage, not proof**".

@@ -378,34 +378,110 @@ for (const k of DOC_ONLY_KEYS) FORBIDDEN_WITNESS_KEYS.add(k)
 // assumption breaks, the fence refuses to run — an admission rule that
 // cannot enumerate the document keys must not admit anything.
 const ADJ_MAX_RANGE_LINES = 12
-function deriveSchemaWitnessForbidden(cwd) {
-  let text
+// Round 5 FIX 1 (second adversarial round): the first derivation anchored on
+// a NAMING CONVENTION (`BLUEPRINT_*FIELDS*`), and a document key living in an
+// unprefixed set (`resource` in PERMISSION_RULE_FIELDS) stayed a working
+// witness — laundering cost one ledger row and NO source edit at all. The
+// forbidden set is now anchored on what the VALIDATOR ACTUALLY ENFORCES:
+// every second argument of validate.ts's assertNoUnknownFields call sites
+// (aliases followed to schema exports, inline literals absorbed). And the
+// completeness invariant is NOT "the set looks big enough" — renaming one
+// export used to leave the run exit 1 with a smaller set (fail-OPEN on
+// PARTIAL failure). The invariant is: every set the validator consults was
+// FOUND; a shortfall is a not-run naming the missing sets. A gate whose
+// safety property degrades in the permissive direction on a typo is a catch
+// that defaults to allow.
+const ADJ_CONSULT_MIN = 10
+const ADJ_IDENTITY_RADIUS = 40
+const ADJ_TRIPLE_KEYS = ['blueprintId', 'revision', 'contentHash']
+export function deriveSchemaWitnessForbidden(cwd) {
+  let schemaText
+  let validateText
   try {
-    text = readFileSync(resolve(cwd, 'packages/domain/blueprint/src/schema.ts'), 'utf8')
-  } catch {
-    return null
+    schemaText = readFileSync(resolve(cwd, 'packages/domain/blueprint/src/schema.ts'), 'utf8')
+    validateText = readFileSync(resolve(cwd, 'packages/domain/blueprint/src/validate.ts'), 'utf8')
+  } catch (e) {
+    return { error: `field-set extraction refused: schema.ts/validate.ts unreadable (${String(e)}) — fail-closed` }
   }
   const lists = new Map()
-  for (const m of text.matchAll(/export const (BLUEPRINT_[A-Z0-9_]*FIELDS(?:_V\d)?)\s*:[^=]*=\s*\[([\s\S]*?)\]/g)) {
+  for (const m of schemaText.matchAll(
+    /export const ((?:BLUEPRINT|PERMISSION)_[A-Z0-9_]*FIELDS(?:_V\d)?)\s*:[^=]*=\s*\[([\s\S]*?)\]/g,
+  )) {
     lists.set(String(m[1]), String(m[2]))
   }
-  const out = new Set()
+  // pure alias exports (`export const AUTHORITY = PERMISSION_MUTATION_ENVELOPE`):
+  // the validator consults the alias; enforcement lives in the target.
+  const aliasOf = new Map()
+  for (const m of schemaText.matchAll(
+    /export const ((?:BLUEPRINT|PERMISSION)_[A-Z0-9_]*FIELDS(?:_V\d)?)\s*=\s*((?:BLUEPRINT|PERMISSION)[A-Z0-9_]*FIELDS(?:_V\d)?)/g,
+  )) {
+    aliasOf.set(String(m[1]), String(m[2]))
+  }
+  const absorbed = new Set()
   const seen = new Set()
-  const absorb = (body) => {
-    for (const s of body.matchAll(/'([A-Za-z_$][A-Za-z0-9_$]*)'/g)) out.add(String(s[1]))
-    for (const r of body.matchAll(/\.\.\.([A-Z0-9_]+)/g)) {
+  const absorbBody = (body) => {
+    for (const s2 of body.matchAll(/'([A-Za-z_$][A-Za-z0-9_$]*)'/g)) absorbed.add(String(s2[1]))
+    for (const r of body.matchAll(/\.\.\.((?:BLUEPRINT|PERMISSION)[A-Z0-9_]*FIELDS(?:_V\d)?)/g)) {
       const name = String(r[1])
       if (seen.has(name)) continue
       seen.add(name)
       const dep = lists.get(name)
-      if (dep !== undefined) absorb(dep)
+      if (dep !== undefined) absorbBody(dep)
     }
   }
-  for (const [, body] of lists) absorb(body)
-  if (lists.size < 2 || !out.has('blueprintId') || !out.has('members') || !out.has('templateId')) {
-    return null
+  const consulted = new Set()
+  for (const m of validateText.matchAll(/assertNoUnknownFields\(\s*[^,]+?,\s*([A-Za-z_$][A-Za-z0-9_$]*|\[[^\]]*\])/g)) {
+    const arg = String(m[1])
+    if (arg.startsWith('[')) {
+      for (const s3 of arg.matchAll(/'([A-Za-z_$][A-Za-z0-9_$]*)'/g)) absorbed.add(String(s3[1]))
+    } else consulted.add(arg)
   }
-  return out
+  if (consulted.size < ADJ_CONSULT_MIN) {
+    return {
+      error: `field-set extraction refused: validate.ts consults only ${String(consulted.size)} named field sets (< ${String(ADJ_CONSULT_MIN)}) — assertNoUnknownFields was restructured beyond the extractor; fail-closed rather than admit on a silently shrunken set`,
+    }
+  }
+  const resolveSet = (name) => {
+    const alias = aliasOf.get(name)
+    if (alias !== undefined) return resolveSet(alias)
+    const direct = lists.get(name)
+    if (direct !== undefined) {
+      if (!seen.has(name)) {
+        seen.add(name)
+        absorbBody(direct)
+      }
+      return true
+    }
+    // local alias in validate.ts (`const templateFields =` with NO semicolon
+    // at this style): window-scan the initializer text for the schema names it
+    // mentions. Spilling a few lines past the initializer over-absorbs at
+    // worst — over-absorption only ever WIDENS the forbidden set (safe side).
+    const decl = new RegExp(`(const|let)\\s+${name}\\s*=`).exec(validateText)
+    if (decl === null) return false
+    const win = validateText.slice(decl.index, decl.index + 500)
+    let ok = true
+    let touched = false
+    for (const r of win.matchAll(/((?:BLUEPRINT|PERMISSION)[A-Z0-9_]*FIELDS(?:_V\d)?)/g)) {
+      touched = true
+      if (!resolveSet(String(r[1]))) ok = false
+    }
+    return touched && ok
+  }
+  const missing = []
+  for (const name of consulted) if (!resolveSet(name)) missing.push(name)
+  if (missing.length > 0) {
+    return {
+      error: `field-set extraction refused: validate.ts consults field sets the extractor could not find: ${missing.join(', ')} — a renamed or restructured set would SILENTLY SHRINK the forbidden witness set (fail-open), so the run stops here naming the missing sets (round-5 fix 1)`,
+    }
+  }
+  for (const anchor of ['blueprintId', 'members', 'templateId', 'resource', 'persona']) {
+    if (!absorbed.has(anchor)) {
+      return {
+        error: `field-set extraction refused: every validator set resolved but anchor key "${anchor}" is absent — the extraction shape no longer matches what the validator enforces; fail-closed (round-5 fix 1)`,
+      }
+    }
+  }
+  return { keys: absorbed, sets: consulted.size }
 }
 
 // --- the line state machine -------------------------------------------------------
@@ -1162,36 +1238,59 @@ export function classifyText(path, text) {
  * register precisely when its digit is READ BY ANOTHER NAMESPACE'S RUNTIME,
  * and the site itself must prove it — the cited range (a window of at most
  * 12 lines: fix 2, because a witness 400 lines from the site is not evidence
- * ABOUT the site) must contain a witness key that NO schema-valid
- * TeamBlueprint document may carry. The forbidden set is DERIVED at run time
- * from schema.ts's own BLUEPRINT_*_FIELDS lists (fix 1), unioned with the
- * retired axis's own key: an allowlist someone typed is a snapshot of what
- * the author thought of — the first version of this rule was 9/9 correct and
- * three keys short (`members`, `templateId`, `persona`), and every short key
- * was load-bearing; a set derived from the schema is the schema. Extraction
- * failing is a not-run (fail-closed), never a smaller set. p7t6 qualifies
- * under the test: its digits are the legacy `.md` teammate-file axis
- * (role:/name:/id: front matter — `role` is in NO blueprint field list), and
- * retiring them would delete the adapter's acceptance proof, not a Blueprint
- * version. A literal someone merely FINDS INCONVENIENT has no such witness:
- * its enclosing object is keyed by Blueprint's own fields, and its lawful
- * disposition is migration, not registration.
+ * ABOUT the site) must contain a witness key, IN CODE OR STRINGS (round-5
+ * fix 2: the fence's own line-state machine masks comments — reading the
+ * range raw charges the "visible code diff" on the least-reviewed line type
+ * in a diff; the reviewer's B3 case's only in-window `role:` was
+ * `// role: no blueprint here`), that NO schema-valid TeamBlueprint document
+ * may carry. The forbidden set is DERIVED at run time from what the
+ * VALIDATOR ACTUALLY ENFORCES (round-5 fix 1): every second argument of
+ * validate.ts's assertNoUnknownFields call sites — schema exports, pure
+ * alias exports, local aliases and inline literals all absorbed. The first
+ * derivation anchored on a NAMING CONVENTION (`BLUEPRINT_*FIELDS*`) and
+ * missed `resource`, which lives unprefixed in PERMISSION_RULE_FIELDS: a
+ * document key the validator enforces stayed a working witness, because a
+ * name-prefix is what the author of the extraction thought of, not what the
+ * validator consults. Completeness is now an INVARIANT, not a size guess:
+ * every consulted set must be FOUND, and a shortfall is a not-run naming the
+ * missing sets — a gate whose safety property degrades in the PERMISSIVE
+ * direction on a typo is the same defect class as a `catch` that defaults to
+ * allow. p7t6 qualifies under the test: its digits are the legacy `.md`
+ * teammate-file axis (role:/name:/id: front matter — `role` is in NO field
+ * set the validator consults, re-derived every run), and retiring them would
+ * delete the adapter's acceptance proof, not a Blueprint version. A literal
+ * someone merely FINDS INCONVENIENT has no such witness: its enclosing
+ * object is keyed by Blueprint's own fields, and its lawful disposition is
+ * migration, not registration.
  *
- * THE COST CLAIM, CORRECTED NOT SOFTENED (adversarial review of 70745ef7):
- * this paragraph used to claim laundering a document site through admission
- * "costs a VISIBLE code diff, not an invisible ledger string". MEASURED
- * FALSE at that commit: the cost was ONE STRING IN THIS LEDGER — a witness
- * key the typed set forgot, or a legitimate `role:` cited at whole-file
- * width (reproduction: evidence 53-acceptance-replay.mjs `vulnerable`, cases
- * A/B/H/P, all admitted at exit 1). What is true after fixes 1/2/5: the
- * witness must be outside the DERIVED document key set, inside a 12-line
- * window around the site, and the row must annotate a site the fence itself
- * classifies dirty — so laundering a real document now requires planting a
- * fake foreign key ADJACENT to the site in source, the one visible-diff cost
- * the fence can force. No property of source text makes laundering
- * IMPOSSIBLE — an edit a reviewer does not read can still plant that line —
- * and the header says so rather than overselling: what no reviewer ever
- * sees is an invisible ledger string, and THAT cost this fence does enforce.
+ * THE COST CLAIM, CORRECTED NOT SOFTENED (TWICE — adversarial reviews of
+ * 70745ef7 and 4b7ca211). v1 claimed laundering "costs a VISIBLE code diff";
+ * MEASURED FALSE at 70745ef7: it cost ONE LEDGER STRING (a key the typed set
+ * forgot, replay cases A/B/H/P). v2 claimed the corrected cost was "planting
+ * a fake foreign key adjacent to the site"; MEASURED FALSE at 4b7ca211 too:
+ * `resource` — enforced by the validator, invisible to the naming-convention
+ * extraction — was already adjacent in five live files, so laundering cost
+ * one ledger row and NO source edit at all (reproduction: replay `r45` mode,
+ * case R5-resource-doc, admitted at exit 1). What is true after the round-5
+ * fixes: the witness must be outside the VALIDATOR-DERIVED key set, present
+ * as code or string (not comment) inside a 12-line window, and the site must
+ * sit outside any identity-triple cluster (blueprintId/revision/contentHash
+ * within 40 lines — WINDOW-INDEPENDENT, because the window is the attacker's
+ * choice). MEASURED RESIDUE, stated not hidden: NO RADIUS IS COMPLETE — a
+ * lane can always add filler between YAML keys to push the triple past any
+ * R, and this fence deliberately does NOT grow a mini-YAML parser to close
+ * it (every one of these documents is an Array.join of one-line string
+ * literals; a parser would defend the shapes its author predicted, and a
+ * fence whose correctness depends on parsing what it scans has swapped one
+ * trust problem for a bigger one). So the truest sentence available, kept
+ * verbatim because it is the honest boundary: *what the fence can honestly
+ * guarantee is only that laundering requires a source edit in the same diff
+ * as the row, and that the row is a reviewable string rather than an
+ * invisible mute.* NEXT TO IT, THE RETIREMENT CONDITION: if a future round
+ * decides that guarantee is not worth having, the correct move is to RETIRE
+ * THE CLASS AND KEEP THOSE SITES DIRTY, not to keep widening the radius —
+ * a mechanism with a stated retirement condition is a tool and one without
+ * is a ratchet.
  *
  * The ledger file itself must be GIT-TRACKED (round 3.5 G4: the override
  * is the mute with a name on it — with dirty suppressed post-§7.4, a
@@ -1238,13 +1337,8 @@ function loadAdjudications(cwd) {
     return { error: `adjudication ledger must be an object keyed "<path>::L<line>::v<version>" (${file})` }
   }
   const derivedDocKeys = deriveSchemaWitnessForbidden(cwd)
-  if (derivedDocKeys === null) {
-    return {
-      error:
-        'schema-derived forbidden-witness set unavailable: packages/domain/blueprint/src/schema.ts is missing or restructured beyond the extractor — fail-closed, the admission rule refuses to run rather than forget document keys again (see FIX 1 note at deriveSchemaWitnessForbidden)',
-    }
-  }
-  const witnessForbidden = new Set([...FORBIDDEN_WITNESS_KEYS, ...derivedDocKeys])
+  if ('error' in derivedDocKeys) return { error: derivedDocKeys.error }
+  const witnessForbidden = new Set([...FORBIDDEN_WITNESS_KEYS, ...derivedDocKeys.keys])
   // Fix 5b: every defect prints ITS OWN reason. "fail the hand-verified rule"
   // for no-such-file, no-such-line and not-a-version-site alike is a not-run
   // the operator has to debug by reading the fence's source.
@@ -1336,12 +1430,45 @@ function loadAdjudications(cwd) {
         )
         continue
       }
+      // Round 5 FIX 2: the witness must be found in CODE or STRINGS, never in
+      // a comment — the fence's own line-state machine masks comments, and
+      // reading the range raw would charge the "visible code diff" on the
+      // least-reviewed line type in a diff (reviewer B3: the only in-window
+      // `role:` was `// role: no blueprint here`).
+      const st = lineStates(text)
+      const codeCited = lines
+        .slice(a - 1, b)
+        .map((L, idx) => {
+          const kinds = (st.states[a - 1 + idx] ?? { kinds: [] }).kinds
+          let outLine = ''
+          for (let ci = 0; ci < L.length; ci += 1) outLine += kinds[ci] === K_COMMENT ? ' ' : L[ci]
+          return outLine
+        })
+        .join('\n')
       if (
-        !new RegExp('(?:^|[^A-Za-z0-9_$]|\\\\n)' + witness + '\\s*:').test(
-          lines.slice(a - 1, b).join('\n'),
-        )
+        !new RegExp('(?:^|[^A-Za-z0-9_$]|\\\\n)' + witness + '\\s*:').test(codeCited)
       ) {
-        bad.push(`${key} — witness key "${witness}" not present in cited range ${String(a)}-${String(b)}`)
+        bad.push(
+          `${key} — witness key "${witness}" not present in cited range ${String(a)}-${String(b)} (code/string only — a comment is not evidence about a site)`,
+        )
+        continue
+      }
+      // Round 5 radius decision (R=40, WINDOW-INDEPENDENT): the identity
+      // triple clustered around the site is the shape of a TeamBlueprint
+      // document whatever range the row cites — a window-scoped class test
+      // is worthless because the window is the attacker's choice. NO RADIUS
+      // IS COMPLETE: filler between YAML keys defeats any R (measured
+      // residue; retirement condition in the header).
+      const radA = Math.max(0, siteLine - 1 - ADJ_IDENTITY_RADIUS)
+      const radB = Math.min(lines.length, siteLine + ADJ_IDENTITY_RADIUS)
+      const radiusText = lines.slice(radA, radB).join('\n')
+      const tripleHits = ADJ_TRIPLE_KEYS.filter((tk) =>
+        new RegExp('(?:^|[^A-Za-z0-9_$]|\\\\n)' + tk + '\\s*:').test(radiusText),
+      )
+      if (tripleHits.length === ADJ_TRIPLE_KEYS.length) {
+        bad.push(
+          `${key} — site sits inside an identity-triple cluster: ${ADJ_TRIPLE_KEYS.join(', ')} all appear within ${String(ADJ_IDENTITY_RADIUS)} lines of L${String(siteLine)} — the shape of a TeamBlueprint document; this row is refused and the site stays dirty`,
+        )
         continue
       }
     }

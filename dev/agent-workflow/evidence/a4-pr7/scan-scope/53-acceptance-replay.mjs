@@ -15,8 +15,9 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 
 const mode = process.argv[2]
-if (mode !== 'vulnerable' && mode !== 'fixed') {
-  console.error('usage: 53-acceptance-replay.mjs vulnerable|fixed')
+const idFilter = process.argv[3] ?? ''
+if (mode !== 'vulnerable' && mode !== 'fixed' && mode !== 'r45') {
+  console.error('usage: 53-acceptance-replay.mjs vulnerable|r45|fixed [id-prefix]')
   process.exit(2)
 }
 const cwd = process.cwd()
@@ -33,19 +34,19 @@ const cases = [
   {
     id: 'A-doc-members',
     ledger: { ...base, [docKey]: dirtyRow(`hand-verified ${FIX}:26-32`, 'members') },
-    admit: mode === 'vulnerable',
+    admit: mode === 'vulnerable' || mode === 'r45',
     whyRefused: mode === 'fixed' ? /document key|schema/i : null,
   },
   {
     id: 'B-doc-templateid',
     ledger: { ...base, [docKey]: dirtyRow(`hand-verified ${FIX}:26-32`, 'templateId') },
-    admit: mode === 'vulnerable',
+    admit: mode === 'vulnerable' || mode === 'r45',
     whyRefused: mode === 'fixed' ? /document key|schema/i : null,
   },
   {
     id: 'H-doc-persona',
     ledger: { ...base, [docKey]: dirtyRow(`hand-verified ${FIX}:18-28`, 'persona') },
-    admit: mode === 'vulnerable',
+    admit: mode === 'vulnerable' || mode === 'r45',
     whyRefused: mode === 'fixed' ? /document key|schema/i : null,
   },
   {
@@ -54,7 +55,7 @@ const cases = [
     // needed; the wide range is the laundering vector the reviewer measured.
     id: 'P-wide-range',
     ledger: { ...base, [P7KEY]: dirtyRow(`hand-verified ${P7}:1-578`, 'role') },
-    admit: mode === 'vulnerable',
+    admit: mode === 'vulnerable', // R4.5 already refused the width
     whyRefused: mode === 'fixed' ? /wider than|width/i : null,
   },
   {
@@ -69,7 +70,7 @@ const cases = [
     // Fix 5: a dirty-class row at a site the fence does NOT classify dirty.
     id: 'N-not-a-dirty-site',
     ledger: { ...base, [`${P7}::L119::v1`]: dirtyRow(`hand-verified ${P7}:118-122`, 'role') },
-    admit: mode === 'vulnerable',
+    admit: mode === 'vulnerable' || mode === 'r45',
     whyRefused: mode === 'fixed' ? /does not classify dirty/i : null,
   },
   {
@@ -101,9 +102,124 @@ const cases = [
   },
 ]
 
+
+// ROUND 5 — the second trapdoor (reviewer: laundering cost ONE LEDGER ROW and
+// no source edit: `resource` was a permission RULE key absent from the typed
+// forbidden list) and the third (B3: the only in-window `role:` was a
+// comment). Expectations: `r45` = what 4b7ca211 did (the leak), `fixed` = the
+// validator-anchored + comment-masked + radius round.
+{
+  const fenceMod = null // scratch files for the two constructed cases:
+  
+// Live derivation: EVERY dirty site whose cited 12-line window contains a
+// permission-rule key is a candidate the old fence admitted — discover them
+// from the fence's own output rather than enumerating the incident report.
+if (mode === 'fixed') {
+  let out = ''
+  try {
+    out = execFileSync(process.execPath, ['scripts/verify-blueprint-version-clean.mjs'], {
+      cwd, encoding: 'utf8', env: process.env,
+    })
+  } catch (e) {
+    out = String(e.stdout ?? '')
+  }
+  const found = []
+  for (const l of out.split('\n')) {
+    if (!l.startsWith('OFFENDING ')) continue
+    const path = l.split(' :: ')[0].slice('OFFENDING '.length)
+    for (const m of l.matchAll(/L(\d+)=v(\d+)/g)) found.push([path, Number(m[1]), m[2]])
+  }
+  const pairs = []
+  for (const [path, line, v] of found) {
+    let lines
+    try {
+      lines = readFileSync(resolve(cwd, path), 'utf8').split('\n')
+    } catch {
+      continue
+    }
+    for (let k = Math.max(0, line - 12); k < Math.min(lines.length, line + 11); k += 1) {
+      if (/(?:^|[^A-Za-z0-9_$])resource\s*:/.test(lines[k]) && !/^\s*(\/\/|\*|\/\*)/.test(lines[k])) {
+        pairs.push([path, line, v, k + 1])
+        break
+      }
+    }
+  }
+  console.log(`derived live resource-window pairs: ${String(pairs.length)}`)
+  for (const [path, line, v, wl] of pairs) {
+    const key = `${path}::L${String(line)}::v${v}`
+    const from = Math.min(line, wl)
+    const to = Math.max(line, wl)
+    cases.push({
+      id: `R5-live-${path.split('/').pop()}-L${String(line)}`,
+      ledger: { ...base, [key]: `intentionally-dirty: live pair; foreign-axis: perms; witness-key: resource; owner: replay; retirement-check: n/a; hand-verified ${path}:${String(from)}-${String(to)}` },
+      admit: false,
+      whyRefused: /document key/i,
+    })
+  }
+}
+
+mkdirSync('.tmp-rr', { recursive: true })
+  writeFileSync(
+    '.tmp-rr/r5-doc.ts',
+    [
+      '// constructed: a document the register must refuse',
+      'const doc = [',
+      "  '---',",
+      "  'schemaVersion: 1',",   // line 4 = site
+      "  'blueprintId: R5-DOC',",
+      '  revision: 1,',
+      "  'contentHash: abc',",
+      "  '  role: leader',",      // line 8 = foreign witness, string-carried
+      "  'members: []',",
+      '].join("\n")',
+      '',
+    ].join('\n'),
+  )
+  writeFileSync(
+    '.tmp-rr/r5-comment.ts',
+    [
+      '// B3 shape: the only role: in window is a comment',
+      'const doc = [',
+      "  '---',",
+      "  'schemaVersion: 1',",   // line 4 = site
+      '].join("\n")',
+      '// role: no blueprint here', // line 6 — comment only
+      '',
+    ].join('\n'),
+  )
+  const r5dirty = (cite, w) =>
+    `intentionally-dirty: r5 replay row; foreign-axis: legacy-team-teammate-md; witness-key: ${w}; owner: replay; retirement-check: n/a replay artifact; ${cite}`
+  cases.push({
+    id: 'R5-resource-doc',
+    ledger: { ...base, 'packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts::L1128::v1': r5dirty(
+      'hand-verified packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:1122-1133', 'resource') },
+    admit: mode === 'vulnerable' || mode === 'r45',
+    whyRefused: mode === 'fixed' ? /document key/i : null,
+  })
+  cases.push({
+    id: 'R5-radius-doc',
+    ledger: { ...base, '.tmp-rr/r5-doc.ts::L4::v1': r5dirty('hand-verified .tmp-rr/r5-doc.ts:1-10', 'role') },
+    // exit 2 in every mode, but the REASON is the whole point: r45 passed the
+    // witness at admission (refused only by the unrelated foreign-site guard),
+    // the fixed fence refuses the DOCUMENT itself.
+    admit: false,
+    whyRefused: mode === 'fixed' ? /identity-triple cluster/i : /does not classify dirty/,
+  })
+  cases.push({
+    id: 'R5-comment-witness',
+    ledger: { ...base, '.tmp-rr/r5-comment.ts::L4::v1': r5dirty('hand-verified .tmp-rr/r5-comment.ts:1-6', 'role') },
+    // same reason-differential: r45 read the comment as evidence (refused
+    // later, for the wrong reason); the fixed fence masks comments at admission.
+    admit: false,
+    whyRefused: mode === 'fixed' ? /code\/string only/i : /does not classify dirty/,
+  })
+  void fenceMod
+}
+
 mkdirSync('.tmp-rr', { recursive: true })
 let bad = 0
 for (const c of cases) {
+  if (idFilter !== '' && !c.id.startsWith(idFilter)) continue
   const f = join('.tmp-rr', `acc-${c.id}.json`)
   writeFileSync(f, JSON.stringify(c.ledger, null, 2))
   let out = ''
