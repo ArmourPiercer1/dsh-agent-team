@@ -625,7 +625,7 @@ async function waitForTurnDone(mock, marker, doneText, timeoutMs) {
 function f15BlueprintYaml(leaderPersona, workerPersona) {
   return [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     `blueprintId: ${BP_F15_ID}`,
     'revision: "1"',
     'teamRequirements:',
@@ -676,6 +676,10 @@ function f15BlueprintYaml(leaderPersona, workerPersona) {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "F15 live-loss team default state."',
@@ -698,7 +702,7 @@ function f15BlueprintYaml(leaderPersona, workerPersona) {
  *  (W3-A–E thunk scoping) but carries no mcp CAPABILITY, so it never mounts). */
 const BP_ANCHOR_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BP_ANCHOR_ID}`,
   'revision: "1"',
   'leader:',
@@ -722,6 +726,10 @@ const BP_ANCHOR_YAML = [
   '  - domain: mcp',
   `    name: ${SERVER}`,
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: "F15 row anchor default state."',

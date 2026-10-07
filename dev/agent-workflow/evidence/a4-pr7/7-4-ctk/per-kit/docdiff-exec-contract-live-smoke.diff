@@ -1,0 +1,60 @@
+--- tests/kits/exec-contract-live-smoke/blueprint.mjs::scenario/exec-token-false (pre)
++++ tests/kits/exec-contract-live-smoke/blueprint.mjs::scenario/exec-token-false (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.exec
+ revision: "1"
+ leader:
+@@ -78,6 +78,10 @@
+         - report-progress
+         - request-control
+       deny: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/exec-contract-live-smoke/blueprint.mjs::scenario/exec-token-true (pre)
++++ tests/kits/exec-contract-live-smoke/blueprint.mjs::scenario/exec-token-true (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.exec
+ revision: "1"
+ leader:
+@@ -79,6 +79,10 @@
+         - report-progress
+         - request-control
+       deny: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/exec-contract-live-smoke/blueprint.mjs::anchor (pre)
++++ tests/kits/exec-contract-live-smoke/blueprint.mjs::anchor (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.exec-anchor
+ revision: "1"
+ leader:
+@@ -10,6 +10,10 @@
+     persona: "You are a worker of the exec-contract live smoke boot team."
+ memberEnvelopes: []
+ requirements: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
