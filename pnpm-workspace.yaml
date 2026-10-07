@@ -1,12 +1,12 @@
 packages:
   - "packages/*"
+hoistPattern:
+  # The built client entry's host module closure (composition-smoke arm
+  # `client plugin (packages/client)`) resolves @deepseek-ai/dsh-client-ui-primitives'
+  # undeclared imports out of node_modules/.pnpm/node_modules/, which pnpm fills from
+  # the hoist pattern; pin it rather than inherit an upstream default.
+  - '*'
 overrides:
-  # Keep the whole vitest stack (vitest, @vitest/mocker, vite-node) on the
-  # rolldown-based vite 8 line: its config loading and TS transforms run
-  # in-process, whereas vite 7's esbuild pipeline spawns child processes
-  # (not viable in spawn-restricted environments such as the P1-T4
-  # verification sandbox).
-  vite: "^8.2.2"
   # A4-PR7 7.6 (client leg): host-generation parity pins, added so the client
   # plugin's host module closure resolves here at all. `packages/client` now
   # dev-depends on the 17 packages @deepseek-ai/dsh-client-ui-primitives@0.2.0-rc.2
@@ -24,12 +24,29 @@ overrides:
   # frozen install refuses a mismatch (ERR_PNPM_LOCKFILE_CONFIG_MISMATCH).
   # Re-measure, do not edit by taste, after any host-pin bump.
   # Evidence: dev/agent-workflow/evidence/a4-pr7/7-6-client-leg/
+  # Order is byte-canonical, not cosmetic: pnpm writes the lockfile's `overrides:` block in
+  # declaration order, so this file and pnpm-lock.yaml must agree key-for-key or the lock
+  # cannot be reproduced from the manifests. Measured with node_modules and the lock both
+  # removed (so pnpm must really re-resolve): declared first, `vite` comes out of
+  # `pnpm install --lockfile-only --offline --no-frozen-lockfile` 2 lines away from the
+  # committed block; declared last it is byte-identical. A *whole-file* byte-identical
+  # regeneration is not achievable offline here for reasons unrelated to these pins — the
+  # store holds one host vintage, so a full re-resolution moves ~1577 lines, on this branch
+  # and on plain master alike (the control is in the evidence file).
+  # Evidence: dev/agent-workflow/evidence/a4-pr7/7-6-client-leg/byte-canonical-lock.txt
   micromark: 4.0.2
   micromark-util-types: 2.0.2
   mdast-util-find-and-replace: 3.0.2
   mdast-util-gfm-strikethrough: 2.0.0
   mdast-util-to-markdown: 2.1.2
   micromark-extension-gfm-table: 2.1.1
+  # Keep the whole vitest stack (vitest, @vitest/mocker, vite-node) on the
+  # rolldown-based vite 8 line: its config loading and TS transforms run
+  # in-process, whereas vite 7's esbuild pipeline spawns child processes
+  # (not viable in spawn-restricted environments such as the P1-T4
+  # verification sandbox).
+  vite: "^8.2.2"
+
 allowBuilds:
   # 0.2.0-rc.2 pin: these five transitive packages ship lifecycle scripts.
   # None of them is part of the plugin's build/test surface — the native
