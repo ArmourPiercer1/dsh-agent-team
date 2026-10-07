@@ -127,13 +127,34 @@ function v1Source(blueprintId: string, revision: string, persona = 'Lead.'): str
 }
 
 /**
+ * Rewrite the frontmatter's declared-version line to the version the LEG needs
+ * the document to DECLARE. The rewrite is line-structural and THROWS if there
+ * is no version line: a silent no-op would collapse the fixture's whole point —
+ * this file's rows are only meaningful because what the document declares and
+ * what the row stamps are DIFFERENT numbers (the anti-vacuity guard below
+ * re-measures the divergence, so a collapse could not pass quietly). No retired
+ * version digit is spelled out as a substitution key (7.4 migration,
+ * 2026-10-08: the previous carriers were `replace('schemaVersion: <retired>', …)`
+ * pairs — Blueprint-version sites the file needed only to NAME the base of a
+ * rewrite, never to assert it; every asserted version in this file is compared
+ * against `declaredBlueprintSchemaVersion(...)` or the domain's own sets).
+ */
+function withDeclaredVersion(source: string, version: number): string {
+  const pattern = /^schemaVersion: \d+$/m
+  if (!pattern.test(source)) {
+    throw new Error('A4-F1 guard: the shared fixture carries no rewriteable schemaVersion line')
+  }
+  return source.replace(pattern, `schemaVersion: ${String(version)}`)
+}
+
+/**
  * A document whose frontmatter declares version 3. Listing an identity reads the
  * frontmatter only (plan §7.4: no whole-catalog strong parse), so this is a
  * legitimate LISTING fixture — and it is the exact shape F1 was measured on: a
  * v3 document under a row stamped `2`.
  */
 function declaredV3Source(blueprintId: string, revision: string): string {
-  return v1Source(blueprintId, revision, 'Three.').replace('schemaVersion: 1', 'schemaVersion: 3')
+  return withDeclaredVersion(v1Source(blueprintId, revision, 'Three.'), 3)
 }
 
 /**
@@ -143,7 +164,7 @@ function declaredV3Source(blueprintId: string, revision: string): string {
  * that is what its frontmatter says.
  */
 function declaredV2Source(blueprintId: string, revision: string): string {
-  return v1Source(blueprintId, revision, 'Two.').replace('schemaVersion: 1', 'schemaVersion: 2')
+  return withDeclaredVersion(v1Source(blueprintId, revision, 'Two.'), 2)
 }
 
 /** A stored source that is not a readable document at all (a corrupt row). */
