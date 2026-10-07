@@ -84,11 +84,7 @@
  * @module @dsh-agent-team/runtime/plugin/root
  */
 
-import {
-  createBlueprintCatalog,
-  parseBlueprint,
-  sha256Hex,
-} from '../../../domain/blueprint/src/index.js'
+import { createBlueprintCatalog, sha256Hex } from '../../../domain/blueprint/src/index.js'
 import type {
   BlueprintCatalog,
   BlueprintTemplate,

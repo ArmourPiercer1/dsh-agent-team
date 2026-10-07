@@ -9,7 +9,9 @@ quote them.
 
 | leg | command | result |
 | --- | --- | --- |
-| repo typecheck | `pnpm -r run typecheck` | **4 of 8 packages Done, `packages/testkit` Failed** — 3 errors, all in the fence wrapper test (a `.mjs` import with no type surface). FIXED in `55482e4d` by adding `scripts/verify-blueprint-version-clean.d.mts`; after the fix `npx tsc -p packages/testkit --noEmit` exits 0. **A full 8/8 re-run has NOT been executed after the fix** — that is the first thing the next writer owes. |
+| repo typecheck (attempt 1) | `pnpm -r run typecheck` | 4 of 8 packages Done, `packages/testkit` Failed — 3 errors, all in the fence wrapper test (a `.mjs` import with no type surface). Fixed in `55482e4d` by adding `scripts/verify-blueprint-version-clean.d.mts`. |
+| repo typecheck (re-run, post-fix) | `pnpm -r run typecheck` | **8 of 8 packages `typecheck: Done`, 0 lines matching `error TS`, exit 0** (`.scratch/gates/7-6-typecheck-2.txt`). This is the leg, met. |
+| `pnpm lint` identity diff | `node scripts/lint-identities.mjs --out … --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` | **PASS: `new 0, resolved 0`, 160 identity lines / 76 distinct, baseline 76 distinct** (`.scratch/gates/7-6-lint-diff-2.txt`). The FIRST run of this leg found **2 new identities authored by this lane** — see the finding below — which is the whole argument for having the tool instead of the README recipe. |
 | whole-repo tests | `npx vitest run` (from the repo root, after `rm -rf packages/testkit/test/.tmp-fault .tmp-t12a-b2-home`) | `Test Files 10 failed \| 476 passed (486)`, `Tests 19 failed \| 5955 passed (5974)`. Receipt `.scratch/gates/7-6-full-test.txt`. |
 | baseline for that leg | `base-run1.txt` (same command, same tree base) | `Test Files 9 failed \| 474 passed (483)`, `Tests 19 failed \| 5897 passed (5916)`. |
 | **failed-test identity** | diff of the two `× ` sets | **IDENTICAL — 19 = 19, same six files, same per-file counts**: `packages/domain/test/t1-capability-schema.test.ts` (9), `packages/domain/test/t2-blueprint-hash.test.ts` (1), `packages/runtime/test/d3-member-identity-context.test.ts` (1), `packages/runtime/test/p6t3-mediation.test.ts` (5), `packages/runtime/test/p6t3-restart.test.ts` (2), `packages/tools/test/p6t6-actions.test.ts` (1). |
@@ -23,15 +25,36 @@ quote them.
 
 ## Legs NOT run (and why — none of them may be inferred from the legs above)
 
-- **Full `pnpm -r run typecheck` after the fix** (8/8 + zero `error TS`).
+- ~~Full `pnpm -r run typecheck` after the fix~~ **done: 8/8 Done, 0 `error TS`.**
 - **Root `pnpm test` twice** (the plan's leg; only the single root `npx vitest run` was done).
 - **Client lane** (baseline 3 failed test-name sets) — untouched by this lane, not re-measured.
-- **`pnpm lint` identity diff against `lint-identities-0237d487.txt`** — the tool now exists (`pnpm lint:identities --diff …`) but the whole-repo eslint run was not executed in this session.
+- ~~the `pnpm lint` identity diff~~ **done: `new 0, resolved 0`.**
 - **`pnpm build`, `build:composition`, `check:artifacts`, `pnpm smoke:composition`** — not run; `smoke:composition` is blocked here by the `clsx` dependency that cannot be installed in this sandbox (see `7-3-BLAST-RADIUS-AND-UNEXECUTED-FLIP.md` §7.4).
 - **Remote 1–8 regressions, Remote/real-host kits** — NOT_RUN: this environment has no
   `tests/deepseek-harness-test-use/packages/cli/dist`, `tests/homes/.playwright-browsers`
   is empty, and there is no `/opt/google/chrome/chrome`. Recorded as
   NOT_RUN/BLOCKED with the reason, not as passing.
+
+## The two lint identities this lane introduced, and what the tool caught
+
+The first full-repo run of `scripts/lint-identities.mjs --diff` reported
+`new 2`: `@typescript-eslint/no-unused-vars` in `packages/runtime/src/plugin/root.ts`
+and in `packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts`. Both were real
+damage from Task 7.2, invisible to every other leg that had passed:
+
+- `root.ts:89` still imported `parseBlueprint` after Task 7.2 moved the parse behind
+  `requireAnchor` — a dead import in the file whose whole change is about *not*
+  parsing at construction, which is the kind of leftover that quietly re-legitimises
+  the old shape for the next reader.
+- the test file carried a `dCode` alias nobody called, and — more usefully — a
+  `team.create` wire call over the OPEN bound document whose assertions had been
+  deleted along with the accidental-green ordering test it belonged to.
+
+The second was not fixed by deletion. A refused `team.create` answering `ok:false`
+means little unless the *identical call shape* (endpoint, param names, blueprint
+identity) is shown to succeed against a bound document this build runs, so the dead
+call became that positive control (one more test; the lane is 55/55). Re-running the
+whole-repo diff returns `new 0, resolved 0`. Mutes were not used and are not available.
 
 ## The one new failing suite, stated as a finding
 

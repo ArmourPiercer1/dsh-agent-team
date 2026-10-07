@@ -622,8 +622,6 @@ const ANCHOR_RUNNABLE = revisionSource('a4p7.degraded.anchor', '1', 'Runnable an
 const ANCHOR_UNKNOWN_VERSION = anchorOnVersion('a4p7.degraded.anchor', '99')
 const ANCHOR_NOT_A_DOCUMENT = 'this anchor is not a blueprint document at all\n'
 
-const dCode = (error: unknown): string | undefined => pluginCodeOf(error)
-
 function dConfig(bootPhase: 'create' | 'resume', blueprintSource: string): TeamPluginConfig {
   return {
     bootPhase,
@@ -895,7 +893,10 @@ const dGovernanceArm = await dWorld({
 const dGovernanceArmEnsure = await dGovernanceArm.call('team.ensureRootLive', {
   teamSessionId: D_ROOT_SID,
 })
-/** The same mint over an OPEN bound document (the control for the ordering law). */
+// The same mint over an OPEN bound document, kept as the positive control for the
+// refused `team.create` below: the refused call's shape (endpoint, param names,
+// blueprint identity) is only meaningful if the identical shape SUCCEEDS when the
+// bound document is one this build runs.
 const D_OPEN_CREATED_SID = 'session-a4p7-d-created-open'
 const dResumeOpenCreate = await dResumeOpen.call('team.create', {
   rootSessionId: D_OPEN_CREATED_SID,
@@ -1143,6 +1144,15 @@ describe('D5 — the start ports refuse before the glue is reached', () => {
     expect(
       dHandoffOpen.governanceCalls.filter((c) => c.includes(HANDOFF_PREFIX)).length,
     ).toBeGreaterThan(0)
+  })
+  it('the SAME team.create shape succeeds over an open bound document (the control)', () => {
+    // Without this, the refused create's `ok:false` could be a harness artefact:
+    // same endpoint, same param names, same blueprint identity, different bound
+    // document — and here the mint completes and exactly one Root Agent starts.
+    expect(dResumeOpenCreate['ok']).toBe(true)
+    expect(
+      dResumeOpen.stub.__t1.rootAgentStarts.filter((sid) => sid === D_OPEN_CREATED_SID).length,
+    ).toBe(1)
   })
   it('team.create over the same bound document is refused, leaving the row NOT LIVE', () => {
     // The create wire sits AFTER the atomic fresh-root commit and BEFORE the
