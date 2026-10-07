@@ -1,0 +1,100 @@
+# FINAL VERIFICATION at rebased HEAD 4f81dcf3 (base origin/master fba82095)
+
+## V1. Clean offline install from the SHIPPED lockfile (the CI path: frozen, offline, store-only)
+$ rm -rf node_modules && pnpm install --offline --store-dir=/home/user/dsh-plugins/dsh-agent-team/.tmp-pnpm-store --ignore-scripts --frozen-lockfile --config.confirmModulesPurge=false
++ typescript-eslint 8.68.0
++ vitest 4.1.11
+
+Done in 1.3s using pnpm v11.7.0
+exit=0
+
+## V2. pnpm run build
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+exit=0
+
+## V3. pnpm run build:composition (ends in check:artifacts)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/client/composition-shim/client-bundle.js (1259739 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+exit=0
+
+## V4. node scripts/composition-smoke.mjs  (VERBATIM, full output)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/scripts/composition-smoke.mjs:189:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/scripts/composition-smoke.mjs:286:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke
+exit=0
+
+## V5. pnpm run smoke:composition (the package-script wrapper)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/scripts/composition-smoke.mjs:189:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/scripts/composition-smoke.mjs:286:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke
+exit=0
+
+## V6. pnpm -r run typecheck
+Done count: 8
+error TS count: 0
+exit=0
+
+## V7. pnpm --filter @dsh-agent-team/client run test (baseline: 3 failed / 876+ passed, team-creation-panel x2 + team-governance x1)
+ ❯ test/team-creation-panel.client.spec.tsx (19 tests | 2 failed) 2406ms
+ ❯ test/team-governance.client.spec.tsx (30 tests | 1 failed) 2371ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed | 53 passed (55)
+      Tests  3 failed | 876 passed (879)
+
+## V8. lint-identities --diff vs the alpha.4 baseline
+lint-identities: 160 identity lines, 76 distinct (target .)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+exit=0
+
+## V9. neighbouring gate suites (7.5 classifier + p4t6 scan + blueprint-version-clean)
+ Test Files  3 passed (3)
+      Tests  65 passed (65)
+
+## V10. eslint on every file this task wrote (evidence .mjs are eslint-ignored by config)
+
+✖ 2 problems (0 errors, 2 warnings)
+
+eslint exit=0
+
+## V11. mute audit of the whole branch diff
+zero matches: no eslint-disable, no @ts-ignore/@ts-expect-error, no .skip/.only
+
+## V12. git diff --stat pnpm-lock.yaml
+ pnpm-lock.yaml | 875 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 875 insertions(+)
+
+## V13. branch state
+4f81dcf3 build(a4-pr7 7.6): make the client plugin composition-smoke leg resolvable
+(worktree clean apart from this evidence directory)

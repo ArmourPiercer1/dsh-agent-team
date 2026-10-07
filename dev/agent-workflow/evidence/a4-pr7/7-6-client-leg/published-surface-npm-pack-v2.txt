@@ -1,0 +1,7 @@
+# Published-surface proof at the delivered base (v2): tarball contents at origin/master d8b145c1 vs HEAD 57d79282
+# base tree = pristine 'git archive origin/master' export in .tmp-faultscratch (tracked files only, no node_modules)
+base(origin/master): entry count=1533 unpackedSize=11176289
+after(this branch) : entry count=1533 unpackedSize=11176289
+
+## diff of (size, path) per file — empty means the published tarball is the same bytes-set
+(no differences)

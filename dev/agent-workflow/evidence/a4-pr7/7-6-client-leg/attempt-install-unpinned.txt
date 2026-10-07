@@ -1,0 +1,20 @@
+$ pnpm install --offline --store-dir=/home/user/dsh-plugins/dsh-agent-team/.tmp-pnpm-store --ignore-scripts --config.confirmModulesPurge=false --no-frozen-lockfile
+(--frozen-lockfile is IMPOSSIBLE for this step by definition: it refuses any lockfile change; CI=true makes it the default, so it is passed explicitly as --no-frozen-lockfile. The lockfile is still written by pnpm, never by hand.)
+Scope: all 10 workspace projects
+✓ Lockfile passes supply-chain policies (verified 1d ago)
+Progress: resolved 1, reused 0, downloaded 0, added 0
+[WARN] deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+[WARN] The metadata of react-dom is missing the "time" field; skipping the minimumReleaseAge check for this package.
+[WARN] The metadata of react is missing the "time" field; skipping the minimumReleaseAge check for this package.
+[WARN] The metadata of typescript is missing the "time" field; skipping the minimumReleaseAge check for this package.
+[WARN] The metadata of @babel/runtime is missing the "time" field; skipping the minimumReleaseAge check for this package.
+[WARN] The metadata of use-sync-external-store is missing the "time" field; skipping the minimumReleaseAge check for this package.
+[WARN] The metadata of scheduler is missing the "time" field; skipping the minimumReleaseAge check for this package.
+[WARN] The metadata of @typescript-eslint/types is missing the "time" field; skipping the minimumReleaseAge check for this package.
+Progress: resolved 524, reused 512, downloaded 0, added 0
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/client:
+[ERR_PNPM_NO_OFFLINE_META] Failed to resolve micromark-util-edit-map@>=1.0.0 <2.0.0-0 in package mirror /home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/cache/pnpm/v11/metadata/registry.npmjs.org/micromark-util-edit-map.jsonl
+
+This error happened while installing the dependencies of mdast-util-from-markdown@2.0.3
+ at micromark@4.0.3
+exit=1

@@ -1,0 +1,80 @@
+
+===== round 1 (pins=0) exit=1 =====
+Progress: resolved 1, reused 0, downloaded 0, added 0
+[ERR_PNPM_NO_OFFLINE_META] Failed to resolve micromark-util-edit-map@>=1.0.0 <2.0.0-0 in package mirror /home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/cache/pnpm/v11/metadata/registry.npmjs.org/micromark-util-edit-map.jsonl
+
+This error happened while installing the dependencies of mdast-util-from-markdown@2.0.3
+ at micromark@4.0.3
+
+===== round 2 (pins=1) exit=1 =====
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +97
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 97, reused 92, downloaded 0, added 77
+[ERR_PNPM_NO_OFFLINE_TARBALL] A package is missing from the store but cannot download it in offline mode. The missing package may be downloaded from https://registry.npmjs.org/micromark-util-types/-/micromark-util-types-2.0.3.tgz.
+
+This error happened while installing the dependencies of mdast-util-from-markdown@2.0.3
+
+===== round 3 (pins=2) exit=1 =====
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +97
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 97, reused 93, downloaded 0, added 77
+[ERR_PNPM_NO_OFFLINE_TARBALL] A package is missing from the store but cannot download it in offline mode. The missing package may be downloaded from https://registry.npmjs.org/mdast-util-find-and-replace/-/mdast-util-find-and-replace-3.0.3.tgz.
+
+This error happened while installing the dependencies of mdast-util-gfm@3.1.0
+ at mdast-util-gfm-autolink-literal@2.0.1
+
+===== round 4 (pins=3) exit=1 =====
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +97
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 97, reused 94, downloaded 0, added 75
+[ERR_PNPM_NO_OFFLINE_TARBALL] A package is missing from the store but cannot download it in offline mode. The missing package may be downloaded from https://registry.npmjs.org/mdast-util-gfm-strikethrough/-/mdast-util-gfm-strikethrough-2.0.1.tgz.
+
+This error happened while installing the dependencies of mdast-util-gfm@3.1.0
+
+===== round 5 (pins=4) exit=1 =====
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +97
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 97, reused 95, downloaded 0, added 76
+[ERR_PNPM_NO_OFFLINE_TARBALL] A package is missing from the store but cannot download it in offline mode. The missing package may be downloaded from https://registry.npmjs.org/mdast-util-to-markdown/-/mdast-util-to-markdown-2.2.0.tgz.
+
+This error happened while installing the dependencies of mdast-util-gfm@3.1.0
+
+===== round 6 (pins=5) exit=1 =====
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +97
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 97, reused 96, downloaded 0, added 72
+[ERR_PNPM_NO_OFFLINE_TARBALL] A package is missing from the store but cannot download it in offline mode. The missing package may be downloaded from https://registry.npmjs.org/micromark-extension-gfm-table/-/micromark-extension-gfm-table-2.1.2.tgz.
+
+This error happened while installing the dependencies of micromark-extension-gfm@3.0.0
+
+===== round 7 (pins=6) exit=0 =====
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +97
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 97, reused 97, downloaded 0, added 97, done
+
+dependencies:
++ @shikijs/langs 4.3.1 (4.5.0 is available)
++ anser 2.3.5
++ clsx 2.1.1
++ katex 0.16.47 (0.19.0 is available)
++ mdast-util-from-markdown 2.0.3 (2.1.0 is available)
++ mdast-util-gfm 3.1.0
++ mdast-util-math 3.0.0
++ micromark-core-commonmark 2.0.3 (2.0.4 is available)
++ micromark-extension-gfm 3.0.0
++ micromark-extension-math 3.1.0
++ micromark-factory-space 2.0.1 (2.1.0 is available)
++ micromark-util-character 2.1.1
++ micromark-util-classify-character 2.0.1
++ micromark-util-sanitize-uri 2.0.1
++ micromark-util-symbol 2.0.1
++ shiki 4.3.1 (4.5.0 is available)
++ simple-icons 16.31.0 (16.34.0 is available)
+
+Done in 609ms using pnpm v11.7.0
