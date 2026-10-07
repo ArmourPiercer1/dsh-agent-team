@@ -94,6 +94,7 @@ import {
   withTimeout,
   type AuthzWorld,
 } from './fix-control-authz-helpers.js'
+import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 
 let world: AuthzWorld | undefined
 
@@ -803,10 +804,11 @@ describe('fix-control-authz C — the durable abandonment is the TERMINAL mark',
 //    covered by the old tests: existing-member delegates short-circuit
 //    (L637-646) and follow-ups go direct CAS.)
 //  - second-preflight `templateFacts` sub-point: v2-blueprint only
-//    (`targetTemplateInputs` is present only for schemaVersion 2). The
-//    P6-T2 fixture blueprint is schemaVersion 1 — the await is
-//    structurally absent here (the boundary check is placed in code
-//    after that await regardless).
+//    (`targetTemplateInputs` is compiled only from a document that carries the
+//    v2 requirement surface). The P6-T2 fixture blueprint does not carry it —
+//    it rides the supported version, whose requirement surface is the two
+//    envelope documents — so the await is structurally absent here (the
+//    boundary check is placed in code after that await regardless).
 //  - outer-gate × send-message: the recovery reentry takes the fallback
 //    (no gate on the reentry — the original attempt's gate ran BEFORE
 //    approval, outside the covered span).
@@ -2099,6 +2101,24 @@ async function c9FaultPreflight(
 // prove it reached its site is not green, however the counters read).
 // =====================================================================
 
+/**
+ * The version this fixture's document declares is the SUBJECT of the file, not
+ * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+ * a home here instead of in the fence's sight: production compiles the
+ * requirement scopes this document declares only when the document declares
+ * version 2 — five sites compare the declared version against 2
+ * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+ * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+ * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+ * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddened exactly the row that declares its subject — c9-r3-1, the v2 template-facts feed row — while the other 73 tests of the file stayed green. 
+ * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+ * emits are byte-for-byte what they were; only the carrier moved. And the
+ * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+ * surviving version this line stops compiling and names THIS FILE — which is the
+ * loud failure §7.4 exists to arrange, in place of a document that would
+ * otherwise become a silent parse refusal.
+ */
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
 /** The v2 variant of the P6-T2 fixture blueprint (residual-3 row
  *  c9-r3-1): the SAME world at schemaVersion 2 with the worker
  *  template's structured requirement (`complete: true` — structurally
@@ -2112,7 +2132,7 @@ async function c9FaultPreflight(
  *  documents). */
 const P6T2_V2_BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 2',
+  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
   'blueprintId: P6T2-BP',
   'revision: "1"',
   'leader:',

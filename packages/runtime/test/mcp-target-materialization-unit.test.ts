@@ -45,7 +45,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { parseBlueprint } from '../../domain/blueprint/src/index.js'
+import { type TeamBlueprint, parseBlueprint } from '../../domain/blueprint/src/index.js'
 import {
   createRuntimeRequirementFactsProvider,
   requirementFactScopeRoleOf,
@@ -83,9 +83,27 @@ const INST_B = 'inst-mtm-u6-b'
 
 // --- the v2 blueprint (the `worker` template scope requires the server) --------
 
+/**
+ * The version this fixture's document declares is the SUBJECT of the file, not
+ * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+ * a home here instead of in the fence's sight: production compiles the
+ * requirement scopes this document declares only when the document declares
+ * version 2 — five sites compare the declared version against 2
+ * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+ * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+ * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+ * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddened 5 of 5 (all green at base): the template scope the unit reads was no longer compiled. 
+ * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+ * emits are byte-for-byte what they were; only the carrier moved. And the
+ * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+ * surviving version this line stops compiling and names THIS FILE — which is the
+ * loud failure §7.4 exists to arrange, in place of a document that would
+ * otherwise become a silent parse refusal.
+ */
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
 const V2_SOURCE = [
   '---',
-  'schemaVersion: 2',
+  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
   'blueprintId: mtm.u6',
   'revision: "1"',
   'leader:',
