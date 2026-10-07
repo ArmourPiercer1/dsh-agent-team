@@ -4401,6 +4401,57 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     })
   }
 
+  async function listDecidedApprovalCases(args: {
+    readonly rootSessionId: string
+    readonly subject?: ControlSubject
+  }): Promise<readonly ApprovalCaseSummary[]> {
+    const root = parseRoot(
+      args.rootSessionId,
+      CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+      'listDecidedApprovalCases',
+    )
+    return withTeamLock(teamLocks, root, async () => {
+      if (repositories.teamSessions.get(root) === undefined) {
+        throw new TeamRuntimeError(
+          TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND,
+          `ControlService: no TeamSession record for root session '${root}'`,
+          { rootSessionId: root },
+        )
+      }
+      const state = loadControlState(root)
+      const caseIds: string[] = []
+      for (const row of state.requests) {
+        const caseId = row.payload.approvalCaseId
+        if (caseId === undefined || caseIds.includes(caseId)) continue
+        caseIds.push(caseId)
+      }
+      const summaries: ApprovalCaseSummary[] = []
+      for (const caseId of caseIds) {
+        const read = buildApprovalCaseState(state, caseId)
+        // The same fail-closed law as the open read (a corrupt case is not
+        // reported here either — `readApprovalCaseState` owns that report).
+        if (read.kind !== 'case') continue
+        // A1-12 "the told half": the EXACT mirror of `listOpenApprovalCases`
+        // with the DECIDED filter. This read states a fold fact ("the current
+        // leg carries a decision"); it expresses NO surfacing opinion — which
+        // decided closes an operator sees (the `resolver-unavailable` rule of
+        // spec 11.6 / plan 6.D) is the intervention lane's law, applied in
+        // `intervention/projection.ts` where the item-status vocabulary lives.
+        if (read.state.status !== 'decided') continue
+        if (
+          args.subject !== undefined &&
+          subjectIdentityOf(read.state.identity.subject) !== subjectIdentityOf(args.subject)
+        ) {
+          continue
+        }
+        const currentLeg = read.state.currentLeg
+        if (currentLeg === undefined) continue
+        summaries.push({ state: read.state, carrierKind: currentLeg.kind })
+      }
+      return summaries
+    })
+  }
+
   // --- appendTerminalOutcome -----------------------------------------------------------
 
   /**
@@ -4846,6 +4897,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     escalateApprovalLeg,
     readApprovalCaseState,
     listOpenApprovalCases,
+    listDecidedApprovalCases,
     appendTerminalOutcome,
     terminalDecisionValueFor,
     closeApprovalCaseWithoutLeg,

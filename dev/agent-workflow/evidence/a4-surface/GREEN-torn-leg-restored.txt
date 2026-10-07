@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-surface
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > precondition: the human-user leg is listed OPEN before the act, and the terminate case is not yet terminal
+=== A4-SURFACE MEASUREMENT === list ids before the act: ["int-case-0i2xub60hidd411pdt2ow1kt","int-case-10pftk01a87yv51miv3gy1u3","int-case-1a621jc05lr8vr0h4kony0r0","int-case-1mkax560agy4ep145guvk00i"]
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > THE TELLING: after the escalate terminates the case, intervention.list carries the case as a TERMINAL authority-unavailable item — informational, zero legal actions, nothing held, no-resolver named
+=== A4-SURFACE MEASUREMENT === list ids after the act: ["int-case-10pftk01a87yv51miv3gy1u3","int-case-1a621jc05lr8vr0h4kony0r0","int-case-1mkax560agy4ep145guvk00i"]; terminate item: {"interventionId":"int-case-10pftk01a87yv51miv3gy1u3","kind":"approval","responseBehavior":"informational","blockScope":null,"source":{"kind":"control-case","id":"case-10pftk01a87yv51miv3gy1u3","requestId":"ctrl-0xf6qxr1okoq3e11qyejd06i","legOrdinal":1,"carrierKind":"leader-approval"},"status":"authority-unavailable","requiredAuthority":"human-user","currentReviewAuthority":"human-user","legalActions":[],"derivationReasons":["no-resolver"],"fingerprint":"fp-a4-surface-wire","createdAt":"2026-09-01T09:00:00Z"}
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > a RISEN escalation is NOT terminal: the risen leg surfaces (exactly one item, open, with affordances) and the case never gains the authority-unavailable cell
+=== A4-SURFACE MEASUREMENT === risen items: [{"interventionId":"int-case-1a621jc05lr8vr0h4kony0r0","kind":"approval","responseBehavior":"wait-for-response","blockScope":{"kind":"operation","operationFingerprint":"fp-a4-surface-risen"},"source":{"kind":"control-case","id":"case-1a621jc05lr8vr0h4kony0r0","requestId":"ctrl-1wyhscs0axceub0iwr8021lf","legOrdinal":2,"carrierKind":"leader-approval"},"status":"open","requiredAuthority":"human-user","currentReviewAuthority":"human-user","legalActions":["allow","escalate","deny"],"derivationReasons":["leg-open"],"fingerprint":"fp-a4-surface-risen","createdAt":"2026-09-01T09:00:00Z"}]
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > the born-terminal zero-review close surfaces CONSISTENTLY with the escalate-terminate close (same terminal cells), not silently differently
+=== A4-SURFACE MEASUREMENT === born-terminal item: {"interventionId":"int-case-1mkax560agy4ep145guvk00i","kind":"approval","responseBehavior":"informational","blockScope":null,"source":{"kind":"control-case","id":"case-1mkax560agy4ep145guvk00i","requestId":"ctrl-0rcar3m1xlpmdh19eqbq81y5","legOrdinal":1,"carrierKind":"leader-approval"},"status":"authority-unavailable","requiredAuthority":"human-user","currentReviewAuthority":"human-admin","legalActions":[],"derivationReasons":["no-resolver"],"fingerprint":"fp-a4-surface-born","createdAt":"2026-09-01T09:00:00Z"}
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > CONTROL arm (this lane widens NOTHING else): an ordinary allow-decided case (no terminalReason) still leaves the list exactly as before
+=== A4-SURFACE MEASUREMENT === ordinary decided item present? true
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > read-side only: a bare intervention.list appends ZERO durable rows (the PR #118 pinned rows stay the only writes)
+=== A4-SURFACE MEASUREMENT === ledger rows appended by one list call: 0
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > fail-closed act on the terminal item: acting by id on a terminated case stays refused (the act lane re-reads OPEN cases only)
+=== A4-SURFACE MEASUREMENT === act-on-terminal: {"code":"INTERVENTION_NOT_FOUND","message":"intervention.act: no OPEN approval case backs 'int-case-10pftk01a87yv51miv3gy1u3' on team 'session-root-p6t1' (the case left the open projection — decided or never existed)","details":{"method":"intervention.act","endpoint":"intervention.act","contractVersion":8,"requestToken":null}}
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > fetch semantics MEASURED (claim corrected): intervention.get SEARCHES THE PROJECTION SET (s6-remote.ts:3667-3680), it is not an independent decided-refusal read — so the surfaced terminal row now answers get too; the decided-vs-never-existed conflation the follow-up report carries survives for ORDINARY closes, pinned here
+=== A4-SURFACE MEASUREMENT === get-after on the surfaced terminal id: ok=true
+=== A4-SURFACE MEASUREMENT === get on the ordinary decided id: {"code":"INTERVENTION_NOT_FOUND","message":"intervention.get: no intervention item 'int-case-0i2xub60hidd411pdt2ow1kt' is currently projected for team 'session-root-p6t1'","details":{"method":"intervention.get","endpoint":"intervention.get","contractVersion":8,"requestToken":null}}
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > absence is fail-safe: a control source WITHOUT the terminated read (the pre-existing structural shape) projects exactly the open set — no crash, no synthesized terminal row
+=== A4-SURFACE MEASUREMENT === fake-control projection ids: ["int-case-1a621jc05lr8vr0h4kony0r0"]
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > torn-window dedupe (the two control reads run under SEPARATE locks): one case appearing in the OPEN snapshot AND the DECIDED snapshot surfaces EXACTLY ONE item, the OPEN snapshot wins, and the act lane — re-reading OPEN fresh — still refuses acting on the truly-decided id
+=== A4-SURFACE MEASUREMENT === torn-window projection ids: ["int-case-10pftk01a87yv51miv3gy1u3"]
+=== A4-SURFACE MEASUREMENT === act 'allow' on the truly-decided id: {"code":"INTERVENTION_NOT_FOUND","message":"intervention.act: no OPEN approval case backs 'int-case-10pftk01a87yv51miv3gy1u3' on team 'session-root-p6t1' (the case left the open projection — decided or never existed)","details":{"method":"intervention.act","endpoint":"intervention.act","contractVersion":8,"requestToken":null}}
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > the generic decided read lives in CONTROL and carries EVERY decided case (the resolver-unavailable FILTER is the intervention lane law, not a control-lane opinion)
+=== A4-SURFACE MEASUREMENT === decided read: ["case-10pftk01a87yv51miv3gy1u3","case-1mkax560agy4ep145guvk00i","case-0i2xub60hidd411pdt2ow1kt"]
+
+ ✓ packages/runtime/test/a4-surface-authority-unavailable.test.ts (11 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  03:33:06
+   Duration  1.08s (transform 746ms, setup 0ms, import 985ms, tests 6ms, environment 0ms)
+

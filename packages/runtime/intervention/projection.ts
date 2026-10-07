@@ -29,6 +29,7 @@
  */
 
 import type { ApprovalCaseState, ApprovalCaseSummary, ControlSubject } from '../control/types.js'
+import { CONTROL_LEG_TERMINAL_REASONS } from '../control/types.js'
 import type {
   InterventionItem,
   RequiredAuthorityReader,
@@ -49,6 +50,18 @@ import { deriveInterventionItems, deriveZeroLegAuthorityUnavailableItem } from '
 export interface InterventionControlSource {
   /** The team's open approval cases (one item per CASE, not per leg). */
   listOpenApprovalCases(input: {
+    readonly rootSessionId: string
+    readonly subject?: ControlSubject
+  }): Promise<readonly ApprovalCaseSummary[]>
+  /**
+   * The team's DECIDED approval cases (the fold mirror of the open read).
+   * OPTIONAL on this seam on purpose: a source that does not offer it keeps
+   * the shipped open-only projection untouched (fail-safe, not fail-open).
+   * The real Control service implements it; what gets SURFACED from the
+   * decided set is decided by THIS lane (the `terminalReason` filter in
+   * {@link projectInterventions}), never by the control read.
+   */
+  listDecidedApprovalCases?(input: {
     readonly rootSessionId: string
     readonly subject?: ControlSubject
   }): Promise<readonly ApprovalCaseSummary[]>
@@ -109,6 +122,11 @@ export interface ProjectInterventionsInput {
  * "no facts", never as "allow": the item then carries no legal actions
  * (spec §18.3 — the client may only use server-provided actions).
  *
+ * The decided half of the A1-12 telling (spec §11.6) is merged in here:
+ * decided cases stamped `terminalReason: resolver-unavailable` join the
+ * projected set as terminal items (see the filter below); every other
+ * decided close stays invisible exactly as before this lane.
+ *
  * @param input - the projection input.
  * @returns the frozen items, Control first then each adapter in order.
  */
@@ -120,6 +138,40 @@ export async function projectInterventions(
     ...(input.subject !== undefined ? { subject: input.subject } : {}),
   })
   const caseStates: ApprovalCaseState[] = summaries.map((summary) => summary.state)
+  // The TELLING half of A1-12 (spec §11.6: terminate as authority-unavailable
+  // AND "surface typed Admin-required result and InterventionItem"; plan
+  // §6.D:651: "Once a leg escalates, the old leg is visibly terminal"). A
+  // DECIDED case whose terminal decision row carries the A2-8 stamp
+  // `terminalReason: resolver-unavailable` — the escalate with no next rung
+  // (PR #118's durable close) or the zero-review case born DECIDED (audit
+  // F2) — is a terminal intervention, and it is surfaced as one. EVERY other
+  // decided close (an ordinary allow/deny, a drift close) stays out of the
+  // list, byte-identical to the pre-existing projection. The generic decided
+  // READ lives in Control (`listDecidedApprovalCases`, a fold mirror with no
+  // surfacing opinion); the narrow filter that names what becomes visible
+  // lives HERE, in the intervention lane. Absence of the optional read is
+  // fail-safe: the projection stays open-only, exactly as before.
+  if (typeof input.control.listDecidedApprovalCases === 'function') {
+    const decided = await input.control.listDecidedApprovalCases({
+      rootSessionId: input.rootSessionId,
+      ...(input.subject !== undefined ? { subject: input.subject } : {}),
+    })
+    for (const summary of decided) {
+      const state = summary.state
+      if (
+        state.terminalDecision?.terminalReason
+        !== CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE
+      ) {
+        continue
+      }
+      if (caseStates.some(
+        (open) => open.identity.approvalCaseId === state.identity.approvalCaseId,
+      )) {
+        continue
+      }
+      caseStates.push(state)
+    }
+  }
   const safeReader: RequiredAuthorityReader | undefined =
     input.reader === undefined
       ? undefined

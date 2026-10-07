@@ -22,7 +22,7 @@
  *
  * @module @dsh-agent-team/runtime/intervention
  */
-import { controlEscalationSuccessor } from '../control/types.js';
+import { controlEscalationSuccessor, CONTROL_LEG_TERMINAL_REASONS } from '../control/types.js';
 import { INTERVENTION_ACTIONS, INTERVENTION_DERIVATION_REASONS, INTERVENTION_KINDS, INTERVENTION_RESPONSE_BEHAVIORS, INTERVENTION_SOURCE_KINDS, INTERVENTION_STATUSES, } from './types.js';
 // --- frozen terminal outcome vocabularies ---------------------------------------------
 /**
@@ -270,12 +270,23 @@ export function deriveLegalActions(facts) {
  * |-------------------------------------|------------------------|---------------------|---------------|
  * | leg pending, resolver exists        | `open`                 | `wait-for-response` | the operation |
  * | leg pending, no resolver (A1-12)    | `authority-unavailable`| `informational`     | `null`        |
+ * | leg closed by an unavailable-resolver terminate (A1-12: the escalate with no next rung, or the zero-review case born DECIDED — the durable close carries `terminalReason: resolver-unavailable`) | `authority-unavailable` | `informational` | `null` |
  * | leg decided (allow/deny/stale)      | `resolved`             | `informational`     | `null`        |
  * | leg abandoned                       | `stale`                | `informational`     | `null`        |
  *
  * An abandoned leg maps to `stale` because that is the assertion the durable
  * row makes: the invocation the item existed for is gone (§14.1 offers no
  * `abandoned`; inventing a sixth status would fork the vocabulary).
+ *
+ * The terminate row is the `feat/a4-surface-authority-unavailable` telling:
+ * spec §11.6 requires the A1-12 close to "surface typed Admin-required
+ * result and InterventionItem" and plan §6.D requires "Once a leg escalates,
+ * the old leg is visibly terminal and no action remains on it"
+ * (alpha4-implementation-plan.md:651). The value it maps to is NOT new —
+ * `authority-unavailable` is §14.1's frozen item status, documented here
+ * (`types.ts`) as existing precisely for §11.6. The mapping reads ONLY the
+ * durable A2-8 stamp (`terminalDecision.terminalReason`), never a reader
+ * fact: an ordinary allow/deny close keeps its `resolved` row untouched.
  */
 function statusOf(caseState, facts) {
     if (caseState.status === 'abandoned') {
@@ -286,6 +297,20 @@ function statusOf(caseState, facts) {
         };
     }
     if (caseState.status === 'decided') {
+        if (caseState.terminalDecision?.terminalReason
+            === CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE) {
+            // The A1-12 terminate close, TOLD (spec §11.6; plan §6.D:651). The
+            // durable deny carries the A2-8 `terminalReason: resolver-unavailable`
+            // stamp - no next leg exists because no higher rung resolves here -
+            // and the item that reports it is the frozen `authority-unavailable`
+            // status, informational, with zero legal actions. An ordinary
+            // allow/deny close (no stamp) falls through to `resolved` untouched.
+            return {
+                status: INTERVENTION_STATUSES.AUTHORITY_UNAVAILABLE,
+                responseBehavior: INTERVENTION_RESPONSE_BEHAVIORS.INFORMATIONAL,
+                reason: INTERVENTION_DERIVATION_REASONS.NO_RESOLVER,
+            };
+        }
         return {
             status: INTERVENTION_STATUSES.RESOLVED,
             responseBehavior: INTERVENTION_RESPONSE_BEHAVIORS.INFORMATIONAL,

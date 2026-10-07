@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-surface
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  03:33:20
+   Duration  359ms (transform 51ms, setup 0ms, import 264ms, tests 5ms, environment 0ms)
+

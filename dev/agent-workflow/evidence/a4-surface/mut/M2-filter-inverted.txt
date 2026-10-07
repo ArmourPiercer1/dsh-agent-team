@@ -1,0 +1,179 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-surface
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > offer: the human-user leg projects escalate — the offer reads off the FROZEN ladder, never off resolver availability (settled 2026-10-08 ruling; NOT touched by this fix)
+=== A4-ESCALATE-TRUTH MEASUREMENT === legalActions offered on the human-user leg before the act: ["allow","escalate","deny"]
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > MEASURED RECEIPT (disclosed misrepresentation, pinned as tripwire): the wire answers outcome "escalated" although no successor took the case — the truthful value is outside the CLOSED v8 set REMOTE_INTERVENTION_ACT_OUTCOMES (remote/src/contracts/types.ts:485-490); adding one is a wire-version decision the writer may not make (BLOCKER reported)
+=== A4-ESCALATE-TRUTH MEASUREMENT === intervention.act wire response: {"ok":true,"value":{"data":{"outcome":"escalated"},"provenance":{"origin":"team-remote","method":"intervention.act","endpoint":"intervention.act","contractVersion":8,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}}
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > service-level truth the receipt discards: caseOutcome is "authority-unavailable" and no leg rose (A1-12, spec 11.6)
+=== A4-ESCALATE-TRUTH MEASUREMENT === escalateApprovalLeg return (discarded by s6-remote.ts:3770-3776): caseOutcome=authority-unavailable nextLeg=ABSENT
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > the case is CLOSED, not destroyed: the leg row stays durable, exactly one closing deny and one escalation fact join, no second leg, nothing pending, zero consumption
+=== A4-ESCALATE-TRUTH MEASUREMENT === durable ledger rows for the wire case after the act: [{"factType":"control-request-recorded","legOrdinal":1},{"factType":"control-decision-recorded","decision":"deny","reason":"escalated","terminalReason":"resolver-unavailable"},{"factType":"control-escalation-recorded","reason":"above my rung — send it up","legOrdinal":1}]
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > DURABLE TRUTH (the fix): the closing deny carries terminalReason "resolver-unavailable" — the A2-8 destination field for an unavailable-resolver close, which the born-terminal twin (requestApprovalLeg's close) stamped and this branch omitted
+=== A4-ESCALATE-TRUTH MEASUREMENT === terminalReason on the wire-lane closing deny: "resolver-unavailable"; on the service-lane closing deny: "resolver-unavailable"
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > CONTROL arm of the fix: a RISEN escalation (leader leg -> Human User) writes no terminalReason and mints leg 2 — absence keeps its A2-8 meaning, the stamp is bound to the terminate branch only
+=== A4-ESCALATE-TRUTH MEASUREMENT === risen case: caseOutcome=escalated nextLeg=leg 2 closing-deny terminalReason=undefined legRows=2
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > re-read law RETIRED-AND-RE-PINNED by feat/a4-surface-authority-unavailable (NOT renumbered): the terminal item is now VISIBLE in the re-read — status authority-unavailable, informational, zero legal actions; the old lie (a terminated close surfacing as NOTHING, or as PENDING) is what this pin now reddens; get answers the same item because get searches the projection (s6-remote.ts:3667-3680), and the fetch-semantics conflation for ORDINARY closes stays a reported follow-up
+=== A4-ESCALATE-TRUTH MEASUREMENT === intervention.list ids after the act: ["int-case-01gn3u61ds4oyx1rntg681ow","int-case-0yyf56w0ijfn4b0kmftky0tn"]; terminate item after the act: undefined; intervention.get ok: false
+
+ ❯ packages/runtime/test/a4-escalate-act-truth.test.ts (7 tests | 1 failed) 7ms
+     ✓ offer: the human-user leg projects escalate — the offer reads off the FROZEN ladder, never off resolver availability (settled 2026-10-08 ruling; NOT touched by this fix) 2ms
+     ✓ MEASURED RECEIPT (disclosed misrepresentation, pinned as tripwire): the wire answers outcome "escalated" although no successor took the case — the truthful value is outside the CLOSED v8 set REMOTE_INTERVENTION_ACT_OUTCOMES (remote/src/contracts/types.ts:485-490); adding one is a wire-version decision the writer may not make (BLOCKER reported) 0ms
+     ✓ service-level truth the receipt discards: caseOutcome is "authority-unavailable" and no leg rose (A1-12, spec 11.6) 0ms
+     ✓ the case is CLOSED, not destroyed: the leg row stays durable, exactly one closing deny and one escalation fact join, no second leg, nothing pending, zero consumption 1ms
+     ✓ DURABLE TRUTH (the fix): the closing deny carries terminalReason "resolver-unavailable" — the A2-8 destination field for an unavailable-resolver close, which the born-terminal twin (requestApprovalLeg's close) stamped and this branch omitted 0ms
+     ✓ CONTROL arm of the fix: a RISEN escalation (leader leg -> Human User) writes no terminalReason and mints leg 2 — absence keeps its A2-8 meaning, the stamp is bound to the terminate branch only 0ms
+     × re-read law RETIRED-AND-RE-PINNED by feat/a4-surface-authority-unavailable (NOT renumbered): the terminal item is now VISIBLE in the re-read — status authority-unavailable, informational, zero legal actions; the old lie (a terminated close surfacing as NOTHING, or as PENDING) is what this pin now reddens; get answers the same item because get searches the projection (s6-remote.ts:3667-3680), and the fetch-semantics conflation for ORDINARY closes stays a reported follow-up 3ms
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > precondition: the human-user leg is listed OPEN before the act, and the terminate case is not yet terminal
+=== A4-SURFACE MEASUREMENT === list ids before the act: ["int-case-0i2xub60hidd411pdt2ow1kt","int-case-10pftk01a87yv51miv3gy1u3","int-case-1a621jc05lr8vr0h4kony0r0"]
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > THE TELLING: after the escalate terminates the case, intervention.list carries the case as a TERMINAL authority-unavailable item — informational, zero legal actions, nothing held, no-resolver named
+=== A4-SURFACE MEASUREMENT === list ids after the act: ["int-case-0i2xub60hidd411pdt2ow1kt","int-case-1a621jc05lr8vr0h4kony0r0"]; terminate item: undefined
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > a RISEN escalation is NOT terminal: the risen leg surfaces (exactly one item, open, with affordances) and the case never gains the authority-unavailable cell
+=== A4-SURFACE MEASUREMENT === risen items: [{"interventionId":"int-case-1a621jc05lr8vr0h4kony0r0","kind":"approval","responseBehavior":"wait-for-response","blockScope":{"kind":"operation","operationFingerprint":"fp-a4-surface-risen"},"source":{"kind":"control-case","id":"case-1a621jc05lr8vr0h4kony0r0","requestId":"ctrl-1wyhscs0axceub0iwr8021lf","legOrdinal":2,"carrierKind":"leader-approval"},"status":"open","requiredAuthority":"human-user","currentReviewAuthority":"human-user","legalActions":["allow","escalate","deny"],"derivationReasons":["leg-open"],"fingerprint":"fp-a4-surface-risen","createdAt":"2026-09-01T09:00:00Z"}]
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > the born-terminal zero-review close surfaces CONSISTENTLY with the escalate-terminate close (same terminal cells), not silently differently
+=== A4-SURFACE MEASUREMENT === born-terminal item: undefined
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > CONTROL arm (this lane widens NOTHING else): an ordinary allow-decided case (no terminalReason) still leaves the list exactly as before
+=== A4-SURFACE MEASUREMENT === ordinary decided item present? false
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > read-side only: a bare intervention.list appends ZERO durable rows (the PR #118 pinned rows stay the only writes)
+=== A4-SURFACE MEASUREMENT === ledger rows appended by one list call: 0
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > fail-closed act on the terminal item: acting by id on a terminated case stays refused (the act lane re-reads OPEN cases only)
+=== A4-SURFACE MEASUREMENT === act-on-terminal: {"code":"INTERVENTION_NOT_FOUND","message":"intervention.act: no OPEN approval case backs 'int-case-10pftk01a87yv51miv3gy1u3' on team 'session-root-p6t1' (the case left the open projection — decided or never existed)","details":{"method":"intervention.act","endpoint":"intervention.act","contractVersion":8,"requestToken":null}}
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > fetch semantics MEASURED (claim corrected): intervention.get SEARCHES THE PROJECTION SET (s6-remote.ts:3667-3680), it is not an independent decided-refusal read — so the surfaced terminal row now answers get too; the decided-vs-never-existed conflation the follow-up report carries survives for ORDINARY closes, pinned here
+=== A4-SURFACE MEASUREMENT === get-after on the surfaced terminal id: ok=false
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > absence is fail-safe: a control source WITHOUT the terminated read (the pre-existing structural shape) projects exactly the open set — no crash, no synthesized terminal row
+=== A4-SURFACE MEASUREMENT === fake-control projection ids: ["int-case-1a621jc05lr8vr0h4kony0r0"]
+
+stdout | packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > the generic decided read lives in CONTROL and carries EVERY decided case (the resolver-unavailable FILTER is the intervention lane law, not a control-lane opinion)
+=== A4-SURFACE MEASUREMENT === decided read: ["case-10pftk01a87yv51miv3gy1u3","case-1mkax560agy4ep145guvk00i","case-0i2xub60hidd411pdt2ow1kt"]
+
+ ❯ packages/runtime/test/a4-surface-authority-unavailable.test.ts (10 tests | 4 failed) 11ms
+     ✓ precondition: the human-user leg is listed OPEN before the act, and the terminate case is not yet terminal 2ms
+     × THE TELLING: after the escalate terminates the case, intervention.list carries the case as a TERMINAL authority-unavailable item — informational, zero legal actions, nothing held, no-resolver named 2ms
+     ✓ a RISEN escalation is NOT terminal: the risen leg surfaces (exactly one item, open, with affordances) and the case never gains the authority-unavailable cell 1ms
+     × the born-terminal zero-review close surfaces CONSISTENTLY with the escalate-terminate close (same terminal cells), not silently differently 1ms
+     × CONTROL arm (this lane widens NOTHING else): an ordinary allow-decided case (no terminalReason) still leaves the list exactly as before 2ms
+     ✓ read-side only: a bare intervention.list appends ZERO durable rows (the PR #118 pinned rows stay the only writes) 0ms
+     ✓ fail-closed act on the terminal item: acting by id on a terminated case stays refused (the act lane re-reads OPEN cases only) 0ms
+     × fetch semantics MEASURED (claim corrected): intervention.get SEARCHES THE PROJECTION SET (s6-remote.ts:3667-3680), it is not an independent decided-refusal read — so the surfaced terminal row now answers get too; the decided-vs-never-existed conflation the follow-up report carries survives for ORDINARY closes, pinned here 1ms
+     ✓ absence is fail-safe: a control source WITHOUT the terminated read (the pre-existing structural shape) projects exactly the open set — no crash, no synthesized terminal row 0ms
+     ✓ the generic decided read lives in CONTROL and carries EVERY decided case (the resolver-unavailable FILTER is the intervention lane law, not a control-lane opinion) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > re-read law RETIRED-AND-RE-PINNED by feat/a4-surface-authority-unavailable (NOT renumbered): the terminal item is now VISIBLE in the re-read — status authority-unavailable, informational, zero legal actions; the old lie (a terminated close surfacing as NOTHING, or as PENDING) is what this pin now reddens; get answers the same item because get searches the projection (s6-remote.ts:3667-3680), and the fetch-semantics conflation for ORDINARY closes stays a reported follow-up
+AssertionError: expected [ …(2) ] to include 'int-case-0ut3uko1s1uisr1n2rv3u11h'
+ ❯ packages/runtime/test/a4-escalate-act-truth.test.ts:449:38
+    447|     // THE OLD LIE CANNOT RETURN — absence half: the terminated close …
+    448|     // listed, and a get over the projection answers it (never "nothin…
+    449|     expect(MEASUREMENT.listAfterIds).toContain(`int-${MEASUREMENT.wire…
+       |                                      ^
+    450|     expect(item, 'the terminated case must be visible in the re-read')…
+    451|     expect(MEASUREMENT.getAfter.ok, 'get searches the projection; the …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > THE TELLING: after the escalate terminates the case, intervention.list carries the case as a TERMINAL authority-unavailable item — informational, zero legal actions, nothing held, no-resolver named
+AssertionError: escalate-terminate close: the terminated case must be listed at all: expected undefined to be defined
+ ❯ expectTerminalItem packages/runtime/test/a4-surface-authority-unavailable.test.ts:370:71
+    368| /** The terminal cell this lane makes visible: the §11.6 close, told. …
+    369| function expectTerminalItem(item: Record<string, unknown> | undefined,…
+    370|   expect(item, `${label}: the terminated case must be listed at all`).…
+       |                                                                       ^
+    371|   expect(item?.['status'], `${label}: status`).toBe('authority-unavail…
+    372|   expect(item?.['responseBehavior'], `${label}: responseBehavior`).toB…
+ ❯ packages/runtime/test/a4-surface-authority-unavailable.test.ts:399:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > the born-terminal zero-review close surfaces CONSISTENTLY with the escalate-terminate close (same terminal cells), not silently differently
+AssertionError: born-terminal zero-review close: the terminated case must be listed at all: expected undefined to be defined
+ ❯ expectTerminalItem packages/runtime/test/a4-surface-authority-unavailable.test.ts:370:71
+    368| /** The terminal cell this lane makes visible: the §11.6 close, told. …
+    369| function expectTerminalItem(item: Record<string, unknown> | undefined,…
+    370|   expect(item, `${label}: the terminated case must be listed at all`).…
+       |                                                                       ^
+    371|   expect(item?.['status'], `${label}: status`).toBe('authority-unavail…
+    372|   expect(item?.['responseBehavior'], `${label}: responseBehavior`).toB…
+ ❯ packages/runtime/test/a4-surface-authority-unavailable.test.ts:423:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > CONTROL arm (this lane widens NOTHING else): an ordinary allow-decided case (no terminalReason) still leaves the list exactly as before
+AssertionError: expected { …(12) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "blockScope": null,
+  "createdAt": "2026-09-01T09:00:00Z",
+  "currentReviewAuthority": "leader",
+  "derivationReasons": [
+    "leg-decided",
+  ],
+  "fingerprint": "fp-a4-surface-ordinary",
+  "interventionId": "int-case-0i2xub60hidd411pdt2ow1kt",
+  "kind": "approval",
+  "legalActions": [],
+  "requiredAuthority": "human-user",
+  "responseBehavior": "informational",
+  "source": {
+    "carrierKind": "leader-approval",
+    "id": "case-0i2xub60hidd411pdt2ow1kt",
+    "kind": "control-case",
+    "legOrdinal": 1,
+    "requestId": "ctrl-0p52jdw1kdpncv0e8puni1n5",
+  },
+  "status": "resolved",
+}
+
+ ❯ packages/runtime/test/a4-surface-authority-unavailable.test.ts:435:38
+    433|     console.info(`${BANNER} ordinary decided item present? ${String(ME…
+    434|     expect(MEASUREMENT.beforeIds).toContain(`int-${MEASUREMENT.ordinar…
+    435|     expect(MEASUREMENT.ordinaryItem).toBeUndefined()
+       |                                      ^
+    436|     expect(MEASUREMENT.afterIds).not.toContain(`int-${MEASUREMENT.ordi…
+    437|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  packages/runtime/test/a4-surface-authority-unavailable.test.ts > a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half) > fetch semantics MEASURED (claim corrected): intervention.get SEARCHES THE PROJECTION SET (s6-remote.ts:3667-3680), it is not an independent decided-refusal read — so the surfaced terminal row now answers get too; the decided-vs-never-existed conflation the follow-up report carries survives for ORDINARY closes, pinned here
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a4-surface-authority-unavailable.test.ts:454:37
+    452|     // (a) the terminated case is NOW projected, so get tells it — the…
+    453|     // item, cell for cell, no second law anywhere.
+    454|     expect(MEASUREMENT.getAfter.ok).toBe(true)
+       |                                     ^
+    455|     const got = dataOf(MEASUREMENT.getAfter)['item'] as Record<string,…
+    456|     expect(got['interventionId']).toBe(`int-${MEASUREMENT.terminateCas…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 12 passed (17)
+   Start at  03:01:01
+   Duration  973ms (transform 1.29s, setup 0ms, import 1.74s, tests 18ms, environment 0ms)
+
