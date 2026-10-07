@@ -1,0 +1,102 @@
+# Byte-canonical regeneration of pnpm-lock.yaml — the defect, the cure, and what is actually reproducible offline
+
+Reviewed head `074c380c`; re-measured at the head that fixes it. pnpm 11.7.0, node v24.21.0, `CI=true`,
+everything `--offline` against the shared store. No network.
+
+## 1. The defect, as reviewed
+
+pnpm writes the lockfile's `overrides:` block in **declaration order**. The committed pair disagreed:
+
+```
+yaml declares first-to-last  | vite, micromark, micromark-util-types, mdast-util-find-and-replace,
+                             | mdast-util-gfm-strikethrough, mdast-util-to-markdown, micromark-extension-gfm-table
+lock records first-to-last   | micromark, micromark-util-types, mdast-util-find-and-replace,
+                             | mdast-util-gfm-strikethrough, mdast-util-to-markdown,
+                             | micromark-extension-gfm-table, vite
+```
+
+`vite` was declared first and recorded last: the committed lock could not be reproduced from the
+committed manifests.
+
+## 2. The cure
+
+Declare `vite: "^8.2.2"` last in `pnpm-workspace.yaml`'s `overrides:` block. The lockfile does not
+change — only the yaml moves — and yaml order now equals lock order, position for position (verified by
+listing both blocks with `cat -n`: 1..6 the six parity pins, 7 `vite`, both sides).
+
+## 3. The prescribed command, and why it passes for the wrong reason
+
+```
+$ rm -f pnpm-lock.yaml && pnpm install --lockfile-only --offline \
+      --store-dir=$STORE --ignore-scripts --no-frozen-lockfile
+Already up to date
+Done in 499ms using pnpm v11.7.0
+$ cmp committed/pnpm-lock.yaml pnpm-lock.yaml
+cmp: byte-identical (exit 0)
+$ sha256sum committed regenerated
+07db804169a921a53ad463d83642cdf2e417794116c9ff1b44e46788cc427398  committed
+07db804169a921a53ad463d83642cdf2e417794116c9ff1b44e46788cc427398  regenerated
+```
+
+Byte-identical — but **with `node_modules` present this test cannot fail**: pnpm prints
+`Already up to date` and re-emits settings from `node_modules/.modules.yaml` rather than resolving from
+the manifests. Measured directly: run against the *defective* yaml (vite first) with `node_modules` in
+place, it also reported byte-identical. So the discriminating test is a regeneration with `node_modules`
+gone as well.
+
+## 4. The discriminating test — two pristine `git archive HEAD` exports, lock and node_modules both absent
+
+Same command in each; only the yaml differs:
+
+| export | emitted overrides order | overrides block vs committed lock | whole-file drift vs committed lock |
+| --- | --- | --- | --- |
+| vite declared **first** (the defect) | vite, then the six | **NO — 2 lines differ** | 1579 lines |
+| vite declared **last** (the cure) | the six, then vite | **YES — byte-identical** | 1577 lines |
+
+The cure makes the settings block exactly reproducible. The one-line difference between the two drift
+totals *is* the moved `vite` entry (one `<`, one `>`).
+
+## 5. What is *not* reproducible offline, and it is not this change
+
+A true from-scratch resolution against this machine's cache moves large parts of the graph the committed
+lock had already frozen — `vitest`, `vite` (8.2.2 → 8.3.3), `jsdom`, `@types/node`, `yaml`, `undici`,
+`sharp`, `@testing-library/dom`, `@opentelemetry/*`, `@img/sharp-libvips-*`, peer-hash suffixes
+throughout. Control, measured on a pristine `git archive origin/master` export carrying **none** of this
+change's dependencies, same command:
+
+```
+[base-control: origin/master, zero client deps added] whole-file drift vs its own committed lock: 1577 lines
+[base-control] its overrides block (one entry): vite:^8.2.2
+```
+
+And of the drift on the cured branch, the part attributable to this change's 17 packages and 6 pins:
+
+```
+[cure]   of which attributable to my 17+6 subtree: 0 lines
+[defect] of which attributable to my 17+6 subtree: 0 lines
+```
+
+Read together: whole-graph byte-identical regeneration is **unachievable offline in this environment
+independent of this branch** — the cached packuments are newer than the store's vintage, the same
+condition that forced the six pins in the first place. What this fix delivers is (a) a settings/overrides
+block that is byte-canonical from the manifests, and (b) this change's own subtree regenerating with zero
+drift. The honest sentence for a future integrator: the committed lockfile *is* the artifact, and a full
+re-resolution here moves ~1577 unrelated lines whether or not this PR merges.
+
+## 6. A pristine clone of the branch, end to end, offline
+
+Separate control (`git archive` of the branch + the cure + `hoistPattern: ['*']` declared) — i.e. what a
+fresh clone does: fresh offline frozen install, fresh build, then the gate.
+
+```
+Done in 1.5s …                     (install --offline --frozen-lockfile, from the committed lock)
+packages/client build: Done        (pnpm run build)
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+PASS composition-smoke
+PASS lines: 12   SKIP: 0   FAIL: 0
+```
+
+The same control tree *before* `pnpm run build` printed
+`FAIL client plugin (packages/client): built entry is missing — run 'pnpm build' first (a missing
+artifact is a failure, never a skip)` — the 7.5 rule holding under exactly the condition it was written
+for.
