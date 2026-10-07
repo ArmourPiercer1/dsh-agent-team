@@ -336,8 +336,20 @@ const NON_BLUEPRINT_NAMESPACES = [
  *  documents — schemaVersion, blueprintId, revision, contentHash). V3
  *  counts `members` only when >= 2 of these sit in the site's own literal. */
 const VERSION_LITERAL_TEST = /schemaVersion["']?\s*:\s*\d/
+// Round 4 item 2: the numeric-form family the TEXT predicate does not read —
+// `+1` (unary plus), `0x` hex, template/computed digits. Measured, never
+// gated: see countNumericFormVariants and the SCOPE-NOTE for the doctrine.
+const NUMERIC_FORM_VARIANTS = /\bschemaVersion["']?\s*:\s*(?:\+\s*\d|0[xX][0-9a-fA-F]|\$\{|`)/g
+function countNumericFormVariants(result, text) {
+  const hits = text.match(NUMERIC_FORM_VARIANTS)
+  if (hits !== null) result.blindNumericForms += hits.length
+}
 const DOC_SHAPE_MARKERS = /displayName|policyStates|teamEnvelope|teamHardEnvelope|requirements/
 const IDENTITY_TRIPLE = ['blueprintId', 'revision', 'contentHash']
+// Round 4: keys a schema-valid TeamBlueprint document CAN carry — a witness
+// drawn from this set proves nothing foreign (the admission rule's forbidden
+// set). DOC_ONLY_KEYS is defined below and merged in via lazy init below.
+const FORBIDDEN_WITNESS_KEYS = new Set([...IDENTITY_TRIPLE, 'schemaVersion'])
 const DOC_ONLY_KEYS = new Set([
   'displayName',
   'description',
@@ -353,6 +365,7 @@ const DOC_ONLY_KEYS = new Set([
   'capabilityPolicy',
   'metadata',
 ])
+for (const k of DOC_ONLY_KEYS) FORBIDDEN_WITNESS_KEYS.add(k)
 
 // --- the line state machine -------------------------------------------------------
 // Tracks line/block comments, single/double-quoted strings (terminated at
@@ -1091,6 +1104,35 @@ export function classifyText(path, text) {
  * and `:99999-100000` — basename+any-digit checked nothing checkable);
  * any violation names the offending keys and exits 2. Silence keeps
  * costing a written, path-named, VERIFIABLE row.
+ * ROUND 4 ITEM 1 — the second row kind, `intentionally-dirty` (same file,
+ * same three-part key, SAME evidence rule — no second tier of proof). Its
+ * value must additionally carry `owner:` and `retirement-check:` (an
+ * executable step, in the style of 7-3-flip/intentional-retired.md) and the
+ * ADMISSION RULE below; ledgered sites print as a seventh NON-GATING class
+ * INTENTIONALLY-DIRTY — always printed, always counted, never silencing.
+ * Closure now reads: dirty empty AND no unadjudicated unknown AND every
+ * dirty-class row's evidence still validates — the last clause is not a
+ * ceremony, it is enforced on every run (a rotting row is a not-run, not a
+ * quiet pass), and a row is REMOVED by executing its retirement-check, never
+ * by relaxing what admits one.
+ *
+ * THE ADMISSION RULE, said out loud because it is the whole difference
+ * between a register and a trapdoor: a version literal belongs in this
+ * register precisely when its digit is READ BY ANOTHER NAMESPACE'S RUNTIME,
+ * and the site itself must prove it — the cited range must contain a
+ * witness key that NO schema-valid TeamBlueprint document may carry (outside
+ * the identity triple, outside the document-only field set, outside the
+ * retired axis's own key). p7t6 qualifies under that test: its digits are
+ * the legacy `.md` teammate-file axis (role:/name:/id: front matter), and
+ * retiring them would delete the adapter's acceptance proof, not a Blueprint
+ * version. A literal someone merely FINDS INCONVENIENT has no such witness:
+ * its enclosing object is keyed by Blueprint's own fields, and its lawful
+ * disposition is migration, not registration. The fence cannot out-think a
+ * reviewer-blind source edit — laundering a Blueprint document through this
+ * register costs a VISIBLE code diff inserting a fake foreign key into the
+ * cited range, not an invisible ledger string; the rule moves the cost into
+ * review, and review pays it.
+ *
  * The ledger file itself must be GIT-TRACKED (round 3.5 G4: the override
  * is the mute with a name on it — with dirty suppressed post-§7.4, a
  * scratch ledger + suppression measured `verdict: clean`, exit 0), so the
@@ -1164,8 +1206,35 @@ function loadAdjudications(cwd) {
     }
     const a = Number(cite[1])
     const b = cite[2] === undefined ? a : Number(cite[2])
-    const lineCount = text.split('\n').length
-    if (!(1 <= a && a <= b && b <= lineCount && a <= siteLine && siteLine <= b)) bad.push(key)
+    const lines = text.split('\n')
+    if (!(1 <= a && a <= b && b <= lines.length && a <= siteLine && siteLine <= b)) {
+      bad.push(key)
+      continue
+    }
+    // Round 4 item 1: the dirty-class kind adds owner + retirement-check +
+    // the ADMISSION RULE witness — a foreign key a schema-valid Blueprint
+    // document cannot carry, present in the cited range. An invalid dirty
+    // row is as fatal to the run as an invalid unknown row: same file, same
+    // proof standard, zero second tier.
+    if (ev.trimStart().startsWith('intentionally-dirty:')) {
+      const field = (n) => {
+        const m = new RegExp(`(?:^|; )${n}:\\s*([^;]+)`).exec(ev)
+        return m === null ? '' : (m[1] ?? '').trim()
+      }
+      const witness = field('witness-key')
+      const fieldsOk =
+        field('owner') !== '' &&
+        field('retirement-check') !== '' &&
+        field('foreign-axis') !== '' &&
+        /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(witness) &&
+        !FORBIDDEN_WITNESS_KEYS.has(witness)
+      const witnessOk =
+        fieldsOk &&
+        new RegExp('(?:^|[^A-Za-z0-9_$]|\\\\n)' + witness + '\\s*:').test(
+          lines.slice(a - 1, b).join('\n'),
+        )
+      if (!witnessOk) bad.push(key)
+    }
   }
   if (bad.length > 0) {
     return {
@@ -1185,9 +1254,11 @@ export function scanBlueprintVersionSites() {
     advisory: [],
     unknown: [],
     adjudicated: [],
+    intentionallyDirty: [],
     blindKeyHalf: 0,
     blindDocMarked: 0,
     blindNonTyped: 0,
+    blindNumericForms: 0,
     ledgerFile: '',
     ledgerCount: 0,
     refused: [],
@@ -1254,6 +1325,7 @@ export function scanBlueprintVersionSites() {
       // AND a version digit) is conservative by design — but its blind spot
       // was hand-reconstructed archaeology (36 files, 7 doc-marked, at the
       // round-1 audit; all read, zero documents lost). Compute it live.
+      countNumericFormVariants(result, text)
       if (VERSION_LITERAL_TEST.test(text)) {
         result.blindKeyHalf += 1
         // The reviewer's narrower population: the typed half is safe by
@@ -1267,6 +1339,7 @@ export function scanBlueprintVersionSites() {
       }
       continue
     }
+    countNumericFormVariants(result, text)
     const c = classifyText(p, text)
     result.dirty.push(...c.dirty)
     result.advisory.push(...c.advisory)
@@ -1288,8 +1361,26 @@ export function scanBlueprintVersionSites() {
       (u) => !done.has(`${u.path}::L${String(u.line)}::v${String(u.version)}`),
     )
   }
+  // Round 4 item 1: ledgered DIRTY sites (kind `intentionally-dirty`) leave
+  // the gated set for the always-printed, never-gating class. Kinds are
+  // pinned by the site's own class: an unknown-kind row cannot annotate a
+  // dirty site and vice versa — the split below reads the value's prefix.
+  for (const site of result.dirty) {
+    const key = `${site.path}::L${String(site.line)}::v${String(site.version)}`
+    const evidence = adj.ledger.get(key)
+    if (evidence !== undefined && evidence.trimStart().startsWith('intentionally-dirty:'))
+      result.intentionallyDirty.push({ ...site, evidence })
+  }
+  if (result.intentionallyDirty.length > 0) {
+    const done = new Set(
+      result.intentionallyDirty.map((x) => `${x.path}::L${String(x.line)}::v${String(x.version)}`),
+    )
+    result.dirty = result.dirty.filter(
+      (d) => !done.has(`${d.path}::L${String(d.line)}::v${String(d.version)}`),
+    )
+  }
   const byLine = (a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : a.line - b.line)
-  for (const k of ['dirty', 'advisory', 'unknown', 'adjudicated', 'refused', 'prose']) result[k].sort(byLine)
+  for (const k of ['dirty', 'advisory', 'unknown', 'adjudicated', 'intentionallyDirty', 'refused', 'prose']) result[k].sort(byLine)
   return result
 }
 
@@ -1323,7 +1414,7 @@ export function formatReport(result) {
   )
   lines.push(`scanned-in-scope: ${String(result.scopeFiles)} tracked files`)
   lines.push(
-    `SCOPE-NOTE blind spot: ${String(result.blindKeyHalf)} files (${String(result.blindNonTyped)} non-typed, ${String(result.blindDocMarked)} doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live`,
+    `SCOPE-NOTE blind spot: ${String(result.blindKeyHalf)} files (${String(result.blindNonTyped)} non-typed, ${String(result.blindDocMarked)} doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — ${String(result.blindNumericForms)} variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use`,
   )
   lines.push(`adjudication-ledger: ${result.ledgerFile} (${String(result.ledgerCount)} entries)`)
   lines.push(
@@ -1340,9 +1431,16 @@ export function formatReport(result) {
   )
   lines.push(`blueprint-keyed files with version digits: ${String(keyed.size)}`)
   lines.push(
-    'GATE: dirty + UNADJUDICATED unknown only. Closure = dirty empty AND no unadjudicated unknown. adjudicated/refused/prose print for dispatch and audit, never gated.',
+    'GATE: dirty + UNADJUDICATED unknown only. Closure = dirty empty AND no unadjudicated unknown AND every intentionally-dirty row still validating (checked every run; a row leaves by executing its retirement-check, never by relaxing admission). adjudicated/intentionally-dirty/refused/prose print for dispatch and audit, never gated.',
   )
   lines.push(...groupByPath(result.dirty, (p, ss) => `OFFENDING ${p} :: ${ss.map(where).join(', ')}`))
+  lines.push(
+    ...groupByPath(
+      result.intentionallyDirty,
+      (p, ss) =>
+        `INTENTIONALLY-DIRTY ${p} :: ${ss.map((s) => `L${String(s.line)}=v${String(s.version)} (${s.evidence})`).join(', ')}`,
+    ),
+  )
   lines.push(...groupByPath(result.unknown, (p, ss) => `UNKNOWN ${p} :: ${ss.map(whereWhy).join(', ')}`))
   lines.push(
     ...groupByPath(result.advisory, (p, ss) => `ADVISORY ${p} :: ${ss.map(whereWhy).join(', ')}`),
@@ -1359,6 +1457,7 @@ export function formatReport(result) {
   const tally = (arr) =>
     `${String(new Set(arr.map((s) => s.path)).size)} files, ${String(arr.length)} sites`
   lines.push(`RESULT dirty(${tally(result.dirty)})`)
+  lines.push(`RESULT intentionally-dirty(${tally(result.intentionallyDirty)})`)
   lines.push(`RESULT unknown(${tally(result.unknown)})`)
   lines.push(`RESULT advisory(${tally(result.advisory)})`)
   lines.push(`RESULT refused(${tally(result.refused)})`)

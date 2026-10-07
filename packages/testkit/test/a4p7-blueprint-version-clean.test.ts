@@ -331,10 +331,22 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
 // sites as ADJUDICATED (non-gating) and gates only on the unadjudicated
 // remainder; this wrapper reads the SAME file, so there is one ledger.
 const LEDGER_FILE = 'dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json'
+const LEDGER_ALL: Record<string, string> = JSON.parse(
+  readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8'),
+) as Record<string, string>
+/**
+ * Two row kinds, ONE file, ONE key form, ONE evidence rule (round 4 item 1):
+ * plain rows adjudicate UNKNOWNs; `intentionally-dirty:` rows annotate a
+ * non-Blueprint version axis with owner + retirement-check + a foreign-axis
+ * witness. The kind is the value's prefix — there is no second tier of
+ * proof and no second file.
+ */
+const isDirtyRow = (v: string): boolean => v.trimStart().startsWith('intentionally-dirty:')
 const UNKNOWN_LEDGER: ReadonlyMap<string, string> = new Map(
-  Object.entries(
-    JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>,
-  ),
+  Object.entries(LEDGER_ALL).filter(([, v]) => !isDirtyRow(v)),
+)
+const DIRTY_LEDGER: ReadonlyMap<string, string> = new Map(
+  Object.entries(LEDGER_ALL).filter(([, v]) => isDirtyRow(v)),
 )
 
 
@@ -346,6 +358,7 @@ interface ScanRun {
   advisory: Array<{ path: string; line: number; why?: string }>
   unknown: Array<{ path: string; line: number; why?: string }>
   adjudicated: Array<{ path: string; line: number; version: number; evidence: string }>
+  intentionallyDirty: Array<{ path: string; line: number; version: number; evidence: string }>
   refused: Array<{ path: string; line: number; ns?: string; why?: string }>
   prose: Array<{ path: string; line: number }>
 }
@@ -362,6 +375,7 @@ const run: ScanRun = {
   advisory: rawRun.advisory ?? [],
   unknown: rawRun.unknown ?? [],
   adjudicated: rawRun.adjudicated ?? [],
+  intentionallyDirty: rawRun.intentionallyDirty ?? [],
   refused: rawRun.refused ?? [],
   prose: rawRun.prose ?? [],
 }
@@ -434,7 +448,13 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
   })
 
   it('every deferred path is still dirty (a migrated path must leave the list)', () => {
-    const stale = [...DEFERRALS.keys()].filter((p) => !dirtyPaths.includes(p))
+    // Round 4 item 1: an `intentionally-dirty` LEDGER row moves a site out of
+    // the GATING dirty set but does not launder the DEFERRALS obligation — the
+    // path must still be present as dirty or annotated, and the row itself is
+    // removed only by executing its retirement-check. A deleted row with an
+    // unexecuted check returns the site to dirty and this test stays honest.
+    const owed = new Set([...dirtyPaths, ...[...new Set(run.intentionallyDirty.map((x) => x.path))]])
+    const stale = [...DEFERRALS.keys()].filter((p) => !owed.has(p))
     expect(stale).toEqual([])
   })
 
@@ -613,7 +633,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // The soft edge the reviewer found: an EMPTY justification kept the whole
     // suite green. Now the fence itself refuses to run on an adjudication that
     // does not name its own entry with a line-referenced hand-verification.
-    for (const [key, ev] of UNKNOWN_LEDGER) {
+    for (const [key, ev] of Object.entries(LEDGER_ALL)) {
       const path = key.split('::')[0] ?? ''
       expect(typeof ev === 'string' && ev.trim().length > 0, `empty justification: ${key}`).toBe(true)
       expect(
@@ -677,7 +697,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
   it('the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4)', () => {
     // (a) every normal report prints the resolved path + entry count.
     expect(report).toContain(`adjudication-ledger: ${resolve(REPO_ROOT, LEDGER_FILE)}`)
-    expect(report).toContain(`(${String(UNKNOWN_LEDGER.size)} entries)`)
+    expect(report).toContain(`(${String(Object.keys(LEDGER_ALL).length)} entries)`)
     // (b) the override without test mode is refused: it is the mute with a
     // name on it, and post-7.4 (dirty suppressed) it is exactly the lever.
     const good = JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>
@@ -718,6 +738,110 @@ function spawnScratchLedger(obj: Record<string, string>): { out: string; status:
   })
   return { out: spawned.stdout + spawned.stderr, status: spawned.status ?? -1 }
 }
+
+describe('intentionally-dirty rows: the dirty-class annotation with an admission rule', () => {
+  const P7 = 'packages/legacy/test/p7t6-teammates-adapter.test.ts'
+  const P7KEY = `${P7}::L118::v1`
+  const dirtyRow = (cite: string, fields?: Partial<Record<string, string>>): string => {
+    const f = {
+      'intentionally-dirty': 'legacy .md teammate-file version axis (intentional-retired.md row 3)',
+      'foreign-axis': 'legacy-team-teammate-md',
+      'witness-key': 'role',
+      owner: 'fence owner (ledger row) + 7.3 (emitter)',
+      'retirement-check': 'run the p7t6 adapter suite and re-read intentional-retired.md row 3',
+    } as Record<string, string>
+    Object.assign(f, fields ?? {})
+    return Object.entries(f).map(([k, v]) => `${k}: ${v}`).join('; ') + `; ${cite}`
+  }
+  const honestP7Row = dirtyRow(`hand-verified ${P7}:118-122`)
+
+  it('the tree: the ledger is DERIVED from the fence classification — p7t6 fully annotated, OFFENDING empty, one non-gating class line', () => {
+    const p7Sites = [...run.dirty, ...run.intentionallyDirty]
+      .filter((d) => d.path === P7)
+      .map((d) => `${d.path}::L${String(d.line)}::v${String(d.version)}`)
+    // (d) half one: the GATE sees exactly the dirty sites that have no row.
+    for (const key of p7Sites) expect(DIRTY_LEDGER.has(key), `ungated but unrowed: ${key}`).toBe(true)
+    const foreignRows = [...DIRTY_LEDGER.keys()].filter((k) => !p7Sites.includes(k))
+    expect(foreignRows, 'a dirty row for anything still dirty is an escape hatch').toEqual([])
+    // honest annotation: derived, never hardcoded
+    const derived = (classifyText as NonNullable<typeof classifyText>)(
+      P7,
+      readFileSync(resolve(REPO_ROOT, P7), 'utf8'),
+    ).dirty
+    expect([...DIRTY_LEDGER.keys()].sort()).toEqual(
+      derived.map((d) => `${P7}::L${String(d.line)}::v${String(d.version)}`).sort(),
+    )
+    expect(DIRTY_LEDGER.size).toBe(9)
+    for (const [k, v] of DIRTY_LEDGER.entries()) {
+      for (const field of ['owner:', 'retirement-check:', 'witness-key:', 'foreign-axis:'])
+        expect(v, `dirty row missing ${field}: ${k}`).toContain(field)
+    }
+    expect(run.intentionallyDirty.length).toBe(9)
+    expect(report).toContain(`RESULT intentionally-dirty(1 files, 9 sites)`)
+    expect(report).toContain(`INTENTIONALLY-DIRTY ${P7}`)
+    const offending = report.split('\n').filter((l) => l.startsWith(`OFFENDING ${P7} `))
+    expect(offending, 'annotated sites leave the gated OFFENDING print, never the record').toEqual([])
+  })
+
+  it('(a) a dirty row whose cited range does not contain the site line is NOT-RUN naming the key', () => {
+    const r = spawnScratchLedger({ ...LEDGER_ALL, [P7KEY]: dirtyRow(`hand-verified ${P7}:245-250`) })
+    expect(r.out).toContain('RESULT not-run')
+    expect(r.out).toContain(P7KEY)
+    expect(r.status).toBe(2)
+  })
+
+  it('(b) a row for a TeamBlueprint DOCUMENT site is refused by the admission rule (both flavors)', () => {
+    // NOTE (the author-exemption discipline bites its own author): this file
+    // is scanned by the fence, so NO string here may spell a retired literal
+    // — the needle is built from the document half (`blueprintId`) and the
+    // ledger's own v-suffix, never from the digit spelling.
+    const docFixture = fixtures.find((f) => f.content.includes('blueprintId'))
+    expect(docFixture, 'need a document fixture').toBeTruthy()
+    const rel = `dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/${String(docFixture?.name)}`
+    const raw = readFileSync(resolve(REPO_ROOT, rel), 'utf8').split('\n')
+    const line = raw.findIndex((l) => l.includes('blueprintId')) + 1
+    expect(line).toBeGreaterThan(0)
+    const docKey = `${rel}::L${String(line)}::v1`
+    const cite = `hand-verified ${rel}:1-${String(raw.length)}`
+    // flavor 1: a witness drawn from Blueprint's own key set proves nothing foreign
+    const r1 = spawnScratchLedger({ ...LEDGER_ALL, [docKey]: dirtyRow(cite, { 'witness-key': 'blueprintId' }) })
+    expect(r1.out, 'witness from the forbidden set must be refused').toContain('RESULT not-run')
+    expect(r1.out).toContain(docKey)
+    expect(r1.status).toBe(2)
+    // flavor 2: a witness that is not in the cited range at all
+    const r2 = spawnScratchLedger({ ...LEDGER_ALL, [docKey]: dirtyRow(cite, { 'witness-key': 'zzzNotInTheRange' }) })
+    expect(r2.out, 'absent witness must be refused').toContain('RESULT not-run')
+    expect(r2.out).toContain(docKey)
+    expect(r2.status).toBe(2)
+  })
+
+  it('(c) dropping a row sends THAT site back to dirty with its own L=v and gates', () => {
+    const victim = `${P7}::L380::v2`
+    const without: Record<string, string> = { ...LEDGER_ALL }
+    expect(without[victim], 'the v2 row must exist in the tree ledger').toBeTruthy()
+    delete without[victim]
+    const r = spawnScratchLedger(without)
+    const offendingLine = r.out.split('\n').find((l) => l.startsWith(`OFFENDING ${P7} ::`)) ?? ''
+    expect(offendingLine, 'the dropped row must return its OWN site to OFFENDING').toContain('L380=v2')
+    expect(r.status).toBe(1)
+    expect(r.out).toContain('RESULT intentionally-dirty(') // the class prints even now
+  })
+
+  it('(d) an honest dirty row does not gate, but every unrowed dirty site still does — annotation, not bypass', () => {
+    const withRow = spawnScratchLedger({ ...LEDGER_ALL, [P7KEY]: honestP7Row })
+    expect(withRow.out).not.toContain('RESULT not-run')
+    expect(withRow.status, 'gate status unchanged by an honest row: ' + withRow.out.slice(0, 300)).toBe(1)
+    const offendingCount = withRow.out.split('\n').filter((l) => l.startsWith('OFFENDING ')).length
+    expect(offendingCount, 'dirty sites with no row MUST still gate').toBeGreaterThan(100)
+    expect(withRow.out).toContain('INTENTIONALLY-DIRTY')
+  })
+
+  it('the blind-spot line names the numeric-form family the text predicate does not read', () => {
+    expect(report).toMatch(/SCOPE-NOTE blind spot:.*numeric-form family/)
+    expect(report).toMatch(/\+N/)
+    expect(report).toMatch(/parser refusing|runtime/i)
+  })
+})
 
 // --- scope boundary -------------------------------------------------------
 
