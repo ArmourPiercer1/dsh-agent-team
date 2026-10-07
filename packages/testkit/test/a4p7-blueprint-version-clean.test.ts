@@ -466,14 +466,39 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // printed, for any path, forever. The literal named path stays, because a
     // reader must be able to open one straight out of this file, and the archetype
     // is the one the next test pins line-by-line anyway.
+    //
+    // The sites are checked PER PATH — the OFFENDING lines are parsed back into
+    // `path -> the sites printed for it`, and a site must appear on ITS OWN path's
+    // line. Searching the whole report for the token would be a mute wearing a
+    // control: measured at this commit 69 of the 253 dirty sites have an
+    // `L<line>=v<version>` token that also occurs on some other report line, so
+    // stripping the suffix from one of those passes a whole-report `toContain`
+    // (mutation C of scratch/mutate-fence.mjs: green against the whole-report form,
+    // red against this one). A report that names no path cannot slip through either:
+    // an empty parse makes every path assertion below fail, not pass.
+    //
+    // On a hypothetical empty dirty set both loops pass vacuously, and that is the
+    // correct behaviour HERE: this leg's subject is the SHAPE of a report about
+    // dirty sites, and the claim that the set has become empty belongs to the
+    // exit-contract leg (`exit 1 iff dirty or unknown`) and to the DEFERRALS
+    // staleness legs. Giving this leg a `dirty.length > 0` guard of its own would
+    // re-arm it as the red-on-success control it was just rewritten to escape.
+    const printed = new Map<string, Set<string>>()
+    for (const line of report.split('\n')) {
+      const off = /^OFFENDING (.+?) :: (.*)$/.exec(line)
+      if (off !== null) {
+        printed.set(off[1], new Set(off[2].split(', ').map((token) => token.trim())))
+      }
+    }
     for (const path of dirtyPaths) {
-      expect(report, `the report must name the dirty path ${path}`).toContain(`OFFENDING ${path} :: `)
+      expect(printed.has(path), `the report must name the dirty path ${path}`).toBe(true)
     }
     for (const site of run.dirty) {
+      const token = `L${String(site.line)}=v${String(site.version)}`
       expect(
-        report,
-        `the report must print the dirty site ${site.path} L${String(site.line)}=v${String(site.version)}`,
-      ).toContain(`L${String(site.line)}=v${String(site.version)}`)
+        printed.get(site.path)?.has(token) ?? false,
+        `the report must print ${site.path} ${token} on that path's own OFFENDING line`,
+      ).toBe(true)
     }
     expect(report).toContain('OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: ')
     expect(report).toMatch(/OFFENDING \S+ :: L\d+=v[12]/)

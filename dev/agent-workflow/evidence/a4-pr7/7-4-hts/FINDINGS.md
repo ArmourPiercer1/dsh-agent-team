@@ -233,17 +233,62 @@ because it is outside the declared band.
 - **D2 — second site on file 5.** The plan/note claimed a "v2 document"; measured shape and
   disposition in the section above. This is a correction to the plan's own site enumeration, not
   extra scope.
-- **D3 — the wrapper's positive control was rewritten, not just re-pointed.** Migrating
-  `run.mjs` reddened *two* legs: `every deferred path is still dirty (a migrated path must leave
-  the list)` and `the fence reports sites, not a bare count, and names a file the reader can
-  open`, which hard-coded `OFFENDING packages/tools/harness/run.mjs :: `. The first is the ratchet
-  working; the second is a control pinned to a file its own lane is migrating — i.e. a control
-  that goes red on **success**, which is when mutes happen. It now asserts the law it stood in
-  for: every dirty **path** is named in the report and every dirty **site** prints its
-  `L<line>=v<version>` token, and it keeps a literal named path for the reader (the archetype the
-  next leg already pins line-by-line, `packages/domain/blueprint/testdata/fixtures.ts`). Nothing
-  was muted, no assertion deleted, the fence/scope/version constants untouched; but this is an
-  edit to a shared test's positive control and needs a reviewer's yes.
+- **D3 — the wrapper's positive control was rewritten, not just re-pointed, and then rewritten
+  again because a mutation proved the first rewrite partly decorative.** Migrating `run.mjs`
+  reddened *two* legs: `every deferred path is still dirty (a migrated path must leave the list)`
+  and `the fence reports sites, not a bare count, and names a file the reader can open`, which
+  hard-coded `OFFENDING packages/tools/harness/run.mjs :: `. The first is the ratchet working; the
+  second is a control pinned to a file its own lane is migrating — a control that goes red on
+  **success**, which is when mutes happen. It now asserts the law it stood in for: every dirty
+  **path** is named and every dirty **site** prints its `L<line>=v<version>`, and it keeps one
+  literal named path for the reader (the archetype the next leg pins line-by-line,
+  `packages/domain/blueprint/testdata/fixtures.ts`). Nothing muted, no assertion deleted, no
+  version constant or scope touched.
+
+  **Proof it can fail** (coordinator's requirement — a universal assertion that cannot go red is
+  inventory, not a control). Three mutations to the report *producer*
+  ([`scratch/mutate-fence.mjs`](scratch/mutate-fence.mjs)) — never to the scanner, the wrapper, or
+  the fence's classification rules; the pristine script is restored by `cp` and its sha256
+  re-verified after every round ([`scratch/fence-script-sha.txt`](scratch/fence-script-sha.txt),
+  `bcb569c1…`):
+
+  | mutation | what it breaks | first rewrite (whole-report `toContain`) | final rewrite (per-path) |
+  |---|---|---|---|
+  | A | the first site of every dirty line loses `=v<version>` | **red** | **red** — `the report must print cordis.patch.yml L60=v1 on that path's own OFFENDING line` |
+  | B | one dirty path vanishes from the naming, sites still in the result | **red** | **red** — `the report must name the dirty path …a1-permission-policy.test.ts` |
+  | C | **one** site whose token also occurs elsewhere loses its suffix | **GREEN — decorative** | **red** — `… must print packages/domain/test/blueprint-v1-frozen-resume.test.ts L76=v1 …` |
+
+  Mutation C is the one that mattered. Measured on the real report: **69 of the 253 dirty sites**
+  have an `L<line>=v<version>` token that also appears on some other report line, so a whole-report
+  `toContain(token)` cannot see those sites being stripped — 27% of the sites were unchecked while
+  looking checked. The final rewrite therefore parses the `OFFENDING` lines back into
+  `path → sites printed for that path` and requires each site on **its own** path's line; an empty
+  parse fails every path assertion rather than satisfying them. Logs:
+  [`mutation-A-wrapper.txt`](scratch/mutation-A-wrapper.txt),
+  [`mutation-B-wrapper.txt`](scratch/mutation-B-wrapper.txt),
+  [`mutation-C-wrapper.txt`](scratch/mutation-C-wrapper.txt) (final rewrite, red),
+  [`mutation-C-against-old-form.txt`](scratch/mutation-C-against-old-form.txt) (first rewrite,
+  green), [`mutation-proofs-strengthened.txt`](scratch/mutation-proofs-strengthened.txt) (all
+  three, same round, sha-verified restores). One round of "proofs" was thrown out before this: my
+  first parse used `!== undefined` on `RegExp.exec`, which returns `null`, so the leg died on a
+  TypeError and every mutation "passed" for the wrong reason — caught by the green baseline that
+  had to follow, fixed, re-run.
+
+  **Empty-set behaviour, executed not asserted**
+  ([`scratch/control-empty-set-probe.mjs`](scratch/control-empty-set-probe.mjs), which feeds the
+  real `formatReport` a run whose `dirty` is empty and everything else intact): both loops run
+  **0 iterations** and pass; the report says `RESULT dirty(0 files, 0 sites)` and
+  `RESULT verdict: clean (dirty 0, unadjudicated unknown 0)`; the tally assertion
+  (`RESULT dirty(0 files`) still passes because it tracks the real count; and the single literal
+  archetype assertion **fails**. So the leg is not purely vacuous at closure — it goes red there on
+  exactly one assertion, the reader-anchor literal, which is the same retirement event the leg
+  immediately below already forces (it pins that path's five named lines). That is one named review
+  event, not a silent pass, and it is not the red-on-success shape the leg was rewritten to
+  escape: there the trigger was *this lane cleaning its own file*, here it is *the archetype
+  fixture itself moving*, a real change to the corpus the leg describes. The loops' vacuity is
+  correct at closure and is why the leg carries no `dirty.length > 0` guard of its own: a guard
+  would re-arm the control against the plan's own success. Emptiness is owned by the exit-contract
+  leg (`exit 1 iff dirty or unknown`) and the two-directional `DEFERRALS` legs.
 - **D4 — one prose line in `run.mjs` was stale, not just old.** `:1678` read "human-override
   records - the only **v1** authority that can GRANT a cell". The ruling is about the
   human-override lane, not the document version, so the qualifier is gone and the sentence says
