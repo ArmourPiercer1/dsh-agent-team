@@ -69,6 +69,7 @@ import {
   controlFacts,
   createFakeToolPipeline,
   createP6T4Service,
+  constantAuthorityRecheck,
   createP6T4World,
   destroyP6T1World,
   expectControlRejection,
@@ -82,6 +83,19 @@ import {
 import type { FakeToolExecution } from './p6t4-helpers.js'
 
 const WORKER_ID = String(P6T4_SEEDS.worker.instanceId)
+
+/**
+ * The authority point A4-PR7 Task 7.0 requires on every operation case (ADR
+ * A1-14): the concrete `{operationClass, matcher}` the allow was decided over.
+ * This fixture's subject is the exactly-once law of the LEDGER, so the point is
+ * the plain exact one this file's `fs.write` scope names, and the fresh ceiling
+ * the guard re-runs over it is pinned constant below — the recheck's own law
+ * lives in `a4p7-a1-14-consumption-revalidation.test.ts`.
+ */
+const AUTHORITY_SCOPE = {
+  operationClass: 'fs.write',
+  matcher: { kind: 'exact', resource: 'p6t4-fixture:fileA' },
+} as const
 const LEADER_ID = String(P6T4_SEEDS.leader.instanceId)
 
 /** Extract the typed error part of a resolved error envelope. */
@@ -429,21 +443,34 @@ let s3: {
 {
   const world = await createP6T4World('f9-case-1', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    // The recheck is CONSTANT here (and counted): the claim this file makes is
+    // about the COUNT of durable consumption rows, so the authority answer must
+    // not be a variable of it. The refusal arms are asserted by the a4p7 file.
+    const recheck = constantAuthorityRecheck()
+    const service = createP6T4Service(world, { authorityRevalidation: recheck.port })
     const identity = {
       subject: { kind: 'instance', instanceId: WORKER_ID } as const,
       beneficiaryAuthority: 'member' as const,
       requestedEffect: 'ask' as const,
     }
     const ask = async (correlation: string, fingerprint: string) => {
-      const scope = makeScope({ correlation, operationFingerprint: fingerprint })
+      const scope = makeScope({
+        correlation,
+        operationFingerprint: fingerprint,
+        authorityScope: AUTHORITY_SCOPE,
+      })
       const created = await service.requestApprovalLeg({
         rootSessionId: P6T4_ROOT,
         caller: memberCaller(WORKER_ID),
         kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
         reviewAuthority: 'leader',
         requiredAuthorityAtCreation: 'leader',
-        identity: { ...identity, operationFingerprint: fingerprint, correlation },
+        identity: {
+          ...identity,
+          operationFingerprint: fingerprint,
+          authorityScope: AUTHORITY_SCOPE,
+          correlation,
+        },
         actionName: scope.actionName,
         toolName: scope.toolName,
       })

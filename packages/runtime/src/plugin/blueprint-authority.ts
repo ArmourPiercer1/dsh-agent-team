@@ -70,6 +70,10 @@
  */
 
 import {
+  BLUEPRINT_VERSION_REFUSAL_CODES,
+  inspectBlueprintSource,
+  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
+  SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
   compareBlueprintRevisions,
   parseBlueprint,
   toBlueprintSnapshotRef,
@@ -132,6 +136,28 @@ export interface BlueprintIdentity {
   readonly origin: BlueprintIdentityOrigin
   /** The saved file name (present for `origin: 'saved'` only). */
   readonly sourceFile?: string
+  /**
+   * The document version this identity was read from — for a frozen row the
+   * version the ROW carries, for the anchor the parsed anchor's, for a saved
+   * source the inspector's. Required, because the operator question "what still
+   * needs migrating?" is answered by this number and nothing else.
+   */
+  readonly schemaVersion: number
+  /**
+   * True exactly when this document carries a version this product DEFINED and
+   * no longer runs (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`): LISTED here, refused
+   * at `resolve()` with `BLUEPRINT_MIGRATION_REQUIRED`.
+   *
+   * The two facts are deliberately separate fields rather than one status
+   * string, because they have two different lifetimes: `migrationRequired` is
+   * what the listing must keep showing (it is the migration backlog), while
+   * `schemaVersion` is what an operator uses to decide WHICH migration applies.
+   * A document on a version nobody defined never reaches either: it has no
+   * readable identity, so it is not listable at all (the inspector's
+   * `rejected`, and `resolve` answers it with
+   * `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`, never with this flag — A1-21).
+   */
+  readonly migrationRequired: boolean
 }
 
 /**
@@ -216,6 +242,149 @@ function parseNamedSource(text: string, name: string): TeamBlueprint {
 }
 
 /**
+ * The state of the INLINE bootstrap anchor, classified WITHOUT throwing
+ * (A4-PR7 Task 7.2, ADR A1-20(c): "an operator who cannot boot cannot migrate
+ * anything").
+ *
+ * THE ONE BRIGHT LINE: **a document this build cannot run because of its VERSION
+ * never kills the host; a document that is not a document at all still does.** A
+ * retired anchor is the operator's backlog — the host must come up, show the
+ * anchor as `migration-required`, and refuse by name every Team bound to it. A
+ * YAML-syntax anchor is a misconfigured plugin row: no migration exists for it,
+ * the fail-closed construction throw stays, and silently booting such a host
+ * would leave every anchor consumer holding a value nobody parsed.
+ */
+export type BlueprintAnchorState =
+  | { readonly status: 'runnable'; readonly blueprint: TeamBlueprint }
+  | {
+      readonly status: 'refused'
+      /** The typed refusal every start path on this anchor owes (A1-21). */
+      readonly code: string
+      /** The operator-facing headline (names the fault and the action). */
+      readonly headline: string
+      /** The declared version, when the frontmatter carried a usable one. */
+      readonly schemaVersion?: number
+      /** True exactly for a DEFINED-and-retired anchor (the migration arm). */
+      readonly migrationRequired: boolean
+      /**
+       * The anchor's identity: present for a retired anchor (the inspector read
+       * it BEFORE it judged the version — Task 7.1's ordering) and absent for a
+       * version nobody defined, which has no identity to list.
+       */
+      readonly identity?: { readonly blueprintId: string; readonly revision: string }
+    }
+
+/**
+ * Classify the inline bootstrap anchor without throwing on a version refusal.
+ *
+ * The strong parse is attempted only when the identity-level inspection says the
+ * version is runnable; every other failure — bad YAML, a missing id, a
+ * semantically broken document — propagates exactly as it does today, because
+ * those are configuration faults and not migration states.
+ */
+export function classifyBlueprintAnchor(source: string): BlueprintAnchorState {
+  const inspection = inspectBlueprintSource(source)
+  if (inspection.status === 'migration-required') {
+    const { identity } = inspection
+    return {
+      status: 'refused',
+      code: BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
+      headline:
+        `the bootstrap Blueprint ${identity.blueprintId}@${identity.revision} is a schema v${identity.schemaVersion} ` +
+        `document; this build runs [${SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')}]. The host boots and the catalog ` +
+        `lists it with migrationRequired=true; no Team bound to it can start until it is migrated`,
+      schemaVersion: identity.schemaVersion,
+      migrationRequired: true,
+      identity: { blueprintId: identity.blueprintId, revision: identity.revision },
+    }
+  }
+  if (
+    inspection.status === 'rejected' &&
+    inspection.diagnostics.some((d) => d.reason === 'schemaVersion-unsupported')
+  ) {
+    // A version this build does not run and never defined (or a version field
+    // that is not a positive integer). Degraded like a migration — because the
+    // operator still needs a booting host to fix it — but NOT listed: there is
+    // no migration to advertise, and the start refusal says which it is.
+    return {
+      status: 'refused',
+      code: BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED,
+      headline:
+        `the bootstrap Blueprint declares a schema version this build does not run; this build runs ` +
+        `[${SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')}]. The host boots degraded; no Team bound to it can start`,
+      migrationRequired: false,
+    }
+  }
+  return { status: 'runnable', blueprint: parseNamedSourceOrThrow(source) }
+}
+
+/** The strong parse, unchanged, for every non-version outcome. */
+function parseNamedSourceOrThrow(source: string): TeamBlueprint {
+  return parseBlueprint(source)
+}
+
+/**
+ * Does a document on this version need a migration, as opposed to being
+ * unreadable or perfectly current?
+ *
+ * The question is answered by the DOMAIN's derived set
+ * (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`), never by a local `version < 3`:
+ * a threshold here would be a second authority on which versions exist, and it
+ * would silently start lying the day a version 4 is defined on the other side of
+ * the package boundary.
+ */
+function migrationRequiredFor(schemaVersion: number): boolean {
+  return RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersion)
+}
+
+/**
+ * The version refusal a resolve/start path owes a document it can name but will
+ * not run (ADR A1-21). Two arms, two typed names, because the two operator
+ * actions are not the same task:
+ *
+ *  - a version this product DEFINED and retired → `BLUEPRINT_MIGRATION_REQUIRED`
+ *    (the document is the operator's; run the migration);
+ *  - a version it never defined → `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` (there
+ *    is no migration for a shape nobody knows).
+ *
+ * The order is the contract, not an optimisation. The identity's own
+ * `migrationRequired` flag is asked FIRST: that flag is what this same build just
+ * advertised on `listIdentities()`, so a resolve that answered "unsupported" (or
+ * "not found") for it would contradict its own catalog — and the flag is also the
+ * only arm that can know (a saved source is classified by the inspector, which
+ * consults the version sets; a frozen row by the retired set directly). Only when
+ * the flag is false does the version itself decide: supported → no refusal, and
+ * anything else is a version neither runnable nor retired, i.e. one this product
+ * never defined.
+ *
+ * A supported version returns `undefined`: this function only ever names a
+ * refusal, and "no refusal" is not a third answer.
+ */
+function versionRefusalOf(
+  identity: BlueprintIdentity,
+): { readonly code: string; readonly headline: string } | undefined {
+  const supported = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')
+  if (identity.migrationRequired) {
+    return {
+      code: BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
+      headline:
+        `Blueprint ${identity.blueprintId}@${identity.revision} is a schema v${identity.schemaVersion} document; ` +
+        `this build runs [${supported}]. It is listed in the catalog with migrationRequired=true — ` +
+        `migrate it (the v3 document requires a teamHardEnvelope authority document) and it will start`,
+    }
+  }
+  if (SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(identity.schemaVersion)) {
+    return undefined
+  }
+  return {
+    code: BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED,
+    headline:
+      `Blueprint ${identity.blueprintId}@${identity.revision} declares schema v${identity.schemaVersion}, ` +
+      `a version this build never defined; this build runs [${supported}]`,
+  }
+}
+
+/**
  * Create the live authority over the frozen registry, the saved sources
  * and the bootstrap anchor.
  * @throws `TeamContractError` (the strong parser's own) when the bootstrap
@@ -226,11 +395,21 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
   const sourceIndex = options.sourceIndex
   const registry = options.registry
 
-  // The bootstrap anchor: the one strong parse at construction (the
-  // inline source is constant per host — today's root already parses it
-  // once per construction).
-  const bootstrap: TeamBlueprint = parseBlueprint(options.bootstrapSource)
-  const bootstrapRef = toBlueprintSnapshotRef(bootstrap)
+  // The bootstrap anchor: the one strong parse at construction (the inline
+  // source is constant per host — today's root already parses it once per
+  // construction).
+  //
+  // A4-PR7 Task 7.2 (A1-20(c)): that parse is now CONDITIONALLY non-fatal. A
+  // VERSION refusal degrades the host instead of killing it — the catalog still
+  // shows the anchor (as `migration-required`, when it has an identity), and
+  // every Team bound to it is refused by name at start. Any other failure is a
+  // configuration fault and still throws here, exactly as before;
+  // `classifyBlueprintAnchor` owns that line and nothing here re-derives it.
+  const anchor = classifyBlueprintAnchor(options.bootstrapSource)
+  const bootstrap: TeamBlueprint | undefined =
+    anchor.status === 'runnable' ? anchor.blueprint : undefined
+  const bootstrapRef =
+    bootstrap === undefined ? undefined : toBlueprintSnapshotRef(bootstrap)
 
   /**
    * The current identity union (fresh scan). Frozen rows first (they win
@@ -246,23 +425,53 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
         revision: row.revision,
         contentHash: row.contentHash,
         origin: 'frozen',
+        schemaVersion: row.schemaVersion,
+        migrationRequired: migrationRequiredFor(row.schemaVersion),
       })
     }
 
-    const bKey = identityKey(bootstrap.blueprintId, bootstrap.revision)
-    if (!map.has(bKey)) {
-      map.set(bKey, {
-        blueprintId: bootstrap.blueprintId,
-        revision: bootstrap.revision,
-        contentHash: bootstrapRef.contentHash,
-        origin: 'bootstrap',
-      })
+    // The anchor arm. Runnable → the parsed identity, unchanged. Refused and
+    // RETIRED → STILL listed, from the identity the inspector read before it
+    // judged the version: this is the line that makes "the migration surface
+    // still sees it" true for the host's own document, and without it the
+    // operator's own Blueprint is the one entry the catalog cannot show. Refused
+    // and UNIDENTIFIED (a version nobody defined) → not listed, because there is
+    // no migration to advertise; the typed start refusal carries that instead.
+    if (bootstrap !== undefined) {
+      const bKey = identityKey(bootstrap.blueprintId, bootstrap.revision)
+      if (!map.has(bKey)) {
+        map.set(bKey, {
+          blueprintId: bootstrap.blueprintId,
+          revision: bootstrap.revision,
+          ...(bootstrapRef !== undefined ? { contentHash: bootstrapRef.contentHash } : {}),
+          origin: 'bootstrap',
+          schemaVersion: bootstrap.schemaVersion,
+          migrationRequired: migrationRequiredFor(bootstrap.schemaVersion),
+        })
+      }
+    } else if (anchor.status === 'refused' && anchor.identity !== undefined) {
+      const bKey = identityKey(anchor.identity.blueprintId, anchor.identity.revision)
+      if (!map.has(bKey)) {
+        map.set(bKey, {
+          blueprintId: anchor.identity.blueprintId,
+          revision: anchor.identity.revision,
+          origin: 'bootstrap',
+          schemaVersion: anchor.schemaVersion ?? 0,
+          migrationRequired: anchor.migrationRequired,
+        })
+      }
     }
 
     for (const name of sourceIndex.listSourceFiles()) {
       const inspection = sourceIndex.inspectSource(name)
-      if (inspection.status === 'rejected') continue // no identity → not listed (plan §7.4)
-      const { blueprintId, revision } = inspection.identity
+      // ONLY `rejected` is dropped (plan §7.4: no identity → nothing to list).
+      // `migration-required` is KEPT, and keeping it is Task 7.1's whole point:
+      // before this line the two states were one `rejected`, so a Blueprint the
+      // operator still has to migrate disappeared from `listIdentities` and from
+      // the v8 catalog — the removal made the cutover look finished and left the
+      // affected Team with no discoverable cause.
+      if (inspection.status === 'rejected') continue
+      const { blueprintId, revision, schemaVersion } = inspection.identity
       const key = identityKey(blueprintId, revision)
       const existing = map.get(key)
       if (existing !== undefined) {
@@ -285,7 +494,19 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
           },
         )
       }
-      map.set(key, { blueprintId, revision, origin: 'saved', sourceFile: name })
+      map.set(key, {
+        blueprintId,
+        revision,
+        origin: 'saved',
+        sourceFile: name,
+        schemaVersion,
+        // The STATUS is the classification, not the version: `ok` on a
+        // supported version and `migration-required` on a retired one are read
+        // from the same identity shape, and re-deriving it from
+        // `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS` here would put a second copy of
+        // the rule where the inspector already answered.
+        migrationRequired: inspection.status === 'migration-required',
+      })
     }
 
     return map
@@ -313,6 +534,27 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
         `blueprint not found in catalog: ${blueprintId}`,
         { blueprintId, reason: 'blueprint-not-found' },
       )
+    }
+    // The version gate runs BEFORE any source is read or strong-parsed, and
+    // before the origin branches: a retired document is refused the same way
+    // whether it came off disk, out of the registry, or from the pinned anchor.
+    // `parseBlueprint` would refuse it too (the same switch governs its set), but
+    // with the domain's generic "this document cannot be read" diagnosis —
+    // exactly the wording A1-21 forbids here, because the document reads
+    // perfectly well and what it needs is a migration. Refusing on the IDENTITY
+    // also means no retired source text is ever parsed, hashed, or handed to a
+    // snapshot ref on the way to saying no.
+    const refusal = versionRefusalOf(identity)
+    if (refusal !== undefined) {
+      throw new TeamPluginError(refusal.code, refusal.headline, {
+        blueprintId,
+        revision,
+        schemaVersion: identity.schemaVersion,
+        origin: identity.origin,
+        migrationRequired: identity.migrationRequired,
+        supportedVersions: [...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS],
+        ...(identity.sourceFile !== undefined ? { sourceFile: identity.sourceFile } : {}),
+      })
     }
     if (identity.origin === 'frozen') {
       // Fresh row read (never a stale listing), then strong-parse the
@@ -342,6 +584,27 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
       return blueprint
     }
     if (identity.origin === 'bootstrap') {
+      if (bootstrap === undefined) {
+        // Unreachable by construction: an anchor this build cannot parse is
+        // listed ONLY when it is retired, and the version gate above refuses
+        // that identity before this arm is ever reached. It is written out
+        // anyway because the function's contract is total — a degraded anchor
+        // answers with its own typed name, never with `undefined` wearing a
+        // `TeamBlueprint`.
+        const fallback = versionRefusalOf(identity)
+        throw new TeamPluginError(
+          fallback?.code ?? BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
+          fallback?.headline ??
+            `the bootstrap anchor cannot be resolved: this build cannot parse it and no migration applies`,
+          {
+            blueprintId,
+            revision,
+            origin: 'bootstrap',
+            reason: 'bootstrap-anchor-refused',
+            ...(anchor.status === 'refused' ? { code: anchor.code } : {}),
+          },
+        )
+      }
       return bootstrap
     }
     const sourceFile = identity.sourceFile
@@ -404,6 +667,45 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
       const blueprintId = ref.blueprintId
       const revision = ref.revision
       const key = identityKey(blueprintId, revision)
+
+      // A4-PR7 Task 7.2 — the same refusal in front of the same durable write.
+      // A frozen row is the registry's promise that this content is a PUBLISHED
+      // revision; freezing a document this build will not run would launder an
+      // unmigrated Blueprint into "already migrated" — the exact lie the
+      // migration surface of Task 7.1 exists to prevent. Read from the identity
+      // scan (no strong parse), and read BEFORE the idempotency short-circuit
+      // below, so a re-drive of an old freeze attempt cannot slip past on a
+      // same-hash match either.
+      const frozen = registry.get(blueprintId, revision)
+      const listedNow = scanIdentities().get(key)
+      if (listedNow !== undefined && listedNow.origin !== 'frozen') {
+        const refusal = versionRefusalOf(listedNow)
+        if (refusal !== undefined) {
+          throw new TeamPluginError(refusal.code, refusal.headline, {
+            blueprintId,
+            revision,
+            schemaVersion: listedNow.schemaVersion,
+            migrationRequired: listedNow.migrationRequired,
+            reason: 'freeze-version-refused',
+          })
+        }
+      } else if (frozen !== undefined) {
+        const refusal = versionRefusalOf({
+          blueprintId,
+          revision,
+          origin: 'frozen',
+          schemaVersion: frozen.schemaVersion,
+          migrationRequired: migrationRequiredFor(frozen.schemaVersion),
+        })
+        if (refusal !== undefined) {
+          throw new TeamPluginError(refusal.code, refusal.headline, {
+            blueprintId,
+            revision,
+            schemaVersion: frozen.schemaVersion,
+            reason: 'freeze-version-refused',
+          })
+        }
+      }
 
       const existing = registry.get(blueprintId, revision)
       if (existing !== undefined) {

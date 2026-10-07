@@ -84,17 +84,14 @@
  * @module @dsh-agent-team/runtime/plugin/root
  */
 
-import {
-  createBlueprintCatalog,
-  parseBlueprint,
-  sha256Hex,
-} from '../../../domain/blueprint/src/index.js'
+import { createBlueprintCatalog, sha256Hex } from '../../../domain/blueprint/src/index.js'
 import type {
   BlueprintCatalog,
   BlueprintTemplate,
   TeamBlueprint,
 } from '../../../domain/blueprint/src/index.js'
 import type { BlueprintAuthority } from './blueprint-authority.js'
+import { classifyBlueprintAnchor } from './blueprint-authority.js'
 import { DEFAULT_CONTEXT_POLICY, isContextPolicy } from '../../../domain/member/src/index.js'
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js'
 import {
@@ -122,6 +119,7 @@ import {
   parseSessionId,
 } from '../../../contracts/src/index.js'
 import type {
+  BlueprintSnapshotRef,
   EffectiveConfigDtoV2,
   MemberIdentity,
   MemberModelStateDto,
@@ -281,6 +279,7 @@ import { authorityRank, planPermissionMutationApproval } from '../../governance/
 // the durable write stays inside `mutatePermission` (ADR §2) and the
 // effective answer stays inside the merged read plane (ADR §3).
 import {
+  createControlAuthorityRevalidation,
   createMemberLifecycleReader,
   createPermissionGovernanceLane,
   createTeamPermissionLanes,
@@ -927,8 +926,84 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // using it); the CATALOG is the injected live one when provided, else
   // the legacy static single-blueprint catalog (the factory-world
   // fallback — every consumer below derives from this single variable).
-  const blueprint: TeamBlueprint = parseBlueprint(config.blueprintSource)
-  const catalog: BlueprintCatalog = blueprintCatalog ?? createBlueprintCatalog([blueprint])
+  //
+  // A4-PR7 Task 7.2 (ADR A1-20(c)) — THE ANCHOR IS CLASSIFIED AT CONSTRUCTION
+  // AND PARSED ON DEMAND. The classification is cheap and total (`inspectBlueprintSource`
+  // never throws for content); the strong parse still happens for every document
+  // this build can run, so the ordinary world is byte-identical — including the
+  // throw for a document that is not a Blueprint at all. What changes is the ONE
+  // case the ADR forbids: a host anchored on a version it no longer runs used to
+  // die HERE, at root construction, which is a whole-host failure reached through
+  // one Team's stale document. "An operator who cannot boot cannot migrate
+  // anything", so the refusal moves to where it belongs — the starts that need
+  // the anchor — and every start gets a typed name on the way (`requireAnchor`).
+  const anchorState = classifyBlueprintAnchor(config.blueprintSource)
+  const requireAnchor = (): TeamBlueprint => {
+    if (anchorState.status === 'refused') {
+      throw new TeamPluginError(anchorState.code, anchorState.headline, {
+        rootSessionId: rootSid,
+        reason: 'bootstrap-anchor-refused',
+        migrationRequired: anchorState.migrationRequired,
+        ...(anchorState.schemaVersion !== undefined
+          ? { schemaVersion: anchorState.schemaVersion }
+          : {}),
+        ...(anchorState.identity !== undefined ? { ...anchorState.identity } : {}),
+      })
+    }
+    return anchorState.blueprint
+  }
+  // The degraded anchor's VALUE (A4-PR7 Task 7.2). Some consumers below take the
+  // anchor BY REFERENCE at construction — the S6 surfaces and the returned root —
+  // and cannot be deferred without changing a signature outside Task 7.2. They
+  // get THIS: not a stand-in document with empty templates and no requirements
+  // (that would be the second version of the same lie — an unreadable document
+  // rendered as an empty one, and it would report "nothing pending" on the wire
+  // for a document we cannot read), but a value that ANSWERS EVERY READ WITH THE
+  // TYPED REFUSAL. Construction succeeds because nobody has to look; the first
+  // operation that actually needs the document gets `BLUEPRINT_MIGRATION_REQUIRED`
+  // (or `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`) naming the anchor and the action.
+  const anchorRefusal = (): never => {
+    if (anchorState.status === 'runnable') {
+      // Unreachable: this value is handed out ONLY when the anchor is refused
+      // (see `blueprint` below). Named rather than silently typed away, because
+      // a future edit that hands it out on a runnable anchor must not turn a
+      // readable document into a throwing one.
+      throw new Error(
+        `internal invariant broken: the refusing anchor value was handed out for a runnable ` +
+          `bootstrap anchor on root ${String(rootSid)}`,
+      )
+    }
+    throw new TeamPluginError(anchorState.code, anchorState.headline, {
+      rootSessionId: rootSid,
+      reason: 'bootstrap-anchor-read-refused',
+      migrationRequired: anchorState.migrationRequired,
+    })
+  }
+  const refusingAnchor = new Proxy({} as TeamBlueprint, {
+    get: anchorRefusal,
+    has: anchorRefusal,
+    ownKeys: anchorRefusal,
+    getOwnPropertyDescriptor: anchorRefusal,
+  })
+  /**
+   * A4-PR7 Task 7.2 — `blueprint` is THIS root's anchor, and the anchor is the
+   * bound document only for the entrances that MINT a team (the create phase and
+   * the handoff target); a RESUMED team is gated on its own row's bound
+   * document, never on the anchor (`boundBlueprintFor`). The two must not be
+   * conflated: a host whose anchor is retired can legitimately resume a Team
+   * whose bound revision is v3, and a host whose anchor is v3 must refuse a Team
+   * whose row still points at v1.
+   */
+  const blueprint: TeamBlueprint =
+    anchorState.status === 'runnable' ? anchorState.blueprint : refusingAnchor
+  // An EMPTY static catalog when the anchor is refused (the factory-world
+  // fallback only — the production host injects the live catalog, which lists the
+  // anchor as `migration-required` through the authority): there is no runnable
+  // document to catalog, and inventing an entry for it would put a Blueprint the
+  // product refuses to run on the same footing as one it runs.
+  const catalog: BlueprintCatalog =
+    blueprintCatalog ??
+    createBlueprintCatalog(anchorState.status === 'runnable' ? [anchorState.blueprint] : [])
 
   // The GENERIC per-root bound Blueprint resolver (model-preference routing
   // fix, guide §4.7.1): ONE per-root cache shared by EVERY consumer that
@@ -958,15 +1033,80 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     return resolved
   }
 
+  /**
+   * A4-PR7 Task 7.2 (ADR A1-20(c) + A1-21) — the VERSION gate in front of every
+   * entrance that can bring a Team's agents to life.
+   *
+   * THE RESOLUTION IS THE CHECK. A start needs the bound document, so the gate
+   * asks the ONE question the bound document can answer — "will this build run
+   * me?" — and inherits the refusal from the same resolver every other consumer
+   * uses: `resolveSnapshot` for a bound ref (the Blueprint authority, Task 7.1),
+   * the classified anchor for a pre-repair no-ref legacy row
+   * (`bound-blueprint.ts` case 2). A second copy of the version logic here would
+   * be a second answer to that question, and the two would drift.
+   *
+   * WHICH DOCUMENT is the whole law, and it is not the same document on both
+   * paths: a MINT entrance binds the anchor's identity, so the anchor is its
+   * bound document; a RESUMED Team is bound to whatever its ROW says, and the
+   * anchor is irrelevant — a host whose anchor is retired still resumes a Team
+   * whose bound revision this build runs, and a host with a v3 anchor still
+   * refuses the Team whose row still points at v1. That is why this takes a
+   * session id and why the resume path could not simply read `boundSnapshot`.
+   *
+   * NOT ACKNOWLEDGEABLE, in either direction of the confusion: governance
+   * acknowledgement (`startGovernanceGate`, and the wire's
+   * `TEAM_START_GOVERNANCE_*` family) gates the v3 envelope-consistency leg —
+   * the leg that exists ONLY once a document this build runs is in play. A
+   * document this build will not run has no envelope to reconcile, so there is
+   * nothing to acknowledge and no warning record to sign. The two refusals stay
+   * two names, two planes, and two operator actions.
+   *
+   * Nothing is written here: `boundBlueprintFor` caches only on success, so a
+   * refusal leaves no durable trace and every re-entry re-runs the same check.
+   */
+  const requireBoundBlueprintStartable = (entrance: string, teamSessionId: string): void => {
+    if (resolveBoundBlueprint === undefined) {
+      // Factory/test world: the anchor stands in for the bound document (the
+      // single-blueprint factory contract), so the anchor's own refusal IS the
+      // start refusal. Read it explicitly — handing `blueprint` along unread
+      // would let a refused anchor start a Team in a factory world.
+      requireAnchor()
+      return
+    }
+    boundBlueprintFor(teamSessionId)
+  }
+
+  /** The gated Root-Agent start (see `seams.startRootAgent`). */
+  const gatedCreateRootAgent: TeamAgentBindings['createRootAgent'] =
+    live.createRootAgent === undefined
+      ? undefined
+      : (rootSessionId: string): Promise<void> => {
+          requireBoundBlueprintStartable('team.create', rootSessionId)
+          const start = live.createRootAgent
+          if (start === undefined) {
+            throw new TeamPluginError(
+              TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CREATE_FAILED,
+              `the live glue's createRootAgent disappeared between the gated wrapper and the call for root "${String(rootSessionId)}"`,
+            )
+          }
+          return start(rootSessionId)
+        }
+
   // --- A03b the bound blueprint snapshot ref (T12-B1/B6) --------------------------------
   // Every fresh-root binding of THIS row binds the same immutable identity:
   // the real create boot (T12-B1) and the handoff target creation (T12-B6)
   // both go through this single ref — no per-path re-derivation.
-  const boundSnapshot = createBlueprintSnapshotRef({
-    blueprintId: parseBlueprintId(String(blueprint.blueprintId)),
-    revision: parseBlueprintRevision(String(blueprint.revision)),
-    contentHash: parseBlueprintContentHash(String(blueprint.contentHash)),
-  })
+  // A4-PR7 Task 7.2 — a FUNCTION, not a value. Deriving the ref is three
+  // parses of the anchor's identity, and this row sits in the construction path
+  // of every root: as a value it re-introduced the very construction-time
+  // failure Task 7.2 removes. Every call site below is a start (or the fixture
+  // registry seed), which is where a version refusal belongs.
+  const boundSnapshot = (): BlueprintSnapshotRef =>
+    createBlueprintSnapshotRef({
+      blueprintId: parseBlueprintId(String(requireAnchor().blueprintId)),
+      revision: parseBlueprintRevision(String(requireAnchor().revision)),
+      contentHash: parseBlueprintContentHash(String(requireAnchor().contentHash)),
+    })
 
   // --- A07 leader identity -------------------------------------------------------------
   const leaderIdentity: MemberIdentity = leaderMemberIdentityOf(rootSid as TeamSessionId)
@@ -1179,23 +1319,37 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     config.externalPolicyFacts as unknown as ExternalPolicyFacts
 
   // --- A14 + A15 compatibility prober / authority / work gate --------------------------
-  const prober = createCompatibilityProber({
-    repositories: repos,
-    rootSessionId: rootSid,
-    blueprint,
-    environmentFacts,
-    now,
-  })
-  const authority = createCompatibilityAuthority({
-    repositories: repos,
-    rootSessionId: rootSid,
-    blueprint,
-    environmentFacts,
-    now,
-  })
+  // A4-PR7 Task 7.2 — MEMOIZED, not built inline. `createCompatibilityAuthority`
+  // fingerprints the bound Blueprint's requirements AT CONSTRUCTION
+  // (`compatibility/authority.ts:268`), so with the anchor refused it would throw
+  // here and take the host down with it — the exact failure A1-20(c) forbids. A
+  // probe cannot happen before a start, every start is gated (below), and the
+  // first read of either seam is where the typed refusal now surfaces.
+  let proberRef: ReturnType<typeof createCompatibilityProber> | undefined
+  let authorityRef: ReturnType<typeof createCompatibilityAuthority> | undefined
+  const prober = (): ReturnType<typeof createCompatibilityProber> =>
+    (proberRef ??= createCompatibilityProber({
+      repositories: repos,
+      rootSessionId: rootSid,
+      blueprint: requireAnchor(),
+      environmentFacts,
+      now,
+    }))
+  const authority = (): ReturnType<typeof createCompatibilityAuthority> =>
+    (authorityRef ??= createCompatibilityAuthority({
+      repositories: repos,
+      rootSessionId: rootSid,
+      blueprint: requireAnchor(),
+      environmentFacts,
+      now,
+    }))
   const compatibility = {
-    prober,
-    authority,
+    get prober() {
+      return prober()
+    },
+    get authority() {
+      return authority()
+    },
     enforceGate: enforceCompatibilityGate,
   }
 
@@ -2089,6 +2243,26 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // the GUI remain the recovery paths). A glue bundle without the port
   // simply does not notify (factory/unit worlds; discovery stays
   // functional through `team_list_pending_control`).
+  // A4-PR7 Task 7.0 (ADR A1-14): the CONSUMPTION-POINT authority recheck, in
+  // the ONE place that can compose it. An approval is not a standing grant:
+  // before the `control-allow-consumed` fact is written, the control service
+  // re-runs the ceiling for the authority point PERSISTED on the row and refuses
+  // with ZERO consumption when the rung that signed no longer covers it, or when
+  // the fresh documents cannot answer. The evaluation lives in the operation lane
+  // and the document reading lives in the permission plane (A5-12); the control
+  // lane sees only the closed verdict (the a3p3 consumer rows state who may ask
+  // the ceiling question, and the control lane is not among them).
+  //
+  // WHY A REF: the control service is constructed here and the plane's
+  // operation-facts reader is published BELOW, in the same function (the
+  // `permissionPlaneRef` publication — the established lazy-ref pattern of this
+  // root, cf. `controlServiceRef` above). The port is created ONCE and reads the
+  // ref per call, so the ask and the consumption point necessarily consult the
+  // SAME reader — a second reader would be a second answer, and the two could
+  // then disagree about which documents bind this Team.
+  const operationApprovalFactsRef: { current: OperationApprovalFactsReader | undefined } = {
+    current: undefined,
+  }
   const control = createControlService({
     teamDomain: domain,
     blueprintCatalog: catalog,
@@ -2101,6 +2275,24 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           }),
         }
       : {}),
+    // A4-PR7 Task 7.0 (ADR A1-14): the recheck port, present exactly when this
+    // process has an authority-ceiling reader at all. Without it the guard
+    // cannot confirm a v3 operation approval and refuses with
+    // `authority-undetermined` — the fail-closed direction, never a default
+    // "covered" (see `ControlAuthorityRecheckPort`'s contract).
+    ...(permissionAuthorityCeiling === undefined
+      ? {}
+      : {
+          authorityRevalidation: createControlAuthorityRevalidation({
+            operationApprovalFacts: async (input) => {
+              const reader = operationApprovalFactsRef.current
+              // An unpublished reader is NOT "no facts to speak of": it reaches
+              // the operation lane as `undefined` facts, which rechecks as
+              // `undetermined` and refuses with zero consumption.
+              return reader === undefined ? undefined : reader(input)
+            },
+          }),
+        }),
   })
   // A6 (alpha.2 plan §11): publish the fully-constructed control service to
   // the shared ref the glue's setup callback reads LAZILY (the teamToolsRef
@@ -2395,6 +2587,15 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         `the fresh binding of root "${String(input.rootSessionId)}" reported no durable state`,
       )
     }
+    // A4-PR7 Task 7.2 — the VERSION gate first, THEN the governance gate. The
+    // order is the law, not a style choice: the governance leg reads the Team's
+    // v3 authority documents, and on a bound document this build will not run
+    // they do not exist — the leg would report a document fault as a governance
+    // fault and hand the operator an acknowledgement to sign for a migration.
+    // Post-fresh-root-commit (the row exists, so the bound document is the row's)
+    // and pre-`ports.start`/pre-`live.boot`: a refusal leaves the row NOT LIVE
+    // with zero agent creation, and the next entry re-runs this same check.
+    requireBoundBlueprintStartable(input.gateMethod, rootSessionId)
     await startGovernanceGate(input.gateMethod, rootSessionId, 'create')
     if (context !== undefined && ports !== undefined) {
       await ports.start(rootSessionId)
@@ -2420,7 +2621,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // The v1 CLOSED remote params carry no blueprint field on
     // handoff.create: the new team pins THIS row's bound blueprint
     // (single-blueprint row; the `staged` record stays opaque here).
-    const snapshot = boundSnapshot
+    const snapshot = boundSnapshot()
     const minted = parseRootSessionId(
       `session-handoff-${sha256Hex(canonicalJsonStringify({ intentToken: intent.intentToken })).slice(0, 40)}`,
     )
@@ -2936,6 +3137,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             }),
           }
     permissionPlaneRef.current = planeForGlue ?? permissionPlane
+    // A4-PR7 Task 7.0 (ADR A1-14): publish the SAME reader into the control
+    // service's consumption-point recheck (whose declaration documents the ref).
+    // It is assigned HERE — the one place that decides whether this process has
+    // operation-side authority facts at all — because the ask and the
+    // consumption point must not be able to read two different document sets: a
+    // second reader is a second answer (A5-12), and on this path the two answers
+    // decide whether an approved operation executes.
+    operationApprovalFactsRef.current = planeForGlue?.operationApprovalFacts
   }
 
   // ROUND 7 (parent BLOCK-1/2/3): the ONE entry-side permission surface.
@@ -3313,7 +3522,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // glue port the with-context handoff uses (create-or-ensure; a fresh
     // root is created by the host, NO native root). Absent (a glue-less
     // world) → team.create fails closed with a typed error.
-    startRootAgent: live.createRootAgent,
+    // A4-PR7 Task 7.2 — gated, and gated HERE rather than only on the wire: this
+    // port is the Root-Agent start of EVERY `team.create` path, so the version
+    // refusal cannot be avoided by reaching the glue through the surface that
+    // forgot to ask. `undefined` stays `undefined` (a glue-less world fails
+    // closed with its own typed error, unchanged).
+    startRootAgent: gatedCreateRootAgent,
     // D2 (Team D1-D6 repair v2, remote contract v3) — the Team-mode live
     // ensure behind the v3-only team.ensureRootLive: the live glue's
     // ensureLiveAgent (A3 Q2 — live-first: the upstream agent registry
@@ -3326,6 +3540,11 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // return value — it only needs the success/failure distinction (the
     // success envelope is built by the handler itself).
     ensureRootLive: async (rootSessionId) => {
+      // A4-PR7 Task 7.2 — `team.ensureRootLive` brings the Root Agent to life
+      // WITHOUT booting anything else, so it is a start entrance in its own
+      // right: an unmigrated Team must not become live through it. Enforced on
+      // the port (not only on the wire) for the same reason as `startRootAgent`.
+      requireBoundBlueprintStartable('team.ensureRootLive', rootSessionId)
       await live.ensureLiveAgent(rootSessionId)
     },
     // A4-PR6 §6.A — the ONE governance-warning port (host-assembled). The
@@ -3624,7 +3843,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       // inherits an already-frozen snapshot). Factory worlds without an
       // authority skip the seeding (the legacy behavior).
       if (blueprintAuthority !== undefined) {
-        await blueprintAuthority.freezeSnapshot(boundSnapshot)
+        await blueprintAuthority.freezeSnapshot(boundSnapshot())
       }
       const input = {
         rootSessionId: rootSid,
@@ -3735,7 +3954,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         // target-agent ports stay untouched by the boot create.
         await createAndStartTeam({
           rootSessionId: parseRootSessionId(rootSid),
-          blueprint: boundSnapshot,
+          blueprint: boundSnapshot(),
           generation: config.generation,
           // A4-PR6 review round 1 (BLOCKER 1): the production boot
           // create is a real start entrance too — the gate runs before
@@ -3786,6 +4005,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       // warning stands unacknowledged must NOT become live through the
       // boot. The resume phase writes nothing; a refusal leaves the
       // durable state exactly as found.
+      // A4-PR7 Task 7.2 — the named placement: between the row read above and
+      // the FIRST durable write of the resume phase (`prober().probe`, below).
+      // `boundSnapshot` could not serve here — it is derived from the anchor, and
+      // a resumed Team is bound to its ROW — so this entrance asks the resolver
+      // explicitly, which is also what makes the refusal the right one for a
+      // migrated Team on a stale-anchor host (allowed) and an unmigrated Team on
+      // a v3 host (refused). Zero compatibility/prober writes before it.
+      requireBoundBlueprintStartable('boot.resume', rootSid)
       await startGovernanceGate('boot.resume', rootSid, 'resume')
     }
     // Boot-time initial compatibility state (wiring decision (x)): the
@@ -3805,7 +4032,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // the inline re-probe entirely. Idempotent: an existing state row
     // (the resume boots, same home) is left untouched.
     if ((await repos.compatibility.get(rootSid)) === undefined) {
-      await prober.probe(PROBE_TRIGGERS.STALE_GENERATION_BEFORE_NEW_WORK)
+      await prober().probe(PROBE_TRIGGERS.STALE_GENERATION_BEFORE_NEW_WORK)
     }
     // Boot-phase durable content (T12-B1 / T12-B2): the FIXTURE create
     // seeds the frozen scenario rows (teamSessions row + team-root

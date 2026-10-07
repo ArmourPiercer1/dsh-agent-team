@@ -38,6 +38,7 @@
     "check:artifacts": "node scripts/check-artifacts-committed.mjs",
     "typecheck": "pnpm -r run typecheck",
     "lint": "eslint .",
+    "lint:identities": "node scripts/lint-identities.mjs",
     "test": "vitest run",
     "test:node": "node scripts/run-tests.mjs",
     "smoke:composition": "node scripts/composition-smoke.mjs"

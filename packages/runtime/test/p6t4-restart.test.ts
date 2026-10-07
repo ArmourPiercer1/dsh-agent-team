@@ -32,6 +32,7 @@ import {
   controlFacts,
   createFakeToolPipeline,
   createP6T4Service,
+  constantAuthorityRecheck,
   createP6T4World,
   destroyP6T1World,
   expectFirst,
@@ -44,6 +45,20 @@ import {
 import type { FakeToolExecution } from './p6t4-helpers.js'
 
 const WORKER_ID = String(P6T4_SEEDS.worker.instanceId)
+
+/**
+ * The authority point A4-PR7 Task 7.0 requires on every operation case (ADR
+ * A1-14). This file's subject is what SURVIVES a restart, so the point is a
+ * constant and the fresh ceiling the guard re-runs over it is pinned constant
+ * (`constantAuthorityRecheck`) — the authority law itself is
+ * `a4p7-a1-14-consumption-revalidation.test.ts`. What this file DOES pin about
+ * the point is that it is durable: a service constructed over a re-opened store
+ * must re-read the same point and still consume the allow it re-read.
+ */
+const AUTHORITY_SCOPE = {
+  operationClass: 'fs.write',
+  matcher: { kind: 'exact', resource: 'p6t4-fixture:fileA' },
+} as const
 
 // --- scenario 1: pending request + recorded decision survive the restart -----------
 let s1: {
@@ -224,9 +239,18 @@ let s4: {
 }
 {
   const world = await createP6T4World('p6t4-rst-4', ['leader', 'worker'])
-  const scope = makeScope({ correlation: 'corr-p6t4-rst-4', operationFingerprint: 'fp-p6t4-rst-4' })
+  const scope = makeScope({
+    correlation: 'corr-p6t4-rst-4',
+    operationFingerprint: 'fp-p6t4-rst-4',
+    authorityScope: AUTHORITY_SCOPE,
+  })
+  // The recheck port is re-created for the restarted service (the restart model
+  // builds a WHOLE new unit): the port is a wiring fact of the composition, not
+  // durable state, and the point it is asked about IS durable — that asymmetry
+  // is part of what the scenario shows.
+  const recheck = constantAuthorityRecheck()
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, { authorityRevalidation: recheck.port })
     const created = await service.requestApprovalLeg({
       rootSessionId: P6T4_ROOT,
       caller: memberCaller(WORKER_ID),
@@ -238,6 +262,7 @@ let s4: {
         beneficiaryAuthority: 'member',
         requestedEffect: 'ask',
         operationFingerprint: 'fp-p6t4-rst-4',
+        authorityScope: AUTHORITY_SCOPE,
         correlation: scope.correlation,
       },
       actionName: scope.actionName,
@@ -255,7 +280,7 @@ let s4: {
     const restarted = await restartP6T1World(world)
     let captured: Omit<typeof s4, never>
     try {
-      const fresh = createP6T4Service(restarted)
+      const fresh = createP6T4Service(restarted, { authorityRevalidation: recheck.port })
       const read = await fresh.readApprovalCaseState({ rootSessionId: P6T4_ROOT, approvalCaseId })
       if (read.kind !== 'case') throw new Error(`the case must survive the restart, got ${read.kind}`)
       const openCases = await fresh.listOpenApprovalCases({ rootSessionId: P6T4_ROOT })
@@ -270,6 +295,7 @@ let s4: {
           beneficiaryAuthority: 'member',
           requestedEffect: 'ask',
           operationFingerprint: 'fp-p6t4-rst-4',
+          authorityScope: AUTHORITY_SCOPE,
           correlation: scope.correlation,
         },
         actionName: scope.actionName,

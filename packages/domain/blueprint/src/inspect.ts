@@ -19,12 +19,16 @@
  * plus the identity field checks:
  *
  *   - the decoded frontmatter is a single plain record;
- *   - `schemaVersion` is present, a positive integer, and SUPPORTED
- *     (`SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` — the same closed set the
- *     strong validator enforces);
+ *   - `schemaVersion` is present and a positive integer;
  *   - `blueprintId` parses (contracts `parseBlueprintId` — the same
  *     grammar the strong validator uses);
- *   - `revision` parses (contracts `parseBlueprintRevision`).
+ *   - `revision` parses (contracts `parseBlueprintRevision`);
+ *   - ONLY THEN the version is classified: a version in
+ *     `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` is `ok`, a version in
+ *     `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS` (defined once, no longer run) is
+ *     `migration-required` AND CARRIES THE IDENTITY PARSED ABOVE, and anything
+ *     else is `rejected`. The order is not cosmetic — see the comment at that
+ *     check.
  *
  * What the inspector NEVER checks (the strong parser's territory, kept
  * intact — plan §5 "不要检查"): template reference closure,
@@ -53,7 +57,10 @@ import {
 import type { BlueprintId, BlueprintRevision } from '../../../contracts/src/index.js'
 
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js'
-import { SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS } from './schema.js'
+import {
+  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
+  SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
+} from './schema.js'
 
 /**
  * The minimal identity of a blueprint source document (plan §5): the
@@ -89,9 +96,31 @@ export interface BlueprintInspectionDiagnostic {
   readonly message: string
 }
 
-/** The total inspection outcome (never throws for content issues). */
+/** The total inspection outcome (never throws for content issues).
+ *
+ * THREE states, because a directory scan can learn three different facts about a
+ * saved source (A4-PR7 Task 7.1, ADR A1-21):
+ *
+ *  - `ok` — a well-formed identity on a version this build RUNS;
+ *  - `migration-required` — a well-formed identity on a version this build
+ *    DEFINED and no longer runs (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`). The
+ *    document is the operator's, its identity is readable, and the only fact
+ *    missing is the migration. It therefore STAYS on the listing surface: the
+ *    whole reason the state exists is that "migrate everything that is left" is
+ *    a runbook an operator can only write when what is left is VISIBLE;
+ *  - `rejected` — no identity is owed. Bad YAML, a missing id, an invalid
+ *    revision, or a version nobody ever defined all say the same thing: there is
+ *    nothing to list and nothing to migrate.
+ *
+ * `migration-required` is not a softer `rejected`, and `rejected` is not a
+ * `migration-required` with the fields hidden. Collapsing the first into the
+ * second is the bug this state closes (an unmigrated Blueprint that vanishes
+ * from `listIdentities` cannot be migrated); collapsing the second into the
+ * first would put an unparseable file on a migration surface.
+ */
 export type BlueprintInspectionResult =
   | { readonly status: 'ok'; readonly identity: BlueprintSourceIdentity }
+  | { readonly status: 'migration-required'; readonly identity: BlueprintSourceIdentity }
   | { readonly status: 'rejected'; readonly diagnostics: readonly BlueprintInspectionDiagnostic[] }
 
 /** True for a single plain record (neither null, nor an array, an object). */
@@ -166,17 +195,6 @@ export function inspectBlueprintSource(source: string): BlueprintInspectionResul
       ],
     }
   }
-  if (!SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersionRaw)) {
-    return {
-      status: 'rejected',
-      diagnostics: [
-        {
-          reason: 'schemaVersion-unsupported',
-          message: `unsupported blueprint schema version ${schemaVersionRaw}; this build supports [${SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')}]`,
-        },
-      ],
-    }
-  }
 
   let blueprintId: BlueprintId
   try {
@@ -198,14 +216,42 @@ export function inspectBlueprintSource(source: string): BlueprintInspectionResul
     }
   }
 
-  return {
-    status: 'ok',
-    identity: {
-      schemaVersion: schemaVersionRaw,
-      blueprintId: String(blueprintId),
-      revision: String(revision),
-    },
+  const identity: BlueprintSourceIdentity = {
+    schemaVersion: schemaVersionRaw,
+    blueprintId: String(blueprintId),
+    revision: String(revision),
   }
+
+  // The version question is asked LAST, and that order is the whole of Task 7.1.
+  // Answering it first — which is how this function used to read — means a
+  // document on a retired version never reaches the identity checks, so it comes
+  // back `rejected` and the catalog drops it: the one Blueprint the operator
+  // still has to migrate is precisely the one the migration runbook cannot see.
+  // Reading the identity first costs nothing (two contracts parsers over two
+  // scalars) and buys the difference between "unreadable" and "not yet
+  // migrated" — the difference between a file and a task.
+  if (!SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersionRaw)) {
+    if (RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersionRaw)) {
+      return { status: 'migration-required', identity }
+    }
+    // A version this product never defined. There is no migration for a document
+    // whose shape nobody knows, so this stays a refusal to identify it — and it
+    // is the refusal the plugin layer names `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`,
+    // never `BLUEPRINT_MIGRATION_REQUIRED` (ADR A1-21: a document the reader
+    // cannot parse and a document it will not run ask the operator for different
+    // actions).
+    return {
+      status: 'rejected',
+      diagnostics: [
+        {
+          reason: 'schemaVersion-unsupported',
+          message: `unsupported blueprint schema version ${schemaVersionRaw}; this build supports [${SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')}]`,
+        },
+      ],
+    }
+  }
+
+  return { status: 'ok', identity }
 }
 
 /**

@@ -73,6 +73,7 @@ import {
   assertControlCode,
   controlFacts,
   createP6T4Service,
+  constantAuthorityRecheck,
   createP6T4World,
   destroyP6T1World,
   humanCaller,
@@ -84,6 +85,32 @@ import {
 } from './p6t4-helpers.js'
 
 const WORKER_ID = String(P6T4_SEEDS.worker.instanceId)
+
+
+/**
+ * The authority point every operation case carries from A4-PR7 Task 7.0 onward
+ * (ADR A1-14), plus the constant consumption-point recheck this file's services
+ * are wired with.
+ *
+ * The recheck is CONSTANT because this file's subject is the ESCALATION law
+ * (who may rise a leg, what a rise may never do), not the authority law: before
+ * PR7 the consumption point asked no authority question at all, and a
+ * `still-sufficient` answer is what that absence meant behaviourally. The
+ * recheck's own law — a rise, an undetermined, an unbound row, and that an
+ * ABSENT port refuses instead of permitting — is pinned in
+ * `a4p7-a1-14-consumption-revalidation.test.ts`.
+ *
+ * The scenarios that hand-write a LEGACY `requestControl` row (the escalated-
+ * reason read gate, the A2-1 foreign decision value) deliberately keep a scope
+ * with NO point: their row carries none, and a point on the guard scope would
+ * disagree with the recorded snapshot instead of testing what they test.
+ */
+const AUTHORITY_SCOPE = {
+  operationClass: 'fs.write',
+  matcher: { kind: 'exact', resource: 'a4p3-fixture:fileA' },
+} as const
+const RECHECK = constantAuthorityRecheck()
+const SERVICE_OPTIONS = { authorityRevalidation: RECHECK.port }
 const LEADER_ID = String(P6T4_SEEDS.leader.instanceId)
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -168,7 +195,11 @@ async function requestLeg(
   // fingerprint), so the guard query must carry the SAME fingerprint — an
   // approval bound to one fingerprint never authorizes another.
   const operationFingerprint = overrides.operationFingerprint ?? `fp-${overrides.correlation}`
-  const scope = makeScope({ correlation: overrides.correlation, operationFingerprint })
+  const scope = makeScope({
+    correlation: overrides.correlation,
+    operationFingerprint,
+    authorityScope: AUTHORITY_SCOPE,
+  })
   const outcome = await service.requestApprovalLeg({
     rootSessionId: P6T4_ROOT,
     caller: memberCaller(WORKER_ID),
@@ -180,6 +211,7 @@ async function requestLeg(
       beneficiaryAuthority: 'member',
       requestedEffect: 'ask',
       operationFingerprint,
+      authorityScope: AUTHORITY_SCOPE,
       correlation: scope.correlation,
     },
     actionName: scope.actionName,
@@ -197,7 +229,7 @@ async function requestLeg(
 const hazard = await (async () => {
   const world = await createP6T4World('a4p3-hz-1', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const scope = makeScope({ correlation: 'corr-a4p3-hazard' })
     const request = await service.requestControl({
       rootSessionId: P6T4_ROOT,
@@ -290,7 +322,7 @@ describe('the escalated-reason read gate (A5-5, preflight no-red finding 2)', ()
 const escalation = await (async () => {
   const world = await createP6T4World('a4p3-esc-1', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const { leg, scope } = await requestLeg(service, { correlation: 'corr-a4p3-esc-1' })
     const before = await service.listControlState(P6T4_ROOT)
     const outcome = await service.escalateApprovalLeg({
@@ -513,7 +545,7 @@ describe('an escalation closes the current leg and raises the next one (A5-5, A1
 const refusals = await (async () => {
   const world = await createP6T4World('a4p3-esc-2', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const decided = await requestLeg(service, { correlation: 'corr-a4p3-refuse-1' })
     await service.resolveControl({
       rootSessionId: P6T4_ROOT,
@@ -589,6 +621,7 @@ const refusals = await (async () => {
         beneficiaryAuthority: 'member',
         requestedEffect: 'ask',
         operationFingerprint: 'fp-a4p3-noadmin',
+        authorityScope: AUTHORITY_SCOPE,
         correlation: 'corr-a4p3-noadmin',
       },
       actionName: 'instance.message.send',
@@ -708,7 +741,7 @@ describe('escalation refuses what it must and terminates what cannot be reviewed
 const foreign = await (async () => {
   const world = await createP6T4World('a4p3-esc-3', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const scope = makeScope({ correlation: 'corr-a4p3-foreign' })
     const request = await service.requestControl({
       rootSessionId: P6T4_ROOT,
@@ -774,7 +807,7 @@ describe('escalate is never an authorization value (A2-1, A3-3)', () => {
 const terminal = await (async () => {
   const world = await createP6T4World('a4p3-esc-4', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const { leg, scope } = await requestLeg(service, { correlation: 'corr-a4p3-terminal' })
     const close = await service.appendTerminalOutcome({
       rootSessionId: P6T4_ROOT,
@@ -833,18 +866,20 @@ const terminal = await (async () => {
 const zeroLeg = await (async () => {
   const world = await createP6T4World('a4p3-zeroleg-1', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const identityOf = (tag: string): ApprovalCaseIdentityInput => ({
       subject: { kind: 'instance', instanceId: WORKER_ID },
       beneficiaryAuthority: 'member',
       requestedEffect: 'ask',
       operationFingerprint: `fp-a4p3-zeroleg-${tag}`,
+      authorityScope: AUTHORITY_SCOPE,
       correlation: `corr-a4p3-zeroleg-${tag}`,
     })
     const adminIdentity = identityOf('admin')
     const adminScope = makeScope({
       correlation: adminIdentity.correlation,
       operationFingerprint: adminIdentity.operationFingerprint ?? 'fp',
+      authorityScope: AUTHORITY_SCOPE,
     })
     // (1) the A1-12 path itself: a case whose reviewer cannot exist.
     const adminLeg = await service.requestApprovalLeg({
@@ -875,6 +910,7 @@ const zeroLeg = await (async () => {
     const closeScope = makeScope({
       correlation: closeIdentity.correlation,
       operationFingerprint: closeIdentity.operationFingerprint ?? 'fp',
+      authorityScope: AUTHORITY_SCOPE,
     })
     const closeArgs = {
       rootSessionId: P6T4_ROOT,
@@ -908,6 +944,7 @@ const zeroLeg = await (async () => {
     const openScope = makeScope({
       correlation: openIdentity.correlation,
       operationFingerprint: openIdentity.operationFingerprint ?? 'fp',
+      authorityScope: AUTHORITY_SCOPE,
     })
     const openCase = await service.requestApprovalLeg({
       rootSessionId: P6T4_ROOT,
@@ -1141,7 +1178,7 @@ describe('the frozen PR3 leg vocabularies (A2-8, A5-16)', () => {
 const selfDecision = await (async () => {
   const world = await createP6T4World('a4p3-esc-5', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const { leg, scope } = await requestLeg(service, { correlation: 'corr-a4p3-self-allow' })
     const risen = await service.escalateApprovalLeg({
       rootSessionId: P6T4_ROOT,
@@ -1275,6 +1312,7 @@ const corruptIdentity = await (async () => {
       beneficiaryAuthority: 'member',
       requestedEffect: 'ask',
       operationFingerprint: 'fp-a4p3-corrupt-id',
+      authorityScope: AUTHORITY_SCOPE,
       correlation: 'corr-a4p3-corrupt-id',
     }
   } finally {
@@ -1282,7 +1320,7 @@ const corruptIdentity = await (async () => {
   }
   const world = await createP6T4World('a4p3-esc-7', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     // The case's ONLY row, and it is corrupt: a case id with no leg ordinal.
     await writeRawControlFact(world, 'control-request-recorded', {
       requestId: 'req-raw-corrupt-only',
@@ -1340,7 +1378,7 @@ describe('a corrupt case is still FOUND by the identity that produced it (fideli
 const fabricatedRise = await (async () => {
   const world = await createP6T4World('a4p3-esc-8', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     // A leg row the STRICT parser accepts (case id + ordinal + authority) and
     // which carries NO identity fields beyond them — the shape a widened
     // PR4/PR5 vocabulary can produce.
@@ -1409,6 +1447,7 @@ const faultClose = await (async () => {
     beneficiaryAuthority: 'member',
     requestedEffect: 'ask',
     operationFingerprint: 'fp-a4p3-fault-close',
+    authorityScope: AUTHORITY_SCOPE,
     correlation: 'corr-a4p3-fault-close',
   }
   const closeArgs = {
@@ -1424,7 +1463,7 @@ const faultClose = await (async () => {
     terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE,
   }
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const ledger = world.domain.repositories.ledger
     const originalPut = ledger.put.bind(ledger)
     let puts = 0
@@ -1449,6 +1488,7 @@ const faultClose = await (async () => {
       makeScope({
         correlation: 'corr-a4p3-fault-close',
         operationFingerprint: 'fp-a4p3-fault-close',
+        authorityScope: AUTHORITY_SCOPE,
       }),
     )
     return {
@@ -1470,7 +1510,7 @@ const faultClose = await (async () => {
 const faultEscalate = await (async () => {
   const world = await createP6T4World('a4p3-esc-10', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const { leg, scope } = await requestLeg(service, { correlation: 'corr-a4p3-fault-escalate' })
     const ledger = world.domain.repositories.ledger
     const originalPut = ledger.put.bind(ledger)
@@ -1616,7 +1656,7 @@ const caseLawBases = await (async () => {
       requestedEffect: 'ask',
     })
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     // (A) a decided earlier leg, and no escalation fact.
     const a = await requestLeg(service, {
       correlation: 'corr-a4p3-basis-a',

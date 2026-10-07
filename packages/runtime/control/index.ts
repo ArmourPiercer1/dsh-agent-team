@@ -115,6 +115,13 @@ export type { ControlErrorCode } from './errors.js'
 export {
   APPROVAL_CASE_IDENTITY_PROBLEMS,
   APPROVAL_CASE_READ_PROBLEMS,
+  // A4-PR7 Task 7.0 (ADR A1-14): the persisted authority point and the
+  // closed verdict of the consumption-point recheck. Barrelled because a
+  // type no barrel publishes is a type the assembly layer cannot name.
+  CONTROL_AUTHORITY_MATCHER_KINDS,
+  CONTROL_AUTHORITY_MATCHER_KIND_VALUES,
+  CONTROL_AUTHORITY_RECHECK_KINDS,
+  CONTROL_AUTHORITY_RECHECK_KIND_VALUES,
   CONTROL_CASE_OUTCOMES,
   CONTROL_CASE_OUTCOME_VALUES,
   CONTROL_CASE_TERMINAL_OUTCOMES,
@@ -139,6 +146,7 @@ export {
   CONTROL_UNRESOLVABLE_AUTHORITIES,
   controlEscalationSuccessor,
   hasAuthorityResolver,
+  isControlAuthorityScope,
   isControlExecutionCoupling,
   isControlSubjectKind,
   isProposalAuthorityPosition,
@@ -153,6 +161,11 @@ export type {
   ApprovalCaseState,
   ApprovalCaseSummary,
   ControlAbandonmentRecord,
+  ControlAuthorityMatcherKind,
+  ControlAuthorityRecheck,
+  ControlAuthorityRecheckInput,
+  ControlAuthorityRecheckPort,
+  ControlAuthorityScope,
   ControlCallerRef,
   ControlCaseClosure,
   ControlCaseOutcome,

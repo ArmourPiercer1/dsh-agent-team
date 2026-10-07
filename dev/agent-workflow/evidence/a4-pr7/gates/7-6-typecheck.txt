@@ -1,0 +1,21 @@
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: test/a4p7-blueprint-version-clean.test.ts(33,8): error TS7016: Could not find a declaration file for module '../../../scripts/verify-blueprint-version-clean.mjs'. '/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7/scripts/verify-blueprint-version-clean.mjs' implicitly has an 'any' type.
+packages/testkit typecheck: test/a4p7-blueprint-version-clean.test.ts(72,47): error TS7006: Parameter 'site' implicitly has an 'any' type.
+packages/testkit typecheck: test/a4p7-blueprint-version-clean.test.ts(105,64): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+packages/testkit typecheck: Failed
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7/packages/testkit:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/testkit@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2
+[WARN]  Local package.json exists, but node_modules missing, did you mean to install?
+[exit 2]

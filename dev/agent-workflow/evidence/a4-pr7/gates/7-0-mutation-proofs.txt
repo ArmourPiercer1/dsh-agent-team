@@ -1,0 +1,130 @@
+A4-PR7 Task 7.0 — mutation proofs (production flipped only, tests untouched)
+=============================================================================
+Worktree: /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7
+Branch:   feat/a4-pr7-v3-cutover
+Base for the mutations: commit b8c76471 (tree clean before every mutation;
+`git status --porcelain` verified empty after every revert — see the
+"clean after revert: True" lines, which the harness script printed itself).
+
+METHOD. Each mutation is a single production edit applied by
+`.scratch/mutate70*.py`, followed by `npx vitest run <the test files that name
+that law>`, followed by a byte-exact restore of the file's previous content.
+No test file was modified in any mutation. Two notes on method honesty:
+
+  * The first attempt at M2/M3 injected `authorityScope: undefined` at the two
+    payload projections. That is NOT a legal mutation here: the TeamDomain
+    ledger refuses an explicit `undefined` ("value of type undefined at
+    $.payload.scope.authorityScope is not lossless JSON"), so the mutation was
+    caught by a different law than the one under test. Both were re-run as
+    M2b/M3b with the KEY REMOVED (`...(false ? {...} : {})`), which is the
+    actual regression shape — a projection that forgets the field — and it is
+    also the bug this task really hit while building 7.0. Those raw
+    lossless-JSON failures are kept below as M2/M3 because they are themselves
+    a receipt: the durable layer makes a silently-missing point loud.
+
+--------------------------------------------------------------------------------
+M1-skip-consumption-recheck  (packages/runtime/control/service.ts)
+  `const authority = await recheckConsumedAuthority(root, request.payload)`
+   -> `const authority = undefined`
+    Tests  8 failed | 2 passed (10)   [a4p7-a1-14-consumption-revalidation.test.ts]
+     RED: A1: an authority rise after the allow refuses with ZERO consumption, and the unspent allow still authorizes once
+     RED: A2: an undetermined fresh ceiling refuses and consumes nothing
+     RED: A4: an operation case with no authority point is refused at the write AND un consumable from disk
+     RED: A5/A6: a re-confirmed allow runs the recheck once and consumes exactly once
+     RED: P1: fresh documents that no longer narrow the point permit the consumption
+     RED: P2: a narrowing that moved UP the ladder strands the allow, and costs nothing
+     RED: P3: no v3 documents is `undetermined`, never "covered"
+     RED: P4: a reader that throws refuses by name; no fault escapes as a generic failure
+    clean after revert: True
+  (A4 reddens because the hand-written unbound row is then consumable; P1-P4
+   because the guard runs at all and reports a different reason.)
+
+--------------------------------------------------------------------------------
+M2-decision-snapshot-writes-an-explicit-undefined  (packages/runtime/control/service.ts)
+    Tests  no tests  — refused by the durable layer, not by the tests:
+     TeamRuntimeError: ControlService: ledger put (control-decision-recorded)
+       failed: value of type undefined at $.payload.scope.authorityScope is not
+       lossless JSON
+    clean after revert: True
+
+M3-leg-fact-writes-an-explicit-undefined  (packages/runtime/control/service.ts)
+    Tests  no tests  — refused by the durable layer:
+     TeamRuntimeError: ControlService: ledger put (control-request-recorded)
+       failed: value of type undefined at $.payload.authorityScope is not
+       lossless JSON
+    clean after revert: True
+
+--------------------------------------------------------------------------------
+M2b-decision-snapshot-forgets-the-key  (packages/runtime/control/service.ts)
+  `...(args.scope.authorityScope !== undefined ? { authorityScope: ... } : {})`
+   -> `...(false ? { authorityScope: args.scope.authorityScope } : {})`
+    Tests  7 failed | 3 passed (10)   [a4p7-a1-14-consumption-revalidation.test.ts]
+     RED: A1: an authority rise after the allow refuses with ZERO consumption, and the unspent allow still authorizes once
+     RED: A2: an undetermined fresh ceiling refuses and consumes nothing
+     RED: A5/A6: a re-confirmed allow runs the recheck once and consumes exactly once
+     RED: P1: fresh documents that no longer narrow the point permit the consumption
+     RED: P2: a narrowing that moved UP the ladder strands the allow, and costs nothing
+     RED: P3: no v3 documents is `undetermined`, never "covered"
+     RED: P4: a reader that throws refuses by name; no fault escapes as a generic failure
+    clean after revert: True
+  This is the projection bug this task actually hit: the decision payload is
+  rebuilt FIELD BY FIELD, so a field omitted there silently never lands, and
+  every v3 consumption then answers `scope-mismatch`.
+
+--------------------------------------------------------------------------------
+M3b-leg-fact-forgets-the-key  (packages/runtime/control/service.ts)
+  the `writeLegRowLocked` spread `...(input.leg.authorityScope !== undefined ? {...} : {})`
+   -> `...(false ? { authorityScope: input.leg.authorityScope } : {})`
+    Tests  7 failed | 60 passed (67)  [f9-control-exactly-once, a4p3-approval-escalation]
+     RED: a risen case authorizes nothing until the RISEN leg is decided, and consumes exactly once after
+     RED: a terminal close the reviewer did not choose is a deny and can never be consumed (ADR A2-8)
+     RED: the risen leg decided by the risen reviewer authorizes the operation exactly once
+     RED: the case state reads the whole chain, and a restart reconstructs it
+     RED: the A1-12 path leaves a readable case and nothing pending
+     RED: the public close writes one case, is idempotent, and never authorizes
+     RED: the refusals do not wedge the case — the risen rung still decides it exactly once
+    clean after revert: True
+  The risen leg of an ESCALATED case is written by `writeLegRowLocked` from
+  `legFieldsOf`, not by `requestControl`; without this projection the escalated
+  leg arrives at its own consumption point unbound.
+
+--------------------------------------------------------------------------------
+M4-rise-check-argument-order-flipped  (packages/runtime/operation-permission/approval-routing.ts)
+  `isHigherAuthority(requiredNow, input.reviewAuthority)`
+   -> `isHigherAuthority(input.reviewAuthority, requiredNow)`
+    Tests  2 failed | 8 passed (10)
+     RED: P2: a narrowing that moved UP the ladder strands the allow, and costs nothing
+     RED: P5: the port asks the durable row's question and refuses unanswerable ones
+    clean after revert: True
+  (A1-A3 stay green by design: they drive the verdict port directly, so they pin
+   the LANE; the P group is what pins the direction of the ordering.)
+
+--------------------------------------------------------------------------------
+M5-plane-defaults-a-fault-to-covered  (packages/runtime/src/plugin/permission-plane.ts)
+  the facts-reader catch returns `still-sufficient` instead of `undetermined`
+    Tests  1 failed | 9 passed (10)
+     RED: P4: a reader that throws refuses by name; no fault escapes as a generic failure
+    clean after revert: True
+
+--------------------------------------------------------------------------------
+M6-write-time-point-requirement-removed  (packages/runtime/control/service.ts)
+  `return problems.AUTHORITY_SCOPE_REQUIRED` -> `return undefined`
+    Tests  1 failed | 9 passed (10)
+     RED: A4: an operation case with no authority point is refused at the write AND un consumable from disk
+     AssertionError: expected 'ControlService: requestApprovalLeg re…' to contain 'authority-scope-required'
+    clean after revert: True
+
+--------------------------------------------------------------------------------
+M7-scope-comparison-ignores-the-point  (packages/runtime/control/service.ts)
+  `scopeSnapshotMatches` short-circuits to `true` when BOTH sides carry a point
+    Tests  1 failed | 102 passed (103)
+     [a4p7-a1-14-consumption-revalidation, a4p3-approval-escalation,
+      f9-control-exactly-once, a4p6-intervention-aggregation, a4p4-operation-single-shot]
+     RED: A3: the persisted authority point is the authorized point
+     AssertionError: expected { allowed: true, …(2) } to match object { allowed: false, …(1) }
+    clean after revert: True
+  Only ONE scenario across the whole migrated set catches it — the point-to-point
+  comparison is otherwise invisible because every migrated fixture carries the
+  same constant point on both sides. A3 is therefore load-bearing, not
+  decorative: it is what makes a guard scope that names a DIFFERENT resource
+  refuse instead of spending the allow.

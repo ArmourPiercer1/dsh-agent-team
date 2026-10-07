@@ -28,13 +28,27 @@
  *      impossible), a rise is stale, a fall is covered, "cannot confirm" is
  *      not "confirmed", and a pre-v3 fresh answer cannot invent a drift.
  *
- * SCOPE DISCLOSURE (stated, not implied): this lane covers the EXECUTING path's
- * recheck, immediately before the last-mile guard. The companion duty at the
- * consumption write inside `guardOperation` (ADR A1-14 / spec §24.6) needs an
- * authority-facts port and a guard block reason in
- * `packages/runtime/control/types.ts` — outside Task 4's granted files — so it
- * is reported as a file-scope blocker and remains UNENFORCED there. C1/C2 pin
- * the zero-consumption property this PR does deliver.
+ * SCOPE, UPDATED BY A4-PR7 TASK 7.0 (this paragraph used to disclose a gap; the
+ * gap is closed, and what remains is different, so the claim is restated rather
+ * than deleted). PR4 shipped only the EXECUTING path's recheck, immediately
+ * before the last-mile guard, and disclosed that the companion duty AT THE
+ * CONSUMPTION WRITE inside `guardOperation` (ADR A1-14 / spec §24.6) was
+ * UNENFORCED because `ControlOperationScope` named no operation class and no
+ * canonical resource. Task 7.0 closed it: the authorized point is persisted with
+ * the case and re-evaluated inside the per-team lock before
+ * `control-allow-consumed`, refusing with zero consumption on a rise or an
+ * `undetermined`. Both halves now exist, pinned in
+ * `a4p7-a1-14-consumption-revalidation.test.ts`.
+ *
+ * WHAT NEITHER HALF CHECKS, STATED OUT LOUD: the point the ASK persists is built
+ * as `{ kind: 'exact', resource: resourceKey }` for every operation class, while
+ * a shell-class (`bash`/`pwsh`) narrowing may be DECLARED at the command
+ * fingerprint shape. A fingerprint-shaped shell rule is therefore invisible to
+ * the ask and, by construction, to the consumption recheck that reuses the ask's
+ * point — the two halves are the same scope, which is what makes them agree, and
+ * the same reason they can both miss the same rule. Fixing it changes which rung
+ * the shell class must ask for, so it is a cutover decision (Task 7.3), not a
+ * Task 7.0 edit. C1/C2 pin the zero-consumption property of the executing path.
  *
  * RUNNER CONSTRAINTS: async scenarios run at module level with top-level
  * await; `it` bodies are synchronous (this repo's plain-node shim).

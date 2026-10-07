@@ -91,6 +91,27 @@ interface C1ToolWorld {
   findTool(name: string): TeamToolDefinition
 }
 
+/**
+ * The authority point this file's operation cases are declared over (ADR A1-14,
+ * A4-PR7 Task 7.0).
+ *
+ * An operation case must now name WHAT the approval is over, not only which
+ * invocation it is: the fingerprint says the invocation, the authority scope says
+ * the point, and the consumption-point re-check consumes the second one. This
+ * file seeds its legs straight through `controlService.requestApprovalLeg` — the
+ * same authority the production pre-execute path uses — so it carries its own
+ * scope rather than inheriting one from a fixture helper.
+ *
+ * Nothing here EXECUTES these legs: the scenarios list them, escalate them and
+ * count them. So the scope is declared to satisfy the write-time law and is never
+ * asserted against; a test that starts deciding over this point must pick the
+ * point on purpose, the way `a4p3-approval-case.test.ts` does.
+ */
+const C1_AUTHORITY_SCOPE = {
+  operationClass: 'fs.write',
+  matcher: { kind: 'exact', resource: 'c1-list-pending:fileA' },
+} as const
+
 async function createC1ToolWorld(basename: string): Promise<C1ToolWorld> {
   const world = await createP6T4World(basename, ['leader', 'worker'])
   const runtime = createP6T2Runtime(world)
@@ -305,6 +326,7 @@ const S = await (async () => {
       // Exactly ONE fingerprint is required by the frozen identity rule
       // (`fingerprint-cardinality`): an operation case names its operation.
       operationFingerprint: 'a4p4-c1-rose-operation-fingerprint',
+      authorityScope: C1_AUTHORITY_SCOPE,
       correlation: 'c1-corr-rose',
     },
     actionName: 'write-file',
@@ -545,6 +567,7 @@ const E = await (async () => {
         beneficiaryAuthority: 'member',
         requestedEffect: 'allow',
         operationFingerprint: `a4p5-escalate-${correlation}`,
+        authorityScope: C1_AUTHORITY_SCOPE,
         correlation,
       },
       actionName: 'write-file',

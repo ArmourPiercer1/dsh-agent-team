@@ -1,0 +1,98 @@
+Bisecting: 5 revisions left to test after this (roughly 3 steps)
+[b4340c502cbccf4a61c7151cb149f72d384a54a3] feat(a4p7/7.1): make an unmigrated Blueprint visible again (three-state inspection)
+running 'bash' '-c' 'rm -rf packages/testkit/test/.tmp-fault; timeout 600 npx vitest run packages/tools/test/c1-list-pending-control.test.ts >/dev/null 2>&1'
+Bisecting: 2 revisions left to test after this (roughly 2 steps)
+[766a99513323b7e1f73d693ec634d175080fc985] test(a4-pr7): 7.0 carry the persisted authority point through every fixture
+running 'bash' '-c' 'rm -rf packages/testkit/test/.tmp-fault; timeout 600 npx vitest run packages/tools/test/c1-list-pending-control.test.ts >/dev/null 2>&1'
+Bisecting: 0 revisions left to test after this (roughly 1 step)
+[e68d2c7414fe9232f81e18db394f739a441682b6] feat(a4-pr7): 7.0 A1-14 authority-scope persistence + consumption recheck
+running 'bash' '-c' 'rm -rf packages/testkit/test/.tmp-fault; timeout 600 npx vitest run packages/tools/test/c1-list-pending-control.test.ts >/dev/null 2>&1'
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[00809868c2a15bf795c7af1fb89e8810dae8bcdd] test(a4-pr7): 7.0 RED — A1-14 consumption revalidation is unenforced
+running 'bash' '-c' 'rm -rf packages/testkit/test/.tmp-fault; timeout 600 npx vitest run packages/tools/test/c1-list-pending-control.test.ts >/dev/null 2>&1'
+e68d2c7414fe9232f81e18db394f739a441682b6 is the first bad commit
+commit e68d2c7414fe9232f81e18db394f739a441682b6
+Author: armourpiercer1 <gtx21@mails.tsinghua.edu.cn>
+Date:   Wed Oct 7 18:21:09 2026 +0800
+
+    feat(a4-pr7): 7.0 A1-14 authority-scope persistence + consumption recheck
+    
+    The prerequisite of Task 7, implemented rather than amended away: the
+    approval case now carries the concrete authority POINT it was decided on,
+    and `guardOperation` re-runs the ceiling for that point inside the
+    per-team lock, immediately before the `control-allow-consumed` write.
+    
+    Persistence (control/types.ts, control/service.ts):
+    - `ControlAuthorityScope {operationClass, matcher:{kind:exact|fingerprint,
+      resource}}` on `ControlOperationScope`, `ApprovalCaseIdentity`, the
+      request payload, the leg fields, the decision snapshot and the scope
+      snapshot comparison. `subtree`/`any` are deliberately NOT matchable
+      kinds for a durable point: a region matcher would turn a single-shot
+      approval into a standing ceiling.
+    - The identity law: an operation case whose identity carries no point is
+      REFUSED at the write (`authority-scope-required`). A durable row that
+      carries no point is corrupt, not merely unsampled: the case read files
+      it as `identity-disagreement` and the guard refuses with
+      `authority-scope-unbound`.
+    - `parseScope` and `commitDecision` both project the point. Omitting it in
+      either place drops the fact the recheck reads and answers
+      `scope-mismatch` for the correct operation — both sites are pinned by
+      the new test's A1 (a green run is only reachable if the point survives
+      request row, decision snapshot and guard scope).
+    
+    The recheck (control/types.ts port, service.ts call site):
+    - `ControlAuthorityRecheckPort` is a CLOSED VERDICT PORT
+      (`still-sufficient | authority-risen | undetermined`). The control lane
+      never names the ceiling evaluator, the ladder, or the document slot —
+      `a3p3-governance-lane-hygiene` states that consumer set in full and the
+      control lane is not in it, so the allow-list stays exactly as wide as it
+      was.
+    - Refusal reasons `authority-risen`, `authority-undetermined`,
+      `authority-scope-unbound`; all three write NOTHING (zero consumption),
+      and none of them is ever routed into `no-request`, which is the one
+      verdict `packages/tools/src/guard.ts` proceeds on.
+    - ABSENT PORT IS NOT "COVERED": with no port a v3 operation approval is
+      unconsumable. Fail closed rather than default to yes.
+    
+    Composition (approval-routing.ts, permission-plane.ts, root.ts):
+    - `recheckPersistedOperationAuthority` asks the PERSISTED question, with
+      the persisted matcher kind, through the one evaluator. It is a separate
+      function from PR4's `recheckOperationApproval` because that one takes the
+      fresh ROUTING, whose scope question is `exact` by construction — a
+      fingerprint-shaped point evaluated under an exact question reads as
+      "no rule covers this", i.e. an authority rise reported as still-covered.
+    - The plane composes the port (`createControlAuthorityRevalidation`) over
+      the SAME operation-facts reader the ask routes with, and publishes it to
+      the control service through a lazy ref in `root.ts` (the root's
+      established pattern): two readers would be two answers, and here the two
+      answers decide whether an approved operation executes.
+    - `pre-execute-adapter.ts` supplies the point at the case identity AND at
+      the guard, names the three new guard refusals with their own outcome, and
+      its PR4 SCOPE DISCLOSURE (that half of A1-14 was UNENFORCED at the
+      consumption write) is retired.
+    
+    Disclosed, not fixed here (the shell-class matcher question): for
+    `bash`/`pwsh`, a document rule of shape
+    `{operationClass:'bash', matcher:{kind:'fingerprint'}}` does not cover an
+    `exact` target, so a narrowing declared at that shape is invisible to the
+    ASK (PR4's design, which this commit does not change) and therefore to the
+    recheck too. Widening the ask changes which rung the shell class must ask
+    for — a cutover decision with its own routing evidence, not a persistence
+    task. The durable field carries a matcher `kind` so the fix lands at one
+    site later without a shape change.
+    
+    New: packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts
+    (5 scenarios, RED at 00809868, GREEN here). Fixture migration for the new
+    required identity field follows in the next commit.
+
+ packages/runtime/control/index.ts                  |  13 +
+ packages/runtime/control/service.ts                | 297 +++++++++++++++++++++
+ packages/runtime/control/types.ts                  | 223 ++++++++++++++++
+ .../operation-permission/approval-routing.ts       | 129 ++++++++-
+ packages/runtime/operation-permission/index.ts     |   1 +
+ .../operation-permission/pre-execute-adapter.ts    | 116 +++++++-
+ packages/runtime/src/plugin/permission-plane.ts    | 117 ++++++++
+ packages/runtime/src/plugin/root.ts                |  47 ++++
+ .../a4p7-a1-14-consumption-revalidation.test.ts    | 123 +++++++--
+ 9 files changed, 1030 insertions(+), 36 deletions(-)
+bisect found first bad commit
