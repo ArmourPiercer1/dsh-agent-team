@@ -119,6 +119,14 @@ import { createGovernanceMutationService,
 // control service exists reads it LAZILY and an unwired boot stays on
 // PR2's typed refusal byte-identically.
 createGovernanceProposalStore, lateBoundPermissionMutationApprovalPort, } from '../../governance/index.js';
+// A4-PR6 §6.B — the fresh required-authority facts reader for the v8
+// intervention projection. The reader is a KERNEL CONSUMER: it walks the
+// approval-plane ceiling through the FROZEN planner (the same reviewed
+// `evaluateAuthorityCeiling` consumer the PR2 mutation lane runs — no new
+// kernel import edge is minted here) and answers the closed fact bag the
+// projection's legality law consumes. The authority ordering is read
+// through the exported rank law, never a second ordering.
+import { authorityRank, planPermissionMutationApproval } from '../../governance/index.js';
 // pre-alpha3 PR4 (plan "PR4: Grant/Revoke/Lifecycle", production entry
 // wiring): the production PERMISSION PLANE assembly (the overlay port's
 // lane deps + the two lifecycle lanes). The root owns the wiring only —
@@ -152,7 +160,7 @@ import { createLiveResidencyOverlay } from './s6-live-overlay.js';
 import { computeTeamLiveToken } from './live-token.js';
 import { resolveSessionReadState } from './team-read-state.js';
 import { createServerPrincipalDerivation } from './s6-principal.js';
-import { createS6RemoteSurfaces } from './s6-remote.js';
+import { createS6RemoteSurfaces, governanceStartRefusal } from './s6-remote.js';
 import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../team-ownership-index.js';
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError } from './types.js';
 // --- the ephemeral mutation store (documented boot-world wiring) -------------------
@@ -1595,15 +1603,62 @@ export function createTeamProductionRoot(params) {
         return { start, deliver };
     };
     /**
+     * A4-PR6 review round 1 (BLOCKER 1) — the gate for the NON-WIRE start
+     * entrances this file owns: the handoff target start (the with-handoff
+     * operation ALWAYS carries the frozen context, so it reaches
+     * `createAndStartTeam` and calls the target Root Agent start — the
+     * SAME `live.createRootAgent` entry the gated wire path uses) and the
+     * production boot (create and resume). Before this closure those
+     * entrances started Teams WITHOUT consulting the governance gate.
+     * Same service port the wire sites use (`params.governanceWarning`,
+     * assembled by host.ts), same per-entry method (`checkStart` for a
+     * create, `checkEnsureRootLive` for the resume), same
+     * `governanceStartRefusal` mapping — the arms are wire-identical to
+     * the `team.create` refusals (shared mapper, no drift). An absent port
+     * is the disclosed-ungated world (test/simulator roots; the production
+     * host always supplies it). The closure runs EXACTLY ONCE per start
+     * entrance: `runGate` mints a durable observation on every
+     * non-consistent pass, so a second consultation per operation would
+     * inflate observation counts (the law the 6.A suites pin).
+     */
+    const startGovernanceGate = async (method, teamSessionId, entry) => {
+        const service = params.governanceWarning;
+        if (service === undefined)
+            return;
+        const outcome = entry === 'create'
+            ? await service.checkStart(teamSessionId)
+            : await service.checkEnsureRootLive(teamSessionId);
+        if (outcome.status === 'open')
+            return;
+        throw governanceStartRefusal(method, outcome);
+    };
+    /**
      * T12-B6 (plan §7-B4) — the ONE formal team-create-and-start entry:
-     * the canonical fresh-root binding, then — only when `initialContext`
-     * is present — the target Root Agent start (create-or-ensure,
-     * idempotent per rootSessionId) and the frozen-context acceptance
-     * through the real Agent input/context seam (at-least-once, the
-     * contextToken is the explicit request identity the target dedupes
-     * on). A with-context handoff is COMPLETE only after both succeeded.
+     * the canonical fresh-root binding, then THE governance start gate
+     * (A4-PR6 review round 1; the follow-up run moved it from before the
+     * mint to AFTER it — the governance documents resolve through the
+     * addressed team's TeamSession row + bound snapshot, so a pre-mint
+     * gate could only ever read `unreadable`; the wire lane already
+     * pinned post-bind, pre-start), then — only when `initialContext` is
+     * present — the target Root Agent start (create-or-ensure, idempotent
+     * per rootSessionId) and the frozen-context acceptance through the
+     * real Agent input/context seam (at-least-once, the contextToken is
+     * the explicit request identity the target dedupes on). A with-context
+     * handoff is COMPLETE only after both succeeded. A refused start
+     * leaves the minted binding NOT LIVE — the same durable residue the
+     * refused wire `team.create` leaves (W1/W3 pin both) — and starts
+     * nothing; every re-drive re-runs the SAME gate.
      */
     const createAndStartTeam = async (input) => {
+        // Fail closed BEFORE the Root Agent start: the gate runs on the
+        // DURABLE state of the addressed team (post-bind — the governance
+        // documents resolve through the TeamSession row + its bound
+        // snapshot, so a gate placed before the mint could only ever read
+        // `unreadable`; review round 1 fix-1 follow-up aligned this entry
+        // with the wire law the s6 lane pins: post durable bind, pre root
+        // start). A refusal therefore leaves the minted binding NOT LIVE —
+        // the same durable residue a refused wire `team.create` leaves —
+        // and starts nothing; a retry re-drives the SAME gate.
         const context = input.initialContext;
         const ports = context !== undefined ? requireHandoffAgentPorts() : undefined;
         const result = await rootBinding.bindFresh({
@@ -1618,6 +1673,7 @@ export function createTeamProductionRoot(params) {
         if (rootSessionId === undefined) {
             throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CREATE_FAILED, `the fresh binding of root "${String(input.rootSessionId)}" reported no durable state`);
         }
+        await startGovernanceGate(input.gateMethod, rootSessionId, 'create');
         if (context !== undefined && ports !== undefined) {
             await ports.start(rootSessionId);
             await ports.deliver({
@@ -1707,10 +1763,15 @@ export function createTeamProductionRoot(params) {
         // then (with-context only) the target Root Agent start + the
         // frozen-context acceptance through the real Agent input/context
         // seam (at-least-once, deduped by contextToken in the target).
+        // A4-PR6 review round 1 (BLOCKER 1): the primitive now gates the
+        // start FIRST — this entrance (`handoff.create`) was the review's
+        // bypass: the with-handoff operation always carries the context, so
+        // it always reaches the target start port.
         return createAndStartTeam({
             rootSessionId: minted,
             blueprint: snapshot,
             generation: 1,
+            gateMethod: 'handoff.create',
             // P9-S8 — the created team inherits the host default workspace (the
             // boot create passes it too; without it the created team's projection
             // fold cannot resolve the leader's effective workspace and fails
@@ -2420,6 +2481,13 @@ export function createTeamProductionRoot(params) {
         ensureRootLive: async (rootSessionId) => {
             await live.ensureLiveAgent(rootSessionId);
         },
+        // A4-PR6 §6.A — the ONE governance-warning port (host-assembled). The
+        // s6 start gate (two `team.create` sites + `team.ensureRootLive`) and
+        // the runtime boundary observation consume it; a world without the
+        // authority facts omits the port and the gate stays disclosed-ungated.
+        ...(params.governanceWarning === undefined
+            ? {}
+            : { governanceWarning: params.governanceWarning }),
         // C1 (restart-recovery, guide §10.2) + supplement round §2.4 — the
         // D3 ordinary-mode one-shot activation permit behind the host-side
         // team.prepareOrdinaryOpen: the live glue's allowOrdinaryActivationOnce
@@ -2463,6 +2531,134 @@ export function createTeamProductionRoot(params) {
                 ...(note !== undefined ? { note } : {}),
             });
             return record;
+        },
+        // A4-PR6 §6.B (contract v8) — the intervention plane's production
+        // wiring. The CONTROL source is the SAME A25 control service (read
+        // slice: listOpenApprovalCases — never a second case store); the
+        // escalate arm is the SAME service's escalateApprovalLeg (the ONE
+        // authoritative upward-recusal entry); the facts reader walks the
+        // ceiling through the FROZEN planner over the SAME permission-plane
+        // ceiling-context port the governance mutation lane reads. The
+        // administration read folds the durable overlay snapshot + the team's
+        // envelope-consistency warnings into a RICH record the s6 port STRIPS
+        // to the closed wire fields (the strip is the remote package's law,
+        // imported, not mirrored).
+        interventionControl: control,
+        interventionEscalate: async ({ rootSessionId, caller, requestId, reason }) => {
+            const result = await control.escalateApprovalLeg({
+                rootSessionId,
+                caller,
+                requestId,
+                ...(reason !== undefined ? { reason } : {}),
+            });
+            return result;
+        },
+        ...(permissionAuthorityCeiling === undefined
+            ? {}
+            : {
+                // The caller-relative required-authority facts reader behind the
+                // projection's legality law (A1-7 freshness through the FROZEN
+                // planner — a kernel consumer on the audited rank law, a3p3
+                // per-name row amended in the same commit). The freshness law at
+                // DECISION time is owned by the control/service entries (PR2
+                // apply path, guard consumption); what THIS reader walks, fresh,
+                // is the case's own FINGERPRINT scope against the CURRENT ceiling
+                // documents: a narrowing added after case creation that touches
+                // this exact ask identity RAISES the required rung here, which is
+                // what pulls `allow` off the offered actions before the operator
+                // clicks. Honest absence (audit F6): no ceiling context, no
+                // durable fingerprint, a faulted read, or a malformed ask answer
+                // `undefined` — the projection then publishes no requiredAuthority
+                // and no actions, never a substitute rung.
+                requiredAuthorityFacts: async (teamSessionId, callerRef, input) => {
+                    const fingerprint = input.mutationProposalFingerprint ?? input.operationFingerprint;
+                    if (fingerprint === undefined)
+                        return undefined;
+                    const instanceId = input.subject.kind === 'instance' ? input.subject.instanceId : LEADER_INSTANCE_ID;
+                    const context = await permissionAuthorityCeiling(teamSessionId, instanceId, 'human');
+                    if (context === undefined)
+                        return undefined;
+                    let plan;
+                    try {
+                        plan = planPermissionMutationApproval({
+                            beneficiaryAuthority: input.beneficiaryAuthority,
+                            documents: context.documents,
+                            regions: [
+                                {
+                                    operationClass: input.actionName,
+                                    matcher: { kind: 'fingerprint', resource: fingerprint },
+                                    risenEffect: input.requestedEffect,
+                                },
+                            ],
+                        });
+                    }
+                    catch {
+                        // The mapped document fault AND the ladder-defect throw both
+                        // mean "no facts readable for this scope" — never a stand-in.
+                        return undefined;
+                    }
+                    if (plan.status === 'unavailable')
+                        return undefined;
+                    // The LIVE FLOOR: the walk can only RAISE the leg's own rung (a
+                    // fresh narrowing never lowers what the case already requires).
+                    const required = plan.status === 'required' &&
+                        authorityRank(plan.requiredAuthority) > authorityRank(input.reviewAuthority)
+                        ? plan.requiredAuthority
+                        : input.reviewAuthority;
+                    let alreadyActed = false;
+                    try {
+                        const read = await control.readApprovalCaseState({
+                            rootSessionId: teamSessionId,
+                            approvalCaseId: input.approvalCaseId,
+                        });
+                        if (read.kind !== 'case')
+                            return undefined;
+                        alreadyActed = read.state.reviewedBy.some((ref) => ref.kind === 'human' && ref.humanId === callerRef);
+                    }
+                    catch {
+                        return undefined;
+                    }
+                    return {
+                        requiredAuthority: required,
+                        reviewerAtOrAboveRequiredAuthority: authorityRank(input.reviewAuthority) >= authorityRank(required),
+                        // The frozen walk ENDS at a rung whose decided ceiling reaches
+                        // the risen effect — `required` is that answer; `undetermined`
+                        // rides its own fact, never folded in here.
+                        desiredEffectWithinGrantCeiling: plan.status === 'required',
+                        ceilingUndetermined: plan.status === 'undetermined',
+                        principalAlreadyActed: alreadyActed,
+                        // Alpha.4 ships no Human Admin resolver (ADR A1-3): a top-rung
+                        // leg has no resolver to act, and the projection says so (A1-12).
+                        resolverExists: input.reviewAuthority !== 'human-admin',
+                    };
+                },
+            }),
+        permissionAdministration: async ({ rootSessionId, memberInstanceId }) => {
+            // The team-level administration read addresses the Leader instance
+            // (the canonical team position); an explicit memberInstanceId
+            // addresses that instance's overlay. Absent overlay = the
+            // blueprint default is what governs — a positive answer, not a gap.
+            const instanceId = memberInstanceId ?? LEADER_INSTANCE_ID;
+            const snapshot = permissionOverlay === undefined
+                ? undefined
+                : await permissionOverlay.latest({ teamSessionId: rootSessionId, memberInstanceId: instanceId });
+            const warnings = params.governanceWarning === undefined
+                ? []
+                : await params.governanceWarning.listWarnings(rootSessionId);
+            return {
+                teamSessionId: rootSessionId,
+                memberInstanceId: instanceId,
+                source: snapshot === undefined ? 'blueprint-default' : 'overlay',
+                generation: snapshot?.metadata.generation ?? null,
+                effective: snapshot?.state ?? { rules: [] },
+                diagnostics: warnings.map((warning) => ({
+                    code: 'envelope-consistency',
+                    kind: warning.kind,
+                    verdict: warning.verdict,
+                    fingerprint: warning.fingerprint,
+                    acknowledged: warning.acknowledged,
+                })),
+            };
         },
         // D1 (Team D1-D6 repair v2, remote contract v3) — the read-only
         // durable root ownership list behind the v3-only team.listRoots: the
@@ -2687,6 +2883,12 @@ export function createTeamProductionRoot(params) {
                     rootSessionId: parseRootSessionId(rootSid),
                     blueprint: boundSnapshot,
                     generation: config.generation,
+                    // A4-PR6 review round 1 (BLOCKER 1): the production boot
+                    // create is a real start entrance too — the gate runs before
+                    // the durable mint (disclosed in the PR body: a
+                    // warning-gated row now refuses to BOOT, not merely to
+                    // start-on-demand; fail closed is the point).
+                    gateMethod: 'boot.create',
                     ...(config.defaultWorkspace !== undefined
                         ? { defaultWorkspace: config.defaultWorkspace }
                         : {}),
@@ -2715,6 +2917,14 @@ export function createTeamProductionRoot(params) {
             if (repos.memberInstances.get(rootSid, LEADER_INSTANCE_ID) === undefined) {
                 throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_RESUME_STATE_MISSING, `the resume of root "${rootSid}" found no durable Leader member row — a resume loads the existing member residency, it never mints one`);
             }
+            // A4-PR6 review round 1 (BLOCKER 1): the resume entrance re-enters
+            // the SAME gate `team.ensureRootLive` uses (the `checkEnsureRootLive`
+            // entry) BEFORE the live layer resumes the Root Agent below — a
+            // durable Team whose authority document faults or whose governance
+            // warning stands unacknowledged must NOT become live through the
+            // boot. The resume phase writes nothing; a refusal leaves the
+            // durable state exactly as found.
+            await startGovernanceGate('boot.resume', rootSid, 'resume');
         }
         // Boot-time initial compatibility state (wiring decision (x)): the
         // frozen runtime's new-work gate (admission/gate.ts) and activation

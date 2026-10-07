@@ -9,11 +9,18 @@
  * assumptions.
  * @module @dsh-agent-team/remote/handlers/override
  */
+import { permissionAdministrationVia } from './intervention.js';
 /**
  * The override category handler (`override.get`, `override.set`,
  * `override.reset`).
  */
-export function createRemoteOverrideHandler(deps) {
+export function createRemoteOverrideHandler(deps, 
+/** A4-PR6 §6.B: the v8 governance read seam (the permission-
+ *  administration read lives in THIS category — it reads the override
+ *  plane's documents — while its port lives on the single v8 seam).
+ *  Optional: pre-v8 callers and fakes compile and behave byte-for-byte;
+ *  an unwired surface answers the v8 read with a typed refusal. */
+governance) {
     return (method, params) => {
         switch (method) {
             case 'override.get': {
@@ -49,6 +56,11 @@ export function createRemoteOverrideHandler(deps) {
                 };
                 const { removed } = deps.reset(request);
                 return { data: { removed } };
+            }
+            case 'override.getPermissionAdministration': {
+                // v8-only (A4-PR6 §6.B): the STRIP-projection lives with the
+                // intervention handler (shared closed-shape law).
+                return permissionAdministrationVia(governance, params);
             }
             default:
                 throw new Error(`override handler routed an unknown method: ${method}`);

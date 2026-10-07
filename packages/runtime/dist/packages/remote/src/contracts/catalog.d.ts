@@ -37,6 +37,11 @@ export declare const REMOTE_CATEGORIES: {
     readonly HANDOFF: "handoff";
     /** Read-only legacy Team inspection (DevPlan §20.6 degradation). */
     readonly LEGACY: "legacy";
+    /** A4-PR6 v8: the intervention plane — approval cases and governance
+     *  warnings as ONE work surface (spec §14–§16); the category exists
+     *  because the methods are cross-cutting (they are not Team lifecycle,
+     *  not Member operations, and not an override mutation). */
+    readonly INTERVENTION: "intervention";
 };
 /** One of the closed Remote contract v1 categories. */
 export type RemoteCategory = (typeof REMOTE_CATEGORIES)[keyof typeof REMOTE_CATEGORIES];
@@ -134,6 +139,41 @@ export declare const REMOTE_V6_ONLY_METHODS: readonly string[];
  */
 export declare const REMOTE_V7_ONLY_METHODS: readonly string[];
 /**
+ * A4-PR6 §6.B (contract v8): the v8-only methods — the intervention plane
+ * plus `override.getPermissionAdministration`. Requests to any of them at
+ * v1–v7 are the typed `method-version-unsupported` rejection (the same
+ * availability machinery as every prior version-only method). The param
+ * field sets of ALL FOUR are closed with unknown-field rejection
+ * (`params.ts`): a future `asRole` / `impersonate` field CANNOT appear on
+ * the wire without a version bump.
+ */
+export declare const REMOTE_V8_ONLY_METHODS: readonly string[];
+/**
+ * ADR A1-2 classification (frozen at the CONTRACT layer): every catalog
+ * method that WRITES governance state. This list is the enumeration
+ * source for the law that each such method is EXPLICITLY principal-routed
+ * in the runtime derivation (`s6-principal.ts`) — no governance-writing
+ * method may fall into the host-operator default branch, "including
+ * methods nobody thought to name" (plan 6.B; pinned by
+ * `packages/remote/test/a4p6-remote-v8.test.ts` against the routing
+ * source). READS (`intervention.list` / `.get`,
+ * `override.getPermissionAdministration`, `override.getPermission`, …)
+ * are deliberately absent: they write nothing and the default branch
+ * exists for host-initiated reads. A new governance-writing method MUST
+ * join this set and the routing set in the same commit.
+ *
+ * A4-PR6 review round 1 (fix 5/6): the enumeration itself was incomplete.
+ * `team.resolveControl` records durable control DECISIONS and
+ * `compatibility.ack` records the governance-warning ACKNOWLEDGMENT —
+ * both write governance state and both are explicitly routed to decider
+ * derivations in `s6-principal.ts`; omitting them meant the law "every
+ * classified method appears in a route" could never notice a future
+ * governance-writing method that ALSO went un-named here. The reverse
+ * direction is now pinned too (routed-to-a-decider-derivation ⇒
+ * enumerated), so this list can no longer silently under-enumerate.
+ */
+export declare const REMOTE_GOVERNANCE_WRITING_METHODS: readonly string[];
+/**
  * Is `method` a catalog method available in remote contract `version`?
  *
  * This is the version-aware membership check the version-aware param
@@ -145,9 +185,10 @@ export declare const REMOTE_V7_ONLY_METHODS: readonly string[];
  *
  * @param method - the candidate method name (must be in the catalog).
  * @param version - the request's contract version (supported:
- *   1 | 2 | 3 | 4 | 5 | 6 | 7 — the v7 bump adds NO method; its
+ *   1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 — the v7 bump adds NO method; its
  *   version-aware surface is the `override.set` / `override.reset`
- *   closed field sets in `params.ts`).
+ *   closed field sets in `params.ts`; the v8 bump (A4-PR6) adds the
+ *   closed intervention plane + `override.getPermissionAdministration`).
  */
 export declare function isRemoteMethodAvailableInVersion(method: string, version: number): boolean;
 /**

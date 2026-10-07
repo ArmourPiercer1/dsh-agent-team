@@ -228,6 +228,18 @@ export interface RemoteOverrideResetRequest {
 }
 
 /** The override (human override / autonomy overlay) port. */
+/** Re-exported so handler/test authors import wire DTOs from the seam they
+ *  already import (the frozen home stays `contracts/types.ts`). */
+export type {
+  RemoteInterventionWireAdministration,
+  RemoteInterventionWireItem,
+  RemoteInterventionWireSource,
+} from '../contracts/types.js'
+import type {
+  RemoteInterventionWireAdministration,
+  RemoteInterventionWireItem,
+} from '../contracts/types.js'
+
 export interface RemoteOverridePort {
   /**
    * Read the stored override/overlay record for the addressed cell.
@@ -631,6 +643,53 @@ export interface RemoteLiveTokenPort {
  * upstream session controller, a session log artifact, or an upstream
  * private API (G8).
  */
+// ---------------------------------------------------------------------------
+// A4-PR6 §6.B — the v8 intervention seam (port 14 on the runtime side;
+// the twenty-first port of the generic dispatcher)
+// ---------------------------------------------------------------------------
+
+/** The closed `intervention.act` request (the frozen client payload rule). */
+export interface RemoteInterventionActRequest {
+  readonly teamSessionId: string
+  readonly interventionId: string
+  readonly action: 'allow' | 'deny' | 'escalate' | 'acknowledge'
+  readonly note?: string
+}
+
+/**
+ * The v8 intervention seam. Every method is a pure READ or a VERB that
+ * routes to ONE authoritative server-side entry (the ControlService
+ * decision/escalate entries, the GovernanceWarning acknowledgement): the
+ * port NEVER re-implements decisioning and NEVER accepts a client-chosen
+ * authority. The handler validates the returned values against the closed
+ * wire shapes (`contracts/types.ts`).
+ */
+export interface RemoteInterventionPort {
+  /** The team's current intervention items (server-derived projection). */
+  list(request: {
+    readonly teamSessionId: string
+  }): { readonly items: readonly RemoteInterventionWireItem[] }
+  /** One item by id; typed `INTERVENTION_NOT_FOUND` when absent. */
+  get(request: {
+    readonly teamSessionId: string
+    readonly interventionId: string
+  }): { readonly item: RemoteInterventionWireItem }
+  /** The single verb entry (authority re-derived server-side, A1-2). */
+  act(request: RemoteInterventionActRequest): {
+    readonly outcome: 'decided' | 'escalated' | 'acknowledged' | 'already-acknowledged'
+  }
+  /**
+   * The permission-administration read. The port may return a RICH
+   * record; the handler STRIPS it to the closed wire fields — the strip is
+   * the handler's law, so authority-bearing cells cannot reach the wire
+   * even through a port regression.
+   */
+  permissionAdministration(request: {
+    readonly teamSessionId: string
+    readonly memberInstanceId?: string
+  }): { readonly administration: RemoteInterventionWireAdministration }
+}
+
 export interface RemoteHandlerDeps {
   readonly catalog: RemoteCatalogPort
   readonly intent: RemoteIntentPort
@@ -652,6 +711,17 @@ export interface RemoteHandlerDeps {
   readonly compatibility: RemoteCompatibilityPort
   readonly handoff: RemoteHandoffPort
   readonly legacy: RemoteLegacyPort
+  /**
+   * A4-PR6 §6.B (contract v8): the intervention plane + the
+   * `override.getPermissionAdministration` read. OPTIONAL on purpose: the
+   * pre-v8 fakes and surfaces keep compiling UNCHANGED (the frozen
+   * `p8t3-helpers` fake set is part of the v1 contract surface and is not
+   * re-authored by the v8 bump); an UNWIRED v8 surface answers the four
+   * v8-only methods with a typed refusal (`internal-error`, reason
+   * `port-unwired`) and every v1–v7 method byte-for-byte. A production
+   * host that serves v8 MUST wire this port.
+   */
+  readonly intervention?: RemoteInterventionPort
 }
 
 /**

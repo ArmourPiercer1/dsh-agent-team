@@ -19,7 +19,7 @@
  * precedent) and their typed failures render verbatim as local notes. The
  * wire-gap ack control is rendered disabled with the explicit reason.
  */
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type {
@@ -772,5 +772,41 @@ describe('TeamGovernance', () => {
     const enBadge = compatBadge(enView.container)
     if (enBadge === null) throw new Error('the compatibility badge did not render')
     expect(enBadge.textContent).toBe('✓ Compatible')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// A4-PR6 §6.D — the intervention panel mounts INSIDE the governance section
+// (no view-level mount) and ONLY when the host face carries the optional v8
+// slice. An older face keeps the exact pre-v8 rendering (every test above
+// pins that unchanged).
+// ---------------------------------------------------------------------------
+
+describe('TeamGovernance A4-PR6 §6.D — the intervention mount', () => {
+  const ADMIN = {
+    teamSessionId: LEADER,
+    memberInstanceId: 'mate',
+    generation: null,
+    source: 'blueprint-default',
+    effective: { rules: [] },
+    diagnostics: [],
+  }
+
+  it('renders the interventions section when the face carries the v8 slice', async () => {
+    const face = makeFace({
+      interventionList: vi.fn(() => Promise.resolve(okResponse({ items: [] }, 'intervention.list'))),
+      interventionAct: vi.fn(() => Promise.resolve(okResponse({ outcome: 'decided' }, 'intervention.act'))),
+      permissionAdministrationGet: vi.fn(() => Promise.resolve(okResponse({ administration: ADMIN }, 'override.getPermissionAdministration'))),
+    })
+    const view = render(<TeamGovernance {...makeProps(defaultTeam(), face)} />)
+    await waitFor(() => expect(view.container.querySelector('[data-interventions]')).not.toBeNull())
+    expect(view.container.querySelector('[data-interventions-empty]')).not.toBeNull()
+    expect(view.container.querySelector('[data-administration-identity]')?.textContent).toContain('blueprint default')
+  })
+
+  it('an older face (no v8 slice) keeps the section absent — the pre-v8 rendering is byte-identical', () => {
+    const view = render(<TeamGovernance {...makeProps()} />)
+    expect(view.container.querySelector('[data-interventions]')).toBeNull()
+    expect(compatBadge(view.container)).not.toBeNull()
   })
 })

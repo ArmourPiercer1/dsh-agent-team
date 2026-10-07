@@ -1,0 +1,5 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/a4p6-governance-warning.test.ts > 6.A the gate on the wire (team.ensureRootLive re-entry path) > warning-required: typed block, the live ensure is NEVER reached (root stays not-live)
+ FAIL  test/a4p6-governance-warning.test.ts > 6.A the gate on the wire (team.ensureRootLive re-entry path) > open: the gate runs FIRST, then the live ensure proceeds unchanged
+ FAIL  test/a4p6-governance-warning.test.ts > 6.A the gate on the wire (team.ensureRootLive re-entry path) > corrupt: typed fail-closed, never acknowledgeable, live ensure never reached
+ FAIL  test/a4p6-governance-warning.test.ts > 6.A the gate on the wire (team.ensureRootLive re-entry path) > migration-required: typed refusal (the PR7 arm exists and is closed)

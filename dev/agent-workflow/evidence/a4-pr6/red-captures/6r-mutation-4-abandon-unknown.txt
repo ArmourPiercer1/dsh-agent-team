@@ -1,0 +1,64 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/client
+
+ ❯ test/team-ledger-model.client.spec.ts (27 tests | 1 failed) 13ms
+     ✓ keeps the frozen depth constants from the legacy feed model 1ms
+     ✓ orders rows by the durable sequence, never by the timestamp 1ms
+     ✓ caps the window at the most recent 200 filtered rows, oldest first 1ms
+     ✓ shows the whole loaded stream when it fits the window 0ms
+     ✓ deepens from a smaller depth over the loaded set (the depth axis) 0ms
+     ✓ clamps the depth to the filtered total 0ms
+     ✓ filters by category and skips rows without the category 0ms
+     ✓ filters by instance id on the row actor 0ms
+     ✓ filters by template id through the actor template 0ms
+     ✓ excludes actor-less rows under an active instance filter 0ms
+     ✓ reports the partial-ledger remainder as server total minus loaded entries (count domain, INV-9.2) 0ms
+     ✓ F11-T5: total 68 with 50 loaded entries (frontier 118) → not complete, 18 remaining (count domain) 0ms
+     ✓ resolves actor labels from the snapshot and falls back to the raw id 0ms
+     ✓ resolves navigation to the member child session and the team root 0ms
+     ✓ joins control requests to their pending state from the loaded chains 0ms
+     ✓ renders control decisions with the value, the reason, and the scope actor 0ms
+     ✓ reads the frozen message from/to leaves per fact type 0ms
+     ✓ joins interval closes to the paired interval instance without guessing 0ms
+     ✓ renders progress rows with the frozen progress value 0ms
+     ✓ renders unknown fact types as the safe generic row without throwing 0ms
+     ✓ uses the stable ledger key and the empty model 0ms
+     ✓ filters artifact-read-granted OUT of the Events rows while keeping it in the raw model 0ms
+     ✓ leaks no grant internals (locator / targetKeyDigest / versionDigest) into ANY rendered row 1ms
+     ✓ keeps the INV-9.2 remainder math on the LOADED entry count (filtered grants do not change it) 0ms
+     ✓ a grant CARRYING the control category (the adapter output) is hidden under the `all` AND the `control` Events filters 0ms
+     ✓ the hide does not touch the raw entry count or the pagination completeness (a control-category grant included) 0ms
+     × control-request-abandoned renders NOTHING in Events (the skip), never an `unknown` JSON row 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-ledger-model.client.spec.ts > A4-PR6 review round 1 (fix 4/6) — the abandonment close never reaches the `unknown` family > control-request-abandoned renders NOTHING in Events (the skip), never an `unknown` JSON row
+AssertionError: expected [ { kind: 'unknown', …(11) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ test/team-ledger-model.client.spec.ts:583:86
+    581|     ]
+    582|     const model = derive({ ledger: ledger(entries) })
+    583|     expect(model.rows.filter((row) => row.factType === 'control-reques…
+       |                                                                                      ^
+    584|     // The renderer law: no `unknown` row exists at all, and NO row bo…
+    585|     // carries the abandonment payload's leaf names (the pre-fix JSON …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 26 passed (27)
+   Start at  16:57:25
+   Duration  153ms (transform 37ms, setup 13ms, import 35ms, tests 13ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

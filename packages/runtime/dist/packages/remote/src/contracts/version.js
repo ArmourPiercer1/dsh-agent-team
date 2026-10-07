@@ -110,8 +110,28 @@ export const REMOTE_CONTRACT_VERSION_V6 = 6;
  */
 export const REMOTE_CONTRACT_VERSION_V7 = 7;
 /**
+ * The remote contract v8 (A4-PR6 §6.B, Alpha.4 governance UX — a
+ * CONTRACT CHANGE, reason recorded in the PR body): the v8-only
+ * intervention plane — `intervention.list` / `intervention.get` /
+ * `intervention.act` (the GovernanceWarning + approval-case work surface
+ * with SERVER-derived legal actions and a closed param set: the act body
+ * is exactly `{teamSessionId, interventionId, action, note?}`, so an
+ * `asRole`/`impersonate` field cannot exist without a version bump) — plus
+ * the `override.getPermissionAdministration` read (a server-side
+ * STRIP-projection: authority-bearing and round-trippable decision fields
+ * never reach the wire). Every v1/v2/v3/v4/v5/v6/v7 method stays
+ * available in v8 and every v1–v7 wire shape is preserved byte-for-byte
+ * for version-1–7 requests (a version bump ADDS supported versions and
+ * methods, never edits older semantics). Orthogonality law (spec §15,
+ * plan 6.B): the wire version NEVER selects the authority algebra — the
+ * v3-only switch reads the BOUND DOCUMENT's version only (ADR A5-12); a
+ * v2 `team.create` may create a Blueprint-v3 Team and a v8 call may carry
+ * a v1 document during the bridge.
+ */
+export const REMOTE_CONTRACT_VERSION_V8 = 8;
+/**
  * All remote contract versions this build accepts:
- * `[1, 2, 3, 4, 5, 6, 7]`.
+ * `[1, 2, 3, 4, 5, 6, 7, 8]`.
  * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
  * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
  * repair round r1 F9 task; v5 by the C1 restart-0.1.7-rc.1 recovery
@@ -132,6 +152,7 @@ export const SUPPORTED_REMOTE_CONTRACT_VERSIONS = [
     REMOTE_CONTRACT_VERSION_V5,
     REMOTE_CONTRACT_VERSION_V6,
     REMOTE_CONTRACT_VERSION_V7,
+    REMOTE_CONTRACT_VERSION_V8,
 ];
 /**
  * Is `value` a supported remote contract version (a positive integer in the

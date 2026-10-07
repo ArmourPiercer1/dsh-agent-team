@@ -1854,6 +1854,43 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts',
       'packages/runtime/test/a4p5-self-mutation.test.ts',
     ]
+    // A4-PR6 (stage 6.A increment; extended INCREMENTALLY per file-creating
+    // commit, per shared rule 8 / A5-17 — never renumber another PR): the
+    // governance-warning lane (types + service + index, the ONE warning
+    // module the start gate, the boundary observation and the v8 surface
+    // read through) plus its three runtime specs. Everything else PR6
+    // touches so far is an EDIT to an already-counted file (s6-remote.ts,
+    // root.ts, host.ts, the remote dispatch.ts backing vocabulary,
+    // intervention/*, tsconfig.build.json, this pin) — an edit is not an
+    // increment — and `dist/**` plus `dev/agent-workflow/evidence/**` stay
+    // outside the scanned scope.
+    const SCANNED_PATHS_A4PR6: readonly string[] = [
+      'packages/runtime/governance-warning/types.ts',
+      'packages/runtime/governance-warning/service.ts',
+      'packages/runtime/governance-warning/index.ts',
+      'packages/runtime/test/a4p6-governance-warning.test.ts',
+      'packages/runtime/test/a4p6-governance-warning-service.test.ts',
+      'packages/runtime/test/a4p6-intervention-aggregation.test.ts',
+      // §6.B (contract v8): the intervention wire law module + its remote suite.
+      'packages/remote/src/handlers/intervention.ts',
+      'packages/remote/test/a4p6-remote-v8.test.ts',
+      // §6.D (client plane): the two client model sources (the scanner's
+      // include pattern is .ts/.mts/.mjs — the panel/spec .tsx files are
+      // outside the scan; the discovered total is the proof: discovered
+      // minus registered is exactly these paths).
+      'packages/client/src/model/team-interventions.ts',
+      'packages/client/src/model/permission-administration.ts',
+      // Review round 1 (this PR's review-fix commits): three new runtime
+      // specs — the start-gate entrance suite (fix 1), the host-adapter
+      // suite over the real docs/contains builders (fixes 2+3), and the
+      // driven-principal act suite (fixes 5+6). Everything else the round
+      // touched is an EDIT to an already-counted file (s6-remote.ts,
+      // root.ts, host.ts, permission-plane.ts, catalog.ts, the client
+      // model/spec, this pin) — an edit is not an increment.
+      'packages/runtime/test/a4p6-start-gate-entrances.test.ts',
+      'packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts',
+      'packages/runtime/test/a4p6-driven-principal-act.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
@@ -1861,14 +1898,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR2.length +
         SCANNED_PATHS_A4PR3.length +
         SCANNED_PATHS_A4PR4.length +
-        SCANNED_PATHS_A4PR5.length,
+        SCANNED_PATHS_A4PR5.length +
+        SCANNED_PATHS_A4PR6.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
         SCANNED_PATHS_A4PR3.length +
         SCANNED_PATHS_A4PR4.length +
-        SCANNED_PATHS_A4PR5.length,
+        SCANNED_PATHS_A4PR5.length +
+        SCANNED_PATHS_A4PR6.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -1901,6 +1940,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4PR3,
       ...SCANNED_PATHS_A4PR4,
       ...SCANNED_PATHS_A4PR5,
+      ...SCANNED_PATHS_A4PR6,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -1923,6 +1963,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // one of them is asserted present by path above. No number in PROSE — the
     // difference of the two pinned totals is the only arithmetic here.
     expect(SCANNED_PATHS_A4PR5.length).toBe(1003 - 999)
+    // The A4-PR6 tie, same form: the movement equals the named files, and every
+    // one of them is asserted present by path above. `1016` is THIS PR's own
+    // advancing total — it moves only when THIS list grows (a stage commit
+    // adding a file updates the list and this number together; an undeclared
+    // file moves the scanner total without the list and fails above). Other
+    // PRs' numbers stay untouched. Review round 1 moved it with the three
+    // review-round specs named in the list.
+    expect(SCANNED_PATHS_A4PR6.length).toBe(1016 - 1003)
 
   })
 

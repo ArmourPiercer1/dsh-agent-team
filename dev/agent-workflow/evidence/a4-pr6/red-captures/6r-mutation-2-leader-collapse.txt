@@ -1,0 +1,71 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6
+
+ ❯ packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts (7 tests | 2 failed) 8ms
+     × a FAULTED leader read maps to `unreadable` (never a zero-claim v3 document) 5ms
+     ✓ the pre-existing fail-closed legs keep their exact arms 0ms
+     ✓ a DECLARED leader (including legally empty) still reads through as v3 0ms
+     × composition: the fault world now CORRUPTS the gate (pre-fix it opened) and writes nothing mint-worthy 1ms
+     ✓ absent seam, throwing seam, throwing provider, and non-boolean answers are ALL `undefined` 0ms
+     ✓ only real boolean answers decide 0ms
+     ✓ composition: an undeterminable containment world MINTS a warning and refuses with an intervention pointer (pre-fix: raw throw) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts > A4-PR6 review round 1 (fix 2/6) — the docs adapter is three-state > a FAULTED leader read maps to `unreadable` (never a zero-claim v3 document)
+AssertionError: expected { stage: 'v3', …(4) } to deeply equal { stage: 'unreadable' }
+
+- Expected
++ Received
+
+  {
+-   "stage": "unreadable",
++   "blueprintContentHash": "sha256:bp-hash",
++   "hard": {
++     "rules": [],
++   },
++   "hardStatus": "absent",
++   "leader": {
++     "rules": [],
++   },
++   "stage": "v3",
+  }
+
+ ❯ packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts:216:36
+    214| describe('A4-PR6 review round 1 (fix 2/6) — the docs adapter is three-…
+    215|   it('a FAULTED leader read maps to `unreadable` (never a zero-claim v…
+    216|     expect(DOCS.leaderUnavailable).toEqual({ stage: 'unreadable' })
+       |                                    ^
+    217|   })
+    218|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts > A4-PR6 review round 1 (fix 2/6) — the docs adapter is three-state > composition: the fault world now CORRUPTS the gate (pre-fix it opened) and writes nothing mint-worthy
+AssertionError: expected '{"kind":"resolved","outcome":{"status…' to contain 'corrupt'
+
+Expected: "corrupt"
+Received: "{"kind":"resolved","outcome":{"status":"open"}}"
+
+ ❯ packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts:245:56
+    243|   it('composition: the fault world now CORRUPTS the gate (pre-fix it o…
+    244|     expect(COMPOSE.leaderFaultOutcome.kind).toBe('resolved')
+    245|     expect(JSON.stringify(COMPOSE.leaderFaultOutcome)).toContain('corr…
+       |                                                        ^
+    246|     expect(JSON.stringify(COMPOSE.leaderFaultOutcome)).toContain('auth…
+    247|     // corrupt does NOT mint a warning (only mismatch/undetermined min…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed (7)
+   Start at  16:54:23
+   Duration  1.43s (transform 1.06s, setup 0ms, import 1.33s, tests 8ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

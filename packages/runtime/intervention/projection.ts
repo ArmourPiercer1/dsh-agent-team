@@ -170,3 +170,86 @@ export function projectZeroLegTermination(input: {
 }): InterventionItem {
   return freezeItem(deriveZeroLegAuthorityUnavailableItem(input))
 }
+
+// ---------------------------------------------------------------------------
+// A4-PR6 — the GovernanceWarning source adapter (spec §15/§16; plan §6.0/§6.B)
+// ---------------------------------------------------------------------------
+
+/**
+ * The STRUCTURAL view of one durable warning the adapter projects (A4-PR6).
+ *
+ * Declared structurally — NOT imported from `governance-warning/**` — so the
+ * intervention lane's import law survives its first production consumer: the
+ * lane still imports no authority/writer module, and the caller (the plugin
+ * assembly) adapts its snapshot type to this shape. Every field here is a
+ * DIAGNOSTIC rendering input; none of it is authority (spec §14.2), and the
+ * projection is still read-only in every direction.
+ */
+export interface InterventionWarningSourceView {
+  readonly interventionId: string
+  readonly warningId: string
+  readonly kind: 'envelope-consistency'
+  readonly fingerprint: string
+  readonly verdict: 'mismatch' | 'undetermined'
+  readonly observationCount: number
+  readonly firstObservedAt: string
+  readonly lastObservedAt: string
+  readonly acknowledged: boolean
+  readonly acknowledgedAt?: string
+  readonly acknowledgedBy?: string
+}
+
+/** The injected warning reader (the durable fold, supplied by the caller). */
+export interface InterventionWarningSourceReader {
+  list(rootSessionId: string): Promise<readonly InterventionWarningSourceView[]>
+}
+
+/**
+ * The PR6 fill of the PR3 adapter seam: map durable warnings to frozen
+ * `warning`-kind items.
+ *
+ * The law the items carry (each pinned by `a4p6-intervention-aggregation.test.ts`):
+ * - `responseBehavior` is ALWAYS `informational`: a warning never puts the
+ *   Team in the state where a reviewer is expected to act (spec §15.0 — a
+ *   non-blocking stage must never look like `wait-for-response`);
+ * - `blockScope` is `null`: the warning never blocks work at runtime; only
+ *   the START GATE (6.A, in the plugin layer) consults the verdict, and it
+ *   blocks START, not work;
+ * - `legalActions` is the WARNING plane only: `['acknowledge']` while the
+ *   fingerprint is unacknowledged, `[]` after;
+ * - `requiredAuthority` / `currentReviewAuthority` are NEVER published: an
+ *   acknowledged warning is not a review, and rendering an authority field
+ *   here would manufacture the authority-looking field spec §14.2 forbids;
+ * - `observationCount`/timestamps fold the §15.4 dedup — repeat observations
+ *   of the same fingerprint update them, they never mint a second item.
+ */
+export function createGovernanceWarningSourceAdapter(
+  deps: InterventionWarningSourceReader,
+): InterventionSourceAdapter {
+  return {
+    source: 'governance-warning',
+    async project({ rootSessionId }) {
+      const warnings = await deps.list(rootSessionId)
+      return warnings.map((warning): InterventionItem => {
+        const item: InterventionItem = {
+          interventionId: warning.interventionId,
+          kind: 'warning',
+          responseBehavior: 'informational',
+          blockScope: null,
+          source: { kind: 'governance-warning', id: warning.warningId },
+          status: warning.acknowledged ? 'acknowledged' : 'open',
+          legalActions: warning.acknowledged ? [] : ['acknowledge'],
+          derivationReasons: warning.acknowledged
+            ? ['warning-acknowledged']
+            : ['warning-observed'],
+          fingerprint: warning.fingerprint,
+          createdAt: warning.firstObservedAt,
+          updatedAt: warning.acknowledged ? warning.acknowledgedAt : warning.lastObservedAt,
+          lastObservedAt: warning.lastObservedAt,
+          observationCount: warning.observationCount,
+        }
+        return item
+      })
+    },
+  }
+}

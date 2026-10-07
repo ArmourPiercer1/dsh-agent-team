@@ -70,7 +70,9 @@ export type {
   InterventionBlockScope,
   InterventionDerivationReason,
   InterventionItem,
+  InterventionItemAction,
   InterventionKind,
+  InterventionWarningActionValue,
   InterventionResponseBehavior,
   InterventionSource,
   InterventionSourceKind,
@@ -114,6 +116,7 @@ export type {
 } from './derivation.js'
 
 export {
+  createGovernanceWarningSourceAdapter,
   freezeItem,
   projectInterventions,
   projectZeroLegTermination,
@@ -121,5 +124,7 @@ export {
 export type {
   InterventionControlSource,
   InterventionSourceAdapter,
+  InterventionWarningSourceReader,
+  InterventionWarningSourceView,
   ProjectInterventionsInput,
 } from './projection.js'

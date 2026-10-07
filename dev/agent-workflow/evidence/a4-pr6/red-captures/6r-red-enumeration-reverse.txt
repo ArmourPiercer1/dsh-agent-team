@@ -1,0 +1,43 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6
+
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts (12 tests | 1 failed) 13ms
+     ✓ v8 is a supported version that ADDS to the ladder (v1–v7 stay members) 1ms
+     ✓ the catalog gains exactly the INTERVENTION category and the four v8-only methods 0ms
+     ✓ availability: v1–v7 refuse every v8-only method; v8 admits everything 1ms
+     ✓ every v8 method param set is CLOSED: an identity or authority smuggle is unknown-field before any port runs 2ms
+     ✓ intervention.act action is the closed four; any other value is malformed-params 1ms
+     ✓ intervention.list carries the CLOSED item shape field-for-field at v8 (presence pinned on the wire) 1ms
+     ✓ intervention.act answers with the closed outcome ONLY — no authority or decision field rides back 0ms
+     ✓ getPermissionAdministration is a server-side STRIP: authority-bearing and round-trippable fields never reach the wire 1ms
+     ✓ typed refusals survive the wire: INTERVENTION_NOT_FOUND passes, CONTROL_RESOLVER_NOT_AUTHORIZED passes, out-of-vocabulary degrades 1ms
+     ✓ an unwired intervention seam is a typed refusal, never a partial success 1ms
+     × ADR A1-2 enumeration: every governance-writing catalog method is EXPLICITLY principal-routed in s6-principal.ts (source law) 3ms
+     ✓ v1–v7 behavior is preserved at the shared seams: the v7 guard field stays v7+ only at override.set 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/remote/test/a4p6-remote-v8.test.ts > A4-PR6 §6.B: the Remote contract v8 surface > ADR A1-2 enumeration: every governance-writing catalog method is EXPLICITLY principal-routed in s6-principal.ts (source law)
+AssertionError: governance-writing method 'compatibility.ack' is routed but NOT enumerated: expected [ 'override.set', …(4) ] to include 'compatibility.ack'
+ ❯ packages/remote/test/a4p6-remote-v8.test.ts:407:9
+    405|         REMOTE_GOVERNANCE_WRITING_METHODS,
+    406|         `governance-writing method '${route}' is routed but NOT enumer…
+    407|       ).toContain(route)
+       |         ^
+    408|     }
+    409|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  16:59:16
+   Duration  251ms (transform 122ms, setup 0ms, import 151ms, tests 13ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

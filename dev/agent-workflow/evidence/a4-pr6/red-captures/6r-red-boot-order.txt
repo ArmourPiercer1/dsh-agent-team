@@ -1,0 +1,25 @@
+ ❯ governanceStartRefusal packages/runtime/src/plugin/s6-remote.ts:421:12
+    419|   }
+    420|   if (outcome.status === 'corrupt') {
+    421|     return new TeamPluginError(
+       |            ^
+    422|       S6_REMOTE_ERROR_CODES.TEAM_START_GOVERNANCE_CORRUPT,
+    423|       `${method}: the authority-document read failed closed (${outcome…
+ ❯ startGovernanceGate packages/runtime/src/plugin/root.ts:2343:11
+ ❯ createAndStartTeam packages/runtime/src/plugin/root.ts:2368:5
+ ❯ Object.boot packages/runtime/src/plugin/root.ts:3723:9
+ ❯ bootstrap packages/runtime/src/plugin/host.ts:2884:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  17:10:38
+   Duration  1.46s (transform 1.02s, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

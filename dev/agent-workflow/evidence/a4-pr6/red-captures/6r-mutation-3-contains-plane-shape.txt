@@ -1,0 +1,32 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6
+
+ ❯ packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts [ packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts ]
+Error: the fs provider does not expose a public contains() seam
+ ❯ packages/runtime/src/plugin/host.ts:939:13
+    937|     const backend = fsBackend() // MUTANT-6R3: plane shape back in the…
+    938|     if (typeof backend.contains !== 'function') {
+    939|       throw new Error('the fs provider does not expose a public contai…
+       |             ^
+    940|     }
+    941|     return backend.contains({ targetKey: parentKey }, { targetKey: poi…
+ ❯ packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts:132:57
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  16:54:31
+   Duration  1.38s (transform 1.02s, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

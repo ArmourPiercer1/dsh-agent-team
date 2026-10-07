@@ -1,0 +1,21 @@
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/runtime/dist/packages/runtime/src/plugin/host.js:198:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/runtime/dist/packages/runtime/src/plugin/host.js:202:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/runtime/dist/packages/runtime/src/plugin/host.js:972:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/runtime/dist/packages/runtime/src/plugin/host.js:2175:19)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/scripts/composition-smoke.mjs:142:26
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+FAIL client plugin (packages/client): Cannot find package 'clsx' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+Did you mean to import "clsx/dist/clsx.js"?
+FAIL composition-smoke
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/scripts/composition-smoke.mjs:225
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/scripts/composition-smoke.mjs:225:9
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.

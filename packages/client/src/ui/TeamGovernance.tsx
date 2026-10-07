@@ -76,6 +76,8 @@ import {
   type PolicyStateViewWire,
 } from '../model/team-governance.js'
 import styles from './TeamGovernance.module.css'
+import type { InterventionActVerb } from '../model/team-interventions.js'
+import { TeamInterventions } from './TeamInterventions.js'
 
 /** The S5-C governance command face (Gate P9-G5): the frozen Remote
  * wrappers (raw `RemoteResponse`, typed error intact) plus the
@@ -106,6 +108,25 @@ export interface TeamGovernanceFace {
    * (repair 20260927, S1-C2) the tightened assessment — the pull's
    * round-trip outcome is a FIRST-CLASS result the dispatch inspects. */
   pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
+  /**
+   * A4-PR6 §6.D — the OPTIONAL v8 intervention slice (the section renders
+   * only when the host face carries it; an older face keeps the exact
+   * pre-v8 rendering). Same closed bodies as `TeamRemoteClient` — the
+   * mount wires them straight through, the UI adds nothing (ADR A1-2).
+   */
+  interventionList?: (params: {
+    readonly teamSessionId: string
+  }) => Promise<RemoteResponse>
+  interventionAct?: (params: {
+    readonly teamSessionId: string
+    readonly interventionId: string
+    readonly action: InterventionActVerb
+    readonly note?: string
+  }) => Promise<RemoteResponse>
+  permissionAdministrationGet?: (params: {
+    readonly teamSessionId: string
+    readonly memberInstanceId?: string
+  }) => Promise<RemoteResponse>
 }
 
 /** The preserved typed error of one command (G5: verbatim wire values). */
@@ -905,6 +926,22 @@ export function TeamGovernance({
           )
         })}
       </div>
+      {/* A4-PR6 §6.D — the intervention panel mounts HERE (inside the
+          governance section — no view-level mount, no legacy refactor);
+          it renders only when the face carries the v8 slice. */}
+      {governance.interventionList !== undefined
+        && governance.interventionAct !== undefined
+        && governance.permissionAdministrationGet !== undefined ? (
+        <TeamInterventions
+          teamSessionId={teamSessionId}
+          face={{
+            interventionList: governance.interventionList,
+            interventionAct: governance.interventionAct,
+            permissionAdministrationGet: governance.permissionAdministrationGet,
+          }}
+          t={t}
+        />
+      ) : null}
     </div>
   )
 }

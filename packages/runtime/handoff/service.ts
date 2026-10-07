@@ -473,6 +473,11 @@ export function createHandoffService(ports: HandoffPorts): HandoffService {
       record.state = state
       return state
     } catch (error) {
+      // A4-PR6 review round 1 (BLOCKER 1): a governance-start refusal
+      // passes through UNTOUCHED (see `isGovernanceStartRefusal`) — the
+      // typed wire code and the intervention pointer must reach the
+      // caller; only genuine creation failures become `creation-failed`.
+      if (isGovernanceStartRefusal(error)) throw error
       // The context (if present) stays frozen; NO team exists; the
       // failure is carried explicitly — a re-invocation retries the
       // creation idempotently (same stable intentToken).
@@ -694,6 +699,35 @@ function intentTokenOf(record: OpRecord): string {
 /** Map one thrown value onto the closed failure record of a code. */
 function toFailure(code: HandoffErrorCode, error: unknown): HandoffFailure {
   return { code, message: describeError(error) }
+}
+
+/**
+ * A4-PR6 review round 1 (BLOCKER 1) — the governance-start refusal is
+ * the OUTCOME, not an infrastructure failure. The gate inside
+ * `createAndStartTeam` refuses `handoff.create` with a typed wire error
+ * (`governanceStartRefusal`, `s6-remote.ts`); converting it into the
+ * generic `creation-failed` state would erase the refusal's code, its
+ * intervention pointer, and its not-acknowledgeable arms. The predicate
+ * is deliberately SHAPE-based: this service must not import the plugin
+ * layer, and the three reason values are the closed, wire-pinned
+ * `detail.reason` vocabulary of that mapper — nothing else passes.
+ * The pass-through keeps the operation re-drivable (record.state
+ * unchanged, `inflight` cleared by the caller's `finally`; a re-invoke
+ * re-derives the same intentToken and consults the gate again — never
+ * bypassed).
+ */
+const GOVERNANCE_START_REFUSAL_REASONS: ReadonlySet<string> = new Set([
+  'governance-warning-required',
+  'governance-authority-document-fault',
+  'blueprint-migration-required',
+])
+
+function isGovernanceStartRefusal(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false
+  const detail = (error as { detail?: unknown }).detail
+  if (typeof detail !== 'object' || detail === null) return false
+  const reason = (detail as { reason?: unknown }).reason
+  return typeof reason === 'string' && GOVERNANCE_START_REFUSAL_REASONS.has(reason)
 }
 
 /** A safe one-line rendering of one thrown value. */

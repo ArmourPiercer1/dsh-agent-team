@@ -72,6 +72,7 @@ export {
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
   REMOTE_CONTRACT_VERSION_V7,
+  REMOTE_CONTRACT_VERSION_V8,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   isSupportedRemoteContractVersion,
   assertSupportedRemoteContractVersion,
@@ -111,6 +112,8 @@ export {
   REMOTE_V5_ONLY_METHODS,
   REMOTE_V6_ONLY_METHODS,
   REMOTE_V7_ONLY_METHODS,
+  REMOTE_V8_ONLY_METHODS,
+  REMOTE_GOVERNANCE_WRITING_METHODS,
   isRemoteMethod,
   isRemoteMethodAvailableInVersion,
   remoteCategoryOf,
@@ -261,6 +264,11 @@ export type {
   RemoteHandoffPrepareParams,
   RemoteHandoffCreateParams,
   RemoteLegacyInspectParams,
+  // A4-PR6 §6.B (contract v8): closed v8 param shapes.
+  RemoteInterventionListParams,
+  RemoteInterventionGetParams,
+  RemoteInterventionActParams,
+  RemoteOverrideGetPermissionAdministrationParams,
   RemoteMethodParams,
   RemoteParsedParams,
 } from './contracts/params.js'
@@ -269,6 +277,12 @@ export {
   REMOTE_PROJECTION_FIELDS,
   REMOTE_PROJECTION_FIELDS_V6,
   REMOTE_LEDGER_ENTRY_FIELDS,
+  // A4-PR6 §6.B (contract v8): the closed wire field sets.
+  REMOTE_INTERVENTION_AUTHORITY_POSITIONS,
+  REMOTE_INTERVENTION_ITEM_FIELDS,
+  REMOTE_INTERVENTION_SOURCE_FIELDS,
+  REMOTE_INTERVENTION_ACT_OUTCOMES,
+  REMOTE_PERMISSION_ADMINISTRATION_FIELDS,
 } from './contracts/types.js'
 
 export type {
@@ -302,6 +316,10 @@ export type {
   RemoteHandoffPrepareValue,
   RemoteHandoffCreateValue,
   RemoteLegacyInspectValue,
+  // A4-PR6 §6.B (contract v8): the intervention-plane wire DTOs.
+  RemoteInterventionWireSource,
+  RemoteInterventionWireItem,
+  RemoteInterventionWireAdministration,
 } from './contracts/types.js'
 
 export type {
@@ -332,6 +350,9 @@ export type {
   RemoteHandlerDeps,
   RemoteHandlerOutcome,
   RemoteHandler,
+  // A4-PR6 §6.B (contract v8): the intervention seam.
+  RemoteInterventionActRequest,
+  RemoteInterventionPort,
 } from './handlers/ports.js'
 
 export {
@@ -361,6 +382,7 @@ export type {
 export {
   createRemoteOverrideHandler,
 } from './handlers/override.js'
+export { createRemoteInterventionHandler } from './handlers/intervention.js'
 
 export {
   createRemotePolicyStateHandler,

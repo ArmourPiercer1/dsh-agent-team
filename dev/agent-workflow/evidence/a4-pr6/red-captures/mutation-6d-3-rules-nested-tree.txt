@@ -1,0 +1,36 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/client
+
+ ❯ test/a4p6-permission-administration.client.spec.tsx (4 tests | 1 failed) 36ms
+     × rules are FLAT rows; a subtree matcher is TEXT, never an expanded tree 26ms
+     ✓ generation:null displays the frozen blueprint-default state, never generation 0 5ms
+     ✓ a typed administration refusal renders VERBATIM, not an empty default view 4ms
+     ✓ the model is fail-safe: a malformed administration value yields NO view (never a half-authority display) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p6-permission-administration.client.spec.tsx > A4-PR6 §6.D the administration view renders the effective set AS RULES > rules are FLAT rows; a subtree matcher is TEXT, never an expanded tree
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ test/a4p6-permission-administration.client.spec.tsx:86:49
+     84|     // The §6.D law: no nested list anywhere under the rules container…
+     85|     // a subtree rule is ONE row with its resource as text.
+     86|     expect(list?.querySelectorAll('ul').length).toBe(0)
+       |                                                 ^
+     87|     expect(list?.querySelectorAll('li').length).toBe(2)
+     88|     // diagnostics ride as their own structured line (code · verdict):
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  16:14:50
+   Duration  2.17s (transform 1.09s, setup 14ms, import 1.70s, tests 36ms, environment 328ms)
+

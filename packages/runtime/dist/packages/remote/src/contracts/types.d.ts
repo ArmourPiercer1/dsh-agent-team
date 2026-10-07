@@ -295,4 +295,81 @@ export declare const REMOTE_PROJECTION_FIELDS: readonly string[];
 export declare const REMOTE_PROJECTION_FIELDS_V6: readonly string[];
 /** The top-level fields of the storage `LedgerEntry` (mirror). */
 export declare const REMOTE_LEDGER_ENTRY_FIELDS: readonly string[];
+/**
+ * The closed authority-ladder position cell (mirror of the runtime
+ * `PROPOSAL_AUTHORITY_POSITIONS`; the ordering law is NOT mirrored — the
+ * wire carries a position NAME, never a rank, and every comparison is
+ * server-side).
+ */
+export declare const REMOTE_INTERVENTION_AUTHORITY_POSITIONS: readonly string[];
+/** The closed `source` object of an intervention item (mirror of PR3). */
+export interface RemoteInterventionWireSource {
+    readonly kind: 'control-case' | 'governance-warning' | 'compatibility';
+    readonly id: string;
+    readonly requestId?: string;
+    readonly legOrdinal?: number;
+    readonly carrierKind?: string;
+}
+/**
+ * The wire item (v8): the frozen `InterventionItem` projection (spec
+ * §14.1), field-for-field. Every field here is SERVER-DERIVED; none is
+ * accepted back from the client (the act body is closed to
+ * `{teamSessionId, interventionId, action, note?}`). `blockScope` is
+ * `null` when nothing is held back (the spec's nullable cell is typed
+ * `null`, never absent).
+ */
+export interface RemoteInterventionWireItem {
+    readonly interventionId: string;
+    readonly kind: 'approval' | 'warning' | 'error';
+    readonly responseBehavior: 'informational' | 'wait-for-response';
+    readonly blockScope: RemoteSafeRecord | null;
+    readonly source: RemoteInterventionWireSource;
+    readonly status: 'open' | 'acknowledged' | 'resolved' | 'authority-unavailable' | 'stale';
+    readonly requiredAuthority?: string;
+    readonly currentReviewAuthority?: string;
+    readonly legalActions: readonly string[];
+    readonly derivationReasons: readonly string[];
+    readonly fingerprint?: string;
+    readonly createdAt: string;
+    readonly updatedAt?: string;
+    readonly lastObservedAt?: string;
+    readonly observationCount?: number;
+}
+/** The frozen top-level field set of a wire item (closed value — the
+ *  handler validates every port item against it, presence AND absence). */
+export declare const REMOTE_INTERVENTION_ITEM_FIELDS: readonly string[];
+/** The closed `source` field set (null cells typed, never absent). */
+export declare const REMOTE_INTERVENTION_SOURCE_FIELDS: readonly string[];
+/**
+ * The `intervention.act` wire outcome (v8). CLOSED set — the response
+ * carries NOTHING else: no authority, no legal actions, no decision
+ * record (the next `intervention.list`/`get` re-derives the full state;
+ * the act response is a receipt, not a projection).
+ */
+export declare const REMOTE_INTERVENTION_ACT_OUTCOMES: readonly string[];
+/**
+ * The `override.getPermissionAdministration` wire value (v8) — a
+ * STRIP-PROJECTION (plan 6.B): the handler projects the port's rich
+ * record down to EXACTLY these fields. Authority-bearing cells (grants,
+ * ceilings, ranks, reviewer identities) and round-trippable decision
+ * fields (request ids, decisions, notes) are dropped server-side and can
+ * never reach a client that might echo them back. What remains answers
+ * the panel's question: which rules are in force at which generation,
+ * from which source, with which diagnostics.
+ */
+export interface RemoteInterventionWireAdministration {
+    readonly teamSessionId: string;
+    /** `null` = the team-level administration view (typed, never absent). */
+    readonly memberInstanceId: string | null;
+    /** The overlay slot generation (`null` = no overlay generation exists). */
+    readonly generation: number | null;
+    /** Which authority the effective rules were read from. */
+    readonly source: 'overlay' | 'blueprint-default';
+    /** The effective rules as RULES (never an expanded filesystem tree). */
+    readonly effective: RemoteSafeRecord;
+    /** Operator-facing diagnostics (strings only). */
+    readonly diagnostics: readonly string[];
+}
+/** The closed field set of the administration wire value. */
+export declare const REMOTE_PERMISSION_ADMINISTRATION_FIELDS: readonly string[];
 //# sourceMappingURL=types.d.ts.map

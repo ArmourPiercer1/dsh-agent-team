@@ -252,7 +252,7 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
     }
   })
 
-  it('S4: the closed catalog carries no AGENT-side decision method — the handoff category is exactly prepare + create (versioned union 9/31: 23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only)', () => {
+  it('S4: the closed catalog carries no AGENT-side decision method — the handoff category is exactly prepare + create (versioned union 10/35: 23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only + 4 v8-only)', () => {
     // The handoff category: EXACTLY the two v1 methods (read-only prepare
     // + the create entry that starts the operation). No decision method.
     expect(REMOTE_METHODS_BY_CATEGORY[REMOTE_CATEGORIES.HANDOFF]).toEqual([
@@ -273,7 +273,12 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
     // per-session durable read-state query — a READ, not a decision).
     // The catalog is a versioned union; the v2-only closed set is
     // exactly the one method that has no v1 counterpart.
-    expect(REMOTE_METHOD_NAMES.length).toBe(31)
+    // A4-PR6 (contract v8) CONTRACT CHANGE: 31 -> 35 methods — the four
+    // v8-only intervention-plane methods (intervention.list/get/act +
+    // override.getPermissionAdministration). The HANDOFF category this
+    // test guards is UNCHANGED (prepare + create); the count rides the
+    // versioned union, not the guarded category.
+    expect(REMOTE_METHOD_NAMES.length).toBe(35)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     expect(REMOTE_V4_ONLY_METHODS).toEqual(['team.resolveControl'])
     expect(REMOTE_V6_ONLY_METHODS).toEqual(['team.getReadState'])
@@ -282,6 +287,11 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
       'compatibility',
       'handoff',
       'intent',
+      // A4-PR6 (contract v8): the tenth category. The guarded law this test
+      // exists for is UNCHANGED — the v8 plane adds NO *decision*-named
+      // method either (act's verb vocabulary routes to authoritative human
+      // entries; the AGENT side still commands nothing).
+      'intervention',
       'legacy',
       'member',
       'override',

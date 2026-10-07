@@ -44,7 +44,7 @@
  * @module @dsh-agent-team/runtime/test/a4p3-intervention-lane-hygiene
  */
 
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -133,6 +133,10 @@ const FROZEN_VALUE_EXPORTS = [
   'TERMINAL_MUTATION_OUTCOME_VALUES',
   'TERMINAL_OPERATION_OUTCOMES',
   'TERMINAL_OPERATION_OUTCOME_VALUES',
+  // A4-PR6 reviewed amendment: the PR6 additions to the frozen surface,
+  // stated PER NAME (parent ruling — "name every added symbol"). The warning
+  // source adapter is the PR6 fill of the PR3 seam; nothing else joined.
+  'createGovernanceWarningSourceAdapter',
   'controlRowShapeOf',
   'currentLegOf',
   'deriveInterventionItem',
@@ -147,7 +151,16 @@ const FROZEN_VALUE_EXPORTS = [
   'strictRowProblem',
 ]
 
+// A4-PR6 reviewed amendment, stated per name: `InterventionItemAction` is the
+// UNION of the plane-specific action vocabularies (reviewer actions + the
+// warning-plane `acknowledge`) that ONE rendering surface carries; the two
+// `InterventionWarningSource*` types are the structural reader the plugin
+// assembly adapts to (the lane still imports NO governance-warning module).
 const FROZEN_TYPE_EXPORTS = [
+  'InterventionItemAction',
+  'InterventionWarningActionValue',
+  'InterventionWarningSourceReader',
+  'InterventionWarningSourceView',
   'ControlRowShape',
   'InterventionAction',
   'InterventionBlockScope',
@@ -210,8 +223,23 @@ describe('the intervention lane imports nothing backwards (A1-17, audit F11)', (
   })
 
   it('no source outside intervention/** imports the intervention lane', () => {
+    // A4-PR6 REVIEWED AMENDMENT (parent ruling, recorded in the PR body): the
+    // lane ships its FIRST production consumer in PR6 — the 6.0 freeze gives
+    // PR6 the projection adapter and 6.B closes the v8 surface on exactly one
+    // plugin file. The amendment follows the a3p3 pattern: the consumer is
+    // STATED per file, never wildcarded — a SECOND importer makes this leg red
+    // and must return as its own reviewed amendment, never widen locally. And
+    // the admitted consumer imports the BARREL only: a deep import past the
+    // barrel would route around the frozen export surface below.
+    const admittedConsumer = join(RUNTIME_ROOT, 'src', 'plugin', 's6-remote.ts')
     for (const file of PACKAGE_SOURCES) {
       if (file.path.startsWith(INTERVENTION_ROOT)) continue
+      if (file.path === admittedConsumer) {
+        expect(`${file.path}: ${file.code}`).not.toMatch(
+          /from\s+'[^']*intervention\/(?!index\.js)/,
+        )
+        continue
+      }
       expect(`${file.path}: ${file.code}`).not.toMatch(/from\s+'[^']*intervention\//)
     }
   })
@@ -279,8 +307,39 @@ describe('the intervention barrel exports exactly the frozen surface (plan Task 
 })
 
 describe('the intervention lane keeps the zero-dist posture (ADR A4-6)', () => {
-  it('intervention is absent from the runtime build include', () => {
+  it('the build include pins: intervention JOINS with its production consumer (PR6 retirement + successor)', () => {
+    // THIS LEG RETIRED A LAW IN A4-PR6, and the retirement is stated rather
+    // than renamed. PR3's leg asserted `intervention` was ABSENT from the
+    // runtime build include — the deliberate zero-dist posture of an UNWIRED
+    // lane (ADR A4-6). Plan §6:537 retires that posture explicitly: PR6 is
+    // the lane's first production consumer, "PR6's duty is to add
+    // `intervention` to `include` and co-commit the emitted `dist` in the
+    // same commit". A lane imported by production cannot stay out of the
+    // build. The SUCCESSOR law, kept with the same teeth:
+    //  - `intervention` (and the PR6 `governance-warning` lane) are PRESENT
+    //    in `include` — unwired-again is not silently allowed;
+    //  - the emitted dist files exist COMMITTED, because `check:artifacts`
+    //    compares them and a stale dist must fail HERE first;
+    //  - the import law that the retirement never touched is the leg ABOVE:
+    //    exactly one stated production consumer (A1-17's actual point — no
+    //    EXECUTING path reaches into the lane beyond the admitted barrel
+    //    import), unchanged by this file's other amendments.
     const buildConfig = readFileSync(join(RUNTIME_ROOT, 'tsconfig.build.json'), 'utf8')
-    expect(buildConfig).not.toMatch(/"intervention/)
+    const include = JSON.parse(buildConfig.replace(/:\/\/.*/g, '')) as { include?: string[] }
+    expect(include.include).toContain('intervention')
+    expect(include.include).toContain('governance-warning')
+    for (const file of ['index.js', 'index.d.ts', 'types.js', 'projection.js', 'derivation.js', 'service.js']) {
+      // `service.js` is the governance-warning lane's; the four lane modules
+      // ride their own names. A MISSING file here means production shipped
+      // without its emitted artifact — the co-commit law, enforced.
+      // The build rootDir is the REPOSITORY root (`rootDir: ../..`), so the
+      // committed layout is `dist/packages/runtime/<lane>/…` — as every other
+      // runtime lane's committed dist already is.
+      const candidates = [
+        join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', 'intervention', file),
+        join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', 'governance-warning', file),
+      ]
+      expect(candidates.some((candidate) => existsSync(candidate))).toBe(true)
+    }
   })
 })

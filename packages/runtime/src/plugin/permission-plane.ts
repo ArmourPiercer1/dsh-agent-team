@@ -395,6 +395,24 @@ export interface PermissionAuthorityFacts {
     memberInstanceId: string,
   ) => Promise<PermissionMutationEnvelope>
   /**
+   * The THREE-STATE twin of {@link PermissionAuthorityFacts.permissionEnvelope}
+   * for the governance start gate (A4-PR6 review round 1, BLOCKER 2).
+   *
+   * For the approval/expansion LANES an abstained read MUST mean zero
+   * authority (`NO_ENVELOPE`) — a documented polarity, deliberately left
+   * untouched. The envelope COMPARATOR needs the distinction the flag-dropping
+   * wrapper destroys: a DECLARED envelope (including a legally empty one,
+   * consistent with a declared-empty hard ceiling) versus a FAULTED read
+   * (unknown binding, canonicalization fault, or binding drift across the
+   * await). Collapsing the fault into `{ rules: [] }` makes
+   * `compareEnvelopes` answer `consistent` — an unreadable authority document
+   * would open the start gate (the review's wire-reachable blocker).
+   */
+  readonly permissionEnvelopeState: (
+    teamSessionId: string,
+    memberInstanceId: string,
+  ) => Promise<PermissionEnvelopeStateRead>
+  /**
    * The v3 Human User hard ceiling for one addressed member (A4-PR1, spec §3.2).
    *
    * THREE outcomes, never a document-or-undefined: on the approval plane an
@@ -432,6 +450,15 @@ export interface PermissionAuthorityFacts {
 const DECLARED_NONE: PermissionStaticLayerFacts = { layers: [] }
 /** The zero-authority envelope document (absent carrier / UNKNOWN). */
 const NO_ENVELOPE: PermissionMutationEnvelope = { rules: [] }
+/**
+ * The outcome of the THREE-STATE envelope read consumed by the governance
+ * start gate (A4-PR6 review round 1, BLOCKER 2) — see
+ * {@link PermissionAuthorityFacts.permissionEnvelopeState}. `unavailable` is
+ * UNKNOWN (the read faulted): never a document, never a zero-authority stand-in.
+ */
+export type PermissionEnvelopeStateRead =
+  | { readonly status: 'declared'; readonly document: PermissionMutationEnvelope }
+  | { readonly status: 'unavailable' }
 /** The provider version when the host supplies none (single-provider host). */
 const SINGLE_PROVIDER = 'single'
 
@@ -731,6 +758,24 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
       NO_ENVELOPE,
     ).then((r) => r.value)
 
+  // A4-PR6 review round 1 (BLOCKER 2) — the three-state twin for the
+  // comparator. `readFresh`'s `ok` flag ALREADY carries the exact
+  // declared/unavailable distinction (unknown binding, canonicalization fault,
+  // drift across the await); this reader PRESERVES it instead of collapsing it
+  // into the lane-facing zero-authority value.
+  const permissionEnvelopeState: PermissionAuthorityFacts['permissionEnvelopeState'] =
+    (teamSessionId, memberInstanceId) =>
+      readFresh<PermissionMutationEnvelope>(
+        teamSessionId,
+        memberInstanceId,
+        (blueprint, tuple) => buildEnvelope(blueprint, tuple.cwd),
+        NO_ENVELOPE,
+      ).then((r) =>
+        r.ok === true
+          ? { status: 'declared' as const, document: r.value }
+          : { status: 'unavailable' as const },
+      )
+
   // The v3 hard ceiling (A4-PR1). `readFresh`'s abstention value is
   // `unavailable` — the SAME slot that carries `NO_ENVELOPE` above, filled with
   // the opposite polarity on purpose: an abstained expansion read must mean zero
@@ -782,6 +827,8 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
       staticLayers(teamSessionId, memberInstanceId),
     permissionEnvelope: async (teamSessionId, memberInstanceId) =>
       permissionEnvelope(teamSessionId, memberInstanceId),
+    permissionEnvelopeState: async (teamSessionId, memberInstanceId) =>
+      permissionEnvelopeState(teamSessionId, memberInstanceId),
     teamHardEnvelope: async (teamSessionId, memberInstanceId) =>
       teamHardEnvelope(teamSessionId, memberInstanceId),
     blueprintSchemaVersion: (teamSessionId) => deps.resolveBlueprint(teamSessionId)?.schemaVersion,

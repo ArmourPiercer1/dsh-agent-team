@@ -205,6 +205,19 @@ const FACT_POLICY_STATE_TRANSITIONED = 'policy-state-transitioned';
 // instead of shipping (the exact failure A4-PR0a fixed for
 // `control-request-abandoned`).
 const FACT_GOVERNANCE_PROPOSAL_RECORDED = 'governance-proposal-recorded';
+// A4-PR6 (§6.C, landed with the 6.A writer so every commit stays a4pr0a-
+// green): the governance-warning family — the durable OBSERVATION rows
+// (an envelope-consistency verdict was seen) and the ACKNOWLEDGEMENT
+// reminder rows, written by `runtime/governance-warning/service.ts` through
+// the host-wired `commitDurableFact` funnel (literals at the funnel site).
+// Both land in the frozen `policy` category beside the proposal row: they
+// are authority-consistency history, and spec §15.5 makes acknowledgement
+// reminder state ONLY — a ninth category is not an option (A3-7). The
+// mirror discipline (lane constant vs this literal) is pinned by
+// `a4p6-governance-warning.test.ts`, which pins the VALUES and the
+// CATEGORY at all three owners together.
+const FACT_GOVERNANCE_WARNING_OBSERVED = 'governance-warning-observed';
+const FACT_GOVERNANCE_WARNING_ACKNOWLEDGED = 'governance-warning-acknowledged';
 const FACT_CAPABILITY_RUNTIME_EVENT = 'capability-runtime-event';
 // pre-alpha3 PR-E §E.5: the requirement / recovery durable facts (the closed
 // vocabulary lives in runtime/requirements/facts.ts; these mirror it here for
@@ -241,6 +254,8 @@ const FACT_TYPE_CATEGORY = new Map([
     // review — a policy fact, in the FROZEN `policy` category (ADR A3-7: never a
     // ninth category; `totalEntries == sum(byCategory)` stays intact).
     [FACT_GOVERNANCE_PROPOSAL_RECORDED, 'policy'],
+    [FACT_GOVERNANCE_WARNING_OBSERVED, 'policy'],
+    [FACT_GOVERNANCE_WARNING_ACKNOWLEDGED, 'policy'],
     // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry. The
     // compatibility category's first production writer (a compatibility
     // CATEGORY, not a new category — the closed 8-shape is unchanged).

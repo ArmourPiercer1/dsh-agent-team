@@ -104,6 +104,19 @@ export type TeamKey =
   | 'view.ledger.fact.interval_opened'
   | 'view.ledger.fact.interval_closed'
   | 'view.ledger.fact.policy'
+  | 'view.ledger.fact.governance_proposal'
+  | 'view.ledger.fact.control_escalation'
+  | 'interventions.title'
+  | 'interventions.empty'
+  | 'interventions.error'
+  | 'interventions.terminal'
+  | 'interventions.action.allow'
+  | 'interventions.action.deny'
+  | 'interventions.action.escalate'
+  | 'interventions.action.acknowledge'
+  | 'interventions.administration'
+  | 'interventions.blueprintDefault'
+  | 'interventions.noRules'
   | 'view.ledger.decision.allow'
   | 'view.ledger.decision.deny'
   | 'view.ledger.decision.stale_denied'
@@ -378,6 +391,19 @@ export const zh: Record<TeamKey, string> = {
   'view.ledger.fact.interval_opened': '活动开始',
   'view.ledger.fact.interval_closed': '活动结束',
   'view.ledger.fact.policy': '策略变更',
+  'view.ledger.fact.governance_proposal': '治理提案',
+  'view.ledger.fact.control_escalation': '控制升级',
+  'interventions.title': '治理介入',
+  'interventions.empty': '当前没有介入项。',
+  'interventions.error': '错误：{message}',
+  'interventions.terminal': '终态：{evidence}',
+  'interventions.action.allow': '允许',
+  'interventions.action.deny': '拒绝',
+  'interventions.action.escalate': '升级',
+  'interventions.action.acknowledge': '确认',
+  'interventions.administration': '权限管理',
+  'interventions.blueprintDefault': '蓝图默认',
+  'interventions.noRules': '无生效规则。',
   'view.ledger.decision.allow': '允许',
   'view.ledger.decision.deny': '拒绝',
   'view.ledger.decision.stale_denied': '过期拒绝',
@@ -643,6 +669,19 @@ export const en: Record<TeamKey, string> = {
   'view.ledger.fact.interval_opened': 'Interval opened',
   'view.ledger.fact.interval_closed': 'Interval closed',
   'view.ledger.fact.policy': 'Policy change',
+  'view.ledger.fact.governance_proposal': 'Governance proposal',
+  'view.ledger.fact.control_escalation': 'Control escalation',
+  'interventions.title': 'Governance interventions',
+  'interventions.empty': 'No interventions are currently projected.',
+  'interventions.error': 'Error: {message}',
+  'interventions.terminal': 'Terminal: {evidence}',
+  'interventions.action.allow': 'Allow',
+  'interventions.action.deny': 'Deny',
+  'interventions.action.escalate': 'Escalate',
+  'interventions.action.acknowledge': 'Acknowledge',
+  'interventions.administration': 'Permission administration',
+  'interventions.blueprintDefault': 'blueprint default',
+  'interventions.noRules': 'No effective rules.',
   'view.ledger.decision.allow': 'Allowed',
   'view.ledger.decision.deny': 'Denied',
   'view.ledger.decision.stale_denied': 'Stale denied',

@@ -43,6 +43,7 @@ import { type RemoteLedgerEntryValue } from '../../../remote/src/contracts/types
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js';
 import type { TeamRootWireRow } from '../team-ownership-index.js';
+import { TeamPluginError } from './types.js';
 import type { RemoteHandlerRegistration, RemoteQueryCommandCompletion, ServerPrincipalDerivation, WorkspaceAttachPort } from './types.js';
 import type { ServerPrincipalContext } from './s6-principal.js';
 import type { SessionReadStateDurableValue } from './team-read-state.js';
@@ -71,6 +72,8 @@ import type { ColdRootBindingInput, FreshRootBindingInput, RootBindingResult } f
 import type { HandoffService } from '../../handoff/index.js';
 import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js';
 import type { ProjectionService } from '../../projection/index.js';
+import type { GovernanceWarningService, GovernanceStartOutcome } from '../../governance-warning/index.js';
+import type { InterventionControlSource, RequiredAuthorityFacts, RequiredAuthorityReaderInput } from '../../intervention/index.js';
 /** The stable error codes the S6 remote surfaces throw (CR-4/CR-12 boundary). */
 export declare const S6_REMOTE_ERROR_CODES: {
     /** A34 — the ledger-page tracker rejected the page (the 20.5/20.6 boundary). */
@@ -146,6 +149,23 @@ export declare const S6_REMOTE_ERROR_CODES: {
     readonly TEAM_ROOT_LIVE_OUTSIDE_TEAM: "TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM";
     /** D2-RESERVED (A3 Q2) — the glue start failed for another reason. */
     readonly TEAM_ROOT_LIVE_START_FAILED: "TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED";
+    /** A4-PR6 (plan §6.A) — the Team start gate found an UNACKNOWLEDGED
+     *  governance warning for the bound v3 documents: the durable root row
+     *  EXISTS and stays NOT LIVE (the Leader does not start; zero agent
+     *  creation). Acknowledgement re-enters the SAME gate through
+     *  `team.ensureRootLive` — the wire error is the pointer, the warning
+     *  itself is discovered through `intervention.list` (the wire-level 6.A
+     *  test owns that ride; the message must never be the only carrier). */
+    readonly TEAM_START_GOVERNANCE_WARNING: "TEAM_REMOTE_TEAM_START_GOVERNANCE_WARNING";
+    /** A4-PR6 — the start-gate authority-document read FAILED CLOSED
+     *  (unreadable or corrupt): start is blocked and the condition is NOT
+     *  acknowledgeable (plan:602). */
+    readonly TEAM_START_GOVERNANCE_CORRUPT: "TEAM_REMOTE_TEAM_START_GOVERNANCE_CORRUPT";
+    /** A4-PR6 — reserved arm (PR7 7.2 replaces the v1/v2 bridge with this
+     *  refusal): NO acknowledgement clears it, in PR6 or after (plan:594).
+     *  Unreachable through the PR6 bridge; the code exists so the wire
+     *  vocabulary is complete before the flip. */
+    readonly TEAM_START_MIGRATION_REQUIRED: "TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED";
     /** F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) —
      *  team.resolveControl: the host wiring exposes no control-service
      *  closure (the durable control plane is not reachable from this
@@ -176,6 +196,37 @@ export declare const S6_REMOTE_ERROR_CODES: {
     readonly TEAM_LIVE_TOKEN_PORT_UNAVAILABLE: "TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE";
 };
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES];
+/**
+ * A4-PR6 review round 1 (BLOCKER 1) — ONE mapper, every gated entrance.
+ *
+ * Builds the typed refusal of a non-`open` governance start outcome. The
+ * mapper is module-level and exported because the gate is not only a
+ * WIRE concern: the three `team.create`/`team.ensureRootLive` sites call
+ * it through `governanceStartGate` (below, inside the ports factory) and
+ * the two non-wire entrances the review found ungated — the handoff
+ * target start (`root.ts` → `createAndStartTeam`, which the with-context
+ * handoff ALWAYS reaches) and the production boot (create and resume) —
+ * call the SAME function from `root.ts`. Every entrance therefore
+ * produces byte-identical arms (the `method` prefix aside): drift
+ * between entrances is structurally impossible, and no second copy of
+ * the three wire codes may exist anywhere (pinned by
+ * `a4p6-start-gate-entrances.test.ts`, behaviour + source law).
+ *
+ * The arms (the union is CLOSED — `GOVERNANCE_START_STATUSES`):
+ * - `warning-required`: the durable root row EXISTS and stays NOT LIVE —
+ *   the typed error carries the `interventionId`; the warning itself is
+ *   discovered through `intervention.list`, and acknowledgement re-enters
+ *   the SAME gate through `team.ensureRootLive`, never bypasses it;
+ * - `corrupt`: blocked, NOT acknowledgeable (fail closed);
+ * - `migration-required`: the PR7 arm — ack-immune by law (plan:594).
+ * There is no arm this mapper can turn into `wait-for-response`, and
+ * nothing here mints a ControlRequest — the warning is not an approval
+ * case. The service's own throws propagate UNMAPPED (they are backing
+ * faults, invariant 4b); only the outcomes are interpreted.
+ */
+export declare function governanceStartRefusal(method: string, outcome: Exclude<GovernanceStartOutcome, {
+    status: 'open';
+}>): TeamPluginError;
 /**
  * The admission request the `member.create` / `member.send` /
  * `member.followup` handlers build (the structural mirror of the frozen
@@ -554,6 +605,37 @@ export interface S6RemoteLegacyPort {
 /** The sixteen production ports (the frozen twelve + the T12-V16 messaging
  *  coordinator port + the two TCM vNext §15.6 create-flavor ports + the
  *  D1 remote-contract-v3 `team.listRoots` port). */
+/**
+ * A4-PR6 §6.B (contract v8) — the intervention-plane read/verb seam of the
+ * production ports. The `caller` is ALWAYS the derived principal (never a
+ * client claim); the wire params carry no actor field. `list`/`get` return
+ * items ALREADY validated through the remote package's closed-shape law;
+ * the verb arms return only the closed receipt cell.
+ */
+export interface S6RemoteInterventionPort {
+    list(request: {
+        readonly teamSessionId: string;
+        readonly caller: ActionCaller;
+    }): Promise<readonly RemoteSafeRecord[]>;
+    get(request: {
+        readonly teamSessionId: string;
+        readonly caller: ActionCaller;
+        readonly interventionId: string;
+    }): Promise<RemoteSafeRecord>;
+    act(request: {
+        readonly teamSessionId: string;
+        readonly caller: ActionCaller;
+        readonly interventionId: string;
+        readonly action: string;
+        readonly note?: string;
+    }): Promise<{
+        readonly outcome: string;
+    }>;
+    permissionAdministration(request: {
+        readonly teamSessionId: string;
+        readonly memberInstanceId?: string;
+    }): Promise<RemoteSafeRecord>;
+}
 export interface S6RemotePorts {
     readonly catalog: S6RemoteCatalogPort;
     readonly intent: S6RemoteIntentPort;
@@ -586,6 +668,8 @@ export interface S6RemotePorts {
     readonly compatibility: S6RemoteCompatibilityPort;
     readonly handoff: S6RemoteHandoffPort;
     readonly legacy: S6RemoteLegacyPort;
+    /** A4-PR6 §6.B (contract v8): the governance read/verb seam. */
+    readonly intervention: S6RemoteInterventionPort;
     /** T12-V16 — the P6-T3 messaging coordinator behind `member.send`:
      *  facade admission + LIVE delivery at admission time (the window-latch
      *  fix; t12v-finding-360s-first-turn.md). The bound-root guard lives in
@@ -898,6 +982,63 @@ export interface S6RemoteOptions {
      * unchanged, invariant 4a/4b).
      */
     readonly ensureRootLive?: (rootSessionId: string) => Promise<void>;
+    /**
+     * A4-PR6 (plan §6.A) — the ONE governance-warning port: the Team-start
+     * gate (consumed at EXACTLY the two `team.create` sites after the durable
+     * bind and before the root start, and at `team.ensureRootLive` after the
+     * fail-closed bound-root preflight), the runtime boundary observation
+     * (fire-after-commit, never blocking), the warning fold for
+     * `intervention.list`, and the acknowledgement plane for
+     * `intervention.act` (warning arm). Assembled by the host where the ONE
+     * bound-Blueprint reader lives (ADR A5-12; Ruling PR6-H) and forwarded by
+     * `root.ts`. Absent (test worlds / a root without the authority facts):
+     * today's behavior stands — start is ungated and the warning arms of the
+     * v8 surface answer `governance-unavailable` (disclosed; the production
+     * host ALWAYS wires it).
+     */
+    readonly governanceWarning?: GovernanceWarningService;
+    /**
+     * A4-PR6 (plan §6.B) — the open-approval-case slice the v8 intervention
+     * projection reads (the structural `InterventionControlSource` the lane
+     * was designed around; satisfied by the durable ControlService). Absent →
+     * `intervention.list` projects warnings only (a root without the control
+     * plane is a test world).
+     */
+    readonly interventionControl?: InterventionControlSource;
+    /**
+     * A4-PR6 — the fresh required-authority facts reader behind the
+     * projection's legality law (the lane-B reader-callback ruling at the
+     * wire: root.ts assembles it from the ONE ceiling-context port; this
+     * module never evaluates authority itself). The caller ref rides because
+     * `principalAlreadyActed` is caller-relative (spec 24.5).
+     */
+    readonly requiredAuthorityFacts?: (teamSessionId: string, callerRef: string, input: RequiredAuthorityReaderInput) => Promise<RequiredAuthorityFacts | undefined>;
+    /**
+     * A4-PR6 §6.B — the escalate arm of `intervention.act`: the control
+     * service's `escalateApprovalLeg` (the ONE authoritative entry for
+     * "this leg recuses upward"; the wire never re-implements ladder
+     * arithmetic — A1-2). Absent: `escalate` fails closed with the typed
+     * `internal-error` (reason `port-unwired`), never a silent leg push.
+     */
+    readonly interventionEscalate?: (args: {
+        readonly rootSessionId: string;
+        readonly caller: ActionCaller;
+        readonly requestId: string;
+        readonly reason?: string;
+    }) => Promise<RemoteSafeRecord>;
+    /**
+     * A4-PR6 §6.B — the RICH permission-administration record behind the
+     * v8-only `override.getPermissionAdministration`. The record may carry
+     * whatever the permission plane holds; the s6 port STRIPS it through the
+     * remote package's closed-field law before anything reaches the wire
+     * (the strip is the handler law, not the caller's politeness). Absent:
+     * the read fails closed with the typed `internal-error` (reason
+     * `port-unwired`).
+     */
+    readonly permissionAdministration?: (args: {
+        readonly rootSessionId: string;
+        readonly memberInstanceId?: string;
+    }) => Promise<RemoteSafeRecord>;
     /**
      * C1 (restart-recovery, guide §10.2) — the one-shot ordinary activation
      * permit armer behind the host-side `team.prepareOrdinaryOpen` (the D3

@@ -57,6 +57,7 @@ import {
   REMOTE_CONTRACT_VERSION_V5,
   REMOTE_CONTRACT_VERSION_V6,
   REMOTE_CONTRACT_VERSION_V7,
+  REMOTE_CONTRACT_VERSION_V8,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
   assessProjectionSync,
@@ -77,6 +78,10 @@ import {
   type RemoteMemberLifecycleParams,
   type RemoteMemberSendParams,
   type RemoteOverrideGetParams,
+  type RemoteInterventionActParams,
+  type RemoteInterventionGetParams,
+  type RemoteInterventionListParams,
+  type RemoteOverrideGetPermissionAdministrationParams,
   type RemoteOverrideResetParamsV7,
   type RemoteOverrideSetParamsV7,
   type RemotePolicyStateGetParams,
@@ -326,6 +331,38 @@ export interface TeamRemoteClient {
   handoffCreate(params: RemoteHandoffCreateParams): Promise<RemoteResponse>
   /** `legacy.inspect` — inspect a legacy Team home (read-only). */
   legacyInspect(params: RemoteLegacyInspectParams): Promise<RemoteResponse>
+  /**
+   * `intervention.list` — the v8 intervention projection (both planes).
+   * STAMPS CONTRACT VERSION 8 (A4-PR6): the closed v8 param set is
+   * `{ teamSessionId }`; the response is `{ items }` of the frozen wire
+   * item cells. A READ — no caller field exists on the wire (the host
+   * derives the principal; ADR A1-2).
+   */
+  interventionList(params: RemoteInterventionListParams): Promise<RemoteResponse>
+  /**
+   * `intervention.get` — one intervention item by id (v8). The typed
+   * `INTERVENTION_NOT_FOUND` refusal arrives as the frozen error block,
+   * never an exception (the shared dispatcher rule).
+   */
+  interventionGet(params: RemoteInterventionGetParams): Promise<RemoteResponse>
+  /**
+   * `intervention.act` — the v8 governance verb. STAMPS CONTRACT VERSION
+   * 8. THE CLOSED BODY LAW (spec §18, coordination ruling): the params
+   * carry ONLY `teamSessionId, interventionId, action, note?` — never a
+   * caller, never an authority claim, never client-derived `legalActions`
+   * (the server derives the principal and the legality; the four-value
+   * `action` selects the ENTRY, never a permission).
+   */
+  interventionAct(params: RemoteInterventionActParams): Promise<RemoteResponse>
+  /**
+   * `override.getPermissionAdministration` — the v8 permission-
+   * administration read (v8 stamps version 8). The response is
+   * `{ administration }` of exactly the six closed wire cells; the STRIP
+   * ran at the host port edge, so authority-bearing extras NEVER ride.
+   */
+  permissionAdministrationGet(
+    params: RemoteOverrideGetPermissionAdministrationParams,
+  ): Promise<RemoteResponse>
 }
 
 /**
@@ -527,6 +564,20 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     handoffPrepare: (params) => call('handoff.prepare', params),
     handoffCreate: (params) => call('handoff.create', params),
     legacyInspect: (params) => call('legacy.inspect', params),
+    // A4-PR6 (contract v8) — the four v8-only wrappers. The version
+    // literal appears ONLY here (TCM vNext §15.3); every param object is
+    // the caller's frozen closed set, spread verbatim — the wrapper adds
+    // NOTHING (a caller field on `intervention.act` would be a contract
+    // violation the closed param parse would refuse host-side anyway;
+    // the client never manufactures one).
+    interventionList: (params) =>
+      callWithVersion('intervention.list', params, REMOTE_CONTRACT_VERSION_V8),
+    interventionGet: (params) =>
+      callWithVersion('intervention.get', params, REMOTE_CONTRACT_VERSION_V8),
+    interventionAct: (params) =>
+      callWithVersion('intervention.act', params, REMOTE_CONTRACT_VERSION_V8),
+    permissionAdministrationGet: (params) =>
+      callWithVersion('override.getPermissionAdministration', params, REMOTE_CONTRACT_VERSION_V8),
   }
 }
 

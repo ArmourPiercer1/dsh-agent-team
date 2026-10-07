@@ -23,6 +23,7 @@ import { describe, expect, it } from 'vitest'
 import {
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
+  REMOTE_CONTRACT_VERSION_V8,
   REMOTE_RPC_CHANNEL,
   buildRemoteError,
   buildRemoteSuccess,
@@ -516,5 +517,57 @@ describe('createTeamRemoteClient — outcome discipline (S2-A / G2)', () => {
     expect(result.response).toBe(undefined)
     expect(result.caught).not.toBe(undefined)
     expect((result.caught as Error).name).toBe('PushTransportLossError')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// A4-PR6 §6.D — the four v8 wrappers (contract version 8). Pins: the
+// envelope stamps v8 (the version literal is client-internal); the act
+// body is EXACTLY the closed set — a note omitted rides as ABSENT (never
+// `note: undefined`); the wrapper never manufactures a caller field (the
+// host derives the principal — ADR A1-2).
+// ---------------------------------------------------------------------------
+
+const v8Scenario = await (async () => {
+  const { carrier, calls } = makeCarrier(() => successEnvelope())
+  const client = createTeamRemoteClient(carrier)
+  await client.interventionList({ teamSessionId: 't8' })
+  await client.interventionGet({ teamSessionId: 't8', interventionId: 'int-case-1' })
+  await client.interventionAct({ teamSessionId: 't8', interventionId: 'int-case-1', action: 'allow' })
+  await client.interventionAct({ teamSessionId: 't8', interventionId: 'int-warn-1', action: 'acknowledge', note: 'seen' })
+  await client.permissionAdministrationGet({ teamSessionId: 't8' })
+  await client.permissionAdministrationGet({ teamSessionId: 't8', memberInstanceId: 'mate' })
+  return { calls }
+})()
+
+describe('createTeamRemoteClient — the v8 wrappers stamp contract version 8 (A4-PR6)', () => {
+  it('every v8 call carries version 8 on the frozen envelope', () => {
+    expect(v8Scenario.calls).toHaveLength(6)
+    for (const call of v8Scenario.calls) {
+      const payload = call.payload as { version: number }
+      expect(payload.version).toBe(REMOTE_CONTRACT_VERSION_V8)
+    }
+  })
+
+  it('intervention.act rides EXACTLY the closed body; an omitted note is ABSENT, never undefined', () => {
+    const actWithoutNote = v8Scenario.calls[2]?.payload as { params: Record<string, unknown> }
+    expect(Object.keys(actWithoutNote.params).sort()).toEqual(['action', 'interventionId', 'teamSessionId'])
+    const actWithNote = v8Scenario.calls[3]?.payload as { params: Record<string, unknown> }
+    expect(Object.keys(actWithNote.params).sort()).toEqual(['action', 'interventionId', 'note', 'teamSessionId'])
+    // never a caller / authority / legalActions cell on the wire (A1-2):
+    expect('caller' in (actWithNote.params as Record<string, unknown>)).toBe(false)
+    expect('principalId' in (actWithNote.params as Record<string, unknown>)).toBe(false)
+    expect('legalActions' in (actWithNote.params as Record<string, unknown>)).toBe(false)
+  })
+
+  it('the v8 READ wrappers carry only their closed read fields', () => {
+    expect(v8Scenario.calls[0]?.endpoint).toBe('intervention.list')
+    expect((v8Scenario.calls[0]?.payload as { params: Record<string, unknown> }).params).toEqual({ teamSessionId: 't8' })
+    expect((v8Scenario.calls[4]?.payload as { params: Record<string, unknown> }).params).toEqual({ teamSessionId: 't8' })
+    expect((v8Scenario.calls[5]?.payload as { params: Record<string, unknown> }).params).toEqual({
+      teamSessionId: 't8',
+      memberInstanceId: 'mate',
+    })
+    expect(v8Scenario.calls[4]?.endpoint).toBe('override.getPermissionAdministration')
   })
 })

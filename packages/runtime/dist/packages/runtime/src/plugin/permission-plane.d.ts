@@ -214,6 +214,21 @@ export interface PermissionAuthorityFacts {
     readonly staticLayers: (teamSessionId: string, memberInstanceId: string) => Promise<PermissionStaticLayerFacts | undefined>;
     readonly permissionEnvelope: (teamSessionId: string, memberInstanceId: string) => Promise<PermissionMutationEnvelope>;
     /**
+     * The THREE-STATE twin of {@link PermissionAuthorityFacts.permissionEnvelope}
+     * for the governance start gate (A4-PR6 review round 1, BLOCKER 2).
+     *
+     * For the approval/expansion LANES an abstained read MUST mean zero
+     * authority (`NO_ENVELOPE`) — a documented polarity, deliberately left
+     * untouched. The envelope COMPARATOR needs the distinction the flag-dropping
+     * wrapper destroys: a DECLARED envelope (including a legally empty one,
+     * consistent with a declared-empty hard ceiling) versus a FAULTED read
+     * (unknown binding, canonicalization fault, or binding drift across the
+     * await). Collapsing the fault into `{ rules: [] }` makes
+     * `compareEnvelopes` answer `consistent` — an unreadable authority document
+     * would open the start gate (the review's wire-reachable blocker).
+     */
+    readonly permissionEnvelopeState: (teamSessionId: string, memberInstanceId: string) => Promise<PermissionEnvelopeStateRead>;
+    /**
      * The v3 Human User hard ceiling for one addressed member (A4-PR1, spec §3.2).
      *
      * THREE outcomes, never a document-or-undefined: on the approval plane an
@@ -244,6 +259,18 @@ export interface PermissionAuthorityFacts {
      *  never a stand-in. */
     readonly blueprintContentHash: (teamSessionId: string) => string | undefined;
 }
+/**
+ * The outcome of the THREE-STATE envelope read consumed by the governance
+ * start gate (A4-PR6 review round 1, BLOCKER 2) — see
+ * {@link PermissionAuthorityFacts.permissionEnvelopeState}. `unavailable` is
+ * UNKNOWN (the read faulted): never a document, never a zero-authority stand-in.
+ */
+export type PermissionEnvelopeStateRead = {
+    readonly status: 'declared';
+    readonly document: PermissionMutationEnvelope;
+} | {
+    readonly status: 'unavailable';
+};
 /**
  * Build the addressed-team, per-member authority readers (see the section
  * header for the three bindings and the fail-closed rules).

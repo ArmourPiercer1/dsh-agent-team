@@ -1,0 +1,47 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/client
+
+ ✓ test/team-remote-client.test.ts (18 tests) 6ms
+ ❯ test/a4p6-interventions.client.spec.tsx (10 tests | 1 failed) 52ms
+     ✓ rows carry the closed columns; warnings render structured, never generic JSON 27ms
+     ✓ a row with EMPTY legalActions is terminal: no affordance, the evidence stands (the client derives NOTHING) 5ms
+     × an act dispatch rides the closed body and the panel RE-PULLS (no optimistic mutation) 13ms
+     ✓ the model and the component import NO authority kernel (source law: legality is server-derived) 1ms
+     ✓ a typed list refusal renders verbatim, never a silent empty plane 4ms
+     ✓ the warning family never becomes an Events row at all (its surface is TeamInterventions) 0ms
+     ✓ governance-proposal-recorded renders a STRUCTURED row, never a serialized payload 0ms
+     ✓ an INCOMPLETE proposal record set renders corrupt/incomplete — never an awaiting proposal (PR5 leftover A) 0ms
+     ✓ control-escalation-recorded renders structured from the frozen A3-12(ii) leaves 0ms
+     ✓ the completeness mirror equals the HOST strict reader closed set (drift pin) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p6-interventions.client.spec.tsx > A4-PR6 §6.D the intervention panel renders the server-given plane > an act dispatch rides the closed body and the panel RE-PULLS (no optimistic mutation)
+AssertionError: expected [ 'action', 'caller', …(2) ] to deeply equal [ 'action', 'interventionId', …(1) ]
+
+- Expected
++ Received
+
+  [
+    "action",
++   "caller",
+    "interventionId",
+    "teamSessionId",
+  ]
+
+ ❯ test/a4p6-interventions.client.spec.tsx:288:48
+    286|     ])
+    287|     const actCall = calls[2] as { params: Record<string, unknown> }
+    288|     expect(Object.keys(actCall.params).sort()).toEqual(['action', 'int…
+       |                                                ^
+    289|     expect(actCall.params['interventionId']).toBe('int-case-a')
+    290|     expect(actCall.params['action']).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 27 passed (28)
+   Start at  16:14:53
+   Duration  2.14s (transform 1.17s, setup 18ms, import 1.81s, tests 58ms, environment 326ms)
+

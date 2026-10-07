@@ -1218,6 +1218,20 @@ export function parseRemoteMethodParams(version, method, params) {
         case 'override.getPermission':
             // v7-only (alpha.3 PR5 ROOT BLOCK-1; co-tenancy with the write pair).
             return wrapParsed(method, parseRemoteOverrideGetPermissionParams(method, params));
+        case 'intervention.list':
+            // v8-only (A4-PR6 §6.B; the availability check guarantees version 8).
+            return wrapParsed(method, parseRemoteInterventionListParams(method, params));
+        case 'intervention.get':
+            // v8-only (A4-PR6 §6.B).
+            return wrapParsed(method, parseRemoteInterventionGetParams(method, params));
+        case 'intervention.act':
+            // v8-only (A4-PR6 §6.B): the closed verb body — the ONLY governance
+            // input the client may send (spec §17.3); authority and legal actions
+            // are re-derived server-side on every act.
+            return wrapParsed(method, parseRemoteInterventionActParams(method, params));
+        case 'override.getPermissionAdministration':
+            // v8-only (A4-PR6 §6.B): the closed permission-administration READ.
+            return wrapParsed(method, parseRemoteOverrideGetPermissionAdministrationParams(method, params));
         case 'team.getProjection':
             return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
         case 'team.getLedgerPage':
@@ -1281,6 +1295,95 @@ function wrapParsed(method, params) {
         method,
         params,
         requestToken: typeof token === 'string' ? token : null,
+    };
+}
+// ---------------------------------------------------------------------------
+// A4-PR6 §6.B — contract v8: the intervention plane + permission administration
+// ---------------------------------------------------------------------------
+/**
+ * The CLOSED `intervention.act` action vocabulary for the WIRE (v8). This
+ * is the union of the PLANE-SPECIFIC vocabularies and deliberately NOT a
+ * fourth global set: `allow | deny | escalate` are the reviewer plane's
+ * frozen `INTERVENTION_ACTIONS` (spec §11.5), and `acknowledge` is the
+ * warning plane's ONLY verb (spec §15.4). It is not the durable decision
+ * vocabulary (`allow | deny | stale-denied` — A2-1/A3-3), and no act body
+ * can express anything else: each action routes to exactly one
+ * authoritative server-side entry point (`resolveControl` /
+ * `escalateApprovalLeg` / the GovernanceWarning acknowledgement), and the
+ * server re-derives whether the CALLER may take it (ADR A1-2) — the wire
+ * value selects an entry, never a permission.
+ */
+export const REMOTE_INTERVENTION_ACTION_VALUES = [
+    'allow',
+    'deny',
+    'escalate',
+    'acknowledge',
+];
+export const REMOTE_INTERVENTION_LIST_FIELDS = ['teamSessionId'];
+export const REMOTE_INTERVENTION_GET_FIELDS = ['teamSessionId', 'interventionId'];
+export const REMOTE_INTERVENTION_ACT_FIELDS = [
+    'teamSessionId',
+    'interventionId',
+    'action',
+    'note',
+];
+export const REMOTE_OVERRIDE_GET_PERMISSION_ADMINISTRATION_FIELDS = [
+    'teamSessionId',
+    'memberInstanceId',
+];
+/** The `interventionId` shape (the frozen `int-…` id is opaque here). */
+function parseInterventionId(method, params) {
+    const value = requiredField(method, params, 'interventionId');
+    if (typeof value !== 'string' || value.length === 0 || value.length > 200) {
+        throw paramMalformed(method, 'interventionId', 'invalid-value', 'interventionId must be a non-empty string (<=200 chars)');
+    }
+    return value;
+}
+/** Parse `intervention.list` params. */
+export function parseRemoteInterventionListParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_INTERVENTION_LIST_FIELDS);
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+    };
+}
+/** Parse `intervention.get` params. */
+export function parseRemoteInterventionGetParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_INTERVENTION_GET_FIELDS);
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+        interventionId: parseInterventionId(method, params),
+    };
+}
+/** Parse `intervention.act` params (the closed verb body). */
+export function parseRemoteInterventionActParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_INTERVENTION_ACT_FIELDS);
+    const action = requiredField(method, params, 'action');
+    if (typeof action !== 'string' || !REMOTE_INTERVENTION_ACTION_VALUES.includes(action)) {
+        throw paramMalformed(method, 'action', 'invalid-value', 'action must be allow, deny, escalate, or acknowledge');
+    }
+    const note = params['note'];
+    if (note !== undefined && (typeof note !== 'string' || note.length === 0 || note.length > 512)) {
+        throw paramMalformed(method, 'note', 'invalid-value', 'note must be a non-empty string of at most 512 characters when present');
+    }
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+        interventionId: parseInterventionId(method, params),
+        action: action,
+        ...(note !== undefined ? { note: note } : {}),
+    };
+}
+/** Parse `override.getPermissionAdministration` params. */
+export function parseRemoteOverrideGetPermissionAdministrationParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_OVERRIDE_GET_PERMISSION_ADMINISTRATION_FIELDS);
+    const memberInstanceId = params['memberInstanceId'];
+    if (memberInstanceId !== undefined) {
+        return {
+            teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+            memberInstanceId: parseRemoteInstanceId(memberInstanceId, 'memberInstanceId'),
+        };
+    }
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
     };
 }
 //# sourceMappingURL=params.js.map

@@ -1,3 +1,5 @@
+import type { EnvelopeContains, GovernanceEnvelopeView, GovernanceWarningDocsPort } from '../../governance-warning/index.js';
+import type { PermissionAuthorityFacts } from './permission-plane.js';
 import type { TeamPluginConfig } from './types.js';
 /**
  * The structural projection of the Cordis plugin context this entry uses
@@ -92,6 +94,71 @@ export declare function withDefaultWorkspace(config: TeamPluginConfig, launchCwd
  * @returns the candidate file URLs, dist layout first.
  */
 export declare function defaultSeamUrlCandidates(hostModuleUrl: string): readonly string[];
+/**
+ * A4-PR6 review round 1 (fix 2/6) — the WARNING lane's docs adapter,
+ * exported so the HOST ADAPTER ITSELF is testable (the review's finding:
+ * the blocker lived in this glue and was invisible to the fake-port
+ * suites). The pre-fix shape read the leader envelope through the
+ * lane-facing `permissionEnvelope` fact, whose abstention value is the
+ * zero-authority document `{ rules: [] }` and whose `ok` flag is dropped:
+ * on an UNKNOWN binding, a canonicalization fault, or binding drift
+ * across the canonicalization await, the comparator saw a leader with NO
+ * claims, answered `consistent`, and the gate opened — an UNREADABLE
+ * authority document silently passing the gate, reachable from the wire.
+ * The adapter now consumes the three-state `permissionEnvelopeState`: a
+ * faulted read maps to `{ stage: 'unreadable' }` → the closed
+ * `authority-document-unreadable` corrupt arm (fail closed, never
+ * acknowledgeable). The lane polarity stays exactly as documented: an
+ * abstained EXPANSION read still means zero authority on the approval
+ * plane (widening is the failure mode there); only the COMPARATOR gets
+ * the third state.
+ */
+/** The envelope-document shape both authority documents share. */
+export type AuthorityEnvelopeDocument = {
+    readonly rules: readonly {
+        readonly operationClass: string;
+        readonly matcher: {
+            readonly kind: 'exact' | 'subtree' | 'fingerprint';
+            readonly resource: string;
+        };
+        readonly maximumEffect: 'deny' | 'ask' | 'allow';
+    }[];
+};
+export declare function buildGovernanceWarningDocs(deps: {
+    readonly blueprintSchemaVersion: PermissionAuthorityFacts['blueprintSchemaVersion'];
+    readonly blueprintContentHash: PermissionAuthorityFacts['blueprintContentHash'];
+    readonly permissionEnvelopeState: PermissionAuthorityFacts['permissionEnvelopeState'];
+    readonly teamHardEnvelope: PermissionAuthorityFacts['teamHardEnvelope'];
+    readonly envelopeView: (document: AuthorityEnvelopeDocument) => GovernanceEnvelopeView;
+    readonly leaderInstanceId: string;
+}): GovernanceWarningDocsPort;
+/** Structural view of the one legal containment seam on the fs provider. */
+export interface GovernanceWarningFsProvider {
+    contains?: (parent: {
+        targetKey: string;
+    }, child: {
+        targetKey: string;
+    }) => unknown;
+}
+/**
+ * A4-PR6 review round 1 (fix 3/6) — the WARNING lane's containment
+ * predicate: THREE-STATE BY CONSTRUCTION (never throws, `undefined` =
+ * undeterminable). The permission PLANE's `fsContainsKeys` keeps its own
+ * documented law (absent `contains` THROWS → the kernel's typed
+ * `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE`); the warning lane must not
+ * inherit that shape: a throw escaped `runGate`/`governanceStartGate`
+ * unmapped as `internal-error`, and the plane's `=== true` coercion
+ * collapsed every non-`true` provider answer (including "I cannot
+ * answer") to a fabricated `false` — which made the comparator's
+ * `undetermined` verdict UNREACHABLE in production, replacing
+ * "coverage unknown → warning" with a guess. Here: absent provider or
+ * absent seam → `undefined`; a throwing provider → `undefined`; a
+ * non-boolean answer → `undefined`; only a real `true`/`false` decides.
+ * (Pinned end to end by `a4p6-governance-warning-host-adapter.test.ts`:
+ * the real service over the real adapters reaches `undetermined` →
+ * `warning-required`.)
+ */
+export declare function buildGovernanceWarningContains(fsBackend: () => GovernanceWarningFsProvider): EnvelopeContains;
 /**
  * The plugin name (Cordis named-export protocol; the row id is
  * `dsh-agent-team`).

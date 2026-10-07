@@ -141,6 +141,29 @@ export const INTERVENTION_ACTION_VALUES: readonly InterventionAction[] = Object.
   INTERVENTION_ACTIONS,
 )
 
+/**
+ * The WARNING-plane action value as the projection renders it (A4-PR6,
+ * spec §15). Declared as a LOCAL literal — this lane holds no import edge
+ * into `governance-warning/**` (and that lane holds none here); the two
+ * spellings are pinned MUTUALLY ASSIGNABLE by `a4p6-governance-warning.test.ts`.
+ *
+ * `acknowledge` is NOT a reviewer action and never enters
+ * {@link INTERVENTION_ACTIONS}: a warning ack changes reminder state only
+ * (spec §15.5), while `allow | deny | escalate` resolve approval legs.
+ */
+export type InterventionWarningActionValue = 'acknowledge'
+
+/**
+ * The element type of a projected item's `legalActions`: the UNION of the
+ * plane-specific action vocabularies — reviewer actions on approval items,
+ * the warning action on warning items — and NEVER a fourth, global action
+ * vocabulary. Which plane an action belongs to is decided by the item's
+ * SOURCE KIND, server-side (6.B routes `intervention.act` by it); the union
+ * here exists because ONE rendering surface carries two planes (coordination
+ * ruling on the vocabulary-drift class).
+ */
+export type InterventionItemAction = InterventionAction | InterventionWarningActionValue
+
 /** Why a derivation produced what it produced (closed, for the UI and tests). */
 export const INTERVENTION_DERIVATION_REASONS = {
   /** The current leg is pending and its reviewer may act. */
@@ -155,6 +178,15 @@ export const INTERVENTION_DERIVATION_REASONS = {
   NO_RESOLVER: 'no-resolver',
   /** A ceiling could not be computed for the scope (A1-7, A5-2). */
   CEILING_UNDETERMINED: 'ceiling-undetermined',
+  /**
+   * A4-PR6 (spec §15): a durable envelope-consistency warning is observed
+   * and UNACKNOWLEDGED — the item exists because of the diagnostic, and the
+   * only legal action is the warning-plane `acknowledge`.
+   */
+  WARNING_OBSERVED: 'warning-observed',
+  /** A4-PR6 (spec §15.5): the warning's fingerprint is acknowledged —
+   *  reminder state; the item stays visible, no action remains open. */
+  WARNING_ACKNOWLEDGED: 'warning-acknowledged',
   /** The reviewer's reach does not cover the requested effect. */
   INSUFFICIENT_REACH: 'insufficient-reach',
   /** A top-of-ladder reviewer may decide but not rise. */
@@ -210,7 +242,7 @@ export interface InterventionItem {
   readonly status: InterventionStatus
   readonly requiredAuthority?: ProposalAuthorityPosition
   readonly currentReviewAuthority?: ProposalAuthorityPosition
-  readonly legalActions: readonly InterventionAction[]
+  readonly legalActions: readonly InterventionItemAction[]
   readonly derivationReasons: readonly InterventionDerivationReason[]
   readonly fingerprint?: string
   readonly createdAt: string

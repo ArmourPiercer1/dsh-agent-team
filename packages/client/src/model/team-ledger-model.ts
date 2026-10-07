@@ -60,6 +60,15 @@ export type TeamLedgerRowKind =
   | 'interval-opened'
   | 'interval-closed'
   | 'policy-transitioned'
+  // A4-PR6 §6.C — the governance families. These rows render STRUCTURED:
+  // the §6.C renderer law says a governance row never lands in the generic
+  // JSON-dumped Event row, so each fact type the PR introduces either joins
+  // INTERNAL_FACT_TYPES (the warning family: audit rows whose surface is
+  // TeamInterventions) or gets a structured family here. A row WITHOUT a
+  // family falls to `unknown`, and the unknown family serializes the whole
+  // payload — the exact failure mode the renderer test must keep impossible.
+  | 'governance-proposal'
+  | 'control-escalation'
   | 'unknown'
 
 /** The closed fact-type → family map (the client-local frozen vocabulary). */
@@ -76,6 +85,9 @@ const FACT_ROW_KIND: Readonly<Record<string, TeamLedgerRowKind>> = {
   'activity-interval-opened': 'interval-opened',
   'activity-interval-closed': 'interval-closed',
   'policy-state-transitioned': 'policy-transitioned',
+  // A4-PR6 §6.C: structured families, never the `unknown` serializer.
+  'governance-proposal-recorded': 'governance-proposal',
+  'control-escalation-recorded': 'control-escalation',
 }
 
 /**
@@ -90,6 +102,29 @@ const FACT_ROW_KIND: Readonly<Record<string, TeamLedgerRowKind>> = {
  */
 const INTERNAL_FACT_TYPES: ReadonlySet<string> = new Set([
   'artifact-read-granted',
+  // A4-PR6 §6.C (first half): the governance-warning family. These are
+  // authority-consistency audit rows, not user activity; the Events section
+  // would otherwise drop them into the `unknown` family and the generic row
+  // would JSON.stringify a whole envelope-consistency verdict (the exact
+  // shape §6.C's renderer law forbids). The warning's surface is
+  // TeamInterventions (v8 `intervention.list`), fed by the same durable
+  // fold the host reads.
+  'governance-warning-observed',
+  'governance-warning-acknowledged',
+  // A4-PR6 review round 1 (fix 4/6) — the plan:1031 rendering decision for
+  // the PRE-ALPHA3 PR-D close fact. Its category registration landed in
+  // PR0 (`control`), but the RENDERING layer was PR6's explicit check, and
+  // the fact was in NEITHER `FACT_ROW_KIND` NOR this set: `?? 'unknown'`
+  // made it a generic row that JSON.stringify'd the whole abandonment
+  // payload — the exact shape §6.C's renderer law forbids. The DECISION is
+  // the skip, not a structured family: `control-request-abandoned` is the
+  // TERMINAL audit close of a control request, and its surface already
+  // exists — `ledger-adapter.adaptControlAbandonDraft` pairs it onto its
+  // request chain by the frozen `requestId` (the chain never displays
+  // pending, never offers Allow; the coordinator-ruled PR #56 uniformity).
+  // A second Events row would double-surface one close with a payload that
+  // carries no subject leaf to render.
+  'control-request-abandoned',
   // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry — an
   // operational compatibility-category fact, not user activity. Skipped by
   // the Events section (otherwise it would land in the `unknown` family and
@@ -130,6 +165,12 @@ export interface TeamLedgerEventRow {
   readonly detail: string
   /** Control request rows only: no paired decision in the loaded facts. */
   readonly pending: boolean
+  /**
+   * Governance-proposal rows only (§6.C): the COMPLETENESS verdict against
+   * the host strict reader's closed record set. `corrupt` renders the
+   * incomplete marker (error dot, naming summary) — never an awaiting row.
+   */
+  readonly governanceRecordStatus?: 'sound' | 'corrupt'
   /**
    * Control request rows only: the durable control request id (the
    * command identity of the F9 v4 `team.resolveControl` surface — the
@@ -213,6 +254,29 @@ function progress(payload: Readonly<Record<string, unknown>>): ProgressValue | u
   return value === 'in-progress' || value === 'completed' || value === 'blocked' ? value : undefined
 }
 
+/**
+ * A4-PR6 §6.C — the COMPLETENESS mirror of the host strict reader's closed
+ * record set (`RECORD_FIELDS` in `runtime/governance/proposal-store.ts`).
+ * This checks PRESENCE only — the host reader owns semantic validity; this
+ * mirror exists so the rendered row can say INCOMPLETE (a partial durable
+ * proposal set renders as corrupt/incomplete, never as a proposal awaiting
+ * review — §6.C's first PR5 leftover: no UI may show a wait nothing is
+ * waiting on). The mirror is pinned against drift by the 6.C renderer spec
+ * (text-compared against the host source — a TEXT mirror, load-bearing and
+ * disclosed, same class as the fact-category mirrors).
+ */
+export const GOVERNANCE_PROPOSAL_RECORD_FIELDS: readonly string[] = [
+  'targetMemberInstanceId',
+  'baseGeneration',
+  'baseSnapshotId',
+  'desiredEffect',
+  'authorityEnvelopeAst',
+  'requiredAuthority',
+  'caseFingerprint',
+  'status',
+  'recordedAt',
+]
+
 /** The lossless-safe serialized payload summary (lossless JSON in, JSON text out). */
 function safePayloadSummary(payload: Readonly<Record<string, unknown>>): string {
   try {
@@ -247,6 +311,7 @@ function buildRow(
   let summary = ''
   let detail = ''
   let pending = false
+  let governanceRecordStatus: 'sound' | 'corrupt' | undefined
   let requestId: string | undefined
   let decisionValue: string | undefined
   let decisionReason: string | undefined
@@ -329,6 +394,53 @@ function buildRow(
       if (detail === '') detail = safePayloadSummary(payload)
       break
     }
+    case 'control-escalation': {
+      // The FROZEN five members of ADR A3-12(ii): the row names the case,
+      // the leg and the previous request — structured leaves, and the
+      // summary NEVER falls back to the payload serializer.
+      const approvalCaseId = str(payload, 'approvalCaseId')
+      const legOrdinal = payload['legOrdinal']
+      const previousRequestId = str(payload, 'previousRequestId')
+      const reason = str(payload, 'reason')
+      const legText =
+        typeof legOrdinal === 'number' && Number.isInteger(legOrdinal)
+          ? `escalation \u00b7 leg ${String(legOrdinal)}`
+          : 'escalation'
+      summary = [legText, reason].filter(part => part !== undefined && part !== '').join(' \u00b7 ')
+      detail = [approvalCaseId, previousRequestId === undefined ? undefined : `previous ${previousRequestId}`, reason]
+        .filter(part => part !== undefined && part !== '')
+        .join(' \u00b7 ')
+      break
+    }
+    case 'governance-proposal': {
+      // §6.C leftover A: the durable proposal row renders INCOMPLETE when
+      // the record set is partial — the marker is carried in the row
+      // (status field + the naming summary), so no renderer can show this
+      // row as a proposal awaiting review. A sound row shows its leaves.
+      const missing = GOVERNANCE_PROPOSAL_RECORD_FIELDS.filter(field => !(field in payload))
+      const extra = Object.keys(payload).filter(field => !GOVERNANCE_PROPOSAL_RECORD_FIELDS.includes(field))
+      governanceRecordStatus = missing.length === 0 && extra.length === 0 ? 'sound' : 'corrupt'
+      const target = str(payload, 'targetMemberInstanceId')
+      if (target !== undefined) actorInstanceId = target
+      if (governanceRecordStatus === 'corrupt') {
+        const parts = [
+          ...missing.map(field => `missing ${field}`),
+          ...extra.map(field => `unexpected ${field}`),
+        ]
+        summary = 'governance proposal record INCOMPLETE - nothing is waiting on it'
+        detail = parts.join(' \u00b7 ')
+        break
+      }
+      const effect = str(payload, 'desiredEffect')
+      const status = str(payload, 'status')
+      const generation = payload['baseGeneration']
+      summary = ['governance proposal', target, effect].filter(part => part !== undefined && part !== '').join(' \u00b7 ')
+      if (summary === '') summary = 'governance proposal recorded'
+      detail = [target, effect, status, typeof generation === 'number' ? `generation ${String(generation)}` : undefined]
+        .filter(part => part !== undefined && part !== '')
+        .join(' \u00b7 ')
+      break
+    }
     case 'work-admitted':
     case 'member-created':
     case 'lifecycle-changed':
@@ -358,6 +470,7 @@ function buildRow(
   const navigationSessionId = actorInstanceId === '' ? '' : (navSessions.get(actorInstanceId) ?? '')
   const at = Date.parse(row.createdAt)
   return {
+    ...(governanceRecordStatus === undefined ? {} : { governanceRecordStatus }),
     kind,
     key: `ledger:${row.sequence}`,
     sequence: row.sequence,

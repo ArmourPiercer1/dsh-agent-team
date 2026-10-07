@@ -405,7 +405,7 @@ export interface RemoteLegacyInspectParams {
     readonly projectDir?: string;
 }
 /** The union of every method's parsed param object. */
-export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideSetParamsV7 | RemoteOverrideResetParams | RemoteOverrideResetParamsV7 | RemoteOverrideMutatePermissionParams | RemoteOverrideGetPermissionParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams;
+export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideSetParamsV7 | RemoteOverrideResetParams | RemoteOverrideResetParamsV7 | RemoteOverrideMutatePermissionParams | RemoteOverrideGetPermissionParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams | RemoteInterventionListParams | RemoteInterventionGetParams | RemoteInterventionActParams | RemoteOverrideGetPermissionAdministrationParams;
 /** The parse result of one request's `params` (typed + token echo). */
 export interface RemoteParsedParams {
     /** The catalog method the params were parsed for. */
@@ -622,4 +622,62 @@ export declare function parseRemoteLegacyInspectParams(method: string, params: R
  *   ID violations.
  */
 export declare function parseRemoteMethodParams(version: number, method: string, params: RemoteSafeRecord): RemoteParsedParams;
+/**
+ * The CLOSED `intervention.act` action vocabulary for the WIRE (v8). This
+ * is the union of the PLANE-SPECIFIC vocabularies and deliberately NOT a
+ * fourth global set: `allow | deny | escalate` are the reviewer plane's
+ * frozen `INTERVENTION_ACTIONS` (spec §11.5), and `acknowledge` is the
+ * warning plane's ONLY verb (spec §15.4). It is not the durable decision
+ * vocabulary (`allow | deny | stale-denied` — A2-1/A3-3), and no act body
+ * can express anything else: each action routes to exactly one
+ * authoritative server-side entry point (`resolveControl` /
+ * `escalateApprovalLeg` / the GovernanceWarning acknowledgement), and the
+ * server re-derives whether the CALLER may take it (ADR A1-2) — the wire
+ * value selects an entry, never a permission.
+ */
+export declare const REMOTE_INTERVENTION_ACTION_VALUES: readonly string[];
+/** `intervention.list` — team-scoped; the items are the server's projection. */
+export interface RemoteInterventionListParams {
+    readonly teamSessionId: string;
+}
+/** `intervention.get` — one item by its frozen id. */
+export interface RemoteInterventionGetParams {
+    readonly teamSessionId: string;
+    readonly interventionId: string;
+}
+/**
+ * `intervention.act` — the frozen client payload rule (plan 6.0):
+ * EXACTLY `{teamSessionId, interventionId, action, note?}`. No caller
+ * claim, no role, no authority, no `legalActions`: an extra field is
+ * `unknown-field` before any port runs, so a future `asRole` /
+ * `impersonate` cannot exist on the wire without a version bump.
+ */
+export interface RemoteInterventionActParams {
+    readonly teamSessionId: string;
+    readonly interventionId: string;
+    readonly action: 'allow' | 'deny' | 'escalate' | 'acknowledge';
+    readonly note?: string;
+}
+/**
+ * `override.getPermissionAdministration` — the team-scoped administration
+ * READ; `memberInstanceId` is optional (absent = the team-level
+ * administration view). Closed set: an identity/authority smuggle field
+ * (`asRole`, `impersonate`, …) is `unknown-field`.
+ */
+export interface RemoteOverrideGetPermissionAdministrationParams {
+    readonly teamSessionId: string;
+    readonly memberInstanceId?: string;
+}
+export declare const REMOTE_INTERVENTION_LIST_FIELDS: readonly string[];
+export declare const REMOTE_INTERVENTION_GET_FIELDS: readonly string[];
+export declare const REMOTE_INTERVENTION_ACT_FIELDS: readonly string[];
+export declare const REMOTE_OVERRIDE_GET_PERMISSION_ADMINISTRATION_FIELDS: readonly string[];
+/** Parse `intervention.list` params. */
+export declare function parseRemoteInterventionListParams(method: string, params: RemoteSafeRecord): RemoteInterventionListParams;
+/** Parse `intervention.get` params. */
+export declare function parseRemoteInterventionGetParams(method: string, params: RemoteSafeRecord): RemoteInterventionGetParams;
+/** Parse `intervention.act` params (the closed verb body). */
+export declare function parseRemoteInterventionActParams(method: string, params: RemoteSafeRecord): RemoteInterventionActParams;
+/** Parse `override.getPermissionAdministration` params. */
+export declare function parseRemoteOverrideGetPermissionAdministrationParams(method: string, params: RemoteSafeRecord): RemoteOverrideGetPermissionAdministrationParams;
 //# sourceMappingURL=params.d.ts.map
