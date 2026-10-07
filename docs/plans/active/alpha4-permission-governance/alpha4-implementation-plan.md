@@ -818,6 +818,14 @@ Placement is achievable and named: the resume path reads the row, the first dura
 
 #### 7.7 — Alpha.4 stage closure (a human pass, separate from the merge)
 
+**Human-acceptance re-deferral — recorded, dated, with an owner and a trigger (2026-10-08, coordinator).** Status: **`BLOCKED` / `NOT_RUN`, not waived.** The Alpha.3 nine-step live walkthrough cannot be executed in this environment because the runtime it needs does not exist here: `tests/deepseek-harness-test-use/packages/cli/dist` is not built, `tests/homes/.playwright-browsers` is empty, and there is no `/opt/google/chrome/chrome` binary. Recording it as blocked rather than omitting it is required by this plan's own completion split -- a step that **cannot be run** is not a step that was passed, and silence is how the pre-Alpha.3 "accepted" fiction returned once already.
+
+- **Owner:** the human project owner (the acceptance is by definition human; the coordinator owns only the receipt, the environment request, and the reminder).
+- **Trigger:** the first moment **all** of the following hold -- 7.3's v3-only flip landed, 7.4's fixture migration landed, 7.5's remainder landed (`clsx` in the lockfile, the Alpha.3 existential aggregate removed), **and** the test runtime is buildable in the working environment (`pnpm -r build` producing the test-use CLI dist, a Playwright browser available, port `3180` family free).
+- **Interim rule:** until the trigger fires, every completion statement about Alpha.4 must keep the four facts separate -- *PRs merged* / *implementation complete* / *human acceptance* / *stage closure* -- and this entry must be cited whenever the third is `NOT_RUN`. No PR, report or status snapshot may collapse them.
+- **Dated receipt:** 2026-10-08, this commit. Re-evaluate at each subsequent stage boundary; do not let the environment note age into an assumption.
+
+
 **Code merge gate ≠ Alpha.4 stage closure.** 7.6 is machine/static/build. Stage closure additionally requires the **Alpha.3 nine-step permission-surface human pass** (`dev/agent-workflow/evidence/alpha3-pr5-notification-projection/ALPHA3-PERMISSIONS-USER-FACING.md` §8, the checklist running from `:193` to `:240`) to have been **actually executed against the PR6 Permission Administration surface** — this is the pass `docs/STATUS.md` records as `NOT_RUN`, and it is the only PR7 finding that changes whether Alpha.4 can be *closed* rather than merged.
 
 - [ ] Execute §8's nine steps against the merged tree on a 3180-family instance, translating steps 4–5's v7 legs to v8 **while retaining the v7 compatibility leg**.
