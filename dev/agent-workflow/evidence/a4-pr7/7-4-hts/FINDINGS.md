@@ -167,6 +167,12 @@ the disappearance of the five `OFFENDING` lines, not the exit code.
 
 ## Gate results (all run in this worktree at lane head)
 
+> These are the **pre-rebase** numbers, taken at base `5ea79126`; they stayed true as history but
+> they are not what a merge should be judged against. The coordinator's ruling was to rebase onto
+> `ff9218a3` and re-derive — that is done, and every number quoted for merge is in
+> [Post-approval round](#post-approval-round-parents-rulings-mutation-proofs-the-rebase-and-the-gates)
+> below.
+
 | gate | command | result |
 |------|---------|--------|
 | fence | `node scripts/verify-blueprint-version-clean.mjs` | exit 1, `dirty(115, 253)`, `unknown(0, 0)`, `adjudicated(16, 24)`; zero lines for any of the five paths |
@@ -223,6 +229,125 @@ not waved through:
 
 Verdict: environmental (whole-machine load from concurrent lanes), reported with the count
 because it is outside the declared band.
+
+## Post-approval round (parent's rulings): mutation proofs, the rebase, and the gates
+
+Two rulings came back on the lane: **D3 approved on the condition that the rewritten control be
+shown able to fail**, and **rebase onto `origin/master` (`ff9218a3`) before merge** because
+`0a4f5029` moved `p4t6`'s pin by list, *"which is exactly the arithmetic I want re-derived rather
+than reasoned about"*. Both are done; the mutation proof is what changed the code again.
+
+### The control was partly decorative, and a mutation is the only reason that is known
+
+The full write-up, the three-mutation table and the empty-set measurement are in deviation **D3**
+below. The short version: mutating the report producer and re-running the wrapper showed that the
+first rewrite of `the fence reports sites, not a bare count…` could not see **one specific class of
+under-reporting** — a site whose `L<line>=v<version>` token also occurs on another report line
+(69 of the 253 dirty sites, measured) keeps passing a whole-report `toContain` even when its
+suffix is deleted. That is exactly the "decorative" case the parent asked to be reported rather
+than patched quietly. It is reported **and** fixed: the leg now parses the `OFFENDING` lines into
+`path → sites printed for that path` and requires each site on its own path's line, and all three
+mutations (A: strip the suffix of the first site of every line; B: drop one dirty path from the
+naming; C: strip one colliding site) redden it, one leg each time, 57 others passing.
+
+Restoration was mechanical, not remembered: the fence script was restored by `cp` and its sha256
+re-checked after **every** mutation round ([`scratch/fence-script-sha.txt`](scratch/fence-script-sha.txt)
+= `bcb569c107b6e413025764993a31839e300cf2bed94f29cad405ef87343ac432`), and `git status` on
+`scripts/` was empty at the end of each round. `git checkout --` was never used.
+
+**The answer to the empty-set question, executed** (not reasoned): with `dirty: []` fed to the real
+`formatReport`, both loops run 0 iterations and pass; `RESULT dirty(0 files, 0 sites)` and
+`RESULT verdict: clean (dirty 0, unadjudicated unknown 0)` are printed; the tally assertion still
+passes because it tracks the real count; the one literal reader-anchor assertion fails, which is
+the same retirement event the archetype leg below already forces. No `dirty.length > 0` guard was
+added — that would re-arm the leg as the red-on-success control it was rewritten to escape.
+[`scratch/control-empty-set-probe.mjs`](scratch/control-empty-set-probe.mjs) reproduces it.
+
+**A discarded round, recorded because it is the interesting part:** the first mutation battery
+"passed" all three checks because my parse tested `!== undefined` on `RegExp.exec`, which returns
+`null` — the leg threw a TypeError and every mutation looked caught. The green baseline run that
+must follow a mutation round is what exposed it. A mutation battery without a green control run
+proves nothing in either direction.
+
+### The rebase
+
+`git rebase --onto ff9218a3 5ea79126 feat/a4-74-hts-fixtures` — 7 commits replayed, **zero
+conflicts** (consistent with the path-overlap check below), `origin/master` re-fetched first and
+still at `ff9218a3`. Nothing was pushed. Commit map (old → new):
+
+| | pre-rebase | post-rebase |
+|---|---|---|
+| 1/5 `blueprint-source` | `94831a22` | `528b552c` |
+| 2/5 `d4-restart-reopen` | `280e3145` | `2e22a43d` |
+| 3/5 `g5-member-e2e` | `bfca3353` | `9a3aa5ef` |
+| 4/5 `run.mjs` | `1a7c30eb` | `3f303e78` |
+| 5/5 `t12-vertical` | `476cae32` | `94202668` |
+| findings + evidence | `732cfa63` | `235c4962` |
+| control rewrite + mutation proofs | `fa6081ce` | `561c3164` |
+| the typecheck fix below | — | `2ead5aa1` (new) |
+
+The reviewer was dispatched against `732cfa63`; the content of the five migrations and of the
+findings commit is unchanged by the replay (no conflicts, no edits), so the review stands for the
+five files — but **the control leg changed after that SHA** (`fa6081ce`/`561c3164` plus
+`2ead5aa1`), and the reviewer must be told to look at the current head, not at `732cfa63`, for
+`packages/testkit/test/a4p7-blueprint-version-clean.test.ts`.
+
+### Gates re-run in the landing tree (every quote below is from this worktree at the new head)
+
+| gate | command | result |
+|------|---------|--------|
+| load check | `node --check` ×5 | all five OK |
+| fence, twice | `node scripts/verify-blueprint-version-clean.mjs` ×2 | exit **1 / 1**; the two outputs are **byte-identical** (`sha256sum` `242ef431…` both, `diff -q` silent); `scanned-in-scope: 744 tracked files`; `RESULT dirty(115 files, 253 sites)`, `unknown(0 files, 0 sites)`, `advisory(12, 18)`, `refused(52, 115)`, `prose(5, 5)`, `adjudicated(16, 24)`, `RESULT verdict: dirty-or-unknown` |
+| my five paths | grep of the report | absent from every gated class; the only line is the non-gating `PROSE packages/tools/harness/t12-vertical.mjs :: L1852=v2` |
+| wrapper | `pnpm exec vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts` | **58 passed (58)** |
+| test counter | `pnpm exec vitest run packages/testkit/test/p4t6-session-event-scan.test.ts` | **10 passed (10)** — re-derived against upstream's moved pin, not reasoned about; this lane still creates/deletes nothing in a counted scope |
+| typecheck | `pnpm -r run typecheck` | exit **0**, `grep -c "error TS"` = 0 — after one real fix of my own, see below |
+| lint | `npx eslint` on the five | unchanged: **one pre-existing error**, `g5-member-e2e.mjs 640:16 'apiPage' is defined but never used` (D5, routed to §7.6) |
+| identity lint | `node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` | `160 identity lines, 76 distinct; new 0, resolved 0` |
+| root suite | `rm -rf packages/testkit/test/.tmp-fault/ && pnpm test` | `9 failed files / 19 failed tests` (492 files, 6170 tests) — **exactly** the declared baseline by name, zero new names; `p6t1-parallel` did not misbehave this time |
+| parse probes | the five probes, standalone | all seven documents re-derived to the same identities: `a7f3203f…`, `2c4f61c5…`, `bd1e78eb…`, `89bc0454…`, `4d50ddf5…`, `d457a829…`, `b369ceee…`; every one `parsed_schemaVersion: 3` |
+
+**`dirty(115, 253)` survived unchanged** — that was the specific thing to check, since ten commits
+landed underneath. It is a real check, not a stale tree: scope grew `741 → 744 tracked files`, so
+three in-scope files did arrive and none of them carries a Blueprint document site. The counter did
+not move because of my five paths, and nothing else moved it either.
+
+### Two findings that belong to other people's merges, said loudly
+
+1. **`a4p75-composition-smoke-classification` fails deterministically in a fresh worktree at
+   `ff9218a3`, and this lane cannot cause it.** First root run after the rebase: 11 files / 23
+   tests, with a new name `composition-smoke verdict against this repository > never reports a
+   passing gate over a step it did not run`, failing on
+   `the closure-gated leg did not print PASS by name (client plugin (packages/client))`. It failed
+   in isolation too (1 failed / 52 passed), so it is not load. Cause, measured: that arm is
+   closure-gated on the built artifact `packages/client/dist/packages/client/src/plugin/client.js`
+   (`scripts/composition-smoke-targets.mjs:41-42`), and a fresh worktree has never run the client
+   build — `packages/client/dist` did not exist here, while the main worktree has it. After
+   `pnpm --filter ./packages/client run build` (plain `tsc -p tsconfig.build.json`: no host, no
+   port, no `tests/homes/**`), the file is **53 passed (53)** and the root suite is back to exactly
+   the declared 9/19. Attribution: this lane touches **zero** files under `scripts/` and zero in
+   that test (`git diff --name-only ff9218a3..HEAD -- scripts …a4p75… | wc -l` → `0`); the leg that
+   reddens arrived with `12a76047` (*"a SKIPPED step now fails the composition gate"*, merged as
+   #136, i.e. the §7.6 lane). **Consequence for every other lane and for §7.6:** from `12a76047`
+   on, a worktree that has not built `packages/client` cannot get a meaningful root-suite baseline,
+   and the failure looks like a governance regression rather than a missing build. Worth a line in
+   the §7.6 runner or in TEST_METHODS §2.
+2. **`pnpm -r run typecheck` caught a defect in my own control that the test suite could not.**
+   After the control rewrite, typecheck exited 2 with `TS2345`/`TS2532` at the new parse
+   (`noUncheckedIndexedAccess` makes `RegExpExecArray` groups `string | undefined`, so
+   `off !== null` narrows nothing) — while vitest reported 58/58 green, because it strips types
+   without checking them. Fixed in `2ead5aa1` with named locals, not with `!` or a cast. The
+   general point is in that commit body: my mutation battery proved runtime teeth and said nothing
+   about types, and the earlier `typecheck exit 0` quote predated the leg entirely, so it was not
+   evidence for it.
+
+### What changed since the lane report
+
+`732cfa63` → `2ead5aa1`: one control leg rewritten again (per-path token membership), one typecheck
+defect of mine fixed, the whole lane replayed onto `ff9218a3`, and the two findings above measured.
+Nothing else moved: the five harness files, their hashes, and the DEFERRALS deletions are untouched
+by this round (`git diff 732cfa63 2ead5aa1 -- packages/tools/harness packages/runtime/root-binding/harness`
+is empty modulo the replay).
 
 ## Deviations and stops
 
