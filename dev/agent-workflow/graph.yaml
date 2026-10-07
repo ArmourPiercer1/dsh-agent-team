@@ -837,12 +837,15 @@ alpha4_governance_20261007:
     s7_1_discoverability: "DONE-MERGED (#100 #103) — three-state migration discovery on the wire；misrepresenting boolean 已删；v8-only 主张在 #108 就地更正为『迁移态是 wire+host 主张，不是 UI 主张』"
     s7_2_boot_start_split: "DONE-MERGED (#100) — degraded boot 与 Team-start refusal 分离"
     s7_3_flip: "FLIP-NOT-LANDED-BY-DESIGN — 顺序裁决（2026-10-08）要求 migrate-by-hand + delete-lie 先于翻转、invert-to-refusal 后于翻转，所以本轮只落前置。前置四项：P1 ceiling 必须问 region.mutationMatcher；P2 落回被 parked 的 a4p7-carrier-width-under-ceiling.test.ts.inert 并补 p4t6 路径项；P3 无 context 分支钉为拒绝；P4（2026-10-08 新发现，coord owner）cordis.patch.yml:58 的 config.blueprintSource 是 v1 文档、且它所在的 dsh-agent-team insert 是 enabled（:50 的 disabled:true 属于上面的 spill-local 条目），它是 tests/homes/a4-accept-* 的 boot 源，v1 退役后先坏的是 §7.7 人工验收用的那次 boot。前置车道 .worktrees/a4-73pre / feat/a4-73-prerequisites 只含 P1-P3；SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS 明令保持 [1,2,3]，被翻掉即为违序"
-    s7_4_fixtures: "HELD-AT-INSTRUMENT — 口径 = C 默认 + 探针判活（schemaVersion: 9）+ A 逐文件人工复核（B 否决）；四类处置 invert-to-refusal / migrate-by-hand / delete-lie / leave-inert；五个高扇出工厂强制人工复核且实测全为活；派发前提 = verify-blueprint-version-clean.mjs 扩出 dirty/advisory 两裁决并覆盖 packages/*/test（车道 .worktrees/a4-scanscope / feat/a4-version-clean-scope 进行中），在此之前 7.4 的完工判据对无类型载体没有定义"
+    s7_4_fixtures: "HELD-AT-INSTRUMENT — 派工已就绪但被门住：扫描工具（7.4 的收口判据本身）复审 DO NOT MERGE，两条分类器缺陷都会在车道编辑期间静默丢站点（邻近行判拒绝 87/141；模板载体够不到冲突通道 → 同载荷三裁决）。第 2 轮已退回原车道（同分支第 4 个 red→green 提交）。派工前置：修好后 head*/fn/sibling 通道判出的拒绝（87+30）人工复核一次。清单已就绪且被独立三路核验为准确：dirty 119 files / 254 sites，按包 runtime 83 · tests 15 · domain 11 · tools 4 · testkit 3 · scripts 1 · legacy 1 · cordis.patch.yml 1；contracts/storage/remote/client 为 0，故 C-remote / C-client 前半程不需要。车道裁决见 #122"
     s7_5_tooling: "PART-DONE — 已落（PR #119）三态合成冒烟门 + 分类器 46 用例 + verify-blueprint-version-clean.mjs；第三轮复审判词『横在它和合并之间的只有披露，不是缺陷』。仍未交付：Alpha.3 existential aggregate 的删除（现被条件化，见 a4_pr7.tasks.a4_pr2.note）与三个 guard test 改名。已点名残留：客户端插件腿是具名 SKIP 不是通过（17 个不可解析宿主依赖，含 clsx）；派生之下两行的打印窗口按政策属作者可见；exports 条件不求值；pattern 重叠与数组候选取 OR 属 skip 方向乐观（已量化入盲点清单）"
     s7_6_merge_gate: "NOT-STARTED — 机器门 + 模拟 GUI 走查（协调者本人以 browser-skill 驱动，标注 SIMULATED/MACHINE）。风险登记：smoke:composition 客户端腿在 base 即红（缺 clsx），离线大概率可修但会改动已发布 manifest 面，需独立车道"
     s7_7_closure: "BLOCKED-ON-HUMAN — Alpha.3 §8 九步人工验收 BLOCKED/NOT_RUN（owner=人类；触发=boot tests/homes/a4-accept-*；回执落 §7.7）；机器腿 8/8 不等价于该通过"
     evidence: "dev/agent-workflow/evidence/a4-pr7/gates/（含 7-5-post-tightening-reverify-workspace-write.txt）、a4-pr76-acceptance-world/（8/8 机器腿 + workspace-write 复跑）、a4-ceiling-coverage/（删除=放宽权限的变异证据）"
   post_alpha4_backlog:
+    - "intervention.list 无界：需要 cap+cursor 或 age window（实测 ~510 B / ~73 µs 每项每次调用；当前验收世界 0 条此类关闭）。与既有 compaction 项并列。来源：#124 复审 RM/量化。"
+    - "intervention.get 对普通已裁决关闭仍混淆『已裁决』与『从未存在』；修它等于向任何持 id 者暴露每次普通关闭的存在性 = 读语义裁决，非车道内可决。当前有测量 pin 作为过渡记录。"
+
     - "Human Admin resolver，或在 pre-flight 拒绝 shell-class envelope 声明 —— 两者都不做，Alpha.4 就保留一个没有出口的 ask 单向门（用户 2026-10-08 裁定记入 backlog，见 #107 的两个 skill 更新）"
     - "18 个治理 code 的命名消息表（约 6 文件 / 120–160 行）；当前 client 面原样渲染 `${code}: ${message}`（#110）"
     - "p6t1-parallel ±1–3 flake 的诊断（含 quota-race 身份）；在诊断之前它是声明式容差，不是可修 bug"
