@@ -42,3 +42,7 @@ instruction, so a worktree prune cannot destroy them):
   entrances-file mutes became typed doubles);
   `build-round.txt`/`build-comp-round.txt`/`check-art-round.txt` +
   `drift-round-list.txt` (the 23-file artifacts co-commit).
+- `root-1ee69e45-runA.json`/`runB.json` + identities — the x2 closure
+  at the ZERO-MUTE head: baseline EXACTLY in both runs plus the known
+  `p6t1-parallel` timing flake only (5 lines / 2 lines; standalone
+  green; the parent saw the same flake in their own verification run).
