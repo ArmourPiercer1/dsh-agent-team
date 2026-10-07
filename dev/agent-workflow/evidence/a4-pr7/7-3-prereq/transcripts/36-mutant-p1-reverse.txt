@@ -1,0 +1,52 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ✓ packages/runtime/test/a4p2-dual-envelope-mutation.test.ts (26 tests) 13ms
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (7 tests | 1 failed) 22ms
+     ✓ a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write 6ms
+     ✓ the SAME mutation with a carrier as wide as the matcher commits (the refusal is width, not the documents) 5ms
+     ✓ the ceiling is asked at the WIDTH the mutation claims, not only at the rising cell 2ms
+     ✓ at the real entry, with NO Alpha.3 Leader law in the way, the width refusal commits nothing 2ms
+     ✓ asking the width never LOOSENS the cell: a cell the ceiling does not reach still refuses 0ms
+     × when BOTH points refuse, the refusal keeps the CELL's identity, not the width's 4ms
+     ✓ the dedupe: a region whose cell IS its width asks ONE question and answers today's refusal 1ms
+ ✓ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (9 tests) 33ms
+ ✓ packages/runtime/test/a4p3-approval-case.test.ts (28 tests) 5ms
+ ✓ packages/runtime/test/a4p4-operation-approval-authority.test.ts (16 tests) 5ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts (33 tests) 126ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts > the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deletion guard) > when BOTH points refuse, the refusal keeps the CELL's identity, not the width's
+AssertionError: expected { status: 'insufficient', …(3) } to deeply equal { status: 'insufficient', …(3) }
+
+- Expected
++ Received
+
+  {
+-   "ceiling": "ask",
++   "ceiling": "no-authority",
+    "detail": {
+-     "requiredAuthority": "human-user",
++     "requiredAuthority": "leader",
+    },
+    "plane": "expansion",
+    "status": "insufficient",
+  }
+
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts:454:21
+    452|     // past. A reversal returns the object asserted above instead.
+    453|     const verdict = judge(CELL_CONTEXT, region)
+    454|     expect(verdict).toEqual({
+       |                     ^
+    455|       status: 'insufficient',
+    456|       plane: 'expansion',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 118 passed (119)
+   Start at  04:43:57
+   Duration  1.16s (transform 4.06s, setup 50ms, import 5.66s, tests 204ms, environment 0ms)
+

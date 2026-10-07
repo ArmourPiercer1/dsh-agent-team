@@ -257,6 +257,9 @@ recorded here because it is a real ordering fact about the gate, not a fixture n
 | identity lint (`node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt`) | exit 0: 160 identity lines, 76 distinct; baseline 76 distinct — **new 0, resolved 0** | `28-lint-identities-diff.txt` |
 | `npx eslint` on every file this branch touches | exit 1, **one** error: `governance/service.ts 117:8 'PermissionStaticLayerFacts' is defined but never used`. Proven **pre-existing on master** — eslint on master's own copy of the file gives the identical error, and this branch's diff contains 0 lines mentioning that type. Not fixed here (an unrequested edit to a line I did not change); recorded for a hygiene commit. | `29-eslint-changed-files.txt`, `30-eslint-preexisting-proof.txt` |
 
+| runtime + testkit after the review round | **8 failed / 4281 passed (4289), 6 files failed / 366 passed (372)** — the identical base set (d3 ×1, p6t3-mediation ×5, p6t3-restart ×2) plus the same 3 collection-error files. Zero new failures. `p4t6` 10/10 with the lane's total re-pinned to **1027**. | `43-runtime-testkit-after-all-followups.txt` |
+| review-round neighbours (`a4p3-approval-case`, `a4p3-approval-escalation`, `a4-escalate-act-truth`, `a4p7-v3-cutover-acceptance`, `a4p7-v8-catalog-migration-state`, `bp1-blueprint-registry`) + the five A4-PR5/PR7 ceiling specs | **195 passed** (neighbours) and **88 passed / 5 files** (the ceiling + approval specs) | this round's runs, quoted in `44-…`, `42-…` |
+
 The dist install surface is co-committed: P1's commit carries the rebuild output of
 `governance/service.*` and `governance/permission-mutation.*`, P3's carries
 `src/plugin/permission-plane.*`. The FIRST landing of P1 omitted it and `check-artifacts-committed`
@@ -274,8 +277,8 @@ because the gate is per-commit.
 | Row-format migration + `TEAM_DOMAIN_SCHEMA_VERSION` / L3 row stamps | **Declined — not prerequisite.** F1 §5 found no row/document-version confusion left on the Blueprint-document path, and Group D pins the L3 stamp says `2` at its own layer. It is migration surface that §7.4's ruling ties to the flip, not to these three. |
 | The frozen-origin **booted** acceptance-world leg | **Declined — F1 §5 assigns it to 7.3's receipt**, and its observable (`a frozen v1/v2 row reports `migration-required` with the number it comes from`) cannot exist while `[1,2,3]` is supported. |
 | The A1-21 split (`unknown → BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`, never `MIGRATION_REQUIRED`) | **Already satisfied — measured, not manufactured.** `host.ts`'s pre-v3 arm and `blueprintVersionStateOf` are untouched by this branch (`git diff --stat` empty over both files); F1's table row for the `number | undefined` seam stays accurate because P3 changed what the CEILING reader answers for the unknown state, not the seam type or its `host.ts:886` `'unreadable'` rendering. |
-| Making the operation lane refuse on an unreadable binding (today: the frozen legacy routing arm) | **Declined — PR7/§7.3 owns that arm** (`approval-routing.ts` rule 1, pinned in `a4p4`). P3 deliberately did not move it: the abstention context flows to that consumer as "no facts I can route on", preserving the pinned behaviour byte-for-byte. Flagged as a flip-window question. |
-| Re-running the ceiling gate on the APPROVED-proposal commit path | **Declined — reported.** `authorizeCeilingBoundedPermissionRise` has exactly ONE call site (`governance/service.ts:1178`, the direct path). `buildApprovalAsk` plans its regions at `region.region` (`:731`), so on an approval-wired lane the width refusal becomes a durable proposal whose rung is computed at the CELL, and the approved retry commits on identity + rung revalidation without re-consulting the ceiling. Measured (`26-measure-ask-rung-cell-vs-width.txt`): for the width fixture both the cell plan and a width plan answer `{status:'required', requiredAuthority:'leader'}`, so no rung UNDER-asks in the measured case — the structural question is that the ceiling law is absent from the approved path, not that the rung is wrong. It is PR5's ask surface, and changing it here would be over-delivery. |
+| Making the operation lane refuse on an unreadable binding (today: the frozen legacy routing arm) | **Round-1 wording was WRONG and is corrected: the arm DID move.** The claim "the abstention flows to that consumer as *no facts I can route on*, preserving the pinned behaviour byte-for-byte" is false — `createOperationApprovalFactsReader` forwards whatever the ceiling reader answers, and P3 changed that answer from `undefined` to a context with two `unavailable` slots, so the operation lane no longer takes `legacy`/`not-authority-v3` for an unreadable binding; it takes `authority-undetermined` + `authority-document-unavailable`. Round-2 follow-up 1 measures it through the production pair and pins it (leg 11, transcript `42`-adjacent), and `approval-routing.ts`'s rule-1 docstring now says so. The authority does not widen: both arms deny, neither writes, and a v3 Team that merely lacks ceiling documents is untouched (leg 5 owns that). |
+| Re-running the ceiling gate on the APPROVED-proposal commit path | **Round 1 declined it; the review made it blocking; the resolution is neither of the review's two options as written — see "Blocking 1" below.** The claim measured here was accurate (`authorizeCeilingBoundedPermissionRise` had one call site, and the rung did not under-ask in the measured case) but the decision to leave the approved path unowned was overturned: the ceiling law is now stated at the commit boundary, the point set is owned by one function, and the terminal semantics are pinned by 12 legs. |
 | Anything that would make the flip land | **Not attempted.** The lane's scope is recorded in `graph.yaml` at `1b9abd8f`: "前置车道 … 只含 P1-P3". |
 
 ### A fourth prerequisite, not mine
@@ -285,6 +288,182 @@ because the gate is per-commit.
 the `tests/homes/a4-accept-*` acceptance world. When 1/2 retire, the first thing to break is the
 §7.7 human-acceptance boot. It joins `s7_3_flip` as **P4, coordinator-owned** — not implementable
 from this lane (it is a composition/config change outside the three prerequisites).
+
+---
+
+## Adversarial-review round — 2 blocking, 4 follow-ups
+
+The verdict was **DO-NOT-MERGE**, and the headline was accepted as stated: P3 closes a fail-open
+that is live on `master` today (`host.ts:2703` → `root.ts:2899` → `service.ts:1178`, with the
+`wroteSnapshot: true` commit-at-base leg as its evidence). Both blocking items are resolved and all
+four follow-ups are resolved or corrected with evidence. Where the review's framing measured wrong,
+this section says so with a transcript rather than implementing past it — which is what the review
+itself asked for.
+
+### Blocking 1 — the ceiling at the approved-commit boundary
+
+The ruling was: take **(A)** "re-consult the ceiling on the approved retry", not (B) alone, with the
+law written into the docstring ("the ceiling bounds committed width at commit time"): re-read
+`lane.authorityCeiling`, re-parse `lane.staticLayers`, reclassify, run
+`authorizeCeilingBoundedPermissionRise(...)` after the rung revalidation and before
+`appendPlannedSnapshot`, refuse with `PERMISSION_AUTHORITY_CEILING_INSUFFICIENT`, zero append, no
+re-mint.
+
+**Option (A) as literally written breaks A4-PR5, measured first.** Implementing the raw re-ask
+turned 3 pinned legs red in `a4p5-permission-mutation-inline-commit.test.ts` —
+`Tests 3 failed | 20 passed (23)`, the escaping error being the direct gate's own
+"the expansion authority ceiling reaches only no-authority…" raised at `governance/service.ts:977`
+(transcript `37-b1-literal-reask-breaks-pr5-inline-commit.txt`). The reason is structural: the
+durable proposal exists *because* the unapproved gate refused that very rise — A1-8 routes a DECIDED
+insufficient rise to a proposal precisely because expansion `no-authority` means "not impossible, a
+PROPOSAL". Re-running the same predicate after `resolveControl(allow)` therefore refuses forever,
+turning every approved inline commit into a silent no-op whose case still reports `decided`. That is
+a consumable-but-no-op approval: the laundering surface the review objected to, manufactured instead
+of closed.
+
+**The hole in (B) is also not constructible on the approval plane.** A document rule matching a width
+matches every cell inside it, and the approval plane reads a non-matching rule as *no narrowing*, so
+the cell is always the stricter question there — a cell-priced approval can never be cheaper than a
+width-priced one (`planPermissionMutationApproval` takes the max). Six document shapes priced both
+ways answer with the same rung; that algebra is pinned as its own `describe` in
+`test/a4p7-approved-retry-ceiling-at-commit.test.ts` (legs 6-12, including the `human-admin`
+"algebra forbids a reviewer" case). The expansion plane is a different plane and P1 was a real
+fail-open there: asking only the cell let a cell grant authorize a wider mutation.
+
+**What landed** is the ruling's substance in the shape the code can honour:
+
+- **One owner for the point set.** `permissionRiseClaimedPoints`
+  (`governance/permission-mutation.ts`) is now the only place that enumerates the points a rise
+  claims, consumed by the expansion judge *and* by `buildApprovalAsk`'s planner, so the two cannot
+  drift into pricing different point sets. Its docstring states that the approval-plane use is
+  measured behaviour-neutral — "it is NOT a second fix, and nothing here claims it is".
+- **The law written where the commit happens.** `resolveDiscoveredApprovalCase` carries the
+  commit-boundary doctrine: the ceiling IS re-asked at commit time — through
+  `deps.permissionLane.authorityCeiling` (fresh per decision, no cache), the fresh `lane.staticLayers`
+  reclassification, and the approved-rung comparison — together with why the raw direct gate is not
+  re-run there, with the transcript cited in place.
+- **Terminal semantics decided in code and pinned by legs**: a commit-time ceiling refusal appends
+  nothing (generation stays `undefined`), consumes nothing (the case keeps `resolved(allow)` and the
+  same `legs.length`, so widening the documents makes the *next* retry commit exactly once —
+  generation 1, then `no-change`), mints nothing (proposal rows unchanged), and never returns
+  `changed: true`. The caller gets `mutation-stale` + `problem: 'ceiling-narrowed-past-approved-rung'`
+  + `approvedRung: 'leader'`, or a thrown `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE` when the documents
+  are unreadable at retry — which propagates by design, since a throw out of a catch is never
+  re-caught by its own `try`.
+- **12 new legs**, each carrying its measured identity: `authority-unavailable` +
+  `no-resolver-for-required-rung` + `human-admin` with 0 proposal rows for the unapprovable width
+  mint; `leader` for the cell-only ask in the same world; the tightened-documents retry; the
+  two-refusals-then-widen sequence; the unreadable-at-retry throw with zero append; the control leg
+  proving an unchanged world still commits `subtree:output = allow`.
+- **Honest labelling.** These are **new pins, not red→green fixes**: the file passes 12/12 against
+  base product code with this branch's governance files stashed
+  (`38-b1-legs-against-base-product-code.txt`), because the behaviour it protects was already correct
+  and unowned. The red→green evidence for this item is transcript `37` (what the literal fix did),
+  not a fake red on the new file.
+
+### Blocking 2 — a sentence about byte-identical refusals that no leg owned
+
+Measured (`34-measure-point-order-identity.txt`): asking the width BEFORE the cell left **all 14 spec
+files green** while `governance/service.ts:1395-1397` promised byte-identical refusals. The sentence
+was true of the common case (dedupe ⇒ one question) and false when both points refuse, where the
+reported identity moves from the cell's to the width's.
+
+Landed: the order now lives in the shared owner with a docstring that states why it is not cosmetic,
+and two legs in `a4p7-carrier-width-under-ceiling.test.ts` own it —
+
+- *when BOTH points refuse, the refusal keeps the CELL's identity, not the width's*: the width-only
+  verdict would be `{ceiling:'no-authority', detail:{requiredAuthority:'leader'}}` while the real
+  region answers `{ceiling:'ask', detail:{requiredAuthority:'human-user'}}`, and the thrown
+  `details.ceiling` is `'ask'` with `details.region` naming the cell
+  (`exact:file:…`);
+- *the dedupe*: a region whose cell IS its width asks ONE question and answers today's refusal.
+
+The reversal mutant is now red, run on the code as it will be committed
+(`44-mutant-p1-reverse-on-committed-helper.txt`): the both-points leg fails
+(`expected { status: 'insufficient', …(3) } to deeply equal { status: 'insufficient', …(3) }`) with
+the other **87 legs green**, so exactly the owning leg catches it. `36-mutant-p1-reverse.txt` is the
+same reversal measured on the pre-extraction judge.
+
+### Follow-up 1 — the operation lane's arm, in production clothing
+
+`FINDINGS.md`'s "preserving the pinned behaviour byte-for-byte" claim about the operation lane was
+wrong and is corrected in the table above. The arm really does flip —
+`legacy` / `not-authority-v3` → `authority-undetermined` / `authority-document-unavailable` — and
+`a4p4-operation-approval-authority.test.ts`'s A14-A16 pin the adapter behind a **fake** ceiling port,
+so nothing in the suite could see the substitution. Leg 11 of
+`a4p7-ceiling-no-context-refusal.test.ts` now drives the production triple —
+`createPermissionAuthorityFacts` → `createAuthorityCeilingReader` →
+`createOperationApprovalFactsReader` → `routeOperationApproval` — with an unresolvable binding, and
+pins the target arm, its denial shape (no `requiredAuthority`, no `carrierKind`), and that a Leader
+install still gets `undefined` and the frozen `legacy` arm (rule 2 untouched). Recorded as **intended
+flip-window behaviour**: the arm moves, the authority does not widen. `approval-routing.ts`'s rule-1
+docstring now tells the truth about both planes.
+
+### Follow-up 2 — the premise measured false; the posture pinned anyway
+
+`judgeCeilingPoint` does **not** parse `staticFacts`. Its `try` covers only
+`grantCeiling`/`expansionCeiling`; the `{ requiredAuthority: null }` catch belongs to
+`requiredAuthorityDetail()`, its own detail renderer. The parses are once per mutation at
+`service.ts:719` (ask), `:1181` (Alpha.3 block), `:1222` (ceiling gate) — and this branch's diff adds
+and removes no parse and no `staticFacts` read at all
+(`41-fu2-premise-check-parse-sites.txt`). So "parse once outside the loop" describes code that
+already does that; reported rather than silently "fixed".
+
+The posture the review wanted guaranteed is pinned anyway, in the two places it can be observed: the
+width spec's leg 12 (the gate PROPAGATES a fault raised at a point — no per-point catch could absorb
+a parse fault into the judge's fault answer) and the refusal spec's leg 12 (at the real entry a
+malformed static document refuses ONCE as `PERMISSION_ENVELOPE_MALFORMED` /
+`problem: 'static-facts-layers-array'`, zero write). Incidental, disclosed and not fixed:
+`classifyPermissionRise` is not defensive the way the parser is — handed `{ layers: 'not-an-array' }`
+it dies on `layer.rules is not iterable` rather than naming the shape. Unreachable in this repository
+(every production `lane.staticLayers` answer is built through `parsePermissionStaticLayerFacts` and
+`service.ts` parses again on arrival), quoted in the leg so the next reader is not surprised.
+
+### Follow-up 3 — a docstring broader than its code, closed in the code
+
+`permission-plane.ts:849` did call `deps.resolveBlueprint(t)?.schemaVersion` with no `try`; the
+reason production does not crash today is that `host.ts:1993-2001` wraps the resolver it injects —
+which is exactly why the seam's own sentence was the liar. Fixed in the code rather than by narrowing
+prose: one local owner `resolveBlueprintOf` wraps the injected resolver and is now the only way this
+factory reads it (both seam fields and `currentBinding`, three sites), answering `undefined` on a
+fault — the same answer host.ts gives ("UNKNOWN facts (typed refusal downstream), never a fall-back
+to the row anchor"), and the answer the ceiling reader already refuses on. Leg 10 drives the
+PRODUCTION factory with a throwing resolver: RED at base
+(`40-fu3-leg10-red-at-base-throwing-resolver.txt`:
+`expected undefined to be 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE'` — there was no code at all to
+route on), green now, and it also asserts the seam's own answer is a context with both document slots
+`unavailable` and no anchor, never `undefined` (the pre-v3 skip), while the `1 | 2 → undefined`
+branch stays byte-identical (legs 3-4).
+
+### Follow-up 4 — the tripwire under §7.3's actual deletion
+
+With Alpha.3's Leader coverage branch deleted **at file level** — `authorizeLeaderPermissionMutation`
+calling `classifyPermissionRise(input)` with no coverage judge, the shape §7.3's retitle takes — the
+approval-wired world still refuses:
+
+| spec under the deleted branch | result |
+| --- | --- |
+| `a4p7-approved-retry-ceiling-at-commit.test.ts` (approval-wired) | **12/12 pass** |
+| `a4p5-permission-mutation-proposal.test.ts` | **33/33 pass** |
+| `a4p5-permission-mutation-inline-commit.test.ts` | **23/23 pass** |
+| `a4p2-dual-envelope-mutation.test.ts` | **26/26 pass** |
+| `a4p7-ceiling-no-context-refusal.test.ts` | 11/12 — the one failure is leg 9, which pins *Alpha.3's own* refusal identity |
+| `a4p7-carrier-width-under-ceiling.test.ts` | 7/8 — the one failure is the entry leg pinning Alpha.3's identity |
+
+**Tests 2 failed | 112 passed (114)**, and both failures flip **to a denying ceiling identity**, never
+to a commit: `PERMISSION_ENVELOPE_EXPANSION_DENIED` → `PERMISSION_AUTHORITY_CEILING_INSUFFICIENT`
+(the width-at-entry leg) and → `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE` (the ordering leg).
+`42-fu4-mutant-leader-coverage-branch-deleted.txt`; the mutant was reverted in the same session.
+This is the lane's strongest input to §7.3's retitle decision: deleting `leaderEnvelopeCoverage`
+moves a refusal's NAME and leaves the refusal standing, with zero writes in every case.
+
+### Transcripts added by this round
+
+`34` (point-order measurement) · `35` (Blocking-2 legs green) · `36` (reversal mutant, pre-extraction)
+· `37` (the literal re-ask breaking A4-PR5) · `38` (the new pins against base product code) ·
+`39` (runtime + testkit after B1/B2) · `40` (FU-3 leg red at base) · `41` (FU-2 premise check) ·
+`42` (FU-4 tripwire) · `43` (runtime + testkit, final tree) · `44` (reversal mutant on the committed
+helper).
 
 ---
 
@@ -312,3 +491,26 @@ from this lane (it is a composition/config change outside the three prerequisite
    document speaks of nothing, which on the approval plane is no narrowing, while absence is no grant
    on the expansion plane. The assertion follows the measurement.
 9. **Not pushed.** Branch local; no push, no force, no gate history touched.
+10. **BLOCKING-1 was not implemented as written, and the refusal is evidenced, not rhetorical.**
+    The literal re-ask produces `Tests 3 failed | 20 passed (23)` in
+    `a4p5-permission-mutation-inline-commit.test.ts` with the direct gate's own
+    `…the expansion authority ceiling reaches only no-authority…` escaping
+    `governance/service.ts:977` (`37`). The ruling's INTENT — the ceiling bounds committed width at
+    commit time, terminal semantics decided and pinned — is implemented; the predicate call site it
+    named is the one thing this lane cannot re-run without breaking PR5.
+11. **A `git checkout` destroyed uncommitted work mid-round, and it briefly changed a gate result.**
+    Reverting the FU-4 file-level mutant with `git checkout
+    packages/runtime/governance/permission-mutation.ts` reset that file to HEAD and deleted the
+    uncommitted `permissionRiseClaimedPoints`, surfacing immediately as
+    `TypeError: permissionRiseClaimedPoints is not a function or its return value is not iterable`
+    in five legs of `a4p7-carrier-width-under-ceiling.test.ts`. The helper was rewritten from its
+    consumers' requirements and re-verified (88/88 over the five ceiling/approval specs,
+    `pnpm -r run typecheck` clean, and the reversal mutant re-run against the restored code as
+    `44`). Consequence for evidence: the FIRST full-suite run of this round executed inside that
+    window and was discarded; transcript `43` is the re-run on the clean tree. Lesson recorded: a
+    mutant is reverted by inverse patch, never by checkout, when the file carries uncommitted work.
+12. **FU-2's premise was reported false instead of being implemented past.** "Parse once outside the
+    loop" describes code that already parses once outside the loop
+    (`41-fu2-premise-check-parse-sites.txt`); the malformed-static legs were added to pin the
+    posture, and one genuine incidental (the classifier's non-defensive `layer.rules is not
+    iterable`) is disclosed rather than quietly patched.

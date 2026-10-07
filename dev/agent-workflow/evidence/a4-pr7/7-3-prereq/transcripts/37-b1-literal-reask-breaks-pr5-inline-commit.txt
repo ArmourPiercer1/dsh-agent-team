@@ -1,0 +1,54 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts (23 tests | 3 failed) 280ms
+     × commits EXACTLY ONE snapshot with the planned rules 41ms
+     × a risen second leg (escalation to Human User) carries the commit: the higher allow commits 23ms
+     × an unrelated lower-layer change that moves NO approved rise still commits 15ms
+     ✓ the SAME mutation at a moved base is a FRESH ask (A1-9 recovery); the allowed-at-old-base case never commits 16ms
+     ✓ an explicit expectedGeneration pinned at the approved base conflicts typed with ZERO writes 15ms
+     ✓ lifecycle drift: an archived target answers mutation-stale (never a lifecycle throw, never a commit) 13ms
+     ✓ proposal creation on an archived target still refuses typed BEFORE any row 10ms
+     ✓ matcher ROOT drift (containment retarget under the same canonical key) -> stale 14ms
+     ✓ the ceiling NARROWS after approval (required now above approved) -> stale 14ms
+     ✓ denied is terminal: every later call says denied, no new case, no write 14ms
+     ✓ the rise that failed renders authority-unavailable — never "awaiting a successor" 15ms
+     ✓ desired state reached after approval -> plain no-change, the case untouched 12ms
+     ✓ the rise-summary parse law is PURE (probes only — the commit-boundary arm is the two tests below) 1ms
+     ✓ an UNPARSEABLE rise summary on the allowed leg fails the arm closed: stale, ZERO write, never a commit 14ms
+     ✓ a WELL-FORMED summary naming a DIFFERENT rise structure fails the same arm closed (A1-8 structural equality, not format) 8ms
+     ✓ a pending proposal crosses HONESTLY: changed:false + the named reason, closed field set, nothing dropped 5ms
+     ✓ terminal arms ride the same reason slot (denied passes through with changed:false) 3ms
+     ✓ the DERIVED caller — never a wire claim — reaches the lane as approvalCaller 3ms
+     ✓ a blocked mutation opens exactly ONE case, at the mutation door, carrying the mutation fingerprint only 7ms
+     ✓ the control law refuses a hybrid identity AND a fingerprint-less one — the doors cannot forge each other 9ms
+     ✓ a NON-LIFECYCLE fault thrown on the guard stack propagates as itself — never `mutation-stale` 10ms
+     ✓ a lifecycle refusal STILL reinterprets to mutation-stale (the narrowing kept the law it was for) 10ms
+     ✓ an approval reader LYING about the durable identity is refused: stale, ZERO write, never a commit 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > commits EXACTLY ONE snapshot with the planned rules
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > a risen second leg (escalation to Human User) carries the commit: the higher allow commits
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > an unrelated lower-layer change that moves NO approved rise still commits
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to allow at exact:output/a.json; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1574:5
+ ❯ resolveDiscoveredApprovalCase packages/runtime/governance/service.ts:977:7
+ ❯ runApprovalAsk packages/runtime/governance/service.ts:1011:16
+ ❯ packages/runtime/governance/service.ts:1257:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 20 passed (23)
+   Start at  04:52:20
+   Duration  2.25s (transform 1.50s, setup 0ms, import 1.86s, tests 280ms, environment 0ms)
+
