@@ -199,3 +199,20 @@ cross-shape false in both directions with positive controls, and cites the three
 so that changing any one of them leaves a named contradiction rather than a quiet
 gap. The requested test — both the ASK and the recheck seeing a fingerprint-shape
 narrowing — is one edit away the moment the routing law is decided.
+
+## 7. Post-fix acceptance receipts (round 2, `7e5b7074`)
+
+| leg | result |
+| --- | --- |
+| whole-repo `npx vitest run`, cleared scratch | `Test Files 9 failed \| 477 passed (486)`, `Tests 19 failed \| 5974 passed (5993)` — **failure identities identical to the baseline set**: `t1-capability-schema` 9, `t2-blueprint-hash` 1, `d3-member-identity-context` 1, `p6t3-mediation` 5, `p6t3-restart` 2, `p6t6-actions` 1, plus the baseline 0-test three (`p8s3b-result-effects`, `t12a-b2-child-identity`, `t12a-glue-handoff-ports`). **`c1-list-pending-control` passes (15 tests) in the same run.** Receipt `.scratch/gates/7-6-full-test-2.txt`. |
+| `packages/runtime` + `packages/tools` | `7 failed \| 343 passed (350)`, `9 failed \| 3987 passed (3996)` — the baseline subset, identity-matched. |
+| lint identity diff | `new 0, resolved 0`, 160 lines / 76 distinct, baseline 76 distinct, exit 0. |
+| PR7 lanes | `a4p7-v3-cutover-acceptance` **58** (GROUP E added), `a4p7-blueprint-version-clean` 9, `p4t6-session-event-scan` 10. |
+| `npx tsc -p packages/runtime --noEmit` | exit 0, 0 `error TS`. |
+
+The **first** runtime+tools run of this round printed `8 failed / 10 failed tests` — one
+above baseline — and the cleared-rescratch re-run printed the exact baseline 7/9. That
+extra failure was produced by the residue of the run before it, which is §6.1's lesson
+reproducing itself inside the act of documenting it: with scratch worlds, a run's
+failure count is only readable after the directory is cleared, and only identities are
+comparable at all.
