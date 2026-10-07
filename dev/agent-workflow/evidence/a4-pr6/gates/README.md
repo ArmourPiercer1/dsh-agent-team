@@ -46,3 +46,7 @@ instruction, so a worktree prune cannot destroy them):
   at the ZERO-MUTE head: baseline EXACTLY in both runs plus the known
   `p6t1-parallel` timing flake only (5 lines / 2 lines; standalone
   green; the parent saw the same flake in their own verification run).
+- `typecheck-round.txt` — the TREE-WIDE `pnpm -r run typecheck` receipt
+  at the type-fix head (the earlier per-package `--filter
+  @deepseek-ai/...` form matched no package and proved nothing —
+  disclosed): 8 `typecheck: Done`, zero `error TS`.

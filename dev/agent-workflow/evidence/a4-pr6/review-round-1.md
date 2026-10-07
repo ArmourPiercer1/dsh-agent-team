@@ -77,6 +77,24 @@ are baseline debt, untouched. Second disclosure folded in: the fix-1
 round's "eslint clean on every touched file" claim had MISSED this file
 entirely — a second reason the mutes were load-bearing.
 
+## Typecheck honesty (parent's second catch, at 5b66c442)
+
+My per-package command `pnpm --filter @deepseek-ai/dsh-agent-team-runtime
+run typecheck` matched NO package (the runtime package is
+`@dsh-agent-team/runtime`), so every "runtime typecheck 0 errors" claim I
+made with it was VACUOUS — grep over empty output, not a gate. The mute
+rewrite's four real errors (one broken import path, two implicit-`any`
+parameters — removing `any` without annotating is the same crime in the
+checker's eyes — and one index-signature-can't-satisfy-required-property
+assignment) sailed through. Fixed at the source: correct import path,
+explicit `(sid: string)` annotations, `as unknown as StubGlue` (the glue
+`.d.mts`'s `Record<string, any>` surface cannot structurally satisfy a
+required property). From this point the typecheck gate is the TREE-WIDE
+`pnpm -r run typecheck` with the receipt kept (gates/typecheck-round.txt:
+`8 typecheck: Done`, `0 error TS`) — the parent's independent tree-wide
+run at 66a5b5d0 (8 Done) is the real evidence that the earlier round
+files compiled; my filter form proved nothing, disclosed.
+
 ## PR-body paragraph (the parent's plain-words demand)
 
 > Fixing the unreadable-document path is what revealed that a whole

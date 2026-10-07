@@ -57,7 +57,7 @@ import { describe, expect, it } from 'vitest'
 
 import { createTeamProductionRoot } from '../src/plugin/root.js'
 import type { TeamAgentBindings, TeamPluginConfig, TeamProductionRoot } from '../src/plugin/types.js'
-import type { GovernanceStartOutcome, GovernanceWarningService } from '../../governance-warning/index.js'
+import type { GovernanceStartOutcome, GovernanceWarningService } from '../governance-warning/index.js'
 import { createTeamDomain, openTeamDomain } from '../../storage/repositories/index.js'
 import {
   destroyDir,
@@ -135,8 +135,8 @@ function gateStub(policy: (sid: string) => 'open' | 'warn'): { calls: string[]; 
     return { status: 'open' }
   }
   const service: GovernanceWarningService = {
-    checkStart: async (sid) => outcome('start', sid),
-    checkEnsureRootLive: async (sid) => outcome('live', sid),
+    checkStart: async (sid: string) => outcome('start', sid),
+    checkEnsureRootLive: async (sid: string) => outcome('live', sid),
     observeRuntime: async () => undefined,
     acknowledge: async () => ({ kind: 'not-found' }),
     listWarnings: async () => [],
@@ -218,7 +218,11 @@ async function buildWorld(scratch: string, opts: {
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
   }
   const teamToolsRef = { current: undefined }
-  const stub: StubGlue = createStubBindings({ config, teamToolsRef, domain })
+  // The stub glue's declared surface is the untyped `Record<string, any>`
+  // (its .d.mts, baseline debt); an index-signature type cannot satisfy a
+  // required property, so the honest form is the explicit cast to the
+  // shape this file actually reads — no `any`, no mute, no implicit any.
+  const stub = createStubBindings({ config, teamToolsRef, domain }) as unknown as StubGlue
   const unused = (): never => {
     throw new Error('A4-PR6 gate guard: legacy inspect is unused in this world')
   }
