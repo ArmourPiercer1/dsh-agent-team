@@ -88,9 +88,6 @@ const classifyText = (fence as Record<string, unknown>).classifyText as
 const isScanScopePath = (fence as Record<string, unknown>).isScanScopePath as
   | ((path: string) => boolean)
   | undefined
-const deriveForbidden = (fence as Record<string, unknown>).deriveSchemaWitnessForbidden as
-  | ((cwd: string) => { keys?: Set<string>; sets?: number; error?: string })
-  | undefined
 
 /** Fixture corpus: `;; key: value` header lines, then verbatim content. */
 interface Fixture {
