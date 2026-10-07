@@ -1876,10 +1876,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/remote/test/a4p6-remote-v8.test.ts',
       // §6.D (client plane): the two client model sources (the scanner's
       // include pattern is .ts/.mts/.mjs — the panel/spec .tsx files are
-      // outside the scan; the 1013 discovered total is the proof: 1011
-      // registered + exactly these two).
+      // outside the scan; the discovered total is the proof: discovered
+      // minus registered is exactly these paths).
       'packages/client/src/model/team-interventions.ts',
       'packages/client/src/model/permission-administration.ts',
+      // Review round 1 (this PR's review-fix commits): three new runtime
+      // specs — the start-gate entrance suite (fix 1), the host-adapter
+      // suite over the real docs/contains builders (fixes 2+3), and the
+      // driven-principal act suite (fixes 5+6). Everything else the round
+      // touched is an EDIT to an already-counted file (s6-remote.ts,
+      // root.ts, host.ts, permission-plane.ts, catalog.ts, the client
+      // model/spec, this pin) — an edit is not an increment.
+      'packages/runtime/test/a4p6-start-gate-entrances.test.ts',
+      'packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts',
+      'packages/runtime/test/a4p6-driven-principal-act.test.ts',
     ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
@@ -1954,12 +1964,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // difference of the two pinned totals is the only arithmetic here.
     expect(SCANNED_PATHS_A4PR5.length).toBe(1003 - 999)
     // The A4-PR6 tie, same form: the movement equals the named files, and every
-    // one of them is asserted present by path above. `1009` is THIS PR's own
+    // one of them is asserted present by path above. `1016` is THIS PR's own
     // advancing total — it moves only when THIS list grows (a stage commit
     // adding a file updates the list and this number together; an undeclared
     // file moves the scanner total without the list and fails above). Other
-    // PRs' numbers stay untouched.
-    expect(SCANNED_PATHS_A4PR6.length).toBe(1013 - 1003)
+    // PRs' numbers stay untouched. Review round 1 moved it with the three
+    // review-round specs named in the list.
+    expect(SCANNED_PATHS_A4PR6.length).toBe(1016 - 1003)
 
   })
 

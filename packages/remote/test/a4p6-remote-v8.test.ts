@@ -350,11 +350,13 @@ describe('A4-PR6 §6.B: the Remote contract v8 surface', () => {
     // complete BY CLASSIFICATION, so a method nobody thought to name
     // still has to appear in an explicit route.
     expect([...REMOTE_GOVERNANCE_WRITING_METHODS].sort()).toEqual([
+      'compatibility.ack',
       'intervention.act',
       'override.mutatePermission',
       'override.reset',
       'override.set',
       'policyState.set',
+      'team.resolveControl',
     ])
     const here = fileURLToPath(new URL('.', import.meta.url))
     const principalSource = readFileSync(
@@ -370,6 +372,41 @@ describe('A4-PR6 §6.B: the Remote contract v8 surface', () => {
       const routed =
         principalSource.includes(`'${method}',`) || principalSource.includes(`=== '${method}'`)
       expect(routed, `s6-principal.ts routes '${method}' explicitly`).toBe(true)
+    }
+    // A4-PR6 review round 1 (fix 5/6) — the REVERSE direction was the
+    // hole: `team.resolveControl` (durable control DECISIONS) and
+    // `compatibility.ack` (the governance-warning ACKNOWLEDGMENT write)
+    // are governance-writing by effect and are explicitly routed to
+    // governance decider derivations, yet the enumeration omitted them —
+    // "complete BY CLASSIFICATION" is worthless if the classification
+    // itself under-enumerates. Law: EVERY method explicitly routed to a
+    // decider derivation (`deriveMutationActor` / `deriveAckCaller` /
+    // `deriveControlCaller`) must be a member of the catalog
+    // classification. Admission routes (`deriveAdmissionCaller`, the
+    // member.create/send/followup set) stay excluded by the A1-2
+    // classification: they admit WORK, they write no governance state.
+    const writeRoutes = new Set<string>()
+    for (const match of principalSource.matchAll(
+      /if \(method === '([^']+)'\) return (deriveMutationActor|deriveAckCaller|deriveControlCaller)\b/g,
+    )) {
+      const name = match[1]
+      if (name !== undefined) writeRoutes.add(name)
+    }
+    const mutationSet = /const MUTATION_METHODS = new Set\(\[([\s\S]*?)\]\)/.exec(principalSource)
+    for (const match of (mutationSet?.[1] ?? '').matchAll(/'([^']+)'/g)) {
+      const name = match[1]
+      if (name !== undefined) writeRoutes.add(name)
+    }
+    // The scan itself must see the three decider routes (a parser that
+    // matched nothing would make the law vacuously green).
+    expect([...writeRoutes].sort()).toContain('intervention.act')
+    expect([...writeRoutes].sort()).toContain('compatibility.ack')
+    expect([...writeRoutes].sort()).toContain('team.resolveControl')
+    for (const route of writeRoutes) {
+      expect(
+        REMOTE_GOVERNANCE_WRITING_METHODS,
+        `governance-writing method '${route}' is routed but NOT enumerated`,
+      ).toContain(route)
     }
   })
 

@@ -17,7 +17,7 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { CONTROL_REQUEST_KINDS } from '../control/index.js'
+import { CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS } from '../control/index.js'
 import {
   INTERVENTION_ACTIONS,
   createGovernanceWarningSourceAdapter,
@@ -263,6 +263,7 @@ describe('A4-PR6 aggregation — one list, two planes, zero vocabulary bleed', (
 
 import { createS6RemoteDispatcher, createS6RemotePorts } from '../src/plugin/s6-remote.js'
 import type { S6RemoteOptions } from '../src/plugin/s6-remote.js'
+import { createServerPrincipalDerivation } from '../src/plugin/s6-principal.js'
 import type { ServerPrincipalDerivation } from '../src/plugin/types.js'
 import { REMOTE_CONTRACT_VERSION_V8 } from '../../remote/src/index.js'
 import type { RemoteResponse } from '../../remote/src/index.js'
@@ -381,7 +382,20 @@ const W8 = await (async () => {
         }) as never,
     } as unknown as S6RemoteOptions
     const ports = createS6RemotePorts(opts)
-    const principal: ServerPrincipalDerivation = () => Promise.resolve(humanCaller(W8_HUMAN)) as never
+    // A4-PR6 review round 1 (fix 5/6): the PRINCIPAL is the REAL
+    // `createServerPrincipalDerivation` — the same derivation the
+    // production surfaces install. The previous stub
+    // (`() => Promise.resolve(humanCaller(W8_HUMAN))`) stood in for the
+    // exact law this suite's own test title names ("the DERIVED caller
+    // — never a client claim"); with the real derivation the caller the
+    // control plane records is the invariant-9 identity of the
+    // ADDRESSED root, and no constant in this file could have produced
+    // it.
+    const principal: ServerPrincipalDerivation = createServerPrincipalDerivation({
+      rootSessionId: P6T4_ROOT,
+      repositories: world.domain.repositories,
+      leaderInstanceId: 'inst-leader',
+    })
     const dispatch = createS6RemoteDispatcher(ports, principal)
     const v8 = (endpoint: string, params: Record<string, unknown>): Promise<RemoteResponse> =>
       dispatch(endpoint as never, { version: REMOTE_CONTRACT_VERSION_V8, params } as never)
@@ -519,7 +533,12 @@ describe('A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, rea
     expect(calls).toHaveLength(1)
     const call = calls[0] as { callerKind: string; callerId: string; decision: string }
     expect(call.callerKind).toBe('human')
-    expect(call.callerId).toBe(W8_HUMAN)
+    // Invariant 9 through the REAL derivation: the team's human identity
+    // IS its root session id — `deriveControlCaller` returns exactly
+    // `{kind:'human', humanId: <addressed root>}`. (Pre-fix this asserted
+    // the stub's arbitrary `W8_HUMAN` constant — the title said "DERIVED
+    // caller" while the value was installed.)
+    expect(call.callerId).toBe(P6T4_ROOT)
     expect(call.decision).toBe('allow')
   })
 
@@ -663,5 +682,116 @@ describe('6.C a zombie open case stays visible and abandonable (PR5 leftover B)'
     const listed = ZOMBIE.openAfter.map((summary) => summary.state.identity.approvalCaseId)
     expect(listed).not.toContain(ZOMBIE.originalCaseId)
     expect(listed).toContain(ZOMBIE.driftedCaseId)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 6.B — the NAMED §11.5 interaction (A4-PR6 review round 1, fix-5/6
+// sibling): a CEILING-NARROWED leg takes its durable `allow` through the
+// v8 `intervention.act` entry (real derivation, real control service),
+// and the refusal lands at CONSUMPTION, not at decision: the narrowing
+// denied the EFFECT (`request-pending` on the guard) while no allow
+// existed; the wire allow writes the durable decision and the SAME guard
+// then allows ONCE (writes `control-allow-consumed`); the second attempt
+// is blocked `allow-consumed` — the exactly-once law. The ceiling decision
+// and the durable approval are separate facts; execution authority is
+// re-derived at every consumption, never cached with the decision
+// (invariant 45: the planes hold no cached authority).
+// ---------------------------------------------------------------------------
+
+const W9 = await (async () => {
+  const world = await createP6T4World('a4p6-consume-1', ['leader', 'worker'])
+  try {
+    const control = createP6T4Service(world)
+    // The operation attempt: the ceiling narrowed this write to `ask` for
+    // the worker, so the gate raises an approval LEG carrying the EXACT
+    // operation scope — the leg IS the durable consequence of narrowing.
+    const scope = makeScope({ correlation: 'corr-a4p6-consume', operationFingerprint: 'fp-a4p6-consume' })
+    const leg = await control.requestApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      reviewAuthority: 'leader',
+      requiredAuthorityAtCreation: 'leader',
+      identity: {
+        subject: { kind: 'instance', instanceId: WORKER_ID },
+        beneficiaryAuthority: 'member',
+        requestedEffect: 'ask',
+        operationFingerprint: scope.operationFingerprint,
+        correlation: scope.correlation,
+      },
+      actionName: scope.actionName,
+      toolName: scope.toolName,
+      summary: 'a4p6 §11.5 consumption leg',
+    })
+    if (leg.kind !== 'leg') throw new Error('the consumption case must have a leg')
+    const approvalCaseId = leg.leg.approvalCaseId ?? 'missing'
+
+    // CONSUMPTION attempt 1 — BEFORE any allow: the effect is refused at
+    // the guard. The narrowing already spoke; the guard holds the line.
+    const pendingGuard = await control.guardOperation(scope)
+
+    // The wire `intervention.act` allow: the REAL derivation installed as
+    // the principal (fix 5/6), the REAL control service behind the port.
+    const opts = {
+      rootSessionId: P6T4_ROOT,
+      repositories: { teamSessions: { get: () => ({}) } } as never,
+      interventionControl: control,
+      // The approval arm of `intervention.act` drives the EXISTING
+      // resolve entry (A1-2: the lane re-implements no decision logic).
+      resolveControl: async (args: { rootSessionId: string; caller: { kind: string; humanId?: string }; requestId: string; decision: 'allow' | 'deny'; note?: string }) =>
+        (await control.resolveControl({
+          rootSessionId: args.rootSessionId,
+          caller: args.caller as never,
+          requestId: args.requestId,
+          decision: args.decision,
+          ...(args.note !== undefined ? { note: args.note } : {}),
+        })) as never,
+    } as unknown as S6RemoteOptions
+    const ports = createS6RemotePorts(opts)
+    const principal: ServerPrincipalDerivation = createServerPrincipalDerivation({
+      rootSessionId: P6T4_ROOT,
+      repositories: world.domain.repositories,
+      leaderInstanceId: 'inst-leader',
+    })
+    const dispatch = createS6RemoteDispatcher(ports, principal)
+    const actAllow = await dispatch('intervention.act' as never, {
+      version: REMOTE_CONTRACT_VERSION_V8,
+      params: { teamSessionId: P6T4_ROOT, interventionId: `int-${approvalCaseId}`, action: 'allow' },
+    } as never)
+
+    // CONSUMPTION attempts 2 and 3 — AFTER the durable allow. The guard
+    // reads ONLY durable rows, so its verdict IS the proof the wire's
+    // decision landed durably.
+    const firstGuard = await control.guardOperation(scope)
+    const secondGuard = await control.guardOperation(scope)
+
+    return { pendingGuard, actAllow, firstGuard, secondGuard, approvalCaseId }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('A4-PR6 review round 1 — the §11.5 named interaction: durable allow through the act entry, refusal at CONSUMPTION', () => {
+  it('before the allow, the effect is refused at the guard (`request-pending`) — narrowing denied it', () => {
+    expect(W9.pendingGuard.allowed).toBe(false)
+    expect(W9.pendingGuard.allowed === false ? W9.pendingGuard.reason : '').toBe(
+      CONTROL_GUARD_BLOCK_REASONS.REQUEST_PENDING,
+    )
+  })
+
+  it('intervention.act takes the DURABLE allow (real derivation, real plane) and answers the closed receipt', () => {
+    expect(dataOf8(W9.actAllow)).toEqual({ outcome: 'decided' })
+  })
+
+  it('after the allow, the SAME guard allows EXACTLY ONCE, then blocks `allow-consumed`', () => {
+    // The guard path only reads durable control rows: an allow here is
+    // the wire decision, read back from the ledger. Consumption 2 writes
+    // `control-allow-consumed`; attempt 3 sees the burn and blocks.
+    expect(W9.firstGuard.allowed).toBe(true)
+    expect(W9.secondGuard.allowed).toBe(false)
+    expect(W9.secondGuard.allowed === false ? W9.secondGuard.reason : '').toBe(
+      CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED,
+    )
   })
 })

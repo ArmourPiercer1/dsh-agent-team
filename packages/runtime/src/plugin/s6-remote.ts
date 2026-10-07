@@ -50,6 +50,7 @@ import {
   isRemoteContractError,
   remoteContractError,
 } from '../../../remote/src/contracts/errors.js'
+import { REMOTE_INTERVENTION_ACT_OUTCOMES } from '../../../remote/src/contracts/types.js'
 import {
   parseRemoteMethodParams,
   parseRemoteTeamGetLedgerPageParams,
@@ -4370,7 +4371,27 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
                 action: actParams.action,
                 ...(actParams.note !== undefined ? { note: actParams.note } : {}),
               }),
-            ).then((receipt) => ({ data: { outcome: receipt.outcome } }))
+            ).then((receipt) => {
+              // A4-PR6 review round 1 (fix 6/6): the s6 lane forwards to
+              // the SAME frozen wire contract as the generic dispatcher,
+              // and that dispatcher validates the act receipt against the
+              // closed outcome set before it reaches the wire
+              // (`remote/src/handlers/intervention.ts` — unknown outcome
+              // = `internal-error` / reason `port-contract`). Forwarding
+              // `receipt.outcome` unvalidated let a plane that returns a
+              // non-vocabulary value mint a wire value the contract
+              // closed at v8 — the client renderer's domain, not the
+              // plane's. Same contract, same answer on both lanes.
+              const outcome: unknown = receipt.outcome
+              if (typeof outcome !== 'string' || !REMOTE_INTERVENTION_ACT_OUTCOMES.includes(outcome)) {
+                throw remoteContractError(
+                  'internal-error',
+                  `intervention.act: the plane returned a malformed receipt outcome '${String(outcome)}'`,
+                  { field: 'outcome', reason: 'port-contract' },
+                )
+              }
+              return { data: { outcome } }
+            })
           }
           default:
             return Promise.reject(new Error(`intervention handler routed an unknown method: ${method}`))
