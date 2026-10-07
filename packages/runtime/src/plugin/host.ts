@@ -100,9 +100,14 @@ import { createAuthorityCeilingReader, createPermissionAuthorityFacts } from './
 // sites — the docs port rides `permissionFacts`, whose leader-position
 // reads canonicalize at the ADDRESSED team's durable default workspace).
 import { createGovernanceWarningService } from '../../governance-warning/index.js'
-import type { GovernanceEnvelopeView } from '../../governance-warning/index.js'
+import type {
+  EnvelopeContains,
+  GovernanceEnvelopeView,
+  GovernanceWarningDocsPort,
+  GovernanceWarningDocumentView,
+} from '../../governance-warning/index.js'
 import { commitDurableFact } from '../../action-router/index.js'
-import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js'
+import type { CanonicalKeyContains, PermissionAuthorityFacts, TeamPermissionPlane } from './permission-plane.js'
 import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
 import type { TemplatePermissionPolicy } from '../../../domain/blueprint/src/index.js'
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../storage/schema/index.js'
@@ -837,6 +842,121 @@ async function loadLegacyInspect(): Promise<LegacyInspectFn> {
     TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_GLUE_UNAVAILABLE,
     `the frozen legacy reader entry could not be loaded: ${failures.join(' | ')}`,
   )
+}
+
+/**
+ * A4-PR6 review round 1 (fix 2/6) — the WARNING lane's docs adapter,
+ * exported so the HOST ADAPTER ITSELF is testable (the review's finding:
+ * the blocker lived in this glue and was invisible to the fake-port
+ * suites). The pre-fix shape read the leader envelope through the
+ * lane-facing `permissionEnvelope` fact, whose abstention value is the
+ * zero-authority document `{ rules: [] }` and whose `ok` flag is dropped:
+ * on an UNKNOWN binding, a canonicalization fault, or binding drift
+ * across the canonicalization await, the comparator saw a leader with NO
+ * claims, answered `consistent`, and the gate opened — an UNREADABLE
+ * authority document silently passing the gate, reachable from the wire.
+ * The adapter now consumes the three-state `permissionEnvelopeState`: a
+ * faulted read maps to `{ stage: 'unreadable' }` → the closed
+ * `authority-document-unreadable` corrupt arm (fail closed, never
+ * acknowledgeable). The lane polarity stays exactly as documented: an
+ * abstained EXPANSION read still means zero authority on the approval
+ * plane (widening is the failure mode there); only the COMPARATOR gets
+ * the third state.
+ */
+/** The envelope-document shape both authority documents share. */
+export type AuthorityEnvelopeDocument = {
+  readonly rules: readonly {
+    readonly operationClass: string
+    readonly matcher: { readonly kind: 'exact' | 'subtree' | 'fingerprint'; readonly resource: string }
+    readonly maximumEffect: 'deny' | 'ask' | 'allow'
+  }[]
+}
+
+export function buildGovernanceWarningDocs(deps: {
+  readonly blueprintSchemaVersion: PermissionAuthorityFacts['blueprintSchemaVersion']
+  readonly blueprintContentHash: PermissionAuthorityFacts['blueprintContentHash']
+  readonly permissionEnvelopeState: PermissionAuthorityFacts['permissionEnvelopeState']
+  readonly teamHardEnvelope: PermissionAuthorityFacts['teamHardEnvelope']
+  readonly envelopeView: (document: AuthorityEnvelopeDocument) => GovernanceEnvelopeView
+  readonly leaderInstanceId: string
+}): GovernanceWarningDocsPort {
+  return {
+    async read(teamSessionId): Promise<GovernanceWarningDocumentView> {
+      const schemaVersion = deps.blueprintSchemaVersion(teamSessionId)
+      if (schemaVersion === undefined) return { stage: 'unreadable' }
+      if (schemaVersion !== 3) return { stage: 'pre-v3', schemaVersion }
+      const hard = await deps.teamHardEnvelope(teamSessionId, deps.leaderInstanceId)
+      if (hard.status === 'unavailable') return { stage: 'unreadable' }
+      const contentHash = deps.blueprintContentHash(teamSessionId)
+      if (contentHash === undefined) return { stage: 'unreadable' }
+      const leader = await deps.permissionEnvelopeState(teamSessionId, deps.leaderInstanceId)
+      // fix 2/6: a FAULTED leader read is `unreadable`, never a zero-claim
+      // document — `consistent` must mean both documents were READ.
+      if (leader.status === 'unavailable') return { stage: 'unreadable' }
+      return {
+        stage: 'v3',
+        hardStatus: hard.status === 'declared' ? 'declared' : 'absent',
+        blueprintContentHash: contentHash,
+        leader: deps.envelopeView(leader.document),
+        hard:
+          hard.status === 'declared'
+            ? deps.envelopeView(hard.document)
+            : { rules: [] },
+      }
+    },
+  }
+}
+
+/** Structural view of the one legal containment seam on the fs provider. */
+export interface GovernanceWarningFsProvider {
+  contains?: (parent: { targetKey: string }, child: { targetKey: string }) => unknown
+}
+
+/**
+ * A4-PR6 review round 1 (fix 3/6) — the WARNING lane's containment
+ * predicate: THREE-STATE BY CONSTRUCTION (never throws, `undefined` =
+ * undeterminable). The permission PLANE's `fsContainsKeys` keeps its own
+ * documented law (absent `contains` THROWS → the kernel's typed
+ * `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE`); the warning lane must not
+ * inherit that shape: a throw escaped `runGate`/`governanceStartGate`
+ * unmapped as `internal-error`, and the plane's `=== true` coercion
+ * collapsed every non-`true` provider answer (including "I cannot
+ * answer") to a fabricated `false` — which made the comparator's
+ * `undetermined` verdict UNREACHABLE in production, replacing
+ * "coverage unknown → warning" with a guess. Here: absent provider or
+ * absent seam → `undefined`; a throwing provider → `undefined`; a
+ * non-boolean answer → `undefined`; only a real `true`/`false` decides.
+ * (Pinned end to end by `a4p6-governance-warning-host-adapter.test.ts`:
+ * the real service over the real adapters reaches `undetermined` →
+ * `warning-required`.)
+ */
+export function buildGovernanceWarningContains(
+  fsBackend: () => GovernanceWarningFsProvider,
+): EnvelopeContains {
+  return (parentKey, pointKey) => {
+    try {
+      const backend = fsBackend()
+      if (typeof backend.contains !== 'function') return undefined
+      const answer = backend.contains({ targetKey: parentKey }, { targetKey: pointKey })
+      if (answer === true) return true
+      if (answer === false) return false
+      return undefined
+    } catch {
+      return undefined
+    }
+  }
+}
+
+/** The envelope-document shape both authority documents share. */
+function governanceViewOfEnvelope(document: AuthorityEnvelopeDocument): GovernanceEnvelopeView {
+  return {
+    rules: document.rules.map((rule) => ({
+      operationClass: rule.operationClass,
+      effect: rule.maximumEffect,
+      matcherKind: rule.matcher.kind,
+      matcherKey: rule.matcher.resource,
+    })),
+  }
 }
 
 /**
@@ -1885,20 +2005,14 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // `permissionFacts` at the LEADER position (whose canonicalization basis
   // is the ADDRESSED team's durable default workspace — the FIX-3 law),
   // which structurally excludes placeholder/actor identities from the gate.
-  const governanceWarningEnvelopeView = (
-    document: { readonly rules: readonly {
-      readonly operationClass: string
-      readonly matcher: { readonly kind: 'exact' | 'subtree' | 'fingerprint'; readonly resource: string }
-      readonly maximumEffect: 'deny' | 'ask' | 'allow'
-    }[] },
-  ): GovernanceEnvelopeView => ({
-    rules: document.rules.map((rule) => ({
-      operationClass: rule.operationClass,
-      effect: rule.maximumEffect,
-      matcherKind: rule.matcher.kind,
-      matcherKey: rule.matcher.resource,
-    })),
-  })
+  // A4-PR6 review round 1 (fixes 2 + 3/6): the docs + contains adapters are
+  // the EXPORTED module-level builders (`buildGovernanceWarningDocs` /
+  // `buildGovernanceWarningContains`) so the adapter itself is testable —
+  // both review blockers lived in this glue: a faulted LEADER read now maps
+  // to `unreadable` (never a zero-claim document comparing `consistent`),
+  // and the warning lane's containment is three-state (a missing/faulting
+  // provider answers `undefined` = undetermined; it never throws past
+  // `runGate` and never coerces a non-`true` answer to a guessed `false`).
   // The funnel clock as a NAME: the durable funnel's call shape is
   // `(repositories, root, now, FACT-TYPE-LITERAL, payload)` — the fact-type
   // literal at position 4 is what `a4pr0a` derives statically, and the
@@ -1947,29 +2061,17 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
             ),
         ),
     },
-    docs: {
-      async read(teamSessionId) {
-        const schemaVersion = permissionFacts.blueprintSchemaVersion(teamSessionId)
-        if (schemaVersion === undefined) return { stage: 'unreadable' }
-        if (schemaVersion !== 3) return { stage: 'pre-v3', schemaVersion }
-        const hard = await permissionFacts.teamHardEnvelope(teamSessionId, LEADER_INSTANCE_ID)
-        if (hard.status === 'unavailable') return { stage: 'unreadable' }
-        const contentHash = permissionFacts.blueprintContentHash(teamSessionId)
-        if (contentHash === undefined) return { stage: 'unreadable' }
-        const leader = await permissionFacts.permissionEnvelope(teamSessionId, LEADER_INSTANCE_ID)
-        return {
-          stage: 'v3',
-          hardStatus: hard.status === 'declared' ? 'declared' : 'absent',
-          blueprintContentHash: contentHash,
-          leader: governanceWarningEnvelopeView(leader),
-          hard:
-            hard.status === 'declared'
-              ? governanceWarningEnvelopeView(hard.document)
-              : { rules: [] },
-        }
-      },
-    },
-    contains: fsContainsKeys,
+    docs: buildGovernanceWarningDocs({
+      blueprintSchemaVersion: (teamSessionId) => permissionFacts.blueprintSchemaVersion(teamSessionId),
+      blueprintContentHash: (teamSessionId) => permissionFacts.blueprintContentHash(teamSessionId),
+      permissionEnvelopeState: (teamSessionId, memberInstanceId) =>
+        permissionFacts.permissionEnvelopeState(teamSessionId, memberInstanceId),
+      teamHardEnvelope: (teamSessionId, memberInstanceId) =>
+        permissionFacts.teamHardEnvelope(teamSessionId, memberInstanceId),
+      envelopeView: governanceViewOfEnvelope,
+      leaderInstanceId: LEADER_INSTANCE_ID,
+    }),
+    contains: buildGovernanceWarningContains(fsBackend),
     now: governanceWarningNow,
   })
 
