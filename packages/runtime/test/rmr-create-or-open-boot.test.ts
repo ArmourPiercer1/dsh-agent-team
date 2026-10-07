@@ -64,10 +64,19 @@ import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 
 const ROOT_SID = 'session-rmrcooroot'
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /** The row blueprint (own id; structure mirrors the t12b2 fixture). */
 const BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: RMR-COO-BP',
   'revision: "1"',
   'leader:',

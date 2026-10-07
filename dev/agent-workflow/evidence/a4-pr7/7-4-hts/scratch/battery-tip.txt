@@ -1,0 +1,124 @@
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+MUTATION A (expect red): every dirty line prints its FIRST site as `L<line>` — the `=v<version>` is gone
+  targets        : dirty paths=75 dropped=packages/domain/blueprint/testdata/fixtures.ts colliding=packages/runtime/test/a2c3-inspect-operation-permission.test.ts:L114 duplicated=cordis.patch.yml
+  first dirty line : OFFENDING cordis.patch.yml :: L60
+  tally line       : RESULT dirty(75 files, 138 sites)
+  report changed   : YES (differs from the pristine report)
+
+==> A  Tests  1 failed | 57 passed (58)   leg=[the fence reports sites, not a bare count, and names a file the reader can open] sha-ok=YES
+    AssertionError: report must print EXACTLY the sites of cordis.patch.yml: expected [ 'L60' ] to d
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+MUTATION B (expect red): packages/domain/blueprint/testdata/fixtures.ts disappears from the naming while its sites stay in the result
+  targets        : dirty paths=75 dropped=packages/domain/blueprint/testdata/fixtures.ts colliding=packages/runtime/test/a2c3-inspect-operation-permission.test.ts:L114 duplicated=cordis.patch.yml
+  first dirty line : OFFENDING cordis.patch.yml :: L60=v1
+  tally line       : RESULT dirty(75 files, 138 sites)
+  report changed   : YES (differs from the pristine report)
+
+==> B  Tests  2 failed | 56 passed (58)   leg=[the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line] sha-ok=YES
+    AssertionError: report must print EXACTLY the sites of packages/domain/blueprint/testdata/fixtur
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+MUTATION C (expect red): packages/runtime/test/a2c3-inspect-operation-permission.test.ts L114 alone loses its suffix — the token `L114=v1` also occurs elsewhere, so a whole-report search is blind to it
+  targets        : dirty paths=75 dropped=packages/domain/blueprint/testdata/fixtures.ts colliding=packages/runtime/test/a2c3-inspect-operation-permission.test.ts:L114 duplicated=cordis.patch.yml
+  first dirty line : OFFENDING cordis.patch.yml :: L60=v1
+  tally line       : RESULT dirty(75 files, 138 sites)
+  report changed   : YES (differs from the pristine report)
+
+==> C  Tests  1 failed | 57 passed (58)   leg=[the fence reports sites, not a bare count, and names a file the reader can open] sha-ok=YES
+    AssertionError: report must print EXACTLY the sites of packages/runtime/test/a2c3-inspect-operat
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+MUTATION E (expect red): a PHANTOM site `L99999=v1` is appended to every dirty path: printed, never found
+  targets        : dirty paths=75 dropped=packages/domain/blueprint/testdata/fixtures.ts colliding=packages/runtime/test/a2c3-inspect-operation-permission.test.ts:L114 duplicated=cordis.patch.yml
+  first dirty line : OFFENDING cordis.patch.yml :: L60=v1, L99999=v1
+  tally line       : RESULT dirty(75 files, 138 sites)
+  report changed   : YES (differs from the pristine report)
+
+==> E  Tests  1 failed | 57 passed (58)   leg=[the fence reports sites, not a bare count, and names a file the reader can open] sha-ok=YES
+    AssertionError: report must print EXACTLY the sites of cordis.patch.yml: expected [ 'L60=v1', 'L
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+MUTATION F (expect red): the first site of cordis.patch.yml is printed TWICE on its own line
+  targets        : dirty paths=75 dropped=packages/domain/blueprint/testdata/fixtures.ts colliding=packages/runtime/test/a2c3-inspect-operation-permission.test.ts:L114 duplicated=cordis.patch.yml
+  first dirty line : OFFENDING cordis.patch.yml :: L60=v1, L60=v1
+  tally line       : RESULT dirty(75 files, 138 sites)
+  report changed   : YES (differs from the pristine report)
+
+==> F  Tests  1 failed | 57 passed (58)   leg=[the fence reports sites, not a bare count, and names a file the reader can open] sha-ok=YES
+    AssertionError: report must print EXACTLY the sites of cordis.patch.yml: expected [ 'L60=v1', 'L
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+MUTATION D (expect red): the CLI truncates long OFFENDING lines on stdout; the returned string stays whole
+  targets        : dirty paths=75 dropped=packages/domain/blueprint/testdata/fixtures.ts colliding=packages/runtime/test/a2c3-inspect-operation-permission.test.ts:L114 duplicated=cordis.patch.yml
+  first dirty line : OFFENDING cordis.patch.yml :: L60=v1
+  tally line       : RESULT dirty(75 files, 138 sites)
+  report changed   : YES (differs from the pristine report)
+
+==> D  Tests  1 failed | 57 passed (58)   leg=[invoking the script by name is a real gate: non-zero exit while dirty sites exist] sha-ok=YES
+    AssertionError: expected 'scan: blueprint document-version fenc…' to be 'scan: blueprint docum
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+MUTATION G (expect red): the dirty tally under-reports its SITE count by one (file count untouched)
+  targets        : dirty paths=75 dropped=packages/domain/blueprint/testdata/fixtures.ts colliding=packages/runtime/test/a2c3-inspect-operation-permission.test.ts:L114 duplicated=cordis.patch.yml
+  first dirty line : OFFENDING cordis.patch.yml :: L60=v1
+  tally line       : RESULT dirty(75 files, 137 sites)
+  report changed   : YES (differs from the pristine report)
+
+==> G  Tests  1 failed | 57 passed (58)   leg=[the fence reports sites, not a bare count, and names a file the reader can open] sha-ok=YES
+    AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'RESULT dirty(75 
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+MUTATION I (expect green): BY DESIGN: a path prints its sites in reverse order — order is not the contract
+  targets        : dirty paths=75 dropped=packages/domain/blueprint/testdata/fixtures.ts colliding=packages/runtime/test/a2c3-inspect-operation-permission.test.ts:L114 duplicated=cordis.patch.yml
+  first dirty line : OFFENDING cordis.patch.yml :: L60=v1
+  tally line       : RESULT dirty(75 files, 138 sites)
+  report changed   : YES (differs from the pristine report)
+
+==> I  Tests  58 passed (58)              leg=[none] sha-ok=YES
+    
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-hts/dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch/mutate-fence.mjs:311
+  throw new Error(
+        ^
+
+Error: MUTATION J is VACUOUS: the mutated producer printed a byte-identical report. A mutation  that changes nothing cannot prove anything — restore ran, nothing was measured.
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-hts/dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch/mutate-fence.mjs:311:9
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
+
+==> J  REFUSED (vacuous guard fired)  sha-ok=YES
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-hts/dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch/mutate-fence.mjs:311
+  throw new Error(
+        ^
+
+Error: MUTATION V is VACUOUS: the mutated producer printed a byte-identical report. A mutation  that changes nothing cannot prove anything — restore ran, nothing was measured.
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-hts/dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch/mutate-fence.mjs:311:9
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
+
+==> V  REFUSED (vacuous guard fired)  sha-ok=YES
+
+=== J re-expressed (line order, not token order): prose is 5 files / 5 sites on this base, so a token reversal is byte-identical and the vacuity guard refused the old J ===
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+MUTATION J (expect green): BY DESIGN: PROSE reorders its own output lines — prose is another leg and is not gated
+  targets        : dirty paths=75 dropped=packages/domain/blueprint/testdata/fixtures.ts colliding=packages/runtime/test/a2c3-inspect-operation-permission.test.ts:L114 duplicated=cordis.patch.yml
+  first dirty line : OFFENDING cordis.patch.yml :: L60=v1
+  tally line       : RESULT dirty(75 files, 138 sites)
+  report changed   : YES (differs from the pristine report)
+
+==> J  Tests  58 passed (58)          sha-ok=YES
+  pristine base  : sha256 bcb569c107b6e413… (HEAD blob, matches fence-script-sha.txt)
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-hts/dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch/mutate-fence.mjs:317
+  throw new Error(
+        ^
+
+Error: MUTATION V is VACUOUS: the mutated producer printed a byte-identical report. A mutation  that changes nothing cannot prove anything — restore ran, nothing was measured.
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-hts/dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch/mutate-fence.mjs:317:9
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
+
+==> V  REFUSED by the vacuity guard

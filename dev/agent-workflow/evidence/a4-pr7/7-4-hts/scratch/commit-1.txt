@@ -1,0 +1,56 @@
+A4-PR7 §7.4 (C-tools+harness 1/5): migrate the P5-T5 harness Blueprint source to v3
+
+packages/runtime/root-binding/harness/blueprint-source.mjs is the bounded-run
+harness's OWN boot document: root-binding/harness/plugin.mjs:431 feeds it to the
+production parser (`parseBlueprint`) at row setup and derives the snapshot ref
+(`blueprintId`/`revision`/`contentHash`) from that parse. The version line is
+therefore read by the product, not by a test — the fence's `dirty` verdict is
+correct and the disposition is migrate-by-hand, not delete-lie. After §7.3's flip
+a v1 document is refused at that call, so leaving it would break the harness.
+
+v3 requires BOTH authority documents and never defaults them
+(domain/blueprint/src/validate.ts:1335-1336). Both are carried as `rules: []`,
+which is the narrowest legal value and exactly what this harness always declared:
+its v1 document carried neither carrier, and an absent carrier is a typed absence
+meaning zero expansion authority — the same ceiling the reader derives from a
+declared-empty one (`authority-envelope.ts`, "an absent hard document is
+no-authority"). No P5-T5 scenario opens an expansion, so any rule written here
+would be authority the harness never exercises. Nothing else in the document
+moved: identity, personas, requirements, envelopes, policyStates and quotas are
+byte-identical, and no rule was added to the fence or its scope.
+
+No hand-copied hash to re-pin: run.mjs:344 carries no contentHash ON PURPOSE
+("the snapshot ref is derived from the parsed blueprint document") and
+plugin.mjs:439 refuses on mismatch. The derived identity is printed by the probe,
+not asserted here: v1 `sha256:a22c7816f98bc462e29b62e35fdda898051cccdad0a90157485f96834c3a71b5`
+→ v3 `sha256:a7f3203fba5ab13215054fdc5a9ace02318a934ca41d15f09aaf8625d6e838b5`.
+
+RED FIRST (the fence refuses to let a migrated path keep its deferral):
+
+  $ pnpm exec vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts
+   × every deferred path is still dirty (a migrated path must leave the list)
+   FAIL  ... > every deferred path is still dirty (a migrated path must leave the list)
+   AssertionError: expected [ Array(1) ] to deeply equal []
+   - []
+   + [
+   +   "packages/runtime/root-binding/harness/blueprint-source.mjs",
+   + ]
+    at packages/testkit/test/a4p7-blueprint-version-clean.test.ts:450:19
+   Tests  1 failed | 47 passed (48)
+
+Then only this lane's own DEFERRALS line was deleted (no reorder, no reflow, no
+other lane's entry touched) and the same command is green:
+
+   Tests  48 passed (48)
+
+EVIDENCE (this is the whole of the pre-§7.6 evidence for this file; the harness
+leg itself runs in §7.6 — the file was NOT booted here, no host was started and
+nothing under tests/homes/** was created or mutated):
+  node --check packages/runtime/root-binding/harness/blueprint-source.mjs  → OK
+  node dev/.../7-4-hts/probes/probe-blueprint-source.mjs  → the imported module's
+    own document parses at v3 with both carriers `{rules: []}`; forging the
+    version to 9 is refused SCHEMA_VERSION_MISMATCH ("this build supports
+    [1, 2, 3]"); deleting either carrier is refused MALFORMED_DTO "missing
+    required field ... at $". Verified by construction and by the fence.
+  node scripts/verify-blueprint-version-clean.mjs → no longer names this path
+    (RESULT dirty(120 files, 259 sites) → RESULT dirty(119 files, 258 sites)).

@@ -1,0 +1,376 @@
+MUTATION: factory minimalBlueprintLines -> schemaVersion 3 + permissionMutationEnvelope/teamHardEnvelope rules:[] (sha256 orig 0d2231eca8e3b25b2ea4dfa7d98dfa52879de0d936534ecb67f9fd3145b97df0)
+RUN AT HEAD 3dad7262 BEFORE witness ownership
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b1
+
+ ❯ packages/runtime/test/a4f1-row-version-not-document-version.test.ts (16 tests | 4 failed) 20ms
+     ✓ the fixture really diverges: the row stamp is the L3 stamp, the document says otherwise 2ms
+     ✓ a frozen v3 document is listed as v3, not as the row stamp 1ms
+     × a frozen v1 document is listed as v1 — three documents, three answers, one stamp 4ms
+     ✓ the state is always the state OF THE REPORTED VERSION — never an independent default 1ms
+     ✓ a row whose document cannot be read reports NO version and is NOT current 1ms
+     ✓ resolving that unreadable row is refused by name, and is not a corrupt-registry claim 1ms
+     ✓ the bootstrap anchor still answers with its parsed document version 1ms
+     ✓ a frozen v3 row is listed at v3 on the wire — the receipt that measured 2 1ms
+     ✓ a frozen row with no readable version reaches the client with no number 0ms
+     ✓ a saved v3 source and a frozen v3 row answer the same version on the same read 0ms
+     ✓ no listed state carries the L3 stamp as its version unless its document declares it 0ms
+     × the freeze really wrote a row, and that row is stamped with the L3 version 1ms
+     × the listing says the same version before and after the freeze 0ms
+     ✓ the freeze gate on an already-frozen row reads the document too 1ms
+     × every row this build writes carries the domain stamp, whatever the document says 1ms
+     ✓ the L3 constants are the values this phase pinned, unchanged by the fix 0ms
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (21 tests | 1 failed) 15ms
+     ✓ every version this build runs is current 1ms
+     ✓ a version nobody defined is unreadable — never current, never migration-required 1ms
+     ✓ a retired version is migration-required exactly when the domain set says so 0ms
+     ✓ a runnable saved source lists current with its version 1ms
+     ✓ a frozen row on a version nobody defined is UNREADABLE, not current 2ms
+     ✓ a retired saved source is migration-required with its version 1ms
+     ✓ no listed identity carries the deleted boolean (one carrier, not two) 2ms
+     ✓ every listed revision carries a state, so a boolean cannot stand in for one 0ms
+     ✓ the frozen row on an undefined version is NOT reported as current 0ms
+     ✓ runnable revisions are current, side by side with the unreadable one 0ms
+     ✓ a retired and a runnable revision carry different states in one listing 0ms
+     ✓ the frozen `{blueprintId, revisions}` shape is untouched (older consumers) 0ms
+     ✓ the state is part of the read, not of the contract version 0ms
+     × the factory root derives its anchor state instead of omitting it 3ms
+     ✓ a host that wires the catalog but NOT the authority gets a LOUD catalog 0ms
+     ✓ a state outside the closed set never reaches the wire — it is unreadable 0ms
+     ✓ the classifier really does answer unreadable for a version nobody defined 0ms
+     ✓ a retired anchor is named as a migration, with its version, and never as unreadable 0ms
+     ✓ an unreadable anchor is named as unreadable and is NOT offered a migration 0ms
+     ✓ neither line still renders the deleted boolean 0ms
+     ✓ both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it 0ms
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (70 tests | 8 failed) 36ms
+     ✓ an unidentifiable document on an unknown version is refused for its identity, not its version 1ms
+     ✓ a document with no blueprintId is refused for the missing identity whatever its version 0ms
+     ✓ a version nobody defined, with a good identity, is parse-rejected — never migration-required 0ms
+     ✓ a non-integer version stays parse-rejected (no identity is owed to it) 0ms
+     ✓ bad YAML is parse-rejected: identity is not owed to an unreadable file 0ms
+     ✓ an unreadable file is refused where it fails to decode, never on the version line 0ms
+     ✓ a well-formed identity on a version this build RUNS inspects ok, with its version carried 0ms
+     ✓ the retired set is exactly DEFINED minus SUPPORTED (no threshold, no hand-declared list) 0ms
+     ✓ every version the product once defined is in the history set, so the flip makes a backlog and not a mystery 0ms
+     ✓ the retired set is empty exactly while the bridge still runs v1 and v2 0ms
+     ✓ the two refusal names are a closed pair and neither overloads an existing code 1ms
+     × it is LISTED, with its identity and its version, under a build that runs v3 only 6ms
+     ✓ it is distinguishable from a parse-rejected file, which is still NOT listed 0ms
+     × every listed arm carries a version and a migration STATE, the anchor included 1ms
+     × resolve refuses it with BLUEPRINT_MIGRATION_REQUIRED — not not-found, not the parser 2ms
+     × the refusal asks for no source read: a retired document is never parsed on the way to no 1ms
+     × a revision-less resolve reaches the same refusal (the latest-revision walk keeps it visible) 2ms
+     × the listed flag is what the refusal acts on, so the catalog can never contradict resolve 2ms
+     × the live catalog facade lists it and refuses it with the same typed code 3ms
+     × under the bridge the same file resolves normally, so the refusal is version-state and not a blanket break 1ms
+     ✓ a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal 1ms
+     ✓ that refusal is not the registry-integrity refusal the row would otherwise produce 0ms
+     ✓ the strong parser accepts a v1 document exactly while the bridge runs it 0ms
+     ✓ a version this build never defined is a refusal, not a crash 0ms
+     ✓ a version this build runs classifies as runnable (the ordinary host is unchanged) 1ms
+     ✓ an anchor that is not a document at all still throws (fail-closed construction) 0ms
+     ✓ the root constructed (the constructor survived the anchor) 0ms
+     ✓ ZERO durable writes: no TeamSession row, no binding, no compatibility state 0ms
+     ✓ ZERO agent effect through the live glue 0ms
+     ✓ the code is the document code, never a governance warning code 0ms
+     ✓ the governance leg is never consulted for the refused create start 0ms
+     ✓ a re-drive gives the same refusal, not a second state 0ms
+     ✓ reading a field refuses typed 0ms
+     ✓ enumerating or serialising it refuses too (no empty-object leak) 0ms
+     ✓ team.ensureRootLive on a refused bound document is refused 0ms
+     ✓ the stub glue ensure port was NEVER entered (the gate sits in front of it) 0ms
+     ✓ the wire carries it in its OWN closed vocabulary, not the document code 0ms
+     ✓ the SAME entrance on the governance fourth arm answers with the typed wire name 0ms
+     ✓ handoff.create over a refused bound document creates NOTHING and never reaches the governance leg 0ms
+     ✓ the SAME team.create shape succeeds over an open bound document (the control) 0ms
+     ✓ team.create over the same bound document is refused, leaving the row NOT LIVE 0ms
+     ✓ a CREATE mint over a refused bound document fails closed with ZERO agent effect 0ms
+     ✓ the refused mint made the chokepoint commit and NO compatibility/prober write 0ms
+     ✓ the entrance asked the bound-document resolver for THIS root 0ms
+     ✓ the refusal is typed and boot() never reached the live layer 0ms
+     ✓ the refused resume wrote NOTHING before refusing 0ms
+     ✓ the resume completed (the new gate broke nothing it guards) 0ms
+     ✓ the resumed root went live through the glue exactly once 0ms
+     ✓ its ensureRootLive entrance reached the glue (the gate is not blocking what it allows) 0ms
+     ✓ the write counter is not a blind spot (a real start does record) 0ms
+     ✓ a no-ref legacy row on a refused anchor refuses typed (not the domain parse error) 0ms
+     ✓ and a runnable anchor still resolves by definition (the legacy binding is intact) 1ms
+     ✓ the authority constructed on the refused anchor 0ms
+     ✓ a version nobody defined is NOT listed (there is no migration to advertise) 1ms
+     ✓ an anchor that is not a document still fails the authority construction 0ms
+     ✓ a fingerprint rule against an exact target is a DECISIVE non-coverage, never undetermined 0ms
+     ✓ the reverse shape pairing is decisive too (the gap is symmetric) 0ms
+     ✓ each shape does cover its own target (the controls that keep the two above honest) 0ms
+     ✓ the CANDIDATE GATE: a shell scope that cannot name its command is refused, never answered from the tool key 0ms
+     ✓ the shell set is the tool key AND the fingerprint; the file set is the point alone 0ms
+     ✓ a point that already names the command does not gain a second shape (more candidates is not automatically more conservative) 0ms
+     ✓ the two PRODUCTION sites derive the SAME set: same row, same documents, same answer 1ms
+     ✓ a refusal is TERMINAL at the consumption point: a shell row with no command is a named refusal, not the persisted point alone 0ms
+     ✓ a shell scope that DOES carry the fingerprint is not refused at the candidate gate (control) 0ms
+     ✓ THE MEET ANSWERS AT THE FINGERPRINT RUNG: one input goes leader -> human-admin 0ms
+     ✓ THE MEET IS LIVE AT CONSUMPTION: the same row and documents answer `stale`, not `still-covered` 0ms
+     ✓ ABSORPTION at the ASK: one `undetermined` candidate and one decided one is `authority-undetermined` 0ms
+     ✓ ABSORPTION at the CONSUMPTION point: the same pair is `undetermined`, never the decided candidate alone 0ms
+     ✓ NEVER WIDER: the meet is exactly the highest rung any candidate requires, over a matrix of documents 1ms
+     ✓ DISCLOSURE: a declared shell narrowing below `allow` now bites, and the rung it demands has no Alpha.4 resolver 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4f1-row-version-not-document-version.test.ts > a4f1 A: a frozen row answers the version question with its document > a frozen v1 document is listed as v1 — three documents, three answers, one stamp
+AssertionError: expected 3 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ packages/runtime/test/a4f1-row-version-not-document-version.test.ts:289:30
+    287|   it('a frozen v1 document is listed as v1 — three documents, three an…
+    288|     const v1 = listed(authorityA, 'a4f1.frozen-v1')
+    289|     expect(v1.schemaVersion).toBe(1)
+       |                              ^
+    290|     expect(v1.migrationState).toBe(blueprintVersionStateOf(1))
+    291|     // Three readable rows, three declared versions, one L3 stamp on a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  packages/runtime/test/a4f1-row-version-not-document-version.test.ts > a4f1 C: crossing the freeze boundary does not change the reported version > the freeze really wrote a row, and that row is stamped with the L3 version
+AssertionError: expected 3 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ packages/runtime/test/a4f1-row-version-not-document-version.test.ts:538:74
+    536|     expect(frozenByFreeze).not.toBe(undefined)
+    537|     expect(frozenByFreeze?.schemaVersion).toBe(TEAM_DOMAIN_SCHEMA_VERS…
+    538|     expect(declaredBlueprintSchemaVersion(frozenByFreeze?.source ?? ''…
+       |                                                                          ^
+    539|     expect(frozenByFreeze?.schemaVersion).not.toBe(declaredBlueprintSc…
+    540|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  packages/runtime/test/a4f1-row-version-not-document-version.test.ts > a4f1 C: crossing the freeze boundary does not change the reported version > the listing says the same version before and after the freeze
+AssertionError: expected 3 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ packages/runtime/test/a4f1-row-version-not-document-version.test.ts:547:33
+    545|     // source (registry-wins) and the row arm answered from its stamp.…
+    546|     // one version, across the boundary.
+    547|     expect(versionBeforeFreeze).toBe(1)
+       |                                 ^
+    548|     expect(versionAfterFreeze).toBe(versionBeforeFreeze)
+    549|     expect(versionAfterFreeze).not.toBe(TEAM_DOMAIN_SCHEMA_VERSION)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  packages/runtime/test/a4f1-row-version-not-document-version.test.ts > a4f1 D: the storage row keeps its L3 stamp untouched > every row this build writes carries the domain stamp, whatever the document says
+AssertionError: expected 3 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ packages/runtime/test/a4f1-row-version-not-document-version.test.ts:595:59
+    593|     expect(ROW_CORRUPT.schemaVersion).toBe(TEAM_DOMAIN_SCHEMA_VERSION)
+    594|     expect(declaredBlueprintSchemaVersion(ROW_V3.source)).toBe(3)
+    595|     expect(declaredBlueprintSchemaVersion(ROW_V1.source)).toBe(1)
+       |                                                           ^
+    596|   })
+    597|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > it is LISTED, with its identity and its version, under a build that runs v3 only
+AssertionError: expected { Object (blueprintId, revision, ...) } to match object { Object (blueprintId, revision, ...) }
+
+- Expected
++ Received
+
+  {
+    "blueprintId": "a4p7.unmigrated",
+-   "migrationState": "migration-required",
++   "migrationState": "current",
+    "origin": "saved",
+    "revision": "1",
+-   "schemaVersion": 1,
++   "schemaVersion": 3,
+    "sourceFile": "unmigrated.yaml",
+  }
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:447:26
+    445|     // The regression this pins: before Task 7.1 this entry did not ex…
+    446|     expect(w1Unmigrated).toBeDefined()
+    447|     expect(w1Unmigrated).toMatchObject({
+       |                          ^
+    448|       blueprintId: 'a4p7.unmigrated',
+    449|       revision: '1',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > every listed arm carries a version and a migration STATE, the anchor included
+AssertionError: expected 3 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:481:89
+    479|     // cutover flips, so only the version is asserted here (the flag f…
+    480|     // retired anchor is group D's claim, where the set itself is narr…
+    481|     expect(w1Listed.find((identity) => identity.origin === 'bootstrap'…
+       |                                                                                         ^
+    482|   })
+    483|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > resolve refuses it with BLUEPRINT_MIGRATION_REQUIRED — not not-found, not the parser
+AssertionError: expected undefined to be 'BLUEPRINT_MIGRATION_REQUIRED' // Object.is equality
+
+- Expected:
+"BLUEPRINT_MIGRATION_REQUIRED"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:486:33
+    484|   it('resolve refuses it with BLUEPRINT_MIGRATION_REQUIRED — not not-f…
+    485|     const error = captureError(() => w1Authority.resolve('a4p7.unmigra…
+    486|     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.M…
+       |                                 ^
+    487|     if (!isTeamPluginError(error)) return
+    488|     expect(error.detail).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > the refusal asks for no source read: a retired document is never parsed on the way to no
+AssertionError: expected undefined to be 'BLUEPRINT_MIGRATION_REQUIRED' // Object.is equality
+
+- Expected:
+"BLUEPRINT_MIGRATION_REQUIRED"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:506:33
+    504|     w1Cutover.readCalls.length = 0
+    505|     const error = captureError(() => w1Authority.resolve('a4p7.unmigra…
+    506|     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.M…
+       |                                 ^
+    507|     expect(w1Cutover.readCalls).toEqual([])
+    508|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > a revision-less resolve reaches the same refusal (the latest-revision walk keeps it visible)
+AssertionError: expected undefined to be 'BLUEPRINT_MIGRATION_REQUIRED' // Object.is equality
+
+- Expected:
+"BLUEPRINT_MIGRATION_REQUIRED"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:515:33
+    513|     // the operator to a file that does not exist.
+    514|     const error = captureError(() => w1Authority.resolve('a4p7.unmigra…
+    515|     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.M…
+       |                                 ^
+    516|   })
+    517|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > the listed flag is what the refusal acts on, so the catalog can never contradict resolve
+AssertionError: expected 'current' to be 'migration-required' // Object.is equality
+
+Expected: "migration-required"
+Received: "current"
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:526:36
+    524|     const listed = w1Authority.listIdentities().find((identity) => ide…
+    525|     const error = captureError(() => w1Authority.resolve('a4p7.unmigra…
+    526|     expect(listed?.migrationState).toBe('migration-required')
+       |                                    ^
+    527|     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.M…
+    528|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > the live catalog facade lists it and refuses it with the same typed code
+AssertionError: expected undefined to be 'BLUEPRINT_MIGRATION_REQUIRED' // Object.is equality
+
+- Expected:
+"BLUEPRINT_MIGRATION_REQUIRED"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:535:87
+    533|     expect(catalog.hasBlueprint('a4p7.unmigrated')).toBe(true)
+    534|     expect([...catalog.listRevisions('a4p7.unmigrated')]).toEqual(['1'…
+    535|     expect(pluginCodeOf(captureError(() => catalog.resolve('a4p7.unmig…
+       |                                                                                       ^
+    536|       BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
+    537|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > under the bridge the same file resolves normally, so the refusal is version-state and not a blanket break
+AssertionError: expected 3 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:546:37
+    544|     const blueprint = w1BridgeAuthority.resolve('a4p7.unmigrated', '1')
+    545|     expect(blueprint.blueprintId).toBe('a4p7.unmigrated')
+    546|     expect(blueprint.schemaVersion).toBe(1)
+       |                                     ^
+    547|     expect(w1BridgeUnmigrated).toMatchObject({ schemaVersion: 1, migra…
+    548|     // …and the bridge's listing carries the SAME identity, differing …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the factory root derives its anchor state instead of omitting it
+AssertionError: expected 3 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:646:39
+    644|     const anchorState = onlyState(rowsF, 'a4p7.catalog.anchor')
+    645|     expect(anchorState.migrationState).toBe('current')
+    646|     expect(anchorState.schemaVersion).toBe(V_RUNNABLE_V1)
+       |                                       ^
+    647|   })
+    648|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  13 failed | 94 passed (107)
+   Start at  05:09:04
+   Duration  1.32s (transform 2.32s, setup 0ms, import 3.49s, tests 71ms, environment 0ms)
+

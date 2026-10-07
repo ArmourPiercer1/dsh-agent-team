@@ -1,0 +1,73 @@
+# Byte-identity proof for the 7 carried (non-promoted) version digits
+# Method: normalize the FINAL file by deleting (a) every comment line this lane added,
+# (b) the added type import, (c) the V2_DOCUMENT_VERSION declaration, and (d) the
+# equivalent-expression swap back to the base token; then diff against the base bytes
+# taken from the commit (git show HEAD:<path>, snapshotted and sha256-recorded).
+# An EMPTY residual diff means nothing but comments + the equivalent expression changed,
+# so the YAML the builder emits is byte-for-byte what it emitted at base.
+
+--- startup-preflight-production-create.test.ts  non-comment content changes vs the commit:
+    +import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+    +const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+    -    'schemaVersion: 2',
+    +    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+--- startup-consent-production.test.ts  non-comment content changes vs the commit:
+    +import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+    +const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+    -    'schemaVersion: 2',
+    +    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+--- startup-all-templates-real-authority.test.ts  non-comment content changes vs the commit:
+    +import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+    +const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+    -    'schemaVersion: 2',
+    +    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+--- startup-template-disable-production.test.ts  non-comment content changes vs the commit:
+    +import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+    +const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+    -    'schemaVersion: 2',
+    +    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+--- template-disable-no-requirements-gate.test.ts  non-comment content changes vs the commit:
+    +import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+    +const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+    -  'schemaVersion: 2',
+    +  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+--- persona-kind-provider-preflight.test.ts  non-comment content changes vs the commit:
+    +const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+    -  'schemaVersion: 2',
+    +  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+    -  'schemaVersion: 2',
+    +  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+--- requirement-d1-d3-decision-scoping.test.ts  non-comment content changes vs the commit:
+    -  'schemaVersion: 1',
+    +  'schemaVersion: 3',
+    +  'permissionMutationEnvelope:',
+    +  '  rules: []',
+    +  'teamHardEnvelope:',
+    +  '  rules: []',
+    -  'schemaVersion: 1',
+    +  'schemaVersion: 3',
+    +  'permissionMutationEnvelope:',
+    +  '  rules: []',
+    +  'teamHardEnvelope:',
+    +  '  rules: []',
+    -  'schemaVersion: 1',
+    +  'schemaVersion: 3',
+    +  'permissionMutationEnvelope:',
+    +  '  rules: []',
+    +  'teamHardEnvelope:',
+    +  '  rules: []',
+    -  'schemaVersion: 1',
+    +  'schemaVersion: 3',
+    +  'permissionMutationEnvelope:',
+    +  '  rules: []',
+    +  'teamHardEnvelope:',
+    +  '  rules: []',
+    +const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+    -  'schemaVersion: 2',
+    +  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+
+# requirement-d1-d3 also contains the four INTENDED v1->v3 promotions, which is why
+# its list above carries them; the carrier part is the last three lines only.
+# Runtime note: TypeScript types erase, so \`schemaVersion: \${V2_DOCUMENT_VERSION}\` renders
+# 'schemaVersion: 2'. No rendered-string capture was taken; the argument is source-level
+# (no other byte changed) plus the suites staying green at identical test counts.

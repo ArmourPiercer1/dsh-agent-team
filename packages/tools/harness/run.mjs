@@ -211,7 +211,7 @@ const EXPECTED_TOOL_COUNT = 13
  */
 const TEAM_BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: P6T6-BP',
   'revision: "1"',
   'leader:',
@@ -257,6 +257,23 @@ const TEAM_BLUEPRINT_SOURCE = [
   '        - report-progress',
   '        - request-control',
   '      deny: []',
+  // Alpha.4 (A4-PR7 §7.4, pre-flip half): at schema version 3 both authority
+  // documents are required and neither is ever defaulted. `rules: []` is the
+  // narrowest legal value and it is the posture this fixture has always had (the
+  // v1 document carried neither carrier). It cannot move the P8-S4B M-scenarios:
+  // they mutate governance CELLS through teamRoot.mutation.governance.setOverride
+  // (the test-only route at packages/tools/harness/plugin.mjs:659, called at :712),
+  // whose only document read is the CAPABILITY envelope
+  // (src/plugin/root.ts:1897 readBlueprintEnvelope → capabilityValuesOf) and, for
+  // an operator slot with no origin, is skipped outright
+  // (governance/service.ts:305 writeTimeChecks); the v3 ceiling law lives on the
+  // permission-overlay mutation lane (governance/service.ts:651, :714,
+  // :1154-1178), which no route of this harness reaches. So writing a rule here
+  // would be the change, not the preservation.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: The P6T6 default state.',
@@ -1675,8 +1692,12 @@ async function main() {
     // session-child-p6t6seedw1) - a real member Session whose NEXT requests
     // must run on the mutated durable truth. Every mutation acts `as` the
     // ROOT session: the row maps that to operator authority, i.e.
-    // human-override records - the only v1 authority that can GRANT a cell
-    // (frozen empty-envelope ruling: autonomy-overlay grants are rejected).
+    // human-override records - the only authority on this lane that can GRANT a
+    // cell (frozen empty-envelope ruling: autonomy-overlay grants are rejected).
+    // The "v1" that used to qualify that sentence was dropped when §7.4 moved this
+    // harness's document to schema version 3: the ruling is about the
+    // human-override lane, not about the document's version, and the v3 authority
+    // documents below carry zero expansion rules either way.
 
     /** A tool call counts as blocked/absent (never silently allowed). */
     const toolUnavailable = (r) =>

@@ -315,9 +315,19 @@ try {
 const TCM_ROOT_SID = 'session-tcm-m2'
 const TCM_SEED_WORKER_ID = 'inst-tcmm2w1'
 const TCM_SEED_WORKER_CHILD = 'session-child-tcmm2w1'
+
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 const TCM_BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: TCM-M2-BP',
   'revision: "1"',
   'leader:',

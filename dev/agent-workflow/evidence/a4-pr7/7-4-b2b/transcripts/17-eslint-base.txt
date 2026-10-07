@@ -1,0 +1,54 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b-base/packages/runtime/test/p8s6-remote-commands.test.ts
+  384:5  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b-base/packages/runtime/test/rc2a1-fs-containment.test.ts
+  71:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-this-alias')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b-base/packages/runtime/test/startup-all-templates-real-authority.test.ts
+  196:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  198:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  222:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b-base/packages/runtime/test/startup-consent-production.test.ts
+  226:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  228:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  252:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  322:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  324:24  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  328:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b-base/packages/runtime/test/startup-preflight-production-create.test.ts
+  232:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  234:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  265:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b-base/packages/runtime/test/startup-template-disable-production.test.ts
+  203:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  205:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  229:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b-base/packages/runtime/test/team-compatibility-scope.test.ts
+  279:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  283:19  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  419:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  421:11  error    'registrationResult' is assigned a value but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  425:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  581:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  585:24  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  587:24  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  594:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  818:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  823:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  867:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  872:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  889:11  error    'deletedStale' is assigned a value but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b-base/packages/runtime/test/team-session-startup-fence.test.ts
+  411:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  463:7  error    'apply3' is assigned a value but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+
+✖ 33 problems (11 errors, 22 warnings)
+  0 errors and 22 warnings potentially fixable with the `--fix` option.
+

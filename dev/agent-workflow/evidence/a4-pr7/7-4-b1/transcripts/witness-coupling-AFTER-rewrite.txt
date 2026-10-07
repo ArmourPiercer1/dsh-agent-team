@@ -1,0 +1,14 @@
+MUTATION: identical to BEFORE side — factory minimalBlueprintLines -> schemaVersion 3 + empty envelopes (sha256 orig 0d2231eca8e3b25b2ea4dfa7d98dfa52879de0d936534ecb67f9fd3145b97df0)
+RUN AT HEAD 3dad7262 + witness ownership rewrite, AFTER side
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b1
+
+ ✓ packages/runtime/test/a4f1-row-version-not-document-version.test.ts (16 tests) 17ms
+ ✓ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (21 tests) 11ms
+ ✓ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (70 tests) 27ms
+
+ Test Files  3 passed (3)
+      Tests  107 passed (107)
+   Start at  05:13:46
+   Duration  1.26s (transform 2.21s, setup 0ms, import 3.35s, tests 54ms, environment 0ms)
+

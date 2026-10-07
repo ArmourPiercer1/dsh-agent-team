@@ -264,7 +264,7 @@ function memberBlock(rootSessionId, instanceId) {
 
 const BLUEPRINT_DOC = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BLUEPRINT_ID}`,
   `revision: "${BLUEPRINT_REVISION}"`,
   'leader:',
@@ -294,6 +294,24 @@ const BLUEPRINT_DOC = [
   '        - send-message',
   '        - report-progress',
   '      deny: []',
+  // Alpha.4 (A4-PR7 §7.4, pre-flip half): at schema version 3 both authority
+  // documents are required and neither is ever defaulted. `rules: []` is the
+  // narrowest legal value and it preserves exactly what G5 has always run with:
+  // the v1 document carried neither carrier, and an absent carrier means
+  // no-authority on the expansion plane — the same answer a declared-empty one
+  // gives. On the APPROVAL plane, which is the one this harness exercises (S4a/b/c
+  // are real member file and shell tool turns), an empty document is the identity:
+  // `narrowingForApproval` in packages/domain/authority-envelope/src/
+  // authority-envelope.ts states "ABSENCE OF A MATCHING RULE IMPOSES NO
+  // NARROWING" and that this is what makes the documented
+  // `teamHardEnvelope: { rules: [] }` survivable — "it removes nothing, and the
+  // Leader's approvable set stays whatever the ladder grants". So the member tool
+  // decisions this harness asserts on cannot move; writing a rule here is what
+  // would move them.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: "The g5a default state."',

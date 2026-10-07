@@ -86,7 +86,7 @@ const HUMAN = { kind: 'human', humanId: 'a3p4r3-operator' } as const
 
 const BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: A3P4R3-BP',
   'revision: "1"',
   'leader:',
@@ -110,6 +110,10 @@ const BLUEPRINT_SOURCE = [
   '        - send-message',
   '        - request-control',
   '      deny: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: The A3P4R3 default state.',

@@ -1,0 +1,48 @@
+# v2 structured-requirement -> v3 sweep (same mutation protocol as 06; scratch dir cleared before each run)
+# Every file goes RED. Three of them at module scope (the world setup asserts a refusal that no longer happens),
+# which vitest reports as 'no tests' — the underlying assertion is quoted below each one.
+
+--- requirement-d1-d3-decision-scoping.test.ts
+ Tests 4 failed | 38 passed (42)
+    × C7 — the RESUMING worker (slot pending) PENDING-blocks the first delegate (the kit B5 first half, unit level) 4ms
+    × C8 — the slot FAILED seconds later: the same delegate is the typed down-category FATAL (the kit B5 second half, unit level) 0ms
+    × D3c — the v2 resuming worker (slot pending) PENDING-blocks the admission (the engine PASS is voided) 0ms
+    × E6 — the v2 template no-seed FATAL is reclassified to PENDING (the non-disabled blocked template) 1ms
+    AssertionError: expected false to be true // Object.is equality
+    AssertionError: expected false to be true // Object.is equality
+
+--- startup-all-templates-real-authority.test.ts
+ Tests no tests
+    AssertionError: expected null to be an instance of TeamRuntimeError
+
+--- startup-consent-production.test.ts
+ Tests no tests
+    AssertionError: expected null to be an instance of TeamRuntimeError
+
+--- startup-preflight-production-create.test.ts
+ Tests 6 failed (6)
+    × the boot create rejects with the typed creation-preflight refusal (outcome fatal) 3ms
+    × zero durable effect: no TeamSession record, no registry row, no fact row 2ms
+    × the boot create rejects typed with the blocked template scope + the down requirement 0ms
+    × zero durable effect: the refused bind wrote nothing under the root 1ms
+    × the boot create rejects typed with the consent-required requirement id 0ms
+    × zero durable effect: the refused bind wrote nothing under the root 1ms
+
+--- startup-template-disable-production.test.ts
+ Tests no tests
+    AssertionError: expected null to be an instance of TeamRuntimeError
+
+--- template-disable-no-requirements-gate.test.ts
+ Tests 1 failed | 4 passed (5)
+    × premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case) 18ms
+    AssertionError: expected [] to deeply equal [ 'team' ]
+
+# Why: production reads teamRequirements / per-template requirements only behind
+# blueprint.schemaVersion === 2 at:
+#   packages/runtime/requirements/scope-requirements.ts:108
+#   packages/runtime/requirements/creation-preflight.ts:217
+#   packages/runtime/admission/requirement-gate.ts:460
+#   packages/runtime/compatibility/blueprint.ts:81
+#   packages/runtime/activation/provider.ts:821
+# A promoted document is legal YAML but its structured scopes are never evaluated,
+# so the boot create stops refusing and the refusal assertions die.

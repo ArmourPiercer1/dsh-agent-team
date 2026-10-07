@@ -21,13 +21,14 @@
 /**
  * @param {{blueprintId: string, revision: string, leaderPersona: string,
  *          memberPersonas?: Record<string, string>}} bp - the directive's blueprint block.
- * @returns {string} a closed-schema v1 blueprint source document.
+ * @returns {string} a closed-schema v3 blueprint source document (the Alpha.4
+ *          authority documents are carried explicitly — see the block below).
  */
 export function p5t5BlueprintSource(bp) {
   const members = Object.entries(bp.memberPersonas ?? { p5t5worker: 'You do the assigned step.' })
   const lines = [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bp.blueprintId}`,
     `revision: "${bp.revision}"`,
     'leader:',
@@ -61,6 +62,20 @@ export function p5t5BlueprintSource(bp) {
     )
   }
   lines.push(
+    // Alpha.4 (A4-PR7 §7.4, pre-flip half): at v3 BOTH authority documents are
+    // required and never defaulted (`domain/blueprint/src/validate.ts` refuses a
+    // v3 document missing either carrier). `rules: []` is the narrowest legal
+    // value, not a permissive filler: this harness has always declared NO
+    // expansion authority — its v1 document carried neither carrier, and an
+    // absent carrier is a typed absence meaning zero expansion authority, the
+    // same ceiling the reader derives from a declared-empty one. The P5-T5
+    // scenarios prove the leader mint, the derived snapshot ref and the admission
+    // gate; none of them opens an expansion, so any rule written here would be
+    // authority this harness never exercises and so never earned.
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: The P5-T5 harness default state.',
