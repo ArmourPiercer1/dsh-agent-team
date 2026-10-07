@@ -389,11 +389,19 @@ has the whole measurement; the parts worth stating here:
    `PASS composition-smoke`. That is the sentence this task was told to confirm is gone.
 4. **State the leg's dependency in the gate's own text**: the client leg's meaning is "the host module
    closure of the built artifact resolves", and that now depends on `packages/client`'s devDependencies
-   being installed. A gate that runs on a tree without an install (or with a different host generation)
-   will legitimately SKIP again — the gate should say which of "not installed" vs "closure broken" it is
-   reporting, since the 7.5 classifier can already tell those apart.
+   being installed **and on `hoistPattern` staying `['*']`** (§3a). A gate that runs on a tree without an
+   install (or with a different host generation) will legitimately SKIP again — the gate should say which
+   of "not installed" vs "closure broken" it is reporting, since the 7.5 classifier can already tell those
+   apart.
 5. **The SKIP branch stays in the script.** It is correct behaviour and it is what made this probe
    possible; making the leg green removed a condition, not a guard.
+
+**Adopted while this was in flight:** plan amendment 7 was ruled in `1b65475e`, and it fixes exactly this
+gate shape — zero `^SKIP ` lines, the client `PASS` line by name, footer without the `NOT RUN` clause,
+**never** the exit code (it read 0 while the leg was skipped) and **never** an arm count (11 today,
+derived from `targets` + `REQUIRED_CHECK_IDS`). The same ruling adopts the 17-devDependencies reading of
+§7.5's "runtime dependency" obligation and the six overrides as host-generation parity pins, so items 1–5
+above are no longer a proposal.
 
 ## 9. What a human still has to decide
 
@@ -447,5 +455,6 @@ that never touches the real workspace).
 | `published-surface-npm-pack.txt`, `published-surface-npm-pack-v2.txt` | the tarball is identical before/after, at both bases (§5) |
 | `hoist-pattern-experiment.txt` | the hide-one-link experiment, the layout facts, the neutrality test and its positive control (§3a) |
 | `byte-canonical-lock.txt` | the override-order defect, its cure, and the base-controlled limit of offline reproducibility (§6a) |
+| `final-verification-v3-base-c70e97b8.txt` | the whole battery re-run at the delivered head, incl. a pristine-clone end-to-end control and the attribution of the neighbour fence suite that is red on master independently of this change |
 | `final-verification.txt` | V1–V13 at the first delivered HEAD `4f81dcf3` (base `fba82095`) |
 | `final-verification-v2-base-d8b145c1.txt` | W1–W8 re-verification at the delivered HEAD `57d79282` (base `d8b145c1`, PR #124 merged) |
