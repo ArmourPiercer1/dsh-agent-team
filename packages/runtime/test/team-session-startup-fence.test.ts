@@ -81,10 +81,19 @@ const ROOT_SID = 'session-startupfenceroot'
 /** The ordinary (unmanaged) session of H2 — no Team row, no binding. */
 const ORDINARY_SID = 'session-startupfence-ordinary'
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /** The row blueprint (own id; structure mirrors the rmr fixture). */
 const BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: STARTUP-FENCE-BP',
   'revision: "1"',
   'leader:',

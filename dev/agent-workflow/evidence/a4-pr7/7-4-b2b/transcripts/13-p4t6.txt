@@ -1,0 +1,11 @@
+$ npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  06:26:51
+   Duration  558ms (transform 103ms, setup 0ms, import 436ms, tests 11ms, environment 0ms)
+
+
+# no SCANNED_PATHS_* entry was added by this lane: it created no file under a
+# p4t6-scanned root (its lists enumerate packages/** only; zero dev/ entries).
+# Every roster path here is an EDIT to an already-counted file, and an edit is not an increment.
+# The derived total 983 + sum(SCANNED_PATHS_*) is therefore unchanged, asserted by the suite itself.

@@ -203,10 +203,21 @@ const BOILERPLATE = [
   'metadata: {}',
 ]
 
+// §7.4 (pre-flip): the four flat-requirement fixtures below (B0 / B1 / B1C / B1P) are v3,
+// and a v3 document must DECLARE both authority documents. Both are `rules: []` — the
+// honest zero these fixtures always meant (an absent pre-v3 carrier already reads as
+// `{rules: []}`; an empty hard envelope narrows nothing), and no test here reaches the
+// permission-mutation lane, so the v3 ceiling gate stays unspent. The §E.2
+// structured-requirement document (`V2_SOURCE`) deliberately KEEPS its version digit:
+// production reads that grammar only at that version — see its carrier note.
 /** The BOOT anchor (zero requirements — the multi-blueprint host shape). */
 const B0_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: d-b0',
   'revision: "1"',
   ...BOILERPLATE,
@@ -215,10 +226,14 @@ const B0_SOURCE = [
   '',
 ].join('\n')
 
-/** The MAIN blueprint (v1 bridge): two REQUIRED mcp servers. */
+/** The MAIN blueprint (the flat-`requirements` shape): two REQUIRED mcp servers. */
 const B1_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: d-b1',
   'revision: "1"',
   ...BOILERPLATE,
@@ -234,7 +249,11 @@ const B1_SOURCE = [
 /** MAIN + the OPTIONAL (unconsented-warning) `mcp_signal` (the E.4 shape). */
 const B1C_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: d-b1c',
   'revision: "1"',
   ...BOILERPLATE,
@@ -253,7 +272,11 @@ const B1C_SOURCE = [
 /** MAIN + the REQUIRED persona `d-other-preset` (the F.4 shape — U5 frozen). */
 const B1P_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: d-b1p',
   'revision: "1"',
   ...BOILERPLATE,
@@ -272,10 +295,25 @@ const B1P_SOURCE = [
  * The V2 blueprint (the closed §E.2 document): the team scope requires
  * `mcp_repo`; the `worker` TEMPLATE scope requires `mcp_web` (the cold /
  * resuming / failed-slot materialization-axis worlds).
+ *
+ * §7.4 carrier migration (pre-flip half): unlike the four flat-requirement
+ * fixtures above, this document's VERSION is the subject — the §E.2 structured
+ * grammar (per-template `requirements` + `teamRequirements`) is read by
+ * production only behind `blueprint.schemaVersion === 2`
+ * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+ * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+ * activation/provider.ts:821). Promoting this digit deletes the C7 / C8 / D3c /
+ * E6 legs (measured: 4 red the moment the document says 3), so it stays 2 and
+ * rides a typed code position: §7.3's narrowing of
+ * `TeamBlueprint['schemaVersion']` makes THIS line a compile error naming this
+ * file, where plan §7.3's delete-or-retarget is decided — not silently here.
+ * Emitted YAML bytes are unchanged.
  */
+const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+
 const V2_SOURCE = [
   '---',
-  'schemaVersion: 2',
+  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
   'blueprintId: d-v2',
   'revision: "1"',
   'leader:',
@@ -843,6 +881,12 @@ const D = await (async () => {
       blueprint: bp,
       environmentFacts: () => world.source(bp),
       environmentFactsRead: () => world.readSource(bp),
+      // §7.3 flip-relevant: this mirrors production's own
+      // `blueprint.schemaVersion === 2` gate (creation-preflight.ts:217) — the
+      // template-scope read port exists only for that grammar. When §7.3
+      // narrows the version union this comparison stops compiling; the flip
+      // owner decides whether the gate widens to v3 or the v2 template-scope
+      // legs retire with it (see FINDINGS §5). NOT a fixture decoration to edit.
       ...(world.templateReadSource !== undefined && bp.schemaVersion === 2
         ? { templateEnvironmentFactsRead: (templateId: string) => world.templateReadSource(bp, templateId) }
         : {}),

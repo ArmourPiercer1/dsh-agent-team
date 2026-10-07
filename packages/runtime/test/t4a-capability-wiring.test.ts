@@ -101,12 +101,24 @@ const INST_B = 'inst-t4ab'
 const SERVER = 't12a-mini-mcp' // the bridge's default configured mcpServer.name
 
 // ── the fixture blueprint (leader + tpl-a + tpl-b, all selective) ──────────
-// Each template declares all four capability sub-fields (the closed-v1
-// schema requires all four when `capabilities` is present). The three
-// templates declare DIFFERENT capabilities so a single shared wiring fails.
+// Each template declares all four capability sub-fields (the closed
+// `capabilities` grammar requires all four when the block is present —
+// validate.ts validateTemplateCapabilities, at every document version). The
+// three templates declare DIFFERENT capabilities so a single shared wiring
+// fails.
+
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 const CAPABILITY_BLUEPRINT = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: team.t4a',
   'revision: "1"',
   'leader:',

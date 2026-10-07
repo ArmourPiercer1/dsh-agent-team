@@ -155,6 +155,11 @@ const STRICT_STATE_ID = 'strict'
 
 // --- the blueprints ---------------------------------------------------------------
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /**
  * One world blueprint (the P8S5A structure with the own id, the closed
  * default+strict policy-state set, an optional `capabilityPolicy` map, and —
@@ -168,7 +173,11 @@ function blueprintSource(
 ): string {
   const lines = [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     'leader:',
