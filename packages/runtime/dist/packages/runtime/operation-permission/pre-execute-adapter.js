@@ -1229,6 +1229,10 @@ export function installParameterPermissionListener(agentCtx, params) {
         const approvalRouting = routeOperationApproval({
             operationClass: operation.tool,
             resourceKey: operation.resource.key,
+            // RULING 4: the shell class can only be narrowed by `fingerprint`, so the
+            // canonical operation identity travels with the scope question. Without it
+            // a shell-class ask would be refused rather than answered from the tool key.
+            commandFingerprint: operation.fingerprint,
             // WHO IS ACTING, from this install's own identity (the ladder rung of
             // the acting surface, not of the beneficiary): spec §7.3's `direct`
             // arm is unreachable without it.
@@ -1470,6 +1474,10 @@ export function installParameterPermissionListener(agentCtx, params) {
             const fresh = routeOperationApproval({
                 operationClass: operation.tool,
                 resourceKey: operation.resource.key,
+                // RULING 4: the shell class can only be narrowed by `fingerprint`, so the
+                // canonical operation identity travels with the scope question. Without it
+                // a shell-class ask would be refused rather than answered from the tool key.
+                commandFingerprint: operation.fingerprint,
                 initiatorAuthority: isLeader ? 'leader' : 'member',
                 facts: freshFacts,
             });

@@ -86,6 +86,6 @@ export { PERMISSION_COVERAGE_CLASSIFICATIONS, SAFE_UNMANAGED_TOOL_NAMES, KNOWN_S
 export type { PermissionCoverageClassification, PermissionCoverageFacts, ClassifiedTool, UnmanagedToolEntry, PermissionCoverageVerdict, } from './permission-coverage.js';
 export { PERMISSION_COVERAGE_ERROR_CODES, PermissionCoverageUnmanagedError, isPermissionCoverageUnmanagedError, } from './errors.js';
 export type { PermissionCoverageErrorCode, PermissionCoverageUnmanagedClassification, PermissionCoverageUnmanagedToolEntry, PermissionCoverageErrorDetail, } from './errors.js';
-export { OPERATION_APPROVAL_REFUSAL_REASONS, OPERATION_APPROVAL_REFUSAL_REASON_VALUES, createOperationApprovalFactsReader, operationApprovalCarrier, recheckOperationApproval, recheckPersistedOperationAuthority, routeOperationApproval, } from './approval-routing.js';
+export { OPERATION_APPROVAL_REFUSAL_REASONS, OPERATION_APPROVAL_REFUSAL_REASON_VALUES, createOperationApprovalFactsReader, operationApprovalCarrier, recheckOperationApproval, operationApprovalCandidatePoints, recheckPersistedOperationAuthority, routeOperationApproval, } from './approval-routing.js';
 export type { OperationApprovalCeilingPort, OperationApprovalCarrier, OperationApprovalFacts, OperationApprovalFactsReader, OperationApprovalRecheck, OperationApprovalRefusalReason, OperationApprovalRouting, OperationApprovalRoutingInput, } from './approval-routing.js';
 //# sourceMappingURL=index.d.ts.map
