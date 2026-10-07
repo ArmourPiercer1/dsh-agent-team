@@ -1,0 +1,72 @@
+# MUTATION M2 (the wrong-but-typed field): thread a durable field that exists but is
+# not the command identity --
+#   -  commandFingerprint: row.operationFingerprint,
+#   +  commandFingerprint: row.authorityScope.matcher.resource,
+# This COMPILES CLEAN (both are strings) and is exactly the mistake the shape question
+# is about: the persisted tool-level resource is `bash:tool`, not the fingerprint.
+# RESULT (packages/runtime lane run): 2 failed | 76 passed. S1 fails as the ORIGINAL
+# fail-open false pass -- "a shell-class rise must refuse; got
+# {"allowed":true,...}" -- and S4 with expected 'bash:tool' to be 'fp-a4p7-a'.
+# This is the mutant that a type-only review cannot catch, and the reason the shape
+# discussion had to be settled with a test on the value, not on the key.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7c/packages/runtime
+
+ ❯ test/a4p7-a1-14-consumption-revalidation.test.ts (14 tests | 2 failed) 9ms
+     ✓ A1: an authority rise after the allow refuses with ZERO consumption, and the unspent allow still authorizes once 2ms
+     ✓ A2: an undetermined fresh ceiling refuses and consumes nothing 0ms
+     ✓ A3: the persisted authority point is the authorized point 0ms
+     ✓ A4: an operation case with no authority point is refused at the write AND un consumable from disk 0ms
+     ✓ A5/A6: a re-confirmed allow runs the recheck once and consumes exactly once 0ms
+     ✓ P1: fresh documents that no longer narrow the point permit the consumption 0ms
+     ✓ P2: a narrowing that moved UP the ladder strands the allow, and costs nothing 0ms
+     ✓ P3: no v3 documents is `undetermined`, never "covered" 0ms
+     ✓ P4: a reader that throws refuses by name; no fault escapes as a generic failure 0ms
+     ✓ P5: the port asks the durable row's question and refuses unanswerable ones 0ms
+     × S1: a shell command narrowed AFTER the allow refuses as `authority-risen` and consumes nothing 2ms
+     ✓ S2: the same shell row with no narrowing on ITS command consumes once (`still-sufficient`) 0ms
+     ✓ S3: the seam itself — THREADED answers `authority-risen`; a row that does not travel with its command is a NAMED REFUSAL, never coverage 0ms
+     × S4: the guard hands the port the ROW's command fingerprint, not a re-derived one 2ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts (64 tests) 24ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p7-a1-14-consumption-revalidation.test.ts > A4-PR7 7.0 S group — the shell class at the production seam (RULING 4, threaded) > S1: a shell command narrowed AFTER the allow refuses as `authority-risen` and consumes nothing
+Error: a shell-class rise must refuse; got {"allowed":true,"requestId":"ctrl-0vbl3bw03j1bbj15e3vu20dz","decisionSequence":2} — the row's command fingerprint almost certainly stopped reaching the port
+ ❯ test/a4p7-a1-14-consumption-revalidation.test.ts:1059:13
+    1057|   it('S1: a shell command narrowed AFTER the allow refuses as `authori…
+    1058|     if (s1.refused.allowed !== false) {
+    1059|       throw new Error(
+       |             ^
+    1060|         `a shell-class rise must refuse; got ${JSON.stringify(s1.refus…
+    1061|           'the row\'s command fingerprint almost certainly stopped rea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a4p7-a1-14-consumption-revalidation.test.ts > A4-PR7 7.0 S group — the shell class at the production seam (RULING 4, threaded) > S4: the guard hands the port the ROW's command fingerprint, not a re-derived one
+AssertionError: S1: the row's operationFingerprint must be threaded: expected 'bash:tool' to be 'fp-a4p7-a' // Object.is equality
+
+Expected: "fp-a4p7-a"
+Received: "bash:tool"
+
+ ❯ test/a4p7-a1-14-consumption-revalidation.test.ts:1123:100
+    1121|     ]) {
+    1122|       if (input === undefined) throw new Error(`${name}: the recheck n…
+    1123|       expect(input.commandFingerprint, `${name}: the row's operationFi…
+       |                                                                                                    ^
+    1124|       // The KEY is present, not merely truthy: the input's contract i…
+    1125|       // caller states the command identity or states its absence, so …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 76 passed (78)
+   Start at  21:51:18
+   Duration  1.37s (transform 1.60s, setup 0ms, import 2.28s, tests 33ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
