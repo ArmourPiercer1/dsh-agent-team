@@ -1,0 +1,25 @@
+scan: blueprint document-version fence (A4-PR7 7.5, ADR A3-16)
+scope: tests/kits/, scripts/, packages/<pkg>/harness/ (evidence and dist excluded)
+scanned-in-scope: 114 tracked files
+offending-files: 20
+OFFENDING packages/runtime/root-binding/harness/blueprint-source.mjs :: L30=v1
+OFFENDING packages/tools/harness/d4-restart-reopen.mjs :: L220=v1
+OFFENDING packages/tools/harness/g5-member-e2e.mjs :: L267=v1
+OFFENDING packages/tools/harness/run.mjs :: L214=v1
+OFFENDING packages/tools/harness/t12-vertical.mjs :: L215=v1, L1838=v2, L1844=v2
+OFFENDING scripts/blueprint-authoring.mjs :: L92=v1
+OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L506=v1, L628=v1
+OFFENDING tests/kits/exec-contract-live-smoke/blueprint.mjs :: L168=v1, L194=v1
+OFFENDING tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs :: L628=v2, L701=v1
+OFFENDING tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs :: L475=v1, L510=v1
+OFFENDING tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs :: L337=v1, L359=v1, L417=v1
+OFFENDING tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs :: L688=v1, L748=v1
+OFFENDING tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs :: L569=v1, L622=v1, L661=v1
+OFFENDING tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs :: L1158=v1, L1292=v1
+OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L446=v1, L795=v2, L810=v2, L1155=v2, L1322=v2, L1409=v2, L1496=v1
+OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L375=v1, L787=v2, L802=v2, L1175=v2, L1352=v2, L1446=v1, L1490=v2, L1577=v2, L1664=v1
+OFFENDING tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs :: L603=v1, L643=v1
+OFFENDING tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs :: L480=v1, L601=v1
+OFFENDING tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs :: L217=v1
+OFFENDING tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs :: L489=v1, L604=v1
+RESULT dirty(20 files, 49 sites)

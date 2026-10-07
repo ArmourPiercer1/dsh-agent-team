@@ -1,0 +1,37 @@
+baseline lane: exit=0 failing=0
+M1 version gate moved back before the identity parse: lane exit=1 red=2 restored=True dirty=[['M packages/domain/blueprint/src/index.ts', ' M packages/domain/blueprint/src/inspect.ts', ' M packages/domain/blueprint/src/schema.ts', ' M packages/runtime/src/plugin/blueprint-authority.ts', ' M packages/testkit/test/p4t6-session-event-scan.test.ts', '?? packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts']]
+    RED: an unidentifiable document on an unknown version is refused for its identity, not its version
+    RED: a document with no blueprintId is refused for the missing identity whatever its version
+M2 migration-required skipped like rejected (the invisibility bug): lane exit=1 red=9 restored=True dirty=[['M packages/domain/blueprint/src/index.ts', ' M packages/domain/blueprint/src/inspect.ts', ' M packages/domain/blueprint/src/schema.ts', ' M packages/runtime/src/plugin/blueprint-authority.ts', ' M packages/testkit/test/p4t6-session-event-scan.test.ts', '?? packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts']]
+    RED: it is LISTED, with its identity and its version, under a build that runs v3 only
+    RED: it is distinguishable from a parse-rejected file, which is still NOT listed
+    RED: every listed arm carries a version and a migration flag, the anchor included
+    RED: resolve refuses it with BLUEPRINT_MIGRATION_REQUIRED — not not-found, not the parser
+    RED: the refusal asks for no source read: a retired document is never parsed on the way to no
+    RED: a revision-less resolve reaches the same refusal (the latest-revision walk keeps it visible)
+M3 the two A1-21 names folded into one: lane exit=1 red=1 restored=True dirty=[['M packages/domain/blueprint/src/index.ts', ' M packages/domain/blueprint/src/inspect.ts', ' M packages/domain/blueprint/src/schema.ts', ' M packages/runtime/src/plugin/blueprint-authority.ts', ' M packages/testkit/test/p4t6-session-event-scan.test.ts', '?? packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts']]
+    RED: a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal
+M4 resolve stops asking the version question at all: lane exit=1 red=7 restored=True dirty=[['M packages/domain/blueprint/src/index.ts', ' M packages/domain/blueprint/src/inspect.ts', ' M packages/domain/blueprint/src/schema.ts', ' M packages/runtime/src/plugin/blueprint-authority.ts', ' M packages/testkit/test/p4t6-session-event-scan.test.ts', '?? packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts']]
+    RED: resolve refuses it with BLUEPRINT_MIGRATION_REQUIRED — not not-found, not the parser
+    RED: the refusal asks for no source read: a retired document is never parsed on the way to no
+    RED: a revision-less resolve reaches the same refusal (the latest-revision walk keeps it visible)
+    RED: the listed flag is what the refusal acts on, so the catalog can never contradict resolve
+    RED: the live catalog facade lists it and refuses it with the same typed code
+    RED: a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal
+M5 the refusal re-derives from the version set instead of the listed flag: lane exit=1 red=5 restored=True dirty=[['M packages/domain/blueprint/src/index.ts', ' M packages/domain/blueprint/src/inspect.ts', ' M packages/domain/blueprint/src/schema.ts', ' M packages/runtime/src/plugin/blueprint-authority.ts', ' M packages/testkit/test/p4t6-session-event-scan.test.ts', '?? packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts']]
+    RED: resolve refuses it with BLUEPRINT_MIGRATION_REQUIRED — not not-found, not the parser
+    RED: the refusal asks for no source read: a retired document is never parsed on the way to no
+    RED: a revision-less resolve reaches the same refusal (the latest-revision walk keeps it visible)
+    RED: the listed flag is what the refusal acts on, so the catalog can never contradict resolve
+    RED: the live catalog facade lists it and refuses it with the same typed code
+M6 a frozen row never carries the migration flag: ANCHOR NOT UNIQUE (0) — case not run
+SOME CASES PROBLEMATIC
+anchor count: 1
+restored: True
+git clean check: [' M packages/runtime/src/plugin/blueprint-authority.ts']
+M6 (frozen-row flag forced false) exit= 0
+Tests  52 passed (52)
+M6 VERDICT: SURVIVES at this commit BY CONSTRUCTION — while the bridge runs [1,2,3] no
+  document, saved or frozen, can be retired, so no lane can see this flag on a frozen
+  row. Group D of this file (the cutover commit) owns the assertion, and the plan's
+  ordering — tooling before the bridge removal — is why the arm exists dark.

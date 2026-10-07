@@ -1,0 +1,14 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7
+
+ ✓ packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts (9 tests) 4ms
+ ✓ packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts (5 tests) 2ms
+ ✓ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (21 tests) 1339ms
+     ✓ the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name  1224ms
+
+ Test Files  3 passed (3)
+      Tests  35 passed (35)
+   Start at  18:32:37
+   Duration  2.10s (transform 1.06s, setup 0ms, import 1.52s, tests 1.35s, environment 0ms)
+

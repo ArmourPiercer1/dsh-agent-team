@@ -1,0 +1,23 @@
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: ../runtime/activation/provider.ts(821,9): error TS2367: This comparison appears to be unintentional because the types '3' and '2' have no overlap.
+packages/tools typecheck: ../runtime/admission/requirement-gate.ts(460,7): error TS2367: This comparison appears to be unintentional because the types '3' and '2' have no overlap.
+packages/tools typecheck: ../runtime/compatibility/blueprint.ts(81,7): error TS2367: This comparison appears to be unintentional because the types '3' and '2' have no overlap.
+packages/tools typecheck: ../runtime/requirements/creation-preflight.ts(217,7): error TS2367: This comparison appears to be unintentional because the types '3' and '2' have no overlap.
+packages/tools typecheck: ../runtime/requirements/scope-requirements.ts(108,7): error TS2367: This comparison appears to be unintentional because the types '3' and '2' have no overlap.
+packages/tools typecheck: Failed
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7/packages/tools:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/tools@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2
+[WARN]  Local package.json exists, but node_modules missing, did you mean to install?

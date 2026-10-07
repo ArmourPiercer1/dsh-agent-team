@@ -1,0 +1,34 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7
+
+ ❯ packages/tools/test/c1-list-pending-control.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/tools/test/c1-list-pending-control.test.ts [ packages/tools/test/c1-list-pending-control.test.ts ]
+ControlError: ControlService: the approval case identity is refused (authority-scope-required); exactly one fingerprint is required and every vocabulary value must be closed-set (field: 'identity')
+ ❯ malformed packages/runtime/control/service.ts:1236:12
+    1234|     message: string,
+    1235|   ): ControlError {
+    1236|     return new ControlError(
+       |            ^
+    1237|       CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+    1238|       `ControlService: ${message} (field: '${field}')`,
+ ❯ Object.requestApprovalLeg packages/runtime/control/service.ts:3971:13
+ ❯ packages/tools/test/c1-list-pending-control.test.ts:295:34
+ ❯ packages/tools/test/c1-list-pending-control.test.ts:163:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  19:25:56
+   Duration  894ms (transform 625ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

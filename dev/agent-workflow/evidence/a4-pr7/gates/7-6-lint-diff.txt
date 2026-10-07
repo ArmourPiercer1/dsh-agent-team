@@ -1,0 +1,6 @@
+lint-identities: 163 identity lines, 78 distinct (target .)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 2, resolved 0
+NEW IDENTITIES (2):
+  error @typescript-eslint/no-unused-vars packages/runtime/src/plugin/root.ts
+  error @typescript-eslint/no-unused-vars packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+[lint exit 1]
