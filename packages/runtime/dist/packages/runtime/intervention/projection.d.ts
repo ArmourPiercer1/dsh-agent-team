@@ -46,6 +46,18 @@ export interface InterventionControlSource {
         readonly rootSessionId: string;
         readonly subject?: ControlSubject;
     }): Promise<readonly ApprovalCaseSummary[]>;
+    /**
+     * The team's DECIDED approval cases (the fold mirror of the open read).
+     * OPTIONAL on this seam on purpose: a source that does not offer it keeps
+     * the shipped open-only projection untouched (fail-safe, not fail-open).
+     * The real Control service implements it; what gets SURFACED from the
+     * decided set is decided by THIS lane (the `terminalReason` filter in
+     * {@link projectInterventions}), never by the control read.
+     */
+    listDecidedApprovalCases?(input: {
+        readonly rootSessionId: string;
+        readonly subject?: ControlSubject;
+    }): Promise<readonly ApprovalCaseSummary[]>;
 }
 /**
  * The seam PR6 fills for the non-Control sources (spec §15, §16). Declared
@@ -87,6 +99,11 @@ export interface ProjectInterventionsInput {
  * the reader decides legality. A reader that throws is treated as
  * "no facts", never as "allow": the item then carries no legal actions
  * (spec §18.3 — the client may only use server-provided actions).
+ *
+ * The decided half of the A1-12 telling (spec §11.6) is merged in here:
+ * decided cases stamped `terminalReason: resolver-unavailable` join the
+ * projected set as terminal items (see the filter below); every other
+ * decided close stays invisible exactly as before this lane.
  *
  * @param input - the projection input.
  * @returns the frozen items, Control first then each adapter in order.

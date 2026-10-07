@@ -183,6 +183,27 @@ const APPROVAL_DECIDED = {
   legalActions: [],
 }
 
+// The A1-12 / spec §11.6 terminate close as the read plane now TELLS it
+// (`feat/a4-surface-authority-unavailable`: the escalate-terminate case
+// surfaces as a terminal item whose status is the frozen
+// `authority-unavailable`, informational, with zero legal actions). The
+// client owns no law here — it renders the server's verdict — and this
+// fixture exists to pin that the NEW status never becomes an affordance and
+// the typed required-authority cell still renders verbatim.
+const APPROVAL_AUTHORITY_UNAVAILABLE = {
+  interventionId: 'int-case-terminate',
+  kind: 'approval',
+  responseBehavior: 'informational',
+  blockScope: null,
+  source: { kind: 'control-case', id: 'case-terminate', requestId: 'req-1', legOrdinal: 1 },
+  status: 'authority-unavailable',
+  requiredAuthority: 'human-admin',
+  currentReviewAuthority: 'human-user',
+  legalActions: [],
+  derivationReasons: ['no-resolver'],
+  createdAt: '2026-10-08T00:00:00.000Z',
+}
+
 const EMPTY_ADMIN = {
   teamSessionId: LEADER,
   memberInstanceId: 'mate',
@@ -263,6 +284,27 @@ describe('A4-PR6 §6.D the intervention panel renders the server-given plane', (
     expect(row?.dataset['terminal']).toBe('true')
     expect(row?.querySelectorAll('[data-intervention-action]').length).toBe(0)
     expect(row?.querySelector('[data-intervention-terminal]')?.textContent).toContain('req-1')
+  })
+
+  it('an A1-12 TERMINAL authority-unavailable row (spec 11.6, told by feat/a4-surface-authority-unavailable): the frozen status renders verbatim, the row is terminal, NO affordance exists, and the typed authority cells stand', async () => {
+    const { face } = makeV8Face({ lists: [[APPROVAL_AUTHORITY_UNAVAILABLE]] })
+    const view = renderPanel(face)
+    await waitFor(() => expect(view.container.querySelectorAll('[data-intervention]').length).toBe(1))
+    const row = view.container.querySelector<HTMLElement>('[data-intervention-id="int-case-terminate"]')
+    // The status is the FROZEN v8 item status, rendered verbatim, and the
+    // row is terminal: zero affordances, the evidence line names the close.
+    expect(row?.dataset['interventionStatus']).toBe('authority-unavailable')
+    expect(row?.dataset['interventionResponse']).toBe('informational')
+    expect(row?.dataset['terminal']).toBe('true')
+    expect(row?.querySelectorAll('[data-intervention-action]').length).toBe(0)
+    expect(row?.querySelector('[data-intervention-terminal]')?.textContent).toContain('authority-unavailable')
+    // The §11.6 "typed Admin-required result" cells render as given: human
+    // admin required, the old leg's rung shown, nothing invented.
+    expect(row?.dataset['interventionRequired']).toBe('human-admin')
+    expect(row?.dataset['interventionCurrent']).toBe('human-user')
+    expect(row?.querySelector('[data-intervention-request-leaf]')?.textContent).toContain('leg 1')
+    // §6.C: never a serialized payload.
+    expect(view.container.textContent).not.toContain('{"')
   })
 
   it('an act dispatch rides the closed body and the panel RE-PULLS (no optimistic mutation)', async () => {

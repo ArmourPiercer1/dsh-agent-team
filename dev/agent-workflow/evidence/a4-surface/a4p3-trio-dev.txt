@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-surface
+
+ ✓ packages/runtime/test/a4p3-intervention-projection.test.ts (32 tests) 7ms
+ ✓ packages/runtime/test/a4p3-approval-case.test.ts (28 tests) 5ms
+ ✓ packages/runtime/test/a4p3-approval-escalation.test.ts (57 tests) 7ms
+
+ Test Files  3 passed (3)
+      Tests  117 passed (117)
+   Start at  02:51:17
+   Duration  935ms (transform 1.69s, setup 0ms, import 2.41s, tests 20ms, environment 0ms)
+

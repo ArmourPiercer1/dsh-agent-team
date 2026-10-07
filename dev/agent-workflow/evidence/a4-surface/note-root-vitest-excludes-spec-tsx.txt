@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-surface
+
+No test files found, exiting with code 1
+
+filter: packages/client/test/a4p6-interventions.client.spec.tsx
+include: packages/*/test/**/*.test.ts
+exclude:  **/node_modules/**, **/dist/**, packages/client/test/s3-client-generation-spike.test.ts
+

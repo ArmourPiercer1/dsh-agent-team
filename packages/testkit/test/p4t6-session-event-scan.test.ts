@@ -1932,6 +1932,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4F1: readonly string[] = [
       'packages/runtime/test/a4f1-row-version-not-document-version.test.ts',
     ]
+    // a4-surface-authority-unavailable (feat/a4-surface-authority-unavailable):
+    // the ONE new scannable file of this lane — the escalate-terminate SURFACING
+    // spec. The lane's other paths (control/types.ts, control/service.ts,
+    // intervention/derivation.ts, intervention/projection.ts, the a4-escalate
+    // re-read rewrite, the client a4p6 spec) are all EDITS to files this scan
+    // already counts, and an edit is not an increment. The total below moves
+    // because this line does.
+    const SCANNED_PATHS_A4SURFACE: readonly string[] = [
+      'packages/runtime/test/a4-surface-authority-unavailable.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
@@ -1943,7 +1953,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR6.length +
         SCANNED_PATHS_A4PR7.length +
         SCANNED_PATHS_A4ESCALATE.length +
-        SCANNED_PATHS_A4F1.length,
+        SCANNED_PATHS_A4F1.length +
+        SCANNED_PATHS_A4SURFACE.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -1954,7 +1965,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR6.length +
         SCANNED_PATHS_A4PR7.length +
         SCANNED_PATHS_A4ESCALATE.length +
-        SCANNED_PATHS_A4F1.length,
+        SCANNED_PATHS_A4F1.length +
+        SCANNED_PATHS_A4SURFACE.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -1991,6 +2003,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4PR7,
       ...SCANNED_PATHS_A4ESCALATE,
       ...SCANNED_PATHS_A4F1,
+      ...SCANNED_PATHS_A4SURFACE,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2048,6 +2061,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // number is this merged tree's total; the derived sums compute that and this
     // comment does not write it.
     expect(SCANNED_PATHS_A4F1.length).toBe(1023 - 1022)
+    // The a4-surface-authority-unavailable tie, same form: the movement
+    // (1023 -> 1024) equals the named files in SCANNED_PATHS_A4SURFACE, each
+    // asserted present by path in the loop above. The endpoints are this
+    // lane's OWN advancing total on the base it landed on (master's own
+    // derived total at the rebase was 1023, and the merged tree measures
+    // 1024); neither number is written by hand for the merged tree — the
+    // derived sums above compute that. The increment's own RED capture
+    // (evidence a4-surface/p4t6-PRE-EXTEND-RED.txt: `expected 1022 to be
+    // 1021` before the list existed) was taken on the pre-rebase base.
+    expect(SCANNED_PATHS_A4SURFACE.length).toBe(1024 - 1023)
 
   })
 

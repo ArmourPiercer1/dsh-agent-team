@@ -1867,6 +1867,27 @@ export interface ControlService {
     readonly subject?: ControlSubject
   }): Promise<readonly ApprovalCaseSummary[]>
   /**
+   * A1-12 "the told half" (`feat/a4-surface-authority-unavailable`) — list
+   * the cases whose CURRENT leg is DECIDED (the exact mirror of
+   * {@link listOpenApprovalCases}: the same fold, the same fail-closed skip
+   * of corrupt cases, the same subject law; only the status filter differs).
+   *
+   * This is a READ of the fold, not an opinion about surfacing: it carries
+   * EVERY decided case — an ordinary allow/deny included — because WHICH
+   * decided closes an operator must see is the intervention lane's law (the
+   * `resolver-unavailable` filter lives in `intervention/projection.ts`,
+   * where the item-status vocabulary lives), not a control-lane default.
+   * Nothing is written here; nothing pending changes meaning.
+   * @param input.rootSessionId - the team (root) session id.
+   * @param input.subject - optional subject filter (same canonical subject
+   *   identity as the operation scope).
+   * @resolves one summary per decided case, in first-leg sequence order.
+   */
+  listDecidedApprovalCases(input: {
+    readonly rootSessionId: string
+    readonly subject?: ControlSubject
+  }): Promise<readonly ApprovalCaseSummary[]>
+  /**
    * Alpha.4 A4-PR3 — close one leg with a TERMINAL outcome that the
    * reviewer did not choose (ADR A2-8: authority/identity drift and the
    * unavailable-resolver close live in `terminalReason`, they do NOT

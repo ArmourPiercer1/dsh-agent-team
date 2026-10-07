@@ -48,6 +48,14 @@
  * `intervention/derivation.ts:310-317` reads the offer off the FROZEN
  * successor table, never off resolver availability (2026-10-08 ruling; the
  * hide-the-button proposal is withdrawn). Nothing here changes the derivation.
+ *
+ * THE SURFACING HALF LANDED (`feat/a4-surface-authority-unavailable`): the
+ * re-read law this file shipped as a tripwire has been RETIRED AND RE-PINNED
+ * at its own named condition — the terminate close is now VISIBLE in
+ * `intervention.list` as a terminal `authority-unavailable` item (spec 11.6,
+ * plan 6.D:651; the durable `terminalReason: resolver-unavailable` stamp is
+ * the read input; zero contract values added, zero writes added). The
+ * receipt half above stays pinned and red-proof: this lane did NOT touch it.
  */
 import { describe, expect, it } from 'vitest'
 
@@ -96,11 +104,6 @@ function facts(overrides: Partial<RequiredAuthorityFacts> = {}): RequiredAuthori
 function dataOf(response: RemoteResponse): Record<string, unknown> {
   if (!response.ok) throw new Error(`expected success, got ${JSON.stringify(response.error)}`)
   return response.value.data as unknown as Record<string, unknown>
-}
-
-function errorOf(response: RemoteResponse): Record<string, unknown> {
-  if (response.ok) throw new Error('expected a typed error, got success')
-  return response.error as unknown as Record<string, unknown>
 }
 
 /** One request/decision/escalation row the durable ledger carries for a case. */
@@ -291,6 +294,9 @@ const MEASUREMENT = await (async () => {
       ),
       act,
       listAfterIds: itemsOf(listAfter).map((item) => item['interventionId']),
+      itemAfter: itemsOf(listAfter).find(
+        (item) => item['interventionId'] === `int-${wireCaseId}`,
+      ),
       getAfter,
       directOutcome,
       stateAfter: {
@@ -411,12 +417,47 @@ describe('a4 escalate-act truth: escalate at a human-user leg closes the case an
     expect(decision?.payload['terminalReason']).toBeUndefined()
   })
 
-  it('re-read law: the decided case leaves the open projection (the panel row disappears; get answers INTERVENTION_NOT_FOUND) — tripwire: wiring projectZeroLegTermination (projection.ts:163, production-uncalled today) into this read will redden this pin and must be re-reviewed, not renumbered; and what it guards is an OPEN duty, not settled law — spec §11.6 "surface typed Admin-required result and InterventionItem" + plan §6.D "Once a leg escalates, the old leg is visibly terminal" (alpha4-implementation-plan.md:651)', () => {
+  it('re-read law RETIRED-AND-RE-PINNED by feat/a4-surface-authority-unavailable (NOT renumbered): the terminal item is now VISIBLE in the re-read — status authority-unavailable, informational, zero legal actions; the old lie (a terminated close surfacing as NOTHING, or as PENDING) is what this pin now reddens; get answers the same item because get searches the projection (s6-remote.ts:3667-3680), and the fetch-semantics conflation for ORDINARY closes stays a reported follow-up', () => {
+    // RETIREMENT RECORD (this is the re-review the retired premise names):
+    // the pin shipped by PR #118 asserted "the decided case LEAVES the open
+    // projection" and declared that wiring the surfacing in would redden it
+    // and must be RE-REVIEWED, not renumbered. The surfacing has landed, so
+    // the assertion is rewritten TO THE NEW TRUTH, and the pin is kept with
+    // its teeth turned around: what it now forbids is exactly what it used
+    // to assert — a terminated close surfacing as NOTHING (absent from the
+    // list, or `INTERVENTION_NOT_FOUND` from a get over the projection) —
+    // and, in the other direction, a terminated close surfacing as PENDING
+    // (status `open`, `wait-for-response`, or any legal action offered).
+    // Note what still holds from the old text: `projectZeroLegTermination`
+    // (projection.ts) remains the WRITE-side inline seam and remains
+    // production-uncalled — the read plane surfaces the close through
+    // `projectInterventions` reading the DECIDED cases whose close carries
+    // `terminalReason: resolver-unavailable` (the PR #118 durable stamp),
+    // so the two A1-12 twins (escalate-terminate and born-terminal) tell
+    // through ONE law. Spec §11.6 "surface typed Admin-required result and
+    // InterventionItem" + plan §6.D "Once a leg escalates, the old leg is
+    // visibly terminal" (alpha4-implementation-plan.md:651) are the duties
+    // this re-pin now enforces instead of the disappearance it used to pin.
+    const item = MEASUREMENT.itemAfter as Record<string, unknown> | undefined
     console.info(
       `${BANNER} intervention.list ids after the act: ${JSON.stringify(MEASUREMENT.listAfterIds)}; ` +
-        `intervention.get after the act: ${JSON.stringify(errorOf(MEASUREMENT.getAfter))}`,
+        `terminate item after the act: ${JSON.stringify(item)}; ` +
+        `intervention.get ok: ${String(MEASUREMENT.getAfter.ok)}`,
     )
-    expect(MEASUREMENT.listAfterIds).not.toContain(`int-${MEASUREMENT.wireCaseId}`)
-    expect(errorOf(MEASUREMENT.getAfter)['code']).toBe('INTERVENTION_NOT_FOUND')
+    // THE OLD LIE CANNOT RETURN — absence half: the terminated close is
+    // listed, and a get over the projection answers it (never "nothing").
+    expect(MEASUREMENT.listAfterIds).toContain(`int-${MEASUREMENT.wireCaseId}`)
+    expect(item, 'the terminated case must be visible in the re-read').toBeDefined()
+    expect(MEASUREMENT.getAfter.ok, 'get searches the projection; the surfaced row answers').toBe(true)
+    // THE OLD LIE CANNOT RETURN — pending half: visible means TERMINAL and
+    // affordance-free, never a revived wait. (Optional chaining is a TYPE
+    // form only: the absence assertion above already reddens an undefined
+    // item before any of these lines runs, and each would independently
+    // fail on `undefined` versus its expected cell.)
+    expect(item?.['status']).toBe('authority-unavailable')
+    expect(item?.['responseBehavior']).toBe('informational')
+    expect(item?.['legalActions']).toEqual([])
+    expect(item?.['blockScope']).toBeNull()
+    expect((item?.['derivationReasons'] as readonly string[] | undefined) ?? []).toContain('no-resolver')
   })
 })
