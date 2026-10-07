@@ -401,7 +401,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expect(spawned.stdout).toContain('RESULT dirty(')
     expect(spawned.stdout).toContain('RESULT advisory(')
     expect(spawned.stdout).toContain('RESULT unknown(')
-    expect(spawned.stdout).toContain(report.split('\n')[0])
+    expect(spawned.stdout).toBe(`${report}\n`)
   })
 
   it('a directory that is not a repository reports not-run with exit 2, never clean', () => {
@@ -483,32 +483,26 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // exit-contract leg (`exit 1 iff dirty or unknown`) and to the DEFERRALS
     // staleness legs. Giving this leg a `dirty.length > 0` guard of its own would
     // re-arm it as the red-on-success control it was just rewritten to escape.
-    const printed = new Map<string, Set<string>>()
+    const printed = new Map<string, string[]>()
     for (const line of report.split('\n')) {
       const off = /^OFFENDING (.+?) :: (.*)$/.exec(line)
-      // Named locals, not `off[1]`: this package compiles with
-      // noUncheckedIndexedAccess, and `tsc` is the only thing that reads a test
-      // file's types — `expect(off !== null)` alone still leaves the groups
-      // `string | undefined` (caught by `pnpm -r run typecheck`, not by vitest).
       const offPath = off?.[1]
       const offSites = off?.[2]
       if (offPath !== undefined && offSites !== undefined) {
-        printed.set(offPath, new Set(offSites.split(', ').map((token) => token.trim())))
+        const toks = offSites.split(', ').map((t) => t.trim()).filter((t) => t !== '')
+        printed.set(offPath, [...(printed.get(offPath) ?? []), ...toks])
       }
     }
     for (const path of dirtyPaths) {
-      expect(printed.has(path), `the report must name the dirty path ${path}`).toBe(true)
-    }
-    for (const site of run.dirty) {
-      const token = `L${String(site.line)}=v${String(site.version)}`
-      expect(
-        printed.get(site.path)?.has(token) ?? false,
-        `the report must print ${site.path} ${token} on that path's own OFFENDING line`,
-      ).toBe(true)
+      const expected = run.dirty
+        .filter((s) => s.path === path)
+        .map((s) => `L${String(s.line)}=v${String(s.version)}`)
+        .sort()
+      expect([...(printed.get(path) ?? [])].sort(), `report must print EXACTLY the sites of ${path}`).toEqual(expected)
     }
     expect(report).toContain('OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: ')
     expect(report).toMatch(/OFFENDING \S+ :: L\d+=v[12]/)
-    expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)} files`)
+    expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)} files, ${String(run.dirty.length)} sites)`)
   })
 
   // --- the 7.4-scope extension: the third class is covered by path ---------
