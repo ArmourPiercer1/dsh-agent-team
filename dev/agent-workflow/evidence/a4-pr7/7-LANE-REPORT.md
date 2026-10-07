@@ -112,3 +112,90 @@ test-use CLI dist, Playwright browsers and Chrome; and accept explicitly that un
 7.3+7.4 land there is no v3-only product to accept. Record
 `PR7 merged` / `Alpha.4 implementation` / `Alpha.4 human acceptance` / `stage closure`
 as four separate lines, as in §1.
+
+## 6. Round 2 (coordinator rulings of 2026-10-07): the blocker closed, two rulings larger than stated
+
+### 6.1 The merge blocker is MINE and it is fixed (`44f5e609`)
+
+- **Bisect**, run = clear `.tmp-fault` then run the one file, names **`e68d2c74`**
+  (7.0 authority-scope persistence) as the first bad commit. Base `c7537872` passes
+  the identical command with a cleared scratch dir: **15/15**
+  (`.scratch/gates/7-6-base-c1-repro.txt`).
+- **The hypothesis the number suggested is false.** `git show c7537872:packages/storage/repositories/team-domain.ts`
+  line 6 already reads "ten stores": the tenth (`permission_overlays`) joined at
+  Alpha.3 PR4 `940cd841`, an ancestor of this base, with its own stamp bootstrap. My
+  commits touch `packages/storage` zero times. 10 stamp rows is the correct count.
+- **The real cause**: `ControlError: the approval case identity is refused
+  (authority-scope-required)` from `requestApprovalLeg`. Task 7.0's fixture sweep
+  covered `packages/runtime/test/*`; this file seeds legs straight through
+  `controlService.requestApprovalLeg` in `packages/tools/test`, so it was never
+  swept. Both operation cases (the risen leg and the escalate-arm seed) now carry a
+  declared `C1_AUTHORITY_SCOPE`. No assertion changed.
+- **Why it took two rounds, kept as a lesson**: a failing module-scope world builder
+  leaves a half-built medium in `.tmp-fault`, and the *next* run dies in
+  `createTeamDomain` with `team_domain already exists` — a downstream artefact that
+  looks like a durable-schema problem and hides the real error. A passing run leaves
+  nothing behind, which is what proved the residue was created by the failure.
+  **Clear the scratch dir before reading a scratch-world failure, not after.**
+- **Systemic check**: every tracked file naming an `operationFingerprint` without an
+  `authorityScope` (10 test files; the rest are producers or `dist`) plus the whole
+  `packages/tools` package: **21 files passed, 1 failed, and that one is
+  `p6t6-actions` from the baseline identity set**. So `c1` was the only missed seed —
+  established by running them, not by the static pattern.
+- Ownership: `packages/tools/test/**` is not a Task 7 `Files:` row; same category as
+  the fixtures `766a9951` swept (a consumer of a law this lane introduced).
+
+### 6.2 Hygiene (`3a485eb8`)
+
+`git rm --cached` of the tracked scratch HOME artifact plus a `.tmp-*-home/` ignore
+entry. The file stays on disk; the documented cleanup recipe can no longer cost a
+writer a tracked deletion.
+
+### 6.3 `leaderEnvelopeCoverage`: both our characterisations were incomplete
+
+`git grep -ln leaderEnvelopeCoverage -- '*.ts' ':!*dist*'` = one file, two
+occurrences — so the coordinator is right that no test file names the symbol, and my
+"three test files guard it" was wrong. But it is not a removable stub either:
+`:1339` is **inside exported production `authorizeLeaderPermissionMutation`**, and it
+is the coverage oracle that walks the Leader's `permissionMutationEnvelope` and
+returns `covered | coverage-unknown | unmet` per region. The plan (line 783) says so
+in terms the symbol search hides: the deletion is of **"the Alpha.3 existential
+authorization aggregate … together with its refusal text and the round-5 comment that
+treats a covering envelope rule *as* the authorization"**. Three test files guard
+that caller (`a3p3-revoke-reveal-semantics`, `a3p4-r4-authority-binding`,
+`a4p2-dual-envelope-mutation`), so this is the deliberate removal of an authorization
+mechanism beside the v3 ceiling path — it belongs in the 7.3 window, and deleting it
+in the remaining budget would have silently weakened the Leader ceiling with nothing
+green or red to say so. Not executed; scope and guard set above.
+
+### 6.4 RULING 4: the blind spot is real, the one-site fix is not, and the gap is now pinned
+
+Verified from the code, not from my comment. Three laws, mutually exclusive at the
+shell class:
+
+1. `domain/blueprint/src/validate.ts:699` + `schema.ts:211` — a shell-class rule pairs
+   with `fingerprint` **EXACTLY**: no subtree, no any, no path;
+2. `operation-permission/canonical-operation.ts:14` — a canonical operation's point is
+   the **tool-level** key, and rules are compared by that key (`permission-resolver.ts:320`);
+3. `domain/authority-envelope/src/authority-envelope.ts:218-221` — cross-shape coverage
+   is `{covers:false, undeterminable:false}`: **decisive, not absorbing**.
+
+Consequence, stated in the direction that matters: a shell-class narrowing cannot
+contribute to the meet the ASK computes, so the rung the human is shown can only be
+**lower** than the narrowing intends. The `undeterminable:false` is what makes it
+permissive rather than fail-closed. What does protect per-command today is the
+one-shot grant keyed by `operationFingerprint` — a different mechanism from the
+ceiling, and not a substitute for it.
+
+The obvious patch (send `kind:'fingerprint'` from the routing) makes the ASK ask a
+per-command question *and* stops every tool-level shell rule from matching, so it
+re-decides which rung signs every shell approval in both directions at once. That is
+the coordinator's escape clause: a routing-law change with its own evidence to review,
+not a persistence fix — storage already carries the matcher `kind` and needs no move.
+
+Interim gate instead of the requested test: **GROUP E** of
+`packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts` pins the decisive
+cross-shape false in both directions with positive controls, and cites the three laws
+so that changing any one of them leaves a named contradiction rather than a quiet
+gap. The requested test — both the ASK and the recheck seeing a fingerprint-shape
+narrowing — is one edit away the moment the routing law is decided.

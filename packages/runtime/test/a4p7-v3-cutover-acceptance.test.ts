@@ -63,6 +63,7 @@ import {
   parseBlueprint,
 } from '../../domain/blueprint/src/index.js'
 import type { BlueprintInspectionResult, TeamBlueprint } from '../../domain/blueprint/src/index.js'
+import { matcherCovers } from '../../domain/authority-envelope/src/index.js'
 import { NEG_INVALID_YAML, revisionSource } from '../../domain/blueprint/testdata/fixtures.js'
 
 import { createBlueprintSourceIndex } from '../src/plugin/blueprint-source-index.js'
@@ -1290,5 +1291,77 @@ describe('D9 — the Blueprint authority degrades with its anchor, and fails clo
   })
   it('an anchor that is not a document still fails the authority construction', () => {
     expect(dGarbageAuthority).toBeInstanceOf(Error)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// GROUP E - the shell-class narrowing the ASK cannot see, as an executable
+// claim (coordinator RULING 4, 2026-10-07).
+//
+// The ruling asked for a test in which a shell-class narrowing declared at
+// fingerprint shape is seen by BOTH the ASK and the consumption recheck. That
+// test cannot be written against this routing, and the reason is worth more
+// than the test would have been, so the gap is pinned here instead of living in
+// a comment: THREE laws each hold on their own and are mutually exclusive at the
+// shell class.
+//
+//   1. the documents: a SHELL-class rule pairs with `fingerprint` EXACTLY, no
+//      subtree, no any, no path (`packages/domain/blueprint/src/validate.ts:699`
+//      and `schema.ts:211`);
+//   2. the plane: a canonical operation's point is the TOOL-level key
+//      (`resource.kind = 'tool'`, `resource.key = the exact tool key`,
+//      `packages/runtime/operation-permission/canonical-operation.ts:14`; rules
+//      are matched by that same key at `permission-resolver.ts:320`);
+//   3. the algebra: coverage between the two shapes is a DECISIVE false, not an
+//      `undetermined` - the first test below.
+//
+// So no shell-class document rule can ever cover the point the ASK asks with,
+// and because the answer is decisive rather than absorbing, the narrowing does
+// not merely go unseen: it stops contributing to the meet, which can only make
+// the rung the human is shown LOWER than the author's narrowing intended. The
+// per-command protection that does exist is the one-shot grant keyed by
+// `operationFingerprint`, which is a different mechanism from the ceiling.
+//
+// Why the obvious patch is not one: flipping the ASK point to `fingerprint`
+// makes it ask a per-command question, and the same flip stops every tool-level
+// shell rule from matching (`permission-resolver.ts:320` compares the tool key),
+// so it re-decides which rung signs EVERY shell approval in both directions at
+// once - a routing-law change with its own evidence to review, not a persistence
+// fix. The durable shape already carries a matcher `kind`, so whichever way the
+// decision goes, storage does not have to move.
+// ---------------------------------------------------------------------------
+describe('GROUP E - the shell narrowing the ASK cannot see (RULING 4)', () => {
+  const fingerprintRule = { kind: 'fingerprint', resource: 'sha256:npm-test-canonical-command' } as const
+  const exactTarget = { kind: 'exact', resource: 'bash:tool' } as const
+
+  it('a fingerprint rule against an exact target is a DECISIVE non-coverage, never undetermined', () => {
+    const verdict = matcherCovers(fingerprintRule, exactTarget)
+    expect(verdict.covers).toBe(false)
+    // The direction of the danger lives in this assertion: an absorbing
+    // `undetermined` would have failed closed. This answers "no", so the rule
+    // contributes nothing to the ceiling and the required rung can only fall.
+    expect(verdict.undeterminable).toBe(false)
+  })
+
+  it('the reverse shape pairing is decisive too (the gap is symmetric)', () => {
+    const verdict = matcherCovers(exactTarget, fingerprintRule)
+    expect(verdict).toEqual({ covers: false, undeterminable: false })
+  })
+
+  it('each shape does cover its own target (the controls that keep the two above honest)', () => {
+    // Without these, the two decisive falses above would be indistinguishable
+    // from a matcher that never covers anything at all.
+    expect(matcherCovers(fingerprintRule, { kind: 'fingerprint', resource: fingerprintRule.resource })).toEqual({
+      covers: true,
+      undeterminable: false,
+    })
+    expect(matcherCovers(exactTarget, { kind: 'exact', resource: exactTarget.resource })).toEqual({
+      covers: true,
+      undeterminable: false,
+    })
+    expect(matcherCovers(exactTarget, { kind: 'exact', resource: 'bash:something-else' })).toEqual({
+      covers: false,
+      undeterminable: false,
+    })
   })
 })
