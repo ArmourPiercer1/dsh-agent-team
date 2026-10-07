@@ -1,0 +1,73 @@
+# A4-PR76 acceptance driver — SIMULATED / MACHINE run, NOT the human pass
+# world=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-accept-20261007T16-57-26Z
+# origin=http://127.0.0.1:3180 stamp=20261007T171559 mockDelayMs=4000
+# (raw responses below are the wire truth; world tokens/paths are gitignored by TEST_METHODS §3.6/§5)
+  :3080 red-line probe (before): status=401
+
+== step 2 — boot line loaded, auth, catalog, team from the v3 envelope-carrying Blueprint
+    bare GET / (expect 401): {"status":401}
+    authenticated GET /?token= (expect 303): {"status":303,"hasCookie":true}
+    GET /__p6t6/health: {"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a4-accept-boot","liveSessions":["session-a4-accept-boot"],"toolCount":15}
+    catalog.list v1: [{"blueprintId":"a4.accept.anchor","revisions":[1],"revisionStates":[{"revision":1,"schemaVersion":3,"migrationState":"current"}]},{"blueprintId":"a4.accept.team","revisions":[1],"revisionStates":[{"revision":1,"schemaVersion":2,"migrationState":"current"}]}]
+    FINDING: frozen-origin catalog.list rows stamp schemaVersion from the storage row (2), not the v3 document — see LEGS.md "Findings", reproduction raw above
+    catalog.get a4.accept.team (document truth): {"schemaVersion":3,"contentHash":"sha256:af9df261e24f7ffeb50875748d8b0c33a2c53d5b58fd3a4bd5bcc02296e3c912"}
+    team.create v2 (idempotent): {"ok":true,"path":"cold-root"}
+  [PASS] step 2 — world boots; v3 Blueprint with non-empty permissionMutationEnvelope is bound — non-empty envelope is proven BEHAVIORALLY by step 4 (an expansion grant above the member static lane commits ONLY under envelope coverage) and by the v3 validator boot-gate (validate.ts:1335-1337 refuses a v3 doc without both carriers)
+
+== step 3 — Leader tool surface carries team_grant_permission/team_revoke_permission; template filtering is live
+    team_grant_permission as Leader (bad args -> typed production rejection = REGISTERED): {"ok":true,"value":{"status":"rejected","code":"TEAM_TOOL_BAD_ARGUMENTS","message":"team-tools: argument 'rules' must be an array of 1..32 permission rules"}}
+    unknown tool name as Leader (expect UNKNOWN_TOOL): {"ok":false,"error":{"message":"unknown tool \"team_definitely_not_a_tool\"","info":{"name":"ToolNotFoundError","code":"UNKNOWN_TOOL"}}}
+  [PASS] step 3 — MACHINE part: both permission tools route to production on the Leader; catalog control UNKNOWN_TOOL — member-side template filtering asserted in step 4 block; GUI visibility pass stays with the human
+
+== step 4 — WRITE leg: team_grant_permission exact-file rule -> changed:true; identical replay -> changed:false; remote override.mutatePermission v7 twin
+    team_create_member (worker): {"ok":true,"value":{"status":"executed","action":"create-member","rootSessionId":"session-a4-accept-boot","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1os26dd1mk9w","templateId":"worker","childSessionId":"session-team-child-5d0e5942f02b2d92f98d9b8e05038fcb","operationId":"op-0rbhhka131zx9n1onmha41qh","replayed":false,"ledgerSequence":1,"admissionCode":"ADMISSION_OPEN"},"requestToken":"a4w-mk-20261007T171559-3"}}
+    team_grant_permission as MEMBER child (expect UNKNOWN_TOOL — template filter): {"ok":false,"error":{"message":"unknown tool \"team_grant_permission\"","info":{"name":"ToolNotFoundError","code":"UNKNOWN_TOOL"}}}
+    team_grant_permission (fresh exact file): {"ok":true,"value":{"status":"permission-mutated","rootSessionId":"session-a4-accept-boot","targetInstanceId":"inst-1os26dd1mk9w","verb":"grant","changed":true}}
+    identical replay (expect changed:false): {"ok":true,"value":{"status":"permission-mutated","rootSessionId":"session-a4-accept-boot","targetInstanceId":"inst-1os26dd1mk9w","verb":"grant","changed":false,"reason":"no-change"}}
+    operator override.mutatePermission v7 (actor kind human): {"ok":true,"changed":true}
+  [PASS] step 4 — WRITE leg (Leader tool + operator v7 twin) — member=inst-1os26dd1mk9w
+
+== step 5 — READ leg: override.getPermission v7 -> authority present, history ascending
+    authority: {"present":true,"generation":2,"rules":[{"operation":"write","resource":"exact:/home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-accept-20261007T16-57-26Z/workspace/grants/leg4-20261007T171559.txt","effect":"allow"},{"operation":"write","resource":"exact:/home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-accept-20261007T16-57-26Z/workspace/grants/leg4b-20261007T171559.txt","effect":"deny"}]}
+    history generations: [1,2]
+  [PASS] step 5 — READ leg — authority+history ONLY — execution conclusion belongs to the next-operation attempt (GUI/human)
+
+== step 6 — ACTIVE notification (best-effort, at-most-one) — SIMULATED model lane
+    async delegate (member enters RUNNING): {"status":"executed","workStatus":"admitted"}
+    CHANGING grant inside the RUNNING window: {"ok":true,"value":{"status":"permission-mutated","rootSessionId":"session-a4-accept-boot","targetInstanceId":"inst-1os26dd1mk9w","verb":"grant","changed":true}}
+    model-visible [team-perm-changed] occurrences in member captures after seq 0: {"capturesScanned":4,"hits":1,"headers":["[team-perm-changed team=session-a4-accept-boot instance=inst-1os26dd1mk9w generation=3]"]}
+  [PASS] step 6 — ACTIVE notification — exactly ONE model-visible notification, spec header, no rule bodies; SIMULATED lane (mock DeepSeek; no model creds in env); member not restarted (same instanceId/child session continues)
+
+== step 7 — IDLE no-wake (idle window > 2x model delay; no capture growth; write still commits)
+    IDLE CHANGING grant + revoke: {"grantChanged":true,"revokeChanged":true}
+    mock capture count across idle window: {"before":4,"after":4}
+    history generations after idle mutations: [1,2,3,4,5]
+  [PASS] step 7 — IDLE no-wake — zero new model requests, zero notifications, WRITE committed (gens 5)
+
+== step 8 — negative reads: foreign team / ghost instance / v6 version
+    foreign teamSessionId: {"code":"TEAM_REMOTE_FOREIGN_TEAM"}
+    grammar-valid ghost instance (current team): {"code":"PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN"}
+    malformed ghost id (disclosed: grammar gate answers RECORD_INVALID BEFORE the lifecycle read — still a typed refusal, never an empty view): {"code":"RECORD_INVALID"}
+    getPermission at contract v6: {"code":"method-version-unsupported"}
+  [PASS] step 8 — negative reads
+
+== step 9 — lifecycle audit: archive keeps history readable; fresh member has no inherited authority
+    team_archive_member: {"status":"executed","to":"ARCHIVED"}
+    archived member history STILL readable (ascending gens): [1,2,3,4,5]
+    fresh member authority: {"present":false,"historyEntries":0}
+  [PASS] step 9 — lifecycle audit
+  :3080 red-line probe (after): status=401
+
+== summary
+  PASS step 2 — world boots; v3 Blueprint with non-empty permissionMutationEnvelope is bound — non-empty envelope is proven BEHAVIORALLY by step 4 (an expansion grant above the member static lane commits ONLY under envelope coverage) and by the v3 validator boot-gate (validate.ts:1335-1337 refuses a v3 doc without both carriers)
+  PASS step 3 — MACHINE part: both permission tools route to production on the Leader; catalog control UNKNOWN_TOOL — member-side template filtering asserted in step 4 block; GUI visibility pass stays with the human
+  PASS step 4 — WRITE leg (Leader tool + operator v7 twin) — member=inst-1os26dd1mk9w
+  PASS step 5 — READ leg — authority+history ONLY — execution conclusion belongs to the next-operation attempt (GUI/human)
+  PASS step 6 — ACTIVE notification — exactly ONE model-visible notification, spec header, no rule bodies; SIMULATED lane (mock DeepSeek; no model creds in env); member not restarted (same instanceId/child session continues)
+  PASS step 7 — IDLE no-wake — zero new model requests, zero notifications, WRITE committed (gens 5)
+  PASS step 8 — negative reads
+  PASS step 9 — lifecycle audit
+
+8 MACHINE legs checked: 8 PASS, 0 SKIP, 0 FAIL
+SIMULATED / MACHINE run — NOT the human pass. Alpha.4 human acceptance: BLOCKED/NOT_RUN (§7.7).
+receipt: /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr76/dev/agent-workflow/evidence/a4-pr76-acceptance-world/receipts/driver-run-20261007T171559.log

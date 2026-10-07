@@ -1,0 +1,187 @@
+---
+# ============================================================================
+# SIMULATED / MACHINE acceptance world blueprint — NOT the human pass.
+# Alpha.4 v3 Team Blueprint for the Alpha.3 nine-step permission-surface
+# acceptance world (ALPHA3-PERMISSIONS-USER-FACING.md §8). The Alpha.4 human
+# acceptance remains BLOCKED/NOT_RUN (alpha4-implementation-plan.md §7.7).
+#
+# v3 REQUIRED authority documents (schemaVersion 3, validate.ts:1335-1337):
+#   - permissionMutationEnvelope — the Leader expansion ceiling (Alpha.3 PR4
+#     carrier, checklist §2; NON-EMPTY here by acceptance requirement);
+#   - teamHardEnvelope — the Human User hard ceiling (Alpha.4 ADR A2-2).
+# Both carry ONE file rule: the subtree `grants` under the target member's
+# effective workspace (the world's workspace/<grants> dir), ceiling `allow`.
+# NO shell-class rules are declared anywhere in this world: Alpha.4 ships no
+# Human Admin resolver (root.ts:3745 `resolverExists: ... !== 'human-admin'`,
+# ADR A1-3), and a declared shell rule below `allow` closes the lane as
+# authority-unavailable — that gap is RECORDED, not worked around.
+# ============================================================================
+schemaVersion: 3
+blueprintId: a4.accept.team
+revision: "1"
+displayName: A4 acceptance team
+description: "SIMULATED/MACHINE acceptance world team (a4-pr76). Not the human pass."
+leader:
+  templateId: leader
+  displayName: Leader
+  persona: >-
+    You are the Leader of the A4 acceptance world. Follow operator direction;
+    answer briefly. This world is a SIMULATED acceptance fixture.
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_inspect_config
+        - team_create_member
+        - team_delegate
+        - team_follow_up
+        - team_collect
+        - team_send_message
+        - team_report_progress
+        - team_request_control
+        - team_resolve_control
+        - team_list_pending_control
+        - team_archive_member
+        - team_grant_permission
+        - team_revoke_permission
+    builtinToolDeny:
+        - ask_user_question
+        - create_goal
+        - exit_plan_mode
+        - get_goal
+        - glob
+        - grep
+        - interrupt_agent
+        - job_kill
+        - job_list
+        - job_output
+        - list_agents
+        - present
+        - send_message
+        - skill
+        - subagent_fork
+        - update_goal
+        - web_fetch
+        - web_search
+        - workflow
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: deny
+      allow:
+        - tool: write
+          resource:
+            kind: subtree
+            path: grants
+        - tool: edit
+          resource:
+            kind: subtree
+            path: grants
+      ask: []
+      deny: []
+members:
+  - templateId: worker
+    displayName: Worker
+    persona: >-
+      You are the Worker of the A4 acceptance world. Acknowledge work with a
+      short confirmation.
+    capabilities:
+      teamTools:
+        kind: allow
+        items:
+          - team_report_progress
+          - team_send_message
+      builtinToolDeny:
+        - ask_user_question
+        - create_goal
+        - exit_plan_mode
+        - get_goal
+        - glob
+        - grep
+        - interrupt_agent
+        - job_kill
+        - job_list
+        - job_output
+        - list_agents
+        - present
+        - send_message
+        - skill
+        - subagent_fork
+        - update_goal
+        - web_fetch
+        - web_search
+        - workflow
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: deny
+        allow: []
+        ask: []
+        deny: []
+requirements: []
+teamEnvelope:
+  # Leader effective envelope = teamEnvelope.allow - deny (admission/envelope.ts
+  # callerEnvelope, leader branch). Carries the full closed governance vocabulary
+  # (ALL_MUTATION_OPS, admission/envelope.ts:150-160) so the Leader can drive the
+  # 9-step acceptance. NO bash/pwsh exec tokens: Alpha.4 ships no Human Admin
+  # resolver (root.ts:3745), so shell-class exec is left closed by design.
+  # grant/revoke are NOT here — they ride the permissionMutationEnvelope carrier.
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+    - archive-member
+    - restore-member
+    - dispose-member
+  deny: []
+memberEnvelopes:
+  - templateId: worker
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+      deny: []
+permissionMutationEnvelope:
+  rules:
+    - operationClass: write
+      matcher:
+        kind: subtree
+        path: grants
+      maximumEffect: allow
+teamHardEnvelope:
+  rules:
+    - operationClass: write
+      matcher:
+        kind: subtree
+        path: grants
+      maximumEffect: allow
+policyStates:
+  - id: default
+    description: "A4 acceptance world default PolicyState."
+quotas:
+  # Quota counts = committed + in-flight instances, ARCHIVED included
+  # (activation/checks.ts:470 documented ruling). Sized so repeated driver
+  # runs and a human GUI session never collide with the acceptance itself.
+  team:
+    maxInstances: 32
+    maxConcurrent: 4
+  members:
+    maxInstances: 28
+    maxConcurrent: 2
+metadata:
+  acceptanceWorld: a4-pr76
+  label: SIMULATED-MACHINE-ACCEPTANCE-NOT-HUMAN-PASS
+---
