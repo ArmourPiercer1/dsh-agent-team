@@ -57,11 +57,10 @@ import {
   recheckPersistedOperationAuthority,
   routeOperationApproval,
 } from '../operation-permission/approval-routing.js'
-import type { OperationApprovalFacts } from '../operation-permission/index.js'
-import { CONTROL_REQUEST_KINDS } from '../control/index.js'
+import type { OperationApprovalFacts } from '../operation-permission/approval-routing.js'
+import { CONTROL_REQUEST_KINDS } from '../control/types.js'
 import { evaluateAuthorityCeiling } from '../governance/runtime-authority.js'
-import { authorityRank } from '../governance/authority-ceiling.js'
-import type { AuthorityEnvelopeDocuments } from '../governance/index.js'
+import { authorityRank, type AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
 import type { ProposalAuthorityPosition } from '../governance/proposal-store.js'
 import type {
   AuthorityEffect,

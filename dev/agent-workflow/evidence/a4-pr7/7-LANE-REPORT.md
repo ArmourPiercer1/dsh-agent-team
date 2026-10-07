@@ -256,12 +256,25 @@ source.
   outvoted by an answered one), otherwise the highest required rung governs. Both candidate
   shapes are named in every refusal detail, since the human-facing question is which shape
   could not be decided.
+  **Correction (round 3):** at this commit that last sentence was true of the ASK and false
+  of the consumption recheck, whose refusals named no shapes at all — the claim was written
+  from the ask site and read as if it covered both. Fixed in the code (the recheck now
+  carries the same `(candidates: …)` list, and a test asserts both shapes appear) rather
+  than by weakening the sentence; see §9.5.
 - The pre-execute adapter passes `commandFingerprint: operation.fingerprint` at both routing
   call sites, so the ASK now sees a shell narrowing it structurally could not see before.
 - An empty candidate set is unrepresentable: the primary point is a required argument, so
   there is no path from "no shape was named" to the identity element (full reach).
 
 ### What is NOT live, as a named request, and the gap that therefore stays open
+
+> **CLOSED at round 3 — see §9.1.** Everything below describes the state at
+> `689b716c`, where it was accurate. The two `Files:` rows it requested were
+> granted and landed: `commandFingerprint` now travels from the durable row
+> through the port into the recheck, and the second bullet ("not threaded at
+> all ⇒ pre-ruling behaviour") no longer describes this tree. Kept because a
+> permissive gap that was named, requested by name, and closed by name is the
+> record worth having.
 
 `recheckPersistedOperationAuthority` derives its candidate set through the same function,
 but in production its caller — `control/service.ts:2571`, port typed in
@@ -284,6 +297,12 @@ durable row through `ControlAuthorityRecheckPort` in `control/types.ts` into the
 
 ### A hazard this ruling found, in the same class as §4b
 
+> **REFUTED — do not act on this paragraph or its proposed rule. See §9.6.** The
+> correlation below was real and its attribution was wrong; the rule it proposes
+> would have taught a reader to distrust a green run they should have trusted.
+> Left in place, with this notice, because the mis-attribution is itself the
+> finding worth keeping.
+
 Importing the **`operation-permission` barrel** into `a4p7-v3-cutover-acceptance.test.ts`
 made `p6t1-parallel` fail (5 tests) in the `packages/runtime/test` directory run, while
 `p6t1-parallel` passes alone and the same directory run is green at the base commit. The law
@@ -300,3 +319,14 @@ in the other direction and would not have caught this.
 deleted — it is now the reason the set is required. `tsc -p packages/runtime` 0 errors.
 `lint-identities --diff` against `lint-identities-0237d487.txt`: 160 lines / 76 distinct,
 **new 0, resolved 0**. Whole-repo vitest: see `gates/7-8-full-test.txt`.
+
+> **Miscount corrected (round 3).** This lane had **64** tests at `689b716c`, not 63. The
+> parenthetical is where it went wrong: GROUP F had **6** tests at that commit, not 5, so
+> 58 + 6 = 64. Confirmed twice — the `it(` declarations in the file at that commit count 64
+> (58 outside GROUP F, 6 inside), and the runner reported 64 for the same file in round 3
+> before §9's tests were added. A gate receipt whose numbers do not reconcile is not a
+> receipt — counted, not recited.
+>
+> Current counts at the round-3 commits: `a4p7-v3-cutover-acceptance.test.ts` **70/70**,
+> `a4p7-a1-14-consumption-revalidation.test.ts` **14/14** (10 at `689b716c`, +4 for the S
+> group). Full receipts: §9 and `gates/`.
