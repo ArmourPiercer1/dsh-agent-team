@@ -53,10 +53,30 @@ def anchor_block(lines):
 for path, sites in SITES.items():
     if not do_pr and path in LEDGER:
         continue
+    if do_pr and path in LEDGER and '--ledger' not in sys.argv[1:]:
+        pass
+    if do_pr and path not in LEDGER:
+        continue  # --pr mode: ONLY the two pr-kits (group 3 files are migrated)
     lines = open(path).read().split('\n')
     prot = anchor_block(lines)
     delta = 0
     log = []
+    if do_ledger and path in LEDGER:
+        for s in sorted(LEDGER[path]):
+            i = s - 1 + delta
+            lm = LED.match(lines[i])
+            if not lm:
+                raise SystemExit(f'{path}:{s}: ledger site mismatch: {lines[i][:50]!r}')
+            lines[i] = f'{lm.group(1)}schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,'
+            log.append(f'L{s}: ledger literal 2 -> TEAM_DOMAIN_SCHEMA_VERSION')
+        # insert the stores.js constant import right after the ledger.js import block
+        for k, l in enumerate(lines):
+            if l.endswith("schema/ledger.js'"):
+                lines.insert(k + 1, "import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../packages/runtime/dist/packages/storage/schema/stores.js'")
+                break
+        else:
+            raise SystemExit(f'{path}: ledger.js import anchor not found')
+        delta += 1  # the inserted import line shifts every later line
     for s in sorted(sites):
         i = s - 1 + delta
         if prot and prot[0] <= i <= prot[1]:
@@ -96,22 +116,5 @@ for path, sites in SITES.items():
             log.append(f'L{s}: v{t.group(1)}->v3 + envelopes @policyStates L{j+1}')
         else:
             raise SystemExit(f'{path}:{s}: site line not array/template doc form: {line[:60]!r}')
-    if do_ledger and path in LEDGER:
-        for s in sorted(LEDGER[path]):
-            i = s - 1 + delta
-            lm = LED.match(lines[i])
-            if not lm:
-                raise SystemExit(f'{path}:{s}: ledger site mismatch: {lines[i][:50]!r}')
-            lines[i] = f'{lm.group(1)}schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,'
-            log.append(f'L{s}: ledger literal 2 -> TEAM_DOMAIN_SCHEMA_VERSION')
-        if 'TEAM_DOMAIN_SCHEMA_VERSION' not in path:
-            # add the import next to the other dist storage imports
-            for k, l in enumerate(lines):
-                if l.startswith("import {") and 'storage/schema/stores.js' in l:
-                    break
-            else:
-                # place after the last import line
-                last = max(k for k, l in enumerate(lines) if l.startswith('import '))
-                lines.insert(last + 1, "import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../packages/runtime/dist/packages/storage/schema/stores.js'")
     open(path, 'w').write('\n'.join(lines))
     print(f'{path}: ' + ' | '.join(log))

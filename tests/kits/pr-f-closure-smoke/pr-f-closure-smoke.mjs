@@ -249,6 +249,7 @@ import {
   parseLedgerEntry,
   serializeLedgerSequenceCounter,
 } from '../../../packages/runtime/dist/packages/storage/schema/ledger.js'
+import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../packages/runtime/dist/packages/storage/schema/stores.js'
 import { canonicalJsonStringify } from '../../../packages/runtime/dist/packages/contracts/src/remote-safe.js'
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
@@ -784,7 +785,7 @@ function seedFact(rootSessionId, factType, payload) {
   }
   const seq = maxSeq + 1
   const entry = {
-    schemaVersion: 2,
+    schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,
     sequence: seq,
     rootSessionId,
     factType,
@@ -799,7 +800,7 @@ function seedFact(rootSessionId, factType, payload) {
   // form too: leaving it stale makes the host's next allocation collide
   // with the seeded sequence.
   ledger[LEDGER_SEQUENCE_COUNTER_KEY] = serializeLedgerSequenceCounter({
-    schemaVersion: 2,
+    schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,
     kind: 'ledger-sequence-counter',
     value: seq,
   })
@@ -1172,7 +1173,7 @@ const UNMANAGED_BUILTINS = [
 function mainTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     `blueprintId: ${BP_MAIN_ID}`,
     'revision: "1"',
     'teamRequirements:',
@@ -1314,6 +1315,10 @@ function mainTeamBlueprintYaml() {
     '    envelope:',
     '      allow:',
     '        - request-control',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-F main team default state."',
@@ -1349,7 +1354,7 @@ function mainTeamBlueprintYaml() {
 function subagentTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     `blueprintId: ${BP_SUB_ID}`,
     'revision: "1"',
     'leader:',
@@ -1410,6 +1415,10 @@ function subagentTeamBlueprintYaml() {
     '    envelope:',
     '      allow:',
     '        - request-control',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-F subagent-surface team default state."',
@@ -1443,7 +1452,7 @@ function subagentTeamBlueprintYaml() {
 function spillTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${BP_SPILL_ID}`,
     'revision: "1"',
     'leader:',
@@ -1477,6 +1486,10 @@ function spillTeamBlueprintYaml() {
     '    - bash',
     '  deny: []',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates: []',
     'metadata: {}',
     '---',
@@ -1487,7 +1500,7 @@ function spillTeamBlueprintYaml() {
 function isoTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     `blueprintId: ${BP_ISO_ID}`,
     'revision: "1"',
     'teamRequirements:',
@@ -1554,6 +1567,10 @@ function isoTeamBlueprintYaml() {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-E isolation team default state."',
@@ -1574,7 +1591,7 @@ function isoTeamBlueprintYaml() {
 function personaTeamBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 2',
+    'schemaVersion: 3',
     `blueprintId: ${BP_PERSONA_ID}`,
     'revision: "1"',
     'teamRequirements:',
@@ -1641,6 +1658,10 @@ function personaTeamBlueprintYaml() {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-F persona team default state."',
@@ -1661,7 +1682,7 @@ function personaTeamBlueprintYaml() {
  *  requirements) — the directive root (C.10 pattern). */
 const BP_ANCHOR_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BP_ANCHOR_ID}`,
   'revision: "1"',
   'leader:',
@@ -1670,6 +1691,10 @@ const BP_ANCHOR_YAML = [
   'members: []',
   'requirements: []',
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',
