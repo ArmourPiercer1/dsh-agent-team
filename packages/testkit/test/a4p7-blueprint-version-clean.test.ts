@@ -788,10 +788,18 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expectSingle(fixture('f33'), 'unknown')
   })
 
+  it('f32 V3: members + identity triple under a row conflict is UNKNOWN; f32b: members WITHOUT the triple stays refused (round-3 F2)', () => {
+    // The no-op guard (members never counts) refused the real partial
+    // document; the naive guard (always counts) would launder wire frames.
+    // V3 sits exactly between: f32 and f32b pin both edges.
+    expectSingle(fixture('f32'), 'unknown')
+    expectSingle(fixture('f32b'), 'refused')
+  })
+
   it('the fixture corpus exists and every fixture was exercised', () => {
     // Guard against the corpus silently emptying (a fixture-less "test" is
     // how a gate dies): names are pinned to the f01..f31 set.
-    expect(fixtures.length).toBeGreaterThanOrEqual(32)
+    expect(fixtures.length).toBeGreaterThanOrEqual(34)
     expect(fixtures.length).toBe(new Set(fixtures.map((f) => f.name)).size)
   })
 

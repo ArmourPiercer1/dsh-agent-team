@@ -326,6 +326,11 @@ const NON_BLUEPRINT_NAMESPACES = [
  * v3) could not even raise the conflict (2026-10-08 review, BLOCKING 1c) —
  * fixture f26 was REFUSED that way before the set was widened.
  */
+/** The identity triple a TeamBlueprint document carries (excluded from the
+ *  doc-only set itself: row DTOs legitimately share these four keys with
+ *  documents — schemaVersion, blueprintId, revision, contentHash). V3
+ *  counts `members` only when >= 2 of these sit in the site's own literal. */
+const IDENTITY_TRIPLE = ['blueprintId', 'revision', 'contentHash']
 const DOC_ONLY_KEYS = new Set([
   'displayName',
   'description',
@@ -955,7 +960,21 @@ export function classifyText(path, text) {
       //    Evidence with document-only keys present in the own literal is a
       //    CONFLICT; on a spread-assisted literal, ctx evidence is not
       //    certifiable; outer-line evidence alone is UNKNOWN. Never a guess.
-      const ownDocKeys = ownKeys.filter((k) => DOC_ONLY_KEYS.has(k))
+      // V3 (round 3 F2): `members` was excluded from DOC_ONLY_KEYS because
+      // RemoteProjectionValue.members collides on wire frames
+      // (packages/remote/src/contracts/types.ts:65) — but that made the old
+      // guard a provable NO-OP: a members-only-alongside-another-doc-key
+      // document already conflicts via the other key. The reviewer's variant
+      // matrix, adopted as V3: members counts as document-only ONLY when the
+      // site's own literal also carries >= 2 of the IDENTITY triple — the
+      // triple is what distinguishes "partial document" from "projection
+      // value with a member list". Measured cost at head: zero new unknowns
+      // (f32/f32b pin both edges: members+triple under a row -> UNKNOWN;
+      // members WITHOUT the triple stays a refused wire frame).
+      const identityHits = IDENTITY_TRIPLE.filter((k) => ownKeys.includes(k)).length
+      const ownDocKeys = ownKeys.filter(
+        (k) => DOC_ONLY_KEYS.has(k) || (k === 'members' && identityHits >= 2),
+      )
       const hits = []
       let sigHit = false
       for (const ns of NON_BLUEPRINT_NAMESPACES) {
