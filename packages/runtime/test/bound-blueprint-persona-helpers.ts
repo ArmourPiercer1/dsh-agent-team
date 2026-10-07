@@ -49,10 +49,19 @@ export const MEMBER_PERSONA_B_WORKER_B = 'You are worker-b of the A2 bound-B tea
 export const MEMBER_PERSONA_B_WORKER = 'You are worker of the A2 bound-B team.'
 export const MEMBER_PERSONA_C_WORKER = 'You are worker of the A2 bound-C team.'
 
-// ── the diverged blueprint documents (closed v1) ───────────────────────────
+// ── the diverged blueprint documents (the supported document version) ──────
 
+// A4-PR7 §7.4 (lane B-runtime-semantics-A): this emitted document rides the
+// supported version, and the two envelope documents that version REQUIRES are
+// declared — in their zero form `rules: []`, which is a POSITION: on the
+// expansion plane a no-match answers `no-authority`, on the approval plane a
+// no-match is identity. Consumers read the document as emitted and build
+// root-direct worlds (the only production producer of
+// `permissionAuthorityCeiling` is the plugin host), so the pair satisfies the
+// v3 grammar without inventing an authority posture no consumer exercises: the
+// helper's full consumer-set run is red-name identical to the base run.
 export const DOC_A = `---
-schemaVersion: 1
+schemaVersion: 3
 blueprintId: a2bpp.a
 revision: "1"
 leader:
@@ -66,11 +75,15 @@ requirements: []
 memberEnvelopes: []
 policyStates: []
 metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
 ---
 `
 
 export const DOC_B = `---
-schemaVersion: 1
+schemaVersion: 3
 blueprintId: a2bpp.b
 revision: "1"
 leader:
@@ -87,11 +100,15 @@ requirements: []
 memberEnvelopes: []
 policyStates: []
 metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
 ---
 `
 
 export const DOC_C = `---
-schemaVersion: 1
+schemaVersion: 3
 blueprintId: a2bpp.c
 revision: "1"
 leader:
@@ -105,11 +122,15 @@ requirements: []
 memberEnvelopes: []
 policyStates: []
 metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
 ---
 `
 
 export const DOC_D = `---
-schemaVersion: 1
+schemaVersion: 3
 blueprintId: a2bpp.d
 revision: "1"
 leader:
@@ -123,6 +144,10 @@ requirements: []
 memberEnvelopes: []
 policyStates: []
 metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
 ---
 `
 

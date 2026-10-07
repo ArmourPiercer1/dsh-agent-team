@@ -73,13 +73,22 @@ export const TEST_STATIC_MODEL = {
   model: 'test-default',
 } as const
 
+// A4-PR7 §7.4 (lane B-runtime-semantics-A): this emitted document rides the
+// supported version, and the two envelope documents that version REQUIRES are
+// declared — in their zero form `rules: []`, which is a POSITION: on the
+// expansion plane a no-match answers `no-authority`, on the approval plane a
+// no-match is identity. Consumers read the document as emitted and build
+// root-direct worlds (the only production producer of
+// `permissionAuthorityCeiling` is the plugin host), so the pair satisfies the
+// v3 grammar without inventing an authority posture no consumer exercises: the
+// helper's full consumer-set run is red-name identical to the base run.
 /**
  * The P6-T2 fixture blueprint source (own ids, quotas and envelopes — see
  * the file header for the deliberate test surface).
  */
 export const P6T2_BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: P6T2-BP',
   'revision: "1"',
   'leader:',
@@ -136,6 +145,10 @@ export const P6T2_BLUEPRINT_SOURCE = [
   '    maxInstances: 2',
   '    maxConcurrent: 2',
   'metadata: {}',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   '---',
 ].join('\n')
 
