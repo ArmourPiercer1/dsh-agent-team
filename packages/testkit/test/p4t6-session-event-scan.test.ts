@@ -1942,6 +1942,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4SURFACE: readonly string[] = [
       'packages/runtime/test/a4-surface-authority-unavailable.test.ts',
     ]
+    // a4-check-artifacts-nonempty (fix/a4-check-artifacts-nonempty): the ONE new
+    // scannable file of this lane — the check:artifacts non-emptiness spec. The
+    // lane's other path (scripts/check-artifacts-committed.mjs) is an EDIT to a
+    // root-level script this scan does not cover (scripts/** is outside the nine
+    // package dirs), and an edit is not an increment. The total below moves
+    // because this line does.
+    const SCANNED_PATHS_A4ARTIFACTS: readonly string[] = [
+      'packages/testkit/test/a4-artifacts-nonempty.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
@@ -1954,7 +1963,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR7.length +
         SCANNED_PATHS_A4ESCALATE.length +
         SCANNED_PATHS_A4F1.length +
-        SCANNED_PATHS_A4SURFACE.length,
+        SCANNED_PATHS_A4SURFACE.length +
+        SCANNED_PATHS_A4ARTIFACTS.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -1966,7 +1976,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR7.length +
         SCANNED_PATHS_A4ESCALATE.length +
         SCANNED_PATHS_A4F1.length +
-        SCANNED_PATHS_A4SURFACE.length,
+        SCANNED_PATHS_A4SURFACE.length +
+        SCANNED_PATHS_A4ARTIFACTS.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2004,6 +2015,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4ESCALATE,
       ...SCANNED_PATHS_A4F1,
       ...SCANNED_PATHS_A4SURFACE,
+      ...SCANNED_PATHS_A4ARTIFACTS,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2071,6 +2083,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (evidence a4-surface/p4t6-PRE-EXTEND-RED.txt: `expected 1022 to be
     // 1021` before the list existed) was taken on the pre-rebase base.
     expect(SCANNED_PATHS_A4SURFACE.length).toBe(1024 - 1023)
+    // The a4-check-artifacts-nonempty tie, same form: the movement equals the
+    // named files in SCANNED_PATHS_A4ARTIFACTS, each asserted present by path in
+    // the loop above. The endpoints are this lane's OWN advancing total on the
+    // base it landed on (the merged tree measured 1024 before this spec joined
+    // and the increment's RED capture read `expected 1025 to be 1024` with the
+    // file present but the list absent); neither number is written for the
+    // merged tree by hand — the derived sums above compute that.
+    expect(SCANNED_PATHS_A4ARTIFACTS.length).toBe(1025 - 1024)
 
   })
 

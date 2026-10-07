@@ -39,6 +39,10 @@
  *
  * Any hit -> exit 1 with the file list (fail-loud: a source change that affects the
  * install surface must ship its rebuilt artifacts in the SAME commit).
+ * Exit codes: 0 compared-and-matched (NEVER on an empty produced set); 1 drift;
+ * 2 NOT-RUN — an empty produced set (the non-emptiness guard below; a success
+ * over zero compared files is a false green, see a4-artifacts-nonempty) or a
+ * missing surface directory (build not run).
  * Files that .gitignore covers under the two paths (e.g. *.tsbuildinfo) are excluded.
  *
  * Known narrow gap (accepted): if a source file is DELETED and the build tool leaves
@@ -109,6 +113,22 @@ const ignored = new Set(
     .split('\n').map((s) => s.trim()).filter(Boolean),
 );
 const produced = new Set(producedAll.filter((f) => !ignored.has(f)));
+
+// Non-emptiness guard (a4-check-artifacts-nonempty): every comparison below
+// is a SET DIFFERENCE, and empty-minus-empty is the empty pass. A nested
+// export under an ignore rule (`git archive` into a `.tmp-*` path measured
+// by two reviewers) made `produced` collapse to zero while the same pathspec
+// query returned a zero `tracked` set — the gate then printed `OK: 0 files`
+// and exit 0 over NOTHING compared. A success report is only meaningful on
+// a non-empty produced set; exit 2 (not-run) names the count and the three
+// real ways here. This cannot fire on a healthy tree (produced > 0 always
+// there), so comparison semantics elsewhere are untouched.
+if (produced.size === 0) {
+  console.error(
+    `[check-artifacts-committed] NOT-RUN: the produced set is empty (0 of ${String(producedAll.length)} files on disk survived the ignore filter) — the gate compared nothing and must not report OK. Three real ways to get here: (1) the cwd is not the repo top-level whose index this gate compares against; (2) the artifacts are ignored away (a nested export/copy under an ignore rule reads every file as ignored, produced AND tracked collapse to zero); (3) a build that emitted nothing (run \`pnpm build && pnpm build:composition\` at the top level first).`,
+  );
+  process.exit(2);
+}
 
 const tracked = new Map(); // path -> blob sha (index)
 for (const line of git('ls-files', '-s', '--', ...PATHS).split('\n')) {

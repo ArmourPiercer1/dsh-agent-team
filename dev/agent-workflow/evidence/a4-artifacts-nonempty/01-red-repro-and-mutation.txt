@@ -1,0 +1,11 @@
+=== REPRODUCTION (the reported world, real export nested in checkout, UNFIXED checker) ===
+$ git archive 0d4d3c56 | tar -x -C .tmp-export && cd .tmp-export && node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 0 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+$ echo $?
+0
+
+=== mutation record vs UNFIXED checker (faithful world: glue pair byte-identical) ===
+first biter: a1 `not OK: 0 files` -> AssertionError: the old false green must never print again: expected [OK: 0 fil...] not to match /OK: 0 files/
+then a2 (exit 0), a3 (count), a4 (toplevel), a5 (ignored), a6 (nothing) all bite
+legs pass/drift/missing-dir PASS unfixed (guard-rails); NOTE: an EARLIER leg world without the glue pair exited 1 via D-drift by accident - fixed the world, not the expectation
+

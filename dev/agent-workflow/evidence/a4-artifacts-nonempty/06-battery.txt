@@ -1,0 +1,8 @@
+=== battery ===
+pnpm build: exit 0; pnpm build:composition: exit 0
+checker on healthy tree (staged first): OK: 1508 files, exit 0
+pnpm -r run typecheck: exit 0, 8 Done, 0 error TS
+eslint on checker+spec+pin: exit 0
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+G1: spec 4/4 with .tmp-fault/a4-artifacts-nonempty removed first, run twice
+root pnpm test NOT run (per instruction); nothing pushed; nothing booted
