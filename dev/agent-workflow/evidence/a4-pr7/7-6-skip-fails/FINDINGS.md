@@ -335,6 +335,39 @@ base to make the gate runnable at all (`raw/build-base.log`).
   1.3 MB of tracked composition bundle); their `before.sha256` / `after.sha256` manifests are kept
   and each original is recoverable with `git show a2059c73:<path>`.
 
+## 8b. Master moved during this round, and one of the new commits changes a premise of §1(e)
+
+Measured at the end of the round (`git log --oneline a2059c73..0af1bd63`, main checkout now at
+`0af1bd63` = PR #134):
+
+* `1b65475e docs(alpha4): … split the SKIP-exits-0 defect` — the task this branch implements.
+* `a322d1b9 build(a4-pr7 7.6): make the client plugin composition-smoke leg resolvable` and
+  `8bbb6964 build(a4-pr7 7.6): make the lock reproducible from the manifests and pin the hoist
+  default` — the third lane (the lane that owns `pnpm-workspace.yaml`, `pnpm-lock.yaml` and
+  `packages/client/package.json`, per the plan's ownership table) added the upstream packages:
+  `git diff --stat a2059c73..0af1bd63` gives `packages/client/package.json | 19 +-` and
+  `pnpm-lock.yaml | 875 +++++`.
+* **Nobody touched my lane's files on master**: the same diff lists no change to
+  `scripts/composition-smoke.mjs`, `scripts/composition-smoke-closure.mjs`,
+  `scripts/composition-smoke-targets.mjs` or
+  `packages/testkit/test/a4p75-composition-smoke-classification.test.ts`. The merge of this branch
+  onto `0af1bd63` should be clean, and `a2059c73` is an ancestor of `0af1bd63`.
+
+**Correction to §1(e), stated rather than left standing.** Its premise — "the client leg cannot run
+in this install surface (17 unresolvable …)" — is a measurement of `a2059c73`'s dependency set, and
+`a322d1b9` changes exactly that set. If it makes the closure resolve, then on the merged tree the
+client leg prints `PASS`, the footer is plain `PASS composition-smoke`, and the gate goes green
+here: §1(e)'s consequences 1 and 2 disappear and consequence 3 (a green gate is reproducible for
+testing but was never reproducible for this repository's own artifact at base) becomes history.
+**This lane cannot measure that**: installing the new lockfile here fails with
+`[ERR_SQLITE_ERROR] unable to open database file` (read-only store), and the hardlinked
+`node_modules` copy that made any measurement possible at all reflected the old lockfile and is now
+deleted. What is safe to say without measuring: the new legs are written so that this outcome
+changes nothing — the real-repo leg asserts "verdict and output agree" in both directions
+(no `^SKIP ` line ⇒ exit 0; a `^SKIP ` line ⇒ exit non-zero and the footer names the step), and the
+green-run leg builds its own tree rather than hoping for one. Whoever runs the merged battery gets
+the answer in one command: `pnpm install && pnpm build && pnpm smoke:composition; echo $?`.
+
 ## 9. Housekeeping and ownership
 
 Touched, and nothing else (`git show --stat`): `scripts/composition-smoke.mjs`,
