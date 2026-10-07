@@ -1068,6 +1068,22 @@ export function scanBlueprintVersionSites() {
     refused: [],
     prose: [],
   }
+  // Round 3 F3: every scope prefix and `git ls-files` below is cwd-relative,
+  // so a run from any subdirectory used to see 0 files and print CLEAN,
+  // exit 0, while the tree held 120 dirty files — a green handed to exactly
+  // the lane worker typing `cd packages/client && node ../../scripts/...`.
+  // The non-repo case was pinned (/tmp -> exit 2); this closes the likelier
+  // mistake: only the repository TOPLEVEL is a valid cwd.
+  const top = spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' })
+  if (top.status === 0) {
+    const toplevel = String(top.stdout ?? '').trim()
+    const here = resolve(process.cwd())
+    if (toplevel !== '' && resolve(toplevel) !== here) {
+      result.reason =
+        `cwd ${here} is not the repository toplevel (${toplevel}); the fence gates on the WHOLE tree — run it from the toplevel`
+      return result
+    }
+  }
   let out
   try {
     // maxBuffer: the tracked-file list is >1 MB NUL-separated at this base,

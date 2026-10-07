@@ -440,6 +440,24 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expect(spawned.status).toBe(2)
   })
 
+  it('run from a SUBDIRECTORY the fence reports not-run with exit 2, never a false clean (round-3 F3)', () => {
+    // `cd packages/client && node ../../scripts/verify-...` used to print
+    // `scanned-in-scope: 0`, `verdict: clean`, exit 0 while the tree held
+    // 120 dirty files: every scope prefix and `git ls-files` is
+    // cwd-relative. A lane worker must never be handed a green from a
+    // subdirectory — only the repository toplevel is a valid cwd.
+    const sub = resolve(REPO_ROOT, 'packages/client')
+    const spawned = spawnSync(process.execPath, [resolve(REPO_ROOT, SCRIPT)], {
+      cwd: sub,
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024,
+    })
+    expect(spawned.stdout, spawned.stderr).toContain('RESULT not-run')
+    expect(spawned.stdout).not.toContain('verdict: clean')
+    expect(spawned.stdout).not.toContain('scanned-in-scope: 0 tracked files\nRESULT verdict: clean')
+    expect(spawned.status).toBe(2)
+  })
+
   it('the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path)', () => {
     const unexpected = dirtyPaths.filter((p) => !DEFERRALS.has(p))
     expect(unexpected).toEqual([])
