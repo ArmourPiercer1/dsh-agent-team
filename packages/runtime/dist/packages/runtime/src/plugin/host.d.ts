@@ -1,5 +1,6 @@
 import type { EnvelopeContains, GovernanceEnvelopeView, GovernanceWarningDocsPort } from '../../governance-warning/index.js';
 import type { PermissionAuthorityFacts } from './permission-plane.js';
+import type { BlueprintAnchorState } from './blueprint-authority.js';
 import type { TeamPluginConfig } from './types.js';
 /**
  * The structural projection of the Cordis plugin context this entry uses
@@ -159,6 +160,26 @@ export interface GovernanceWarningFsProvider {
  * `warning-required`.)
  */
 export declare function buildGovernanceWarningContains(fsBackend: () => GovernanceWarningFsProvider): EnvelopeContains;
+/**
+ * The degraded-boot warning an OPERATOR reads (A4-PR7 Ruling 1). Exported and pure
+ * because the SENTENCE is the product surface here: it is the line a human decides
+ * from, so it is asserted as text rather than as a field somebody hopes a renderer
+ * spells correctly.
+ *
+ * THE ONE THING THIS FUNCTION EXISTS TO KEEP TRUE: the two refusals read
+ * differently. A DEFINED-and-retired anchor is a task the operator owns; it keeps
+ * its identity and stays on the catalog, and the line names it with its version. A
+ * version this build never defined is not a task — there is nothing to migrate
+ * toward — it has no identity to list, and the line must not pretend otherwise.
+ * Before this function both arms ended in the same
+ * `… listed in the catalog with migrationRequired=<true|false>` tail, so the
+ * un-runnable document was printed in the exact words used for the nothing-to-do
+ * one, and the only difference was a bare `true`/`false` in the middle of a
+ * sentence about a catalog listing.
+ */
+export declare function degradedAnchorBootLine(rootSessionId: string, anchor: Extract<BlueprintAnchorState, {
+    readonly status: 'refused';
+}>): string;
 /**
  * The plugin name (Cordis named-export protocol; the row id is
  * `dsh-agent-team`).

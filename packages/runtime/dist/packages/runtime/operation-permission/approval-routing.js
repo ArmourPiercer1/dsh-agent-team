@@ -263,6 +263,101 @@ export function recheckOperationApproval(input) {
     }
     return { kind: 'still-covered' };
 }
+// ---------------------------------------------------------------------------
+// The consumption-point recheck (A4-PR7 Task 7.0, ADR A1-14)
+// ---------------------------------------------------------------------------
+/**
+ * Re-run the ceiling for a PERSISTED authority point, at the moment the
+ * one-shot allow is about to be spent.
+ *
+ * WHY THIS IS A SEPARATE FUNCTION AND NOT A CALL TO
+ * {@link recheckOperationApproval}. The PR4 recheck takes the FRESH ROUTING —
+ * it re-derives the rung from the operation the caller is holding right now.
+ * That is the right question at the ask, and the wrong one at the consumption
+ * point: the consumption point's question is about the scope the human ACTUALLY
+ * approved, which is the durable row's, not the live call's. Reconstructing a
+ * routing verdict here would need the caller-role routing the v3 lane exists to
+ * retire, and — decisively — the routing builds its scope question as
+ * `{kind:'exact', resource}` (its own comment says an operation is one concrete
+ * target). A row whose point is a `fingerprint` matcher would be evaluated
+ * against a question it was never asked, and a mismatch of matcher KIND reads
+ * as "no rule covers this", which on this plane means "no narrowing", which
+ * means an authority RISE would be reported as still-covered. This function
+ * asks the persisted question, with the persisted kind.
+ *
+ * The `initiatorAuthority` the walk demands is filled with `reviewAuthority`,
+ * and the fill is not a convenience: the question at this point is exactly
+ * "can the rung that signed still sign this scope?", and the evaluator's
+ * `direct` arm IS that predicate (`mayReview(initiator, beneficiary,
+ * required)`). So `direct` and `approval-required(<= reviewAuthority)` both
+ * mean covered, and only a strictly higher required rung means otherwise.
+ *
+ * `facts === undefined` is NOT a pass. At the ask it means "this Team is not on
+ * the v3 documents, use the frozen routing"; at a consumption point there is no
+ * frozen routing to fall back to — the row was minted by the v3 lane, so a
+ * fresh read that cannot produce documents cannot CONFIRM the rung, and
+ * "could not confirm" is not "confirmed" (`undetermined`, fail closed).
+ *
+ * @param input.reviewAuthority - the rung recorded on the durable leg.
+ * @param input.beneficiaryAuthority - the durable identity's beneficiary.
+ * @param input.authorityScope - the point persisted with the case.
+ * @param input.facts - the plane's facts, read NOW (not the ask's).
+ * @returns whether the recorded approval still covers the persisted point.
+ */
+export function recheckPersistedOperationAuthority(input) {
+    const undetermined = (reason, detail) => ({ kind: 'undetermined', reason, detail });
+    const { facts } = input;
+    if (facts === undefined) {
+        return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE, 'the authority-ceiling context for this instance could not be read at the consumption point');
+    }
+    if (typeof facts.beneficiaryAuthority !== 'string' ||
+        facts.documents === null ||
+        typeof facts.documents !== 'object') {
+        return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.FACTS_MALFORMED, 'the fresh authority facts are malformed (no beneficiary position or no document slot)');
+    }
+    if (facts.beneficiaryAuthority !== input.beneficiaryAuthority) {
+        // The row says the operation raises one rung, the plane says another. Which
+        // one is right is an authority question, and this module does not answer
+        // authority questions by picking a side.
+        return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.FACTS_MALFORMED, `the durable identity's beneficiary '${input.beneficiaryAuthority}' disagrees with the fresh facts' '${facts.beneficiaryAuthority}'`);
+    }
+    let evaluation;
+    try {
+        evaluation = evaluateAuthorityCeiling({
+            beneficiaryAuthority: input.beneficiaryAuthority,
+            initiatorAuthority: input.reviewAuthority,
+            operationClass: input.authorityScope.operationClass,
+            // The PERSISTED point, kind included. This line is the whole reason the
+            // durable field carries a matcher kind instead of a bare resource.
+            matcher: {
+                kind: input.authorityScope.matcher.kind,
+                resource: input.authorityScope.matcher.resource,
+            },
+            desiredEffect: 'allow',
+            documents: facts.documents,
+            ...(facts.subtreeContains !== undefined ? { subtreeContains: facts.subtreeContains } : {}),
+        });
+    }
+    catch (error) {
+        const code = codeOf(error);
+        return undetermined(code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE
+            ? OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE
+            : OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT, messageOf(error));
+    }
+    if (evaluation.outcome === 'undetermined') {
+        return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.CEILING_UNDETERMINED, `the ceiling for ${input.authorityScope.operationClass} on ${input.authorityScope.matcher.resource} ` +
+            `could not be decided at the consumption point (rungs consulted: ` +
+            `${evaluation.evidence.consideredRoles.join(', ') || 'none'})`);
+    }
+    const requiredNow = evaluation.requiredAuthority;
+    if (requiredNow === undefined) {
+        return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT, 'the evaluator answered with a decided outcome but no required authority');
+    }
+    if (isHigherAuthority(requiredNow, input.reviewAuthority)) {
+        return { kind: 'stale', requiredNow };
+    }
+    return { kind: 'still-covered' };
+}
 /**
  * Adapt the existing authority-ceiling context reader into the OPERATION-plane
  * facts the router consumes (Task 4's "both authority envelopes" input), so the

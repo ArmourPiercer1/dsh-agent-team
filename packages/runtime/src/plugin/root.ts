@@ -91,7 +91,7 @@ import type {
   TeamBlueprint,
 } from '../../../domain/blueprint/src/index.js'
 import type { BlueprintAuthority } from './blueprint-authority.js'
-import { classifyBlueprintAnchor } from './blueprint-authority.js'
+import { blueprintVersionStateOf, classifyBlueprintAnchor } from './blueprint-authority.js'
 import { DEFAULT_CONTEXT_POLICY, isContextPolicy } from '../../../domain/member/src/index.js'
 import type { EnvironmentFact } from '../../../domain/compatibility/src/index.js'
 import {
@@ -349,7 +349,10 @@ import { computeTeamLiveToken } from './live-token.js'
 import { resolveSessionReadState } from './team-read-state.js'
 import { createServerPrincipalDerivation } from './s6-principal.js'
 import { createS6RemoteSurfaces, governanceStartRefusal } from './s6-remote.js'
-import type { S6RemoteCompatibilityOperations } from './s6-remote.js'
+import type {
+  S6CatalogMigrationState,
+  S6RemoteCompatibilityOperations,
+} from './s6-remote.js'
 // A4-PR6 §6.A — the ONE governance-warning port type (the service is
 // ASSEMBLED by host.ts, Ruling PR6-H; root.ts forwards it verbatim to the
 // s6 surface and adds zero governance logic).
@@ -943,11 +946,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       throw new TeamPluginError(anchorState.code, anchorState.headline, {
         rootSessionId: rootSid,
         reason: 'bootstrap-anchor-refused',
-        migrationRequired: anchorState.migrationRequired,
-        ...(anchorState.schemaVersion !== undefined
-          ? { schemaVersion: anchorState.schemaVersion }
+        migrationState: anchorState.migrationState,
+        // Only the migration arm HAS an identity and a version — the `unreadable`
+        // arm has neither, because the inspector hands out no identity for a
+        // version it cannot name (A1-21). The narrow is the fact, not a
+        // belt-and-braces `!== undefined` on a field the type already excludes.
+        ...(anchorState.migrationState === 'migration-required'
+          ? { ...anchorState.identity, schemaVersion: anchorState.schemaVersion }
           : {}),
-        ...(anchorState.identity !== undefined ? { ...anchorState.identity } : {}),
       })
     }
     return anchorState.blueprint
@@ -976,7 +982,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     throw new TeamPluginError(anchorState.code, anchorState.headline, {
       rootSessionId: rootSid,
       reason: 'bootstrap-anchor-read-refused',
-      migrationRequired: anchorState.migrationRequired,
+      migrationState: anchorState.migrationState,
     })
   }
   const refusingAnchor = new Proxy({} as TeamBlueprint, {
@@ -1004,6 +1010,44 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const catalog: BlueprintCatalog =
     blueprintCatalog ??
     createBlueprintCatalog(anchorState.status === 'runnable' ? [anchorState.blueprint] : [])
+
+  // A4-PR7 Ruling 1 — WHERE THE CATALOG'S MIGRATION STATE COMES FROM, and there is
+  // exactly one answer. `listIdentities()` classifies every identity it is about to
+  // list (from the domain's version sets, and from the inspector's status for a
+  // saved source), so the remote payload carries THE SAME VALUE `resolve()` acts on:
+  // "the listing says migration-required" and "the resolve says unsupported" for one
+  // identity stop being two derivations that can drift, and become one read seen
+  // twice. There is no second classification anywhere below this line, which is the
+  // entire point of deleting the boolean.
+  //
+  // A factory world has no authority — but the static catalog it falls back to can
+  // hold nothing except the anchor THIS construction just classified, so the
+  // fallback is derived from that classification. It is not defaulted to `current`:
+  // a default is the lie this ruling deletes, in a new costume. A catalog this root
+  // did not build, over no authority, yields no states, and the payload then reports
+  // those revisions `unreadable` rather than guessing.
+  const catalogMigrationStates = (): readonly S6CatalogMigrationState[] => {
+    if (blueprintAuthority !== undefined) {
+      return blueprintAuthority.listIdentities().map((identity) => ({
+        blueprintId: identity.blueprintId,
+        revision: identity.revision,
+        schemaVersion: identity.schemaVersion,
+        migrationState: identity.migrationState,
+      }))
+    }
+    if (blueprintCatalog === undefined && anchorState.status === 'runnable') {
+      const anchorBlueprint = anchorState.blueprint
+      return [
+        {
+          blueprintId: anchorBlueprint.blueprintId,
+          revision: anchorBlueprint.revision,
+          schemaVersion: anchorBlueprint.schemaVersion,
+          migrationState: blueprintVersionStateOf(anchorBlueprint.schemaVersion),
+        },
+      ]
+    }
+    return []
+  }
 
   // The GENERIC per-root bound Blueprint resolver (model-preference routing
   // fix, guide §4.7.1): ONE per-root cache shared by EVERY consumer that
@@ -3429,6 +3473,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       : {}),
     repositories: repos,
     catalog,
+    // A4-PR7 Ruling 1 — the migration half of the `catalog.list` payload. Wiring
+    // this is load-bearing: unhook it and every revision on the wire answers
+    // `unreadable`, which is loud by construction (see the option's contract).
+    catalogMigrationStates,
     blueprint,
     leaderInstanceId: LEADER_INSTANCE_ID,
     projection,

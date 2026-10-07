@@ -51,7 +51,18 @@ import type { RemoteTeamGetReadStateValue } from '../contracts/types.js'
 export interface RemoteCatalogPort {
   /**
    * Every blueprint the catalog knows.
-   * @returns records of the shape `{ blueprintId, revisions: number[] }`.
+   *
+   * A4-PR7 Ruling 1 — records now carry the migration state beside the revisions:
+   * `{ blueprintId, revisions: number[], revisionStates: { revision, schemaVersion,
+   * migrationState }[] }`, where `migrationState` is `current`,
+   * `migration-required` (a version this product DEFINED and retired — the
+   * operator's migration backlog) or `unreadable` (a version it never defined, so
+   * nothing is owed and nothing can be claimed). Migration visibility is part of
+   * DISCOVERY: an operator decides "what is still left to migrate?" from this one
+   * read. The state is not selectable by contract version, and it never selects the
+   * authority algebra — the A5-12 law is about the wire version, and this is a read
+   * of the bound document's version, which is the one thing that law says to read.
+   * @returns one record per blueprint.
    */
   list(): readonly RemoteSafeRecord[]
   /**

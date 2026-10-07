@@ -74,6 +74,16 @@ import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
 // a3p3 hygiene leg on the proposal-law module).
 import { beneficiaryAuthorityForTarget } from '../../governance/index.js';
 import { createPermissionDecisionLane, createPermissionLifecycleMutationLane } from '../../permission-lifecycle/index.js';
+// A4-PR7 Task 7.0 (ADR A1-14): the CONSUMPTION-POINT authority recheck. The
+// OPERATION lane asks the persisted ceiling question — `recheckPersistedOperationAuthority`
+// is the only non-governance consumer of the ceiling question, per the stated
+// consumer rows in `a3p3-governance-lane-hygiene.test.ts` — and this plane
+// supplies the facts and translates the verdict into the control lane's closed
+// vocabulary. The control names come from `control/types.js` (the closed-set
+// module) rather than the control BARREL, so adding this mapping does not pull
+// the control SERVICE into the plane's module graph for the sake of two names.
+import { recheckPersistedOperationAuthority } from '../../operation-permission/index.js';
+import { CONTROL_AUTHORITY_RECHECK_KINDS } from '../../control/types.js';
 /**
  * The ADR §8 lifecycle reader over the durable member rows. A read that
  * FAULTS propagates (the decision lane fails closed on a throwing port —
@@ -531,6 +541,99 @@ export function createAuthorityCeilingReader(deps) {
             },
             blueprintContentHash,
         };
+    };
+}
+/**
+ * THE CONSUMPTION-POINT AUTHORITY RECHECK (A4-PR7 Task 7.0, ADR A1-14).
+ *
+ * The Control service calls this INSIDE the per-team lock, immediately before
+ * it writes the `control-allow-consumed` fact, to answer one question: does the
+ * rung that signed the leg STILL cover the authority point recorded on that
+ * leg? An approval is not a standing grant (A1-14), so the answer must come
+ * from the documents as they are NOW, and the only reader of those documents in
+ * this process is the ceiling context this plane already builds (A5-12: a
+ * reader in every judge is a second answer).
+ *
+ * WHY THE MAPPING LIVES HERE AND NOT IN THE CONTROL LANE. The control lane
+ * deliberately consumes a CLOSED VERDICT PORT: it must not reach the ladder, the
+ * document slot, or the ceiling question, because a lane that can evaluate a
+ * ceiling is a lane that can widen one, and `a3p3-governance-lane-hygiene`
+ * states the consumer set of that question in full. So the plane composes: the
+ * operation lane's `recheckPersistedOperationAuthority` asks the persisted
+ * question against the fresh facts, and this adapter only TRANSLATES the
+ * vocabulary (`still-covered` → `still-sufficient`, `stale` → `authority-risen`,
+ * `undetermined` → `undetermined`) and supplies the facts. It adds no authority
+ * reasoning: no rung is named here, no ordering is consulted, and the one thing
+ * it reads off the row beyond the facts (`requestedEffect`) is the question the
+ * operation lane's `desiredEffect` law can actually answer.
+ *
+ * EVERY FAILURE IS `undetermined`, INCLUDING A THROWN FACTS READ. `undetermined`
+ * is the arm the guard refuses with and consumes NOTHING on; a fault that
+ * reported `still-sufficient` would execute an operation whose authority is
+ * unknown, and a fault that THREW out of here would surface in the guard as a
+ * generic guard failure instead of the named reason the durable verdict
+ * deserves. There is no permissive default anywhere in this function.
+ *
+ * `actingAsLeader` is DERIVED FROM THE DURABLE ROW's beneficiary, never from a
+ * re-read of who is holding the keyboard: the facts reader is valid exactly when
+ * the beneficiary is the member instance the row names, and the reader's own law
+ * (pinned in `test/a4p4-operation-approval-authority.test.ts`) refuses to route a
+ * Leader-beneficiary ask off a member-beneficiary document set. A leader-
+ * beneficiary row therefore answers with no facts, hence `undetermined`, hence a
+ * refusal with zero consumption — the fail-closed direction. No v3 operation case
+ * row is minted for a Leader install today: its routing takes the pre-v3 arm,
+ * which creates no approval case at all.
+ *
+ * @param deps.operationApprovalFacts - the plane's operation-facts reader (the
+ *   same reader the pre-execute pipeline routes the ask with, so the ask and the
+ *   consumption point cannot read two different document sets).
+ * @returns the port for `createControlService`'s `authorityRevalidation`.
+ */
+export function createControlAuthorityRevalidation(deps) {
+    return async (input) => {
+        const undetermined = (reason, detail) => ({
+            kind: CONTROL_AUTHORITY_RECHECK_KINDS.UNDETERMINED,
+            reason,
+            detail,
+        });
+        if (input.requestedEffect !== 'allow') {
+            // The operation lane evaluates the `allow` effect and nothing else (its
+            // module docs say why: `allow` is the only effect that means "may this
+            // run"). A row asking for another effect is not a question this recheck
+            // can answer, and "cannot answer" is `undetermined` — never a pass.
+            return undetermined('requested-effect-not-answerable', `the persisted case requests '${input.requestedEffect}'; the consumption-point recheck answers only the 'allow' effect`);
+        }
+        let facts;
+        try {
+            facts = await deps.operationApprovalFacts({
+                teamSessionId: input.rootSessionId,
+                memberInstanceId: input.instanceId,
+                actingAsLeader: input.beneficiaryAuthority === 'leader',
+            });
+        }
+        catch (error) {
+            return undetermined('authority-facts-reader-failed', `the fresh authority facts failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+        const verdict = recheckPersistedOperationAuthority({
+            reviewAuthority: input.reviewAuthority,
+            beneficiaryAuthority: input.beneficiaryAuthority,
+            authorityScope: input.authorityScope,
+            facts,
+        });
+        switch (verdict.kind) {
+            case 'still-covered':
+                return { kind: CONTROL_AUTHORITY_RECHECK_KINDS.STILL_SUFFICIENT };
+            case 'stale':
+                return {
+                    kind: CONTROL_AUTHORITY_RECHECK_KINDS.AUTHORITY_RISEN,
+                    requiredNow: verdict.requiredNow,
+                    detail: `the fresh authority documents require '${verdict.requiredNow}' for ` +
+                        `${input.authorityScope.operationClass} on ${input.authorityScope.matcher.resource}; ` +
+                        `the leg was signed at '${input.reviewAuthority}'`,
+                };
+            case 'undetermined':
+                return undetermined(verdict.reason, verdict.detail);
+        }
     };
 }
 /** The permission policy of one template of the bound Blueprint (the leader

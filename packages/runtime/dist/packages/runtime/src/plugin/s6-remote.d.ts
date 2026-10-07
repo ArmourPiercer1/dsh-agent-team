@@ -43,6 +43,7 @@ import { type RemoteLedgerEntryValue } from '../../../remote/src/contracts/types
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js';
 import type { TeamRootWireRow } from '../team-ownership-index.js';
+import type { BlueprintVersionState } from './blueprint-authority.js';
 import { TeamPluginError } from './types.js';
 import type { RemoteHandlerRegistration, RemoteQueryCommandCompletion, ServerPrincipalDerivation, WorkspaceAttachPort } from './types.js';
 import type { ServerPrincipalContext } from './s6-principal.js';
@@ -339,8 +340,25 @@ export interface S6RemotePolicyStateSwitchRequest {
     /** The client's actor claim (derivation input only). */
     readonly actorClaim: unknown;
 }
+/**
+ * The migration state of ONE catalog identity, as `catalog.list` carries it
+ * (A4-PR7 Ruling 1). The producer is the Blueprint authority's own listing, so the
+ * value on the wire is the value `resolve()` refuses on — one carrier seen twice,
+ * never two carriers that can disagree.
+ */
+export interface S6CatalogMigrationState {
+    readonly blueprintId: string;
+    /** The revision in the identity's OWN spelling (the catalog's revision string). */
+    readonly revision: string;
+    readonly schemaVersion: number;
+    readonly migrationState: BlueprintVersionState;
+}
 /** Port 1/12 — blueprint catalog discovery (`catalog.*`). */
 export interface S6RemoteCatalogPort {
+    /**
+     * Every blueprint the catalog knows: its revisions AND each revision's migration
+     * state, i.e. `{ blueprintId, revisions: number[], revisionStates: […] }`.
+     */
     list(): Promise<readonly RemoteSafeRecord[]>;
     get(blueprintId: string, blueprintRevision?: number): Promise<RemoteSafeRecord>;
 }
@@ -862,6 +880,19 @@ export interface S6RemoteOptions {
     readonly repositories: TeamDomainRepositories;
     /** The host blueprint catalog (the single bound blueprint). */
     readonly catalog: BlueprintCatalog;
+    /**
+     * A4-PR7 Ruling 1 — the migration state of every identity the catalog lists, read
+     * at the moment of the listing (so a caller may not cache it), which
+     * `catalog.list` publishes beside each revision.
+     *
+     * Optional AT THIS LEVEL ONLY, because the factory root has no authority to ask;
+     * `root.ts` always supplies it — from the live authority where there is one, from
+     * its own classified anchor where there is not. Absent, the payload answers
+     * `unreadable` for everything, and NEVER guesses `current`: guessing is the
+     * defect this ruling deletes, so the cost of dropping this wiring is a catalog
+     * that shouts, not one that shrugs.
+     */
+    readonly catalogMigrationStates?: () => readonly S6CatalogMigrationState[];
     /** The bound blueprint (policy-state closed set, template quota). */
     readonly blueprint: TeamBlueprint;
     /** The bound leader's instance id (the leader authority). */

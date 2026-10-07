@@ -405,6 +405,47 @@ function shellEffectTokens(operation, rawArguments) {
     }
     return parts.map((part) => `[${part}]`).join(' ');
 }
+/**
+ * THE AUTHORITY POINT of one canonical operation (A4-PR7 Task 7.0, ADR A1-14):
+ * the concrete `{operationClass, matcher}` the approval is about, in the shape
+ * the durable case row persists and the consumption point re-runs the ceiling
+ * over.
+ *
+ * IT IS THE SAME SCOPE THE ASK ASKED, BY CONSTRUCTION. The routing derives the
+ * required rung from `{operationClass: operation.tool, matcher: {kind:'exact',
+ * resource: operation.resource.key}}`; the persisted point must be exactly that,
+ * because the recheck's question is "does the rung that signed still cover what
+ * the human was shown?", and a recheck that asks about a DIFFERENT scope than
+ * the one that was approved can only produce a refusal the human could not have
+ * authorized (a false rise) or a coverage the human never granted (a false
+ * pass). Persisting a narrower point than the ask used would be the second of
+ * those: the allow would be re-confirmed against a scope nobody signed.
+ *
+ * THE CLASS NAMED HERE IS THE OPERATION'S OWN (`operation.tool`), never a
+ * category derived from the matcher's shape — the documents compare the class,
+ * and the domain validator refuses a file-shaped matcher under a shell class.
+ *
+ * A DISCLOSED LIMIT OF THE EXACT SCOPE, stated rather than papered over: for the
+ * SHELL class, a document rule shaped `{operationClass:'bash',
+ * matcher:{kind:'fingerprint', …}}` does not cover an `exact` target
+ * (`matcherCovers`: a fingerprint rule covers ONLY a fingerprint target), so a
+ * narrowing declared at the fingerprint shape is invisible to BOTH the ask and
+ * this recheck. That blind spot is PR4's, not PR7's: the ask side has always
+ * asked the exact question, and PR4's `(4c')` fresh recheck asks it again. Fixing
+ * it means changing which question the ASK asks — a widening of the shell class's
+ * required rung, with its own routing evidence to re-review — and that is a
+ * cutover decision, not a persistence task. The durable field carries a matcher
+ * `kind` precisely so the fix can be made at one site later without changing the
+ * durable shape; the fingerprint-scoped GRANT itself is unaffected (the one-shot
+ * is matched by `operationFingerprint`, and it cannot be spent on another
+ * command).
+ */
+function authorityPointOf(operation) {
+    return {
+        operationClass: operation.tool,
+        matcher: { kind: 'exact', resource: operation.resource.key },
+    };
+}
 // ---------------------------------------------------------------------------
 // The install factory.
 // ---------------------------------------------------------------------------
@@ -1245,6 +1286,15 @@ export function installParameterPermissionListener(agentCtx, params) {
         // identity is frozen at creation with the rung the routing derived, and
         // the legacy request kind rides as the carrier. On the pre-v3 arm it is
         // the pre-existing `requestControl` call, unchanged.
+        // A4-PR7 Task 7.0 (ADR A1-14): the authority point carried to the last-mile
+        // guard. PRESENT exactly when this invocation is on the case-creating arm:
+        // the pre-v3 arm mints no approval case, its durable row carries no point,
+        // and a guard scope that named one would disagree with the recorded decision
+        // snapshot — the guard would answer `scope-mismatch` for the very operation
+        // it was asked about. The case identity above and this value are the SAME
+        // computation of the SAME operation, so the guard re-runs the ceiling over
+        // the scope the human was shown and nothing else.
+        const authorityPoint = approvalRouting.kind === 'approval-required' ? authorityPointOf(operation) : undefined;
         let record;
         try {
             if (approvalRouting.kind === 'approval-required') {
@@ -1259,6 +1309,7 @@ export function installParameterPermissionListener(agentCtx, params) {
                         beneficiaryAuthority: approvalRouting.beneficiaryAuthority,
                         requestedEffect: 'allow',
                         operationFingerprint: operation.fingerprint,
+                        authorityScope: authorityPointOf(operation),
                         correlation: callId,
                     },
                     actionName: ACTION_NAME,
@@ -1380,14 +1431,20 @@ export function installParameterPermissionListener(agentCtx, params) {
         // decision), and the terminal state is recorded as a derived observation
         // rather than as a new durable verdict.
         //
-        // SCOPE DISCLOSURE: this is the adapter-side recheck. The same duty on the
-        // OTHER side of the seam — a recheck INSIDE `guardOperation`, immediately
-        // before the consumption write — needs an authority-facts port on
-        // `ControlServiceOptions` plus a `CONTROL_GUARD_BLOCK_REASONS` member to
-        // name it, both declared in `packages/runtime/control/types.ts`, which is
-        // outside this task's granted files. That half of A1-14 is therefore
-        // UNENFORCED at the consumption write in this PR and is reported as a
-        // file-scope blocker, not claimed.
+        // BOTH HALVES OF A1-14 EXIST, AND THEY ARE NOT THE SAME CHECK. This is the
+        // adapter-side half: it re-derives the rung from the operation this listener
+        // is holding, which is the scope the ask was routed on, and it is what turns
+        // a rise into the human-readable deny above. The OTHER half — the one that
+        // cannot be bypassed by a caller that reaches the guard by another route —
+        // landed in A4-PR7 Task 7.0: `guardOperation` re-runs the ceiling INSIDE the
+        // per-team lock for the authority point PERSISTED ON THE ROW, immediately
+        // before the `control-allow-consumed` write, and refuses with
+        // `authority-risen` / `authority-undetermined` / `authority-scope-unbound`
+        // and ZERO consumption. The two halves ask the same question of two
+        // different sources (the live operation vs the durable row), so a row whose
+        // point drifted from the live operation is caught by the guard even when
+        // this check passes. Neither half rewrites the allow: an unspent allow is
+        // the human's answer, still on the record.
         if (operationApprovalRouting !== undefined && record.reviewAuthority !== undefined) {
             const reviewAuthority = record.reviewAuthority;
             let freshFacts;
@@ -1459,6 +1516,7 @@ export function installParameterPermissionListener(agentCtx, params) {
                 toolName: name,
                 correlation: callId,
                 operationFingerprint: operation.fingerprint,
+                ...(authorityPoint !== undefined ? { authorityScope: authorityPoint } : {}),
             });
         }
         catch (error) {
@@ -1503,6 +1561,41 @@ export function installParameterPermissionListener(agentCtx, params) {
                     kind: 'deny',
                     reason: capabilityDenialReason(PRE_EXECUTE_CAPABILITY_ERROR_CODES.EXTERNAL_RUNTIME_RESTRICTION, `the host runtime stopped allowing ${name} between the approval and the last-mile ` +
                         `guard (${verdict.reason}) — the invocation terminates; the one-shot allow was not consumed`),
+                };
+            }
+            // A4-PR7 Task 7.0 (ADR A1-14) — the guard-side consumption recheck,
+            // discovered here rather than at (4c'): the durable row's own authority
+            // point no longer matches what the fresh documents allow (or the row
+            // carries no point at all, or the fresh documents could not answer). The
+            // guard consumed NOTHING: the refusal is written before the
+            // `control-allow-consumed` fact, so the human's allow is still unspent and
+            // still exactly as written. Named here (rather than folded into the generic
+            // guard-blocked sentence below) because the three reasons answer different
+            // questions — a rise says the Team's documents moved, an undetermined says
+            // nobody could re-read them, an unbound row says the durable fact is
+            // incomplete — and the operator reading the deny needs to know which.
+            if (verdict.reason === CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_RISEN ||
+                verdict.reason === CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED ||
+                verdict.reason === CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_SCOPE_UNBOUND) {
+                observe({
+                    stage: 'terminal-outcome',
+                    callId,
+                    // The frozen terminal-operation-outcome vocabulary again (see the
+                    // `execution-unavailable` arm above): a rise is the `stale` fact the
+                    // (4c') half already reports, and the other two are the same
+                    // `authority-undetermined` fact. Spelled as literals because ADR A1-17
+                    // forbids an executing path from importing the projection lane.
+                    outcome: verdict.reason === CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_RISEN
+                        ? 'stale'
+                        : 'authority-undetermined',
+                    via: 'guard-authority-recheck',
+                    reason: verdict.reason,
+                });
+                return {
+                    kind: 'deny',
+                    reason: `permission denied: the authority for ${name} could not be re-confirmed at the last-mile ` +
+                        `guard (${verdict.reason}) — the invocation did not execute and the one-shot allow was ` +
+                        'not consumed',
                 };
             }
             // R5 — in THIS pipeline a no-request verdict is a consistency
