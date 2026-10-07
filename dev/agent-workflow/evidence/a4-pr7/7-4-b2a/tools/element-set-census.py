@@ -36,7 +36,14 @@ import subprocess
 import sys
 
 PAIR = ["permissionMutationEnvelope:", "  rules: []", "teamHardEnvelope:", "  rules: []"]
-VERSION = re.compile(r"^schemaVersion:\s*(?:\$\{[A-Za-z_]+\}|\d+)$")
+# a witness constant may contain digits (V2_DOCUMENT_VERSION) — an earlier revision required
+# [A-Za-z_]+ and therefore read another lane's `schemaVersion: ${V2_DOCUMENT_VERSION}` as a
+# vanished version element, reporting a clean migration as a lost document.
+# A version-carrying element is `schemaVersion:` followed by a digit (possibly not a valid
+# version at all — `1.5` appears in a cutover fixture) or an INTERPOLATION, which in this repo
+# is a bare witness constant (DECLARED_DOCUMENT_VERSION, V2_DOCUMENT_VERSION) or an expression
+# (`${String(version)}`). A narrower pattern read another lane's witnesses as lost documents.
+VERSION = re.compile(r"^schemaVersion:\s*(?:\$\{[^{}]+\}|[0-9]+(?:\.[0-9]+)?)$")
 KEY = re.compile(r"^[A-Za-z_][A-Za-z0-9_.]*:")
 YAMLISH = re.compile(r"^(?:---|-\s.*|[A-Za-z_][A-Za-z0-9_.]*:.*|\s+-\s.*)$")
 
@@ -118,12 +125,18 @@ def elements(text):
     return [t for _, t in found]
 
 
+class NewFile(Exception):
+    """The path does not exist at <rev>: there is no base document set to compare against."""
+
+
 def read(rev, path):
     if rev in (".", "WORK"):
         with open(path, encoding="utf-8") as fh:
             return fh.read()
-    return subprocess.run(["git", "show", f"{rev}:{path}"], capture_output=True,
-                          text=True, check=True).stdout
+    r = subprocess.run(["git", "show", f"{rev}:{path}"], capture_output=True, text=True)
+    if r.returncode != 0:
+        raise NewFile(path)
+    return r.stdout
 
 
 def region(stream, idx):
@@ -215,6 +228,16 @@ BAD = {
                                "  '  rules: []',\n  'metadata: {}',\n  'teamHardEnvelope:',"),
 }
 
+# Not a mutant: a legal carrier rewrite whose constant name contains a digit. This one must
+# stay CLEAN — an earlier revision of the VERSION pattern could not read `${V2_DOCUMENT_VERSION}`
+# and reported another lane's witness as a lost document.
+CLEAN_MUTANTS = {
+    "witness-name-with-digit": GOOD.replace("  'schemaVersion: 3',",
+                                            "  `schemaVersion: ${V2_DOCUMENT_VERSION}`,"),
+    "witness-is-an-expression": GOOD.replace("  'schemaVersion: 3',",
+                                             "  `schemaVersion: ${String(version)}`,"),
+}
+
 
 def self_test():
     """Prove the screen can see what it claims to see. A screen that reports 0 anomalies while
@@ -230,6 +253,11 @@ def self_test():
         print(f"  {'PASS' if got else 'FAIL'}  {name:18} -> {len(got)} anomal(y|ies)"
               + (f": {got[0].split(': ', 1)[1]}" if got else " (SCREEN IS BLIND HERE)"))
         ok = ok and bool(got)
+    for name, legal in CLEAN_MUTANTS.items():
+        got = census("t.ts", GOOD, legal)[2]
+        print(f"  {'PASS' if not got else 'FAIL'}  {name:18} -> {len(got)} anomal(y|ies)"
+              + (f" (FALSE POSITIVE: {got[0].split(': ', 1)[1]})" if got else " (clean, as it must be)"))
+        ok = ok and not got
     dropped = GOOD.replace("  'metadata: {}',\n", "")
     got = census("t.ts", GOOD, dropped)[2]
     print(f"  {'PASS' if got else 'FAIL'}  dropped-metadata -> {len(got)} anomal(y|ies)"
@@ -252,6 +280,10 @@ def main():
     for p in paths:
         try:
             r, n, bad, notes = census(p, read(base, p), read(".", p))
+        except NewFile:
+            r, n, bad, notes = 0, 0, [], [f"{p}: new file at this rev — no base document set to "
+                                         f"compare; it needs a one-sided review (rules R3-R5 on the "
+                                         f"head stream only), not a diff"]
         except Exception as exc:                                       # noqa: BLE001
             r, n, bad, notes = 0, 0, [f"{p}: census error {type(exc).__name__}: {exc}"], []
         tot_regions += r

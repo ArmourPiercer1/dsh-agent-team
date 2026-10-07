@@ -565,6 +565,22 @@ for a total to hide.
   it is not in this roster (§7.4 assigned it elsewhere) and its DEFERRALS row is still there.
 * Two known-red things stay red and are named above rather than smoothed over:
   `p8s3b-result-effects` (§8) and the `p6t1-parallel` flake (§6).
+* **The census was wrong twice more after it first reported clean, and both wrong ways are now
+  guarded.** Its version-element pattern required an interpolation name with no digits, so it read
+  another lane's `` `schemaVersion: ${V2_DOCUMENT_VERSION}` `` as a *vanished document* — a false
+  accusation against a correct migration, which is worse than a miss; and it raised on a path that
+  did not exist at the base instead of reporting an un-censusable new file. Both are fixed, and its
+  `--self-test` grew **must-stay-clean** mutants for both families (now 6 cases: 4 mutants that must
+  be caught, 2 legal shapes that must stay clean), so the false-positive mode is tested as hard as
+  the hiding mode. The roster result is unchanged by the fix: 34 files / 2 109 elements / 0 anomalies.
+  Run over all 81 test files that moved between `a4ef2a6b` and this branch it reports 4 926 elements,
+  152 changed element regions and **9 flags in 5 files, none of them this lane's**
+  (`transcripts/element-set-census-all-changed.txt`, header says how to read it): those are a
+  handover screen for the lanes that own them — each flag is one of three shapes this screen does not
+  yet classify (a row version that is deliberately not a document version, a document interpolated
+  from parameters, or a document the file deleted on purpose), and only the owning lane can say which.
+  This lane does not adjudicate foreign fixtures; it hands over the instrument.
+
 * Instruments this lane wrote and got wrong before getting right, because the reader deserves the
   base rate: two revisions of the element census reported a complacent zero from broken
   line/token heuristics (the third revision carries a `--self-test` for exactly that reason, §7);

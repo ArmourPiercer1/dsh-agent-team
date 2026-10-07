@@ -71,3 +71,12 @@ packages/testkit/test/p4t6-session-event-scan.test.ts  @ a4ef2a6b (lane base)
   wrong row. All four are fixed in the committed tools (eslint now runs -f json; the sum now mirrors the
   test's own asserted expression via tools/scan_count_derivation.py) and the numbers above come from the
   corrected run. The scan arithmetic is appended below by that tool.
+## second addendum — the census tool changed after this battery ran
+  tools/element-set-census.py had two further defects found by running it over OTHER lanes' migrated files: its
+  version-element pattern could not read an interpolation whose name contains a digit, so it accused a correct
+  witness (schemaVersion: ${V2_DOCUMENT_VERSION}) of losing a document; and it raised instead of reporting on a
+  path absent at the base. Both fixed; the self-test grew two must-stay-clean cases (now 6, all PASS) and is
+  re-run into transcripts/census-self-test-merged.txt. The roster census is unchanged: 34 files / 2109 elements
+  / 0 anomalies (transcripts/element-set-census.txt), and the whole-footprint screen is
+  transcripts/element-set-census-all-changed.txt (9 flags, 5 files, none of them this lane's - a handover
+  screen, not a verdict).
