@@ -1,0 +1,293 @@
+=== RED capture at the UNMODIFIED base — A4-PR7 Ruling 1 (three-state catalog migration state) ===
+=== date: 2026-10-07T13:43:44Z
+=== worktree: /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b-base  (pristine sibling checkout of the same base commit)
+=== HEAD: 4eee9393002678592aeee890ee0e466c7a6b22d6
+=== git diff --stat — TRACKED files (production must be untouched):
+(empty above = no production file modified)
+=== git status --porcelain — the RED test is the only addition:
+?? packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
+########## pnpm exec vitest run packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts ##########
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b-base
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (19 tests | 18 failed) 13ms
+     × every version this build runs is current 3ms
+     × a version nobody defined is unreadable — never current, never migration-required 0ms
+     × a retired version is migration-required exactly when the domain set says so 0ms
+     × a runnable saved source lists current with its version 2ms
+     × a frozen row on a version nobody defined is UNREADABLE, not current 1ms
+     × a retired saved source is migration-required with its version 1ms
+     × no listed identity carries the deleted boolean (one carrier, not two) 1ms
+     × every listed revision carries a state, so a boolean cannot stand in for one 0ms
+     × the frozen row on an undefined version is NOT reported as current 0ms
+     × runnable revisions are current, side by side with the unreadable one 0ms
+     × a retired and a runnable revision carry different states in one listing 0ms
+     ✓ the frozen `{blueprintId, revisions}` shape is untouched (older consumers) 0ms
+     × the state is part of the read, not of the contract version 0ms
+     × the factory root derives its anchor state instead of omitting it 0ms
+     × the classifier really does answer unreadable for a version nobody defined 0ms
+     × a retired anchor is named as a migration, with its version, and never as unreadable 0ms
+     × an unreadable anchor is named as unreadable and is NOT offered a migration 0ms
+     × neither line still renders the deleted boolean 0ms
+     × both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 A: the version state is derived from the domain sets, never from a threshold > every version this build runs is current
+TypeError: blueprintVersionStateOf is not a function
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:376:14
+    374|   it('every version this build runs is current', () => {
+    375|     for (const version of SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS) {
+    376|       expect(blueprintVersionStateOf(version)).toBe('current')
+       |              ^
+    377|     }
+    378|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 A: the version state is derived from the domain sets, never from a threshold > a version nobody defined is unreadable — never current, never migration-required
+TypeError: blueprintVersionStateOf is not a function
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:381:12
+    379|
+    380|   it('a version nobody defined is unreadable — never current, never mi…
+    381|     expect(blueprintVersionStateOf(V_UNDEFINED)).toBe('unreadable')
+       |            ^
+    382|     expect(blueprintVersionStateOf(V_UNDEFINED)).not.toBe('current')
+    383|     expect(blueprintVersionStateOf(V_UNDEFINED)).not.toBe('migration-r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 A: the version state is derived from the domain sets, never from a threshold > a retired version is migration-required exactly when the domain set says so
+TypeError: blueprintVersionStateOf is not a function
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:394:14
+    392|         ? 'current'
+    393|         : 'unreadable'
+    394|       expect(blueprintVersionStateOf(version)).toBe(expected)
+       |              ^
+    395|     }
+    396|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 B: the identity carrier is three-valued, and the boolean is gone > a runnable saved source lists current with its version
+AssertionError: expected undefined to be 'current' // Object.is equality
+
+- Expected:
+"current"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:405:38
+    403|       .listIdentities()
+    404|       .find((i) => i.blueprintId === 'a4p7.catalog.runnableA')
+    405|     expect(identity?.migrationState).toBe('current')
+       |                                      ^
+    406|     expect(identity?.schemaVersion).toBe(V_RUNNABLE_V1)
+    407|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 B: the identity carrier is three-valued, and the boolean is gone > a frozen row on a version nobody defined is UNREADABLE, not current
+AssertionError: expected undefined to be 'unreadable' // Object.is equality
+
+- Expected:
+"unreadable"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:413:38
+    411|       .listIdentities()
+    412|       .find((i) => i.blueprintId === 'a4p7.catalog.unknown')
+    413|     expect(identity?.migrationState).toBe('unreadable')
+       |                                      ^
+    414|     expect(identity?.schemaVersion).toBe(V_UNDEFINED)
+    415|     // The collapse this ruling deletes: this identity is listed AND r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 B: the identity carrier is three-valued, and the boolean is gone > a retired saved source is migration-required with its version
+AssertionError: expected undefined to be 'migration-required' // Object.is equality
+
+- Expected:
+"migration-required"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:427:38
+    425|       .listIdentities()
+    426|       .find((i) => i.blueprintId === 'a4p7.catalog.retired')
+    427|     expect(identity?.migrationState).toBe('migration-required')
+       |                                      ^
+    428|     expect(identity?.schemaVersion).toBe(V_RUNNABLE_V1)
+    429|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 B: the identity carrier is three-valued, and the boolean is gone > no listed identity carries the deleted boolean (one carrier, not two)
+AssertionError: expected { …(6) } to not have property "migrationRequired"
+
+- Expected:
+undefined
+
++ Received:
+false
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:434:30
+    432|     for (const world of [worldR, worldC]) {
+    433|       for (const identity of world.authority.listIdentities()) {
+    434|         expect(identity).not.toHaveProperty('migrationRequired')
+       |                              ^
+    435|         expect(['current', 'migration-required', 'unreadable']).toCont…
+    436|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > every listed revision carries a state, so a boolean cannot stand in for one
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:448:21
+    446|       const revisions = row['revisions'] as readonly number[]
+    447|       const states = statesOf(row)
+    448|       expect(states.map((s) => s.revision)).toEqual([...revisions])
+       |                     ^
+    449|       for (const state of states) {
+    450|         expect(['current', 'migration-required', 'unreadable']).toCont…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the frozen row on an undefined version is NOT reported as current
+TypeError: Cannot read properties of undefined (reading '0')
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:456:65
+    454|
+    455|   it('the frozen row on an undefined version is NOT reported as curren…
+    456|     const state = statesOf(rowOf(rowsR, 'a4p7.catalog.unknown'))[0]
+       |                                                                 ^
+    457|     expect(state.migrationState).toBe('unreadable')
+    458|     expect(state.migrationState).not.toBe('current')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > runnable revisions are current, side by side with the unreadable one
+TypeError: Cannot read properties of undefined (reading '0')
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:467:60
+    465|
+    466|   it('runnable revisions are current, side by side with the unreadable…
+    467|     expect(statesOf(rowOf(rowsR, 'a4p7.catalog.runnableA'))[0]).toEqua…
+       |                                                            ^
+    468|       revision: 1,
+    469|       schemaVersion: V_RUNNABLE_V1,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > a retired and a runnable revision carry different states in one listing
+TypeError: Cannot read properties of undefined (reading '0')
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:476:58
+    474|
+    475|   it('a retired and a runnable revision carry different states in one …
+    476|     expect(statesOf(rowOf(rowsC, 'a4p7.catalog.retired'))[0]).toEqual({
+       |                                                          ^
+    477|       revision: 4,
+    478|       schemaVersion: V_RUNNABLE_V1,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the state is part of the read, not of the contract version
+TypeError: Cannot read properties of undefined (reading '0')
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:499:60
+    497|       statesOf(rowOf(rowsR, 'a4p7.catalog.unknown')),
+    498|     )
+    499|     expect(statesOf(rowOf(rowsRv1, 'a4p7.catalog.unknown'))[0].migrati…
+       |                                                            ^
+    500|   })
+    501|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the factory root derives its anchor state instead of omitting it
+TypeError: Cannot read properties of undefined (reading '0')
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:504:31
+    502|   it('the factory root derives its anchor state instead of omitting it…
+    503|     const anchorRow = rowOf(rowsF, 'a4p7.catalog.anchor')
+    504|     expect(statesOf(anchorRow)[0].migrationState).toBe('current')
+       |                               ^
+    505|     expect(statesOf(anchorRow)[0].schemaVersion).toBe(V_RUNNABLE_V1)
+    506|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 D: the degraded-boot line says which of the two it is > the classifier really does answer unreadable for a version nobody defined
+AssertionError: expected undefined to be 'unreadable' // Object.is equality
+
+- Expected:
+"unreadable"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:543:40
+    541|     expect(refusedReal.status).toBe('refused')
+    542|     if (refusedReal.status !== 'refused') return
+    543|     expect(refusedReal.migrationState).toBe('unreadable')
+       |                                        ^
+    544|     expect(refusedReal.code).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHE…
+    545|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 D: the degraded-boot line says which of the two it is > a retired anchor is named as a migration, with its version, and never as unreadable
+TypeError: degradedBootLine is not a function
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:548:18
+    546|
+    547|   it('a retired anchor is named as a migration, with its version, and …
+    548|     const line = degradedBootLine(ROOT_SID, refusedMigration)
+       |                  ^
+    549|     expect(line).toContain('migrationState=migration-required')
+    550|     expect(line).toContain('schema v1')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 D: the degraded-boot line says which of the two it is > an unreadable anchor is named as unreadable and is NOT offered a migration
+TypeError: degradedBootLine is not a function
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:556:18
+    554|
+    555|   it('an unreadable anchor is named as unreadable and is NOT offered a…
+    556|     const line = degradedBootLine(ROOT_SID, refusedReal.status === 're…
+       |                  ^
+    557|     expect(line).toContain('migrationState=unreadable')
+    558|     expect(line).toContain('not listed')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 D: the degraded-boot line says which of the two it is > neither line still renders the deleted boolean
+TypeError: degradedBootLine is not a function
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:563:12
+    561|
+    562|   it('neither line still renders the deleted boolean', () => {
+    563|     expect(degradedBootLine(ROOT_SID, refusedMigration)).not.toContain…
+       |            ^
+    564|     expect(
+    565|       degradedBootLine(ROOT_SID, refusedReal.status === 'refused' ? re…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/18]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 D: the degraded-boot line says which of the two it is > both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it
+TypeError: degradedBootLine is not a function
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:574:20
+    572|       refusedReal.status === 'refused' ? refusedReal : refusedMigratio…
+    573|     ]) {
+    574|       const line = degradedBootLine(ROOT_SID, state)
+       |                    ^
+    575|       expect(line).toContain('DEGRADED boot')
+    576|       expect(line).toContain('host is up')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/18]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  18 failed | 1 passed (19)
+   Start at  21:43:45
+   Duration  1.46s (transform 1.03s, setup 0ms, import 1.34s, tests 13ms, environment 0ms)
+
+[red exit=1]

@@ -1,0 +1,866 @@
+=== A4-PR7 Ruling 1 — mutation proofs. Each flips PRODUCTION ONLY (never a test), runs the ruling lane, and is reverted from the committed tree 73d187bb. ===
+=== date: 2026-10-07T13:53:24Z
+=== MUTATION M1-collapse-unreadable-to-current ===
+=== production file flipped (test files untouched): packages/runtime/src/plugin/blueprint-authority.ts
+===   - return 'unreadable'
+===   + return 'current'
+=== git diff --stat (what the mutation touched):
+ packages/runtime/src/plugin/blueprint-authority.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+########## pnpm exec vitest run packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts ##########
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (19 tests | 5 failed) 16ms
+     ✓ every version this build runs is current 1ms
+     × a version nobody defined is unreadable — never current, never migration-required 4ms
+     × a retired version is migration-required exactly when the domain set says so 1ms
+     ✓ a runnable saved source lists current with its version 1ms
+     × a frozen row on a version nobody defined is UNREADABLE, not current 1ms
+     ✓ a retired saved source is migration-required with its version 1ms
+     ✓ no listed identity carries the deleted boolean (one carrier, not two) 3ms
+     ✓ every listed revision carries a state, so a boolean cannot stand in for one 1ms
+     × the frozen row on an undefined version is NOT reported as current 1ms
+     ✓ runnable revisions are current, side by side with the unreadable one 0ms
+     ✓ a retired and a runnable revision carry different states in one listing 0ms
+     ✓ the frozen `{blueprintId, revisions}` shape is untouched (older consumers) 0ms
+     × the state is part of the read, not of the contract version 1ms
+     ✓ the factory root derives its anchor state instead of omitting it 0ms
+     ✓ the classifier really does answer unreadable for a version nobody defined 0ms
+     ✓ a retired anchor is named as a migration, with its version, and never as unreadable 0ms
+     ✓ an unreadable anchor is named as unreadable and is NOT offered a migration 0ms
+     ✓ neither line still renders the deleted boolean 0ms
+     ✓ both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it 0ms
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (58 tests | 1 failed) 26ms
+     ✓ an unidentifiable document on an unknown version is refused for its identity, not its version 2ms
+     ✓ a document with no blueprintId is refused for the missing identity whatever its version 0ms
+     ✓ a version nobody defined, with a good identity, is parse-rejected — never migration-required 0ms
+     ✓ a non-integer version stays parse-rejected (no identity is owed to it) 0ms
+     ✓ bad YAML is parse-rejected: identity is not owed to an unreadable file 0ms
+     ✓ an unreadable file is refused where it fails to decode, never on the version line 0ms
+     ✓ a well-formed identity on a version this build RUNS inspects ok, with its version carried 0ms
+     ✓ the retired set is exactly DEFINED minus SUPPORTED (no threshold, no hand-declared list) 0ms
+     ✓ every version the product once defined is in the history set, so the flip makes a backlog and not a mystery 0ms
+     ✓ the retired set is empty exactly while the bridge still runs v1 and v2 0ms
+     ✓ the two refusal names are a closed pair and neither overloads an existing code 0ms
+     ✓ it is LISTED, with its identity and its version, under a build that runs v3 only 0ms
+     ✓ it is distinguishable from a parse-rejected file, which is still NOT listed 0ms
+     ✓ every listed arm carries a version and a migration STATE, the anchor included 0ms
+     ✓ resolve refuses it with BLUEPRINT_MIGRATION_REQUIRED — not not-found, not the parser 1ms
+     ✓ the refusal asks for no source read: a retired document is never parsed on the way to no 0ms
+     ✓ a revision-less resolve reaches the same refusal (the latest-revision walk keeps it visible) 1ms
+     ✓ the listed flag is what the refusal acts on, so the catalog can never contradict resolve 1ms
+     ✓ the live catalog facade lists it and refuses it with the same typed code 2ms
+     ✓ under the bridge the same file resolves normally, so the refusal is version-state and not a blanket break 1ms
+     × a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal 6ms
+     ✓ that refusal is not the registry-integrity refusal the row would otherwise produce 0ms
+     ✓ the strong parser accepts a v1 document exactly while the bridge runs it 1ms
+     ✓ a version this build never defined is a refusal, not a crash 0ms
+     ✓ a version this build runs classifies as runnable (the ordinary host is unchanged) 1ms
+     ✓ an anchor that is not a document at all still throws (fail-closed construction) 0ms
+     ✓ the root constructed (the constructor survived the anchor) 0ms
+     ✓ ZERO durable writes: no TeamSession row, no binding, no compatibility state 0ms
+     ✓ ZERO agent effect through the live glue 0ms
+     ✓ the code is the document code, never a governance warning code 0ms
+     ✓ the governance leg is never consulted for the refused create start 0ms
+     ✓ a re-drive gives the same refusal, not a second state 0ms
+     ✓ reading a field refuses typed 0ms
+     ✓ enumerating or serialising it refuses too (no empty-object leak) 0ms
+     ✓ team.ensureRootLive on a refused bound document is refused 0ms
+     ✓ the stub glue ensure port was NEVER entered (the gate sits in front of it) 0ms
+     ✓ the wire carries it in its OWN closed vocabulary, not the document code 0ms
+     ✓ the SAME entrance on the governance fourth arm answers with the typed wire name 0ms
+     ✓ handoff.create over a refused bound document creates NOTHING and never reaches the governance leg 0ms
+     ✓ the SAME team.create shape succeeds over an open bound document (the control) 0ms
+     ✓ team.create over the same bound document is refused, leaving the row NOT LIVE 0ms
+     ✓ a CREATE mint over a refused bound document fails closed with ZERO agent effect 0ms
+     ✓ the refused mint made the chokepoint commit and NO compatibility/prober write 0ms
+     ✓ the entrance asked the bound-document resolver for THIS root 0ms
+     ✓ the refusal is typed and boot() never reached the live layer 0ms
+     ✓ the refused resume wrote NOTHING before refusing 0ms
+     ✓ the resume completed (the new gate broke nothing it guards) 0ms
+     ✓ the resumed root went live through the glue exactly once 0ms
+     ✓ its ensureRootLive entrance reached the glue (the gate is not blocking what it allows) 0ms
+     ✓ the write counter is not a blind spot (a real start does record) 0ms
+     ✓ a no-ref legacy row on a refused anchor refuses typed (not the domain parse error) 0ms
+     ✓ and a runnable anchor still resolves by definition (the legacy binding is intact) 1ms
+     ✓ the authority constructed on the refused anchor 0ms
+     ✓ a version nobody defined is NOT listed (there is no migration to advertise) 0ms
+     ✓ an anchor that is not a document still fails the authority construction 0ms
+     ✓ a fingerprint rule against an exact target is a DECISIVE non-coverage, never undetermined 0ms
+     ✓ the reverse shape pairing is decisive too (the gap is symmetric) 0ms
+     ✓ each shape does cover its own target (the controls that keep the two above honest) 0ms
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 71 passed (77)
+   Start at  21:53:24
+   Duration  1.37s (transform 1.71s, setup 0ms, import 2.46s, tests 42ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C2: a frozen row is classified by the version it carries, not by its text > a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal
+AssertionError: expected { …(6) } to match object { origin: 'frozen', …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "migrationState": "unreadable",
++   "migrationState": "current",
+    "origin": "frozen",
+    "schemaVersion": 99,
+  }
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:543:89
+    541|     // listing said current, the resolve said no, and both were this c…
+    542|     // truthful output. `unreadable` is what the listing actually know…
+    543|     expect(w2Listed.find((identity) => identity.blueprintId === 'a4p7.…
+       |                                                                                         ^
+    544|       { origin: 'frozen', schemaVersion: 99, migrationState: 'unreadab…
+    545|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 A: the version state is derived from the domain sets, never from a threshold > a version nobody defined is unreadable — never current, never migration-required
+AssertionError: expected 'current' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "current"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:406:50
+    404|
+    405|   it('a version nobody defined is unreadable — never current, never mi…
+    406|     expect(blueprintVersionStateOf(V_UNDEFINED)).toBe('unreadable')
+       |                                                  ^
+    407|     expect(blueprintVersionStateOf(V_UNDEFINED)).not.toBe('current')
+    408|     expect(blueprintVersionStateOf(V_UNDEFINED)).not.toBe('migration-r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 A: the version state is derived from the domain sets, never from a threshold > a retired version is migration-required exactly when the domain set says so
+AssertionError: expected 'current' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "current"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:419:48
+    417|         ? 'current'
+    418|         : 'unreadable'
+    419|       expect(blueprintVersionStateOf(version)).toBe(expected)
+       |                                                ^
+    420|     }
+    421|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 B: the identity carrier is three-valued, and the boolean is gone > a frozen row on a version nobody defined is UNREADABLE, not current
+AssertionError: expected 'current' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "current"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:438:38
+    436|       .listIdentities()
+    437|       .find((i) => i.blueprintId === 'a4p7.catalog.unknown')
+    438|     expect(identity?.migrationState).toBe('unreadable')
+       |                                      ^
+    439|     expect(identity?.schemaVersion).toBe(V_UNDEFINED)
+    440|     // The collapse this ruling deletes: this identity is listed AND r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the frozen row on an undefined version is NOT reported as current
+AssertionError: expected 'current' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "current"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:482:34
+    480|   it('the frozen row on an undefined version is NOT reported as curren…
+    481|     const state = onlyState(rowsR, 'a4p7.catalog.unknown')
+    482|     expect(state.migrationState).toBe('unreadable')
+       |                                  ^
+    483|     expect(state.migrationState).not.toBe('current')
+    484|     expect(state.migrationState).not.toBe('migration-required')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the state is part of the read, not of the contract version
+AssertionError: expected 'current' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "current"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:524:71
+    522|       statesOf(rowOf(rowsR, 'a4p7.catalog.unknown')),
+    523|     )
+    524|     expect(onlyState(rowsRv1, 'a4p7.catalog.unknown').migrationState).…
+       |                                                                       ^
+    525|   })
+    526|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+[mutation vitest exit=1]
+=== reverting from the committed tree:
+=== git status --porcelain after revert (must show no M for the mutated file):
+(clean)
+
+=== MUTATION M2-collapse-unreadable-to-migration-required ===
+=== production file flipped (test files untouched): packages/runtime/src/plugin/blueprint-authority.ts
+===   - return 'unreadable'
+===   + return 'migration-required'
+=== git diff --stat (what the mutation touched):
+ packages/runtime/src/plugin/blueprint-authority.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+########## pnpm exec vitest run packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts ##########
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (19 tests | 5 failed) 15ms
+     ✓ every version this build runs is current 1ms
+     × a version nobody defined is unreadable — never current, never migration-required 4ms
+     × a retired version is migration-required exactly when the domain set says so 1ms
+     ✓ a runnable saved source lists current with its version 1ms
+     × a frozen row on a version nobody defined is UNREADABLE, not current 1ms
+     ✓ a retired saved source is migration-required with its version 1ms
+     ✓ no listed identity carries the deleted boolean (one carrier, not two) 2ms
+     ✓ every listed revision carries a state, so a boolean cannot stand in for one 0ms
+     × the frozen row on an undefined version is NOT reported as current 0ms
+     ✓ runnable revisions are current, side by side with the unreadable one 0ms
+     ✓ a retired and a runnable revision carry different states in one listing 0ms
+     ✓ the frozen `{blueprintId, revisions}` shape is untouched (older consumers) 0ms
+     × the state is part of the read, not of the contract version 0ms
+     ✓ the factory root derives its anchor state instead of omitting it 0ms
+     ✓ the classifier really does answer unreadable for a version nobody defined 0ms
+     ✓ a retired anchor is named as a migration, with its version, and never as unreadable 0ms
+     ✓ an unreadable anchor is named as unreadable and is NOT offered a migration 0ms
+     ✓ neither line still renders the deleted boolean 0ms
+     ✓ both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it 0ms
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (58 tests | 1 failed) 29ms
+     ✓ an unidentifiable document on an unknown version is refused for its identity, not its version 2ms
+     ✓ a document with no blueprintId is refused for the missing identity whatever its version 0ms
+     ✓ a version nobody defined, with a good identity, is parse-rejected — never migration-required 1ms
+     ✓ a non-integer version stays parse-rejected (no identity is owed to it) 0ms
+     ✓ bad YAML is parse-rejected: identity is not owed to an unreadable file 0ms
+     ✓ an unreadable file is refused where it fails to decode, never on the version line 0ms
+     ✓ a well-formed identity on a version this build RUNS inspects ok, with its version carried 1ms
+     ✓ the retired set is exactly DEFINED minus SUPPORTED (no threshold, no hand-declared list) 0ms
+     ✓ every version the product once defined is in the history set, so the flip makes a backlog and not a mystery 0ms
+     ✓ the retired set is empty exactly while the bridge still runs v1 and v2 0ms
+     ✓ the two refusal names are a closed pair and neither overloads an existing code 0ms
+     ✓ it is LISTED, with its identity and its version, under a build that runs v3 only 0ms
+     ✓ it is distinguishable from a parse-rejected file, which is still NOT listed 0ms
+     ✓ every listed arm carries a version and a migration STATE, the anchor included 0ms
+     ✓ resolve refuses it with BLUEPRINT_MIGRATION_REQUIRED — not not-found, not the parser 1ms
+     ✓ the refusal asks for no source read: a retired document is never parsed on the way to no 0ms
+     ✓ a revision-less resolve reaches the same refusal (the latest-revision walk keeps it visible) 1ms
+     ✓ the listed flag is what the refusal acts on, so the catalog can never contradict resolve 1ms
+     ✓ the live catalog facade lists it and refuses it with the same typed code 3ms
+     ✓ under the bridge the same file resolves normally, so the refusal is version-state and not a blanket break 2ms
+     × a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal 5ms
+     ✓ that refusal is not the registry-integrity refusal the row would otherwise produce 0ms
+     ✓ the strong parser accepts a v1 document exactly while the bridge runs it 1ms
+     ✓ a version this build never defined is a refusal, not a crash 2ms
+     ✓ a version this build runs classifies as runnable (the ordinary host is unchanged) 1ms
+     ✓ an anchor that is not a document at all still throws (fail-closed construction) 0ms
+     ✓ the root constructed (the constructor survived the anchor) 0ms
+     ✓ ZERO durable writes: no TeamSession row, no binding, no compatibility state 0ms
+     ✓ ZERO agent effect through the live glue 0ms
+     ✓ the code is the document code, never a governance warning code 0ms
+     ✓ the governance leg is never consulted for the refused create start 0ms
+     ✓ a re-drive gives the same refusal, not a second state 0ms
+     ✓ reading a field refuses typed 0ms
+     ✓ enumerating or serialising it refuses too (no empty-object leak) 0ms
+     ✓ team.ensureRootLive on a refused bound document is refused 0ms
+     ✓ the stub glue ensure port was NEVER entered (the gate sits in front of it) 0ms
+     ✓ the wire carries it in its OWN closed vocabulary, not the document code 0ms
+     ✓ the SAME entrance on the governance fourth arm answers with the typed wire name 0ms
+     ✓ handoff.create over a refused bound document creates NOTHING and never reaches the governance leg 0ms
+     ✓ the SAME team.create shape succeeds over an open bound document (the control) 0ms
+     ✓ team.create over the same bound document is refused, leaving the row NOT LIVE 0ms
+     ✓ a CREATE mint over a refused bound document fails closed with ZERO agent effect 0ms
+     ✓ the refused mint made the chokepoint commit and NO compatibility/prober write 0ms
+     ✓ the entrance asked the bound-document resolver for THIS root 0ms
+     ✓ the refusal is typed and boot() never reached the live layer 0ms
+     ✓ the refused resume wrote NOTHING before refusing 0ms
+     ✓ the resume completed (the new gate broke nothing it guards) 0ms
+     ✓ the resumed root went live through the glue exactly once 0ms
+     ✓ its ensureRootLive entrance reached the glue (the gate is not blocking what it allows) 0ms
+     ✓ the write counter is not a blind spot (a real start does record) 0ms
+     ✓ a no-ref legacy row on a refused anchor refuses typed (not the domain parse error) 0ms
+     ✓ and a runnable anchor still resolves by definition (the legacy binding is intact) 1ms
+     ✓ the authority constructed on the refused anchor 0ms
+     ✓ a version nobody defined is NOT listed (there is no migration to advertise) 0ms
+     ✓ an anchor that is not a document still fails the authority construction 0ms
+     ✓ a fingerprint rule against an exact target is a DECISIVE non-coverage, never undetermined 0ms
+     ✓ the reverse shape pairing is decisive too (the gap is symmetric) 0ms
+     ✓ each shape does cover its own target (the controls that keep the two above honest) 0ms
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 71 passed (77)
+   Start at  21:53:26
+   Duration  1.34s (transform 1.68s, setup 0ms, import 2.40s, tests 44ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C2: a frozen row is classified by the version it carries, not by its text > a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal
+AssertionError: expected { …(6) } to match object { origin: 'frozen', …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "migrationState": "unreadable",
++   "migrationState": "migration-required",
+    "origin": "frozen",
+    "schemaVersion": 99,
+  }
+
+ ❯ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts:543:89
+    541|     // listing said current, the resolve said no, and both were this c…
+    542|     // truthful output. `unreadable` is what the listing actually know…
+    543|     expect(w2Listed.find((identity) => identity.blueprintId === 'a4p7.…
+       |                                                                                         ^
+    544|       { origin: 'frozen', schemaVersion: 99, migrationState: 'unreadab…
+    545|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 A: the version state is derived from the domain sets, never from a threshold > a version nobody defined is unreadable — never current, never migration-required
+AssertionError: expected 'migration-required' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "migration-required"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:406:50
+    404|
+    405|   it('a version nobody defined is unreadable — never current, never mi…
+    406|     expect(blueprintVersionStateOf(V_UNDEFINED)).toBe('unreadable')
+       |                                                  ^
+    407|     expect(blueprintVersionStateOf(V_UNDEFINED)).not.toBe('current')
+    408|     expect(blueprintVersionStateOf(V_UNDEFINED)).not.toBe('migration-r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 A: the version state is derived from the domain sets, never from a threshold > a retired version is migration-required exactly when the domain set says so
+AssertionError: expected 'migration-required' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "migration-required"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:419:48
+    417|         ? 'current'
+    418|         : 'unreadable'
+    419|       expect(blueprintVersionStateOf(version)).toBe(expected)
+       |                                                ^
+    420|     }
+    421|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 B: the identity carrier is three-valued, and the boolean is gone > a frozen row on a version nobody defined is UNREADABLE, not current
+AssertionError: expected 'migration-required' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "migration-required"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:438:38
+    436|       .listIdentities()
+    437|       .find((i) => i.blueprintId === 'a4p7.catalog.unknown')
+    438|     expect(identity?.migrationState).toBe('unreadable')
+       |                                      ^
+    439|     expect(identity?.schemaVersion).toBe(V_UNDEFINED)
+    440|     // The collapse this ruling deletes: this identity is listed AND r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the frozen row on an undefined version is NOT reported as current
+AssertionError: expected 'migration-required' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "migration-required"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:482:34
+    480|   it('the frozen row on an undefined version is NOT reported as curren…
+    481|     const state = onlyState(rowsR, 'a4p7.catalog.unknown')
+    482|     expect(state.migrationState).toBe('unreadable')
+       |                                  ^
+    483|     expect(state.migrationState).not.toBe('current')
+    484|     expect(state.migrationState).not.toBe('migration-required')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the state is part of the read, not of the contract version
+AssertionError: expected 'migration-required' to be 'unreadable' // Object.is equality
+
+Expected: "unreadable"
+Received: "migration-required"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:524:71
+    522|       statesOf(rowOf(rowsR, 'a4p7.catalog.unknown')),
+    523|     )
+    524|     expect(onlyState(rowsRv1, 'a4p7.catalog.unknown').migrationState).…
+       |                                                                       ^
+    525|   })
+    526|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+[mutation vitest exit=1]
+=== reverting from the committed tree:
+=== git status --porcelain after revert (must show no M for the mutated file):
+(clean)
+
+=== MUTATION M3-unwire-the-root-reader ===
+=== production file flipped (test files untouched): packages/runtime/src/plugin/root.ts
+===   - catalogMigrationStates,
+===   + (line deleted)
+=== git diff --stat (what the mutation touched):
+ packages/runtime/src/plugin/root.ts | 1 -
+ 1 file changed, 1 deletion(-)
+########## pnpm exec vitest run packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts ##########
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (19 tests | 4 failed) 17ms
+     ✓ every version this build runs is current 1ms
+     ✓ a version nobody defined is unreadable — never current, never migration-required 1ms
+     ✓ a retired version is migration-required exactly when the domain set says so 0ms
+     ✓ a runnable saved source lists current with its version 1ms
+     ✓ a frozen row on a version nobody defined is UNREADABLE, not current 2ms
+     ✓ a retired saved source is migration-required with its version 1ms
+     ✓ no listed identity carries the deleted boolean (one carrier, not two) 2ms
+     ✓ every listed revision carries a state, so a boolean cannot stand in for one 0ms
+     × the frozen row on an undefined version is NOT reported as current 3ms
+     × runnable revisions are current, side by side with the unreadable one 2ms
+     × a retired and a runnable revision carry different states in one listing 1ms
+     ✓ the frozen `{blueprintId, revisions}` shape is untouched (older consumers) 0ms
+     ✓ the state is part of the read, not of the contract version 0ms
+     × the factory root derives its anchor state instead of omitting it 1ms
+     ✓ the classifier really does answer unreadable for a version nobody defined 0ms
+     ✓ a retired anchor is named as a migration, with its version, and never as unreadable 0ms
+     ✓ an unreadable anchor is named as unreadable and is NOT offered a migration 0ms
+     ✓ neither line still renders the deleted boolean 0ms
+     ✓ both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it 0ms
+ ✓ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (58 tests) 21ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 73 passed (77)
+   Start at  21:53:28
+   Duration  1.35s (transform 1.69s, setup 0ms, import 2.44s, tests 39ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the frozen row on an undefined version is NOT reported as current
+AssertionError: expected undefined to be 99 // Object.is equality
+
+- Expected:
+99
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:488:33
+    486|     // not an unidentified one, and the operator needs the number to s…
+    487|     // version the catalog refused to recognise.
+    488|     expect(state.schemaVersion).toBe(V_UNDEFINED)
+       |                                 ^
+    489|   })
+    490|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > runnable revisions are current, side by side with the unreadable one
+AssertionError: expected { revision: 1, …(1) } to deeply equal { revision: 1, schemaVersion: 1, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "migrationState": "current",
++   "migrationState": "unreadable",
+    "revision": 1,
+-   "schemaVersion": 1,
+  }
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:492:56
+    490|
+    491|   it('runnable revisions are current, side by side with the unreadable…
+    492|     expect(onlyState(rowsR, 'a4p7.catalog.runnableA')).toEqual({
+       |                                                        ^
+    493|       revision: 1,
+    494|       schemaVersion: V_RUNNABLE_V1,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > a retired and a runnable revision carry different states in one listing
+AssertionError: expected { revision: 4, …(1) } to deeply equal { revision: 4, schemaVersion: 1, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "migrationState": "migration-required",
++   "migrationState": "unreadable",
+    "revision": 4,
+-   "schemaVersion": 1,
+  }
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:501:54
+    499|
+    500|   it('a retired and a runnable revision carry different states in one …
+    501|     expect(onlyState(rowsC, 'a4p7.catalog.retired')).toEqual({
+       |                                                      ^
+    502|       revision: 4,
+    503|       schemaVersion: V_RUNNABLE_V1,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the factory root derives its anchor state instead of omitting it
+AssertionError: expected 'unreadable' to be 'current' // Object.is equality
+
+Expected: "current"
+Received: "unreadable"
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:529:40
+    527|   it('the factory root derives its anchor state instead of omitting it…
+    528|     const anchorState = onlyState(rowsF, 'a4p7.catalog.anchor')
+    529|     expect(anchorState.migrationState).toBe('current')
+       |                                        ^
+    530|     expect(anchorState.schemaVersion).toBe(V_RUNNABLE_V1)
+    531|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+[mutation vitest exit=1]
+=== reverting from the committed tree:
+=== git status --porcelain after revert (must show no M for the mutated file):
+(clean)
+
+=== MUTATION M4-drop-the-payload-field ===
+=== production file flipped (test files untouched): packages/runtime/src/plugin/s6-remote.ts
+===   - rows.push({ blueprintId, revisions, revisionStates })
+===   + rows.push({ blueprintId, revisions })
+=== git diff --stat (what the mutation touched):
+ packages/runtime/src/plugin/s6-remote.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+########## pnpm exec vitest run packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts ##########
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (19 tests | 6 failed) 13ms
+     ✓ every version this build runs is current 1ms
+     ✓ a version nobody defined is unreadable — never current, never migration-required 0ms
+     ✓ a retired version is migration-required exactly when the domain set says so 0ms
+     ✓ a runnable saved source lists current with its version 1ms
+     ✓ a frozen row on a version nobody defined is UNREADABLE, not current 1ms
+     ✓ a retired saved source is migration-required with its version 1ms
+     ✓ no listed identity carries the deleted boolean (one carrier, not two) 3ms
+     × every listed revision carries a state, so a boolean cannot stand in for one 2ms
+     × the frozen row on an undefined version is NOT reported as current 0ms
+     × runnable revisions are current, side by side with the unreadable one 0ms
+     × a retired and a runnable revision carry different states in one listing 0ms
+     ✓ the frozen `{blueprintId, revisions}` shape is untouched (older consumers) 0ms
+     × the state is part of the read, not of the contract version 0ms
+     × the factory root derives its anchor state instead of omitting it 0ms
+     ✓ the classifier really does answer unreadable for a version nobody defined 0ms
+     ✓ a retired anchor is named as a migration, with its version, and never as unreadable 0ms
+     ✓ an unreadable anchor is named as unreadable and is NOT offered a migration 0ms
+     ✓ neither line still renders the deleted boolean 0ms
+     ✓ both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it 0ms
+ ✓ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (58 tests) 22ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  6 failed | 71 passed (77)
+   Start at  21:53:30
+   Duration  1.38s (transform 1.69s, setup 0ms, import 2.49s, tests 35ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > every listed revision carries a state, so a boolean cannot stand in for one
+Error: A4-PR7 catalog guard: the row carries no revisionStates array: {"blueprintId":"a4p7.catalog.anchor","revisions":[1]}
+ ❯ statesOf packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:330:11
+    328|   const states = row['revisionStates']
+    329|   if (!Array.isArray(states)) {
+    330|     throw new Error(
+       |           ^
+    331|       `A4-PR7 catalog guard: the row carries no revisionStates array: …
+    332|     )
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:472:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the frozen row on an undefined version is NOT reported as current
+Error: A4-PR7 catalog guard: the row carries no revisionStates array: {"blueprintId":"a4p7.catalog.unknown","revisions":[7]}
+ ❯ statesOf packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:330:11
+    328|   const states = row['revisionStates']
+    329|   if (!Array.isArray(states)) {
+    330|     throw new Error(
+       |           ^
+    331|       `A4-PR7 catalog guard: the row carries no revisionStates array: …
+    332|     )
+ ❯ onlyState packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:339:18
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:481:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > runnable revisions are current, side by side with the unreadable one
+Error: A4-PR7 catalog guard: the row carries no revisionStates array: {"blueprintId":"a4p7.catalog.runnableA","revisions":[1]}
+ ❯ statesOf packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:330:11
+    328|   const states = row['revisionStates']
+    329|   if (!Array.isArray(states)) {
+    330|     throw new Error(
+       |           ^
+    331|       `A4-PR7 catalog guard: the row carries no revisionStates array: …
+    332|     )
+ ❯ onlyState packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:339:18
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:492:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > a retired and a runnable revision carry different states in one listing
+Error: A4-PR7 catalog guard: the row carries no revisionStates array: {"blueprintId":"a4p7.catalog.retired","revisions":[4]}
+ ❯ statesOf packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:330:11
+    328|   const states = row['revisionStates']
+    329|   if (!Array.isArray(states)) {
+    330|     throw new Error(
+       |           ^
+    331|       `A4-PR7 catalog guard: the row carries no revisionStates array: …
+    332|     )
+ ❯ onlyState packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:339:18
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:501:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the state is part of the read, not of the contract version
+Error: A4-PR7 catalog guard: the row carries no revisionStates array: {"blueprintId":"a4p7.catalog.unknown","revisions":[7]}
+ ❯ statesOf packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:330:11
+    328|   const states = row['revisionStates']
+    329|   if (!Array.isArray(states)) {
+    330|     throw new Error(
+       |           ^
+    331|       `A4-PR7 catalog guard: the row carries no revisionStates array: …
+    332|     )
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:521:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 C: catalog.list carries the state beside the revisions (real root, real dispatcher) > the factory root derives its anchor state instead of omitting it
+Error: A4-PR7 catalog guard: the row carries no revisionStates array: {"blueprintId":"a4p7.catalog.anchor","revisions":[1]}
+ ❯ statesOf packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:330:11
+    328|   const states = row['revisionStates']
+    329|   if (!Array.isArray(states)) {
+    330|     throw new Error(
+       |           ^
+    331|       `A4-PR7 catalog guard: the row carries no revisionStates array: …
+    332|     )
+ ❯ onlyState packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:339:18
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:528:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+[mutation vitest exit=1]
+=== reverting from the committed tree:
+=== git status --porcelain after revert (must show no M for the mutated file):
+(clean)
+
+=== MUTATION M5-render-collapses-arm-1 ===
+=== production file flipped (test files untouched): packages/runtime/src/plugin/host.ts
+===   - and is LISTED in the catalog with migrationState=migration-required
+===   + and is LISTED in the catalog with migrationState=unreadable
+=== git diff --stat (what the mutation touched):
+ packages/runtime/src/plugin/host.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+########## pnpm exec vitest run packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts ##########
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (19 tests | 1 failed) 15ms
+     ✓ every version this build runs is current 1ms
+     ✓ a version nobody defined is unreadable — never current, never migration-required 0ms
+     ✓ a retired version is migration-required exactly when the domain set says so 0ms
+     ✓ a runnable saved source lists current with its version 1ms
+     ✓ a frozen row on a version nobody defined is UNREADABLE, not current 2ms
+     ✓ a retired saved source is migration-required with its version 0ms
+     ✓ no listed identity carries the deleted boolean (one carrier, not two) 2ms
+     ✓ every listed revision carries a state, so a boolean cannot stand in for one 0ms
+     ✓ the frozen row on an undefined version is NOT reported as current 0ms
+     ✓ runnable revisions are current, side by side with the unreadable one 0ms
+     ✓ a retired and a runnable revision carry different states in one listing 0ms
+     ✓ the frozen `{blueprintId, revisions}` shape is untouched (older consumers) 0ms
+     ✓ the state is part of the read, not of the contract version 0ms
+     ✓ the factory root derives its anchor state instead of omitting it 0ms
+     ✓ the classifier really does answer unreadable for a version nobody defined 0ms
+     × a retired anchor is named as a migration, with its version, and never as unreadable 5ms
+     ✓ an unreadable anchor is named as unreadable and is NOT offered a migration 0ms
+     ✓ neither line still renders the deleted boolean 0ms
+     ✓ both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it 0ms
+ ✓ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (58 tests) 22ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 76 passed (77)
+   Start at  21:53:32
+   Duration  1.41s (transform 1.76s, setup 0ms, import 2.55s, tests 37ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 D: the degraded-boot line says which of the two it is > a retired anchor is named as a migration, with its version, and never as unreadable
+AssertionError: expected '[dsh-agent-team] DEGRADED boot for ro…' to contain 'migrationState=migration-required'
+
+Expected: "migrationState=migration-required"
+Received: "[dsh-agent-team] DEGRADED boot for row session-a4p7-catalog-root: scripted: a schema v1 anchor under a build that runs [3] (code BLUEPRINT_MIGRATION_REQUIRED, anchor a4p7.catalog.retired@1 is schema v1 and is LISTED in the catalog with migrationState=unreadable). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only)."
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:574:18
+    572|   it('a retired anchor is named as a migration, with its version, and …
+    573|     const line = degradedBootLine(ROOT_SID, refusedMigration)
+    574|     expect(line).toContain('migrationState=migration-required')
+       |                  ^
+    575|     expect(line).toContain('schema v1')
+    576|     expect(line).toContain('a4p7.catalog.retired@1')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+[mutation vitest exit=1]
+=== reverting from the committed tree:
+=== git status --porcelain after revert (must show no M for the mutated file):
+(clean)
+
+=== MUTATION M6-render-collapses-arm-2 ===
+=== production file flipped (test files untouched): packages/runtime/src/plugin/host.ts
+===   - `anchor identity could not be read (migrationState=unreadable), so it is not listed — `
+===   + `anchor identity could not be read (migrationState=migration-required), so it is listed — `
+=== git diff --stat (what the mutation touched):
+ packages/runtime/src/plugin/host.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+########## pnpm exec vitest run packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts ##########
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (19 tests | 1 failed) 16ms
+     ✓ every version this build runs is current 1ms
+     ✓ a version nobody defined is unreadable — never current, never migration-required 0ms
+     ✓ a retired version is migration-required exactly when the domain set says so 0ms
+     ✓ a runnable saved source lists current with its version 1ms
+     ✓ a frozen row on a version nobody defined is UNREADABLE, not current 1ms
+     ✓ a retired saved source is migration-required with its version 1ms
+     ✓ no listed identity carries the deleted boolean (one carrier, not two) 2ms
+     ✓ every listed revision carries a state, so a boolean cannot stand in for one 0ms
+     ✓ the frozen row on an undefined version is NOT reported as current 0ms
+     ✓ runnable revisions are current, side by side with the unreadable one 0ms
+     ✓ a retired and a runnable revision carry different states in one listing 0ms
+     ✓ the frozen `{blueprintId, revisions}` shape is untouched (older consumers) 0ms
+     ✓ the state is part of the read, not of the contract version 0ms
+     ✓ the factory root derives its anchor state instead of omitting it 0ms
+     ✓ the classifier really does answer unreadable for a version nobody defined 0ms
+     ✓ a retired anchor is named as a migration, with its version, and never as unreadable 0ms
+     × an unreadable anchor is named as unreadable and is NOT offered a migration 6ms
+     ✓ neither line still renders the deleted boolean 0ms
+     ✓ both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it 0ms
+ ✓ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (58 tests) 21ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 76 passed (77)
+   Start at  21:53:34
+   Duration  1.30s (transform 1.61s, setup 0ms, import 2.34s, tests 36ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 D: the degraded-boot line says which of the two it is > an unreadable anchor is named as unreadable and is NOT offered a migration
+AssertionError: expected '[dsh-agent-team] DEGRADED boot for ro…' to contain 'migrationState=unreadable'
+
+Expected: "migrationState=unreadable"
+Received: "[dsh-agent-team] DEGRADED boot for row session-a4p7-catalog-root: the bootstrap Blueprint declares a schema version this build does not run; this build runs [1, 2, 3]. The host boots degraded; no Team bound to it can start (code BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED, anchor identity could not be read (migrationState=migration-required), so it is listed — there is no migration to advertise for a version this build never defined). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only)."
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:582:18
+    580|   it('an unreadable anchor is named as unreadable and is NOT offered a…
+    581|     const line = degradedBootLine(ROOT_SID, refusedReal.status === 're…
+    582|     expect(line).toContain('migrationState=unreadable')
+       |                  ^
+    583|     expect(line).toContain('not listed')
+    584|     expect(line).not.toContain('migrationState=migration-required')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+[mutation vitest exit=1]
+=== reverting from the committed tree:
+=== git status --porcelain after revert (must show no M for the mutated file):
+(clean)
+
+=== MUTATION M7-boolean-comes-back ===
+=== production file flipped (test files untouched): packages/runtime/src/plugin/blueprint-authority.ts
+===   - migrationState: inspection.status === 'ok' ? 'current' : 'migration-required',
+===   + migrationState: inspection.status === 'ok' ? 'current' : 'migration-required',
+        migrationRequired: false,
+=== git diff --stat (what the mutation touched):
+ packages/runtime/src/plugin/blueprint-authority.ts | 1 +
+ 1 file changed, 1 insertion(+)
+########## pnpm exec vitest run packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts ##########
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts (19 tests | 1 failed) 14ms
+     ✓ every version this build runs is current 1ms
+     ✓ a version nobody defined is unreadable — never current, never migration-required 0ms
+     ✓ a retired version is migration-required exactly when the domain set says so 0ms
+     ✓ a runnable saved source lists current with its version 1ms
+     ✓ a frozen row on a version nobody defined is UNREADABLE, not current 2ms
+     ✓ a retired saved source is migration-required with its version 1ms
+     × no listed identity carries the deleted boolean (one carrier, not two) 4ms
+     ✓ every listed revision carries a state, so a boolean cannot stand in for one 1ms
+     ✓ the frozen row on an undefined version is NOT reported as current 0ms
+     ✓ runnable revisions are current, side by side with the unreadable one 0ms
+     ✓ a retired and a runnable revision carry different states in one listing 0ms
+     ✓ the frozen `{blueprintId, revisions}` shape is untouched (older consumers) 0ms
+     ✓ the state is part of the read, not of the contract version 0ms
+     ✓ the factory root derives its anchor state instead of omitting it 0ms
+     ✓ the classifier really does answer unreadable for a version nobody defined 0ms
+     ✓ a retired anchor is named as a migration, with its version, and never as unreadable 0ms
+     ✓ an unreadable anchor is named as unreadable and is NOT offered a migration 0ms
+     ✓ neither line still renders the deleted boolean 0ms
+     ✓ both lines keep the two facts A1-20(c)/A1-21 separate: the host is up, the start is refused, no ack clears it 0ms
+ ✓ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (58 tests) 23ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 76 passed (77)
+   Start at  21:53:36
+   Duration  1.33s (transform 1.66s, setup 0ms, import 2.41s, tests 37ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts > a4p7 R1 B: the identity carrier is three-valued, and the boolean is gone > no listed identity carries the deleted boolean (one carrier, not two)
+AssertionError: expected { …(7) } to not have property "migrationRequired"
+
+- Expected:
+undefined
+
++ Received:
+false
+
+ ❯ packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts:459:30
+    457|     for (const world of [worldR, worldC]) {
+    458|       for (const identity of world.authority.listIdentities()) {
+    459|         expect(identity).not.toHaveProperty('migrationRequired')
+       |                              ^
+    460|         expect(['current', 'migration-required', 'unreadable']).toCont…
+    461|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+[mutation vitest exit=1]
+=== reverting from the committed tree:
+=== git status --porcelain after revert (must show no M for the mutated file):
+(clean)
+
+=== FINAL: git status --porcelain after all reverts (must be empty):
+=== FINAL: HEAD still 73d187bb with zero diff:
+0

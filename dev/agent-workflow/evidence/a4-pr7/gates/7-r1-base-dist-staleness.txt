@@ -1,0 +1,47 @@
+=== Does the BASE commit ship a stale install-surface mirror? ===
+=== date: 2026-10-07T13:49:51Z  HEAD: 4eee9393002678592aeee890ee0e466c7a6b22d6
+=== porcelain BEFORE the rebuild:
+########## pnpm build (base source, unchanged) ##########
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+[build exit=0]
+=== dist files the rebuild changed vs the COMMITTED mirror:
+51
+=== sample (first 12):
+ M packages/runtime/dist/packages/domain/blueprint/src/index.d.ts
+ M packages/runtime/dist/packages/domain/blueprint/src/index.d.ts.map
+ M packages/runtime/dist/packages/domain/blueprint/src/index.js
+ M packages/runtime/dist/packages/domain/blueprint/src/index.js.map
+ M packages/runtime/dist/packages/domain/blueprint/src/inspect.d.ts
+ M packages/runtime/dist/packages/domain/blueprint/src/inspect.d.ts.map
+ M packages/runtime/dist/packages/domain/blueprint/src/inspect.js
+ M packages/runtime/dist/packages/domain/blueprint/src/inspect.js.map
+ M packages/runtime/dist/packages/domain/blueprint/src/schema.d.ts
+ M packages/runtime/dist/packages/domain/blueprint/src/schema.d.ts.map
+ M packages/runtime/dist/packages/domain/blueprint/src/schema.js
+ M packages/runtime/dist/packages/domain/blueprint/src/schema.js.map
+########## check:artifacts on the rebuilt base tree ##########
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+[ELIFECYCLE] Command failed with exit code 1.
+[check:artifacts exit=0]
