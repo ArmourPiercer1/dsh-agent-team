@@ -317,7 +317,16 @@ describe('multi-mcp: host.validateTeamPluginConfig — the row-config boundary (
     return {
       bootPhase: 'create',
       rootSessionId: 'session-mmsupply',
-      blueprintSource: 'schemaVersion: 1\nblueprintId: MMSUPPLY-BP\nrevision: "1"\n',
+      // A4-PR7 §7.4 (lane B-runtime-semantics-A): this carrier used to DECLARE a
+      // retired-style version the file never read. `validateTeamPluginConfig`
+      // requires the field to be a non-empty string and nothing else
+      // (src/plugin/host.ts:612), and the §7.4 liveness probe — raising the
+      // declared version to one the product refuses — left all of this file's
+      // tests green, so nothing in this file's reach parses the document. A
+      // document that no reader parses is not a place to spend a version claim
+      // (or an envelope pair), so the value is now what the check under test
+      // actually reads: an opaque non-empty string.
+      blueprintSource: 'blueprintId: MMSUPPLY-BP\nrevision: "1"\n',
       generation: 1,
       seedMembers: [],
       staticModel: { provider: 'p', model: 'm' },

@@ -409,9 +409,20 @@ async function createGlueWorld(params: {
   const config = {
     bootPhase: 'create',
     rootSessionId,
+    // A4-PR7 §7.4 (lane B-runtime-semantics-A): the glue PARSES this row-config
+    // document (src/plugin/live/agent-bindings.mjs parses `config.blueprintSource`
+    // through `parseBlueprint`), so it rides the supported version and declares
+    // the envelope pair that version REQUIRES — in their zero form `rules: []`,
+    // a position on each plane (a no-match answers `no-authority` on the
+    // expansion plane and identity on the approval plane). This world is
+    // root-direct: the only production producer of `permissionAuthorityCeiling`
+    // is the plugin host, so no ceiling reader consults the pair. NOTE: this
+    // file is RED AT BASE by name (`sessionPersistence.exists public seam is
+    // unavailable`, agent-bindings.mjs:888) — the migration is by inspection,
+    // with the parse witness recorded in evidence/a4-pr7/7-4-b2a/.
     blueprintSource: [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.p8s3b',
       'revision: "1"',
       'leader:',
@@ -424,6 +435,10 @@ async function createGlueWorld(params: {
       'memberEnvelopes: []',
       'policyStates: []',
       'metadata: {}',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       '---',
       '',
     ].join('\n'),
