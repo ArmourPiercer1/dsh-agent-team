@@ -60,7 +60,6 @@ import {
   FileStorageSeam,
   scratchDir,
 } from '../../testkit/fault-injection/file-seam.mjs'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped stub glue (test double), untyped by design
 import { createAgentBindings as createStubBindings } from './p8s5a-stub-glue.mjs'
 
 // --- fixture identities ----------------------------------------------------------
@@ -145,8 +144,7 @@ function gateStub(policy: (sid: string) => 'open' | 'warn'): { calls: string[]; 
 function makeSessionQueryFake() {
   const fake = {
     readSurfaceCount: 0,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    readSurface: async (id: string): Promise<Record<string, any>> => {
+    readSurface: async (id: string): Promise<Record<string, unknown>> => {
       fake.readSurfaceCount += 1
       if (id !== SRC_SID) throw new Error(`readSurface called with '${id}'`)
       return {
@@ -162,8 +160,7 @@ function makeSessionQueryFake() {
         ],
       }
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic service surface (test double), untyped by design
-    readTitleSnapshots: async (ids: readonly string[]): Promise<Record<string, any>[]> =>
+    readTitleSnapshots: async (ids: readonly string[]): Promise<Record<string, unknown>[]> =>
       ids.map((sid) => ({
         status: 'fulfilled',
         value: { session: { id: sid, createdAt: 1725000000000 }, title: { title: 'A4P6R1 source task' } },
@@ -174,7 +171,6 @@ function makeSessionQueryFake() {
 
 // --- the world (the d2 production-root pattern) ------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped root world, test double by design
 async function buildWorld(scratch: string, opts: {
   bootPhase: 'create' | 'resume'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- service-port double, untyped by design
@@ -187,7 +183,7 @@ async function buildWorld(scratch: string, opts: {
   root: any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped stub glue, untyped by design
   stub: any
-  dispatcher: (endpoint: string, params: unknown) => Promise<Record<string, any>>
+  dispatcher: (endpoint: string, params: unknown) => Promise<Record<string, unknown>>
 }> {
   const seam = new FileStorageSeam(scratch)
   const domain = opts.reopen === true ? await openTeamDomain(seam) : await createTeamDomain(seam)
@@ -222,21 +218,17 @@ async function buildWorld(scratch: string, opts: {
     ...(opts.getSessionQuery === undefined ? {} : { getSessionQuery: opts.getSessionQuery }),
     ...(opts.governanceWarning === undefined ? {} : { governanceWarning: opts.governanceWarning }),
   })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic registration double (d2 pattern)
-  let dispatcher: ((endpoint: string, payload: unknown) => Promise<Record<string, any>>) | null = null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic registration double (d2 pattern)
+  let dispatcher: ((endpoint: string, payload: unknown) => Promise<Record<string, unknown>>) | null = null
   root.seams.remoteHandlerRegistration.current()({
     rpc: {
       handle: (_channel: string, handler: unknown) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic dispatcher double, untyped by design
-        dispatcher = handler as (endpoint: string, payload: unknown) => Promise<Record<string, any>>
+        dispatcher = handler as (endpoint: string, payload: unknown) => Promise<Record<string, unknown>>
         return () => {}
       },
     },
   })
   if (dispatcher === null) throw new Error('A4-PR6 gate guard: the registration never installed a dispatcher')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic dispatcher double, untyped by design
-  const installed = dispatcher as unknown as (endpoint: string, payload: unknown) => Promise<Record<string, any>>
+  const installed = dispatcher as unknown as (endpoint: string, payload: unknown) => Promise<Record<string, unknown>>
   return {
     root,
     stub,
@@ -245,19 +237,21 @@ async function buildWorld(scratch: string, opts: {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- response envelope double shape, untyped by design
-function codeOf(response: Record<string, any>): string | null {
+function codeOf(response: Record<string, unknown>): string | null {
   if (response.ok === true) return null
   const error = response['error']
   return error !== null && typeof error === 'object'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic error shape, untyped by design
-    ? String((error as Record<string, any>)['code'])
+    ? String((error as Record<string, unknown>)['code'])
     : 'malformed-error'
 }
 
 /**
  * W1 — the handoff entrance, gate REFUSES (warning on the minted handoff
- * root): typed wire refusal, zero start, zero durable mint, re-drivable.
+ * root): typed wire refusal, zero AGENT start, re-drivable. The durable
+ * residue is the full atomic chokepoint commit (row + snapshot +
+ * team-root binding — `bindFresh` is ONE commit at the single fresh-root
+ * choke point); "NOT LIVE" is the absence of any agent effect, exactly
+ * the state of a stopped team that every re-entry path re-gates.
  */
 const w1 = await (async () => {
   const dir = scratchDir('a4p6r1-w1-handoff-refused')
@@ -285,9 +279,11 @@ const w1 = await (async () => {
   const handoffChecked = gate.calls.filter((c) => c.startsWith('start:') && c.includes(HANDOFF_PREFIX)).length
   // The minted handoff root is the sid the gate was consulted for.
   const minted = (gate.calls.find((c) => c.startsWith('start:') && c.includes(HANDOFF_PREFIX)) ?? '').split(':')[1] ?? ''
-  // The wire `team.create` semantics the refusal must match: the durable
-  // row EXISTS and stays NOT LIVE (no team-root binding — the 6.A law:
-  // the gate sits after the durable bind and BEFORE startRootAgent).
+  // The wire `team.create` semantics the refusal must match: the gate
+  // sits after the durable bind and BEFORE startRootAgent, so the
+  // refusal leaves the FULL chokepoint commit (row + binding, one
+  // atomic fresh-root commit) with NO agent ever started — a durable
+  // NOT-LIVE team, re-gated on every re-entry.
   const mintedBinding = minted === '' ? 'no-mint' : world.root.domain.repositories.sessionBindings.get(minted)
   await world.root.close()
   destroyDir(dir)
@@ -322,9 +318,14 @@ const w2 = await (async () => {
 })()
 
 /**
- * W3 — the BOOT-create entrance, gate REFUSES: boot rejects typed, ZERO
- * durable mint (the gate sits before `bindFresh`), the live layer never
- * boots.
+ * W3 — the BOOT-create entrance, gate REFUSES: boot rejects typed; the
+ * minted row EXISTS and stays NOT LIVE; the live layer never boots.
+ * Post-bind, pre-start is the ONLY position where the gate can read the
+ * addressed team's governance documents at all (they resolve through
+ * the TeamSession row + bound snapshot — a pre-mint gate is
+ * structurally `unreadable`); the residue is therefore the SAME law the
+ * refused wire `team.create` was pinned to: durable row present, zero
+ * live binding, zero start, re-drivable (review round 1 follow-up).
  */
 const w3 = await (async () => {
   const dir = scratchDir('a4p6r1-w3-boot-create-refused')
@@ -343,9 +344,13 @@ const w3 = await (async () => {
   const records = world.root.domain.repositories.teamSessions.list().length
   const bootCount = world.stub.__t1.bootCount as number
   const started = world.stub.__t1.rootAgentStarts as string[]
+  // The minted boot root is the sid the gate was consulted for; the
+  // refusal must leave it WITHOUT a team-root binding (NOT LIVE).
+  const minted = (gate.calls.find((c) => c.startsWith('start:')) ?? '').split(':')[1] ?? ''
+  const mintedBinding = minted === '' ? 'no-mint' : world.root.domain.repositories.sessionBindings.get(minted)
   await world.root.close()
   destroyDir(dir)
-  return { rejectionCode, rejectionDetails, records, bootCount, started, calls: gate.calls }
+  return { rejectionCode, rejectionDetails, records, bootCount, started, mintedBinding, calls: gate.calls }
 })()
 
 /**
@@ -385,7 +390,7 @@ describe('A4-PR6 review round 1 (BLOCKER 1) — the handoff entrance is gated', 
     expect(JSON.stringify(w1.first)).toContain(WARN_INTERVENTION) // the pointer rides to the wire
     expect(w1.started).toEqual([]) // zero agent effect — the start port never fired
     expect(w1.records).toBe(2) // the durable handoff row EXISTS (BQ-16 pre-put, same as the wire path)…
-    expect(w1.mintedBinding).toBeUndefined() // …and stays NOT LIVE: no team-root binding was ever written
+    expect((w1.mintedBinding as { readonly kind?: string } | undefined)?.kind).toBe('team-root') // …WITH the full atomic chokepoint commit — NOT-LIVE is the zero AGENT effect asserted above (`started` empty), not a missing binding
     expect(w1.handoffChecked).toBe(2) // first + replay: the gate re-runs on every re-drive, never bypassed
   })
 
@@ -402,10 +407,11 @@ describe('A4-PR6 review round 1 (BLOCKER 1) — the handoff entrance is gated', 
 })
 
 describe('A4-PR6 review round 1 (BLOCKER 1) — the boot entrances are gated', () => {
-  it('W3: a warning-gated boot-create rejects typed with ZERO durable mint and NO live boot', () => {
+  it('W3: a warning-gated boot-create rejects typed leaving the minted row NOT LIVE and with NO live boot', () => {
     expect(w3.rejectionCode).toBe('TEAM_REMOTE_TEAM_START_GOVERNANCE_WARNING')
     expect(JSON.stringify(w3.rejectionDetails)).toContain(WARN_INTERVENTION)
-    expect(w3.records).toBe(0) // fail-closed BEFORE bindFresh — the refusal writes nothing
+    expect(w3.records).toBe(1) // post-bind, pre-start: the minted row EXISTS…
+    expect((w3.mintedBinding as { readonly kind?: string } | undefined)?.kind).toBe('team-root') // …with the full atomic chokepoint commit — NOT-LIVE = zero agent effect (below)
     expect(w3.bootCount).toBe(0) // live.boot() never reached
     expect(w3.started).toEqual([])
   })

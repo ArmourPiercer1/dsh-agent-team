@@ -2345,15 +2345,20 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
 
   /**
    * T12-B6 (plan §7-B4) — the ONE formal team-create-and-start entry:
-   * the governance start gate FIRST (A4-PR6 review round 1: every
-   * entrance into a Team start passes it before ANY durable write, so a
-   * refusal leaves nothing behind), then the canonical fresh-root
-   * binding, then — only when `initialContext` is present — the target
-   * Root Agent start (create-or-ensure, idempotent per rootSessionId)
-   * and the frozen-context acceptance through the real Agent
-   * input/context seam (at-least-once, the contextToken is the explicit
-   * request identity the target dedupes on). A with-context handoff is
-   * COMPLETE only after both succeeded.
+   * the canonical fresh-root binding, then THE governance start gate
+   * (A4-PR6 review round 1; the follow-up run moved it from before the
+   * mint to AFTER it — the governance documents resolve through the
+   * addressed team's TeamSession row + bound snapshot, so a pre-mint
+   * gate could only ever read `unreadable`; the wire lane already
+   * pinned post-bind, pre-start), then — only when `initialContext` is
+   * present — the target Root Agent start (create-or-ensure, idempotent
+   * per rootSessionId) and the frozen-context acceptance through the
+   * real Agent input/context seam (at-least-once, the contextToken is
+   * the explicit request identity the target dedupes on). A with-context
+   * handoff is COMPLETE only after both succeeded. A refused start
+   * leaves the minted binding NOT LIVE — the same durable residue the
+   * refused wire `team.create` leaves (W1/W3 pin both) — and starts
+   * nothing; every re-drive re-runs the SAME gate.
    */
   const createAndStartTeam = async (input: {
     readonly rootSessionId: FreshRootBindingInput['rootSessionId']
@@ -2364,8 +2369,15 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     /** Which entrance opened this start (typed-refusal `method` prefix). */
     readonly gateMethod: string
   }): Promise<TeamCreationOutcome> => {
-    // Fail closed BEFORE the durable mint — the refusal writes nothing.
-    await startGovernanceGate(input.gateMethod, String(input.rootSessionId), 'create')
+    // Fail closed BEFORE the Root Agent start: the gate runs on the
+    // DURABLE state of the addressed team (post-bind — the governance
+    // documents resolve through the TeamSession row + its bound
+    // snapshot, so a gate placed before the mint could only ever read
+    // `unreadable`; review round 1 fix-1 follow-up aligned this entry
+    // with the wire law the s6 lane pins: post durable bind, pre root
+    // start). A refusal therefore leaves the minted binding NOT LIVE —
+    // the same durable residue a refused wire `team.create` leaves —
+    // and starts nothing; a retry re-drives the SAME gate.
     const context = input.initialContext
     const ports = context !== undefined ? requireHandoffAgentPorts() : undefined
     const result = await rootBinding.bindFresh({
@@ -2383,6 +2395,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         `the fresh binding of root "${String(input.rootSessionId)}" reported no durable state`,
       )
     }
+    await startGovernanceGate(input.gateMethod, rootSessionId, 'create')
     if (context !== undefined && ports !== undefined) {
       await ports.start(rootSessionId)
       await ports.deliver({
