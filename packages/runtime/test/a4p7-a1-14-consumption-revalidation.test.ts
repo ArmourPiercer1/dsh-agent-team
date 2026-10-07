@@ -693,6 +693,10 @@ const RECHECK_INPUT: ControlAuthorityRecheckInput = {
   reviewAuthority: 'leader',
   requestedEffect: 'allow',
   authorityScope: SCOPE_A,
+  // The field is required (see `control/types.ts`). This group's point is
+  // FILE-class, where the candidate set is the point alone whatever the
+  // command identity is, so its value cannot move any P-group verdict.
+  commandFingerprint: FP_A,
 }
 
 const p1 = await (async () => {
@@ -974,6 +978,11 @@ const SHELL_RECHECK_INPUT: ControlAuthorityRecheckInput = {
   reviewAuthority: 'leader',
   requestedEffect: 'allow',
   authorityScope: SHELL_POINT,
+  // The production shape: the row travels with its command. The key is required
+  // on this input (`control/types.ts`), so the unthreaded call in S3 has to
+  // STATE the absence — which is what makes the runtime refusal a typed,
+  // reachable arm instead of dead code behind a cast.
+  commandFingerprint: FP_A,
 }
 
 const s1 = await (async () => {
@@ -1002,7 +1011,6 @@ const s1 = await (async () => {
       restored,
       rowsAfterRestore,
       input: env.inputs[0],
-      inputKeys: env.inputs[0] === undefined ? [] : Object.keys(env.inputs[0]).sort(),
     }
   } finally {
     await destroyP6T1World(env.world)
@@ -1030,11 +1038,11 @@ const s3 = await (async () => {
   const threaded = await planeRecheck({
     beneficiaryAuthority: 'member',
     documents: SHELL_COMMAND_CAPPED,
-  }).port({ ...SHELL_RECHECK_INPUT, commandFingerprint: FP_A })
+  }).port(SHELL_RECHECK_INPUT)
   const notThreaded = await planeRecheck({
     beneficiaryAuthority: 'member',
     documents: SHELL_COMMAND_CAPPED,
-  }).port(SHELL_RECHECK_INPUT)
+  }).port({ ...SHELL_RECHECK_INPUT, commandFingerprint: undefined })
   // The point that already names its command needs no threading to answer
   // honestly — which is the control showing the gap is about the MISSING
   // candidate, not about shell rules being unreadable in principle.
@@ -1113,6 +1121,10 @@ describe('A4-PR7 7.0 S group — the shell class at the production seam (RULING 
     ]) {
       if (input === undefined) throw new Error(`${name}: the recheck never ran`)
       expect(input.commandFingerprint, `${name}: the row's operationFingerprint must be threaded`).toBe(FP_A)
+      // The KEY is present, not merely truthy: the input's contract is that a
+      // caller states the command identity or states its absence, so a call site
+      // that quietly stops naming it is visible here.
+      expect(Object.keys(input)).toContain('commandFingerprint')
       // And it is the DURABLE point that travels, kind included: the tool-level
       // exact key the ASK persisted, not the invocation now arriving.
       expect(input.authorityScope).toEqual(SHELL_POINT)

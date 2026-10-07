@@ -876,24 +876,32 @@ export interface ControlAuthorityRecheckInput {
   /** The persisted concrete authority point (ADR A1-14). */
   readonly authorityScope: ControlAuthorityScope
   /**
-   * The row's canonical command identity (`operationFingerprint`), threaded so
-   * the recheck can derive the SAME candidate set the ask derived (RULING 4).
+   * The row's canonical command identity (`operationFingerprint`), so the
+   * recheck derives the SAME candidate set the ASK derived (RULING 4).
    *
-   * It is DURABLE in the same sense as every field above: it is read off the
-   * matched request row, never re-derived from the invocation now arriving. The
-   * field is optional only because a pre-Alpha.4 row and an `envelope-mutation`
-   * case carry no fingerprint — and BOTH of those return before the port is
-   * called (`control/service.ts`), so a recheck that reaches the ceiling
-   * evaluator always has it. Dropping it at the call site is not a cosmetic
-   * change: it makes the shell-class candidate set the persisted tool-level
-   * point alone, which no shell rule can cover (`authority-envelope.ts:218-222`
-   * answers a decisive `{covers:false}` across shapes), so the meet collapses
-   * to the tool key and a genuine authority RISE on a shell-class row is
-   * reported as `still-sufficient`. That is a false pass, and
-   * `test/a4p7-a1-14-consumption-revalidation.test.ts` (P group, shell class)
-   * is red when it happens.
+   * It is DURABLE in the same sense as every field above: read off the matched
+   * request row, never re-derived from the invocation now arriving — that
+   * re-derivation is the thing ADR A1-14 forbids.
+   *
+   * REQUIRED, and here is why the shape is `string | undefined` rather than
+   * optional. Without it the shell-class candidate set is the persisted
+   * tool-level point alone, and no shell rule can cover an exact target
+   * (`authority-envelope.ts:218-222` answers a decisive `{covers:false}` across
+   * shapes), so the meet collapses to the ladder default and an authority RISE
+   * on a shell command is read as coverage — the false pass this field exists to
+   * prevent. There is exactly one production caller (`control/service.ts`, the
+   * recheck inside the per-team lock) and it can ALWAYS supply it: a row with no
+   * `operationFingerprint` returns before the port is reached. So a caller may
+   * not omit the field — omitting it is a compile error, which is the law the
+   * compiler is asked to hold.
+   *
+   * `undefined` stays NAMEABLE because the runtime guard must stay a live path
+   * rather than code only reachable by casting: a caller that states the absence
+   * gets `undetermined` with `shell-point-missing` in its reason — a refusal
+   * that consumes nothing — never a narrower question and never a pass. That is
+   * the arm `test/a4p7-a1-14-consumption-revalidation.test.ts` S3 pins.
    */
-  readonly commandFingerprint?: string
+  readonly commandFingerprint: string | undefined
 }
 
 /** One recheck verdict; see {@link CONTROL_AUTHORITY_RECHECK_KINDS}. */

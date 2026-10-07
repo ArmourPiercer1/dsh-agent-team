@@ -1028,10 +1028,10 @@ export function createControlAuthorityRevalidation(deps: {
       // (`authority-envelope.ts:218-222` answers a decisive `{covers:false}`
       // across shapes) — and a rise on the command comes back `still-covered`.
       // The field is the row's durable `operationFingerprint`, passed through by
-      // `control/service.ts`; this plane adds no identity of its own.
-      ...(input.commandFingerprint !== undefined
-        ? { commandFingerprint: input.commandFingerprint }
-        : {}),
+      // `control/service.ts`; this plane adds no identity of its own and states
+      // the absence rather than dropping the key, because the helper's answer to
+      // a shell scope with no command is a refusal, not a narrower question.
+      commandFingerprint: input.commandFingerprint,
       facts,
     })
     switch (verdict.kind) {
