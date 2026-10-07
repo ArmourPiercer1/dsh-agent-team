@@ -205,3 +205,41 @@ Numbers supersede §1/§6 as the merge contract; earlier sections are history, n
   shows the M1 shape slipping the colon-keyed check and reddening M1 alone). Both red
   transcripts must preserve line counts: a line-shifting mutation reddens the line-
   number-sensitive advisory PIN first (measured, then the mutation was reshaped).
+
+## 8. Merge contract (head `14a63c80` = merge of `origin/master ef937cd0`, C-testkit #145 included)
+
+Rebase superseded by MERGE per coordinator ruling — quoted SHAs stay resolvable; the
+chain tip keeps every reviewed SHA. One conflict, predicted region
+(`a4p7-blueprint-version-clean.test.ts` pin block). Resolution keep-both-lists:
+HEAD side kept (the `cutover:584` re-anchor pin + the full safety leg), C-testkit's
+deletion of the `bp1h:95` pin kept (bp1h is migrated; a pin naming a dead advisory
+would assert nothing), their rewritten pr-e/pr-f ON-PURPOSE rows, cdom's ratified
+`fixtures.ts` row, and the production-entry row all PRESENT. No reflow, no renumber:
+map audit — 84 rows, zero duplicate keys; B1's 13 and C-testkit's 16 deletions all in
+force. The ratchet is the referee, and it reffed: wrapper 58/58 green (every-deferred-
+path-still-dirty + stale-row legs). No SCANNED_PATHS region conflicted (it lives in
+p4t6, outside this merge's file set).
+
+Merged-tree numbers, supersede §7:
+- fence: `dirty(80,144) unknown(0,0) advisory(8,10) refused(52,115) prose(5,5)
+  adjudicated(16,24)` exit 1 (transcript `transcripts/scan-post-merge-committed.txt`).
+  Not the §7 pair — C-testkit's 16 migrated paths left dirty (97→80 files, 188→144
+  sites); their bp1h migration removed its advisory file (9→8 files, 12→10 sites).
+  B1 residue unchanged by design: production-entry only, 4 sites.
+- **A measurement artifact, recorded because I reported the wrong number mid-merge:**
+  the fence run BEFORE the merge commit printed `prose(5,7)`; after committing the
+  merge the same command prints `prose(5,5)`. The mid-merge tree carries the wrapper
+  unmerged (stages in the index) and the scan read conflicted content twice. Lesson
+  generalized: fence numbers are only contract on a COMMITTED tree — the wrapper's own
+  test runs `runScan` against the working tree, and the ratchet's green at 58/58 is
+  what proves the conflict state itself resolved honestly (content, not counting).
+- wrapper 58/58; 13-spec set 190/190; p4t6 10/10; lint-identities new 0; typecheck
+  exit 0; eslint on the hand-resolved wrapper: clean.
+- root `pnpm test`: name-set identical to the §7 set — baseline (9 files/19 tests +
+  3 collection-time files) + p6t1-parallel ×2 (documented flake; solo green on this
+  tree) + `a4p75-composition-smoke-classification` ×1 (pre-existing on pristine
+  master, reproduced at detached `a4ef2a6b`; handed to the composition-gate lane with
+  the refused-not-failed ruling; B1 scope untouched).
+- Evidence hygiene per coordinator housekeeping: the lane's transcripts now LIVE in
+  `7-4-b1/transcripts/` (33 files + manifest; restore-proofs included); worktree
+  scratch moved to `.tmp-b1-scratch/` (excluded); worktree porcelain-clean at head.
