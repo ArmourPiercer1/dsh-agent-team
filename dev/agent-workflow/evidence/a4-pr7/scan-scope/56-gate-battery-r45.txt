@@ -1,0 +1,10 @@
+=== round-4.5 battery (adversarial fixes 1-5 on merged tree) ===
+merged head base: ee9d61e7 (origin/master, wrapper-only overlap, clean merge)
+acceptance: 52-red (vulnerable: A/B/H/P/N ADMITTED, three defects one sentence) -> 54-green (all refused, distinct reasons, CONTROL admitted)
+fence twice byte-identical; exit 1 on dirty alone; fence self-sites 0
+wrapper 66/66 normal AND with .tmp-fault absent (G1); p4t6 10/10 UNTOUCHED
+typecheck 8 Done / 0 error TS; eslint exit 0; lint-identities new 0 / resolved 0
+replay script: scan-scope/53-acceptance-replay.mjs (vulnerable|fixed), reviewer README cases 1:1 + CONTROL
+merged-tree numbers (55...txt): dirty(74, 129) intentionally-dirty(1, 9) unknown(0, 0)
+adjudicated(16, 24) advisory(8, 10) refused(52, 115) prose(5, 5); blind numeric-form 33 live
+dirty 109 -> 74 = master migrations, register (1,9) unchanged through the merge

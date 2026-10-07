@@ -181,3 +181,26 @@ this lane proved migration is cross-lane, with numbers.
 One commit per file group, each with the red-first ratchet transcript in the body; catalog,
 inspector, parse, validation, exec-contract, a1-permission-policy, blueprint-v1-frozen-resume,
 t2-blueprint-hash, t2-blueprint-v2-hash, t2-blueprint-v2-requirements (+ this evidence file).
+
+## 8. Keep-list after the adversarial review of the `intentionally-dirty` register
+Appended by the fence owner (branch `feat/a4-73-dirty-class-ledger`) so the DO-NOT-MERGE round
+is not over-corrected. What the review CONFIRMED and what must therefore SURVIVE its fixes:
+
+- The nine `p7t6` rows are GENUINELY foreign: legacy `.md` front-matter version axis, `role`
+  is in no `BLUEPRINT_*_FIELDS` list; every carrier file is `DEFERRALS`-listed with a real,
+  executable retirement check (intentional-retired.md row 3).
+- Non-gating holds in every measured direction: rows 9→0 move `dirty` 204→213 with exit 1
+  unchanged; unrowed dirty still gates; deleting a row returns its own site to `OFFENDING`;
+  a rotting row is exit 2 naming the key, never a quiet pass.
+- The ledger can never go falsely clean: missing / zero-byte / truncated / `[]` / `null` are
+  each exit 2; `{}` is exit 1 with closing arithmetic; no silent drop exists.
+- The classifier is SHARED not forked: the wrapper derives rows via the fence's own
+  `classifyText`; post-fix the derivation terminates in SET EQUALITY, not a count.
+- What was WRONG and is fixed (fixes 1–5, evidence 53–56): typed forbidden-witness set
+  (now schema-derived, fail-closed), unbounded cited ranges (now 12-line windows), the
+  three hardcoded 9s (now set equality), the `>100` OFFENDING-count leg (X10 — now the
+  reviewer's contract assertion), fence-silent foreign dirty-rows and one generic not-run
+  sentence (now refused at the gate, with distinct reasons).
+- §5 of this file stands: `packages/domain/blueprint/testdata/fixtures.ts` and the other
+  document-bearing files must STAY dirty — post-fix, a ledger row can no longer launder
+  them (reviewer cases A/B/H/P all exit 2; replay: `scan-scope/53-acceptance-replay.mjs fixed`).

@@ -367,6 +367,47 @@ const DOC_ONLY_KEYS = new Set([
 ])
 for (const k of DOC_ONLY_KEYS) FORBIDDEN_WITNESS_KEYS.add(k)
 
+// Round 4 FIX 1 (adversarial review of 70745ef7): a hand-typed allowlist of
+// keys is a snapshot of what the author thought of — mine was 9/9 correct
+// and THREE keys short (`members`, `templateId`, `persona`), and every short
+// key was load-bearing. The forbidden-witness set is therefore DERIVED from
+// the schema at run time: every key in BLUEPRINT_TOP_LEVEL_FIELDS* /
+// BLUEPRINT_TEMPLATE_FIELDS* (spreads followed) is a key a schema-valid
+// TeamBlueprint document can carry, and is forbidden as a foreign witness BY
+// CONSTRUCTION. Fail-closed: if schema.ts moved or the extractor's shape
+// assumption breaks, the fence refuses to run — an admission rule that
+// cannot enumerate the document keys must not admit anything.
+const ADJ_MAX_RANGE_LINES = 12
+function deriveSchemaWitnessForbidden(cwd) {
+  let text
+  try {
+    text = readFileSync(resolve(cwd, 'packages/domain/blueprint/src/schema.ts'), 'utf8')
+  } catch {
+    return null
+  }
+  const lists = new Map()
+  for (const m of text.matchAll(/export const (BLUEPRINT_[A-Z0-9_]*FIELDS(?:_V\d)?)\s*:[^=]*=\s*\[([\s\S]*?)\]/g)) {
+    lists.set(String(m[1]), String(m[2]))
+  }
+  const out = new Set()
+  const seen = new Set()
+  const absorb = (body) => {
+    for (const s of body.matchAll(/'([A-Za-z_$][A-Za-z0-9_$]*)'/g)) out.add(String(s[1]))
+    for (const r of body.matchAll(/\.\.\.([A-Z0-9_]+)/g)) {
+      const name = String(r[1])
+      if (seen.has(name)) continue
+      seen.add(name)
+      const dep = lists.get(name)
+      if (dep !== undefined) absorb(dep)
+    }
+  }
+  for (const [, body] of lists) absorb(body)
+  if (lists.size < 2 || !out.has('blueprintId') || !out.has('members') || !out.has('templateId')) {
+    return null
+  }
+  return out
+}
+
 // --- the line state machine -------------------------------------------------------
 // Tracks line/block comments, single/double-quoted strings (terminated at
 // EOL) and template literals ACROSS lines, including `${ ... }`
@@ -1119,19 +1160,38 @@ export function classifyText(path, text) {
  * THE ADMISSION RULE, said out loud because it is the whole difference
  * between a register and a trapdoor: a version literal belongs in this
  * register precisely when its digit is READ BY ANOTHER NAMESPACE'S RUNTIME,
- * and the site itself must prove it — the cited range must contain a
- * witness key that NO schema-valid TeamBlueprint document may carry (outside
- * the identity triple, outside the document-only field set, outside the
- * retired axis's own key). p7t6 qualifies under that test: its digits are
- * the legacy `.md` teammate-file axis (role:/name:/id: front matter), and
+ * and the site itself must prove it — the cited range (a window of at most
+ * 12 lines: fix 2, because a witness 400 lines from the site is not evidence
+ * ABOUT the site) must contain a witness key that NO schema-valid
+ * TeamBlueprint document may carry. The forbidden set is DERIVED at run time
+ * from schema.ts's own BLUEPRINT_*_FIELDS lists (fix 1), unioned with the
+ * retired axis's own key: an allowlist someone typed is a snapshot of what
+ * the author thought of — the first version of this rule was 9/9 correct and
+ * three keys short (`members`, `templateId`, `persona`), and every short key
+ * was load-bearing; a set derived from the schema is the schema. Extraction
+ * failing is a not-run (fail-closed), never a smaller set. p7t6 qualifies
+ * under the test: its digits are the legacy `.md` teammate-file axis
+ * (role:/name:/id: front matter — `role` is in NO blueprint field list), and
  * retiring them would delete the adapter's acceptance proof, not a Blueprint
  * version. A literal someone merely FINDS INCONVENIENT has no such witness:
  * its enclosing object is keyed by Blueprint's own fields, and its lawful
- * disposition is migration, not registration. The fence cannot out-think a
- * reviewer-blind source edit — laundering a Blueprint document through this
- * register costs a VISIBLE code diff inserting a fake foreign key into the
- * cited range, not an invisible ledger string; the rule moves the cost into
- * review, and review pays it.
+ * disposition is migration, not registration.
+ *
+ * THE COST CLAIM, CORRECTED NOT SOFTENED (adversarial review of 70745ef7):
+ * this paragraph used to claim laundering a document site through admission
+ * "costs a VISIBLE code diff, not an invisible ledger string". MEASURED
+ * FALSE at that commit: the cost was ONE STRING IN THIS LEDGER — a witness
+ * key the typed set forgot, or a legitimate `role:` cited at whole-file
+ * width (reproduction: evidence 53-acceptance-replay.mjs `vulnerable`, cases
+ * A/B/H/P, all admitted at exit 1). What is true after fixes 1/2/5: the
+ * witness must be outside the DERIVED document key set, inside a 12-line
+ * window around the site, and the row must annotate a site the fence itself
+ * classifies dirty — so laundering a real document now requires planting a
+ * fake foreign key ADJACENT to the site in source, the one visible-diff cost
+ * the fence can force. No property of source text makes laundering
+ * IMPOSSIBLE — an edit a reviewer does not read can still plant that line —
+ * and the header says so rather than overselling: what no reviewer ever
+ * sees is an invisible ledger string, and THAT cost this fence does enforce.
  *
  * The ledger file itself must be GIT-TRACKED (round 3.5 G4: the override
  * is the mute with a name on it — with dirty suppressed post-§7.4, a
@@ -1177,6 +1237,17 @@ function loadAdjudications(cwd) {
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return { error: `adjudication ledger must be an object keyed "<path>::L<line>::v<version>" (${file})` }
   }
+  const derivedDocKeys = deriveSchemaWitnessForbidden(cwd)
+  if (derivedDocKeys === null) {
+    return {
+      error:
+        'schema-derived forbidden-witness set unavailable: packages/domain/blueprint/src/schema.ts is missing or restructured beyond the extractor — fail-closed, the admission rule refuses to run rather than forget document keys again (see FIX 1 note at deriveSchemaWitnessForbidden)',
+    }
+  }
+  const witnessForbidden = new Set([...FORBIDDEN_WITNESS_KEYS, ...derivedDocKeys])
+  // Fix 5b: every defect prints ITS OWN reason. "fail the hand-verified rule"
+  // for no-such-file, no-such-line and not-a-version-site alike is a not-run
+  // the operator has to debug by reading the fence's source.
   const bad = []
   for (const [key, ev] of Object.entries(parsed)) {
     // G2: identity is path::L<line>::v<version> — the report already prints
@@ -1184,7 +1255,7 @@ function loadAdjudications(cwd) {
     // line (v1's verdict laundered v2). Each literal costs its own row.
     const m = /^(.+)::L(\d+)::v(\d+)$/.exec(key)
     if (m === null || typeof ev !== 'string') {
-      bad.push(key)
+      bad.push(`${key} — key is not "<path>::L<line>::v<version>" or value is not a string`)
       continue
     }
     const sitePath = m[1]
@@ -1192,54 +1263,92 @@ function loadAdjudications(cwd) {
     // G3: the citation must name the key's FULL path, and the cited range
     // must exist in that tracked file and contain the site's line —
     // "silence costs a written row" only if the row can be CHECKED.
-    const cite = new RegExp(`hand-verified ${sitePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:(\\d+)(?:-(\\d+))?`).exec(ev)
+    const cite = new RegExp(
+      `hand-verified ${sitePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:(\\d+)(?:-(\\d+))?`,
+    ).exec(ev)
     if (cite === null) {
-      bad.push(key)
+      bad.push(`${key} — no "hand-verified <key's own full path>:<line-range>" citation in the value`)
       continue
     }
     let text
     try {
       text = readFileSync(resolve(cwd, sitePath), 'utf8')
     } catch {
-      bad.push(key)
+      bad.push(`${key} — no such file for the cited path (${sitePath})`)
       continue
     }
     const a = Number(cite[1])
     const b = cite[2] === undefined ? a : Number(cite[2])
     const lines = text.split('\n')
-    if (!(1 <= a && a <= b && b <= lines.length && a <= siteLine && siteLine <= b)) {
-      bad.push(key)
+    if (siteLine < 1 || siteLine > lines.length) {
+      bad.push(`${key} — no such line: site is beyond file end (${String(lines.length)} lines in ${sitePath})`)
       continue
     }
-    // Round 4 item 1: the dirty-class kind adds owner + retirement-check +
-    // the ADMISSION RULE witness — a foreign key a schema-valid Blueprint
-    // document cannot carry, present in the cited range. An invalid dirty
-    // row is as fatal to the run as an invalid unknown row: same file, same
-    // proof standard, zero second tier.
+    if (!(1 <= a && a <= b)) {
+      bad.push(`${key} — cited range ${String(a)}-${String(b)} is malformed (need 1 <= from <= to)`)
+      continue
+    }
+    if (b > lines.length) {
+      bad.push(`${key} — cited range ${String(a)}-${String(b)} is beyond file end (${String(lines.length)} lines)`)
+      continue
+    }
+    // FIX 2: evidence is a WINDOW, not the file. `role:` four hundred lines
+    // from the site says nothing ABOUT the site; unbounded width turns "the
+    // range proves it" into "the file contains the word eventually". The
+    // reviewer's Case P laundering (legitimate `role`, range 1-598) dies on
+    // this clause alone.
+    if (b - a + 1 > ADJ_MAX_RANGE_LINES) {
+      bad.push(
+        `${key} — cited range ${String(a)}-${String(b)} is wider than the ${String(ADJ_MAX_RANGE_LINES)}-line evidence window`,
+      )
+      continue
+    }
+    if (!(a <= siteLine && siteLine <= b)) {
+      bad.push(`${key} — cited range ${String(a)}-${String(b)} does not contain the site line L${String(siteLine)}`)
+      continue
+    }
+    // Round 4 item 1 + FIX 1/5: the dirty-class kind adds owner +
+    // retirement-check + the ADMISSION RULE witness — a foreign key OUTSIDE
+    // the schema-derived document key set, present in the cited window. An
+    // invalid dirty row is as fatal to the run as an invalid unknown row:
+    // same file, same proof standard, zero second tier.
     if (ev.trimStart().startsWith('intentionally-dirty:')) {
       const field = (n) => {
-        const m = new RegExp(`(?:^|; )${n}:\\s*([^;]+)`).exec(ev)
-        return m === null ? '' : (m[1] ?? '').trim()
+        const fm = new RegExp(`(?:^|; )${n}:\\s*([^;]+)`).exec(ev)
+        return fm === null ? '' : (fm[1] ?? '').trim()
+      }
+      let missing = ''
+      for (const n of ['owner', 'retirement-check', 'foreign-axis']) {
+        if (field(n) === '') missing = n
+      }
+      if (missing !== '') {
+        bad.push(`${key} — dirty-class row missing required field: ${missing}`)
+        continue
       }
       const witness = field('witness-key')
-      const fieldsOk =
-        field('owner') !== '' &&
-        field('retirement-check') !== '' &&
-        field('foreign-axis') !== '' &&
-        /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(witness) &&
-        !FORBIDDEN_WITNESS_KEYS.has(witness)
-      const witnessOk =
-        fieldsOk &&
-        new RegExp('(?:^|[^A-Za-z0-9_$]|\\\\n)' + witness + '\\s*:').test(
+      if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(witness)) {
+        bad.push(`${key} — witness-key must be a bare identifier, got "${witness}"`)
+        continue
+      }
+      if (witnessForbidden.has(witness)) {
+        bad.push(
+          `${key} — witness key "${witness}" is a TeamBlueprint document key (derived from schema.ts field lists) — a foreign axis must be FOREIGN, not forgotten by a list`,
+        )
+        continue
+      }
+      if (
+        !new RegExp('(?:^|[^A-Za-z0-9_$]|\\\\n)' + witness + '\\s*:').test(
           lines.slice(a - 1, b).join('\n'),
         )
-      if (!witnessOk) bad.push(key)
+      ) {
+        bad.push(`${key} — witness key "${witness}" not present in cited range ${String(a)}-${String(b)}`)
+        continue
+      }
     }
   }
   if (bad.length > 0) {
     return {
-      error:
-        `adjudication ledger entries fail the "hand-verified <own full path>:<line-range containing the site>" rule (${file}): ${bad.slice(0, 8).join(', ')}${bad.length > 8 ? ` (+${String(bad.length - 8)} more)` : ''}`,
+      error: `adjudication ledger rows rejected (${file}): ${bad.slice(0, 8).join(' | ')}${bad.length > 8 ? ` (+${String(bad.length - 8)} more)` : ''}`,
     }
   }
   return { ledger: new Map(Object.entries(parsed)), file, count: Object.keys(parsed).length }
@@ -1347,6 +1456,25 @@ export function scanBlueprintVersionSites() {
     result.refused.push(...c.refused)
     result.prose.push(...c.prose)
   }
+  // FIX 5a: the GATE refuses what the test would later complain about. A
+  // dirty-class row is a statement ABOUT a gated site; where the fence does
+  // not classify the site dirty, the row is either stale or a hatch, and
+  // neither belongs in a file that every lane rebases over. Checked BEFORE
+  // the split consumes matches, against the full classified dirty set.
+  {
+    const dirtySiteKeys = new Set(
+      result.dirty.map((s) => `${s.path}::L${String(s.line)}::v${String(s.version)}`),
+    )
+    const foreign = []
+    for (const [key, ev] of adj.ledger) {
+      if (ev.trimStart().startsWith('intentionally-dirty:') && !dirtySiteKeys.has(key)) foreign.push(key)
+    }
+    if (foreign.length > 0) {
+      result.ran = false
+      result.reason = `dirty-class ledger rows for sites the fence does not classify dirty: ${foreign.slice(0, 8).join(', ')}${foreign.length > 8 ? ` (+${String(foreign.length - 8)} more)` : ''} — an annotation must annotate a real gated site`
+      return result
+    }
+  }
   // Part C: ledgered unknowns leave the gated set for the ADJUDICATED class.
   for (const site of result.unknown) {
     const key = `${site.path}::L${String(site.line)}::v${String(site.version)}`
@@ -1414,7 +1542,7 @@ export function formatReport(result) {
   )
   lines.push(`scanned-in-scope: ${String(result.scopeFiles)} tracked files`)
   lines.push(
-    `SCOPE-NOTE blind spot: ${String(result.blindKeyHalf)} files (${String(result.blindNonTyped)} non-typed, ${String(result.blindDocMarked)} doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — ${String(result.blindNumericForms)} variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use`,
+    `SCOPE-NOTE blind spot: ${String(result.blindKeyHalf)} files (${String(result.blindNonTyped)} non-typed, ${String(result.blindDocMarked)} doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — ${String(result.blindNumericForms)} variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use; named integrity case: pr-e-requirement-recovery-smoke asserts raw-byte equality of a saved v1 source under a pinned hash, where a numeric-form rewrite stays self-consistent (hashes cover the parsed projection) — "these exact bytes are historical" is guarded by that kit's byte assertion, not by this fence: kit-proof integrity, not runtime safety`,
   )
   lines.push(`adjudication-ledger: ${result.ledgerFile} (${String(result.ledgerCount)} entries)`)
   lines.push(
