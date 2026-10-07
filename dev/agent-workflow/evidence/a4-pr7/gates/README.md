@@ -51,3 +51,47 @@ replaces `migrationRequired: boolean` at every site in one commit, and
 | `7-r1-artifacts-stale-first-run.txt` | the same gate failing (`STALE install-surface artifacts`) on the first run, before the rebuilt mirror was staged — what the gate is for. |
 | `7-r1-base-dist-staleness.txt` + `7-r1-base-dist-staleness-exit.txt` | **an inherited finding, not this change's**: rebuilding the UNMODIFIED base source moves 51 committed dist files and `check:artifacts` fails (exit 1, the second receipt is the same gate with no pipe, so its exit line is the gate's own: `[check:artifacts exit=1]`, 51 `content-drift` files, and an empty porcelain outside the two artifact paths). The base commit shipped a mirror that lagged its own source. |
 | `run-7-r1-gates.sh` | the gate driver (base and post modes: whole-repo x2 after clearing `.tmp-fault`, then the fast set), kept so the round is reproducible rather than reconstructed. |
+
+## Dated obligation — opened 2026-10-07, trigger: Task 7.3 flips the retired set
+
+**Trigger.** The commit that makes `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS` non-empty
+— i.e. 7.3's v3-only cutover, where `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` becomes
+`[3]` and v1/v2 become DEFINED-and-retired. That commit, not a later cleanup, owns
+this work: the moment the set flips, the proof below stops being the best available
+proof and becomes a proof that is no longer needed, and a proof nobody needed is a
+proof nobody re-runs.
+
+**The gap being left open, on purpose.** Ruling 1's `migration-required` leg —
+identity listing, `catalog.list` payload, and the degraded-boot render — is proven
+today against the `cutoverIndex` double that `a4p7-v3-cutover-acceptance.test.ts`
+already uses: a source index whose `inspectSource` answers as the inspector of a
+build running `[3]`. The authority, live catalog, root, dispatcher and payload are
+all the real ones; only the classification input is simulated. That is honest
+because at this base **no document on disk can inspect as `migration-required`** —
+the bridge still runs v1 and v2, so the retired set is `DEFINED minus SUPPORTED =
+∅`, and the emptiness is itself pinned as a law by the acceptance lane's group B.
+It is still a double, and a double cannot fail for the reason the real thing would.
+
+**What the flip must replace.** In
+`packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts`:
+
+1. group B's `a4p7.catalog.retired@4` and group C's retired-vs-runnable leg — a
+   **saved v1 source, unmodified fixture text**, classified by the real
+   `inspectBlueprintSource` with `cutoverIndex` deleted from the file entirely;
+2. group D's `refusedMigration`, currently a hand-built refused-anchor **value**
+   (no anchor reaches that arm yet) — replaced by the result of the real
+   `classifyBlueprintAnchor(v1Anchor)`;
+3. group A's retired-set leg, whose `expected` is computed from
+   `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` alone (`? 'current' : 'unreadable'`)
+   because there is no retired version to name yet. It does assert five real
+   equalities over `[1, 2, 3, 4, 99]`; what it cannot do is fail for the
+   `migration-required` arm, since no version in that list reaches it while the set
+   is empty. Its `expected` must become a three-way derivation, and `[1, 2]` must
+   then answer `migration-required` for the reason and not by table.
+
+**Done means all three, plus one receipt.** The double is gone (grep the file for
+`cutoverIndex`: zero hits), the three legs are RED before that commit's production
+flip and GREEN after it in the same commit — the ruling's own discipline, unchanged
+— and the raw capture lands here as `7-3-post-flip-migration-state.txt` with its row
+in the table above. A flip that leaves this file on the double has not re-proved
+anything; it has merely stopped being honest about which part was simulated.
