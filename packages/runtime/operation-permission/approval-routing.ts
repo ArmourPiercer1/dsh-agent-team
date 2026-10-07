@@ -263,15 +263,6 @@ function messageOf(error: unknown): string {
 }
 
 /**
- * Route one concrete operation ask to the minimum authority that may sign it
- * (spec §7.2-§7.4, §10.1, acceptance §21.4).
- *
- * @param input - the operation, the acting rung, and the plane's authority
- *   facts for the beneficiary (`undefined` = not v3).
- * @returns the routing arm; only `approval-required` names a durable carrier,
- *   and no arm ever names an authority the documents did not produce.
- */
-/**
  * The CANDIDATE POINTS that name one approval scope (A4-PR7 RULING 4).
  *
  * ONE FUNCTION, BOTH SITES. The ask and the consumption recheck each need the set
@@ -335,6 +326,15 @@ export function operationApprovalCandidatePoints(input: {
   return { points: [point.matcher, { kind: 'fingerprint', resource: commandFingerprint }] }
 }
 
+/**
+ * Route one concrete operation ask to the minimum authority that may sign it
+ * (spec §7.2-§7.4, §10.1, acceptance §21.4).
+ *
+ * @param input - the operation, the acting rung, and the plane's authority
+ *   facts for the beneficiary (`undefined` = not v3).
+ * @returns the routing arm; only `approval-required` names a durable carrier,
+ *   and no arm ever names an authority the documents did not produce.
+ */
 export function routeOperationApproval(
   input: OperationApprovalRoutingInput,
 ): OperationApprovalRouting {
@@ -376,9 +376,12 @@ export function routeOperationApproval(
         'the tool key alone would report a ceiling no author declared',
     }
   }
-  // Both candidate shapes go into every refusal message: a human reading a
-  // refusal has to be able to tell WHICH shape the ceiling could not decide,
-  // and the recheck's question is about what the human was shown.
+  // Every refusal PAST the candidate gate names both candidate shapes: a human
+  // reading a refusal has to be able to tell WHICH shape the ceiling could not
+  // decide, and the consumption point's question is about what this human was
+  // shown -- so `recheckPersistedOperationAuthority` names them in its refusals
+  // too, in the same words. The gate refusal above is the deliberate exception:
+  // it cannot name a shape it was never allowed to ask about.
   const candidateDetail =
     candidates.points.length > 1
       ? ` (candidates: ${candidates.points.map((m) => `${m.kind} ${m.resource}`).join(', ')})`
@@ -402,12 +405,12 @@ export function routeOperationApproval(
         }),
       )
     } catch (error: unknown) {
-    const code = codeOf(error)
-    const reason =
-      code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE
-        ? OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE
-        : OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT
-    return {
+      const code = codeOf(error)
+      const reason =
+        code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE
+          ? OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE
+          : OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT
+      return {
         kind: 'authority-undetermined',
         reason,
         detail: `${messageOf(error)}${candidateDetail}`,
@@ -444,7 +447,7 @@ export function routeOperationApproval(
     return {
       kind: 'authority-undetermined',
       reason: OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT,
-      detail: 'no candidate evaluation was produced for this scope',
+      detail: `no candidate evaluation was produced for this scope${candidateDetail}`,
     }
   }
   let evaluation = firstEvaluation
@@ -466,7 +469,7 @@ export function routeOperationApproval(
     return {
       kind: 'authority-undetermined',
       reason: OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT,
-      detail: 'the evaluator answered with a decided outcome but no required authority',
+      detail: `the evaluator answered with a decided outcome but no required authority${candidateDetail}`,
     }
   }
 
@@ -673,6 +676,14 @@ export function recheckPersistedOperationAuthority(input: {
         'persisted tool-level point alone would report a ceiling no author declared',
     )
   }
+  // The same candidate naming the ASK puts in its refusals, for the same reason:
+  // the consumption refusal is shown to a human as the reason their approval did
+  // not spend, and "which shape could not be decided" is the question they can
+  // actually act on.
+  const candidateDetail =
+    candidates.points.length > 1
+      ? ` (candidates: ${candidates.points.map((m) => `${m.kind} ${m.resource}`).join(', ')})`
+      : ''
   const evaluations: ReturnType<typeof evaluateAuthorityCeiling>[] = []
   for (const matcher of candidates.points) {
     try {
@@ -696,7 +707,7 @@ export function recheckPersistedOperationAuthority(input: {
         code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE
           ? OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE
           : OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT,
-        messageOf(error),
+        `${messageOf(error)}${candidateDetail}`,
       )
     }
   }
@@ -707,7 +718,7 @@ export function recheckPersistedOperationAuthority(input: {
       OPERATION_APPROVAL_REFUSAL_REASONS.CEILING_UNDETERMINED,
       `the ceiling for ${input.authorityScope.operationClass} on ${input.authorityScope.matcher.resource} ` +
         `could not be decided at the consumption point (rungs consulted: ` +
-        `${undecided.evidence.consideredRoles.join(', ') || 'none'})`,
+        `${undecided.evidence.consideredRoles.join(', ') || 'none'})${candidateDetail}`,
     )
   }
   // The same meet as the ask: the HIGHEST rung any candidate requires is what
@@ -717,7 +728,7 @@ export function recheckPersistedOperationAuthority(input: {
   if (firstEvaluation === undefined) {
     return undetermined(
       OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT,
-      'no candidate evaluation was produced for the persisted scope',
+      'no candidate evaluation was produced for the persisted scope' + candidateDetail,
     )
   }
   let evaluation = firstEvaluation
@@ -733,7 +744,7 @@ export function recheckPersistedOperationAuthority(input: {
   if (requiredNow === undefined) {
     return undetermined(
       OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT,
-      'the evaluator answered with a decided outcome but no required authority',
+      'the evaluator answered with a decided outcome but no required authority' + candidateDetail,
     )
   }
   if (isHigherAuthority(requiredNow, input.reviewAuthority)) {
