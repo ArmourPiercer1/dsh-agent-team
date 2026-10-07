@@ -1,0 +1,60 @@
+--- tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs::BP_ANCHOR_YAML (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.prd-anchor
+ revision: "1"
+ leader:
+@@ -10,6 +10,10 @@
+     persona: "You are a worker of the PR-D gate boot team."
+ memberEnvelopes: []
+ requirements: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs::saved/empty-deny (pre)
++++ tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs::saved/empty-deny (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.prd
+ revision: "1"
+ leader:
+@@ -87,6 +87,10 @@
+         - request-control
+       deny: []
+ requirements: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs::saved/deny (pre)
++++ tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs::saved/deny (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.prd
+ revision: "1"
+ leader:
+@@ -89,6 +89,10 @@
+         - request-control
+       deny: []
+ requirements: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---

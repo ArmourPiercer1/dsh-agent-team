@@ -1,0 +1,3 @@
+tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs :: BP_ANCHOR_YAML: v3; probe(v9) refused=true
+tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs :: saved/empty-deny: v3; probe(v9) refused=true
+tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs :: saved/deny: v3; probe(v9) refused=true
