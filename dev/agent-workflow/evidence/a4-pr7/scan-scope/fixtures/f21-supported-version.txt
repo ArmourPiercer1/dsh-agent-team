@@ -1,0 +1,13 @@
+;; expect: none
+;; rule: supported-version-regression — the fence's own reading decision (its
+;;        header records why): the predicate is the plan's shape restricted to
+;;        a version this product does NOT run (v !== 3), so a correctly
+;;        migrated fixture is never flagged. Carriers here are string forms
+;;        that WOULD be dirty if the digit were not 3.
+;; path: packages/example/test/fx-supported.ts
+export const migrated = [
+  '---',
+  'schemaVersion: 3',
+  'blueprintId: team.migrated',
+  'revision: "1"',
+].join('\n')

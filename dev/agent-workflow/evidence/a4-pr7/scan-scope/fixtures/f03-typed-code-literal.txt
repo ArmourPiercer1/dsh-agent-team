@@ -1,0 +1,19 @@
+;; expect: advisory
+;; rule: typed-code-literal — a version in a real TypeScript object-literal
+;;        property position (verbatim shape of
+;;        packages/runtime/test/p5t5-helpers.ts:80). §7.3's narrowing of
+;;        TeamBlueprint.schemaVersion to 3 is the instrument for this class:
+;;        gating it here would double-count a gate tsc already holds, so the
+;;        fence PRINTS it for dispatch and does not gate on it.
+;; path: packages/example/test/fx-typed-code-literal.ts
+export const P5T5_BLUEPRINT: TeamBlueprint = {
+  schemaVersion: 1,
+  blueprintId: parseBlueprintId('P5T5-BP'),
+  revision: parseBlueprintRevision('1'),
+  contentHash: parseBlueprintContentHash('sha256-11111111111111111111111111111111'),
+  leader: {
+    templateId: parseTemplateId('leader'),
+    persona: 'Lead.',
+  },
+  members: [],
+}

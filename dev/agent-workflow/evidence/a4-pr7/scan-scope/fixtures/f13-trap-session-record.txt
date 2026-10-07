@@ -1,0 +1,23 @@
+;; expect: refused
+;; namespace: team-session-record
+;; rule: trap-team-session-record — verbatim shape of
+;;        packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts:140
+;;        (the file whose PROBE stayed green with unsupported
+;;        literals — the rows carry the TeamSessionRecordDto stamp, not a
+;;        Blueprint document version; the nested `blueprint:` value is an
+;;        ANCHOR ref {blueprintId, revision, contentHash} with no version of
+;;        its own). Same namespace as packages/runtime/test/p8s7r2-disposed
+;;        -history.test.ts:87 (teamRow).
+;; path: packages/example/test/fx-trap-session-record.ts
+const sessionRows = new Map<string, TeamSessionRecordDto>()
+for (const row of [
+  {
+    schemaVersion: 1,
+    rootSessionId: ROOT_A,
+    blueprint: { blueprintId: 'BP-A', revision: '1', contentHash: 'sha-a' },
+    createdAt: NOW,
+    generation: 1,
+  },
+]) {
+  sessionRows.set(row.rootSessionId, row as TeamSessionRecordDto)
+}

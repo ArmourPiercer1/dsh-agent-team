@@ -1,0 +1,18 @@
+;; expect: dirty
+;; rule: template-literal-carrier — the version lines sit inside a multi-line
+;;        template literal (no quotes on the matched line at all). The state
+;;        machine must carry template state across lines; a per-line regex
+;;        would read these as code and silently under-report the dirty class.
+;; path: packages/example/test/fx-template-literal-carrier.ts
+export function blueprintSource(teamId: string): string {
+  return `---
+schemaVersion: 1
+blueprintId: ${teamId}
+revision: "1"
+leader:
+  templateId: leader
+  persona: "Lead."
+members: []
+---
+`
+}

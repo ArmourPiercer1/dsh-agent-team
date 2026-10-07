@@ -1,0 +1,19 @@
+;; expect: refused
+;; namespace: projection-envelope
+;; rule: trap-projection-envelope — the wire-frame form (verbatim shape of
+;;        packages/client/test/projection-adapter.test.ts:64 and the remote
+;;        team.ts:164/:192 envelope reads, which read `raw['schemaVersion']`
+;;        at RUNTIME and carry no digit literal at all). The projection DTO's
+;;        sibling key set (teamSessionId + generation + blueprint) is not the
+;;        closed Blueprint document field set.
+;; path: packages/example/test/fx-trap-projection-envelope.ts
+/** One minimal 9-field D-4 wire projection (the `RemoteProjectionValue` shape). */
+function wireFrame(overrides: Record<string, unknown> = {}): RemoteProjectionValue {
+  return {
+    schemaVersion: 1,
+    teamSessionId: 'team-1',
+    blueprint: { blueprintId: 'bp-1', revision: 2, contentHash: 'sha-1' },
+    generation: 7,
+    ...overrides,
+  }
+}

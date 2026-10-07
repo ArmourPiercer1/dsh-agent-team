@@ -1,0 +1,18 @@
+;; expect: dirty
+;; rule: yaml-string-carrier — the YAML-fragment form, verbatim shape of
+;;        packages/domain/blueprint/testdata/fixtures.ts:26 (a version carried
+;;        inside a single-quoted string element of a string[] array: TypeScript
+;;        never sees the number, so the 7.3 union narrowing cannot redden it).
+;; path: packages/example/test/fx-yaml-string-carrier.ts
+function minimalBlueprintLines(blueprintId: string, revision: string, persona: string): string[] {
+  return [
+    '---',
+    'schemaVersion: 1',
+    `blueprintId: ${blueprintId}`,
+    `revision: "${revision}"`,
+    'leader:',
+    '  templateId: leader',
+    `  persona: ${JSON.stringify(persona)}`,
+    'members: []',
+  ].join('\n')
+}

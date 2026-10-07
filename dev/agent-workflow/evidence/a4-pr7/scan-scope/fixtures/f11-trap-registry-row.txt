@@ -1,0 +1,19 @@
+;; expect: refused
+;; namespace: registry-row
+;; rule: trap-registry-row — F1's lesson: a BlueprintRegistryRecord row's
+;;        schemaVersion is TEAM_DOMAIN_SCHEMA_VERSION, "the TeamDomain schema
+;;        version that shaped the row, L3 discipline"
+;;        (packages/storage/schema/blueprint-registry.ts:131-139) — a ROW stamp,
+;;        not a document version. Verbatim shapes of
+;;        packages/storage/test/bp1-blueprint-registry.test.ts:146 and
+;;        packages/runtime/test/bp1-blueprint-authority.test.ts:108.
+;; path: packages/example/test/fx-trap-registry-row.ts
+const badVersion = await capture(() =>
+  parseBlueprintRegistryRecord({ ...baseRecord, schemaVersion: 1 }),
+)
+const row: BlueprintRegistryRecordView = {
+  schemaVersion: 2,
+  blueprintId: BP_ALPHA,
+  revision: REV_1,
+}
+void badVersion

@@ -1,0 +1,22 @@
+;; expect: refused
+;; namespace: projection-envelope
+;; rule: trap-overlay-test — packages/runtime/test/p01-team-scoped-overlay.test.ts:211
+;;        verbatim. The number is the PROJECTION service's stamp (the probe
+;;        stayed green there because it belongs to another namespace — the
+;;        2026-10-08 coordinator record says so in as many words). The file
+;;        keys blueprintId (line 142), so only the enclosing-context half can
+;;        keep it out of the Blueprint class.
+;; path: packages/example/test/fx-trap-projection-service.ts
+const P01 = await (async () => {
+  const overlay = createLiveResidencyOverlay({
+    repositories: fakeRepos as never,
+    live: fakeLive as never,
+    now: () => FIXED_NOW,
+  })
+  const service = createProjectionService(fakeReadPort, overlay, {
+    clock: () => FIXED_NOW,
+    schemaVersion: 1,
+  })
+  return service
+})()
+const BP_ID = 'BP-P01-A' // blueprintId: present so the file-level both-halves key holds

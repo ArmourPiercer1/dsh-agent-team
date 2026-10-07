@@ -1,0 +1,21 @@
+;; expect: refused
+;; namespace: ledger-row
+;; rule: trap-ledger-row — the artifact/governance ledger row stamp (verbatim
+;;        shape of packages/runtime/src/plugin/host.ts:2837 which stamps
+;;        `schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION` — a constant, no digit,
+;;        invisible by construction — and its digit-bearing test forms at
+;;        packages/runtime/test/p6t4-helpers.ts:458 and
+;;        packages/remote/test/p8t4-engine.test.ts:122).
+;; path: packages/example/test/fx-trap-ledger-row.ts
+async function appendGranted(repos: Repos, rootSessionId: string, payload: Record<string, unknown>) {
+  const sequence = await repos.ledger.allocateSequence()
+  await repos.ledger.put({
+    schemaVersion: 2,
+    sequence,
+    rootSessionId,
+    factType: 'artifact-read-granted',
+    payload,
+    createdAt: new Date().toISOString(),
+  })
+}
+const LEDGER_BP = 'team.ledgerref' // blueprintId: the file-level key half

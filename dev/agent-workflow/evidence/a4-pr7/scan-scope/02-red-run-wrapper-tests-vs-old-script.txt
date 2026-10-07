@@ -1,0 +1,505 @@
+
+ RUN  v4.1.8 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-scanscope
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (36 tests | 29 failed) 102ms
+     × the scan ran (a scan that could not run is never reported as clean) 3ms
+     × invoking the script by name is a real gate: non-zero exit while dirty sites exist 54ms
+     ✓ a directory that is not a repository reports not-run with exit 2, never clean 35ms
+     ✓ the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path) 0ms
+     × every deferred path is still dirty (a migrated path must leave the list) 1ms
+     ✓ the fence needs no exemption for its own author 0ms
+     × the fence reports sites, not a bare count, and names a file the reader can open 2ms
+     × the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line 1ms
+     × packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path 0ms
+     ✓ the named namespace traps are never reported as Blueprint sites 0ms
+     × the REFUSED lines are visible with their namespace, so a refusal is auditable 0ms
+     ✓ unknown is empty on the current tree (every shape classifies or is refused with evidence) 0ms
+     × the scope function is the plan's list plus the measured third class — no more, no less 0ms
+     × f01 YAML-string carrier is DIRTY (the type system cannot see it) 0ms
+     × f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here) 0ms
+     × f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it) 0ms
+     × f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide) 0ms
+     × f05 untyped .mjs object literal is DIRTY (nothing type-checks the file) 0ms
+     × f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions) 0ms
+     × f07 overlay/projection-service option is REFUSED (projection-envelope) 0ms
+     × f08 projection wire envelope is REFUSED (projection-envelope) 0ms
+     × f09 session-binding row is REFUSED (session-binding) 0ms
+     × f10 MemberInstance row is REFUSED (member-instance-record) 0ms
+     × f11 registry ROW stamp is REFUSED (registry-row, F1: row stamp != document version) 0ms
+     × f12 ledger row is REFUSED (ledger-row) 0ms
+     × f13 TeamSessionRecordDto row is REFUSED (team-session-record) 0ms
+     × f14 governance-override row is REFUSED (governance-override) 0ms
+     × f15 approval-case + operation rows are REFUSED (governance-ledger) 0ms
+     × f16 artifact-grant payload is REFUSED (artifact-grant-payload) 0ms
+     × f17 prose document without the blueprintId half is not a site at all 0ms
+     × f18 ambiguous hybrid shape is UNKNOWN and gates (no silent drop, no guessed verdict) 0ms
+     × f19 JSON data is DIRTY (data is never type-checked) 0ms
+     × f20 YAML config blueprintSource block is DIRTY (cordis.patch.yml shape) 0ms
+     × f21 supported-version fixtures stay clean in every carrier (reading decision) 0ms
+     ✓ the fixture corpus exists and every fixture was exercised 0ms
+     ✓ a real in-scope file that keys blueprintId WITHOUT a version literal is not a site 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 29 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the scan ran (a scan that could not run is never reported as clean)
+AssertionError: expected 117 to be greater than 400
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:244:28
+    242|     // check". The old scope was 117 files; the extended universe must…
+    243|     // 400 (packages/*/test alone adds ~500 tracked code files).
+    244|     expect(run.scopeFiles).toBeGreaterThan(400)
+       |                            ^
+    245|   })
+    246|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > invoking the script by name is a real gate: non-zero exit while dirty sites exist
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:256:44
+    254|     // unknown; advisory never moves the exit code.
+    255|     const gating = run.dirty.length + run.unknown.length
+    256|     expect(spawned.status, spawned.stderr).toBe(gating > 0 ? 1 : 0)
+       |                                            ^
+    257|     expect(spawned.stdout).toContain('RESULT dirty(')
+    258|     expect(spawned.stdout).toContain('RESULT advisory(')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > every deferred path is still dirty (a migrated path must leave the list)
+AssertionError: expected [ …(20) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "packages/tools/harness/d4-restart-reopen.mjs",
++   "packages/tools/harness/g5-member-e2e.mjs",
++   "packages/tools/harness/run.mjs",
++   "packages/tools/harness/t12-vertical.mjs",
++   "packages/runtime/root-binding/harness/blueprint-source.mjs",
++   "scripts/blueprint-authoring.mjs",
++   "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
++   "tests/kits/exec-contract-live-smoke/blueprint.mjs",
++   "tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs",
++   "tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs",
++   "tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs",
++   "tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs",
++   "tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs",
++   "tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs",
++   "tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs",
++   "tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs",
++   "tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs",
++   "tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs",
++   "tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs",
++   "tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs",
++ ]
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:281:19
+    279|   it('every deferred path is still dirty (a migrated path must leave t…
+    280|     const stale = [...DEFERRALS.keys()].filter((p) => !dirtyPaths.incl…
+    281|     expect(stale).toEqual([])
+       |                   ^
+    282|   })
+    283|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the fence reports sites, not a bare count, and names a file the reader can open
+AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'RESULT dirty(0 files'
+
+- Expected
++ Received
+
+- RESULT dirty(0 files
++ scan: blueprint document-version fence (A4-PR7 7.5, ADR A3-16)
++ scope: tests/kits/, scripts/, packages/<pkg>/harness/ (evidence and dist excluded)
++ scanned-in-scope: 117 tracked files
++ offending-files: 20
++ OFFENDING packages/runtime/root-binding/harness/blueprint-source.mjs :: L30=v1
++ OFFENDING packages/tools/harness/d4-restart-reopen.mjs :: L220=v1
++ OFFENDING packages/tools/harness/g5-member-e2e.mjs :: L267=v1
++ OFFENDING packages/tools/harness/run.mjs :: L214=v1
++ OFFENDING packages/tools/harness/t12-vertical.mjs :: L215=v1, L1838=v2, L1844=v2
++ OFFENDING scripts/blueprint-authoring.mjs :: L92=v1
++ OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L506=v1, L628=v1
++ OFFENDING tests/kits/exec-contract-live-smoke/blueprint.mjs :: L168=v1, L194=v1
++ OFFENDING tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs :: L628=v2, L701=v1
++ OFFENDING tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs :: L475=v1, L510=v1
++ OFFENDING tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs :: L337=v1, L359=v1, L417=v1
++ OFFENDING tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs :: L688=v1, L748=v1
++ OFFENDING tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs :: L569=v1, L622=v1, L661=v1
++ OFFENDING tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs :: L1158=v1, L1292=v1
++ OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L446=v1, L795=v2, L810=v2, L1155=v2, L1322=v2, L1409=v2, L1496=v1
++ OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L375=v1, L787=v2, L802=v2, L1175=v2, L1352=v2, L1446=v1, L1490=v2, L1577=v2, L1664=v1
++ OFFENDING tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs :: L603=v1, L643=v1
++ OFFENDING tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs :: L480=v1, L601=v1
++ OFFENDING tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs :: L217=v1
++ OFFENDING tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs :: L489=v1, L604=v1
++ RESULT dirty(20 files, 49 sites)
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:301:20
+    299|     expect(report).toContain('OFFENDING packages/tools/harness/run.mjs…
+    300|     expect(report).toMatch(/OFFENDING \S+ :: L\d+=v[12]/)
+    301|     expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)…
+       |                    ^
+    302|   })
+    303|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line
+AssertionError: fixtures.ts:L26 must be a DIRTY site (YAML string carrier): expected [] to include 26
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:314:85
+    312|     const lines = run.dirty.filter((s) => s.path === archetype).map((s…
+    313|     for (const l of [26, 72, 242, 264, 286]) {
+    314|       expect(lines, `fixtures.ts:L${l} must be a DIRTY site (YAML stri…
+       |                                                                                     ^
+    315|     }
+    316|     expect(report).toContain(`OFFENDING ${archetype} :: `)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path
+AssertionError: expected [] to include 'packages/runtime/test/t12a-live-bridg…'
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:324:24
+    322|     // just count it. t12a-live-bridge.mjs:1347 is the unambiguous mem…
+    323|     // (a .mjs test-tree emitter, dirty in any classification).
+    324|     expect(dirtyPaths).toContain('packages/runtime/test/t12a-live-brid…
+       |                        ^
+    325|   })
+    326|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the REFUSED lines are visible with their namespace, so a refusal is auditable
+AssertionError: p01:211 must appear as a visible REFUSED line: expected 0 to be greater than 0
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:358:73
+    356|     // deciding channel, never just dropped.
+    357|     const p01 = run.refused.filter((s) => s.path === 'packages/runtime…
+    358|     expect(p01.length, 'p01:211 must appear as a visible REFUSED line'…
+       |                                                                         ^
+    359|     expect(report).toContain('REFUSED packages/runtime/test/p01-team-s…
+    360|     expect(report).toContain('projection-envelope')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the scope function is the plan's list plus the measured third class — no more, no less
+Error: RED (scope-rule): scripts/verify-blueprint-version-clean.mjs exports no isScanScopePath yet
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:374:13
+    372|   it("the scope function is the plan's list plus the measured third cl…
+    373|     if (isScanScopePath === undefined) {
+    374|       throw new Error('RED (scope-rule): scripts/verify-blueprint-vers…
+       |             ^
+    375|     }
+    376|     expect(isScanScopePath('tests/kits/whatever/x.mjs')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f01 YAML-string carrier is DIRTY (the type system cannot see it)
+Error: RED (f01-yaml-string-carrier.txt, rule: yaml-string-carrier — the YAML-fragment form, verbatim shape of): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:398:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here)
+Error: RED (f02-quoted-value-carrier.txt, rule: quoted-value-carrier — the quoted form, verbatim shape of): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:401:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it)
+Error: RED (f03-typed-code-literal.txt, rule: typed-code-literal — a version in a real TypeScript object-literal): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:404:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide)
+Error: RED (f04-template-literal-carrier.txt, rule: template-literal-carrier — the version lines sit inside a multi-line): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:407:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f05 untyped .mjs object literal is DIRTY (nothing type-checks the file)
+Error: RED (f05-untyped-file-carrier.txt, rule: untyped-file-carrier — a .mjs source is never type-checked at all, so): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:410:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions)
+Error: RED (f06-comment-carrier.txt, rule: comment-carrier — a version written in a `//` comment (and in a block): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:413:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f07 overlay/projection-service option is REFUSED (projection-envelope)
+Error: RED (f07-trap-projection-service.txt, rule: trap-overlay-test — packages/runtime/test/p01-team-scoped-overlay.test.ts:211): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:416:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f08 projection wire envelope is REFUSED (projection-envelope)
+Error: RED (f08-trap-projection-envelope.txt, rule: trap-projection-envelope — the wire-frame form (verbatim shape of): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:419:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f09 session-binding row is REFUSED (session-binding)
+Error: RED (f09-trap-session-binding.txt, rule: trap-session-binding — verbatim shape of): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:422:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f10 MemberInstance row is REFUSED (member-instance-record)
+Error: RED (f10-trap-member-record.txt, rule: trap-member-record — the MemberInstance discriminator namespace the): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:425:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f11 registry ROW stamp is REFUSED (registry-row, F1: row stamp != document version)
+Error: RED (f11-trap-registry-row.txt, rule: trap-registry-row — F1's lesson: a BlueprintRegistryRecord row's): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:428:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f12 ledger row is REFUSED (ledger-row)
+Error: RED (f12-trap-ledger-row.txt, rule: trap-ledger-row — the artifact/governance ledger row stamp (verbatim): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:431:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f13 TeamSessionRecordDto row is REFUSED (team-session-record)
+Error: RED (f13-trap-session-record.txt, rule: trap-team-session-record — verbatim shape of): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:434:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f14 governance-override row is REFUSED (governance-override)
+Error: RED (f14-trap-governance-override.txt, rule: trap-governance-override — verbatim shapes of): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:437:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f15 approval-case + operation rows are REFUSED (governance-ledger)
+Error: RED (f15-trap-governance-rows.txt, rule: trap-approval-and-operation-rows — the approval-case row (verbatim): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:440:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f16 artifact-grant payload is REFUSED (artifact-grant-payload)
+Error: RED (f16-trap-artifact-grant.txt, rule: trap-artifact-grant-payload — the artifact-read-granted LEDGER PAYLOAD): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:444:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f17 prose document without the blueprintId half is not a site at all
+Error: RED (f17-prose-non-blueprint.txt, rule: prose-file — a non-code, non-Blueprint document that discusses): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:447:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f18 ambiguous hybrid shape is UNKNOWN and gates (no silent drop, no guessed verdict)
+Error: RED (f18-ambiguous-shape.txt, rule: ambiguous-shape — an object whose sibling key set carries BOTH the): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:453:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f19 JSON data is DIRTY (data is never type-checked)
+Error: RED (f19-json-data.txt, rule: json-data-carrier — a JSON document is DATA: nothing type-checks it,): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:456:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f20 YAML config blueprintSource block is DIRTY (cordis.patch.yml shape)
+Error: RED (f20-yaml-config-carrier.txt, rule: yaml-config-carrier — cordis.patch.yml:58-62 carries a live): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:459:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/29]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f21 supported-version fixtures stay clean in every carrier (reading decision)
+Error: RED (f21-supported-version.txt, rule: supported-version-regression — the fence's own reading decision (its): scripts/verify-blueprint-version-clean.mjs exports no classifyText — the two-verdict rule does not exist yet
+ ❯ classify packages/testkit/test/a4p7-blueprint-version-clean.test.ts:137:11
+    135| function classify(f: Fixture): Classification {
+    136|   if (classifyText === undefined) {
+    137|     throw new Error(
+       |           ^
+    138|       `RED (${f.name}, rule: ${f.rule}): scripts/verify-blueprint-vers…
+    139|     )
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:146:13
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:462:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/29]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  29 failed | 7 passed (36)
+   Start at  02:56:58
+   Duration  273ms (transform 26ms, setup 0ms, import 55ms, tests 102ms, environment 0ms)
+
