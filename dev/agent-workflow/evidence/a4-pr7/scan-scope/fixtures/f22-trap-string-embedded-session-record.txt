@@ -1,0 +1,16 @@
+;; expect: refused
+;; namespace: team-session-record
+;; rule: string-embedded-json — a hand-built serialized record inside a TS
+;;        string carries its OWN namespace keys (rootSessionId + blueprint
+;;        anchor ref), so sibling extraction must see inside string segments.
+;;        Tree evidence: packages/contracts/test/serialization.test.ts:93
+;;        (deserializeTeamSessionRecord of a key-shuffled JSON literal).
+;; path: packages/contracts/test/fx-string-record.ts
+import { deserializeTeamSessionRecord } from '../src/serialization.js'
+
+it('deserializing hand-built key-shuffled JSON still validates', () => {
+  const json =
+    '{"generation":1,"createdAt":"2026-08-29T12:00:00.000Z","blueprint":{"revision":"17","contentHash":"sha256:abc123","blueprintId":"AIUED-ALGO"},"rootSessionId":"session-1","schemaVersion":1}'
+  const back = deserializeTeamSessionRecord(json)
+  expect(back.rootSessionId).toBe('session-1')
+})

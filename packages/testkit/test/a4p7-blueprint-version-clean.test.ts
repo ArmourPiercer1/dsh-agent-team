@@ -109,9 +109,11 @@ function loadFixtures(): Fixture[] {
     const header = new Map<string, string>()
     let i = 0
     for (; i < lines.length; i += 1) {
+      // ALL leading `;;` lines are header (key lines plus their wrapped
+      // continuation lines); content starts at the first non-`;;` line.
+      if (!lines[i].startsWith(';;')) break
       const m = /^;;\s*([a-z]+):\s*(.*)$/.exec(lines[i])
-      if (m === null) break
-      header.set(m[1], m[2])
+      if (m !== null) header.set(m[1], m[2])
     }
     return {
       name,
@@ -176,39 +178,136 @@ function expectSingle(f: Fixture, want: SiteClass | 'none'): Classification {
  * as a lie), never by being added to a skip list in the scanner.
  */
 const DEFERRALS: ReadonlyMap<string, string> = new Map([
-  // Lane `C-tools+harness` — the plan names these four sites by path.
   ['packages/tools/harness/d4-restart-reopen.mjs', 'C-tools+harness (plan-named site, harness/d4-restart-reopen.mjs:220)'],
   ['packages/tools/harness/g5-member-e2e.mjs', 'C-tools+harness (plan-named site, harness/g5-member-e2e.mjs:267)'],
   ['packages/tools/harness/run.mjs', 'C-tools+harness (plan-named site, harness/run.mjs:214)'],
-  ['packages/tools/harness/t12-vertical.mjs', 'C-tools+harness (plan-named site, harness/t12-vertical.mjs:215; also emits a v2 document)'],
-  // Lane `C-runtime-fixtures` — the runtime bounded-run harness's Blueprint source.
+  ['packages/tools/harness/t12-vertical.mjs', 'C-tools+harness (plan-named site, harness/t12-vertical.mjs:215; also emits a v2 document; the L1838 occurrence is comment prose, not a site)'],
   ['packages/runtime/root-binding/harness/blueprint-source.mjs', 'C-runtime-fixtures (bounded-run harness Blueprint source)'],
-  // Lane `C-testkit` — the authoring script and the maintained kit fixtures.
+  ['packages/testkit/test/bp1h-blueprint-authoring.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/testkit/test/t6-10-composition-pipeline.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/testkit/test/t6-7-fresh-per-delegation.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['scripts/blueprint-authoring.mjs', 'C-testkit (the blueprint authoring script)'],
-  ['tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs', 'C-testkit (kit fixture)'],
-  ['tests/kits/exec-contract-live-smoke/blueprint.mjs', 'C-testkit (kit fixture)'],
+  ['tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['tests/kits/exec-contract-live-smoke/blueprint.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs', 'C-testkit (kit fixture; also emits a v2 document)'],
-  ['tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs', 'C-testkit (kit fixture)'],
-  ['tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs', 'C-testkit (kit fixture)'],
-  ['tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs', 'C-testkit (kit fixture)'],
+  ['tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs', 'C-testkit (kit fixture; also emits a v2 document)'],
-  ['tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs', 'C-testkit (kit fixture)'],
+  ['tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs', 'C-testkit (kit fixture; also carries the V1 anchor contentHash literal that 7.3 re-pins)'],
   ['tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs', 'C-testkit (kit fixture; also carries the V1 anchor contentHash literal that 7.3 re-pins)'],
-  ['tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs', 'C-testkit (kit fixture)'],
-  ['tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs', 'C-testkit (kit fixture)'],
-  ['tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs', 'C-testkit (kit fixture)'],
-  ['tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs', 'C-testkit (kit fixture)'],
+  ['tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/blueprint/testdata/fixtures.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/a1-permission-policy.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/blueprint-v1-frozen-resume.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/bp1-blueprint-inspector.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/exec-contract-a1-leader-allow.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/t2-blueprint-catalog.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/t2-blueprint-hash.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/t2-blueprint-parse.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/t2-blueprint-v2-hash.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/t2-blueprint-v2-requirements.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/domain/test/t2-blueprint-validation.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a2c1-pwsh-permission.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a2c3-inspect-operation-permission.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a2c7-subtree-matcher.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a3p4-production-permission-plane.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a3p5-permission-read-wiring.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a3p5-permission-splice.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a4p6-start-gate-entrances.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a6a-production-wiring.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/alpha2-explicit-agent-setup.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/bound-blueprint-persona-helpers.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/bp1-dual-team-gate.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/bp1-freeze-barrier.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/bp1-red-glue-probe.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/bp1-red-probe.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/consent-scope-hash-binding.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/control-abandon-without-resolve-envelope.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/control-subject-cross-kind-alias.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/d2-s6-ensure-root-live.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/exec-contract-dual-gate.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/f1-webserver-shim-isolation.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/f15-mcp-live-loss-characterization.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/f15-mcp-live-loss.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/leader-recovery-next-boundary-exit.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/leader-template-required-boundary.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/mcp-blueprint-initial-grant.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/mcp-supply-config.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/mcp-target-materialization-unit.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/mcp-target-materialization.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/model-activation-step8.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/model-blueprint-initial-routing.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/model-inspect-config.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/multi-mcp-wiring.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p6t1-checks.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p6t1-helpers.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p6t1-parallel.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p6t2-helpers.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p6t3-helpers.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p6t4-helpers.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s3b-result-effects.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s5a-host-loadability.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s5a-production-assembly.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s6-pagination.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s6-principal.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s6-projection.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s6-push-reconnect.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s6-remote-commands.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s7r2-effective-config.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s7r2-model-state.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s7r2-policy-state-durable.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s7r4-fork-describe.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/p8s7r4-handoff-wiring.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/pbf-default-artifact-urls.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/persona-kind-provider-preflight.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/prf-inspect-same-source.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/rc2a1-fs-containment.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/requirement-probe-blueprint-scoping.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/rmr-create-or-open-boot.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/rmr-remote-mount-race.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/startup-all-templates-real-authority.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/startup-consent-production.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/startup-preflight-production-create.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/startup-template-disable-production.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/t12a-h1-nullable-mcp.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/t12a-live-bridge.mjs', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/t12b1-real-create.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/t12b2-resume-separation.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/t12b6-handoff-agent-start.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/t12m4-remote-mount.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/t14h-probe-merge.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/t4a-capability-wiring.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/tcm-m2-workspace-attach.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/team-compatibility-scope.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/team-session-startup-fence.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/template-disable-no-requirements-gate.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — raised to coordinator; carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
+  ['cordis.patch.yml', 'SCOPE ADDITION (measured 2026-10-08: the root composition patch\'s blueprintSource block is a live v1 document emitter, cordis.patch.yml:58-62) — NO §7.4 lane row — raised to coordinator'],
+  ['tests/mock/scripts/boot.mjs', 'C-testkit scope addition (measured 2026-10-08: mock-boot YAML emitter outside every prior scan)'],
 ])
+
 
 interface ScanRun {
   ran: boolean
   reason: string | null
   scopeFiles: number
-  dirty: Array<{ path: string; line: number; version: number }>
-  advisory: Array<{ path: string; line: number }>
-  unknown: Array<{ path: string; line: number }>
-  refused: Array<{ path: string; line: number }>
+  dirty: Array<{ path: string; line: number; version: number; why?: string }>
+  advisory: Array<{ path: string; line: number; why?: string }>
+  unknown: Array<{ path: string; line: number; why?: string }>
+  refused: Array<{ path: string; line: number; ns?: string; why?: string }>
   prose: Array<{ path: string; line: number }>
 }
 
@@ -338,7 +437,6 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
       'packages/storage/schema/blueprint-registry.ts', // the row-vs-document lesson itself
       'packages/runtime/test/bp1-blueprint-authority.test.ts', // BlueprintRegistryRecordView row
       'packages/storage/test/bp1-blueprint-registry.test.ts', // row-stamp negative tests
-      'packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts', // the probe-green file: its literals are TeamSessionRecordDto stamps
     ]
     const reported = new Set([
       ...run.dirty.map((s) => s.path),
@@ -348,6 +446,26 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     for (const t of traps) {
       expect(reported, `${t} is not a Blueprint version site — it must not be reported`).not.toContain(t)
     }
+  })
+
+  it('the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused', () => {
+    // packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts
+    // is the file the 2026-10-08 probe stayed GREEN on — and both halves of
+    // the coordinator's finding live in the same file:
+    //  - :101 IS a Blueprint document literal (blueprintOf returns
+    //    TeamBlueprint), laundered past tsc by `as unknown as TeamBlueprint`
+    //    — exactly the documented advisory caveat. It must show up as
+    //    ADVISORY dispatch material for the probe, never as a gated site.
+    //  - :140/:147 are TeamSessionRecordDto rows (the nested `blueprint:`
+    //    value is an anchor ref, not a document) — they must be REFUSED
+    //    under that namespace, invisible to every verdict that dispatches.
+    const f = 'packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts'
+    expect(run.dirty.filter((s) => s.path === f)).toEqual([])
+    expect(run.unknown.filter((s) => s.path === f)).toEqual([])
+    expect(run.advisory.filter((s) => s.path === f).map((s) => s.line)).toEqual([101])
+    const refusedHere = run.refused.filter((s) => s.path === f)
+    expect(refusedHere.map((s) => s.line)).toEqual([140, 147])
+    for (const s of refusedHere) expect(s.ns).toContain('team-session-record')
   })
 
   it('the REFUSED lines are visible with their namespace, so a refusal is auditable', () => {
@@ -461,11 +579,34 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
   it('f21 supported-version fixtures stay clean in every carrier (reading decision)', () => {
     expectSingle(fixture('f21'), 'none')
   })
+  it('f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string)', () => {
+    // The regex widening to JSON key-quoting caught this class on the real
+    // tree (contracts/test/serialization.test.ts:93): a serialized record
+    // carried in a TS string must be refused by the keys inside THAT string,
+    // not by the enclosing function's object shape. The real file must then
+    // be visible as REFUSED and never reach a gated or dispatch class.
+    expectSingle(fixture('f22'), 'refused')
+    expect(report).toContain('REFUSED packages/contracts/test/serialization.test.ts :: ')
+    expect([...new Set([...run.dirty, ...run.unknown, ...run.advisory].map((s) => s.path))]).not.toContain(
+      'packages/contracts/test/serialization.test.ts',
+    )
+  })
+  it('f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId)', () => {
+    // Same class, second namespace: serialization.test.ts:207.
+    expectSingle(fixture('f23'), 'refused')
+  })
+  it('f24 string-carried YAML WITH document siblings stays DIRTY (no ns hit, no refusal)', () => {
+    // The counterweight of f22/f23: sibling evidence alone never REFUSES.
+    // Refusal requires a positive namespace signature; doc siblings only
+    // raise the bar (signature conflict -> unknown), they never demote a
+    // dirty site into a quiet bucket.
+    expectSingle(fixture('f24'), 'dirty')
+  })
 
   it('the fixture corpus exists and every fixture was exercised', () => {
     // Guard against the corpus silently emptying (a fixture-less "test" is
-    // how a gate dies): names are pinned to the f01..f21 set.
-    expect(fixtures.length).toBeGreaterThanOrEqual(21)
+    // how a gate dies): names are pinned to the f01..f24 set.
+    expect(fixtures.length).toBeGreaterThanOrEqual(24)
     expect(fixtures.length).toBe(new Set(fixtures.map((f) => f.name)).size)
   })
 

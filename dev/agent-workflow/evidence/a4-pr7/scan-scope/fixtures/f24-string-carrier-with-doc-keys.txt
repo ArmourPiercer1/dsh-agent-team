@@ -1,0 +1,16 @@
+;; expect: dirty
+;; rule: string-carrier-with-doc-keys — a YAML fragment carried in a string
+;;        that carries DOCUMENT siblings (leader/policyStates) and no
+;;        namespace context stays DIRTY: sibling evidence alone never
+;;        refuses, refusal requires a positive namespace signature.
+;; path: packages/domain/blueprint/testdata/fx-doc-keys.ts
+export const DOC_FRAGMENT_LINES = [
+  '---',
+  'schemaVersion: 1',
+  'blueprintId: team.docfragment',
+  'revision: "1"',
+  'leader:',
+  '  templateId: leader',
+  'policyStates:',
+  '  - id: default',
+]
