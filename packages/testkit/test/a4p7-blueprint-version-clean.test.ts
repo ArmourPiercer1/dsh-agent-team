@@ -231,7 +231,6 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['packages/domain/test/blueprint-v1-frozen-resume.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/domain/test/bp1-blueprint-inspector.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/domain/test/exec-contract-a1-leader-allow.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/domain/test/t2-blueprint-catalog.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/domain/test/t2-blueprint-hash.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/domain/test/t2-blueprint-parse.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/domain/test/t2-blueprint-v2-hash.test.ts', 'C-domain (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],

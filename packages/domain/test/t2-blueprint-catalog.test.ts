@@ -18,6 +18,17 @@ import type { BlueprintCatalogSource, TeamBlueprint } from '../blueprint/src/ind
 import { revisionSource } from '../blueprint/testdata/fixtures.js'
 import { expectCode, expectErrorDetails } from './t2-helpers.js'
 
+/**
+ * §7.4 carrier migration (pre-flip half): this witness must carry a version
+ * stamp this product has NEVER defined — the digit 9 IS the claim, not an
+ * incidental version the §7.3 flip will move (the defined set is [1,2,3] and
+ * stays so across the flip; only the SUPPORTED bridge narrows). It lives at a
+ * typed code position instead of inside the YAML string, so the fence no
+ * longer classifies a retired-digit string carrier here; the bytes handed to
+ * the catalog and the asserted error details are unchanged.
+ */
+const NEVER_DEFINED_VERSION = 9
+
 /** An in-memory catalog source (no I/O anywhere). */
 function inMemorySource(docs: Record<string, string>): BlueprintCatalogSource {
   const names = Object.keys(docs)
@@ -149,12 +160,12 @@ describe('t2 catalog: source seam', () => {
   it('annotates parse failures with the source name', () => {
     const source = inMemorySource({
       'good.md': revisionSource('team.alpha', '1', 'A.'),
-      'bad.md': '---\nschemaVersion: 9\n---\n',
+      'bad.md': `---\nschemaVersion: ${NEVER_DEFINED_VERSION}\n---\n`,
     })
     expectErrorDetails(
       () => createBlueprintCatalogFromSource(source),
       'SCHEMA_VERSION_MISMATCH',
-      { sourceName: 'bad.md', schemaVersion: 9 },
+      { sourceName: 'bad.md', schemaVersion: NEVER_DEFINED_VERSION },
     )
   })
 
