@@ -559,14 +559,14 @@ function msgContentsOf(req) {
   })
 }
 
-// ── the saved team blueprints (strict closed-v1) ────────────────────────────
+// ── the saved team blueprints (strict closed-v3) ────────────────────────────
 
 /** Team-1 (ROOT_T1): the MCP team. The leader declares mcp allow [A,B,C] and
  *  NO team tools (the MCP-only surface — the isolation under test). */
 function mcpTeamBlueprintYaml(bpId, leaderPersona, mcpItems) {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     'leader:',
@@ -596,6 +596,10 @@ function mcpTeamBlueprintYaml(bpId, leaderPersona, mcpItems) {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-C MCP team default state."',
@@ -619,7 +623,7 @@ function mcpTeamBlueprintYaml(bpId, leaderPersona, mcpItems) {
 function workflowTeamBlueprintYaml(bpId, leaderPersona, workerPersona) {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     'leader:',
@@ -640,6 +644,10 @@ function workflowTeamBlueprintYaml(bpId, leaderPersona, workerPersona) {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "PR-C workflow team default state."',
@@ -658,7 +666,7 @@ function workflowTeamBlueprintYaml(bpId, leaderPersona, workerPersona) {
 /** The row anchor: a plain LEGACY leader (no capabilities block at all). */
 const BP_ANCHOR_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BP_ANCHOR_ID}`,
   'revision: "1"',
   'leader:',
@@ -667,6 +675,10 @@ const BP_ANCHOR_YAML = [
   'members: []',
   'requirements: []',
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',

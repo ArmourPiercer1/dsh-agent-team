@@ -1,0 +1,62 @@
+--- tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs::mcp-team (pre)
++++ tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs::mcp-team (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.prc-t1
+ revision: "1"
+ leader:
+@@ -30,6 +30,10 @@
+   deny:
+     - delete-team
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: default
+     description: "PR-C MCP team default state."
+--- tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs::workflow-team (pre)
++++ tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs::workflow-team (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.prc-tw
+ revision: "1"
+ leader:
+@@ -20,6 +20,10 @@
+   deny:
+     - delete-team
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: default
+     description: "PR-C workflow team default state."
+--- tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs::BP_ANCHOR_YAML (post)
+@@ -1,13 +1,17 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.prc-anchor
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-C smoke boot team. prc-mcp-2026-10-07T20-45-40 is the run nonce."
++  persona: "You are the leader of the PR-C smoke boot team. prc-mcp-2026-10-07T20-50-32 is the run nonce."
+ members: []
+ requirements: []
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---

@@ -1,0 +1,8 @@
+TEAM_DOMAIN_SCHEMA_VERSION = 2
+LEDGER ROW emitted from literal 2 : {"createdAt":"2026-10-08T05:00:00.000Z","factType":"requirement.granted","payload":{"a":1,"b":[2,3]},"rootSessionId":"sess-root-abc","schemaVersion":2,"sequence":7}
+LEDGER ROW emitted from constant  : {"createdAt":"2026-10-08T05:00:00.000Z","factType":"requirement.granted","payload":{"a":1,"b":[2,3]},"rootSessionId":"sess-root-abc","schemaVersion":2,"sequence":7}
+BYTE-IDENTICAL: true
+COUNTER emitted from literal 2    : {"kind":"ledger-sequence-counter","schemaVersion":2,"value":7}
+COUNTER emitted from constant     : {"kind":"ledger-sequence-counter","schemaVersion":2,"value":7}
+BYTE-IDENTICAL: true
+counter key used by kits is the same: "__ledger_sequence_counter"

@@ -1,0 +1,64 @@
+--- tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs::BP_ANCHOR_YAML (post)
+@@ -1,15 +1,19 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.sml-anchor
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the send-message liveness smoke boot team. SMLK_DISC_2026-10-07T20-45-40 is the discovery marker."
++  persona: "You are the leader of the send-message liveness smoke boot team. SMLK_DISC_2026-10-07T20-50-33 is the discovery marker."
+ members:
+   - templateId: worker
+     persona: "You are a worker of the send-message liveness smoke boot team."
+ memberEnvelopes: []
+ requirements: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs::saved/empty-deny (pre)
++++ tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs::saved/empty-deny (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.sml
+ revision: "1"
+ leader:
+@@ -80,6 +80,10 @@
+         - send-message
+         - report-progress
+       deny: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs::saved/deny (pre)
++++ tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs::saved/deny (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.sml
+ revision: "1"
+ leader:
+@@ -82,6 +82,10 @@
+         - send-message
+         - report-progress
+       deny: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---

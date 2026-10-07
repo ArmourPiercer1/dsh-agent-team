@@ -1155,7 +1155,7 @@ function teamRowConfig({ bootPhase }) {
 /** The row anchor: a plain legacy leader (the 0.1.0-rc.1 boot shape). */
 const BP_ANCHOR_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BP_ANCHOR_ID}`,
   'revision: "1"',
   'leader:',
@@ -1166,6 +1166,10 @@ const BP_ANCHOR_YAML = [
   '    persona: "You are a worker of the PR-D gate boot team."',
   'memberEnvelopes: []',
   'requirements: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',
@@ -1289,7 +1293,7 @@ function savedBlueprintYaml(bpId, denyList) {
   ]
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     ...leaderBlock,
@@ -1297,6 +1301,10 @@ function savedBlueprintYaml(bpId, denyList) {
     ...teamEnvelope,
     ...memberEnvelope,
     'requirements: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates: []',
     'metadata: {}',
     '---',
