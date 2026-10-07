@@ -216,3 +216,87 @@ extra failure was produced by the residue of the run before it, which is §6.1's
 reproducing itself inside the act of documenting it: with scratch worlds, a run's
 failure count is only readable after the directory is cleared, and only identities are
 comparable at all.
+
+## 8. RULING 4 implemented (2026-10-08): the ceiling meets a candidate SET
+
+Four facts, kept separate because they are four different claims:
+
+- **`PR7 merged`** — true, `21a6df90`, nothing to restate.
+- **`Alpha.4 implementation`** — RULING 4 is implemented and green at the ASK; RULING 1,
+  7.3, 7.4 and the 7.5 remainder are not.
+- **`Alpha.4 human acceptance`** — **NOT_RUN / BLOCKED**, unchanged, and the open item is
+  the coordinator's dated re-deferral of acceptance with an owner and a trigger — not
+  "environment unavailable".
+- **stage closure** — not claimed, not close to claimed.
+
+### Where the law landed, and why not where it was granted
+
+The ruling granted `packages/domain/authority-envelope/src/authority-envelope.ts`. A
+`meetCandidateCeilings(first, rest)` was written there, its five-law test was written and
+made green, and then **reverted** (the domain tree is byte-identical to the base commit).
+The reason is a type fact, not a preference: `evaluateAuthorityCeiling` answers with a
+**rung** (`AuthorityEvaluation.requiredAuthority: ProposalAuthorityPosition`), not an
+`EffectiveCeiling`. The effect lattice is three-valued; the rung ladder is not. Meeting in
+the lattice and deriving a rung *after* the meet is precisely the failure the ruling names
+— an answer whose rung nobody declared — because the derivation happens downstream of the
+conservatism. The meet therefore has to happen where the answer is already a rung, which is
+`operation-permission/approval-routing.ts` (a granted file), taking the highest rung via the
+ladder's own `authorityRank`/`isHigherAuthority` rather than a new ordering.
+`isShellOperationClass` is imported from the domain module, so the class law still has one
+source.
+
+### What is live
+
+- `operationApprovalCandidatePoints({point, commandFingerprint})` is the **one** derivation
+  of the candidate shapes, called by the ASK and by the consumption recheck; shell class ⇒
+  `[exact tool key, fingerprint]`, file class ⇒ the point alone, a point that already names
+  the command ⇒ one shape. A shell-class scope with no fingerprint is **refused** with the
+  new named reason `shell-point-missing`, on the routing, not silently narrowed.
+- The meet at both sites: any candidate `undetermined` absorbs (an unanswered shape is never
+  outvoted by an answered one), otherwise the highest required rung governs. Both candidate
+  shapes are named in every refusal detail, since the human-facing question is which shape
+  could not be decided.
+- The pre-execute adapter passes `commandFingerprint: operation.fingerprint` at both routing
+  call sites, so the ASK now sees a shell narrowing it structurally could not see before.
+- An empty candidate set is unrepresentable: the primary point is a required argument, so
+  there is no path from "no shape was named" to the identity element (full reach).
+
+### What is NOT live, as a named request, and the gap that therefore stays open
+
+`recheckPersistedOperationAuthority` derives its candidate set through the same function,
+but in production its caller — `control/service.ts:2571`, port typed in
+`control/types.ts:1405` — does not read the row's `operationFingerprint`. So:
+
+- **threaded but empty** ⇒ refused (`shell-point-missing`): the caller reached the row and
+  the row could not answer, which fails closed, as it should;
+- **not threaded at all** (every production row today) ⇒ the set is the persisted point
+  alone, i.e. pre-ruling behaviour.
+
+The second branch is the one permissive-direction gap RULING 4 leaves, stated as what it is:
+for a shell-class scope the consumption answer can still report `still-covered` where the
+fingerprint candidate would have said `stale`. Refusing that branch would be the
+conservative reading AND would break every shell-class one-shot in production, which is a
+change to make with its own receipt rather than one to slip into a governance commit. GROUP
+F asserts the gap as a shape with a named cause instead of leaving it to surface as a
+`still-covered`. **The fix is two `Files:` rows** — thread `operationFingerprint` from the
+durable row through `ControlAuthorityRecheckPort` in `control/types.ts` into the call in
+`control/service.ts`. Requesting them, not editing them.
+
+### A hazard this ruling found, in the same class as §4b
+
+Importing the **`operation-permission` barrel** into `a4p7-v3-cutover-acceptance.test.ts`
+made `p6t1-parallel` fail (5 tests) in the `packages/runtime/test` directory run, while
+`p6t1-parallel` passes alone and the same directory run is green at the base commit. The law
+was innocent: suppressing BOTH new refusals kept it red; importing the same symbols from
+`../operation-permission/approval-routing.js` directly made it green (6 files / 8 failed
+tests = the base identities exactly). A barrel pulls a module graph a test does not need, and
+in this repo those graphs carry world state. Proposed lane rule: **a runtime test imports
+the module it tests, not the lane barrel** — `a3p3-governance-lane-hygiene` polices barrels
+in the other direction and would not have caught this.
+
+### Gates at this commit
+
+`a4p7-v3-cutover-acceptance.test.ts` 63/63 (58 + GROUP F's 5); GROUP E **retitled**, not
+deleted — it is now the reason the set is required. `tsc -p packages/runtime` 0 errors.
+`lint-identities --diff` against `lint-identities-0237d487.txt`: 160 lines / 76 distinct,
+**new 0, resolved 0**. Whole-repo vitest: see `gates/7-8-full-test.txt`.

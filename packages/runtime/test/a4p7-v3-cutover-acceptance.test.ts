@@ -50,6 +50,11 @@
  * @module @dsh-agent-team/runtime/test/a4p7-v3-cutover-acceptance
  */
 import { afterAll, describe, expect, it } from 'vitest'
+import {
+  OPERATION_APPROVAL_REFUSAL_REASONS,
+  operationApprovalCandidatePoints,
+  routeOperationApproval,
+} from '../operation-permission/approval-routing.js'
 import { mkdirSync, rmSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 
@@ -1299,11 +1304,13 @@ describe('D9 — the Blueprint authority degrades with its anchor, and fails clo
 // claim (coordinator RULING 4, 2026-10-07).
 //
 // The ruling asked for a test in which a shell-class narrowing declared at
-// fingerprint shape is seen by BOTH the ASK and the consumption recheck. That
-// test cannot be written against this routing, and the reason is worth more
-// than the test would have been, so the gap is pinned here instead of living in
-// a comment: THREE laws each hold on their own and are mutually exclusive at the
-// shell class.
+// fingerprint shape is seen by BOTH the ASK and the consumption recheck. This
+// group is the HALF of that ruling that survives the fix: the three laws, each
+// of which holds on its own and which were mutually exclusive at the shell class
+// when the ASK asked only one shape. GROUP F is the closure - the ASK and the
+// recheck now ask the SET and meet the answers - and it depends on exactly the
+// decisive non-coverage pinned below, so this group stays as the reason the set
+// is required rather than as a stand-in for a missing test.
 //
 //   1. the documents: a SHELL-class rule pairs with `fingerprint` EXACTLY, no
 //      subtree, no any, no path (`packages/domain/blueprint/src/validate.ts:699`
@@ -1315,12 +1322,15 @@ describe('D9 — the Blueprint authority degrades with its anchor, and fails clo
 //   3. the algebra: coverage between the two shapes is a DECISIVE false, not an
 //      `undetermined` - the first test below.
 //
-// So no shell-class document rule can ever cover the point the ASK asks with,
-// and because the answer is decisive rather than absorbing, the narrowing does
-// not merely go unseen: it stops contributing to the meet, which can only make
-// the rung the human is shown LOWER than the author's narrowing intended. The
-// per-command protection that does exist is the one-shot grant keyed by
-// `operationFingerprint`, which is a different mechanism from the ceiling.
+// So a shell-class document rule could never cover the single point the ASK used
+// to ask with, and because the answer is decisive rather than absorbing, the
+// narrowing did not merely go unseen: it stopped contributing to the meet, which
+// can only make the rung the human is shown LOWER than the author's narrowing
+// intended. That direction - never wider, only ever lower - is the reason the
+// fix is a candidate SET rather than a migration of shell documents, and GROUP F
+// asserts that asking both shapes recovers the narrowing without widening any
+// scope. The per-command protection that also exists, the one-shot grant keyed
+// by `operationFingerprint`, is a different mechanism from the ceiling.
 //
 // Why the obvious patch is not one: flipping the ASK point to `fingerprint`
 // makes it ask a per-command question, and the same flip stops every tool-level
@@ -1330,7 +1340,7 @@ describe('D9 — the Blueprint authority degrades with its anchor, and fails clo
 // fix. The durable shape already carries a matcher `kind`, so whichever way the
 // decision goes, storage does not have to move.
 // ---------------------------------------------------------------------------
-describe('GROUP E - the shell narrowing the ASK cannot see (RULING 4)', () => {
+describe('GROUP E - why a shell narrowing was invisible to the ASK: three laws, one gap (RULING 4; closed by GROUP F)', () => {
   const fingerprintRule = { kind: 'fingerprint', resource: 'sha256:npm-test-canonical-command' } as const
   const exactTarget = { kind: 'exact', resource: 'bash:tool' } as const
 
@@ -1363,5 +1373,130 @@ describe('GROUP E - the shell narrowing the ASK cannot see (RULING 4)', () => {
       covers: false,
       undeterminable: false,
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// GROUP F - the closure: the ceiling evaluates a CANDIDATE SET of points and
+// meets them (coordinator RULING 4, option (ii), 2026-10-08).
+//
+// The set is the exact tool key AND the command fingerprint. A meet over
+// candidate points is never wider than either individual evaluation, so the fix
+// is conservative BY CONSTRUCTION rather than by an argument about this fixture:
+// adding a candidate can lower the rung the human is asked to sign or leave it
+// where it was, and can never raise it. The shapes are derived by ONE function
+// that both the ASK and the consumption recheck call, because the recheck's
+// question - "does the rung that signed still cover what the human was shown?" -
+// is only answerable if the two sites asked the same question.
+//
+// An empty candidate set is not representable at the call sites: the primary
+// point is a required argument, so there is no path from "we could not name a
+// shape" to the identity element (full reach), which is what an empty meet over
+// the document lattice means and why it would be the wrong answer here.
+// ---------------------------------------------------------------------------
+describe('GROUP F - the candidate set the ceiling meets (RULING 4 closure)', () => {
+  const shellFingerprint = 'sha256:npm-test-canonical-command'
+  const shellPoint = { operationClass: 'bash', matcher: { kind: 'exact', resource: 'bash:tool' } } as const
+  const filePoint = { operationClass: 'fs.write', matcher: { kind: 'exact', resource: 'fileA' } } as const
+
+  it('ABSORPTION LAW, at the shape level: a shell scope that cannot name its command is refused, never answered from the tool key', () => {
+    const derived = operationApprovalCandidatePoints({ point: shellPoint })
+    // Refused, and STILL carrying its primary point: the refusal is the answer,
+    // not an invitation for a caller to proceed with the narrower question.
+    expect(derived.refused).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+    // And the refusal is live on the routing, not just on the helper: with the
+    // facts present the ask reaches this decision and stops there.
+    const routing = routeOperationApproval({
+      operationClass: 'bash',
+      resourceKey: 'bash:tool',
+      initiatorAuthority: 'member',
+      facts: { beneficiaryAuthority: 'member', documents: {} } as never,
+    })
+    // Narrowed, not cast: `reason` exists on the refusal arm only, and a cast
+    // here would let the assertion pass against an arm that has no reason at all.
+    if (routing.kind !== 'authority-undetermined') {
+      throw new Error(`expected a refusal, got ${routing.kind}`)
+    }
+    expect(routing.reason).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+  })
+
+  it('the shell set is the tool key AND the fingerprint; the file set is the point alone', () => {
+    expect(
+      operationApprovalCandidatePoints({ point: shellPoint, commandFingerprint: shellFingerprint }).points,
+    ).toEqual([
+      { kind: 'exact', resource: 'bash:tool' },
+      { kind: 'fingerprint', resource: shellFingerprint },
+    ])
+    // The positive control that keeps the file class honest: one candidate, so
+    // nothing about existing file-class routing moves.
+    expect(operationApprovalCandidatePoints({ point: filePoint }).points).toEqual([
+      { kind: 'exact', resource: 'fileA' },
+    ])
+    expect(operationApprovalCandidatePoints({ point: filePoint }).refused).toBeUndefined()
+  })
+
+  it('a point that already names the command does not gain a second shape (more candidates is not automatically more conservative)', () => {
+    const derived = operationApprovalCandidatePoints({
+      point: { operationClass: 'bash', matcher: { kind: 'fingerprint', resource: shellFingerprint } },
+      commandFingerprint: shellFingerprint,
+    })
+    expect(derived.points).toEqual([{ kind: 'fingerprint', resource: shellFingerprint }])
+  })
+
+  it('the ASK and the consumption recheck derive the SAME set from the same row (no drift by construction)', () => {
+    // The persisted `authorityScope` is what the ASK's primary point became, so
+    // identical inputs MUST give an identical set. Asserted rather than assumed:
+    // a recheck that asked a different question would report an authority RISE as
+    // still-covered, which is the false pass this ruling exists to prevent.
+    const atAsk = operationApprovalCandidatePoints({ point: shellPoint, commandFingerprint: shellFingerprint })
+    const persistedScope = {
+      operationClass: shellPoint.operationClass,
+      matcher: { kind: shellPoint.matcher.kind, resource: shellPoint.matcher.resource },
+    }
+    const atConsumption = operationApprovalCandidatePoints({
+      point: persistedScope,
+      commandFingerprint: shellFingerprint,
+    })
+    expect(atConsumption.points).toEqual(atAsk.points)
+    expect(atConsumption.refused).toBe(atAsk.refused)
+  })
+
+  it('the consumption gap is asserted, not assumed: a caller that cannot thread a fingerprint keeps the persisted point alone', () => {
+    // THREADING PENDING, this is the one permissive-direction gap RULING 4 leaves.
+    // `control/service.ts` does not yet read the row's `operationFingerprint`, so
+    // the recheck arrives with no fingerprint and asks the persisted point alone.
+    // Refusing there instead would be conservative AND would break every
+    // shell-class one-shot in production, so the gap is pinned as a known shape
+    // with a named owner rather than left to be discovered as a `still-covered`.
+    const unthreaded = operationApprovalCandidatePoints({ point: shellPoint })
+    expect(unthreaded.refused).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+    expect(unthreaded.points).toEqual([{ kind: 'exact', resource: 'bash:tool' }])
+    // A threaded-but-empty fingerprint is the OTHER case: the caller reached the
+    // row and the row had nothing. That one does fail closed (see the recheck's
+    // branch), which is why the two are distinguished by whether the field was
+    // supplied at all rather than by whether it was empty.
+    expect(
+      operationApprovalCandidatePoints({ point: shellPoint, commandFingerprint: '' }).refused,
+    ).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+  })
+
+  it('a shell scope that DOES carry the fingerprint is not refused at the candidate gate (control)', () => {
+    const facts = { beneficiaryAuthority: 'member', documents: {} } as never
+    const withFingerprint = routeOperationApproval({
+      operationClass: 'bash',
+      resourceKey: 'bash:tool',
+      initiatorAuthority: 'member',
+      commandFingerprint: shellFingerprint,
+      facts,
+    })
+    // It got PAST the candidate gate and into the ceiling, where this fixture's
+    // empty document slot then fails: reaching that failure is the point, since
+    // the shell-point refusal is the only answer that names a missing command.
+    if (withFingerprint.kind !== 'authority-undetermined') {
+      throw new Error(`expected the ceiling to answer, got ${withFingerprint.kind}`)
+    }
+    expect(withFingerprint.reason).not.toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+    expect(operationApprovalCandidatePoints({ point: shellPoint, commandFingerprint: shellFingerprint }).refused)
+      .toBeUndefined()
   })
 })
