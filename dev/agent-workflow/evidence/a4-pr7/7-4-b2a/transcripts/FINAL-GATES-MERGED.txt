@@ -1,0 +1,73 @@
+# Final gates on the merged tree — head 6793314d, master 14ea8717, base a4ef2a6b
+
+## 0. install sanity (a partial cp -al install produces phantom TS7026/TS2307)
+  root node_modules: 7 entries ; .pnpm store: 817 ; package-level node_modules: 5 of 9
+
+## 1. fence, twice, byte-identical
+  RESULT dirty(7 files, 51 sites)
+  RESULT unknown(0 files, 0 sites)
+  RESULT advisory(8 files, 10 sites)
+  RESULT refused(52 files, 115 sites)
+  RESULT prose(5 files, 5 sites)
+  RESULT adjudicated(16 files, 24 sites)
+  RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+  two runs: BYTE-IDENTICAL (exit 1 / 1)
+
+## 2. by-path movement, and the 7 files that stay dirty
+  dirty paths in the fence output: 7
+  DEFERRALS rows on master (its dirty set): 41
+  gone (dirty on master, clean now): 34
+  added (dirty now, not dirty on master): 0
+  of which belonging to this lane: 0
+  remaining 7:
+    cordis.patch.yml
+    packages/domain/blueprint/testdata/fixtures.ts
+    packages/legacy/test/p7t6-teammates-adapter.test.ts
+    packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+    packages/runtime/test/t12a-live-bridge.mjs
+    tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs
+    tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs
+
+## 3. wrapper and scan-count ratchet
+  wrapper:  Test Files 1 passed (1)  Tests 58 passed (58)
+  wrapper vs master: 0	34	packages/testkit/test/a4p7-blueprint-version-clean.test.ts
+  p4t6:  Test Files 1 passed (1)  Tests 10 passed (10)
+  p4t6: BLOB-IDENTICAL to master's
+
+## 4. typecheck (real install)
+  pnpm -r run typecheck: exit 0 ; TS7026/TS2307 occurrences: 0
+
+## 5. eslint on the 34 roster files — identity multiset, head vs base
+  exit: head 1 / base 1  (1 = problems present, expected: these files carry pre-existing errors)
+  problem totals (from -f json): head 10 / base 10
+  error/warning split (head): 7 errors, 3 warnings
+  identity multiset (file, rule) -> count: base 10 problems / 7 identities, head 10 problems / 7 identities, IDENTICAL=True
+
+## 6. lint identities against the reviewed baseline
+  exit 0; baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0 
+  baseline line counts: 160 lines; current 2
+
+## 7. element-set census on the merged tree (+ its own self-test)
+  self-test exit 0 : 4 PASS, 0 FAIL
+  census exit 0 : --------------------------------------------------------------------------------------------
+
+## 8. tree integrity after every swap
+  packages/: working tree matches HEAD (all restores clean)
+packages/testkit/test/p4t6-session-event-scan.test.ts
+  asserted: filesScanned == 983 + A4PR2[4] + A4PR3[8] + A4PR4[4] + A4PR5[4] + A4PR6[14] + A4PR7[6] + A4ESCALATE[1] + A4F1[1] + A4SURFACE[1] + A4ARTIFACTS[1] + A4P7PRE[3] + A4P76GATE[1]
+  total: 983 + 48 = 1031   (12 of 14 blocks are in the sum; the rest are inside the base)
+  SCANNED_PATHS_A474B2A present: False (correct if False: this lane adds no scannable file)
+packages/testkit/test/p4t6-session-event-scan.test.ts  @ a4ef2a6b (lane base)
+  asserted: filesScanned == 983 + A4PR2[4] + A4PR3[8] + A4PR4[4] + A4PR5[4] + A4PR6[14] + A4PR7[6] + A4ESCALATE[1] + A4F1[1] + A4SURFACE[1] + A4ARTIFACTS[1] + A4P7PRE[3]
+  total: 983 + 47 = 1030   (11 of 13 blocks are in the sum; the rest are inside the base)
+  SCANNED_PATHS_A474B2A present: False (correct if False: this lane adds no scannable file)
+  movement between the lane base and the merged tree: 1030 -> 1031 (+1), from master's own blocks — not this lane's
+
+## addendum — instrumentation repaired after the first merged run
+  The first pass of this battery printed three instrument failures, not measurement failures: a say header containing
+  backticks ran cp -al via command substitution; the SCANNED_PATHS_ sum grepped for NAME = <number>
+  instead of list lengths and printed an empty total; the eslint identity parser matched no rule names
+  and reported IDENTICAL=True over two empty multisets; and one census summary line was scraped from the
+  wrong row. All four are fixed in the committed tools (eslint now runs -f json; the sum now mirrors the
+  test's own asserted expression via tools/scan_count_derivation.py) and the numbers above come from the
+  corrected run. The scan arithmetic is appended below by that tool.

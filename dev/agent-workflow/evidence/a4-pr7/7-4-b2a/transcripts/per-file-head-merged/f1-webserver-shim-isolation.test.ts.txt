@@ -1,0 +1,29 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T1: the team remote registration is served by the scoped shim (0.1.5 topology)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T1: the team remote registration is served by the scoped shim (0.1.5 topology)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T2: unrelated contexts keep the native Cordis failure (the key regression)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T2: unrelated contexts keep the native Cordis failure (the key regression)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T3: 0.1.2-era behavior is unchanged (the native walk resolves)
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/f1-webserver-shim-isolation.test.ts > F1 the scoped webServer compatibility seam (host.ts internal/get) > F1-T3: 0.1.2-era behavior is unchanged (the native walk resolves)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+ ✓ packages/runtime/test/f1-webserver-shim-isolation.test.ts (3 tests) 159ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  07:35:07
+   Duration  1.79s (transform 1.24s, setup 0ms, import 1.54s, tests 159ms, environment 0ms)
+

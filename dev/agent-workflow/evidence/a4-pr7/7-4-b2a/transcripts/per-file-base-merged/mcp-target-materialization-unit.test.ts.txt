@@ -1,0 +1,11 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ✓ packages/runtime/test/mcp-target-materialization-unit.test.ts (5 tests) 3ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  07:34:26
+   Duration  720ms (transform 473ms, setup 0ms, import 625ms, tests 3ms, environment 0ms)
+

@@ -1,0 +1,4 @@
+  PASS  pair-after-fence   -> 3 anomal(y|ies): [head] envelope pair at element 8 is outside the document declaring its version (fence region 2 vs 1)
+  PASS  orphaned-rules     -> 1 anomal(y|ies): removal that is not a version element: ['  rules: []']
+  PASS  split-pair         -> 3 anomal(y|ies): [head] envelope pair not contiguous at element 3 (run length 2)
+  PASS  dropped-metadata -> 1 anomal(y|ies): removal that is not a version element: ['metadata: {}']
