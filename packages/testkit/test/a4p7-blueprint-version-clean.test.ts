@@ -721,10 +721,43 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expectSingle(fixture('f26'), 'unknown')
   })
 
+  it('f27 backtick carriers reach the SAME verdict AND channel as the single-quoted twin', () => {
+    // BLOCKING 2: one payload, three carriers. The old machine published
+    // only unclosed template segments, so the backtick spellings of the f23
+    // payload got a different mechanism (or a refusal from the ENCLOSING
+    // row's keys — the invisible-site class). Closed template segments are
+    // now first-class carriers.
+    const c = expectSingle(fixture('f27'), 'refused')
+    expect(c.refused.length, 'both backtick spellings are sites').toBe(2)
+    for (const s of c.refused) {
+      expect(s.why, 'the template carrier must refuse from the keys INSIDE it').toContain(
+        '/carrier-sibling',
+      )
+    }
+  })
+  it('f28 a document in a multi-line backtick under a row call is UNKNOWN, never refused by the row', () => {
+    // The invisible site: refused-by-enclosing-keys removed its document
+    // from every verdict. The document's own keys carry no namespace
+    // signature; the row call is outer evidence; UNKNOWN gates.
+    expectSingle(fixture('f28'), 'unknown')
+  })
+  it('f29 a backtick inside a regex literal opens no phantom template (YAML stays DIRTY)', () => {
+    expectSingle(fixture('f29'), 'dirty')
+  })
+  it('f30 a backslash-newline string continuation keeps the carrier a carrier (DIRTY)', () => {
+    expectSingle(fixture('f30'), 'dirty')
+  })
+
+  it('f31 quoted and bare key spellings of one typed object share ONE class', () => {
+    // Carrier is decided at the version DIGIT, not at the match start that
+    // happens to sit inside a quoted key token (BLOCKING 2 asymmetry).
+    expectSingle(fixture('f31'), 'advisory')
+  })
+
   it('the fixture corpus exists and every fixture was exercised', () => {
     // Guard against the corpus silently emptying (a fixture-less "test" is
-    // how a gate dies): names are pinned to the f01..f26 set.
-    expect(fixtures.length).toBeGreaterThanOrEqual(26)
+    // how a gate dies): names are pinned to the f01..f31 set.
+    expect(fixtures.length).toBeGreaterThanOrEqual(31)
     expect(fixtures.length).toBe(new Set(fixtures.map((f) => f.name)).size)
   })
 

@@ -1,0 +1,20 @@
+;; expect: dirty
+;; rule: regex-backtick-no-phantom-template — a backtick inside a REGEX
+;;        literal is not a template opener. The old lineStates had no regex
+;;        branch: /[`]/ opened a phantom template, its closing backtick was
+;;        consumed by the following document template's OPENER (parity flip),
+;;        and the YAML document read as CODE -> ADVISORY, a gated-class
+;;        hide. Fixture pinned DIRTY (review BLOCKING 2 demotion #1).
+;; path: packages/example/test/fx-regex-backtick.ts
+const TICK_TEST = /[`]/
+const DOC_BP = 'team.regexbacktick'
+
+export const DOC_YAML = `---
+schemaVersion: 2
+blueprintId: team.regexbacktick
+revision: "1"
+leader:
+  templateId: leader
+policyStates: []
+`
+void TICK_TEST; void DOC_BP

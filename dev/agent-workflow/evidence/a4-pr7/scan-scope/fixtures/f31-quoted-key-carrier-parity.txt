@@ -1,0 +1,14 @@
+;; expect: advisory
+;; rule: quoted-key-carrier-parity — `{"schemaVersion": 2, ...}` and
+;;        `{schemaVersion: 2, ...}` are the SAME typed-code position; the
+;;        quoted spelling merely puts the KEY token inside a string. The old
+;;        machine read the match by its START column (inside the key string)
+;;        -> dirty for the quoted spelling while the bare spelling read
+;;        advisory (and siblingKeys could not even see the quoted keys).
+;;        The carrier is decided at the VERSION DIGIT position, and quoted
+;;        keys count as keys. One class, both spellings.
+;; path: packages/example/test/fx-quoted-key-parity.ts
+export const QUOTED = { "schemaVersion": 2, "displayName": "quoted spelling" }
+export const BARE = { schemaVersion: 2, displayName: 'bare spelling' }
+const QK_REF = { blueprintId: 'team.quotedkeyparity' } // blueprintId: both-halves key half
+void QUOTED; void BARE; void QK_REF

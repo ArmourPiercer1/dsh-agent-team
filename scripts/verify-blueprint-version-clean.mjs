@@ -355,9 +355,33 @@ const K_COMMENT = 2
  * keys (contracts/test/serialization.test.ts:93/:207 is the measured case):
  * refusing that class requires reading the keys the string itself contains.
  */
+/** Regex-vs-division at a code-position `/`: decided by the previous
+ *  significant character (classic heuristic, deliberately conservative —
+ *  `>` is DELIBERATELY division-side so JSX `</div>` closes are never read
+ *  as regex starts; an unclassifiable candidate falls through as ordinary
+ *  code, which is the direction that can only ADD string reading, and the
+ *  string-reading errors of this machine are documented above). */
+function regexPosition(lines, li, i, kinds) {
+  const l = lines[li]
+  let k = i - 1
+  while (k >= 0 && (l[k] === ' ' || l[k] === '\t')) k -= 1
+  if (k < 0) return true // start of line (or of a continued expression)
+  if (kinds[k] !== K_CODE) return false // after a string/comment: division
+  const prev = l[k]
+  if ('=({[,;:!&|?+-*%~^'.includes(prev)) return true
+  if (/[\w$]/.test(prev)) {
+    // keyword before: `return /re/`, `typeof /re/` are regex positions
+    let s = k
+    while (s >= 0 && /[\w$]/.test(l[s])) s -= 1
+    const word = l.slice(s + 1, k + 1)
+    return ['return', 'typeof', 'instanceof', 'in', 'of', 'new', 'delete', 'void', 'case', 'do', 'else'].includes(word)
+  }
+  return false // ), ], quote, dot: division
+}
+
 function lineStates(text) {
   const lines = text.split('\n')
-  const carry = { template: false, interp: [], blockComment: false }
+  const carry = { template: false, interp: [], blockComment: false, lineString: null, lineSeg: null }
   const states = []
   const segments = []
   const openSegs = []
@@ -365,6 +389,51 @@ function lineStates(text) {
     const kinds = new Array(line.length).fill(K_CODE)
     let i = 0
     let openQuote = false
+    // A quoted string that CONTINUED from the previous line via a trailing
+    // backslash (legal JS line continuation): this line is inside that
+    // string until its quote closes (BLOCKING 2, demotion #2 — without
+    // this, continuation lines restarted at CODE state and turned carried
+    // documents into advisory).
+    if (carry.lineString !== null) {
+      const q = carry.lineString
+      const seg = carry.lineSeg
+      let cont = false
+      let closedAt = -1
+      for (let j = 0; j < line.length; j += 1) {
+        kinds[j] = K_STRING
+        if (line[j] === '\\') {
+          if (j === line.length - 1) {
+            cont = true
+            break
+          }
+          j += 1
+          kinds[j] = K_STRING
+          continue
+        }
+        if (line[j] === q) {
+          closedAt = j
+          break
+        }
+      }
+      if (carry.lineString !== null) {
+        if (!cont) {
+          // EOL without backslash and without the quote: genuinely
+          // unterminated — visible through the openQuote unknown rule.
+          openQuote = true
+          seg.el = li
+          seg.ec = line.length - 1
+          segments.push(seg)
+          carry.lineString = null
+          carry.lineSeg = null
+        }
+        states.push({ kinds, openQuote })
+        return
+      }
+      seg.el = li
+      seg.ec = closedAt
+      segments.push(seg)
+      i = closedAt + 1
+    }
     while (i < line.length) {
       const c = line[i]
       const c2 = line[i + 1]
@@ -391,6 +460,12 @@ function lineStates(text) {
           if (top !== undefined) {
             top.el = li
             top.ec = i
+            // BLOCKING 2: PUBLISH closed template segments. The old machine
+            // pushed only the openSegs leftovers (unclosed templates), so
+            // segmentAt was undefined for every CLOSED template and the
+            // carrier's own keys were unread — equivalent spellings of one
+            // payload got three verdicts (f27/f28 red first).
+            segments.push(top)
           }
           i += 1
           continue
@@ -415,6 +490,43 @@ function lineStates(text) {
         i += 2
         continue
       }
+      if (c === '/' && c2 !== '/' && c2 !== '*' && regexPosition(lines, li, i, kinds)) {
+        // A REGEX LITERAL occupies code and may contain quotes AND backticks:
+        // /[`]/ is not a template opener (BLOCKING 2, demotion #1 — the old
+        // machine opened a phantom template whose parity flip turned a
+        // following YAML document into advisory). Class-aware, escape-aware;
+        // an unterminated candidate falls through as ordinary code (division).
+        let j = i + 1
+        let inClass = false
+        let closed = false
+        while (j < line.length) {
+          const rc = line[j]
+          if (rc === '\\') {
+            j += 2
+            continue
+          }
+          if (rc === '[') inClass = true
+          else if (rc === ']') inClass = false
+          else if (rc === '/' && !inClass) {
+            closed = true
+            break
+          }
+          j += 1
+        }
+        if (closed) {
+          kinds[i] = K_CODE
+          for (let z = i + 1; z <= j && z < line.length; z += 1) kinds[z] = K_CODE
+          let t = j + 1
+          while (t < line.length && /[gimsuyd]/.test(line[t])) {
+            kinds[t] = K_CODE
+            t += 1
+          }
+          i = t
+          continue
+        }
+        i += 1
+        continue
+      }
       if (c === '`') {
         carry.template = true
         kinds[i] = K_STRING
@@ -427,9 +539,17 @@ function lineStates(text) {
         kinds[i] = K_STRING
         let j = i + 1
         let closed = false
+        let continues = false
         for (; j < line.length; j += 1) {
           kinds[j] = K_STRING
           if (line[j] === '\\') {
+            if (j === line.length - 1) {
+              // trailing backslash at EOL inside an open string: the string
+              // CONTINUES on the next line (legal JS). Not an unknown
+              // unterminated line — the carrier survives the newline.
+              continues = true
+              break
+            }
             j += 1
             if (j < line.length) kinds[j] = K_STRING
             continue
@@ -438,6 +558,14 @@ function lineStates(text) {
             closed = true
             break
           }
+        }
+        if (continues) {
+          const seg = { sl: li, sc: i, el: li, ec: line.length - 1 }
+          segments.push(seg) // partial segment so THIS line's sites read as string
+          carry.lineString = q
+          carry.lineSeg = { sl: li, sc: i, el: -1, ec: 0 }
+          i = line.length
+          continue
         }
         if (!closed) openQuote = true
         segments.push({ sl: li, sc: i, el: li, ec: closed ? j : line.length - 1 })
@@ -552,7 +680,22 @@ function siblingKeys(lines, states, headIdx) {
     const l = lines[j]
     const kinds = states?.[j]?.kinds
     for (let k = 0; k < l.length; k += 1) {
-      if (kinds !== undefined && kinds[k] !== K_CODE) continue
+      if (kinds !== undefined && kinds[k] !== K_CODE) {
+        // Quoted keys: `"kind":` puts the KEY token inside a string, but it
+        // is still a key of the literal (BLOCKING 2 parity — bare keys were
+        // visible, quoted ones were not; the carrier decision moved to the
+        // digit, and the key pools must see both spellings). Only a
+        // string-START position preceded by code can be a key.
+        if (depth === 1 && (l[k] === '"' || l[k] === "'") && (k === 0 || kinds[k - 1] === K_CODE)) {
+          const mq = /^(["'])([A-Za-z_$][\w$]*)\1\s*:/.exec(l.slice(k))
+          const prefixQ = l.slice(0, k)
+          if (mq !== null && (prefixQ.trim() === '' || /[{,]\s*$/.test(prefixQ))) {
+            keys.push(mq[2])
+            k += mq[0].length - 1
+          }
+        }
+        continue
+      }
       const c = l[k]
       if (c === '{') {
         depth += 1
@@ -697,8 +840,15 @@ export function classifyText(path, text) {
           carrier = 'data'
         }
       } else {
+        // Carrier is decided at the VERSION DIGIT, not at the match start:
+        // the quoted-key spelling (a quoted key token followed by a digit)
+        // puts only the KEY inside a string; the digit — the thing
+        // TypeScript polices or does not — is at a code position. Deciding
+        // by match start gave one typed-code position two classes (f31
+        // parity, BLOCKING 2).
         const st = states[idx]
-        const kind = st === undefined ? K_CODE : st.kinds[m.index] ?? K_CODE
+        const digitCol = m.index + m[0].length - String(m[1] ?? m[2] ?? m[3]).length
+        const kind = st === undefined ? K_CODE : st.kinds[digitCol] ?? K_CODE
         carrier = kind === K_STRING ? 'string' : kind === K_COMMENT ? 'comment' : 'code'
       }
       if (carrier === 'comment') {
@@ -746,6 +896,11 @@ export function classifyText(path, text) {
           ownKeys = enclosing.keys
           ownSpread = enclosing.spread
         }
+        // The spread guard belongs to the LITERAL, not to the digit's
+        // carrier: a quoted digit VALUE inside a SPREAD-built record still
+        // hides keys (contracts/test/negative.test.ts:157 — the C2 diff
+        // caught this hole).
+        if (carrier === 'string') ownSpread = enclosing.spread
       }
 
       // 3) the namespace ladder — a refusal requires a POSITIVE match on the

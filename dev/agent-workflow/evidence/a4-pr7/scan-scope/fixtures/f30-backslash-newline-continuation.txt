@@ -1,0 +1,16 @@
+;; expect: dirty
+;; rule: backslash-newline-continuation — a quoted string may continue
+;;        across a line at a trailing backslash (legal JS). The old line
+;;        machine restarted every line at CODE state, so the continuation
+;;        lines — including the version site — read as code: ADVISORY, the
+;;        second gated-class hide (review BLOCKING 2 demotion #2). Pinned
+;;        DIRTY: the string carrier never stops at EOL when the line ends
+;;        in a backslash inside an open string.
+;; path: packages/example/test/fx-backslash-newline.ts
+export const DOC_FRAGMENT = '---\
+schemaVersion: 2\
+blueprintId: team.bscont\
+revision: "1"\
+policyStates: []'
+const DOC_BP = 'team.bscont'
+void DOC_BP
