@@ -51,7 +51,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { spawnSync } from 'node:child_process'
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve, dirname } from 'node:path'
 import * as fence from '../../../scripts/verify-blueprint-version-clean.mjs'
@@ -335,39 +335,17 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
  * entries are removed by fixing the file's shape (or by its migration),
  * never by extending this list to swallow a new shape.
  */
-const UNKNOWN_LEDGER: ReadonlyMap<string, string> = new Map([
-  // Every entry was hand-verified at its cited source on 2026-10-08 (round 2
-  // of the review). Flavors: (a) the namespace name sits only on an OUTER
-  // line (a builder signature, a `projection:`/`ledger.put(` head line, a
-  // type annotation) or the own keys are SHORTHAND properties the key
-  // scanner cannot see (`sessionId,` carries no colon); (b) the literal is
-  // SPREAD-built, so hidden keys cannot be certified document-free.
-  // None is a Blueprint document; none is machine-refused.
-  ['packages/client/test/client-plugin-mount.test.ts::L96', 'projection-envelope: nested `projection:` wire frame (RemoteProjectionValue); own keys carry `teamSessionId,` as SHORTHAND (invisible to the key scanner); hand-verified client-plugin-mount.test.ts:94-103'],
-  ['packages/client/test/ledger-adapter.test.ts::L58', 'ledger-row: RemoteLedgerEntryValue builder return (sequence/rootSessionId visible); deciding type name on the builder line; hand-verified ledger-adapter.test.ts:54-60'],
-  ['packages/client/test/team-command-flow.test.ts::L76', 'projection-envelope: wireFrame builder return ("the 9-field wire projection" comment at :73); RemoteProjectionValue; hand-verified team-command-flow.test.ts:73-78'],
-  ['packages/client/test/team-projection-store-v6.test.ts::L65', 'projection-envelope: buildRemoteSuccess payload `projection:` wire frame; shorthand teamSessionId; hand-verified team-projection-store-v6.test.ts:62-70'],
-  ['packages/client/test/team-projection-store-v6.test.ts::L93', 'projection-envelope: same wire-frame shape, second builder; hand-verified team-projection-store-v6.test.ts:90-98'],
-  ['packages/client/test/team-projection-store-v6.test.ts::L290', 'projection-envelope: same wire-frame shape, third builder; hand-verified team-projection-store-v6.test.ts:287-295'],
-  ['packages/client/test/team-projection-store.test.ts::L74', 'projection-envelope: same wire-frame shape; hand-verified team-projection-store.test.ts:71-79'],
-  ['packages/client/test/team-view.client.spec.tsx::L199', 'ledger-row: RemoteLedgerEntryValue builder return (sequence/rootSessionId); hand-verified team-view.client.spec.tsx:195-201'],
-  ['packages/contracts/test/negative.test.ts::L151', 'team-session-record: NEGATIVE test of the TeamSessionRecord version axis (SCHEMA_VERSION_MISMATCH at 2); parse call on the same line, literal SPREAD-built ({...validTeam}) — spread guard; hand-verified negative.test.ts:150-152'],
-  ['packages/contracts/test/negative.test.ts::L155', 'team-session-record: same class (SCHEMA_VERSION_UNSUPPORTED at 0); spread guard; hand-verified negative.test.ts:154-156'],
-  ['packages/contracts/test/negative.test.ts::L157', 'team-session-record: same class (corrupt string version); spread guard; hand-verified negative.test.ts:156-159'],
-  ['packages/remote/test/c6-remote-v6.test.ts::L308', 'projection-envelope: value.data.projection wire frame (RemoteProjectionValue); hand-verified c6-remote-v6.test.ts:305-312'],
-  ['packages/remote/test/p8t3-helpers.ts::L119', 'ledger-row: p8t3LedgerEntry builder (RemoteLedgerEntryValue shape: sequence/rootSessionId visible); hand-verified p8t3-helpers.ts:117-121'],
-  ['packages/remote/test/p8t4-engine.test.ts::L62', 'projection-envelope: dto builder — own comment:59 "the nine frozen top-level fields" (RemoteProjectionValue); hand-verified p8t4-engine.test.ts:59-64'],
-  ['packages/remote/test/p8t4-server.ts::L46', 'projection-envelope: p8t4Projection builder return (whole-projection DTO); hand-verified p8t4-server.ts:44-48'],
-  ['packages/remote/test/p8t4-server.ts::L66', 'ledger-row: p8t4LedgerEntry builder — own comment:63 "the storage LedgerEntry shape"; hand-verified p8t4-server.ts:63-68'],
-  ['packages/remote/test/p8t4-sync.test.ts::L51', 'projection-envelope: syncDto builder ("the nine frozen top-level fields"); hand-verified p8t4-sync.test.ts:48-53'],
-  ['packages/runtime/test/p01-team-scoped-overlay.test.ts::L211', 'projection-envelope: createProjectionService option object {clock, schemaVersion} — deciding name two lines above; the 2026-10-08 coordinator record names this stamp projection-owned ("the number is another namespace\'s"); hand-verified p01-team-scoped-overlay.test.ts:210-212'],
-  ['packages/runtime/test/p6t4-helpers.ts::L458', 'ledger-row: repositories.ledger.put argument (sequence/rootSessionId visible); ledger.put( on the head line; hand-verified p6t4-helpers.ts:456-460'],
-  ['packages/storage/test/bp1-blueprint-registry.test.ts::L146', 'registry-row: parseBlueprintRegistryRecord NEGATIVE test, SPREAD-built ({...baseRecord}); F1 row axis, name on the same line but spread guard forbids machine refusal; hand-verified bp1-blueprint-registry.test.ts:145-147'],
-  ['packages/storage/test/bp1-blueprint-registry.test.ts::L159', 'registry-row: serializeBlueprintRegistryRecord round-trip argument, SPREAD-built; same F1 evidence; hand-verified bp1-blueprint-registry.test.ts:158-160'],
-  ['packages/storage/test/p4-helpers.ts::L415', 'session-binding: teamMemberBinding record for parseSessionBinding — kind visible, sessionId SHORTHAND (no colon, invisible to the key scanner); binding version axis (SessionBindingDto); hand-verified p4-helpers.ts:413-416'],
-  ['packages/storage/test/p4-helpers.ts::L420', 'session-binding: teamRootBinding one-liner; same shorthand class; hand-verified p4-helpers.ts:418-421'],
-  ['packages/storage/test/p4-helpers.ts::L425', 'session-binding: ordinaryBinding one-liner; same shorthand class; hand-verified p4-helpers.ts:423-426'],
-])
+// Part C (round 3): the adjudication ledger MOVED to a file the fence itself
+// reads — dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json
+// (reviewed, path-named, versioned with the fence). The fence prints ledgered
+// sites as ADJUDICATED (non-gating) and gates only on the unadjudicated
+// remainder; this wrapper reads the SAME file, so there is one ledger.
+const LEDGER_FILE = 'dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json'
+const UNKNOWN_LEDGER: ReadonlyMap<string, string> = new Map(
+  Object.entries(
+    JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>,
+  ),
+)
 
 
 interface ScanRun {
@@ -377,6 +355,7 @@ interface ScanRun {
   dirty: Array<{ path: string; line: number; version: number; why?: string }>
   advisory: Array<{ path: string; line: number; why?: string }>
   unknown: Array<{ path: string; line: number; why?: string }>
+  adjudicated: Array<{ path: string; line: number; version: number; evidence: string }>
   refused: Array<{ path: string; line: number; ns?: string; why?: string }>
   prose: Array<{ path: string; line: number }>
 }
@@ -392,6 +371,7 @@ const run: ScanRun = {
   dirty: rawRun.dirty ?? [],
   advisory: rawRun.advisory ?? [],
   unknown: rawRun.unknown ?? [],
+  adjudicated: rawRun.adjudicated ?? [],
   refused: rawRun.refused ?? [],
   prose: rawRun.prose ?? [],
 }
@@ -533,9 +513,10 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
       // (2026-10-08 review: outer-line evidence can no longer REFUSE, so a
       // trap file whose only evidence is an enclosing line lands in the
       // ledger — visible and gated, with the human verdict written here).
-      ...run.unknown
-        .filter((s) => !UNKNOWN_LEDGER.has(`${s.path}::L${String(s.line)}`))
-        .map((s) => s.path),
+      // (round 3 Part C) adjudicated sites left run.unknown for the
+      // non-gating ADJUDICATED class; a trap surfacing THERE is covered by
+      // the ledger's own evidence, so only unadjudicated unknowns violate.
+      ...run.unknown.map((s) => s.path),
     ])
     for (const t of traps) {
       expect(reported, `${t} is not a Blueprint version site — it must not be reported`).not.toContain(t)
@@ -613,22 +594,64 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 571)).toContain('toMatchObject')
   })
 
-  it('every UNKNOWN site on the tree is adjudicated BY PATH in this wrapper — no unadjudicated unknown, no stale ledger row', () => {
-    // 2026-10-08 review (BLOCKING 1b/1c): evidence outside the site's own
-    // literal, or a spread-hidden literal, may not be machine-refused; it
-    // becomes UNKNOWN, which GATES. The price of honesty is a per-path human
-    // verdict — recorded here with the evidence, checked in both directions.
-    const live = new Set(run.unknown.map((u) => `${u.path}::L${String(u.line)}`))
-    for (const u of run.unknown) {
+  it('unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated', () => {
+    // Part C (round 3, reviewer-ratified F4): the ledger lives in a file the
+    // fence reads; ledgered sites print as a sixth, NON-GATING class; closure
+    // = dirty empty AND no unadjudicated unknown. Both directions still bite:
+    // no unadjudicated unknown may exist, no ledger row may be stale.
+    const live = new Set(run.adjudicated.map((a) => `${a.path}::L${String(a.line)}`))
+    for (const a of run.adjudicated) {
       expect(
-        UNKNOWN_LEDGER.has(`${u.path}::L${String(u.line)}`),
-        `unadjudicated UNKNOWN at ${u.path}:${String(u.line)} (${u.why}) — verify by hand against the cited source, then ledger it with that evidence`,
-      ).toBe(true)
+        UNKNOWN_LEDGER.get(`${a.path}::L${String(a.line)}`),
+        `adjudicated site carries evidence the ledger does not: ${a.path}:${String(a.line)}`,
+      ).toBe(a.evidence)
     }
     for (const k of UNKNOWN_LEDGER.keys()) {
-      expect(live.has(k), `stale UNKNOWN_LEDGER row ${k} — the site is gone; remove the adjudication`).toBe(true)
+      expect(live.has(k), `stale ledger row ${k} — the site is gone; remove the adjudication`).toBe(true)
     }
-    expect(run.unknown.length).toBe(UNKNOWN_LEDGER.size)
+    expect(run.unknown.map((u) => `${u.path}::L${String(u.line)}`), 'every unknown on this tree must be adjudicated; new unknowns gate until read').toEqual([])
+    expect(run.adjudicated.length).toBe(UNKNOWN_LEDGER.size)
+    for (const l of report.split('\n').filter((x) => x.startsWith('ADJUDICATED '))) {
+      expect(l, 'printed ADJUDICATED line must carry its evidence').toContain('hand-verified')
+    }
+    expect(report).toContain('RESULT adjudicated(')
+  })
+
+  it('every ledger entry cites hand-verified <its own path>:<line> — silence costs a written row', () => {
+    // The soft edge the reviewer found: an EMPTY justification kept the whole
+    // suite green. Now the fence itself refuses to run on an adjudication that
+    // does not name its own entry with a line-referenced hand-verification.
+    for (const [key, ev] of UNKNOWN_LEDGER) {
+      const path = key.split('::')[0]
+      const base = path.split('/').at(-1)
+      expect(typeof ev === 'string' && ev.trim().length > 0, `empty justification: ${key}`).toBe(true)
+      expect(
+        ev,
+        `evidence must cite hand-verified <basename>:<line> for the entry's own file: ${key}`,
+      ).toMatch(new RegExp(`hand-verified [^\\s]*${base?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:[0-9]`))
+    }
+  })
+
+  it('an adjudication file with an empty or path-foreign justification is NOT-RUN exit 2, naming the key', () => {
+    for (const [flavor, value] of [
+      ['empty', ''],
+      ['foreign', 'hand-verified packages/example/elsewhere.test.ts:1-2'],
+    ] as const) {
+      const good = JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>
+      const badKey = Object.keys(good)[0]
+      good[badKey] = value
+      const tmp = resolve(REPO_ROOT, `.tmp-faultscratch/adjud-bad-${flavor}.json`)
+      writeFileSync(tmp, JSON.stringify(good))
+      const spawned = spawnSync(process.execPath, [resolve(REPO_ROOT, SCRIPT)], {
+        cwd: REPO_ROOT,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+        env: { ...process.env, DSH_SCAN_ADJUDICATIONS: tmp },
+      })
+      expect(spawned.stdout + spawned.stderr, `adjudication file with an ${flavor} justification must not-run`).toContain('RESULT not-run')
+      expect(spawned.stdout + spawned.stderr).toContain(badKey)
+      expect(spawned.status).toBe(2)
+    }
   })
 
   // --- scope boundary -------------------------------------------------------

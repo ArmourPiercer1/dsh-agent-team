@@ -36,11 +36,16 @@
  *   7.4 audit assigned `packages/legacy/teammates-adapter.ts` to the 7.3
  *   list, not to a fixture scan.
  *
- * THE TWO VERDICTS — WHICH ONE GATES, AND WHY (the sentence a future reader
- * quotes): **this fence gates on `dirty` plus `unknown`: Blueprint-version
- * literals the type system structurally cannot see — string/template
- * carriers in .ts, every site in .mjs/.cjs/.js, and every site in data files
- * (.json/.yml/.yaml). `advisory` — code-position TypeScript literals — is
+ * THE TWO VERDICTS — WHICH ONES GATE, AND WHY (the sentence a future reader
+ * quotes): **this fence gates on `dirty` plus UNADJUDICATED `unknown`:
+ * Blueprint-version literals the type system structurally cannot see —
+ * string/template carriers in .ts, every site in .mjs/.cjs/.js, and every
+ * site in data files (.json/.yml/.yaml). An UNKNOWN whose line carries a
+ * recorded human verdict (the adjudication ledger below) prints as the
+ * sixth class `adjudicated` and does NOT gate: closure is defined as
+ * "dirty empty AND no unadjudicated unknown", so §7.4 can actually close
+ * without anyone widening a rule to silence other namespaces' version axes
+ * (round 3, reviewer-ratified F4).** `advisory` — code-position TypeScript literals — is
  * printed by path but NEVER gates. NOT because tsc will catch those sites —
  * MEASURED otherwise: under the real §7.3 flip (types.ts:416 -> `readonly
  * schemaVersion: 3`, `pnpm -r --no-bail run typecheck`, 2026-10-08, evidence
@@ -1057,6 +1062,62 @@ export function classifyText(path, text) {
 /** Scan the tracked tree. NEVER throws; a failure to read the tree is
  *  `ran: false` with the reason, which the report prints as not-run and the
  *  CLI exits 2 for — "could not run" is never "clean". */
+/**
+ * The adjudication ledger (round 3 Part C, reviewer-ratified F4). Unknowns
+ * GATE by design; every one of them must carry a human, path-named verdict.
+ * The ledger therefore lives in a FILE THE FENCE READS —
+ * dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json —
+ * keyed `<path>::L<line>` -> evidence. Ledgered sites print as a sixth,
+ * NON-GATING class ADJUDICATED with their evidence; closure is defined as
+ * "dirty empty AND no unadjudicated unknown", so §7.4's end state is
+ * reachable WITHOUT anyone widening a rule for other namespaces' version
+ * axes that must never migrate. The soft edge the reviewer found — an empty
+ * justification string kept the whole suite green — is closed by refusing to
+ * run: every value must cite `hand-verified <its own basename>:<line>`;
+ * any violation names the offending keys and exits 2. Silence keeps costing
+ * a written, path-named, reviewed row.
+ * The env override exists for the wrapper's own falsification tests only.
+ */
+const ADJUDICATIONS_FILE =
+  'dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json'
+
+function loadAdjudications(cwd) {
+  const file = process.env.DSH_SCAN_ADJUDICATIONS ?? resolve(cwd, ADJUDICATIONS_FILE)
+  let raw
+  try {
+    raw = readFileSync(file, 'utf8')
+  } catch (e) {
+    return { error: `adjudication ledger unreadable at ${file}: ${String(e)}` }
+  }
+  let parsed
+  try {
+    parsed = JSON.parse(raw)
+  } catch (e) {
+    return { error: `adjudication ledger is not valid JSON (${file}): ${String(e)}` }
+  }
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { error: `adjudication ledger must be an object keyed "<path>::L<line>" (${file})` }
+  }
+  const bad = []
+  for (const [key, ev] of Object.entries(parsed)) {
+    const m = /^(.+)::L(\d+)$/.exec(key)
+    if (m === null || typeof ev !== 'string') {
+      bad.push(key)
+      continue
+    }
+    const base = m[1].split('/').at(-1)
+    const re = new RegExp(`hand-verified [^\\s]*${base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:[0-9]`)
+    if (!re.test(ev)) bad.push(key)
+  }
+  if (bad.length > 0) {
+    return {
+      error:
+        `adjudication ledger entries fail the "hand-verified <own path>:<line>" rule (${file}): ${bad.slice(0, 8).join(', ')}${bad.length > 8 ? ` (+${String(bad.length - 8)} more)` : ''}`,
+    }
+  }
+  return { ledger: new Map(Object.entries(parsed)) }
+}
+
 export function scanBlueprintVersionSites() {
   const result = {
     ran: false,
@@ -1065,6 +1126,7 @@ export function scanBlueprintVersionSites() {
     dirty: [],
     advisory: [],
     unknown: [],
+    adjudicated: [],
     refused: [],
     prose: [],
   }
@@ -1083,6 +1145,11 @@ export function scanBlueprintVersionSites() {
         `cwd ${here} is not the repository toplevel (${toplevel}); the fence gates on the WHOLE tree — run it from the toplevel`
       return result
     }
+  }
+  const adj = loadAdjudications(process.cwd())
+  if ('error' in adj) {
+    result.reason = adj.error
+    return result
   }
   let out
   try {
@@ -1125,8 +1192,18 @@ export function scanBlueprintVersionSites() {
     result.refused.push(...c.refused)
     result.prose.push(...c.prose)
   }
+  // Part C: ledgered unknowns leave the gated set for the ADJUDICATED class.
+  for (const site of result.unknown) {
+    const key = `${site.path}::L${String(site.line)}`
+    const evidence = adj.ledger.get(key)
+    if (evidence !== undefined) result.adjudicated.push({ ...site, evidence })
+  }
+  if (result.adjudicated.length > 0) {
+    const done = new Set(result.adjudicated.map((a) => `${a.path}::L${String(a.line)}`))
+    result.unknown = result.unknown.filter((u) => !done.has(`${u.path}::L${String(u.line)}`))
+  }
   const byLine = (a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : a.line - b.line)
-  for (const k of ['dirty', 'advisory', 'unknown', 'refused', 'prose']) result[k].sort(byLine)
+  for (const k of ['dirty', 'advisory', 'unknown', 'adjudicated', 'refused', 'prose']) result[k].sort(byLine)
   return result
 }
 
@@ -1170,12 +1247,19 @@ export function formatReport(result) {
   )
   lines.push(`blueprint-keyed files with version digits: ${String(keyed.size)}`)
   lines.push(
-    'GATE: dirty + unknown only. advisory/refused/prose are printed for dispatch and audit, never gated.',
+    'GATE: dirty + UNADJUDICATED unknown only. Closure = dirty empty AND no unadjudicated unknown. adjudicated/refused/prose print for dispatch and audit, never gated.',
   )
   lines.push(...groupByPath(result.dirty, (p, ss) => `OFFENDING ${p} :: ${ss.map(where).join(', ')}`))
   lines.push(...groupByPath(result.unknown, (p, ss) => `UNKNOWN ${p} :: ${ss.map(whereWhy).join(', ')}`))
   lines.push(
     ...groupByPath(result.advisory, (p, ss) => `ADVISORY ${p} :: ${ss.map(whereWhy).join(', ')}`),
+  )
+  lines.push(
+    ...groupByPath(
+      result.adjudicated,
+      (p, ss) =>
+        `ADJUDICATED ${p} :: ${ss.map((s) => `L${String(s.line)}=v${String(s.version)} (${s.evidence})`).join(', ')}`,
+    ),
   )
   lines.push(...groupByPath(result.refused, (p, ss) => `REFUSED ${p} :: ${ss.map(whereNs).join(', ')}`))
   lines.push(...groupByPath(result.prose, (p, ss) => `PROSE ${p} :: ${ss.map(where).join(', ')}`))
@@ -1186,10 +1270,11 @@ export function formatReport(result) {
   lines.push(`RESULT advisory(${tally(result.advisory)})`)
   lines.push(`RESULT refused(${tally(result.refused)})`)
   lines.push(`RESULT prose(${tally(result.prose)})`)
+  lines.push(`RESULT adjudicated(${tally(result.adjudicated)})`)
   const gating = result.dirty.length + result.unknown.length
   lines.push(
     gating === 0
-      ? 'RESULT verdict: clean (dirty 0, unknown 0)'
+      ? 'RESULT verdict: clean (dirty 0, unadjudicated unknown 0)'
       : 'RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)',
   )
   return lines.join('\n')
