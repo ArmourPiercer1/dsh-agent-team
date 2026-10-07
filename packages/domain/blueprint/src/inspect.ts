@@ -49,8 +49,9 @@
  * The result is TOTAL over content: every content-level violation is a
  * classified `rejected` outcome (a closed `reason` set + the parser's
  * verbatim message — the line location when the YAML decode reports
- * one), never a throw. The only throw is the programming-error case the
- * strong split already owns (a non-string source).
+ * one), never a throw — and that includes a non-string source, which the strong
+ * split would reject: `readDeclaredVersion` catches it and classifies it, so no
+ * entry point here documents a `@throws`.
  *
  * Pure module: no I/O (the source text is passed in), no `node:`
  * builtins, no live Agent — only contracts v1 + the sibling parse module.
@@ -241,9 +242,8 @@ function readDeclaredVersion(source: string): DeclaredVersionRead {
  *
  * @param source - the raw UTF-8 blueprint document text.
  * @returns the declared positive integer version, or `undefined` when none can
- *   be read.
- * @throws `MALFORMED_DTO` ONLY for a non-string source (the programming-error
- *   case the strong split already owns).
+ *   be read. A non-string source is classified like any other unreadable input
+ *   and returns `undefined`; this function documents no `@throws`.
  */
 export function declaredBlueprintSchemaVersion(source: string): number | undefined {
   const read = readDeclaredVersion(source)
@@ -256,9 +256,9 @@ export function declaredBlueprintSchemaVersion(source: string): number | undefin
  * @param source - the raw UTF-8 blueprint document text.
  * @returns `ok` + the minimal identity when the document is a well-formed
  *   blueprint identity (regardless of its deeper semantics), or `rejected`
- *   with the closed diagnostics when it is not indexable at all.
- * @throws `MALFORMED_DTO` ONLY for a non-string source (the programming-
- *   error case the strong split already owns).
+ *   with the closed diagnostics when it is not indexable at all. A non-string
+ *   source is one of those classified rejections, not a throw; this function
+ *   documents no `@throws`.
  */
 export function inspectBlueprintSource(source: string): BlueprintInspectionResult {
   const declared = readDeclaredVersion(source)

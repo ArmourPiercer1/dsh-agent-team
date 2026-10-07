@@ -154,6 +154,26 @@ because there is exactly one consumer (§1.5).
    `catalogRevisionState`'s "no state supplied" arm already emitted state-without-number
    (`a4p7-v8-catalog-migration-state.test.ts` pins it), so no new rendering was invented — the
    unknown arm now reaches the pre-existing one instead of a fabricated number.
+3. **One arm is a _narrowing_, not a re-ordering, and it is named here so it is not discovered
+   later:** re-driving `freezeSnapshot` on a row that is already frozen used to answer `ok`
+   whatever the stored bytes, and now refuses with `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` when the
+   stored document cannot be read or declares an unsupported version. It is reachable only through
+   a corrupt, hand-edited or foreign store — `freezeSnapshot` strong-parses before it writes, and
+   `packages/storage/schema/blueprint-registry.ts:152-163` refuses a row whose source is missing or
+   empty — so no world this product can write changes behaviour.
+
+**Two doc comments on this branch were wrong about throwing, and both were corrected on review.**
+`declaredBlueprintSchemaVersion` carried `@throws MALFORMED_DTO ONLY for a non-string source`, and
+the module header claimed the strong split's programming-error case was the one escape from the
+"never a throw" rule. It is not: `readDeclaredVersion` wraps that split in `try`/`catch`, so the
+failure is classified like every other one. Measured at head (`node --experimental-strip-types`
+could not resolve the workspace's extension-less imports, so this ran under `vitest` with a
+throwaway spec, since deleted): passed `123`, `null`, `undefined` and `{}`,
+`declaredBlueprintSchemaVersion` returns `undefined` and `inspectBlueprintSource` returns
+`rejected`, and neither throws. The sibling
+`inspectBlueprintSource` carried the identical wrong `@throws` two declarations away, and leaving a
+known-false contract line next to a corrected one is the half-fix pattern this phase keeps meeting,
+so it was corrected in the same commit. No behavior changed: comment text only.
 
 ### Cost
 
