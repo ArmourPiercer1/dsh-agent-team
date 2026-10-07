@@ -184,6 +184,29 @@ function pluginCodeOf(error: unknown): string | undefined {
 }
 
 /**
+ * A version NOBODY DEFINED, derived from the domain's own set — the proof these
+ * legs pin is SET MEMBERSHIP ("outside every defined version"), not a remembered
+ * number, and this file already asserts that way where the question is the
+ * version this build RUNS. The pre-migration fixture spelled the value as 99;
+ * the derivation renders 99's successor today and keeps the probe outside the
+ * set in every future set.
+ */
+const VERSION_NOBODY_DEFINED = Math.max(...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS) + 1
+
+/**
+ * Rewrite a source's frontmatter version line STRUCTURALLY. Throws when the
+ * source carries no version line: a silent no-op would leave the document on
+ * the fixture's own version and every assertion below would then prove nothing
+ * about the version it names.
+ */
+function withDeclaredVersion(source: string, version: string | number): string {
+  if (!/^schemaVersion: \d+$/m.test(source)) {
+    throw new Error('a4p7 cutover fixture: the source carries no rewriteable schemaVersion line')
+  }
+  return source.replace(/^schemaVersion: \d+$/m, `schemaVersion: ${String(version)}`)
+}
+
+/**
  * A source index that answers like the INSPECTOR of a build whose
  * `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` is `[3]`: a well-formed identity on
  * any other DEFINED version comes back `migration-required` instead of `ok`.
@@ -243,7 +266,7 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
     const result = inspectBlueprintSource(
       [
         '---',
-        'schemaVersion: 99',
+        `schemaVersion: ${VERSION_NOBODY_DEFINED}`,
         'blueprintId: "not an id!!"',
         'revision: "1"',
         'leader:',
@@ -265,7 +288,7 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
 
   it('a document with no blueprintId is refused for the missing identity whatever its version', () => {
     const result = inspectBlueprintSource(
-      ['---', 'schemaVersion: 99', 'revision: "1"', '---', ''].join('\n'),
+      ['---', `schemaVersion: ${VERSION_NOBODY_DEFINED}`, 'revision: "1"', '---', ''].join('\n'),
     )
     expect(result.status).toBe('rejected')
     if (result.status !== 'rejected') return
@@ -273,10 +296,10 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
   })
 
   it('a version nobody defined, with a good identity, is parse-rejected — never migration-required', () => {
-    // The other half of A1-21: `99` was never a Blueprint document, so no
-    // migration applies and it must not be advertised as migratable.
+    // The other half of A1-21: this version was never a Blueprint document, so
+    // no migration applies and it must not be advertised as migratable.
     const result = inspectBlueprintSource(
-      revisionSource('a4p7.unknown', '1').replace('schemaVersion: 1', 'schemaVersion: 99'),
+      withDeclaredVersion(revisionSource('a4p7.unknown', '1'), VERSION_NOBODY_DEFINED),
     )
     expect(result.status).toBe('rejected')
     if (result.status !== 'rejected') return
@@ -285,7 +308,7 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
 
   it('a non-integer version stays parse-rejected (no identity is owed to it)', () => {
     const result = inspectBlueprintSource(
-      revisionSource('a4p7.fraction', '1').replace('schemaVersion: 1', 'schemaVersion: 1.5'),
+      withDeclaredVersion(revisionSource('a4p7.fraction', '1'), '1.5'),
     )
     expect(result.status).toBe('rejected')
     if (result.status !== 'rejected') return
@@ -312,10 +335,7 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
     const supported = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0]
     expect(supported).toBeDefined()
     const result = inspectBlueprintSource(
-      revisionSource('a4p7.current', '1').replace(
-        'schemaVersion: 1',
-        `schemaVersion: ${String(supported)}`,
-      ),
+      withDeclaredVersion(revisionSource('a4p7.current', '1'), String(supported)),
     )
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') return
@@ -540,15 +560,16 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
 
 const W2 = makeDir('w2')
 const W2_ANCHOR = revisionSource('a4p7.anchor2', '1', 'Anchor two.')
-// The row is on version 99 BECAUSE ITS STORED TEXT SAYS SO. Before F1 this fixture
-// put `99` in a row field and left a v1 document in `source`, which is not a state
-// production can reach (a freeze stores the bytes it just parsed) and which asserted
-// the very conflation F1 is: a number beside the identity standing in for the
-// document's version. Declaring it in the document is the only way this arm exists
-// — a hand-edited or corrupt store — and it leaves every assertion below untouched.
-const W2_ROW_SOURCE = revisionSource('a4p7.frozen-unknown', '7', 'Frozen unknown-version lead.').replace(
-  'schemaVersion: 1',
-  'schemaVersion: 99',
+// The row is on an UNDEFINED version BECAUSE ITS STORED TEXT SAYS SO. Before F1
+// this fixture put the number in a row field and left a v1 document in `source`,
+// which is not a state production can reach (a freeze stores the bytes it just
+// parsed) and which asserted the very conflation F1 is: a number beside the
+// identity standing in for the document's version. Declaring it in the document
+// is the only way this arm exists — a hand-edited or corrupt store — and it
+// leaves every assertion below untouched.
+const W2_ROW_SOURCE = withDeclaredVersion(
+  revisionSource('a4p7.frozen-unknown', '7', 'Frozen unknown-version lead.'),
+  VERSION_NOBODY_DEFINED,
 )
 const w2Authority = createBlueprintAuthority({
   bootstrapSource: W2_ANCHOR,
@@ -568,13 +589,13 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version its document de
     // listing said current, the resolve said no, and both were this component's
     // truthful output. `unreadable` is what the listing actually knows.
     expect(w2Listed.find((identity) => identity.blueprintId === 'a4p7.frozen-unknown')).toMatchObject(
-      { origin: 'frozen', schemaVersion: 99, migrationState: 'unreadable' },
+      { origin: 'frozen', schemaVersion: VERSION_NOBODY_DEFINED, migrationState: 'unreadable' },
     )
     const error = captureError(() => w2Authority.resolve('a4p7.frozen-unknown', '7'))
     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED)
     if (!isTeamPluginError(error)) return
     expect(error.detail).toMatchObject({
-      schemaVersion: 99,
+      schemaVersion: VERSION_NOBODY_DEFINED,
       migrationState: 'unreadable',
       origin: 'frozen',
     })
@@ -619,7 +640,7 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version its document de
 // WHAT IS REACHABLE AT THIS COMMIT, stated plainly: the bridge still runs
 // `[1, 2, 3]`, so no DEFINED version is retired yet and the migration arm of
 // every new refusal is dark. The arm that IS live is the other version refusal —
-// a document on a version this build never defined (`schemaVersion: 99`) — and it
+// a document on a version this build never defined (`VERSION_NOBODY_DEFINED`) — and it
 // drives the same machinery end to end: classify without throwing → the
 // constructor survives → the value refuses on read → every start entrance refuses
 // typed before its first durable write. The v1/v2 siblings of these worlds (same
@@ -651,15 +672,15 @@ const D_ROOT_SID = 'session-a4p7-d-root'
 const D_NOW = '2026-10-20T00:00:00.000Z'
 
 /** The fixture anchor with only its declared version changed. */
-function anchorOnVersion(blueprintId: string, version: string): string {
-  return revisionSource(blueprintId, '1', 'Degraded anchor lead.').replace(
-    'schemaVersion: 1',
-    `schemaVersion: ${version}`,
+function anchorOnVersion(blueprintId: string, version: string | number): string {
+  return withDeclaredVersion(
+    revisionSource(blueprintId, '1', 'Degraded anchor lead.'),
+    version,
   )
 }
 
 const ANCHOR_RUNNABLE = revisionSource('a4p7.degraded.anchor', '1', 'Runnable anchor lead.')
-const ANCHOR_UNKNOWN_VERSION = anchorOnVersion('a4p7.degraded.anchor', '99')
+const ANCHOR_UNKNOWN_VERSION = anchorOnVersion('a4p7.degraded.anchor', VERSION_NOBODY_DEFINED)
 const ANCHOR_NOT_A_DOCUMENT = 'this anchor is not a blueprint document at all\n'
 
 function dConfig(bootPhase: 'create' | 'resume', blueprintSource: string): TeamPluginConfig {
