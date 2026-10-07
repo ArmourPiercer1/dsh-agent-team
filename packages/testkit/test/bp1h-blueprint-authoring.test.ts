@@ -92,7 +92,7 @@ describe('blueprint-authoring helper (BP10, plan §14)', () => {
     expect(result.status).toBe('saved')
     if (result.status !== 'saved') return
     expect(result.path).toBe(join(scratch, 'bp', 'bp1-h-b.yaml'))
-    expect(result.identity).toEqual({ schemaVersion: 1, blueprintId: 'bp1-h-b', revision: '1' })
+    expect(result.identity).toEqual({ schemaVersion: 3, blueprintId: 'bp1-h-b', revision: '1' })
     expect(readFileSync(result.path, 'utf8')).toBe(readFileSync(draftPath, 'utf8'))
     // The draft survives (the authoring loop keeps iterating on it).
     expect(existsSync(draftPath)).toBe(true)
@@ -125,7 +125,7 @@ describe('blueprint-authoring helper (BP10, plan §14)', () => {
       join(scratch, 'weak.draft.yaml'),
       [
         '---',
-        'schemaVersion: 1',
+        'schemaVersion: 3',
         'blueprintId: BP1-H',
         'revision: "1"',
         'leader:',
@@ -133,6 +133,10 @@ describe('blueprint-authoring helper (BP10, plan §14)', () => {
         'members: []',
         'requirements: []',
         'memberEnvelopes: []',
+        'permissionMutationEnvelope:',
+        '  rules: []',
+        'teamHardEnvelope:',
+        '  rules: []',
         'policyStates: []',
         'metadata: {}',
         '---',
@@ -146,7 +150,7 @@ describe('blueprint-authoring helper (BP10, plan §14)', () => {
     })
     expect(result.status).toBe('saved')
     if (result.status !== 'saved') return
-    expect(result.identity).toEqual({ schemaVersion: 1, blueprintId: 'BP1-H', revision: '1' })
+    expect(result.identity).toEqual({ schemaVersion: 3, blueprintId: 'BP1-H', revision: '1' })
     expect(existsSync(result.path)).toBe(true)
   })
 
