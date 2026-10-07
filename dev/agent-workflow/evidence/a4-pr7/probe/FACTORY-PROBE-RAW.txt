@@ -1,0 +1,51 @@
+=== FACTORY packages/runtime/test/p6t1-helpers.ts  literals=2  direct_importer_files=98
+      Tests  83 failed | 48 passed (131)
+ FAIL  packages/runtime/test/a2c1-pwsh-permission.test.ts [ packages/runtime/test/a2c1-pwsh-permission.test.ts ]
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts [ packages/runtime/test/a2c2-permission-coverage.test.ts ]
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts [ packages/runtime/test/a2c3-inspect-operation-permission.test.ts ]
+ FAIL  packages/runtime/test/a2c4-external-lastmile.test.ts [ packages/runtime/test/a2c4-external-lastmile.test.ts ]
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts
+ FAIL  packages/runtime/test/a4a-control-exact-scope.test.ts [ packages/runtime/test/a4a-control-exact-scope.test.ts ]
+ FAIL  packages/runtime/test/a4p4-capability-vs-permission.test.ts [ packages/runtime/test/a4p4-capability-vs-permission.test.ts ]
+ FAIL  packages/runtime/test/a4p4-operation-approval-authority.test.ts [ packages/runtime/test/a4p4-operation-approval-authority.test.ts ]
+ FAIL  packages/runtime/test/a4p4-operation-single-shot.test.ts [ packages/runtime/test/a4p4-operation-single-shot.test.ts ]
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts
+ FAIL  packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts [ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts ]
+ FAIL  packages/runtime/test/a4pr0-proposal-generation.test.ts [ packages/runtime/test/a4pr0-proposal-generation.test.ts ]
+  reverted, porcelain=0
+=== FACTORY packages/runtime/test/p6t2-helpers.ts  literals=2  direct_importer_files=49
+      Tests  120 failed | 21 passed (141)
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts [ packages/runtime/test/a2c3-inspect-operation-permission.test.ts ]
+ FAIL  packages/runtime/test/c1-production-wiring.test.ts [ packages/runtime/test/c1-production-wiring.test.ts ]
+ FAIL  packages/runtime/test/c1-restart-recovery.test.ts [ packages/runtime/test/c1-restart-recovery.test.ts ]
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts [ packages/runtime/test/d3-member-identity-context.test.ts ]
+ FAIL  packages/runtime/test/f3a-lock-scope.test.ts [ packages/runtime/test/f3a-lock-scope.test.ts ]
+ FAIL  packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts [ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts ]
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts
+ FAIL  packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts
+ FAIL  packages/runtime/test/fix-control-authz-h-send-message.test.ts
+ FAIL  packages/runtime/test/g8s1-generation-stamp.test.ts [ packages/runtime/test/g8s1-generation-stamp.test.ts ]
+ FAIL  packages/runtime/test/issue1-async-delegation.test.ts [ packages/runtime/test/issue1-async-delegation.test.ts ]
+ FAIL  packages/runtime/test/issue1-serial-blocking.test.ts [ packages/runtime/test/issue1-serial-blocking.test.ts ]
+  reverted, porcelain=0
+=== FACTORY packages/runtime/test/p6t4-helpers.ts  literals=2  direct_importer_files=55
+      Tests  60 failed | 43 passed (103)
+ FAIL  packages/runtime/test/a2c1-pwsh-permission.test.ts [ packages/runtime/test/a2c1-pwsh-permission.test.ts ]
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts [ packages/runtime/test/a2c2-permission-coverage.test.ts ]
+ FAIL  packages/runtime/test/a2c4-external-lastmile.test.ts [ packages/runtime/test/a2c4-external-lastmile.test.ts ]
+ FAIL  packages/runtime/test/a2c5-read-fingerprint.test.ts [ packages/runtime/test/a2c5-read-fingerprint.test.ts ]
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts
+ FAIL  packages/runtime/test/a4a-control-exact-scope.test.ts [ packages/runtime/test/a4a-control-exact-scope.test.ts ]
+ FAIL  packages/runtime/test/a4p3-approval-case.test.ts [ packages/runtime/test/a4p3-approval-case.test.ts ]
+ FAIL  packages/runtime/test/a4p3-approval-escalation.test.ts [ packages/runtime/test/a4p3-approval-escalation.test.ts ]
+ FAIL  packages/runtime/test/a4p3-intervention-projection.test.ts [ packages/runtime/test/a4p3-intervention-projection.test.ts ]
+ FAIL  packages/runtime/test/a4p4-capability-vs-permission.test.ts [ packages/runtime/test/a4p4-capability-vs-permission.test.ts ]
+ FAIL  packages/runtime/test/a4p4-operation-approval-authority.test.ts [ packages/runtime/test/a4p4-operation-approval-authority.test.ts ]
+ FAIL  packages/runtime/test/a4p4-operation-single-shot.test.ts [ packages/runtime/test/a4p4-operation-single-shot.test.ts ]
+  reverted, porcelain=0
+=== FACTORY packages/remote/test/p8t3-helpers.ts  literals=2  direct_importer_files=14
+      Tests  2 failed | 204 passed (206)
+ FAIL  packages/remote/test/p8t3-round-trip.test.ts
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts [ packages/runtime/test/a2c3-inspect-operation-permission.test.ts ]
+  reverted, porcelain=0
+=== DONE porcelain=0
