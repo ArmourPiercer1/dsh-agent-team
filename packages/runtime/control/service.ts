@@ -4223,9 +4223,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // has already named the field that says why: `terminalReason`
       // `resolver-unavailable` ("No resolver exists for the authority this
       // case needs", ADR A1-12 / spec 11.6). The born-terminal twin close in
-      // `requestApprovalLeg` (:4013) stamps it; until the escalate-truth fix
-      // this branch did not, so the durable record read bare `deny ·
-      // escalated` — indistinguishable for every reader that does not also
+      // `requestApprovalLeg` (`closeZeroReviewCaseTransactionally`) stamps it;
+      // until the escalate-truth fix this branch did not, so the record read
+      // bare `deny · escalated` — indistinguishable for every reader that does not also
       // fold the case, which is audit F2's mute-close defect re-armed on the
       // OTHER A1-12 entrance. An ABSENT terminalReason keeps its A2-8 meaning
       // (reviewer-chosen close / a rise: the case continues above).

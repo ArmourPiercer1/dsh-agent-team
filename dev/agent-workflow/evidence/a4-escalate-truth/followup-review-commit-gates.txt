@@ -1,0 +1,16 @@
+### pnpm build
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+### git add dist
+M  packages/runtime/dist/packages/runtime/control/service.js
+M  packages/runtime/dist/packages/runtime/control/service.js.map
+### build:composition
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+### check:artifacts
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+### p4t6
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+### a4-escalate-act-truth
+ Test Files  1 passed (1)
+      Tests  7 passed (7)

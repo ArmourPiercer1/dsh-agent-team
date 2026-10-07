@@ -4,7 +4,7 @@
 **Base:** `origin/master` at first fetch = `4c6aab89263b298a3ce5cf6b7fc217beecceef53` ("4c6aab89 or newer" satisfied; origin/master advanced to `bfdf1141` — two docs-only commits — after branch creation; not rebased, never rebased).
 **Deviation noted:** an earlier working master checkout sat at `534d10e8` (pre-#112/#113); `git fetch` was run FIRST per instructions and the branch was cut from the fetched `origin/master` = `4c6aab89`.
 
-## 1. The trace (file:line, every hop, verified against this tree)
+## 1. The trace (file:line, every hop, verified against this tree; `control/service.ts` coordinates restated AT THIS LANE'S HEAD — line numbers there moved by the fix itself, so symbols are the anchor)
 
 | # | Hop | Location |
 | --- | --- | --- |
@@ -13,16 +13,16 @@
 | 3 | The act lane's escalate arm: FRESH open-case re-read, CURRENT leg requestId, `await options.interventionEscalate(...)`, return value DISCARDED, `{ outcome: 'escalated' }` returned unconditionally | `packages/runtime/src/plugin/s6-remote.ts:3762-3777` (discard+return :3770-3776) |
 | 4 | The escalate port's signature (returns a record — never consulted by the lane) | `packages/runtime/src/plugin/s6-remote.ts:1363` |
 | 5 | Production wiring (root): closure calls `control.escalateApprovalLeg` and RETURNS the result | `packages/runtime/src/plugin/root.ts:3661-3669` |
-| 6 | The service law: successor from the FROZEN ladder, resolver check, three writes with the terminate branch skipping WRITE 3 | `packages/runtime/control/service.ts:4089` (`escalateApprovalLeg`), :4208-4209 (`controlEscalationSuccessor` / `hasAuthorityResolver`), WRITE 1 :4221, WRITE 2 :4233-4239, terminate branch returning `caseOutcome: AUTHORITY_UNAVAILABLE` :4267-4272 (pre-fix; post-fix :4217-4240), risen return :4305-4316 |
+| 6 | The service law: successor from the FROZEN ladder, resolver check, three writes with the terminate branch skipping WRITE 3 | `packages/runtime/control/service.ts:4090` (`escalateApprovalLeg`), :4209-4210 (`controlEscalationSuccessor` / `hasAuthorityResolver`), WRITE 1 :4232-4241, WRITE 2 :4244-4250, terminate branch returning `caseOutcome: AUTHORITY_UNAVAILABLE` :4278-4284, risen return :4324-4329 — all AT HEAD |
 | 7 | The frozen tables: `'human-user' → 'human-admin'`, `human-admin → null`; `CONTROL_UNRESOLVABLE_AUTHORITIES = ['human-admin']`; `hasAuthorityResolver` | `packages/runtime/control/types.ts:283-292` (successor table), :341-343, :352-354 |
 | 8 | The closed case-outcome vocabulary (`escalated` / `authority-unavailable`) and `ControlEscalationOutcome` (`nextLeg` ABSENT on terminate) | `packages/runtime/control/types.ts:588-596, 613-623` |
 | 9 | The closed leg-terminal-reason vocabulary — `RESOLVER_UNAVAILABLE: 'resolver-unavailable'` ("No resolver exists for the authority this case needs (ADR A1-12, spec 11.6)") | `packages/runtime/control/types.ts:368-380` |
 | 10 | The A2-8 destination field on the decision record (`terminalReason`; "ABSENT = an ordinary allow/deny") | `packages/runtime/control/types.ts:1151-1163` |
-| 11 | The BORN-TERMINAL twin close (A1-12/audit F2) — writes a born-terminal leg + deny **stamped** `terminalReason: 'resolver-unavailable'` | `packages/runtime/control/service.ts:4002-4029` (`closeZeroReviewCaseTransactionally`, stamp :4013) |
-| 12 | `commitDecision` already carries `terminalReason` additively (payload + record) | `packages/runtime/control/service.ts:1529,1575,1595` (pre-fix numbers) |
-| 13 | Re-read law: open-case fold skips decided cases (`status !== 'open'`, `currentLeg === undefined`) → the panel row vanishes | `packages/runtime/control/service.ts:4347-4391`; projection `packages/runtime/intervention/projection.ts` `projectInterventions`; s6 get → `INTERVENTION_NOT_FOUND` `packages/runtime/src/plugin/s6-remote.ts:3666-3678` |
+| 11 | The BORN-TERMINAL twin close (A1-12/audit F2) — writes a born-terminal leg + deny **stamped** `terminalReason: 'resolver-unavailable'` | `packages/runtime/control/service.ts` (`requestApprovalLeg`'s born-terminal twin via `closeZeroReviewCaseTransactionally` — SYMBOLIC cite; the call is at :4010 at this head, stamp :4014) |
+| 12 | `commitDecision` already carries `terminalReason` additively (payload + record) | `packages/runtime/control/service.ts:1530,1576,1596` (at this head) |
+| 13 | Re-read law: open-case fold skips decided cases (`status !== 'open'`, `currentLeg === undefined`) → the panel row vanishes | `packages/runtime/control/service.ts:4389,4397` (at this head); projection `packages/runtime/intervention/projection.ts` `projectInterventions`; s6 get → `INTERVENTION_NOT_FOUND` `packages/runtime/src/plugin/s6-remote.ts:3666-3678` |
 | 14 | `projectZeroLegTermination` — **VERIFIED: no production caller** (only the barrel `intervention/index.ts:25,122` and tests `a4p3-intervention-lane-hygiene.test.ts:150`, `a4p3-intervention-projection.test.ts:66,697`). An uncalled projector, exactly as the audit said. Its docstring says it is "the seam PR4/PR5 call when a request terminates synchronously" — the pre-execute adapter does NOT call it (it denies with text, `operation-permission/pre-execute-adapter.ts:1801-1818`). | `packages/runtime/intervention/projection.ts:163` |
-| 15 | Ledger durable source: fact types `control-request-recorded` / `control-decision-recorded` / `control-escalation-recorded` — **no fact type names the case termination**; the terminate fact lived nowhere durable pre-fix | `packages/runtime/control/service.ts:287-298` |
+| 15 | Ledger durable source: fact types `control-request-recorded` / `control-decision-recorded` / `control-escalation-recorded` — **no fact type names the case termination**; the terminate fact lived nowhere durable pre-fix | `packages/runtime/control/service.ts:288-299` (at this head) |
 | 16 | Client: the panel NEVER shows the receipt (only errors), then re-reads ("no optimistic mutation: the projection re-read is the truth") | `packages/client/src/ui/TeamInterventions.tsx:139-156` |
 | 17 | Client ledger row: `summary = decision · reason` → renders `deny · escalated`; `terminalReason` is NOT read anywhere in the client read plane (grep: zero hits in `team-ledger-model.ts` / `ledger-adapter.ts` / `projection-source.ts`) — the coordinator's 2026-10-08 ruling files this under the post-Alpha.4 named-message table | `packages/client/src/model/team-ledger-model.ts:356-365` |
 | 18 | The OTHER caller of `escalateApprovalLeg` — the Leader tool lane — forwards the FULL outcome including `caseOutcome`: it already tells the truth | `packages/tools/src/tools.ts:1060-1072` (`{ status: 'control-escalated', outcome }`) |
@@ -48,11 +48,11 @@ durable `ControlService`, with the escalate closure mirroring `root.ts:3661` ver
   durable leg row retained, terminal deny + escalation fact written, never pending, waiter settles on the deny.
   Nothing is destroyed. It is also NOT a rise: no successor leg exists.
 - "the leg row vanishes on re-read" — **true only of the OPEN projection** (panel/list/get), false of the durable
-  store; the projection law (`service.ts:4377,4385`) legitimately hides decided rows.
+  store; the projection law (open-fold skip, `service.ts:4389,4397` at this head) legitimately hides decided rows.
 - "the ledger reads Denied · escalated" — **true** (client summary `deny · escalated`, `team-ledger-model.ts:363`),
   and pre-fix that was ALL the durable record said.
 
-## 3. Decision: (b), fixed in the narrowest honest way — plus one (b)-half BLOCKED on the wire
+## 3. Decision: (b), fixed in the narrowest honest way — plus one (b)-half BLOCKED on the wire OUTCOME SET (the surfacing half is v8-legal; see below)
 
 **Not (a):** the receipt says the case went up when it was closed at the click, and pre-fix the durable closing deny
 omitted the reason field the closed vocabulary has for exactly this close.
@@ -62,15 +62,30 @@ Admin leg, durable per audit F2). No ADR violation in the behaviour.
 **Fixed (durable record, this commit):** `escalateApprovalLeg`'s terminate branch now stamps
 `terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE` on WRITE 1 (the closing deny) when
 `!mintsRisenLeg` — an EXISTING frozen vocabulary value (`types.ts:378-380`), the same stamp the born-terminal twin
-already writes (`service.ts:4013`), into an EXISTING additive field of the decision payload/record (A2-8,
+already writes (`requestApprovalLeg`'s twin via `closeZeroReviewCaseTransactionally`; :4014 at this head), into an
+EXISTING additive field of the decision payload/record (A2-8,
 `types.ts:1151-1163`; `commitDecision` already projected it). No new vocabulary value, no wire change, no method
 return change (`service.d.ts` is byte-identical after rebuild — the type surface did not move). An ABSENT
 terminalReason keeps its A2-8 meaning (reviewer-chosen close / a rise), pinned by the control-arm test.
 The ledger's CLIENT rendering still reads `deny · escalated`; wiring `terminalReason` into the named message table
 is the coordinator's post-Alpha.4 ruling (2026-10-08 log, item 2, "~6 files") and is NOT touched here.
 
-**BLOCKED (receipt half) — wire-version decision, NOT mine to make:**
-the truthful receipt value does not exist on the v8 wire.
+**What is genuinely NEW in the record (two facts no other file states):** (1) the stamped field now rides
+`team.getLedgerPage` payloads to EVERY remote consumer — the ledger wire entry carries the row's `payload`
+verbatim (`packages/remote/src/contracts/types.ts:204-213` with `payload` in `REMOTE_LEDGER_ENTRY_FIELDS`
+`:388-396`; `ledgerEntryWire` `packages/runtime/src/plugin/s6-remote.ts:1618-1675`), so every reader of the
+remote ledger sees `terminalReason` on this close without any further change; (2)
+`readApprovalCaseState().state.terminalDecision.terminalReason` is newly POPULATED for the governance plane
+(the read builds `terminalDecision` through `toDecisionRecord`, `service.ts:3829` and `:1474-1488`), which is
+the typed consumption point for any future authority-side reader. **No RENDERED path reads it yet** — the ledger
+label still prints `deny · escalated` — so this commit is honestly scoped **"recorded, not yet told"**: the
+durable record and both typed read paths now carry the truth; telling the operator is the surfacing follow-up
+below and the post-Alpha.4 message table.
+
+**BLOCKED (the act-outcome half only) — wire-version decision, NOT mine to make:**
+the truthful receipt value does not exist in the `intervention.act` **outcome set** on the v8 wire. (It DOES
+exist on the v8 wire as the intervention item's `status` — see the surfacing half below; that half is legal
+today and is the follow-up, not the blocker.)
 
 - Exact type: `REMOTE_INTERVENTION_ACT_OUTCOMES` — `packages/remote/src/contracts/types.ts:485-490` —
   the CLOSED v8 set `['decided','escalated','acknowledged','already-acknowledged']`.
@@ -81,13 +96,33 @@ the truthful receipt value does not exist on the v8 wire.
   plane's"). Adding e.g. `authority-unavailable` changes what the FROZEN v8 method version may return → contract-
   version decision (coordinator + human), and would redden the closed-set pins
   (`packages/remote/test/a4p6-remote-v8.test.ts:14,241,288`) that stand as the v8 contract record.
-- Related live ruling the coordinator should re-read with this: the 2026-10-08 log item — "an UNAVAILABLE
-  escalation must not wear a success receipt … the act receipt must keep the termination. Two files, not a locale
-  change." It cannot be executed inside v8's closed set; the hide-the-alternative (not offering escalate) is
-  withdrawn (this plan's 2026-10-08 withdrawal + derivation.ts:310-317). So the wire decision is the only
-  remaining shape of that ruling; the v8 act-lane misreport is pinned AS A TRIPWIRE in
-  `a4-escalate-act-truth.test.ts` ("MEASURED RECEIPT (disclosed misrepresentation…)") so the landing of that wire
-  decision reddens the pin instead of slipping past it.
+- The ruling this answers is the coordinator's correction of PR #110 — `dev/agent-workflow/SESSION_ROUTER_LOG.md`,
+  2026-10-08 round 2 (merged as #115): "an UNAVAILABLE escalation must not wear a success receipt … the act
+  receipt must keep the termination." That correction is LOG text, not plan text (the plan carries no such
+  sentence; its rule is the frozen rung offer set at `alpha4-implementation-plan.md:28`), and by that same log
+  entry the hide-the-alternative (not offering escalate at a `human-user` leg) is withdrawn — the offer stands
+  (`derivation.ts:310-317`). The ruling has TWO halves; only the first is blocked:
+  **(1) ACT-OUTCOME half — the blocker above:** carrying the termination in `intervention.act`'s own outcome
+  value collides with the closed v8 set → contract-version decision (coordinator + human). The v8 act-lane
+  misreport is pinned AS A TRIPWIRE in `a4-escalate-act-truth.test.ts` ("MEASURED RECEIPT (disclosed
+  misrepresentation…)") so landing that decision reddens the pin instead of slipping past it.
+  **(2) SURFACING half — v8-legal TODAY: a FOLLOW-UP producer task, not a contract decision and not a
+  blocker.** The truthful value already exists end-to-end as the intervention item STATUS
+  `'authority-unavailable'`: in the wire item `status` union (`packages/remote/src/contracts/types.ts:438`);
+  accepted by the shared validator (`packages/remote/src/handlers/intervention.ts:105`), which the s6 lane
+  imports (`src/plugin/s6-remote.ts:128`) and applies to every projected item (`:2226`); documented for
+  exactly this close (`packages/runtime/intervention/types.ts:80-90` — spec §11.6's "surface typed
+  Admin-required result and InterventionItem", `alpha4-permission-governance-spec.md:527-535`); its projector
+  exists (`intervention/derivation.ts:546` `deriveZeroLegAuthorityUnavailableItem`,
+  `intervention/projection.ts:163-171` `projectZeroLegTermination` — production-uncalled, hop 14); the
+  injection seam is LIVE in production (`src/plugin/s6-remote.ts:2204-2225`, the `projectInterventions`
+  adapters array — it already carries the governance-warning adapter); and the client already renders the
+  terminal row with no affordance (`packages/client/src/model/team-interventions.ts:69-71`). **Only the
+  producer is missing**: wiring one is Alpha.4-eligible with ZERO contract bump, and it discharges the open
+  duty the re-read tripwire guards (test:414 now carries the cross-references — spec §11.6 + plan §6.D
+  "Once a leg escalates, the old leg is visibly terminal", `alpha4-implementation-plan.md:651`). Left as
+  written by the first draft of this README, the surfacing half would have been mis-scheduled behind a human
+  contract decision that it does not need.
 - NOT DONE (rejected as its own misrepresentation): remapping the terminate receipt to `'decided'` reuses a v8
   value whose contract meaning is the reviewer's own allow/deny act — silent semantic overloading of a closed
   value is the same disease as a silent `escalated`.
@@ -132,3 +167,9 @@ the truthful receipt value does not exist on the v8 wire.
 - origin/master moved (`4c6aab89` → `bfdf1141`, docs-only) after branch creation; branch was NOT rebased (rule)
   and the coordinator merges.
 - No host was booted; no port used; all worlds are in-process p6t4 durable worlds; scratch stayed under the repo.
+- **Follow-up commit (adversarial-review corrections F1-F6):** text-only in this README + the test titles; the
+  one `service.ts` change is the COMMENT at the WRITE-1 call switching `:4013` to a symbolic cite (F3) — no
+  code behavior moved — but since comments ship in the install-surface artifact, the dist mirrors for
+  `control/service.js` were rebuilt and co-committed and `check:artifacts` re-run (`OK: 1508 files`). The
+  reviewer's item-status finding (surfacing half v8-legal) was re-verified here before adoption: every cited
+  coordinate checked at head; `projection.ts` fn is `:163-171` (reviewer's `:155-171` includes its docstring).

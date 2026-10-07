@@ -24,8 +24,8 @@
  * already contains `resolver-unavailable` ("No resolver exists for the
  * authority this case needs (ADR A1-12, spec 11.6)", `control/types.ts`
  * CONTROL_LEG_TERMINAL_REASONS) and the born-terminal twin close
- * (`requestApprovalLeg` -> `closeZeroReviewCaseTransactionally`,
- * `service.ts:4013`) already stamps it. `ControlDecisionRecord.terminalReason`
+ * (`requestApprovalLeg` -> `closeZeroReviewCaseTransactionally`) already
+ * stamps it. `ControlDecisionRecord.terminalReason`
  * (A2-8) is the declared destination for exactly this close; the escalation
  * close silently omitted it, so the durable record read only
  * `deny · escalated` — indistinguishable from a rise for every reader that
@@ -376,7 +376,7 @@ describe('a4 escalate-act truth: escalate at a human-user leg closes the case an
     expect(decision?.payload['reason']).toBe('escalated')
   })
 
-  it('DURABLE TRUTH (the fix): the closing deny carries terminalReason "resolver-unavailable" — the A2-8 destination field for an unavailable-resolver close, which the born-terminal twin (service.ts:4013) stamped and this branch omitted', () => {
+  it('DURABLE TRUTH (the fix): the closing deny carries terminalReason "resolver-unavailable" — the A2-8 destination field for an unavailable-resolver close, which the born-terminal twin (requestApprovalLeg\'s close) stamped and this branch omitted', () => {
     const decision = MEASUREMENT.wireCaseRows.find(
       (row) => row.factType === 'control-decision-recorded',
     )
@@ -411,7 +411,7 @@ describe('a4 escalate-act truth: escalate at a human-user leg closes the case an
     expect(decision?.payload['terminalReason']).toBeUndefined()
   })
 
-  it('re-read law: the decided case leaves the open projection (the panel row disappears; get answers INTERVENTION_NOT_FOUND) — tripwire: wiring projectZeroLegTermination (projection.ts:163, production-uncalled today) into this read will redden this pin and must be re-reviewed, not renumbered', () => {
+  it('re-read law: the decided case leaves the open projection (the panel row disappears; get answers INTERVENTION_NOT_FOUND) — tripwire: wiring projectZeroLegTermination (projection.ts:163, production-uncalled today) into this read will redden this pin and must be re-reviewed, not renumbered; and what it guards is an OPEN duty, not settled law — spec §11.6 "surface typed Admin-required result and InterventionItem" + plan §6.D "Once a leg escalates, the old leg is visibly terminal" (alpha4-implementation-plan.md:651)', () => {
     console.info(
       `${BANNER} intervention.list ids after the act: ${JSON.stringify(MEASUREMENT.listAfterIds)}; ` +
         `intervention.get after the act: ${JSON.stringify(errorOf(MEASUREMENT.getAfter))}`,
