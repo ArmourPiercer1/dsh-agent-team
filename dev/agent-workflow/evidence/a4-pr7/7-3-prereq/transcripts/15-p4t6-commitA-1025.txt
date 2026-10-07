@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+ ✓ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (5 tests) 23ms
+
+ Test Files  2 passed (2)
+      Tests  15 passed (15)
+   Start at  03:45:26
+   Duration  897ms (transform 690ms, setup 0ms, import 1.07s, tests 28ms, environment 0ms)
+

@@ -1,0 +1,88 @@
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs:37
+  BEFORE |* C0  blueprint preflight: catalog.get resolves the v2 blueprint (with the|
+  AFTER  |* C0  blueprint preflight: catalog.get resolves the v3 blueprint (with the|
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs:202
+  BEFORE |const BP_F15_ID = 'f15.leader' // the v2 team blueprint (the real team)|
+  AFTER  |const BP_F15_ID = 'f15.leader' // the v3 team blueprint (the real team)|
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs:233
+  BEFORE |{ id: 'C0', name: 'blueprint preflight: catalog.get resolves v2 + intent.probe PASS (row seed feeds the unknown verdict)' },|
+  AFTER  |{ id: 'C0', name: 'blueprint preflight: catalog.get resolves v3 + intent.probe PASS (row seed feeds the unknown verdict)' },|
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs:620
+  BEFORE |/** The F15 team (schemaVersion 2 — the PR-E real-host-proven shape): the|
+  AFTER  |/** The F15 team (schemaVersion 3 — the PR-E real-host-proven shape): the|
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs:720
+  BEFORE |// here (v1 flat list: domain mcp -> mcpServer, subject = name) makes the|
+  AFTER  |// here (flat requirements list: domain mcp -> mcpServer, subject = name) makes the|
+tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs:1266
+  BEFORE |check('C0', 'catalog.get resolves the v2 blueprint; intent.probe: req-f15-mcp (complete:true mcpServer) outcome=PASS with status=OPEN — the row enviro|
+  AFTER  |check('C0', 'catalog.get resolves the v3 blueprint; intent.probe: req-f15-mcp (complete:true mcpServer) outcome=PASS with status=OPEN — the row enviro|
+tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs:450
+  BEFORE |// ── the saved team blueprints (strict closed-v1, the d-smoke shape) ─────────|
+  AFTER  |// ── the saved team blueprints (strict closed-v3, the d-smoke shape) ─────────|
+tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs:562
+  BEFORE |// ── the saved team blueprints (strict closed-v1) ────────────────────────────|
+  AFTER  |// ── the saved team blueprints (strict closed-v3) ────────────────────────────|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:3
+  BEFORE |* pre-alpha3 PR-E E.12 — the real-host / browser gate: PR-E Blueprint v2 +|
+  AFTER  |* pre-alpha3 PR-E E.12 — the real-host / browser gate: PR-E Blueprint v3 +|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:94
+  BEFORE |*       the boot anchor, which structurally admits nothing (v1|
+  AFTER  |*       the boot anchor, which structurally admits nothing (legacy-shape|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:431
+  BEFORE |const T = `session-prereq-main-${RUN_STAMP}` // the main scenario team (v2)|
+  AFTER  |const T = `session-prereq-main-${RUN_STAMP}` // the main scenario team (v3)|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:432
+  BEFORE |const T2 = `session-prereq-iso-${RUN_STAMP}` // the dual-team isolation team (v2)|
+  AFTER  |const T2 = `session-prereq-iso-${RUN_STAMP}` // the dual-team isolation team (v3)|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:433
+  BEFORE |const T9 = `session-prereq-persona-${RUN_STAMP}` // the persona team (v2)|
+  AFTER  |const T9 = `session-prereq-persona-${RUN_STAMP}` // the persona team (v3)|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:439
+  BEFORE |const BP_ANCHOR_ID = 'team.prereq-anchor' // the row anchor (v1, capabilities-less)|
+  AFTER  |const BP_ANCHOR_ID = 'team.prereq-anchor' // the row anchor (v3, capabilities-less)|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:1152
+  BEFORE |/** The main scenario team (v2): the requirement matrix under test. */|
+  AFTER  |/** The main scenario team (v3): the requirement matrix under test. */|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:1321
+  BEFORE |/** The isolation team (v2): NARROWER requirements (repo only) — the S14|
+  AFTER  |/** The isolation team (v3): NARROWER requirements (repo only) — the S14|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:1414
+  BEFORE |/** The persona team (v2): the S12 `ptc` regression subject. */|
+  AFTER  |/** The persona team (v3): the S12 `ptc` regression subject. */|
+tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:1505
+  BEFORE |/** The row anchor: a plain LEGACY v1 leader (no capabilities, no|
+  AFTER  |/** The row anchor: a plain LEGACY-shape leader (no capabilities, no|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:25
+  BEFORE |*   13 v2 Blueprint create/resume         — E.12 S1 (v2 create) + F15 C1 + G1|
+  AFTER  |*   13 v3 Blueprint create/resume         — E.12 S1 (v2 create) + F15 C1 + G1|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:88
+  BEFORE |*  G1  world: v2 team + 3 mini-MCPs    — the E.12 main world shape|
+  AFTER  |*  G1  world: v3 team + 3 mini-MCPs    — the E.12 main world shape|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:358
+  BEFORE |const T = `session-prf-main-${RUN_STAMP}` // the main gap team (v2)|
+  AFTER  |const T = `session-prf-main-${RUN_STAMP}` // the main gap team (v3)|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:360
+  BEFORE |const T9 = `session-prf-persona-${RUN_STAMP}` // the persona ptc team (v2) — G5|
+  AFTER  |const T9 = `session-prf-persona-${RUN_STAMP}` // the persona ptc team (v3) — G5|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:361
+  BEFORE |const TSUB = `session-prf-subagent-${RUN_STAMP}` // the subagent-surface fail-closed team (v2) — G9|
+  AFTER  |const TSUB = `session-prf-subagent-${RUN_STAMP}` // the subagent-surface fail-closed team (v3) — G9|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:1172
+  BEFORE |/** The main scenario team (v2): the requirement matrix under test. */|
+  AFTER  |/** The main scenario team (v3): the requirement matrix under test. */|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:1344
+  BEFORE |/** The isolation team (v2): NARROWER requirements (repo only) — the S14|
+  AFTER  |/** The isolation team (v3): NARROWER requirements (repo only) — the S14|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:1347
+  BEFORE |/** The subagent-surface team (v2): the G9 subject — the worker declares|
+  AFTER  |/** The subagent-surface team (v3): the G9 subject — the worker declares|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:1438
+  BEFORE |/** The spill team (v1, the PR#35 real-spill fixture — the proven E2E|
+  AFTER  |/** The spill team (v3, the PR#35 real-spill fixture shape — the proven E2E|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:1590
+  BEFORE |/** The persona team (v2): the S12 `ptc` regression subject. */|
+  AFTER  |/** The persona team (v3): the S12 `ptc` regression subject. */|
+tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:1681
+  BEFORE |/** The row anchor: a plain LEGACY v1 leader (no capabilities, no|
+  AFTER  |/** The row anchor: a plain LEGACY-shape leader (no capabilities, no|
+# 29 prose lines edited (all assertions passed)

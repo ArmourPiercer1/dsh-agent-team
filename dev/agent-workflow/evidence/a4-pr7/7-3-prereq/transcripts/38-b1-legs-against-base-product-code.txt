@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ✓ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts (12 tests) 78ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  05:07:13
+   Duration  1.04s (transform 693ms, setup 0ms, import 879ms, tests 78ms, environment 0ms)
+

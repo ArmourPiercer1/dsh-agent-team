@@ -60,7 +60,7 @@ import { expectSingleFamily } from './t6-helpers.js'
  */
 const T6_FRESH_BLUEPRINT_SOURCE: string = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: team.t6-fresh',
   'revision: "1"',
   'leader:',
@@ -72,6 +72,13 @@ const T6_FRESH_BLUEPRINT_SOURCE: string = [
   '    contextPolicy: fresh_per_delegation',
   'requirements: []',
   'memberEnvelopes: []',
+  // v3 requires both authority envelopes explicitly (§3.2, no implicit
+  // default); `rules: []` is the narrowest declaration — this test
+  // exercises contextPolicy/member mechanics, not any mutation authority.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',

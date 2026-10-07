@@ -19,6 +19,16 @@ import {
 } from '../blueprint/testdata/fixtures.js'
 import { expectErrorDetails } from './t2-helpers.js'
 
+/**
+ * §7.4 carrier migration (pre-flip half): the declared stamp of the
+ * `MINIMAL_BLUEPRINT_SOURCE` factory fixture. The frontmatter-text test
+ * below pins that fixture's bytes VERBATIM — a live v1 mirror, not a choice
+ * of this file: fixtures.ts stays v1 until the flip (byte-coupled to
+ * cross-lane consumers; see evidence 7-4-cdom FINDINGS). Change this
+ * constant only together with fixtures.ts, never to make the scan pass.
+ */
+const MINIMAL_FACTORY_DECLARED_VERSION = 1
+
 describe('t2 parse: minimal blueprint', () => {
   it('parses the minimal closed v1 document', () => {
     const bp = parseBlueprint(MINIMAL_BLUEPRINT_SOURCE)
@@ -56,7 +66,7 @@ describe('t2 parse: minimal blueprint', () => {
   it('trims string fields during normalization', () => {
     const src = [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.min',
       'revision: "1"',
       'displayName: "  Padded  "',
@@ -67,6 +77,10 @@ describe('t2 parse: minimal blueprint', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -145,7 +159,7 @@ describe('t2 parse: splitFrontmatter', () => {
     expect(doc.body).toBe('')
     expect(doc.frontmatterText).toEqual(
       [
-        'schemaVersion: 1',
+        `schemaVersion: ${MINIMAL_FACTORY_DECLARED_VERSION}`,
         'blueprintId: team.min',
         'revision: "1"',
         'leader:',
@@ -161,7 +175,7 @@ describe('t2 parse: splitFrontmatter', () => {
   })
 
   it('accepts a whitespace-only body', () => {
-    expect(() => splitFrontmatter('---\nschemaVersion: 1\n---\n   \n')).not.toThrow()
+    expect(() => splitFrontmatter('---\nschemaVersion: 3\n---\n   \n')).not.toThrow()
   })
 
   it('rejects non-string sources', () => {
@@ -174,7 +188,7 @@ describe('t2 parse: splitFrontmatter', () => {
 
   it('rejects sources without an opening delimiter', () => {
     expectErrorDetails(
-      () => splitFrontmatter('schemaVersion: 1\n---\n'),
+      () => splitFrontmatter('schemaVersion: 3\n---\n'),
       'MALFORMED_DTO',
       { reason: 'frontmatter-missing' },
     )
@@ -182,7 +196,7 @@ describe('t2 parse: splitFrontmatter', () => {
 
   it('rejects unclosed frontmatter', () => {
     expectErrorDetails(
-      () => splitFrontmatter('---\nschemaVersion: 1\n'),
+      () => splitFrontmatter('---\nschemaVersion: 3\n'),
       'MALFORMED_DTO',
       { reason: 'frontmatter-unclosed' },
     )
@@ -190,7 +204,7 @@ describe('t2 parse: splitFrontmatter', () => {
 
   it('rejects a non-empty markdown body', () => {
     expectErrorDetails(
-      () => splitFrontmatter('---\nschemaVersion: 1\n---\n# body\n'),
+      () => splitFrontmatter('---\nschemaVersion: 3\n---\n# body\n'),
       'MALFORMED_DTO',
       { reason: 'markdown-body-not-allowed' },
     )

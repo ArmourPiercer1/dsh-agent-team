@@ -16,6 +16,22 @@ import {
   parseBlueprint,
   toHashableBlueprint,
 } from '../blueprint/src/index.js'
+import type { TeamBlueprint } from '../blueprint/src/index.js'
+
+/**
+ * §7.4 carrier migration (pre-flip half): both suites here prove VERSION
+ * behaviour — v2 structured requirements participate in the content hash,
+ * and the v1 projection carries NO v2 keys (the §E.2 byte-stability
+ * guarantee). The digits are the SUBJECT: promoting to v3 would delete
+ * both proofs; invert-to-refusal is a post-flip move. The carriers move to
+ * typed code positions and the YAML lines interpolate from them
+ * byte-identically. `TeamBlueprint['schemaVersion']` is the type §7.3's
+ * cutover narrows to `3` — at the flip these two constants become COMPILE
+ * ERRORS pointing at this proof file, where the planned delete-or-invert
+ * (plan §7.3) happens loudly in review, not as a silent clean.
+ */
+const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
 
 // ---------------------------------------------------------------------------
 // a v2 document with structured requirements (deterministic content)
@@ -23,7 +39,7 @@ import {
 
 const V2_SOURCE: readonly string[] = [
   '---',
-  'schemaVersion: 2',
+  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
   'blueprintId: team.v2.hash',
   'revision: "1"',
   'teamRequirements:',
@@ -82,7 +98,7 @@ const V2_SOURCE_SHUFFLED: readonly string[] = [
   '    complete: true',
   'revision: "1"',
   'blueprintId: team.v2.hash',
-  'schemaVersion: 2',
+  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
   '---',
   '',
 ]
@@ -151,7 +167,7 @@ describe('E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability)', (
     const bp = parseBlueprint(
       [
         '---',
-        'schemaVersion: 1',
+        `schemaVersion: ${V1_DOCUMENT_VERSION}`,
         'blueprintId: team.v1.frozen',
         'revision: "1"',
         'leader:',

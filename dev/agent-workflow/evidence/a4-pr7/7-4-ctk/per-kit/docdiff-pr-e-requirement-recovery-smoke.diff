@@ -1,0 +1,44 @@
+--- tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs::main (pre)
++++ tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs::main (post)
+@@ -13,7 +13,7 @@
+     complete: true
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-E requirement/recovery smoke team. Nonce prereq-2026-10-07T20-45-40. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
++  persona: "You are the leader of the PR-E requirement/recovery smoke team. Nonce prereq-2026-10-07T20-50-33. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
+   requirements:
+     - requirementId: lead.mcp.signal
+       type: mcpServer
+--- tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs::iso (pre)
++++ tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs::iso (post)
+@@ -9,7 +9,7 @@
+     complete: true
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-E isolation team. Nonce prereq-2026-10-07T20-45-40. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
++  persona: "You are the leader of the PR-E isolation team. Nonce prereq-2026-10-07T20-50-33. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
+   capabilities:
+     teamTools:
+       kind: allow
+--- tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs::persona (pre)
++++ tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs::persona (post)
+@@ -9,7 +9,7 @@
+     complete: true
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-E persona team. Nonce prereq-2026-10-07T20-45-40. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
++  persona: "You are the leader of the PR-E persona team. Nonce prereq-2026-10-07T20-50-33. When asked to delegate, call the delegated tool EXACTLY once and then answer with the done marker."
+   capabilities:
+     teamTools:
+       kind: allow
+--- tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs::BP_ANCHOR_YAML (post)
+@@ -4,7 +4,7 @@
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the PR-E smoke boot team. prereq-2026-10-07T20-45-40 is the run nonce."
++  persona: "You are the leader of the PR-E smoke boot team. prereq-2026-10-07T20-50-33 is the run nonce."
+ members: []
+ requirements: []
+ memberEnvelopes: []

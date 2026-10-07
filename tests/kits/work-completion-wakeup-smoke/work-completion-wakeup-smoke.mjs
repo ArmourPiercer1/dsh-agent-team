@@ -486,7 +486,7 @@ function teamRowConfig() {
 /** The row anchor: a plain legacy leader (the 0.1.0-rc.1 boot shape). */
 const BP_ANCHOR_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BP_ANCHOR_ID}`,
   'revision: "1"',
   'leader:',
@@ -497,6 +497,10 @@ const BP_ANCHOR_YAML = [
   '    persona: "You are a worker of the work-completion smoke boot team."',
   'memberEnvelopes: []',
   'requirements: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',
@@ -601,13 +605,17 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
   ]
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     ...leaderBlock,
     ...teamEnvelope,
     ...workerBlock,
     ...memberEnvelope,
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates: []',
     'metadata: {}',
     '---',

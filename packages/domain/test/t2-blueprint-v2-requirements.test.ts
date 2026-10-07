@@ -22,6 +22,21 @@ import { parseBlueprint } from '../blueprint/src/index.js'
 import type { TeamBlueprint } from '../blueprint/src/index.js'
 import { expectCode, expectErrorDetails } from './t2-helpers.js'
 
+/**
+ * §7.4 carrier migration (pre-flip half): this suite pins the v2
+ * structured-requirement surface AND the frozen-v1 leg (a v1 document that
+ * names a v2 field must fail loud — v1 is NOT tightened into v2). Both
+ * digits are the SUBJECT: promoting to v3 deletes the v2 proof and the
+ * v1-freeze negative; invert-to-refusal is a post-flip move. The carriers
+ * move to typed code positions and every YAML line interpolates from them
+ * byte-identically. `TeamBlueprint['schemaVersion']` is the type §7.3's
+ * cutover narrows to `3` — at the flip these constants become COMPILE
+ * ERRORS naming this proof file, where delete-or-invert (plan §7.3) is
+ * decided in review, not silently here.
+ */
+const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
+
 // ---------------------------------------------------------------------------
 // helpers: build v2 documents as raw YAML source
 // ---------------------------------------------------------------------------
@@ -30,7 +45,7 @@ import { expectCode, expectErrorDetails } from './t2-helpers.js'
 function v2Source(body: string): string {
   return [
     '---',
-    'schemaVersion: 2',
+    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
     'blueprintId: team.v2',
     'revision: "1"',
     'leader:',
@@ -55,7 +70,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
   it('parses team + leader + member structured requirements', () => {
     const src = [
       '---',
-      'schemaVersion: 2',
+      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.full',
       'revision: "1"',
       'teamRequirements:',
@@ -103,7 +118,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
   it('normalizes an omitted `complete` to `false` (the ordinary ack-able case)', () => {
     const src = [
       '---',
-      'schemaVersion: 2',
+      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.def',
       'revision: "1"',
       'teamRequirements:',
@@ -130,7 +145,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
   it('accepts a persona requirement (the §E.3 required-persona carrier)', () => {
     const src = [
       '---',
-      'schemaVersion: 2',
+      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.persona',
       'revision: "1"',
       'leader:',
@@ -169,7 +184,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
     // REQUIRED one) fails loud MALFORMED_DTO, never a silent false-OPEN.
     const src = [
       '---',
-      'schemaVersion: 2',
+      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.persona-bad',
       'revision: "1"',
       'leader:',
@@ -194,7 +209,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
   it('rejects an unknown persona subject slug (additive v2 rule, §E.3)', () => {
     const src = [
       '---',
-      'schemaVersion: 2',
+      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.persona-unknown',
       'revision: "1"',
       'leader:',
@@ -219,7 +234,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
     const bp = parseBlueprint(
       [
         '---',
-        'schemaVersion: 2',
+        `schemaVersion: ${V2_DOCUMENT_VERSION}`,
         'blueprintId: team.v2.empty',
         'revision: "1"',
         'teamRequirements: []',
@@ -244,7 +259,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
     const bp = parseBlueprint(
       [
         '---',
-        'schemaVersion: 2',
+        `schemaVersion: ${V2_DOCUMENT_VERSION}`,
         'blueprintId: team.v2.bare',
         'revision: "1"',
         'leader:',
@@ -273,7 +288,7 @@ describe('E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1)', () 
   it('rejects `teamRequirements` on a v1 document (unknown top-level field)', () => {
     const src = [
       '---',
-      'schemaVersion: 1',
+      `schemaVersion: ${V1_DOCUMENT_VERSION}`,
       'blueprintId: team.v1.with-v2',
       'revision: "1"',
       'teamRequirements:',
@@ -299,7 +314,7 @@ describe('E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1)', () 
   it('rejects `requirements` on a v1 template (unknown template field)', () => {
     const src = [
       '---',
-      'schemaVersion: 1',
+      `schemaVersion: ${V1_DOCUMENT_VERSION}`,
       'blueprintId: team.v1.tpl-v2',
       'revision: "1"',
       'leader:',
@@ -331,7 +346,7 @@ describe('E.2 v2: malformed requirements fail loud', () => {
   function v2ReqSource(requirementLines: string[]): string {
     return [
       '---',
-      'schemaVersion: 2',
+      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.neg',
       'revision: "1"',
       'teamRequirements:',
