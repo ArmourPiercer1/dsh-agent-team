@@ -543,3 +543,29 @@ different question — it is the subject of the task queued behind this merge, a
 statement now is that at least two legs of this file (`check:artifacts`, and the composition
 arm that reads the built client entry) depend on that residue, so "green" above is green in a
 built tree and must not be quoted as green in a clean one.
+
+## Correction, 2026-10-08, measured in the clean-worktree round that followed this merge
+
+The paragraph above says "at least two legs of this file (`check:artifacts`, and the
+composition arm that reads the built client entry) depend on that residue". **Half of that is
+false and the half that is true is narrower than it reads.** Measured in a worktree with no
+build output at all, at this base (`a4-pr7/instrument-tree-shape/red-1-instrument.txt`):
+
+- `node scripts/check-artifacts-committed.mjs` → **exit 0**, `OK: 1508 files; committed
+  install-surface artifacts match the fresh build (incl. 1 glue placement(s))`. It does not
+  depend on build residue at all: both entries in `INSTALL_SURFACES`
+  (`packages/runtime/dist` 1505 files, `packages/client/composition-shim` 3 files) are
+  **tracked and committed**, so there is nothing for an unbuilt tree to be missing. It is green
+  in a clean worktree, and the "must not be quoted as green in a clean one" caveat does not
+  apply to it.
+- The composition leg is the one that is genuinely tree-dependent, and it fails **loudly and
+  correctly**: `FAIL client plugin (packages/client): built entry is missing — run `pnpm build`
+  first (a missing artifact is a failure, never a skip)`, footer `FAIL composition-smoke`,
+  exit 1. `packages/client/dist` is gitignored, untracked, in no install surface, and absent
+  from the root `package.json` `files` whitelist — no install of this repository carries it.
+  What was wrong was not the instrument but the two specs that read that red as a composition
+  regression; see `../instrument-tree-shape/FINDINGS.md`.
+
+So the honest statement of the closing paragraph is: **one** leg of this file is green only in a
+tree carrying build output, it is the composition leg, and its green is loud — the residue
+caveat belongs to it alone.

@@ -261,18 +261,19 @@ it measured**, because the `why:` text of a non-green verdict is the only part a
 | composition (`composition-smoke.mjs`) | filesystem as-is | per-arm lines; refusal text adds the tree shape |
 | artifacts (`check-artifacts-committed.mjs`) | tracked surfaces **and** disk | `OK: N files` |
 
-## 8. The battery at the head (final code)
+## 8. The battery at the head (`37d566c6`, final code)
 
 `battery.txt`, exit codes measured without a pipe throughout:
 
 | item | result |
 | --- | --- |
 | p4t6 scannable-file ledger | `10 passed (10)` — **no ledger increment**: `scripts/**` and `dev/agent-workflow/evidence/**` are outside the scan, and both edited test files were already counted |
-| the 7.6 gate in the checkout a reviewer clones (committed surfaces, no client build) | `22 passed (22)` (`gate-and-classifier-in-unbuilt-tree-final.txt` after the last edit: `23 passed (23)`) |
-| the 7.5 classifier suite in that tree | `54 passed (54)`, printing its tree state |
+| the 7.6 gate in the checkout a reviewer clones (committed surfaces, no client build) | `23 passed (23)` |
+| the 7.5 classifier suite in that tree | `54 passed (54)`, printing its tree state (`HEAD 37d566c6, 0 tracked file(s) not matching HEAD`) |
 | `pnpm --filter @dsh-agent-team/client run build` | exit 0 and **`git status` identical afterwards** — the build touches nothing committed |
 | the gate + classifier in the healthy tree | `23 passed (23)` / `54 passed (54)` |
-| the gate in the one-artifact-removed tree | `22 passed (22)` (`gate-tree-C-final.txt`) |
+| the gate in the one-artifact-removed tree | `23 passed (23)` (`gate-tree-C-at-head.txt`) |
+| the same battery a second time on the clean head | `head-verification.txt`: gate `23`, classifier `54`, p4t6 `10`, `new 0, resolved 0` + `universe: 1104 file(s) linted, 0 of them gitignored`, `composition-smoke` exit 0, typecheck exit 0, changed-file eslint exit 0, `git status` empty |
 | `pnpm -r run typecheck` | exit 0, 8 `Done`, 0 `error TS` |
 | changed-file eslint (all six touched files) | exit 0 |
 | `lint-identities --diff …0237d487.txt` | exit 0, `160 identity lines, 76 distinct`, `new 0, resolved 0`, `universe: 1104 file(s) linted, 0 of them gitignored` |

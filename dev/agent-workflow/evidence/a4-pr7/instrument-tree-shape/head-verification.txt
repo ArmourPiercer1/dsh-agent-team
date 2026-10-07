@@ -1,0 +1,25 @@
+### HEAD verification at 37d566c6 on fix/a4-instrument-tree-shape (parent 69f7fdad)
+tree state: client dist files=400  status lines=0
+--- a4p7-merge-gate
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+--- a4p75 classifier
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+--- p4t6 ledger
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+--- lint-identities --diff <baseline> (exit measured without a pipe)
+lint-identities exit=0
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1104 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+--- composition-smoke (exit measured without a pipe)
+composition-smoke exit=0
+PASS composition-smoke
+--- pnpm -r run typecheck
+typecheck exit=0  Done=8  errorTS=0
+--- changed-file eslint
+eslint exit=0
+--- final git status
+(no lines above = clean)

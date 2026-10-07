@@ -1,4 +1,4 @@
-############ BATTERY at 69f7fdad (head is the commit made from this tree)
+############ BATTERY at 37d566c6 (head is the commit made from this tree)
 ### 1. p4t6 scannable-file ledger
  Test Files  1 passed (1)
       Tests  10 passed (10)
@@ -6,9 +6,9 @@
 ### 2. the 7.6 gate in the CHECKOUT A REVIEWER CLONES (committed surfaces only, no client build)
 packages/client/dist: ABSENT
  Test Files  1 passed (1)
-      Tests  22 passed (22)
+      Tests  23 passed (23)
 ### 2b. the 7.5 classifier suite in the same tree
-composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD 69f7fdad, 7 tracked file(s) not matching HEAD; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD 37d566c6, 0 tracked file(s) not matching HEAD; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
  Test Files  1 passed (1)
       Tests  54 passed (54)
 
@@ -17,7 +17,7 @@ build exit=0
 git status identical after build: yes
 entry present: yes   files under packages/client/dist: 400
  Test Files  1 passed (1)
-      Tests  22 passed (22)
+      Tests  23 passed (23)
 ### 3b. the 7.5 classifier suite in the healthy tree
  Test Files  1 passed (1)
       Tests  54 passed (54)
@@ -42,11 +42,4 @@ PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 ru
 PASS composition-smoke
 
 ### 8. tree state at the end
- M eslint.config.mjs
- M packages/testkit/test/a4p7-merge-gate.test.ts
- M packages/testkit/test/a4p75-composition-smoke-classification.test.ts
- M scripts/lint-identities.mjs
-?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/
-?? scripts/a4-artifact-provenance.d.mts
-?? scripts/a4-artifact-provenance.mjs
 scratch leftovers: packages/testkit/test/.tmp-fault (none expected)

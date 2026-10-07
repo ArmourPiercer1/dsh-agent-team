@@ -1,0 +1,6 @@
+note: the entry:/siblings: line below is printed BEFORE the removal. The gate then runs with the entry moved aside and 399 siblings left in packages/client/dist, and "restored: yes" is the assertion that the worktree was handed back as found.
+### FULL 7.6 gate in TREE C at head 37d566c6 (entry surgically removed, 399 siblings left)
+entry: PRESENT  siblings: 400
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+restored: yes  git status lines: 5
