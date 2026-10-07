@@ -149,6 +149,11 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
         if (rel.startsWith(`governance${sep}service.ts`)) continue
         if (rel.startsWith(`governance${sep}types.ts`)) continue
         if (rel.startsWith(`governance${sep}index.ts`)) continue
+        // A4-PR5 amendment: the proposal-law module — a SIBLING KERNEL inside
+        // the governance lane (it consumes the mutation kernel's pure
+        // vocabulary exactly as service.ts does; it is not a production
+        // wiring, and its own importer legs below pin who may import IT).
+        if (rel.startsWith(`governance${sep}permission-approval.ts`)) continue
         // PR4 (round 3) amendment: the ONE production consumer — the plugin
         // assembly layer that derives the identity-bound authority facts
         // (pure parse/answer helpers only; zero write path, zero grammar).
@@ -249,6 +254,9 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
         if (rel.startsWith(`governance${sep}service.ts`)) continue
         if (rel.startsWith(`governance${sep}types.ts`)) continue
         if (rel.startsWith(`governance${sep}index.ts`)) continue
+        // A4-PR5 amendment: the proposal-law module (see the leg above — the
+        // combined predicate must carry the SAME skip, or one window lies).
+        if (rel.startsWith(`governance${sep}permission-approval.ts`)) continue
         // PR4's audited assembly layer is the ONE production consumer, by barrel as
         // well as by module — measured, not assumed: it is the only barrel importer
         // in the tree that names a mutation symbol at all.
@@ -761,6 +769,14 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // `teamHardEnvelope` and the ceiling module itself stay out of it (pinned
     // by the two legs below).
     const OPERATION_ROUTING = join('operation-permission', 'approval-routing.ts')
+    // A4-PR5 amendment: `permission-approval.ts` — the durable-proposal law
+    // module INSIDE the governance lane — joins as a consumer of exactly the
+    // rows the frozen approval walk calls (the evaluator and its input type,
+    // the rank function, and the refusal vocabulary it maps to outcome arms).
+    // It is a sibling kernel, the same character service.ts has on these rows;
+    // its own importer surface is pinned by a leg of its own below.
+    const PERMISSION_APPROVAL = 'governance/permission-approval.ts'
+    const CEILING_AND_PROPOSAL = [...CEILING_AND_GATE, PERMISSION_APPROVAL]
     // The list's COMPLETENESS is asserted below against the module's own export
     // scan, so this array cannot quietly fall behind the file it polices.
     const SURFACE: readonly (readonly [name: string, allowed: readonly string[]])[] = [
@@ -773,9 +789,9 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // as "not one of mine" and rethrow out of the governance path).
       ['bindingDocs', CEILING_LANE],
       ['grantCeiling', CEILING_AND_GATE],
-      ['AuthorityEnvelopeDocuments', [...CEILING_AND_GATE, LANE_TYPES, OPERATION_ROUTING]],
-      ['AuthorityBindingError', CEILING_AND_GATE],
-      ['AUTHORITY_CEILING_ERROR_CODES', [...CEILING_AND_GATE, OPERATION_ROUTING]],
+      ['AuthorityEnvelopeDocuments', [...CEILING_AND_PROPOSAL, LANE_TYPES, OPERATION_ROUTING]],
+      ['AuthorityBindingError', CEILING_AND_PROPOSAL],
+      ['AUTHORITY_CEILING_ERROR_CODES', [...CEILING_AND_PROPOSAL, OPERATION_ROUTING]],
       ['AuthorityBindingProblem', CEILING_LANE],
       ['AuthorityCeilingErrorCode', CEILING_LANE],
       ['AuthorityCeilingScope', CEILING_AND_EVALUATOR],
@@ -794,7 +810,12 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // consumer set is short on purpose: anything that wants a rank calls
       // `authorityRank` and gets the closed-set refusal with it.
       ['AUTHORITY_RANK', CEILING_AND_EVALUATOR],
-      ['authorityRank', CEILING_AND_EVALUATOR],
+      // A4-PR5: the proposal walk compares RUNGS (approved vs recomputed
+      // required) — the rank law stays ONE table; both consumers join by name
+      // (service for the commit-boundary check, approval for the batch max).
+      // A4-PR4: the operation router compares fresh-document rungs through
+      // THE ladder ordering rather than re-spelling one.
+      ['authorityRank', [...CEILING_AND_EVALUATOR, SERVICE, PERMISSION_APPROVAL]],
       ['isHigherAuthority', [...CEILING_AND_EVALUATOR, OPERATION_ROUTING]],
       // WHO MAY ACT — the ladder half of "legal approval", never fused with the
       // ceiling half (ADR A3-2, spec §7.4).
@@ -814,9 +835,13 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts')]],
       ['AuthorityEvaluation', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationEvidence', [RUNTIME_AUTHORITY, 'governance/index.ts', OPERATION_ROUTING]],
-      ['AuthorityEvaluationInput', [RUNTIME_AUTHORITY, 'governance/index.ts']],
+      ['AuthorityEvaluationInput', [RUNTIME_AUTHORITY, 'governance/index.ts', PERMISSION_APPROVAL]],
       ['AuthorityEvaluationOutcome', [RUNTIME_AUTHORITY, 'governance/index.ts']],
-      ['evaluateAuthorityCeiling', [...CEILING_AND_GATE, OPERATION_ROUTING]],
+      // A4-PR5: the approval-rung plan REUSES this frozen walk (never a
+      // second ladder implementation); the refusal detail already did.
+      // A4-PR4: the operation router asks the same ceiling question — same
+      // walk, same documents, one ordering fact (A5-12).
+      ['evaluateAuthorityCeiling', [...CEILING_AND_PROPOSAL, OPERATION_ROUTING]],
       // The domain algebra: the domain lane, plus the ceiling adapter where it
       // composes them. NOT the permission plane and NOT any decision path.
       ['narrowingForApproval', [...DOMAIN_LANE, ...CEILING_LANE]],
@@ -989,13 +1014,75 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // governance → governance: no plugin edge, no storage edge, and neither file
     // reaches `narrowingForApproval` or the domain algebra (pinned by their SURFACE
     // rows above, which list them only for the ceiling names the gate calls).
+    // A4-PR5: `governance/permission-approval.ts` joins — the proposal law
+    // consumes the refusal vocabulary (`AuthorityBindingError`, its code
+    // table), the document-set type, and `authorityRank` to take the batch
+    // MAX rung. governance → governance; no plugin edge, no storage edge,
+    // and it reaches no domain algebra (its SURFACE rows above state the
+    // exact set; the leg below pins who may import IT).
     expect([...importers].sort()).toEqual([
       join('governance', 'index.ts'),
+      join('governance', 'permission-approval.ts'),
       join('governance', 'runtime-authority.ts'),
       join('governance', 'service.ts'),
       join('governance', 'types.ts'),
       join('src', 'plugin', 'permission-plane.ts'),
     ].sort())
+  })
+
+  it('the PR5 proposal-law module has exactly the consumers PR5 gave it (and the barrel exports all of it)', () => {
+    const importers = new Set<string>()
+    for (const file of walkTs(RUNTIME_ROOT, [])) {
+      const source = readFileSync(file, 'utf8')
+      for (const match of source.matchAll(/\bfrom\s*['"]([^'"]*permission-approval\.js)['"]/g)) {
+        if ((match[1] ?? '').length === 0) continue
+        importers.add(relative(RUNTIME_ROOT, file))
+      }
+    }
+    // service (the law's caller), types (the port type the deps carry), the
+    // barrel (the sanctioned single instantiation). storage stays ABSENT on
+    // purpose. src/plugin was the "named future amendment" this comment held
+    // open — the REBASE ROUND spent it: `src/plugin/permission-plane.ts` now
+    // consumes `beneficiaryAuthorityForTarget` through the BARREL, which the
+    // specifier scan above cannot see, so the BY-NAME scan below states it.
+    expect([...importers].sort()).toEqual([
+      join('governance', 'index.ts'),
+      join('governance', 'service.ts'),
+      join('governance', 'types.ts'),
+    ].sort())
+    // The barrel route stated by NAME, so a consumer arriving through the
+    // barrel cannot hide from this leg either.
+    const namedConsumers = new Set<string>()
+    for (const file of walkTs(RUNTIME_ROOT, [])) {
+      const rel = relative(RUNTIME_ROOT, file)
+      if (rel === join('governance', 'permission-approval.ts')) continue
+      if (codeOnly(readFileSync(file, 'utf8')).includes('beneficiaryAuthorityForTarget')) {
+        namedConsumers.add(rel)
+      }
+    }
+    expect([...namedConsumers].sort()).toEqual([
+      join('governance', 'index.ts'), // the re-export itself
+      join('governance', 'service.ts'), // the ask path
+      join('src', 'plugin', 'permission-plane.ts'), // the ceiling reader (rebase round)
+    ].sort())
+    // COMPLETENESS both directions: every runtime export of the law module is
+    // re-exported by the barrel (one instantiation — no import route the
+    // name walk cannot see), and the barrel claims nothing the module lacks.
+    const lawSource = readFileSync(join(RUNTIME_ROOT, 'governance', 'permission-approval.ts'), 'utf8')
+    const exported = new Set<string>()
+    for (const m of lawSource.matchAll(/^export (?:const|function|interface|type)\s+([A-Za-z0-9_]+)/gm)) {
+      if (m[1]) exported.add(m[1])
+    }
+    expect(exported.size, 'the export scan found nothing to police').toBeGreaterThan(8)
+    const barrelSource = readFileSync(join(RUNTIME_ROOT, 'governance', 'index.ts'), 'utf8')
+    const reExported = new Set<string>()
+    for (const block of barrelSource.matchAll(/export(?: type)? \{([^}]*)\} from '\.\/permission-approval\.js'/g)) {
+      for (const entry of (block[1] ?? '').split(',')) {
+        const name = entry.trim().split(/\s+as\s+/).pop()?.trim()
+        if (name && /^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) reExported.add(name)
+      }
+    }
+    expect([...reExported].sort(), 'the barrel re-exports exactly the law module\'s exports').toEqual([...exported].sort())
   })
 
   it('the runtime consumes that grammar as ONE implementation, not a copy', () => {
@@ -1025,5 +1112,110 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     expect(AUTHORITY_CEILING_SOURCE).toContain("import type { ProposalAuthorityPosition } from './proposal-store.js'")
     expect(AUTHORITY_CEILING_SOURCE).not.toMatch(/^import \{[^}]*\} from '\.\/proposal-store\.js'/m)
     expect(AUTHORITY_CEILING_SOURCE).not.toMatch(/from '\.\.\/\.\.\/storage\//)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// A2-16 / A3-10 — THE GATE PR5 OWED AND THIS PR SHIPS. ADR A2-16:1 "PR5 gate:
+// a test asserting exactly one overlay `.append(` call site outside tests";
+// restated truthfully by A3-10 as ONE FUNNEL: exactly one kernel writer, the
+// adapter as its only wrapper, and no third call site — three assertions.
+// PR5 is the PR that added a SECOND commit route (approved-commit and step-5
+// both commit through the extracted `appendPlannedSnapshot`), and a text-order
+// gate cannot see a call site that sits textually BEFORE it (the a4p2 leg's
+// `indexOf('overlay.append(')` compares positions; the kernel append now
+// precedes the gate in text, so that leg is blind to exactly the case this
+// gate exists for). This leg locates the append by FUNCTION-BODY CONTAINMENT
+// and scans every production file: a third writer — in any file, at any
+// position — turns it red. That is why it ships here, in the PR that made it
+// single-writer, not later when there is nothing left to protect.
+// ---------------------------------------------------------------------------
+function productionSources(): Map<string, string> {
+  const out = new Map<string, string>()
+  const packagesRoot = join(RUNTIME_ROOT, '..')
+  const visit = (dir: string): void => {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry)
+      const st = statSync(full)
+      if (st.isDirectory()) {
+        if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+        visit(full)
+        continue
+      }
+      if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry.endsWith('.d.ts')) continue
+      out.set(relative(RUNTIME_ROOT, full).split(sep).join('/'), readFileSync(full, 'utf8'))
+    }
+  }
+  for (const pkg of ['runtime', 'tools', 'remote', 'client', 'domain']) {
+    const pkgRoot = pkg === 'runtime' ? RUNTIME_ROOT : join(packagesRoot, pkg)
+    try {
+      statSync(pkgRoot)
+    } catch {
+      continue
+    }
+    visit(pkgRoot)
+  }
+  return out
+}
+
+/** Brace-match the body of `const appendPlannedSnapshot = async (` — the
+ *  funnel. Text order plays no role: containment is the assertion. */
+function appendPlannedSnapshotBody(source: string): string {
+  const start = source.indexOf('const appendPlannedSnapshot = async (')
+  if (start === -1) throw new Error('A2-16 gate has no subject: appendPlannedSnapshot is gone')
+  const open = source.indexOf('{', source.indexOf(')', start))
+  let depth = 0
+  for (let i = open; i < source.length; i += 1) {
+    if (source[i] === '{') depth += 1
+    else if (source[i] === '}') {
+      depth -= 1
+      if (depth === 0) return source.slice(open, i + 1)
+    }
+  }
+  throw new Error('appendPlannedSnapshot body never closes')
+}
+
+describe('A2-16/A3-10: the durable overlay writer is ONE funnel, structurally (the PR5-owed gate)', () => {
+  const SOURCES = productionSources()
+
+  it('clause 1: exactly ONE kernel `overlay.append(` call site in ALL production source, and it sits INSIDE appendPlannedSnapshot', () => {
+    const kernelSites: string[] = []
+    for (const [rel, text] of SOURCES) {
+      const hits = text.match(/\boverlay\.append\(/g)
+      if (hits !== null) for (let i = 0; i < hits.length; i += 1) kernelSites.push(rel)
+    }
+    expect(kernelSites).toEqual(['governance/service.ts'])
+    expect(SERVICE_SOURCE.match(/\boverlay\.append\(/g)?.length).toBe(1)
+    // Containment, not position: the one call site is inside the funnel body.
+    const body = appendPlannedSnapshotBody(SERVICE_SOURCE)
+    expect((body.match(/\boverlay\.append\(/g) ?? []).length).toBe(1)
+    // And the ONLY way the lane writes a snapshot is by calling the funnel:
+    // both commit routes (step-5 and the approved retry) go through it.
+    expect(SERVICE_SOURCE.match(/\bawait appendPlannedSnapshot\(/g)?.length).toBe(2)
+  })
+
+  it('clause 2: the adapter is the kernel writer\u2019s ONLY wrapper, instantiated in exactly one wiring', () => {
+    const adapter = SOURCES.get('permission-governance/overlay-repository.ts')
+    if (adapter === undefined) throw new Error('the lane port adapter vanished \u2014 the funnel lost its wrapper')
+    // The wrapper shape, exactly once: it forwards, it does not author.
+    expect(adapter.match(/\.append\(/g)?.length).toBe(1)
+    expect(adapter).toContain('return repository.append(input)')
+    // One instantiation in production: the plugin assembly layer. A second
+    // instantiation would be a second handle to the store.
+    const sites: string[] = []
+    for (const [rel, text] of SOURCES) {
+      if (/\bcreatePermissionOverlayRepositoryPort\s*\(/.test(text) && !text.includes('export function createPermissionOverlayRepositoryPort')) {
+        sites.push(rel)
+      }
+    }
+    expect(sites).toEqual(['src/plugin/host.ts'])
+  })
+
+  it('clause 3: no third call site \u2014 the snapshot-append vocabulary exists in no other production file', () => {
+    const writers: string[] = []
+    for (const [rel, text] of SOURCES) {
+      if (/\boverlay\.append\(|\brepository\.append\(input\b/.test(text)) writers.push(rel)
+    }
+    expect(writers.sort()).toEqual(['governance/service.ts', 'permission-governance/overlay-repository.ts'])
   })
 })

@@ -145,6 +145,7 @@ export declare function createPermissionGovernanceLane(deps: {
      *  production root wires the SAME shared assertion the mutation lane
      *  pre-checks — one lifecycle law, never a second gate. */
     readonly targetGuard?: GovernancePermissionLaneDeps['targetGuard'];
+    readonly isLifecycleRefusal?: GovernancePermissionLaneDeps['isLifecycleRefusal'];
     /** A4-PR2 lane C: the v3 authority-ceiling context reader, wired by the
      *  production root from {@link createAuthorityCeilingReader}. Absent = the
      *  deployment wired no ceiling reader, which is a WIRING fact and never the v3
@@ -235,6 +236,13 @@ export interface PermissionAuthorityFacts {
      * permission fact is read through — never a document-shape inference.
      */
     readonly blueprintSchemaVersion: (teamSessionId: string) => number | undefined;
+    /** A4-PR5 (rebase round): the machine content identity of the SAME bound
+     *  Blueprint the version switch above resolves — `TeamBlueprint.contentHash`
+     *  is the value the POLICY_STATE_SNAPSHOT_MISMATCH law compares against, so
+     *  a proposal fingerprint built from it binds to exactly the Blueprint the
+     *  Team is bound to. `undefined` = no resolvable bound Blueprint (UNKNOWN),
+     *  never a stand-in. */
+    readonly blueprintContentHash: (teamSessionId: string) => string | undefined;
 }
 /**
  * Build the addressed-team, per-member authority readers (see the section
@@ -323,6 +331,6 @@ export declare function createPermissionAuthorityFacts(deps: PermissionAuthority
  * i.e. an authority verdict invented from an absence.
  */
 export declare function createAuthorityCeilingReader(deps: {
-    readonly facts: Pick<PermissionAuthorityFacts, 'teamHardEnvelope' | 'permissionEnvelope' | 'blueprintSchemaVersion'>;
+    readonly facts: Pick<PermissionAuthorityFacts, 'teamHardEnvelope' | 'permissionEnvelope' | 'blueprintSchemaVersion' | 'blueprintContentHash'>;
 }): (teamSessionId: string, memberInstanceId: string, actor: 'leader' | 'human') => Promise<PermissionAuthorityCeilingContext | undefined>;
 //# sourceMappingURL=permission-plane.d.ts.map

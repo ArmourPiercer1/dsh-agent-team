@@ -255,8 +255,18 @@ import { createProjectionService } from '../../projection/index.js'
 import type { ProjectionService } from '../../projection/index.js'
 import { createTeamTools } from '../../../tools/src/index.js'
 import type { TeamToolSet } from '../../../tools/src/index.js'
-import { createGovernanceMutationService } from '../../governance/index.js'
-import type { GovernancePermissionLaneDeps } from '../../governance/index.js'
+import {
+  createGovernanceMutationService,
+  // A4-PR5: the durable proposal store (the ONE approval-case writer, over
+  // the SAME durable ledger repo) and the late-bound approval port over the
+  // shared `controlServiceRef` — the same ref pattern `boot()` uses for
+  // every control consumer, so a governance service built BEFORE the
+  // control service exists reads it LAZILY and an unwired boot stays on
+  // PR2's typed refusal byte-identically.
+  createGovernanceProposalStore,
+  lateBoundPermissionMutationApprovalPort,
+} from '../../governance/index.js'
+import type { GovernancePermissionLaneDeps, PermissionMutationApprovalPort } from '../../governance/index.js'
 // pre-alpha3 PR4 (plan "PR4: Grant/Revoke/Lifecycle", production entry
 // wiring): the production PERMISSION PLANE assembly (the overlay port's
 // lane deps + the two lifecycle lanes). The root owns the wiring only —
@@ -2543,6 +2553,11 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
               memberInstanceId,
               'mutate the permission overlay of',
             ),
+          // A4-PR5 (review item 6): the SAME owner's decider — the guard's
+          // refusals are exactly the lifecycle law's typed errors; anything
+          // else thrown from the guard stack is a FAULT and the governance
+          // service must propagate it, never reinterpret it as stale.
+          isLifecycleRefusal: (error: unknown) => error instanceof PermissionLifecycleError,
           ...(fsContainsKeys === undefined ? {} : { fsContainsKeys }),
           // Round 3 (BLOCK-1) / round 4 (addressed-team + X1 ceiling): the
           // fact readers pass through VERBATIM — this factory neither
@@ -2552,6 +2567,27 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
           ...(permissionAuthorityCeiling === undefined ? {} : { authorityCeiling: permissionAuthorityCeiling }),
         })
+
+  // A4-PR5: the durable proposal lane. The store rides `repos.ledger`
+  // (proposals are ledger rows — one durable store, one durability order
+  // with every other team fact); the approval port is the LATE-BOUND
+  // adapter over the shared `controlServiceRef` — the same ref pattern
+  // `boot()` uses for every control consumer — so construction order never
+  // matters, and a boot whose ref stays empty leaves the approval lane
+  // UNWIRED: every rise answers PR2's typed refusal byte-identically (the
+  // service probes `wired()` per call, not once).
+  const governanceProposals = createGovernanceProposalStore({
+    ledger: repos.ledger as never,
+    now,
+  })
+  // The ref cast states the structural fact: the FULL control service
+  // implements the narrow 3-method approval port (the port is exactly the
+  // slice the mutation lane may call — request/lookup/read, no decision
+  // entrance: a mutation surface that could DECIDE approvals would be a
+  // second authority path, refused by construction).
+  const permissionApprovalPort = lateBoundPermissionMutationApprovalPort(
+    controlServiceRef as unknown as { current: PermissionMutationApprovalPort | undefined },
+  )
 
   const mutation = {
     // R2-1: the durable-backed store is exposed on the root surface (an
@@ -2642,6 +2678,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       ...(permissionGovernanceLane === undefined
         ? {}
         : { permissionLane: permissionGovernanceLane }),
+      // A4-PR5: the durable proposal store + the approval port (both inert
+      // while the permission lane above is absent — the service's own
+      // probe requires lane + ceiling reader + store + port together;
+      // either half missing is PR2's typed refusal, byte-identical).
+      proposals: governanceProposals,
+      approval: permissionApprovalPort,
     }),
     resolveDurableModelSelection,
     resolveDurableMcpFacet,

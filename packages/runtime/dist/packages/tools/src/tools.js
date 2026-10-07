@@ -23,7 +23,9 @@
  * |                       | idempotent over the scope identity)          |
  * | team_resolve_control  | control service `resolveControl` (unguarded: |
  * |                       | the service's resolver role closure is the   |
- * |                       | authority; a member is never a resolver)     |
+ * |                       | authority; a member is never a resolver);    |
+ * |                       | `decision=escalate` routes to                |
+ * |                       | `escalateApprovalLeg` (A4-PR5, PR4 duty b)   |
  * | team_list_pending_control | control service `listControlState`     |
  * |                       | (C1: the read-only Leader discovery of      |
  * |                       | pending `leader-approval` requests — leader |
@@ -73,7 +75,7 @@
  * @module @dsh-agent-team/tools/tools
  */
 import { ACTION_NAMES, PROGRESS_VALUES, isTeamRuntimeError, } from '../../runtime/admission/index.js';
-import { CONTROL_DECISION_VALUES, CONTROL_REQUEST_KIND_VALUES, isControlError, } from '../../runtime/control/index.js';
+import { CONTROL_DECISION_VALUES, CONTROL_REVIEW_ACTIONS, CONTROL_REQUEST_KIND_VALUES, isControlError, } from '../../runtime/control/index.js';
 import { isMessagingError } from '../../runtime/messaging/index.js';
 import { ACTIVITY_ERROR_CODES, isActivityError, } from '../../runtime/activity/index.js';
 import { isArgsRecord, isTeamToolArgsError, optionalStringField, requireStringField, validateRequestToken, } from './tokens.js';
@@ -842,7 +844,7 @@ function requestControlSpec() {
 function resolveControlSpec() {
     return {
         name: 'team_resolve_control',
-        description: "Record an allow/deny decision on a pending control request (resolver roles per kind: leader-approval -> leader|human, user-approval -> human only, envelope-mutation -> leader|human; a member is never a resolver). An allow authorizes the exact scope exactly once, consumed by the last-mile guard.",
+        description: "Record an allow/deny decision on a pending control request, or ESCALATE the leg when its reviewer judges the case above its rung (resolver roles per kind: leader-approval -> leader|human, user-approval -> human only, envelope-mutation -> leader|human; a member is never a resolver). An allow authorizes the exact scope exactly once, consumed by the last-mile guard. Escalate closes THIS leg with a terminal deny(reason 'escalated'), records the reviewer's escalation fact, and passes the case to the next rung on the closed successor ladder; the escalating reviewer can no longer act on the case.",
         properties: {
             rootSessionId: ROOT_SESSION_ID_ARG,
             requestToken: REQUEST_TOKEN_ARG,
@@ -852,8 +854,17 @@ function resolveControlSpec() {
             },
             decision: {
                 type: 'string',
-                enum: [CONTROL_DECISION_VALUES.ALLOW, CONTROL_DECISION_VALUES.DENY],
-                description: 'The decision: allow | deny.',
+                // A2-1 holds: `escalate` is NOT a CONTROL_DECISION_VALUE (a fourth
+                // decision value would make the first escalate row an implicit
+                // vocabulary change). The TOOL enum carries the third choice from the
+                // separate ESCALATION-actions axis; the service routes it to
+                // `escalateApprovalLeg`, never to `resolveControl`.
+                enum: [
+                    CONTROL_DECISION_VALUES.ALLOW,
+                    CONTROL_DECISION_VALUES.DENY,
+                    CONTROL_REVIEW_ACTIONS.ESCALATE,
+                ],
+                description: 'The decision: allow | deny | escalate.',
             },
             note: {
                 type: 'string',
@@ -865,12 +876,26 @@ function resolveControlSpec() {
             const requestId = requireStringField(args, 'requestId', REQUEST_ID_MAX_LENGTH);
             const decision = requireStringField(args, 'decision', 16);
             if (decision !== CONTROL_DECISION_VALUES.ALLOW &&
-                decision !== CONTROL_DECISION_VALUES.DENY) {
-                throw new TeamToolArgsError("team-tools: argument 'decision' must be allow | deny", {
+                decision !== CONTROL_DECISION_VALUES.DENY &&
+                decision !== CONTROL_REVIEW_ACTIONS.ESCALATE) {
+                throw new TeamToolArgsError("team-tools: argument 'decision' must be allow | deny | escalate", {
                     decision,
                 });
             }
             const note = optionalStringField(args, 'note', NOTE_MAX_LENGTH);
+            if (decision === CONTROL_REVIEW_ACTIONS.ESCALATE) {
+                // The escalate arm (PR4 hand-off duty b): the durable law — resolver
+                // roles, the `reviewedBy` exclusion, the risen leg or the A1-12
+                // termination — is the SERVICE's (`escalateApprovalLeg`); this tool
+                // adds no authority of its own and forwards the derived caller.
+                const outcome = await ctx.options.controlService.escalateApprovalLeg({
+                    rootSessionId: ctx.rootSessionId,
+                    caller: ctx.caller,
+                    requestId,
+                    ...(note !== undefined ? { reason: note } : {}),
+                });
+                return { status: 'control-escalated', outcome };
+            }
             const record = await ctx.options.controlService.resolveControl({
                 rootSessionId: ctx.rootSessionId,
                 caller: ctx.caller,

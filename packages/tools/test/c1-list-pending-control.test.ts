@@ -33,6 +33,7 @@ import { createActivityLedger } from '../../runtime/activity/index.js'
 import type { ActivityLedger } from '../../runtime/activity/index.js'
 import type { ActionCaller, TeamRuntime } from '../../runtime/admission/index.js'
 import {
+  CONTROL_DECISION_REASONS,
   CONTROL_REQUEST_KINDS,
   createControlService,
 } from '../../runtime/control/index.js'
@@ -510,5 +511,177 @@ describe('team_list_pending_control (C1) — the Leader pending-approval discove
     if (S.audit.status === 'pending-control-listed') {
       expect(S.audit.pending.length).toBeGreaterThan(0)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// A4-PR5 rebase round (PR4 hand-off duty b): the model-facing ESCALATION arm.
+// PR4 shipped `escalateApprovalLeg` service-only, because the closed
+// `TeamToolsResult` union had no arm for it and the tool advertised
+// `allow | deny` only — so "a reviewer can escalate" was unproven at the
+// surface. The union now admits `control-escalated`, the tool enum admits
+// `escalate`, and this group measures WHAT IS TRUE at the tool: the reviewer
+// of the current leg escalates through the same `team_resolve_control` entry;
+// a non-reviewer is refused by the service law and the leg SURVIVES for its
+// reviewer; a pre-Alpha.4 row without a case identity keeps its closed
+// refusal; and — the examined assumption PR4 named — a member is not the
+// reviewer of ANY current kind (leader-approval/user-approval/envelope-
+// mutation resolver closures), so no member leg exists to escalate: the
+// member refusal below is the measurement, not an assumption.
+// ---------------------------------------------------------------------------
+const E = await (async () => {
+  const env = await createC1ToolWorld('c1-escalate-arm')
+  const leaderCaller: ActionCaller = { kind: 'instance', instanceId: LEADER_ID }
+  const workerCaller: ActionCaller = { kind: 'instance', instanceId: WORKER_ID }
+  async function openLeg(correlation: string) {
+    const opened = await env.control.requestApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: workerCaller,
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      reviewAuthority: 'leader',
+      requiredAuthorityAtCreation: 'leader',
+      identity: {
+        subject: { kind: 'instance', instanceId: WORKER_ID },
+        beneficiaryAuthority: 'member',
+        requestedEffect: 'allow',
+        operationFingerprint: `a4p5-escalate-${correlation}`,
+        correlation,
+      },
+      actionName: 'write-file',
+      toolName: 'fs.write',
+    })
+    if (opened.kind !== 'leg') {
+      throw new Error(`escalate arm setup: expected a durable leg, got '${opened.kind}'`)
+    }
+    return opened.leg
+  }
+
+  // (1) THE reviewer escalates THROUGH THE TOOL: the arm is honest.
+  const leg1 = await openLeg('c1-esc-1')
+  const escalated = await runTool(
+    env,
+    'team_resolve_control',
+    {
+      rootSessionId: P6T4_ROOT,
+      requestToken: 'c1-esc-t1',
+      requestId: leg1.requestId,
+      decision: 'escalate',
+      note: 'above my rung',
+    },
+    P6T4_ROOT,
+  )
+
+  // (2) A NON-REVIEWER (the worker — a member, which is no kind's reviewer)
+  // is refused, and the refusal leaves the leg alive for its reviewer.
+  const leg2 = await openLeg('c1-esc-2')
+  let workerRefusal: unknown
+  try {
+    workerRefusal = await runTool(
+      env,
+      'team_resolve_control',
+      { rootSessionId: P6T4_ROOT, requestToken: 'c1-esc-t2', requestId: leg2.requestId, decision: 'escalate' },
+      WORKER_SESSION,
+    )
+  } catch (error) {
+    workerRefusal = error
+  }
+  const afterRefusal = await runTool(
+    env,
+    'team_resolve_control',
+    { rootSessionId: P6T4_ROOT, requestToken: 'c1-esc-t3', requestId: leg2.requestId, decision: 'escalate' },
+    P6T4_ROOT,
+  )
+
+  // (3) The decision enum still refuses garbage — now naming all three arms.
+  let badDecision: unknown
+  try {
+    badDecision = await runTool(
+      env,
+      'team_resolve_control',
+      { rootSessionId: P6T4_ROOT, requestToken: 'c1-esc-t4', requestId: leg1.requestId, decision: 'maybe' },
+      P6T4_ROOT,
+    )
+  } catch (error) {
+    badDecision = error
+  }
+
+  // (4) A pre-Alpha.4 row (no case identity) keeps its closed refusal.
+  const legacy = await env.control.requestControl({
+    rootSessionId: P6T4_ROOT,
+    caller: workerCaller,
+    kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+    targetInstanceId: WORKER_ID,
+    actionName: 'write-file',
+    toolName: 'fs.write',
+    correlation: 'c1-esc-legacy',
+  })
+  let legacyRefusal: unknown
+  try {
+    legacyRefusal = await runTool(
+      env,
+      'team_resolve_control',
+      { rootSessionId: P6T4_ROOT, requestToken: 'c1-esc-t5', requestId: legacy.requestId, decision: 'escalate' },
+      P6T4_ROOT,
+    )
+  } catch (error) {
+    legacyRefusal = error
+  }
+  void leaderCaller
+  // The scratch world is closed once every scenario above is computed (the
+  // file's established pattern at the S block: destroy before returning —
+  // vitest double-loads the module and a surviving TeamDomain fails closed
+  // on the second load, which is exactly how this group's first attempt
+  // died).
+  await destroyP6T1World(env.world)
+  return { leg1RequestId: leg1.requestId, escalated, workerRefusal, afterRefusal, badDecision, legacyRefusal }
+})()
+
+// The closed tool wrapper maps a THROWING run() to the `rejected` arm
+// (code + message, never a raw throw) — the refusals below are asserted as
+// that arm, measured, not as thrown errors.
+function rejectedArm(value: unknown): { status?: string; code?: string; message?: string } {
+  return value as { status?: string; code?: string; message?: string }
+}
+
+describe('team_resolve_control escalation arm (A4-PR5, PR4 duty b)', () => {
+  it('the reviewer escalates through the tool: control-escalated, terminal deny(reason escalated), the leg RISES', () => {
+    expect(E.escalated.status).toBe('control-escalated')
+    if (E.escalated.status !== 'control-escalated') return
+    expect(E.escalated.outcome.caseOutcome).toBe('escalated')
+    expect(E.escalated.outcome.terminalDecision.reason).toBe(CONTROL_DECISION_REASONS.ESCALATED)
+    // The closed successor ladder: a leader leg rises to human-user (the
+    // successor table is the service's law; the tool forwards it verbatim).
+    expect(E.escalated.outcome.nextLeg?.reviewAuthority).toBe('human-user')
+    // The durable facts the arm carries: the escalation NAMES the escalating
+    // principal (never a leg — A1-10) and closes the EXACT leg it was asked
+    // on, without reusing its requestId.
+    expect(E.escalated.outcome.escalation.previousRequestId).toBe(E.leg1RequestId)
+    expect(E.escalated.outcome.escalation.escalatedBy).toEqual(
+      expect.objectContaining({ kind: 'instance', instanceId: LEADER_ID }),
+    )
+  })
+
+  it('a member is refused (it is no kind of reviewer — the examined assumption), and the leg survives for its reviewer', () => {
+    const arm = rejectedArm(E.workerRefusal)
+    expect(arm.status).toBe('rejected')
+    expect(arm.code).toBe('CONTROL_RESOLVER_NOT_AUTHORIZED')
+    expect(arm.message ?? '').toContain("is not a resolver for kind 'leader-approval'")
+    // The refusal was ZERO-write: the leg stayed OPEN and its reviewer
+    // escalated it afterwards through the same arm.
+    expect(E.afterRefusal.status).toBe('control-escalated')
+  })
+
+  it('the enum still refuses garbage and now names all three arms', () => {
+    const arm = rejectedArm(E.badDecision)
+    expect(arm.status).toBe('rejected')
+    expect(arm.code).toBe('TEAM_TOOL_BAD_ARGUMENTS')
+    expect(arm.message ?? '').toContain('allow | deny | escalate')
+  })
+
+  it('a pre-Alpha.4 row without a case identity keeps its closed escalation refusal', () => {
+    const arm = rejectedArm(E.legacyRefusal)
+    expect(arm.status).toBe('rejected')
+    expect(arm.code).toBe('CONTROL_REQUEST_MALFORMED')
+    expect(arm.message ?? '').toContain('no approval-case identity')
   })
 })
