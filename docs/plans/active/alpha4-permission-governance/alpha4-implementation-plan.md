@@ -47,9 +47,10 @@ Before A4-PR0a (the baseline-diff is a PR0a and PR0 gate):
   - all new/changed targeted tests green;
   - `pnpm typecheck` green;
   - changed-file ESLint green;
-  - full `pnpm lint` introduces no new diagnostic identities relative to the recorded baseline (`dev/agent-workflow/evidence/a4-lint-baseline/`; note `pnpm lint` is deliberately RED at master until PR7 — 130 pre-existing errors, concentrated in test code — and the gate is identity-relative precisely so a governance PR never acquires a 44-file drive-by cleanup);
+  - full `pnpm lint` introduces no new diagnostic identities relative to the citable lint baseline **`dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt`** — **160 identities = 128 errors + 32 warnings**, re-recorded from the merged head; the earlier `lint-identities-11e1609c.txt` / 162-identity pair is **revoked** and survives only as history. `pnpm lint` is deliberately RED at master until PR7, concentrated in test code, and the gate is identity-relative precisely so a governance PR never acquires a 44-file drive-by cleanup);
   - full `pnpm test` introduces no new failing test/collection identities relative to the recorded baseline.
-- [ ] **Every A4-PR1…PR7 gate** runs the artifact half of rule 8 — the older "after any client/composition change" framing was narrower than A1.2.8 and is superseded: run `pnpm build` (dist co-commit rule), `pnpm build:composition`, `pnpm check:artifacts`, recompute the `p4t6` scannable-file inventory pin, and the composition smoke relevant to the changed surface (client-leg smoke runs at base parity per Amendment A1.2.4). This applies to every PR1-PR7 gate, not only composition-touching ones.
+- [ ] **Every A4-PR1…PR7 gate** runs the artifact half of rule 8 — the older "after any client/composition change" framing was narrower than A1.2.8 and is superseded: run `pnpm build` (dist co-commit rule), `pnpm build:composition`, `pnpm check:artifacts`, recompute the `p4t6` scannable-file inventory pin, and the composition smoke relevant to the changed surface (`pnpm smoke:composition` — the client-leg smoke runs at base parity per Amendment A1.2.4). This applies to every PR1-PR7 gate, not only composition-touching ones.
+- [ ] **The `p4t6` pin is DERIVED, and no writer hand-writes it.** `packages/testkit/test/p4t6-session-event-scan.test.ts` asserts `983 + SCANNED_PATHS_A4PR2.length + SCANNED_PATHS_A4PR3.length + SCANNED_PATHS_A4PR4.length + SCANNED_PATHS_A4PR5.length` (the `983` inside that expression is the PR0-era base constant, not the current value; the sum is **1003** at the PR6 base, and it moves whenever any PR adds a scannable file). **A PR that creates a scannable file adds or extends its own `SCANNED_PATHS_A4PRn` path list — it never renumbers another PR's list, never edits the base constant, and never replaces the sum with a literal total.** Only `.ts` / `.mts` / `.mjs` are scannable, so `*.client.spec.tsx` files never move the pin; the `it()` title text in that file is prose, not a second pin.
 - [ ] **Coordinator lint-baseline duty (named by the PR3 pre-flight audit; the duty had no owner anywhere in the plan).** If a merged PR lands files that change the ESLint identity set, the **coordinator re-records the lint baseline under `dev/agent-workflow/evidence/a4-lint-baseline/` at the next PR's base, before that PR is dispatched**, and records the re-record in the PR3-base evidence. The identity-relative lint gate above reads only against the recorded baseline, and no lane may re-record it — a lane editing the baseline would launder its own new diagnostics — so without this step the next PR is blocked on identities it did not create, or the gate waves through identities it should not.
 
 ## Review Focus
@@ -73,8 +74,8 @@ Before A4-PR0a (the baseline-diff is a PR0a and PR0 gate):
 | A4-PR3 | Approval Case Control Plane | Durable multi-leg approval cases, escalate, case outcomes, intervention core | old approval flows still work through compatibility adapters | control / case projection / restart tests |
 | A4-PR4 | Operation Approval Routing | v3 `ask` routed by minimum authority; single-shot execution/capability semantics | v1/v2 continue old A2 ask routing | pre-execute / capability seam / control integration |
 | A4-PR5 | Durable Mutation Proposals | v3 out-of-authority mutations become exact inline approval proposals | v1/v2 keep Alpha.3 mutation behavior | governance / approval bridge / lifecycle-CAS tests |
-| A4-PR6 | Governance UX Surface | Governance warnings + Intervention Remote v8 + Permission Administration UI | old Remote/UI entry points retained | warning backend / Remote v8 / client+UI |
-| A4-PR7 | v3-Only Cutover & Acceptance | Reject v1/v2 everywhere, cold-resume migration gate, remove transitional paths | final Alpha.4 behavior | fixture migration by package / cold-resume gate / acceptance |
+| A4-PR6 | Governance Warnings, Intervention v8, Permission Administration UI | Governance warnings on the **real Team-start gate** + Intervention Remote v8 + Permission Administration UI | old Remote/UI entry points retained; v1/v2 bridge behaviour unchanged | one PR, staged 6.0 freeze → 6.A warnings+start gate ∥ 6.B Remote v8 → 6.C client facts → 6.D UI → integration gate |
+| A4-PR7 | A1-14, Migration Discoverability, v3-Only Cutover, Split Completion | **A1-14 consumption revalidation first**, then three-state migration discovery, then degraded boot separated from Team-start refusal, **then** the v3-only cutover | host boots degraded with `migration-required` listed; a v1/v2 Team's start/resume is refused with zero agent creation and no acknowledgement path | 7.0 A1-14 → 7.1 discoverability → 7.2 boot/start split → 7.3 cutover → 7.4 fixtures by lane → 7.5 tooling → 7.6 code merge gate → 7.7 stage closure (human pass) |
 
 **Required merge order:**  
 `A4-PR0a -> A4-PR0 -> A4-PR1 -> A4-PR2 -> A4-PR3 -> A4-PR4 -> A4-PR5 -> A4-PR6 -> A4-PR7`.
@@ -124,7 +125,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - Modify: `packages/runtime/src/plugin/permission-plane.ts`
 - Modify: `packages/domain/tsconfig.json` — **added by ADR X5-E5; mandated by A3-9 and the A3 addendum but previously missing from this list.** Its `include` is `['src','blueprint/src','policy/src','test','vitest.config.ts']`, so without `'authority-envelope/src'` the plan's rule-10 `pnpm -r run typecheck` never sees the new kernel. Under the one-writer rule a file absent from this list is uneditable, which is why the omission is repaired here rather than discovered mid-task.
 - Modify: `packages/runtime/test/a3p3-governance-lane-hygiene.test.ts` — **added by ADR X5-E5 (mandated by the A4 addendum).** The lane-hygiene walk roots are `['runtime','tools','remote','client']`, so `'domain'` must be added or **nothing polices the new lane's import edges and nothing goes red**; the allow-list must also gain `governance/authority-ceiling.ts`, and note that the walk's regex flags even `import type … from './permission-mutation.js'`.
-- Evidence (not source): the `p4t6` scannable-file pin recompute receipt (the pin is **983** as of PR0's merge; PR1 adds ≥2 scannable files) and `dev/agent-workflow/evidence/a4-pr1/INVARIANT-MATRIX.md` before first GREEN, where invariants #6 and #16 must name tests.
+- Evidence (not source): the `p4t6` scannable-file pin recompute receipt (the pin is **derived** from the per-PR `SCANNED_PATHS_A4PRn` lists, not a literal — PR1 adds ≥2 scannable files and therefore extends the PR1 list) and `dev/agent-workflow/evidence/a4-pr1/INVARIANT-MATRIX.md` before first GREEN, where invariants #6 and #16 must name tests.
 - Test create: `packages/runtime/test/a4p1-authority-envelope.test.ts`
 - Test create: `packages/domain/test/a4p1-blueprint-v3-governance.test.ts`
 - Test update: `packages/runtime/test/a3p3-permission-mutation-authority.test.ts`
@@ -214,7 +215,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - Test update: `packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts`
 - Modify: `packages/runtime/test/a3p3-governance-lane-hygiene.test.ts` — **added by ADR X7-R1.** PR2's production files will import `permission-mutation.ts` (at minimum `PermissionResourceMatcher`, even type-only) and the consumer walk at `:107-157` flags that **including `import type`**, so without a reviewed skip-list entry PR2 cannot compile its own design. Storage/`permission-overlay.js` entries must NOT be added: the edge scan at `:360-373` already covers every `.ts` in `governance/` and PR2 needs no new storage edge.
 - Test create: `packages/runtime/test/a4p2-ceiling-reachability.test.ts` — **added by ADR X7-R1**: spec §7.4.1 names this file and its owning PR as PR2 lane A, and X5-B1 struck the same duty from PR1; the file was simply absent from this list, which under the one-writer rule makes it unwriteable.
-- Modify: `packages/testkit/test/p4t6-session-event-scan.test.ts` — **added by ADR X7-R1** (rule 8 / A5-17 continuous recompute authority; pin is **983** at `:52` and PR2 adds ≥3 scannable files) plus the recompute receipt line.
+- Modify: `packages/testkit/test/p4t6-session-event-scan.test.ts` — **added by ADR X7-R1** (rule 8 / A5-17 continuous recompute authority; **extend `SCANNED_PATHS_A4PR2` — the pin is the derived sum over the per-PR lists, never a literal to edit**, and the `it()` title is prose) plus the recompute receipt line.
 - Modify: `packages/tools/src/tools.ts` — **string-only edit, assigned to PR2 by the X7-R4 ruling recorded in A5-11.** The `grant`/`revoke` descriptions (`:1320-1322`) tell the model that "EXPANSION requires explicit carrier coverage and refuses typed"; PR2 is the PR that changes carrier/envelope evaluation, and a model-facing description that documents behaviour the PR has changed is a lie the model acts on. Strings follow the semantics they describe: PR2 owns these, PR4 owns `resolve`/pending, PR5 owns proposal routing. Zero test hits exist for any of these strings (no `*.snap` under `packages/` at all), so **PR2 must add its own description pin** or the next PR regresses it invisibly.
 - Test update: `packages/runtime/test/a3p3-governance-lane-hygiene.test.ts` — second duty for PR2, which already owns this file: the consumer walk matches per-module specifiers only, so a `governance/index.js` barrel import **legally evades the reviewed allow-list** (X9 class: a tightening that opens a new window). PR2 is the first PR adding a cross-lane consumer that will want the sanctioned barrel route, so it closes the window it opens: the walk must cover barrel specifiers against the same allow-list.
 - Text/pin owner for `packages/tools/src/tools.ts` — **undecidable in the plan as written (ADR X7-R4)**, so it is NOT silently assigned: A2-18 gives description-string updates to "the PR that changes the algebra" (= PR2), while A5-11 gives `tools.ts` to PR4. No test pins those strings today (verified: zero test hits), so whichever way this is ruled, PR2 must positively pin whatever wording ships in its own dual-envelope test. Do not edit `tools.ts` without the ruling.
@@ -267,7 +268,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - [ ] Pin the two `tools.ts` carrier-coverage descriptions PR2 edited (X7-R4 ruling) — the strings are the model's only view of what expansion does, and no existing test reads them.
 - [ ] Extend the hygiene consumer walk so a `governance/index.js` barrel import is checked against the same allow-list as a per-module import (X9 class).
 - [ ] Run all Alpha.3 permission-governance tests plus A4P2 tests (the Alpha.3 user-facing record lives at `dev/agent-workflow/evidence/alpha3-pr5-notification-projection/ALPHA3-PERMISSIONS-USER-FACING.md`).
-- [ ] Run the plan's full PR gate set, not a shortened version of it: **rule 10** `pnpm -r run typecheck` (exit 0 / **×8** — `packages/legacy` declares no `typecheck` script) + `pnpm exec eslint <changed files>`; **rule 8** `pnpm build && pnpm build:composition && pnpm run check:artifacts` with the drift co-committed in the same commit (PR2 wires `service.ts` → `authority-ceiling.ts`/`runtime-authority.ts`, so expect `packages/runtime/dist/packages/runtime/governance/{runtime-authority,authority-ceiling,service,index}.{js,d.ts,*.map}` transitively — the runtime build include omits `governance` but transitive emission still applies, A5-19; that is rule 8, not a regression); the `p4t6` scannable-file pin recompute (current value **983** (measured at `:1782-1783`; 978 was superseded by PR1 — see the arithmetic note at `p4t6:1763-1772`; the `it()` title at `:52` is stale prose, not a second pin), PR2 adds ≥3 files) with its receipt; and the full baseline diff captured **twice** per A1.2.3 (`rm -rf packages/testkit/test/.tmp-fault/` first), reference = **22 identities / 9 files**, bar `NEW=0`.
+- [ ] Run the plan's full PR gate set, not a shortened version of it: **rule 10** `pnpm -r run typecheck` (exit 0 / **×8** — `packages/legacy` declares no `typecheck` script) + `pnpm exec eslint <changed files>`; **rule 8** `pnpm build && pnpm build:composition && pnpm run check:artifacts` with the drift co-committed in the same commit (PR2 wires `service.ts` → `authority-ceiling.ts`/`runtime-authority.ts`, so expect `packages/runtime/dist/packages/runtime/governance/{runtime-authority,authority-ceiling,service,index}.{js,d.ts,*.map}` transitively — the runtime build include omits `governance` but transitive emission still applies, A5-19; that is rule 8, not a regression); the `p4t6` scannable-file pin recompute (the **derived** sum over the per-PR `SCANNED_PATHS_A4PRn` lists — Task 3 extends its own list rather than restating a number — see the arithmetic note at `p4t6:1763-1772`; the `it()` title at `:52` is stale prose, not a second pin), PR2 adds ≥3 files) with its receipt; and the full baseline diff captured **twice** per A1.2.3 (`rm -rf packages/testkit/test/.tmp-fault/` first), reference = **22 identities / 9 files**, bar `NEW=0`.
 - [ ] **Client lane (added by ADR X12; binding on Tasks 3–7 — retitled by the PR3 pre-flight audit: the old "Tasks 4, 5, 6 and 7" binding excluded the first client-touching task, because Task 3 edits `client/src/model/ledger-adapter.ts:89`; these are the tasks that touch client-visible surfaces):** `pnpm --filter @dsh-agent-team/client run test`. The root `vitest.config.ts` include is `packages/*/test/**/*.test.ts`, which matches **zero** of the client package's 27 `*.client.spec.ts(x)` files (`pnpm vitest list --filesOnly | grep -c 'spec.tsx'` → 0), so the root command has never executed them and `pnpm test` is **not** a full-suite claim. Baseline and the three pre-existing failures are recorded in `dev/agent-workflow/evidence/a4-client-baseline/` — including that **the citable 22-identity baseline is root-suite-scoped**, that the 3 failures are identical at base `d21effba` (so PR6 does not inherit blame for `team-governance.client.spec.tsx`, a file Task 6 edits), and that `s3-client-generation-spike.test.ts` is **worktree-location-dependent** (passes in a worktree, fails collection in the main checkout) and must not be "fixed" to suit either location.
 - [ ] Explicitly document the temporary PR2 behavior: “higher authority required” is still a refusal until PR5.
 - [ ] Open A4-PR2.
@@ -298,7 +299,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - Modify: `packages/runtime/src/plugin/projection-source.ts` — **added by ADR X8-R1.** This plan's own A4 addendum already says PR3's list "**must** include" it; the addendum was never applied to the list, and the PR0a closed-set guard (`a4pr0a-fact-type-closed-set.test.ts:475`) goes red on an uneditable file — the exact PR0a↔PR0 hazard A5-22 exists to end.
 - Modify: `packages/client/src/model/ledger-adapter.ts` (one category-map row at `:89`) — **added by ADR X8-R1**, A5-22: the writer of a fact type owns **both** maps in the same commit, and guard C3 (`a4pr0a:480`) enforces the mirror.
 - Test update: `packages/client/test/ledger-adapter.test.ts` — **named by the PR3 pre-flight audit (B8): Task 3 has mandated a client edit since X8-R1 but named no client test, so the category-map row shipped untested.** It must assert the category **value** for `control-escalation-recorded` (`control`), not key presence: PR0a's guard compares key sets only (`a4pr0a-fact-type-closed-set.test.ts:355-362`, C3 `:480-481`), so a row filed under the wrong category renders in the wrong Events category with **nothing red** — the A5-6/X8-R3 hazard.
-- Modify: `packages/testkit/test/p4t6-session-event-scan.test.ts` + recompute receipt — **added by ADR X8-R1** (rule 8 / A5-17; pin **983** at `:1782-1783` — the malformed range this line carried is repaired in place by the PR3 pre-flight; the `it()` title at `:52` remains stale prose, not a second pin; Task 3 adds ≥6 scannable files). Task 2 got this line from X7-R1 and Task 3 did not.
+- Modify: `packages/testkit/test/p4t6-session-event-scan.test.ts` + recompute receipt — **added by ADR X8-R1** (rule 8 / A5-17; **extend `SCANNED_PATHS_A4PR3` — the assertion is the derived sum over the per-PR lists, not a literal number**, and the `it()` title at `:52` is prose, not a second pin; Task 3 adds ≥6 scannable files). Task 2 got this line from X7-R1 and Task 3 did not.
 - Dist co-commit expectation — **added by ADR X8-R1**: `control` **is** in `packages/runtime/tsconfig.build.json`'s include (verified: 21-entry list, `governance` is not in it), so `control/**` edits emit `dist/packages/runtime/control/*` unconditionally and must ship in the same commit; `intervention/` is **not** in the include and PR3 must **not** add it (A4-6's zero-dist posture; PR6 wires it and adds the include with its own artifact co-commit).
 - Create: `packages/runtime/intervention/derivation.ts` — **lane B's home module, named here by the PR3 pre-flight audit (B4: the previous line said the file would be "named by PR3 in its PR body and here at review time", which under 1-task-1-writer is the same as naming nothing — a writer cannot create a file it cannot name).** Lane B's case-state derivation, the terminal case-outcome vocabulary, and the X8-R2 strict/legacy discriminator live here rather than in `control/types.ts`/`control/service.ts` (A1.3), and the module joins `intervention/`'s zero-dist posture (`tsconfig.build.json` include unchanged; PR6 wires and co-commits dist, A4-6's precedent).
 - Test create: `packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts` — the **A1-17 intervention-boundary import-edge pin**, named by the PR3 pre-flight audit from the two options the previous wording left open (the precedent is `packages/runtime/test/a3p5-permission-notification-lane-hygiene.test.ts`; `intervention/` does not exist yet, so no such test exists). It pins that the intervention lane's edges are what lane B's ruling below states: required authority arrives as a reader callback, never as a `governance` value import.
@@ -380,7 +381,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - Create: `packages/runtime/operation-permission/approval-routing.ts`
 - Modify: `packages/tools/src/tools.ts` — **required by Amendment A1.3, which claimed this line already existed; it never did (ADR X11, third occurrence of the class).** The reachable `escalate` tool (A1-11) and the cross-case pending list both live here: the pending filter is `kind === 'leader-approval'` at `tools.ts:1122-1123` and the decision enum is `allow|deny` at `:1020-1024`. Both must change. Task 4's Files list previously omitted the file that its own headline duty edits.
 - Test update: `packages/tools/test/c1-list-pending-control.test.ts` — case 4 (`:360`) and case 5 (`:369`) pin the **exclusion** of `user-approval` / `envelope-mutation` from the pending list; A1-11's cross-case list inverts exactly those pins, so this suite is red the moment the duty is done correctly.
-- Test update: `packages/testkit/test/p4t6-session-event-scan.test.ts` — unconditional, not conditional: Task 4 creates scannable test files and the pin is exact-equality `toBe(983)` (`:1782-1783`). **The pin is 983, not the 978 Tasks 2 and 3 previously said — those two lines are repaired in this same commit, because a note in Task 4 that leaves Task 2 wrong is exactly X11** (rule 4: PR1 moved it; the arithmetic note is at `p4t6:1763-1772`; the `it()` title at `:52` still reads 978 and is stale prose, not a second pin).
+- Test update: `packages/testkit/test/p4t6-session-event-scan.test.ts` — unconditional, not conditional: Task 4 creates scannable test files, so it **extends `SCANNED_PATHS_A4PR4`**. The assertion is a **derived sum** (`base + Σ per-PR list lengths`) evaluated with `toBe`, so there is no number to copy and no "the pin is N" statement to keep current: Tasks 2–5 each own one list, and the earlier hand-written per-task totals (978 / 983) are withdrawn rather than corrected, because a number restated in a task body is exactly the thing that went stale (X10). The `it()` title in that file is prose, not a pin.
 - **No-touch ruling** for `packages/runtime/action-router/router.ts`: Amendment A3 assigned PR4 ownership of the branch at `:619` (`if (decision.decision !== 'allow') {`; citation repaired in place by the PR3 pre-flight — the old `:615-624` over-read the range), and A5-5 requires no functional change there. PR4 records the no-touch decision rather than editing the file, so the assignment stops reading as an unfulfilled duty.
 - Conditional: `packages/runtime/operation-permission/errors.ts` — if the new routing state emits a typed rejection (spec 13 recommends typed families; `PRE_EXECUTE_INSTALL_ERROR_CODES` is at `errors.ts:274`), it is edited here. PR4 decides at dispatch and records which way it went.
 - Conditional: `packages/runtime/test/a3p3-governance-lane-hygiene.test.ts` — `approval-routing.ts` needs `PermissionResourceMatcher` (spec 7.2) and `operation-permission` has zero governance imports today; a direct import (even `import type`) reddens the consumer walk, as X7-R1 already forced for PR2. **Sanctioned route: the `governance/index.ts` barrel.** The walk's regex matches per-module specifiers, so a barrel import legally evades the reviewed allow-list — an X9-class hole to close here, not to exploit (see ADR X12).
@@ -454,7 +455,7 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 - Modify: `packages/tools/src/tools.ts` only to consume the new result shape; do not fork a second mutation authority.
 - Modify: `packages/tools/src/types.ts`
 - Modify: `packages/runtime/src/plugin/projection-source.ts` + `packages/client/src/model/ledger-adapter.ts:89-142` (extent repaired in place by the PR3 pre-flight) **only if** the inline-commit path records a NEW fact type; PR5 otherwise reuses PR0's `governance-proposal-recorded`, whose two category entries already exist (PR0 landed both). Deciding this at dispatch, rather than at line-by-line implementation, is what keeps PR5 out of a file PR4 may be editing concurrently — see the PR4∥PR5 collision set.
-- Test update: `packages/testkit/test/p4t6-session-event-scan.test.ts` — unconditional for the same reason as Task 4: Task 5 creates four scannable files and the pin is `toBe(983)` exact-equality. It was in neither task's list while both tasks were individually named in the A1.3 collision set; **collision-set membership is not edit permission** (X11). PR4 lands first, so PR5 rebases onto PR4's recomputed number rather than deriving its own.
+- Test update: `packages/testkit/test/p4t6-session-event-scan.test.ts` — unconditional for the same reason as Task 4: Task 5 creates four scannable files, so it **extends `SCANNED_PATHS_A4PR5`** in the same derived expression. It was in neither task's list while both tasks were individually named in the A1.3 collision set; **collision-set membership is not edit permission** (X11). PR4 lands first, so PR5 rebases onto PR4's list and adds only its own paths.
 - Modify: `packages/runtime/governance/index.ts` — the barrel's own doc (`index.ts:7-9`) states that root wiring consumes **only** this module's exports, and PR5 must wire `createGovernanceProposalStore` plus the approval adapter into `root.ts`. Deep-importing would violate that law, so the barrel is the sanctioned route and must be editable (X11: the file was named by no rule at all).
 - Modify: `packages/runtime/src/plugin/s6-remote.ts` — `mutatePermission` maps results through a closed `{ changed, code?, reason? }` projection (`:2966-2969`). A proposal arm of the result union would be **silently dropped into `{ changed: false }`, indistinguishable from a no-change**. Ruled: PR5 refuses a proposal outcome typed at the v7 seam. Silent indistinguishability on an authority surface is not an acceptable interim state, and the remote contract stays v7.
 - Test create: `packages/runtime/test/a4p5-permission-mutation-proposal.test.ts`
@@ -509,193 +510,303 @@ Do not use “everyone edits the same service file and resolve conflicts later�
 
 **Branch:** `task/alpha4-pr6-intervention-ui`
 
-**Purpose:** Make Alpha.4 observable and operable without redesigning the whole existing UI/Remote stack.
+**Purpose:** Make Alpha.4 observable and operable without redesigning the whole existing UI/Remote stack, and put the Team-start governance gate on the path where a Team actually starts.
 
-**Files — warning/intervention backend:**
-- Create: `packages/runtime/governance-warning/types.ts`
-- Create: `packages/runtime/governance-warning/service.ts`
-- Create: `packages/runtime/governance-warning/index.ts`
-- Modify: `packages/runtime/intervention/projection.ts`
-- Modify: `packages/runtime/intervention/types.ts`
-- Modify: `packages/runtime/src/plugin/root.ts`
-- Modify: `packages/runtime/src/plugin/projection-source.ts` only where needed for summary linkage.
-- Prefer append-only ledger facts in the existing `policy` category for warning observed/acknowledged history rather than adding a new top-level ledger category.
+**Shape: ONE PR, six stages.** PR6 is not split into sub-PRs. Stage order is `6.0 → 6.A → 6.B → 6.C → 6.D → integration`. 6.A and 6.B may partially run in parallel after 6.0; **6.C and 6.D wait on the frozen v8 wire contract** produced by 6.0 and 6.B. Every stage commits; there is one merge gate, at the end.
 
-**Files — Remote v8:**
-- Modify: `packages/remote/src/contracts/version.ts`
-- Modify: `packages/remote/src/contracts/catalog.ts`
-- Modify: `packages/remote/src/contracts/params.ts`
-- Modify: `packages/remote/src/contracts/types.ts`
-- Modify: `packages/remote/src/contracts/catalog.ts` / package barrel as needed
-- Modify: `packages/remote/src/handlers/ports.ts`
-- Modify: relevant remote category handler/dispatcher files
-- Modify: `packages/runtime/src/plugin/s6-remote.ts`
+#### 6.0 — Interface freeze (coordinator commit; the complete surface)
 
-**Files — client/UI:**
-- Modify: `packages/client/src/transport/team-remote-client.ts`
-- Create: `packages/client/src/model/team-interventions.ts`
-- Create: `packages/client/src/ui/TeamInterventions.tsx`
-- Create: `packages/client/src/ui/TeamInterventions.module.css`
-- Modify: `packages/client/src/model/team-governance.ts`
-- Modify: `packages/client/src/ui/TeamGovernance.tsx`
-- Add Permission Administration read/model helpers; prefer a new read endpoint such as `override.getPermissionAdministration` rather than changing v7 `override.getPermission` semantics.
+An unnamed `Create:` is a plan defect, not writer latitude. Every file below is either unconditional or conditional-with-a-named-trigger; there is no third kind.
 
-**Tests:**
-- Create: `packages/runtime/test/a4p6-governance-warning.test.ts`
-- Create: `packages/runtime/test/a4p6-intervention-aggregation.test.ts`
-- Create: `packages/remote/test/a4p6-remote-v8.test.ts`
-- Create: `packages/client/test/a4p6-interventions.client.spec.tsx`
-- Create: `packages/client/test/a4p6-permission-administration.client.spec.tsx`
-- Update: `packages/client/test/team-governance.client.spec.tsx`
-- Update: `packages/client/test/team-remote-client.test.ts`
+**Unconditional — new files:**
 
-**Coordinator interface-freeze commit before parallel lanes**
+- `packages/runtime/governance-warning/types.ts`, `packages/runtime/governance-warning/service.ts`, `packages/runtime/governance-warning/index.ts`
+- `packages/client/src/model/team-interventions.ts`
+- `packages/client/src/model/permission-administration.ts` — **the Permission Administration helper location is frozen here**; a lane chooses field shapes, never the path.
+- `packages/client/src/ui/TeamInterventions.tsx`, `packages/client/src/ui/TeamInterventions.module.css`
+- `packages/runtime/test/a4p6-governance-warning.test.ts`, `packages/runtime/test/a4p6-intervention-aggregation.test.ts`
+- `packages/remote/test/a4p6-remote-v8.test.ts` — also the named home of the A1-2 negative test in 6.B.
+- `packages/client/test/a4p6-interventions.client.spec.tsx`, `packages/client/test/a4p6-permission-administration.client.spec.tsx`
+
+**Unconditional — modified files:**
+
+- `packages/runtime/intervention/projection.ts`, `packages/runtime/intervention/types.ts`
+- `packages/runtime/src/plugin/root.ts` — supplies the governance-start port that 6.A consumes (the same file that already wires `startRootAgent` at `:3235` and `ensureRootLive` at `:3247`).
+- `packages/runtime/src/plugin/s6-remote.ts` — the two Team-start gate sites in 6.A plus the v8 handler surface.
+- `packages/runtime/src/plugin/s6-principal.ts` — **this file exists on `master`** (server-side principal derivation, `P8-S6 A32`). PR6 extends it to the v8 governance-writing methods; nobody may write or plan as if it has to be created.
+- `packages/runtime/tsconfig.build.json` — **current fact, not a defect report: its `include` list has 21 entries, contains `control`, and has no `intervention` entry**, so PR3's intervention lane ships unbuilt today. PR6's duty is to add `intervention` to `include` and co-commit the emitted `dist` in the same commit.
+- `packages/runtime/src/plugin/projection-source.ts` — register every fact type PR6 introduces in `FACT_TYPE_CATEGORY` (`:261`).
+- `packages/client/src/model/ledger-adapter.ts` — the client category map `FACT_TYPE_CATEGORY` (`:89`).
+- `packages/client/src/model/team-ledger-model.ts` — **`INTERNAL_FACT_TYPES` (`:91-109`)**, the third and only silent owner of the fact-hygiene triad (6.C).
+- `packages/client/src/transport/team-remote-client.ts`
+- `packages/client/src/model/team-governance.ts`, `packages/client/src/ui/TeamGovernance.tsx`
+- `packages/remote/src/contracts/version.ts`, `packages/remote/src/contracts/catalog.ts`, `packages/remote/src/contracts/params.ts`, `packages/remote/src/contracts/types.ts`, `packages/remote/src/handlers/ports.ts`, and the v8 category dispatcher/handler files.
+- `packages/testkit/test/p4t6-session-event-scan.test.ts` — extend **your own** `SCANNED_PATHS_A4PR6` list with every scannable file you create; the pin is derived from the per-PR lists, so **never renumber another PR's list and never hand-write a total** (see shared rule 8 / A5-17).
+- `packages/remote/test/p8t3-version.test.ts`, `packages/remote/test/tcm-m1-remote-v2.test.ts`, `packages/remote/test/d1-remote-v3.test.ts`, `packages/runtime/test/t12m4-remote-mount.test.ts` — updated as a **contract change**, with the reason recorded in the PR body (6.B).
+- `packages/client/test/team-governance.client.spec.tsx`, `packages/client/test/team-remote-client.test.ts`
+
+Prefer append-only ledger facts in the existing `policy` category for warning observed/acknowledged history rather than adding a new top-level ledger category. If a ninth ledger category turns out to be unavoidable, `packages/client/test/team-ledger.client.spec.tsx:400` (`toHaveLength(9)`) moves — and **only the client lane can see that red**, because root `pnpm test` loads no `*.client.spec.*` file.
+
+**Conditional — each with the exact trigger that pulls it into this PR.** If the trigger fires, the file is owned here; if it does not, the PR body says so explicitly.
+
+| File | Trigger |
+| --- | --- |
+| `packages/runtime/governance/service.ts` | the pure create/publish diagnostic surface cannot live entirely in `governance-warning/**` (A5-14) |
+| `packages/client/src/ui/TeamLedger.tsx` | a governance disclosure is rendered in a ledger row (A5-20) |
+| `packages/client/src/ui/TeamView.tsx` | `TeamInterventions` is mounted at view level (`TeamGovernance` mounts at `TeamView.tsx:1359`; that is the mount surface if the panel is a sibling) |
+| `packages/runtime/test/a3p3-governance-lane-hygiene.test.ts` | any new module imports the authority kernel; the allow-list is part of the frozen interface |
+| `packages/client/test/team-governance.test.ts` | any governance rendering change. **This is a root-suite `.test.ts` file**: a red here is a root-gate red on a file the writer must edit, not a client-lane red |
+| `packages/client/test/ledger-adapter.test.ts` | any category-map change. **Also a root-suite file**, same consequence |
+| `packages/client/test/team-d4-a1-ui-pull.client.spec.tsx` | the UI pull surface changes shape under the new panels |
+| `packages/client/test/team-ledger-model.client.spec.ts` | category assignment changes for existing fact types |
+| `packages/client/test/team-remote-categories.test.ts` | the category set exposed to the client changes |
+
+**Freeze checklist (this commit):**
+
 - [ ] Define `InterventionItem`, `InterventionAction`, source adapters, and v8 wire DTOs.
-- [ ] Define the v8 methods:
-  - `intervention.list`
-  - `intervention.get`
-  - `intervention.act`
-  - `override.getPermissionAdministration`
-- [ ] Freeze client payload rule: only `teamSessionId, interventionId, action, note?`; never client-supplied authority/legalActions.
+- [ ] Define the v8 methods: `intervention.list`, `intervention.get`, `intervention.act`, `override.getPermissionAdministration`.
+- [ ] Freeze the client payload rule: only `teamSessionId, interventionId, action, note?`; never client-supplied authority or `legalActions`.
+- [ ] Freeze the governance-start port shape used by 6.A (below) so lane A does not invent a second entry point.
+- [ ] Freeze the fact-type list PR6 introduces, together with its three owners (6.C).
 
-**Parallel lane A — GovernanceWarning authority**
+#### 6.A — GovernanceWarning authority and the real Team-start gate
+
+**The gate has exactly two control points, both in `packages/runtime/src/plugin/s6-remote.ts`:**
+
+1. `team.create` — **after the durable Team/root bind and before `startRootAgent()`**, at both sites (the awaits sit at `:2306` and `:2415` on `58cf32c8`).
+2. `team.ensureRootLive` — the resume path (`ensureRootLive` implementation `:1787`, its fail-closed preflight `:1688`, port declared `:610`, supplied by `src/plugin/root.ts:3247`).
+
+`activation/checks.ts` and `admission/requirement-gate.ts` are **not the control points**: each contains **zero** references to `ensureRootLive` or `startRootAgent`, so a gate wired there blocks nothing and **nothing goes red**. A writer who puts the gate there has shipped a gate that does not exist.
+
+Both control points sit behind **one** port, conceptually:
+
+```
+checkGovernanceStart(teamSessionId) →
+    'open'
+  | 'warning-required'(interventionId)
+  | 'corrupt'
+  | 'migration-required'
+```
+
+- `open` → proceed to `startRootAgent()` / live boot.
+- `warning-required` → the durable Team root exists and stays **not live**; the Leader does not start. Acknowledgement re-enters the same gate through the existing `ensureRootLive` / open path.
+- `corrupt` → start blocked; not acknowledgeable.
+- `migration-required` → reserved for the v1/v2 bridge: PR6 keeps today's bridge behaviour, and PR7 7.2 replaces it with a refusal. **No acknowledgement clears this outcome, in PR6 or after.**
+
+**A warning must never be simulated as a `ControlRequest`.** A `GovernanceWarning` is not an approval case: it gets no `ControlRequest` row, no leg, and no entry in the decision vocabulary. Minting one as a Control request makes the Team look like it awaits a human approval that has no authority meaning, and a non-blocking stage that returns `wait-for-response` halts the Team through the approval plane. Two RED tests own this, and nothing else catches it: *a warning mints no Control request or approval case*, and *a non-blocking governance stage never returns `wait-for-response`*.
+
+Bridge window (PR6 runs before the v3-only cutover):
+
+- On a v3 envelope, the consistency check runs and `mismatch` / `undetermined` writes a durable `GovernanceWarning` and does not start the Leader.
+- A post-acknowledgement `ensureRootLive` **re-enters the same gate** rather than bypassing it.
+- An unreadable or corrupt authority document **fails closed**.
+- A v1/v2 bound document keeps bridge behaviour through PR6; PR7 7.2 makes its start `BLUEPRINT_MIGRATION_REQUIRED`.
+
+**Remote contract version and Blueprint schema version are orthogonal.** A v2 `team.create` call can create a Blueprint-v3 Team, and a v8 call can carry a v1 document during the bridge. No code path may infer one version from the other, and the wire version never selects the authority algebra — that switch reads the document version only (A5-12).
+
 - [ ] RED tests for `consistent | mismatch | undetermined`.
-- [ ] Implement configuration/runtime fingerprints and observed-count dedup.
-- [ ] Implement fingerprint-bound acknowledgement.
-- [ ] Prove acknowledgement does not affect authority evaluator output.
-- [ ] Add runtime boundary observation hooks.
-- [ ] For Blueprint authoring, provide the pure create/publish diagnostic API; because Alpha.4 has no Blueprint editor, do not invent a new editor solely for this warning.
-- [ ] At Team start, place a governance gate between durable Team binding and Leader activation: warning-required may leave a durable Team root not yet live, then acknowledgement + existing ensure/open path continues startup.
+- [ ] Configuration/runtime fingerprints and observed-count dedup.
+- [ ] Fingerprint-bound acknowledgement; prove acknowledgement does not affect authority evaluator output.
+- [ ] Runtime boundary observation hooks.
+- [ ] Pure create/publish diagnostic API; Alpha.4 has no Blueprint editor, so do not invent one for this warning.
+- [ ] Wire-level test that a computed warning actually reaches the client through v8 (today a warning can be computed server-side and dropped in transit with **no** red anywhere).
+- [ ] No `packages/testkit/**` path may carry production start behaviour: `packages/testkit/domain/src/**` has zero production import edges, so a testkit-based gate is not a gate.
 - [ ] Commit.
 
-**Parallel lane B — Intervention aggregation + Remote v8**
-- [ ] Aggregate Control approval, Compatibility warning, GovernanceWarning, and capability/environment terminal observations into one read projection.
-- [ ] Implement `intervention.act` strictly as a fresh router to authoritative services.
-- [ ] Add Remote v8 version/catalog/params/ports/runtime handler.
-- [ ] Preserve v1-v7 method behavior.
-- [ ] Add `override.getPermissionAdministration` read projection.
+#### 6.B — Remote v8 + principal derivation (closed work surface)
+
+The v8 work surface is **closed**: `contracts/version.ts`, `contracts/catalog.ts`, `contracts/params.ts`, `contracts/types.ts`, `handlers/ports.ts`, the category dispatcher/handler, `packages/runtime/src/plugin/s6-remote.ts`, `packages/runtime/src/plugin/s6-principal.ts`, and the tests named in 6.0. Nothing outside that list changes behaviour in 6.B.
+
+- [ ] Add Remote v8 version / catalog / params / ports / runtime handler; preserve v1–v7 method behavior.
+- [ ] `intervention` and `override.getPermissionAdministration` params are **closed field sets with unknown-field rejection**, so a future `asRole` / `impersonate` field cannot appear without a version bump.
+- [ ] `intervention.act` is strictly a fresh router into the authoritative `ControlService` entry point; it re-derives the caller principal and the legal action set server-side and never re-implements decisioning.
+- [ ] `override.getPermissionAdministration` read projection strips authority-bearing and round-trippable decision fields.
+- [ ] **Catalog-enumeration test (ADR A1-2):** enumerate the v8 catalog and assert that **every governance-writing method passes through principal derivation explicitly**. Nothing may fall into a default or operator branch, including methods nobody thought to name.
+- [ ] **Negative test, in `packages/remote/test/a4p6-remote-v8.test.ts`:** a `member` caller invoking `intervention.act` with action `allow` **cannot** obtain human-user decision authority. Assert the server-side refusal, not a filtered UI.
+- [ ] **Assert at the wire, not the service.** The response whitelist in `s6-remote.ts` (`const safe = { changed: … }`, at `:2995` on `58cf32c8`) copies a closed field set, so a new v8 field can be dropped at that seam while the client reads it fail-safe — invisible at service level. The v8 tests assert field presence on the wire.
+- [ ] **The four version pins are updated as a contract change, and the PR body states the reason.** Adding contract version 8 makes **v8 the supported maximum**, so the exact-equality sets at `p8t3-version.test.ts:218`, `tcm-m1-remote-v2.test.ts:578`, `d1-remote-v3.test.ts:275` and the `version: 8 → contract-version-unsupported` assertions at `t12m4-remote-mount.test.ts:281-283, 379-380` stop being true. They are edited **because the contract moved**, and the reason is written down so the edit never reads as tests changed to make them pass. Leaving them failing is not the alternative — they are part of the contract surface.
 - [ ] Commit.
 
-**Parallel lane C — client transport/model**
-- [ ] Add v8 wrappers in `team-remote-client.ts`.
-- [ ] Parse Intervention and Permission Administration values without inventing authority locally.
-- [ ] Add client tests that reject malformed legalActions/authority fields from wire.
+#### 6.C — Client fact hygiene (owner-principle triad)
+
+Every fact type PR6 introduces — `governance-proposal-recorded`, `control-escalation-recorded`, and each governance-warning fact type — has **three** owners, all three change in the same commit, and a two-of-three registration is a defect, not a partial:
+
+1. runtime `FACT_TYPE_CATEGORY` in `packages/runtime/src/plugin/projection-source.ts:261` — a host-side miss **throws** (`:814`), so it fails loudly;
+2. client `FACT_TYPE_CATEGORY` in `packages/client/src/model/ledger-adapter.ts:89` — a client-side miss is caught by the PR0a closed-set guard (root suite), so it fails loudly;
+3. **`INTERNAL_FACT_TYPES` in `packages/client/src/model/team-ledger-model.ts:91-109`** — **silent**. A type present in both category maps but absent here renders as a generic JSON-dumped Event row and nothing goes red; today **zero** tests reference `INTERNAL_FACT_TYPES`.
+
+- [ ] Register each new fact type in all three owners.
+- [ ] **Renderer test (client lane) proving a governance row never lands in a generic JSON Event row**, one case per new fact type including `governance-proposal-recorded`. This test is what makes owner 3 real; without it the omission is invisible forever.
+- [ ] PR5's two visibility leftovers close here, with the exact surfaces:
+  - **An incomplete proposal-record set renders corrupt/incomplete, never "awaiting approval, proceeding".** The reader is `packages/runtime/governance/proposal-store.ts` (strict reader, typed `corrupt-record`), surfaced through `packages/runtime/src/plugin/projection-source.ts` and rendered by the client ledger. Behaviour change: a set whose record is missing or partial must carry the corrupt/incomplete marker all the way to the rendered row, so the UI cannot show a wait that nothing is waiting on.
+  - **A zombie open case stays visible and abandonable, never silently unreachable.** The surface is `listOpenApprovalCases` in `packages/runtime/control/service.ts` (the same listing the approval tooling reads) and the abandon path `abandonControlRequest`, whose additive `control-request-abandoned` fact is the terminal mark. Behaviour change: a case that became unreachable because fingerprint drift opened a *different* identity at the same base (see Spec §24.5 — dedup is per identity, not per base) must still appear in that listing and still accept the abandon action. **The fix is visibility; base-scoped suppression is not being added.**
+- [ ] Proposal **atomicity** and **base-scoped dedup** are explicitly **post-Alpha.4** work (see the Post-Alpha.4 Backlog), **not** PR6 and **not** PR7. Do not add either as a PR6/PR7 checkbox.
 - [ ] Commit.
 
-**Parallel lane D — UI**
-- [ ] Add Intervention list showing kind/status/source/response behavior/block scope/current+required authority/legal actions.
-- [ ] Add Permission Administration view showing Blueprint identity, static policy, both envelopes, overlay generation/provenance, effective summary, and diagnostics.
-- [ ] Do not expand subtree rules into a frozen filesystem tree.
-- [ ] Once a leg escalates, old leg is visibly terminal and no action remains.
+#### 6.D — UI: incremental only, no legacy refactor
+
+- [ ] Intervention list showing kind / status / source / response behavior / block scope / current+required authority / legal actions.
+- [ ] Permission Administration view showing Blueprint identity, static policy, both envelopes, overlay generation/provenance, effective summary, and diagnostics, read through `packages/client/src/model/permission-administration.ts`.
+- [ ] **`legalActions` are server-derived.** The client renders the set it is given; a client test rejects a payload that asks the client to derive authority or legality locally.
+- [ ] Once a leg escalates, the old leg is visibly terminal and no action remains on it.
+- [ ] **Envelopes are shown as rules.** Subtree rules are never expanded into a static directory/filesystem tree, in any component or fixture.
+- [ ] `leader-approval` / `user-approval` addressing **stays accepted for compatibility**; PR6 may add addressing kinds but renames nothing.
 - [ ] Keep existing TeamGovernance functionality; do not broadly refactor unrelated UI.
 - [ ] Commit.
 
-**Integration / merge gate**
-- [ ] Merge A then B, then C/D after v8 contract is stable.
-- [ ] Run Remote version regression 1-8.
-- [ ] Run client tests with the exact command `pnpm --filter @dsh-agent-team/client run test` (**the bare phrase "Run client tests" named no command and no baseline; X12 measured that the root gate never ran this lane**), `pnpm build:composition`, `pnpm check:artifacts`, and composition smoke.
-- [ ] Run full baseline-diff gate.
+#### Integration / merge gate (complete list — a step that cannot be run is not a step)
+
+- [ ] Merge 6.A then 6.B; land 6.C/6.D only after the v8 contract is frozen.
+- [ ] Remote version regression 1–8 with the four updated pins in place.
+- [ ] **Client lane:** `pnpm --filter @dsh-agent-team/client run test`, captured **before and after in this PR's own worktree** (client counts are worktree-location dependent; state the tree, do not "fix" it). Baseline **53 files / 853 tests / 3 pre-existing failures** (2 in `team-creation-panel.client.spec.tsx`, 1 in `team-governance.client.spec.tsx`); exactly one of the three lives in a file PR6 updates — record the other two as inherited failures, not inherited blame. **Closure compares test-name sets**: the three baseline names still present and no new failing name. Do **not** reuse the root `scripts/fail-set.mjs` mechanism here — it has no lint or client mode, so an identity diff on this lane is not available.
+- [ ] Root `pnpm test` + baseline diff against the citable 22-identity root reference; Alpha.4 may remove baseline failures but adds none.
+- [ ] `pnpm typecheck`.
+- [ ] `pnpm build`.
+- [ ] `pnpm build:composition`.
+- [ ] `pnpm check:artifacts` — the newly built `intervention` lane must be co-committed.
+- [ ] `pnpm smoke:composition` (the real script name; "composition smoke" as prose is not a gate step).
+- [ ] `pnpm lint` identity diff against the current citable baseline (shared rule: closure is the identity set, never a count).
+- [ ] `p4t6` pin recomputed by extending `SCANNED_PATHS_A4PR6`.
+- [ ] Precondition for PR7 7.7 only: the Permission Administration surface exists and is drivable. The Alpha.3 nine-step human pass is **not** executed here and PR6 must not report it.
 - [ ] Open A4-PR6.
 
 ---
 
-### Task 7 / A4-PR7: Blueprint-v3-Only Cutover, Cold-Resume Gate, and Full Alpha.4 Acceptance
+### Task 7 / A4-PR7: A1-14 First, Migration Discoverability, v3-Only Cutover, then Split Completion
 
 **Branch:** `task/alpha4-pr7-v3-cutover-acceptance`
 
-**Purpose:** Perform the intentionally breaking migration only after all v3 runtime, Remote, and UI surfaces are complete.
+**Purpose:** Close the Alpha.4 authority obligation that is still unenforced (A1-14), make the unmigrated Blueprint set discoverable, separate host boot from Team start, and **only then** perform the intentionally breaking v3-only cutover — finishing with two completion claims that must never be conflated.
 
-**Files:**
-- Modify: `packages/domain/blueprint/src/schema.ts`
-- Modify: `packages/domain/blueprint/src/validate.ts`
-- Modify: Blueprint version tests under `packages/domain/test/`
-- Modify: `packages/runtime/src/plugin/bound-blueprint.ts`
-- Modify: root/cold-resume/activation files that currently accept v1/v2
-- Modify: all repository test fixtures/Blueprint strings that represent supported runnable Teams
-- Update: ADR/Spec status and final Alpha.4 docs
+**Order is normative: `7.0 → 7.7`, and the cutover is NOT first.** The previous ordering put the breaking change first, so the PR that deletes the migration bridge landed before the tooling that lets an operator see what still needs migrating, before the guard-side authority re-check the ADR makes mandatory, and before the boot semantics that keep a host with an old anchor alive at all.
+
+#### Files (complete surface; every entry is unconditional unless marked)
+
+**7.0 — A1-14 consumption revalidation:**
+
+- Modify: `packages/runtime/control/types.ts` — `ControlOperationScope` (`:753`) and `ApprovalCaseIdentity` gain `authorityScope`.
+- Modify: `packages/runtime/control/service.ts` — the re-check inside the per-team lock before the consumption fact (`FACT_CONSUMPTION = 'control-allow-consumed'` `:285`; `guardOperation` `:2389`; the consuming `putEntry` at `:2692`, which today has only `checkExternalOperation` in front of it and **no authority or ceiling re-check anywhere**).
+- Modify: `packages/runtime/operation-permission/pre-execute-adapter.ts` — supply the concrete operation point (operation class + canonical resource) the persisted scope must carry.
+- Modify: `packages/runtime/src/plugin/live/agent-bindings.mjs`, `packages/runtime/src/plugin/permission-plane.ts`, `packages/runtime/src/plugin/root.ts` — load the **fresh bound** authority documents at guard time.
+- Add: `packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts`.
+
+**7.1–7.5 — cutover, migration, fixtures, tooling:**
+
+- Modify: `packages/domain/blueprint/src/inspect.ts`, `packages/domain/blueprint/src/types.ts`, `packages/domain/blueprint/src/schema.ts`, `packages/domain/blueprint/src/validate.ts`, `packages/domain/blueprint/testdata/fixtures.ts`
+- Modify: `packages/runtime/src/plugin/blueprint-authority.ts`, `packages/runtime/src/plugin/host.ts`, `packages/runtime/src/plugin/root.ts`, `packages/runtime/src/plugin/bound-blueprint.ts`, `packages/runtime/src/plugin/permission-plane.ts`, `packages/runtime/src/plugin/live/agent-bindings.mjs`
+- Modify: `packages/runtime/governance/permission-mutation.ts` (delete only the Alpha.3 existential aggregate, 7.5), `packages/runtime/governance/types.ts`, `packages/runtime/governance/service.ts`, `packages/runtime/governance/index.ts`
+- Modify: `packages/domain/authority-envelope/src/index.ts`, `packages/domain/blueprint/src/index.ts` (the `PermissionMutationEnvelope` / `PermissionEnvelopeRule` alias deletion, A1-18)
+- Modify: `packages/legacy/teammates-adapter.ts` **and** `packages/legacy/test/p7t6-teammates-adapter.test.ts` — `teammates-adapter.ts` is a **production v1 emitter** (`schemaVersion: 1` at `:542`, feeding `validateBlueprintDocument` at `:552`), so post-cutover it throws at run time unless it is migrated explicitly. It is assigned here, not left to be discovered by a fixture scan, and `packages/legacy` appears in no C-lane.
+- Modify: `scripts/blueprint-authoring.mjs` (`:92`) + `packages/testkit/test/bp1h-blueprint-authoring.test.ts` (its pins at `:95,128,149`)
+- Modify: `packages/testkit/test/p4t6-session-event-scan.test.ts` — PR7 creates scannable files (including the new scan wrapper), so extend **your own** `SCANNED_PATHS_A4PR7` list; never renumber, never hand-write a total.
+- Modify: `packages/client/package.json` + `pnpm-lock.yaml` (the `clsx` runtime dependency, 7.5)
+- Modify: `docs/STATUS.md` (A1.2.9 removes the disclosure lines in PR7)
+- Add: `scripts/verify-blueprint-version-clean.mjs`, `packages/testkit/test/a4p7-blueprint-version-clean.test.ts`, `scripts/lint-identities.mjs`, root `package.json` (`"lint:identities"`), `packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts`
 - Add evidence: `dev/agent-workflow/evidence/alpha4-final/`
+- Conditional: the `permissionEnvelope` rename set. **Emit it by path at dispatch, not from a remembered count** — the pre-flight recorded 6 files / 24 occurrences at `11e1609c`; at `58cf32c8` the same non-dist scan yields 15 files, 5 of them production (`governance/types.ts`, `governance/service.ts`, `src/plugin/host.ts`, `src/plugin/permission-plane.ts`, `src/plugin/root.ts`). A count in a task body is exactly what goes stale (X10); the path set is the deliverable.
 
-**Interfaces:**
-- Final `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]`.
-- Add/standardize typed outcomes equivalent to:
-  - `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`
-  - `BLUEPRINT_MIGRATION_REQUIRED`
-- Remove all PR1-PR6 transitional v1/v2 authorization branches.
-  - **Named inventory item (this was unowned until PR1).** The existential envelope-coverage aggregate at `packages/runtime/governance/permission-mutation.ts:1184-1206` is the *second* expansion-plane aggregate in the tree; the first is `effectiveAuthorityCeiling`. It is sanctioned by spec §5.2 **only until PR7**, and the round-5 comment at `:1204-1205` ("the covering envelope rule IS the authorization") is precisely the semantics Alpha.4 replaces with effective-ceiling evaluation. It appeared in no PR's file list, so under the one-writer rule it was invisible: PR7 owns it. **It is not part of the A5-9 fixture inventory** — that predicate counts Blueprint *fixture* sites and excludes `packages/**` sources by declaration, so asking whether this file is "in the 18" was my own category error (corrected by ADR X10). Two separate inventories, do not merge them.
+#### 7.0 — A1-14 is a prerequisite implementation lane, not an acceptance checkbox
 
-**Parallel lane A — domain cutover**
-- [ ] Write RED test that v1/v2 are rejected under final Alpha.4.
-- [ ] Set supported schema to v3 only.
-- [ ] Remove transitional legacy-unbounded/legacy-routing assumptions from domain/runtime types.
-- [ ] Run domain tests.
-- [ ] Commit.
+**Current truth at `58cf32c8`, stated so nobody has to rediscover it:** `ControlOperationScope` carries `toolName?`, `capabilityDomain?`, `operationFingerprint?` — **no `operationClass` and no canonical resource authority identity**, so `guardOperation()` cannot re-run the ceiling evaluator even in principle. PR4 shipped this as disclosed-unenforced, and PR4's own PR description says PR7's acceptance gate must not close while the guard-side half is unenforced.
 
-**Parallel lane B — cold-resume/runtime gate**
-- [ ] RED test: persisted Team bound to v1/v2 fails before Leader/Member activation.
-- [ ] Implement migration-required gate in bound Blueprint/cold-resume path.
-- [ ] Prove no implicit Team/overlay migration and zero agent startup.
-- [ ] Commit.
+Required change:
 
-**Parallel lanes C1..Cn — fixture migration by package**
-Dispatch independent agents by package to avoid shared files:
-- C1: `packages/domain/test` Blueprint fixtures;
-- C2: `packages/runtime/test` fixtures;
-- C3: `packages/tools/test` and harness fixtures;
-- C4: `packages/remote/test` fixtures;
-- C5: `packages/client/test` fixtures;
-- C6: `packages/testkit/test` / maintained kit fixtures.
+1. **Persist a v3 operation-case `authorityScope`:** `{ operationClass, matcher: { kind: 'exact' | 'fingerprint', resource } }`. This is the **concrete operation point only — no subtree matcher is ever persisted in a Control row**: a subtree in a Control row silently widens the single-shot capability grant into a standing ceiling. Fold `authorityScope` into `ApprovalCaseIdentity`, the request leg, the decision scope, and deterministic case identity.
+2. **Required for v3 operation cases; absent for legacy rows; no longer usable for new v3 consumption after PR7** — the transitional v1/v2 scope shapes are deleted, so a v3 operation case without `authorityScope` is corrupt, not merely unsampled.
+3. **Then re-check at consumption.** Inside the per-team lock, **before** writing `control-allow-consumed`: load the request, the case, and the decision → load the **freshly bound** v3 authority documents → re-run the ceiling evaluation with the persisted `authorityScope` → confirm the reviewing authority is still sufficient. `undetermined`, or any rise in required authority since the decision, **refuses with zero consumption** (no fact written, the allow stays unspent). Only a re-confirmed decision may consume.
+4. **Blocking RED:** an allow obtained while the ceiling justified it, followed by an authority rise, then `guardOperation` ⇒ refusal **and** zero `control-allow-consumed` rows. Second RED: a persisted exact scope is not satisfied by a different resource at the same `toolName`, and a fingerprint matcher is not satisfied by a drifted fingerprint.
 
-Each agent:
-- [ ] Migrates only supported/live Blueprint fixtures to v3 with explicit `teamHardEnvelope`.
-- [ ] Chooses Team Hard rules that preserve the fixture's intended pre-Alpha.4 permissions rather than blindly using an unbounded approximation.
-- [ ] Leaves historical evidence files untouched.
-- [ ] Runs package-local tests and commits.
+**The rule: the A1-14 gate stays closed until 7.0 lands, and it reopens when it does.** PR4's disclosure stops being a covered deferral the moment PR7 opens; it cannot be cited as the reason the gate passed after 7.0 exists, and it cannot be cited as the reason the gate is skipped.
 
-**Migration operator path (ADR A5-21 gap closed; the plan previously stated the outcome but named no surface).** There is **no product surface** that migrates a Blueprint: the v8 remote surface exposes `catalog.list/get` and `override.*` / `team.*` only, the blueprint registry is append-only and hash-verified, and hot-rebind is post-Alpha.4. So an existing Team is migrated by one of exactly two operator actions, and PR7's runbook must say which one it exercised:
+**The only other lawful alternative** is to formally amend the ADR and the Spec to **defer A1-14 past Alpha.4**, with the deferral voted and recorded as a contract change. **An ADR saying MUST while the final report says BLOCKED-and-done is not an option** — that is not a deferral, it is a silent breach, and it is the failure mode A1-14 exists to prevent.
 
-1. **Author a v3 Blueprint file** into the mutable `blueprintDir` (`src/plugin/host.ts:602,1692`) — reachable today by hand, and by `scripts/blueprint-authoring.mjs` once its emitted skeleton stops saying `schemaVersion: 1` (`:92`, pinned by `packages/testkit/test/bp1h-blueprint-authoring.test.ts:95,128,149`) — then **create a new Team**. This is the sanctioned path for the stage.
-2. **Edit the inline anchor in the plugin row config** (`src/plugin/host.ts:597`) for a Team whose Blueprint is inline. Hand-editing only; no tool does it in Alpha.4.
+#### 7.1 — Migration discoverability (the most valuable migration-usability fix in this PR)
 
-Anything else — rewriting a registry row, re-hashing, or hot-swapping a running Team's Blueprint — is out of scope and would break the hash-verified immutability the registry exists to provide. An unmigrated v1/v2 Team keeps working through PR1–PR6 provided the dual algebra of A5-12 holds and `inspect.ts` keeps listing v1/v2 sources (A3-11); its start behaviour is the warn-and-acknowledge row of §21.1 (A5-10).
+**The bug this closes:** today `inspect.ts` returns `{ status: 'rejected', diagnostics }` for an unsupported document version (`:168-179`), and `blueprint-authority.ts` skips every `rejected` inspection (`:264`). After the cutover that pair **removes every unmigrated Blueprint from the discovery surface**: it vanishes from `listIdentities`, so from the catalog, so a "migrate everything" runbook cannot see what is left. The two tests that exist on that path use `schemaVersion: 1.5` and `99`, so **nothing goes red** when the bridge's own migration surface disappears.
 
-**Parallel lane D — final acceptance/security matrix** (owning file `packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts`, ADR A5-14)
-- [ ] Add/assemble a single Alpha.4 acceptance suite that pins:
-  - v3-only migration;
-  - expansion-plane no-match zero authority (and its counterpart: approval-plane absence imposes no narrowing);
-  - monotonic overlapping ceilings;
-  - live descendant creation;
-  - root identity drift;
-  - Member/Leader/Human authority routing;
-  - sufficient-reviewer voluntary escalation;
-  - Human Admin terminal routing/unavailability;
-  - Member mutation rejection;
-  - Leader self-tighten/self-expand;
-  - revoke/reveal;
-  - batch atomicity;
-  - single-shot capability preflight/last-mile semantics;
-  - mutation CAS/lifecycle/identity drift;
-  - warning dedup/ack;
-  - restart reconstruction;
-  - cross-instance/cross-Team isolation;
-  - Intervention non-authority.
-- [ ] Record all receipts under `dev/agent-workflow/evidence/alpha4-final/`.
-- [ ] Commit.
+- [ ] `BlueprintInspectionResult` becomes three-state: `ok | migration-required | rejected`.
+- [ ] A v1/v2 document still **parses its identity** (blueprintId, revision, schemaVersion) and yields `migration-required` **with that identity**. Bad YAML, a missing id, and an invalid revision stay `rejected` — identity is not owed to a document that has none.
+- [ ] `blueprint-authority.ts`: `rejected` → skip as today; **`migration-required` → stays on `listIdentities()` and the catalog migration surface**, while `resolve()` and any start path on that identity throw `BLUEPRINT_MIGRATION_REQUIRED`.
+- [ ] `BlueprintIdentity` (`:128-135`) gains `schemaVersion` and `migrationRequired`, and Remote v8 `catalog.list` exposes both **without changing any older wire** (additive fields on v8 only; v7 responses are byte-identical).
+- [ ] Lane-C test, on the real discovery surface: a v1 document is still **listed with a migration-required status**, and that status is distinguishable from parse-rejected.
+- [ ] Typed names stay distinct (A1-21): `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` and `BLUEPRINT_MIGRATION_REQUIRED` are **new** codes. Overloading the existing `SCHEMA_VERSION_UNSUPPORTED` / `SCHEMA_VERSION_MISMATCH` is forbidden — a document the reader cannot parse is a different refusal from one it can parse but will not run, and the operator action differs.
 
-**Integration / final gate**
-- [ ] **`scripts/verify-blueprint-version-clean.mjs` must emit the site set by path, not compare against a remembered count (ADR X10).** Measured on `59d76d3a` the in-scope set is **20**: 14 kit files (not 16 — `stage2-observer.mjs`, `stage2-observer.test.mjs` and `team-projection-recovery-smoke.mjs` carry `schemaVersion` on SessionBinding DTOs or in prose and construct no Blueprint), plus `scripts/blueprint-authoring.mjs:92`, plus `packages/runtime/root-binding/harness/blueprint-source.mjs:30`, plus **four `packages/tools/harness/**` sites that no earlier count included**: `d4-restart-reopen.mjs:220`, `g5-member-e2e.mjs:267`, `run.mjs:214`, `t12-vertical.mjs:215`. Predicate: a string literal `schemaVersion: <digit>` in a file that also keys `blueprintId`, over `tests/kits/**` + `scripts/**` + `packages/**/harness/**`, excluding `dev/agent-workflow/evidence/**`. A bare digit scan would false-positive on `stage2-observer.test.mjs:214`.
-- [ ] Merge A+B first, then fixture lanes, then acceptance lane.
-- [ ] Run targeted Alpha.4 acceptance suite.
-- [ ] Run `pnpm typecheck`.
-- [ ] Run changed-file ESLint.
-- [ ] Run full `pnpm lint` and compare diagnostic identities to baseline — **the canonical Alpha.4 baseline is `dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-11e1609c.txt` (162 identities = 130 errors + 32 warnings, `sha256 da48f12f…`); closure is an identity diff with no new line, never the count (README in that directory states the predicate and the known gap that `fail-set.mjs` has no lint mode).**
-- [ ] Run full `pnpm test` and compare failing test/collection identities to baseline; Alpha.4 may remove baseline failures but must add none.
-- [ ] Run `pnpm build`.
-- [ ] Run `pnpm build:composition`.
-- [ ] Run `pnpm check:artifacts`.
-- [ ] Run `pnpm smoke:composition`.
-- [ ] Run the maintained real-host/Chrome acceptance lanes that are applicable to Team Governance UI, under the existing sandbox/port/ownership discipline; do not claim live acceptance for any lane not actually executed.
+**The operator migration path (there is no product migrate button).** The v8 remote surface exposes `catalog.list/get` and `override.*` / `team.*` only; the Blueprint registry is append-only and hash-verified; hot-rebind is post-Alpha.4. So an existing Team is migrated by exactly one of two operator actions, and PR7's runbook must say which one it exercised:
+
+1. **Author a v3 Blueprint file** into the mutable `blueprintDir` (`src/plugin/host.ts:602,1692`) — by hand today, and via `scripts/blueprint-authoring.mjs` once its emitted skeleton stops saying `schemaVersion: 1` (`:92`, pinned by `packages/testkit/test/bp1h-blueprint-authoring.test.ts:95,128,149`) — then **create a new Team**. This is the sanctioned path for the stage.
+2. **Edit the inline anchor in the plugin row config** (`src/plugin/host.ts:597`) for a Team whose Blueprint is inline. Hand-editing only; no tool does this in Alpha.4.
+
+Anything else — rewriting a registry row, re-hashing, or hot-swapping a running Team's Blueprint — is out of scope and would break the hash-verified immutability the registry exists to provide. Through PR1–PR6 an unmigrated v1/v2 Team keeps working **only** because the dual algebra of A5-12 holds and `inspect.ts` keeps listing v1/v2 sources (A3-11, now 7.1). **From 7.2 its start and cold resume are `BLUEPRINT_MIGRATION_REQUIRED` with zero agent creation, and that refusal is not a warning: no acknowledgement clears it.**
+
+#### 7.2 — Degraded host boot, separated from Team start refusal
+
+Three planes, and they must stay three:
+
+1. **Host/plugin boot may degrade but must not die.** A host whose bootstrap/source Blueprint is v1/v2 **can boot**; the catalog can show it as `migration-required`. All three anchor parses are constructor-time today — `plugin/blueprint-authority.ts:232` (constructed from `host.ts:1695`), `host.ts:1874`, and `root.ts:908` (the older documents cite `root.ts:883`, which has drifted; locate by symbol), so they must become **non-fatal**: a refused document must not kill the constructor. An operator who cannot boot cannot migrate anything.
+2. **A specific v1/v2 Team cannot start or resume.** `boot()` / `ensureRootLive()` / Team start on a bound v1/v2 Blueprint → `BLUEPRINT_MIGRATION_REQUIRED`, with **zero agent creation** and zero compatibility/prober writes before the refusal. **Not bypassable by acknowledgement** — acknowledgement gates the v3 envelope-consistency leg only.
+3. **The migration surface still sees it** (7.1).
+
+**Fix the lane-B RED wording, which currently inverts A1-20(c).** "Persisted Team bound to v1/v2 fails before Leader/Member activation" reads as *make construction throw*, which is precisely what A1-20(c) forbids. The required RED is: **successful construction + zero `records.creates` + a typed migration refusal from `boot()`**. Reuse the existing zero-creates mechanism: `createScriptedAgentsDouble` (`packages/runtime/test/p8s3b-result-effects.test.ts:293`) consumed as `records.creates.length === 0` (as at `packages/runtime/test/t4a-capability-wiring.test.ts:476`).
+
+Placement is achievable and named: the resume path reads the row, the first durable write is `prober.probe`, and `live.boot()` follows — the refusal sits **between the row read and the first durable write**, and must add an explicit `resolveBoundBlueprint(rootSessionId)`, because `boundSnapshot` comes from the anchor rather than from the row.
+
+#### 7.3 — The v3-only cutover (only now)
+
+- [ ] `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]` (`packages/domain/blueprint/src/schema.ts:75`) **and** narrow `TeamBlueprint.schemaVersion` from `1 | 2 | 3` to `3` at **`packages/domain/blueprint/src/types.ts:416`**. Touching the validator alone leaves the type system asserting a contract the product no longer honours.
+- [ ] Record the blast radius honestly: the pre-flight measured **110** tracked files carrying a v1/v2 Blueprint-shaped literal, of which **39** also call `parseBlueprint` / `validateBlueprintDocument` and therefore **turn red**, while the rest are typed literals that **stay green while lying**. The 110/39 pair was measured at `11e1609c`; treat it as the *why*, not the checklist — the dispatch emits the current set **by path** (7.5). Narrowing is the ruling, and the cost is stated: lane-C work multiplies across packages.
+- [ ] **Compatibility-by-subject tests are deleted or inverted, never retargeted.** A test whose subject is "a v1 document parses" (`packages/domain/test/blueprint-v1-frozen-resume.test.ts:52-60` is the canonical one) or "a v2 document parses" (`packages/domain/test/t2-blueprint-v2-hash.test.ts`, `packages/domain/test/t2-blueprint-v2-requirements.test.ts`, `packages/runtime/test/persona-requirement-v2.test.ts`) must become a **migration-required contract test or be deleted**. Mechanically pointing the same test at a v3 fixture under the same name is forbidden: it converts a retired contract into a false green.
+- [ ] Delete the transitional v1/v2 authorization branches, and with A1-18 delete the `PermissionMutationEnvelope` / `PermissionEnvelopeRule` aliases — **16 files** carry them (`git ls-files` + scan at `58cf32c8`; emit the set by path, do not trust this number after PR7 starts).
+- [ ] Re-pin the golden blueprint-contentHash **literals** — the hardcoded digests, not the self-comparing determinism assertions, which need no re-pin. Measured at `58cf32c8`: `packages/domain/test/a4p1-blueprint-v3-governance.test.ts:265` (`V1_GOLDEN_HASH`, asserted `:425-426`) and `:267` (`V2_GOLDEN_HASH`, asserted `:427-428`), `packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:2115`, and the two kit copies of `V1_ANCHOR_HASH_PRE_PR_E` (`tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:460`, `tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:389`). **The scan emits this set by path; a count carried in a document is not the contract (X10) — and the earlier 'one' and 'two' counts were both wrong.**
+
+#### 7.4 — Fixture migration re-owned by lane (one file, one lane)
+
+`packages/runtime/test/**` is written by three different lanes under the old lane list, which is not a lane split. Re-own it:
+
+| Lane | Owns |
+| --- | --- |
+| `C-domain` | `packages/domain/**` fixtures and Blueprint test data |
+| `C-runtime-fixtures` | `packages/runtime/test/**` fixture **data only** (no semantics) |
+| `B-runtime-semantics` | cold-resume / A1-14 / cutover **behaviour** tests in `packages/runtime/test/**` — this lane, and only this lane, may rewrite a runtime test's assertions |
+| `C-tools+harness` | `packages/tools/test/**` **and** `packages/tools/harness/**` (the latter is not under `packages/tools/test`; its four v1 sites are `d4-restart-reopen.mjs:220`, `g5-member-e2e.mjs:267`, `run.mjs:214`, `t12-vertical.mjs:215`) |
+| `C-remote` | `packages/remote/test/**` |
+| `C-client` | `packages/client/test/**` |
+| `C-testkit` | `packages/testkit/test/**` + maintained kit fixtures + `tests/kits/**` + `scripts/blueprint-authoring.mjs` |
+| `D-acceptance` | the final matrix (`packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts`), **waiting for all of the above** |
+
+- [ ] One file, one lane. A lane that needs a change in another lane's file raises it instead of editing it.
+- [ ] `packages/legacy/teammates-adapter.ts` is assigned to the 7.3 list above (production v1 emitter), **not** to a fixture scan.
+- [ ] Migrate only supported/live Blueprint fixtures to v3 with an explicit `teamHardEnvelope`, choosing Team Hard rules that preserve each fixture's intended pre-Alpha.4 permissions rather than an unbounded approximation. Historical evidence files stay untouched.
+
+#### 7.5 — Tooling, and the one deletion
+
+- [ ] **Keep `effectiveAuthorityCeiling()`.** It is §5.2's **replacement** — the final effective-ceiling implementation (`packages/domain/authority-envelope/src/authority-envelope.ts:409` at this base, cited as `:380+` when the pre-flight was written) — and it is called in production from `packages/runtime/governance/authority-ceiling.ts:54,423` inside the `grantCeiling` walk. A claim that it has no callers is not evidence to delete it, and the "the first aggregate … sanctioned only until PR7" phrasing that invited deleting the v3 algebra itself is withdrawn. `effectiveAuthorityCeiling` / `narrowingForApproval` are the surviving v3 path and **must not be removed**.
+- [ ] **The only deletion on this list** is the Alpha.3 existential authorization aggregate: `leaderEnvelopeCoverage` in `packages/runtime/governance/permission-mutation.ts:1368-1391` (called at `:1339`; recorded as `:1184-1206` when the ruling was written — the file has grown, so name the symbol and re-locate it rather than trusting either range), together with its refusal text and the round-5 comment that treats a covering envelope rule *as* the authorization.
+- [ ] `scripts/verify-blueprint-version-clean.mjs` **plus** `packages/testkit/test/a4p7-blueprint-version-clean.test.ts` invoking it. **A script no test calls is not a gate** — `verify-zero-core.mjs` is the cautionary precedent (invoked by nothing). The scan walks `git ls-files` output, **never** a bare filesystem walk (that hits `tests/homes/**` store copies) and **never** `rg` (not installed here; `rg`-based scans return silent all-zero false negatives). It emits the offending site set **by path** and fails on a new path, never on a remembered count. Predicate: a string literal matching `schemaVersion: <digit>` in a file that also keys `blueprintId`, over `tests/kits/**`, `scripts/**`, `packages/**/harness/**`, excluding `dev/agent-workflow/evidence/**`.
+- [ ] `scripts/lint-identities.mjs` plus `"lint:identities": "node scripts/lint-identities.mjs"` in the root scripts, so the lint normaliser stops being a recipe copied out of an evidence README. Closure stays an identity diff, never a count.
+- [ ] `pnpm smoke:composition`: if the only missing piece is the **`clsx` runtime dependency**, **add the dependency and the lockfile** — `packages/client/package.json` (the manifest the client resolver actually reads; `clsx` is imported by no file in this repo and appears in no lockfile entry today) **plus `pnpm-lock.yaml`**. Do not invent another exemption for a leg that a one-line dependency makes passable; if a second cause is found, re-open and disclose A1.2.7 rather than closing it silently.
+
+#### 7.6 — Code merge gate (all machine-checkable legs)
+
+- [ ] `pnpm typecheck`; changed-file ESLint; full `pnpm lint` compared as an identity diff against **`dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt`** (160 identities = 128 errors + 32 warnings). The earlier `lint-identities-11e1609c.txt` / 162 pair is **revoked**; closure is "no new identity", never the count, and `scripts/lint-identities.mjs` (7.5) is now the normaliser.
+- [ ] Full `pnpm test` with the baseline-diff gate (citable root reference; Alpha.4 may remove baseline failures but adds none).
+- [ ] **Client lane:** `pnpm --filter @dsh-agent-team/client run test`, captured before and after in this worktree, closing on the three named pre-existing client failures plus no-new-failures — **test-name sets, not a `fail-set.mjs` identity diff** (that script has no client mode). Root `pnpm test` sees **0 of the 27** `*.client.spec.*` files, so a root-suite claim says nothing about the UI lanes PR6 created.
+- [ ] `pnpm build`, `pnpm build:composition`, `pnpm check:artifacts`, `pnpm smoke:composition` (the `clsx` fix from 7.5 is what makes this leg passable; a red here blocks the merge).
+- [ ] `p4t6` recomputation via `SCANNED_PATHS_A4PR7`.
+- [ ] Blueprint-version-clean wrapper green: `packages/testkit/test/a4p7-blueprint-version-clean.test.ts`.
+- [ ] Targeted Alpha.4 acceptance suite (`a4p7-v3-cutover-acceptance.test.ts`) green: v3-only migration; expansion-plane no-match zero authority and its approval-plane counterpart; monotonic overlapping ceilings; live descendant creation; root identity drift; Member/Leader/Human routing; voluntary escalation; Human Admin terminal routing/unavailability; Member mutation rejection; Leader self-tighten/self-expand; revoke/reveal; batch atomicity; single-shot preflight/last-mile semantics including the 7.0 re-check; mutation CAS/lifecycle/identity drift; warning dedup/ack; restart reconstruction; cross-Team isolation; Intervention non-authority.
 - [ ] Update ADR/Spec from Draft to Accepted only after review and evidence.
 - [ ] Open A4-PR7.
+
+#### 7.7 — Alpha.4 stage closure (a human pass, separate from the merge)
+
+**Code merge gate ≠ Alpha.4 stage closure.** 7.6 is machine/static/build. Stage closure additionally requires the **Alpha.3 nine-step permission-surface human pass** (`dev/agent-workflow/evidence/alpha3-pr5-notification-projection/ALPHA3-PERMISSIONS-USER-FACING.md` §8, the checklist running from `:193` to `:240`) to have been **actually executed against the PR6 Permission Administration surface** — this is the pass `docs/STATUS.md` records as `NOT_RUN`, and it is the only PR7 finding that changes whether Alpha.4 can be *closed* rather than merged.
+
+- [ ] Execute §8's nine steps against the merged tree on a 3180-family instance, translating steps 4–5's v7 legs to v8 **while retaining the v7 compatibility leg**.
+- [ ] One **dated, human-executed receipt per step**, naming the performer, under `dev/agent-workflow/evidence/alpha4-final/ALPHA3-HUMAN-ACCEPTANCE.md`; flip the recorded status.
+- [ ] Steps 1, 2, 4, 5, 8, 9 need a booted host plus a mock model; steps 3, 6, 7 additionally need a live member process. This environment is **known-blocked** (`tests/deepseek-harness-test-use/packages/cli/dist` absent, `tests/homes/.playwright-browsers` empty, no `/opt/google/chrome/chrome`; `/usr/bin/chromium-browser` exists), so the honest outcome when blocked is an explicit re-deferral with owner, trigger, and a dated receipt — **never silence**.
+- [ ] If blocked, record all four facts separately, each with blocker, owner, trigger, and dated receipt: `PR7 merged`; `Alpha.4 implementation = merged`; `Alpha.4 human acceptance = NOT_RUN/BLOCKED`; `stage closure = pending`.
+
+**"PR merged" must never be reported as "Alpha.4 fully accepted."** Merging is the machine gate; acceptance is a human observation, and the stage stays open until the human pass has dated receipts.
 
 ---
 
@@ -737,7 +848,9 @@ Do not merge PR N+1 before PR N's reviewed interfaces are on `master`, except th
 
 **After A4-PR6:** Alpha.4 is fully observable/operable through Remote/UI for v3 Teams; old UI/Remote commands remain compatible.
 
-**After A4-PR7:** final Alpha.4: v3-only, old Teams require explicit migration/new Team creation, all transitional branches removed.
+**After A4-PR7 (code merge gate):** final Alpha.4 semantics — v3-only; an unmigrated v1/v2 Blueprint is still **listed** with `migration-required` but its Team start/resume is refused with `BLUEPRINT_MIGRATION_REQUIRED` and zero agent creation, which no acknowledgement clears; all transitional branches removed; the A1-14 consumption recheck enforced.
+
+**After A4-PR7 (stage closure) is a separate claim.** A merged PR7 means *Alpha.4 implementation = merged*. **"PR merged" must never be reported as "Alpha.4 fully accepted"**: stage closure additionally needs the Alpha.3 nine-step permission-surface human pass executed with dated receipts (Task 7 §7.7). If that pass cannot run, the record says `PR7 merged` + `implementation = merged` + `human acceptance = NOT_RUN/BLOCKED` + `stage closure = pending`, each with blocker, owner, and trigger.
 
 # Post-Alpha.4 Backlog Created by This Plan
 
@@ -754,14 +867,16 @@ Record but do not implement in these PRs:
 - cleanup/removal of `leader-approval` / `user-approval`;
 - consolidation of `team.resolveControl` with `intervention.act`;
 - broader Control/Compatibility/GovernanceWarning API/UI cleanup;
-- durable Control schema compaction/migration solely for cleanliness.
+- durable Control schema compaction/migration solely for cleanliness;
+- **proposal-record atomicity** — collapsing a proposal's authority-bearing writes into one durable append (between PR5 and PR6, and until this lands, an incomplete set must render corrupt/incomplete: Task 6 §6.C);
+- **base-scoped duplicate-case suppression** — today dedup is **per identity, not per base**, so `requestedEffect` drift at the same base leaves an unreachable open case; "one open case per (team, target, base)" is **not** a guarantee (Spec §24.5). Base-scoped suppression is a post-Alpha.4 change, not a PR6/PR7 duty.
 
 # Self-Review Checklist
 
 - [ ] Every ADR/Spec requirement maps to one PR/task above.
 - [ ] No PR requires Alpha.4-final v3-only behavior before all v3 runtime paths exist.
 - [ ] No parallel code-writing lane owns the same production file.
-- [ ] The real shared-file risk set — `src/plugin/root.ts`, `src/plugin/live/agent-bindings.mjs`, `governance/permission-mutation.ts`, `control/service.ts`, `operation-permission/pre-execute-adapter.ts`, `governance/service.ts` — is serialised behind a coordinator commit; parallel lanes never own them (Amendment A2 addenda).erfaces before consumers run in parallel.
+- [ ] The real shared-file risk set — `src/plugin/root.ts`, `src/plugin/live/agent-bindings.mjs`, `governance/permission-mutation.ts`, `control/service.ts`, `operation-permission/pre-execute-adapter.ts`, `governance/service.ts` — is serialised behind a coordinator commit; parallel lanes never own them (Amendment A2 addenda). PR6 §6.0 and PR7 §7.0/§7.4 freeze their interfaces and lane ownership before consumers run in parallel, and in PR7 **one file has exactly one lane**.
 - [ ] Effective-ceiling semantics replace existential envelope coverage everywhere by PR7.
 - [ ] Both operation and mutation approval use the same RuntimeAuthority model.
 - [ ] Capability/environment failure never enters approval routing.
@@ -797,7 +912,7 @@ The authoritative record is `dev/agent-workflow/evidence/alpha4/baseline/BASELIN
 4. **Named flake allowance** — additive-only, so it can never mask stable debt. Identities here may be re-run in isolation before being treated as blocking: `p6t1-parallel.test.ts::P6-T1 P1: N=2 same-template parallel activations…` ×2 (a genuine flake, 1/3 **isolated** runs; not root-caused) — **widened in place 2026-10-07 to the whole `p6t1-parallel.test.ts` group**, because PR1 measured that the enumerated identities do not describe the observed behaviour: four observations produced three different identity subsets, two of them on trees with no PR1 code (base carried 3 P3-quota identities; a standalone probe repeated FAIL-2-identities / PASS / PASS). The allowance is group-scoped, still additive-only, and closure is still taken on the strict identity diff against the citable 22-identity reference — PR1 did exactly that and reached NEW=0 FIXED=0, plus the two whole-tree hygiene-scanner ENOENT races while `packages/testkit/test/.tmp-fault/` churns (`rc2-kit-pin-hygiene` H2 3/5 full runs, `rc2-kit-preset-seam` P6 2/5). Measured by dogfooding `scripts/fail-set.mjs` on five runs of one tree: 24/23/25/24/23 identities. `fail-set.mjs diff` exits non-zero only on identities outside the baseline union — it never re-runs anything itself.
 5. **`scripts/fail-set.mjs` (owned by A4-PR0) is format-locked to `BASELINE.md` §7** and proven byte-identical to both committed identity files (33-line recorded, 23-line final). Contract: two line shapes `TEST <relpath>::<fullName>` / `FILE <relpath>::COLLECTION-OR-UNHANDLED`; `<fullName>` copied **verbatim**; repo root = explicit arg, else cwd — never longest-common-prefix (it strips `packages/` and silently breaks comparison); identities must not depend on which checkout produced the report, so a `<repoRoot>/.worktrees/<task>/` prefix is elided (PR #62's debt was captured in a worktree and did not line up with root runs for exactly this reason); raw vitest JSON stays gitignored, the identity list plus `.summary.txt` are the record.
 6. **New named debt with an owner (PR0 lane): the two whole-tree hygiene scanners are mis-scoped.** `rc2-kit-pin-hygiene.test.ts:29-38` (`sourcesUnder`, `statSync` at `:35`) and `rc2-kit-preset-seam.test.ts:73-82` (`walkSources`, called at `:264`) walk **gitignored** trees, skip `.tmp-faultscratch` while the real base is `.tmp-fault`, and therefore scan retained DSH_HOME worlds: 21 306 files, **954 offenders, all under `tests/homes/`** (53 worlds × 18 `.mjs` — historical snapshots of this repo's own tree inside 0.1.7-rc.1-era spill worlds), zero offenders elsewhere. Those worlds are evidence-registered in tracked files, so they cannot be deleted; the fix is the one this plan already needs for its own gate — scope both walkers to tracked sources (or skip `tests/homes/`, `.tmp-fault`, and unreadable/dangling entries). Until then H2 is red in any tree that retains worlds and green in a fresh worktree, which is precisely the kind of environment-dependent gate this plan forbids.
-7. **`pnpm smoke:composition` is amended**: the client leg is red at base by design (upstream `dsh-client-ui-primitives` publishes no runtime deps ⇒ `clsx` crash). The leg is run and recorded, and its known-red status is not treated as an Alpha.4 regression; removed by PR7.
+7. **`pnpm smoke:composition` is amended**: the client leg is red at base by design (upstream `dsh-client-ui-primitives` publishes no runtime deps ⇒ `clsx` crash; `clsx` is in no manifest and no lockfile entry in this repo). The leg is run and recorded, and its known-red status is not treated as an Alpha.4 regression. **"Removed by PR7" is now an obligation, not a dispensation: PR7 §7.5 adds the missing `clsx` runtime dependency to `packages/client/package.json` plus `pnpm-lock.yaml`, and PR7 may not close this amendment on a leg that still cannot pass — inventing a second exemption is forbidden; if a second cause is found, A1.2.7 is re-opened and disclosed.**
 8. Every **PR0a, PR0 and PR1–PR7** gate additionally runs `pnpm build`, `pnpm build:composition`, and `pnpm check:artifacts` **in the same commit** (dist co-commit rule), recomputes the `p4t6` inventory pin when `packages/**` file counts change (PR0 holds that authority first), and requires a RED-before-GREEN receipt.
 9. Temporary-semantics disclosure now has named targets: a PR-body section, a `docs/STATUS.md` line, and an evidence receipt — all removed by PR7.
 10. **Every gate also runs `pnpm -r run typecheck` (added 2026-10-07 in the A4-PR0a follow-up, and it is not optional for PR0–PR7).** Measured reason, not caution: `build` is `pnpm -r run build` = `tsc -p tsconfig.build.json`, whose `include` is `src` (+ two named domain lanes), so any module that nothing in `src/**` imports — which is every Alpha.4 lane module until the PR that wires it (`governance/proposal-store.ts` in PR0, `domain/authority-envelope/**` and `runtime/governance/authority-ceiling.ts` in PR1) — is never typechecked by `build`; `packages/runtime/tsconfig.json` includes `['src','test','vitest.config.ts']`, so the ONLY thing that typechecks such a module is the package `typecheck` reaching it transitively through its own test import; and vitest transpiles without typechecking at all. The hole was proven on the first PR of the phase: the A4-PR0a guard test merged green carrying 27 `noUncheckedIndexedAccess` errors that no configured gate could see. `pnpm exec eslint <changed files>` runs with it, because the a3p3 import-hygiene rules are the independent enforcement of the A4-1 / A3-6 import bans.
@@ -808,7 +923,7 @@ The authoritative record is `dev/agent-workflow/evidence/alpha4/baseline/BASELIN
 - **PR3**: exactly one writer owns `control/types.ts` and `control/service.ts`; lane B's derivation and terminal-vocabulary work moves into new modules rather than sharing those files.
 - **PR4**: file list gains `packages/tools/src/tools.ts` (reachable `escalate`, pending list spanning cases — A1-11) and the guard-side consumption recheck (A1-14).
 - **PR5**: exactly one writer owns `governance/service.ts` and `permission-mutation.ts`; the batch planner moves to its own module.
-- **PR6**: file list gains `packages/runtime/src/plugin/s6-principal.ts` (explicit per-method principal derivation, no fallback — A1-2) and `packages/remote/test/p8t3-version.test.ts` (the `[1..7]` pin that makes the 1–8 regression possible). `intervention/projection.ts` has one writer; warning aggregation gets its own module; `src/plugin/root.ts` wiring is a coordinator-owned commit.
+- **PR6**: Task 6 §6.0 **is** the file list, and it now contains the whole surface: `packages/runtime/src/plugin/s6-principal.ts` (**an existing `master` file to extend, not a file to create** — explicit per-method principal derivation, no fallback, A1-2) and **all four** contract-version tests (`p8t3-version.test.ts`, `tcm-m1-remote-v2.test.ts`, `d1-remote-v3.test.ts`, `packages/runtime/test/t12m4-remote-mount.test.ts`), not just the first. `intervention/projection.ts` has one writer; warning aggregation gets its own module; `src/plugin/root.ts` wiring is a coordinator-owned commit.
 - **PR7**: scope extends to the boot-anchor and reference-less-row cases of A1-20, alias deletion, and the golden contentHash re-pin.
 - **Collision-set repairs (X11).** `packages/tools/src/tools.ts` is added to the shared-file set and the serialisation ranking, as A5-11 recorded but never wrote; `packages/testkit/test/p4t6-session-event-scan.test.ts` gains an explicit owner order (**PR4 first, PR5 rebases onto the recomputed pin**) because two tasks recreate scannable files against one exact-equality count; and **`packages/runtime/src/plugin/projection-source.ts` + `packages/client/src/model/ledger-adapter.ts` are ruled single-owner PR4 within the PR4∥PR5 window** — both tasks listed them "iff", and measurement confirmed PR5 can reuse PR0's registered `governance-proposal-recorded` fact type and needs neither file; within that window PR5 must not edit them. **Scoped in place by the PR3 pre-flight audit (B2): this ruling governs the concurrent window only (graph `:815` records exactly that intent) — it does not reach back into PR3, which is *mandated* to edit both files (Task 3's X8-R1 lines and A5-6's fact-type registration stand); the old unscoped wording read as a blanket ban and contradicted the operative Task 3 text.**
 - **PR4 ∥ PR5 rebase collision set** (name it in the PR5 rebase step): `packages/runtime/src/plugin/root.ts`, the `p4t6` inventory pin, `packages/runtime/dist` mirrors, and the log/graph bookkeeping files.
@@ -826,7 +941,7 @@ PR6 and PR7 real-host / Chrome lanes follow the recorded precedent: attempt the 
 
 ### A1.6 Deferred human acceptance (user ruling, 2026-10-07)
 
-The Alpha.3 permission-surface human acceptance checklist (the 9-step pass in `ALPHA3-PERMISSIONS-USER-FACING.md` §8) is **accepted as a deferred precondition**: there is no useful entry point for it in the current Alpha.3-only UI, so it becomes an Alpha.4 acceptance item executed against the PR6 Permission Administration surface. "Merge is not deployment" continues to hold until that pass is recorded.
+The Alpha.3 permission-surface human acceptance checklist (the 9-step pass in §8 of `dev/agent-workflow/evidence/alpha3-pr5-notification-projection/ALPHA3-PERMISSIONS-USER-FACING.md`) is **accepted as a deferred precondition**: there is no useful entry point for it in the current Alpha.3-only UI, so it becomes an Alpha.4 acceptance item executed against the PR6 Permission Administration surface, **owned by Task 7 §7.7** — PR6 owns only that the surface exists and is drivable, and no PR6 or PR7 checkbox other than §7.7 executes it. **"Merge is not deployment" continues to hold until that pass is recorded with dated, human-executed receipts, and a merged PR7 is therefore not Alpha.4 acceptance** (§7.7's four-way record).
 
 ### A1.7 Test-world migration policy (PR7 input)
 
@@ -849,7 +964,7 @@ Removable set = **probe scratch only**, and it must be proven unreferenced first
 - its typed error-code home: a **lane-local** closed table `packages/runtime/governance/proposal-codes.ts` (ADR A4-1 — the earlier "the plugin's typed code module" wording is withdrawn: no lane value-imports from `src/plugin/**`);
 - `packages/runtime/src/plugin/projection-source.ts` — the `FACT_TYPE_CATEGORY` entry mapping the new fact type to the existing `policy` category (an unregistered type throws `TEAM_PROJECTION_SOURCE_LEDGER_CATEGORY_UNKNOWN` at `:766` and breaks the whole ledger read plane, not one row);
 - `scripts/fail-set.mjs` — the A1.2.2 baseline-diff tool, which exists today only in an unmerged worktree and was owned by no PR;
-- the `p4t6` scannable-inventory pin recompute (`packages/testkit/test/p4t6-session-event-scan.test.ts:1735-1736`; `:52` is the `it()` title, not the pin), which PR0 is now expressly authorised to change;
+- the `p4t6` scannable-inventory pin recompute (`packages/testkit/test/p4t6-session-event-scan.test.ts` — the assertion is a **derived sum over the per-PR `SCANNED_PATHS_A4PRn` path lists**; no line number is citable here because it moves with the file, and the `it()` title is prose, not a pin), which PR0 is now expressly authorised to change;
 - round-trip, restart-survival and corrupt-record tests.
 
 Gate (A4-7, two legs): round-trip green across a reopened store; payload-level corruption of an entry-valid row yields a typed corrupt outcome naming path/field/sequence while the row is still present in `list()`, and entry-level corruption is asserted as a **throw** from the durable read, never as an empty result; ledger projection still serves every category with `sum(byCategory) === factCount`; no new store, no storage schema change, no change to the appended-last stamp contract.
@@ -862,7 +977,7 @@ Gate (A4-7, two legs): round-trip green across a reopened store; payload-level c
 
 ## A3 addenda (2026-10-07, round 2) — these supersede the A2 addenda and every task body above on conflict
 
-**PR0 is a real PR.** It joins the merge-order table, the review order (targeted security reviewer for the corrupt-read path), the A1.2.2 baseline-diff gate, the A1.2.5 gates (`pnpm build` + `build:composition` + `check:artifacts` dist co-commit + `p4t6` pin recompute + RED-first), the A1.4 evidence dir (`dev/agent-workflow/evidence/a4-pr0/`), and the Expected-Stable-Plugin-State list. **Ownership exception granted to PR0:** the `p4t6` scannable-inventory pin (`packages/testkit/test/p4t6-session-event-scan.test.ts:52`, currently 971) is recomputed by whichever PR changes `packages/**` file counts, starting with PR0 — otherwise PR0 cannot pass its own gate without breaking the single-writer rule that assigned `packages/testkit/**` to PR1.
+**PR0 is a real PR.** It joins the merge-order table, the review order (targeted security reviewer for the corrupt-read path), the A1.2.2 baseline-diff gate, the A1.2.5 gates (`pnpm build` + `build:composition` + `check:artifacts` dist co-commit + `p4t6` pin recompute + RED-first), the A1.4 evidence dir (`dev/agent-workflow/evidence/a4-pr0/`), and the Expected-Stable-Plugin-State list. **Ownership exception granted to PR0:** the `p4t6` scannable-inventory pin (`packages/testkit/test/p4t6-session-event-scan.test.ts`) is recomputed by whichever PR changes `packages/**` file counts, starting with PR0 — the value is the **derived** sum over the per-PR `SCANNED_PATHS_A4PRn` lists, so "recompute" means "extend your own list", never "write today's number" — otherwise PR0 cannot pass its own gate without breaking the single-writer rule that assigned `packages/testkit/**` to PR1.
 
 **PR0 file list, corrected.** `packages/storage/schema/ledger.ts` is **dropped** (no storage edit is needed: `factType` is an open hygienic string, the repository whitelists nothing). It owns instead: `packages/runtime/governance/proposal-store.ts` (append + strict reader + typed `corrupt-record`), the factType name `governance-proposal-recorded`, its typed error-code home, the **`FACT_TYPE_CATEGORY` registration** in `packages/runtime/src/plugin/projection-source.ts` (target category `policy`; an unmapped fact type throws `TEAM_PROJECTION_SOURCE_LEDGER_CATEGORY_UNKNOWN` and breaks the whole ledger read plane), and **`scripts/fail-set.mjs`** — the baseline-diff tool A1.2.2 requires, which exists today only in an unmerged worktree (`.worktrees/a4-fail-set`, `2a0ff1ef`, self-test passing and verified not to move the p4t6 pin) and is owned by no PR.
 
@@ -871,8 +986,8 @@ Gate (A4-7, two legs): round-trip green across a reopened store; payload-level c
 - **PR3** — specifies the escalation leg fact `{ approvalCaseId, legOrdinal, previousRequestId, escalatedBy, reason }` and the caller-visible `escalated` outcome for the inline waiter; its import pin must disambiguate the two same-named `CONTROL_DECISION_VALUES` constants by module path (`control/types.ts:169` re-exported at `control/index.ts:118` vs `admission/actions.ts:127` re-exported at `admission/index.ts:91`), plus the third literal decision list in `remote/src/handlers/team.ts`.
 - **PR4** — additionally owns the `packages/runtime/action-router/router.ts:619` branch (a second consumer hard-coding `decision.decision !== 'allow'`; citation repaired in place by the PR3 pre-flight — the old `:615-624` over-read the range) and `packages/runtime/operation-permission/errors.ts` if new routing states emit typed denials; owns the §21.4 rise tests **and** the exec dual-gate v3 tests (repaired in place 2026-10-07: the second branch of the old "both branches: matching shell rule narrows, no shell rule does not" wording legislated A3-4, which **A5-4 withdrew** as production-behaviour-reversing — an envelope with no shell-class rule keeps today's fail-closed token-absence gate, pinned by `exec-contract-dual-gate.test.ts:278,314,547`; so the v3 branch pair is "matching shell rule narrows" / "no shell rule keeps the fail-closed absence gate").
 - **PR5** — the single-writer gate is "one kernel writer + one sanctioned port adapter + no third call site", since the tree already has two sites (`governance/service.ts:707`, `permission-governance/overlay-repository.ts:71`).
-- **PR6** — the Team-start governance gate is implemented on the real path (`plugin/root.ts`, `plugin/s6-remote.ts` own `ensureRootLive`; `activation/checks.ts` and `admission/requirement-gate.ts` are unrelated to it), with no "defer it" escape; also owns the client mapping so a `governance-proposal-recorded` row is never rendered as a generic uncategorized ledger entry (`client/src/model/ledger-adapter.ts:330-337`).
-- **PR7** — additionally owns `packages/runtime/src/plugin/blueprint-authority.ts` (the **earliest** construction-time anchor parse, called from `host.ts:1695`), `plugin/root.ts:883`, `packages/domain/blueprint/src/inspect.ts` (kept able to list v1/v2 sources so unmigrated blueprints stay discoverable), `packages/tools/src/tools.ts:961`, the testkit/harness fixtures (`packages/testkit/domain/src/scenario.ts:177,183`, `packages/runtime/root-binding/harness/blueprint-source.mjs:30`), and the static scan `scripts/verify-blueprint-version-clean.mjs` enforcing the verified 19-file fixture inventory. **Lane C7 correction:** `scripts/fixtures/composition-smoke/team-blueprint.yaml` does not exist and `scripts/composition-smoke.mjs` contains no blueprint — both struck; the authoring helper `scripts/blueprint-authoring.mjs:92` and the **two** golden contentHash pins (`a3p4-pr4-production-entry-regression.test.ts:2115`, `pr-f-closure-smoke.mjs:389`) are in scope instead.
+- **PR6** — the Team-start governance gate is implemented on the real path (`plugin/root.ts` and `plugin/s6-remote.ts` own `ensureRootLive`/`startRootAgent`; `activation/checks.ts` and `admission/requirement-gate.ts` reference **neither**, so they are refuted as control points, not merely unrelated), with no "defer it" escape; also owns the client fact mapping so a `governance-proposal-recorded` row is never rendered as a generic uncategorized ledger entry — which is the **three**-site triad of A5-7 (runtime `projection-source.ts` map, client `ledger-adapter.ts` map, and `INTERNAL_FACT_TYPES` in `client/src/model/team-ledger-model.ts:91-109`), the last being the only silent one. Task 6 §6.C is the operative text; the old `ledger-adapter.ts:330-337` citation named the lookup inside `adaptEntry` (now `:361`), not the category map (`:89-142`), and named no third site at all.
+- **PR7** — additionally owns `packages/runtime/src/plugin/blueprint-authority.ts` (the **earliest** construction-time anchor parse, constructed at `host.ts:1695`); the third parse moved to `plugin/root.ts:908` (the `:883` citation in older documents has drifted, `plugin/root.ts:883`, `packages/domain/blueprint/src/inspect.ts` (**three-state result** so v1/v2 sources stay **listed** with `migration-required` — Task 7 §7.1; keeping them "listable" is not achievable while the only non-`ok` status is `rejected`), `packages/tools/src/tools.ts:961`, the harness fixtures (`packages/runtime/root-binding/harness/blueprint-source.mjs:30`; **`packages/testkit/domain/src/scenario.ts:177,183` is struck** — those are storage DTOs, not Blueprint version sites, per A5-9), and `scripts/verify-blueprint-version-clean.mjs` — which is shipped **with** its test wrapper `packages/testkit/test/a4p7-blueprint-version-clean.test.ts` and emits the site set **by path, not as a count** (X10 measured the in-scope set at **20**: 14 kit files + `scripts/blueprint-authoring.mjs:92` + `root-binding/harness/blueprint-source.mjs:30` + four `packages/tools/harness/**` sites; the earlier "18" and "19-file" counts were both wrong). **Lane C7 correction:** `scripts/fixtures/composition-smoke/team-blueprint.yaml` does not exist and `scripts/composition-smoke.mjs` contains no blueprint — both struck; the authoring helper and the golden contentHash pins — the golden blueprint-contentHash **literals** — the hardcoded digests, not the self-comparing determinism assertions, which need no re-pin. Measured at `58cf32c8`: `packages/domain/test/a4p1-blueprint-v3-governance.test.ts:265` (`V1_GOLDEN_HASH`, asserted `:425-426`) and `:267` (`V2_GOLDEN_HASH`, asserted `:427-428`), `packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:2115`, and the two kit copies of `V1_ANCHOR_HASH_PRE_PR_E` (`tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs:460`, `tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs:389`). **The scan emits this set by path; a count carried in a document is not the contract (X10) — and the earlier 'one' and 'two' counts were both wrong.** — are in scope instead.
 
 **Invariant→test matrix now has an owner.** PR1 writes the matrix (ADR §29 + A1/A2/A3) into `dev/agent-workflow/evidence/a4-pr1/INVARIANT-MATRIX.md` before its first GREEN, names a test per invariant, and carries invariant #6 — which already has real tests (`packages/runtime/test/a5a-pre-execute.test.ts:962,1208`) but had no owning PR.
 
@@ -892,8 +1007,8 @@ Per-PR corrections to the file lists above (these supersede them):
 - **PR4**: the "no v1/v2 behavior change" test must enumerate the exec dual-gate downgrade path, not only kind selection (ADR lane note 24); the coordinator lands the `src/plugin/root.ts` wiring commit **before** PR4 and PR5 open in parallel.
 - **PR4/PR5 serialisation**: `packages/tools/src/tools.ts` is owned by **PR4**; PR5 rebases onto PR4, and the file joins the rebase collision set below — the two PRs both named it (ADR A5-11).
 - **PR5**: consumes the PR0 substrate (and discloses that between PR5 and PR6 a proposal row renders as a generic uncategorised Event client row, ADR A5-7); adds the structural "exactly one overlay `.append(` call site" test (A2-16).
-- **PR6** (superseded by A3-13/A5-10 — the `activation/checks.ts` and `admission/requirement-gate.ts` assignment is **struck**; they are not on the `ensureRootLive` path): the Team-start governance gate is deferred (A2-15).
-- **PR7**: file list additionally owns `packages/runtime/src/plugin/host.ts` (construction-time anchor parse, A2-10) and gains **lane C7** covering `tests/kits/**` and `scripts/fixtures/**` — including `pr-f-closure-smoke.mjs`'s own `schemaVersion: 1` fixture and its `V1_ANCHOR_HASH_PRE_PR_E` golden hash, `rc2-real-host-smoke.mjs`, and `scripts/fixtures/composition-smoke/team-blueprint.yaml`. Those kits sit outside the vitest gate, so nothing else will catch them.
+- **PR6** (the `activation/checks.ts` / `admission/requirement-gate.ts` assignment is **struck**; neither file references `ensureRootLive` or `startRootAgent`, so a gate placed there gates nothing): **the Team-start governance gate is NOT deferred** — Task 6 §6.A owns it on the real path, between the durable bind and `startRootAgent()` at both `s6-remote.ts` `team.create` sites, plus `ensureRootLive`.
+- **PR7**: file list additionally owns `packages/runtime/src/plugin/host.ts` (construction-time anchor parse, A2-10). **Lane C7 is replaced by the lane re-ownership in Task 7 §7.4** (`C-testkit` takes `tests/kits/**` + `scripts/**`, `C-tools+harness` takes `packages/tools/harness/**`, which is not under `packages/tools/test`), and the non-existent `scripts/fixtures/composition-smoke/team-blueprint.yaml` is struck from it. Those kits sit outside the vitest gate, which is exactly why §7.5's scan ships as a **test wrapper** rather than as a script nobody calls.
 
 **Honest shared-file ranking** (replacing the plan's earlier "two highest-risk files" claim): `src/plugin/root.ts` (3660 ln), `src/plugin/live/agent-bindings.mjs` (4911 ln), `governance/permission-mutation.ts` (1338 ln), `control/service.ts` (2781 ln), `operation-permission/pre-execute-adapter.ts` (1696 ln), `governance/service.ts` (729 ln). PR4 and PR5 both touch `root.ts`, and PR1/PR2/PR5 all touch `permission-mutation.ts`: serialize those files behind a coordinator commit; parallel lanes never own them.
 
@@ -907,7 +1022,7 @@ Per-PR corrections to the file lists above (these supersede them):
 **Files:**
 - Modify: `packages/runtime/src/plugin/projection-source.ts` (`FACT_TYPE_CATEGORY` += `control-request-abandoned` → `control`)
 - Modify: `packages/client/src/model/ledger-adapter.ts:89-142` (client category symmetry; the map — extent repaired in place by the PR3 pre-flight, the old `:89-129` under-read it — not the `:333` lookup or the `:748` renderer)
-- Modify: `packages/testkit/test/p4t6-session-event-scan.test.ts:1735-1736` (inventory recompute, A5-17)
+- Modify: `packages/testkit/test/p4t6-session-event-scan.test.ts` (inventory recompute by extending the per-PR `SCANNED_PATHS_A4PRn` list, A5-17)
 - Create: `packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts` (RED-first: abandon → read projection through the production read port)
 - Create: `packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts` (guard test; tracked-source scan only)
 
@@ -915,7 +1030,7 @@ Per-PR corrections to the file lists above (these supersede them):
 - [x] Register `control-request-abandoned` in `FACT_TYPE_CATEGORY` under the frozen `control` category. **Do not** add a ninth category. Independent sweeps confirm this is the only unregistered production-written fact type today (A5-16 addendum), so the guard should go green on this one entry.
 - [x] Add the client category entry — **the writer of a fact type owns both category maps** (ADR A5-22); PR6 keeps the rendering/`INTERNAL_FACT_TYPES` layer — and check `INTERNAL_FACT_TYPES` semantics for whether an abandonment row belongs in the Events view (it currently renders via a `case` at `ledger-adapter.ts:748`).
 - [x] Land the **closed-set guard test** (ADR A5-16): derive the fact types production sources write by **resolving identifiers** — same-file and imported constants, `OP_TO_FACT_TYPE`-style tables, and typed-parameter call sites — not by scanning `factType:` literals (only six sites are literals; a literal scan passes on the commit that contains this bug). Scan `git ls-files` output for `packages/**` sources, skipping `dist`, `node_modules`, `.tmp-fault` (A1.2.6: tracked sources only). Assert each derived type is registered in **both** the host map and the client category map, assert the eight-category set is unchanged, assert the derived set **contains** `control-request-abandoned`, `governance-proposal-recorded` and `control-escalation-recorded`, and prove non-vacuity once by mutation (A5-16 iii).
-- [x] Recompute the `p4t6` scannable-file inventory at `packages/testkit/test/p4t6-session-event-scan.test.ts:1735-1736` (plus the `:52` title and `:1716-1732` arithmetic note): this PR adds two test files, and the recompute authority now starts here (ADR A5-17), continuing with every later PR.
+- [x] Recompute the `p4t6` scannable-file inventory in `packages/testkit/test/p4t6-session-event-scan.test.ts`: this PR adds two test files, and the recompute authority now starts here (ADR A5-17), continuing with every later PR. **That authority is exercised by adding a path list per PR (`SCANNED_PATHS_A4PRn`) to the derived sum — the file now carries one list per merged PR, so a later writer never edits another PR's list and never writes a literal total.**
 - [x] Co-commit emitted `dist` if the build output changes (`pnpm run check:artifacts`).
 - [x] Capture the baseline per A1.2.3 (delete scratch, capture twice) and confirm the failing set moved **only downward**.
 - [x] Commit.
@@ -959,6 +1074,6 @@ Round 3 was the last permitted round (ADR A1.1 cap). Security returned BLOCK and
 - **PR0a is first (A4-4)** — see its task body above; it is a live Alpha.3 defect, not an Alpha.4 feature.
 - **PR4 owns `packages/tools/src/tools.ts`; PR5 rebases** (A5-11) and joins the collision set.
 - **PR5 discloses** the interim generic-Event rendering of proposal rows until PR6 owns the client mapping and `INTERNAL_FACT_TYPES` (A5-7).
-- **PR7**: inventory is 18 under a defined predicate with two strikes (A5-9); `scripts/verify-blueprint-version-clean.mjs` is invoked by name in the gate; lane D owns `a4p7-v3-cutover-acceptance.test.ts` (A5-14).
-- **Start gate (A5-10):** incompatible/unmigrated governance authority on a v1/v2 Team is warning-and-acknowledgeable; unreadable-or-corrupt is start-blocking. §21.1 now carries both rows; the earlier "binding row" quote was a phantom and is withdrawn.
+- **PR7**: the fixture inventory is **emitted by path by the scan, not carried as a count** — A5-9's 18 was wrong in both directions and X10's measurement under the same predicate gives **20** (14 kit files, not 16, plus four `packages/tools/harness/**` sites that no earlier list contained; the two storage-DTO strikes survive); `scripts/verify-blueprint-version-clean.mjs` is invoked **by a committed test wrapper** (`packages/testkit/test/a4p7-blueprint-version-clean.test.ts`), because a script no test calls is not a gate; lane `D-acceptance` owns `a4p7-v3-cutover-acceptance.test.ts` (A5-14), with lane ownership fixed one-file-one-lane in Task 7 §7.4.
+- **Start gate (A5-10), restated because the original wording merged three planes into one sentence and was wrong:** (1) a host whose bootstrap/source Blueprint is v1/v2 **may boot in a degraded state** and the catalog may still list the document as `migration-required`; (2) a specific **v1/v2 Team cannot start or cold-resume** — it is refused with `BLUEPRINT_MIGRATION_REQUIRED` before any agent is created, and **acknowledgement never clears it**; (3) an **unreadable or corrupt** authority document is start-blocking and fails closed. Acknowledgement gates only the **v3 envelope-consistency** diagnostic (`mismatch` / `undetermined`). Spec §21.1 and §15.3 carry the three planes; the earlier "binding row" quote was a phantom and is withdrawn.
 
