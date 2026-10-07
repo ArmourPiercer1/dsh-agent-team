@@ -38,6 +38,14 @@
  * `parseBlueprint()` — that split is the point (the catalog lists it;
  * resolving it fails closed with the strong parser's exact diagnosis).
  *
+ * The structural + `schemaVersion` stages are ONE read (`readDeclaredVersion`)
+ * shared by two entry points: `inspectBlueprintSource` (identity + the three-
+ * state version verdict) and `declaredBlueprintSchemaVersion` (the narrower
+ * "what version does this document SAY" question, for a caller that must report
+ * a document it will not name — a frozen registry row's stored text). One read,
+ * two questions: a second chain that reads the version differently is how two
+ * surfaces start disagreeing about one document.
+ *
  * The result is TOTAL over content: every content-level violation is a
  * classified `rejected` outcome (a closed `reason` set + the parser's
  * verbatim message — the line location when the YAML decode reports
@@ -112,6 +120,30 @@ export type BlueprintInspectionResult = {
     readonly status: 'rejected';
     readonly diagnostics: readonly BlueprintInspectionDiagnostic[];
 };
+/**
+ * The version a blueprint document DECLARES, read at identity level — or
+ * `undefined` when the document is not readable enough to declare one (no
+ * frontmatter, undecodable YAML, a non-record frontmatter, a missing or
+ * non-integer `schemaVersion`).
+ *
+ * This is the ONLY lawful way to learn a Blueprint's document version from
+ * bytes that are not being strong-parsed, and it exists because the alternative
+ * is worse: a caller that needs the number and has no honest source for it
+ * reaches for whatever number is lying next to the identity — which is precisely
+ * how a storage row's L3 stamp came to be rendered as a document version (finding
+ * F1). Note what this function does NOT say: it does not say the version is
+ * runnable (`SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS`), retired
+ * (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`), or that the document is valid. A
+ * declared version nobody defined is still a declared version — the operator
+ * needs exactly that number to see WHICH version the catalog refused.
+ *
+ * @param source - the raw UTF-8 blueprint document text.
+ * @returns the declared positive integer version, or `undefined` when none can
+ *   be read.
+ * @throws `MALFORMED_DTO` ONLY for a non-string source (the programming-error
+ *   case the strong split already owns).
+ */
+export declare function declaredBlueprintSchemaVersion(source: string): number | undefined;
 /**
  * Inspect one blueprint source document at the IDENTITY level.
  *

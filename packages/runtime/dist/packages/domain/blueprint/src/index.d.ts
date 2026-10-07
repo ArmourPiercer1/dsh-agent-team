@@ -14,7 +14,7 @@ export { BLUEPRINT_AUTHORITY_ENVELOPE_EXEC_MATCHER_FIELDS, BLUEPRINT_AUTHORITY_E
 export type { BlueprintVersionRefusalCode } from './schema.js';
 export type { BlueprintAuthorityEnvelope, BlueprintAuthorityEnvelopeMatcher, BlueprintAuthorityEnvelopeRule, BlueprintMetadata, BlueprintPermissionMutationEnvelope, BlueprintPermissionMutationEnvelopeMatcher, BlueprintPermissionMutationEnvelopeRule, BlueprintRequirement, BlueprintTemplate, CapabilityPolicy, CapabilityRequirement, LeaderTemplate, MemberEnvelopeEntry, MemberTemplate, MutationEnvelope, ParsedBlueprintDocument, PermissionResource, PermissionRule, PermissionTool, PolicyStateDefinition, Quota, QuotaSpec, TeamBlueprint, TeamBlueprintCore, TemplatePermissionPolicy, } from './types.js';
 export { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
-export { inspectBlueprintSource } from './inspect.js';
+export { declaredBlueprintSchemaVersion, inspectBlueprintSource } from './inspect.js';
 export type { BlueprintInspectionDiagnostic, BlueprintInspectionResult, BlueprintSourceIdentity, } from './inspect.js';
 export { deriveContentHash, sha256Hex } from './hash.js';
 export { parseBlueprint, toHashableBlueprint, validateBlueprintDocument, } from './validate.js';

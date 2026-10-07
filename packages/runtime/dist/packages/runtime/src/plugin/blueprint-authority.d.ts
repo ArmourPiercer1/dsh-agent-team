@@ -77,9 +77,23 @@ import type { BlueprintSourceIndex } from './blueprint-source-index.js';
  * tests may substitute an in-memory row store. The row view carries the
  * stored SOURCE TEXT (the runtime authority of a frozen revision, not just
  * the hash).
+ *
+ * THE ROW STAMP IS DELIBERATELY ABSENT. A `BlueprintRegistryRecord` also carries
+ * `schemaVersion`, and that number is the TeamDomain **L3 row stamp**
+ * (`TEAM_DOMAIN_SCHEMA_VERSION`, stamped at
+ * `packages/storage/schema/blueprint-registry.ts:106` and validated at `:133` as
+ * "the TeamDomain schema version that shaped the row") — it says which storage
+ * shape wrote the row, and nothing whatever about the Blueprint document inside
+ * it. Carrying it into this view under the name `schemaVersion` is what made
+ * finding F1 possible: the listing read it as the document version, so every
+ * frozen row reported the domain stamp (2) as its Blueprint version, and after
+ * the v3-only cutover every frozen row would be advertised as a retired
+ * document. Two versions need two names, so the row's version of the story stops
+ * at the storage boundary: **the document version is read from the stored
+ * document** ({@link documentVersionOfStoredSource}), and a row that cannot
+ * answer that question reports no number rather than the wrong one.
  */
 export interface BlueprintRegistryRecordView {
-    readonly schemaVersion: number;
     readonly blueprintId: string;
     readonly revision: string;
     readonly contentHash: string;
@@ -115,12 +129,21 @@ export interface BlueprintIdentity {
     /** The saved file name (present for `origin: 'saved'` only). */
     readonly sourceFile?: string;
     /**
-     * The document version this identity was read from — for a frozen row the
-     * version the ROW carries, for the anchor the parsed anchor's, for a saved
-     * source the inspector's. Required, because the operator question "what still
-     * needs migrating?" is answered by this number and nothing else.
+     * The DOCUMENT version this identity's document declares — read out of the
+     * document itself, and from nothing else: the inspector for a saved source or
+     * a frozen row's stored text, the strong parse for the bootstrap anchor. A
+     * storage row's L3 stamp is NOT an answer to this question and is not reachable
+     * from {@link BlueprintRegistryRecordView} (see the note there — that
+     * conflation is finding F1).
+     *
+     * ABSENT means UNKNOWABLE, not default: the only way to have no number here is
+     * a document whose frontmatter cannot be read at all (a corrupt frozen row).
+     * Such an identity is still listed — the row is durable and a bound Team must
+     * not lose its entry — but the surface says "unknown" instead of inventing a
+     * number an operator could act on, and its `migrationState` is `unreadable`,
+     * never `current`.
      */
-    readonly schemaVersion: number;
+    readonly schemaVersion?: number;
     /**
      * Whether this document's version runs here, is owed a migration, or cannot be
      * read at all — see {@link BlueprintVersionState}. LISTED here whatever it says
@@ -131,7 +154,10 @@ export interface BlueprintIdentity {
      * `schemaVersion` beside it is not a second answer to the same question: the
      * state is WHICH situation this is, the version is the number the operator
      * types into the migration. A document with no readable identity at all is not
-     * listable (the inspector's `rejected`) and so never carries either field.
+     * listable (the inspector's `rejected`) and so never carries either field; a
+     * document whose identity is known but whose version cannot be read is listed
+     * with the state and WITHOUT the number, because an unknown version and version
+     * 2 are different facts and only one of them can be acted on.
      */
     readonly migrationState: BlueprintVersionState;
 }
@@ -294,6 +320,20 @@ export type BlueprintVersionState = 'current' | 'migration-required' | 'unreadab
  * question, in one place, with no comparison operator in it.
  */
 export declare function blueprintVersionStateOf(schemaVersion: number): BlueprintVersionState;
+/**
+ * What one stored blueprint document says about its OWN version, and what this
+ * build therefore owes it. `schemaVersion` is present exactly when the document
+ * declared one; `migrationState: 'unreadable'` without a number is the one arm
+ * where the question has no answer, and it is the only arm with no number to
+ * report.
+ */
+export type BlueprintDocumentVersion = {
+    readonly schemaVersion: number;
+    readonly migrationState: BlueprintVersionState;
+} | {
+    readonly schemaVersion?: undefined;
+    readonly migrationState: 'unreadable';
+};
 /**
  * Create the live authority over the frozen registry, the saved sources
  * and the bootstrap anchor.

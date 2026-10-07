@@ -249,6 +249,11 @@ const CATALOG_MIGRATION_STATES = [
  * stated as a default: advertising a document as current because nothing said
  * otherwise is exactly the lie the boolean used to tell, and a host that stops
  * wiring the reader has to produce a loud catalog, not a quiet one.
+ *
+ * `schemaVersion` rides along exactly when the producer could read one. Both
+ * unknown arms therefore reach the client the same way — a state and NO number —
+ * whether nobody supplied a state or the document itself has no readable version;
+ * the difference between them is the host's to know, and neither is a version.
  */
 function catalogRevisionState(states, blueprintId, revision, revisionSpelling) {
     const state = states.get(`${blueprintId}@${revisionSpelling}`);
@@ -257,7 +262,7 @@ function catalogRevisionState(states, blueprintId, revision, revisionSpelling) {
     }
     return {
         revision,
-        schemaVersion: state.schemaVersion,
+        ...(state.schemaVersion === undefined ? {} : { schemaVersion: state.schemaVersion }),
         migrationState: state.migrationState,
     };
 }

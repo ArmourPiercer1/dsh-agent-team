@@ -562,7 +562,14 @@ export interface S6CatalogMigrationState {
   readonly blueprintId: string
   /** The revision in the identity's OWN spelling (the catalog's revision string). */
   readonly revision: string
-  readonly schemaVersion: number
+  /**
+   * The DOCUMENT version the identity's own document declares — absent when the
+   * document could not be read at all. Absent is not zero, not `1`, and not the
+   * storage row's L3 stamp: the wire omits the field rather than ship a number an
+   * operator would read as a version and act on (finding F1: a frozen row's
+   * `2` was the storage shape's number, not the Blueprint's).
+   */
+  readonly schemaVersion?: number
   readonly migrationState: BlueprintVersionState
 }
 
@@ -581,6 +588,11 @@ const CATALOG_MIGRATION_STATES: readonly BlueprintVersionState[] = [
  * stated as a default: advertising a document as current because nothing said
  * otherwise is exactly the lie the boolean used to tell, and a host that stops
  * wiring the reader has to produce a loud catalog, not a quiet one.
+ *
+ * `schemaVersion` rides along exactly when the producer could read one. Both
+ * unknown arms therefore reach the client the same way — a state and NO number —
+ * whether nobody supplied a state or the document itself has no readable version;
+ * the difference between them is the host's to know, and neither is a version.
  */
 function catalogRevisionState(
   states: ReadonlyMap<string, S6CatalogMigrationState>,
@@ -594,7 +606,7 @@ function catalogRevisionState(
   }
   return {
     revision,
-    schemaVersion: state.schemaVersion,
+    ...(state.schemaVersion === undefined ? {} : { schemaVersion: state.schemaVersion }),
     migrationState: state.migrationState,
   }
 }

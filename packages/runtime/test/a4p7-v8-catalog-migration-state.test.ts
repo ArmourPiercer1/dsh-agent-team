@@ -162,14 +162,21 @@ function sourceOnVersion(blueprintId: string, revision: string, version: number)
   )
 }
 
-/** A frozen row on a version this product never defined (reachable TODAY). */
+/**
+ * A frozen row on a version this product never defined (reachable TODAY).
+ *
+ * The row is on that version because its STORED DOCUMENT declares it
+ * (`sourceOnVersion` writes it into the frontmatter). There is no row-level version
+ * field to set: the storage L3 stamp is not part of this view, and reading it as
+ * the document version is finding F1 — it would have made every row here answer
+ * `2` no matter what its document said.
+ */
 function rowOnVersion(
   blueprintId: string,
   revision: string,
   schemaVersion: number,
 ): BlueprintRegistryRecordView {
   return {
-    schemaVersion,
     blueprintId,
     revision,
     contentHash: 'sha256:a4p7-catalog-fixture-hash-is-not-the-source-hash',

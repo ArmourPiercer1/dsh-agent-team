@@ -38,6 +38,14 @@
  * `parseBlueprint()` — that split is the point (the catalog lists it;
  * resolving it fails closed with the strong parser's exact diagnosis).
  *
+ * The structural + `schemaVersion` stages are ONE read (`readDeclaredVersion`)
+ * shared by two entry points: `inspectBlueprintSource` (identity + the three-
+ * state version verdict) and `declaredBlueprintSchemaVersion` (the narrower
+ * "what version does this document SAY" question, for a caller that must report
+ * a document it will not name — a frozen registry row's stored text). One read,
+ * two questions: a second chain that reads the version differently is how two
+ * surfaces start disagreeing about one document.
+ *
  * The result is TOTAL over content: every content-level violation is a
  * classified `rejected` outcome (a closed `reason` set + the parser's
  * verbatim message — the line location when the YAML decode reports
@@ -129,6 +137,120 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * The outcome of the ONE read of a document's declared version. `frontmatter`
+ * rides along so the identity inspection does not decode the YAML a second time
+ * (and so no caller has to re-derive the record the version came out of).
+ */
+type DeclaredVersionRead =
+  | {
+      readonly ok: true
+      readonly schemaVersion: number
+      readonly frontmatter: Record<string, unknown>
+    }
+  | { readonly ok: false; readonly diagnostic: BlueprintInspectionDiagnostic }
+
+/**
+ * THE ONE READ of the version a blueprint document DECLARES: the strong
+ * parser's own structural stages (`splitFrontmatter` → `decodeYamlFrontmatter`,
+ * same rules, same verbatim messages, same reasons — the strong parser is NOT
+ * weakened: this module reuses its functions), the plain-record rule, then the
+ * `schemaVersion` field rule (present, positive integer).
+ *
+ * One implementation, TWO questions asked of it: {@link inspectBlueprintSource}
+ * turns a failed read into closed diagnostics, and
+ * {@link declaredBlueprintSchemaVersion} answers the narrower operator question
+ * "what version does this document say it is?". A second copy of this chain is
+ * how a version would end up being read differently in two places — which is the
+ * defect class F1 is about (a number answering two questions).
+ *
+ * Nothing else is checked: no identity fields, no version classification, and
+ * deliberately no whole-document validation (plan §7.4: a logically broken
+ * source must not break a catalog).
+ */
+function readDeclaredVersion(source: string): DeclaredVersionRead {
+  let doc: { readonly frontmatterText: string; readonly body: string }
+  try {
+    doc = splitFrontmatter(source)
+  } catch (err) {
+    return { ok: false, diagnostic: diagnosticOf(err, 'structure-invalid') }
+  }
+
+  let raw: unknown
+  try {
+    raw = decodeYamlFrontmatter(doc.frontmatterText)
+  } catch (err) {
+    return { ok: false, diagnostic: diagnosticOf(err, 'yaml-invalid') }
+  }
+
+  // Identity level only — the strong parser's whole-document validation
+  // deliberately does NOT run here (plan §7.4: no whole-catalog strong
+  // parse; a logically broken saved source must not break the catalog).
+  if (!isPlainRecord(raw)) {
+    return {
+      ok: false,
+      diagnostic: {
+        reason: 'not-a-plain-record',
+        message: 'blueprint frontmatter must decode to a single plain record',
+      },
+    }
+  }
+
+  // The `schemaVersion` field rule: present, and a positive integer.
+  const schemaVersionRaw = raw['schemaVersion']
+  if (schemaVersionRaw === undefined) {
+    return {
+      ok: false,
+      diagnostic: {
+        reason: 'schemaVersion-missing',
+        message: 'blueprint schemaVersion is missing',
+      },
+    }
+  }
+  if (
+    typeof schemaVersionRaw !== 'number' ||
+    !Number.isInteger(schemaVersionRaw) ||
+    schemaVersionRaw < 1
+  ) {
+    return {
+      ok: false,
+      diagnostic: {
+        reason: 'schemaVersion-unsupported',
+        message: `blueprint schemaVersion must be a positive integer, got ${JSON.stringify(schemaVersionRaw)}`,
+      },
+    }
+  }
+  return { ok: true, schemaVersion: schemaVersionRaw, frontmatter: raw }
+}
+
+/**
+ * The version a blueprint document DECLARES, read at identity level — or
+ * `undefined` when the document is not readable enough to declare one (no
+ * frontmatter, undecodable YAML, a non-record frontmatter, a missing or
+ * non-integer `schemaVersion`).
+ *
+ * This is the ONLY lawful way to learn a Blueprint's document version from
+ * bytes that are not being strong-parsed, and it exists because the alternative
+ * is worse: a caller that needs the number and has no honest source for it
+ * reaches for whatever number is lying next to the identity — which is precisely
+ * how a storage row's L3 stamp came to be rendered as a document version (finding
+ * F1). Note what this function does NOT say: it does not say the version is
+ * runnable (`SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS`), retired
+ * (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`), or that the document is valid. A
+ * declared version nobody defined is still a declared version — the operator
+ * needs exactly that number to see WHICH version the catalog refused.
+ *
+ * @param source - the raw UTF-8 blueprint document text.
+ * @returns the declared positive integer version, or `undefined` when none can
+ *   be read.
+ * @throws `MALFORMED_DTO` ONLY for a non-string source (the programming-error
+ *   case the strong split already owns).
+ */
+export function declaredBlueprintSchemaVersion(source: string): number | undefined {
+  const read = readDeclaredVersion(source)
+  return read.ok ? read.schemaVersion : undefined
+}
+
+/**
  * Inspect one blueprint source document at the IDENTITY level.
  *
  * @param source - the raw UTF-8 blueprint document text.
@@ -139,62 +261,12 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
  *   error case the strong split already owns).
  */
 export function inspectBlueprintSource(source: string): BlueprintInspectionResult {
-  // Stage 1-2: the strong parser's own structural stages (same rules,
-  // same verbatim messages, same reasons — the strong parser is NOT
-  // weakened: this module reuses its functions).
-  let doc: { readonly frontmatterText: string; readonly body: string }
-  try {
-    doc = splitFrontmatter(source)
-  } catch (err) {
-    return { status: 'rejected', diagnostics: [diagnosticOf(err, 'structure-invalid')] }
+  const declared = readDeclaredVersion(source)
+  if (!declared.ok) {
+    return { status: 'rejected', diagnostics: [declared.diagnostic] }
   }
-
-  let raw: unknown
-  try {
-    raw = decodeYamlFrontmatter(doc.frontmatterText)
-  } catch (err) {
-    return { status: 'rejected', diagnostics: [diagnosticOf(err, 'yaml-invalid')] }
-  }
-
-  // Identity level only — the strong parser's whole-document validation
-  // deliberately does NOT run here (plan §7.4: no whole-catalog strong
-  // parse; a logically broken saved source must not break the catalog).
-  if (!isPlainRecord(raw)) {
-    return {
-      status: 'rejected',
-      diagnostics: [
-        {
-          reason: 'not-a-plain-record',
-          message: 'blueprint frontmatter must decode to a single plain record',
-        },
-      ],
-    }
-  }
-
-  const schemaVersionRaw = raw.schemaVersion
-  if (schemaVersionRaw === undefined) {
-    return {
-      status: 'rejected',
-      diagnostics: [
-        { reason: 'schemaVersion-missing', message: 'blueprint schemaVersion is missing' },
-      ],
-    }
-  }
-  if (
-    typeof schemaVersionRaw !== 'number' ||
-    !Number.isInteger(schemaVersionRaw) ||
-    schemaVersionRaw < 1
-  ) {
-    return {
-      status: 'rejected',
-      diagnostics: [
-        {
-          reason: 'schemaVersion-unsupported',
-          message: `blueprint schemaVersion must be a positive integer, got ${JSON.stringify(schemaVersionRaw)}`,
-        },
-      ],
-    }
-  }
+  const schemaVersionRaw = declared.schemaVersion
+  const raw = declared.frontmatter
 
   let blueprintId: BlueprintId
   try {

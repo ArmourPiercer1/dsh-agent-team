@@ -463,7 +463,12 @@ export function createTeamProductionRoot(params) {
             return blueprintAuthority.listIdentities().map((identity) => ({
                 blueprintId: identity.blueprintId,
                 revision: identity.revision,
-                schemaVersion: identity.schemaVersion,
+                // Carried through unchanged, including its ABSENCE: the authority read
+                // the number out of the document (or could not), and re-deriving it here
+                // — let alone defaulting it — would put a second version authority on the
+                // path to the wire, which is the mistake F1 is (finding
+                // `a4-pr76-acceptance-world/LEGS.md` F1).
+                ...(identity.schemaVersion === undefined ? {} : { schemaVersion: identity.schemaVersion }),
                 migrationState: identity.migrationState,
             }));
         }

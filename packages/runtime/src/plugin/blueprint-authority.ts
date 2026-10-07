@@ -71,6 +71,7 @@
 
 import {
   BLUEPRINT_VERSION_REFUSAL_CODES,
+  declaredBlueprintSchemaVersion,
   inspectBlueprintSource,
   RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
   SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
@@ -96,9 +97,23 @@ import type { BlueprintSourceIndex } from './blueprint-source-index.js'
  * tests may substitute an in-memory row store. The row view carries the
  * stored SOURCE TEXT (the runtime authority of a frozen revision, not just
  * the hash).
+ *
+ * THE ROW STAMP IS DELIBERATELY ABSENT. A `BlueprintRegistryRecord` also carries
+ * `schemaVersion`, and that number is the TeamDomain **L3 row stamp**
+ * (`TEAM_DOMAIN_SCHEMA_VERSION`, stamped at
+ * `packages/storage/schema/blueprint-registry.ts:106` and validated at `:133` as
+ * "the TeamDomain schema version that shaped the row") — it says which storage
+ * shape wrote the row, and nothing whatever about the Blueprint document inside
+ * it. Carrying it into this view under the name `schemaVersion` is what made
+ * finding F1 possible: the listing read it as the document version, so every
+ * frozen row reported the domain stamp (2) as its Blueprint version, and after
+ * the v3-only cutover every frozen row would be advertised as a retired
+ * document. Two versions need two names, so the row's version of the story stops
+ * at the storage boundary: **the document version is read from the stored
+ * document** ({@link documentVersionOfStoredSource}), and a row that cannot
+ * answer that question reports no number rather than the wrong one.
  */
 export interface BlueprintRegistryRecordView {
-  readonly schemaVersion: number
   readonly blueprintId: string
   readonly revision: string
   readonly contentHash: string
@@ -137,12 +152,21 @@ export interface BlueprintIdentity {
   /** The saved file name (present for `origin: 'saved'` only). */
   readonly sourceFile?: string
   /**
-   * The document version this identity was read from — for a frozen row the
-   * version the ROW carries, for the anchor the parsed anchor's, for a saved
-   * source the inspector's. Required, because the operator question "what still
-   * needs migrating?" is answered by this number and nothing else.
+   * The DOCUMENT version this identity's document declares — read out of the
+   * document itself, and from nothing else: the inspector for a saved source or
+   * a frozen row's stored text, the strong parse for the bootstrap anchor. A
+   * storage row's L3 stamp is NOT an answer to this question and is not reachable
+   * from {@link BlueprintRegistryRecordView} (see the note there — that
+   * conflation is finding F1).
+   *
+   * ABSENT means UNKNOWABLE, not default: the only way to have no number here is
+   * a document whose frontmatter cannot be read at all (a corrupt frozen row).
+   * Such an identity is still listed — the row is durable and a bound Team must
+   * not lose its entry — but the surface says "unknown" instead of inventing a
+   * number an operator could act on, and its `migrationState` is `unreadable`,
+   * never `current`.
    */
-  readonly schemaVersion: number
+  readonly schemaVersion?: number
   /**
    * Whether this document's version runs here, is owed a migration, or cannot be
    * read at all — see {@link BlueprintVersionState}. LISTED here whatever it says
@@ -153,7 +177,10 @@ export interface BlueprintIdentity {
    * `schemaVersion` beside it is not a second answer to the same question: the
    * state is WHICH situation this is, the version is the number the operator
    * types into the migration. A document with no readable identity at all is not
-   * listable (the inspector's `rejected`) and so never carries either field.
+   * listable (the inspector's `rejected`) and so never carries either field; a
+   * document whose identity is known but whose version cannot be read is listed
+   * with the state and WITHOUT the number, because an unknown version and version
+   * 2 are different facts and only one of them can be acted on.
    */
   readonly migrationState: BlueprintVersionState
 }
@@ -381,6 +408,44 @@ export function blueprintVersionStateOf(schemaVersion: number): BlueprintVersion
 }
 
 /**
+ * What one stored blueprint document says about its OWN version, and what this
+ * build therefore owes it. `schemaVersion` is present exactly when the document
+ * declared one; `migrationState: 'unreadable'` without a number is the one arm
+ * where the question has no answer, and it is the only arm with no number to
+ * report.
+ */
+export type BlueprintDocumentVersion =
+  | {
+      readonly schemaVersion: number
+      readonly migrationState: BlueprintVersionState
+    }
+  | { readonly schemaVersion?: undefined; readonly migrationState: 'unreadable' }
+
+/**
+ * THE ONE SOURCE OF THE DOCUMENT VERSION FOR TEXT THAT IS NOT BEING
+ * STRONG-PARSED: read the declared version out of the document, then ask the
+ * domain what it makes of that number.
+ *
+ * This is what a frozen registry row's version question is answered with. The row
+ * is the durable authority for its bytes — it stores the immutable source text —
+ * so the row can state its document's version exactly the way a saved source can:
+ * by being read. What it may not do is answer with the L3 stamp on its own header
+ * (`TEAM_DOMAIN_SCHEMA_VERSION`), which describes the storage shape and is `2`
+ * whether the document inside is v1, v2, v3, or unreadable — that is finding F1,
+ * and after the v3-only cutover it would make a host report its OWN frozen anchor
+ * as a retired document and refuse it at the start boundary.
+ *
+ * `declaredBlueprintSchemaVersion` never throws for content (it is the identity
+ * read), so a corrupt stored source costs one classified `unreadable` and takes
+ * nothing down with it.
+ */
+function documentVersionOfStoredSource(source: string): BlueprintDocumentVersion {
+  const declared = declaredBlueprintSchemaVersion(source)
+  if (declared === undefined) return { migrationState: 'unreadable' }
+  return { schemaVersion: declared, migrationState: blueprintVersionStateOf(declared) }
+}
+
+/**
  * The version refusal a resolve/start path owes a document it can name but will
  * not run (ADR A1-21). Two arms, two typed names, because the two operator
  * actions are not the same task:
@@ -412,20 +477,43 @@ function versionRefusalOf(
     return {
       code: BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
       headline:
-        `Blueprint ${identity.blueprintId}@${identity.revision} is a schema v${identity.schemaVersion} document; ` +
+        `Blueprint ${identity.blueprintId}@${identity.revision} is ${documentPhrase(identity)}; ` +
         `this build runs [${supported}]. It is listed in the catalog with migrationState=migration-required — ` +
         `migrate it (the v3 document requires a teamHardEnvelope authority document) and it will start`,
     }
   }
-  if (SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(identity.schemaVersion)) {
+  if (
+    identity.schemaVersion !== undefined &&
+    SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(identity.schemaVersion)
+  ) {
     return undefined
   }
   return {
     code: BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED,
     headline:
-      `Blueprint ${identity.blueprintId}@${identity.revision} declares schema v${identity.schemaVersion}, ` +
+      `Blueprint ${identity.blueprintId}@${identity.revision} declares ${versionPhrase(identity)}, ` +
       `a version this build never defined; this build runs [${supported}]`,
   }
+}
+
+/**
+ * The version half of a refusal sentence, spelled from what is ACTUALLY KNOWN.
+ * An absent `schemaVersion` means the document itself could not be read, and the
+ * refusal has to say that rather than print `schema vundefined`: an operator
+ * reads a number off a refusal and types it into a migration, and there is no
+ * migration for a document whose version nobody can read.
+ */
+function versionPhrase(identity: BlueprintIdentity): string {
+  return identity.schemaVersion === undefined
+    ? 'a version this build cannot read from the document'
+    : `schema v${String(identity.schemaVersion)}`
+}
+
+/** The same fact as a noun phrase, for the sentence that names the document. */
+function documentPhrase(identity: BlueprintIdentity): string {
+  return identity.schemaVersion === undefined
+    ? 'a document whose version this build cannot read'
+    : `a schema v${String(identity.schemaVersion)} document`
 }
 
 /**
@@ -464,13 +552,23 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
     const map = new Map<string, BlueprintIdentity>()
 
     for (const row of registry.list()) {
+      // THE ROW IS THE AUTHORITY FOR ITS BYTES, NOT FOR A VERSION NUMBER. The
+      // identity and the content hash come off the row (that is what a durable
+      // registry row knows); the version comes out of the document the row
+      // stores, exactly as it does for a saved source, because a row stamped by
+      // the storage L3 discipline would otherwise answer the operator's question
+      // "which version is this Blueprint?" with the storage shape's number — and
+      // the freeze-shadowing below means that answer would then REPLACE the true
+      // one the same Blueprint gave while it was still a saved file (finding F1,
+      // measured live: the same v3 document listed 3 from disk and 2 once frozen).
+      const version = documentVersionOfStoredSource(row.source)
       map.set(identityKey(row.blueprintId, row.revision), {
         blueprintId: row.blueprintId,
         revision: row.revision,
         contentHash: row.contentHash,
         origin: 'frozen',
-        schemaVersion: row.schemaVersion,
-        migrationState: blueprintVersionStateOf(row.schemaVersion),
+        ...(version.schemaVersion === undefined ? {} : { schemaVersion: version.schemaVersion }),
+        migrationState: version.migrationState,
       })
     }
 
@@ -596,7 +694,10 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
       throw new TeamPluginError(refusal.code, refusal.headline, {
         blueprintId,
         revision,
-        schemaVersion: identity.schemaVersion,
+        // Absent, not `undefined`, when the document could not be read: a detail
+        // bag an operator or a log reader inspects must not distinguish "no
+        // version" from "version undefined" by the presence of a key.
+        ...(identity.schemaVersion === undefined ? {} : { schemaVersion: identity.schemaVersion }),
         origin: identity.origin,
         migrationState: identity.migrationState,
         supportedVersions: [...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS],
@@ -731,24 +832,33 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
           throw new TeamPluginError(refusal.code, refusal.headline, {
             blueprintId,
             revision,
-            schemaVersion: listedNow.schemaVersion,
+            ...(listedNow.schemaVersion === undefined ? {} : { schemaVersion: listedNow.schemaVersion }),
             migrationState: listedNow.migrationState,
             reason: 'freeze-version-refused',
           })
         }
       } else if (frozen !== undefined) {
+        // The same law as the listing, on the same bytes: the version a frozen row
+        // is judged by is the version its stored document declares
+        // (`documentVersionOfStoredSource`), never the L3 stamp on the row. A gate
+        // that read the stamp would let the storage shape decide whether a
+        // document can be published — and after the v3-only cutover it would
+        // refuse every frozen revision on a stamp that says `2` while the document
+        // inside says `3`.
+        const version = documentVersionOfStoredSource(frozen.source)
         const refusal = versionRefusalOf({
           blueprintId,
           revision,
           origin: 'frozen',
-          schemaVersion: frozen.schemaVersion,
-          migrationState: blueprintVersionStateOf(frozen.schemaVersion),
+          ...(version.schemaVersion === undefined ? {} : { schemaVersion: version.schemaVersion }),
+          migrationState: version.migrationState,
         })
         if (refusal !== undefined) {
           throw new TeamPluginError(refusal.code, refusal.headline, {
             blueprintId,
             revision,
-            schemaVersion: frozen.schemaVersion,
+            ...(version.schemaVersion === undefined ? {} : { schemaVersion: version.schemaVersion }),
+            migrationState: version.migrationState,
             reason: 'freeze-version-refused',
           })
         }

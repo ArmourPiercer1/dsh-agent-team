@@ -1909,6 +1909,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       // is not an increment. The total below moves because this line does.
       'packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts',
     ]
+    // A4-F1 (`fix/a4-f1-row-vs-document-version`): the boundary test for finding F1
+    // — a storage row's L3 stamp is not a Blueprint document version, and a row that
+    // cannot know the version says so instead of printing a number. Exactly one new
+    // scannable file; every other path that fix touched is an EDIT to a path this
+    // scan already counts, and an edit is not an increment.
+    const SCANNED_PATHS_A4F1: readonly string[] = [
+      'packages/runtime/test/a4f1-row-version-not-document-version.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
@@ -1918,7 +1926,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR4.length +
         SCANNED_PATHS_A4PR5.length +
         SCANNED_PATHS_A4PR6.length +
-        SCANNED_PATHS_A4PR7.length,
+        SCANNED_PATHS_A4PR7.length +
+        SCANNED_PATHS_A4F1.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -1927,7 +1936,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR4.length +
         SCANNED_PATHS_A4PR5.length +
         SCANNED_PATHS_A4PR6.length +
-        SCANNED_PATHS_A4PR7.length,
+        SCANNED_PATHS_A4PR7.length +
+        SCANNED_PATHS_A4F1.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -1962,6 +1972,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4PR5,
       ...SCANNED_PATHS_A4PR6,
       ...SCANNED_PATHS_A4PR7,
+      ...SCANNED_PATHS_A4F1,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -1999,6 +2010,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // it with the ONE file it added — every other path that ruling touched was
     // already counted, and an edit is not an increment.
     expect(SCANNED_PATHS_A4PR7.length).toBe(1020 - 1016)
+    // The A4-F1 tie, same form. `1021` is this fix's own advancing total: one named
+    // file (the F1 boundary spec), asserted present by path above, and the totals
+    // above moved by exactly this list's length. Other PRs' numbers stay untouched.
+    expect(SCANNED_PATHS_A4F1.length).toBe(1021 - 1020)
 
   })
 

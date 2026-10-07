@@ -350,7 +350,14 @@ export interface S6CatalogMigrationState {
     readonly blueprintId: string;
     /** The revision in the identity's OWN spelling (the catalog's revision string). */
     readonly revision: string;
-    readonly schemaVersion: number;
+    /**
+     * The DOCUMENT version the identity's own document declares — absent when the
+     * document could not be read at all. Absent is not zero, not `1`, and not the
+     * storage row's L3 stamp: the wire omits the field rather than ship a number an
+     * operator would read as a version and act on (finding F1: a frozen row's
+     * `2` was the storage shape's number, not the Blueprint's).
+     */
+    readonly schemaVersion?: number;
     readonly migrationState: BlueprintVersionState;
 }
 /** Port 1/12 — blueprint catalog discovery (`catalog.*`). */

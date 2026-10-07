@@ -165,7 +165,6 @@ class MemRegistry implements BlueprintRegistryPort {
       throw error
     }
     const row: BlueprintRegistryRecordView = {
-      schemaVersion: 2,
       blueprintId: input.blueprintId,
       revision: input.revision,
       contentHash: input.contentHash,
