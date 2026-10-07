@@ -30,6 +30,7 @@ import {
   buildRemoteSuccess,
   type RemoteResponse,
 } from '../../remote/src/index.js'
+import { interventionActParams } from '../src/model/team-interventions.js'
 import {
   compatibilityAckParams,
   compatibilityReprobeParams,
@@ -219,5 +220,76 @@ describe('P9-T10 (P9-S7) command flows — override / policyState / compatibilit
     const { result } = transportLossScenario
     expect(result.response).toBe(undefined)
     expect(result.caught instanceof PushTransportLossError).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// A4-PR6 §6.D (conditional row, trigger FIRED: the category set exposed to
+// the client gained the tenth category) — the INTERVENTION category over
+// the same three outcome laws: a typed refusal resolves with the closed
+// wire block verbatim (INTERVENTION_NOT_FOUND is a BACKING code — it must
+// survive the dispatcher intact, invariant 4b); success passes through;
+// transport loss is the only rejection kind.
+// ---------------------------------------------------------------------------
+
+const interventionActErrorScenario = await (async () => {
+  const params = interventionActParams('team-1', 'int-case-9', 'allow')
+  const { carrier, calls } = makeCarrier(() =>
+    errorEnvelope(
+      'INTERVENTION_NOT_FOUND',
+      'intervention.act: no OPEN approval case backs the intervention',
+      'intervention.act',
+    ),
+  )
+  const client = createTeamRemoteClient(carrier)
+  const result = await capture(() => client.interventionAct(params))
+  return { calls, result, params }
+})()
+
+const interventionListSuccessScenario = await (async () => {
+  const { carrier, calls } = makeCarrier(() =>
+    successEnvelope({ items: [] }, 'intervention.list'),
+  )
+  const client = createTeamRemoteClient(carrier)
+  const result = await capture(() => client.interventionList({ teamSessionId: 'team-1' }))
+  return { calls, result }
+})()
+
+const interventionActLossScenario = await (async () => {
+  const { carrier } = makeCarrier(() => {
+    throw new Error('socket closed')
+  })
+  const client = createTeamRemoteClient(carrier)
+  const result = await capture(() =>
+    client.interventionAct(interventionActParams('team-1', 'int-warn-1', 'acknowledge')),
+  )
+  return { result }
+})()
+
+describe('intervention category (A4-PR6 v8) — the shared outcome discipline holds', () => {
+  it('the backing INTERVENTION_NOT_FOUND refusal resolves with the closed block verbatim', () => {
+    const { result } = interventionActErrorScenario
+    expect(result.caught).toBe(undefined)
+    expect(result.response?.ok).toBe(false)
+    if (result.response !== undefined && !result.response.ok) {
+      expect(result.response.error.code).toBe('INTERVENTION_NOT_FOUND')
+      expect(result.response.error.message).toBe(
+        'intervention.act: no OPEN approval case backs the intervention',
+      )
+    }
+  })
+
+  it('the list success passes through intact (items cell, no re-wrap)', () => {
+    const { result } = interventionListSuccessScenario
+    expect(result.response?.ok).toBe(true)
+    if (result.response !== undefined && result.response.ok) {
+      expect(result.response.value.data).toEqual({ items: [] })
+    }
+  })
+
+  it('transport loss on the act surface rejects with the frozen PushTransportLossError', () => {
+    const { result } = interventionActLossScenario
+    expect(result.response).toBe(undefined)
+    expect((result.caught as Error).name).toBe('PushTransportLossError')
   })
 })

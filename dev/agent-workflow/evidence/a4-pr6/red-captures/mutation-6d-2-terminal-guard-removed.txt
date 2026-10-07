@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/client
+
+ ❯ test/a4p6-interventions.client.spec.tsx (10 tests | 1 failed) 54ms
+     ✓ rows carry the closed columns; warnings render structured, never generic JSON 28ms
+     × a row with EMPTY legalActions is terminal: no affordance, the evidence stands (the client derives NOTHING) 7ms
+     ✓ an act dispatch rides the closed body and the panel RE-PULLS (no optimistic mutation) 11ms
+     ✓ the model and the component import NO authority kernel (source law: legality is server-derived) 0ms
+     ✓ a typed list refusal renders verbatim, never a silent empty plane 4ms
+     ✓ the warning family never becomes an Events row at all (its surface is TeamInterventions) 1ms
+     ✓ governance-proposal-recorded renders a STRUCTURED row, never a serialized payload 0ms
+     ✓ an INCOMPLETE proposal record set renders corrupt/incomplete — never an awaiting proposal (PR5 leftover A) 0ms
+     ✓ control-escalation-recorded renders structured from the frozen A3-12(ii) leaves 0ms
+     ✓ the completeness mirror equals the HOST strict reader closed set (drift pin) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p6-interventions.client.spec.tsx > A4-PR6 §6.D the intervention panel renders the server-given plane > a row with EMPTY legalActions is terminal: no affordance, the evidence stands (the client derives NOTHING)
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ test/a4p6-interventions.client.spec.tsx:265:77
+    263|     expect(row?.dataset['terminal']).toBe('true')
+    264|     expect(row?.querySelectorAll('[data-intervention-action]').length)…
+    265|     expect(row?.querySelector('[data-intervention-terminal]')?.textCon…
+       |                                                                             ^
+    266|   })
+    267|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  16:14:47
+   Duration  2.22s (transform 1.11s, setup 12ms, import 1.73s, tests 54ms, environment 332ms)
+

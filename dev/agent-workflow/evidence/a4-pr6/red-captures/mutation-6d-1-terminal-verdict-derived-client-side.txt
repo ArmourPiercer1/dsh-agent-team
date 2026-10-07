@@ -1,0 +1,148 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/client
+
+ ❯ test/a4p6-interventions.client.spec.tsx (10 tests | 2 failed) 1053ms
+     ✓ rows carry the closed columns; warnings render structured, never generic JSON 26ms
+     × a row with EMPTY legalActions is terminal: no affordance, the evidence stands (the client derives NOTHING) 7ms
+     × an act dispatch rides the closed body and the panel RE-PULLS (no optimistic mutation) 1013ms
+     ✓ the model and the component import NO authority kernel (source law: legality is server-derived) 0ms
+     ✓ a typed list refusal renders verbatim, never a silent empty plane 4ms
+     ✓ the warning family never becomes an Events row at all (its surface is TeamInterventions) 1ms
+     ✓ governance-proposal-recorded renders a STRUCTURED row, never a serialized payload 0ms
+     ✓ an INCOMPLETE proposal record set renders corrupt/incomplete — never an awaiting proposal (PR5 leftover A) 0ms
+     ✓ control-escalation-recorded renders structured from the frozen A3-12(ii) leaves 0ms
+     ✓ the completeness mirror equals the HOST strict reader closed set (drift pin) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p6-interventions.client.spec.tsx > A4-PR6 §6.D the intervention panel renders the server-given plane > a row with EMPTY legalActions is terminal: no affordance, the evidence stands (the client derives NOTHING)
+AssertionError: expected 'false' to be 'true' // Object.is equality
+
+Expected: "true"
+Received: "false"
+
+ ❯ test/a4p6-interventions.client.spec.tsx:263:38
+    261|     await waitFor(() => expect(view.container.querySelectorAll('[data-…
+    262|     const row = view.container.querySelector<HTMLElement>('[data-inter…
+    263|     expect(row?.dataset['terminal']).toBe('true')
+       |                                      ^
+    264|     expect(row?.querySelectorAll('[data-intervention-action]').length)…
+    265|     expect(row?.querySelector('[data-intervention-terminal]')?.textCon…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a4p6-interventions.client.spec.tsx > A4-PR6 §6.D the intervention panel renders the server-given plane > an act dispatch rides the closed body and the panel RE-PULLS (no optimistic mutation)
+AssertionError: expected 'false' to be 'true' // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"_card_1897c4"[39m
+        [33mdata-interventions[39m=[32m"true"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_cardHead_1897c4"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_cardTitle_1897c4"[39m
+          [36m>[39m
+            [0mGovernance interventions[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_row_1897c4"[39m
+          [33mdata-intervention[39m=[32m"true"[39m
+          [33mdata-intervention-current[39m=[32m"leader"[39m
+          [33mdata-intervention-id[39m=[32m"int-case-a"[39m
+          [33mdata-intervention-kind[39m=[32m"approval"[39m
+          [33mdata-intervention-required[39m=[32m"leader"[39m
+          [33mdata-intervention-response[39m=[32m"wait-for-response"[39m
+          [33mdata-intervention-source[39m=[32m"control-case"[39m
+          [33mdata-intervention-status[39m=[32m"resolved"[39m
+          [33mdata-terminal[39m=[32m"false"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_rowTitle_1897c4"[39m
+            [33mdata-intervention-summary[39m=[32m"true"[39m
+          [36m>[39m
+            [0mapproval · resolved · wait-for-response[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_meta_1897c4"[39m
+            [33mdata-intervention-authorities[39m=[32m"true"[39m
+          [36m>[39m
+            [0mleader → leader[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_meta_1897c4"[39m
+            [33mdata-intervention-request-leaf[39m=[32m"true"[39m
+          [36m>[39m
+            [0mrequest req-1 · leg 1[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_actions_1897c4"[39m
+            [33mdata-intervention-actions[39m=[32m""[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_cardHead_1897c4"[39m
+          [33mdata-administration-head[39m=[32m"true"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_cardTitle_1897c4"[39m
+          [36m>[39m
+            [0mPermission administration[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mdata-administration[39m=[32m"true"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_meta_1897c4"[39m
+            [33mdata-administration-identity[39m=[32m"true"[39m
+          [36m>[39m
+            [0mteam-leader / mate · [0m
+            [0mblueprint default[0m
+            [0m · blueprint-default[0m
+          [36m</p>[39m
+          [36m<ul[39m
+            [33mclass[39m=[32m"_rules_1897c4"[39m
+            [33mdata-administration-rules[39m=[32m"true"[39m
+          [36m>[39m
+            [36m<li[39m
+              [33mdata-administration-no-rules[39m=[32m"true"[39m
+            [36m>[39m
+              [0mNo effective rules.[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+
+Expected: "true"
+Received: "false"
+
+ ❯ test/a4p6-interventions.client.spec.tsx:279:7
+    277|     await waitFor(() => expect(
+    278|       view.container.querySelector<HTMLElement>('[data-intervention]')…
+    279|     ).toBe('true'))
+       |       ^
+    280|     expect(calls.map((call) => call.endpoint)).toEqual([
+    281|       'intervention.list',
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 8 passed (10)
+   Start at  16:14:44
+   Duration  3.18s (transform 1.10s, setup 13ms, import 1.69s, tests 1.05s, environment 333ms)
+

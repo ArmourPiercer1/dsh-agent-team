@@ -1030,6 +1030,12 @@ export function applyTeamMount(
     overrideSet: (params) => teamRemote.overrideSet(params),
     overrideReset: (params) => teamRemote.overrideReset(params),
     pullProjection,
+    // A4-PR6 §6.D — the v8 intervention slice, the frozen Remote wrappers
+    // verbatim (no adapter, no extra fields — the closed bodies stay
+    // closed on their way to the UI; ADR A1-2).
+    interventionList: (params) => teamRemote.interventionList(params),
+    interventionAct: (params) => teamRemote.interventionAct(params),
+    permissionAdministrationGet: (params) => teamRemote.permissionAdministrationGet(params),
   }
 
   // (15) The S5-D handoff face (frozen Remote wrappers verbatim).

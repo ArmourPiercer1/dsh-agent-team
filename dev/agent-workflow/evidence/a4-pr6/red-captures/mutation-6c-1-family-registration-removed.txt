@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/a4p6-interventions.client.spec.tsx > A4-PR6 §6.C the governance rows never render as generic JSON Events > governance-proposal-recorded renders a STRUCTURED row, never a serialized payload
+ FAIL  test/a4p6-interventions.client.spec.tsx > A4-PR6 §6.C the governance rows never render as generic JSON Events > an INCOMPLETE proposal record set renders corrupt/incomplete — never an awaiting proposal (PR5 leftover A)
+      Tests  2 failed | 3 passed (5)
