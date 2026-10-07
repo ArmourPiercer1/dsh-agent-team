@@ -1874,6 +1874,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       // §6.B (contract v8): the intervention wire law module + its remote suite.
       'packages/remote/src/handlers/intervention.ts',
       'packages/remote/test/a4p6-remote-v8.test.ts',
+      // §6.D (client plane): the two client model sources (the scanner's
+      // include pattern is .ts/.mts/.mjs — the panel/spec .tsx files are
+      // outside the scan; the 1013 discovered total is the proof: 1011
+      // registered + exactly these two).
+      'packages/client/src/model/team-interventions.ts',
+      'packages/client/src/model/permission-administration.ts',
     ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
@@ -1953,7 +1959,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // adding a file updates the list and this number together; an undeclared
     // file moves the scanner total without the list and fails above). Other
     // PRs' numbers stay untouched.
-    expect(SCANNED_PATHS_A4PR6.length).toBe(1011 - 1003)
+    expect(SCANNED_PATHS_A4PR6.length).toBe(1013 - 1003)
 
   })
 
