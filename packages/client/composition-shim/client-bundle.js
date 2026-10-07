@@ -5,7 +5,7 @@ var __dshFactory = (require) => {
 		/* S8 composition adapter (D-T9-11 territory): the P9 client product ships a plain tsc ESM dist; this single-file facade inlines its module graph, externalizes the baseline module-table specifiers, and maps .module.css to identity class maps with real CSS <style> injection. */
 		var __extCache = {};
 		function __extReq(spec) { var m = __extCache[spec]; if (m === undefined) { m = __extCache[spec] = require(spec); } return m; }
-		var __cssTable = {"ui/NewTeamEntry.module.css":{"classes":{"rail":"rail","wide":"wide","label":"label","backdrop":"backdrop","dialog":"dialog"},"text":"/* Rail (collapsed 56px) entry: icon-only row; the tooltip is owned by the\n   wrapping Tooltip (delay 500ms, the native New Session row pattern). */\n.rail {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  padding: 6px 0;\n  border: none;\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  cursor: pointer;\n}\n\n.rail:hover {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.rail:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* Wide (expanded) entry: icon + text label row — the expanded button carries\n   its own label, so the tooltip is disabled in this state. */\n.wide {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 6px 8px;\n  border: none;\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-align: left;\n  cursor: pointer;\n}\n\n.wide:hover {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.wide:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* The expanded-state text label (rail state renders icon-only). */\n.label {\n  white-space: nowrap;\n}\n\n/* The creation overlay: the sidebar column clips overflow, so the Team-owned\n   panel mounts as a fixed full-viewport backdrop with a centered dialog\n   (the same reason the ui-cordis footer panel is position: fixed). */\n.backdrop {\n  position: fixed;\n  inset: 0;\n  z-index: 1000;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 24px;\n  background: var(--dsw-alias-bg-mask-1);\n}\n\n.dialog {\n  width: 100%;\n  max-width: 560px;\n  max-height: calc(100vh - 48px);\n  overflow-y: auto;\n}\n"},"ui/TeamDock.module.css":{"classes":{"root":"root","row":"row","jump":"jump","title":"title","sep":"sep","readout":"readout","chevron":"chevron","expanded":"expanded","members":"members","tasks":"tasks","member":"member","task":"task","dotSlot":"dotSlot","name":"name","subject":"subject","taskStatus":"taskStatus","empty":"empty"},"text":"/* Team dock in the composer context stack (the D12 thin readout): one\n   collapsed 13px row in the shared dock column (same card alignment as the\n   todo/queue strips above it), the expanded body a compact member status and\n   task list. The --dsh-composer-* width axis inherits from the conversation\n   root, whose subtree hosts the dock slot. */\n\n.root {\n  box-sizing: border-box;\n  flex: none;\n  overflow: hidden;\n  margin: 0 auto;\n  width: calc(\n    100% -\n    var(--dsh-composer-side-clearance) -\n    var(--dsh-composer-side-clearance) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset)\n  );\n  max-width: calc(\n    var(--dsh-composer-card-max-width) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset)\n  );\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 12px;\n  background: var(--dsw-specific-tip);\n  /* Elevated surface: the same tip rung as the sibling dock cards, and the\n     expanded lists scroll inside this card, so the thumb takes the l2\n     elevation tokens (they inherit down to the lists). */\n  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);\n  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);\n}\n\n.row {\n  display: flex;\n  align-items: center;\n  gap: 2px;\n  padding: 0 4px 0 12px;\n}\n\n.jump {\n  display: flex;\n  flex: 1 1 auto;\n  align-items: center;\n  min-width: 0;\n  padding: 4px;\n  border: none;\n  border-radius: 8px;\n  background: transparent;\n  text-align: left;\n  cursor: pointer;\n}\n\n.title {\n  flex: none;\n  font: var(--dsw-font-xs-13);\n  font-weight: 500;\n  color: var(--dsw-alias-label-primary);\n}\n\n/* The D12 separators (title→first segment, segment→segment) share one\n   en-space joiner, so the readout line carries its own spacing and the\n   flex gap stays zero. */\n.sep {\n  flex: none;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.readout {\n  min-width: 0;\n  overflow: hidden;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-tertiary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.jump:hover .sep,\n.jump:focus-visible .sep,\n.jump:hover .readout,\n.jump:focus-visible .readout {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.jump:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.chevron {\n  display: grid;\n  flex: none;\n  place-items: center;\n  padding: 6px;\n  border: none;\n  border-radius: 8px;\n  background: transparent;\n  color: var(--dsw-alias-label-tertiary);\n  cursor: pointer;\n}\n\n.chevron:hover {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.chevron:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.expanded {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 2px 12px 8px;\n}\n\n.members,\n.tasks {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  max-height: 132px;\n  overflow-y: auto;\n}\n\n.member,\n.task {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.dotSlot {\n  display: grid;\n  flex: none;\n  place-items: center;\n  width: 14px;\n  height: 14px;\n}\n\n.name,\n.subject {\n  min-width: 0;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.taskStatus {\n  flex: none;\n  font: var(--dsw-font-xxxs-11);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.empty {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n"},"ui/TeamSettingsSection.module.css":{"classes":{"container":"container","title":"title","emptyState":"emptyState","emptyTitle":"emptyTitle","emptyDescription":"emptyDescription","steps":"steps"},"text":".container {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px;\n}\n\n.title {\n  font-size: 16px;\n  font-weight: 600;\n  color: var(--dsw-alias-label-primary);\n  margin: 0;\n}\n\n.emptyState {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 12px;\n  border-radius: 8px;\n  background: var(--dsw-alias-bg-module-platform);\n}\n\n.emptyTitle {\n  font-weight: 500;\n  color: var(--dsw-alias-label-secondary);\n  margin: 0;\n}\n\n.emptyDescription {\n  color: var(--dsw-alias-label-tertiary);\n  margin: 0;\n}\n\n.steps {\n  margin: 0;\n  padding-left: 24px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.steps li {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.steps code {\n  font-family: var(--ds-font-family-code);\n  font-size: 13px;\n  background: var(--dsw-alias-bg-overlay);\n  padding: 2px 6px;\n  border-radius: 4px;\n}\n"},"ui/TeamView.module.css":{"classes":{"body":"body","zero":"zero","zeroInner":"zeroInner","zeroText":"zeroText","zeroStart":"zeroStart","section":"section","sectionTitle":"sectionTitle","legacyBanner":"legacyBanner","legacySummary":"legacySummary","legacySummaryTitle":"legacySummaryTitle","legacyNote":"legacyNote","roots":"roots","rootsTitle":"rootsTitle","rootsList":"rootsList","rootRow":"rootRow","rootId":"rootId","rootRowOpen":"rootRowOpen","viewStatus":"viewStatus"},"text":"/* The zero-state container shares the tab's content column (the same host\n   width axis as .body below) so its centered content sits in the same\n   column the populated sections do. The border-box + calc(W + 48px)\n   geometry (48px = the horizontal padding) guarantees the content stays\n   exactly W wide on wide hosts and never exceeds the container on narrow\n   ones — see the .body note. */\n.zero {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100%;\n  padding: 24px;\n  color: var(--dsw-alias-label-tertiary);\n  box-sizing: border-box;\n  width: 100%;\n  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);\n  margin: 0 auto;\n}\n\n.zeroInner {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 12px;\n  width: 100%;\n  max-width: 720px;\n}\n\n.zeroText {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.zeroStart {\n  padding: 6px 14px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.zeroStart:hover {\n  opacity: 0.88;\n}\n\n.zeroStart:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* The tab's single content column: pinned to the host conversation width\n   axis (--dsh-chat-content-width, declared on the conversation root and\n   user-draggable through the width handles; the fallback keeps the legacy\n   full-width behavior on hosts without the axis). Every section — its\n   title AND its cards, including the governance section — lives inside\n   this one box, so the titles track the cards on a width drag and the\n   governance column resizes exactly like the other four.\n\n   Geometry (2026-09-21 supplemental review): the column is border-box with\n   a cap of W + 48px (48px = the horizontal padding), NOT content-box\n   width:100% capped at W — under the default content-box sizing the\n   padded column would overflow its narrow container by 48px. The border-box\n   cap guarantees: wide host → content exactly W (the host's own content\n   width); narrow container → border-box clamps to the container and the\n   content shrinks to (container − 48px) — it can never exceed the\n   container's client width. */\n.body {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n  min-height: 100%;\n  padding: 16px 24px;\n  box-sizing: border-box;\n  width: 100%;\n  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);\n  margin: 0 auto;\n}\n\n.section {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.sectionTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n/* P9-T8 (S5-D): the legacy zero state (UI §34 read-only banner + summary). */\n\n.legacyBanner {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-state-warn-primary);\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n}\n\n.legacyBanner p {\n  margin: 0;\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.4;\n}\n\n.legacySummary {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.legacySummaryTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.legacySummary p {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.legacySummary ul {\n  margin: 0;\n  padding-left: 16px;\n  list-style: none;\n}\n\n.legacySummary li {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.legacyNote {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n/* D1 (Team D1-D6 repair v2, remote contract v3): the persisted\n   root-identity rows of the zero state (read-only in D1 — D2/D3 add the\n   open action). */\n\n.roots {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  width: 100%;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.rootsTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.rootsList {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n\n.rootRow {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 4px 12px;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.rootRow span {\n  word-break: break-all;\n}\n\n.rootId {\n  color: var(--dsw-alias-label-primary);\n}\n\n/* D2 (D6) — the dedicated open-in-Team-mode entry on a persisted-roots\n   row (the explicit \"以 Team 模式打开 / 回到 Leader\" button). */\n.rootRowOpen {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-state-business-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.rootRowOpen:hover {\n  opacity: 0.88;\n}\n\n.rootRowOpen:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n.rootRowOpen:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n/* repair 20260927 (S1-C1/S1-C2) — the with-frame view-status header: the\n   light pending mark (refresh / reconnect in flight) and the \"update\n   failed — showing the last successfully loaded data\" note (the content\n   below is ALWAYS kept). Empty (no children) when the view is healthy. */\n.viewStatus {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  min-width: 0;\n}\n"},"ui/TeamCreationPanel.module.css":{"classes":{"panel":"panel","title":"title","field":"field","fieldLabel":"fieldLabel","select":"select","textarea":"textarea","hint":"hint","detail":"detail","detailName":"detailName","detailSource":"detailSource","detailDescription":"detailDescription","detailTemplates":"detailTemplates","compat":"compat","compatTitle":"compatTitle","compatNote":"compatNote","compatReady":"compatReady","compatUnknown":"compatUnknown","warningList":"warningList","warningRow":"warningRow","warningOwner":"warningOwner","warningSubjects":"warningSubjects","warningDetail":"warningDetail","ack":"ack","fatal":"fatal","fatalTitle":"fatalTitle","fatalRow":"fatalRow","fatalPreset":"fatalPreset","error":"error","rootKept":"rootKept","catalogActions":"catalogActions","actions":"actions","primary":"primary","secondary":"secondary","handoff":"handoff","handoffTitle":"handoffTitle","handoffNote":"handoffNote","handoffReady":"handoffReady","handoffPreview":"handoffPreview","handoffError":"handoffError","handoffFailed":"handoffFailed","handoffTriad":"handoffTriad"},"text":".panel {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 14px 16px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 8px;\n  background: var(--dsw-alias-bg-layer-1);\n}\n\n.title {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-14);\n  font-weight: 600;\n}\n\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-width: 0;\n}\n\n.fieldLabel {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.select,\n.textarea {\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.textarea {\n  min-height: 54px;\n  resize: vertical;\n}\n\n.select:focus-visible,\n.textarea:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.select:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.hint {\n  margin: -6px 0 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.detail {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 6px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.detailName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.detailSource {\n  padding: 1px 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.detailDescription {\n  flex-basis: 100%;\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.detailTemplates {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.compat {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.compatTitle {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.compatNote,\n.compatReady,\n.compatUnknown {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.compatReady {\n  color: var(--dsw-alias-state-success-primary);\n}\n\n.compatUnknown {\n  color: var(--dsw-alias-state-error-primary);\n}\n\n.warningList {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n\n.warningRow {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  padding: 6px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n}\n\n.warningOwner {\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.warningSubjects,\n.warningDetail {\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.ack {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.ack input {\n  margin: 0;\n}\n\n.fatal {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-error-secondary);\n}\n\n.fatalTitle,\n.fatalRow {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.fatalRow {\n  font: var(--dsw-font-xxxs-11);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.fatalPreset {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.5;\n}\n\n.error {\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-error-secondary);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.rootKept {\n  margin: 4px 0 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* BP9 (issue #2 blueprint-loading, plan §13) — the manual catalog\n   refresh button row (below the blueprint picker, once the first load\n   has settled). */\n.catalogActions {\n  display: flex;\n  margin: 6px 0 8px;\n}\n\n.actions {\n  display: flex;\n  gap: 8px;\n}\n\n.primary,\n.secondary {\n  padding: 6px 14px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.primary {\n  background: var(--dsw-alias-state-business-primary);\n  border-color: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n}\n\n.primary:hover:not(:disabled),\n.secondary:hover:not(:disabled) {\n  opacity: 0.88;\n}\n\n.primary:focus-visible,\n.secondary:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n.primary:disabled,\n.secondary:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n/* P9-T8 (S5-D): the §32 handoff block (the optional face + source surface). */\n\n.handoff {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.handoffTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.handoff > span:not(.handoffTitle) {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.handoff > label {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.handoff > label:has(input:disabled) {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.handoffNote {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.handoffReady {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n}\n\n.handoffReady > span {\n  color: var(--dsw-alias-state-success-primary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n}\n\n.handoffPreview {\n  width: 100%;\n  padding: 6px 8px;\n  border-left: 2px solid var(--dsw-alias-border-l2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.handoffPreview > p {\n  margin: 0 0 3px;\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.handoffPreview ul {\n  margin: 0;\n  padding-left: 16px;\n  list-style: disc;\n}\n\n.handoffPreview li {\n  margin: 1px 0;\n  word-break: break-word;\n}\n\n.handoffError,\n.handoffFailed > p {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.handoffFailed {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border: 1px solid var(--dsw-alias-state-error-secondary);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-1);\n}\n\n.handoffTriad {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n"},"ui/TeamTimeline.module.css":{"classes":{"root":"root","empty":"empty","plot":"plot","corner":"corner","axis":"axis","tick":"tick","gutter":"gutter","gutterRow":"gutterRow","swatch":"swatch","laneName":"laneName","track":"track","domain":"domain","lane":"lane","bar":"bar"},"text":".root {\n  --team-lane-height: 28px;\n  display: flex;\n  flex-direction: column;\n  border-bottom: 1px solid var(--dsw-alias-border-l2);\n  user-select: none;\n}\n\n.root :global([role='tooltip']) {\n  font: var(--dsw-font-xxxs-11);\n}\n\n.empty {\n  margin: 0;\n  padding: 12px 16px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n\n.plot {\n  display: grid;\n  grid-template-columns: 160px minmax(0, 1fr);\n  grid-template-rows: 20px auto;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.corner {\n  border-right: 1px solid var(--dsw-alias-border-l1);\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.axis {\n  position: relative;\n  overflow: hidden;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.tick {\n  position: absolute;\n  top: 3px;\n  left: var(--team-tick-left);\n  padding-left: 4px;\n  border-left: 1px solid var(--dsw-alias-border-l2);\n  height: 100%;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n  white-space: nowrap;\n}\n\n.gutter {\n  border-right: 1px solid var(--dsw-alias-border-l1);\n}\n\n.gutterRow {\n  display: flex;\n  gap: 6px;\n  align-items: center;\n  height: var(--team-lane-height);\n  padding: 0 8px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.gutterRow:last-child {\n  border-bottom: 0;\n}\n\n.swatch {\n  flex: none;\n  width: 8px;\n  height: 8px;\n  border-radius: 2px;\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\n}\n\n.laneName {\n  overflow: hidden;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.gutterRow[data-current='true'] .laneName {\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.track {\n  position: relative;\n  overflow: hidden;\n  height: calc(var(--team-lane-count, 1) * var(--team-lane-height));\n  cursor: grab;\n  touch-action: none;\n}\n\n.track[data-panning='true'] {\n  cursor: grabbing;\n}\n\n.track:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.domain {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: var(--team-domain-left);\n  width: var(--team-domain-width);\n}\n\n.lane {\n  position: relative;\n  height: var(--team-lane-height);\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.lane:last-child {\n  border-bottom: 0;\n}\n\n.lane[data-current='true'] {\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\n}\n\n.bar {\n  position: absolute;\n  top: 50%;\n  left: var(--team-bar-left);\n  width: max(2px, var(--team-bar-width));\n  height: 14px;\n  min-width: 2px;\n  transform: translateY(-50%);\n  border-radius: 2px;\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\n  opacity: 0.85;\n  cursor: pointer;\n}\n\n.bar:hover {\n  opacity: 1;\n}\n\n.bar[data-running='true'] {\n  animation: team-bar-pulse 1.2s ease-in-out infinite;\n}\n\n@keyframes team-bar-pulse {\n  0%,\n  100% {\n    opacity: 1;\n  }\n\n  50% {\n    opacity: 0.55;\n  }\n}\n\n@media (prefers-reduced-motion: reduce) {\n  .bar[data-running='true'] {\n    animation: none;\n  }\n}\n\n/* The lane-color ramp (slot index → existing state token; the tint tier\n   lightens a hue toward the layer background for members beyond the four\n   base colors). */\n[data-lane-color='0'] {\n  --team-lane-color: var(--dsw-alias-state-business-primary);\n}\n\n[data-lane-color='1'] {\n  --team-lane-color: var(--dsw-alias-state-success-primary);\n}\n\n[data-lane-color='2'] {\n  --team-lane-color: var(--dsw-alias-state-warn-primary);\n}\n\n[data-lane-color='3'] {\n  --team-lane-color: var(--dsw-alias-state-error-primary);\n}\n\n[data-lane-color='4'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-business-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='5'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-success-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='6'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='7'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n"},"ui/TeamMembers.module.css":{"classes":{"root":"root","group":"group","groupRow":"groupRow","groupName":"groupName","instances":"instances","actions":"actions","instanceRow":"instanceRow","instanceNav":"instanceNav","actionButton":"actionButton","commandError":"commandError","dotSlot":"dotSlot","instanceStatus":"instanceStatus","instanceAction":"instanceAction","waitingBadge":"waitingBadge","noInstances":"noInstances","createButton":"createButton","teamModeRow":"teamModeRow","teamModeOpen":"teamModeOpen","teamModeBadge":"teamModeBadge"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.group {\n  overflow: hidden;\n  min-width: 0;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.group[data-current='true'] {\n  border-color: var(--dsw-alias-state-business-primary);\n}\n\n/* border-box: the leader header is a <button> (already border-box via the\n   #28 form-control rule) but the worker header is a DIV — content-box made\n   `width:100% + 20px padding` overflow the card by 20px and the group's\n   overflow:hidden clipped the right-aligned `+` create button by 10px.\n   2026-09-22 supplemental live-browser measurement. */\n.groupRow {\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  width: 100%;\n  padding: 6px 10px;\n  border: 0;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n  text-align: left;\n}\n\n.groupRow[data-leader='true'] {\n  cursor: pointer;\n}\n\n.groupRow[data-leader='true']:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.groupRow[data-leader='true']:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.groupName {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.group[data-current='true'] .groupName {\n  color: var(--dsw-alias-state-business-primary);\n}\n\n.instances {\n  display: flex;\n  flex-direction: column;\n}\n\n/* border-box (2026-09-22 supplemental, live-browser measurement): the row\n   is `width: 100%` + 28px horizontal padding on a DIV — as content-box it\n   overflowed the group card by 28px and the group's overflow:hidden\n   clipped the right-aligned action cluster's trailing button by 18px at\n   every width where the cluster stays on line 1 (and the right-aligned\n   content of any row). The <button> groupRow variant was already saved by\n   the #28 form-control border-box rule; the DIV rows need it explicitly.\n   With border-box the row box == the card content box, so the #28\n   .actions shrink+wrap contract (never exceed the row) lands the buttons\n   INSIDE the card at all widths. */\n.instanceRow {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 4px 8px;\n  box-sizing: border-box;\n  width: 100%;\n  padding: 6px 10px 6px 18px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n}\n\n.instanceRow:last-child {\n  border-bottom: 0;\n}\n\n.instanceRow[data-current='true'] {\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\n  color: var(--dsw-alias-label-primary);\n}\n\n.instanceNav {\n  display: flex;\n  flex: 1 1 auto;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  padding: 0;\n  border: 0;\n  background: transparent;\n  color: inherit;\n  font: inherit;\n  text-align: left;\n  cursor: pointer;\n}\n\n.instanceNav:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.instanceNav:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 2px;\n}\n\n.instanceNav:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n/* flex-wrap: when the row is narrower than the full button cluster,\n   the buttons wrap onto a second line INSIDE the card instead of\n   overflowing the group's right edge (where the group's overflow:hidden\n   clipped them, leaving the trailing buttons cut off). 2026-09-21\n   supplemental review: `flex: none` (non-shrinkable, fixed basis) kept\n   the cluster wider than its row even with wrap enabled — it must be\n   shrinkable: flex 0 1 auto + min-width 0 + max-width 100% so the cluster\n   can never exceed the row, wrapping its buttons instead of clipping\n   them; justify-content flex-end keeps the original right alignment. */\n.actions {\n  display: flex;\n  flex: 0 1 auto;\n  min-width: 0;\n  max-width: 100%;\n  justify-content: flex-end;\n  flex-wrap: wrap;\n  gap: 4px;\n}\n\n.actionButton {\n  padding: 2px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.actionButton:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.actionButton:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.actionButton:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.commandError {\n  width: 100%;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: color-mix(in srgb, var(--dsw-alias-state-error-secondary) 18%, transparent);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n  word-break: break-word;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: center;\n}\n\n.instanceStatus {\n  flex: none;\n}\n\n.instanceAction {\n  overflow: hidden;\n  color: var(--dsw-alias-label-caption);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.waitingBadge {\n  flex: none;\n  margin-left: auto;\n  padding: 0 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.noInstances {\n  display: block;\n  padding: 6px 10px 6px 18px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.createButton {\n  flex: none;\n  margin-left: auto;\n  padding: 0 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 18px;\n  cursor: pointer;\n}\n\n.createButton:hover {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n}\n\n.createButton:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n/* D2 (D6) — the dedicated open-in-Team-mode entry on the root/leader row\n   (the explicit \"以 Team 模式打开 / 回到 Leader\" button) + the current\n   open-mode badge. */\n.teamModeRow {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 4px 10px 6px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n}\n\n.teamModeOpen {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-state-business-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.teamModeOpen:hover:not(:disabled) {\n  opacity: 0.88;\n}\n\n.teamModeOpen:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.teamModeOpen:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.teamModeBadge {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  white-space: nowrap;\n}\n"},"ui/TeamActivity.module.css":{"classes":{"root":"root","empty":"empty","taskRow":"taskRow","dotSlot":"dotSlot","taskMain":"taskMain","taskLine":"taskLine","taskSubject":"taskSubject","taskStatus":"taskStatus","taskAssignee":"taskAssignee","taskSummary":"taskSummary"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  min-width: 0;\n  overflow: hidden;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.empty {\n  display: block;\n  padding: 6px 10px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n\n.taskRow {\n  display: flex;\n  gap: 8px;\n  padding: 6px 10px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  min-width: 0;\n}\n\n.taskRow:last-child {\n  border-bottom: 0;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: flex-start;\n  padding-top: 3px;\n}\n\n.taskMain {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n}\n\n.taskLine {\n  display: flex;\n  align-items: baseline;\n  gap: 8px;\n  min-width: 0;\n}\n\n.taskSubject {\n  overflow: hidden;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.taskStatus {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.taskAssignee {\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.taskSummary {\n  overflow: hidden;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n"},"ui/TeamLedger.module.css":{"classes":{"root":"root","empty":"empty","top":"top","loadEarlier":"loadEarlier","loadFailed":"loadFailed","truncated":"truncated","rows":"rows","row":"row","dotSlot":"dotSlot","time":"time","marker":"marker","actor":"actor","summary":"summary","state":"state","stateReason":"stateReason","filter":"filter","resolveBar":"resolveBar","controlDetail":"controlDetail","resolveBtn":"resolveBtn","resolveBusy":"resolveBusy","resolveError":"resolveError","externalPolicyLine":"externalPolicyLine","controlField":"controlField","readOnlyNote":"readOnlyNote","controlFieldWide":"controlFieldWide","controlDigestValue":"controlDigestValue","controlPayload":"controlPayload","cannotReview":"cannotReview"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.empty {\n  display: block;\n  padding: 12px 16px;\n  border: 1px dashed var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n  text-align: center;\n}\n\n.top {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-height: 22px;\n}\n\n.loadEarlier {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.loadEarlier:hover {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n}\n\n.loadEarlier:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.loadFailed {\n  padding: 2px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.truncated {\n  padding: 2px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.rows {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  min-width: 0;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.row {\n  display: flex;\n  /* run5 geometry fix ④: a chip/badge too wide for the row drops to its\n     own line instead of clipping under `.rows` (overflow: hidden). */\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 6px 10px;\n  border: 0;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-align: left;\n  cursor: pointer;\n  min-width: 0;\n}\n\n.row:last-child {\n  border-bottom: 0;\n}\n\n.row:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.row:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.row:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: center;\n}\n\n.time {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n  font-variant-numeric: tabular-nums;\n}\n\n.marker {\n  flex: none;\n  padding: 0 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.actor {\n  flex: none;\n  max-width: 220px;\n  overflow: hidden;\n  color: var(--dsw-alias-label-primary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.summary {\n  overflow: hidden;\n  min-width: 0;\n  flex: 1 1 auto;\n  color: var(--dsw-alias-label-secondary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.state {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  flex: none;\n  max-width: 40%;\n  padding: 0 6px;\n  border-radius: 4px;\n  font: var(--dsw-font-xxxs-11);\n}\n\n.state[data-pending='true'] {\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n}\n\n.state:not([data-pending='true']) {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.stateReason {\n  overflow: hidden;\n  max-width: 100%;\n  color: var(--dsw-alias-label-caption);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* P9-T6 addition (UI §27.4): the client-local category / instance filter\n   selects, styled in the same control language as `.loadEarlier`. */\n.filter {\n  padding: 2px 6px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  max-width: 180px;\n  cursor: pointer;\n}\n\n.filter:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n/* F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4): the human\n   control-resolution command bar rendered under a PENDING control-request\n   row (the row itself is a <button> — the bar is its sibling, never\n   nested): the Allow / Deny commands, the in-flight busy note, and the\n   typed error note (the frozen control vocabulary code + message).\n   Absent `onResolveControl` face → the bar never renders (legacy surface\n   unchanged). */\n.resolveBar {\n  display: flex;\n  /* run5 geometry fix ①: on a narrow bar the flex:none command buttons\n     (+gaps, ~128px) used to squeeze the detail list below ~60px. With\n     wrap + the `.controlDetail` flex-basis floor (②) the list takes the\n     first line at full width and the buttons move to a line of their\n     own — never an overflow, never a collapse. */\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  padding: 4px 10px 6px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.resolveBtn {\n  flex: none;\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.resolveBtn:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  border-color: var(--dsw-alias-state-business-primary);\n}\n\n.resolveBtn:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.resolveBtn:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n.resolveBusy {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.resolveError {\n  overflow: hidden;\n  min-width: 0;\n  max-width: 100%;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 2, UI §26.4): the external hard policy\n   blocked an allowed team decision — the badge switches from the plain\n   decision label to the frozen two-line \"Team decision / Execution\"\n   display (stacked, right-aligned in the row's badge slot). Never the\n   plain \"denied\" label. */\n.state[data-external-policy='true'] {\n  flex-direction: column;\n  align-items: flex-end;\n  gap: 2px;\n  padding: 2px 6px;\n}\n\n.externalPolicyLine {\n  display: block;\n  max-width: 100%;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 1, UI §26.2): the control-request detail\n   panel field rows (requester / kind / requested operation / tool /\n   reason / creation time / current status / requested authority) — a\n   wrapping definition list in the caption label language. */\n.controlDetail {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 2px 12px;\n  /* run5 geometry fix ②: flex-basis floor via min(). A 181px bar: the\n     basis resolves to 181, the list fills the first line and the\n     buttons wrap below. A wide bar (≥ ~452px content): the basis is\n     20rem, list + buttons share one line and the list grows — the\n     1440/675 layout is preserved by construction. */\n  flex: 1 1 min(100%, 20rem);\n  margin: 0;\n  min-width: 0;\n}\n\n.controlField {\n  display: flex;\n  /* run5 geometry fix ③: dt and dd keep one line ONLY while both flex\n     bases fit (a line break is forced exactly when they do not, so the\n     value can never be squeezed beside a long label — it lands on its\n     own line at the FULL list width instead). */\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 6px;\n  min-width: 0;\n}\n\n.controlField dt {\n  flex: none;\n  /* TINY FIX (parent gap in 7816423d): flex:none sizes the label by its\n     MAX-CONTENT width (which ignores soft-wrap opportunities), so a\n     longer CJK digest label — or a long embedded Latin token — let the\n     NON-SHRINKING label itself overflow the field and clip under\n     `.rows`. The cap resolves against the field box and\n     overflow-wrap:break-word breaks the label's own lines; short\n     labels keep their inline behavior bit-identical (basis below cap). */\n  max-width: 100%;\n  overflow-wrap: break-word;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.controlField dd {\n  overflow: hidden;\n  min-width: 0;\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 4): the served-version-gated read-only\n   note (the served host is pre-v4 — the detail panel stays, the\n   commands do not). */\n.readOnlyNote {\n  flex: none;\n  padding: 2px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* PR #56 — the control-detail extensions (display ≠ verification): the\n   FULL wire digest and the FULL review payload render VERBATIM and are\n   NEVER truncated (the base `.controlField dd` ellipsis is overridden;\n   the payload block scrolls instead). */\n.controlFieldWide {\n  flex: 1 1 100%;\n  align-items: flex-start;\n}\n\n.controlFieldWide dd {\n  display: flex;\n  flex: 1 1 auto;\n  overflow: visible;\n  white-space: normal;\n}\n\n/* FROZEN BATCH #3: this selector MUST out-specify the `.controlField dd`\n   ellipsis trio (0,1,1) or the FULL wire digest renders TRUNCATED in a\n   narrow panel — `.controlField dd.controlDigestValue` is (0,1,2). */\n.controlField dd.controlDigestValue {\n  overflow: visible;\n  white-space: normal;\n  font-family: var(--dsw-font-family-mono, ui-monospace, monospace);\n  word-break: break-all;\n  user-select: all;\n}\n\n.controlPayload {\n  flex: 1 1 auto;\n  max-height: 16rem;\n  margin: 0;\n  padding: 4px 6px;\n  overflow: auto;\n  border: 1px solid var(--dsw-alias-border-primary, currentColor);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11) var(--dsw-font-family-mono, ui-monospace, monospace);\n  white-space: pre-wrap;\n  word-break: break-all;\n  user-select: text;\n}\n\n.cannotReview {\n  flex: 1 1 100%;\n  padding: 2px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n}\n"},"ui/TeamGovernance.module.css":{"classes":{"section":"section","card":"card","cardHead":"cardHead","cardTitle":"cardTitle","badge":"badge","badgeUnknown":"badgeUnknown","counts":"counts","meta":"meta","freshRead":"freshRead","freshReadTitle":"freshReadTitle","actions":"actions","primary":"primary","secondary":"secondary","help":"help","note":"note","noteError":"noteError","cells":"cells","cell":"cell","cellName":"cellName","cellLocked":"cellLocked","cellCurrent":"cellCurrent","cellEditor":"cellEditor","select":"select","input":"input","preview":"preview","memberBlock":"memberBlock","memberName":"memberName","lanes":"lanes","lane":"lane","laneName":"laneName","laneValue":"laneValue","laneState":"laneState","laneFlag":"laneFlag","hardPolicy":"hardPolicy","override":"override","overrideEditor":"overrideEditor"},"text":".section {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  min-width: 0;\n}\n\n.card {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  min-width: 0;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.cardHead {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n}\n\n.cardTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-14);\n  font-weight: 600;\n}\n\n.badge {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-state-success-primary);\n  color: var(--dsw-alias-bg-layer-1);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.badge[data-governance-compat-mark='warning'] {\n  background: var(--dsw-alias-state-warn-primary);\n}\n\n.badge[data-governance-compat-mark='fatal'] {\n  background: var(--dsw-alias-state-error-primary);\n}\n\n.badgeUnknown {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.counts {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n}\n\n.meta {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.freshRead {\n  padding: 6px 8px;\n  border-left: 2px solid var(--dsw-alias-border-l2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.freshReadTitle {\n  margin: 0 0 2px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n}\n\n.actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.primary,\n.secondary {\n  padding: 3px 10px;\n  border-radius: 4px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.primary {\n  border-color: var(--dsw-alias-state-business-primary);\n  background: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n}\n\n.primary:disabled,\n.secondary:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.help {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.note {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.noteError {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.cells {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n\n.cell {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  padding: 6px 8px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.cellName {\n  min-width: 90px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.cellLocked {\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 400;\n}\n\n.cellCurrent {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.cellEditor {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  margin-left: auto;\n}\n\n.select,\n.input {\n  padding: 2px 6px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.preview {\n  margin: 0;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.memberBlock {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.memberName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.lanes {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n}\n\n.lane {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.laneName {\n  min-width: 110px;\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.laneValue {\n  min-width: 120px;\n  word-break: break-all;\n}\n\n.laneState {\n  font-weight: 600;\n}\n\n.laneFlag {\n  padding: 0 6px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.hardPolicy {\n  padding: 1px 6px;\n  border-radius: 3px;\n  background: var(--dsw-alias-state-error-secondary);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.override {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.overrideEditor {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 6px;\n}\n"},"ui/TeamMemberDialogs.module.css":{"classes":{"dialog":"dialog","warning":"warning","notice":"notice","field":"field","fieldLabel":"fieldLabel","templateName":"templateName","button":"button"},"text":"/* The dialog CONTENT wrapper: the card chrome (mask, radius, fill,\n   elevation), the header (title + close), and the footer (the action\n   row) come from the shared Modal primitive — this box only stacks the\n   fields inside the modal's content column. */\n.dialog {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  min-width: 0;\n}\n\n.warning {\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.notice {\n  padding: 6px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-width: 0;\n}\n\n.fieldLabel {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* 2026-09-21 supplemental review: border-box so `width: 100%` + padding +\n   border stay inside the modal body's content box — under the default\n   content-box sizing every control overflowed the dialog's right edge by\n   padding+border (18px here). */\n.field input,\n.field select {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.field input:focus-visible,\n.field select:focus-visible,\n.field textarea:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.field textarea {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  resize: vertical;\n}\n\n.templateName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n/* The action row renders in the Modal's card footer (its own flex-end\n   row + gap) — only the button skin stays local. */\n.button {\n  padding: 5px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.button:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.button:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.button:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n"}};
+		var __cssTable = {"ui/NewTeamEntry.module.css":{"classes":{"rail":"rail","wide":"wide","label":"label","backdrop":"backdrop","dialog":"dialog"},"text":"/* Rail (collapsed 56px) entry: icon-only row; the tooltip is owned by the\n   wrapping Tooltip (delay 500ms, the native New Session row pattern). */\n.rail {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  padding: 6px 0;\n  border: none;\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  cursor: pointer;\n}\n\n.rail:hover {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.rail:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* Wide (expanded) entry: icon + text label row — the expanded button carries\n   its own label, so the tooltip is disabled in this state. */\n.wide {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 6px 8px;\n  border: none;\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-align: left;\n  cursor: pointer;\n}\n\n.wide:hover {\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.wide:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* The expanded-state text label (rail state renders icon-only). */\n.label {\n  white-space: nowrap;\n}\n\n/* The creation overlay: the sidebar column clips overflow, so the Team-owned\n   panel mounts as a fixed full-viewport backdrop with a centered dialog\n   (the same reason the ui-cordis footer panel is position: fixed). */\n.backdrop {\n  position: fixed;\n  inset: 0;\n  z-index: 1000;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 24px;\n  background: var(--dsw-alias-bg-mask-1);\n}\n\n.dialog {\n  width: 100%;\n  max-width: 560px;\n  max-height: calc(100vh - 48px);\n  overflow-y: auto;\n}\n"},"ui/TeamDock.module.css":{"classes":{"root":"root","row":"row","jump":"jump","title":"title","sep":"sep","readout":"readout","chevron":"chevron","expanded":"expanded","members":"members","tasks":"tasks","member":"member","task":"task","dotSlot":"dotSlot","name":"name","subject":"subject","taskStatus":"taskStatus","empty":"empty"},"text":"/* Team dock in the composer context stack (the D12 thin readout): one\n   collapsed 13px row in the shared dock column (same card alignment as the\n   todo/queue strips above it), the expanded body a compact member status and\n   task list. The --dsh-composer-* width axis inherits from the conversation\n   root, whose subtree hosts the dock slot. */\n\n.root {\n  box-sizing: border-box;\n  flex: none;\n  overflow: hidden;\n  margin: 0 auto;\n  width: calc(\n    100% -\n    var(--dsh-composer-side-clearance) -\n    var(--dsh-composer-side-clearance) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset)\n  );\n  max-width: calc(\n    var(--dsh-composer-card-max-width) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset) -\n    var(--dsh-composer-dock-inset)\n  );\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 12px;\n  background: var(--dsw-specific-tip);\n  /* Elevated surface: the same tip rung as the sibling dock cards, and the\n     expanded lists scroll inside this card, so the thumb takes the l2\n     elevation tokens (they inherit down to the lists). */\n  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);\n  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);\n}\n\n.row {\n  display: flex;\n  align-items: center;\n  gap: 2px;\n  padding: 0 4px 0 12px;\n}\n\n.jump {\n  display: flex;\n  flex: 1 1 auto;\n  align-items: center;\n  min-width: 0;\n  padding: 4px;\n  border: none;\n  border-radius: 8px;\n  background: transparent;\n  text-align: left;\n  cursor: pointer;\n}\n\n.title {\n  flex: none;\n  font: var(--dsw-font-xs-13);\n  font-weight: 500;\n  color: var(--dsw-alias-label-primary);\n}\n\n/* The D12 separators (title→first segment, segment→segment) share one\n   en-space joiner, so the readout line carries its own spacing and the\n   flex gap stays zero. */\n.sep {\n  flex: none;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.readout {\n  min-width: 0;\n  overflow: hidden;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-tertiary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.jump:hover .sep,\n.jump:focus-visible .sep,\n.jump:hover .readout,\n.jump:focus-visible .readout {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.jump:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.chevron {\n  display: grid;\n  flex: none;\n  place-items: center;\n  padding: 6px;\n  border: none;\n  border-radius: 8px;\n  background: transparent;\n  color: var(--dsw-alias-label-tertiary);\n  cursor: pointer;\n}\n\n.chevron:hover {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.chevron:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.expanded {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 2px 12px 8px;\n}\n\n.members,\n.tasks {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  max-height: 132px;\n  overflow-y: auto;\n}\n\n.member,\n.task {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  font: var(--dsw-font-xs-13);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.dotSlot {\n  display: grid;\n  flex: none;\n  place-items: center;\n  width: 14px;\n  height: 14px;\n}\n\n.name,\n.subject {\n  min-width: 0;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.taskStatus {\n  flex: none;\n  font: var(--dsw-font-xxxs-11);\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.empty {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n"},"ui/TeamSettingsSection.module.css":{"classes":{"container":"container","title":"title","emptyState":"emptyState","emptyTitle":"emptyTitle","emptyDescription":"emptyDescription","steps":"steps"},"text":".container {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 16px;\n}\n\n.title {\n  font-size: 16px;\n  font-weight: 600;\n  color: var(--dsw-alias-label-primary);\n  margin: 0;\n}\n\n.emptyState {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  padding: 12px;\n  border-radius: 8px;\n  background: var(--dsw-alias-bg-module-platform);\n}\n\n.emptyTitle {\n  font-weight: 500;\n  color: var(--dsw-alias-label-secondary);\n  margin: 0;\n}\n\n.emptyDescription {\n  color: var(--dsw-alias-label-tertiary);\n  margin: 0;\n}\n\n.steps {\n  margin: 0;\n  padding-left: 24px;\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.steps li {\n  color: var(--dsw-alias-label-secondary);\n}\n\n.steps code {\n  font-family: var(--ds-font-family-code);\n  font-size: 13px;\n  background: var(--dsw-alias-bg-overlay);\n  padding: 2px 6px;\n  border-radius: 4px;\n}\n"},"ui/TeamView.module.css":{"classes":{"body":"body","zero":"zero","zeroInner":"zeroInner","zeroText":"zeroText","zeroStart":"zeroStart","section":"section","sectionTitle":"sectionTitle","legacyBanner":"legacyBanner","legacySummary":"legacySummary","legacySummaryTitle":"legacySummaryTitle","legacyNote":"legacyNote","roots":"roots","rootsTitle":"rootsTitle","rootsList":"rootsList","rootRow":"rootRow","rootId":"rootId","rootRowOpen":"rootRowOpen","viewStatus":"viewStatus"},"text":"/* The zero-state container shares the tab's content column (the same host\n   width axis as .body below) so its centered content sits in the same\n   column the populated sections do. The border-box + calc(W + 48px)\n   geometry (48px = the horizontal padding) guarantees the content stays\n   exactly W wide on wide hosts and never exceeds the container on narrow\n   ones — see the .body note. */\n.zero {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100%;\n  padding: 24px;\n  color: var(--dsw-alias-label-tertiary);\n  box-sizing: border-box;\n  width: 100%;\n  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);\n  margin: 0 auto;\n}\n\n.zeroInner {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 12px;\n  width: 100%;\n  max-width: 720px;\n}\n\n.zeroText {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n}\n\n.zeroStart {\n  padding: 6px 14px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.zeroStart:hover {\n  opacity: 0.88;\n}\n\n.zeroStart:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n/* The tab's single content column: pinned to the host conversation width\n   axis (--dsh-chat-content-width, declared on the conversation root and\n   user-draggable through the width handles; the fallback keeps the legacy\n   full-width behavior on hosts without the axis). Every section — its\n   title AND its cards, including the governance section — lives inside\n   this one box, so the titles track the cards on a width drag and the\n   governance column resizes exactly like the other four.\n\n   Geometry (2026-09-21 supplemental review): the column is border-box with\n   a cap of W + 48px (48px = the horizontal padding), NOT content-box\n   width:100% capped at W — under the default content-box sizing the\n   padded column would overflow its narrow container by 48px. The border-box\n   cap guarantees: wide host → content exactly W (the host's own content\n   width); narrow container → border-box clamps to the container and the\n   content shrinks to (container − 48px) — it can never exceed the\n   container's client width. */\n.body {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n  min-height: 100%;\n  padding: 16px 24px;\n  box-sizing: border-box;\n  width: 100%;\n  max-width: calc(var(--dsh-chat-content-width, 100%) + 48px);\n  margin: 0 auto;\n}\n\n.section {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.sectionTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n/* P9-T8 (S5-D): the legacy zero state (UI §34 read-only banner + summary). */\n\n.legacyBanner {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-state-warn-primary);\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n}\n\n.legacyBanner p {\n  margin: 0;\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.4;\n}\n\n.legacySummary {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.legacySummaryTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.legacySummary p {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.legacySummary ul {\n  margin: 0;\n  padding-left: 16px;\n  list-style: none;\n}\n\n.legacySummary li {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.legacyNote {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n/* D1 (Team D1-D6 repair v2, remote contract v3): the persisted\n   root-identity rows of the zero state (read-only in D1 — D2/D3 add the\n   open action). */\n\n.roots {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  width: 100%;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.rootsTitle {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.rootsList {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n}\n\n.rootRow {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 4px 12px;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.rootRow span {\n  word-break: break-all;\n}\n\n.rootId {\n  color: var(--dsw-alias-label-primary);\n}\n\n/* D2 (D6) — the dedicated open-in-Team-mode entry on a persisted-roots\n   row (the explicit \"以 Team 模式打开 / 回到 Leader\" button). */\n.rootRowOpen {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-state-business-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.rootRowOpen:hover {\n  opacity: 0.88;\n}\n\n.rootRowOpen:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n.rootRowOpen:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n/* repair 20260927 (S1-C1/S1-C2) — the with-frame view-status header: the\n   light pending mark (refresh / reconnect in flight) and the \"update\n   failed — showing the last successfully loaded data\" note (the content\n   below is ALWAYS kept). Empty (no children) when the view is healthy. */\n.viewStatus {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  min-width: 0;\n}\n"},"ui/TeamCreationPanel.module.css":{"classes":{"panel":"panel","title":"title","field":"field","fieldLabel":"fieldLabel","select":"select","textarea":"textarea","hint":"hint","detail":"detail","detailName":"detailName","detailSource":"detailSource","detailDescription":"detailDescription","detailTemplates":"detailTemplates","compat":"compat","compatTitle":"compatTitle","compatNote":"compatNote","compatReady":"compatReady","compatUnknown":"compatUnknown","warningList":"warningList","warningRow":"warningRow","warningOwner":"warningOwner","warningSubjects":"warningSubjects","warningDetail":"warningDetail","ack":"ack","fatal":"fatal","fatalTitle":"fatalTitle","fatalRow":"fatalRow","fatalPreset":"fatalPreset","error":"error","rootKept":"rootKept","catalogActions":"catalogActions","actions":"actions","primary":"primary","secondary":"secondary","handoff":"handoff","handoffTitle":"handoffTitle","handoffNote":"handoffNote","handoffReady":"handoffReady","handoffPreview":"handoffPreview","handoffError":"handoffError","handoffFailed":"handoffFailed","handoffTriad":"handoffTriad"},"text":".panel {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  padding: 14px 16px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 8px;\n  background: var(--dsw-alias-bg-layer-1);\n}\n\n.title {\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-14);\n  font-weight: 600;\n}\n\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-width: 0;\n}\n\n.fieldLabel {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.select,\n.textarea {\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.textarea {\n  min-height: 54px;\n  resize: vertical;\n}\n\n.select:focus-visible,\n.textarea:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.select:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.hint {\n  margin: -6px 0 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.detail {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 6px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.detailName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.detailSource {\n  padding: 1px 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.detailDescription {\n  flex-basis: 100%;\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.detailTemplates {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.compat {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.compatTitle {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.compatNote,\n.compatReady,\n.compatUnknown {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.compatReady {\n  color: var(--dsw-alias-state-success-primary);\n}\n\n.compatUnknown {\n  color: var(--dsw-alias-state-error-primary);\n}\n\n.warningList {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n\n.warningRow {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  padding: 6px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n}\n\n.warningOwner {\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.warningSubjects,\n.warningDetail {\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.ack {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.ack input {\n  margin: 0;\n}\n\n.fatal {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-error-secondary);\n}\n\n.fatalTitle,\n.fatalRow {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.fatalRow {\n  font: var(--dsw-font-xxxs-11);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.fatalPreset {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.5;\n}\n\n.error {\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-error-secondary);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.rootKept {\n  margin: 4px 0 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* BP9 (issue #2 blueprint-loading, plan §13) — the manual catalog\n   refresh button row (below the blueprint picker, once the first load\n   has settled). */\n.catalogActions {\n  display: flex;\n  margin: 6px 0 8px;\n}\n\n.actions {\n  display: flex;\n  gap: 8px;\n}\n\n.primary,\n.secondary {\n  padding: 6px 14px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.primary {\n  background: var(--dsw-alias-state-business-primary);\n  border-color: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n}\n\n.primary:hover:not(:disabled),\n.secondary:hover:not(:disabled) {\n  opacity: 0.88;\n}\n\n.primary:focus-visible,\n.secondary:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 1px;\n}\n\n.primary:disabled,\n.secondary:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n/* P9-T8 (S5-D): the §32 handoff block (the optional face + source surface). */\n\n.handoff {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.handoffTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.handoff > span:not(.handoffTitle) {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.handoff > label {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.handoff > label:has(input:disabled) {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.handoffNote {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.handoffReady {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n}\n\n.handoffReady > span {\n  color: var(--dsw-alias-state-success-primary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n}\n\n.handoffPreview {\n  width: 100%;\n  padding: 6px 8px;\n  border-left: 2px solid var(--dsw-alias-border-l2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.handoffPreview > p {\n  margin: 0 0 3px;\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.handoffPreview ul {\n  margin: 0;\n  padding-left: 16px;\n  list-style: disc;\n}\n\n.handoffPreview li {\n  margin: 1px 0;\n  word-break: break-word;\n}\n\n.handoffError,\n.handoffFailed > p {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.handoffFailed {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border: 1px solid var(--dsw-alias-state-error-secondary);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-1);\n}\n\n.handoffTriad {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n"},"ui/TeamTimeline.module.css":{"classes":{"root":"root","empty":"empty","plot":"plot","corner":"corner","axis":"axis","tick":"tick","gutter":"gutter","gutterRow":"gutterRow","swatch":"swatch","laneName":"laneName","track":"track","domain":"domain","lane":"lane","bar":"bar"},"text":".root {\n  --team-lane-height: 28px;\n  display: flex;\n  flex-direction: column;\n  border-bottom: 1px solid var(--dsw-alias-border-l2);\n  user-select: none;\n}\n\n.root :global([role='tooltip']) {\n  font: var(--dsw-font-xxxs-11);\n}\n\n.empty {\n  margin: 0;\n  padding: 12px 16px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n\n.plot {\n  display: grid;\n  grid-template-columns: 160px minmax(0, 1fr);\n  grid-template-rows: 20px auto;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.corner {\n  border-right: 1px solid var(--dsw-alias-border-l1);\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.axis {\n  position: relative;\n  overflow: hidden;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.tick {\n  position: absolute;\n  top: 3px;\n  left: var(--team-tick-left);\n  padding-left: 4px;\n  border-left: 1px solid var(--dsw-alias-border-l2);\n  height: 100%;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n  white-space: nowrap;\n}\n\n.gutter {\n  border-right: 1px solid var(--dsw-alias-border-l1);\n}\n\n.gutterRow {\n  display: flex;\n  gap: 6px;\n  align-items: center;\n  height: var(--team-lane-height);\n  padding: 0 8px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.gutterRow:last-child {\n  border-bottom: 0;\n}\n\n.swatch {\n  flex: none;\n  width: 8px;\n  height: 8px;\n  border-radius: 2px;\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\n}\n\n.laneName {\n  overflow: hidden;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.gutterRow[data-current='true'] .laneName {\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.track {\n  position: relative;\n  overflow: hidden;\n  height: calc(var(--team-lane-count, 1) * var(--team-lane-height));\n  cursor: grab;\n  touch-action: none;\n}\n\n.track[data-panning='true'] {\n  cursor: grabbing;\n}\n\n.track:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.domain {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: var(--team-domain-left);\n  width: var(--team-domain-width);\n}\n\n.lane {\n  position: relative;\n  height: var(--team-lane-height);\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n}\n\n.lane:last-child {\n  border-bottom: 0;\n}\n\n.lane[data-current='true'] {\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\n}\n\n.bar {\n  position: absolute;\n  top: 50%;\n  left: var(--team-bar-left);\n  width: max(2px, var(--team-bar-width));\n  height: 14px;\n  min-width: 2px;\n  transform: translateY(-50%);\n  border-radius: 2px;\n  background: var(--team-lane-color, var(--dsw-alias-label-tertiary));\n  opacity: 0.85;\n  cursor: pointer;\n}\n\n.bar:hover {\n  opacity: 1;\n}\n\n.bar[data-running='true'] {\n  animation: team-bar-pulse 1.2s ease-in-out infinite;\n}\n\n@keyframes team-bar-pulse {\n  0%,\n  100% {\n    opacity: 1;\n  }\n\n  50% {\n    opacity: 0.55;\n  }\n}\n\n@media (prefers-reduced-motion: reduce) {\n  .bar[data-running='true'] {\n    animation: none;\n  }\n}\n\n/* The lane-color ramp (slot index → existing state token; the tint tier\n   lightens a hue toward the layer background for members beyond the four\n   base colors). */\n[data-lane-color='0'] {\n  --team-lane-color: var(--dsw-alias-state-business-primary);\n}\n\n[data-lane-color='1'] {\n  --team-lane-color: var(--dsw-alias-state-success-primary);\n}\n\n[data-lane-color='2'] {\n  --team-lane-color: var(--dsw-alias-state-warn-primary);\n}\n\n[data-lane-color='3'] {\n  --team-lane-color: var(--dsw-alias-state-error-primary);\n}\n\n[data-lane-color='4'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-business-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='5'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-success-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='6'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n\n[data-lane-color='7'] {\n  --team-lane-color: color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, var(--dsw-alias-bg-layer-2));\n}\n"},"ui/TeamMembers.module.css":{"classes":{"root":"root","group":"group","groupRow":"groupRow","groupName":"groupName","instances":"instances","actions":"actions","instanceRow":"instanceRow","instanceNav":"instanceNav","actionButton":"actionButton","commandError":"commandError","dotSlot":"dotSlot","instanceStatus":"instanceStatus","instanceAction":"instanceAction","waitingBadge":"waitingBadge","noInstances":"noInstances","createButton":"createButton","teamModeRow":"teamModeRow","teamModeOpen":"teamModeOpen","teamModeBadge":"teamModeBadge"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.group {\n  overflow: hidden;\n  min-width: 0;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.group[data-current='true'] {\n  border-color: var(--dsw-alias-state-business-primary);\n}\n\n/* border-box: the leader header is a <button> (already border-box via the\n   #28 form-control rule) but the worker header is a DIV — content-box made\n   `width:100% + 20px padding` overflow the card by 20px and the group's\n   overflow:hidden clipped the right-aligned `+` create button by 10px.\n   2026-09-22 supplemental live-browser measurement. */\n.groupRow {\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  width: 100%;\n  padding: 6px 10px;\n  border: 0;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n  text-align: left;\n}\n\n.groupRow[data-leader='true'] {\n  cursor: pointer;\n}\n\n.groupRow[data-leader='true']:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.groupRow[data-leader='true']:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.groupName {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.group[data-current='true'] .groupName {\n  color: var(--dsw-alias-state-business-primary);\n}\n\n.instances {\n  display: flex;\n  flex-direction: column;\n}\n\n/* border-box (2026-09-22 supplemental, live-browser measurement): the row\n   is `width: 100%` + 28px horizontal padding on a DIV — as content-box it\n   overflowed the group card by 28px and the group's overflow:hidden\n   clipped the right-aligned action cluster's trailing button by 18px at\n   every width where the cluster stays on line 1 (and the right-aligned\n   content of any row). The <button> groupRow variant was already saved by\n   the #28 form-control border-box rule; the DIV rows need it explicitly.\n   With border-box the row box == the card content box, so the #28\n   .actions shrink+wrap contract (never exceed the row) lands the buttons\n   INSIDE the card at all widths. */\n.instanceRow {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 4px 8px;\n  box-sizing: border-box;\n  width: 100%;\n  padding: 6px 10px 6px 18px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n}\n\n.instanceRow:last-child {\n  border-bottom: 0;\n}\n\n.instanceRow[data-current='true'] {\n  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent);\n  color: var(--dsw-alias-label-primary);\n}\n\n.instanceNav {\n  display: flex;\n  flex: 1 1 auto;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  padding: 0;\n  border: 0;\n  background: transparent;\n  color: inherit;\n  font: inherit;\n  text-align: left;\n  cursor: pointer;\n}\n\n.instanceNav:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.instanceNav:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: 2px;\n}\n\n.instanceNav:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n/* flex-wrap: when the row is narrower than the full button cluster,\n   the buttons wrap onto a second line INSIDE the card instead of\n   overflowing the group's right edge (where the group's overflow:hidden\n   clipped them, leaving the trailing buttons cut off). 2026-09-21\n   supplemental review: `flex: none` (non-shrinkable, fixed basis) kept\n   the cluster wider than its row even with wrap enabled — it must be\n   shrinkable: flex 0 1 auto + min-width 0 + max-width 100% so the cluster\n   can never exceed the row, wrapping its buttons instead of clipping\n   them; justify-content flex-end keeps the original right alignment. */\n.actions {\n  display: flex;\n  flex: 0 1 auto;\n  min-width: 0;\n  max-width: 100%;\n  justify-content: flex-end;\n  flex-wrap: wrap;\n  gap: 4px;\n}\n\n.actionButton {\n  padding: 2px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.actionButton:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.actionButton:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.actionButton:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.commandError {\n  width: 100%;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: color-mix(in srgb, var(--dsw-alias-state-error-secondary) 18%, transparent);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n  word-break: break-word;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: center;\n}\n\n.instanceStatus {\n  flex: none;\n}\n\n.instanceAction {\n  overflow: hidden;\n  color: var(--dsw-alias-label-caption);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.waitingBadge {\n  flex: none;\n  margin-left: auto;\n  padding: 0 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.noInstances {\n  display: block;\n  padding: 6px 10px 6px 18px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.createButton {\n  flex: none;\n  margin-left: auto;\n  padding: 0 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  line-height: 18px;\n  cursor: pointer;\n}\n\n.createButton:hover {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n}\n\n.createButton:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n/* D2 (D6) — the dedicated open-in-Team-mode entry on the root/leader row\n   (the explicit \"以 Team 模式打开 / 回到 Leader\" button) + the current\n   open-mode badge. */\n.teamModeRow {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 4px 10px 6px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n}\n\n.teamModeOpen {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-state-business-primary);\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-state-business-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.teamModeOpen:hover:not(:disabled) {\n  opacity: 0.88;\n}\n\n.teamModeOpen:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.teamModeOpen:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.teamModeBadge {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  white-space: nowrap;\n}\n"},"ui/TeamActivity.module.css":{"classes":{"root":"root","empty":"empty","taskRow":"taskRow","dotSlot":"dotSlot","taskMain":"taskMain","taskLine":"taskLine","taskSubject":"taskSubject","taskStatus":"taskStatus","taskAssignee":"taskAssignee","taskSummary":"taskSummary"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  min-width: 0;\n  overflow: hidden;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.empty {\n  display: block;\n  padding: 6px 10px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n}\n\n.taskRow {\n  display: flex;\n  gap: 8px;\n  padding: 6px 10px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  min-width: 0;\n}\n\n.taskRow:last-child {\n  border-bottom: 0;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: flex-start;\n  padding-top: 3px;\n}\n\n.taskMain {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n}\n\n.taskLine {\n  display: flex;\n  align-items: baseline;\n  gap: 8px;\n  min-width: 0;\n}\n\n.taskSubject {\n  overflow: hidden;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.taskStatus {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.taskAssignee {\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.taskSummary {\n  overflow: hidden;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n"},"ui/TeamLedger.module.css":{"classes":{"root":"root","empty":"empty","top":"top","loadEarlier":"loadEarlier","loadFailed":"loadFailed","truncated":"truncated","rows":"rows","row":"row","dotSlot":"dotSlot","time":"time","marker":"marker","actor":"actor","summary":"summary","state":"state","stateReason":"stateReason","filter":"filter","resolveBar":"resolveBar","controlDetail":"controlDetail","resolveBtn":"resolveBtn","resolveBusy":"resolveBusy","resolveError":"resolveError","externalPolicyLine":"externalPolicyLine","controlField":"controlField","readOnlyNote":"readOnlyNote","controlFieldWide":"controlFieldWide","controlDigestValue":"controlDigestValue","controlPayload":"controlPayload","cannotReview":"cannotReview"},"text":".root {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  min-width: 0;\n}\n\n.empty {\n  display: block;\n  padding: 12px 16px;\n  border: 1px dashed var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xs-13);\n  text-align: center;\n}\n\n.top {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-height: 22px;\n}\n\n.loadEarlier {\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.loadEarlier:hover {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n}\n\n.loadEarlier:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.loadFailed {\n  padding: 2px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.truncated {\n  padding: 2px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.rows {\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n  min-width: 0;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.row {\n  display: flex;\n  /* run5 geometry fix ④: a chip/badge too wide for the row drops to its\n     own line instead of clipping under `.rows` (overflow: hidden). */\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n  padding: 6px 10px;\n  border: 0;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: transparent;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n  text-align: left;\n  cursor: pointer;\n  min-width: 0;\n}\n\n.row:last-child {\n  border-bottom: 0;\n}\n\n.row:hover {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.row:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.row:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n.dotSlot {\n  display: inline-flex;\n  flex: none;\n  align-items: center;\n}\n\n.time {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n  font-variant-numeric: tabular-nums;\n}\n\n.marker {\n  flex: none;\n  padding: 0 6px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.actor {\n  flex: none;\n  max-width: 220px;\n  overflow: hidden;\n  color: var(--dsw-alias-label-primary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.summary {\n  overflow: hidden;\n  min-width: 0;\n  flex: 1 1 auto;\n  color: var(--dsw-alias-label-secondary);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.state {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  flex: none;\n  max-width: 40%;\n  padding: 0 6px;\n  border-radius: 4px;\n  font: var(--dsw-font-xxxs-11);\n}\n\n.state[data-pending='true'] {\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n}\n\n.state:not([data-pending='true']) {\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n}\n\n.stateReason {\n  overflow: hidden;\n  max-width: 100%;\n  color: var(--dsw-alias-label-caption);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* P9-T6 addition (UI §27.4): the client-local category / instance filter\n   selects, styled in the same control language as `.loadEarlier`. */\n.filter {\n  padding: 2px 6px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  max-width: 180px;\n  cursor: pointer;\n}\n\n.filter:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n/* F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4): the human\n   control-resolution command bar rendered under a PENDING control-request\n   row (the row itself is a <button> — the bar is its sibling, never\n   nested): the Allow / Deny commands, the in-flight busy note, and the\n   typed error note (the frozen control vocabulary code + message).\n   Absent `onResolveControl` face → the bar never renders (legacy surface\n   unchanged). */\n.resolveBar {\n  display: flex;\n  /* run5 geometry fix ①: on a narrow bar the flex:none command buttons\n     (+gaps, ~128px) used to squeeze the detail list below ~60px. With\n     wrap + the `.controlDetail` flex-basis floor (②) the list takes the\n     first line at full width and the buttons move to a line of their\n     own — never an overflow, never a collapse. */\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n  padding: 4px 10px 6px;\n  border-bottom: 1px solid var(--dsw-alias-border-l1);\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.resolveBtn {\n  flex: none;\n  padding: 2px 10px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n  cursor: pointer;\n}\n\n.resolveBtn:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  border-color: var(--dsw-alias-state-business-primary);\n}\n\n.resolveBtn:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.resolveBtn:disabled {\n  cursor: default;\n  opacity: 0.55;\n}\n\n.resolveBusy {\n  flex: none;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.resolveError {\n  overflow: hidden;\n  min-width: 0;\n  max-width: 100%;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 2, UI §26.4): the external hard policy\n   blocked an allowed team decision — the badge switches from the plain\n   decision label to the frozen two-line \"Team decision / Execution\"\n   display (stacked, right-aligned in the row's badge slot). Never the\n   plain \"denied\" label. */\n.state[data-external-policy='true'] {\n  flex-direction: column;\n  align-items: flex-end;\n  gap: 2px;\n  padding: 2px 6px;\n}\n\n.externalPolicyLine {\n  display: block;\n  max-width: 100%;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 1, UI §26.2): the control-request detail\n   panel field rows (requester / kind / requested operation / tool /\n   reason / creation time / current status / requested authority) — a\n   wrapping definition list in the caption label language. */\n.controlDetail {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 2px 12px;\n  /* run5 geometry fix ②: flex-basis floor via min(). A 181px bar: the\n     basis resolves to 181, the list fills the first line and the\n     buttons wrap below. A wide bar (≥ ~452px content): the basis is\n     20rem, list + buttons share one line and the list grows — the\n     1440/675 layout is preserved by construction. */\n  flex: 1 1 min(100%, 20rem);\n  margin: 0;\n  min-width: 0;\n}\n\n.controlField {\n  display: flex;\n  /* run5 geometry fix ③: dt and dd keep one line ONLY while both flex\n     bases fit (a line break is forced exactly when they do not, so the\n     value can never be squeezed beside a long label — it lands on its\n     own line at the FULL list width instead). */\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 6px;\n  min-width: 0;\n}\n\n.controlField dt {\n  flex: none;\n  /* TINY FIX (parent gap in 7816423d): flex:none sizes the label by its\n     MAX-CONTENT width (which ignores soft-wrap opportunities), so a\n     longer CJK digest label — or a long embedded Latin token — let the\n     NON-SHRINKING label itself overflow the field and clip under\n     `.rows`. The cap resolves against the field box and\n     overflow-wrap:break-word breaks the label's own lines; short\n     labels keep their inline behavior bit-identical (basis below cap). */\n  max-width: 100%;\n  overflow-wrap: break-word;\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.controlField dd {\n  overflow: hidden;\n  min-width: 0;\n  margin: 0;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* F9U (gate-review supplement 4): the served-version-gated read-only\n   note (the served host is pre-v4 — the detail panel stays, the\n   commands do not). */\n.readOnlyNote {\n  flex: none;\n  padding: 2px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-caption);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* PR #56 — the control-detail extensions (display ≠ verification): the\n   FULL wire digest and the FULL review payload render VERBATIM and are\n   NEVER truncated (the base `.controlField dd` ellipsis is overridden;\n   the payload block scrolls instead). */\n.controlFieldWide {\n  flex: 1 1 100%;\n  align-items: flex-start;\n}\n\n.controlFieldWide dd {\n  display: flex;\n  flex: 1 1 auto;\n  overflow: visible;\n  white-space: normal;\n}\n\n/* FROZEN BATCH #3: this selector MUST out-specify the `.controlField dd`\n   ellipsis trio (0,1,1) or the FULL wire digest renders TRUNCATED in a\n   narrow panel — `.controlField dd.controlDigestValue` is (0,1,2). */\n.controlField dd.controlDigestValue {\n  overflow: visible;\n  white-space: normal;\n  font-family: var(--dsw-font-family-mono, ui-monospace, monospace);\n  word-break: break-all;\n  user-select: all;\n}\n\n.controlPayload {\n  flex: 1 1 auto;\n  max-height: 16rem;\n  margin: 0;\n  padding: 4px 6px;\n  overflow: auto;\n  border: 1px solid var(--dsw-alias-border-primary, currentColor);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11) var(--dsw-font-family-mono, ui-monospace, monospace);\n  white-space: pre-wrap;\n  word-break: break-all;\n  user-select: text;\n}\n\n.cannotReview {\n  flex: 1 1 100%;\n  padding: 2px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n}\n"},"ui/TeamGovernance.module.css":{"classes":{"section":"section","card":"card","cardHead":"cardHead","cardTitle":"cardTitle","badge":"badge","badgeUnknown":"badgeUnknown","counts":"counts","meta":"meta","freshRead":"freshRead","freshReadTitle":"freshReadTitle","actions":"actions","primary":"primary","secondary":"secondary","help":"help","note":"note","noteError":"noteError","cells":"cells","cell":"cell","cellName":"cellName","cellLocked":"cellLocked","cellCurrent":"cellCurrent","cellEditor":"cellEditor","select":"select","input":"input","preview":"preview","memberBlock":"memberBlock","memberName":"memberName","lanes":"lanes","lane":"lane","laneName":"laneName","laneValue":"laneValue","laneState":"laneState","laneFlag":"laneFlag","hardPolicy":"hardPolicy","override":"override","overrideEditor":"overrideEditor"},"text":".section {\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n  min-width: 0;\n}\n\n.card {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  min-width: 0;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.cardHead {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n}\n\n.cardTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-14);\n  font-weight: 600;\n}\n\n.badge {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-state-success-primary);\n  color: var(--dsw-alias-bg-layer-1);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.badge[data-governance-compat-mark='warning'] {\n  background: var(--dsw-alias-state-warn-primary);\n}\n\n.badge[data-governance-compat-mark='fatal'] {\n  background: var(--dsw-alias-state-error-primary);\n}\n\n.badgeUnknown {\n  padding: 1px 8px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n  white-space: nowrap;\n}\n\n.counts {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xs-13);\n}\n\n.meta {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.freshRead {\n  padding: 6px 8px;\n  border-left: 2px solid var(--dsw-alias-border-l2);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.freshReadTitle {\n  margin: 0 0 2px;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 600;\n}\n\n.actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.primary,\n.secondary {\n  padding: 3px 10px;\n  border-radius: 4px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.primary {\n  border-color: var(--dsw-alias-state-business-primary);\n  background: var(--dsw-alias-state-business-primary);\n  color: var(--dsw-alias-bg-layer-1);\n}\n\n.primary:disabled,\n.secondary:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.help {\n  margin: 0;\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.note {\n  margin: 0;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.noteError {\n  margin: 0;\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.cells {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n\n.cell {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  padding: 6px 8px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.cellName {\n  min-width: 90px;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.cellLocked {\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  font-weight: 400;\n}\n\n.cellCurrent {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.cellEditor {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  margin-left: auto;\n}\n\n.select,\n.input {\n  padding: 2px 6px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.preview {\n  margin: 0;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.memberBlock {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  padding: 8px 10px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 4px;\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.memberName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  font-weight: 600;\n}\n\n.lanes {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n}\n\n.lane {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 8px;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.laneName {\n  min-width: 110px;\n  color: var(--dsw-alias-label-primary);\n  font-weight: 600;\n}\n\n.laneValue {\n  min-width: 120px;\n  word-break: break-all;\n}\n\n.laneState {\n  font-weight: 600;\n}\n\n.laneFlag {\n  padding: 0 6px;\n  border-radius: 999px;\n  background: var(--dsw-alias-bg-layer-1);\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n.hardPolicy {\n  padding: 1px 6px;\n  border-radius: 3px;\n  background: var(--dsw-alias-state-error-secondary);\n  color: var(--dsw-alias-state-error-primary);\n  font: var(--dsw-font-xxxs-11);\n  word-break: break-all;\n}\n\n.override {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.overrideEditor {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: 6px;\n}\n"},"ui/TeamMemberDialogs.module.css":{"classes":{"dialog":"dialog","warning":"warning","notice":"notice","field":"field","fieldLabel":"fieldLabel","templateName":"templateName","button":"button"},"text":"/* The dialog CONTENT wrapper: the card chrome (mask, radius, fill,\n   elevation), the header (title + close), and the footer (the action\n   row) come from the shared Modal primitive — this box only stacks the\n   fields inside the modal's content column. */\n.dialog {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  min-width: 0;\n}\n\n.warning {\n  padding: 8px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-state-warn-tertiary);\n  color: var(--dsw-alias-state-warn-label);\n  font: var(--dsw-font-xs-13);\n  line-height: 1.5;\n}\n\n.notice {\n  padding: 6px 10px;\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-3);\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-xxxs-11);\n  line-height: 1.4;\n}\n\n.field {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-width: 0;\n}\n\n.fieldLabel {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-xxxs-11);\n}\n\n/* 2026-09-21 supplemental review: border-box so `width: 100%` + padding +\n   border stay inside the modal body's content box — under the default\n   content-box sizing every control overflowed the dialog's right edge by\n   padding+border (18px here). */\n.field input,\n.field select {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n.field input:focus-visible,\n.field select:focus-visible,\n.field textarea:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.field textarea {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 5px 8px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  resize: vertical;\n}\n\n.templateName {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n}\n\n/* The action row renders in the Modal's card footer (its own flex-end\n   row + gap) — only the button skin stays local. */\n.button {\n  padding: 5px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-xs-13);\n  cursor: pointer;\n}\n\n.button:hover:not(:disabled) {\n  background: var(--dsw-alias-bg-layer-3);\n}\n\n.button:focus-visible {\n  outline: 1px solid var(--dsw-alias-state-business-primary);\n  outline-offset: -1px;\n}\n\n.button:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n"},"ui/TeamInterventions.module.css":{"classes":{"card":"card","cardHead":"cardHead","cardTitle":"cardTitle","row":"row","rowTitle":"rowTitle","meta":"meta","terminal":"terminal","noteError":"noteError","actions":"actions","secondary":"secondary","rules":"rules"},"text":".card {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  min-width: 0;\n  padding: 10px 12px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-2);\n}\n\n.cardHead {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-width: 0;\n}\n\n.cardTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-14);\n  font-weight: 600;\n}\n\n.row {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  padding: 8px 10px;\n  border: 1px solid var(--dsw-alias-border-l1);\n  border-radius: 6px;\n  background: var(--dsw-alias-bg-layer-1);\n}\n\n.rowTitle {\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-13);\n  font-weight: 600;\n}\n\n.meta {\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-s-12);\n}\n\n.terminal {\n  color: var(--dsw-alias-label-tertiary);\n  font: var(--dsw-font-s-12);\n  font-style: italic;\n}\n\n.noteError {\n  margin: 0;\n  color: var(--dsw-alias-label-danger, #b3261e);\n  font: var(--dsw-font-s-12);\n}\n\n.actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.secondary {\n  padding: 4px 10px;\n  border: 1px solid var(--dsw-alias-border-l2);\n  border-radius: 6px;\n  background: transparent;\n  color: var(--dsw-alias-label-primary);\n  font: var(--dsw-font-s-12);\n  cursor: pointer;\n}\n\n.secondary:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n\n.rules {\n  margin: 0;\n  padding-left: 18px;\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  color: var(--dsw-alias-label-secondary);\n  font: var(--dsw-font-s-12);\n}\n"}};
 		var __cssDone = {};
 		function __css(key) {
 			if (!__cssDone[key]) {
@@ -1888,6 +1888,12 @@ var __dshFactory = (require) => {
 			        overrideSet: (params) => teamRemote.overrideSet(params),
 			        overrideReset: (params) => teamRemote.overrideReset(params),
 			        pullProjection,
+			        // A4-PR6 §6.D — the v8 intervention slice, the frozen Remote wrappers
+			        // verbatim (no adapter, no extra fields — the closed bodies stay
+			        // closed on their way to the UI; ADR A1-2).
+			        interventionList: (params) => teamRemote.interventionList(params),
+			        interventionAct: (params) => teamRemote.interventionAct(params),
+			        permissionAdministrationGet: (params) => teamRemote.permissionAdministrationGet(params),
 			    };
 			    // (15) The S5-D handoff face (frozen Remote wrappers verbatim).
 			    const handoff = {
@@ -3622,6 +3628,15 @@ var __dshFactory = (require) => {
 			    // whose type is absent from this map simply carries no category client-side,
 			    // and `a4pr0a-fact-type-closed-set.test.ts` C3 fails the drift.
 			    'governance-proposal-recorded': 'policy',
+			    // A4-PR6 §6.C (first half, same commit as the host registration above):
+			    // the governance-warning observation/acknowledgement rows classify
+			    // exactly as the host fold classifies them — `policy`, no ninth category.
+			    // Hidden from the generic Events rows by `INTERNAL_FACT_TYPES`
+			    // (team-ledger-model): the warning's surface is TeamInterventions, and a
+			    // generic JSON row of an authority verdict is the disclosure shape this
+			    // repo refuses (A5-20 discipline).
+			    'governance-warning-observed': 'policy',
+			    'governance-warning-acknowledged': 'policy',
 			    // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry (the
 			    // compatibility category's first production writer). A compatibility
 			    // CATEGORY — no new category. Hidden from the Events surface by
@@ -5191,6 +5206,8 @@ var __dshFactory = (require) => {
 			    'interval-opened': 'view.ledger.fact.interval_opened',
 			    'interval-closed': 'view.ledger.fact.interval_closed',
 			    'policy-transitioned': 'view.ledger.fact.policy',
+			    'governance-proposal': 'view.ledger.fact.governance_proposal',
+			    'control-escalation': 'view.ledger.fact.control_escalation',
 			};
 			/** The frozen decision-value labels; an unknown wire value renders raw (fail-open display). */
 			const DECISION_KEYS = {
@@ -5220,7 +5237,13 @@ var __dshFactory = (require) => {
 			        case 'control-decision':
 			        case 'control-consumed':
 			        case 'interval-closed':
+			        case 'control-escalation':
 			            return 'done';
+			        case 'governance-proposal':
+			            // §6.C: an incomplete durable proposal set is an ERROR state on the
+			            // row, never the neutral dot — the UI cannot show a quiet wait for a
+			            // record that cannot be a proposal.
+			            return row.governanceRecordStatus === 'corrupt' ? 'error' : 'ongoing';
 			        case 'progress-recorded':
 			            switch (row.progressValue) {
 			                case 'completed': return 'done';
@@ -5529,6 +5552,8 @@ var __dshFactory = (require) => {
 			const policyStateLabel = __imp36.policyStateLabel;
 			const policyStateSetParams = __imp36.policyStateSetParams;
 			const styles = __css("ui/TeamGovernance.module.css");
+			const __imp38 = __req("ui/TeamInterventions.js");
+			const TeamInterventions = __imp38.TeamInterventions;
 			/**
 			 * P9-T8 (S5-C) — the config/policy/compatibility governance section
 			 * (plan P9-S5 S5-C; UI doc §10/§18/§19/§21; Gate P9-G5).
@@ -6006,7 +6031,13 @@ var __dshFactory = (require) => {
 			                                            }) })), resetError !== undefined && (_jsx("p", { className: styles.noteError, "data-governance-override-reset-error": true, children: t('governance.error', {
 			                                                message: `${resetError.code}: ${resetError.message}${resetError.requestToken !== null ? ` [${resetError.requestToken}]` : ''}`,
 			                                            }) }))] })] }, member.instanceId));
-			                    })] })] }));
+			                    })] }), governance.interventionList !== undefined
+			                && governance.interventionAct !== undefined
+			                && governance.permissionAdministrationGet !== undefined ? (_jsx(TeamInterventions, { teamSessionId: teamSessionId, face: {
+			                    interventionList: governance.interventionList,
+			                    interventionAct: governance.interventionAct,
+			                    permissionAdministrationGet: governance.permissionAdministrationGet,
+			                }, t: t })) : null] }));
 			}
 			Object.defineProperty(exports, "TeamGovernance", { enumerable: true, get: () => TeamGovernance });
 			/**
@@ -7591,6 +7622,7 @@ var __dshFactory = (require) => {
 			const REMOTE_CONTRACT_VERSION_V5 = __imp50.REMOTE_CONTRACT_VERSION_V5;
 			const REMOTE_CONTRACT_VERSION_V6 = __imp50.REMOTE_CONTRACT_VERSION_V6;
 			const REMOTE_CONTRACT_VERSION_V7 = __imp50.REMOTE_CONTRACT_VERSION_V7;
+			const REMOTE_CONTRACT_VERSION_V8 = __imp50.REMOTE_CONTRACT_VERSION_V8;
 			const REMOTE_RPC_CHANNEL = __imp50.REMOTE_RPC_CHANNEL;
 			const PushTransportLossError = __imp50.PushTransportLossError;
 			const assessProjectionSync = __imp50.assessProjectionSync;
@@ -7809,6 +7841,16 @@ var __dshFactory = (require) => {
 			        handoffPrepare: (params) => call('handoff.prepare', params),
 			        handoffCreate: (params) => call('handoff.create', params),
 			        legacyInspect: (params) => call('legacy.inspect', params),
+			        // A4-PR6 (contract v8) — the four v8-only wrappers. The version
+			        // literal appears ONLY here (TCM vNext §15.3); every param object is
+			        // the caller's frozen closed set, spread verbatim — the wrapper adds
+			        // NOTHING (a caller field on `intervention.act` would be a contract
+			        // violation the closed param parse would refuse host-side anyway;
+			        // the client never manufactures one).
+			        interventionList: (params) => callWithVersion('intervention.list', params, REMOTE_CONTRACT_VERSION_V8),
+			        interventionGet: (params) => callWithVersion('intervention.get', params, REMOTE_CONTRACT_VERSION_V8),
+			        interventionAct: (params) => callWithVersion('intervention.act', params, REMOTE_CONTRACT_VERSION_V8),
+			        permissionAdministrationGet: (params) => callWithVersion('override.getPermissionAdministration', params, REMOTE_CONTRACT_VERSION_V8),
 			    };
 			}
 			Object.defineProperty(exports, "createTeamRemoteClient", { enumerable: true, get: () => createTeamRemoteClient });
@@ -7948,6 +7990,19 @@ var __dshFactory = (require) => {
 			    'view.ledger.fact.interval_opened': '活动开始',
 			    'view.ledger.fact.interval_closed': '活动结束',
 			    'view.ledger.fact.policy': '策略变更',
+			    'view.ledger.fact.governance_proposal': '治理提案',
+			    'view.ledger.fact.control_escalation': '控制升级',
+			    'interventions.title': '治理介入',
+			    'interventions.empty': '当前没有介入项。',
+			    'interventions.error': '错误：{message}',
+			    'interventions.terminal': '终态：{evidence}',
+			    'interventions.action.allow': '允许',
+			    'interventions.action.deny': '拒绝',
+			    'interventions.action.escalate': '升级',
+			    'interventions.action.acknowledge': '确认',
+			    'interventions.administration': '权限管理',
+			    'interventions.blueprintDefault': '蓝图默认',
+			    'interventions.noRules': '无生效规则。',
 			    'view.ledger.decision.allow': '允许',
 			    'view.ledger.decision.deny': '拒绝',
 			    'view.ledger.decision.stale_denied': '过期拒绝',
@@ -8213,6 +8268,19 @@ var __dshFactory = (require) => {
 			    'view.ledger.fact.interval_opened': 'Interval opened',
 			    'view.ledger.fact.interval_closed': 'Interval closed',
 			    'view.ledger.fact.policy': 'Policy change',
+			    'view.ledger.fact.governance_proposal': 'Governance proposal',
+			    'view.ledger.fact.control_escalation': 'Control escalation',
+			    'interventions.title': 'Governance interventions',
+			    'interventions.empty': 'No interventions are currently projected.',
+			    'interventions.error': 'Error: {message}',
+			    'interventions.terminal': 'Terminal: {evidence}',
+			    'interventions.action.allow': 'Allow',
+			    'interventions.action.deny': 'Deny',
+			    'interventions.action.escalate': 'Escalate',
+			    'interventions.action.acknowledge': 'Acknowledge',
+			    'interventions.administration': 'Permission administration',
+			    'interventions.blueprintDefault': 'blueprint default',
+			    'interventions.noRules': 'No effective rules.',
 			    'view.ledger.decision.allow': 'Allowed',
 			    'view.ledger.decision.deny': 'Denied',
 			    'view.ledger.decision.stale_denied': 'Stale denied',
@@ -8957,6 +9025,7 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V5", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V5 });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V6", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V6 });
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V7", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V7 });
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V8", { enumerable: true, get: () => __re3.REMOTE_CONTRACT_VERSION_V8 });
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => __re3.SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			Object.defineProperty(exports, "isSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.isSupportedRemoteContractVersion });
 			Object.defineProperty(exports, "assertSupportedRemoteContractVersion", { enumerable: true, get: () => __re3.assertSupportedRemoteContractVersion });
@@ -8983,6 +9052,8 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_V5_ONLY_METHODS", { enumerable: true, get: () => __re5.REMOTE_V5_ONLY_METHODS });
 			Object.defineProperty(exports, "REMOTE_V6_ONLY_METHODS", { enumerable: true, get: () => __re5.REMOTE_V6_ONLY_METHODS });
 			Object.defineProperty(exports, "REMOTE_V7_ONLY_METHODS", { enumerable: true, get: () => __re5.REMOTE_V7_ONLY_METHODS });
+			Object.defineProperty(exports, "REMOTE_V8_ONLY_METHODS", { enumerable: true, get: () => __re5.REMOTE_V8_ONLY_METHODS });
+			Object.defineProperty(exports, "REMOTE_GOVERNANCE_WRITING_METHODS", { enumerable: true, get: () => __re5.REMOTE_GOVERNANCE_WRITING_METHODS });
 			Object.defineProperty(exports, "isRemoteMethod", { enumerable: true, get: () => __re5.isRemoteMethod });
 			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => __re5.isRemoteMethodAvailableInVersion });
 			Object.defineProperty(exports, "remoteCategoryOf", { enumerable: true, get: () => __re5.remoteCategoryOf });
@@ -9067,6 +9138,12 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "REMOTE_PROJECTION_FIELDS", { enumerable: true, get: () => __re9.REMOTE_PROJECTION_FIELDS });
 			Object.defineProperty(exports, "REMOTE_PROJECTION_FIELDS_V6", { enumerable: true, get: () => __re9.REMOTE_PROJECTION_FIELDS_V6 });
 			Object.defineProperty(exports, "REMOTE_LEDGER_ENTRY_FIELDS", { enumerable: true, get: () => __re9.REMOTE_LEDGER_ENTRY_FIELDS });
+			Object.defineProperty(exports, "// A4-PR6 §6.B (contract v8): the closed wire field sets.\nREMOTE_INTERVENTION_AUTHORITY_POSITIONS", { enumerable: true, get: () => __re9.// A4-PR6 §6.B (contract v8): the closed wire field sets.
+REMOTE_INTERVENTION_AUTHORITY_POSITIONS });
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_ITEM_FIELDS", { enumerable: true, get: () => __re9.REMOTE_INTERVENTION_ITEM_FIELDS });
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_SOURCE_FIELDS", { enumerable: true, get: () => __re9.REMOTE_INTERVENTION_SOURCE_FIELDS });
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_ACT_OUTCOMES", { enumerable: true, get: () => __re9.REMOTE_INTERVENTION_ACT_OUTCOMES });
+			Object.defineProperty(exports, "REMOTE_PERMISSION_ADMINISTRATION_FIELDS", { enumerable: true, get: () => __re9.REMOTE_PERMISSION_ADMINISTRATION_FIELDS });
 			const __re9 = __req("../../remote/src/contracts/types.js");
 			Object.defineProperty(exports, "createRemoteCatalogHandler", { enumerable: true, get: () => __re10.createRemoteCatalogHandler });
 			const __re10 = __req("../../remote/src/handlers/catalog.js");
@@ -9078,50 +9155,52 @@ var __dshFactory = (require) => {
 			const __re13 = __req("../../remote/src/handlers/member.js");
 			Object.defineProperty(exports, "createRemoteOverrideHandler", { enumerable: true, get: () => __re14.createRemoteOverrideHandler });
 			const __re14 = __req("../../remote/src/handlers/override.js");
-			Object.defineProperty(exports, "createRemotePolicyStateHandler", { enumerable: true, get: () => __re15.createRemotePolicyStateHandler });
-			const __re15 = __req("../../remote/src/handlers/policy-state.js");
-			Object.defineProperty(exports, "createRemoteCompatibilityHandler", { enumerable: true, get: () => __re16.createRemoteCompatibilityHandler });
-			const __re16 = __req("../../remote/src/handlers/compatibility.js");
-			Object.defineProperty(exports, "createRemoteHandoffHandler", { enumerable: true, get: () => __re17.createRemoteHandoffHandler });
-			const __re17 = __req("../../remote/src/handlers/handoff.js");
-			Object.defineProperty(exports, "createRemoteLegacyHandler", { enumerable: true, get: () => __re18.createRemoteLegacyHandler });
-			const __re18 = __req("../../remote/src/handlers/legacy.js");
-			Object.defineProperty(exports, "createRemoteDispatcher", { enumerable: true, get: () => __re19.createRemoteDispatcher });
-			const __re19 = __req("../../remote/src/handlers/dispatch.js");
-			Object.defineProperty(exports, "REMOTE_RPC_CHANNEL", { enumerable: true, get: () => __re20.REMOTE_RPC_CHANNEL });
-			Object.defineProperty(exports, "registerRemoteHandlers", { enumerable: true, get: () => __re20.registerRemoteHandlers });
-			const __re20 = __req("../../remote/src/handlers/register.js");
+			Object.defineProperty(exports, "createRemoteInterventionHandler", { enumerable: true, get: () => __re15.createRemoteInterventionHandler });
+			const __re15 = __req("../../remote/src/handlers/intervention.js");
+			Object.defineProperty(exports, "createRemotePolicyStateHandler", { enumerable: true, get: () => __re16.createRemotePolicyStateHandler });
+			const __re16 = __req("../../remote/src/handlers/policy-state.js");
+			Object.defineProperty(exports, "createRemoteCompatibilityHandler", { enumerable: true, get: () => __re17.createRemoteCompatibilityHandler });
+			const __re17 = __req("../../remote/src/handlers/compatibility.js");
+			Object.defineProperty(exports, "createRemoteHandoffHandler", { enumerable: true, get: () => __re18.createRemoteHandoffHandler });
+			const __re18 = __req("../../remote/src/handlers/handoff.js");
+			Object.defineProperty(exports, "createRemoteLegacyHandler", { enumerable: true, get: () => __re19.createRemoteLegacyHandler });
+			const __re19 = __req("../../remote/src/handlers/legacy.js");
+			Object.defineProperty(exports, "createRemoteDispatcher", { enumerable: true, get: () => __re20.createRemoteDispatcher });
+			const __re20 = __req("../../remote/src/handlers/dispatch.js");
+			Object.defineProperty(exports, "REMOTE_RPC_CHANNEL", { enumerable: true, get: () => __re21.REMOTE_RPC_CHANNEL });
+			Object.defineProperty(exports, "registerRemoteHandlers", { enumerable: true, get: () => __re21.registerRemoteHandlers });
+			const __re21 = __req("../../remote/src/handlers/register.js");
 			// ---------------------------------------------------------------------------
 			// P8-T4 push model (whole-projection generation, versioned invalidation +
 			// pull): the pure client-side sync engine over the frozen contract v1
 			// surface (Gate G8: a new state is never overwritten by a stale response).
 			// ---------------------------------------------------------------------------
-			Object.defineProperty(exports, "PushBackoffRangeError", { enumerable: true, get: () => __re21.PushBackoffRangeError });
-			Object.defineProperty(exports, "backoffCapMs", { enumerable: true, get: () => __re21.backoffCapMs });
-			Object.defineProperty(exports, "defaultDelayPicker", { enumerable: true, get: () => __re21.defaultDelayPicker });
-			Object.defineProperty(exports, "isStateChange", { enumerable: true, get: () => __re21.isStateChange });
-			Object.defineProperty(exports, "pickBackoffDelayMs", { enumerable: true, get: () => __re21.pickBackoffDelayMs });
-			Object.defineProperty(exports, "stateOnConnect", { enumerable: true, get: () => __re21.stateOnConnect });
-			Object.defineProperty(exports, "stateOnLoss", { enumerable: true, get: () => __re21.stateOnLoss });
-			const __re21 = __req("../../remote/src/push/reconnect.js");
-			Object.defineProperty(exports, "PUSH_MIN_GENERATION", { enumerable: true, get: () => __re22.PUSH_MIN_GENERATION });
-			Object.defineProperty(exports, "decideFrameVerdict", { enumerable: true, get: () => __re22.decideFrameVerdict });
-			Object.defineProperty(exports, "isStrictlyNewerGeneration", { enumerable: true, get: () => __re22.isStrictlyNewerGeneration });
-			const __re22 = __req("../../remote/src/push/generation.js");
-			Object.defineProperty(exports, "PULL_PROJECTION_ENDPOINT", { enumerable: true, get: () => __re23.PULL_PROJECTION_ENDPOINT });
-			Object.defineProperty(exports, "assessProjectionSync", { enumerable: true, get: () => __re23.assessProjectionSync });
-			Object.defineProperty(exports, "extractPushFrame", { enumerable: true, get: () => __re23.extractPushFrame });
-			Object.defineProperty(exports, "isApplyAssessment", { enumerable: true, get: () => __re23.isApplyAssessment });
-			const __re23 = __req("../../remote/src/push/pull.js");
-			Object.defineProperty(exports, "assessProjectionSyncV6", { enumerable: true, get: () => __re24.assessProjectionSyncV6 });
-			Object.defineProperty(exports, "extractPushFrameV6", { enumerable: true, get: () => __re24.extractPushFrameV6 });
-			Object.defineProperty(exports, "appliedIdentityFromV6", { enumerable: true, get: () => __re24.appliedIdentityFromV6 });
-			const __re24 = __req("../../remote/src/push/pull-v6.js");
-			Object.defineProperty(exports, "createLedgerPageTracker", { enumerable: true, get: () => __re25.createLedgerPageTracker });
-			Object.defineProperty(exports, "verifyLedgerPageAnchor", { enumerable: true, get: () => __re25.verifyLedgerPageAnchor });
-			const __re25 = __req("../../remote/src/push/ledger-page.js");
-			Object.defineProperty(exports, "PushTransportLossError", { enumerable: true, get: () => __re26.PushTransportLossError });
-			const __re26 = __req("../../remote/src/push/types.js");
+			Object.defineProperty(exports, "PushBackoffRangeError", { enumerable: true, get: () => __re22.PushBackoffRangeError });
+			Object.defineProperty(exports, "backoffCapMs", { enumerable: true, get: () => __re22.backoffCapMs });
+			Object.defineProperty(exports, "defaultDelayPicker", { enumerable: true, get: () => __re22.defaultDelayPicker });
+			Object.defineProperty(exports, "isStateChange", { enumerable: true, get: () => __re22.isStateChange });
+			Object.defineProperty(exports, "pickBackoffDelayMs", { enumerable: true, get: () => __re22.pickBackoffDelayMs });
+			Object.defineProperty(exports, "stateOnConnect", { enumerable: true, get: () => __re22.stateOnConnect });
+			Object.defineProperty(exports, "stateOnLoss", { enumerable: true, get: () => __re22.stateOnLoss });
+			const __re22 = __req("../../remote/src/push/reconnect.js");
+			Object.defineProperty(exports, "PUSH_MIN_GENERATION", { enumerable: true, get: () => __re23.PUSH_MIN_GENERATION });
+			Object.defineProperty(exports, "decideFrameVerdict", { enumerable: true, get: () => __re23.decideFrameVerdict });
+			Object.defineProperty(exports, "isStrictlyNewerGeneration", { enumerable: true, get: () => __re23.isStrictlyNewerGeneration });
+			const __re23 = __req("../../remote/src/push/generation.js");
+			Object.defineProperty(exports, "PULL_PROJECTION_ENDPOINT", { enumerable: true, get: () => __re24.PULL_PROJECTION_ENDPOINT });
+			Object.defineProperty(exports, "assessProjectionSync", { enumerable: true, get: () => __re24.assessProjectionSync });
+			Object.defineProperty(exports, "extractPushFrame", { enumerable: true, get: () => __re24.extractPushFrame });
+			Object.defineProperty(exports, "isApplyAssessment", { enumerable: true, get: () => __re24.isApplyAssessment });
+			const __re24 = __req("../../remote/src/push/pull.js");
+			Object.defineProperty(exports, "assessProjectionSyncV6", { enumerable: true, get: () => __re25.assessProjectionSyncV6 });
+			Object.defineProperty(exports, "extractPushFrameV6", { enumerable: true, get: () => __re25.extractPushFrameV6 });
+			Object.defineProperty(exports, "appliedIdentityFromV6", { enumerable: true, get: () => __re25.appliedIdentityFromV6 });
+			const __re25 = __req("../../remote/src/push/pull-v6.js");
+			Object.defineProperty(exports, "createLedgerPageTracker", { enumerable: true, get: () => __re26.createLedgerPageTracker });
+			Object.defineProperty(exports, "verifyLedgerPageAnchor", { enumerable: true, get: () => __re26.verifyLedgerPageAnchor });
+			const __re26 = __req("../../remote/src/push/ledger-page.js");
+			Object.defineProperty(exports, "PushTransportLossError", { enumerable: true, get: () => __re27.PushTransportLossError });
+			const __re27 = __req("../../remote/src/push/types.js");
 			//# sourceMappingURL=index.js.map
 			}, exports: {} };
 		__mods["model/team-timeline-model.js"] = { done: false, fn: function (exports) {
@@ -9523,6 +9602,9 @@ var __dshFactory = (require) => {
 			    'activity-interval-opened': 'interval-opened',
 			    'activity-interval-closed': 'interval-closed',
 			    'policy-state-transitioned': 'policy-transitioned',
+			    // A4-PR6 §6.C: structured families, never the `unknown` serializer.
+			    'governance-proposal-recorded': 'governance-proposal',
+			    'control-escalation-recorded': 'control-escalation',
 			};
 			/**
 			 * The INTERNAL authority fact types that never become Events rows
@@ -9536,6 +9618,15 @@ var __dshFactory = (require) => {
 			 */
 			const INTERNAL_FACT_TYPES = new Set([
 			    'artifact-read-granted',
+			    // A4-PR6 §6.C (first half): the governance-warning family. These are
+			    // authority-consistency audit rows, not user activity; the Events section
+			    // would otherwise drop them into the `unknown` family and the generic row
+			    // would JSON.stringify a whole envelope-consistency verdict (the exact
+			    // shape §6.C's renderer law forbids). The warning's surface is
+			    // TeamInterventions (v8 `intervention.list`), fed by the same durable
+			    // fold the host reads.
+			    'governance-warning-observed',
+			    'governance-warning-acknowledged',
 			    // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry — an
 			    // operational compatibility-category fact, not user activity. Skipped by
 			    // the Events section (otherwise it would land in the `unknown` family and
@@ -9563,6 +9654,29 @@ var __dshFactory = (require) => {
 			    const value = payload['progress'];
 			    return value === 'in-progress' || value === 'completed' || value === 'blocked' ? value : undefined;
 			}
+			/**
+			 * A4-PR6 §6.C — the COMPLETENESS mirror of the host strict reader's closed
+			 * record set (`RECORD_FIELDS` in `runtime/governance/proposal-store.ts`).
+			 * This checks PRESENCE only — the host reader owns semantic validity; this
+			 * mirror exists so the rendered row can say INCOMPLETE (a partial durable
+			 * proposal set renders as corrupt/incomplete, never as a proposal awaiting
+			 * review — §6.C's first PR5 leftover: no UI may show a wait nothing is
+			 * waiting on). The mirror is pinned against drift by the 6.C renderer spec
+			 * (text-compared against the host source — a TEXT mirror, load-bearing and
+			 * disclosed, same class as the fact-category mirrors).
+			 */
+			const GOVERNANCE_PROPOSAL_RECORD_FIELDS = [
+			    'targetMemberInstanceId',
+			    'baseGeneration',
+			    'baseSnapshotId',
+			    'desiredEffect',
+			    'authorityEnvelopeAst',
+			    'requiredAuthority',
+			    'caseFingerprint',
+			    'status',
+			    'recordedAt',
+			];
+			Object.defineProperty(exports, "GOVERNANCE_PROPOSAL_RECORD_FIELDS", { enumerable: true, get: () => GOVERNANCE_PROPOSAL_RECORD_FIELDS });
 			/** The lossless-safe serialized payload summary (lossless JSON in, JSON text out). */
 			function safePayloadSummary(payload) {
 			    try {
@@ -9590,6 +9704,7 @@ var __dshFactory = (require) => {
 			    let summary = '';
 			    let detail = '';
 			    let pending = false;
+			    let governanceRecordStatus;
 			    let requestId;
 			    let decisionValue;
 			    let decisionReason;
@@ -9679,6 +9794,54 @@ var __dshFactory = (require) => {
 			                detail = safePayloadSummary(payload);
 			            break;
 			        }
+			        case 'control-escalation': {
+			            // The FROZEN five members of ADR A3-12(ii): the row names the case,
+			            // the leg and the previous request — structured leaves, and the
+			            // summary NEVER falls back to the payload serializer.
+			            const approvalCaseId = str(payload, 'approvalCaseId');
+			            const legOrdinal = payload['legOrdinal'];
+			            const previousRequestId = str(payload, 'previousRequestId');
+			            const reason = str(payload, 'reason');
+			            const legText = typeof legOrdinal === 'number' && Number.isInteger(legOrdinal)
+			                ? `escalation \u00b7 leg ${String(legOrdinal)}`
+			                : 'escalation';
+			            summary = [legText, reason].filter(part => part !== undefined && part !== '').join(' \u00b7 ');
+			            detail = [approvalCaseId, previousRequestId === undefined ? undefined : `previous ${previousRequestId}`, reason]
+			                .filter(part => part !== undefined && part !== '')
+			                .join(' \u00b7 ');
+			            break;
+			        }
+			        case 'governance-proposal': {
+			            // §6.C leftover A: the durable proposal row renders INCOMPLETE when
+			            // the record set is partial — the marker is carried in the row
+			            // (status field + the naming summary), so no renderer can show this
+			            // row as a proposal awaiting review. A sound row shows its leaves.
+			            const missing = GOVERNANCE_PROPOSAL_RECORD_FIELDS.filter(field => !(field in payload));
+			            const extra = Object.keys(payload).filter(field => !GOVERNANCE_PROPOSAL_RECORD_FIELDS.includes(field));
+			            governanceRecordStatus = missing.length === 0 && extra.length === 0 ? 'sound' : 'corrupt';
+			            const target = str(payload, 'targetMemberInstanceId');
+			            if (target !== undefined)
+			                actorInstanceId = target;
+			            if (governanceRecordStatus === 'corrupt') {
+			                const parts = [
+			                    ...missing.map(field => `missing ${field}`),
+			                    ...extra.map(field => `unexpected ${field}`),
+			                ];
+			                summary = 'governance proposal record INCOMPLETE - nothing is waiting on it';
+			                detail = parts.join(' \u00b7 ');
+			                break;
+			            }
+			            const effect = str(payload, 'desiredEffect');
+			            const status = str(payload, 'status');
+			            const generation = payload['baseGeneration'];
+			            summary = ['governance proposal', target, effect].filter(part => part !== undefined && part !== '').join(' \u00b7 ');
+			            if (summary === '')
+			                summary = 'governance proposal recorded';
+			            detail = [target, effect, status, typeof generation === 'number' ? `generation ${String(generation)}` : undefined]
+			                .filter(part => part !== undefined && part !== '')
+			                .join(' \u00b7 ');
+			            break;
+			        }
 			        case 'work-admitted':
 			        case 'member-created':
 			        case 'lifecycle-changed':
@@ -9708,6 +9871,7 @@ var __dshFactory = (require) => {
 			    const navigationSessionId = actorInstanceId === '' ? '' : (navSessions.get(actorInstanceId) ?? '');
 			    const at = Date.parse(row.createdAt);
 			    return {
+			        ...(governanceRecordStatus === undefined ? {} : { governanceRecordStatus }),
 			        kind,
 			        key: `ledger:${row.sequence}`,
 			        sequence: row.sequence,
@@ -10234,6 +10398,138 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "hardPolicyDisplay", { enumerable: true, get: () => hardPolicyDisplay });
 			//# sourceMappingURL=team-governance.js.map
 			}, exports: {} };
+		__mods["ui/TeamInterventions.js"] = { done: false, fn: function (exports) {
+			const __imp0 = __extReq("react/jsx-runtime");
+			const _jsx = __imp0.jsx;
+			const _jsxs = __imp0.jsxs;
+			const __imp17 = __extReq("react");
+			const useCallback = __imp17.useCallback;
+			const useEffect = __imp17.useEffect;
+			const useState = __imp17.useState;
+			const __imp18 = __req("model/team-interventions.js");
+			const interventionActParams = __imp18.interventionActParams;
+			const interventionListParams = __imp18.interventionListParams;
+			const interventionRows = __imp18.interventionRows;
+			const permissionAdministrationParams = __imp18.permissionAdministrationParams;
+			const terminalEvidence = __imp18.terminalEvidence;
+			const __imp19 = __req("model/permission-administration.js");
+			const parsePermissionAdministration = __imp19.parsePermissionAdministration;
+			const styles = __css("ui/TeamInterventions.module.css");
+			/**
+			 * A4-PR6 §6.D — the intervention panel (UI §18 surface; mounted INSIDE
+			 * TeamGovernance — no view-level mount, no legacy refactor).
+			 *
+			 * Laws this component exists to make visible (and the client spec pins):
+			 *  - `legalActions` are SERVER-DERIVED: the buttons rendered are exactly
+			 *    the wire array; an empty array is TERMINAL (the row shows the
+			 *    structured evidence, never an affordance). The component imports no
+			 *    authority kernel — it CANNOT derive legality locally.
+			 *  - escalated/decided legs are visibly terminal (no action remains).
+			 *  - warnings render a structured block, never a generic JSON dump.
+			 *  - the administration view renders the effective set AS RULES (one flat
+			 *    row per rule, matcher by kind + resource text) — subtree rules are
+			 *    never expanded into a directory/tree.
+			 *  - after a successful act the panel RE-PULLS; no optimistic mutation.
+			 */
+			function errorNote(response) {
+			    if (response.ok)
+			        return undefined;
+			    return { code: response.error.code, message: response.error.message };
+			}
+			/** The structured block-scope text: scalar leaves joined, NEVER a raw
+			 *  serialization of the record (the §6.C renderer law). */
+			function blockScopeText(scope) {
+			    if (scope === null)
+			        return '';
+			    const parts = [];
+			    for (const [key, value] of Object.entries(scope)) {
+			        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+			            parts.push(`${key}=${String(value)}`);
+			        }
+			    }
+			    return parts.join(' \u00b7 ');
+			}
+			/** The frozen verb → label seat map (display grouping ONLY: an action
+			 *  not on the wire never gets a button — this map LABELS, it never
+			 *  supplies). */
+			const ACTION_LABEL_KEYS = {
+			    allow: 'interventions.action.allow',
+			    deny: 'interventions.action.deny',
+			    escalate: 'interventions.action.escalate',
+			    acknowledge: 'interventions.action.acknowledge',
+			};
+			/**
+			 * The interventions card. A mount pulls `intervention.list` +
+			 * `override.getPermissionAdministration`; every act dispatch goes through
+			 * the injected frozen face and is followed by exactly ONE re-pull (no
+			 * optimistic authority patch — the projection is the final authority).
+			 */
+			function TeamInterventions({ teamSessionId, face, t, }) {
+			    const [state, setState] = useState({
+			        rows: [],
+			        listError: undefined,
+			        administrationError: undefined,
+			    });
+			    const [actError, setActError] = useState(undefined);
+			    const [pendingId, setPendingId] = useState(undefined);
+			    const refresh = useCallback(async () => {
+			        const [list, administration] = await Promise.all([
+			            face.interventionList(interventionListParams(teamSessionId)).catch(() => undefined),
+			            face.permissionAdministrationGet(permissionAdministrationParams(teamSessionId)).catch(() => undefined),
+			        ]);
+			        setState((previous) => ({
+			            rows: list !== undefined && list.ok ? interventionRows(list.value.data) : previous.rows,
+			            ...(administration !== undefined && administration.ok
+			                ? { administration: parsePermissionAdministration(administration.value.data) }
+			                : {}),
+			            listError: list === undefined
+			                ? { code: 'transport-loss', message: 'intervention.list' }
+			                : errorNote(list),
+			            administrationError: administration === undefined
+			                ? { code: 'transport-loss', message: 'override.getPermissionAdministration' }
+			                : errorNote(administration),
+			        }));
+			    }, [face, teamSessionId]);
+			    useEffect(() => {
+			        void refresh();
+			    }, [refresh]);
+			    const onAct = useCallback(async (row, action) => {
+			        setPendingId(`${row.item.interventionId}:${action}`);
+			        setActError(undefined);
+			        try {
+			            // THE closed body (the builder cannot add a field — never a caller,
+			            // never an authority claim; ADR A1-2):
+			            const response = await face.interventionAct(interventionActParams(teamSessionId, row.item.interventionId, action));
+			            const note = errorNote(response);
+			            if (note !== undefined)
+			                setActError(note);
+			        }
+			        catch {
+			            setActError({ code: 'transport-loss', message: 'intervention.act' });
+			        }
+			        finally {
+			            setPendingId(undefined);
+			            // no optimistic mutation: the projection re-read is the truth.
+			            await refresh();
+			        }
+			    }, [face, refresh, teamSessionId]);
+			    return (_jsxs("div", { className: styles.card, "data-interventions": true, children: [_jsx("div", { className: styles.cardHead, children: _jsx("span", { className: styles.cardTitle, children: t('interventions.title') }) }), state.listError !== undefined && (_jsx("p", { className: styles.noteError, "data-interventions-error": true, children: t('interventions.error', { message: `${state.listError.code}: ${state.listError.message}` }) })), actError !== undefined && (_jsx("p", { className: styles.noteError, "data-interventions-act-error": true, children: t('interventions.error', { message: `${actError.code}: ${actError.message}` }) })), state.rows.length === 0 && state.listError === undefined && (_jsx("p", { className: styles.meta, "data-interventions-empty": true, children: t('interventions.empty') })), state.rows.map((row) => {
+			                const scope = blockScopeText(row.item.blockScope);
+			                return (_jsxs("div", { className: styles.row, "data-intervention": true, "data-intervention-id": row.item.interventionId, "data-intervention-kind": row.item.kind, "data-intervention-status": row.item.status, "data-intervention-response": row.item.responseBehavior, "data-intervention-source": row.item.source.kind, "data-intervention-required": row.item.requiredAuthority ?? '', "data-intervention-current": row.item.currentReviewAuthority ?? '', "data-terminal": row.terminal ? 'true' : 'false', children: [_jsx("span", { className: styles.rowTitle, "data-intervention-summary": true, children: `${row.item.kind} \u00b7 ${row.item.status} \u00b7 ${row.item.responseBehavior}` }), _jsx("span", { className: styles.meta, "data-intervention-authorities": true, children: `${row.item.currentReviewAuthority ?? '-'} \u2192 ${row.item.requiredAuthority ?? '-'}` }), scope !== '' && _jsx("span", { className: styles.meta, "data-intervention-scope": true, children: scope }), row.isWarning && (_jsx("span", { className: styles.meta, "data-intervention-warning": true, children: ['warning', row.item.source.id,
+			                                ...(row.item.fingerprint !== undefined ? [`fp ${row.item.fingerprint}`] : []),
+			                                ...(row.item.observationCount !== undefined ? [`x${String(row.item.observationCount)}`] : []),
+			                            ].join(' \u00b7 ') })), !row.isWarning && row.item.source.requestId !== undefined && (_jsx("span", { className: styles.meta, "data-intervention-request-leaf": true, children: `request ${row.item.source.requestId}${row.item.source.legOrdinal !== undefined ? ` \u00b7 leg ${String(row.item.source.legOrdinal)}` : ''}` })), row.terminal ? (_jsx("span", { className: styles.terminal, "data-intervention-terminal": true, children: t('interventions.terminal', { evidence: terminalEvidence(row) }) })) : (_jsx("span", { className: styles.actions, "data-intervention-actions": row.actions.join(','), children: row.actions.map((action) => (_jsx("button", { type: "button", className: styles.secondary, "data-intervention-action": action, disabled: pendingId !== undefined, onClick: () => {
+			                                    void onAct(row, action);
+			                                }, children: t(ACTION_LABEL_KEYS[action] ?? 'interventions.title') }, action))) }))] }, row.item.interventionId));
+			            }), _jsx("div", { className: styles.cardHead, "data-administration-head": true, children: _jsx("span", { className: styles.cardTitle, children: t('interventions.administration') }) }), state.administrationError !== undefined && (_jsx("p", { className: styles.noteError, "data-administration-error": true, children: t('interventions.error', {
+			                    message: `${state.administrationError.code}: ${state.administrationError.message}`,
+			                }) })), state.administration !== undefined && (_jsxs("div", { "data-administration": true, children: [_jsxs("p", { className: styles.meta, "data-administration-identity": true, children: [`${state.administration.teamSessionId}${state.administration.memberInstanceId !== undefined ? ` / ${state.administration.memberInstanceId}` : ''} \u00b7 `, state.administration.generation === null
+			                                ? t('interventions.blueprintDefault')
+			                                : `generation ${String(state.administration.generation)}`, ` \u00b7 ${state.administration.source}`] }), _jsxs("ul", { className: styles.rules, "data-administration-rules": true, children: [state.administration.rules.map((rule, index) => (_jsx("li", { "data-permission-rule": true, "data-rule-lane": rule.lane, "data-rule-matcher-kind": rule.matcherKind, "data-rule-resource": rule.resource, "data-rule-effect": rule.effect, children: `${rule.lane} \u00b7 ${rule.matcherKind} ${rule.resource} \u00b7 ${rule.effect}` }, `${rule.lane}:${rule.matcherKind}:${rule.resource}:${String(index)}`))), state.administration.rules.length === 0 && (_jsx("li", { "data-administration-no-rules": true, children: t('interventions.noRules') }))] }), state.administration.diagnostics.length > 0 && (_jsx("ul", { className: styles.rules, "data-administration-diagnostics": true, children: state.administration.diagnostics.map((entry, index) => (_jsx("li", { "data-administration-diagnostic": true, children: entry }, `${entry}:${String(index)}`))) }))] }))] }));
+			}
+			Object.defineProperty(exports, "TeamInterventions", { enumerable: true, get: () => TeamInterventions });
+			//# sourceMappingURL=TeamInterventions.js.map
+			}, exports: {} };
 		__mods["../../remote/src/contracts/remote-safe.js"] = { done: false, fn: function (exports) {
 			const __imp20 = __req("../../remote/src/contracts/errors.js");
 			const RemoteContractError = __imp20.RemoteContractError;
@@ -10732,8 +11028,29 @@ var __dshFactory = (require) => {
 			const REMOTE_CONTRACT_VERSION_V7 = 7;
 			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V7", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V7 });
 			/**
+			 * The remote contract v8 (A4-PR6 §6.B, Alpha.4 governance UX — a
+			 * CONTRACT CHANGE, reason recorded in the PR body): the v8-only
+			 * intervention plane — `intervention.list` / `intervention.get` /
+			 * `intervention.act` (the GovernanceWarning + approval-case work surface
+			 * with SERVER-derived legal actions and a closed param set: the act body
+			 * is exactly `{teamSessionId, interventionId, action, note?}`, so an
+			 * `asRole`/`impersonate` field cannot exist without a version bump) — plus
+			 * the `override.getPermissionAdministration` read (a server-side
+			 * STRIP-projection: authority-bearing and round-trippable decision fields
+			 * never reach the wire). Every v1/v2/v3/v4/v5/v6/v7 method stays
+			 * available in v8 and every v1–v7 wire shape is preserved byte-for-byte
+			 * for version-1–7 requests (a version bump ADDS supported versions and
+			 * methods, never edits older semantics). Orthogonality law (spec §15,
+			 * plan 6.B): the wire version NEVER selects the authority algebra — the
+			 * v3-only switch reads the BOUND DOCUMENT's version only (ADR A5-12); a
+			 * v2 `team.create` may create a Blueprint-v3 Team and a v8 call may carry
+			 * a v1 document during the bridge.
+			 */
+			const REMOTE_CONTRACT_VERSION_V8 = 8;
+			Object.defineProperty(exports, "REMOTE_CONTRACT_VERSION_V8", { enumerable: true, get: () => REMOTE_CONTRACT_VERSION_V8 });
+			/**
 			 * All remote contract versions this build accepts:
-			 * `[1, 2, 3, 4, 5, 6, 7]`.
+			 * `[1, 2, 3, 4, 5, 6, 7, 8]`.
 			 * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
 			 * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
 			 * repair round r1 F9 task; v5 by the C1 restart-0.1.7-rc.1 recovery
@@ -10754,6 +11071,7 @@ var __dshFactory = (require) => {
 			    REMOTE_CONTRACT_VERSION_V5,
 			    REMOTE_CONTRACT_VERSION_V6,
 			    REMOTE_CONTRACT_VERSION_V7,
+			    REMOTE_CONTRACT_VERSION_V8,
 			];
 			Object.defineProperty(exports, "SUPPORTED_REMOTE_CONTRACT_VERSIONS", { enumerable: true, get: () => SUPPORTED_REMOTE_CONTRACT_VERSIONS });
 			/**
@@ -11017,6 +11335,11 @@ var __dshFactory = (require) => {
 			    HANDOFF: 'handoff',
 			    /** Read-only legacy Team inspection (DevPlan §20.6 degradation). */
 			    LEGACY: 'legacy',
+			    /** A4-PR6 v8: the intervention plane — approval cases and governance
+			     *  warnings as ONE work surface (spec §14–§16); the category exists
+			     *  because the methods are cross-cutting (they are not Team lifecycle,
+			     *  not Member operations, and not an override mutation). */
+			    INTERVENTION: 'intervention',
 			};
 			Object.defineProperty(exports, "REMOTE_CATEGORIES", { enumerable: true, get: () => REMOTE_CATEGORIES });
 			/** Every category value, in declaration order. */
@@ -11080,6 +11403,20 @@ var __dshFactory = (require) => {
 			    'handoff.prepare': { category: REMOTE_CATEGORIES.HANDOFF },
 			    'handoff.create': { category: REMOTE_CATEGORIES.HANDOFF },
 			    'legacy.inspect': { category: REMOTE_CATEGORIES.LEGACY },
+			    // A4-PR6 §6.B (contract v8): the intervention work surface. `intervention
+			    // .list` / `.get` are pure reads of the SERVER-derived projection
+			    // (legal actions computed server-side, spec §17.3); `intervention.act` is
+			    // the single verb entry (closed body {teamSessionId, interventionId,
+			    // action, note?} — the reviewer three plus the warning plane's
+			    // `acknowledge`), routed server-side to the authoritative ControlService
+			    // / GovernanceWarning entries, never re-implementing decisioning.
+			    'intervention.list': { category: REMOTE_CATEGORIES.INTERVENTION },
+			    'intervention.get': { category: REMOTE_CATEGORIES.INTERVENTION },
+			    'intervention.act': { category: REMOTE_CATEGORIES.INTERVENTION },
+			    // The v8 permission-administration READ lives in the OVERRIDE category
+			    // (it reads that plane's documents; the strip-projection law — never an
+			    // authority-bearing or round-trippable decision field — is the handler's).
+			    'override.getPermissionAdministration': { category: REMOTE_CATEGORIES.OVERRIDE },
 			};
 			Object.defineProperty(exports, "REMOTE_METHOD_CATALOG", { enumerable: true, get: () => REMOTE_METHOD_CATALOG });
 			/** Every method name, in deterministic (sorted) order. */
@@ -11102,6 +11439,7 @@ var __dshFactory = (require) => {
 			    compatibility: methodsForCategory(REMOTE_CATEGORIES.COMPATIBILITY),
 			    handoff: methodsForCategory(REMOTE_CATEGORIES.HANDOFF),
 			    legacy: methodsForCategory(REMOTE_CATEGORIES.LEGACY),
+			    intervention: methodsForCategory(REMOTE_CATEGORIES.INTERVENTION),
 			});
 			Object.defineProperty(exports, "REMOTE_METHODS_BY_CATEGORY", { enumerable: true, get: () => REMOTE_METHODS_BY_CATEGORY });
 			/**
@@ -11185,6 +11523,44 @@ var __dshFactory = (require) => {
 			];
 			Object.defineProperty(exports, "REMOTE_V7_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V7_ONLY_METHODS });
 			/**
+			 * A4-PR6 §6.B (contract v8): the v8-only methods — the intervention plane
+			 * plus `override.getPermissionAdministration`. Requests to any of them at
+			 * v1–v7 are the typed `method-version-unsupported` rejection (the same
+			 * availability machinery as every prior version-only method). The param
+			 * field sets of ALL FOUR are closed with unknown-field rejection
+			 * (`params.ts`): a future `asRole` / `impersonate` field CANNOT appear on
+			 * the wire without a version bump.
+			 */
+			const REMOTE_V8_ONLY_METHODS = [
+			    'intervention.list',
+			    'intervention.get',
+			    'intervention.act',
+			    'override.getPermissionAdministration',
+			];
+			Object.defineProperty(exports, "REMOTE_V8_ONLY_METHODS", { enumerable: true, get: () => REMOTE_V8_ONLY_METHODS });
+			/**
+			 * ADR A1-2 classification (frozen at the CONTRACT layer): every catalog
+			 * method that WRITES governance state. This list is the enumeration
+			 * source for the law that each such method is EXPLICITLY principal-routed
+			 * in the runtime derivation (`s6-principal.ts`) — no governance-writing
+			 * method may fall into the host-operator default branch, "including
+			 * methods nobody thought to name" (plan 6.B; pinned by
+			 * `packages/remote/test/a4p6-remote-v8.test.ts` against the routing
+			 * source). READS (`intervention.list` / `.get`,
+			 * `override.getPermissionAdministration`, `override.getPermission`, …)
+			 * are deliberately absent: they write nothing and the default branch
+			 * exists for host-initiated reads. A new governance-writing method MUST
+			 * join this set and the routing set in the same commit.
+			 */
+			const REMOTE_GOVERNANCE_WRITING_METHODS = [
+			    'override.set',
+			    'override.reset',
+			    'policyState.set',
+			    'override.mutatePermission',
+			    'intervention.act',
+			];
+			Object.defineProperty(exports, "REMOTE_GOVERNANCE_WRITING_METHODS", { enumerable: true, get: () => REMOTE_GOVERNANCE_WRITING_METHODS });
+			/**
 			 * Is `method` a catalog method available in remote contract `version`?
 			 *
 			 * This is the version-aware membership check the version-aware param
@@ -11196,9 +11572,10 @@ var __dshFactory = (require) => {
 			 *
 			 * @param method - the candidate method name (must be in the catalog).
 			 * @param version - the request's contract version (supported:
-			 *   1 | 2 | 3 | 4 | 5 | 6 | 7 — the v7 bump adds NO method; its
+			 *   1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 — the v7 bump adds NO method; its
 			 *   version-aware surface is the `override.set` / `override.reset`
-			 *   closed field sets in `params.ts`).
+			 *   closed field sets in `params.ts`; the v8 bump (A4-PR6) adds the
+			 *   closed intervention plane + `override.getPermissionAdministration`).
 			 */
 			function isRemoteMethodAvailableInVersion(method, version) {
 			    if (!(method in REMOTE_METHOD_CATALOG))
@@ -11209,36 +11586,49 @@ var __dshFactory = (require) => {
 			            !REMOTE_V4_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V5_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V6_ONLY_METHODS.includes(method) &&
-			            !REMOTE_V7_ONLY_METHODS.includes(method));
+			            !REMOTE_V7_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V8_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 2) {
 			        return (!REMOTE_V3_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V4_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V5_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V6_ONLY_METHODS.includes(method) &&
-			            !REMOTE_V7_ONLY_METHODS.includes(method));
+			            !REMOTE_V7_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V8_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 3) {
 			        return (!REMOTE_V4_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V5_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V6_ONLY_METHODS.includes(method) &&
-			            !REMOTE_V7_ONLY_METHODS.includes(method));
+			            !REMOTE_V7_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V8_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 4) {
 			        return (!REMOTE_V5_ONLY_METHODS.includes(method) &&
 			            !REMOTE_V6_ONLY_METHODS.includes(method) &&
-			            !REMOTE_V7_ONLY_METHODS.includes(method));
+			            !REMOTE_V7_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V8_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 5) {
-			        return (!REMOTE_V6_ONLY_METHODS.includes(method) && !REMOTE_V7_ONLY_METHODS.includes(method));
+			        return (!REMOTE_V6_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V7_ONLY_METHODS.includes(method) &&
+			            !REMOTE_V8_ONLY_METHODS.includes(method));
 			    }
 			    if (version === 6) {
-			        return !REMOTE_V7_ONLY_METHODS.includes(method);
+			        return (!REMOTE_V7_ONLY_METHODS.includes(method) && !REMOTE_V8_ONLY_METHODS.includes(method));
 			    }
-			    // version === 7: every v1..v6 method, the v6-only methods, and the
-			    // PR4-round-5 v7-only `override.mutatePermission` (the v7 bump's other
-			    // version-aware surface is the `override.set` / `override.reset` closed
-			    // field sets in `params.ts`).
+			    if (version === 7) {
+			        // version === 7: every v1..v6 method, the v6-only methods, and the
+			        // PR4-round-5 v7-only `override.mutatePermission` /
+			        // `override.getPermission` (the v7 bump's other version-aware surface
+			        // is the `override.set` / `override.reset` closed field sets in
+			        // `params.ts`) — but NOT the A4-PR6 v8-only intervention plane.
+			        return !REMOTE_V8_ONLY_METHODS.includes(method);
+			    }
+			    // version === 8 (A4-PR6): every v1..v7 method plus the intervention
+			    // plane and the permission-administration read (the v8 bump ADDS; the
+			    // v1–v7 wire shapes are byte-for-byte preserved for older requests).
 			    return true;
 			}
 			Object.defineProperty(exports, "isRemoteMethodAvailableInVersion", { enumerable: true, get: () => isRemoteMethodAvailableInVersion });
@@ -12754,6 +13144,20 @@ var __dshFactory = (require) => {
 			        case 'override.getPermission':
 			            // v7-only (alpha.3 PR5 ROOT BLOCK-1; co-tenancy with the write pair).
 			            return wrapParsed(method, parseRemoteOverrideGetPermissionParams(method, params));
+			        case 'intervention.list':
+			            // v8-only (A4-PR6 §6.B; the availability check guarantees version 8).
+			            return wrapParsed(method, parseRemoteInterventionListParams(method, params));
+			        case 'intervention.get':
+			            // v8-only (A4-PR6 §6.B).
+			            return wrapParsed(method, parseRemoteInterventionGetParams(method, params));
+			        case 'intervention.act':
+			            // v8-only (A4-PR6 §6.B): the closed verb body — the ONLY governance
+			            // input the client may send (spec §17.3); authority and legal actions
+			            // are re-derived server-side on every act.
+			            return wrapParsed(method, parseRemoteInterventionActParams(method, params));
+			        case 'override.getPermissionAdministration':
+			            // v8-only (A4-PR6 §6.B): the closed permission-administration READ.
+			            return wrapParsed(method, parseRemoteOverrideGetPermissionAdministrationParams(method, params));
 			        case 'team.getProjection':
 			            return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
 			        case 'team.getLedgerPage':
@@ -12820,6 +13224,104 @@ var __dshFactory = (require) => {
 			        requestToken: typeof token === 'string' ? token : null,
 			    };
 			}
+			// ---------------------------------------------------------------------------
+			// A4-PR6 §6.B — contract v8: the intervention plane + permission administration
+			// ---------------------------------------------------------------------------
+			/**
+			 * The CLOSED `intervention.act` action vocabulary for the WIRE (v8). This
+			 * is the union of the PLANE-SPECIFIC vocabularies and deliberately NOT a
+			 * fourth global set: `allow | deny | escalate` are the reviewer plane's
+			 * frozen `INTERVENTION_ACTIONS` (spec §11.5), and `acknowledge` is the
+			 * warning plane's ONLY verb (spec §15.4). It is not the durable decision
+			 * vocabulary (`allow | deny | stale-denied` — A2-1/A3-3), and no act body
+			 * can express anything else: each action routes to exactly one
+			 * authoritative server-side entry point (`resolveControl` /
+			 * `escalateApprovalLeg` / the GovernanceWarning acknowledgement), and the
+			 * server re-derives whether the CALLER may take it (ADR A1-2) — the wire
+			 * value selects an entry, never a permission.
+			 */
+			const REMOTE_INTERVENTION_ACTION_VALUES = [
+			    'allow',
+			    'deny',
+			    'escalate',
+			    'acknowledge',
+			];
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_ACTION_VALUES", { enumerable: true, get: () => REMOTE_INTERVENTION_ACTION_VALUES });
+			const REMOTE_INTERVENTION_LIST_FIELDS = ['teamSessionId'];
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_LIST_FIELDS", { enumerable: true, get: () => REMOTE_INTERVENTION_LIST_FIELDS });
+			const REMOTE_INTERVENTION_GET_FIELDS = ['teamSessionId', 'interventionId'];
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_GET_FIELDS", { enumerable: true, get: () => REMOTE_INTERVENTION_GET_FIELDS });
+			const REMOTE_INTERVENTION_ACT_FIELDS = [
+			    'teamSessionId',
+			    'interventionId',
+			    'action',
+			    'note',
+			];
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_ACT_FIELDS", { enumerable: true, get: () => REMOTE_INTERVENTION_ACT_FIELDS });
+			const REMOTE_OVERRIDE_GET_PERMISSION_ADMINISTRATION_FIELDS = [
+			    'teamSessionId',
+			    'memberInstanceId',
+			];
+			Object.defineProperty(exports, "REMOTE_OVERRIDE_GET_PERMISSION_ADMINISTRATION_FIELDS", { enumerable: true, get: () => REMOTE_OVERRIDE_GET_PERMISSION_ADMINISTRATION_FIELDS });
+			/** The `interventionId` shape (the frozen `int-…` id is opaque here). */
+			function parseInterventionId(method, params) {
+			    const value = requiredField(method, params, 'interventionId');
+			    if (typeof value !== 'string' || value.length === 0 || value.length > 200) {
+			        throw paramMalformed(method, 'interventionId', 'invalid-value', 'interventionId must be a non-empty string (<=200 chars)');
+			    }
+			    return value;
+			}
+			/** Parse `intervention.list` params. */
+			function parseRemoteInterventionListParams(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_INTERVENTION_LIST_FIELDS);
+			    return {
+			        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteInterventionListParams", { enumerable: true, get: () => parseRemoteInterventionListParams });
+			/** Parse `intervention.get` params. */
+			function parseRemoteInterventionGetParams(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_INTERVENTION_GET_FIELDS);
+			    return {
+			        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			        interventionId: parseInterventionId(method, params),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteInterventionGetParams", { enumerable: true, get: () => parseRemoteInterventionGetParams });
+			/** Parse `intervention.act` params (the closed verb body). */
+			function parseRemoteInterventionActParams(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_INTERVENTION_ACT_FIELDS);
+			    const action = requiredField(method, params, 'action');
+			    if (typeof action !== 'string' || !REMOTE_INTERVENTION_ACTION_VALUES.includes(action)) {
+			        throw paramMalformed(method, 'action', 'invalid-value', 'action must be allow, deny, escalate, or acknowledge');
+			    }
+			    const note = params['note'];
+			    if (note !== undefined && (typeof note !== 'string' || note.length === 0 || note.length > 512)) {
+			        throw paramMalformed(method, 'note', 'invalid-value', 'note must be a non-empty string of at most 512 characters when present');
+			    }
+			    return {
+			        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			        interventionId: parseInterventionId(method, params),
+			        action: action,
+			        ...(note !== undefined ? { note: note } : {}),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteInterventionActParams", { enumerable: true, get: () => parseRemoteInterventionActParams });
+			/** Parse `override.getPermissionAdministration` params. */
+			function parseRemoteOverrideGetPermissionAdministrationParams(method, params) {
+			    assertNoUnknownFields(method, params, REMOTE_OVERRIDE_GET_PERMISSION_ADMINISTRATION_FIELDS);
+			    const memberInstanceId = params['memberInstanceId'];
+			    if (memberInstanceId !== undefined) {
+			        return {
+			            teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			            memberInstanceId: parseRemoteInstanceId(memberInstanceId, 'memberInstanceId'),
+			        };
+			    }
+			    return {
+			        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+			    };
+			}
+			Object.defineProperty(exports, "parseRemoteOverrideGetPermissionAdministrationParams", { enumerable: true, get: () => parseRemoteOverrideGetPermissionAdministrationParams });
 			//# sourceMappingURL=params.js.map
 			}, exports: {} };
 		__mods["../../remote/src/contracts/types.js"] = { done: false, fn: function (exports) {
@@ -12880,6 +13382,74 @@ var __dshFactory = (require) => {
 			    'sequence',
 			];
 			Object.defineProperty(exports, "REMOTE_LEDGER_ENTRY_FIELDS", { enumerable: true, get: () => REMOTE_LEDGER_ENTRY_FIELDS });
+			// ---------------------------------------------------------------------------
+			// A4-PR6 §6.B — contract v8 wire DTOs (the closed intervention-plane shapes)
+			// ---------------------------------------------------------------------------
+			/**
+			 * The closed authority-ladder position cell (mirror of the runtime
+			 * `PROPOSAL_AUTHORITY_POSITIONS`; the ordering law is NOT mirrored — the
+			 * wire carries a position NAME, never a rank, and every comparison is
+			 * server-side).
+			 */
+			const REMOTE_INTERVENTION_AUTHORITY_POSITIONS = [
+			    'member',
+			    'leader',
+			    'human-user',
+			    'human-admin',
+			];
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_AUTHORITY_POSITIONS", { enumerable: true, get: () => REMOTE_INTERVENTION_AUTHORITY_POSITIONS });
+			/** The frozen top-level field set of a wire item (closed value — the
+			 *  handler validates every port item against it, presence AND absence). */
+			const REMOTE_INTERVENTION_ITEM_FIELDS = [
+			    'interventionId',
+			    'kind',
+			    'responseBehavior',
+			    'blockScope',
+			    'source',
+			    'status',
+			    'legalActions',
+			    'derivationReasons',
+			    'createdAt',
+			    'requiredAuthority',
+			    'currentReviewAuthority',
+			    'fingerprint',
+			    'updatedAt',
+			    'lastObservedAt',
+			    'observationCount',
+			];
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_ITEM_FIELDS", { enumerable: true, get: () => REMOTE_INTERVENTION_ITEM_FIELDS });
+			/** The closed `source` field set (null cells typed, never absent). */
+			const REMOTE_INTERVENTION_SOURCE_FIELDS = [
+			    'kind',
+			    'id',
+			    'requestId',
+			    'legOrdinal',
+			    'carrierKind',
+			];
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_SOURCE_FIELDS", { enumerable: true, get: () => REMOTE_INTERVENTION_SOURCE_FIELDS });
+			/**
+			 * The `intervention.act` wire outcome (v8). CLOSED set — the response
+			 * carries NOTHING else: no authority, no legal actions, no decision
+			 * record (the next `intervention.list`/`get` re-derives the full state;
+			 * the act response is a receipt, not a projection).
+			 */
+			const REMOTE_INTERVENTION_ACT_OUTCOMES = [
+			    'decided',
+			    'escalated',
+			    'acknowledged',
+			    'already-acknowledged',
+			];
+			Object.defineProperty(exports, "REMOTE_INTERVENTION_ACT_OUTCOMES", { enumerable: true, get: () => REMOTE_INTERVENTION_ACT_OUTCOMES });
+			/** The closed field set of the administration wire value. */
+			const REMOTE_PERMISSION_ADMINISTRATION_FIELDS = [
+			    'teamSessionId',
+			    'memberInstanceId',
+			    'generation',
+			    'source',
+			    'effective',
+			    'diagnostics',
+			];
+			Object.defineProperty(exports, "REMOTE_PERMISSION_ADMINISTRATION_FIELDS", { enumerable: true, get: () => REMOTE_PERMISSION_ADMINISTRATION_FIELDS });
 			//# sourceMappingURL=types.js.map
 			}, exports: {} };
 		__mods["../../remote/src/handlers/catalog.js"] = { done: false, fn: function (exports) {
@@ -13730,6 +14300,8 @@ var __dshFactory = (require) => {
 			//# sourceMappingURL=member.js.map
 			}, exports: {} };
 		__mods["../../remote/src/handlers/override.js"] = { done: false, fn: function (exports) {
+			const __imp11 = __req("../../remote/src/handlers/intervention.js");
+			const permissionAdministrationVia = __imp11.permissionAdministrationVia;
 			/**
 			 * The `override` category handler (design note §3 / D-7): autonomy overlays
 			 * and explicit human overrides over the P7-T2 MutationService + mutation
@@ -13745,7 +14317,13 @@ var __dshFactory = (require) => {
 			 * The override category handler (`override.get`, `override.set`,
 			 * `override.reset`).
 			 */
-			function createRemoteOverrideHandler(deps) {
+			function createRemoteOverrideHandler(deps, 
+			/** A4-PR6 §6.B: the v8 governance read seam (the permission-
+			 *  administration read lives in THIS category — it reads the override
+			 *  plane's documents — while its port lives on the single v8 seam).
+			 *  Optional: pre-v8 callers and fakes compile and behave byte-for-byte;
+			 *  an unwired surface answers the v8 read with a typed refusal. */
+			governance) {
 			    return (method, params) => {
 			        switch (method) {
 			            case 'override.get': {
@@ -13782,6 +14360,11 @@ var __dshFactory = (require) => {
 			                const { removed } = deps.reset(request);
 			                return { data: { removed } };
 			            }
+			            case 'override.getPermissionAdministration': {
+			                // v8-only (A4-PR6 §6.B): the STRIP-projection lives with the
+			                // intervention handler (shared closed-shape law).
+			                return permissionAdministrationVia(governance, params);
+			            }
 			            default:
 			                throw new Error(`override handler routed an unknown method: ${method}`);
 			        }
@@ -13789,6 +14372,225 @@ var __dshFactory = (require) => {
 			}
 			Object.defineProperty(exports, "createRemoteOverrideHandler", { enumerable: true, get: () => createRemoteOverrideHandler });
 			//# sourceMappingURL=override.js.map
+			}, exports: {} };
+		__mods["../../remote/src/handlers/intervention.js"] = { done: false, fn: function (exports) {
+			const __imp25 = __req("../../remote/src/contracts/errors.js");
+			const remoteContractError = __imp25.remoteContractError;
+			const __imp26 = __req("../../remote/src/contracts/types.js");
+			const REMOTE_INTERVENTION_ACT_OUTCOMES = __imp26.REMOTE_INTERVENTION_ACT_OUTCOMES;
+			const REMOTE_INTERVENTION_AUTHORITY_POSITIONS = __imp26.REMOTE_INTERVENTION_AUTHORITY_POSITIONS;
+			const REMOTE_INTERVENTION_ITEM_FIELDS = __imp26.REMOTE_INTERVENTION_ITEM_FIELDS;
+			const REMOTE_INTERVENTION_SOURCE_FIELDS = __imp26.REMOTE_INTERVENTION_SOURCE_FIELDS;
+			const REMOTE_PERMISSION_ADMINISTRATION_FIELDS = __imp26.REMOTE_PERMISSION_ADMINISTRATION_FIELDS;
+			/**
+			 * The `intervention` category handler (A4-PR6 §6.B, contract v8).
+			 *
+			 * The generic dispatcher's mirror of the runtime production lane: three
+			 * read/verb methods of the intervention plane plus the
+			 * `override.getPermissionAdministration` strip. The handler
+			 *
+			 * - validates every port value against the CLOSED wire shape (the same
+			 *   defense the v6 read-state lane runs: a projection regression must
+			 *   surface as a typed `internal-error` (`port-contract`), never as a
+			 *   malformed wire object the client half-renders);
+			 * - projects the administration read DOWN to the closed field set —
+			 *   the server-side STRIP is this handler's law, not the caller's
+			 *   politeness: whatever extra cells the backing record carries
+			 *   (grants, ceilings, ranks, reviewer identities, open request ids) are
+			 *   dropped HERE, so a round-trippable authority field cannot reach a
+			 *   client even if the port regresses;
+			 * - adds nothing: the act response is a closed receipt (the next list/get
+			 *   re-derives state), and legal actions exist only on items, computed
+			 *   server-side by the runtime lane (spec §17.3).
+			 *
+			 * Pure module: no I/O, no node: builtins, no runtime environment
+			 * assumptions.
+			 * @module @dsh-agent-team/remote/handlers/intervention
+			 */
+			function portContract(field, problem) {
+			    return remoteContractError('internal-error', `remote backing port returned a malformed value at '${field}': ${problem}`, { field, reason: 'port-contract' });
+			}
+			function asRecord(value, field) {
+			    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+			        throw portContract(field, 'expected an object');
+			    }
+			    return value;
+			}
+			function requiredString(item, field, label) {
+			    const value = item[field];
+			    if (typeof value !== 'string' || value.length === 0) {
+			        throw portContract(label, `'${field}' must be a non-empty string`);
+			    }
+			    return value;
+			}
+			/**
+			 * Validate one item against the closed wire shape; return it unchanged.
+			 *
+			 * A4-PR6 §6.B: EXPORTED so the production s6 dispatcher validates through
+			 * the SAME law the generic dispatcher runs — the closed-shape check must not
+			 * have two copies that can drift (the s6 lane imports this module by path).
+			 */
+			function validateItem(raw, label) {
+			    const item = asRecord(raw, label);
+			    for (const key of Object.keys(item)) {
+			        if (!REMOTE_INTERVENTION_ITEM_FIELDS.includes(key)) {
+			            throw portContract(label, `unknown item field '${key}'`);
+			        }
+			    }
+			    requiredString(item, 'interventionId', label);
+			    const kind = requiredString(item, 'kind', label);
+			    if (!['approval', 'warning', 'error'].includes(kind)) {
+			        throw portContract(label, `unknown kind '${kind}'`);
+			    }
+			    const responseBehavior = requiredString(item, 'responseBehavior', label);
+			    if (!['informational', 'wait-for-response'].includes(responseBehavior)) {
+			        throw portContract(label, `unknown responseBehavior '${responseBehavior}'`);
+			    }
+			    if (!('blockScope' in item)) {
+			        throw portContract(label, 'blockScope must be present (null when nothing is held)');
+			    }
+			    if (item['blockScope'] !== null)
+			        asRecord(item['blockScope'], `${label}.blockScope`);
+			    const source = asRecord(item['source'], `${label}.source`);
+			    for (const key of Object.keys(source)) {
+			        if (!REMOTE_INTERVENTION_SOURCE_FIELDS.includes(key)) {
+			            throw portContract(`${label}.source`, `unknown field '${key}'`);
+			        }
+			    }
+			    requiredString(source, 'kind', `${label}.source`);
+			    requiredString(source, 'id', `${label}.source`);
+			    const status = requiredString(item, 'status', label);
+			    if (!['open', 'acknowledged', 'resolved', 'authority-unavailable', 'stale'].includes(status)) {
+			        throw portContract(label, `unknown status '${status}'`);
+			    }
+			    for (const cell of ['requiredAuthority', 'currentReviewAuthority']) {
+			        const value = item[cell];
+			        if (value !== undefined && !REMOTE_INTERVENTION_AUTHORITY_POSITIONS.includes(String(value))) {
+			            throw portContract(label, `'${cell}' must be a closed authority position`);
+			        }
+			    }
+			    const legalActions = item['legalActions'];
+			    if (!Array.isArray(legalActions) || legalActions.some((a) => typeof a !== 'string')) {
+			        throw portContract(label, 'legalActions must be an array of strings');
+			    }
+			    // The wire NEVER carries a legality the planes do not know: every legal
+			    // action cell is inside the union of the plane vocabularies (a fourth
+			    // global action would be a contract violation even from our own port).
+			    for (const action of legalActions) {
+			        if (!['allow', 'deny', 'escalate', 'acknowledge'].includes(action)) {
+			            throw portContract(label, `legalActions carries the unknown action '${action}'`);
+			        }
+			    }
+			    if (!Array.isArray(item['derivationReasons'])) {
+			        throw portContract(label, 'derivationReasons must be an array');
+			    }
+			    requiredString(item, 'createdAt', label);
+			    return item;
+			}
+			Object.defineProperty(exports, "validateItem", { enumerable: true, get: () => validateItem });
+			/**
+			 * THE STRIP + closed-cell validation for the administration read (see the
+			 * module header). Exported for the same single-law reason as
+			 * {@link validateItem}: the production lane strips through this function.
+			 */
+			function validateAdministration(raw, label) {
+			    const rich = asRecord(raw, label);
+			    // THE STRIP: pick exactly the closed fields; drop everything else —
+			    // authority-bearing and round-trippable decision cells included. The
+			    // closed-cell checks then run on what SURVIVES (a port that omitted a
+			    // required cell is a port-contract violation; one that ADDED a cell is
+			    // silently, deliberately, stripped).
+			    const administration = {};
+			    for (const field of REMOTE_PERMISSION_ADMINISTRATION_FIELDS) {
+			        if (field in rich)
+			            administration[field] = rich[field];
+			    }
+			    for (const field of REMOTE_PERMISSION_ADMINISTRATION_FIELDS) {
+			        if (!(field in administration)) {
+			            throw portContract(label, `missing closed field '${field}'`);
+			        }
+			    }
+			    requiredString(administration, 'teamSessionId', label);
+			    const memberInstanceId = administration['memberInstanceId'];
+			    if (memberInstanceId !== null && typeof memberInstanceId !== 'string') {
+			        throw portContract(label, 'memberInstanceId must be a string or null');
+			    }
+			    const generation = administration['generation'];
+			    if (generation !== null && (typeof generation !== 'number' || !Number.isSafeInteger(generation))) {
+			        throw portContract(label, 'generation must be a safe integer or null');
+			    }
+			    const source = administration['source'];
+			    if (source !== 'overlay' && source !== 'blueprint-default') {
+			        throw portContract(label, "source must be 'overlay' or 'blueprint-default'");
+			    }
+			    asRecord(administration['effective'], `${label}.effective`);
+			    if (!Array.isArray(administration['diagnostics'])) {
+			        throw portContract(label, 'diagnostics must be an array');
+			    }
+			    return administration;
+			}
+			Object.defineProperty(exports, "validateAdministration", { enumerable: true, get: () => validateAdministration });
+			/** The intervention category handler (v8: `intervention.list|get|act`). */
+			function createRemoteInterventionHandler(deps) {
+			    return (method, params) => {
+			        switch (method) {
+			            case 'intervention.list': {
+			                const listParams = params;
+			                const { items } = deps.list({ teamSessionId: listParams.teamSessionId });
+			                return {
+			                    data: { items: items.map((item, index) => validateItem(item, `items[${index}]`)) },
+			                };
+			            }
+			            case 'intervention.get': {
+			                const getParams = params;
+			                const { item } = deps.get({
+			                    teamSessionId: getParams.teamSessionId,
+			                    interventionId: getParams.interventionId,
+			                });
+			                return { data: { item: validateItem(item, 'item') } };
+			            }
+			            case 'intervention.act': {
+			                const actParams = params;
+			                const { outcome } = deps.act({
+			                    teamSessionId: actParams.teamSessionId,
+			                    interventionId: actParams.interventionId,
+			                    action: actParams.action,
+			                    ...(actParams.note !== undefined ? { note: actParams.note } : {}),
+			                });
+			                if (!REMOTE_INTERVENTION_ACT_OUTCOMES.includes(outcome)) {
+			                    throw portContract('outcome', `unknown act outcome '${outcome}'`);
+			                }
+			                // The receipt carries the outcome and NOTHING else.
+			                return { data: { outcome } };
+			            }
+			            default:
+			                throw new Error(`intervention handler routed an unknown method: ${method}`);
+			        }
+			    };
+			}
+			Object.defineProperty(exports, "createRemoteInterventionHandler", { enumerable: true, get: () => createRemoteInterventionHandler });
+			/**
+			 * The `override.getPermissionAdministration` lane: the read lives in the
+			 * OVERRIDE category (it reads the override plane's documents) but its
+			 * PORT lives on the intervention seam (one governance read/verb seam for
+			 * the whole v8 surface). The STRIP is enforced by the shared
+			 * `validateAdministration` below.
+			 */
+			function permissionAdministrationVia(deps, params) {
+			    if (deps === undefined) {
+			        throw remoteContractError('internal-error', 'override.getPermissionAdministration: the v8 governance read seam is unwired on this surface — zero read', { reason: 'port-unwired' });
+			    }
+			    const readParams = params;
+			    const { administration } = deps.permissionAdministration({
+			        teamSessionId: readParams.teamSessionId,
+			        ...(readParams.memberInstanceId !== undefined
+			            ? { memberInstanceId: readParams.memberInstanceId }
+			            : {}),
+			    });
+			    return { data: { administration: validateAdministration(administration, 'administration') } };
+			}
+			Object.defineProperty(exports, "permissionAdministrationVia", { enumerable: true, get: () => permissionAdministrationVia });
+			//# sourceMappingURL=intervention.js.map
 			}, exports: {} };
 		__mods["../../remote/src/handlers/policy-state.js"] = { done: false, fn: function (exports) {
 			/**
@@ -13962,16 +14764,18 @@ var __dshFactory = (require) => {
 			const createRemoteHandoffHandler = __imp44.createRemoteHandoffHandler;
 			const __imp45 = __req("../../remote/src/handlers/intent.js");
 			const createRemoteIntentHandler = __imp45.createRemoteIntentHandler;
-			const __imp46 = __req("../../remote/src/handlers/legacy.js");
-			const createRemoteLegacyHandler = __imp46.createRemoteLegacyHandler;
-			const __imp47 = __req("../../remote/src/handlers/member.js");
-			const createRemoteMemberHandler = __imp47.createRemoteMemberHandler;
-			const __imp48 = __req("../../remote/src/handlers/override.js");
-			const createRemoteOverrideHandler = __imp48.createRemoteOverrideHandler;
-			const __imp49 = __req("../../remote/src/handlers/policy-state.js");
-			const createRemotePolicyStateHandler = __imp49.createRemotePolicyStateHandler;
-			const __imp50 = __req("../../remote/src/handlers/team.js");
-			const createRemoteTeamHandler = __imp50.createRemoteTeamHandler;
+			const __imp46 = __req("../../remote/src/handlers/intervention.js");
+			const createRemoteInterventionHandler = __imp46.createRemoteInterventionHandler;
+			const __imp47 = __req("../../remote/src/handlers/legacy.js");
+			const createRemoteLegacyHandler = __imp47.createRemoteLegacyHandler;
+			const __imp48 = __req("../../remote/src/handlers/member.js");
+			const createRemoteMemberHandler = __imp48.createRemoteMemberHandler;
+			const __imp49 = __req("../../remote/src/handlers/override.js");
+			const createRemoteOverrideHandler = __imp49.createRemoteOverrideHandler;
+			const __imp50 = __req("../../remote/src/handlers/policy-state.js");
+			const createRemotePolicyStateHandler = __imp50.createRemotePolicyStateHandler;
+			const __imp51 = __req("../../remote/src/handlers/team.js");
+			const createRemoteTeamHandler = __imp51.createRemoteTeamHandler;
 			/**
 			 * The throw-proof dispatcher of the Remote contract v1 (design note §6).
 			 *
@@ -14008,7 +14812,8 @@ var __dshFactory = (require) => {
 			 * assumptions.
 			 * @module @dsh-agent-team/remote/handlers/dispatch
 			 */
-			/** Wire the twenty ports into the nine category handlers. */
+			/** Wire the ports into the category handlers (v8: the twenty-first optional
+			 *  intervention seam joins the ten categories). */
 			function buildCategoryHandlers(deps) {
 			    return {
 			        [REMOTE_CATEGORIES.CATALOG]: createRemoteCatalogHandler(deps.catalog),
@@ -14030,12 +14835,24 @@ var __dshFactory = (require) => {
 			            admission: deps.admission,
 			            lifecycle: deps.lifecycle,
 			        }),
-			        [REMOTE_CATEGORIES.OVERRIDE]: createRemoteOverrideHandler(deps.override),
+			        [REMOTE_CATEGORIES.OVERRIDE]: createRemoteOverrideHandler(deps.override, deps.intervention),
 			        [REMOTE_CATEGORIES.POLICY_STATE]: createRemotePolicyStateHandler(deps.policyState),
 			        [REMOTE_CATEGORIES.COMPATIBILITY]: createRemoteCompatibilityHandler(deps.compatibility),
 			        [REMOTE_CATEGORIES.HANDOFF]: createRemoteHandoffHandler(deps.handoff),
 			        [REMOTE_CATEGORIES.LEGACY]: createRemoteLegacyHandler(deps.legacy),
+			        // A4-PR6 §6.B (contract v8): the intervention plane. An UNWIRED seam
+			        // (pre-v8 surfaces) answers the v8-only methods with the typed
+			        // `internal-error` / `port-unwired` refusal — never a partial success,
+			        // never a v1-v7 side effect (those methods route elsewhere).
+			        [REMOTE_CATEGORIES.INTERVENTION]: createRemoteInterventionHandler(deps.intervention ?? unwiredInterventionPort()),
 			    };
+			}
+			/** The typed refusal of an unwired v8 seam (see `buildCategoryHandlers`). */
+			function unwiredInterventionPort() {
+			    const refuse = () => {
+			        throw remoteContractError('internal-error', 'the v8 intervention seam is unwired on this surface — zero read, zero verb', { reason: 'port-unwired' });
+			    };
+			    return { list: refuse, get: refuse, act: refuse, permissionAdministration: refuse };
 			}
 			/**
 			 * The CLOSED backing-service error-code vocabulary invariant 4b may pass
@@ -14250,6 +15067,25 @@ var __dshFactory = (require) => {
 			    'TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT',
 			    'TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM',
 			    'TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED',
+			    // A4-PR6 §6.A (remote contract v8 — a contract change, reason recorded
+			    // in the PR body): the Team-start governance gate's typed refusals. The
+			    // gate lives at the runtime start sites (team.create v1/v2 and
+			    // team.ensureRootLive), so these codes can ride EVERY contract version
+			    // the gate protects; v8 adds the discovery + acknowledgement surface
+			    // (`intervention.list` / `intervention.act`) that makes the warning arm
+			    // operable. `TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED` is the closed
+			    // PR7 arm (unreachable through the PR6 bridge, pinned).
+			    // A4-PR6 §6.B (contract v8): the intervention lane's own typed refusal —
+			    // an act/get against an intervention id the server does not currently
+			    // project. Closed v8 addition; the act authority refusals REUSE the
+			    // frozen CONTROL_* codes (the authority law lives in the control plane —
+			    // this lane routes to it, it does not re-decide), and the governance-
+			    // start gate codes below ride EVERY contract version (plan ruling: the
+			    // gate protects all versions; v8 only adds the operable surface).
+			    'INTERVENTION_NOT_FOUND',
+			    'TEAM_REMOTE_TEAM_START_GOVERNANCE_WARNING',
+			    'TEAM_REMOTE_TEAM_START_GOVERNANCE_CORRUPT',
+			    'TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED',
 			    // runtime/team-ownership-index — Team D1-D6 repair v2 D1: the durable
 			    // ownership-index integrity failures (a root whose binding rows are
 			    // inconsistent; raised by the D1 pure index module and surfaced by
@@ -15418,6 +16254,259 @@ var __dshFactory = (require) => {
 			Object.defineProperty(exports, "isStaleTeamProjection", { enumerable: true, get: () => __re25.isStaleTeamProjection });
 			const __re25 = __req("../../contracts/src/projection/projection.js");
 			//# sourceMappingURL=index.js.map
+			}, exports: {} };
+		__mods["model/team-interventions.js"] = { done: false, fn: function (exports) {
+			/**
+			 * A4-PR6 §6.D — the intervention panel model (frozen location).
+			 *
+			 * THE server-derived-legality law (spec §18, ADR A1-2): every action
+			 * affordance this module renders comes from the wire item's `legalActions`
+			 * cell and NOTHING else. This module imports no authority kernel, no
+			 * ladder, no ceiling — the client never derives authority or legality
+			 * locally; a payload with empty `legalActions` is terminal, full stop.
+			 * The renderer test rejects a payload that asks the client to fill the
+			 * set in itself.
+			 *
+			 * The param builders below are the client-side closed-set constructors
+			 * (the team-governance precedent): they shape the frozen v8 bodies and
+			 * cannot add a field — `intervention.act` carries exactly
+			 * `{ teamSessionId, interventionId, action, note? }` (never a caller,
+			 * never an authority claim).
+			 */
+			const ACT_VERB_VALUES = ['allow', 'deny', 'escalate', 'acknowledge'];
+			function isActVerb(value) {
+			    return ACT_VERB_VALUES.includes(value);
+			}
+			function str(value, key) {
+			    const leaf = value[key];
+			    return typeof leaf === 'string' ? leaf : undefined;
+			}
+			function strArray(value, key) {
+			    const leaf = value[key];
+			    return Array.isArray(leaf) ? leaf.filter((entry) => typeof entry === 'string') : [];
+			}
+			/** Fail-safe parse of one wire item (the boundary read; the host already
+			 *  validated the closed shape — a structurally unreadable item is DROPPED
+			 *  here rather than rendered as a half-row: a visible-but-wrong row would
+			 *  misrepresent governance; the list stays consistent or the row is absent).
+			 *  @returns the view, or undefined for an unreadable item. */
+			function parseInterventionItem(raw) {
+			    if (typeof raw !== 'object' || raw === null)
+			        return undefined;
+			    const item = raw;
+			    const interventionId = str(item, 'interventionId');
+			    const kind = str(item, 'kind');
+			    const status = str(item, 'status');
+			    const responseBehavior = str(item, 'responseBehavior');
+			    const createdAt = str(item, 'createdAt');
+			    const sourceRaw = item['source'];
+			    if (interventionId === undefined
+			        || kind === undefined
+			        || status === undefined
+			        || responseBehavior === undefined
+			        || createdAt === undefined
+			        || typeof sourceRaw !== 'object'
+			        || sourceRaw === null) {
+			        return undefined;
+			    }
+			    const source = sourceRaw;
+			    const sourceKind = str(source, 'kind');
+			    const sourceId = str(source, 'id');
+			    if (sourceKind === undefined || sourceId === undefined)
+			        return undefined;
+			    const legOrdinal = source['legOrdinal'];
+			    const blockScopeRaw = item['blockScope'];
+			    const requiredAuthority = str(item, 'requiredAuthority');
+			    const currentReviewAuthority = str(item, 'currentReviewAuthority');
+			    const fingerprint = str(item, 'fingerprint');
+			    const updatedAt = str(item, 'updatedAt');
+			    const lastObservedAt = str(item, 'lastObservedAt');
+			    const observationCount = item['observationCount'];
+			    const requestId = str(source, 'requestId');
+			    const carrierKind = str(source, 'carrierKind');
+			    return {
+			        interventionId,
+			        kind,
+			        responseBehavior,
+			        blockScope: typeof blockScopeRaw === 'object' && blockScopeRaw !== null
+			            ? blockScopeRaw
+			            : null,
+			        source: {
+			            kind: sourceKind,
+			            id: sourceId,
+			            ...(requestId !== undefined ? { requestId } : {}),
+			            ...(typeof legOrdinal === 'number' ? { legOrdinal } : {}),
+			            ...(carrierKind !== undefined ? { carrierKind } : {}),
+			        },
+			        status,
+			        ...(requiredAuthority !== undefined ? { requiredAuthority } : {}),
+			        ...(currentReviewAuthority !== undefined ? { currentReviewAuthority } : {}),
+			        legalActions: strArray(item, 'legalActions'),
+			        derivationReasons: strArray(item, 'derivationReasons'),
+			        ...(fingerprint !== undefined ? { fingerprint } : {}),
+			        createdAt,
+			        ...(updatedAt !== undefined ? { updatedAt } : {}),
+			        ...(lastObservedAt !== undefined ? { lastObservedAt } : {}),
+			        ...(typeof observationCount === 'number' ? { observationCount } : {}),
+			    };
+			}
+			Object.defineProperty(exports, "parseInterventionItem", { enumerable: true, get: () => parseInterventionItem });
+			/** The list payload (`{ items }`) of `intervention.list` → panel rows. */
+			function interventionRows(data) {
+			    const items = data?.['items'];
+			    if (!Array.isArray(items))
+			        return [];
+			    const rows = [];
+			    for (const raw of items) {
+			        const item = parseInterventionItem(raw);
+			        if (item === undefined)
+			            continue;
+			        rows.push({
+			            item,
+			            // THE server-derived law: verbatim. No sorting, no filtering, no
+			            // ladder consultation.
+			            actions: item.legalActions.filter(isActVerb),
+			            terminal: item.legalActions.length === 0,
+			            isWarning: item.source.kind === 'governance-warning',
+			        });
+			    }
+			    return rows;
+			}
+			Object.defineProperty(exports, "interventionRows", { enumerable: true, get: () => interventionRows });
+			/** A terminal row's evidence line: the structured leaves the wire names
+			 *  (never a serialized payload — §6.C's renderer law). */
+			function terminalEvidence(row) {
+			    const parts = [row.item.status];
+			    if (row.item.source.legOrdinal !== undefined)
+			        parts.push(`leg ${String(row.item.source.legOrdinal)}`);
+			    if (row.item.source.requestId !== undefined)
+			        parts.push(`request ${row.item.source.requestId}`);
+			    return parts.join(' \u00b7 ');
+			}
+			Object.defineProperty(exports, "terminalEvidence", { enumerable: true, get: () => terminalEvidence });
+			// -- the closed v8 param builders (the ONLY client shapes for the plane) --
+			/** `intervention.list` params: exactly `{ teamSessionId }`. */
+			function interventionListParams(teamSessionId) {
+			    return { teamSessionId };
+			}
+			Object.defineProperty(exports, "interventionListParams", { enumerable: true, get: () => interventionListParams });
+			/** `intervention.get` params: exactly `{ teamSessionId, interventionId }`. */
+			function interventionGetParams(teamSessionId, interventionId) {
+			    return { teamSessionId, interventionId };
+			}
+			Object.defineProperty(exports, "interventionGetParams", { enumerable: true, get: () => interventionGetParams });
+			/**
+			 * `intervention.act` params: THE CLOSED BODY — `note` is spread only when
+			 * present (an absent note never rides as `undefined`; the wire closed-set
+			 * parse distinguishes the two).
+			 */
+			function interventionActParams(teamSessionId, interventionId, action, note) {
+			    return {
+			        teamSessionId,
+			        interventionId,
+			        action,
+			        ...(note !== undefined ? { note } : {}),
+			    };
+			}
+			Object.defineProperty(exports, "interventionActParams", { enumerable: true, get: () => interventionActParams });
+			/** `override.getPermissionAdministration` params (memberInstanceId optional). */
+			function permissionAdministrationParams(teamSessionId, memberInstanceId) {
+			    return {
+			        teamSessionId,
+			        ...(memberInstanceId !== undefined ? { memberInstanceId } : {}),
+			    };
+			}
+			Object.defineProperty(exports, "permissionAdministrationParams", { enumerable: true, get: () => permissionAdministrationParams });
+			//# sourceMappingURL=team-interventions.js.map
+			}, exports: {} };
+		__mods["model/permission-administration.js"] = { done: false, fn: function (exports) {
+			/**
+			 * A4-PR6 §6.D — the Permission Administration read model (frozen location:
+			 * the plan pins THIS path as the helper home; a lane chooses field shapes,
+			 * never the path).
+			 *
+			 * The administration wire value is exactly the SIX closed cells the host
+			 * port edge stripped (`teamSessionId, memberInstanceId, generation,
+			 * source, effective, diagnostics`). This module turns that value into the
+			 * display shape: identity, the overlay provenance summary, the EFFECTIVE
+			 * RULES rendered AS RULES (§6.D law: subtree rules are NEVER expanded
+			 * into a directory/filesystem tree — one flat row per rule, matcher shown
+			 * by KIND + RESOURCE text), and the diagnostics list.
+			 */
+			function str(value, key) {
+			    const leaf = value[key];
+			    return typeof leaf === 'string' ? leaf : undefined;
+			}
+			/** Fail-safe parse of the `{ administration }` payload cell. A malformed
+			 *  value yields NO view (the panel shows the typed read outcome instead —
+			 *  a half-parsed authority view is worse than an absent one). */
+			function parsePermissionAdministration(data) {
+			    const raw = data?.['administration'];
+			    if (typeof raw !== 'object' || raw === null)
+			        return undefined;
+			    const administration = raw;
+			    const teamSessionId = str(administration, 'teamSessionId');
+			    const source = str(administration, 'source');
+			    if (teamSessionId === undefined || source === undefined)
+			        return undefined;
+			    const memberInstanceId = str(administration, 'memberInstanceId');
+			    const generationLeaf = administration['generation'];
+			    const generation = typeof generationLeaf === 'number' ? generationLeaf : null;
+			    const effectiveRaw = administration['effective'];
+			    const rules = [];
+			    if (typeof effectiveRaw === 'object' && effectiveRaw !== null) {
+			        const rulesLeaf = effectiveRaw['rules'];
+			        if (Array.isArray(rulesLeaf)) {
+			            for (const ruleRaw of rulesLeaf) {
+			                if (typeof ruleRaw !== 'object' || ruleRaw === null)
+			                    continue;
+			                const rule = ruleRaw;
+			                const matcherRaw = rule['matcher'];
+			                if (typeof matcherRaw !== 'object' || matcherRaw === null)
+			                    continue;
+			                const matcher = matcherRaw;
+			                const lane = str(rule, 'lane');
+			                const effect = str(rule, 'effect');
+			                const matcherKind = str(matcher, 'kind');
+			                const resource = str(matcher, 'resource');
+			                if (lane === undefined || effect === undefined || matcherKind === undefined || resource === undefined) {
+			                    continue;
+			                }
+			                rules.push({ lane, matcherKind, resource, effect });
+			            }
+			        }
+			    }
+			    const diagnosticsLeaf = administration['diagnostics'];
+			    const diagnostics = Array.isArray(diagnosticsLeaf)
+			        ? diagnosticsLeaf
+			            .map((entry) => {
+			            if (typeof entry === 'string')
+			                return entry;
+			            if (typeof entry === 'object' && entry !== null) {
+			                const record = entry;
+			                const code = str(record, 'code');
+			                const verdict = str(record, 'verdict');
+			                const interventionId = str(record, 'interventionId');
+			                if (code !== undefined) {
+			                    return [code, verdict, interventionId].filter((part) => typeof part === 'string' && part !== '').join(' \u00b7 ');
+			                }
+			            }
+			            return undefined;
+			        })
+			            .filter((entry) => entry !== undefined)
+			        : [];
+			    return {
+			        teamSessionId,
+			        ...(memberInstanceId !== undefined ? { memberInstanceId } : {}),
+			        generation,
+			        source,
+			        fromOverlay: source === 'overlay' && generation !== null,
+			        rules,
+			        diagnostics,
+			    };
+			}
+			Object.defineProperty(exports, "parsePermissionAdministration", { enumerable: true, get: () => parsePermissionAdministration });
+			//# sourceMappingURL=permission-administration.js.map
 			}, exports: {} };
 		__mods["../../contracts/src/schema-version.js"] = { done: false, fn: function (exports) {
 			const __imp18 = __req("../../contracts/src/errors.js");
