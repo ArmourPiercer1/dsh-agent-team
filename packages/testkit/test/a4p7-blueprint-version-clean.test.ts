@@ -16,10 +16,12 @@
  *     (string/template carriers in .ts, every site in .mjs/.cjs/.js, and data
  *     files .json/.yml/.yaml). THIS is what 7.4 closes on: dirty (plus
  *     `unknown`) empty.
- *   - `advisory` — code-position TS literals: §7.3's narrowing of
- *     TeamBlueprint.schemaVersion is the instrument for those, and gating
- *     them here would double-count a gate tsc holds. They are PRINTED by path
- *     because they are dispatch material, not because this fence owns them.
+ *   - `advisory` — code-position TS literals. NOT ungated because tsc will
+ *     catch them — measured under the real §7.3 flip exactly 1 of 18 sites
+ *     reddens (p5t5-helpers.ts:80); 17 survive via toEqual/toMatchObject
+ *     arguments, Record<string,unknown> builders, and as-unknown-as casts.
+ *     They stay ungated because the PROBE, not tsc, dispositions them; every
+ *     printed ADVISORY line carries the caveat naming its mechanism.
  *   - `unknown` — the classifier cannot decide; it gates, because a scan that
  *     drops a site silently is the defect this phase keeps re-meeting.
  *   - `refused` — sites whose enclosing context positively identifies one of
@@ -582,8 +584,8 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     }
     const named = (path: string, line: number): string => {
       const s = run.advisory.find((x) => x.path === path && x.line === line)
-      expect(s, `${path}:${String(s.line)} must be an advisory line`).toBeDefined()
-      return s === undefined ? '' : s.why
+      expect(s, `${path}:${String(line)} must be an advisory line`).toBeDefined()
+      return s?.why ?? ''
     }
     expect(
       named('packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts', 101),

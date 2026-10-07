@@ -1,0 +1,30 @@
+=== wrapper suite (final) ===
+ Test Files  1 passed (1)
+      Tests  48 passed (48)
+
+=== p4t6 (expected untouched) ===
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+
+=== report two-run byte comparison ===
+two runs byte-identical
+
+=== self-check: sites emitted in the scanner's own file ===
+0
+0 lines — clean
+
+=== typecheck ===
+0
+8
+
+=== eslint both owned files ===
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+eslint exit 0
+
+=== head verdict (final) ===
+RESULT dirty(119 files, 254 sites)
+RESULT unknown(18 files, 26 sites)
+RESULT advisory(12 files, 18 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(4 files, 4 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
