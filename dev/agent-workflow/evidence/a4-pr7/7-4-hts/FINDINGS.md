@@ -173,9 +173,23 @@ Scan run from the worktree root (`paths` in the report are cwd-relative). Full l
 | run | log | `RESULT dirty` | this lane's five paths |
 |-----|-----|----------------|------------------------|
 | before (pre-rebase base `a2059c73`) | `scratch/scan-before.txt` | `120 files, 259 sites` | `blueprint-source L30=v1`, `d4 L220=v1`, `g5 L267=v1`, `run L214=v1`, `t12 L215=v1, L1844=v2` (+ `PROSE t12 L1838=v2`) |
-| after rebase, before migration | `scratch/scan-after-rebase.txt` | `117 files, 256 sites` | only `run L214=v1`, `t12 L215=v1, L1844=v2` (files 1–3 already clean) |
-| after file 4 | `scratch/scan-after-file4.txt` | `116 files, 255 sites` | only `t12 L215=v1, L1844=v2` |
-| after file 5 (lane end) | `scratch/scan-after-file5.txt` | `115 files, 253 sites` | **none** — the five paths appear in no gated class; `PROSE t12 L1852=v2` remains (non-gating) |
+| after file 1 (`blueprint-source`) | `scratch/scan-after-file1.txt` | `119 files, 258 sites` | `d4 L220=v1`, `run L214=v1`, `t12 L215=v1, L1844=v2` |
+| after file 2 (`d4`) | `scratch/scan-after-file2.txt` | `118 files, 257 sites` | `g5 L267=v1`, `run L214=v1`, `t12 L215=v1, L1844=v2` |
+| after file 3 (`g5`) | `scratch/scan-after-file3.txt` | `117 files, 256 sites` | `run L214=v1`, `t12 L215=v1, L1844=v2` |
+| — also `117, 256` | `scratch/scan-after-rebase.txt` | `117 files, 256 sites` | same five-path state as the row above: **this capture was taken after files 1–3**, and is named for the rebase that immediately preceded it, not for a pre-migration state |
+| after file 4 (`run`) | `scratch/scan-after-file4.txt` | `116 files, 255 sites` | `t12 L215=v1, L1844=v2` |
+| after file 5 (`t12`, lane end) | `scratch/scan-after-file5.txt` | `115 files, 253 sites` | **none** — the five paths appear in no gated class; `PROSE t12 L1852=v2` remains (non-gating) |
+
+**A label in this table was wrong and it misled in the worst available direction**
+(reviewer's nit, confirmed against the logs and corrected here). The row that used to read
+*"after rebase, before migration — 117 files, 256 sites"* was really the after-file-3 state:
+its five-path column names `run` and `t12` only, which cannot be true before migration. As
+written it credited the rebase with three of this lane's own migrations — `120 → 117` looked
+like base drift — and that is the one reading that would make a later reader distrust every
+other number in the ladder. The counter moved **one file and one site per migration**
+(`120,259 → 119,258 → 118,257 → 117,256 → 116,255 → 115,253`), so the rebase itself moved
+the counter by nothing. The logs are unchanged and remain the source.
+
 
 Also visible across those runs: the sixth class landed with the rebase — `unknown(16 files, 24
 sites)` in the pre-rebase run is `unknown(0) / adjudicated(16, 24)` after round 3, with the same
@@ -234,9 +248,17 @@ not waved through:
 
 - run alone, twice: `pnpm exec vitest run packages/runtime/test/p6t1-parallel.test.ts` →
   **9 passed (9)** both times;
-- the repo's own §7.0 gate logs already show this suite moving run-to-run
-  (`dev/agent-workflow/evidence/a4-pr7/gates/7-0-root-run1.txt` = 20 failed tests,
-  `7-0-root-run2.txt` = 21 failed tests, with `p6t1-parallel` among them);
+- the repo's own §7.0 gate logs already show this suite moving run-to-run:
+  `dev/agent-workflow/evidence/a4-pr7/gates/7-0-root-run1.txt` = 20 failed tests and
+  `7-0-root-run2.txt` = 21 failed tests, and **the one test that differs between them is a
+  `p6t1-parallel` test** — run2 carries
+  `FAIL packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel
+  activations all succeed (raised quotas)`, while run1 prints
+  `✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests)`;
+  (reviewer's nit, accepted: this bullet used to say "with `p6t1-parallel` among them", which
+  read run1 as if it contained the failure. It does not — run1's copy passes. The claim that
+  survives is narrower and still supports the point: the same suite changes its failure set
+  between two runs of the same tree, and the delta is this file.)
 - nothing in this lane's diff can reach it: the five migrated paths are harness programs that no
   test imports (`grep` over `packages`/`tests`/`scripts` finds only path-string mentions in
   `p4t6-session-event-scan.test.ts` and the `bounded-run.regression.test.mjs` port ledger, and the
@@ -365,6 +387,135 @@ defect of mine fixed, the whole lane replayed onto `ff9218a3`, and the two findi
 Nothing else moved: the five harness files, their hashes, and the DEFERRALS deletions are untouched
 by this round (`git diff 732cfa63 2ead5aa1 -- packages/tools/harness packages/runtime/root-binding/harness`
 is empty modulo the replay).
+
+## Review round (MERGE-with-fixes): the hardening, the battery re-derived here, and the merge
+
+Review verdict: **MERGE-with-fixes**. The fix was written by the reviewer
+(`.worktrees/rr-review-evidence/hard/control-leg-hardening.patch`), and the instruction was to
+apply it rather than re-write it from a description, then re-derive its behaviour in this
+worktree — *a patch from a reviewer is a proposal, and the writer has to be able to defend it*.
+
+### The three hunks and what each one buys
+
+* **`expect(spawned.stdout).toBe(`${report}\n`)`** — the leg had been reading the report
+  formatted **in-process** while the gate reads **stdout**. An instrument that reads the library
+  instead of the artifact is testing a different program than the one that runs, and the
+  concrete hole was that the CLI could truncate an `OFFENDING` line and the control would never
+  know. Pinning the bytes makes "did the report I assert on ever exist as output?" a checked
+  fact.
+* **per-path exact multiset** (`toEqual` of sorted token arrays) replaces per-path containment.
+  Containment could only ever notice *absence*; the multiset also notices invention and
+  duplication.
+* **the tally pins `files, sites`**, not just `files`.
+
+Applied with `git apply`; the result is byte-identical to the reviewer's copy (`diff` → 0
+lines), and verified before trusting: wrapper **58 passed (58)**,
+`tsc -p tsconfig.json --noEmit` in `packages/testkit` → exit 0.
+
+### The battery, re-derived here (not inherited)
+
+Seven holes, each applied to the report producer, each restored by `cp` with the pristine sha
+re-checked afterwards (`YES` on every row of `scratch/battery-patched.txt`). Every mutation now
+prints the line it produced, so the transcript proves the defect's shape instead of asserting it.
+
+| id | the defect | result here | leg that caught it |
+|----|-----------|-------------|--------------------|
+| A | first site of every dirty line loses `=v<version>` (`OFFENDING cordis.patch.yml :: L60`) | **RED** | the sites-not-a-count leg — `expected [ 'L60' ] to deeply equal [ 'L60=v1' ]` |
+| B | one dirty path vanishes from the naming | **RED** | same leg — `expected [] to deeply equal [ 'L165=v1', … ]` |
+| C | one **colliding** site loses its suffix | **RED** | same leg |
+| E | a **phantom** site printed for every path (`…, L99999=v1`) — found nowhere | **RED** | same leg — `expected [ 'L60=v1', 'L99999=v1' ] to deeply equal [ 'L60=v1' ]` |
+| F | one site printed **twice** on its own line | **RED** | same leg — `expected [ 'L60=v1', 'L60=v1' ] …` |
+| D | **the CLI truncates long OFFENDING lines on stdout**; the returned string stays whole | **RED** | the *invoking-the-script* leg — the only one that reads bytes |
+| G | the dirty tally under-reports its **site** count by one | **RED** | the sites-not-a-count leg — `to contain 'RESULT dirty(115 files, 253 sites)'` |
+| I | a path's sites printed in **reverse order** | **GREEN, by design** | the contract is the multiset per path, not the order along the line |
+| J | the **PROSE** class reorders its own tokens | **GREEN, by design** | prose is another leg's subject and is not gated at all |
+
+Every RED row fails exactly **one** leg, 57 passing. The same four holes that the hardening was
+about — **E, F, D, G** — were then run against my **pre-hardening** leg for the record
+(`scratch/battery-before-hardening.txt`): all four were **GREEN** there (`58 passed (58)` each),
+while A and C were already red. That reproduces the reviewer's finding rather than accepting it.
+
+**Two harness bugs, disclosed because they are the reason the first table was worth nothing.**
+(i) The rewritten `offending()` helper interpolated a bare expression and dropped the
+`.join(', ')`, so mutation A did not strip a suffix — it printed an arrow function's source
+where the sites had been. A/C/E/F/I all "ran", and every hole still reddened the control **for
+the wrong reason**. What exposed it was the *expected-green* mutation I: a mangled line cannot
+pass it, so an expected-green is the harness's own test. (ii) A second helper version emitted an
+unbalanced paren, and one anchor drifted so the harness applied **nothing** while the wrapper ran
+against a pristine script — reported as `58 passed`, which would have been read as "the control
+is green under mutation E". Both are now structurally impossible: the harness refuses to apply
+when an anchor is absent, `node --check`s the mutated producer before returning, restores on
+failure, and prints the mutated line plus the tally so a human sees what actually changed.
+`scratch/mutate-fence.mjs` carries the explanation at the top.
+
+### Empty set, re-measured against the hardened leg
+
+An empty-set claim about a program that no longer exists is worth nothing, so
+`scratch/control-empty-set-probe.mjs` was rewritten to the hardened leg and re-run
+(`scratch/empty-set-after-hardening.txt`): **0 exact-multiset comparisons**, no `OFFENDING`
+line, `RESULT dirty(0 files, 0 sites)`, `RESULT verdict: clean (dirty 0, unadjudicated unknown
+0)`, the `files, sites` tally assertion **passes**, and the reader-anchor literal still **fails**
+— the same single retirement event the archetype leg already forces. The conclusion is unchanged
+by the hardening, and there is still no `dirty.length > 0` guard in the leg.
+
+### The merge, and the anchor trap
+
+`git merge ef937cd0` (merge, **not** rebase: this is the candidate's tree and a rebase would
+rewrite SHAs the reviewer already holds). One conflicted region, in `DEFERRALS`, resolved as
+**master's content minus exactly the five rows naming my paths** — asserted, not eyeballed
+(`dropped.length === 5`; the row count goes `93 → 88`). Master's side also carries 27 row
+deletions from lanes that migrated their own files, the updated `pr-e`/`pr-f` justifications,
+and the ratified `fixtures.ts` STOP row.
+
+The trap was at the **anchor**, and it is the reason to read a hunk instead of picking a side:
+master's copy still asserts `OFFENDING packages/tools/harness/run.mjs :: `. Taking master's side
+of that hunk re-arms the exact red-on-success control this leg was rewritten to escape, pointed
+at a path this lane just cleaned — a green tree would turn the gate red. The merge keeps the
+re-anchored version, checked afterwards:
+
+```
+grep -c 'OFFENDING packages/tools/harness/run.mjs'                        → 0
+grep -c 'OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: '    → 1
+```
+
+and the new anchor is durable for a reason that is not luck: master collapsed the C-domain rows
+into one ratified `fixtures.ts` row carrying their STOP note, so the path stays dirty **by
+ruling**, with an owner and a stated reason. The two `isScanScopePath` legs survived (19
+references), and the merged file's full leg-title inventory is **identical to master's** (58
+legs, same hash), so nothing was dropped in either direction.
+
+### The candidate's numbers, and why they differ from the prediction
+
+Measured at the merge commit, in this worktree:
+
+| gate | result |
+|------|--------|
+| fence ×2 | exit `1 / 1`, outputs **byte-identical** (`a939fece…`), by-path diff empty; `scanned-in-scope: 747`; `dirty(88 files, 163 sites)`, `unknown(0 files, 0 sites)`, `advisory(8, 12)`, `refused(52, 115)`, `prose(5, 5)`, `adjudicated(16, 24)`, verdict `dirty-or-unknown` |
+| my five paths | absent from every gated class; only the non-gating `PROSE packages/tools/harness/t12-vertical.mjs :: L1852=v2` |
+| wrapper | **58 passed (58)** |
+| `p4t6` | **10 passed (10)** |
+| typecheck | `pnpm -r run typecheck` exit **0**, `grep -c "error TS"` = 0 |
+| eslint (the five) | **one error, pre-existing**: `g5-member-e2e.mjs 640:16 'apiPage' is defined but never used`. `git log -S apiPage` and `git blame -L 640` both name `2602d730` ("G5A: live-host member E2E runner", 2026-09-07), an ancestor of the base. Reported as pre-existing, never as "clean" |
+| identity lint | `160 identity lines, 76 distinct; new 0, resolved 0` |
+| `node --check` ×5 | all five OK |
+
+**The prediction was `dirty(105 files, 207 sites)`; the measured value is `88 files, 163 sites`,
+and the difference is not this lane's doing.** The counterfactual settles it in this same tree:
+with my five documents reverted to master's bytes, the fence reads **`dirty(93 files, 169
+sites)`** and my five paths appear as `OFFENDING` with the six sites at
+`blueprint-source L30`, `d4 L220`, `g5 L267`, `run L214`, `t12 L215 + L1844` — exactly the
+reviewer's own confirmation of where the sites sit. So:
+
+* master at `ef937cd0`, in this tree: **93 files / 169 sites**;
+* this lane's five migrations: **−5 files / −6 sites**, one per site, no collateral movement;
+* candidate: **88 / 163** — and the DEFERRALS ledger now has exactly **88 rows**, which is the
+  two-directional staleness agreement the wrapper asserts, holding by construction.
+
+The 12-file / 38-site gap between `93/169` and the predicted `105/207` belongs to the base the
+prediction was taken on, not to this merge: 27 `DEFERRALS` rows disappeared between `ff9218a3`
+and `ef937cd0` as other lanes migrated their files, so a measurement taken before those merges
+landed is necessarily higher. Treat `88/163` as the candidate's contract and the prediction as a
+base-drift marker.
 
 ## Deviations and stops
 
