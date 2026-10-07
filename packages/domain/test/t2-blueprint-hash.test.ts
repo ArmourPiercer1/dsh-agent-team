@@ -155,7 +155,7 @@ describe('Gate A4: modelPreference content-hash sensitivity', () => {
   function minimalSource(modelPreference: string | undefined): string {
     const lines = [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.mp-hash',
       'revision: "1"',
       'leader:',
@@ -166,6 +166,10 @@ describe('Gate A4: modelPreference content-hash sensitivity', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+      '        rules: []',
+      'teamHardEnvelope:',
+      '        rules: []',
       'metadata: {}',
       '---',
       '',
