@@ -15,6 +15,14 @@ adjudicated(16,24) advisory(12,16) refused(52,115) prose(5,5)`, exit 1.
 (The unknown→adjudicated migration is the fence's own ledger landing, not B1 work.
 advisory −2 = the two cutover `v99` `toMatchObject` advisories retired when the probes
 became constant reads.)
+**Base-era correction (recorded at the coordinator's request, 2026-10-08):** the
+`unknown(16,24)` figure above predates the adjudication ledger and describes the OLD
+base `a2059c73`. At B1's actual LANE BASE — the post-ledger master the branch rebases
+onto — the fence already printed `unknown(0,0)` plus `adjudicated(16,24)`: the same
+24 sites, nothing hidden, reclassified. A dispatch message quoted the older pair; any
+`unknown`/`adjudicated` number quoted onward (e.g. at §7.6) should read the lane-base
+pair `unknown(0,0) adjudicated(16,24)`. `scratch/b1/scan-before.txt` keeps the literal
+`a2059c73` output for archaeology.
 
 | file (packages/runtime/test/) | before OFFENDING | disposition | after |
 |---|---|---|---|
@@ -144,7 +152,22 @@ same class/count; earlier 571→547 was the v99-retirement shift — both moves 
 - wrapper `a4p7-blueprint-version-clean`: 58/58 green (DEFERRALS = 13 B1 rows removed by
   path; production-entry row retained).
 - `p4t6-session-event-scan`: 10/10. `pnpm -r run typecheck`: exit 0
-  (`scratch/b1/typecheck-final.txt`). eslint on all touched files: clean.
+  (`scratch/b1/typecheck-final.txt`).
+- **eslint, stated as both facts (review correction — do NOT paraphrase this as
+  "clean"):** literal `npx eslint` over the 13 migrated files + the wrapper reports
+  **10 problems (5 errors / 5 warnings)** in THREE migrated files:
+  `a3p4-pr4-decision-routing-regression.test.ts` 2e/3w (`no-unused-vars@L145`,
+  `no-explicit-any@L264`, unused-disable L261/274/276),
+  `a3p4-pr7-entry-exec-contract-regression.test.ts` 2e/0w (`no-unused-vars@L37` join,
+  `@L63` PERMISSION_MUTATION_ERROR_CODES), `a3p4-production-permission-plane.test.ts`
+  1e/2w (`no-explicit-any@L231`, unused-disable L228/240). **All ten are pre-existing:
+  identical rule+file identities at base (reviewer re-measured; base lines 141/260/227)
+  and, verified here per file, identical usage counts of the flagged names between
+  merge-base and HEAD** (`scratch/b1/eslint-head.json`). The untouched STOP file
+  carries 11e/2w of its own and is not in the three above — B1 edited nothing there.
+  Zero new debt; **the operative gate is `lint-identities --diff` → new 0, resolved 0**,
+  which is what closes; the earlier word "clean" was true of the gate and false of the
+  command.
 - `lint-identities --diff` vs baseline `lint-identities-0237d487.txt`: 160 identity lines,
   76 distinct; new 0, resolved 0.
 - root `pnpm test` (after `rm -rf packages/testkit/test/.tmp-fault/`): name-set identical
