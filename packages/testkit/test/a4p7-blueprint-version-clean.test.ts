@@ -592,8 +592,21 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
       'utf8',
     )
     expect(cutoverSrc, 're-anchored pin: the old v99 laundering site must be GONE, not re-labelled').not.toMatch(/schemaVersion:\s*99\b/)
-    expect(cutoverSrc, 're-anchored pin: the replacement must be COMPUTED from the domain set').toContain('Math.max(...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS)')
+    // (2') The derivation half is ANCHORED to the declaration line (reviewer M2
+    // hardening, tightened): an unanchored toContain('Math.max(...)') was satisfied
+    // by a COMMENT echoing the expression — the derivation could be a lie written
+    // in prose. The line-start anchor excludes every comment shape (they put `//`,
+    // `/*` or `*` before the text); a lie would now have to BE the declaration line.
+    expect(cutoverSrc, 're-anchored pin: the DERIVATION declaration must exist, not a comment echo of it').toMatch(/^\s*const VERSION_NOBODY_DEFINED\s*=\s*Math\.max\(\.\.\.DEFINED_BLUEPRINT_DOCUMENT_VERSIONS\)\s*\+\s*1/m)
     expect(cutoverSrc, 're-anchored pin: the site must speak the constant, not a digit').toContain('schemaVersion: VERSION_NOBODY_DEFINED')
+    // (3) M1 (reviewer hardening): the bare-argument slip shape — a retired 99
+    // re-introduced as a positional argument (`.toBe(99)`) carries no schemaVersion
+    // prefix and slips past the colon-keyed absence check above. Measured against
+    // this file BEFORE committing (scratch/b1/m1-regex-audit.txt): zero matches
+    // today, so no timeout/port/count collision; if a legitimate bare 99 ever
+    // lands in this plumbing file, scope this assertion to the W2 assertion region
+    // — do not delete it.
+    expect(cutoverSrc, 're-anchored pin: no bare-argument 99 may return to the file').not.toMatch(/[,(]\s*99\s*[,)]/)
   })
 
   it('unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated', () => {
