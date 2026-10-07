@@ -1,0 +1,258 @@
+/**
+ * a4p7-carrier-width-under-ceiling.test.ts — pin the carrier's WHOLE-MATCHER
+ * width law on the wiring that SURVIVES the 7.3 v3 cutover.
+ *
+ * WHY THIS FILE EXISTS. The Alpha.4 plan §7.5 sanctions deleting
+ * `leaderEnvelopeCoverage` (the `covered | coverage-unknown | unmet` oracle
+ * behind `authorizeLeaderPermissionMutation`) on the ground that the v3
+ * authority-ceiling gate now carries the authorization law. Two of the three
+ * conditions it enforces really are re-enforced by that gate:
+ *
+ *   - operationClass agreement  → an unmatched class answers `no-authority` on
+ *     the expansion plane (`authority-envelope.ts:409-419` + `:381-395`), which
+ *     does not reach any risen effect → `insufficient` (`service.ts:1331-1365`);
+ *   - effect-ladder reach       → the per-cell ceiling is compared against the
+ *     risen effect at `service.ts:1355-1365`.
+ *
+ * The third is NOT. The ceiling is looked up at the RISING CELL
+ * (`service.ts:1294`, `matcher: region.region`); `region.mutationMatcher` — the
+ * width the mutation actually claims — is never read on that path. So a carrier
+ * rule that covers every rising cell but is NARROWER than the mutation matcher
+ * authorizes the batch under the ceiling gate alone. That is the width law's
+ * exact subject ("a narrow envelope rule must not authorize a broader
+ * mutation"), and no test on master pins it in a v3-wired world: the v3 fixture
+ * in `a4p2-dual-envelope-mutation.test.ts:86` builds its rise with
+ * `mutationMatcher: region` (width identical by construction), and the two
+ * v3-wired suites (`a4p5-self-mutation`, `a4p5-permission-mutation-proposal`)
+ * hand the carrier and the hard ceiling the SAME matchers.
+ *
+ * So this file pins the condition where it is observable BEFORE the deletion,
+ * with the second leg naming the gap so the deletion cannot be performed
+ * quietly: leg 1 is red the moment the aggregate goes, leg 2 says in an
+ * assertion that the ceiling gate on its own is SILENT on the same rise.
+ *
+ * What a 7.3-window implementation must add for the deletion to be equivalent:
+ * the ceiling lookup must be taken at `region.mutationMatcher` (whole claimed
+ * matcher), not at `region.region`, for the expansion plane — or the gate must
+ * additionally require that a single rule of the actor's own
+ * `permissionMutationEnvelope` covers `mutationMatcher` with `maximumEffect`
+ * reaching `risenEffect`. Until then this law has no other owner.
+ *
+ * @module @dsh-agent-team/runtime/test/a4p7-carrier-width-under-ceiling
+ */
+
+import { describe, expect, it } from 'vitest'
+import { createTeamOperationCoordinator } from '../coordination/index.js'
+import {
+  authorizeCeilingBoundedPermissionRise,
+  classifyPermissionRise,
+} from '../governance/permission-mutation.js'
+import { createGovernanceMutationService } from '../governance/index.js'
+import { createPermissionAuthorityCeilingJudge } from '../governance/service.js'
+import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import type {
+  GovernanceMutationServiceDeps,
+  GovernancePermissionMutationArgs,
+  PermissionMutationEnvelope,
+  PermissionResourceMatcher,
+  PermissionStaticLayerFacts,
+} from '../governance/index.js'
+import type { OverrideRecordView, OverrideStorePort, PolicyReader } from '../mutation/index.js'
+import type { PolicyStateTransitionRecord } from '../mutation/types.js'
+import type {
+  GovernanceTransitionCache,
+  GovernanceTransitionCommit,
+  PermissionAuthorityCeilingContext,
+} from '../governance/types.js'
+import { FIXTURE_INSTANCE_ID, FIXTURE_TEAM_SESSION_ID, openWorld } from './permission-overlay-helpers.js'
+
+const FILE = 'file:/srv/a4p7-width/out.txt'
+const SUB = 'file:/srv/a4p7-width'
+const NOW = '2026-10-08T00:00:00.000Z'
+
+const exact = (resource: string): PermissionResourceMatcher => ({ kind: 'exact', resource })
+const subtree = (resource: string): PermissionResourceMatcher => ({ kind: 'subtree', resource })
+/** The structural-containment double, same algebra as the Alpha.3 lane. */
+const contains = (root: string, child: string): boolean => child === root || child.startsWith(`${root}/`)
+
+/** ONE rule, one matcher width — the carrier and the Team Hard document are
+ *  given the SAME shape on purpose: the widening must come from the MUTATION,
+ *  never from a document disagreement. */
+function oneRule(matcher: PermissionResourceMatcher, maximumEffect: 'allow' | 'ask' | 'deny'): PermissionMutationEnvelope {
+  return { rules: [{ operationClass: 'write', matcher, maximumEffect }] }
+}
+
+/** The lower facts that confine the rise to the ONE narrow cell the carrier
+ *  covers: within a layer the most restrictive matching rule answers, so the
+ *  template says `deny` at FILE and `allow` across the rest of SUB. A broad
+ *  overlay grant at `subtree SUB` therefore raises ONLY the FILE cell. */
+const TEMPLATE_DENY_AT_FILE: PermissionStaticLayerFacts = {
+  layers: [
+    {
+      label: 'template',
+      default: 'deny',
+      rules: [
+        { operationClass: 'write', matcher: exact(FILE), effect: 'deny' },
+        { operationClass: 'write', matcher: subtree(SUB), effect: 'allow' },
+      ],
+    },
+  ],
+}
+
+class NoopOverrides implements OverrideStorePort {
+  async list(_rootSessionId: string): Promise<readonly OverrideRecordView[]> {
+    return []
+  }
+  async put(record: unknown): Promise<unknown> {
+    return record
+  }
+}
+class NoopTransitions implements GovernanceTransitionCache {
+  appendTransition(_teamSessionId: string, _transition: PolicyStateTransitionRecord): void {}
+  listTransitions(_teamSessionId: string): readonly PolicyStateTransitionRecord[] {
+    return []
+  }
+}
+class NoopCommit implements GovernanceTransitionCommit {
+  async commit(_rootSessionId: string, _transition: PolicyStateTransitionRecord): Promise<void> {}
+}
+const NEVER_CONSULTED: PolicyReader = {
+  readBlueprintEnvelope: (): never => {
+    throw new Error('the permission lane must not read the capability envelope')
+  },
+  readTemplatePolicy: (): never => {
+    throw new Error('the permission lane must not read template policy')
+  },
+  readExternalFacts: (): never => {
+    throw new Error('the permission lane must not read external hard facts')
+  },
+}
+
+/** A v3-wired world: the ceiling reader answers a context for every target, so
+ *  the ceiling gate is LIVE and the ONLY thing that could refuse after the
+ *  Alpha.3 aggregate is gone. */
+async function openV3World(carrier: PermissionMutationEnvelope, hard: PermissionMutationEnvelope) {
+  const world = await openWorld(`a4p7w-${Math.random().toString(36).slice(2, 8)}`)
+  const documents: AuthorityEnvelopeDocuments = {
+    teamHardEnvelope: { status: 'declared', document: hard } as AuthorityEnvelopeDocuments['teamHardEnvelope'],
+    permissionMutationEnvelope: { status: 'declared', document: carrier } as AuthorityEnvelopeDocuments['permissionMutationEnvelope'],
+  }
+  const deps: GovernanceMutationServiceDeps = {
+    chain: createTeamOperationCoordinator(),
+    overrides: new NoopOverrides(),
+    transitions: new NoopTransitions(),
+    transitionCommit: new NoopCommit(),
+    policy: NEVER_CONSULTED,
+    registeredMembers: async () => [],
+    policyStates: () => ['default'],
+    now: () => NOW,
+    permissionLane: {
+      overlay: world.port,
+      permissionEnvelope: () => carrier,
+      staticLayers: () => TEMPLATE_DENY_AT_FILE,
+      subtreeContains: contains,
+      authorityCeiling: async (_team: string, _member: string, actor: 'leader' | 'human'): Promise<PermissionAuthorityCeilingContext> => ({
+        beneficiaryAuthority: 'member',
+        initiatorAuthority: actor === 'leader' ? 'leader' : 'human-user',
+        documents,
+        blueprintContentHash: `sha256:${'c'.repeat(64)}`,
+      }),
+    },
+  }
+  let counter = 0
+  const service = createGovernanceMutationService(deps)
+  return {
+    service,
+    documents,
+    /** The durable authority snapshot of the target — `undefined` proves ZERO WRITE. */
+    listRules: () => world.port.latest(world.identity),
+    close: async () => {
+      await world.store.close()
+      world.destroy()
+    },
+    mutateLeader: (
+      rules: readonly { operationClass: string; matcher: PermissionResourceMatcher; effect: 'allow' | 'ask' | 'deny' }[],
+    ) =>
+      service.mutatePermission({
+        authority: { kind: 'leader' },
+        teamSessionId: FIXTURE_TEAM_SESSION_ID,
+        memberInstanceId: FIXTURE_INSTANCE_ID,
+        kind: 'grant_instance',
+        mutationId: `mut-a4p7w-${String(++counter)}`,
+        reason: 'width pin',
+        rules,
+      } as GovernancePermissionMutationArgs),
+  }
+}
+
+/** The rise facts of the SAME mutation, classified the way `service.ts` does it
+ *  (no coverage judge — the ceiling gate's own input, `service.ts:1163-1168`). */
+function ceilingOnlyInput() {
+  return {
+    latestRules: [],
+    plannedRules: [
+      { operation: 'write', resource: `subtree:${SUB}`, effect: 'allow' as const },
+    ],
+    mutationRules: [{ operationClass: 'write', matcher: subtree(SUB), effect: 'allow' as const }],
+    envelope: { rules: [] },
+    staticFacts: TEMPLATE_DENY_AT_FILE,
+    subtreeContains: contains,
+  }
+}
+
+describe('the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deletion guard)', () => {
+  it('a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write', async () => {
+    const w = await openV3World(oneRule(exact(FILE), 'allow'), oneRule(exact(FILE), 'allow'))
+    try {
+      const error = await w.mutateLeader([{ operationClass: 'write', matcher: subtree(SUB), effect: 'allow' }]).then(
+        () => undefined,
+        (raised: unknown) => raised,
+      )
+      // Today: the width law refuses. This identity is the one that goes RED the
+      // moment `leaderEnvelopeCoverage` is deleted — see leg 2 for why the
+      // surviving ceiling gate cannot substitute for it.
+      expect((error as { code?: string } | undefined)?.code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+      expect((error as { details?: Record<string, unknown> } | undefined)?.details?.problem).toBe('expansion-region-uncovered')
+      expect((error as { details?: Record<string, unknown> } | undefined)?.details?.mutationMatcher).toBe(`subtree:${SUB}`)
+      // ZERO WRITE: the refusal is not cosmetic.
+      expect(await w.listRules()).toBeUndefined()
+    } finally {
+      await w.close()
+    }
+  })
+
+  it('the SAME mutation with a carrier as wide as the matcher commits (the refusal is width, not the documents)', async () => {
+    const w = await openV3World(oneRule(subtree(SUB), 'allow'), oneRule(subtree(SUB), 'allow'))
+    try {
+      await expect(w.mutateLeader([{ operationClass: 'write', matcher: subtree(SUB), effect: 'allow' }])).resolves.toBeDefined()
+    } finally {
+      await w.close()
+    }
+  })
+
+  it('THE GAP: the ceiling gate ALONE is sufficient on that very rise, so it is not the width law\'s owner', () => {
+    const input = ceilingOnlyInput()
+    const classification = classifyPermissionRise(input)
+    expect(classification.rising.length).toBe(1)
+    const region = classification.rising[0]!
+    // The width the mutation claims is strictly broader than the cell the ceiling
+    // is asked about — this pair IS the condition, and it is why the two verdicts
+    // can disagree.
+    expect(region.mutationMatcher).toEqual(subtree(SUB))
+    expect(region.region).toEqual(exact(FILE))
+    const judge = createPermissionAuthorityCeilingJudge({ subtreeContains: contains })
+    const context: PermissionAuthorityCeilingContext = {
+      beneficiaryAuthority: 'member',
+      initiatorAuthority: 'leader',
+      documents: {
+        teamHardEnvelope: { status: 'declared', document: oneRule(exact(FILE), 'allow') } as AuthorityEnvelopeDocuments['teamHardEnvelope'],
+        permissionMutationEnvelope: {
+          status: 'declared',
+          document: oneRule(exact(FILE), 'allow'),
+        } as AuthorityEnvelopeDocuments['permissionMutationEnvelope'],
+      },
+    }
+    expect(judge(context, region)).toEqual({ status: 'sufficient' })
+    expect(() => authorizeCeilingBoundedPermissionRise(classification.rising, (r) => judge(context, r))).not.toThrow()
+  })
+})

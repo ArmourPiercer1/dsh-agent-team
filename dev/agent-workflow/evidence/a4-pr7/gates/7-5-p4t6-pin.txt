@@ -1,0 +1,22 @@
+A4-PR7 Task 7.5 — the p4t6 scannable-file pin, moved by the mechanism the file prescribes
+(SIMULATED / MACHINE evidence.)
+
+1. The first whole-repo run after adding
+   packages/testkit/test/a4p75-composition-smoke-classification.test.ts:
+       AssertionError: expected 1021 to be 1020
+   in packages/testkit/test/p4t6-session-event-scan.test.ts (coverage arm).
+
+2. Causality, measured rather than assumed: with the new file moved out of the tree,
+   the same command is 10 passed / 0 failed; with it back, 1021. So the movement is
+   one added scannable path under packages/**, not a scanner regression.
+
+3. The fix is the one the file documents: the path is NAMED in
+   SCANNED_PATHS_A4PR7 (which the by-path loop asserts present), and PR7's own
+   advancing total moves 1020 -> 1021 in the same edit. The total was not touched
+   on its own, and no count was invented in prose.
+
+4. After the edit:
+       pnpm exec vitest run p4t6-session-event-scan + the new file -> 31 passed
+       whole-repo pnpm test -> 9 failed files / 19 failed tests, identity set =
+       baseline (p6t1-parallel did not fire this run; declared flake band 1-3)
+       total tests 6030 -> 6051, the +21 being exactly this lane's new file

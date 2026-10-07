@@ -1,0 +1,65 @@
+A4-PR7 Task 7.5 — public registry probe (requires NETWORK; captured while full access existed)
+(SIMULATED / MACHINE evidence. Output verbatim from npm view against https://registry.npmjs.org.)
+
+# registry capture (npm registry https://registry.npmjs.org) — captured 2026-10-07T16:57:13Z, A4-PR7 7.5
+=== @deepseek-ai/dsh-client-ui-primitives dist-tags.latest:
+"0.0.1-rc.1"
+=== @deepseek-ai/dsh-client-ui-primitives@0.2.0-rc.2 dependencies:
+=== @deepseek-ai/dsh-client-ui-primitives@0.2.0-rc.2 peerDependencies:
+{
+  "@deepseek-ai/cordis": "~4.0.4"
+}
+=== @deepseek-ai/dsh-client-ui-primitives versions matching 0.2.0-rc.2:
+0.2.0-rc.2
+
+=== @deepseek-ai/dsh-client-store dist-tags.latest:
+"0.1.2-alpha.2"
+=== @deepseek-ai/dsh-client-store@0.2.0-rc.2 dependencies:
+=== @deepseek-ai/dsh-client-store@0.2.0-rc.2 peerDependencies:
+{
+  "@deepseek-ai/cordis": "~4.0.4"
+}
+=== @deepseek-ai/dsh-client-store versions matching 0.2.0-rc.2:
+0.2.0-rc.2
+
+=== @deepseek-ai/dsh-util-code-language dist-tags.latest:
+"0.1.7-rc.2"
+=== @deepseek-ai/dsh-util-code-language@0.2.0-rc.2 dependencies:
+=== @deepseek-ai/dsh-util-code-language@0.2.0-rc.2 peerDependencies:
+{
+  "@deepseek-ai/cordis": "~4.0.4"
+}
+=== @deepseek-ai/dsh-util-code-language versions matching 0.2.0-rc.2:
+0.2.0-rc.2
+
+=== @deepseek-ai/dsh-util-workspace-path dist-tags.latest:
+"0.1.2-alpha.2"
+=== @deepseek-ai/dsh-util-workspace-path@0.2.0-rc.2 dependencies:
+=== @deepseek-ai/dsh-util-workspace-path@0.2.0-rc.2 peerDependencies:
+{
+  "@deepseek-ai/cordis": "~4.0.4"
+}
+=== @deepseek-ai/dsh-util-workspace-path versions matching 0.2.0-rc.2:
+0.2.0-rc.2
+
+
+WHAT THIS ANSWERS, question by question
+  - `dist-tags.latest` for the four @deepseek-ai client packages is STALE (0.0.1-rc.1,
+    0.1.2-alpha.2, 0.1.7-rc.2, 0.1.2-alpha.2). That is what an `npm view <pkg>` query
+    returns when the pin under discussion is a pre-release: it is evidence about a
+    DIST-TAG, not about whether the version exists. `0.2.0-rc.2` IS published for all
+    four, which the last line of each block shows. A "the pinned version does not
+    exist upstream" reading of a stale dist-tag is the mistake this capture forecloses.
+  - `dependencies` is EMPTY for every one of them at 0.2.0-rc.2, and the only declared
+    dependency anywhere in the four manifests is the peer `@deepseek-ai/cordis@~4.0.4`.
+    So "its one declared dependency" is not accurate either: the count is zero.
+  - Consequence for the plan's Task 7.5 line: adding pins for the 23 packages this repo
+    does not import would be us inventing a dependency manifest for someone else's
+    package, and it would still not make the load step meaningful (production
+    externalizes that specifier). This is why the ruling is "no pins".
+
+RE-RUNNING THIS UNDER workspace-write
+  It needs network, not file access. It is recorded here precisely so that nobody has to
+  re-run it: the claim is now reviewable from this file. If it must be re-run, keep the
+  npm cache inside the workspace (`npm_config_cache=<repo>/.tmp-npm-cache`), otherwise
+  npm writes `~/.npm` and the file sandbox refuses.

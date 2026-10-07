@@ -1,0 +1,30 @@
+$ node .tmp-faultscratch/r3/probe-n2.mjs
+{
+  "name": "control",
+  "visited": 2,
+  "ownUnresolved": [],
+  "upstreamUnresolved": [
+    "@a4p75/gone"
+  ],
+  "untraversed": 0,
+  "loadErrorCode": "ERR_MODULE_NOT_FOUND",
+  "verdict": "skip",
+  "THE_LINE_THE_GATE_PRINTS": "SKIP client plugin (packages/client): host module closure unavailable — 1 unresolvable: @a4p75/gone"
+}
+{
+  "name": "with-untraversed",
+  "visited": 2,
+  "ownUnresolved": [],
+  "upstreamUnresolved": [
+    "@a4p75/gone"
+  ],
+  "untraversed": 1,
+  "loadErrorCode": "ERR_MODULE_NOT_FOUND",
+  "verdict": "skip",
+  "THE_LINE_THE_GATE_PRINTS": "SKIP client plugin (packages/client): host module closure unavailable — 1 unresolvable: @a4p75/gone"
+}
+TRUNCATION MESSAGE: the closure scan hit its file cap after 1 files, so it cannot certify this repo's own artifact clean — a SKIP here would claim an unscanned graph (raise maxFiles or fix the graph, never the classification)
+CONTROL SKIP LINE: host module closure unavailable — 1 unresolvable: @a4p75/gone
+HELD SKIP LINE:   host module closure unavailable — 1 unresolvable: @a4p75/gone
+IDENTICAL? YES — a held-back scan is invisible in the output
+exit=0

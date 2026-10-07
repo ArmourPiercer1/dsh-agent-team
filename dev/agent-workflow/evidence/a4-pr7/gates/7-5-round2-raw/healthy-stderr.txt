@@ -1,0 +1,9 @@
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:189:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:286:13

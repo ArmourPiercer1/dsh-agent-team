@@ -1,0 +1,56 @@
+$ for i in 1 2; do pnpm exec vitest run packages/runtime/test/p6t1-parallel.test.ts; done   # each iteration shown below
+----- isolated run 1 -----
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 1 failed) 8ms
+     ✓ two activated results with distinct instance ids and child Sessions 1ms
+     ✓ two COMMITTED operations, two members, two distinct child Sessions 0ms
+     × five activated results, five COMMITTED operations, five members, five child Sessions 4ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+AssertionError: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:193:31
+    191| describe('P6-T1 P2: N=5 same-template parallel activations all succeed…
+    192|   it('five activated results, five COMMITTED operations, five members,…
+    193|     expect(p2?.errors.length).toBe(0)
+       |                               ^
+    194|     expect(p2?.results.length).toBe(5)
+    195|     if (p2 === undefined) throw new Error('P2: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  02:36:02
+   Duration  687ms (transform 427ms, setup 0ms, import 595ms, tests 8ms, environment 0ms)
+
+exit=1
+----- isolated run 2 -----
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  02:36:03
+   Duration  734ms (transform 451ms, setup 0ms, import 647ms, tests 4ms, environment 0ms)
+
+exit=0
