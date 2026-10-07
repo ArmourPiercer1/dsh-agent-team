@@ -111,6 +111,20 @@ const INTERNAL_FACT_TYPES: ReadonlySet<string> = new Set([
   // fold the host reads.
   'governance-warning-observed',
   'governance-warning-acknowledged',
+  // A4-PR6 review round 1 (fix 4/6) — the plan:1031 rendering decision for
+  // the PRE-ALPHA3 PR-D close fact. Its category registration landed in
+  // PR0 (`control`), but the RENDERING layer was PR6's explicit check, and
+  // the fact was in NEITHER `FACT_ROW_KIND` NOR this set: `?? 'unknown'`
+  // made it a generic row that JSON.stringify'd the whole abandonment
+  // payload — the exact shape §6.C's renderer law forbids. The DECISION is
+  // the skip, not a structured family: `control-request-abandoned` is the
+  // TERMINAL audit close of a control request, and its surface already
+  // exists — `ledger-adapter.adaptControlAbandonDraft` pairs it onto its
+  // request chain by the frozen `requestId` (the chain never displays
+  // pending, never offers Allow; the coordinator-ruled PR #56 uniformity).
+  // A second Events row would double-surface one close with a payload that
+  // carries no subject leaf to render.
+  'control-request-abandoned',
   // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry — an
   // operational compatibility-category fact, not user activity. Skipped by
   // the Events section (otherwise it would land in the `unknown` family and

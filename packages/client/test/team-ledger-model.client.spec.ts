@@ -558,3 +558,34 @@ describe('deriveTeamLedgerSection — internal authority facts (PR #26 P2)', () 
     expect(shallow.total).toBe(3)
   })
 })
+
+// A4-PR6 review round 1 (fix 4/6) — the plan:1031 rendering decision for the
+// PRE-ALPHA3 PR-D close fact. PR0 registered `control-request-abandoned` in
+// the CATEGORY maps; the RENDERING check was PR6's, and the fact sat in
+// NEITHER `FACT_ROW_KIND` NOR `INTERNAL_FACT_TYPES`: `?? 'unknown'` made it
+// a generic row that JSON.stringify'd the whole abandonment payload — the
+// exact shape §6.C's renderer law forbids. The decision is the INTERNAL skip
+// (its surface is the paired control chain — `adaptControlAbandonDraft`: the
+// chain never displays pending, never offers Allow), never a JSON dump.
+describe('A4-PR6 review round 1 (fix 4/6) — the abandonment close never reaches the `unknown` family', () => {
+  it('control-request-abandoned renders NOTHING in Events (the skip), never an `unknown` JSON row', () => {
+    const entries = [
+      uiEntry(1, 'control-request-recorded', T, { requestId: 'req-ab', subject: { kind: 'team' } }, 'control'),
+      uiEntry(
+        2,
+        'control-request-abandoned',
+        T + 1000,
+        { requestId: 'req-ab', rootSessionId: LEADER, abandonedAt: iso(T + 1000), reason: 'inline-flow abort' },
+        'control',
+      ),
+    ]
+    const model = derive({ ledger: ledger(entries) })
+    expect(model.rows.filter((row) => row.factType === 'control-request-abandoned')).toHaveLength(0)
+    // The renderer law: no `unknown` row exists at all, and NO row body
+    // carries the abandonment payload's leaf names (the pre-fix JSON dump).
+    expect(model.rows.filter((row) => row.kind === 'unknown')).toHaveLength(0)
+    expect(JSON.stringify(model.rows)).not.toContain('abandonedAt')
+    // The request itself still renders as its structured control row.
+    expect(model.rows.filter((row) => row.factType === 'control-request-recorded')).toHaveLength(1)
+  })
+})
