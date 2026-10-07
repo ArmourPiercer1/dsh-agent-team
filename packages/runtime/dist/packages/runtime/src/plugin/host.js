@@ -76,10 +76,9 @@ import { createAuthorityCeilingReader, createPermissionAuthorityFacts } from './
 // reads canonicalize at the ADDRESSED team's durable default workspace).
 import { createGovernanceWarningService } from '../../governance-warning/index.js';
 import { commitDurableFact } from '../../action-router/index.js';
-import { parseBlueprint } from '../../../domain/blueprint/src/index.js';
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../storage/schema/index.js';
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
-import { createBlueprintAuthority } from './blueprint-authority.js';
+import { classifyBlueprintAnchor, createBlueprintAuthority } from './blueprint-authority.js';
 import { createBoundBlueprintResolver } from './bound-blueprint.js';
 import { createLiveBlueprintCatalog } from './blueprint-live-catalog.js';
 import { createBlueprintSourceIndex } from './blueprint-source-index.js';
@@ -1453,10 +1452,28 @@ export async function apply(ctx, config) {
         // Loud-log only: the boot anchor's declared permissions-bearing templates.
         // (NOT an authority source — the round-4 readers resolve per addressed
         // team; this stays for the operator-facing startup line.)
-        const factsAnchorBlueprint = parseBlueprint(resolvedRowConfig.blueprintSource);
-        const permissionsBearingTemplates = [factsAnchorBlueprint.leader, ...factsAnchorBlueprint.members]
-            .filter((template) => template.capabilities?.permissions !== undefined)
-            .map((template) => template.templateId);
+        //
+        // A4-PR7 Task 7.2 (ADR A1-20(c)): this third constructor-time anchor parse is
+        // the one that used to take the WHOLE Team runtime down. It sits inside the
+        // readiness `try`, so a `parseBlueprint` throw here — including a throw for a
+        // version this build no longer runs — landed in `catch { teamRuntimeReadiness =
+        // 'failed' }`: an operator with one unmigrated inline anchor had no Team mode
+        // at all, and therefore no way to migrate it. The parse is now CLASSIFIED, the
+        // degraded case LOUD-LOGS with the same typed code every start on that anchor
+        // will carry, and the host stays up.
+        const anchorState = classifyBlueprintAnchor(resolvedRowConfig.blueprintSource);
+        const permissionsBearingTemplates = anchorState.status === 'runnable'
+            ? [anchorState.blueprint.leader, ...anchorState.blueprint.members]
+                .filter((template) => template.capabilities?.permissions !== undefined)
+                .map((template) => template.templateId)
+            : [];
+        if (anchorState.status === 'refused') {
+            console.warn(`[dsh-agent-team] DEGRADED boot for row ${rowConfig.rootSessionId}: ${anchorState.headline} ` +
+                `(code ${anchorState.code}${anchorState.identity !== undefined
+                    ? `, anchor ${anchorState.identity.blueprintId}@${anchorState.identity.revision}, listed in the catalog with migrationRequired=${String(anchorState.migrationRequired)}`
+                    : ', anchor identity unreadable'}). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO `
+                + `acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only).`);
+        }
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -2221,7 +2238,9 @@ export async function apply(ctx, config) {
             if (permissionsBearingTemplates.length > 0) {
                 console.info(`[dsh-agent-team] durable permission authority ACTIVE for row ${rowConfig.rootSessionId}: ` +
                     `anchor templates declaring capabilities.permissions = ${JSON.stringify(permissionsBearingTemplates)}, ` +
-                    `facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor ${String(factsAnchorBlueprint.blueprintId)}@${String(factsAnchorBlueprint.revision)}), ` +
+                    `facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor ${anchorState.status === 'runnable'
+                        ? `${String(anchorState.blueprint.blueprintId)}@${String(anchorState.blueprint.revision)}`
+                        : 'unavailable: refused anchor'}), ` +
                     `canonicalized at each target member's effective workspace; expansion ceiling = the bound ` +
                     `Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: ${String(permissionFacts.healthy())})`);
             }

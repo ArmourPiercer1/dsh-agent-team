@@ -19,12 +19,16 @@
  * plus the identity field checks:
  *
  *   - the decoded frontmatter is a single plain record;
- *   - `schemaVersion` is present, a positive integer, and SUPPORTED
- *     (`SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` — the same closed set the
- *     strong validator enforces);
+ *   - `schemaVersion` is present and a positive integer;
  *   - `blueprintId` parses (contracts `parseBlueprintId` — the same
  *     grammar the strong validator uses);
- *   - `revision` parses (contracts `parseBlueprintRevision`).
+ *   - `revision` parses (contracts `parseBlueprintRevision`);
+ *   - ONLY THEN the version is classified: a version in
+ *     `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` is `ok`, a version in
+ *     `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS` (defined once, no longer run) is
+ *     `migration-required` AND CARRIES THE IDENTITY PARSED ABOVE, and anything
+ *     else is `rejected`. The order is not cosmetic — see the comment at that
+ *     check.
  *
  * What the inspector NEVER checks (the strong parser's territory, kept
  * intact — plan §5 "不要检查"): template reference closure,
@@ -46,7 +50,7 @@
  */
 import { isTeamContractError, parseBlueprintId, parseBlueprintRevision, } from '../../../contracts/src/index.js';
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
-import { SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS } from './schema.js';
+import { RETIRED_BLUEPRINT_DOCUMENT_VERSIONS, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
 /** True for a single plain record (neither null, nor an array, an object). */
 function isPlainRecord(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -115,17 +119,6 @@ export function inspectBlueprintSource(source) {
             ],
         };
     }
-    if (!SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersionRaw)) {
-        return {
-            status: 'rejected',
-            diagnostics: [
-                {
-                    reason: 'schemaVersion-unsupported',
-                    message: `unsupported blueprint schema version ${schemaVersionRaw}; this build supports [${SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')}]`,
-                },
-            ],
-        };
-    }
     let blueprintId;
     try {
         blueprintId = parseBlueprintId(raw.blueprintId);
@@ -146,14 +139,40 @@ export function inspectBlueprintSource(source) {
             diagnostics: [diagnosticOf(err, 'revision-invalid')],
         };
     }
-    return {
-        status: 'ok',
-        identity: {
-            schemaVersion: schemaVersionRaw,
-            blueprintId: String(blueprintId),
-            revision: String(revision),
-        },
+    const identity = {
+        schemaVersion: schemaVersionRaw,
+        blueprintId: String(blueprintId),
+        revision: String(revision),
     };
+    // The version question is asked LAST, and that order is the whole of Task 7.1.
+    // Answering it first — which is how this function used to read — means a
+    // document on a retired version never reaches the identity checks, so it comes
+    // back `rejected` and the catalog drops it: the one Blueprint the operator
+    // still has to migrate is precisely the one the migration runbook cannot see.
+    // Reading the identity first costs nothing (two contracts parsers over two
+    // scalars) and buys the difference between "unreadable" and "not yet
+    // migrated" — the difference between a file and a task.
+    if (!SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersionRaw)) {
+        if (RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersionRaw)) {
+            return { status: 'migration-required', identity };
+        }
+        // A version this product never defined. There is no migration for a document
+        // whose shape nobody knows, so this stays a refusal to identify it — and it
+        // is the refusal the plugin layer names `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`,
+        // never `BLUEPRINT_MIGRATION_REQUIRED` (ADR A1-21: a document the reader
+        // cannot parse and a document it will not run ask the operator for different
+        // actions).
+        return {
+            status: 'rejected',
+            diagnostics: [
+                {
+                    reason: 'schemaVersion-unsupported',
+                    message: `unsupported blueprint schema version ${schemaVersionRaw}; this build supports [${SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')}]`,
+                },
+            ],
+        };
+    }
+    return { status: 'ok', identity };
 }
 /**
  * Lift a thrown rejection into a closed diagnostic: the contracts

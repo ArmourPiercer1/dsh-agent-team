@@ -72,6 +72,79 @@ export declare const BLUEPRINT_DOCUMENT_SCHEMA_VERSION: 1;
  */
 export declare const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[];
 /**
+ * Every Blueprint DOCUMENT VERSION this product has ever defined and shipped:
+ * `1` (the frozen Alpha.1/2 document), `2` (Alpha.3's requirements document),
+ * `3` (Alpha.4's authority-document form). This is a HISTORY set, not a
+ * permission set — nothing consults it to decide what may run.
+ *
+ * It exists because "the reader cannot parse this" and "the reader can parse
+ * this but will not run it" are DIFFERENT facts with different operator actions
+ * (ADR A1-21), and telling them apart requires knowing which versions were ever
+ * a thing. A version outside this set is an unknown document; a version inside
+ * it but outside {@link SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS} is a document the
+ * operator owns and can migrate.
+ */
+export declare const DEFINED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[];
+/**
+ * The versions this product DEFINED and no longer RUNS: a document carrying one
+ * still has a readable identity (`blueprintId`, `revision`, `schemaVersion`), so
+ * it stays on the discovery surface and is refused with
+ * `BLUEPRINT_MIGRATION_REQUIRED` at the resolve/start boundary — never silently
+ * dropped, never run.
+ *
+ * DERIVED, never hand-declared, so it cannot drift out of sync with the switch
+ * it describes. Two consequences of the derivation are deliberate and both are
+ * load-bearing:
+ *
+ *  - **While the PR1-PR6 bridge holds (`[1, 2, 3]` above), this set is EMPTY**
+ *    and the `migration-required` arm is unreachable. That is the honest state
+ *    of a tree that has not cut over: a build that still runs v1/v2 must not
+ *    advertise those documents as needing migration. Task 7.3's flip of
+ *    `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` to `[3]` is what makes this
+ *    `[1, 2]`, and it is the same flip that makes the discoverability surface
+ *    real (A4-PR7's ordering: the migration tooling lands BEFORE the bridge is
+ *    removed, so the operator can see what is left to migrate).
+ *  - A version that was never defined (a document from a future build, or a
+ *    hand-edited `99`) is NOT in this set. It gets the parse refusal
+ *    (`BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` at the plugin boundary,
+ *    `schemaVersion-unsupported` from the inspector), because there is no
+ *    migration for a document whose shape nobody knows.
+ */
+export declare const RETIRED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[];
+/**
+ * The two typed refusal names for the version boundary (ADR A1-21). They live
+ * beside the version sets they describe because the FACT they name is a fact
+ * about a document's version — the runtime lanes (the plugin's Blueprint
+ * authority, the start gates) throw them, and the Remote surface carries them,
+ * but neither of those lanes decides which one applies.
+ *
+ * TWO NAMES, NOT ONE, AND NOT AN OVERLOAD. `SCHEMA_VERSION_UNSUPPORTED` (the
+ * domain parser's own code) and `SCHEMA_VERSION_MISMATCH` (the snapshot-ref
+ * fence) already exist and mean something else; A1-21 forbids folding these two
+ * refusals into them or into each other, because each asks the operator for a
+ * different action:
+ *
+ *  - {@link MIGRATION_REQUIRED}: the reader READ the document, its identity is
+ *    known, and the product will not run it. Action: migrate this Blueprint — it
+ *    is on the listing surface precisely so that this is a runbook, not a
+ *    mystery.
+ *  - {@link SCHEMA_VERSION_UNSUPPORTED}: the document declares a version this
+ *    product never defined, so there is no identity to migrate and no migration
+ *    that applies. Action: retire/replace the document, or run a build that
+ *    defines it.
+ *
+ * A third answer is not available: neither name is ever produced for a document
+ * on a supported version.
+ */
+export declare const BLUEPRINT_VERSION_REFUSAL_CODES: {
+    readonly MIGRATION_REQUIRED: "BLUEPRINT_MIGRATION_REQUIRED";
+    readonly SCHEMA_VERSION_UNSUPPORTED: "BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED";
+};
+/** One version-refusal code. */
+export type BlueprintVersionRefusalCode = (typeof BLUEPRINT_VERSION_REFUSAL_CODES)[keyof typeof BLUEPRINT_VERSION_REFUSAL_CODES];
+/** Every version-refusal code, for membership pins. */
+export declare const BLUEPRINT_VERSION_REFUSAL_CODE_VALUES: readonly BlueprintVersionRefusalCode[];
+/**
  * The exact closed field set of a blueprint document (top level).
  * Order is presentation only; validation never depends on it.
  */

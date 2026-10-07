@@ -76,6 +76,8 @@ import type { AuthorityDocumentRead } from '../../governance/authority-ceiling.j
 import type { PermissionAuthorityCeilingContext } from '../../governance/types.js';
 import type { MemberLifecycleReaderPort, PermissionDecisionLane, PermissionLifecycleMutationLane, PermissionLifecycleRestorePort } from '../../permission-lifecycle/index.js';
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js';
+import type { OperationApprovalFactsReader } from '../../operation-permission/index.js';
+import type { ControlAuthorityRecheckPort } from '../../control/types.js';
 /** The durable member-instance read surface the lifecycle facts come from. */
 export interface MemberInstanceRowReader {
     get(rootSessionId: string, instanceId: string): {
@@ -360,4 +362,53 @@ export declare function createPermissionAuthorityFacts(deps: PermissionAuthority
 export declare function createAuthorityCeilingReader(deps: {
     readonly facts: Pick<PermissionAuthorityFacts, 'teamHardEnvelope' | 'permissionEnvelope' | 'blueprintSchemaVersion' | 'blueprintContentHash'>;
 }): (teamSessionId: string, memberInstanceId: string, actor: 'leader' | 'human') => Promise<PermissionAuthorityCeilingContext | undefined>;
+/**
+ * THE CONSUMPTION-POINT AUTHORITY RECHECK (A4-PR7 Task 7.0, ADR A1-14).
+ *
+ * The Control service calls this INSIDE the per-team lock, immediately before
+ * it writes the `control-allow-consumed` fact, to answer one question: does the
+ * rung that signed the leg STILL cover the authority point recorded on that
+ * leg? An approval is not a standing grant (A1-14), so the answer must come
+ * from the documents as they are NOW, and the only reader of those documents in
+ * this process is the ceiling context this plane already builds (A5-12: a
+ * reader in every judge is a second answer).
+ *
+ * WHY THE MAPPING LIVES HERE AND NOT IN THE CONTROL LANE. The control lane
+ * deliberately consumes a CLOSED VERDICT PORT: it must not reach the ladder, the
+ * document slot, or the ceiling question, because a lane that can evaluate a
+ * ceiling is a lane that can widen one, and `a3p3-governance-lane-hygiene`
+ * states the consumer set of that question in full. So the plane composes: the
+ * operation lane's `recheckPersistedOperationAuthority` asks the persisted
+ * question against the fresh facts, and this adapter only TRANSLATES the
+ * vocabulary (`still-covered` → `still-sufficient`, `stale` → `authority-risen`,
+ * `undetermined` → `undetermined`) and supplies the facts. It adds no authority
+ * reasoning: no rung is named here, no ordering is consulted, and the one thing
+ * it reads off the row beyond the facts (`requestedEffect`) is the question the
+ * operation lane's `desiredEffect` law can actually answer.
+ *
+ * EVERY FAILURE IS `undetermined`, INCLUDING A THROWN FACTS READ. `undetermined`
+ * is the arm the guard refuses with and consumes NOTHING on; a fault that
+ * reported `still-sufficient` would execute an operation whose authority is
+ * unknown, and a fault that THREW out of here would surface in the guard as a
+ * generic guard failure instead of the named reason the durable verdict
+ * deserves. There is no permissive default anywhere in this function.
+ *
+ * `actingAsLeader` is DERIVED FROM THE DURABLE ROW's beneficiary, never from a
+ * re-read of who is holding the keyboard: the facts reader is valid exactly when
+ * the beneficiary is the member instance the row names, and the reader's own law
+ * (pinned in `test/a4p4-operation-approval-authority.test.ts`) refuses to route a
+ * Leader-beneficiary ask off a member-beneficiary document set. A leader-
+ * beneficiary row therefore answers with no facts, hence `undetermined`, hence a
+ * refusal with zero consumption — the fail-closed direction. No v3 operation case
+ * row is minted for a Leader install today: its routing takes the pre-v3 arm,
+ * which creates no approval case at all.
+ *
+ * @param deps.operationApprovalFacts - the plane's operation-facts reader (the
+ *   same reader the pre-execute pipeline routes the ask with, so the ask and the
+ *   consumption point cannot read two different document sets).
+ * @returns the port for `createControlService`'s `authorityRevalidation`.
+ */
+export declare function createControlAuthorityRevalidation(deps: {
+    readonly operationApprovalFacts: OperationApprovalFactsReader;
+}): ControlAuthorityRecheckPort;
 //# sourceMappingURL=permission-plane.d.ts.map

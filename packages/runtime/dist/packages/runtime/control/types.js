@@ -339,6 +339,15 @@ export const APPROVAL_CASE_IDENTITY_PROBLEMS = {
     EFFECT_UNKNOWN: 'effect-unknown',
     /** A subject that is not one of the closed canonical subjects. */
     SUBJECT_MALFORMED: 'subject-malformed',
+    /**
+     * An operation case that names no authority point (ADR A1-14, A4-PR7 Task
+     * 7.0). The sibling of `OPERATION_FINGERPRINT_REQUIRED`: the fingerprint says
+     * *which invocation*, the authority scope says *over what*, and the
+     * consumption-point re-check needs the second one. Post-cutover there is no
+     * transitional shape to fall back to, so the write is refused rather than
+     * defaulted.
+     */
+    AUTHORITY_SCOPE_REQUIRED: 'authority-scope-required',
 };
 /** The closed reasons `readApprovalCaseState` can refuse to build a case. */
 export const APPROVAL_CASE_READ_PROBLEMS = {
@@ -450,6 +459,63 @@ export const CONTROL_EXECUTION_COUPLING_VALUES = Object.values(CONTROL_EXECUTION
 export function isControlExecutionCoupling(value) {
     return (typeof value === 'string' && CONTROL_EXECUTION_COUPLING_VALUES.includes(value));
 }
+// --- the persisted authority scope (A4-PR7 Task 7.0, ADR A1-14) ---------------------
+/**
+ * The two matcher kinds a Control row may persist (ADR A1-14).
+ *
+ * `subtree` and `any` are DELIBERATELY ABSENT. A Control row authorizes ONE
+ * invocation; persisting a region-shaped matcher would silently widen the
+ * single-shot capability grant into a standing ceiling — the next operation
+ * inside the subtree would find a durable scope that "matches" it. The concrete
+ * operation point is the only thing an allow ever covered, so it is the only
+ * thing an allow may carry.
+ */
+export const CONTROL_AUTHORITY_MATCHER_KINDS = {
+    /** A file-plane operation: the canonical resource key of this invocation. */
+    EXACT: 'exact',
+    /** An exec-plane operation: the canonical fingerprint of this command. */
+    FINGERPRINT: 'fingerprint',
+};
+/** Every persisted matcher kind, for membership pins. */
+export const CONTROL_AUTHORITY_MATCHER_KIND_VALUES = Object.values(CONTROL_AUTHORITY_MATCHER_KINDS);
+/** Type guard: is `value` a well-formed {@link ControlAuthorityScope}? */
+export function isControlAuthorityScope(value) {
+    if (typeof value !== 'object' || value === null)
+        return false;
+    const candidate = value;
+    if (typeof candidate.operationClass !== 'string' || candidate.operationClass.length === 0) {
+        return false;
+    }
+    const matcher = candidate.matcher;
+    if (typeof matcher !== 'object' || matcher === null)
+        return false;
+    const shaped = matcher;
+    if (typeof shaped.kind !== 'string' ||
+        !CONTROL_AUTHORITY_MATCHER_KIND_VALUES.includes(shaped.kind)) {
+        return false;
+    }
+    return typeof shaped.resource === 'string' && shaped.resource.length > 0;
+}
+/**
+ * The verdict of the A1-14 fresh-authority recheck at the consumption point.
+ *
+ * THE SHAPE IS THE POINT: the control lane consumes a CLOSED VERDICT, never
+ * documents and never a ceiling value. Reading the bound authority documents and
+ * walking the ladder is the permission plane's one answer (ADR A5-12: a reader
+ * in every judge is a second answer). The control plane must not re-decide
+ * authority, so this vocabulary names only what the guard may DO with the
+ * answer.
+ */
+export const CONTROL_AUTHORITY_RECHECK_KINDS = {
+    /** The rung that signed still covers the persisted point. */
+    STILL_SUFFICIENT: 'still-sufficient',
+    /** The documents now require a HIGHER rung than the one that signed. */
+    AUTHORITY_RISEN: 'authority-risen',
+    /** The fresh documents could not answer, so coverage is NOT confirmed. */
+    UNDETERMINED: 'undetermined',
+};
+/** Every recheck kind, for membership pins. */
+export const CONTROL_AUTHORITY_RECHECK_KIND_VALUES = Object.values(CONTROL_AUTHORITY_RECHECK_KINDS);
 // --- guard verdicts -------------------------------------------------------------------
 /**
  * The closed guard block reasons (the last-mile guard NEVER throws for a
@@ -503,6 +569,32 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
      * `no-request`, so an unrecognized value can never execute.
      */
     DECISION_UNRECOGNIZED: 'decision-unrecognized',
+    /**
+     * A1-14 (A4-PR7 Task 7.0): at the consumption point the FRESHLY BOUND
+     * authority documents require a HIGHER rung than the one that signed. The
+     * allow is not wrong — it was true when written — it is about an invocation
+     * that no longer exists to be authorized. ZERO consumption: burning the
+     * one-shot on a drift would turn the drift into a second denial nobody voted
+     * on (the same reasoning as `EXTERNAL_POLICY` above).
+     */
+    AUTHORITY_RISEN: 'authority-risen',
+    /**
+     * A1-14: the fresh authority answer could not be obtained (an unavailable
+     * document, an unanswerable containment question, or no recheck port at all).
+     * "Could not confirm" is not "confirmed" — and an unreadable document is
+     * never an empty one (ADR A5-16). ZERO consumption, as above.
+     */
+    AUTHORITY_UNDETERMINED: 'authority-undetermined',
+    /**
+     * A1-14: the durable row is an operation case that carries NO authority point.
+     * After the v3-only cutover there is no transitional scope shape to evaluate
+     * against, so the row cannot be re-confirmed and cannot consume. This is the
+     * CORRUPT row of A2-9's rule, caught at the one place where being wrong means
+     * executing: `packages/tools/guard.ts` blocks on every reason but
+     * `no-request`, so naming this (rather than dropping the row to `no-request`)
+     * is what keeps a corrupt authority row from executing.
+     */
+    AUTHORITY_SCOPE_UNBOUND: 'authority-scope-unbound',
 };
 /** Every guard block reason value, for membership checks. */
 export const CONTROL_GUARD_BLOCK_REASON_VALUES = Object.values(CONTROL_GUARD_BLOCK_REASONS);
