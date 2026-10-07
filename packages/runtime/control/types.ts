@@ -875,6 +875,25 @@ export interface ControlAuthorityRecheckInput {
   readonly requestedEffect: PermissionOverlayEffect
   /** The persisted concrete authority point (ADR A1-14). */
   readonly authorityScope: ControlAuthorityScope
+  /**
+   * The row's canonical command identity (`operationFingerprint`), threaded so
+   * the recheck can derive the SAME candidate set the ask derived (RULING 4).
+   *
+   * It is DURABLE in the same sense as every field above: it is read off the
+   * matched request row, never re-derived from the invocation now arriving. The
+   * field is optional only because a pre-Alpha.4 row and an `envelope-mutation`
+   * case carry no fingerprint — and BOTH of those return before the port is
+   * called (`control/service.ts`), so a recheck that reaches the ceiling
+   * evaluator always has it. Dropping it at the call site is not a cosmetic
+   * change: it makes the shell-class candidate set the persisted tool-level
+   * point alone, which no shell rule can cover (`authority-envelope.ts:218-222`
+   * answers a decisive `{covers:false}` across shapes), so the meet collapses
+   * to the tool key and a genuine authority RISE on a shell-class row is
+   * reported as `still-sufficient`. That is a false pass, and
+   * `test/a4p7-a1-14-consumption-revalidation.test.ts` (P group, shell class)
+   * is red when it happens.
+   */
+  readonly commandFingerprint?: string
 }
 
 /** One recheck verdict; see {@link CONTROL_AUTHORITY_RECHECK_KINDS}. */

@@ -302,6 +302,12 @@ function messageOf(error: unknown): string {
  *   shell class, meaningless elsewhere.
  * @returns the candidate points, plus a refusal reason when a shell-class scope
  *   cannot name its command (a wiring fault, never a silent narrowing-free pass).
+ *   The contract on that combination is strict: when `refused` is set, the
+ *   accompanying `points` list is a DIAGNOSTIC of the shape that could not be
+ *   completed, NOT a candidate set — both call sites check `refused` FIRST and
+ *   return, because evaluating the lone tool-level point of a shell-class scope
+ *   answers with a decisive non-coverage no author declared. Pinned by
+ *   `test/a4p7-v3-cutover-acceptance.test.ts` GROUP F.
  */
 export function operationApprovalCandidatePoints(input: {
   readonly point: ControlAuthorityScope
@@ -650,25 +656,23 @@ export function recheckPersistedOperationAuthority(input: {
     point: input.authorityScope,
     ...(input.commandFingerprint !== undefined ? { commandFingerprint: input.commandFingerprint } : {}),
   })
-  if (candidates.refused !== undefined && input.commandFingerprint !== undefined) {
-    // The caller threaded the field and the row still cannot answer: the question
-    // the ask asked genuinely cannot be re-asked here, so this fails closed.
+  // A refusal is TERMINAL here, exactly as it is at the ASK. The helper answers a
+  // shell-class scope that cannot name its command with `refused` AND its primary
+  // point, and that primary point is a SHAPE NO SHELL RULE CAN COVER
+  // (`authority-envelope.ts:218-222`: cross-shape coverage is a decisive
+  // `{covers:false}`). Evaluating it would therefore not be "the narrower
+  // question" — it would be an answer the documents never gave, and it is exactly
+  // how a rise on a shell command becomes a `still-covered`. So the point that
+  // accompanies a refusal is a diagnostic of what could not be named, never a
+  // candidate to evaluate; no call site consults `points` while `refused` is set.
+  if (candidates.refused !== undefined) {
     return undetermined(
       candidates.refused,
-      `the persisted ${input.authorityScope.operationClass} scope is shell-class and its row carries no command ` +
-        'fingerprint, so the coverage question the ask asked cannot be re-asked here',
+      `the persisted ${input.authorityScope.operationClass} scope is shell-class and its row supplies no usable ` +
+        'command fingerprint, so the coverage question the ask asked cannot be re-asked here; answering from the ' +
+        'persisted tool-level point alone would report a ceiling no author declared',
     )
   }
-  // DISCLOSURE, and it is the one permissive-direction gap left in this ruling.
-  // `input.commandFingerprint === undefined` here means the CALLER cannot supply
-  // a fingerprint yet - `control/service.ts` (the consumer of this port) does not
-  // read the row's `operationFingerprint` - so the candidate set is the persisted
-  // point alone, which is exactly the pre-ruling behaviour. Refusing instead would
-  // be the conservative reading and would also break every shell-class one-shot in
-  // production, so the gap stays visible here, is asserted by GROUP F, and closes
-  // when the row's fingerprint is threaded through the port. It is NOT a claim
-  // that the consumption answer is conservative: for a shell scope it can still
-  // report `still-covered` where the fingerprint candidate would have said `stale`.
   const evaluations: ReturnType<typeof evaluateAuthorityCeiling>[] = []
   for (const matcher of candidates.points) {
     try {
