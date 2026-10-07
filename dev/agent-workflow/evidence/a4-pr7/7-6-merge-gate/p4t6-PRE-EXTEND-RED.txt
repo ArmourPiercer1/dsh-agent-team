@@ -52,3 +52,29 @@ the p4t6 test title is a ~40 KB paragraph; the assertion is the record:
 
 AssertionError: expected 1025 to be 1026 // Object.is equality
 Tests  1 failed | 9 passed (10)
+
+=== MERGED RED capture (merged into origin/master e52c0c7a, which carries A4P7PRE +3) ===
+this lane's tie after the merge reads 1029 - 1028, and BOTH endpoints were measured.
+The scanner does not print its total on success, so each total was read off an
+intentional off-by-one on the derived sum (`983 + 1 + the lane lengths`), which makes
+the failure message state the real number; the ordinary RED below then confirms the
+same pair without the probe. Every probe was reverted and every moved file restored.
+
+  T_without this lane = 1028
+    - probe on origin/master's own p4t6 with a4p7-merge-gate.test.ts absent from disk:
+      AssertionError: expected 1028 to be 1029      (real total 1028, offered 1029)
+  T_with    this lane = 1029
+    - probe on the merged p4t6 with this lane's entry in place:
+      AssertionError: expected 1029 to be 1030      (real total 1029, offered 1030)
+
+  ordinary RED, no probe — merged p4t6 with SCANNED_PATHS_A4P76GATE naming this spec and
+  the spec file itself moved out of packages/testkit/test, so the sum is one above the
+  scanner's count, which is exactly "this lane's file is what moves the total":
+AssertionError: expected 1028 to be 1029
+Tests  1 failed | 9 passed (10)
+
+  restored: `p4t6` on the merged tree, this lane's spec present = 10 passed (10).
+
+The two captures above this line are the same lane's RED on its earlier bases
+(79aeddb2: expected 1025 to be 1024; ff9218a3: expected 1025 to be 1026). Kept, not
+rewritten: each tie asserts the pair that lane actually moved.

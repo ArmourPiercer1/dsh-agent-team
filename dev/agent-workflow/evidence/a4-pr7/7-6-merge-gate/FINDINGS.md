@@ -483,3 +483,63 @@ The cost decision stands: the ~30 s stays embedded. If load relief is ever wante
 a dedicated vitest pool for `p6t1-parallel` (§6), not a mutation leg moved back out to a
 remembered command line — the mutation legs are this file's evidence that its classifiers are
 exercised against a live tree rather than against strings it wrote for itself.
+
+## 16. Merge round: PR #146 would not auto-merge, so the collision was settled here
+
+The reviewed head `013e0800` could not be merged by the coordinator (`the merge commit
+cannot be cleanly created`), and the instruction was to **merge** rather than rebase so that
+head stays addressable. Master had moved to `e52c0c7a` (#143 7.4 C-domain, #144 7.3
+prerequisites, #145 7.4 C-testkit). Merge commit `f7528618`.
+
+One file conflicted: `packages/testkit/test/p4t6-session-event-scan.test.ts`, exactly where
+this lane's own §10 predicted it would — both sides appended a lane list after
+`SCANNED_PATHS_A4ARTIFACTS`, into both derived sums and the by-path presence loop. Resolution
+is keep-both-lists: `SCANNED_PATHS_A4P7PRE` (3 files) and `SCANNED_PATHS_A4P76GATE` (1 file)
+both stay, same relative order in both sums and the loop, every lane keeping its own tie;
+`A4P7PRE`'s `1028 - 1025` untouched; total still `983 + Σ lengths`, never a written number;
+no reflow of anything that did not need to move. The wrapper's `DEFERRALS` block did not
+conflict — this lane never edited that file, so no ratchet arbitration was needed.
+
+**The tie arithmetic was re-derived, not copied.** Both endpoints measured
+(`p4t6-PRE-EXTEND-RED.txt`): `origin/master` without this lane derives **1028**, this merged
+tree derives **1029**, so the tie reads `1029 - 1028`; the ordinary RED with the entry in the
+list and the spec file off disk says `expected 1028 to be 1029`. The totals were read off a
+deliberate `+1` on the derived sum, because the scanner does not print its count on success.
+The comma-operator trap was checked structurally, not by eye: in both sums every term before
+the last ends in `+` and only the final term ends in `,`. Repairing my own earlier resolution
+turned up the same family in whitespace form — a list entry sharing a line with the closing
+bracket — also fixed here, which is worth recording because it lint-passed and typechecked
+for two rounds before anyone looked at it.
+
+### The merged tree's numbers, as the candidate's contract
+
+From `merged-head-verification-e52c0c7a.txt` at `f7528618` (driver
+`reproduce-merged-head-verification.sh`):
+
+| instrument | what the merged tree prints |
+| --- | --- |
+| gate spec, twice | `20 passed (20)` / `30.04s`, `20 passed (20)` / `30.27s` |
+| `p4t6` | `10 passed (10)`, derived total **1029** |
+| 7.5 classifier suite | `53 passed (53)` — in a tree carrying build output; see the caveat below |
+| `pnpm -r run typecheck` | exit 0, 8 `Done`, 0 `error TS`, 0 `Failed` |
+| changed-file eslint | exit 0 |
+| `pnpm run lint` | exit 1 on the standing 160-problem debt — measured by §7.6 as the identity diff below, not as an exit code |
+| `lint-identities --diff …0237d487.txt` | `160 identity lines, 76 distinct`, `new 0, resolved 0` |
+| `composition-smoke` (exit measured **without a pipe**) | exit **0**, 12 step-pattern lines (11 arms + footer), `SKIP 0`, `FAIL 0`, footer `PASS composition-smoke` |
+| acceptance `packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts` | `70 passed (70)` |
+| fence at the toplevel | exit 1 by design; `scanned-in-scope: 748 tracked files`; `dirty(93 files, 169 sites)`, `unknown(0)`, `advisory(8 files, 12 sites)`, `refused(52)`, `prose(5)`, `adjudicated(16 files, 24 sites)`, verdict `dirty-or-unknown` |
+
+**No count in this lane was edited to get any of that.** The fence leg asserts the *classes*
+and a non-empty scanned universe, so the C-domain and C-testkit migrations moved `dirty` from
+`120/259` → `110/213` → `93/169` and `advisory` from `12/18` → `8/12` across three rounds and
+the leg never changed. Had it pinned a number, this merge would have produced the edit the
+design exists to prevent.
+
+**Caveat this lane owns and does not paper over:** the gate spec and the 7.5 classifier suite
+were green here because *this worktree carries build residue* (`packages/client/dist` is
+gitignored output built in an earlier round; only `packages/runtime/dist` and
+`packages/client/composition-shim` are committed). A clean worktree with no build output is a
+different question — it is the subject of the task queued behind this merge, and the honest
+statement now is that at least two legs of this file (`check:artifacts`, and the composition
+arm that reads the built client entry) depend on that residue, so "green" above is green in a
+built tree and must not be quoted as green in a clean one.
