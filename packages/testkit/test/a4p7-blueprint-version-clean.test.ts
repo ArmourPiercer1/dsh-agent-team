@@ -203,7 +203,6 @@ function expectSingle(f: Fixture, want: SiteClass | 'none'): Classification {
  * as a lie), never by being added to a skip list in the scanner.
  */
 const DEFERRALS: ReadonlyMap<string, string> = new Map([
-  ['packages/tools/harness/run.mjs', 'C-tools+harness (plan-named site, harness/run.mjs:214)'],
   ['packages/tools/harness/t12-vertical.mjs', 'C-tools+harness (plan-named site, harness/t12-vertical.mjs:215; also emits a v2 document; the L1838 occurrence is comment prose, not a site)'],
   ['packages/testkit/test/bp1h-blueprint-authoring.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/testkit/test/t6-10-composition-pipeline.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
@@ -458,9 +457,26 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
 
   it('the fence reports sites, not a bare count, and names a file the reader can open', () => {
     // The plan's X10 law: the contract is the path set, so the report must
-    // carry paths and line numbers. `run.mjs` is a named Task 7.4 site — the
-    // positive control that detection actually finds a known v1 author.
-    expect(report).toContain('OFFENDING packages/tools/harness/run.mjs :: ')
+    // carry paths and line numbers.
+    //
+    // This control used to name ONE path — `packages/tools/harness/run.mjs` — and
+    // that shape is a landmine: the day the lane owning the file migrates, the
+    // control goes red on SUCCESS, which is precisely when a tired worker mutes
+    // it (lane C-tools+harness, §7.4). The law is asserted directly instead:
+    // every dirty PATH is named and every dirty SITE's `L<line>=v<version>` is
+    // printed, for any path, forever. The literal named path stays, because a
+    // reader must be able to open one straight out of this file, and the archetype
+    // is the one the next test pins line-by-line anyway.
+    for (const path of dirtyPaths) {
+      expect(report, `the report must name the dirty path ${path}`).toContain(`OFFENDING ${path} :: `)
+    }
+    for (const site of run.dirty) {
+      expect(
+        report,
+        `the report must print the dirty site ${site.path} L${String(site.line)}=v${String(site.version)}`,
+      ).toContain(`L${String(site.line)}=v${String(site.version)}`)
+    }
+    expect(report).toContain('OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: ')
     expect(report).toMatch(/OFFENDING \S+ :: L\d+=v[12]/)
     expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)} files`)
   })
