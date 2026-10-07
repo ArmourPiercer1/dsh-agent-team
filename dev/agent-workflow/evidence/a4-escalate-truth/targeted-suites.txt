@@ -1,0 +1,17 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-escalate
+
+ ✓ packages/runtime/test/a4p6-driven-principal-act.test.ts (6 tests) 4ms
+ ✓ packages/runtime/test/a4p3-intervention-projection.test.ts (32 tests) 9ms
+ ✓ packages/runtime/test/control-legacy-row-compat.test.ts (5 tests) 4ms
+ ✓ packages/runtime/test/p6t4-restart.test.ts (4 tests) 3ms
+ ✓ packages/runtime/test/f9-control-exactly-once.test.ts (10 tests) 6ms
+ ✓ packages/runtime/test/a4p6-intervention-aggregation.test.ts (20 tests) 11ms
+ ✓ packages/runtime/test/a4p3-approval-escalation.test.ts (57 tests) 9ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts (23 tests) 187ms
+
+ Test Files  8 passed (8)
+      Tests  157 passed (157)
+   Start at  02:10:03
+   Duration  1.26s (transform 5.25s, setup 0ms, import 7.72s, tests 233ms, environment 1ms)
+

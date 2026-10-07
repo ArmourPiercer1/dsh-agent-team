@@ -173,7 +173,7 @@ import { TEAM_DOMAIN_ERROR_CODES, isTeamDomainError, } from '../../storage/schem
 import { deterministicToken } from '../../storage/provisioning/index.js';
 import { CONTROL_ERROR_CODES, ControlError, } from './errors.js';
 import { PERMISSION_OVERLAY_EFFECT_VALUES, } from '../../storage/schema/permission-overlay.js';
-import { APPROVAL_CASE_IDENTITY_PROBLEMS, APPROVAL_CASE_READ_PROBLEMS, CONTROL_AUTHORITY_MATCHER_KINDS, CONTROL_AUTHORITY_RECHECK_KINDS, CONTROL_CASE_OUTCOMES, CONTROL_CASE_TERMINAL_OUTCOMES, CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_REASONS, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_EXECUTION_COUPLINGS, CONTROL_EXECUTION_COUPLING_VALUES, CONTROL_LEG_TERMINAL_REASON_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, CONTROL_REQUEST_KIND_VALUES, CONTROL_RESOLVER_ROLES, CONTROL_SUBJECT_KINDS, controlEscalationSuccessor, hasAuthorityResolver, isControlAuthorityScope, isProposalAuthorityPosition, } from './types.js';
+import { APPROVAL_CASE_IDENTITY_PROBLEMS, APPROVAL_CASE_READ_PROBLEMS, CONTROL_AUTHORITY_MATCHER_KINDS, CONTROL_AUTHORITY_RECHECK_KINDS, CONTROL_CASE_OUTCOMES, CONTROL_CASE_TERMINAL_OUTCOMES, CONTROL_DECISION_REASON_VALUES, CONTROL_DECISION_REASONS, CONTROL_DECISION_VALUES, CONTROL_DECISION_VALUE_VALUES, CONTROL_EXECUTION_COUPLINGS, CONTROL_EXECUTION_COUPLING_VALUES, CONTROL_LEG_TERMINAL_REASONS, CONTROL_LEG_TERMINAL_REASON_VALUES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, CONTROL_REQUEST_KIND_VALUES, CONTROL_RESOLVER_ROLES, CONTROL_SUBJECT_KINDS, controlEscalationSuccessor, hasAuthorityResolver, isControlAuthorityScope, isProposalAuthorityPosition, } from './types.js';
 // --- closed fact vocabulary (kebab; p4t6-scanner safe by construction) -------------
 /** The durable ControlRequest fact family. */
 const FACT_REQUEST = 'control-request-recorded';
@@ -3313,6 +3313,16 @@ export function createControlService(options) {
             // reason `escalated`. This is the row that makes the inline waiter
             // settle; if it were written with an out-of-vocabulary reason the read
             // gate would drop it and the waiter would hang.
+            // When no leg rises, THIS row is the case's last durable word, and A2-8
+            // has already named the field that says why: `terminalReason`
+            // `resolver-unavailable` ("No resolver exists for the authority this
+            // case needs", ADR A1-12 / spec 11.6). The born-terminal twin close in
+            // `requestApprovalLeg` (`closeZeroReviewCaseTransactionally`) stamps it;
+            // until the escalate-truth fix this branch did not, so the record read
+            // bare `deny · escalated` — indistinguishable for every reader that does not also
+            // fold the case, which is audit F2's mute-close defect re-armed on the
+            // OTHER A1-12 entrance. An ABSENT terminalReason keeps its A2-8 meaning
+            // (reviewer-chosen close / a rise: the case continues above).
             const terminalDecision = await commitDecision({
                 requestId: args.requestId,
                 value: CONTROL_DECISION_VALUES.DENY,
@@ -3320,6 +3330,7 @@ export function createControlService(options) {
                 scope,
                 requestSequence: leg.entry.sequence,
                 reason: CONTROL_DECISION_REASONS.ESCALATED,
+                ...(mintsRisenLeg ? {} : { terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE }),
                 ...(args.reason !== undefined ? { note: args.reason } : {}),
             });
             // WRITE 2 of 3: the additive leg fact, payload FROZEN at the A3-12(ii)

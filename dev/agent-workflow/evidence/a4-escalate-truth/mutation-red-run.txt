@@ -1,0 +1,57 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-escalate
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > offer: the human-user leg projects escalate — the offer reads off the FROZEN ladder, never off resolver availability (settled 2026-10-08 ruling; NOT touched by this fix)
+=== A4-ESCALATE-TRUTH MEASUREMENT === legalActions offered on the human-user leg before the act: ["allow","escalate","deny"]
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > MEASURED RECEIPT (disclosed misrepresentation, pinned as tripwire): the wire answers outcome "escalated" although no successor took the case — the truthful value is outside the CLOSED v8 set REMOTE_INTERVENTION_ACT_OUTCOMES (remote/src/contracts/types.ts:485-490); adding one is a wire-version decision the writer may not make (BLOCKER reported)
+=== A4-ESCALATE-TRUTH MEASUREMENT === intervention.act wire response: {"ok":true,"value":{"data":{"outcome":"escalated"},"provenance":{"origin":"team-remote","method":"intervention.act","endpoint":"intervention.act","contractVersion":8,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}}
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > service-level truth the receipt discards: caseOutcome is "authority-unavailable" and no leg rose (A1-12, spec 11.6)
+=== A4-ESCALATE-TRUTH MEASUREMENT === escalateApprovalLeg return (discarded by s6-remote.ts:3770-3776): caseOutcome=authority-unavailable nextLeg=ABSENT
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > the case is CLOSED, not destroyed: the leg row stays durable, exactly one closing deny and one escalation fact join, no second leg, nothing pending, zero consumption
+=== A4-ESCALATE-TRUTH MEASUREMENT === durable ledger rows for the wire case after the act: [{"factType":"control-request-recorded","legOrdinal":1},{"factType":"control-decision-recorded","decision":"deny","reason":"escalated","terminalReason":"authority-drift"},{"factType":"control-escalation-recorded","reason":"above my rung — send it up","legOrdinal":1}]
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > DURABLE TRUTH (the fix): the closing deny carries terminalReason "resolver-unavailable" — the A2-8 destination field for an unavailable-resolver close, which the born-terminal twin (service.ts:4013) stamped and this branch omitted
+=== A4-ESCALATE-TRUTH MEASUREMENT === terminalReason on the wire-lane closing deny: "authority-drift"; on the service-lane closing deny: "authority-drift"
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > CONTROL arm of the fix: a RISEN escalation (leader leg -> Human User) writes no terminalReason and mints leg 2 — absence keeps its A2-8 meaning, the stamp is bound to the terminate branch only
+=== A4-ESCALATE-TRUTH MEASUREMENT === risen case: caseOutcome=escalated nextLeg=leg 2 closing-deny terminalReason=undefined legRows=2
+
+stdout | packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > re-read law: the decided case leaves the open projection (the panel row disappears; get answers INTERVENTION_NOT_FOUND) — tripwire: wiring projectZeroLegTermination (projection.ts:163, production-uncalled today) into this read will redden this pin and must be re-reviewed, not renumbered
+=== A4-ESCALATE-TRUTH MEASUREMENT === intervention.list ids after the act: ["int-case-01gn3u61ds4oyx1rntg681ow","int-case-0yyf56w0ijfn4b0kmftky0tn"]; intervention.get after the act: {"code":"INTERVENTION_NOT_FOUND","message":"intervention.get: no intervention item 'int-case-0ut3uko1s1uisr1n2rv3u11h' is currently projected for team 'session-root-p6t1'","details":{"method":"intervention.get","endpoint":"intervention.get","contractVersion":8,"requestToken":null}}
+
+ ❯ packages/runtime/test/a4-escalate-act-truth.test.ts (7 tests | 1 failed) 8ms
+     ✓ offer: the human-user leg projects escalate — the offer reads off the FROZEN ladder, never off resolver availability (settled 2026-10-08 ruling; NOT touched by this fix) 2ms
+     ✓ MEASURED RECEIPT (disclosed misrepresentation, pinned as tripwire): the wire answers outcome "escalated" although no successor took the case — the truthful value is outside the CLOSED v8 set REMOTE_INTERVENTION_ACT_OUTCOMES (remote/src/contracts/types.ts:485-490); adding one is a wire-version decision the writer may not make (BLOCKER reported) 0ms
+     ✓ service-level truth the receipt discards: caseOutcome is "authority-unavailable" and no leg rose (A1-12, spec 11.6) 0ms
+     ✓ the case is CLOSED, not destroyed: the leg row stays durable, exactly one closing deny and one escalation fact join, no second leg, nothing pending, zero consumption 1ms
+     × DURABLE TRUTH (the fix): the closing deny carries terminalReason "resolver-unavailable" — the A2-8 destination field for an unavailable-resolver close, which the born-terminal twin (service.ts:4013) stamped and this branch omitted 4ms
+     ✓ CONTROL arm of the fix: a RISEN escalation (leader leg -> Human User) writes no terminalReason and mints leg 2 — absence keeps its A2-8 meaning, the stamp is bound to the terminate branch only 0ms
+     ✓ re-read law: the decided case leaves the open projection (the panel row disappears; get answers INTERVENTION_NOT_FOUND) — tripwire: wiring projectZeroLegTermination (projection.ts:163, production-uncalled today) into this read will redden this pin and must be re-reviewed, not renumbered 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4-escalate-act-truth.test.ts > a4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it > DURABLE TRUTH (the fix): the closing deny carries terminalReason "resolver-unavailable" — the A2-8 destination field for an unavailable-resolver close, which the born-terminal twin (service.ts:4013) stamped and this branch omitted
+AssertionError: expected 'authority-drift' to be 'resolver-unavailable' // Object.is equality
+
+Expected: "resolver-unavailable"
+Received: "authority-drift"
+
+ ❯ packages/runtime/test/a4-escalate-act-truth.test.ts:391:49
+    389|       )}; on the service-lane closing deny: ${JSON.stringify(directDec…
+    390|     )
+    391|     expect(decision?.payload['terminalReason']).toBe('resolver-unavail…
+       |                                                 ^
+    392|     expect(directDecision?.payload['terminalReason']).toBe('resolver-u…
+    393|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  02:08:08
+   Duration  985ms (transform 689ms, setup 0ms, import 894ms, tests 8ms, environment 0ms)
+
