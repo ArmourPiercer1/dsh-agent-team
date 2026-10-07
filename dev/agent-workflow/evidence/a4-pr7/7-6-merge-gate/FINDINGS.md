@@ -1,7 +1,7 @@
 # A4-PR7 Task 7.6 — the code merge gate, as a spec the suite runs
 
-Lane: `test/a4-pr7-76-gate` (single-task writer). Base: `79aeddb2` (master, after PR #131),
-**rebased onto `ff9218a3` before delivery** — 24 commits landed underneath this lane while it
+Lane: `test/a4-pr7-76-gate` (single-task writer). Base: `79aeddb2` (master, after PR #131), **rebased twice**: onto `ff9218a3` for
+delivery, then onto `fe7e40f4` for the review fixes (§15). — 24 commits landed underneath this lane while it
 was written, two of which changed instruments this gate reads (§14 records what moved and
 what was re-measured; `79aeddb2`-era captures are kept, not rewritten).
 Authority: `docs/plans/active/alpha4-permission-governance/alpha4-implementation-plan.md`
@@ -12,7 +12,7 @@ Coordinator's ruling for this round (2026-10-08) fixes the three shapes §4 belo
 
 | path | what |
 | --- | --- |
-| `packages/testkit/test/a4p7-merge-gate.test.ts` | the gate: 18 tests that drive the real commands. New. |
+| `packages/testkit/test/a4p7-merge-gate.test.ts` | the gate: 20 tests that drive the real commands. New. |
 | `packages/testkit/test/p4t6-session-event-scan.test.ts` | the scannable-file ledger increment: one new lane list + its own tie (§9). |
 | `dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/` | this file and the captures it cites. |
 
@@ -24,8 +24,8 @@ machine-checks that lesson for the four instruments §7.6 names, so the same rot
 re-open silently.
 
 Cost added to the suite: **30.6s** (pre-rebase `spec-two-runs.txt`: `17 passed` / `30.50s`,
-then `17 passed` / `30.53s`; post-rebase `18 passed` / `30.60s`, second run of
-`outer-legs-and-base-control-rebased-ff9218a3.txt` O8). Typecheck 9.4s, lint identity 9.6s, client lane 7.5s, the rest
+then `17 passed` / `30.53s`; at `ff9218a3` `18 passed` / `30.60s`; at `fe7e40f4` with the
+review fixes `20 passed` / see `post-fix-verification-fe7e40f4.txt` V1–V2). Typecheck 9.4s, lint identity 9.6s, client lane 7.5s, the rest
 under 2s. The three mutations the gate performs on the tree (hide the built client entry;
 hide one hoisted package; scratch dir for the non-repo leg) are restored in `finally`
 and asserted restored — `check:artifacts` and `smoke:composition` both green afterwards
@@ -326,7 +326,7 @@ the scanner's total for the next reader.
 | changed-file ESLint | outer (`npx eslint <my 2 files>`) | clean; the whole-repo leg below subsumes it |
 | full `pnpm lint` as identity diff vs `lint-identities-0237d487.txt` | **embedded** | `160 identity lines, 76 distinct`, `new 0, resolved 0` — on both bases, i.e. the 24 upstream commits did not move the baseline either |
 | full `pnpm test` with the baseline-diff gate | **outer** (§12 reason) | run twice, on both bases: `79aeddb2` 22 → 25 → 22, `ff9218a3` 26 (base) → 23 (head). **0 added** by this lane in either; the swing is the `p6t1-parallel` load group (§6) |
-| client lane `pnpm --filter @dsh-agent-team/client run test`, closing on the named trio | **embedded** | `3 failed | 877 passed (880)` on both bases, trio 3/3 by name, nothing outside the disclosed set |
+| client lane `pnpm --filter @dsh-agent-team/client run test`, closing on the named trio | **embedded** | `3 failed, 877 passed (880)` on every base tried, trio 3/3 by name, nothing outside the disclosed set, and the trio's 2 spec files asserted present (§15 F5 — a green trio is allowed, a vanished one is not) |
 | `pnpm build`, `pnpm build:composition` | **outer** (§12 reason) | both `Done`; `git status` afterwards carries only this lane's 3 paths, i.e. the committed surface was already current |
 | `pnpm check:artifacts` | **embedded** | `OK: 1508 files … (incl. 1 glue placement(s))`; `OK: 0 files`, the `NOT-RUN:` empty-produced-set line and the `missing` line are all classified `refused` — the first two pinned against the strings the script prints, the third also run for real from `packages/testkit` (§5) |
 | `pnpm smoke:composition` (red blocks merge) | **embedded** | 11 arms PASS by name (2 plugin + 9 bundle, both counts imported), zero SKIP, unqualified footer, step-line count checked against the two lists; the three-way mutation matrix of §2 proves the leg can go red |
@@ -414,3 +414,72 @@ base — the fence/split lane grew it); acceptance `70 passed (70)` (O7); `build
 class printed (O6); lint `new 0, resolved 0` (O11); typecheck 8 `Done` / 0 `error TS`
 (O12); client lane `3 failed | 877 passed (880)` (O13); base/head identity diff `new 0`
 (R1–R3). Nothing was carried over from the pre-rebase receipts without being re-run.
+
+## 15. Review round 1: four tolerance branches that passed on nothing, and one residual accepted on purpose
+
+The verdict was MERGE-with-fixes, and every fix was the same defect wearing four hats: a
+branch written to tolerate a legitimate state that also tolerates the *absence* of the thing
+being checked. §5 and §7.5 of this file are the same disease in other people's instruments;
+being told I had shipped it myself in the client leg is the correct review.
+
+| id | the tolerance | what it silently accepted | the fix | proof it bites |
+| --- | --- | --- | --- | --- |
+| **F5** | `0 failures and 0 name matches ⇒ passed` | **deleting the trio's two spec files turned the leg green.** §7.6 closes *on* three named failures, so the cheapest way to satisfy the leg was to erase what it inspects | the two files the trio lives in (derived from `CLIENT_BASELINE_FAILURES`, not a second hand-written list) must be in `packages/client/test`, read **before** the lane runs; a missing file is a `failed` that names it and says what to update. Green with the files present is still tolerated — the trio may be fixed, and a gate that requires failure would block the fix | `review-fixes-F1-F5-bite.txt` §1: with `team-creation-panel.client.spec.tsx` moved out of the tree the live leg printed `Tests 1 failed, 860 passed (861)` (the summary line, with the separator spelled out because a literal pipe would break this table) — the surviving trio file still matched 1 of 3, so the old branch would have called that **passed**; the leg reds with the absence message. Restored, `git status` back to its single modified path, leg green again. Committed teeth: `tolerates a green trio and refuses a vanished one`, 7 report-text cases including green+absent and red+present |
+| **F2** | the runner refused only *its own* timeout, while its comment claimed it refused signals | an externally killed child (OOM killer, stray `pkill`, teardown mid-run) that had already flushed a complete report reached the classifier and read **`passed`** | `signal !== null ⇒ refused` before `classify` is ever called, naming the signal and the code | committed leg `a child killed by a signal is refused even when it printed a complete report`: `sh -c 'printf "PASS synthetic-instrument: every arm reported, nothing to see"; kill -KILL $$'` — well-formed flushed output, `SIGKILL`, verdict `refused`, and the `classify` it would have reached returns `passed` by construction to prove the layering |
+| **F3** | the plugin half had a non-emptiness tripwire; the bundle half did not | `REQUIRED_CHECK_IDS` resolving to `[]` — 9 of the 11 arms simply stop being required, and every consumer is a `for` loop that stops iterating | `bundleArms()` with the symmetric guard, plus a malformed-entry guard, used at both call sites | `review-fixes-F1-F5-bite.txt` §2: with the import shadowed by an empty list the green leg fails with `bundleArms() derived zero ids from REQUIRED_CHECK_IDS — the bundle half … would stop being required at all`, then the probe is reverted byte-identically |
+| **F1** | two registration checks matched raw file text | a **comment** naming the path kept the p4t6 registration green after the array entry — the only part the scanner counts — was deleted; and a comment naming a script kept the "invoked from a test" wiring claim green with nothing invoking it | the p4t6 check now matches inside the `const SCANNED_PATHS_A4P76GATE = […]` literal, as a quoted entry; the wiring check matches only inside the head of a `runLeg(` call, where the argv actually lives | `review-fixes-F1-F5-bite.txt` §3 runs both matchers over three texts each. The honest part: the new wiring matcher **went red on my own file**, because the fence legs passed `[FENCE]` through a constant. The check was right and the indirection was the thing to remove — the three call sites now spell the path, instead of the check being loosened until it stopped meaning anything |
+
+The reviewer's M6b case belongs in this file's terms, not only in the review. Hiding an
+arm's `PASS` line *below* a guard that never prints makes the instrument report
+green-minus-one at exit 0: the instrument is the thing that cannot see its own absence, and
+this spec is the layer that compares its report against what it knows should be there. That
+is the whole argument for a second layer, and also the boundary of what the second layer can
+do — which is the next section.
+
+### Accepted residual, stated rather than hidden: a consistent arm deletion stays green
+
+If an arm is removed **completely** — the id out of `REQUIRED_CHECK_IDS` (or the target out
+of `PLUGIN_TARGETS`), its `record()` call, and its print site — this gate goes green. It
+cannot do otherwise: the ruling forbids asserting a literal arm count, and the arm set is
+derived from those two lists precisely so that a legitimate arm added by another lane does
+not require an edit here. Derivation and a count are the same knob turned in opposite
+directions; a gate that requires N arms would also fail every honest change to N. The
+F3/plugin tripwires cover the *whole half disappearing* (an empty derivation), not one entry
+leaving cleanly, and a clean departure from a list is indistinguishable from an edit that
+list's owner is entitled to make.
+
+So the residual is: **this gate cannot see an arm that was never intended to run.** Its
+actual protections against that are procedural — `graph.yaml` and plan §7.6 are the record of
+what must be gated, the diff of `composition-smoke-targets.mjs` / `composition-smoke-bundle.mjs`
+is where such a deletion is visible, and the wiring test (§1) at least guarantees the four
+named instruments are still spawned by *something*. If a mechanical tripwire is ever wanted
+without a literal count, the shape is a per-arm **identity** pin (the two lists asserted
+against named ids recorded in the plan, a set assertion that grows when a lane adds an arm
+but fails when one vanishes) — a real option, not taken here because the ruling's letter and
+its reason both point the other way, and because inventing it unilaterally would be exactly
+the silent re-tightening this phase keeps finding. **Do not summarise this as a strength.**
+An instrument that names its blind spot can be reasoned about; one that hides it is how we
+kept arriving at greens nobody earned.
+
+### Re-verification at `fe7e40f4`
+
+`post-fix-verification-fe7e40f4.txt`, driver `reproduce-post-fix-verification.sh`: gate
+`20 passed (20)` twice (`28.84s` / `28.89s`); `p4t6 10` (no new scannable file, so the total
+stays exactly where §9 put it); the 7.5 classifier suite `53`; `pnpm -r run typecheck` exit 0
+with 8 `Done` and 0 `error TS`; changed-file eslint exit 0; `lint-identities --diff` `new 0,
+resolved 0` — V6's `pnpm run lint` exits 1 on the standing 160-problem repo debt, which is the
+number §7.6 measures as an identity diff, not a regression introduced here. The fence run
+prints `scanned-in-scope: 745`, every class, verdict `dirty-or-unknown` at exit 1 by design,
+with dirty down to `110 files, 213 sites` because the 7.4 C-domain migrations landed while
+this lane was in review; my leg asserts the classes and a non-empty universe, not those
+counts, so it read the change without an edit. `composition-smoke` measured **without a pipe**:
+`exit_code_no_pipe=0`, 12 lines matching the step pattern (11 arms + the footer), `SKIP lines:
+0`, `FAIL lines: 0`, footer `PASS composition-smoke`. The acceptance suite now lives at
+`packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts` — the 7.4 range moved it out of
+`packages/testkit/test`, which is why V9 carries a correction line — and is still
+`70 passed (70)`.
+
+The cost decision stands: the ~30 s stays embedded. If load relief is ever wanted the lever is
+a dedicated vitest pool for `p6t1-parallel` (§6), not a mutation leg moved back out to a
+remembered command line — the mutation legs are this file's evidence that its classifiers are
+exercised against a live tree rather than against strings it wrote for itself.

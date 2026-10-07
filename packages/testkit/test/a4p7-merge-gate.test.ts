@@ -92,6 +92,74 @@ const CLIENT_BASELINE_FAILURES: readonly string[] = [
 ]
 const CLIENT_DISCLOSED_LOCATION_DEPENDENT = 'test/s3-client-generation-spike.test.ts'
 
+/**
+ * The spec FILES the disclosed trio lives in, derived from the names above rather than
+ * written out a second time: 3 named tests across 2 files, and a list that could drift
+ * from the list it is supposed to guard is its own small defect.
+ */
+const CLIENT_TRIO_FILES: readonly string[] = [
+  ...new Set(CLIENT_BASELINE_FAILURES.map((name) => (name.split(' > ')[0] ?? '').replace(/^test\//, ''))),
+]
+
+/**
+ * Read the client lane's vitest report. This lives at module scope so the tolerance below
+ * can be tested directly against reports it has never seen — including the one this file
+ * could not previously tell apart (F5).
+ *
+ * THE TOLERANCE AND ITS LIMIT. §7.6 closes on three NAMED pre-existing client failures, so
+ * a run reporting zero failures is acceptable: the trio may be fixed, and a gate that
+ * requires failure would block the fix. It was implemented as "zero failures and zero name
+ * matches ⇒ passed", which is vacuous in a way that matters — deleting the trio's spec
+ * files also reports zero failures and zero matches, so the loudest way to satisfy this leg
+ * was to erase what it inspects. Absence is now a separate answer from green: the files the
+ * trio lives in must be in the directory listing, checked before the report is even read.
+ * Green with the files present is a pass; a vanished file is a failure that says which one
+ * and what to update if the removal was deliberate.
+ */
+function classifyClientLaneReport(run: { out: string; missingTrioFiles: readonly string[] }): {
+  verdict: Verdict
+  why: string
+} {
+  const out = run.out
+  const summary = out.split('\n').filter((l) => /^\s*(Test Files|Tests)\s/.test(l)).join(' / ')
+  if (summary.length === 0) {
+    return { verdict: 'refused', why: `the client lane produced no vitest summary at all; tail: ${tail(out)}` }
+  }
+  const reportedFailures = /Tests\s+(\d+) failed/.exec(out)?.[1] ?? '0'
+  const failed = [...out.matchAll(/^\s*FAIL\s+(.+)$/gm)].map((m) => (m[1] as string).trim())
+  const outside = failed.filter(
+    (f) => !CLIENT_BASELINE_FAILURES.some((b) => f.startsWith(b)) && !f.startsWith(CLIENT_DISCLOSED_LOCATION_DEPENDENT),
+  )
+  if (outside.length > 0) {
+    return { verdict: 'failed', why: `new client-lane failures outside the disclosed baseline: ${outside.slice(0, 5).join(' | ')}` }
+  }
+  if (run.missingTrioFiles.length > 0) {
+    return {
+      verdict: 'failed',
+      why:
+        `${String(run.missingTrioFiles.length)} of the ${String(CLIENT_TRIO_FILES.length)} files the disclosed client baseline lives in is not in ` +
+        `packages/client/test (${run.missingTrioFiles.join(', ')}) — a test that is not in the tree cannot fail, so a zero-failure ` +
+        `report from this lane measures nothing. §7.6 closes ON the three named failures; if they were fixed or the files renamed, ` +
+        `update dev/agent-workflow/evidence/a4-client-baseline/README.md and this file's CLIENT_BASELINE_FAILURES in the same change ` +
+        `rather than letting the absence pass as a green.`,
+    }
+  }
+  const matched = CLIENT_BASELINE_FAILURES.filter((b) => out.includes(b))
+  if (reportedFailures !== '0' && matched.length === 0) {
+    // The guard against a vacuous name set: failures were reported, none of them matched
+    // the disclosed names, and nothing above caught it because the filter is a prefix match
+    // over a set that may itself have drifted.
+    return {
+      verdict: 'failed',
+      why: `${reportedFailures} client-lane failure(s) reported and NONE matched the disclosed names — the baseline record in a4-client-baseline/README.md has drifted and must be re-derived, not re-pinned silently: ${failed.slice(0, 5).join(' | ')}`,
+    }
+  }
+  return {
+    verdict: 'passed',
+    why: `${summary} — every reported failure is disclosed, the trio's ${String(CLIENT_TRIO_FILES.length)} spec files are present, and ${String(matched.length)} of the baseline trio matched by name${reportedFailures === '0' ? '; the trio is GREEN, which §7.6 allows because the files are there to be re-run' : ''} (the s3 spike is location-dependent, see a4-client-baseline/README.md)`,
+  }
+}
+
 type Verdict = 'passed' | 'failed' | 'refused'
 
 interface LegRun {
@@ -174,8 +242,26 @@ async function runLeg(
         })
         return
       }
+      if (signal !== null) {
+        // F2, and the reason this branch exists separately from the timeout above: a child
+        // killed from OUTSIDE — OOM killer, a `pkill` in a cleanup path, a harness tearing
+        // the tree down — can die AFTER flushing a syntactically complete report. Handing
+        // that to `classify` would return `passed`, because the classifier is reading a
+        // report and has no idea the author of that report was killed mid-sentence. A run
+        // that did not reach its own exit is not a run that checked anything, however
+        // well-formed its last line looked.
+        resolveLeg({
+          verdict: 'refused',
+          why: `${opts.label}: terminated by signal ${signal} before it exited (code ${String(code)}) — whatever it printed last, it did not finish. Output tail:\n    ${tail(stdout || stderr)}`,
+          code,
+          stdout,
+          stderr,
+          signal,
+        })
+        return
+      }
       const classified = opts.classify({ stdout, stderr, code })
-      resolveLeg({ verdict: classified.verdict, why: classified.why, code, stdout, stderr, signal: signal ?? null })
+      resolveLeg({ verdict: classified.verdict, why: classified.why, code, stdout, stderr, signal })
     })
   })
 }
@@ -217,6 +303,28 @@ function compositionTargets(): { label: string; expectedName: string }[] {
     throw new Error('compositionTargets() derived zero plugin targets from PLUGIN_TARGETS — no plugin arm would be required by this gate')
   }
   return out
+}
+
+/**
+ * The bundle arms the composition gate intends to run, from the same frozen list it
+ * renders them from. The symmetric tripwire to the one above: the plugin half is 2 of the
+ * 11 arms today and the bundle half is 9, so an empty derivation here loses MORE of the
+ * gate, and every consumer below is a `for` loop that would simply stop iterating. An
+ * import that resolves to `[]` — a renamed export, a build step that stops writing it, a
+ * merge that deletes entries — must be a loud failure at derivation time, not a green with
+ * fewer requirements. See FINDINGS §15 for the residual this guard does NOT cover.
+ */
+function bundleArms(): readonly string[] {
+  const ids = REQUIRED_CHECK_IDS as readonly string[]
+  if (ids.length === 0) {
+    throw new Error('bundleArms() derived zero ids from REQUIRED_CHECK_IDS — the bundle half of the composition gate (9 of the 11 arms today) would stop being required at all')
+  }
+  for (const id of ids) {
+    if (typeof id !== 'string' || id.length === 0) {
+      throw new Error(`bundleArms() read a malformed id out of REQUIRED_CHECK_IDS (${String(id)}) — an arm that cannot be named cannot be required`)
+    }
+  }
+  return ids
 }
 
 /**
@@ -418,7 +526,7 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
           `the ${target.label} leg is not a PASS line naming plugin "${target.expectedName}": ${parsed.steps.filter((l) => l.includes(target.label)).join(' | ') || '(no line for this target at all)'}`,
         ).toBe(true)
       }
-      for (const id of REQUIRED_CHECK_IDS as readonly string[]) {
+      for (const id of bundleArms()) {
         expect(
           parsed.steps.some((l) => l.startsWith('PASS ') && l.includes(` ${id} (`)),
           `required bundle arm "${id}" did not print a PASS line — an arm that stopped reporting is a closed gate, not a green one`,
@@ -429,7 +537,7 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       // printed is checked against the two lists it prints from, not against a number
       // written in this file.
       expect(parsed.steps.length, 'the number of step lines must equal the two derived arm lists the gate prints from').toBe(
-        compositionTargets().length + (REQUIRED_CHECK_IDS as readonly string[]).length,
+        compositionTargets().length + bundleArms().length,
       )
       expect(parsed.footer, 'the summary line must be the unqualified one').toBe('PASS composition-smoke')
       expect(r.stdout).not.toMatch(/NOT RUN/)
@@ -502,11 +610,10 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
   })
 
   describe('the fence leg (plan 7.6: the wrapper must be green; this leg owns the cwd doctrine)', () => {
-    const FENCE = 'scripts/verify-blueprint-version-clean.mjs'
 
     it('reports every verdict class with its set by path when run at the toplevel', { timeout: 630000 }, async () => {
       const toplevel = repoToplevel() as string
-      const r = await runLeg(process.execPath, [FENCE], {
+      const r = await runLeg(process.execPath, ['scripts/verify-blueprint-version-clean.mjs'], {
         cwd: REPO_ROOT,
         timeoutMs: 600_000,
         label: 'the blueprint-version fence',
@@ -525,7 +632,7 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       const scratch = join(REPO_ROOT, '.tmp-7-6-gate-not-a-repo')
       spawnSync('mkdir', ['-p', scratch], { cwd: REPO_ROOT })
       try {
-        const r = await runLeg(process.execPath, [join(REPO_ROOT, FENCE)], {
+        const r = await runLeg(process.execPath, [join(REPO_ROOT, 'scripts', 'verify-blueprint-version-clean.mjs')], {
           cwd: scratch,
           timeoutMs: 120_000,
           label: 'the blueprint-version fence outside a repository',
@@ -543,7 +650,7 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
     it('will not accept a run from below the toplevel as a whole-tree clean (measured false-clean)', { timeout: 630000 }, async () => {
       const toplevel = repoToplevel() as string
       const sub = join(REPO_ROOT, 'packages', 'testkit')
-      const r = await runLeg(process.execPath, [join(REPO_ROOT, FENCE)], {
+      const r = await runLeg(process.execPath, [join(REPO_ROOT, 'scripts', 'verify-blueprint-version-clean.mjs')], {
         cwd: sub,
         timeoutMs: 600_000,
         label: 'the blueprint-version fence from packages/testkit',
@@ -666,44 +773,54 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
     })
 
     it('the client lane runs, and no failure appears outside the disclosed baseline', { timeout: 1830000 }, async () => {
+      // The listing is taken BEFORE the lane runs and never re-read: the answer about what
+      // is in the tree must not be shapeable by the run whose honesty is in question.
+      const listing = readdirSync(join(REPO_ROOT, 'packages', 'client', 'test'))
+      const missingTrioFiles = CLIENT_TRIO_FILES.filter((f) => !listing.includes(f))
       const r = await runLeg('pnpm', ['--filter', './packages/client', 'run', 'test'], {
         cwd: REPO_ROOT,
         timeoutMs: 1_800_000,
         label: 'pnpm --filter @dsh-agent-team/client run test',
-        classify: ({ stdout, stderr, code }) => {
-          // vitest writes its report to stderr and pnpm prefixes it with the package
-          // name, so the lane has to be read from BOTH streams. Reading only stdout is
-          // how a lane that failed loudly reads as a lane that said nothing.
-          const out = `${stdout}\n${stderr}`
-          const summary = out.split('\n').filter((l) => /^\s*(Test Files|Tests)\s/.test(l)).join(' / ')
-          if (summary.length === 0) {
-            return { verdict: 'refused' as Verdict, why: `the client lane produced no vitest summary at all (exit ${code}); tail: ${tail(out)}` }
-          }
-          const reportedFailures = /Tests\s+(\d+) failed/.exec(out)?.[1] ?? '0'
-          const failed = [...out.matchAll(/^\s*FAIL\s+(.+)$/gm)].map((m) => (m[1] as string).trim())
-          const outside = failed.filter(
-            (f) => !CLIENT_BASELINE_FAILURES.some((b) => f.startsWith(b)) && !f.startsWith(CLIENT_DISCLOSED_LOCATION_DEPENDENT),
-          )
-          if (outside.length > 0) {
-            return { verdict: 'failed' as Verdict, why: `new client-lane failures outside the disclosed baseline: ${outside.slice(0, 5).join(' | ')}` }
-          }
-          const matched = CLIENT_BASELINE_FAILURES.filter((b) => out.includes(b))
-          if (reportedFailures !== '0' && matched.length === 0) {
-            // The guard against a vacuous name set: failures were reported, none of them
-            // matched the disclosed names, and nothing above caught it because the
-            // filter is a prefix match over a set that may itself have drifted.
-            return {
-              verdict: 'failed' as Verdict,
-              why: `${reportedFailures} client-lane failure(s) reported and NONE matched the disclosed names — the baseline record in a4-client-baseline/README.md has drifted and must be re-derived, not re-pinned silently: ${failed.slice(0, 5).join(' | ')}`,
-            }
-          }
-          return {
-            verdict: 'passed' as Verdict,
-            why: `${summary} — every reported failure is disclosed (${matched.length} of the baseline trio matched by name${reportedFailures === '0' ? '; the trio is green, which §7.6 allows' : ''}; the s3 spike is location-dependent, see a4-client-baseline/README.md)`,
-          }
-        },
+        // vitest writes its report to stderr and pnpm prefixes it with the package name, so
+        // the lane is read from BOTH streams. Reading only stdout is how a lane that failed
+        // loudly reads as a lane that said nothing.
+        classify: ({ stdout, stderr }) => classifyClientLaneReport({ out: `${stdout}\n${stderr}`, missingTrioFiles }),
       })
       expect(r.verdict, `client lane did not close. why: ${r.why}\n    tail:\n    ${tail(`${r.stdout}\n${r.stderr}`, 25)}`).toBe('passed')
+    })
+
+    it('tolerates a green trio and refuses a vanished one — the two are different answers', () => {
+      // F5. The tolerance above ("zero failures is acceptable, the trio may have been
+      // fixed") was satisfied by an absence too, which means deleting the trio's spec
+      // files used to turn this leg GREEN. The cases below are the report text the real
+      // lane prints, with nothing but the file listing changed, so the distinction is
+      // machine-checked rather than a comment that promises care.
+      const green = ' Test Files  55 passed (55)\n      Tests  880 passed (880)\n'
+      const trioRed =
+        '      Tests  3 failed | 877 passed (880)\n' +
+        CLIENT_BASELINE_FAILURES.map((n) => `   FAIL ${n}`).join('\n') +
+        '\n'
+      expect(classifyClientLaneReport({ out: green, missingTrioFiles: [] }).verdict, 'a green trio with the files present must pass — §7.6 must not require failure').toBe('passed')
+      expect(
+        classifyClientLaneReport({ out: green, missingTrioFiles: ['team-creation-panel.client.spec.tsx'] }).verdict,
+        'the same green report with one trio file missing must FAIL: an erased test cannot fail',
+      ).toBe('failed')
+      expect(
+        classifyClientLaneReport({ out: green, missingTrioFiles: ['team-creation-panel.client.spec.tsx'] }).why,
+        'the failure has to name the file and say what to update, or the next reader cannot tell deletion from a bad listing',
+      ).toContain('team-creation-panel.client.spec.tsx')
+      expect(classifyClientLaneReport({ out: trioRed, missingTrioFiles: [] }).verdict, 'the measured state today: trio red by name, files present').toBe('passed')
+      expect(classifyClientLaneReport({ out: green, missingTrioFiles: CLIENT_TRIO_FILES }).why).toContain('cannot fail')
+      expect(
+        classifyClientLaneReport({ out: ' Test Files  1 failed (1)\n      Tests  1 failed | 1 passed (2)\n   FAIL test/some-other.client.spec.tsx > x > y', missingTrioFiles: [] }).verdict,
+        'an undisclosed failure is a failure even when the trio is quiet',
+      ).toBe('failed')
+      expect(classifyClientLaneReport({ out: 'no report, just noise', missingTrioFiles: [] }).verdict).toBe('refused')
+      // The trio's file list is derived, so this guards the derivation too: 3 names, 2 files.
+      expect(CLIENT_TRIO_FILES, 'the trio is 3 named tests across 2 files; anything else means CLIENT_BASELINE_FAILURES was edited without this check').toEqual([
+        'team-creation-panel.client.spec.tsx',
+        'team-governance.client.spec.tsx',
+      ])
     })
   })
 
@@ -729,12 +846,44 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       expect(r.verdict).toBe('refused')
       expect(r.why).toContain('killed after 500ms')
     })
+
+    it('a child killed by a signal is refused even when it printed a complete report', async () => {
+      // F2. The distinction this leg pins is NOT "printed nothing" — the child below prints
+      // a perfectly well-formed PASS line and flushes it, then kills itself. Handled at the
+      // classifier, that reads `passed`; handled by the runner, it is a refusal naming the
+      // signal. This is the OOM-killer / stray-pkill / teardown-during-shutdown case, and it
+      // is the case the earlier version of this runner mislabelled.
+      const r = await runLeg('sh', ['-c', 'printf "PASS synthetic-instrument: every arm reported, nothing to see\\n"; kill -KILL $$'], {
+        cwd: REPO_ROOT,
+        timeoutMs: 30_000,
+        label: 'the instrument killed from outside',
+        classify: () => ({ verdict: 'passed' as Verdict, why: 'unreachable — a signalled child must never reach classify as a green' }),
+      })
+      expect(r.verdict, `a signalled child reported '${r.stdout.trim()}' and must still be refused`).toBe('refused')
+      expect(r.signal).toBe('SIGKILL')
+      expect(r.why).toContain('terminated by signal SIGKILL')
+      expect(r.stdout).toContain('PASS synthetic-instrument')
+    })
   })
 
   describe('the gate is wired, not remembered', () => {
     it('every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core', () => {
       const testFiles = readdirSync(TEST_DIR).filter((f) => f.endsWith('.test.ts'))
-      const corpus = testFiles.map((f) => readFileSync(join(TEST_DIR, f), 'utf8')).join('\n')
+      // A file may mention an instrument in a comment while invoking nothing, and this test
+      // would have stayed green on that (F1). So the match is scoped to the head of a
+      // `runLeg(` call, where the argv actually lives: the promise under review is "some
+      // test spawns this", not "some test has heard of this".
+      const spawnWindows = testFiles
+        .map((f) => readFileSync(join(TEST_DIR, f), 'utf8'))
+        .flatMap((text) => {
+          const windows: string[] = []
+          let at = text.indexOf('runLeg(')
+          while (at !== -1) {
+            windows.push(text.slice(at, at + 400))
+            at = text.indexOf('runLeg(', at + 1)
+          }
+          return windows
+        })
       const rootManifest = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8')) as { scripts: Record<string, string> }
       // Each instrument must be reachable from a root script when plan §7.6 names one,
       // and named by a test that spawns it either way. The second half is the point:
@@ -751,7 +900,11 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
         if (rootScript !== null) {
           expect(rootManifest.scripts[rootScript] ?? null, `root package.json has no "${rootScript}" script for ${file}`).not.toBeNull()
         }
-        expect(corpus, `${file} is not spawned or referenced by any file under packages/testkit/test — a gate nobody calls`).toContain(file)
+        const quoted = new RegExp(`["'][^"']*${file.replace(/\./g, '\\.')}["']`)
+        expect(
+          spawnWindows.some((w) => quoted.test(w)),
+          `${file} is not passed to any runLeg(...) argv under packages/testkit/test — a comment naming it is not an invocation, and an instrument nobody spawns is the verify-zero-core shape this test exists to catch`,
+        ).toBe(true)
       }
     })
 
@@ -762,7 +915,17 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       // scanner's total for the next reader.
       const p4t6 = readFileSync(join(TEST_DIR, 'p4t6-session-event-scan.test.ts'), 'utf8')
       const myPath = relative(REPO_ROOT, join(TEST_DIR, 'a4p7-merge-gate.test.ts')).replace(/\\/g, '/')
-      expect(p4t6, `${myPath} is not registered in SCANNED_PATHS_A4P76GATE — add the path and move that lane's own tie; never hand-write a total`).toContain(myPath)
+      // F1 again, same disease: `p4t6.toContain(myPath)` was satisfied by a COMMENT naming
+      // the path, so deleting the array entry — the only part the scanner counts — left this
+      // test green. Match the entry inside the lane's array literal instead. The derived-sum
+      // assertion in p4t6 already reddens on such a deletion, so this is precision, not
+      // teeth; precision is the reason the ledger exists.
+      const laneList = /const SCANNED_PATHS_A4P76GATE[^=]*=\s*\[([^\]]*)\]/.exec(p4t6)
+      expect(laneList, 'p4t6 has no `const SCANNED_PATHS_A4P76GATE = […]` array literal — re-add the lane list, and its own tie').not.toBeNull()
+      expect(
+        (laneList?.[1] ?? '').replace(/\s+/g, ' '),
+        `${myPath} is not an ENTRY in SCANNED_PATHS_A4P76GATE — add the path and move that lane's own tie; never hand-write a total, and never count a mention`,
+      ).toContain(`'${myPath}'`)
     })
   })
 })
