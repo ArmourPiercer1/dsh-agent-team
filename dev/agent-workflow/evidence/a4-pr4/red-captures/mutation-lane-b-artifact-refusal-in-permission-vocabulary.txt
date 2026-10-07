@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ❯ test/artifact-read-permission-lane.test.ts (9 tests | 1 failed) 10ms
+     ✓ G1: explicit rule deny + valid grant → DENY (the grant is never consulted) 3ms
+     ✓ G2: explicit ask + valid grant → ALLOW with ZERO control requests 1ms
+     ✓ G3: default deny + valid grant → ALLOW, zero requests, exec marked (no second guard) 0ms
+     × G4: external hard + valid grant → DENY (the shared last-mile recheck) 4ms
+     ✓ G5: grants are consumed by `read` ONLY — bash never consults the port 0ms
+     ✓ G6: default deny + INVALID grant (no candidate) → unchanged pipeline (DENY) 0ms
+     ✓ G7: default ask + invalid grant → the unchanged pipeline ENTERS THE ASK PATH 0ms
+     ✓ G8: a faulting grant port fails closed — the unchanged pipeline decides 0ms
+     ✓ G9 (additive): no grant port installed — the pipeline is byte-for-byte unchanged 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/artifact-read-permission-lane.test.ts > artifact-grant lane (implementation guide §9) > G4: external hard + valid grant → DENY (the shared last-mile recheck)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/artifact-read-permission-lane.test.ts:376:68
+    374|       // The capability family, not the permission vocabulary: a host …
+    375|       // not somebody refusing.
+    376|       expect(decision.reason.startsWith('execution unavailable:')).toB…
+       |                                                                    ^
+    377|       expect(decision.reason).toContain('alpha4-external-runtime-restr…
+    378|       expect(decision.reason).toContain('tools.read is externally hard…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  10:36:46
+   Duration  881ms (transform 623ms, setup 0ms, import 783ms, tests 10ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

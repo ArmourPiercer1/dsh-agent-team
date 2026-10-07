@@ -1,0 +1,49 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ❯ test/a2c4-external-lastmile.test.ts (11 tests | 1 failed) 8ms
+     ✓ R1: a static allow still EXECUTES after the live external provider hard-denies the tools cell (gap: the static path carries no external check) 1ms
+     ✓ R2: a durable allow whose external cell tightened before the guard still EXECUTES and CONSUMES the one-shot (gap: guardOperation re-reads no external facts) 0ms
+     ✓ G1 (=R1): static allow + live external hard deny -> zero execution, a deny decision, zero durable control rows (the static path has no request) 0ms
+     ✓ G2: static allow + an allow-list that does NOT name the tool -> zero execution; the static path never mints a control row 0ms
+     ✓ G9: hostile-prepend end-cap non-regression (H1): the externally-allowed exec was marked (end-cap abstains); the externally-denied exec was NEVER marked (end-cap still denies it with the stable reason) 0ms
+     ✓ G3: static allow + a THROWING facts provider -> fail closed (deny, zero execution, the fault reason is surfaced; zero control rows) 0ms
+     ✓ G4: static allow + a permissive host -> the existing success path is unchanged (one execution, zero control rows); the live probe IS consulted on the allow path; an unsupported tool pass-through never probes 0ms
+     × G5: ask allow + external tighten after the decision -> zero execution, the guard verdict is external-policy, ZERO allow consumption, and NO new durable control rows (the recheck is read-only) 4ms
+     ✓ G6: the surviving one-shot (zero consumption pays off): re-presentation under the tightened policy blocks AGAIN without consumption; after the host relaxes the SAME approval executes EXACTLY ONCE (the consumption row appears exactly then); the next re-presentation is allow-consumed (scope/fingerprint identity + exactly-once preserved) 0ms
+     ✓ G7: a HUMAN allow cannot beat the external hard at the last mile: the guard blocks with external-policy, the one-shot is NOT consumed, and the durable decision stays a plain human allow (no new decision row, no reason minted) 0ms
+     ✓ G8: the shared read-only check semantics: hard deny / allow-list (named vs unlisted) / capabilityExists:false / absent cell / explicit domain / no-cell-not-probed / thrown probe / malformed domain / tools derivation — all fail closed, never throw, and the check writes ZERO durable rows 0ms
+ ✓ test/a4p4-capability-vs-permission.test.ts (7 tests) 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a2c4-external-lastmile.test.ts > A2C-4 GREEN acceptance — the external hard last-mile recheck (plan §6.5) > G5: ask allow + external tighten after the decision -> zero execution, the guard verdict is external-policy, ZERO allow consumption, and NO new durable control rows (the recheck is read-only)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a2c4-external-lastmile.test.ts:1059:71
+    1057|     // durable-plane vocabulary is untouched); only the caller-facing
+    1058|     // wording changed.
+    1059|     expect(t.reason.startsWith(PRE_EXECUTE_CAPABILITY_REASON_PREFIX)).…
+       |                                                                       ^
+    1060|     expect(
+    1061|       t.reason.includes(PRE_EXECUTE_CAPABILITY_ERROR_CODES.EXTERNAL_RU…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 17 passed (18)
+   Start at  10:00:45
+   Duration  971ms (transform 1.26s, setup 0ms, import 1.75s, tests 11ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

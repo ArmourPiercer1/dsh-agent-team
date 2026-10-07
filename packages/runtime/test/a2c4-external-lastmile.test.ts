@@ -46,6 +46,22 @@
  *       ceiling denied was NEVER marked by this install — the
  *       monotonic end-cap guard still denies it (H1 preserved).
  *
+ * A4-PR4 NOTE (lane B, spec §12.1/§13 — the pins updated here, nothing
+ * relaxed): the pipeline now asks the host ONCE EARLIER, as a capability
+ * ENVIRONMENT preflight before any Team question is answered, and every
+ * host-refusal reason is typed into the capability family
+ * (`execution unavailable: [alpha4-external-runtime-restriction] …`)
+ * instead of the permission vocabulary. Consequences pinned below: a
+ * static-allow call probes the external facts TWICE (preflight + the
+ * RETAINED last-mile recheck — the recheck was not "deduplicated" away),
+ * a host refusal on the static path is observed as
+ * `capability-preflight-denied` (the last-mile stage is then never
+ * reached), and the guard's `external-policy` verdict surfaces as the
+ * capability family. Every A2C-4 law still holds unchanged: zero
+ * execution, zero durable rows on the static path, ZERO allow
+ * consumption on an external refusal, a read-only recheck, and end-cap
+ * monotonicity.
+ *
  * RED PHASE PROTOCOL (brief §5.2): the two probes below are written
  * against the PRE-FIX surface only (adapter trigger + guardOperation —
  * no A2C-4 API) and MUST fail on the base commit; their failure logs
@@ -78,6 +94,8 @@ import type {
 } from '../control/index.js'
 import {
   END_CAP_DENIAL_REASON,
+  PRE_EXECUTE_CAPABILITY_ERROR_CODES,
+  PRE_EXECUTE_CAPABILITY_REASON_PREFIX,
   installParameterPermissionListener,
 } from '../operation-permission/index.js'
 import type {
@@ -451,6 +469,9 @@ let g2: {
   readonly phaseA: { readonly decision: PreToolDecisionLike; readonly executed: number }
   readonly phaseB: { readonly decision: PreToolDecisionLike; readonly executed: number; readonly reason: string }
   readonly controlRows: number
+  /** A4-PR4: the capability-environment preflight denials (the FIRST probe). */
+  readonly preflightDenialObservations: number
+  /** A2C-4: the last-mile recheck denials (the RETAINED second probe). */
   readonly recheckObservations: number
   readonly endcapOnAllowedExec: string | undefined
   readonly endcapOnDeniedExec: string | undefined
@@ -481,6 +502,9 @@ let g2: {
         reason: decisionB.kind === 'deny' ? decisionB.reason : '',
       },
       controlRows: state.requests.length + state.decisions.length + state.consumptions.length,
+      preflightDenialObservations: env.observations.filter(
+        (o) => o['stage'] === 'capability-preflight-denied',
+      ).length,
       recheckObservations: env.observations.filter(
         (o) => o['stage'] === 'external-recheck-denied',
       ).length,
@@ -975,9 +999,15 @@ describe('A2C-4 GREEN acceptance — the external hard last-mile recheck (plan �
     expect(g2.phaseB.decision.kind).toBe('deny')
     expect(g2.phaseB.executed).toBe(0)
     expect(g2.controlRows).toBe(0)
-    // The diagnostics surface records the recheck denial (small rows
-    // only — no argument payloads).
-    expect(g2.recheckObservations).toBe(1)
+    // The diagnostics surface records the denial — and A4-PR4 says WHERE:
+    // an unavailable capability is now caught by the environment PREFLIGHT
+    // (before any Team decision), so the last-mile recheck stage is never
+    // reached on this path. Zero durable rows either way.
+    expect(g2.preflightDenialObservations).toBe(1)
+    expect(g2.recheckObservations).toBe(0)
+    expect(g2.phaseB.reason.startsWith(PRE_EXECUTE_CAPABILITY_REASON_PREFIX)).toBe(true)
+    expect(g2.phaseB.reason.includes(PRE_EXECUTE_CAPABILITY_ERROR_CODES.EXTERNAL_RUNTIME_RESTRICTION)).toBe(true)
+    expect(g2.phaseB.reason.includes('permission denied')).toBe(false)
   })
 
   it('G9: hostile-prepend end-cap non-regression (H1): the externally-allowed exec was marked (end-cap abstains); the externally-denied exec was NEVER marked (end-cap still denies it with the stable reason)', () => {
@@ -989,10 +1019,14 @@ describe('A2C-4 GREEN acceptance — the external hard last-mile recheck (plan �
     expect(g3.phaseAExecuted).toBe(1)
     expect(g3.phaseBDecision.kind).toBe('deny')
     expect(g3.phaseBExecuted).toBe(0)
-    // The static-path external recheck deny surfaces the fail-closed
-    // verdict reason (shim-compatible: includes + toBe, not toContain).
-    expect(g3.phaseBReason.startsWith('permission denied: the external hard policy no longer allows read')).toBe(true)
+    // The fault surfaces fail-closed. A4-PR4 lane B: it is a capability/
+    // environment denial (the frozen shared check folds a faulting probe
+    // into a fail-closed refusal, so the family is the external-
+    // restriction member — see the errors.ts note on why the third family
+    // has no producer), never a permission denial.
+    expect(g3.phaseBReason.startsWith(PRE_EXECUTE_CAPABILITY_REASON_PREFIX)).toBe(true)
     expect(g3.phaseBReason.includes('fail closed')).toBe(true)
+    expect(g3.phaseBReason.includes('permission denied')).toBe(false)
     expect(g3.controlRows).toBe(0)
   })
 
@@ -1000,22 +1034,33 @@ describe('A2C-4 GREEN acceptance — the external hard last-mile recheck (plan �
     expect(g4.allowedDecisionKind).toBe('allow')
     expect(g4.allowedExecuted).toBe(1)
     expect(g4.controlRows).toBe(0)
-    expect(g4.probesAfterAllow).toBe(1)
+    // A4-PR4: TWO live probes per allowed call — the environment preflight
+    // (spec 12.1, before the permission resolve) AND the retained A2C-4
+    // last-mile recheck (the window between the Team's answer and the
+    // dispatch). A count of 1 here would mean the recheck was deleted in
+    // favor of the preflight, which is not the same guarantee.
+    expect(g4.probesAfterAllow).toBe(2)
     expect(g4.unsupportedExecuted).toBe(1)
-    // The unsupported pass-through returns BEFORE the external check —
-    // the probe count is unchanged.
-    expect(g4.probesAfterUnsupported).toBe(1)
+    // The unsupported pass-through returns BEFORE the external check (it
+    // never enters the parameter resolver) — no probe added.
+    expect(g4.probesAfterUnsupported).toBe(2)
   })
 
   it('G5: ask allow + external tighten after the decision -> zero execution, the guard verdict is external-policy, ZERO allow consumption, and NO new durable control rows (the recheck is read-only)', () => {
     const t = g56.tightened
     expect(t.decision.kind).toBe('deny')
     expect(t.executed).toBe(0)
-    // The adapter's stable guard-block mapping (shim-compatible exact
-    // string — no toContain).
-    expect(t.reason).toBe(
-      `permission denied: the last-mile guard blocked the operation (${CONTROL_GUARD_BLOCK_REASONS.EXTERNAL_POLICY})`,
-    )
+    // A4-PR4 lane C: the guard's external-policy verdict is the SAME host
+    // fact as the preflight's, discovered after the human's allow — so it
+    // surfaces in the capability family, not the permission one. The
+    // guard-block REASON below stays the frozen closed-set value (the
+    // durable-plane vocabulary is untouched); only the caller-facing
+    // wording changed.
+    expect(t.reason.startsWith(PRE_EXECUTE_CAPABILITY_REASON_PREFIX)).toBe(true)
+    expect(
+      t.reason.includes(PRE_EXECUTE_CAPABILITY_ERROR_CODES.EXTERNAL_RUNTIME_RESTRICTION),
+    ).toBe(true)
+    expect(t.reason.includes(CONTROL_GUARD_BLOCK_REASONS.EXTERNAL_POLICY)).toBe(true)
     // Exactly the original request + the durable allow — nothing new:
     // no consumption (the one-shot survives), no deny decision row
     // (the last-mile block is a verdict, not a mutation).

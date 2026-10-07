@@ -1,0 +1,98 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ❯ test/a2c4-external-lastmile.test.ts (11 tests | 1 failed) 8ms
+     ✓ R1: a static allow still EXECUTES after the live external provider hard-denies the tools cell (gap: the static path carries no external check) 1ms
+     ✓ R2: a durable allow whose external cell tightened before the guard still EXECUTES and CONSUMES the one-shot (gap: guardOperation re-reads no external facts) 0ms
+     ✓ G1 (=R1): static allow + live external hard deny -> zero execution, a deny decision, zero durable control rows (the static path has no request) 0ms
+     × G2: static allow + an allow-list that does NOT name the tool -> zero execution; the static path never mints a control row 5ms
+     ✓ G9: hostile-prepend end-cap non-regression (H1): the externally-allowed exec was marked (end-cap abstains); the externally-denied exec was NEVER marked (end-cap still denies it with the stable reason) 0ms
+     ✓ G3: static allow + a THROWING facts provider -> fail closed (deny, zero execution, the fault reason is surfaced; zero control rows) 0ms
+     ✓ G4: static allow + a permissive host -> the existing success path is unchanged (one execution, zero control rows); the live probe IS consulted on the allow path; an unsupported tool pass-through never probes 0ms
+     ✓ G5: ask allow + external tighten after the decision -> zero execution, the guard verdict is external-policy, ZERO allow consumption, and NO new durable control rows (the recheck is read-only) 0ms
+     ✓ G6: the surviving one-shot (zero consumption pays off): re-presentation under the tightened policy blocks AGAIN without consumption; after the host relaxes the SAME approval executes EXACTLY ONCE (the consumption row appears exactly then); the next re-presentation is allow-consumed (scope/fingerprint identity + exactly-once preserved) 0ms
+     ✓ G7: a HUMAN allow cannot beat the external hard at the last mile: the guard blocks with external-policy, the one-shot is NOT consumed, and the durable decision stays a plain human allow (no new decision row, no reason minted) 0ms
+     ✓ G8: the shared read-only check semantics: hard deny / allow-list (named vs unlisted) / capabilityExists:false / absent cell / explicit domain / no-cell-not-probed / thrown probe / malformed domain / tools derivation — all fail closed, never throw, and the check writes ZERO durable rows 0ms
+ ❯ test/a4p4-capability-vs-permission.test.ts (7 tests | 2 failed) 8ms
+     × B1: a capability unavailable at preflight writes NO control request and answers in the capability family 5ms
+     ✓ B2: a static Team allow + an unavailable capability is a capability outcome, not a permission denial 0ms
+     ✓ B3: a host without the capability behaves the same way (zero rows, zero execution) 0ms
+     ✓ B4: with the capability available an `ask` still opens the durable approval case (permission is not swallowed) 0ms
+     × B5: a faulting external facts probe fails closed through the capability family with zero rows 1ms
+     ✓ B6: the durable permission mutation lane carries no capability preflight (spec 13 is an execution concern) 0ms
+     ✓ B7: the preflight is ADDITIVE — the last-mile external recheck is retained (two probes per allowed call) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a2c4-external-lastmile.test.ts > A2C-4 GREEN acceptance — the external hard last-mile recheck (plan §6.5) > G2: static allow + an allow-list that does NOT name the tool -> zero execution; the static path never mints a control row
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ test/a2c4-external-lastmile.test.ts:1006:44
+    1004|     // (before any Team decision), so the last-mile recheck stage is n…
+    1005|     // reached on this path. Zero durable rows either way.
+    1006|     expect(g2.preflightDenialObservations).toBe(1)
+       |                                            ^
+    1007|     expect(g2.recheckObservations).toBe(0)
+    1008|     expect(g2.phaseB.reason.startsWith(PRE_EXECUTE_CAPABILITY_REASON_P…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a4p4-capability-vs-permission.test.ts > a4p4 lane B — capability/environment outcomes are not permission outcomes > B1: a capability unavailable at preflight writes NO control request and answers in the capability family
+AssertionError: expected [ 'request:leader-approval:pending' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "request:leader-approval:pending",
++ ]
+
+ ❯ test/a4p4-capability-vs-permission.test.ts:420:21
+    418|     expect(b1.decision.kind).toBe('deny')
+    419|     // The durable footprint is EMPTY: no request, no decision, no aba…
+    420|     expect(b1.rows).toEqual([])
+       |                     ^
+    421|     for (const factType of CONTROL_ROW_FACT_TYPES) {
+    422|       expect(b1.rows.join(',')).not.toContain(factType)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a4p4-capability-vs-permission.test.ts > a4p4 lane B — capability/environment outcomes are not permission outcomes > B5: a faulting external facts probe fails closed through the capability family with zero rows
+AssertionError: expected [ 'request:leader-approval:pending' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "request:leader-approval:pending",
++ ]
+
+ ❯ test/a4p4-capability-vs-permission.test.ts:452:21
+    450|   it('B5: a faulting external facts probe fails closed through the cap…
+    451|     expect(b5.executed).toBe(0)
+    452|     expect(b5.rows).toEqual([])
+       |                     ^
+    453|     expect(reasonOf(b5.decision)).toContain(PRE_EXECUTE_CAPABILITY_ERR…
+    454|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 15 passed (18)
+   Start at  10:00:23
+   Duration  1.10s (transform 1.31s, setup 0ms, import 1.92s, tests 16ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

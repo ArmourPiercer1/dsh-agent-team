@@ -1,0 +1,99 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ✓ test/a4p4-capability-vs-permission.test.ts (7 tests) 3ms
+ ❯ test/a4p4-operation-approval-authority.test.ts (13 tests | 4 failed) 10ms
+     ✓ A1: a Member ask answers at Leader, and an absent document never causes a rise 1ms
+     × A2: the rise to Human User happens because the LEADER ceiling is exceeded, not because a rule is missing 4ms
+     × A3: a hard ceiling below the effect rises past Human User (bound by the SAME document) to Human Admin 1ms
+     ✓ A4: a Leader ask starts at Human User (the rung above the beneficiary) 0ms
+     ✓ A5: an ask with no rung above it refuses to name a reviewer 0ms
+     ✓ A6: an undecidable narrowing (a subtree rule, no containment predicate) is undetermined 0ms
+     ✓ A7: no undetermined arm carries a position (a routing instruction cannot be minted from it) 0ms
+     ✓ A8: the plane having nothing to say is the FROZEN legacy routing, not a computed one 0ms
+     ✓ A9: `direct` — the acting rung already holds the required rung, so no case exists to open 0ms
+     × A10: the durable leg records the DERIVED rung and the legacy kind rides as carrier 1ms
+     ✓ A11: an undetermined authority writes NOTHING durable and answers without waiting 0ms
+     × A12: a required rung with no resolver closes the case AT CREATION (never a pending leg) 1ms
+     ✓ A13: with no authority port wired the v1/v2 row is unchanged (frozen kind, no invented leg fields) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p4-operation-approval-authority.test.ts > a4p4 lane A — an ask routes to the minimum authority the documents require > A2: the rise to Human User happens because the LEADER ceiling is exceeded, not because a rule is missing
+AssertionError: expected 'leader' to be 'human-user' // Object.is equality
+
+Expected: "human-user"
+Received: "leader"
+
+ ❯ test/a4p4-operation-approval-authority.test.ts:443:34
+    441|     expect(a2.kind).toBe('approval-required')
+    442|     if (a2.kind !== 'approval-required') return
+    443|     expect(a2.requiredAuthority).toBe('human-user')
+       |                                  ^
+    444|     expect(a2.carrierKind).toBe('user-approval')
+    445|     // The audit trail states the reason: Leader was consulted and was…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/a4p4-operation-approval-authority.test.ts > a4p4 lane A — an ask routes to the minimum authority the documents require > A3: a hard ceiling below the effect rises past Human User (bound by the SAME document) to Human Admin
+AssertionError: expected 'leader' to be 'human-admin' // Object.is equality
+
+Expected: "human-admin"
+Received: "leader"
+
+ ❯ test/a4p4-operation-approval-authority.test.ts:460:34
+    458|     expect(a3.kind).toBe('approval-required')
+    459|     if (a3.kind !== 'approval-required') return
+    460|     expect(a3.requiredAuthority).toBe('human-admin')
+       |                                  ^
+    461|     // The carrier is the human carrier of the legacy vocabulary — a c…
+    462|     expect(a3.carrierKind).toBe('user-approval')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/a4p4-operation-approval-authority.test.ts > a4p4 lane A — an ask routes to the minimum authority the documents require > A10: the durable leg records the DERIVED rung and the legacy kind rides as carrier
+AssertionError: expected 'leader-approval' to be 'user-approval' // Object.is equality
+
+Expected: "user-approval"
+Received: "leader-approval"
+
+ ❯ test/a4p4-operation-approval-authority.test.ts:514:22
+    512|     if (leg === undefined) return
+    513|     // The carrier: the legacy kind that can CARRY a human review.
+    514|     expect(leg.kind).toBe('user-approval')
+       |                      ^
+    515|     // The authority: what the documents derived, recorded on the case.
+    516|     expect(leg.reviewAuthority).toBe('human-user')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/a4p4-operation-approval-authority.test.ts > a4p4 lane A — an ask routes to the minimum authority the documents require > A12: a required rung with no resolver closes the case AT CREATION (never a pending leg)
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ test/a4p4-operation-approval-authority.test.ts:542:25
+    540|   it('A12: a required rung with no resolver closes the case AT CREATIO…
+    541|     expect(a12.executed).toBe(0)
+    542|     expect(a12.pending).toBe(0)
+       |                         ^
+    543|     expect(a12.requests).toHaveLength(1)
+    544|     const leg = a12.requests[0]
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 16 passed (20)
+   Start at  10:06:55
+   Duration  1.17s (transform 1.44s, setup 0ms, import 2.05s, tests 14ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

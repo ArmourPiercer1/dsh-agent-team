@@ -200,13 +200,30 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
     const strip = (source: string): string =>
       source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
     /** Does this file reach a permission-mutation name through the barrel? */
+    // A4-PR4 lane A: the OPERATION router reads the barrel for authority
+    // vocabulary, and exactly ONE of the names it needs is DECLARED in
+    // `permission-mutation.ts` — `SubtreeContains`, the containment predicate
+    // type that `AuthorityEvaluationInput.subtreeContains` asks for. It is a
+    // pure function shape: reaching it grants no reachability, and the
+    // alternatives are both worse than the amendment. Re-spelling the type
+    // locally is the X7-R3 defect class this file hunts (a structural copy
+    // that agrees today and drifts tomorrow); importing the module directly
+    // opens the window the leg above polices. So the admission is per NAME,
+    // the non-vacuity cases below pin that a real kernel symbol in the SAME
+    // file is still an offender, and a file that is not admitted is still an
+    // offender for naming even this one type.
+    const BARREL_TYPE_ADMISSIONS: Readonly<Record<string, readonly string[]>> = {
+      [join('operation-permission', 'approval-routing.ts')]: ['SubtreeContains'],
+    }
     const importsViaBarrel = (rel: string, source: string): boolean => {
       const inLane = rel.startsWith(`governance${sep}`)
       const barrelHere = inLane ? /from\s*['"]\.\/index\.js['"]/.test(source) : false
       const barrelPath = /from\s*['"][^'"]*governance\/index\.js['"]/.test(source)
       if (!barrelHere && !barrelPath) return false
       const body = strip(source)
+      const admitted = new Set(BARREL_TYPE_ADMISSIONS[rel] ?? [])
       for (const name of mutationNames) {
+        if (admitted.has(name)) continue
         if (new RegExp(`\\b${name}\\b`).test(body)) return true
       }
       return false
@@ -271,6 +288,27 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
       ['a mention inside a comment only', join('src', 'plugin', 'x.ts'), `${barrelHost}\n// planPermissionMutation is not imported here\n`, false],
       ['a real call on a line that also carries a comment', join('src', 'plugin', 'x.ts'), `${barrelHost}\nconst p = planPermissionMutation // trailing comment\n`, true],
       ['an in-lane `./index.js` barrel import', join('governance', 'something.ts'), `import { planPermissionMutation } from './index.js'\n`, true],
+      // The A4-PR4 admission, one case per direction it opens. Minimal
+      // sources (no `barrelHost`), because the point is the admission itself
+      // and nothing else may contribute a hit.
+      [
+        'the admitted router naming ONLY its admitted containment type',
+        join('operation-permission', 'approval-routing.ts'),
+        `import type { SubtreeContains } from '../governance/index.js'\nexport type F = { readonly c?: SubtreeContains }\n`,
+        false,
+      ],
+      [
+        'the admitted router naming a real kernel symbol is STILL an offender',
+        join('operation-permission', 'approval-routing.ts'),
+        `import { planPermissionMutation } from '../governance/index.js'\n`,
+        true,
+      ],
+      [
+        'a file with no admission naming even the admitted type',
+        join('operation-permission', 'pre-execute-adapter.ts'),
+        `import type { SubtreeContains } from '../governance/index.js'\n`,
+        true,
+      ],
     ]
     for (const [label, rel, source, expected] of cases) {
       expect(reachesKernel(rel, source), `the combined predicate is wrong about: ${label}`).toBe(expected)
@@ -710,6 +748,19 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     const SERVICE = 'governance/service.ts'
     const LANE_TYPES = 'governance/types.ts'
     const CEILING_AND_GATE = [...CEILING_AND_EVALUATOR, SERVICE]
+    // A4-PR4 lane A amendment: the OPERATION-plane router. It is the first
+    // consumer outside the governance lane to ask the ceiling question, and it
+    // asks it through the barrel — the sanctioned route the plan names. The
+    // barrel is NOT an evasion here: this walk matches names, not specifiers,
+    // so the router arrives as five stated rows below (`evaluateAuthorityCeiling`,
+    // `isHigherAuthority` — the fresh-recheck comparison, which uses THE ladder
+    // ordering rather than re-spelling one, the document-pair type, the evidence
+    // type it passes through to the observe row, and the error-code table it
+    // maps refusals with) and joins
+    // nothing else. It reads no document, calls no reader, and mints no rung:
+    // `teamHardEnvelope` and the ceiling module itself stay out of it (pinned
+    // by the two legs below).
+    const OPERATION_ROUTING = join('operation-permission', 'approval-routing.ts')
     // The list's COMPLETENESS is asserted below against the module's own export
     // scan, so this array cannot quietly fall behind the file it polices.
     const SURFACE: readonly (readonly [name: string, allowed: readonly string[]])[] = [
@@ -722,9 +773,9 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // as "not one of mine" and rethrow out of the governance path).
       ['bindingDocs', CEILING_LANE],
       ['grantCeiling', CEILING_AND_GATE],
-      ['AuthorityEnvelopeDocuments', [...CEILING_AND_GATE, LANE_TYPES]],
+      ['AuthorityEnvelopeDocuments', [...CEILING_AND_GATE, LANE_TYPES, OPERATION_ROUTING]],
       ['AuthorityBindingError', CEILING_AND_GATE],
-      ['AUTHORITY_CEILING_ERROR_CODES', CEILING_AND_GATE],
+      ['AUTHORITY_CEILING_ERROR_CODES', [...CEILING_AND_GATE, OPERATION_ROUTING]],
       ['AuthorityBindingProblem', CEILING_LANE],
       ['AuthorityCeilingErrorCode', CEILING_LANE],
       ['AuthorityCeilingScope', CEILING_AND_EVALUATOR],
@@ -744,7 +795,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // `authorityRank` and gets the closed-set refusal with it.
       ['AUTHORITY_RANK', CEILING_AND_EVALUATOR],
       ['authorityRank', CEILING_AND_EVALUATOR],
-      ['isHigherAuthority', CEILING_AND_EVALUATOR],
+      ['isHigherAuthority', [...CEILING_AND_EVALUATOR, OPERATION_ROUTING]],
       // WHO MAY ACT — the ladder half of "legal approval", never fused with the
       // ceiling half (ADR A3-2, spec §7.4).
       ['mayReview', CEILING_AND_EVALUATOR],
@@ -762,10 +813,10 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // not be re-decided at each call site.
       ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts')]],
       ['AuthorityEvaluation', [RUNTIME_AUTHORITY, 'governance/index.ts']],
-      ['AuthorityEvaluationEvidence', [RUNTIME_AUTHORITY, 'governance/index.ts']],
+      ['AuthorityEvaluationEvidence', [RUNTIME_AUTHORITY, 'governance/index.ts', OPERATION_ROUTING]],
       ['AuthorityEvaluationInput', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationOutcome', [RUNTIME_AUTHORITY, 'governance/index.ts']],
-      ['evaluateAuthorityCeiling', CEILING_AND_GATE],
+      ['evaluateAuthorityCeiling', [...CEILING_AND_GATE, OPERATION_ROUTING]],
       // The domain algebra: the domain lane, plus the ceiling adapter where it
       // composes them. NOT the permission plane and NOT any decision path.
       ['narrowingForApproval', [...DOMAIN_LANE, ...CEILING_LANE]],

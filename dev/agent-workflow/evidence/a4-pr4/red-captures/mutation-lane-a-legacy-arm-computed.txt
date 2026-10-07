@@ -1,0 +1,66 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ❯ test/a4p4-operation-approval-authority.test.ts (13 tests | 2 failed) 9ms
+     ✓ A1: a Member ask answers at Leader, and an absent document never causes a rise 1ms
+     ✓ A2: the rise to Human User happens because the LEADER ceiling is exceeded, not because a rule is missing 0ms
+     ✓ A3: a hard ceiling below the effect rises past Human User (bound by the SAME document) to Human Admin 0ms
+     ✓ A4: a Leader ask starts at Human User (the rung above the beneficiary) 0ms
+     ✓ A5: an ask with no rung above it refuses to name a reviewer 0ms
+     ✓ A6: an undecidable narrowing (a subtree rule, no containment predicate) is undetermined 0ms
+     ✓ A7: no undetermined arm carries a position (a routing instruction cannot be minted from it) 0ms
+     × A8: the plane having nothing to say is the FROZEN legacy routing, not a computed one 4ms
+     ✓ A9: `direct` — the acting rung already holds the required rung, so no case exists to open 0ms
+     ✓ A10: the durable leg records the DERIVED rung and the legacy kind rides as carrier 0ms
+     ✓ A11: an undetermined authority writes NOTHING durable and answers without waiting 0ms
+     ✓ A12: a required rung with no resolver closes the case AT CREATION (never a pending leg) 0ms
+     × A13: with no authority port wired the v1/v2 row is unchanged (frozen kind, no invented leg fields) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p4-operation-approval-authority.test.ts > a4p4 lane A — an ask routes to the minimum authority the documents require > A8: the plane having nothing to say is the FROZEN legacy routing, not a computed one
+AssertionError: expected 'approval-required' to be 'legacy' // Object.is equality
+
+Expected: "legacy"
+Received: "approval-required"
+
+ ❯ test/a4p4-operation-approval-authority.test.ts:494:21
+    492|
+    493|   it('A8: the plane having nothing to say is the FROZEN legacy routing…
+    494|     expect(a8.kind).toBe('legacy')
+       |                     ^
+    495|     if (a8.kind !== 'legacy') return
+    496|     expect(a8.reason).toBe('not-authority-v3')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a4p4-operation-approval-authority.test.ts > a4p4 lane A — an ask routes to the minimum authority the documents require > A13: with no authority port wired the v1/v2 row is unchanged (frozen kind, no invented leg fields)
+AssertionError: expected 'leader' to be undefined // Object.is equality
+
+- Expected:
+undefined
+
++ Received:
+"leader"
+
+ ❯ test/a4p4-operation-approval-authority.test.ts:560:33
+    558|     expect(row.kind).toBe('leader-approval')
+    559|     // Nothing v3 is invented onto a pre-v3 row.
+    560|     expect(row.reviewAuthority).toBe(undefined)
+       |                                 ^
+    561|     expect(row.requiredAuthorityAtCreation).toBe(undefined)
+    562|     expect(row.approvalCaseId).toBe(undefined)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 11 passed (13)
+   Start at  10:07:15
+   Duration  1.10s (transform 701ms, setup 0ms, import 999ms, tests 9ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

@@ -1,0 +1,55 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ❯ test/a4p4-operation-approval-authority.test.ts (16 tests | 1 failed) 19ms
+     ✓ A1: a Member ask answers at Leader, and an absent document never causes a rise 2ms
+     ✓ A2: the rise to Human User happens because the LEADER ceiling is exceeded, not because a rule is missing 0ms
+     ✓ A3: a hard ceiling below the effect rises past Human User (bound by the SAME document) to Human Admin 0ms
+     ✓ A4: a Leader ask starts at Human User (the rung above the beneficiary) 0ms
+     ✓ A5: an ask with no rung above it refuses to name a reviewer 0ms
+     ✓ A6: an undecidable narrowing (a subtree rule, no containment predicate) is undetermined 0ms
+     ✓ A7: no undetermined arm carries a position (a routing instruction cannot be minted from it) 0ms
+     ✓ A8: the plane having nothing to say is the FROZEN legacy routing, not a computed one 0ms
+     ✓ A9: `direct` — the acting rung already holds the required rung, so no case exists to open 0ms
+     ✓ A10: the durable leg records the DERIVED rung and the legacy kind rides as carrier 1ms
+     ✓ A11: an undetermined authority writes NOTHING durable and answers without waiting 2ms
+     ✓ A12: a required rung with no resolver closes the case AT CREATION (never a pending leg) 1ms
+     ✓ A13: with no authority port wired the v1/v2 row is unchanged (frozen kind, no invented leg fields) 0ms
+     × A14: the facts reader hands over the plane’s OWN documents, and a pre-v3 read is `undefined` (the legacy arm) 9ms
+     ✓ A15: a Leader install is never routed off a member-beneficiary document set (no under-ask) 0ms
+     ✓ A16: the reader takes the actor argument as plumbing, not as authority 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p4-operation-approval-authority.test.ts > a4p4 lane A — an ask routes to the minimum authority the documents require > A14: the facts reader hands over the plane’s OWN documents, and a pre-v3 read is `undefined` (the legacy arm)
+AssertionError: expected { teamHardEnvelope: { …(2) }, …(1) } to be { teamHardEnvelope: { …(2) }, …(1) } // Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: { teamHardEnvelope: { …(2) }, …(1) }
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ test/a4p4-operation-approval-authority.test.ts:636:30
+    634|     // memory instead of the plane (the A5-12 shape).
+    635|     expect(a14v3).not.toBe(undefined)
+    636|     expect(a14v3?.documents).toBe(READER_PAIR)
+       |                              ^
+    637|     expect(a14v3?.beneficiaryAuthority).toBe('member')
+    638|     // No subtree predicate is invented here: `subtreeContains` is sup…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  10:25:42
+   Duration  3.08s (transform 2.23s, setup 0ms, import 2.86s, tests 19ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

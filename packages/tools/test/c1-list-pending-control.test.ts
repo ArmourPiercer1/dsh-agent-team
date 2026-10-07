@@ -5,13 +5,17 @@
  *   1. Leader + zero pending        -> empty list
  *   2. Leader + one pending         -> the exact request record is returned
  *   3. a decided request            -> excluded
- *   4. a pending user-approval      -> excluded (narrow surface)
- *   5. a pending envelope-mutation  -> excluded (first narrow version)
+ *   4. a pending user-approval      -> LISTED (A4-PR4 inversion of the
+ *                                      single-carrier filter, ADR A1-11)
+ *   5. a pending envelope-mutation  -> LISTED (same inversion)
  *   6. multiple requests            -> sorted by durable requestSequence
  *   7. `limit`                      -> deterministic truncation (+ flag)
  *   8. a member caller              -> rejected BEFORE any read
  *   9. the read                     -> zero ledger writes, zero decisions,
  *                                      zero consumption (durable evidence)
+ *  10. a case whose leg ROSED       -> listed by its CURRENT leg at the new
+ *                                      carrier, once; the closed leg never
+ *                                      (the A1-11 duty itself)
  *
  * World: the full tool-suite world over the P6-T4 durable world (real
  * TeamDomain over a scratch dir + real control service + the sanctioned
@@ -204,8 +208,14 @@ const S = await (async () => {
     P6T4_ROOT,
   )
 
-  // (case 4) a pending USER approval is excluded (human-only resolvers —
-  // the narrow leader-approval list never shows it).
+  // (case 4) A4-PR4 INVERSION (ADR A1-11): a pending USER approval is now
+  // INCLUDED. It was excluded by a carrier filter (`kind ===
+  // 'leader-approval'`), not by an authority rule — nothing about the row
+  // changed, the list's filter did. The Leader can see that a Human User is
+  // the resolver (`kind`/`reviewAuthority` ride on the record) without being
+  // able to decide it itself, which the service's closed resolver roles
+  // enforce; hiding the wait entirely left the operation blocked with nobody
+  // on the discovery surface able to say why.
   await env.control.requestControl({
     rootSessionId: P6T4_ROOT,
     caller: workerCaller,
@@ -215,15 +225,15 @@ const S = await (async () => {
     toolName: 'fs.write',
     correlation: 'c1-corr-user',
   })
-  const userExcluded = await runTool(
+  const userPending = await runTool(
     env,
     'team_list_pending_control',
     { rootSessionId: P6T4_ROOT, requestToken: 'c1-l-4' },
     P6T4_ROOT,
   )
 
-  // (case 5) a pending ENVELOPE-MUTATION is excluded in this first narrow
-  // tool (no query language: leader-approval only).
+  // (case 5) A4-PR4 INVERSION (ADR A1-11): same for ENVELOPE-MUTATION — the
+  // list is no longer a single-carrier list.
   await env.control.requestControl({
     rootSessionId: P6T4_ROOT,
     caller: workerCaller,
@@ -232,7 +242,7 @@ const S = await (async () => {
     actionName: 'update-envelope',
     correlation: 'c1-corr-envelope',
   })
-  const envelopeExcluded = await runTool(
+  const envelopePending = await runTool(
     env,
     'team_list_pending_control',
     { rootSessionId: P6T4_ROOT, requestToken: 'c1-l-5' },
@@ -271,6 +281,51 @@ const S = await (async () => {
     WORKER_SESSION,
   )
 
+  // (case 10) A4-PR4, the case-derivation guarantee of A1-11. Two facts the
+  // old row-scan could not give: the list shows a case's CURRENT leg (a leg an
+  // escalation CLOSED is never actionable work), and it shows it at whatever
+  // rung that leg waits on — a risen leg keeps its carrier
+  // (`service.ts:3966` writes `kind: leg.payload.kind`; only
+  // `reviewAuthority` rises), so under a carrier filter the rung was
+  // invisible, and on a non-`leader-approval` carrier the whole case was. A
+  // carrier also fixes its fingerprint vocabulary
+  // (`mutation-proposal-fingerprint-required`), so an operation case here is
+  // an operation-carried one.
+  const rose = await env.control.requestApprovalLeg({
+    rootSessionId: P6T4_ROOT,
+    caller: workerCaller,
+    kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+    reviewAuthority: 'leader',
+    requiredAuthorityAtCreation: 'leader',
+    identity: {
+      subject: { kind: 'instance', instanceId: WORKER_ID },
+      beneficiaryAuthority: 'member',
+      requestedEffect: 'allow',
+      // Exactly ONE fingerprint is required by the frozen identity rule
+      // (`fingerprint-cardinality`): an operation case names its operation.
+      operationFingerprint: 'a4p4-c1-rose-operation-fingerprint',
+      correlation: 'c1-corr-rose',
+    },
+    actionName: 'write-file',
+    toolName: 'fs.write',
+  })
+  if (rose.kind !== 'leg') {
+    throw new Error(`case 10 setup: expected a durable leg, got '${rose.kind}'`)
+  }
+  const closedLeg = rose.leg
+  const roseEscalation = await env.control.escalateApprovalLeg({
+    rootSessionId: P6T4_ROOT,
+    caller: { kind: 'instance', instanceId: LEADER_ID },
+    requestId: closedLeg.requestId,
+    reason: 'the Leader declines to decide this scope',
+  })
+  const roseListed = await runTool(
+    env,
+    'team_list_pending_control',
+    { rootSessionId: P6T4_ROOT, requestToken: 'c1-l-10', limit: 100 },
+    P6T4_ROOT,
+  )
+
   // (case 9) zero durable side effects: the ledger fact count, the
   // decision count and the consumption count are IDENTICAL before and
   // after a list read (the read is a fresh ledger scan — invariant 45).
@@ -295,8 +350,11 @@ const S = await (async () => {
     single,
     decided,
     afterDecide,
-    userExcluded,
-    envelopeExcluded,
+    userPending,
+    envelopePending,
+    closedLeg,
+    roseEscalation,
+    roseListed,
     m1,
     m2,
     m3,
@@ -357,22 +415,49 @@ describe('team_list_pending_control (C1) — the Leader pending-approval discove
     expect(r.count).toBe(1)
   })
 
-  it('case 4: a pending user-approval is excluded (narrow leader-approval surface)', () => {
-    const r = S.userExcluded
+  it('case 4 (A1-11 inversion): a pending user-approval is now listed (the carrier filter is gone)', () => {
+    const r = S.userPending
     expect(r.status).toBe('pending-control-listed')
     if (r.status !== 'pending-control-listed') return
     const kinds = r.pending.map((p) => p.kind)
-    expect(kinds).not.toContain(CONTROL_REQUEST_KINDS.USER_APPROVAL)
+    expect(kinds).toContain(CONTROL_REQUEST_KINDS.USER_APPROVAL)
+    expect(kinds).toContain(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
+    // Being listed is not being a resolver: this row's closed resolver roles
+    // are human-only, and the service still refuses a Leader decision.
+    const listed = r.pending.find((p) => p.kind === CONTROL_REQUEST_KINDS.USER_APPROVAL)
+    expect(listed?.status).toBe('pending')
+  })
+
+  it('case 5 (A1-11 inversion): a pending envelope-mutation is now listed too', () => {
+    const r = S.envelopePending
+    expect(r.status).toBe('pending-control-listed')
+    if (r.status !== 'pending-control-listed') return
+    const kinds = r.pending.map((p) => p.kind)
+    expect(kinds).toContain(CONTROL_REQUEST_KINDS.ENVELOPE_MUTATION)
     expect(kinds).toContain(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
   })
 
-  it('case 5: a pending envelope-mutation is excluded in this first narrow tool', () => {
-    const r = S.envelopeExcluded
+  it('case 10 (A1-11): a case is listed at its CURRENT leg and rung; a CLOSED leg never appears', () => {
+    const nextLeg = S.roseEscalation.nextLeg
+    expect(nextLeg === undefined).toBe(false)
+    if (nextLeg === undefined) return
+    const r = S.roseListed
     expect(r.status).toBe('pending-control-listed')
     if (r.status !== 'pending-control-listed') return
-    const kinds = r.pending.map((p) => p.kind)
-    expect(kinds).not.toContain(CONTROL_REQUEST_KINDS.ENVELOPE_MUTATION)
-    expect(kinds).toContain(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
+    const ids = r.pending.map((p) => p.requestId)
+    // The risen leg is on the list, and it waits on the rung it rose to...
+    expect(ids).toContain(nextLeg.requestId)
+    expect(nextLeg.reviewAuthority).toBe('human-user')
+    // ...while riding the carrier it started on (stated, not assumed).
+    expect(nextLeg.kind).toBe(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
+    // ...and exactly once (the two durable sources are deduplicated by id)...
+    expect(ids.filter((id) => id === nextLeg.requestId)).toHaveLength(1)
+    // ...while the leg the escalation CLOSED is not open work at all
+    // (A1-10: its id is never reused, and it never comes back).
+    expect(ids).not.toContain(S.closedLeg.requestId)
+    const listed = r.pending.find((p) => p.requestId === nextLeg.requestId)
+    expect(listed?.approvalCaseId).toBe(S.closedLeg.approvalCaseId)
+    expect(listed?.legOrdinal).toBe(2)
   })
 
   it('case 6: multiple requests are sorted by durable requestSequence ascending', () => {

@@ -12,8 +12,11 @@
  *      out-of-workspace artifact) — and the exec is marked in the
  *      existing `authorizedExecutions` WeakSet (the end-cap guard
  *      abstains — NO second guard is introduced);
- *  G4  external hard + valid grant → DENY (the SAME last-mile
- *      recheck as the static-allow path — invariant 34);
+ *  G4  host policy tightens after the capability preflight + valid grant →
+ *      DENY by the SAME last-mile recheck the static-allow path runs
+ *      (invariant 34), reported in the capability family — A4-PR4 re-anchored
+ *      this case onto that ordering; see its body for the law and where the
+ *      sibling paths are enforced;
  *  G5  grants are consumed by `read` ONLY: a `bash` call with a "valid"
  *      grant port never consults the port (the unchanged pipeline
  *      decides — default deny here → DENY);
@@ -160,6 +163,14 @@ interface GrantEnvOptions {
   readonly externalAllowed?: boolean
   readonly externalReason?: string
   readonly externalFault?: boolean
+  /**
+   * G4's re-anchor (A4-PR4). The host policy is INTACT when the capability
+   * preflight asks it, and tightens at the last-mile point: the flip happens
+   * inside the grant-port call, which is the last `await` before the last-mile
+   * recheck this case is named for. Without it the case would be answered
+   * three steps earlier by the preflight and would no longer test its name.
+   */
+  readonly tightenAfterGrant?: boolean
 }
 
 interface GrantEnv {
@@ -207,6 +218,14 @@ function makeGrantEnv(options: GrantEnvOptions): GrantEnv {
           }): Promise<boolean> => {
             grantCalls.push({ rawPath, canonicalResourceKey, instanceId })
             if (options.grantFault === true) throw new Error('grant port fault (G8)')
+            if (options.tightenAfterGrant === true) {
+              // The policy tightens HERE: after the preflight already answered
+              // "the host can run this", at the last point before the
+              // last-mile recheck. This is the only ordering that still
+              // exercises that recheck (A4-PR4 moved the same check earlier,
+              // so a statically-denied world is now intercepted upstream).
+              controlWorld.externalAllowed = false
+            }
             return options.grantVerdict === undefined ? false : options.grantVerdict(rawPath)
           },
         }
@@ -323,11 +342,28 @@ describe('artifact-grant lane (implementation guide §9)', () => {
   })
 
   it('G4: external hard + valid grant → DENY (the shared last-mile recheck)', async () => {
+    // THE LAW THIS CASE PROTECTS (invariant 34): there is ONE external-policy
+    // evaluator, and the artifact-grant path shares the SAME last-mile recheck
+    // the static-allow path runs — a grant is a floor, never a ceiling
+    // override, so no Team authority can authorize what the host refuses.
+    //
+    // A4-PR4 RE-ANCHOR (authorized by the coordinator; the record is in
+    // `dev/agent-workflow/evidence/a4-pr4/PR-DESCRIPTION.md`): lane B added a
+    // capability PREFLIGHT that runs before any Team question, so a world that
+    // is statically denied is now intercepted upstream and this case would
+    // silently stop testing the recheck it is named for. The world therefore
+    // tightens AFTER that preflight (`tightenAfterGrant`), and the stage
+    // assertions below pin WHICH check answered. The same law on the
+    // ask/allow-side is enforced by C2 in `a4p4-operation-single-shot.test.ts`
+    // (capability lost after the reviewer allow: capability family, the one-shot
+    // allow NOT consumed); the shared-evaluator half is pinned by lane B's B6
+    // and by a2c4 G5.
     const env = makeGrantEnv({
       policy: STRICT_READ_POLICY,
       grantVerdict: () => true,
-      externalAllowed: false,
+      externalAllowed: true,
       externalReason: 'tools.read is externally hard-denied',
+      tightenAfterGrant: true,
     })
     env.resolverWorld.files.set(ARTIFACT, { targetKey: TK_ARTIFACT })
     const next = makeNext()
@@ -335,8 +371,21 @@ describe('artifact-grant lane (implementation guide §9)', () => {
     const decision = await env.ctx.trigger(exec, next.fn)
     expect(decision.kind).toBe('deny')
     if (decision.kind === 'deny') {
-      expect(decision.reason).toContain('the external hard policy no longer allows read')
+      // The capability family, not the permission vocabulary: a host fact is
+      // not somebody refusing.
+      expect(decision.reason.startsWith('execution unavailable:')).toBe(true)
+      expect(decision.reason).toContain('alpha4-external-runtime-restriction')
+      expect(decision.reason).toContain('tools.read is externally hard-denied')
+      expect(decision.reason.startsWith('permission denied:')).toBe(false)
     }
+    // WHICH check answered — this is what keeps the case's name true: the
+    // preflight let the operation through, the last-mile recheck denied it.
+    const stages = env.observations.map((o) => String(o['stage'] ?? ''))
+    expect(stages).not.toContain('capability-preflight-denied')
+    const recheck = env.observations.find((o) => o['stage'] === 'external-recheck-denied')
+    expect(recheck).toBeDefined()
+    expect(recheck?.['via']).toBe('artifact-grant')
+    expect(recheck?.['code']).toBe('alpha4-external-runtime-restriction')
     // NOT marked: the end-cap would deny it (zero effect until authorized)
     const endCap = env.ctx.activeGuard()
     expect(endCap!(exec)).toBe(END_CAP_DENIAL_REASON)

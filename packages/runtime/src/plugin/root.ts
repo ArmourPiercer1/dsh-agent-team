@@ -273,6 +273,12 @@ import {
   PermissionLifecycleError,
 } from '../../permission-lifecycle/types.js'
 import { canonicalizeShellOperation } from '../../operation-permission/canonical-operation.js'
+// A4-PR4 lane A: the adapter that turns the injected authority-ceiling context
+// reader into the OPERATION-plane facts the pre-execute listener routes on.
+// Cross-lane consumption goes through the lane's own barrel (ADR X12's rule for
+// governance vocabulary applies to `governance/**`; this is a lane surface).
+import { createOperationApprovalFactsReader } from '../../operation-permission/index.js'
+import type { OperationApprovalFactsReader } from '../../operation-permission/index.js'
 import type { TeamPermissionExecIntent } from '../../../tools/src/index.js'
 import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js'
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js'
@@ -2772,7 +2778,41 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           },
         })
   if (permissionPlaneRef !== undefined) {
-    permissionPlaneRef.current = permissionPlane
+    // A4-PR4 (lane A, Task 4's `src/plugin/root.ts` line): the OPERATION-side
+    // authority facts, published on the SAME plane object the live glue already
+    // reads per install. WHY HERE: the one authority-document reader this
+    // process has is the injected `permissionAuthorityCeiling` port (built by
+    // `createAuthorityCeilingReader` in permission-plane.ts and handed to the
+    // root by the host); the operation lane must read documents through it and
+    // not grow a second reader (ADR A5-12 — a reader in every judge is a second
+    // answer). `createOperationApprovalFactsReader` is the adapter that does
+    // that mapping, and it carries the two rules that make the mapping safe
+    // (pre-v3 -> `undefined` = the frozen legacy routing; a LEADER install is
+    // never routed off a member-beneficiary document set), pinned in
+    // `test/a4p4-operation-approval-authority.test.ts` (A14-A16).
+    // The field rides on the root-constructed plane rather than on the
+    // `TeamPermissionPlane` interface: that interface lives in
+    // `src/plugin/permission-plane.ts`, which is NOT in this task's file list
+    // (Global Precedence: report the scope, do not widen it), so the addition is
+    // declared locally. `permissionPlaneRef.current` is typed by the interface,
+    // so every existing reader of the plane sees exactly what it saw before.
+    type PlaneWithOperationFacts = TeamPermissionPlane & {
+      readonly operationApprovalFacts: OperationApprovalFactsReader
+    }
+    const planeForGlue: PlaneWithOperationFacts | undefined =
+      permissionPlane === undefined || permissionAuthorityCeiling === undefined
+        ? undefined
+        : {
+            ...permissionPlane,
+            operationApprovalFacts: createOperationApprovalFactsReader({
+              // `async` because the injected port's declared return is
+              // `T | Promise<T>` (the lane accepts a sync or async reader); the
+              // adapter's port is Promise-typed, so the wrapper normalises.
+              ceiling: async (teamSessionId, memberInstanceId, actor) =>
+                permissionAuthorityCeiling(teamSessionId, memberInstanceId, actor),
+            }),
+          }
+    permissionPlaneRef.current = planeForGlue ?? permissionPlane
   }
 
   // ROUND 7 (parent BLOCK-1/2/3): the ONE entry-side permission surface.

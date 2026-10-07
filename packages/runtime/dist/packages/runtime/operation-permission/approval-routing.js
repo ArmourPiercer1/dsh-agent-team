@@ -1,0 +1,311 @@
+/**
+ * approval-routing.ts — A4-PR4 lane A: WHO must approve a concrete operation.
+ *
+ * THE QUESTION THIS MODULE ANSWERS, and the one it deliberately does not.
+ * The permission plane already answered "is this operation allowed, asked
+ * about, or denied" (permission-resolver.ts, the merged dynamic lane). When
+ * that answer is ASK, something else has to say which rung of the authority
+ * ladder has to sign — and until now that sentence was written by one
+ * expression in the adapter: `isLeader ? 'user-approval' : 'leader-approval'`
+ * (spec §10.1 names exactly this as the thing to replace). That expression
+ * confuses two different facts: the ROLE of whoever happens to be holding the
+ * keyboard, and the AUTHORITY the operation requires. This module computes
+ * the second. The carrier kind the durable row wears is then DERIVED from it
+ * (spec §10.1.4: the legacy request kind survives as a compatibility carrier,
+ * never as semantic authority).
+ *
+ * THE THREE ARMS, in the order the spec's §7.4 walk produces them:
+ *
+ *  1. `approval-required` — a named rung must sign. `requiredAuthority` is
+ *     that rung; `carrierKind` is the legacy request kind that carries it:
+ *     Leader → `leader-approval`, Human User / Human Admin → `user-approval`.
+ *     The carrier is a DISPLAY/COMPATIBILITY fact: the review authority that
+ *     may act is `requiredAuthority`, recorded on the leg, and a carrier that
+ *     disagrees with it is a bug in the caller, not a second opinion.
+ *  2. `direct` — the initiator already holds the rung the operation requires
+ *     over its own beneficiary (spec §7.3's `direct` arm: "the Leader may
+ *     commit this now"). No case is opened, because a case would ask a rung
+ *     to approve what the acting rung already holds — and §21.4 forbids a
+ *     self/same-level allow. `packages/tools/src/guard.ts` proceeds on a
+ *     `no-request` verdict, so the end-cap guard does not second-guess it.
+ *  3. `authority-undetermined` — the documents could not answer. This arm
+ *     carries NO position, by construction: the evaluator's undetermined arm
+ *     has no `requiredAuthority` field (ADR A1-7: naming a reviewer for a
+ *     scope nobody is authorized to sign routes a case that cannot be
+ *     decided), and `AuthorityBindingError` refusals propagate for the same
+ *     reason. The caller denies and writes NOTHING durable. An unavailable
+ *     document is never folded into "no rule", and "no rule" is never folded
+ *     into "no authority" — the two directions A5-16 and §21.4 keep apart.
+ *
+ * THE LADDER IS NOT RE-DECIDED HERE. `evaluateAuthorityCeiling` is the one
+ * implementation of the walk (`governance/runtime-authority.ts`); the one
+ * ordering is `AUTHORITY_RANK` behind it. This module adds no rung, no
+ * ranking, and no document reading: it supplies the OPERATION-plane question
+ * (which operation class, which canonical resource, effect `allow`) and
+ * translates the answer into the vocabulary the pre-execute pipeline speaks.
+ * In particular it never reads `teamHardEnvelope` — the plane owns the
+ * three-way document slot, and this module receives it (a reader in every
+ * judge is the shape A5-12 refuses).
+ *
+ * WHY `desiredEffect` IS FIXED TO `allow`. An operation ask asks "may this
+ * run", and `allow` is the only effect that means it. Passing the permission
+ * plane's own `ask` would ask a different question ("may a reviewer be
+ * asked?") and answer it with a reviewer — the effect asked about is the
+ * EFFECT, not the lane that raised the question.
+ *
+ * Purity: same facts, same answer. No I/O, no clock, no service, no lock.
+ * The one exception is the tail's {@link createOperationApprovalFactsReader},
+ * which is not a judge but the ADAPTER the production root uses to hand this
+ * lane its facts: it calls exactly one injected port, maps, and adds no
+ * authority reasoning of its own. Everything above it stays pure.
+ *
+ * @module @dsh-agent-team/runtime/operation-permission/approval-routing
+ */
+import { AUTHORITY_CEILING_ERROR_CODES, evaluateAuthorityCeiling, isHigherAuthority, } from '../governance/index.js';
+import { CONTROL_REQUEST_KINDS } from '../control/index.js';
+// ---------------------------------------------------------------------------
+// The refusal vocabulary
+// ---------------------------------------------------------------------------
+/**
+ * Why an operation's required authority could not be determined. A closed
+ * set of DIAGNOSES: none of them is an authority, none of them is a
+ * permission denial, and the caller renders each as the same fail-closed
+ * outcome with a different reason.
+ *
+ * `AUTHORITY_UNAVAILABLE` is named with the frozen durable vocabulary
+ * (`CONTROL_CASE_TERMINAL_OUTCOMES`) rather than a new string: the case that
+ * terminates because no rung can sign and the ask that cannot name a signer
+ * are the same fact about the ladder, and a second spelling of it is a second
+ * vocabulary. No new code is minted here.
+ */
+export const OPERATION_APPROVAL_REFUSAL_REASONS = {
+    /** The evaluator answered `undetermined` (an unanswerable containment
+     *  question, or a narrowing that cannot be decided for this scope). */
+    CEILING_UNDETERMINED: 'ceiling-undetermined',
+    /** A document this ladder rung is BOUND BY could not be read
+     *  (`AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE`). A missing document is not an
+     *  empty one. */
+    DOCUMENT_UNAVAILABLE: 'authority-document-unavailable',
+    /** A defect in the evaluation input or the documents
+     *  (`AUTHORITY_BINDING_DEFECT`) — including the Human Admin ask, which has
+     *  no upper rung and therefore no reviewer to name. */
+    DOCUMENT_BINDING_DEFECT: 'authority-binding-defect',
+    /** The plane's facts arrived in a shape this module cannot ask about at
+     *  all (a fault in the wiring, never a governance answer). */
+    FACTS_MALFORMED: 'authority-facts-malformed',
+};
+/** Every refusal reason, for membership pins. */
+export const OPERATION_APPROVAL_REFUSAL_REASON_VALUES = Object.values(OPERATION_APPROVAL_REFUSAL_REASONS);
+/**
+ * The carrier table. Two legacy kinds exist because the durable vocabulary
+ * predates the ladder; three rungs above the beneficiary do not fit into two
+ * names, which is exactly why the carrier is not the authority. Human Admin
+ * rides `user-approval` because that is the human-carrier of this vocabulary
+ * — and in Alpha.4 no Human Admin resolver exists, so a case that lands there
+ * is closed by the control plane as `authority-unavailable` rather than left
+ * pending (ADR A1-12). A Member required-rung has no carrier because it
+ * cannot occur: the walk starts at the rung ABOVE the beneficiary, so the
+ * beneficiary's own rung is never the answer.
+ */
+const CARRIER_BY_REQUIRED_AUTHORITY = {
+    leader: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+    'human-user': CONTROL_REQUEST_KINDS.USER_APPROVAL,
+    'human-admin': CONTROL_REQUEST_KINDS.USER_APPROVAL,
+};
+/** The legacy request kind of one required rung, or `undefined`. */
+export function operationApprovalCarrier(requiredAuthority) {
+    return CARRIER_BY_REQUIRED_AUTHORITY[requiredAuthority];
+}
+// ---------------------------------------------------------------------------
+// The routing
+// ---------------------------------------------------------------------------
+/** Read the `code`/`problem` of a thrown value without importing the error
+ *  class (the ceiling module is not an importable dependency of this lane —
+ *  the barrel carries the vocabulary, not the class). */
+function codeOf(error) {
+    if (typeof error !== 'object' || error === null)
+        return undefined;
+    const code = error.code;
+    return typeof code === 'string' ? code : undefined;
+}
+function messageOf(error) {
+    return error instanceof Error ? error.message : String(error);
+}
+/**
+ * Route one concrete operation ask to the minimum authority that may sign it
+ * (spec §7.2-§7.4, §10.1, acceptance §21.4).
+ *
+ * @param input - the operation, the acting rung, and the plane's authority
+ *   facts for the beneficiary (`undefined` = not v3).
+ * @returns the routing arm; only `approval-required` names a durable carrier,
+ *   and no arm ever names an authority the documents did not produce.
+ */
+export function routeOperationApproval(input) {
+    const { facts } = input;
+    if (facts === undefined) {
+        return { kind: 'legacy', reason: 'not-authority-v3' };
+    }
+    const { beneficiaryAuthority, documents } = facts;
+    if (typeof beneficiaryAuthority !== 'string' ||
+        documents === null ||
+        typeof documents !== 'object') {
+        // A malformed fact object is a wiring fault. It is reported as
+        // undetermined — never as a permission denial, and never as a guessed
+        // rung — because the alternative is to route a case on garbage input.
+        return {
+            kind: 'authority-undetermined',
+            reason: OPERATION_APPROVAL_REFUSAL_REASONS.FACTS_MALFORMED,
+            detail: 'the authority facts for this instance are malformed (no beneficiary position or no document slot)',
+        };
+    }
+    let evaluation;
+    try {
+        evaluation = evaluateAuthorityCeiling({
+            beneficiaryAuthority,
+            initiatorAuthority: input.initiatorAuthority,
+            operationClass: input.operationClass,
+            // The canonical exact resource of THIS invocation. An operation is one
+            // concrete target, so the scope question is exact by construction: a
+            // document rule that covers it does so as an exact hit or a subtree
+            // that contains it, and `subtreeContains` is what answers the second.
+            matcher: { kind: 'exact', resource: input.resourceKey },
+            desiredEffect: 'allow',
+            documents,
+            ...(facts.subtreeContains !== undefined ? { subtreeContains: facts.subtreeContains } : {}),
+        });
+    }
+    catch (error) {
+        const code = codeOf(error);
+        const reason = code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE
+            ? OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE
+            : OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT;
+        return {
+            kind: 'authority-undetermined',
+            reason,
+            detail: messageOf(error),
+        };
+    }
+    if (evaluation.outcome === 'undetermined') {
+        return {
+            kind: 'authority-undetermined',
+            reason: OPERATION_APPROVAL_REFUSAL_REASONS.CEILING_UNDETERMINED,
+            detail: `the authority ceiling for ${input.operationClass} on ${input.resourceKey} could not be ` +
+                `decided (rungs consulted: ${evaluation.evidence.consideredRoles.join(', ') || 'none'})`,
+        };
+    }
+    const requiredAuthority = evaluation.requiredAuthority;
+    if (requiredAuthority === undefined) {
+        // Unreachable by the evaluator's own type (the arm carries no position
+        // only when undetermined, which returned above). Stated as a refusal
+        // rather than a cast, because the alternative is minting a routing
+        // instruction out of a missing field.
+        return {
+            kind: 'authority-undetermined',
+            reason: OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT,
+            detail: 'the evaluator answered with a decided outcome but no required authority',
+        };
+    }
+    if (evaluation.outcome === 'direct') {
+        return {
+            kind: 'direct',
+            requiredAuthority,
+            beneficiaryAuthority,
+            evidence: evaluation.evidence,
+        };
+    }
+    const carrierKind = operationApprovalCarrier(requiredAuthority);
+    if (carrierKind === undefined) {
+        // The required rung has no legacy carrier (today: a rung at or below the
+        // beneficiary, which the walk cannot produce). Refusing beats inventing
+        // a carrier — an invented one would be authority minted by the adapter.
+        return {
+            kind: 'authority-undetermined',
+            reason: OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT,
+            detail: `the required authority '${requiredAuthority}' has no request-kind carrier`,
+        };
+    }
+    return {
+        kind: 'approval-required',
+        requiredAuthority,
+        beneficiaryAuthority,
+        carrierKind,
+        evidence: evaluation.evidence,
+    };
+}
+/**
+ * Re-derive the required authority at the moment of execution and compare it
+ * with the rung that actually signed (spec §12.1's "fresh authority recheck",
+ * ADR A1-14: an approval is not a standing grant).
+ *
+ * The comparison is `isHigherAuthority` — THE ladder ordering
+ * (`AUTHORITY_RANK` behind it), never a locally re-spelled rank list. A
+ * second ordering is the defect X7-R3 names, and in this particular place it
+ * would decide who may execute.
+ *
+ * A pre-v3 fresh answer is `still-covered` by definition: there is no
+ * document-backed requirement to drift against, and inventing one would
+ * change v1/v2 behavior, which PR7 owns.
+ *
+ * @param input.reviewAuthority - the rung recorded on the durable leg.
+ * @param input.fresh - the routing recomputed from freshly read facts.
+ * @returns whether the recorded approval still covers this invocation.
+ */
+export function recheckOperationApproval(input) {
+    const { fresh } = input;
+    if (fresh.kind === 'legacy' || fresh.kind === 'direct') {
+        return { kind: 'still-covered' };
+    }
+    if (fresh.kind === 'authority-undetermined') {
+        return { kind: 'undetermined', reason: fresh.reason, detail: fresh.detail };
+    }
+    if (isHigherAuthority(fresh.requiredAuthority, input.reviewAuthority)) {
+        return { kind: 'stale', requiredNow: fresh.requiredAuthority };
+    }
+    return { kind: 'still-covered' };
+}
+/**
+ * Adapt the existing authority-ceiling context reader into the OPERATION-plane
+ * facts the router consumes (Task 4's "both authority envelopes" input), so the
+ * routing has exactly one source for the documents — the plane's reader, the
+ * same one the mutation lane reads. A second reader would be the A5-12 shape
+ * this repo refuses (a reader in every judge), and it would be a second answer.
+ *
+ * TWO RULES, both pinned in `test/a4p4-operation-approval-authority.test.ts`:
+ *
+ * 1. **A pre-v3 read is `undefined`, and `undefined` is the legacy arm.** The
+ *    port answers `undefined` when the bound Blueprint is not schema v3 (or its
+ *    binding is unknown), and that maps to
+ *    {@link OperationApprovalRouting}'s `legacy` arm downstream — the frozen
+ *    v1/v2 `isLeader ? 'user-approval' : 'leader-approval'` routing, which PR7
+ *    owns. This adapter never converts an unknown binding into a v3 answer.
+ * 2. **A Leader install is NEVER routed off these facts.** The only production
+ *    reader available here fixes the BENEFICIARY to `member` (it is the
+ *    mutation lane's reader: `permission-plane.ts:821`). Evaluating the
+ *    Leader's own ask against a member-beneficiary document set would start the
+ *    ladder walk at `rungAbove('member')` and could answer that the Leader
+ *    needs only Leader sign-off — i.e. it would UNDER-ask, the one direction
+ *    this lane is not allowed to move in. So the Leader install gets
+ *    `undefined` = the frozen routing, and the member install — whose
+ *    beneficiary genuinely IS the member instance — gets the real documents.
+ *
+ * The `actor` argument selects only the context's `initiatorAuthority`, which
+ * this adapter discards by design (see {@link OperationApprovalCeilingPort});
+ * it is passed because the port demands it, never read as authority here.
+ *
+ * @param deps.ceiling - the injected ceiling-context reader.
+ * @returns the facts reader for the pre-execute adapter's routing port.
+ */
+export function createOperationApprovalFactsReader(deps) {
+    return async (input) => {
+        if (input.actingAsLeader)
+            return undefined;
+        const context = await deps.ceiling(input.teamSessionId, input.memberInstanceId, 'leader');
+        if (context === undefined)
+            return undefined;
+        return {
+            beneficiaryAuthority: context.beneficiaryAuthority,
+            documents: context.documents,
+        };
+    };
+}
+//# sourceMappingURL=approval-routing.js.map

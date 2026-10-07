@@ -1,0 +1,47 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ❯ test/a4p4-operation-approval-authority.test.ts (13 tests | 1 failed) 8ms
+     ✓ A1: a Member ask answers at Leader, and an absent document never causes a rise 1ms
+     ✓ A2: the rise to Human User happens because the LEADER ceiling is exceeded, not because a rule is missing 0ms
+     ✓ A3: a hard ceiling below the effect rises past Human User (bound by the SAME document) to Human Admin 0ms
+     ✓ A4: a Leader ask starts at Human User (the rung above the beneficiary) 0ms
+     ✓ A5: an ask with no rung above it refuses to name a reviewer 0ms
+     ✓ A6: an undecidable narrowing (a subtree rule, no containment predicate) is undetermined 0ms
+     ✓ A7: no undetermined arm carries a position (a routing instruction cannot be minted from it) 0ms
+     ✓ A8: the plane having nothing to say is the FROZEN legacy routing, not a computed one 0ms
+     × A9: `direct` — the acting rung already holds the required rung, so no case exists to open 4ms
+     ✓ A10: the durable leg records the DERIVED rung and the legacy kind rides as carrier 0ms
+     ✓ A11: an undetermined authority writes NOTHING durable and answers without waiting 0ms
+     ✓ A12: a required rung with no resolver closes the case AT CREATION (never a pending leg) 0ms
+     ✓ A13: with no authority port wired the v1/v2 row is unchanged (frozen kind, no invented leg fields) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p4-operation-approval-authority.test.ts > a4p4 lane A — an ask routes to the minimum authority the documents require > A9: `direct` — the acting rung already holds the required rung, so no case exists to open
+AssertionError: expected 'approval-required' to be 'direct' // Object.is equality
+
+Expected: "direct"
+Received: "approval-required"
+
+ ❯ test/a4p4-operation-approval-authority.test.ts:501:21
+    499|
+    500|   it('A9: `direct` — the acting rung already holds the required rung, …
+    501|     expect(a9.kind).toBe('direct')
+       |                     ^
+    502|     if (a9.kind !== 'direct') return
+    503|     expect(a9.requiredAuthority).toBe('leader')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed (13)
+   Start at  10:07:23
+   Duration  1.07s (transform 687ms, setup 0ms, import 976ms, tests 8ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

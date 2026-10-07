@@ -899,15 +899,25 @@ function resolveControlSpec() {
  *   metadata — the tool layer enforces `caller.instanceId ===
  *   LEADER_INSTANCE_ID` before any read (human/UI inspection is a separate
  *   remote/UI concern);
- * - the first version stays deliberately narrow: `status === 'pending'`
- *   AND `kind === 'leader-approval'`, sorted by durable `requestSequence`
- *   ascending, clamped by `limit`. No target/template/regex filters and no
- *   query language in this round.
+ * - the list spans what a reviewer can STILL act on, across carriers
+ *   (A4-PR4, ADR A1-11). The carrier is NOT the reviewer (`reviewAuthority`
+ *   is — spec 19), and a risen leg keeps its carrier, so the old
+ *   `kind === 'leader-approval'` filter hid any case whose carrier was
+ *   `user-approval` or `envelope-mutation` even while it sat waiting on the
+ *   Leader. Two durable sources, both fresh ledger reads:
+ *     (a) every approval CASE whose current leg is open
+ *         (`ControlService.listOpenApprovalCases`, A4-PR3) — case-derived, so
+ *         a leg an escalation CLOSED can never be shown as actionable work;
+ *     (b) every PENDING row with no case identity — the pre-Alpha.4 / v1/v2
+ *         rows, which are not cases and must keep appearing until PR7 (the
+ *         merge gate forbids a v1/v2 behavior change here).
+ *   Sorted by durable `requestSequence` ascending, clamped by `limit`. No
+ *   target/template/regex filters and no query language in this round.
  */
 function listPendingControlSpec() {
     return {
         name: 'team_list_pending_control',
-        description: 'List unresolved `leader-approval` control requests for this Team. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. (Leader-only; members are rejected.)',
+        description: 'List this Team\'s unresolved approvals across every carrier: each open approval case at its CURRENT leg (whatever rung that leg is waiting on and whichever carrier it rides), plus any pending legacy request. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. (Leader-only; members are rejected.)',
         properties: {
             rootSessionId: ROOT_SESSION_ID_ARG,
             requestToken: REQUEST_TOKEN_ARG,
@@ -937,13 +947,26 @@ function listPendingControlSpec() {
                 return {
                     status: 'rejected',
                     code: TEAM_TOOL_PENDING_LIST_NOT_LEADER,
-                    message: 'team-tools: team_list_pending_control is Leader-only (the pending leader-approval list is the Leader discovery surface; a member caller is rejected before any read)',
+                    message: 'team-tools: team_list_pending_control is Leader-only (the pending approval list is the Leader discovery surface; a member caller is rejected before any read)',
                 };
             }
-            const state = await ctx.options.controlService.listControlState(ctx.rootSessionId);
-            const pending = state.requests
-                .filter((r) => r.status === 'pending' && r.kind === 'leader-approval')
-                .sort((a, b) => a.requestSequence - b.requestSequence);
+            // Both sources are fresh ledger reads (invariant 45 — no cached
+            // authority), and neither creates, resolves, or consumes anything.
+            const [state, openCases] = await Promise.all([
+                ctx.options.controlService.listControlState(ctx.rootSessionId),
+                ctx.options.controlService.listOpenApprovalCases({ rootSessionId: ctx.rootSessionId }),
+            ]);
+            const caseLegs = openCases
+                .map((openCase) => openCase.state.currentLeg)
+                .filter((leg) => leg !== undefined);
+            const caseLegIds = new Set(caseLegs.map((leg) => leg.requestId));
+            // A pending row that IS a case leg already appears above; a pending row
+            // with no case identity is a pre-Alpha.4 / v1/v2 request and appears
+            // here (its absence would be a v1/v2 behavior change, which PR7 owns).
+            const legacyPending = state.requests.filter((row) => row.status === 'pending' &&
+                row.approvalCaseId === undefined &&
+                !caseLegIds.has(row.requestId));
+            const pending = [...caseLegs, ...legacyPending].sort((a, b) => a.requestSequence - b.requestSequence);
             const truncated = pending.length > limit;
             const page = truncated ? pending.slice(0, limit) : pending;
             return {

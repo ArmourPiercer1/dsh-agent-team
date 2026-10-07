@@ -2520,10 +2520,48 @@ export function createAgentBindings(deps) {
           }
           return backend.contains({ targetKey: subtreeRootKey }, { targetKey: childKey }) === true
         }
+        const operationApprovalFacts =
+          permissionPlane === undefined || permissionPlane === null
+            ? undefined
+            : permissionPlane.operationApprovalFacts
+        // A4-PR4 (lane A, Task 4's glue line): the OPERATION-side authority
+        // facts, when the production root published them on the plane. Absent
+        // (a pre-v3 Team, a root with no ceiling port, a stub glue) -> NO port
+        // -> the adapter's `legacy` arm, which is today's
+        // `isLeader ? 'user-approval' : 'leader-approval'` byte-identically.
+        // The identity the documents belong to is THIS install's durable
+        // identity (`instanceId` serves both roles - plan §9.5), and
+        // `actingAsLeader` is the bit the reader's no-under-ask rule needs
+        // (a Leader install is never routed off a member-beneficiary document
+        // set, so it keeps the frozen routing; A14-A16 in
+        // `test/a4p4-operation-approval-authority.test.ts`).
+        // The documents do not depend on which operation is being asked about,
+        // so the adapter's `{operationClass, resourceKey}` argument is not
+        // forwarded - the scope question is answered by `subtreeContains`
+        // against the operation's own canonical key, which the router supplies.
+        // `subtreeContains` rides from THIS side because containment is the fs
+        // provider's public seam and the glue owns it: the SAME pinned
+        // `FileSystem.contains` the overlay rules use, resolved per call. A
+        // provider without that seam THROWS, which the router maps to
+        // `authority-undetermined` -> deny with zero durable rows: a subtree
+        // requirement is never answered by a guess and never by a silent match.
+        const operationApprovalRouting =
+          typeof operationApprovalFacts !== 'function'
+            ? undefined
+            : async () => {
+                const facts = await operationApprovalFacts({
+                  teamSessionId: teamRoot,
+                  memberInstanceId: instanceId,
+                  actingAsLeader: isLeader,
+                })
+                if (facts === undefined || facts === null) return undefined
+                return { ...facts, subtreeContains: containOverlayKeys }
+              }
         const disposePermission = installParameterPermissionListener(agentCtx, {
           policy: permissionPolicy,
           resolveTarget,
           containsTargets,
+          ...(operationApprovalRouting === undefined ? {} : { operationApprovalRouting }),
           ...(permissionPlane === undefined || permissionPlane === null
             ? {}
             : {

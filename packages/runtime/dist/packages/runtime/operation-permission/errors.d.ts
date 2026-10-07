@@ -235,4 +235,52 @@ export declare class PermissionCoverageUnmanagedError extends Error {
 }
 /** Type guard: is `value` a {@link PermissionCoverageUnmanagedError}? */
 export declare function isPermissionCoverageUnmanagedError(value: unknown): value is PermissionCoverageUnmanagedError;
+/** The stable prefix every capability/environment denial reason carries. */
+export declare const PRE_EXECUTE_CAPABILITY_REASON_PREFIX = "execution unavailable:";
+/**
+ * The closed capability/environment codes of the pre-execute pipeline
+ * (spec §13's typed families, in this repository's existing
+ * kebab-case `alpha*-` convention).
+ *
+ * TWO members, and the omission is deliberate and measured. The frozen
+ * read-only external check (`ControlService.checkExternalOperation`) answers
+ * `{ allowed: false, reason: <free text> }` and folds EVERY fail-closed case
+ * into that one shape — a hard deny, an unnamed allow-list item, an explicit
+ * `capabilityExists: false`, a faulting facts probe and a malformed facts
+ * shape are indistinguishable through it. Spec §13's third family
+ * (`CAPABILITY_UNAVAILABLE`, the host has no such capability) therefore has
+ * NO producer that could emit it truthfully, and this PR declares no code no
+ * path can return — the same rule `governance/runtime-authority.ts:130-137`
+ * states for an unreachable outcome arm. Splitting the two needs a
+ * verdict-shape change in `packages/runtime/control/types.ts`, which is
+ * outside Task 4's declared files; the gap is reported, not papered over.
+ */
+export declare const PRE_EXECUTE_CAPABILITY_ERROR_CODES: {
+    /**
+     * The host's external hard policy refuses this operation (a hard deny
+     * cell, an allow-list that does not name the tool, or the shared check's
+     * own fail-closed reading of faulted/malformed external facts).
+     */
+    readonly EXTERNAL_RUNTIME_RESTRICTION: "alpha4-external-runtime-restriction";
+    /**
+     * The environment question could not be asked: the shared external check
+     * itself threw, so no verdict about the host is available at all.
+     * Fail-closed denial, distinct from a refusal the host actually stated.
+     */
+    readonly HOST_ENVIRONMENT_UNAVAILABLE: "alpha4-host-environment-unavailable";
+};
+/** One of the closed capability/environment codes. */
+export type PreExecuteCapabilityErrorCode = (typeof PRE_EXECUTE_CAPABILITY_ERROR_CODES)[keyof typeof PRE_EXECUTE_CAPABILITY_ERROR_CODES];
+/** Every capability/environment code value, for membership checks. */
+export declare const PRE_EXECUTE_CAPABILITY_ERROR_CODE_VALUES: readonly string[];
+/**
+ * The deterministic reason string of one capability/environment denial: the
+ * stable prefix, the closed code in brackets, then the diagnostic. The
+ * diagnostic is free text (the frozen check's own fail-closed explanation);
+ * the PREFIX and the CODE are the contract.
+ * @param code - the closed capability/environment code.
+ * @param detail - the diagnostic (never authority data).
+ * @returns the stable denial reason.
+ */
+export declare function capabilityDenialReason(code: PreExecuteCapabilityErrorCode, detail: string): string;
 //# sourceMappingURL=errors.d.ts.map

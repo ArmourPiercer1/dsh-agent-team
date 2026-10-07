@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ❯ test/a4p4-operation-single-shot.test.ts (6 tests | 1 failed) 8ms
+     ✓ C1: authority drift after the allow — no execution, no consumption, no rewritten verdict 2ms
+     ✓ C2: the capability vanishing after the allow is execution-unavailable, not a permission loss 1ms
+     ✓ C3: the exact invocation consumes the allow exactly once, and a replay is refused 0ms
+     ✓ C4: a failed tool body does not refund the allow — the retry needs its own approval 0ms
+     × C5: every terminal state the adapter reports is a member of the frozen vocabulary 3ms
+     ✓ C6: the recheck comparison — equal is covered, a rise is stale, unknown is not confirmed 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p4-operation-single-shot.test.ts > a4p4 lane C — one approval, one invocation, and an honest terminal state > C5: every terminal state the adapter reports is a member of the frozen vocabulary
+AssertionError: expected undefined to be 'tool-body-denied' // Object.is equality
+
+- Expected:
+"tool-body-denied"
+
++ Received:
+undefined
+
+ ❯ test/a4p4-operation-single-shot.test.ts:652:29
+    650|     expect(unavailable?.['via']).toBe('guard-external-policy')
+    651|     const failed = c4.terminal.find((o) => o['outcome'] === 'execution…
+    652|     expect(failed?.['via']).toBe('tool-body-denied')
+       |                             ^
+    653|   })
+    654|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  10:14:03
+   Duration  1.06s (transform 701ms, setup 0ms, import 969ms, tests 8ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
