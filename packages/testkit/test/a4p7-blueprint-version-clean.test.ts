@@ -622,7 +622,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // suite green. Now the fence itself refuses to run on an adjudication that
     // does not name its own entry with a line-referenced hand-verification.
     for (const [key, ev] of UNKNOWN_LEDGER) {
-      const path = key.split('::')[0]
+      const path = key.split('::')[0] ?? ''
       const base = path.split('/').at(-1)
       expect(typeof ev === 'string' && ev.trim().length > 0, `empty justification: ${key}`).toBe(true)
       expect(
@@ -638,7 +638,8 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
       ['foreign', 'hand-verified packages/example/elsewhere.test.ts:1-2'],
     ] as const) {
       const good = JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>
-      const badKey = Object.keys(good)[0]
+      const badKey = Object.keys(good)[0] ?? ''
+      if (badKey === '') throw new Error('ledger file is empty — nothing to falsify')
       good[badKey] = value
       const tmp = resolve(REPO_ROOT, `.tmp-faultscratch/adjud-bad-${flavor}.json`)
       writeFileSync(tmp, JSON.stringify(good))
