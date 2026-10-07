@@ -430,7 +430,7 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
       origin: 'saved',
       sourceFile: 'unmigrated.yaml',
       schemaVersion: 1,
-      migrationRequired: true,
+      migrationState: 'migration-required',
     })
   })
 
@@ -442,16 +442,18 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
     expect(w1Listed.filter((identity) => identity.sourceFile === 'broken.yaml')).toEqual([])
   })
 
-  it('every listed arm carries a version and a migration flag, the anchor included', () => {
+  it('every listed arm carries a version and a migration STATE, the anchor included', () => {
     // The catalog migration surface IS this list, so no arm may omit the fields:
     // the anchor is the one document Task 7.2 makes host construction survive, so
-    // its version is the fact an operator needs first.
+    // its version is the fact an operator needs first. The state is asserted as a
+    // MEMBER OF THE THREE-VALUE SET rather than as `true`/`false`: a boolean on
+    // this line is what made a document nobody could read look current.
     const origins = w1Listed.map((identity) => identity.origin)
     expect(origins).toContain('bootstrap')
     expect(origins).toContain('saved')
     for (const identity of w1Listed) {
       expect(typeof identity.schemaVersion).toBe('number')
-      expect(typeof identity.migrationRequired).toBe('boolean')
+      expect(['current', 'migration-required', 'unreadable']).toContain(identity.migrationState)
     }
     // The anchor is the fixture's own v1 document: its flag is the one the
     // cutover flips, so only the version is asserted here (the flag for a
@@ -468,7 +470,7 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
       revision: '1',
       schemaVersion: 1,
       origin: 'saved',
-      migrationRequired: true,
+      migrationState: 'migration-required',
       sourceFile: 'unmigrated.yaml',
     })
     // The message is operator-facing: it names the document, its version, and the
@@ -495,13 +497,13 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
 
   it('the listed flag is what the refusal acts on, so the catalog can never contradict resolve', () => {
     // The one place where a build could be its own enemy: `listIdentities()`
-    // publishes `migrationRequired` from the inspector's classification, and a
+    // publishes `migrationState` from the inspector's classification, and a
     // resolve that re-derived the answer from the version set could answer
     // "unsupported" — or "not found" — for the very entry it just listed as
     // migratable. Asserted by reading both surfaces for the same identity.
     const listed = w1Authority.listIdentities().find((identity) => identity.blueprintId === 'a4p7.unmigrated')
     const error = captureError(() => w1Authority.resolve('a4p7.unmigrated', '1'))
-    expect(listed?.migrationRequired).toBe(true)
+    expect(listed?.migrationState).toBe('migration-required')
     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED)
   })
 
@@ -522,11 +524,11 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
     const blueprint = w1BridgeAuthority.resolve('a4p7.unmigrated', '1')
     expect(blueprint.blueprintId).toBe('a4p7.unmigrated')
     expect(blueprint.schemaVersion).toBe(1)
-    expect(w1BridgeUnmigrated).toMatchObject({ schemaVersion: 1, migrationRequired: false })
+    expect(w1BridgeUnmigrated).toMatchObject({ schemaVersion: 1, migrationState: 'current' })
     // …and the bridge's listing carries the SAME identity, differing only in the
     // two new facts. That is the whole of the migration surface: an entry does not
     // appear and vanish across the cutover, its STATUS changes.
-    expect({ ...w1BridgeUnmigrated, migrationRequired: true }).toEqual({ ...w1Unmigrated })
+    expect({ ...w1BridgeUnmigrated, migrationState: 'migration-required' }).toEqual({ ...w1Unmigrated })
   })
 })
 
@@ -548,16 +550,22 @@ const w2Listed = w2Authority.listIdentities()
 describe('a4p7 7.1 C2: a frozen row is classified by the version it carries, not by its text', () => {
   it('a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal', () => {
     // The two A1-21 names, produced by adjacent code over the same list, kept
-    // apart by the flag that reaches the wire.
+    // apart by the STATE that reaches the wire.
+    //
+    // This assertion is the ruling in one line. Under the deleted boolean it read
+    // `migrationRequired: false` — the same answer the runnable documents beside it
+    // gave — while `resolve()` on the very next line refused this identity. The
+    // listing said current, the resolve said no, and both were this component's
+    // truthful output. `unreadable` is what the listing actually knows.
     expect(w2Listed.find((identity) => identity.blueprintId === 'a4p7.frozen-unknown')).toMatchObject(
-      { origin: 'frozen', schemaVersion: 99, migrationRequired: false },
+      { origin: 'frozen', schemaVersion: 99, migrationState: 'unreadable' },
     )
     const error = captureError(() => w2Authority.resolve('a4p7.frozen-unknown', '7'))
     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED)
     if (!isTeamPluginError(error)) return
     expect(error.detail).toMatchObject({
       schemaVersion: 99,
-      migrationRequired: false,
+      migrationState: 'unreadable',
       origin: 'frozen',
     })
     expect(error.message).toContain('never defined')
@@ -601,7 +609,7 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version it carries, not
 // drives the same machinery end to end: classify without throwing → the
 // constructor survives → the value refuses on read → every start entrance refuses
 // typed before its first durable write. The v1/v2 siblings of these worlds (same
-// assertions, `migrationRequired: true`, code `BLUEPRINT_MIGRATION_REQUIRED`, the
+// assertions, `migrationState: 'migration-required'`, code `BLUEPRINT_MIGRATION_REQUIRED`, the
 // anchor now LISTED) land in the commit that flips the set, where they go red
 // first. Nothing here is skipped, stubbed, or renamed to hide which arm it is.
 //
@@ -863,7 +871,7 @@ const dCreateBoundRefused = await dWorld({
     throw new TeamPluginError(
       MIGRATION_REFUSAL,
       'the bound Blueprint is a schema v1 document; migrate it (scripted)',
-      { blueprintId: 'a4p7.degraded.anchor', revision: '1', migrationRequired: true },
+      { blueprintId: 'a4p7.degraded.anchor', revision: '1', migrationState: 'migration-required' },
     )
   },
 })
@@ -877,7 +885,7 @@ const dResumeRefused = await dWorld({
     throw new TeamPluginError(
       MIGRATION_REFUSAL,
       'the bound Blueprint is a schema v1 document; migrate it (scripted: the authority of group C answers this way)',
-      { blueprintId: 'a4p7.degraded.anchor', revision: '1', migrationRequired: true },
+      { blueprintId: 'a4p7.degraded.anchor', revision: '1', migrationState: 'migration-required' },
     )
   },
 })
@@ -997,7 +1005,7 @@ const dHandoffRefused = await dWorld({
     throw new TeamPluginError(
       MIGRATION_REFUSAL,
       'the bound Blueprint is a schema v1 document; migrate it (scripted)',
-      { blueprintId: 'a4p7.degraded.anchor', revision: '1', migrationRequired: true },
+      { blueprintId: 'a4p7.degraded.anchor', revision: '1', migrationState: 'migration-required' },
     )
   },
 })
@@ -1028,7 +1036,10 @@ describe('D1 — the bright line: a version refusal degrades, a non-document sti
     expect(state.status).toBe('refused')
     if (state.status !== 'refused') return
     expect(state.code).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED)
-    expect(state.migrationRequired).toBe(false)
+    // `unreadable`, and NOT the old `false`: this is the arm with nothing to
+    // migrate, and saying so is the difference between a runbook step and a
+    // migration that can never finish.
+    expect(state.migrationState).toBe('unreadable')
   })
   it('a version this build runs classifies as runnable (the ordinary host is unchanged)', () => {
     expect(classifyBlueprintAnchor(ANCHOR_RUNNABLE).status).toBe('runnable')
@@ -1274,7 +1285,7 @@ describe('D8 — bound-blueprint case 2 refuses with the same name case 3 gets',
     const error = captureError(() => refusedResolver('session-a4p7-d-legacy'))
     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED)
     if (!isTeamPluginError(error)) return
-    expect(error.detail).toMatchObject({ migrationRequired: false, reason: 'bound-anchor-refused' })
+    expect(error.detail).toMatchObject({ migrationState: 'unreadable', reason: 'bound-anchor-refused' })
   })
   it('and a runnable anchor still resolves by definition (the legacy binding is intact)', () => {
     expect(openResolver('session-a4p7-d-legacy').blueprintId).toBe('a4p7.degraded.anchor')
@@ -1300,7 +1311,7 @@ describe('D9 — the Blueprint authority degrades with its anchor, and fails clo
   })
   it('a version nobody defined is NOT listed (there is no migration to advertise)', () => {
     // The contrast with group C, on the same code path: a RETIRED anchor IS
-    // listed, with migrationRequired=true, because the operator owes a
+    // listed, with migrationState=migration-required, because the operator owes a
     // migration for it. Listing this one would advertise a task that does not
     // exist and blur the two refusals the operator has to tell apart (A1-21).
     const anchorIdentity = parseBlueprint(ANCHOR_RUNNABLE).blueprintId

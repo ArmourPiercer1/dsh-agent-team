@@ -1,0 +1,73 @@
+=== What the forward-port merge actually changed. Run at HEAD 4a3326917eee12865bd656f6ed26a8967e91a265, date 2026-10-07T15:11:05Z.
+=== Merge parents: d22f92bd (my pre-merge head d22f92bd) and 1be9e2b0 (origin/master).
+
+########## git log --graph -1 (two parents, no rewrite) ##########
+*   4a332691 Merge origin/master (1be9e2b0) into feat/a4-pr7-catalog-migration — forward-port, no rewrite
+|\  
+
+########## git diff --stat d22f92bd..HEAD (the merge delta = master arriving + the rebuilt mirror) ##########
+ .../a4p7-a1-14-consumption-revalidation.test.ts    |  292 ++-
+ .../test/a4p7-v3-cutover-acceptance.test.ts        |  547 +++++-
+ 53 files changed, 13514 insertions(+), 129 deletions(-)
+
+########## of the 94 paths THIS branch owns, the ones the merge touched ##########
+this branch owns 94 paths; the merge changed 53 paths overall (master content arriving)
+of MY paths it changed 22: 20 install-surface mirror, 2 non-dist:
+    dev/agent-workflow/evidence/a4-pr7/gates/README.md
+    packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+
+the 20 mirror files that moved against master (this branch emissions, rebuilt from merged source):
+    packages/runtime/dist/packages/remote/src/handlers/ports.d.ts
+    packages/runtime/dist/packages/remote/src/handlers/ports.d.ts.map
+    packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.d.ts
+    packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.d.ts.map
+    packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js
+    packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js.map
+    packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.d.ts.map
+    packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.js
+    packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.js.map
+    packages/runtime/dist/packages/runtime/src/plugin/host.d.ts
+    packages/runtime/dist/packages/runtime/src/plugin/host.d.ts.map
+    packages/runtime/dist/packages/runtime/src/plugin/host.js
+    packages/runtime/dist/packages/runtime/src/plugin/host.js.map
+    packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+    packages/runtime/dist/packages/runtime/src/plugin/root.js
+    packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+    packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts
+    packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map
+    packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js
+    packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map
+
+########## byte-identity of MY production code across the merge (git diff --stat d22f92bd HEAD -- <file>) ##########
+    UNCHANGED  packages/remote/src/handlers/ports.ts
+    UNCHANGED  packages/runtime/src/plugin/blueprint-authority.ts
+    UNCHANGED  packages/runtime/src/plugin/bound-blueprint.ts
+    UNCHANGED  packages/runtime/src/plugin/host.ts
+    UNCHANGED  packages/runtime/src/plugin/root.ts
+    UNCHANGED  packages/runtime/src/plugin/s6-remote.ts
+    UNCHANGED  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
+    UNCHANGED  packages/testkit/test/p4t6-session-event-scan.test.ts
+
+########## the one test file both branches edited: separation of concerns ##########
+--- arrived from master (git diff --stat d22f92bd HEAD -- file):
+ 1 file changed, 535 insertions(+), 12 deletions(-)
+--- lines the merge ADDED that mention the carrier (must be 0):
+0
+--- still mine against master (git diff --stat origin/master HEAD -- file):
+ 1 file changed, 30 insertions(+), 19 deletions(-)
+
+########## the non-dist conflict and its resolution ##########
+conflicted paths: 33 = 32 under packages/**/dist/ (taken from origin/master, then the merged tree was rebuilt) + 1 evidence README (resolved as a UNION, both sections verbatim).
+git diff --diff-filter=U at resolve time:
+Auto-merging dev/agent-workflow/evidence/a4-pr7/gates/README.md
+CONFLICT (content): Merge conflict in dev/agent-workflow/evidence/a4-pr7/gates/README.md
+Auto-merging packages/runtime/dist/packages/runtime/control/service.d.ts.map
+CONFLICT (content): Merge conflict in packages/runtime/dist/packages/runtime/control/service.d.ts.map
+Auto-merging packages/runtime/dist/packages/runtime/control/service.js
+CONFLICT (content): Merge conflict in packages/runtime/dist/packages/runtime/control/service.js
+Auto-merging packages/runtime/dist/packages/runtime/control/service.js.map
+CONFLICT (content): Merge conflict in packages/runtime/dist/packages/runtime/control/service.js.map
+Auto-merging packages/runtime/dist/packages/runtime/control/types.d.ts
+CONFLICT (content): Merge conflict in packages/runtime/dist/packages/runtime/control/types.d.ts
+Auto-merging packages/runtime/dist/packages/runtime/control/types.d.ts.map
+CONFLICT (content): Merge conflict in packages/runtime/dist/packages/runtime/control/types.d.ts.map

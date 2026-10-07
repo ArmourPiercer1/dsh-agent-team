@@ -1,0 +1,18 @@
+--- BASE: 2 run(s), union 28 identities
+      /home/user/dsh-plugins/dsh-agent-team/.tmp-a4pr7b-hold/base/full-run1.txt: 26
+      /home/user/dsh-plugins/dsh-agent-team/.tmp-a4pr7b-hold/base/full-run2.txt: 24
+--- POST: 1 run(s), union 22 identities
+      /home/user/dsh-plugins/dsh-agent-team/.tmp-a4pr7b-hold/s2/post-merge.txt: 22
+
+NEW (in POST, never in BASE) — must be empty for "no new failing identity": 0
+RESOLVED (in BASE, absent from POST): 6
+  - TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+  - TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+  - TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five c
+  - TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota)
+  - TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly two activations succeed
+  - TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > the final durable state holds EXACTLY two members and two COMMITTED operati
+
+Note on the BASE union: a base run flaps on `p6t1-parallel` (the declared flake of
+this lane), so the base UNION is wider than either base run. The comparison that
+matters is NEW, and it is computed against the union for that reason.

@@ -138,6 +138,7 @@ import type {
 import { createLedgerPageTracker } from '../../../remote/src/push/ledger-page.js'
 import type { PageCheckResult } from '../../../remote/src/push/types.js'
 import type { TeamRootWireRow } from '../team-ownership-index.js'
+import type { BlueprintVersionState } from './blueprint-authority.js'
 import { TeamPluginError } from './types.js'
 import type {
   RemoteHandlerRegistration,
@@ -551,8 +552,59 @@ export interface S6RemotePolicyStateSwitchRequest {
   readonly actorClaim: unknown
 }
 
+/**
+ * The migration state of ONE catalog identity, as `catalog.list` carries it
+ * (A4-PR7 Ruling 1). The producer is the Blueprint authority's own listing, so the
+ * value on the wire is the value `resolve()` refuses on — one carrier seen twice,
+ * never two carriers that can disagree.
+ */
+export interface S6CatalogMigrationState {
+  readonly blueprintId: string
+  /** The revision in the identity's OWN spelling (the catalog's revision string). */
+  readonly revision: string
+  readonly schemaVersion: number
+  readonly migrationState: BlueprintVersionState
+}
+
+/** The states this remote will put on the wire. Anything else is not a state. */
+const CATALOG_MIGRATION_STATES: readonly BlueprintVersionState[] = [
+  'current',
+  'migration-required',
+  'unreadable',
+]
+
+/**
+ * The `revisionStates` entry for one revision.
+ *
+ * An identity the catalog can name that NOBODY supplied a state for is reported
+ * `unreadable` — never `current`. That is the whole failure mode of this ruling
+ * stated as a default: advertising a document as current because nothing said
+ * otherwise is exactly the lie the boolean used to tell, and a host that stops
+ * wiring the reader has to produce a loud catalog, not a quiet one.
+ */
+function catalogRevisionState(
+  states: ReadonlyMap<string, S6CatalogMigrationState>,
+  blueprintId: string,
+  revision: number,
+  revisionSpelling: string,
+): RemoteSafeRecord {
+  const state = states.get(`${blueprintId}@${revisionSpelling}`)
+  if (state === undefined || !CATALOG_MIGRATION_STATES.includes(state.migrationState)) {
+    return { revision, migrationState: 'unreadable' }
+  }
+  return {
+    revision,
+    schemaVersion: state.schemaVersion,
+    migrationState: state.migrationState,
+  }
+}
+
 /** Port 1/12 — blueprint catalog discovery (`catalog.*`). */
 export interface S6RemoteCatalogPort {
+  /**
+   * Every blueprint the catalog knows: its revisions AND each revision's migration
+   * state, i.e. `{ blueprintId, revisions: number[], revisionStates: […] }`.
+   */
   list(): Promise<readonly RemoteSafeRecord[]>
   get(blueprintId: string, blueprintRevision?: number): Promise<RemoteSafeRecord>
 }
@@ -1124,6 +1176,19 @@ export interface S6RemoteOptions {
   readonly repositories: TeamDomainRepositories
   /** The host blueprint catalog (the single bound blueprint). */
   readonly catalog: BlueprintCatalog
+  /**
+   * A4-PR7 Ruling 1 — the migration state of every identity the catalog lists, read
+   * at the moment of the listing (so a caller may not cache it), which
+   * `catalog.list` publishes beside each revision.
+   *
+   * Optional AT THIS LEVEL ONLY, because the factory root has no authority to ask;
+   * `root.ts` always supplies it — from the live authority where there is one, from
+   * its own classified anchor where there is not. Absent, the payload answers
+   * `unreadable` for everything, and NEVER guesses `current`: guessing is the
+   * defect this ruling deletes, so the cost of dropping this wiring is a catalog
+   * that shouts, not one that shrugs.
+   */
+  readonly catalogMigrationStates?: () => readonly S6CatalogMigrationState[]
   /** The bound blueprint (policy-state closed set, template quota). */
   readonly blueprint: TeamBlueprint
   /** The bound leader's instance id (the leader authority). */
@@ -2392,13 +2457,29 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
     return resolved
   }
 
+  /**
+   * The migration states for ONE listing, keyed `<blueprintId>@<revision>` in the
+   * catalog's own revision spelling. Built per call and not cached: it is a read of
+   * a live authority, and two listings in one process are allowed to differ.
+   */
+  const migrationStatesByKey = (): ReadonlyMap<string, S6CatalogMigrationState> => {
+    const states = new Map<string, S6CatalogMigrationState>()
+    for (const state of options.catalogMigrationStates?.() ?? []) {
+      states.set(`${state.blueprintId}@${state.revision}`, state)
+    }
+    return states
+  }
+
   return {
     // --- 1/12 catalog: host catalog discovery (read-only) ---------------------------
     catalog: {
       async list(): Promise<readonly RemoteSafeRecord[]> {
+        const states = migrationStatesByKey()
         const rows: RemoteSafeRecord[] = []
         for (const blueprintId of catalog.blueprintIds) {
-          const revisions = catalog.listRevisions(blueprintId).map((revision) => {
+          const revisions: number[] = []
+          const revisionStates: RemoteSafeRecord[] = []
+          for (const revision of catalog.listRevisions(blueprintId)) {
             const value = Number(revision)
             if (!Number.isSafeInteger(value)) {
               throw new TeamPluginError(
@@ -2407,9 +2488,14 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
                 { reason: 'malformed-revision', blueprintId, revision },
               )
             }
-            return value
-          })
-          rows.push({ blueprintId, revisions })
+            revisions.push(value)
+            // One entry per revision, in `revisions` order: a consumer must never
+            // have to join two arrays by hand and hope they stayed in step — that
+            // join is where a boolean would have been "good enough" and where a
+            // listing and a resolve would have started disagreeing.
+            revisionStates.push(catalogRevisionState(states, blueprintId, value, revision))
+          }
+          rows.push({ blueprintId, revisions, revisionStates })
         }
         return rows
       },

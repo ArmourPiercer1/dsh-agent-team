@@ -82,10 +82,9 @@ export function createBoundBlueprintResolver(options) {
                 throw new TeamPluginError(anchor.code, anchor.headline, {
                     teamRootSessionId: teamRootSid,
                     reason: 'bound-anchor-refused',
-                    migrationRequired: anchor.migrationRequired,
-                    ...(anchor.identity !== undefined ? { ...anchor.identity } : {}),
-                    ...(anchor.schemaVersion !== undefined
-                        ? { schemaVersion: anchor.schemaVersion }
+                    migrationState: anchor.migrationState,
+                    ...(anchor.migrationState === 'migration-required'
+                        ? { ...anchor.identity, schemaVersion: anchor.schemaVersion }
                         : {}),
                 });
             }

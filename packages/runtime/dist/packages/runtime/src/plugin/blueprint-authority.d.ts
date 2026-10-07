@@ -122,20 +122,18 @@ export interface BlueprintIdentity {
      */
     readonly schemaVersion: number;
     /**
-     * True exactly when this document carries a version this product DEFINED and
-     * no longer runs (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`): LISTED here, refused
-     * at `resolve()` with `BLUEPRINT_MIGRATION_REQUIRED`.
+     * Whether this document's version runs here, is owed a migration, or cannot be
+     * read at all — see {@link BlueprintVersionState}. LISTED here whatever it says
+     * (a readable identity is listable, and the migration backlog is only a backlog
+     * while it is visible); refused at `resolve()` by the same value, under the
+     * matching one of A1-21's two names.
      *
-     * The two facts are deliberately separate fields rather than one status
-     * string, because they have two different lifetimes: `migrationRequired` is
-     * what the listing must keep showing (it is the migration backlog), while
-     * `schemaVersion` is what an operator uses to decide WHICH migration applies.
-     * A document on a version nobody defined never reaches either: it has no
-     * readable identity, so it is not listable at all (the inspector's
-     * `rejected`, and `resolve` answers it with
-     * `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`, never with this flag — A1-21).
+     * `schemaVersion` beside it is not a second answer to the same question: the
+     * state is WHICH situation this is, the version is the number the operator
+     * types into the migration. A document with no readable identity at all is not
+     * listable (the inspector's `rejected`) and so never carries either field.
      */
-    readonly migrationRequired: boolean;
+    readonly migrationState: BlueprintVersionState;
 }
 /**
  * The narrow live authority (plan §8). Every call queries the current
@@ -221,19 +219,36 @@ export type BlueprintAnchorState = {
     readonly code: string;
     /** The operator-facing headline (names the fault and the action). */
     readonly headline: string;
-    /** The declared version, when the frontmatter carried a usable one. */
-    readonly schemaVersion?: number;
-    /** True exactly for a DEFINED-and-retired anchor (the migration arm). */
-    readonly migrationRequired: boolean;
+    /** A DEFINED-and-retired anchor: the operator's migration backlog. */
+    readonly migrationState: 'migration-required';
+    /** The version the migration starts FROM — always readable on this arm. */
+    readonly schemaVersion: number;
     /**
-     * The anchor's identity: present for a retired anchor (the inspector read
-     * it BEFORE it judged the version — Task 7.1's ordering) and absent for a
-     * version nobody defined, which has no identity to list.
+     * The anchor's own identity. The inspector read it BEFORE it judged the
+     * version (Task 7.1's ordering), which is exactly why a document this build
+     * will not run can still be LISTED — and why this arm, and only this arm,
+     * has something to list.
      */
-    readonly identity?: {
+    readonly identity: {
         readonly blueprintId: string;
         readonly revision: string;
     };
+} | {
+    readonly status: 'refused';
+    readonly code: string;
+    readonly headline: string;
+    /**
+     * A version this product never defined. NO identity and NO version field
+     * here, and that is the point: the inspector hands out no identity for a
+     * version it cannot name, so there is nothing to list and no migration to
+     * advertise. These two refusals were ONE refused shape with optional
+     * `identity?`/`schemaVersion?`, which is how a renderer came to print
+     * "listed in the catalog with migrationRequired=false" for the arm with
+     * nothing to list — the fields were absent, the sentence was not. Making the
+     * pair exist only on the arm that has them is what keeps that sentence from
+     * being writable again.
+     */
+    readonly migrationState: 'unreadable';
 };
 /**
  * Classify the inline bootstrap anchor without throwing on a version refusal.
@@ -244,6 +259,41 @@ export type BlueprintAnchorState = {
  * those are configuration faults and not migration states.
  */
 export declare function classifyBlueprintAnchor(source: string): BlueprintAnchorState;
+/**
+ * What THIS build says about a Blueprint document's declared version (A4-PR7
+ * Ruling 1, ADR A1-21). Three values, because "this build will not run it" is TWO
+ * different facts with two different operator actions:
+ *
+ *  - `current` — the version is in `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS`: the
+ *    document runs, and nothing is owed to it;
+ *  - `migration-required` — the version is in `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`:
+ *    this product DEFINED that version, no longer runs it, and the document is the
+ *    operator's to migrate. Listed, and refused at `resolve()` with
+ *    `BLUEPRINT_MIGRATION_REQUIRED`;
+ *  - `unreadable` — the version is in NEITHER set, so this build cannot tell the
+ *    operator anything about that document's migration state, AND no migration is
+ *    owed: there is nothing to run for a shape nobody defined. Listed (its identity
+ *    is still readable) and refused at `resolve()` with
+ *    `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`.
+ *
+ * WHY ONE VALUE AND NOT A BOOLEAN. The deleted `migrationRequired: boolean` had to
+ * make `false` mean both "current" and "cannot read that version", so a row on a
+ * version nobody defined was advertised as CURRENT while `resolve()` refused it —
+ * one component, one identity, two answers, and the surface an operator reads was
+ * the wrong one. That is the absent-vs-unavailable fold this phase keeps meeting,
+ * one layer up each time.
+ *
+ * The classification reads the DOMAIN's two derived sets and nothing else, never a
+ * local `version < 3`: a threshold would be a second authority on which versions
+ * exist, and it would start lying the day a version 4 is defined on the other side
+ * of the package boundary.
+ */
+export type BlueprintVersionState = 'current' | 'migration-required' | 'unreadable';
+/**
+ * Classify one declared version against the domain's two derived sets: the whole
+ * question, in one place, with no comparison operator in it.
+ */
+export declare function blueprintVersionStateOf(schemaVersion: number): BlueprintVersionState;
 /**
  * Create the live authority over the frozen registry, the saved sources
  * and the bootstrap anchor.

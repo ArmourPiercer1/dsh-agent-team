@@ -104,9 +104,9 @@ export function classifyBlueprintAnchor(source) {
             code: BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
             headline: `the bootstrap Blueprint ${identity.blueprintId}@${identity.revision} is a schema v${identity.schemaVersion} ` +
                 `document; this build runs [${SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')}]. The host boots and the catalog ` +
-                `lists it with migrationRequired=true; no Team bound to it can start until it is migrated`,
+                `lists it with migrationState=migration-required; no Team bound to it can start until it is migrated`,
             schemaVersion: identity.schemaVersion,
-            migrationRequired: true,
+            migrationState: 'migration-required',
             identity: { blueprintId: identity.blueprintId, revision: identity.revision },
         };
     }
@@ -121,7 +121,7 @@ export function classifyBlueprintAnchor(source) {
             code: BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED,
             headline: `the bootstrap Blueprint declares a schema version this build does not run; this build runs ` +
                 `[${SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')}]. The host boots degraded; no Team bound to it can start`,
-            migrationRequired: false,
+            migrationState: 'unreadable',
         };
     }
     return { status: 'runnable', blueprint: parseNamedSourceOrThrow(source) };
@@ -131,17 +131,15 @@ function parseNamedSourceOrThrow(source) {
     return parseBlueprint(source);
 }
 /**
- * Does a document on this version need a migration, as opposed to being
- * unreadable or perfectly current?
- *
- * The question is answered by the DOMAIN's derived set
- * (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`), never by a local `version < 3`:
- * a threshold here would be a second authority on which versions exist, and it
- * would silently start lying the day a version 4 is defined on the other side of
- * the package boundary.
+ * Classify one declared version against the domain's two derived sets: the whole
+ * question, in one place, with no comparison operator in it.
  */
-function migrationRequiredFor(schemaVersion) {
-    return RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersion);
+export function blueprintVersionStateOf(schemaVersion) {
+    if (SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersion))
+        return 'current';
+    if (RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersion))
+        return 'migration-required';
+    return 'unreadable';
 }
 /**
  * The version refusal a resolve/start path owes a document it can name but will
@@ -154,25 +152,26 @@ function migrationRequiredFor(schemaVersion) {
  *    is no migration for a shape nobody knows).
  *
  * The order is the contract, not an optimisation. The identity's own
- * `migrationRequired` flag is asked FIRST: that flag is what this same build just
- * advertised on `listIdentities()`, so a resolve that answered "unsupported" (or
- * "not found") for it would contradict its own catalog — and the flag is also the
- * only arm that can know (a saved source is classified by the inspector, which
- * consults the version sets; a frozen row by the retired set directly). Only when
- * the flag is false does the version itself decide: supported → no refusal, and
- * anything else is a version neither runnable nor retired, i.e. one this product
- * never defined.
+ * `migrationState` is asked FIRST: that state is what this same build just
+ * advertised on `listIdentities()` and on the Remote catalog, so a resolve that
+ * answered "unsupported" (or "not found") for an identity its own catalog calls a
+ * migration would contradict the surface the operator was told to trust — and the
+ * state is also the only arm that can know (a saved source is classified by the
+ * inspector, which consults the version sets; a frozen row by those sets
+ * directly). Only when the state is not `migration-required` does the version
+ * itself decide: supported → no refusal, and anything else is `unreadable`: a
+ * version neither runnable nor retired, i.e. one this product never defined.
  *
  * A supported version returns `undefined`: this function only ever names a
  * refusal, and "no refusal" is not a third answer.
  */
 function versionRefusalOf(identity) {
     const supported = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ');
-    if (identity.migrationRequired) {
+    if (identity.migrationState === 'migration-required') {
         return {
             code: BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
             headline: `Blueprint ${identity.blueprintId}@${identity.revision} is a schema v${identity.schemaVersion} document; ` +
-                `this build runs [${supported}]. It is listed in the catalog with migrationRequired=true — ` +
+                `this build runs [${supported}]. It is listed in the catalog with migrationState=migration-required — ` +
                 `migrate it (the v3 document requires a teamHardEnvelope authority document) and it will start`,
         };
     }
@@ -222,7 +221,7 @@ export function createBlueprintAuthority(options) {
                 contentHash: row.contentHash,
                 origin: 'frozen',
                 schemaVersion: row.schemaVersion,
-                migrationRequired: migrationRequiredFor(row.schemaVersion),
+                migrationState: blueprintVersionStateOf(row.schemaVersion),
             });
         }
         // The anchor arm. Runnable → the parsed identity, unchanged. Refused and
@@ -241,19 +240,19 @@ export function createBlueprintAuthority(options) {
                     ...(bootstrapRef !== undefined ? { contentHash: bootstrapRef.contentHash } : {}),
                     origin: 'bootstrap',
                     schemaVersion: bootstrap.schemaVersion,
-                    migrationRequired: migrationRequiredFor(bootstrap.schemaVersion),
+                    migrationState: blueprintVersionStateOf(bootstrap.schemaVersion),
                 });
             }
         }
-        else if (anchor.status === 'refused' && anchor.identity !== undefined) {
+        else if (anchor.status === 'refused' && anchor.migrationState === 'migration-required') {
             const bKey = identityKey(anchor.identity.blueprintId, anchor.identity.revision);
             if (!map.has(bKey)) {
                 map.set(bKey, {
                     blueprintId: anchor.identity.blueprintId,
                     revision: anchor.identity.revision,
                     origin: 'bootstrap',
-                    schemaVersion: anchor.schemaVersion ?? 0,
-                    migrationRequired: anchor.migrationRequired,
+                    schemaVersion: anchor.schemaVersion,
+                    migrationState: anchor.migrationState,
                 });
             }
         }
@@ -297,8 +296,11 @@ export function createBlueprintAuthority(options) {
                 // supported version and `migration-required` on a retired one are read
                 // from the same identity shape, and re-deriving it from
                 // `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS` here would put a second copy of
-                // the rule where the inspector already answered.
-                migrationRequired: inspection.status === 'migration-required',
+                // the rule where the inspector already answered. `rejected` never reaches
+                // this line (the `continue` above drops it), so these two statuses are the
+                // whole domain at this point — and the third state, `unreadable`, has no
+                // listing to be wrong on, because an unreadable identity is never a row.
+                migrationState: inspection.status === 'ok' ? 'current' : 'migration-required',
             });
         }
         return map;
@@ -339,7 +341,7 @@ export function createBlueprintAuthority(options) {
                 revision,
                 schemaVersion: identity.schemaVersion,
                 origin: identity.origin,
-                migrationRequired: identity.migrationRequired,
+                migrationState: identity.migrationState,
                 supportedVersions: [...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS],
                 ...(identity.sourceFile !== undefined ? { sourceFile: identity.sourceFile } : {}),
             });
@@ -446,7 +448,7 @@ export function createBlueprintAuthority(options) {
                         blueprintId,
                         revision,
                         schemaVersion: listedNow.schemaVersion,
-                        migrationRequired: listedNow.migrationRequired,
+                        migrationState: listedNow.migrationState,
                         reason: 'freeze-version-refused',
                     });
                 }
@@ -457,7 +459,7 @@ export function createBlueprintAuthority(options) {
                     revision,
                     origin: 'frozen',
                     schemaVersion: frozen.schemaVersion,
-                    migrationRequired: migrationRequiredFor(frozen.schemaVersion),
+                    migrationState: blueprintVersionStateOf(frozen.schemaVersion),
                 });
                 if (refusal !== undefined) {
                     throw new TeamPluginError(refusal.code, refusal.headline, {

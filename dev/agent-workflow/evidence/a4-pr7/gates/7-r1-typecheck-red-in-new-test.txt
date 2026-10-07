@@ -1,0 +1,29 @@
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(457,12): error TS18048: 'state' is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(458,12): error TS18048: 'state' is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(459,12): error TS18048: 'state' is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(463,12): error TS18048: 'state' is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(472,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(481,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(486,12): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(487,12): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(499,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(504,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime typecheck: test/a4p7-v8-catalog-migration-state.test.ts(505,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime typecheck: Failed
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/runtime:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/runtime@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2

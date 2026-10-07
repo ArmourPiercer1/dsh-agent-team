@@ -496,6 +496,34 @@ function governanceViewOfEnvelope(document) {
     };
 }
 /**
+ * The degraded-boot warning an OPERATOR reads (A4-PR7 Ruling 1). Exported and pure
+ * because the SENTENCE is the product surface here: it is the line a human decides
+ * from, so it is asserted as text rather than as a field somebody hopes a renderer
+ * spells correctly.
+ *
+ * THE ONE THING THIS FUNCTION EXISTS TO KEEP TRUE: the two refusals read
+ * differently. A DEFINED-and-retired anchor is a task the operator owns; it keeps
+ * its identity and stays on the catalog, and the line names it with its version. A
+ * version this build never defined is not a task — there is nothing to migrate
+ * toward — it has no identity to list, and the line must not pretend otherwise.
+ * Before this function both arms ended in the same
+ * `… listed in the catalog with migrationRequired=<true|false>` tail, so the
+ * un-runnable document was printed in the exact words used for the nothing-to-do
+ * one, and the only difference was a bare `true`/`false` in the middle of a
+ * sentence about a catalog listing.
+ */
+export function degradedAnchorBootLine(rootSessionId, anchor) {
+    const which = anchor.migrationState === 'migration-required'
+        ? `anchor ${anchor.identity.blueprintId}@${anchor.identity.revision} is schema v${anchor.schemaVersion} ` +
+            `and is LISTED in the catalog with migrationState=migration-required`
+        : `anchor identity could not be read (migrationState=unreadable), so it is not listed — ` +
+            `there is no migration to advertise for a version this build never defined`;
+    return (`[dsh-agent-team] DEGRADED boot for row ${rootSessionId}: ${anchor.headline} ` +
+        `(code ${anchor.code}, ${which}). The host is up; every Team start or cold resume bound to this ` +
+        `anchor is refused with that code, and NO acknowledgement clears it (governance ` +
+        `acknowledgement gates the v3 envelope-consistency leg only).`);
+}
+/**
  * The plugin name (Cordis named-export protocol; the row id is
  * `dsh-agent-team`).
  */
@@ -1468,11 +1496,7 @@ export async function apply(ctx, config) {
                 .map((template) => template.templateId)
             : [];
         if (anchorState.status === 'refused') {
-            console.warn(`[dsh-agent-team] DEGRADED boot for row ${rowConfig.rootSessionId}: ${anchorState.headline} ` +
-                `(code ${anchorState.code}${anchorState.identity !== undefined
-                    ? `, anchor ${anchorState.identity.blueprintId}@${anchorState.identity.revision}, listed in the catalog with migrationRequired=${String(anchorState.migrationRequired)}`
-                    : ', anchor identity unreadable'}). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO `
-                + `acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only).`);
+            console.warn(degradedAnchorBootLine(rowConfig.rootSessionId, anchorState));
         }
         const live = glue.createAgentBindings({
             agents,

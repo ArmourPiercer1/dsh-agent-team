@@ -235,6 +235,32 @@ export function governanceStartRefusal(method, outcome) {
     return new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_START_MIGRATION_REQUIRED, `${method}: the bound Blueprint document predates the v3 governance grammar; ` +
         `start is refused until the Team is migrated (acknowledgement never clears this)`, { reason: 'blueprint-migration-required' });
 }
+/** The states this remote will put on the wire. Anything else is not a state. */
+const CATALOG_MIGRATION_STATES = [
+    'current',
+    'migration-required',
+    'unreadable',
+];
+/**
+ * The `revisionStates` entry for one revision.
+ *
+ * An identity the catalog can name that NOBODY supplied a state for is reported
+ * `unreadable` — never `current`. That is the whole failure mode of this ruling
+ * stated as a default: advertising a document as current because nothing said
+ * otherwise is exactly the lie the boolean used to tell, and a host that stops
+ * wiring the reader has to produce a loud catalog, not a quiet one.
+ */
+function catalogRevisionState(states, blueprintId, revision, revisionSpelling) {
+    const state = states.get(`${blueprintId}@${revisionSpelling}`);
+    if (state === undefined || !CATALOG_MIGRATION_STATES.includes(state.migrationState)) {
+        return { revision, migrationState: 'unreadable' };
+    }
+    return {
+        revision,
+        schemaVersion: state.schemaVersion,
+        migrationState: state.migrationState,
+    };
+}
 /**
  * BP-G (issue #2 blueprint-loading, plan §12.2) — the methods the
  * readiness gate does NOT refuse while the state is not `ready`: the
@@ -1019,20 +1045,40 @@ export function createS6RemotePorts(options) {
         }
         return resolved;
     }
+    /**
+     * The migration states for ONE listing, keyed `<blueprintId>@<revision>` in the
+     * catalog's own revision spelling. Built per call and not cached: it is a read of
+     * a live authority, and two listings in one process are allowed to differ.
+     */
+    const migrationStatesByKey = () => {
+        const states = new Map();
+        for (const state of options.catalogMigrationStates?.() ?? []) {
+            states.set(`${state.blueprintId}@${state.revision}`, state);
+        }
+        return states;
+    };
     return {
         // --- 1/12 catalog: host catalog discovery (read-only) ---------------------------
         catalog: {
             async list() {
+                const states = migrationStatesByKey();
                 const rows = [];
                 for (const blueprintId of catalog.blueprintIds) {
-                    const revisions = catalog.listRevisions(blueprintId).map((revision) => {
+                    const revisions = [];
+                    const revisionStates = [];
+                    for (const revision of catalog.listRevisions(blueprintId)) {
                         const value = Number(revision);
                         if (!Number.isSafeInteger(value)) {
                             throw new TeamPluginError(S6_REMOTE_ERROR_CODES.CATALOG_REVISION_MALFORMED, `blueprint '${blueprintId}' carries a malformed revision '${revision}'`, { reason: 'malformed-revision', blueprintId, revision });
                         }
-                        return value;
-                    });
-                    rows.push({ blueprintId, revisions });
+                        revisions.push(value);
+                        // One entry per revision, in `revisions` order: a consumer must never
+                        // have to join two arrays by hand and hope they stayed in step — that
+                        // join is where a boolean would have been "good enough" and where a
+                        // listing and a resolve would have started disagreeing.
+                        revisionStates.push(catalogRevisionState(states, blueprintId, value, revision));
+                    }
+                    rows.push({ blueprintId, revisions, revisionStates });
                 }
                 return rows;
             },

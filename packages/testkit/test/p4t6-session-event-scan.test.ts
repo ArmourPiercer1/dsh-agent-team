@@ -1903,6 +1903,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts',
       'packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts',
       'packages/testkit/test/a4p7-blueprint-version-clean.test.ts',
+      // A4-PR7 Ruling 1 (this commit): the three-state migration surface on the
+      // Remote catalog. Exactly one new scannable file — every other path the
+      // ruling touches is an EDIT to a path this scan already counts, and an edit
+      // is not an increment. The total below moves because this line does.
+      'packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts',
     ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
@@ -1987,11 +1992,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // PRs' numbers stay untouched. Review round 1 moved it with the three
     // review-round specs named in the list.
     expect(SCANNED_PATHS_A4PR6.length).toBe(1016 - 1003)
-    // The A4-PR7 tie, same form. `1017` is PR7's own advancing total: it moves
+    // The A4-PR7 tie, same form. `1020` is PR7's own advancing total: it moves
     // only when the A4-PR7 list above grows, and the by-path loop above is what
     // proves each named path really is in the scan (a total that moved for a
-    // dropped file instead of an added one fails there, not here).
-    expect(SCANNED_PATHS_A4PR7.length).toBe(1019 - 1016)
+    // dropped file instead of an added one fails there, not here). Ruling 1 moved
+    // it with the ONE file it added — every other path that ruling touched was
+    // already counted, and an edit is not an increment.
+    expect(SCANNED_PATHS_A4PR7.length).toBe(1020 - 1016)
 
   })
 

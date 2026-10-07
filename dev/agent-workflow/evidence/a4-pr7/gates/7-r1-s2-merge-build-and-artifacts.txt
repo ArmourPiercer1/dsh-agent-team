@@ -1,0 +1,70 @@
+=== pnpm build then build:composition then check:artifacts, on the merged tree, before the merge commit was written.
+=== The dist conflicts were taken from origin/master first, so the mirror in the merge commit is GENERATED from merged source, not chosen from a side.
+=== merge forward-port build  date: 2026-10-07T15:09:29Z
+########## pnpm build ##########
+$ pnpm -r run build
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+[build exit=0]
+########## pnpm run build:composition ##########
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 95 modules, 12 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/client/composition-shim/client-bundle.js (1259739 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/client/composition-shim/package.json
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/blueprint-authority.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/bound-blueprint.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+[ELIFECYCLE] Command failed with exit code 1.
+[build:composition exit=1]
+
+=== post-merge install-surface gate  date: 2026-10-07T15:09:41Z
+=== dist conflicts were taken from origin/master, then the merged tree was REBUILT (pnpm build exit=0, see merge-build.txt), and the rebuild is co-committed into the merge commit.
+########## pnpm run build:composition ##########
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 95 modules, 12 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/client/composition-shim/client-bundle.js (1259739 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+[build:composition exit=0]
+########## pnpm run check:artifacts ##########
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+[check:artifacts exit=0]

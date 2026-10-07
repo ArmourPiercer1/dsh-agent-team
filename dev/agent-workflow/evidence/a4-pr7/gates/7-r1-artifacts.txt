@@ -1,0 +1,24 @@
+=== pnpm build + build:composition + check:artifacts (with the rebuilt mirror staged) ===
+=== date: 2026-10-07T13:51:38Z  HEAD: 4eee9393002678592aeee890ee0e466c7a6b22d6
+########## pnpm build ##########
+packages/remote build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+[build exit=0]
+########## git add -A (source + rebuilt install-surface mirror, same commit) ##########
+staged.
+########## pnpm build:composition ##########
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/client/composition-shim/client-bundle.js (1259739 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7b/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+[build:composition exit=0]
+########## pnpm run check:artifacts ##########
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+[check:artifacts exit=0]
