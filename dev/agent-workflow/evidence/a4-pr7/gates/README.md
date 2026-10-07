@@ -138,3 +138,23 @@ rebuilding the mirror), owned there, and merely surfaced here.
 | `r3-p4t6.txt`, `r3-a4pr0a-hygiene.txt`, `r3-client.txt`, `r3-lint-diff.txt`, `r3-lint-identities.txt` | p4t6 pin 10 passed from the repo root; a4pr0a + lane hygiene 35 passed; client lane 3 failed / 876 passed (baseline set, `packages/client` untouched by this branch); lint identities 160 lines / 76 distinct, `new 0, resolved 0`. |
 | `r3-build.txt`, `r3-build-composition.txt`, `r3-check-artifacts.txt` | `pnpm build` exit 0; `build:composition` and `check:artifacts` exit 1 on 51 drifted dist files. |
 | `r3-dist-drift-at-base.txt` | the drift is inherited: measured at `689b716c` (source exports `operationApprovalCandidatePoints`, committed dist does not contain it), with the 36-inherited / 15-mine split and the last commit to touch that dist file (`a1b2431b`, A4-PR4). |
+
+## Forward-port merge (`7-r1-s2-*`): bringing `#103` onto master without a rewrite
+
+`origin/master` took `#102`/`#105` (its own mirror refresh) and the RULING 4 fixes,
+which left `#103` reporting `CONFLICTING`: two branches had each committed a refreshed
+mirror of the same inherited drift. Resolved by a forward `git merge` — **no rebase, no
+force-push**, because the gated-history rule applies to a merged feature branch and the
+merge body cites `8cc6a8bd`, a SHA a rebase would erase.
+
+| file | the claim it supports |
+| --- | --- |
+| `7-r1-s2-merge-shape.txt` | what the merge actually touched, which is the claim the merge body makes: 33 conflicted paths of which **32 were under `packages/**/dist/`** (taken from `origin/master`, then the merged tree was rebuilt) and **1 was the evidence README** (union, both sections verbatim); the byte-identity of this branch's production files across the merge; and the separation in the one file both branches edited — master's 535 arriving lines contain **zero** mentions of the carrier, while the 30 lines still differing from master are all carrier renames. |
+| `7-r1-s2-merge-build-and-artifacts.txt` | `pnpm build` exit 0, `build:composition` exit 0, `check:artifacts` **OK 1508, exit 0**, co-committed into the merge commit — 20 mirror files moved against master's mirror and they are exactly this branch's emissions plus their maps; master's RULING 4 emissions rebuilt byte-identically, which is the sign the two refreshes described the same drift and nothing else. |
+| `7-r1-s2-post-merge-gates.txt` (+ `run-7-r1-s2.sh`) | the gates on the merged tree: `pnpm -r run typecheck` 8/8 `Done`, 0 `error TS`; whole-repo `pnpm test` after clearing `.tmp-fault` at **487 files / 6030 tests**, 9 failed files / 19 failed tests; `p4t6` 10 passed from the repo root (its derived total absorbed master's new files without a pin move); `a4pr0a` 14/14; the ruling lane 3 files / 105 passed; `lint-identities` 160 / 76 distinct, `new 0, resolved 0`; client lane the same three baseline failures; `check:artifacts` exit 0. |
+| `7-r1-s2-identity-diff.txt` | the base failing-identity union against this merged tree: **NEW = 0**; the 6 "resolved" are `p6t1-parallel` legs that did not fire. |
+
+The mutation sweep was NOT re-run, and the honest reason is recorded rather than
+assumed: no production line of this branch changed in the merge — `7-r1-s2-merge-shape.txt`
+proves it file by file — and a mutation proof measures a production change that is
+still byte-identical to the one already measured.
