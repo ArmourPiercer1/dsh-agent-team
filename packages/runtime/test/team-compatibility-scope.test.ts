@@ -143,10 +143,19 @@ const ROOT_B = 'session-h2compb'
 /** A root this host never owns. */
 const ROOT_FOREIGN = 'session-h2compforeign'
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /** The A (boot) blueprint — the row anchor (web + base, both optional). */
 const BLUEPRINT_A_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: H2COMP-A-BP',
   'revision: "1"',
   'leader:',
@@ -196,6 +205,11 @@ const BLUEPRINT_A_SOURCE = [
   '---',
 ].join('\n')
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /** The B (owned) blueprint — a SAVED SOURCE in the blueprint dir. Same
  *  shape as A except the id/persona and the requirement set: it adds the
  *  `tool/pdf` requirement, which the shared host facts do NOT satisfy —
@@ -203,7 +217,11 @@ const BLUEPRINT_A_SOURCE = [
  *  environment fingerprints (requirement set + facts) differ. */
 const BLUEPRINT_B_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: H2COMP-B-BP',
   'revision: "1"',
   'leader:',
@@ -719,12 +737,21 @@ it('H2.6 a foreign root is still rejected by the bound-root guard', () => {
  *  the H2 world). */
 const ROOT_B2 = 'session-h5compb'
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /** The H5 B blueprint: same shape as H2-B but `tool/pdf` is REQUIRED
  *  (no `optional` → `complete: true` → FATAL under the host facts where
  *  pdf is unavailable). */
 const BLUEPRINT_B2_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: H5COMP-B2-BP',
   'revision: "1"',
   'leader:',

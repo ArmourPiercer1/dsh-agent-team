@@ -68,10 +68,19 @@ const SEED_SCOUT_CHILD = 'session-child-p8s6seeds1'
 /** The deterministic clock the C2 assertions compare against. */
 const FIXED_NOW = '2026-09-01T00:00:00.000Z'
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /** The C2 blueprint (own id; structure mirrors the P8-S5A T1 fixture). */
 const BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: P8S6PROJ-BP',
   'revision: "1"',
   'leader:',
