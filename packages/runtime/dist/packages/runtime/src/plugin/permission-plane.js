@@ -618,6 +618,18 @@ export function createControlAuthorityRevalidation(deps) {
             reviewAuthority: input.reviewAuthority,
             beneficiaryAuthority: input.beneficiaryAuthority,
             authorityScope: input.authorityScope,
+            // RULING 4, threaded: the row's command identity joins the persisted point
+            // so the consumption point derives the SAME candidate set the ASK derived.
+            // A shell-class narrowing is declared at `fingerprint` shape EXACTLY
+            // (`blueprint/src/validate.ts:699`), so without it the only question asked
+            // here is the tool-level exact key — which no shell rule can cover
+            // (`authority-envelope.ts:218-222` answers a decisive `{covers:false}`
+            // across shapes) — and a rise on the command comes back `still-covered`.
+            // The field is the row's durable `operationFingerprint`, passed through by
+            // `control/service.ts`; this plane adds no identity of its own and states
+            // the absence rather than dropping the key, because the helper's answer to
+            // a shell scope with no command is a refusal, not a narrower question.
+            commandFingerprint: input.commandFingerprint,
             facts,
         });
         switch (verdict.kind) {

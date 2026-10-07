@@ -99,6 +99,14 @@ export interface OperationApprovalRoutingInput {
     /** The plane's answer for this instance, or `undefined` when the Team is
      *  not on the v3 authority documents. */
     readonly facts: OperationApprovalFacts | undefined;
+    /**
+     * The canonical operation identity, REQUIRED for the shell class (RULING 4):
+     * the documents narrow a shell invocation by `fingerprint` exactly, so an ask
+     * that does not carry it cannot see its own narrowing. It is not optional in
+     * behaviour - a shell-class ask without it is refused as `SHELL_POINT_MISSING`
+     * rather than answered from the tool key alone.
+     */
+    readonly commandFingerprint?: string;
 }
 /**
  * Why an operation's required authority could not be determined. A closed
@@ -116,6 +124,16 @@ export declare const OPERATION_APPROVAL_REFUSAL_REASONS: {
     /** The evaluator answered `undetermined` (an unanswerable containment
      *  question, or a narrowing that cannot be decided for this scope). */
     readonly CEILING_UNDETERMINED: "ceiling-undetermined";
+    /**
+     * A SHELL-class scope whose command fingerprint was not supplied (RULING 4).
+     * The documents can only narrow a shell invocation by `fingerprint` exactly, so
+     * an ask that cannot name the command cannot see its own narrowing; answering
+     * from the tool key alone would report a ceiling no author declared. A wiring
+     * fault on this plane is reported as undetermined - never as a denial, and never
+     * as a guessed rung - which is the convention this module already keeps for
+     * malformed facts.
+     */
+    readonly SHELL_POINT_MISSING: "shell-point-missing";
     /** A document this ladder rung is BOUND BY could not be read
      *  (`AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE`). A missing document is not an
      *  empty one. */
@@ -165,6 +183,51 @@ export type OperationApprovalRouting = {
     readonly reason: OperationApprovalRefusalReason;
     /** The fail-closed diagnostic (free text, never authority data). */
     readonly detail: string;
+};
+/**
+ * The CANDIDATE POINTS that name one approval scope (A4-PR7 RULING 4).
+ *
+ * ONE FUNCTION, BOTH SITES. The ask and the consumption recheck each need the set
+ * of shapes their scope question arrives in, and they must agree about it: the
+ * consumption question is "does the rung that signed still cover what the human
+ * was shown?", and if each site derived its own set the recheck could silently ask
+ * a question the ask never asked - the false-pass failure wearing the recheck's
+ * clothes. So the set is derived here, from the point plus the command fingerprint,
+ * and `a4p7-v3-cutover-acceptance.test.ts` ASSERTS the two sites agree instead of
+ * trusting that both callers remembered.
+ *
+ * WHY A SET AT ALL: the documents pair a shell-class rule with a `fingerprint`
+ * matcher EXACTLY (`blueprint/src/validate.ts:699`: no subtree, no any, no path)
+ * while this plane names an operation by its TOOL-level exact key
+ * (`canonical-operation.ts:14`). Asking only the tool key makes every shell
+ * narrowing answer `{covers:false, undeterminable:false}` - DECISIVE, not
+ * absorbing - so the narrowing contributes nothing to the meet and the rung shown
+ * to a human can only come out LOWER than the author declared. Asking both shapes
+ * and meeting the answers closes that without changing what a document means.
+ *
+ * The file-class answer is the point alone: a file-class rule is exact or subtree,
+ * and both already answer the exact question - so a set of one is the whole law
+ * there, and no existing file-class routing moves.
+ *
+ * @param point - the scope's primary point (at the ask, the tool-level exact key;
+ *   at consumption, the persisted `authorityScope` verbatim, kind included).
+ * @param commandFingerprint - the canonical operation identity: required for the
+ *   shell class, meaningless elsewhere.
+ * @returns the candidate points, plus a refusal reason when a shell-class scope
+ *   cannot name its command (a wiring fault, never a silent narrowing-free pass).
+ *   The contract on that combination is strict: when `refused` is set, the
+ *   accompanying `points` list is a DIAGNOSTIC of the shape that could not be
+ *   completed, NOT a candidate set — both call sites check `refused` FIRST and
+ *   return, because evaluating the lone tool-level point of a shell-class scope
+ *   answers with a decisive non-coverage no author declared. Pinned by
+ *   `test/a4p7-v3-cutover-acceptance.test.ts` GROUP F.
+ */
+export declare function operationApprovalCandidatePoints(input: {
+    readonly point: ControlAuthorityScope;
+    readonly commandFingerprint?: string;
+}): {
+    readonly points: readonly ControlAuthorityScope['matcher'][];
+    readonly refused?: (typeof OPERATION_APPROVAL_REFUSAL_REASONS)[keyof typeof OPERATION_APPROVAL_REFUSAL_REASONS];
 };
 /**
  * Route one concrete operation ask to the minimum authority that may sign it
@@ -268,6 +331,13 @@ export declare function recheckPersistedOperationAuthority(input: {
     readonly beneficiaryAuthority: ProposalAuthorityPosition;
     readonly authorityScope: ControlAuthorityScope;
     readonly facts: OperationApprovalFacts | undefined;
+    /**
+     * The canonical operation identity from the durable row (RULING 4). The
+     * candidate set is re-derived HERE by the same function the ask used, so the
+     * recheck cannot ask a scope question the ask never asked; the equality is
+     * asserted, not assumed, in `a4p7-v3-cutover-acceptance.test.ts`.
+     */
+    readonly commandFingerprint?: string;
 }): OperationApprovalRecheck;
 /**
  * The ONE port {@link createOperationApprovalFactsReader} needs: the
