@@ -571,8 +571,10 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // B1's cutover-acceptance migration retired the two `schemaVersion: 99`
     // toMatchObject advisories (the probes now read a derived constant, so no
     // digit sits in a code position any more); the surviving named laundering in
-    // that file is the v1 bridge assertion below.
-    expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 547)).toContain('toMatchObject')
+    // that file is the v1 bridge assertion below. (Witness ownership, phase 1:
+    // the file grew its byte-owned v1 witness builder — the bridge line shifted
+    // 547 -> 584; its class and count are unchanged.)
+    expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 584)).toContain('toMatchObject')
   })
 
   it('unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated', () => {

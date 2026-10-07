@@ -207,6 +207,43 @@ function withDeclaredVersion(source: string, version: string | number): string {
 }
 
 /**
+ * The version THIS file's W1 worlds and retired-witness arms are ABOUT: v1.
+ * A named claim of this file — not `revisionSource`'s base version, which is a
+ * claim of the shared factory and moves with the factory's own migration
+ * (7.4-B1 phase 1, C-domain FINDINGS §5: the factory could not move to v3
+ * while three runtime files kept minting their retired-version witnesses from
+ * its bytes).
+ */
+const WITNESS_V1 = 1
+
+/**
+ * A byte-owned v1 witness: the minimal CLOSED v1 document, declared at
+ * `WITNESS_V1` by this file. Everything the W1 group asserts — "unmigrated",
+ * "the bridge still runs it", "the strong parser accepts it while the bridge
+ * runs v1" — is a claim about THIS version, so the bytes must not be the
+ * factory's era. Documents whose whole point is the version this build RUNS
+ * keep flowing through `revisionSource`: those correctly follow the factory.
+ */
+function witnessV1Source(blueprintId: string, revision: string, persona = 'Lead.'): string {
+  return [
+    '---',
+    `schemaVersion: ${String(WITNESS_V1)}`,
+    `blueprintId: ${blueprintId}`,
+    `revision: "${revision}"`,
+    'leader:',
+    '  templateId: leader',
+    `  persona: ${JSON.stringify(persona)}`,
+    'members: []',
+    'requirements: []',
+    'memberEnvelopes: []',
+    'policyStates: []',
+    'metadata: {}',
+    '---',
+    '',
+  ].join('\n')
+}
+
+/**
  * A source index that answers like the INSPECTOR of a build whose
  * `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` is `[3]`: a well-formed identity on
  * any other DEFINED version comes back `migration-required` instead of `ok`.
@@ -299,7 +336,7 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
     // The other half of A1-21: this version was never a Blueprint document, so
     // no migration applies and it must not be advertised as migratable.
     const result = inspectBlueprintSource(
-      withDeclaredVersion(revisionSource('a4p7.unknown', '1'), VERSION_NOBODY_DEFINED),
+      withDeclaredVersion(witnessV1Source('a4p7.unknown', '1'), VERSION_NOBODY_DEFINED),
     )
     expect(result.status).toBe('rejected')
     if (result.status !== 'rejected') return
@@ -308,7 +345,7 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
 
   it('a non-integer version stays parse-rejected (no identity is owed to it)', () => {
     const result = inspectBlueprintSource(
-      withDeclaredVersion(revisionSource('a4p7.fraction', '1'), '1.5'),
+      withDeclaredVersion(witnessV1Source('a4p7.fraction', '1'), '1.5'),
     )
     expect(result.status).toBe('rejected')
     if (result.status !== 'rejected') return
@@ -412,8 +449,8 @@ describe('a4p7 7.1 B: the retired set is derived, and the two refusal names stay
 // =============================================================================
 
 const W1 = makeDir('w1')
-const W1_ANCHOR = revisionSource('a4p7.anchor', '1', 'Anchor lead.')
-const W1_SAVED = revisionSource('a4p7.unmigrated', '1', 'Unmigrated lead.')
+const W1_ANCHOR = witnessV1Source('a4p7.anchor', '1', 'Anchor lead.')
+const W1_SAVED = witnessV1Source('a4p7.unmigrated', '1', 'Unmigrated lead.')
 writeSource(W1, 'unmigrated.yaml', W1_SAVED)
 writeSource(W1, 'broken.yaml', NEG_INVALID_YAML.source)
 
@@ -568,7 +605,7 @@ const W2_ANCHOR = revisionSource('a4p7.anchor2', '1', 'Anchor two.')
 // is the only way this arm exists — a hand-edited or corrupt store — and it
 // leaves every assertion below untouched.
 const W2_ROW_SOURCE = withDeclaredVersion(
-  revisionSource('a4p7.frozen-unknown', '7', 'Frozen unknown-version lead.'),
+  witnessV1Source('a4p7.frozen-unknown', '7', 'Frozen unknown-version lead.'),
   VERSION_NOBODY_DEFINED,
 )
 const w2Authority = createBlueprintAuthority({
@@ -621,7 +658,7 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version its document de
     // the DOMAIN's words — `SCHEMA_VERSION_UNSUPPORTED`, "this document cannot be
     // read" — never with the actionable migration name the operator needs. One
     // law, both states, no branch.
-    const refused = captureError(() => parseBlueprint(revisionSource('a4p7.parse', '1'))) !== undefined
+    const refused = captureError(() => parseBlueprint(witnessV1Source('a4p7.parse', '1'))) !== undefined
     expect(refused).toBe(!BRIDGE_RUNS_V1)
   })
 })
@@ -671,10 +708,10 @@ import { TeamPluginError } from '../src/plugin/types.js'
 const D_ROOT_SID = 'session-a4p7-d-root'
 const D_NOW = '2026-10-20T00:00:00.000Z'
 
-/** The fixture anchor with only its declared version changed. */
+/** The witness body with only its declared version changed. */
 function anchorOnVersion(blueprintId: string, version: string | number): string {
   return withDeclaredVersion(
-    revisionSource(blueprintId, '1', 'Degraded anchor lead.'),
+    witnessV1Source(blueprintId, '1', 'Degraded anchor lead.'),
     version,
   )
 }
