@@ -7,6 +7,29 @@ overrides:
   # (not viable in spawn-restricted environments such as the P1-T4
   # verification sandbox).
   vite: "^8.2.2"
+  # A4-PR7 7.6 (client leg): host-generation parity pins, added so the client
+  # plugin's host module closure resolves here at all. `packages/client` now
+  # dev-depends on the 17 packages @deepseek-ai/dsh-client-ui-primitives@0.2.0-rc.2
+  # imports (it declares none of them itself); six of their transitive versions
+  # are unreachable here by fresh resolution: the shared pnpm store holds exactly
+  # the versions the host pinned at baseline, while the cached registry
+  # packuments advertise newer patches, and micromark@4.0.3 requires
+  # micromark-util-edit-map, which exists in neither the store nor the metadata
+  # cache (ERR_PNPM_NO_OFFLINE_META). Every value below is byte-identical to the
+  # host's own resolution in tests/deepseek-harness-test-use/pnpm-lock.yaml, so
+  # this is parity with the pinned generation, not a new version policy — and
+  # all six names appear nowhere in the pre-change pnpm-lock.yaml, so the blast
+  # radius is exactly the new client closure. These entries are load-bearing for
+  # any re-resolution: pnpm records `overrides` in pnpm-lock.yaml settings and a
+  # frozen install refuses a mismatch (ERR_PNPM_LOCKFILE_CONFIG_MISMATCH).
+  # Re-measure, do not edit by taste, after any host-pin bump.
+  # Evidence: dev/agent-workflow/evidence/a4-pr7/7-6-client-leg/
+  micromark: 4.0.2
+  micromark-util-types: 2.0.2
+  mdast-util-find-and-replace: 3.0.2
+  mdast-util-gfm-strikethrough: 2.0.0
+  mdast-util-to-markdown: 2.1.2
+  micromark-extension-gfm-table: 2.1.1
 allowBuilds:
   # 0.2.0-rc.2 pin: these five transitive packages ship lifecycle scripts.
   # None of them is part of the plugin's build/test surface — the native
