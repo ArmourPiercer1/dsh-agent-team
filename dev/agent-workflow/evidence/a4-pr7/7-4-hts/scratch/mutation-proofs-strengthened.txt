@@ -1,0 +1,18 @@
+MUTATION A applied: A: every dirty OFFENDING line prints its FIRST site as `L<line>` — the `=v<version>` suffix is gone.
+  wrapper exit=1
+   FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the fence reports sites, not a bare count, and names a file the reader can open
+  AssertionError: the report must print cordis.patch.yml L60=v1 on that path's own OFFENDING line: expected false to be true // Object.is equality
+        Tests  1 failed | 57 passed (58)
+  restored sha matches pristine: YES
+MUTATION B applied: B: the dirty path packages/domain/test/a1-permission-policy.test.ts is dropped from the report's naming; its sites stay in the structured result.
+  wrapper exit=1
+   FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the fence reports sites, not a bare count, and names a file the reader can open
+  AssertionError: the report must name the dirty path packages/domain/test/a1-permission-policy.test.ts: expected false to be true // Object.is equality
+        Tests  1 failed | 57 passed (58)
+  restored sha matches pristine: YES
+MUTATION C applied: C: only packages/domain/test/blueprint-v1-frozen-resume.test.ts L76 loses its suffix — a site whose token also appears on other report lines (collision probe).
+  wrapper exit=1
+   FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the fence reports sites, not a bare count, and names a file the reader can open
+  AssertionError: the report must print packages/domain/test/blueprint-v1-frozen-resume.test.ts L76=v1 on that path's own OFFENDING line: expected false to be true // Object.is equality
+        Tests  1 failed | 57 passed (58)
+  restored sha matches pristine: YES

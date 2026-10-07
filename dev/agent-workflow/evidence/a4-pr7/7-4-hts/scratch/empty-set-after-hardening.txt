@@ -1,0 +1,9 @@
+{
+  "dirtyPaths": 0,
+  "exactMultisetComparisons": 0,
+  "reportHasAnyOffendingLine": false,
+  "reportDirtyTallyLine": "RESULT dirty(0 files, 0 sites)",
+  "reportVerdict": "RESULT verdict: clean (dirty 0, unadjudicated unknown 0)",
+  "tallyAssertionPasses": true,
+  "literalArchetypeAssertionPasses": false
+}

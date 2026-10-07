@@ -1,0 +1,44 @@
+--- tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs::f15 (pre)
++++ tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs::f15 (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 2
++schemaVersion: 3
+ blueprintId: f15.leader
+ revision: "1"
+ teamRequirements:
+@@ -50,6 +50,10 @@
+   deny:
+     - delete-team
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: default
+     description: "F15 live-loss team default state."
+--- tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs::BP_ANCHOR_YAML (post)
+@@ -1,15 +1,19 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: f15.anchor
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the row anchor of the F15 smoke world. f15-2026-10-07-20-45-40 is the run nonce. No work is assigned to you."
++  persona: "You are the row anchor of the F15 smoke world. f15-2026-10-07-20-50-32 is the run nonce. No work is assigned to you."
+ members: []
+ requirements:
+   - domain: mcp
+     name: mcp-f15
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: default
+     description: "F15 row anchor default state."

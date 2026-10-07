@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-hts
+
+ ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (58 tests) 911ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  357ms
+
+ Test Files  1 passed (1)
+      Tests  58 passed (58)
+   Start at  06:11:22
+   Duration  1.19s (transform 42ms, setup 0ms, import 191ms, tests 911ms, environment 0ms)
+

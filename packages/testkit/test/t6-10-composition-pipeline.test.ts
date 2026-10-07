@@ -61,7 +61,7 @@ import { isDeepFrozen } from './t6-helpers.js'
 
 const T6_PIPELINE_BLUEPRINT_SOURCE: string = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: team.t6-pipeline',
   'revision: "1"',
   'leader:',
@@ -79,6 +79,13 @@ const T6_PIPELINE_BLUEPRINT_SOURCE: string = [
   '    name: cordis-mcp',
   '    optional: true',
   'memberEnvelopes: []',
+  // v3 requires both authority envelopes explicitly (§3.2, no implicit
+  // default); `rules: []` is the narrowest declaration — this pipeline
+  // test exercises composition mechanics, not any mutation authority.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',

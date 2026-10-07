@@ -1,0 +1,26 @@
+### the new spec, two consecutive runs (determinism; run A was 17 passed in 30.51s)
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > runs where its instruments can see the tree, and refuses to run anywhere else 5ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > is green, asserted by arm name and by absence of a skip — never by the exit code 826ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > treats a step that did not run as a failure that says why, even at exit 0 0ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > says so by name when the built client entry is gone, and does not skip past it 356ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > refuses the leg, by name, when the host module closure cannot be traversed 419ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the fence leg (plan 7.6: the wrapper must be green; this leg owns the cwd doctrine) > reports every verdict class with its set by path when run at the toplevel 188ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the fence leg (plan 7.6: the wrapper must be green; this leg owns the cwd doctrine) > refuses a directory that is not a repository, and is never believed as clean 47ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the fence leg (plan 7.6: the wrapper must be green; this leg owns the cwd doctrine) > will not accept a run from below the toplevel as a whole-tree clean (measured false-clean) 59ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > lint closes as an identity diff against the named baseline, not against a count 10122ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > the committed install surface is fresh against the tree, and a missing surface is refused 93ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > every workspace package that declares a typecheck script typechecks 9741ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the client lane (the root suite cannot see it, and this gate says why) > no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here 1ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the client lane (the root suite cannot see it, and this gate says why) > the client lane runs, and no failure appears outside the disclosed baseline 7912ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the runner itself refuses what never ran > a missing instrument is a refusal that names it, never a pass 67ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the runner itself refuses what never ran > an instrument that is killed before reporting is a refusal that says so 505ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the gate is wired, not remembered > every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core 3ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the gate is wired, not remembered > this spec itself is counted by the p4t6 scannable-file ledger 0ms
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Duration  30.50s (transform 49ms, setup 0ms, import 68ms, tests 30.35s, environment 0ms)
+
+### second run
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Duration  30.53s (transform 46ms, setup 0ms, import 60ms, tests 30.39s, environment 0ms)

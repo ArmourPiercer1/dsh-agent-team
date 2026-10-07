@@ -1,0 +1,5 @@
+PROSE packages/domain/blueprint/testdata/fixtures.ts :: L303=v2
+PROSE packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L7=v2
+PROSE packages/runtime/test/a4f1-row-version-not-document-version.test.ts :: L9=v2
+PROSE packages/testkit/test/a4p7-blueprint-version-clean.test.ts :: L553=v99
+PROSE packages/tools/harness/t12-vertical.mjs :: L1838=v2

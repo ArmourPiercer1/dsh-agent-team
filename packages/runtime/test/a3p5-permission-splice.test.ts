@@ -67,7 +67,7 @@ const RUNTIME_ROOT = join(HERE, '..')
 
 const BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: A3P5SP-BP',
   'revision: "1"',
   'leader:',
@@ -88,6 +88,10 @@ const BLUEPRINT_SOURCE = [
   '      allow:',
   '        - send-message',
   '      deny: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: The A3P5SP default state.',

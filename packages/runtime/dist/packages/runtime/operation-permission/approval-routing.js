@@ -540,12 +540,24 @@ export function recheckPersistedOperationAuthority(input) {
  *
  * TWO RULES, both pinned in `test/a4p4-operation-approval-authority.test.ts`:
  *
- * 1. **A pre-v3 read is `undefined`, and `undefined` is the legacy arm.** The
- *    port answers `undefined` when the bound Blueprint is not schema v3 (or its
- *    binding is unknown), and that maps to
- *    {@link OperationApprovalRouting}'s `legacy` arm downstream — the frozen
- *    v1/v2 `isLeader ? 'user-approval' : 'leader-approval'` routing, which PR7
- *    owns. This adapter never converts an unknown binding into a v3 answer.
+ * 1. **A DECIDED pre-v3 read is `undefined`, and `undefined` is the legacy arm.**
+ *    The port answers `undefined` when the bound Blueprint DECIDES the question by
+ *    being schema v1/v2, and that maps to {@link OperationApprovalRouting}'s
+ *    `legacy` arm downstream — the frozen v1/v2
+ *    `isLeader ? 'user-approval' : 'leader-approval'` routing, which PR7 owns.
+ *
+ *    AN UNKNOWABLE BINDING NO LONGER TAKES THIS ARM (A4-PR7 §7.5 prerequisite 3,
+ *    review follow-up 1). The ceiling reader used to answer `undefined` for both
+ *    cases, which let "nobody can read the binding" borrow the pre-v3 Team's
+ *    frozen routing; the reader now answers a real context whose document slots are
+ *    `unavailable`, so this adapter forwards it and the router refuses with
+ *    `authority-undetermined` + `authority-document-unavailable`. The arm MOVED and
+ *    the authority did not WIDEN: both arms deny, neither writes anything, and the
+ *    refusing arm names a faulted read (remedy: fix the read) rather than a frozen
+ *    legacy route. Measured and pinned by leg 11 of
+ *    `test/a4p7-ceiling-no-context-refusal.test.ts`, which drives this production
+ *    pair — `a4p4`\'s A14-A16 pins the adapter behind a fake port, so nothing else
+ *    in the suite could see the substitution.
  * 2. **A Leader install is NEVER routed off these facts.** The only production
  *    reader available here fixes the BENEFICIARY to `member` (it is the
  *    mutation lane's reader: `permission-plane.ts:821`). Evaluating the

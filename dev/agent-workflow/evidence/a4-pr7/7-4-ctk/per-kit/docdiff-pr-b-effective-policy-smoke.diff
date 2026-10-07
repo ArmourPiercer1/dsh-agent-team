@@ -1,0 +1,40 @@
+--- tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs::T_PS (pre)
++++ tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs::T_PS (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.prb-ps
+ revision: "1"
+ displayName: "PR-B policy-state smoke team"
+@@ -22,6 +22,10 @@
+   deny:
+     - delete-team
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: default
+     description: "Default state (no model pin)."
+--- tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs::BOOT_SAVED (pre)
++++ tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs::BOOT_SAVED (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.mpr-anchor
+ revision: "2"
+ displayName: "PR-B C3 positive boot blueprint (saved source rev 2)"
+@@ -12,6 +12,10 @@
+     persona: "PR-B C3 positive worker (no modelPreference; the policyState model cell wins the model lane)."
+ requirements: []
+ memberEnvelopes: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: strict
+     description: "PR-B C3 positive: a non-default state in the bound blueprint so the closed set includes it."

@@ -1,0 +1,64 @@
+--- tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs::BP_ANCHOR_YAML (pre)
++++ tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs::BP_ANCHOR_YAML (post)
+@@ -1,15 +1,19 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.wcn-anchor
+ revision: "1"
+ leader:
+   templateId: leader
+-  persona: "You are the leader of the work-completion smoke boot team. WCMK_DISC_2026-10-07T20-45-40 is the discovery marker."
++  persona: "You are the leader of the work-completion smoke boot team. WCMK_DISC_2026-10-07T20-50-33 is the discovery marker."
+ members:
+   - templateId: worker
+     persona: "You are a worker of the work-completion smoke boot team."
+ memberEnvelopes: []
+ requirements: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs::saved/empty-deny (pre)
++++ tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs::saved/empty-deny (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.wcn
+ revision: "1"
+ leader:
+@@ -81,6 +81,10 @@
+         - send-message
+         - report-progress
+       deny: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---
+--- tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs::saved/deny (pre)
++++ tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs::saved/deny (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: team.wcn
+ revision: "1"
+ leader:
+@@ -83,6 +83,10 @@
+         - send-message
+         - report-progress
+       deny: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates: []
+ metadata: {}
+ ---

@@ -447,7 +447,7 @@ function toolValue(result, name) {
   return value
 }
 
-// ── the saved team blueprints (strict closed-v1, the d-smoke shape) ─────────
+// ── the saved team blueprints (strict closed-v3, the d-smoke shape) ─────────
 // The LEADER declares the full team-tools set + mcp allow (the initial
 // grant under test). No `permissions` block (absent policy = no permission
 // listener — the legacy/alpha.1 path, d-smoke precedent). The row ANCHOR is
@@ -472,7 +472,7 @@ function savedBlueprintYaml(bpId, leaderPersona, mcpItems, members) {
   ]
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     ...leaderBlock,
@@ -489,6 +489,10 @@ function savedBlueprintYaml(bpId, leaderPersona, mcpItems, members) {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "mcp-initial-grant smoke default state."',
@@ -507,7 +511,7 @@ function savedBlueprintYaml(bpId, leaderPersona, mcpItems, members) {
 /** The row anchor: a plain LEGACY leader (no capabilities block at all). */
 const BP_ANCHOR_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: team.mgis-anchor',
   'revision: "1"',
   'leader:',
@@ -516,6 +520,10 @@ const BP_ANCHOR_YAML = [
   'members: []',
   'requirements: []',
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',

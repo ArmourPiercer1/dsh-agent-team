@@ -115,7 +115,7 @@ function r7BlueprintSource(opts: {
 }): string {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: A3P4R7-BP',
     'revision: "1"',
     'leader:',
@@ -171,6 +171,8 @@ function r7BlueprintSource(opts: {
     '        kind: fingerprint',
     `        fingerprint: "${opts.execFingerprint}"`,
     '      maximumEffect: allow',
+    'teamHardEnvelope:',
+    '  rules: []',
     'teamEnvelope:',
     '  allow: [send-message, report-progress, request-control, resolve-control, archive-member, restore-member]',
     '  deny: []',

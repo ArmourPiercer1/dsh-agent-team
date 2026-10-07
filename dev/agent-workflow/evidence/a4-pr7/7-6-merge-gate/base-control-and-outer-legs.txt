@@ -1,0 +1,105 @@
+### B0 pre-state
+ M packages/testkit/test/p4t6-session-event-scan.test.ts
+?? dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/
+?? packages/testkit/test/a4p7-merge-gate.test.ts
+### B1 remove the lane's two writes (spec file + p4t6 increment)
+Saved working directory and index state On test/a4-pr7-76-gate: 7-6-gate-p4t6-increment-aside-for-base-control
+B1 spec present? no
+B1 p4t6 clean? 0 modified line(s)
+### B2 base capture (root suite, same tree, same node_modules)
+B2 vitest exit=1
+[fail-set] captured 22 identities (19 failing tests, 3 collection-failing files) from 1 report(s)
+### B3 restore the lane's writes
+On branch test/a4-pr7-76-gate
+Your branch is behind 'origin/master' by 20 commits, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   packages/testkit/test/p4t6-session-event-scan.test.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+Dropped refs/stash@{0} (24ab161143ca315d73aac6fae4180bf2cde946f2)
+B3 spec present? yes
+ M packages/testkit/test/p4t6-session-event-scan.test.ts
+?? dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/
+?? packages/testkit/test/a4p7-merge-gate.test.ts
+### B4 attributable diff (base -> head)
+new=3 removed=0
+> TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P1: N=2 same-template parallel activations both succeed two COMMITTED operations, 
+> TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P1: N=2 same-template parallel activations both succeed two activated results with
+> TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P3: the quota race — five parallel, two may admit (no over-create) exactly three
+### B5 outer legs
+### O1 pnpm run build
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+O1 exit=0
+### O2 pnpm run build:composition (writes the committed surface)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-gate/packages/client/composition-shim/client-bundle.js (1259739 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-gate/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-gate/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+O2 exit=0
+### O3 git status after the writing legs (must be empty for a clean tree)
+ M packages/testkit/test/p4t6-session-event-scan.test.ts
+?? dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/
+?? packages/testkit/test/a4p7-merge-gate.test.ts
+O3 lines=3
+### O4 pnpm run check:artifacts
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+O4 exit=0
+### O5 pnpm run smoke:composition (standalone, all arms printed)
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate cont
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degener
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/clie
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): al
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and 
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest recor
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both 
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module gra
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly 
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived U
+PASS composition-smoke
+O5 exit=0 (recorded, never the basis of a claim)
+### O6 blueprint-version fence at the toplevel (RESULT lines only)
+RESULT dirty(120 files, 259 sites)
+RESULT unknown(16 files, 24 sites)
+RESULT advisory(12 files, 18 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+O6 exit=1
+### O7 targeted acceptance suite (plan 7.6: a4p7-v3-cutover-acceptance)
+ Test Files  1 passed (1)
+      Tests  70 passed (70)
+### O8 the new spec, second run (determinism)
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Duration  29.54s (transform 48ms, setup 0ms, import 64ms, tests 29.38s, environment 0ms)
+### O9 p4t6 after the increment
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+### O10 composition-smoke classification suite (the 7.5 classifier)
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+### O11 lint: full repo, changed-file lint and the identity diff
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+lint-identities: 160 identity lines, 76 distinct (target .)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+### O12 typecheck (whole workspace)
+8
+O12 Done-lines above; error TS lines below
+0
+### O13 client lane standalone
+ Test Files  2 failed | 53 passed (55)
+      Tests  3 failed | 877 passed (880)
+### done
+### all done

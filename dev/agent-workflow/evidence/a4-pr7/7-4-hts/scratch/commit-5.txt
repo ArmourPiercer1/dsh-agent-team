@@ -1,0 +1,92 @@
+A4-PR7 §7.4 (C-tools+harness 5/5): migrate the T12 vertical harness to v3, and correct what its "v2 document" was claimed to be
+
+packages/tools/harness/t12-vertical.mjs builds its boot documents with
+`blueprintDoc(world, bpId)` and hands one to each of the three production rows
+(`:282 blueprintSource: BLUEPRINTS[world].doc`), so this single function is THREE
+Blueprint documents (worlds a/b/c) and the plan named only its version line.
+Migrate-by-hand is the disposition: the product parses these at boot, so after
+§7.3's flip none of the three worlds would start.
+
+`rules: []` for both required v3 carriers, because that is the posture all three
+worlds have always had (the v1 document carried neither carrier) and it moves no
+T12 verdict:
+ - V3's stage-1 HARD deny of the `mcp` capability is an EXTERNAL policy fact on the
+   row config (`externalPolicyFacts` in `teamRowConfig`), never a Blueprint
+   authority document — the plane the empty carriers write to is a different one;
+ - on the approval plane an empty document is the identity
+   (domain/authority-envelope/src/authority-envelope.ts `narrowingForApproval`:
+   absence of a matching rule imposes no narrowing);
+ - on the expansion plane `effectiveAuthorityCeiling` answers no-match with
+   no-authority, which is what an absent v1 carrier already meant.
+
+Derived, not copied — three documents, each re-hashed by the production parser:
+  world a  v1 sha256:65ab058de01e891968d6d0c4e75861cbbf177a301108bca22f54a549abb02936
+        -> v3 sha256:4d50ddf54cc60f61ad6a2cf72e43b625a73b83337a221ad28a53c0f06002e0ce
+  world b  v1 sha256:4749e6eacb1522a3f571f1a3365ed1384abb10ecb7f607e74f187d7455d1f1ec
+        -> v3 sha256:d457a829def46698cabf6f99423c47ffe55a90c00fc205f0aa22a264023ea506
+  world c  v1 sha256:af47d8dce6ed61983bd7567a90aa0d084db25639a3f9d978c6fe29045d08d96a
+        -> v3 sha256:b369ceee78bf633f97b356d2eb7dc55d1bb3e371ec665043747a00d8dda2720a
+
+THE SECOND SITE WAS NOT A DOCUMENT, AND THE PLAN NOTE ABOUT IT WAS WRONG. The
+DEFERRALS entry for this path read "…; also emits a v2 document; the L1838
+occurrence is comment prose, not a site", and the coordinator's flip-window note
+named this file as the first place to look for a literal that cannot move.
+Measured: this harness emits exactly three documents, all built by `blueprintDoc`,
+all now v3 (the probe enumerates them and prints all three derivations). Its other
+version digit sits inside a V5 `v5.check` LABEL, whose predicate is
+`sv === 2` on `projection.schemaVersion` — the PROJECTION axis
+(SUPPORTED_PROJECTION_SCHEMA_VERSIONS, production stamps the upper one), a frozen
+namespace the Blueprint document cutover does not touch. The label spelled that
+stamp in YAML document-key form, which is precisely the spelling the fence keys on,
+so a sentence about a version was being reported as a Blueprint document.
+
+Disposition: delete-lie on the sentence, nothing else. The label now names the axis
+it pins; the assertion `sv === 2` and its detail `schemaVersion=${sv}` are
+byte-identical; the contract quote in the comment above the check — the evidence
+for the value — is untouched and is reported by the fence as PROSE (non-gating,
+now L1852). No literal was "migrated" to 3: that would have falsified a real
+P8-S contract claim. The check label appears in no code path that compares it
+(grep over the tree: the only hits are historical T12 run evidence under
+dev/agent-workflow/evidence/T12/, which records what those runs said).
+
+DELIBERATELY NOT DONE, for the coordinator: no row added to
+`dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md`. That file's
+staleness invariant is "while a row lives here, its path stays dirty and its
+DEFERRALS entry must remain"; t12-vertical now has no gated site, so a row there
+would either re-add a DEFERRALS entry that the wrapper then reddens, or break the
+invariant. Its admission criterion 1 ("cannot be migrated to the supported
+version") also no longer applies: after this commit the file carries no
+retired-version Blueprint literal at all. FINDINGS carries the pre-drafted row text
+in case the coordinator reads it differently.
+
+RED FIRST — the fence's two-directional list did its job on the last file:
+
+  $ node scripts/verify-blueprint-version-clean.mjs
+  PROSE packages/tools/harness/t12-vertical.mjs :: L1852=v2
+  RESULT dirty(115 files, 253 sites)      # this path no longer OFFENDING
+  RESULT verdict: dirty-or-unknown        (exit 1 — other lanes still open)
+
+  $ pnpm exec vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL ... > every deferred path is still dirty (a migrated path must leave the list)
+   AssertionError: expected [ Array(1) ] to deeply equal []
+   + [
+   +   "packages/tools/harness/t12-vertical.mjs",
+   + ]
+   Tests  1 failed | 57 passed (58)
+
+RESOLUTION: deleted only this lane's own DEFERRALS line — the fifth and last of
+them; every other lane's entry is untouched, no reorder, no reflow. Wrapper green
+afterwards: 58 passed (58).
+
+EVIDENCE — this is the whole of the pre-§7.6 evidence for this file; the harness
+leg itself runs in §7.6. The harness was NOT run: no host booted, no port opened,
+nothing under tests/homes/** created or mutated, :3080 untouched.
+  node --check packages/tools/harness/t12-vertical.mjs → OK
+  node dev/.../7-4-hts/probes/probe-t12-vertical.mjs [before-copy] → all three
+    worlds' documents sliced from the file parse with the production parser at
+    schemaVersion 3 with both carriers {rules: []}; version forged to 9 →
+    SCHEMA_VERSION_MISMATCH; either carrier deleted → MALFORMED_DTO.
+  node scripts/verify-blueprint-version-clean.mjs → this path is no longer named
+    by a gated class (RESULT dirty(116 files, 255 sites) → RESULT dirty(115 files,
+    253 sites): two sites closed here, the v1 carrier and the label).
