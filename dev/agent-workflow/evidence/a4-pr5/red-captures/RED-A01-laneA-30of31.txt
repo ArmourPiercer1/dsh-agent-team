@@ -1,0 +1,356 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr5/packages/runtime
+
+ ❯ test/a4p5-permission-mutation-proposal.test.ts (31 tests | 30 failed) 99ms
+     × is deterministic, id-shaped, and order-insensitive over the rule set 3ms
+     × binds the team — changing it changes the fingerprint 0ms
+     × binds the target — changing it changes the fingerprint 0ms
+     × binds the beneficiary — changing it changes the fingerprint 0ms
+     × binds the kind — changing it changes the fingerprint 0ms
+     × binds the requested effect — changing it changes the fingerprint 0ms
+     × binds the matcher kind (root identity class) — changing it changes the fingerprint 0ms
+     × binds the matcher root — changing it changes the fingerprint 0ms
+     × binds the operation class — changing it changes the fingerprint 0ms
+     × binds the blueprint anchor — changing it changes the fingerprint 0ms
+     × EXCLUDES provenance: mutationId / reason / base / actor are not identity (24.5) 0ms
+     × names only the base pair: same base = same correlation, new base = new one (A1-9) 0ms
+     × derives the leader position from the TARGET identity, never from the context label (A5-1) 2ms
+     × names the first approval rung that reaches (hard silent -> leader for a member rise) 0ms
+     × the batch is the MAX rung over its rising regions (all-or-nothing) 0ms
+     × an undecided ceiling is UNDETERMINED, never a guessed rung 0ms
+     × a capped hard envelope pushes the ask above the ladder -> human-admin 0ms
+     ✓ mirrors intervention TERMINAL_MUTATION_OUTCOMES without importing it 0ms
+     × creates ONE case + one proposal row per rule, commits NOTHING, and says so 16ms
+     × a retry is idempotent: same case, one leg row, no second proposal set 6ms
+     × a different effect asked is a DIFFERENT fingerprint, a DIFFERENT case 6ms
+     × a denied fingerprint at the same base is NOT re-proposable (A1-9): denied is terminal 6ms
+     × a NEW base generation re-asks with a fresh case (A1-9 recovery) 5ms
+     × the requester is the DERIVED principal the lane was given, never a host default 6ms
+     × an operator rise with NO named approval caller behaves as the unwired lane (PR2 throw) 6ms
+     × a Human User rise above the Team Hard cap terminates authority-unavailable: no rows, no pending, durable deny 5ms
+     × member initiation refuses BEFORE any proposal machinery (zero rows, zero cases) 6ms
+     × an unreadable hard envelope REFUSES (never absent, never a proposal) 8ms
+     × an undecided containment is UNDETERMINED — no rung is proposed for an undecided region 6ms
+     × with the approval lane UNWIRED the PR2 refusal is byte-identical 9ms
+     × names the kind EXPLICITLY: a silent LEADER_APPROVAL default can never swallow a mutation case 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 30 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > is deterministic, id-shaped, and order-insensitive over the rule set
+Error: stub
+ ❯ Module.permissionMutationProposalFingerprint governance/permission-approval.ts:11:9
+      9| export type PermissionMutationApprovalPort = Record<string, never>
+     10| export function permissionMutationProposalFingerprint(_input: unknown)…
+     11|   throw new Error('stub')
+       |         ^
+     12| }
+     13| export function permissionMutationCorrelation(_input: unknown): string…
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:301:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the team — changing it changes the fingerprint
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the target — changing it changes the fingerprint
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the beneficiary — changing it changes the fingerprint
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the kind — changing it changes the fingerprint
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the requested effect — changing it changes the fingerprint
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the matcher kind (root identity class) — changing it changes the fingerprint
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the matcher root — changing it changes the fingerprint
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the operation class — changing it changes the fingerprint
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the blueprint anchor — changing it changes the fingerprint
+Error: stub
+ ❯ Module.permissionMutationProposalFingerprint governance/permission-approval.ts:11:9
+      9| export type PermissionMutationApprovalPort = Record<string, never>
+     10| export function permissionMutationProposalFingerprint(_input: unknown)…
+     11|   throw new Error('stub')
+       |         ^
+     12| }
+     13| export function permissionMutationCorrelation(_input: unknown): string…
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:357:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > EXCLUDES provenance: mutationId / reason / base / actor are not identity (24.5)
+Error: stub
+ ❯ Module.permissionMutationProposalFingerprint governance/permission-approval.ts:11:9
+      9| export type PermissionMutationApprovalPort = Record<string, never>
+     10| export function permissionMutationProposalFingerprint(_input: unknown)…
+     11|   throw new Error('stub')
+       |         ^
+     12| }
+     13| export function permissionMutationCorrelation(_input: unknown): string…
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:364:34
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the base-pair correlation and the derived beneficiary > names only the base pair: same base = same correlation, new base = new one (A1-9)
+Error: stub
+ ❯ Module.permissionMutationCorrelation governance/permission-approval.ts:14:9
+     12| }
+     13| export function permissionMutationCorrelation(_input: unknown): string…
+     14|   throw new Error('stub')
+       |         ^
+     15| }
+     16| export function beneficiaryAuthorityForTarget(_target: string, ctx: 'm…
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:385:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the base-pair correlation and the derived beneficiary > derives the leader position from the TARGET identity, never from the context label (A5-1)
+AssertionError: expected 'member' to be 'leader' // Object.is equality
+
+Expected: "leader"
+Received: "member"
+
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:392:86
+    390|
+    391|   it('derives the leader position from the TARGET identity, never from…
+    392|     expect(approvalLane.beneficiaryAuthorityForTarget(LEADER_INSTANCE_…
+       |                                                                                      ^
+    393|     expect(approvalLane.beneficiaryAuthorityForTarget(WORKER_ID, 'memb…
+    394|     // A context that DOES name leader is not overridden downward.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the approval rung plan (spec 7.4 walk, reused not re-implemented) > names the first approval rung that reaches (hard silent -> leader for a member rise)
+Error: stub
+ ❯ Module.planPermissionMutationApproval governance/permission-approval.ts:20:9
+     18| }
+     19| export function planPermissionMutationApproval(_input: unknown): never…
+     20|   throw new Error('stub')
+       |         ^
+     21| }
+     22| export function riseDigestOf(_regions: unknown): string {
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:409:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the approval rung plan (spec 7.4 walk, reused not re-implemented) > the batch is the MAX rung over its rising regions (all-or-nothing)
+Error: stub
+ ❯ Module.planPermissionMutationApproval governance/permission-approval.ts:20:9
+     18| }
+     19| export function planPermissionMutationApproval(_input: unknown): never…
+     20|   throw new Error('stub')
+       |         ^
+     21| }
+     22| export function riseDigestOf(_regions: unknown): string {
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:421:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the approval rung plan (spec 7.4 walk, reused not re-implemented) > an undecided ceiling is UNDETERMINED, never a guessed rung
+Error: stub
+ ❯ Module.planPermissionMutationApproval governance/permission-approval.ts:20:9
+     18| }
+     19| export function planPermissionMutationApproval(_input: unknown): never…
+     20|   throw new Error('stub')
+       |         ^
+     21| }
+     22| export function riseDigestOf(_regions: unknown): string {
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:436:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the approval rung plan (spec 7.4 walk, reused not re-implemented) > a capped hard envelope pushes the ask above the ladder -> human-admin
+Error: stub
+ ❯ Module.planPermissionMutationApproval governance/permission-approval.ts:20:9
+     18| }
+     19| export function planPermissionMutationApproval(_input: unknown): never…
+     20|   throw new Error('stub')
+       |         ^
+     21| }
+     22| export function riseDigestOf(_regions: unknown): string {
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:448:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > creates ONE case + one proposal row per rule, commits NOTHING, and says so
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:478:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a retry is idempotent: same case, one leg row, no second proposal set
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:526:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a different effect asked is a DIFFERENT fingerprint, a DIFFERENT case
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:542:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a denied fingerprint at the same base is NOT re-proposable (A1-9): denied is terminal
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:554:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a NEW base generation re-asks with a fresh case (A1-9 recovery)
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:579:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > the requester is the DERIVED principal the lane was given, never a host default
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:605:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > an operator rise with NO named approval caller behaves as the unwired lane (PR2 throw)
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:624:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > a Human User rise above the Team Hard cap terminates authority-unavailable: no rows, no pending, durable deny
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:642:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > member initiation refuses BEFORE any proposal machinery (zero rows, zero cases)
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:669:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > an unreadable hard envelope REFUSES (never absent, never a proposal)
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:686:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > an undecided containment is UNDETERMINED — no rung is proposed for an undecided region
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:701:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > with the approval lane UNWIRED the PR2 refusal is byte-identical
+AssertionError: expected 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' to be 'PERMISSION_AUTHORITY_CEILING_INSUFFIC…' // Object.is equality
+
+Expected: "PERMISSION_AUTHORITY_CEILING_INSUFFICIENT"
+Received: "PERMISSION_EFFECT_CONTEXT_UNAVAILABLE"
+
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:719:58
+    717|       const captured = await refusal(() => w.mutate({ rules: grantA() …
+    718|       expect(captured.threw).toBe(true)
+    719|       expect((captured.error as { code?: string }).code).toBe(
+       |                                                          ^
+    720|         PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
+    721|       )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/30]⎯
+
+ FAIL  test/a4p5-permission-mutation-proposal.test.ts > the identity the case is opened with > names the kind EXPLICITLY: a silent LEADER_APPROVAL default can never swallow a mutation case
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openApprovalWorld test/a4p5-permission-mutation-proposal.test.ts:192:20
+ ❯ test/a4p5-permission-mutation-proposal.test.ts:730:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/30]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  30 failed | 1 passed (31)
+   Start at  09:55:53
+   Duration  1.14s (transform 728ms, setup 0ms, import 920ms, tests 99ms, environment 0ms)
+

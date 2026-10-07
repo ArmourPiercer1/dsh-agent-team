@@ -57,6 +57,12 @@ import { assertCells, buildReissueRecord, buildTombstoneRecord, checkCellsAgains
 import { PERMISSION_EFFECT_PRECEDENCE, authorizeCeilingBoundedPermissionRise, authorizeLeaderPermissionMutation, classifyPermissionRise, parsePermissionMutation, parsePermissionMutationEnvelope, parsePermissionStaticLayerFacts, planPermissionMutation, PERMISSION_MUTATION_ERROR_CODES, PermissionMutationError, } from './permission-mutation.js';
 import { AUTHORITY_CEILING_ERROR_CODES, AuthorityBindingError, expansionCeiling, grantCeiling, } from './authority-ceiling.js';
 import { evaluateAuthorityCeiling } from './runtime-authority.js';
+import { authorityRank } from './authority-ceiling.js';
+// A4-PR5 — the durable-proposal path: the pure law module plus the control
+// plane's FROZEN tokens (VALUE imports: the case question kind and the
+// escalation decision reason are frozen names, never re-spelled strings).
+import { PERMISSION_MUTATION_PENDING_REASON, PERMISSION_MUTATION_TERMINAL_OUTCOMES, beneficiaryAuthorityForTarget, buildPermissionMutationApprovalIdentity, encodeRiseSummary, parseRiseSummary, permissionMutationCorrelation, permissionMutationProposalFingerprint, planPermissionMutationApproval, proposalOperationId, riseDigestOf, } from './permission-approval.js';
+import { CONTROL_DECISION_REASONS, CONTROL_REQUEST_KINDS } from '../control/index.js';
 import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js';
 /** The storage duplicate code string (mirrors TEAM_DOMAIN_ERROR_CODES). */
 const STORAGE_RECORD_DUPLICATE = 'RECORD_DUPLICATE';
@@ -450,6 +456,353 @@ export function createGovernanceMutationService(deps) {
         // a malformed envelope refuses EVERY Leader expansion attempt, never a
         // silently relaxed one). Human mutations need no envelope (ADR §7) — but
         // the read happens inside the serialized section like every other fact.
+        // A4-PR5 — the durable-proposal machinery. Everything below is reachable
+        // ONLY from inside the serialized section (identity inputs are read there,
+        // never mid-check), and ONLY when the lane is fully wired: an unwired
+        // lane never runs a single line of it and answers PR2's throw verbatim.
+        const approvalWired = deps.approval !== undefined &&
+            deps.proposals !== undefined &&
+            lane.authorityCeiling !== undefined &&
+            (typeof deps.approval.wired !== 'function' ||
+                deps.approval.wired());
+        const terminalStale = (approvalCaseId, current, detail) => ({
+            changed: false,
+            reason: PERMISSION_MUTATION_TERMINAL_OUTCOMES.MUTATION_STALE,
+            ...(approvalCaseId === undefined ? {} : { approvalCaseId }),
+            current,
+            detail,
+        });
+        /** Field-wise comparison of a DURABLE approval-case identity against the
+         *  identity this call computes (review item 7a; A2-7's derivation is
+         *  trusted for OPENING, verified here for COMMITTING). */
+        const durableIdentityMatches = (durable, current) => durable.subject.kind === current.subject.kind &&
+            durable.subject.kind === 'instance' &&
+            current.subject.kind === 'instance' &&
+            durable.subject.instanceId === current.subject.instanceId &&
+            durable.beneficiaryAuthority === current.beneficiaryAuthority &&
+            durable.requestedEffect === current.requestedEffect &&
+            durable.operationFingerprint === undefined &&
+            durable.mutationProposalFingerprint === current.mutationProposalFingerprint &&
+            durable.correlation === current.correlation;
+        const proposalAstOf = (matcher) => matcher.kind === 'fingerprint'
+            ? { kind: 'fingerprint', fingerprint: matcher.resource }
+            : { kind: matcher.kind, path: matcher.resource };
+        /** Recompute the WHOLE ask from FRESH reads inside the serialized
+         *  section: ceiling documents, static facts, the rise classification,
+         *  the derived beneficiary, the approval rung, the fingerprint, the
+         *  base-pair identity. Used at proposal time AND (with fresh reads) at
+         *  the commit boundary — the same code answers both, so "revalidated"
+         *  is not a promise, it is a fact about the code path. `undefined`
+         *  means "this call has no approvable ask" (no v3 context, no rise,
+         *  an undecided/unreadable ceiling) — the callers fail closed. */
+        const buildApprovalAsk = async (perm, base, generation, plannedRules, as) => {
+            if (lane.authorityCeiling === undefined)
+                return undefined;
+            const ctx = await lane.authorityCeiling(perm.teamSessionId, perm.memberInstanceId, as);
+            if (ctx === undefined)
+                return undefined;
+            const factsRaw = await lane.staticLayers?.(perm.teamSessionId, perm.memberInstanceId);
+            const staticFacts = factsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(factsRaw);
+            const rising = classifyPermissionRise({
+                latestRules: base === undefined ? [] : base.state.rules,
+                plannedRules,
+                mutationRules: perm.rules,
+                envelope: parsePermissionMutationEnvelope({ rules: [] }),
+                staticFacts,
+                subtreeContains: lane.subtreeContains,
+            }).rising;
+            if (rising.length === 0)
+                return undefined;
+            const beneficiary = beneficiaryAuthorityForTarget(perm.memberInstanceId);
+            const planApproval = planPermissionMutationApproval({
+                beneficiaryAuthority: beneficiary,
+                documents: ctx.documents,
+                regions: rising.map((region) => ({
+                    operationClass: region.operationClass,
+                    matcher: region.region,
+                    risenEffect: region.risenEffect,
+                })),
+                ...(lane.subtreeContains === undefined ? {} : { subtreeContains: lane.subtreeContains }),
+            });
+            if (planApproval.status !== 'required')
+                return undefined;
+            const fingerprint = permissionMutationProposalFingerprint({
+                teamSessionId: perm.teamSessionId,
+                targetMemberInstanceId: perm.memberInstanceId,
+                beneficiaryAuthority: beneficiary,
+                mutationKind: perm.kind,
+                rules: perm.rules.map((rule) => ({
+                    operationClass: rule.operationClass,
+                    matcherKind: rule.matcher.kind,
+                    matcherResource: rule.matcher.resource,
+                    effect: rule.effect,
+                })),
+                blueprintContentHash: ctx.blueprintContentHash ?? null,
+            });
+            const identity = buildPermissionMutationApprovalIdentity({
+                targetMemberInstanceId: perm.memberInstanceId,
+                beneficiaryAuthority: beneficiary,
+                requestedEffect: planApproval.requestedEffect,
+                mutationProposalFingerprint: fingerprint,
+                correlation: permissionMutationCorrelation({
+                    baseGeneration: generation,
+                    baseSnapshotId: base === undefined ? null : base.snapshotId,
+                }),
+            });
+            return {
+                beneficiary,
+                required: planApproval.requiredAuthority,
+                requestedEffect: planApproval.requestedEffect,
+                rising,
+                fingerprint,
+                identity,
+            };
+        };
+        /** A lifecycle refusal on a RETRY of the same ask at the same base, with
+         *  a decided case behind it, is stale evidence — not a fresh refusal.
+         *  Any doubt (including a failure of this helper itself) returns
+         *  `undefined` and the original lifecycle refusal propagates. */
+        const lifecycleDriftAgainstApprovedAsk = async (perm, as) => {
+            if (!approvalWired)
+                return undefined;
+            try {
+                const approval = deps.approval;
+                const base = await lane.overlay.latest({
+                    teamSessionId: perm.teamSessionId,
+                    memberInstanceId: perm.memberInstanceId,
+                });
+                const generation = base === undefined ? 0 : base.metadata.generation;
+                const planned = planPermissionMutation(base, perm);
+                if (!planned.changed)
+                    return undefined;
+                const ask = await buildApprovalAsk(perm, base, generation, planned.rules, as);
+                if (ask === undefined)
+                    return undefined;
+                const found = await approval.findApprovalCaseByIdentity({
+                    rootSessionId: perm.teamSessionId,
+                    identity: ask.identity,
+                    kind: CONTROL_REQUEST_KINDS.ENVELOPE_MUTATION,
+                });
+                if (found.kind !== 'found')
+                    return undefined;
+                const read = await approval.readApprovalCaseState({
+                    rootSessionId: perm.teamSessionId,
+                    approvalCaseId: found.approvalCaseId,
+                });
+                if (read.kind !== 'case' || read.state.status !== 'decided')
+                    return undefined;
+                if (read.state.terminalDecision?.decision !== 'allow')
+                    return undefined;
+                return terminalStale(found.approvalCaseId, base, { problem: 'target-lifecycle-drift' });
+            }
+            catch {
+                // Doubt propagates the ORIGINAL lifecycle refusal (the caller rethrows
+                // it). This swallow can never fabricate a verdict — it only declines
+                // the reinterpretation — so a durable-read fault here surfaces as the
+                // lifecycle refusal it raced, never as a stale authorization (review
+                // item 6; the fault-vs-refusal line above is the guard).
+                return undefined;
+            }
+        };
+        /** The discovered-case interpreter: the durable decision, revalidated at
+         *  the commit boundary, decides everything. See the module doc of
+         *  `permission-approval` for the drift laws this renders. */
+        const resolveDiscoveredApprovalCase = async (approvalCaseId, ask, perm, base, generation, plannedRules, as) => {
+            const approval = deps.approval;
+            const read = await approval.readApprovalCaseState({
+                rootSessionId: perm.teamSessionId,
+                approvalCaseId,
+            });
+            if (read.kind === 'problem') {
+                // A case that cannot be read back is not an approval. Stale, zero
+                // write — the fail-closed discipline of every durable read here.
+                return terminalStale(approvalCaseId, base, {
+                    problem: 'approval-case-unreadable',
+                    readProblem: read.problem,
+                });
+            }
+            const state = read.state;
+            if (state.status === 'open') {
+                return {
+                    changed: false,
+                    reason: PERMISSION_MUTATION_PENDING_REASON,
+                    approvalCaseId,
+                    ...(state.currentLeg === undefined ? {} : { requestId: state.currentLeg.requestId }),
+                    requiredAuthority: ask.required,
+                    proposalFingerprint: ask.fingerprint,
+                    detail: { problem: 'proposal-open', beneficiaryAuthority: ask.beneficiary },
+                };
+            }
+            if (state.status === 'abandoned') {
+                return terminalStale(approvalCaseId, base, { problem: 'approval-leg-abandoned' });
+            }
+            const decision = state.terminalDecision;
+            if (decision === undefined) {
+                return terminalStale(approvalCaseId, base, { problem: 'decided-without-decision' });
+            }
+            if (decision.decision === 'deny') {
+                if (decision.reason === CONTROL_DECISION_REASONS.ESCALATED) {
+                    // The reviewer escalated and the successor rung had no resolver:
+                    // "the rise failed", rendered truthfully — never "awaiting
+                    // <successor>" (the leg that would await does not exist).
+                    return {
+                        changed: false,
+                        reason: PERMISSION_MUTATION_TERMINAL_OUTCOMES.AUTHORITY_UNAVAILABLE,
+                        approvalCaseId,
+                        current: base,
+                        detail: { problem: 'escalation-exhausted', requiredAuthority: ask.required },
+                    };
+                }
+                return {
+                    changed: false,
+                    reason: PERMISSION_MUTATION_TERMINAL_OUTCOMES.DENIED,
+                    approvalCaseId,
+                    current: base,
+                    detail: { problem: 'proposal-denied' },
+                };
+            }
+            if (decision.decision !== 'allow') {
+                return terminalStale(approvalCaseId, base, { problem: 'closure-without-reviewer-decision' });
+            }
+            // ALLOW — the commit boundary. Revalidate EVERYTHING from fresh reads:
+            // the target lifecycle was re-asserted at the head of this serialized
+            // section; the base pair is pinned by the identity that just matched
+            // (correlation names it); what remains is the WORLD: documents, static
+            // facts, the rise structure, the approved rung.
+            const fresh = await buildApprovalAsk(perm, base, generation, plannedRules, as);
+            if (fresh === undefined) {
+                return terminalStale(approvalCaseId, base, { problem: 'approved-rise-no-longer-provable' });
+            }
+            // Review item 7a: identity equality used to rest on one derived token
+            // pair (fresh vs ask fingerprints — both computed HERE, locally). What
+            // the reviewer decided lives in the DURABLE case state, and the approval
+            // port is an injected boundary whose answers are verified, never
+            // trusted: compare the durable identity FIELD BY FIELD against the
+            // pre-section ask and against the freshly recomputed ask. A lying or
+            // stale reader, a blueprint re-anchor, a drifted label — any single
+            // field out of line fails closed.
+            if (!durableIdentityMatches(state.identity, ask.identity)) {
+                return terminalStale(approvalCaseId, base, { problem: 'durable-identity-not-the-current-ask' });
+            }
+            if (!durableIdentityMatches(state.identity, fresh.identity)) {
+                return terminalStale(approvalCaseId, base, { problem: 'identity-drift-within-section' });
+            }
+            const openedLeg = state.legs[0];
+            const approvedDigest = openedLeg === undefined ? undefined : parseRiseSummary(openedLeg.summary);
+            if (approvedDigest === undefined || approvedDigest !== riseDigestOf(fresh.rising)) {
+                // A1-8's structural equality: the approved (region-set, risen
+                // effects) recomputed here must equal the digest recorded durably
+                // when the ask was opened. A retargeted root or a flipped risen
+                // effect is a DIFFERENT rise; an unparseable summary is a corrupt
+                // record. Both are stale, never a commit.
+                return terminalStale(approvalCaseId, base, { problem: 'rise-structure-drift' });
+            }
+            const approvedRung = state.currentLeg?.reviewAuthority;
+            if (approvedRung === undefined || authorityRank(fresh.required) > authorityRank(approvedRung)) {
+                // Tightenings never rise: the ceiling narrowed between the approval
+                // and this retry — what the reviewer approved, nobody now can.
+                return terminalStale(approvalCaseId, base, {
+                    problem: 'ceiling-narrowed-past-approved-rung',
+                    ...(state.currentLeg === undefined ? {} : { approvedRung }),
+                });
+            }
+            const snapshot = await appendPlannedSnapshot(deps.permissionLane.overlay, perm, base, plannedRules, generation, as);
+            return { changed: true, snapshot };
+        };
+        /** Open (or discover) the durable ask and answer the mutation from the
+         *  case: discovery FIRST (A1-9 — the same semantics at the same base is
+         *  the same question), a fresh leg only for a question never asked. */
+        const runApprovalAsk = async (ask, perm, base, generation, plannedRules, as, caller) => {
+            const approval = deps.approval;
+            const store = deps.proposals;
+            const found = await approval.findApprovalCaseByIdentity({
+                rootSessionId: perm.teamSessionId,
+                identity: ask.identity,
+                kind: CONTROL_REQUEST_KINDS.ENVELOPE_MUTATION,
+            });
+            if (found.kind === 'found') {
+                return await resolveDiscoveredApprovalCase(found.approvalCaseId, ask, perm, base, generation, plannedRules, as);
+            }
+            const legOutcome = await approval.requestApprovalLeg({
+                rootSessionId: perm.teamSessionId,
+                caller,
+                kind: CONTROL_REQUEST_KINDS.ENVELOPE_MUTATION,
+                reviewAuthority: ask.required,
+                requiredAuthorityAtCreation: ask.required,
+                identity: ask.identity,
+                actionName: `permission-mutation:${perm.kind}`,
+                summary: encodeRiseSummary(riseDigestOf(ask.rising)),
+                executionCoupling: 'inline',
+            });
+            if (legOutcome.kind !== 'leg') {
+                // Born-terminal (A1-12 amended F2): no resolver exists at the rung
+                // the ask needs. The case opens ALREADY DENIED — the mutation
+                // answers `authority-unavailable`, with NO proposal row and never a
+                // pending promise nobody can keep.
+                return {
+                    changed: false,
+                    reason: PERMISSION_MUTATION_TERMINAL_OUTCOMES.AUTHORITY_UNAVAILABLE,
+                    approvalCaseId: legOutcome.approvalCaseId,
+                    current: base,
+                    detail: { problem: 'no-resolver-for-required-rung', requiredAuthority: ask.required },
+                };
+            }
+            if (typeof legOutcome.leg.approvalCaseId !== 'string') {
+                // A returned leg that cannot be named is a defect on the approval
+                // side; the mutation lane never makes a pending promise about a
+                // case it cannot correlate — refuse terminal, zero proposal rows.
+                return {
+                    changed: false,
+                    reason: PERMISSION_MUTATION_TERMINAL_OUTCOMES.AUTHORITY_UNAVAILABLE,
+                    current: base,
+                    detail: { problem: 'leg-without-case-identity' },
+                };
+            }
+            const approvalCaseId = legOutcome.leg.approvalCaseId;
+            // DURABILITY GAP, DISCLOSED (review item 5; design.md §9): the leg and
+            // these per-rule proposal rows are appended through TWO stores — one
+            // atomic write does not cover both. A fault mid-loop can leave a
+            // REVIEWABLE case with FEWER rows than rules, and the retry will not
+            // backfill: discovery-by-identity answers pending with zero writes
+            // (A1-9's idempotence law, which must not become a silent re-append).
+            // The honest consequence: the AUDIT record can be permanently
+            // incomplete — a reviewer may see the case and its fingerprint but not
+            // every per-rule row. AUTHORITY is unaffected: the commit boundary
+            // never reads row counts — it revalidates the planned rules from fresh
+            // reads plus the digest and the durable-identity comparison above.
+            // Closing the gap (backfill-on-discovery, or a shared append funnel)
+            // is a durable-shape change, PR7-cutover-owned along with the rest of
+            // the durable-vocabulary closure.
+            for (const rule of perm.rules) {
+                await store.appendProposal({
+                    teamSessionId: perm.teamSessionId,
+                    proposal: {
+                        targetMemberInstanceId: perm.memberInstanceId,
+                        baseGeneration: generation,
+                        baseSnapshotId: base === undefined ? null : base.snapshotId,
+                        desiredEffect: rule.effect,
+                        authorityEnvelopeAst: proposalAstOf(rule.matcher),
+                        requiredAuthority: ask.required,
+                        caseFingerprint: ask.fingerprint,
+                    },
+                    operationId: proposalOperationId(perm.mutationId),
+                });
+            }
+            return {
+                changed: false,
+                reason: PERMISSION_MUTATION_PENDING_REASON,
+                approvalCaseId,
+                requestId: legOutcome.leg.requestId,
+                requiredAuthority: ask.required,
+                proposalFingerprint: ask.fingerprint,
+                detail: {
+                    problem: 'rise-above-actor-authority',
+                    requestedEffect: ask.requestedEffect,
+                    beneficiaryAuthority: ask.beneficiary,
+                    baseGeneration: generation,
+                },
+            };
+        };
         // 3. Serialize on the shared per-team chain (the SAME chain the legacy
         // overrides/policyState lanes use — one chain, one mutation order per
         // team; ADR §1's "bypass mutation serialization" MUST-NOT is honored by
@@ -464,7 +817,30 @@ export function createGovernanceMutationService(deps) {
             // (permission-lifecycle/mutation-lane assertPermissionMutationTarget)
             // — ONE lifecycle law, wired from the same reader, never a second gate.
             if (lane.targetGuard !== undefined) {
-                await lane.targetGuard(mutation.teamSessionId, mutation.memberInstanceId);
+                try {
+                    await lane.targetGuard(mutation.teamSessionId, mutation.memberInstanceId);
+                }
+                catch (error) {
+                    // A4-PR5 (additive, the ONLY reinterpretation this guard can get):
+                    // when the retried mutation is the SAME ask at the SAME base and
+                    // that exact ask carries a DECIDED case, the lifecycle refusal of
+                    // the retry IS A1-8's lifecycle drift and the honest answer is
+                    // `mutation-stale` — the durable allow is inert, nothing commits,
+                    // and no new row opens. Every other lifecycle refusal (no decided
+                    // case, unwired lane, an unreadable anything) propagates untouched:
+                    // PR3's head-of-chain assertion stands for every path that was
+                    // never approved.
+                    // Review item 6 (A3-3's class): ONLY a certified lifecycle refusal
+                    // may be reinterpreted. Without the decider's yes, the error is a
+                    // FAULT wearing the guard's stack — a storage outage must never
+                    // arrive as `mutation-stale`, an authorization-shaped verdict.
+                    if (lane.isLifecycleRefusal?.(error) !== true)
+                        throw error;
+                    const drifted = await lifecycleDriftAgainstApprovedAsk(mutation, actor);
+                    if (drifted === undefined)
+                        throw error;
+                    return drifted;
+                }
             }
             const latest = await overlay.latest({
                 teamSessionId: mutation.teamSessionId,
@@ -560,7 +936,34 @@ export function createGovernanceMutationService(deps) {
                         staticFacts: ceilingFacts,
                         subtreeContains: lane.subtreeContains,
                     });
-                    authorizeCeilingBoundedPermissionRise(ceilingClassification.rising, (region) => authorityCeilingJudge(ceilingContext, region));
+                    try {
+                        authorizeCeilingBoundedPermissionRise(ceilingClassification.rising, (region) => authorityCeilingJudge(ceilingContext, region));
+                    }
+                    catch (error) {
+                        // A4-PR5: on a fully-wired approval lane, a DECIDED-insufficient
+                        // rise stops refusing into the void and becomes a durable
+                        // proposal. Everything else — the unavailable-context and
+                        // undecided refusals (PR2's mappings), every non-insufficient
+                        // code, an unwired lane — propagates byte-identically.
+                        if (!(error instanceof PermissionMutationError) ||
+                            error.code !== PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT ||
+                            !approvalWired) {
+                            throw error;
+                        }
+                        // The acting principal for the CASE is derived, never guessed:
+                        // the Leader lane derives its own instance caller; an operator
+                        // mutation must have arrived carrying its named principal, or
+                        // this lane behaves exactly as if it were unwired (spec §24.5:
+                        // authority is derived server-side; a nameless human cannot
+                        // open a case).
+                        const caller = actor === 'leader' ? { kind: 'instance', instanceId: LEADER_INSTANCE_ID } : args.approvalCaller;
+                        if (caller === undefined)
+                            throw error;
+                        const ask = await buildApprovalAsk(mutation, latest, currentGeneration, plan.rules, actor);
+                        if (ask === undefined)
+                            throw error;
+                        return await runApprovalAsk(ask, mutation, latest, currentGeneration, plan.rules, actor, caller);
+                    }
                 }
             }
             // 5. Commit ONE new FULL snapshot THROUGH the persistence-only port
@@ -568,37 +971,45 @@ export function createGovernanceMutationService(deps) {
             // PR1 store's, never caller-supplied). A durable CAS conflict (the
             // cross-process case ADR §1 keeps out of the port) maps to the same
             // typed GENERATION_CONFLICT — the caller never sees a raw store error.
-            const nextGeneration = currentGeneration + 1;
-            const input = {
-                identity: {
-                    teamSessionId: mutation.teamSessionId,
-                    memberInstanceId: mutation.memberInstanceId,
-                },
-                state: { rules: plan.rules },
-                metadata: {
-                    generation: nextGeneration,
-                    previousSnapshotId: latest === undefined ? null : latest.snapshotId,
-                },
-                provenance: {
-                    actor,
-                    mutationId: mutation.mutationId,
-                    timestamp: deps.now(),
-                    reason: mutation.reason,
-                },
-            };
-            let snapshot;
-            try {
-                snapshot = await overlay.append(input);
-            }
-            catch (error) {
-                const code = error instanceof Error ? error.code : undefined;
-                if (code === STORAGE_RECORD_DUPLICATE) {
-                    throw new PermissionMutationError(PERMISSION_MUTATION_ERROR_CODES.GENERATION_CONFLICT, 'the durable overlay chain rejected the append (a concurrent writer occupied the generation)', { problem: 'durable-append-conflict', generation: nextGeneration });
-                }
-                throw error;
-            }
+            // A4-PR5: the append moved into `appendPlannedSnapshot` — the SAME
+            // function the approved-retry commit calls (one snapshot law, one
+            // durable-conflict mapping, no second implementation to drift).
+            const snapshot = await appendPlannedSnapshot(overlay, mutation, latest, plan.rules, currentGeneration, actor);
             return { changed: true, snapshot };
         });
+    };
+    /** The shared step-5 append, extracted so the approved-retry commit is
+     *  the SAME code path (one snapshot, commit-before-ack, the durable CAS
+     *  conflict mapped to the same typed GENERATION_CONFLICT). */
+    const appendPlannedSnapshot = async (overlay, perm, base, plannedRules, generation, as) => {
+        const nextGeneration = generation + 1;
+        const input = {
+            identity: {
+                teamSessionId: perm.teamSessionId,
+                memberInstanceId: perm.memberInstanceId,
+            },
+            state: { rules: plannedRules },
+            metadata: {
+                generation: nextGeneration,
+                previousSnapshotId: base === undefined ? null : base.snapshotId,
+            },
+            provenance: {
+                actor: as,
+                mutationId: perm.mutationId,
+                timestamp: deps.now(),
+                reason: perm.reason,
+            },
+        };
+        try {
+            return await overlay.append(input);
+        }
+        catch (error) {
+            const code = error instanceof Error ? error.code : undefined;
+            if (code === STORAGE_RECORD_DUPLICATE) {
+                throw new PermissionMutationError(PERMISSION_MUTATION_ERROR_CODES.GENERATION_CONFLICT, 'the durable overlay chain rejected the append (a concurrent writer occupied the generation)', { problem: 'durable-append-conflict', generation: nextGeneration });
+            }
+            throw error;
+        }
     };
     return {
         setOverride,

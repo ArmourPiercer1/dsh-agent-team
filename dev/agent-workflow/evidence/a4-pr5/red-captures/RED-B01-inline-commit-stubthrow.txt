@@ -1,0 +1,208 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr5/packages/runtime
+
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts (13 tests | 13 failed) 88ms
+     × commits EXACTLY ONE snapshot with the planned rules 19ms
+     × a risen second leg (escalation to Human User) carries the commit: the higher allow commits 8ms
+     × an unrelated lower-layer change that moves NO approved rise still commits 6ms
+     × the SAME mutation at a moved base is a FRESH ask (A1-9 recovery); the allowed-at-old-base case never commits 5ms
+     × an explicit expectedGeneration pinned at the approved base conflicts typed with ZERO writes 6ms
+     × lifecycle drift: an archived target answers mutation-stale (never a lifecycle throw, never a commit) 5ms
+     × proposal creation on an archived target still refuses typed BEFORE any row 6ms
+     × matcher ROOT drift (containment retarget under the same canonical key) -> stale 6ms
+     × the ceiling NARROWS after approval (required now above approved) -> stale 5ms
+     × denied is terminal: every later call says denied, no new case, no write 6ms
+     × the rise that failed renders authority-unavailable — never "awaiting a successor" 5ms
+     × desired state reached after approval -> plain no-change, the case untouched 4ms
+     × a corrupt rise summary on the allowed leg fails closed (stale, zero write) 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > commits EXACTLY ONE snapshot with the planned rules
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:225:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > a risen second leg (escalation to Human User) carries the commit: the higher allow commits
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:246:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > an unrelated lower-layer change that moves NO approved rise still commits
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:266:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > base movement after approval -> the approved mutation never commits > the SAME mutation at a moved base is a FRESH ask (A1-9 recovery); the allowed-at-old-base case never commits
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:290:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > base movement after approval -> the approved mutation never commits > an explicit expectedGeneration pinned at the approved base conflicts typed with ZERO writes
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:314:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > lifecycle drift: an archived target answers mutation-stale (never a lifecycle throw, never a commit)
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:336:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > proposal creation on an archived target still refuses typed BEFORE any row
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:350:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > matcher ROOT drift (containment retarget under the same canonical key) -> stale
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:368:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > the ceiling NARROWS after approval (required now above approved) -> stale
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:400:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > denied is terminal: every later call says denied, no new case, no write
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:421:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > the rise that failed renders authority-unavailable — never "awaiting a successor"
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:437:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > desired state reached after approval -> plain no-change, the case untouched
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:470:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > a corrupt rise summary on the allowed leg fails closed (stale, zero write)
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ openWorld2 test/a4p5-permission-mutation-inline-commit.test.ts:126:29
+ ❯ test/a4p5-permission-mutation-inline-commit.test.ts:485:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed (13)
+   Start at  09:59:07
+   Duration  1.08s (transform 718ms, setup 0ms, import 898ms, tests 88ms, environment 0ms)
+

@@ -1835,19 +1835,40 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p4-operation-approval-authority.test.ts',
       'packages/runtime/test/a4p4-operation-single-shot.test.ts',
     ]
+    // A4-PR5 (lane A/B/C): one proposal-law lane source plus its three specs,
+    // all inside the scanner's existing `packages/**/*.ts` scope. Everything
+    // else this PR touches is an EDIT to an already-counted file
+    // (governance/service.ts, governance/types.ts, governance/index.ts,
+    // src/plugin/root.ts, src/plugin/s6-remote.ts, src/plugin/permission-plane.ts,
+    // tools/types.ts, tools/tools.ts, the amended a3p3 hygiene, a4p2
+    // dual-envelope and tools c1-list specs, and THIS pin) — an edit is not an
+    // increment (`control/` was NOT touched: the guard-side A1-14 duty closed
+    // as a named BLOCKED with the exact seam, recorded in
+    // `dev/agent-workflow/evidence/a4-pr5/design.md` §9) — and `dist/**` plus
+    // `dev/agent-workflow/evidence/**` stay outside the scanned scope. RED raw
+    // `dev/agent-workflow/evidence/a4-pr5/red-captures/RED-D01-p4t6-pin-999.txt`
+    // reported `expected 1003 to be 999` on the rebased tree.
+    const SCANNED_PATHS_A4PR5: readonly string[] = [
+      'packages/runtime/governance/permission-approval.ts',
+      'packages/runtime/test/a4p5-permission-mutation-proposal.test.ts',
+      'packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts',
+      'packages/runtime/test/a4p5-self-mutation.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
         SCANNED_PATHS_A4PR3.length +
-        SCANNED_PATHS_A4PR4.length,
+        SCANNED_PATHS_A4PR4.length +
+        SCANNED_PATHS_A4PR5.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
         SCANNED_PATHS_A4PR3.length +
-        SCANNED_PATHS_A4PR4.length,
+        SCANNED_PATHS_A4PR4.length +
+        SCANNED_PATHS_A4PR5.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -1879,6 +1900,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4PR2,
       ...SCANNED_PATHS_A4PR3,
       ...SCANNED_PATHS_A4PR4,
+      ...SCANNED_PATHS_A4PR5,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -1897,6 +1919,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // one of them is asserted present by path above. No number in PROSE — the
     // difference of the two pinned totals is the only arithmetic here.
     expect(SCANNED_PATHS_A4PR4.length).toBe(999 - 995)
+    // The A4-PR5 tie, same form: the movement equals the named files, and every
+    // one of them is asserted present by path above. No number in PROSE — the
+    // difference of the two pinned totals is the only arithmetic here.
+    expect(SCANNED_PATHS_A4PR5.length).toBe(1003 - 999)
 
   })
 

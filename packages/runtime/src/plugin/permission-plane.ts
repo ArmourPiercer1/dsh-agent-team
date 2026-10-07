@@ -101,6 +101,10 @@ import type {
 import type { AuthorityDocumentRead } from '../../governance/authority-ceiling.js'
 import type { RuntimeAuthority } from '../../governance/runtime-authority.js'
 import type { PermissionAuthorityCeilingContext } from '../../governance/types.js'
+// A4-PR5 (rebase round): the plane consumes the beneficiary-derivation law
+// through the governance BARREL (the sanctioned single route; stated in the
+// a3p3 hygiene leg on the proposal-law module).
+import { beneficiaryAuthorityForTarget } from '../../governance/index.js'
 import { createPermissionDecisionLane, createPermissionLifecycleMutationLane } from '../../permission-lifecycle/index.js'
 import type {
   MemberLifecycleReaderPort,
@@ -196,19 +200,21 @@ export function createPermissionGovernanceLane(deps: {
    *  production root wires the SAME shared assertion the mutation lane
    *  pre-checks — one lifecycle law, never a second gate. */
   readonly targetGuard?: GovernancePermissionLaneDeps['targetGuard']
+  readonly isLifecycleRefusal?: GovernancePermissionLaneDeps['isLifecycleRefusal']
   /** A4-PR2 lane C: the v3 authority-ceiling context reader, wired by the
    *  production root from {@link createAuthorityCeilingReader}. Absent = the
    *  deployment wired no ceiling reader, which is a WIRING fact and never the v3
    *  signal (that decision is the reader's, in this module — ADR A5-12). */
   readonly authorityCeiling?: GovernancePermissionLaneDeps['authorityCeiling']
 }): GovernancePermissionLaneDeps {
-  const { overlay, fsContainsKeys, staticLayers, permissionEnvelope, targetGuard, authorityCeiling } = deps
+  const { overlay, fsContainsKeys, staticLayers, permissionEnvelope, targetGuard, isLifecycleRefusal, authorityCeiling } = deps
   return {
     overlay,
     ...(authorityCeiling === undefined ? {} : { authorityCeiling }),
     ...(staticLayers === undefined ? {} : { staticLayers }),
     ...(permissionEnvelope === undefined ? {} : { permissionEnvelope }),
     ...(targetGuard === undefined ? {} : { targetGuard }),
+    ...(isLifecycleRefusal === undefined ? {} : { isLifecycleRefusal }),
     ...(fsContainsKeys === undefined
       ? {}
       : {
@@ -414,6 +420,13 @@ export interface PermissionAuthorityFacts {
    * permission fact is read through — never a document-shape inference.
    */
   readonly blueprintSchemaVersion: (teamSessionId: string) => number | undefined
+  /** A4-PR5 (rebase round): the machine content identity of the SAME bound
+   *  Blueprint the version switch above resolves — `TeamBlueprint.contentHash`
+   *  is the value the POLICY_STATE_SNAPSHOT_MISMATCH law compares against, so
+   *  a proposal fingerprint built from it binds to exactly the Blueprint the
+   *  Team is bound to. `undefined` = no resolvable bound Blueprint (UNKNOWN),
+   *  never a stand-in. */
+  readonly blueprintContentHash: (teamSessionId: string) => string | undefined
 }
 
 const DECLARED_NONE: PermissionStaticLayerFacts = { layers: [] }
@@ -772,6 +785,8 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
     teamHardEnvelope: async (teamSessionId, memberInstanceId) =>
       teamHardEnvelope(teamSessionId, memberInstanceId),
     blueprintSchemaVersion: (teamSessionId) => deps.resolveBlueprint(teamSessionId)?.schemaVersion,
+    blueprintContentHash: (teamSessionId) =>
+      deps.resolveBlueprint(teamSessionId)?.contentHash as string | undefined,
   }
 }
 
@@ -802,7 +817,7 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
  * i.e. an authority verdict invented from an absence.
  */
 export function createAuthorityCeilingReader(deps: {
-  readonly facts: Pick<PermissionAuthorityFacts, 'teamHardEnvelope' | 'permissionEnvelope' | 'blueprintSchemaVersion'>
+  readonly facts: Pick<PermissionAuthorityFacts, 'teamHardEnvelope' | 'permissionEnvelope' | 'blueprintSchemaVersion' | 'blueprintContentHash'>
 }): (
   teamSessionId: string,
   memberInstanceId: string,
@@ -811,6 +826,19 @@ export function createAuthorityCeilingReader(deps: {
   return async (teamSessionId, memberInstanceId, actor) => {
     const schemaVersion = deps.facts.blueprintSchemaVersion(teamSessionId)
     if (schemaVersion !== 3) return undefined
+    // A4-PR5 (rebase round, parent plan-wiring item): THE FINGERPRINT ANCHOR.
+    // The hash resolves through the SAME bound-Blueprint route that just chose
+    // the v3 branch — the two reads share one resolution law, so an anchor is
+    // present for every v3 context this factory can honestly answer with. An
+    // `undefined` hash here means the binding went unresolvable between the
+    // reads (the binding vanished mid-flight): that is the SAME unresolved-
+    // binding state whose documented answer above is the existential branch,
+    // and it takes it — a v3 gate must never stamp an ANCHORLESS fingerprint,
+    // because then "bound to a Blueprint" and "silently skipped" are once more
+    // indistinguishable in the durable row (pinned in
+    // test/a4p5-permission-mutation-proposal.test.ts, the anchor group).
+    const blueprintContentHash = deps.facts.blueprintContentHash(teamSessionId)
+    if (blueprintContentHash === undefined) return undefined
     // The trusted operator is a HUMAN authority position (plan:261, ADR §7): there
     // is NO production path that constructs a `human-admin`, and none appears
     // here — the highest position this factory can ever name is `human-user`.
@@ -818,7 +846,19 @@ export function createAuthorityCeilingReader(deps: {
     const hard = await deps.facts.teamHardEnvelope(teamSessionId, memberInstanceId)
     const envelope = await deps.facts.permissionEnvelope(teamSessionId, memberInstanceId)
     return {
-      beneficiaryAuthority: 'member',
+      // A4-PR5 (rebase round): the BENEFICIARY IS DERIVED FROM THE TARGET
+      // IDENTITY through the proposal law itself (`beneficiaryAuthorityForTarget`,
+      // governance/permission-approval.ts) — the same equation the governance
+      // service applies, so the plane and the ask can never disagree about whose
+      // authority is rising. The pre-PR5 literal `'member'` mislabeled the
+      // Leader's own overlay and was reported as PR5's interim defect; the
+      // derivation now lives HERE, at the single reader (A5-12), so both the
+      // mutation lane and PR4's operation adapter (its `OperationApprovalCeiling
+      // Port` is this reader's structural subset) receive the corrected rung.
+      // A leader-targeted read answers `leader` — never `human-admin`, which
+      // remains unconstructible (the leg below that pin stands, widened by a
+      // leader-target case in the a4p5 anchor group).
+      beneficiaryAuthority: beneficiaryAuthorityForTarget(memberInstanceId),
       initiatorAuthority,
       documents: {
         teamHardEnvelope: hard,
@@ -831,6 +871,7 @@ export function createAuthorityCeilingReader(deps: {
         // `unavailable`.
         permissionMutationEnvelope: { status: 'declared', document: envelope },
       },
+      blueprintContentHash,
     }
   }
 }

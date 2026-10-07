@@ -1,0 +1,6 @@
+RED-D01 — p4t6 file-count pin at the rebased tree (post PR4 #91, pre PR5 pin edit)
+$ (cd packages/testkit && vitest run test/p4t6-session-event-scan.test.ts)
+AssertionError: expected 1003 to be 999
+  (master pin = 983 + PR2 4 + PR3 8 + PR4 4 = 999; the PR5 list adds exactly the four
+  named paths, so the owed total moves 999 -> 1003; the pre-rebase "999" in the parent
+  instruction predates PR4 own +4 and is superseded by this measurement.)

@@ -1,0 +1,115 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr5/packages/runtime
+
+ ❯ test/a4p5-self-mutation.test.ts (6 tests | 6 failed) 10ms
+     × self-EXPANSION asks the rung above the LEADER (never a self-review rung), whatever the context labels 5ms
+     × a self-EXPANSION allowed by the Human User commits inline into the Leader overlay 1ms
+     × a self-TIGHTENING needs no proposal at all (no rise -> gate silent) 1ms
+     × proposes (deny -> revealed allow), then commits ONE rule-free snapshot on allow 1ms
+     × ONE region the ladder cannot approve dooms the WHOLE batch: no rows, no commit 0ms
+     × TWO approvable regions open ONE case with one proposal row per rule 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > self-EXPANSION asks the rung above the LEADER (never a self-review rung), whatever the context labels
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError ../storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain ../storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World test/p6t1-helpers.ts:359:18
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:108:14
+ ❯ test/a4p5-self-mutation.test.ts:180:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > a self-EXPANSION allowed by the Human User commits inline into the Leader overlay
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError ../storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain ../storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World test/p6t1-helpers.ts:359:18
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:108:14
+ ❯ test/a4p5-self-mutation.test.ts:203:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > a self-TIGHTENING needs no proposal at all (no rise -> gate silent)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError ../storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain ../storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World test/p6t1-helpers.ts:359:18
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:108:14
+ ❯ test/a4p5-self-mutation.test.ts:229:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the revoke that reveals a lower allow is an expansion > proposes (deny -> revealed allow), then commits ONE rule-free snapshot on allow
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError ../storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain ../storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World test/p6t1-helpers.ts:359:18
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:108:14
+ ❯ test/a4p5-self-mutation.test.ts:255:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the batch is all-or-nothing > ONE region the ladder cannot approve dooms the WHOLE batch: no rows, no commit
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError ../storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain ../storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World test/p6t1-helpers.ts:359:18
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:108:14
+ ❯ test/a4p5-self-mutation.test.ts:296:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the batch is all-or-nothing > TWO approvable regions open ONE case with one proposal row per rule
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError ../storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain ../storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World test/p6t1-helpers.ts:359:18
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:108:14
+ ❯ test/a4p5-self-mutation.test.ts:316:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  09:59:24
+   Duration  1.08s (transform 766ms, setup 0ms, import 972ms, tests 10ms, environment 0ms)
+

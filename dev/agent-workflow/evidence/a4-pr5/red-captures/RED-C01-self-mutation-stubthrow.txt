@@ -1,0 +1,103 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr5/packages/runtime
+
+ ❯ test/a4p5-self-mutation.test.ts (6 tests | 6 failed) 47ms
+     × self-EXPANSION asks the rung above the LEADER (never a self-review rung), whatever the context labels 18ms
+     × a self-EXPANSION allowed by the Human User commits inline into the Leader overlay 7ms
+     × a self-TIGHTENING needs no proposal at all (no rise -> gate silent) 5ms
+     × proposes (deny -> revealed allow), then commits ONE rule-free snapshot on allow 5ms
+     × ONE region the ladder cannot approve dooms the WHOLE batch: no rows, no commit 5ms
+     × TWO approvable regions open ONE case with one proposal row per rule 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > self-EXPANSION asks the rung above the LEADER (never a self-review rung), whatever the context labels
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:138:28
+ ❯ test/a4p5-self-mutation.test.ts:180:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > a self-EXPANSION allowed by the Human User commits inline into the Leader overlay
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:138:28
+ ❯ test/a4p5-self-mutation.test.ts:203:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > a self-TIGHTENING needs no proposal at all (no rise -> gate silent)
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:138:28
+ ❯ test/a4p5-self-mutation.test.ts:229:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the revoke that reveals a lower allow is an expansion > proposes (deny -> revealed allow), then commits ONE rule-free snapshot on allow
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:138:28
+ ❯ test/a4p5-self-mutation.test.ts:255:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the batch is all-or-nothing > ONE region the ladder cannot approve dooms the WHOLE batch: no rows, no commit
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:138:28
+ ❯ test/a4p5-self-mutation.test.ts:296:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/a4p5-self-mutation.test.ts > the batch is all-or-nothing > TWO approvable regions open ONE case with one proposal row per rule
+Error: stub
+ ❯ Module.lateBoundPermissionMutationApprovalPort governance/permission-approval.ts:34:9
+     32|   _ref: { current: PermissionMutationApprovalPort | undefined },
+     33| ): PermissionMutationApprovalPort {
+     34|   throw new Error('stub')
+       |         ^
+     35| }
+     36|
+ ❯ buildWorld test/a4p5-self-mutation.test.ts:138:28
+ ❯ test/a4p5-self-mutation.test.ts:316:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  09:59:08
+   Duration  976ms (transform 660ms, setup 0ms, import 838ms, tests 47ms, environment 0ms)
+

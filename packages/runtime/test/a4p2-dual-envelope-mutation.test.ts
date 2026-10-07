@@ -367,6 +367,13 @@ describe('the production reader: the v3 switch, BOTH branches, one file (ADR A5-
       : { status: 'declared', document: slot as AuthorityEnvelope }
   const factsFor = (schemaVersion: number | undefined, hard: AuthorityEnvelopeDocuments['teamHardEnvelope']) => ({
     blueprintSchemaVersion: () => schemaVersion,
+    // A4-PR5 rebase round (interface growth, PR2's legs untouched): the reader
+    // now also reads the bound Blueprint's content hash (the proposal
+    // fingerprint anchor). A fixture that declares a version also declares its
+    // content identity — same resolution law, so the v3 legs keep answering
+    // with a context exactly as before, and the unknown-version legs stay the
+    // existential branch.
+    blueprintContentHash: () => (schemaVersion === undefined ? undefined : `sha256:${'c'.repeat(64)}`),
     teamHardEnvelope: async () => hardRead(hard),
     permissionEnvelope: async () => ({ rules: [] }),
   })

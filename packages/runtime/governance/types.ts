@@ -56,6 +56,13 @@ import type {
   PermissionStaticLayerFacts,
   SubtreeContains,
 } from './permission-mutation.js'
+// A4-PR5 (additive): the approval-lane vocabulary the mutation result and the
+// service deps now carry. TYPE-only edges — the governance lane never imports
+// a ControlService implementation; it addresses the narrow port.
+import type { ProposalAuthorityPosition } from './proposal-store.js'
+import type { ActionCaller } from '../admission/types.js'
+import type { PermissionMutationApprovalPort } from './permission-approval.js'
+import type { GovernanceProposalStore } from './proposal-store.js'
 
 /**
  * The per-team serialization seam the service serializes every mutation
@@ -144,6 +151,19 @@ export interface GovernancePermissionLaneDeps {
    * unguarded (test/factory worlds only; production root always wires it).
    */
   readonly targetGuard?: (teamSessionId: string, memberInstanceId: string) => Promise<void>
+  /**
+   * A4-PR5 (review item 6, A3-3's class): the LIFECYCLE-REFUSAL DECIDER that
+   * ships beside the guard. The service reinterprets an in-guard refusal as
+   * `mutation-stale` ONLY when the owner of the guard's law confirms this
+   * error IS the lifecycle refusal (production: `error instanceof
+   * PermissionLifecycleError`). Anything the decider does not certify — a
+   * storage fault, a bug, a foreign error thrown from the guard's stack —
+   * propagates as ITSELF: a fault must never wear an authorization verdict.
+   * Absent = the reinterpretation never happens (conservative default; the
+   * drift law is opt-in at wiring, and un-wired worlds propagate every
+   * refusal untouched).
+   */
+  readonly isLifecycleRefusal?: (error: unknown) => boolean
   /**
    * The PR1 persistence-only overlay port — the ONE durable write target of
    * the permission path (ADR §1: GovernanceMutationService → this port →
@@ -263,6 +283,21 @@ export interface PermissionAuthorityCeilingContext {
   readonly initiatorAuthority: RuntimeAuthority
   /** The two ceiling documents, three-way (see above). */
   readonly documents: AuthorityEnvelopeDocuments
+  /**
+   * A4-PR5 (additive): the content hash of the BOUND TeamBlueprint, when the
+   * reader carries one. It is the anchor the proposal fingerprint binds (the
+   * ask is an ask about THIS blueprint's ladder), and `undefined` here is the
+   * reader saying "no anchor for you" — which the fingerprint binds as the
+   * distinct `null` value, never as a silent skip. The PRODUCTION plane
+   * reader (`createAuthorityCeilingReader`) ALWAYS supplies it on a v3
+   * context: a v3 read whose binding resolves without a hash answers NO
+   * context at all — the reader refuses to stamp an anchorless v3
+   * fingerprint (the documented unresolved-binding branch, pinned by the
+   * anchor group in `test/a4p5-permission-mutation-proposal.test.ts`). A
+   * `null`-anchored fingerprint is therefore reachable only from a lane
+   * wired to a fixture reader that names no hash — never from production.
+   */
+  readonly blueprintContentHash?: string
 }
 
 /** The service dependencies (every durable home injected). */
@@ -300,6 +335,21 @@ export interface GovernanceMutationServiceDeps {
    * permission plane (see {@link GovernancePermissionLaneDeps}).
    */
   readonly permissionLane?: GovernancePermissionLaneDeps
+  /**
+   * A4-PR5 (additive): the durable governance-proposal store (PR0) the
+   * mutation lane writes one row per rule into when a rise goes up for
+   * approval. OPTIONAL like the lane itself: unwired, an insufficient rise is
+   * PR2's typed throw, byte-identical.
+   */
+  readonly proposals?: GovernanceProposalStore
+  /**
+   * A4-PR5 (additive): the narrow approval port (see
+   * {@link PermissionMutationApprovalPort}) addressed through a late-bound
+   * ref, exactly like every other control-plane consumer on the root. When
+   * absent or unwired, a rise that needs approval answers PR2's typed refusal
+   * — the proposal path NEVER runs half-wired.
+   */
+  readonly approval?: PermissionMutationApprovalPort
 }
 
 // ---------------------------------------------------------------------------
@@ -466,6 +516,15 @@ export interface GovernancePermissionMutationArgs {
    * `expectedGeneration`, types L176/213 lineage).
    */
   readonly expectedGeneration?: number
+  /**
+   * A4-PR5 (additive): the DERIVED principal standing behind an `operator`
+   * mutation when it opens or acts on an approval case (the control plane's
+   * ActionCaller, authenticated server-side by the caller law — never a
+   * payload claim). The Leader lane derives its own caller and never reads
+   * this. An operator mutation that reaches the approval path WITHOUT it
+   * behaves exactly like the unwired lane: PR2's typed refusal, zero rows.
+   */
+  readonly approvalCaller?: ActionCaller
 }
 
 /**
@@ -474,6 +533,18 @@ export interface GovernancePermissionMutationArgs {
  * PR-A); the snapshot is the backend truth. `changed: false` — the desired
  * state already holds (same desired effect, or a revoke of pairs that never
  * existed): NO snapshot, NO generation bump.
+ *
+ * A4-PR5 (additive): a rise that needs approval the actor cannot give itself
+ * no longer refuses into the void — it becomes a DURABLE PROPOSAL
+ * (`reason: 'mutation-proposal-pending'`, nothing committed, the case and one
+ * proposal row per rule durable), and a mutation redelivered after the case
+ * settles resolves honestly against the durable decision: commit (allowed and
+ * still structurally the approved ask), `mutation-stale` (the world drifted —
+ * base, lifecycle, ceiling, rise structure), or `denied` /
+ * `authority-unavailable` (the ask ended). The terminal names are the frozen
+ * intervention table's values (mirror pinned by `a4p5-permission-mutation-
+ * proposal.test.ts`); `authority-undetermined` has no entrance through this
+ * API in PR5 — undecided inputs stay PR2's typed throws.
  */
 export type GovernancePermissionMutationResult =
   | { readonly changed: true; readonly snapshot: PermissionOverlaySnapshot }
@@ -482,6 +553,30 @@ export type GovernancePermissionMutationResult =
       readonly reason: 'no-change'
       /** The current authority snapshot (undefined when none exists). */
       readonly current: PermissionOverlaySnapshot | undefined
+    }
+  | {
+      readonly changed: false
+      /** The one non-terminal park reason: the ask is durable and open. */
+      readonly reason: 'mutation-proposal-pending'
+      readonly approvalCaseId: string
+      /** The leg a reviewer acts on now, when the case has one. */
+      readonly requestId?: string
+      /** The rung the ask rests at (derived now; durable on the leg). */
+      readonly requiredAuthority: ProposalAuthorityPosition
+      /** The identity fingerprint binding case + proposal rows (opaque). */
+      readonly proposalFingerprint: string
+      /** Honest, machine-readable context (never authority data). */
+      readonly detail: Record<string, unknown>
+    }
+  | {
+      readonly changed: false
+      readonly reason: 'mutation-stale' | 'denied' | 'authority-unavailable'
+      /** The case that ended (or whose approval went stale), when there was one. */
+      readonly approvalCaseId?: string
+      /** The current authority snapshot (undefined when none exists). */
+      readonly current: PermissionOverlaySnapshot | undefined
+      /** Honest, machine-readable context (never authority data). */
+      readonly detail: Record<string, unknown>
     }
 
 // ---------------------------------------------------------------------------

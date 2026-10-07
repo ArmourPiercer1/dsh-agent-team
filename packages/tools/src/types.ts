@@ -21,6 +21,7 @@ import type {
 } from '../../runtime/admission/index.js'
 import type {
   ControlDecisionRecord,
+  ControlEscalationOutcome,
   ControlGuardBlockReason,
   ControlRequestRecord,
   ControlService,
@@ -153,6 +154,15 @@ export type TeamToolsResult =
   | {
       readonly status: 'control-resolved'
       readonly decision: ControlDecisionRecord
+    }
+  // A4-PR5 (rebase round, PR4 hand-off duty b): the reviewer ESCALATED the
+  // leg. This arm is the closed-union admission PR4 named as its seam — the
+  // durable escalation is a leg fact + terminal `deny(reason escalated)` +
+  // the risen leg (A5-5/A1-12), which is NOT a `ControlDecisionRecord` and
+  // must not be laundered into `control-resolved`.
+  | {
+      readonly status: 'control-escalated'
+      readonly outcome: ControlEscalationOutcome
     }
   | {
       readonly status: 'pending-control-listed'

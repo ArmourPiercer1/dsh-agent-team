@@ -145,3 +145,40 @@ export type {
   GovernancePermissionMutationArgs,
   GovernancePermissionMutationResult,
 } from './types.js'
+// A4-PR5 — the durable permission-mutation PROPOSAL law. The governance
+// service consumes it as a sibling module; the host wiring (root.ts) consumes
+// the late-bound approval port and the terminal vocabulary THROUGH this
+// barrel — the sanctioned single instantiation (X12: no import route around
+// the barrel that the name walk cannot see).
+// A4-PR5: the proposal store's ONE instantiation route. The ROOT builds
+// the store over the durable ledger and injects it — the governance lane
+// itself keeps ZERO storage imports (the store module owns the audited
+// edge; the barrel only routes the factory, the same way it already
+// routes the service factory over its own storage edges).
+export { createGovernanceProposalStore } from './proposal-store.js'
+
+export {
+  PERMISSION_MUTATION_PENDING_REASON,
+  PERMISSION_MUTATION_TERMINAL_OUTCOME_VALUES,
+  PERMISSION_MUTATION_TERMINAL_OUTCOMES,
+  RISE_SUMMARY_PREFIX,
+  beneficiaryAuthorityForTarget,
+  buildPermissionMutationApprovalIdentity,
+  encodeRiseSummary,
+  lateBoundPermissionMutationApprovalPort,
+  parseRiseSummary,
+  permissionMutationCorrelation,
+  permissionMutationProposalFingerprint,
+  planPermissionMutationApproval,
+  proposalOperationId,
+  riseDigestOf,
+} from './permission-approval.js'
+export type {
+  LateBoundPermissionMutationApprovalPort,
+  PermissionMutationApprovalPlan,
+  PermissionMutationApprovalPort,
+  PermissionMutationApprovalRegion,
+  PermissionMutationFingerprintRule,
+  PermissionMutationProposalFingerprintInput,
+  PermissionMutationTerminalOutcome,
+} from './permission-approval.js'

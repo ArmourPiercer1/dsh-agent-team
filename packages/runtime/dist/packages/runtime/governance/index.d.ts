@@ -35,4 +35,7 @@ export { AUTHORITY_RANK, authorityRank, expansionCeiling, isHigherAuthority, may
 export { evaluateAuthorityCeiling } from './runtime-authority.js';
 export type { AuthorityEvaluation, AuthorityEvaluationEvidence, AuthorityEvaluationInput, AuthorityEvaluationOutcome, RuntimeAuthority, } from './runtime-authority.js';
 export type { GovernancePermissionLaneDeps, GovernancePermissionMutationArgs, GovernancePermissionMutationResult, } from './types.js';
+export { createGovernanceProposalStore } from './proposal-store.js';
+export { PERMISSION_MUTATION_PENDING_REASON, PERMISSION_MUTATION_TERMINAL_OUTCOME_VALUES, PERMISSION_MUTATION_TERMINAL_OUTCOMES, RISE_SUMMARY_PREFIX, beneficiaryAuthorityForTarget, buildPermissionMutationApprovalIdentity, encodeRiseSummary, lateBoundPermissionMutationApprovalPort, parseRiseSummary, permissionMutationCorrelation, permissionMutationProposalFingerprint, planPermissionMutationApproval, proposalOperationId, riseDigestOf, } from './permission-approval.js';
+export type { LateBoundPermissionMutationApprovalPort, PermissionMutationApprovalPlan, PermissionMutationApprovalPort, PermissionMutationApprovalRegion, PermissionMutationFingerprintRule, PermissionMutationProposalFingerprintInput, PermissionMutationTerminalOutcome, } from './permission-approval.js';
 //# sourceMappingURL=index.d.ts.map

@@ -1634,7 +1634,34 @@ export function createS6RemotePorts(options) {
                     // provenance semantics) — the propagation is unconditional.
                     reason: request.reason,
                     rules,
+                    // A4-PR5: the APPROVER identity for the durable-proposal lane —
+                    // the DERIVED caller (s6-principal's validation, never a host
+                    // claim). A bound-human remote call approves under its own human
+                    // identity; a Leader call is answered by the governance service's
+                    // own synthesized Leader caller and ignores this. The lane is a
+                    // Record passthrough, so no seam member is added anywhere.
+                    approvalCaller: caller,
                 }));
+                // A4-PR5: the PENDING arm rides the closed projection HONESTLY —
+                // `changed:false` plus the named reason is the whole truth (a durable
+                // proposal opened, nothing committed), and the reason slot is exactly
+                // the discriminator the PR2 ceiling refusals already ride. The first
+                // design here THREW a typed `PERMISSION_MUTATION_APPROVAL_PENDING`;
+                // measured dead through the real dispatcher: the throw-proof mapper
+                // passes ONLY codes from the closed REMOTE_BACKING_ERROR_CODES
+                // vocabulary, an approval-pending code is not a member (joining it is
+                // a remote-contract change outside PR5), so the refusal would have
+                // arrived as INTERNAL_ERROR — indistinguishable from a crash, which
+                // is how an approval gets lost on the floor. The case HANDLE
+                // (approvalCaseId) stays off v7 by the closed FIELD SET — but it is
+                // genuinely recoverable over v7: `getProjection` counts the policy-
+                // category rows and `getLedgerPage` payloads carry the proposal rows
+                // and the approval case's identity (and the ask's identity
+                // correlation is deterministic), so the recovery route exists on the
+                // read plane, not only in the approval lane. The terminal arms (`mutation-stale` / `denied` /
+                // `authority-unavailable`) ride the same slot; the v7 contract SHAPE
+                // is untouched. (A lane test pins all of this through the real
+                // throw-proof dispatcher — a4p5 lane B, the s6 seam group.)
                 const safe = { changed: result['changed'] === true };
                 if (typeof result['code'] === 'string')
                     safe['code'] = result['code'];
