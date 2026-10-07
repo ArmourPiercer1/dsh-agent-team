@@ -95,3 +95,30 @@ flip and GREEN after it in the same commit — the ruling's own discipline, unch
 — and the raw capture lands here as `7-3-post-flip-migration-state.txt` with its row
 in the table above. A flip that leaves this file on the double has not re-proved
 anything; it has merely stopped being honest about which part was simulated.
+
+## Supplement S1 (`7-r1-s1-*`): the absent-reader default gets driven, not cited
+
+Independent review returned MERGE-READY and reproduced every load-bearing number,
+then named the one claim this file made that nothing executed: the branch answering
+`unreadable` when no state was supplied was reached by no test, so flipping it to
+`current` left the whole lane green. Two legs added (test-only), both through the
+real root and dispatcher.
+
+| file | the claim it supports |
+| --- | --- |
+| `7-r1-s1-mutations.txt` (+ `run-7-r1-s1.sh`, and `run-7-r1-mutate.py` now carrying M8/M9) | the full nine-mutation sweep on the tree that adds the legs. **M8** flips the default `'unreadable'` -> `'current'`: **2 failed / 77 passed — exactly the two new legs and nothing else**, which is the measurement that the gap existed and is closed. **M9** removes only the closed-set conjunct: **1 failed — only the bogus-state leg**, so the two legs pin different halves of one guard rather than duplicating each other. The other seven keep their meaning; M4's kill set grows 6 -> **8** because the new legs read the same payload field, and that growth is the point of having them. Ends with the S1 test file as the only modified path — no production mutation survived. |
+| `7-r1-s1-typecheck-and-fast.txt` | the fast set on the supplemented tree: `pnpm -r run typecheck` 8/8 `Done`, 0 `error TS`; `p4t6` 10 passed (unchanged 1020 — S1 adds legs to an existing file, not a scannable file); `a4pr0a` 14/14; `lint-identities` 160 / 76 distinct, `new 0, resolved 0`; client lane the same three baseline failures. |
+| `7-r1-s1-full-run1.txt` / `-run2.txt` | whole-repo ×2 on the supplemented tree: 487 files, **6014 tests** (6012 + the two legs), 9 failed files / 19 failed tests in both runs. |
+| `7-r1-s1-identity-diff.txt` | base union (28) against this tree's union (22): **NEW = 0**, the 6 "resolved" being `p6t1-parallel` legs that did not fire in these two runs. |
+| `7-r1-s1-ruling-lane-and-artifacts.txt` | the ruling lane at 8 files / **133 passed** (was 131) and `check:artifacts` OK with exit 0 — S1 moved no production line, so the co-committed mirror still matches without a rebuild. |
+
+### Scope of the claim, for the merge body
+
+**`migrationState` is a wire-and-host claim, not a UI claim.** The client's
+`parseCatalogList` reads `blueprintId` and `revisions` only, so no interface surface
+shows Blueprint migration state today; "migration discoverability" here means an
+operator reading `catalog.list` or the degraded-boot line, and it stays that way
+until a client lane reads `revisionStates`. The same body should say that the
+commit's 58-file install-surface mirror is **51 inherited + 7 authored** — the
+staleness is master-side (`b4340c50` and `e68d2c74` shipped source without
+rebuilding the mirror), owned there, and merely surfaced here.

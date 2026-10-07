@@ -42,6 +42,17 @@ MUTATIONS = {
     # The deleted boolean, put back by hand: proves the pin is the TEST, not only tsc.
     'M7-boolean-comes-back': (BA, "        migrationState: inspection.status === 'ok' ? 'current' : 'migration-required',",
                               "        migrationState: inspection.status === 'ok' ? 'current' : 'migration-required',\n        migrationRequired: false,"),
+    # S1: the absent-reader default, flipped to the reassurance it exists to refuse.
+    # Reviewer's MUT-8. Only the two missing-state legs can see it: every other
+    # world supplies a states entry, so no wired path touches this line.
+    'M8-default-becomes-current': (S6, "    return { revision, migrationState: 'unreadable' }",
+                                   "    return { revision, migrationState: 'current' }"),
+    # S1b: the second conjunct alone — the closed-set check removed, the missing
+    # state still handled. Proves the bogus-state leg is not a duplicate of the
+    # missing-state leg: each half of the guard has its own kill.
+    'M9-closed-set-check-dropped': (S6,
+                                    "  if (state === undefined || !CATALOG_MIGRATION_STATES.includes(state.migrationState)) {",
+                                    "  if (state === undefined) {"),
 }
 
 
