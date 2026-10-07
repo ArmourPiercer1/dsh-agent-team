@@ -76,6 +76,19 @@ import {
 } from '../blueprint/testdata/fixtures.js'
 import { expectCode, expectErrorDetails, isDeepFrozen } from './t2-helpers.js'
 
+/**
+ * §7.4 carrier migration (pre-flip half): the declared stamp of the
+ * `PERMISSION_SOURCE_ASK` factory fixture. The lane-movement hash test
+ * below compares an inline document against THAT fixture's content hash
+ * and asserts they DIFFER when a rule moves ask->deny; for that
+ * difference to prove anything, both documents must carry the SAME
+ * schemaVersion. The fixture stays v1 until the flip (fixtures.ts is
+ * byte-coupled to cross-lane consumers — see evidence 7-4-cdom FINDINGS),
+ * so this mirror stays v1 too. Change this constant only together with
+ * fixtures.ts, never to make the scan pass.
+ */
+const ASK_FIXTURE_DECLARED_VERSION = 1
+
 /** The expected normalized policy of `PERMISSION_SOURCE_ASK`.
  *
  * NOTE (H2 ruling): the allow lane no longer carries the `bash` + `any`
@@ -162,7 +175,7 @@ describe('A1: positive parses (default ask | deny, exact/any resources)', () => 
   it('a MEMBER template can carry its own permissions (per-template scope)', () => {
     const source = [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.min',
       'revision: "1"',
       'leader:',
@@ -197,6 +210,10 @@ describe('A1: positive parses (default ask | deny, exact/any resources)', () => 
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+        '  rules: []',
+      'teamHardEnvelope:',
+        '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -216,7 +233,7 @@ describe('A1: positive parses (default ask | deny, exact/any resources)', () => 
   it('exact.path is trimmed on normalization (repo string-field rule)', () => {
     const source = [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.min',
       'revision: "1"',
       'leader:',
@@ -246,6 +263,10 @@ describe('A1: positive parses (default ask | deny, exact/any resources)', () => 
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+        '  rules: []',
+      'teamHardEnvelope:',
+        '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -370,7 +391,7 @@ describe('A1: validation rejections (closed schema, fail loudly)', () => {
     const longPath = `/x/${'y'.repeat(PERMISSION_PATH_MAX_LENGTH)}`
     const source = [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.min',
       'revision: "1"',
       'leader:',
@@ -400,6 +421,10 @@ describe('A1: validation rejections (closed schema, fail loudly)', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+        '  rules: []',
+      'teamHardEnvelope:',
+        '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -439,7 +464,7 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
         : [`      ${name}: []`]
     return [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.min',
       'revision: "1"',
       'leader:',
@@ -465,6 +490,10 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+        '  rules: []',
+      'teamHardEnvelope:',
+        '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -494,7 +523,7 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
         : [`        ${name}: []`]
     return [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.min',
       'revision: "1"',
       'leader:',
@@ -522,6 +551,10 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+        '  rules: []',
+      'teamHardEnvelope:',
+        '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -632,7 +665,7 @@ describe('A1: content hash binds to the permissions policy', () => {
     const askLane = parseBlueprint(PERMISSION_SOURCE_ASK) // write-exact in ask
     const movedToDeny = parseBlueprint([
       '---',
-      'schemaVersion: 1',
+      `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`,
       'blueprintId: team.min',
       'revision: "1"',
       'leader:',
@@ -730,7 +763,7 @@ describe('A1: duplicate normalization is deterministic', () => {
     const make = (firstPath: string, secondPath: string): string =>
       [
         '---',
-        'schemaVersion: 1',
+        'schemaVersion: 3',
         'blueprintId: team.min',
         'revision: "1"',
         'leader:',
@@ -764,6 +797,10 @@ describe('A1: duplicate normalization is deterministic', () => {
         'requirements: []',
         'memberEnvelopes: []',
         'policyStates: []',
+        'permissionMutationEnvelope:',
+          '  rules: []',
+        'teamHardEnvelope:',
+          '  rules: []',
         'metadata: {}',
         '---',
         '',
@@ -784,7 +821,7 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
   const subtreeProbeSource = (tool: string, kind: string, path: string): string =>
     [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.min',
       'revision: "1"',
       'leader:',
@@ -814,6 +851,10 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+        '  rules: []',
+      'teamHardEnvelope:',
+        '  rules: []',
       'metadata: {}',
       '---',
       '',
