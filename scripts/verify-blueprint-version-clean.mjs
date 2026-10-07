@@ -1082,16 +1082,44 @@ export function classifyText(path, text) {
  * reachable WITHOUT anyone widening a rule for other namespaces' version
  * axes that must never migrate. The soft edge the reviewer found — an empty
  * justification string kept the whole suite green — is closed by refusing to
- * run: every value must cite `hand-verified <its own basename>:<line>`;
- * any violation names the offending keys and exits 2. Silence keeps costing
- * a written, path-named, reviewed row.
- * The env override exists for the wrapper's own falsification tests only.
+ * run: keys are THREE-PART "<path>::L<line>::v<version>" — a two-part key
+ * lets ONE row adjudicate EVERY literal on the line, and a second literal
+ * must cost its own row like everything else; every value must cite
+ * `hand-verified <the key's FULL path>:<line[-range]>`, the cited range
+ * must exist in that tracked file and CONTAIN the site's line (round 3.5:
+ * the fence had run with `hand-verified packages/nowhere/deeper/x.ts:94`
+ * and `:99999-100000` — basename+any-digit checked nothing checkable);
+ * any violation names the offending keys and exits 2. Silence keeps
+ * costing a written, path-named, VERIFIABLE row.
+ * The ledger file itself must be GIT-TRACKED (round 3.5 G4: the override
+ * is the mute with a name on it — with dirty suppressed post-§7.4, a
+ * scratch ledger + suppression measured `verdict: clean`, exit 0), so the
+ * resolved path is printed in every report header and an untracked ledger
+ * is refused unless DSH_SCAN_TEST_MODE=1 — which only the wrapper's own
+ * falsification legs set.
  */
 const ADJUDICATIONS_FILE =
   'dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json'
 
 function loadAdjudications(cwd) {
-  const file = process.env.DSH_SCAN_ADJUDICATIONS ?? resolve(cwd, ADJUDICATIONS_FILE)
+  const override = process.env.DSH_SCAN_ADJUDICATIONS
+  const testMode = process.env.DSH_SCAN_TEST_MODE === '1'
+  const file = override === undefined ? resolve(cwd, ADJUDICATIONS_FILE) : resolve(cwd, override)
+  // G4: the override is the mute with a name on it. Today dirty(120)
+  // dominates so no false green is reachable through it; the day §7.4
+  // closes, a scratch ledger + suppressed dirty is exactly `verdict:
+  // clean`, exit 0 — measured by the reviewer. So the ledger the fence
+  // reads must be GIT-TRACKED unless the wrapper's falsification legs
+  // explicitly say otherwise (DSH_SCAN_TEST_MODE=1), and every report
+  // prints the resolved path it read.
+  if (!testMode) {
+    const tracked = spawnSync('git', ['ls-files', '--error-unmatch', file], { cwd, encoding: 'utf8' })
+    if (tracked.status !== 0) {
+      return {
+        error: `adjudication ledger ${file} is not git-tracked; the fence reads only reviewed, committed ledgers (DSH_SCAN_TEST_MODE=1 is for the wrapper's own falsification legs)`,
+      }
+    }
+  }
   let raw
   try {
     raw = readFileSync(file, 'utf8')
@@ -1105,26 +1133,47 @@ function loadAdjudications(cwd) {
     return { error: `adjudication ledger is not valid JSON (${file}): ${String(e)}` }
   }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    return { error: `adjudication ledger must be an object keyed "<path>::L<line>" (${file})` }
+    return { error: `adjudication ledger must be an object keyed "<path>::L<line>::v<version>" (${file})` }
   }
   const bad = []
   for (const [key, ev] of Object.entries(parsed)) {
-    const m = /^(.+)::L(\d+)$/.exec(key)
+    // G2: identity is path::L<line>::v<version> — the report already prints
+    // `L6=v1`; a two-part key let ONE row adjudicate EVERY literal on the
+    // line (v1's verdict laundered v2). Each literal costs its own row.
+    const m = /^(.+)::L(\d+)::v(\d+)$/.exec(key)
     if (m === null || typeof ev !== 'string') {
       bad.push(key)
       continue
     }
-    const base = m[1].split('/').at(-1)
-    const re = new RegExp(`hand-verified [^\\s]*${base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:[0-9]`)
-    if (!re.test(ev)) bad.push(key)
+    const sitePath = m[1]
+    const siteLine = Number(m[2])
+    // G3: the citation must name the key's FULL path, and the cited range
+    // must exist in that tracked file and contain the site's line —
+    // "silence costs a written row" only if the row can be CHECKED.
+    const cite = new RegExp(`hand-verified ${sitePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:(\\d+)(?:-(\\d+))?`).exec(ev)
+    if (cite === null) {
+      bad.push(key)
+      continue
+    }
+    let text
+    try {
+      text = readFileSync(resolve(cwd, sitePath), 'utf8')
+    } catch {
+      bad.push(key)
+      continue
+    }
+    const a = Number(cite[1])
+    const b = cite[2] === undefined ? a : Number(cite[2])
+    const lineCount = text.split('\n').length
+    if (!(1 <= a && a <= b && b <= lineCount && a <= siteLine && siteLine <= b)) bad.push(key)
   }
   if (bad.length > 0) {
     return {
       error:
-        `adjudication ledger entries fail the "hand-verified <own path>:<line>" rule (${file}): ${bad.slice(0, 8).join(', ')}${bad.length > 8 ? ` (+${String(bad.length - 8)} more)` : ''}`,
+        `adjudication ledger entries fail the "hand-verified <own full path>:<line-range containing the site>" rule (${file}): ${bad.slice(0, 8).join(', ')}${bad.length > 8 ? ` (+${String(bad.length - 8)} more)` : ''}`,
     }
   }
-  return { ledger: new Map(Object.entries(parsed)) }
+  return { ledger: new Map(Object.entries(parsed)), file, count: Object.keys(parsed).length }
 }
 
 export function scanBlueprintVersionSites() {
@@ -1138,6 +1187,9 @@ export function scanBlueprintVersionSites() {
     adjudicated: [],
     blindKeyHalf: 0,
     blindDocMarked: 0,
+    blindNonTyped: 0,
+    ledgerFile: '',
+    ledgerCount: 0,
     refused: [],
     prose: [],
   }
@@ -1162,6 +1214,8 @@ export function scanBlueprintVersionSites() {
     result.reason = adj.error
     return result
   }
+  result.ledgerFile = adj.file
+  result.ledgerCount = adj.count
   let out
   try {
     // maxBuffer: the tracked-file list is >1 MB NUL-separated at this base,
@@ -1202,7 +1256,14 @@ export function scanBlueprintVersionSites() {
       // round-1 audit; all read, zero documents lost). Compute it live.
       if (VERSION_LITERAL_TEST.test(text)) {
         result.blindKeyHalf += 1
-        if (DOC_SHAPE_MARKERS.test(text)) result.blindDocMarked += 1
+        // The reviewer's narrower population: the typed half is safe by
+        // construction (blueprintId is required on TeamBlueprint and tsc
+        // enforces it), so only NON-typed files can hide a document the
+        // fence never sees.
+        if (!/\.(ts|tsx|mts|cts)$/.test(p)) {
+          result.blindNonTyped += 1
+          if (DOC_SHAPE_MARKERS.test(text)) result.blindDocMarked += 1
+        }
       }
       continue
     }
@@ -1215,13 +1276,17 @@ export function scanBlueprintVersionSites() {
   }
   // Part C: ledgered unknowns leave the gated set for the ADJUDICATED class.
   for (const site of result.unknown) {
-    const key = `${site.path}::L${String(site.line)}`
+    const key = `${site.path}::L${String(site.line)}::v${String(site.version)}`
     const evidence = adj.ledger.get(key)
     if (evidence !== undefined) result.adjudicated.push({ ...site, evidence })
   }
   if (result.adjudicated.length > 0) {
-    const done = new Set(result.adjudicated.map((a) => `${a.path}::L${String(a.line)}`))
-    result.unknown = result.unknown.filter((u) => !done.has(`${u.path}::L${String(u.line)}`))
+    const done = new Set(
+      result.adjudicated.map((a) => `${a.path}::L${String(a.line)}::v${String(a.version)}`),
+    )
+    result.unknown = result.unknown.filter(
+      (u) => !done.has(`${u.path}::L${String(u.line)}::v${String(u.version)}`),
+    )
   }
   const byLine = (a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : a.line - b.line)
   for (const k of ['dirty', 'advisory', 'unknown', 'adjudicated', 'refused', 'prose']) result[k].sort(byLine)
@@ -1258,8 +1323,9 @@ export function formatReport(result) {
   )
   lines.push(`scanned-in-scope: ${String(result.scopeFiles)} tracked files`)
   lines.push(
-    `SCOPE-NOTE key-half blind spot: ${String(result.blindKeyHalf)} in-scope files carry a schemaVersion literal but no blueprintId text (excluded by the both-halves rule); ${String(result.blindDocMarked)} are doc-marked — round-1 audit (2026-10-08) read every one at 36/7 and lost zero documents; these counts are computed live`,
+    `SCOPE-NOTE blind spot: ${String(result.blindKeyHalf)} files (${String(result.blindNonTyped)} non-typed, ${String(result.blindDocMarked)} doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live`,
   )
+  lines.push(`adjudication-ledger: ${result.ledgerFile} (${String(result.ledgerCount)} entries)`)
   lines.push(
     'SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior',
   )

@@ -51,7 +51,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { spawnSync } from 'node:child_process'
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve, dirname } from 'node:path'
 import * as fence from '../../../scripts/verify-blueprint-version-clean.mjs'
@@ -599,10 +599,11 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // fence reads; ledgered sites print as a sixth, NON-GATING class; closure
     // = dirty empty AND no unadjudicated unknown. Both directions still bite:
     // no unadjudicated unknown may exist, no ledger row may be stale.
-    const live = new Set(run.adjudicated.map((a) => `${a.path}::L${String(a.line)}`))
+    const keyOf = (p: string, line: number, version: number): string => `${p}::L${String(line)}::v${String(version)}`
+    const live = new Set(run.adjudicated.map((a) => keyOf(a.path, a.line, a.version)))
     for (const a of run.adjudicated) {
       expect(
-        UNKNOWN_LEDGER.get(`${a.path}::L${String(a.line)}`),
+        UNKNOWN_LEDGER.get(keyOf(a.path, a.line, a.version)),
         `adjudicated site carries evidence the ledger does not: ${a.path}:${String(a.line)}`,
       ).toBe(a.evidence)
     }
@@ -610,6 +611,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
       expect(live.has(k), `stale ledger row ${k} — the site is gone; remove the adjudication`).toBe(true)
     }
     expect(run.unknown.map((u) => `${u.path}::L${String(u.line)}`), 'every unknown on this tree must be adjudicated; new unknowns gate until read').toEqual([])
+    for (const k of UNKNOWN_LEDGER.keys()) expect(k, 'three-part key required').toMatch(/::L\d+::v\d+$/)
     expect(run.adjudicated.length).toBe(UNKNOWN_LEDGER.size)
     for (const l of report.split('\n').filter((x) => x.startsWith('ADJUDICATED '))) {
       expect(l, 'printed ADJUDICATED line must carry its evidence').toContain('hand-verified')
@@ -623,39 +625,111 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // does not name its own entry with a line-referenced hand-verification.
     for (const [key, ev] of UNKNOWN_LEDGER) {
       const path = key.split('::')[0] ?? ''
-      const base = path.split('/').at(-1)
       expect(typeof ev === 'string' && ev.trim().length > 0, `empty justification: ${key}`).toBe(true)
       expect(
         ev,
-        `evidence must cite hand-verified <basename>:<line> for the entry's own file: ${key}`,
-      ).toMatch(new RegExp(`hand-verified [^\\s]*${base?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:[0-9]`))
+        `evidence must cite hand-verified <full path>:<line> for the entry's own file: ${key}`,
+      ).toContain(`hand-verified ${path}:`)
     }
   })
 
-  it('an adjudication file with an empty or path-foreign justification is NOT-RUN exit 2, naming the key', () => {
-    for (const [flavor, value] of [
+  it('the ledger is keyed path::L<line>::v<version>: an old two-part key is NOT-RUN naming it (G2)', () => {
+    const good = JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>
+    const first = Object.keys(good)[0] ?? ''
+    const twoPart = first.replace(/::v\d+$/, '')
+    const legacy: Record<string, string> = { ...good }
+    delete legacy[first]
+    legacy[twoPart] = good[first] ?? ''
+    const r = spawnScratchLedger(legacy)
+    expect(r.out).toContain('RESULT not-run')
+    expect(r.out).toContain(twoPart)
+    expect(r.status).toBe(2)
+  })
+
+  it('dropping ONE row sends THAT site back to UNKNOWN — a second literal on a ledgered line costs its own row (G2)', () => {
+    const good = JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>
+    const victim = Object.keys(good)[0] ?? ''
+    const path = victim.split('::')[0] ?? ''
+    const m = /::L(\d+)::v(\d+)$/.exec(victim)
+    expect(m, `three-part key expected: ${victim}`).not.toBeNull()
+    delete good[victim]
+    const r = spawnScratchLedger(good)
+    expect(r.out.slice(0, 500)).not.toContain('RESULT not-run')
+    const unknownLine = r.out.split('\n').find((l) => l.startsWith(`UNKNOWN ${path} ::`)) ?? ''
+    expect(unknownLine, 'the dropped row must send its OWN site back to UNKNOWN').toContain(`L${m?.[1] ?? '?'}=v${m?.[2] ?? '?'}`)
+    expect(r.status).toBe(1)
+  })
+
+  it('evidence must cite the key\'s FULL tracked path with a real range containing the site line (G3)', () => {
+    const base = JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>
+    const key = Object.keys(base)[0] ?? ''
+    const m = /^(.+)::L(\d+)::v(\d+)$/.exec(key)
+    expect(m, `three-part key expected, got ${key}`).not.toBeNull()
+    const sitePath = m?.[1] ?? ''
+    const basename = sitePath.split('/').at(-1) ?? ''
+    const flavorEdits: Array<[string, string]> = [
       ['empty', ''],
-      ['foreign', 'hand-verified packages/example/elsewhere.test.ts:1-2'],
-    ] as const) {
-      const good = JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>
-      const badKey = Object.keys(good)[0] ?? ''
-      if (badKey === '') throw new Error('ledger file is empty — nothing to falsify')
-      good[badKey] = value
-      const tmp = resolve(REPO_ROOT, `.tmp-faultscratch/adjud-bad-${flavor}.json`)
-      writeFileSync(tmp, JSON.stringify(good))
-      const spawned = spawnSync(process.execPath, [resolve(REPO_ROOT, SCRIPT)], {
-        cwd: REPO_ROOT,
-        encoding: 'utf8',
-        maxBuffer: 16 * 1024 * 1024,
-        env: { ...process.env, DSH_SCAN_ADJUDICATIONS: tmp },
-      })
-      expect(spawned.stdout + spawned.stderr, `adjudication file with an ${flavor} justification must not-run`).toContain('RESULT not-run')
-      expect(spawned.stdout + spawned.stderr).toContain(badKey)
-      expect(spawned.status).toBe(2)
+      ['wrong-depth-path', base[key]?.replace(sitePath, `packages/nowhere/deeper/${basename}`) ?? ''],
+      ['range-off-end', base[key]?.replace(/(:)\d+(-\d+)?(?!\d)/, '$199999-100000') ?? ''],
+      ['range-misses-line', base[key]?.replace(/hand-verified (\S*?):\d+(-\d+)?/, 'hand-verified $1:1-2') ?? ''],
+    ]
+    for (const [flavor, ev] of flavorEdits) {
+      const scratch: Record<string, string> = { ...base, [key]: ev }
+      const r = spawnScratchLedger(scratch)
+      expect(r.out, `evidence flavor ${flavor} must not run`).toContain('RESULT not-run')
+      expect(r.out).toContain(key)
+      expect(r.status).toBe(2)
     }
+    // and the honest shape still runs
+    expect(spawnScratchLedger(base).out).toContain('adjudication-ledger: ')
   })
 
-  // --- scope boundary -------------------------------------------------------
+  it('the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4)', () => {
+    // (a) every normal report prints the resolved path + entry count.
+    expect(report).toContain(`adjudication-ledger: ${resolve(REPO_ROOT, LEDGER_FILE)}`)
+    expect(report).toContain(`(${String(UNKNOWN_LEDGER.size)} entries)`)
+    // (b) the override without test mode is refused: it is the mute with a
+    // name on it, and post-7.4 (dirty suppressed) it is exactly the lever.
+    const good = JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>
+    const tmp = scratchLedgerPath('untracked-no-testmode', good)
+    const spawned = spawnSync(process.execPath, [resolve(REPO_ROOT, SCRIPT)], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024,
+      env: { ...process.env, DSH_SCAN_ADJUDICATIONS: tmp },
+    })
+    expect(spawned.stdout + spawned.stderr).toContain('RESULT not-run')
+    expect(spawned.stdout + spawned.stderr).toMatch(/tracked/i)
+    expect(spawned.status).toBe(2)
+  })
+
+  it('the blind-spot note prints the load-bearing sentence and the two-number audit clause is gone', () => {
+    expect(report).toMatch(/SCOPE-NOTE blind spot: \d+ files \(\d+ non-typed, \d+ doc-marked where the fence is the only defence\)/)
+    expect(report).not.toContain('36/7')
+    expect(report).not.toContain('round-1 audit')
+  })
+
+  const SCRATCH_DIR = resolve(REPO_ROOT, '.tmp-faultscratch')
+function scratchLedgerPath(name: string, obj: Record<string, string>): string {
+  // G1 rule: legs create their own world — nothing in this file may depend
+  // on pre-existing scratch state; a clean checkout must run every leg.
+  mkdirSync(SCRATCH_DIR, { recursive: true })
+  const file = resolve(SCRATCH_DIR, `adjud-${name}.json`)
+  writeFileSync(file, JSON.stringify(obj))
+  return file
+}
+function spawnScratchLedger(obj: Record<string, string>): { out: string; status: number } {
+  const tmp = scratchLedgerPath(`spawn-${Object.keys(obj).length}`, obj)
+  const spawned = spawnSync(process.execPath, [resolve(REPO_ROOT, SCRIPT)], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+    env: { ...process.env, DSH_SCAN_ADJUDICATIONS: tmp, DSH_SCAN_TEST_MODE: '1' },
+  })
+  return { out: spawned.stdout + spawned.stderr, status: spawned.status ?? -1 }
+}
+
+// --- scope boundary -------------------------------------------------------
 
   it("the scope function is the plan's list plus the measured third class — no more, no less", () => {
     if (isScanScopePath === undefined) {
@@ -840,7 +914,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
 
   it('f35 + scope notes: a closed continuation revives CODE on the line tail; both blind spots print (round-3 D)', () => {
     expectSingle(fixture('f35'), 'advisory')
-    expect(report).toContain('SCOPE-NOTE key-half blind spot:')
+    expect(report).toContain('SCOPE-NOTE blind spot:')
     expect(report).toContain('SCOPE-NOTE lineStates continuation:')
   })
 
