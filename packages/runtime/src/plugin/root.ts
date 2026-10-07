@@ -343,6 +343,10 @@ import { resolveSessionReadState } from './team-read-state.js'
 import { createServerPrincipalDerivation } from './s6-principal.js'
 import { createS6RemoteSurfaces } from './s6-remote.js'
 import type { S6RemoteCompatibilityOperations } from './s6-remote.js'
+// A4-PR6 §6.A — the ONE governance-warning port type (the service is
+// ASSEMBLED by host.ts, Ruling PR6-H; root.ts forwards it verbatim to the
+// s6 surface and adds zero governance logic).
+import type { GovernanceWarningService } from '../../governance-warning/index.js'
 import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../team-ownership-index.js'
 import type { DurableTemplateRow } from '../../projection/index.js'
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js'
@@ -840,6 +844,16 @@ export interface TeamProductionRootParams {
    * its Alpha.3 behaviour. Omission is a WIRING fact, never the v3 signal.
    */
   readonly permissionAuthorityCeiling?: GovernancePermissionLaneDeps['authorityCeiling']
+  /**
+   * A4-PR6 §6.A — the ONE governance-warning service (assembled by host.ts
+   * where the bound-Blueprint reader + canonicalizer live, Ruling PR6-H).
+   * Forwarded VERBATIM to the s6 surface: the Team-start gate at the two
+   * `team.create` sites + `team.ensureRootLive`, the runtime boundary
+   * observation, and (6.B) the v8 warning surface. root.ts adds ZERO
+   * governance logic; omission (test/legacy assemblers) leaves the gate in
+   * its disclosed ungated state.
+   */
+  readonly governanceWarning?: GovernanceWarningService
   /**
    * pre-alpha3 PR4 ROUND 5 (FIX-2a) — the server-side canonicalizer for the
    * Leader's permission grant/revoke TOOL (the SAME fs-provider seam the
@@ -3247,6 +3261,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     ensureRootLive: async (rootSessionId) => {
       await live.ensureLiveAgent(rootSessionId)
     },
+    // A4-PR6 §6.A — the ONE governance-warning port (host-assembled). The
+    // s6 start gate (two `team.create` sites + `team.ensureRootLive`) and
+    // the runtime boundary observation consume it; a world without the
+    // authority facts omits the port and the gate stays disclosed-ungated.
+    ...(params.governanceWarning === undefined
+      ? {}
+      : { governanceWarning: params.governanceWarning }),
     // C1 (restart-recovery, guide §10.2) + supplement round §2.4 — the
     // D3 ordinary-mode one-shot activation permit behind the host-side
     // team.prepareOrdinaryOpen: the live glue's allowOrdinaryActivationOnce

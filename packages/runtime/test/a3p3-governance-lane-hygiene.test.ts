@@ -977,10 +977,24 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // that reads the document it is about to judge is a service that decides which
     // Teams are v3 (ADR A5-12 puts that switch in the plane). Anything beyond this
     // one file is still a violation.
-    expect(readerCalls, 'exactly one production caller of the v3 hard-ceiling reader').toEqual([
+    //
+    // AMENDED AGAIN by A4-PR6 §6.A (plan conditional row: "any new module imports
+    // the authority kernel; the allow-list is part of the frozen interface"): the
+    // governance-warning DOCS PORT is assembled in `host.ts` (Ruling PR6-H: the
+    // assembly lives where the ONE bound-Blueprint reader and the ONE canonicalizer
+    // already live) and reads the team-level hard ceiling THROUGH the plane's own
+    // facts object at the LEADER position — no new document reader, no new
+    // canonicalizer, no member addressing. `host.ts` is WIRING, and the surviving
+    // half of the law is what this amendment re-pins: NEITHER governance lane
+    // (`governance/service.ts` nor `governance-warning/service.ts`) may ever call
+    // the reader — a warning service that read the document it folds would be the
+    // exact A5-12 violation this leg exists to catch.
+    expect(readerCalls, 'the v3 hard-ceiling reader has exactly its two reviewed consumers').toEqual([
+      join('src', 'plugin', 'host.ts'),
       join('src', 'plugin', 'permission-plane.ts'),
     ])
     expect(readerCalls).not.toContain(join('governance', 'service.ts'))
+    expect(readerCalls).not.toContain(join('governance-warning', 'service.ts'))
     // And the plane's import of the ceiling module is TYPE-ONLY, so PR1 adds no
     // runtime governance→plugin edge: the reader's alias must not become a load
     // order dependency for a module the runtime does not otherwise use.

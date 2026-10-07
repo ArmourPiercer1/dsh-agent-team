@@ -218,6 +218,23 @@ import type {
 import type { HandoffService } from '../../handoff/index.js'
 import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js'
 import type { ProjectionService } from '../../projection/index.js'
+// A4-PR6 — the governance-warning lane (the start gate + the warning plane)
+// and the intervention lane (the projection the v8 surface serves). The
+// intervention import is the SINGLE admitted production edge into the lane
+// (reviewed amendment, `a4p3-intervention-lane-hygiene.test.ts`); it rides
+// the BARREL only.
+import type { GovernanceWarningService, GovernanceStartOutcome } from '../../governance-warning/index.js'
+import {
+  createGovernanceWarningSourceAdapter,
+  projectInterventions,
+} from '../../intervention/index.js'
+import type {
+  InterventionControlSource,
+  InterventionItem,
+  InterventionWarningSourceView,
+  RequiredAuthorityFacts,
+  RequiredAuthorityReaderInput,
+} from '../../intervention/index.js'
 
 // --- the stable S6 remote error codes (the typed domain errors) ----------------------
 
@@ -296,6 +313,23 @@ export const S6_REMOTE_ERROR_CODES = {
   TEAM_ROOT_LIVE_OUTSIDE_TEAM: 'TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM',
   /** D2-RESERVED (A3 Q2) — the glue start failed for another reason. */
   TEAM_ROOT_LIVE_START_FAILED: 'TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED',
+  /** A4-PR6 (plan §6.A) — the Team start gate found an UNACKNOWLEDGED
+   *  governance warning for the bound v3 documents: the durable root row
+   *  EXISTS and stays NOT LIVE (the Leader does not start; zero agent
+   *  creation). Acknowledgement re-enters the SAME gate through
+   *  `team.ensureRootLive` — the wire error is the pointer, the warning
+   *  itself is discovered through `intervention.list` (the wire-level 6.A
+   *  test owns that ride; the message must never be the only carrier). */
+  TEAM_START_GOVERNANCE_WARNING: 'TEAM_REMOTE_TEAM_START_GOVERNANCE_WARNING',
+  /** A4-PR6 — the start-gate authority-document read FAILED CLOSED
+   *  (unreadable or corrupt): start is blocked and the condition is NOT
+   *  acknowledgeable (plan:602). */
+  TEAM_START_GOVERNANCE_CORRUPT: 'TEAM_REMOTE_TEAM_START_GOVERNANCE_CORRUPT',
+  /** A4-PR6 — reserved arm (PR7 7.2 replaces the v1/v2 bridge with this
+   *  refusal): NO acknowledgement clears it, in PR6 or after (plan:594).
+   *  Unreachable through the PR6 bridge; the code exists so the wire
+   *  vocabulary is complete before the flip. */
+  TEAM_START_MIGRATION_REQUIRED: 'TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED',
   /** F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) —
    *  team.resolveControl: the host wiring exposes no control-service
    *  closure (the durable control plane is not reachable from this
@@ -1115,6 +1149,41 @@ export interface S6RemoteOptions {
    */
   readonly ensureRootLive?: (rootSessionId: string) => Promise<void>
   /**
+   * A4-PR6 (plan §6.A) — the ONE governance-warning port: the Team-start
+   * gate (consumed at EXACTLY the two `team.create` sites after the durable
+   * bind and before the root start, and at `team.ensureRootLive` after the
+   * fail-closed bound-root preflight), the runtime boundary observation
+   * (fire-after-commit, never blocking), the warning fold for
+   * `intervention.list`, and the acknowledgement plane for
+   * `intervention.act` (warning arm). Assembled by the host where the ONE
+   * bound-Blueprint reader lives (ADR A5-12; Ruling PR6-H) and forwarded by
+   * `root.ts`. Absent (test worlds / a root without the authority facts):
+   * today's behavior stands — start is ungated and the warning arms of the
+   * v8 surface answer `governance-unavailable` (disclosed; the production
+   * host ALWAYS wires it).
+   */
+  readonly governanceWarning?: GovernanceWarningService
+  /**
+   * A4-PR6 (plan §6.B) — the open-approval-case slice the v8 intervention
+   * projection reads (the structural `InterventionControlSource` the lane
+   * was designed around; satisfied by the durable ControlService). Absent →
+   * `intervention.list` projects warnings only (a root without the control
+   * plane is a test world).
+   */
+  readonly interventionControl?: InterventionControlSource
+  /**
+   * A4-PR6 — the fresh required-authority facts reader behind the
+   * projection's legality law (the lane-B reader-callback ruling at the
+   * wire: root.ts assembles it from the ONE ceiling-context port; this
+   * module never evaluates authority itself). The caller ref rides because
+   * `principalAlreadyActed` is caller-relative (spec 24.5).
+   */
+  readonly requiredAuthorityFacts?: (
+    teamSessionId: string,
+    callerRef: string,
+    input: RequiredAuthorityReaderInput,
+  ) => Promise<RequiredAuthorityFacts | undefined>
+  /**
    * C1 (restart-recovery, guide §10.2) — the one-shot ordinary activation
    * permit armer behind the host-side `team.prepareOrdinaryOpen` (the D3
    * ordinary-mode compatibility): the live glue's
@@ -1631,6 +1700,73 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
   }
 
   /**
+   * A4-PR6 (plan §6.A) — THE Team-start governance gate. Exactly one port
+   * (`options.governanceWarning`), exactly three control points: the two
+   * `team.create` start sites (post durable bind, pre root start) and
+   * `team.ensureRootLive` (post bound-root preflight, pre live ensure).
+   *
+   * The law at this edge:
+   * - `warning-required`: the durable root row EXISTS and stays NOT LIVE —
+   *   the typed error carries the `interventionId`; the warning itself is
+   *   discovered through `intervention.list`, and acknowledgement re-enters
+   *   the SAME gate through `team.ensureRootLive`, never bypasses it;
+   * - `corrupt`: blocked, NOT acknowledgeable (fail closed);
+   * - `migration-required`: the PR7 arm — ack-immune by law (plan:594);
+   * - the outcome union is CLOSED (`GOVERNANCE_START_STATUSES`): there is no
+   *   arm this function can turn into `wait-for-response`, and nothing here
+   *   mints a ControlRequest — the warning is not an approval case.
+   * The port's own throws propagate UNMAPPED (they are backing faults,
+   * invariant 4b); only the four outcomes are interpreted here.
+   */
+  async function governanceStartGate(
+    method: string,
+    teamSessionId: string,
+    entry: 'create' | 'resume',
+  ): Promise<void> {
+    const service = options.governanceWarning
+    if (service === undefined) return
+    const outcome: GovernanceStartOutcome =
+      entry === 'create'
+        ? await service.checkStart(teamSessionId)
+        : await service.checkEnsureRootLive(teamSessionId)
+    if (outcome.status === 'open') return
+    if (outcome.status === 'warning-required') {
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_START_GOVERNANCE_WARNING,
+        `${method}: the Team start is gated by an unacknowledged governance warning ` +
+          `(intervention '${outcome.interventionId}'); the durable root stays not-live and ` +
+          `acknowledgement re-enters this gate through team.ensureRootLive`,
+        { reason: 'governance-warning-required', interventionId: outcome.interventionId },
+      )
+    }
+    if (outcome.status === 'corrupt') {
+      throw new TeamPluginError(
+        S6_REMOTE_ERROR_CODES.TEAM_START_GOVERNANCE_CORRUPT,
+        `${method}: the authority-document read failed closed (${outcome.reason}) — ` +
+          `start is blocked and this condition is not acknowledgeable`,
+        { reason: 'governance-authority-document-fault', document: outcome.reason },
+      )
+    }
+    // `migration-required` (the closed fourth arm; PR7 7.2 reaches it when
+    // the v1/v2 bridge flips). No acknowledgement path exists or may exist.
+    throw new TeamPluginError(
+      S6_REMOTE_ERROR_CODES.TEAM_START_MIGRATION_REQUIRED,
+      `${method}: the bound Blueprint document predates the v3 governance grammar; ` +
+        `start is refused until the Team is migrated (acknowledgement never clears this)`,
+      { reason: 'blueprint-migration-required' },
+    )
+  }
+
+  /** A4-PR6 — the runtime boundary observation: fire AFTER a committed
+   *  permission mutation; NEVER blocks, NEVER throws at the caller (spec
+   *  §15.2 runtime stage — the Team keeps running). */
+  async function observeGovernanceBoundary(teamSessionId: string): Promise<void> {
+    const service = options.governanceWarning
+    if (service === undefined) return
+    await service.observeRuntime(teamSessionId)
+  }
+
+  /**
    * D1 (Team D1-D6 repair v2, remote contract v3) — the fail-closed
    * `team.listRoots` preflight: the host wiring must expose the
    * read-only durable root ownership list. Absent → the typed
@@ -1786,6 +1922,12 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
    */
   async function ensureRootLive(requestedTeamSessionId: string): Promise<RemoteSafeRecord> {
     const teamSessionId = assertBoundRoot('team.ensureRootLive', requestedTeamSessionId)
+    // A4-PR6 §6.A — the SAME gate, RE-ENTERED (never bypassed): an
+    // acknowledgement that let the Team start, or a start deferred by a
+    // warning, both flow back through this exact check before the live
+    // ensure. Placed AFTER the fail-closed bound-root preflight (a foreign
+    // or unbound root is refused before governance is ever consulted).
+    await governanceStartGate('team.ensureRootLive', teamSessionId, 'resume')
     try {
       await requireEnsureRootLivePort()(teamSessionId)
     } catch (error) {
@@ -2303,6 +2445,8 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // NO native root). The durable bind already landed: a start
         // failure is typed, the team row stays durable, and the retry
         // (cold path) re-drives the start.
+        // A4-PR6 §6.A — THE start gate: post durable bind, pre root start.
+        await governanceStartGate('team.create', requestedRootSessionId, 'create')
         await startRootAgent(requestedRootSessionId)
         // TCM vNext §15.4 (G1) — AFTER the bind + the start, the Root
         // initial work runs the plan §15.8 closure (lock → gate →
@@ -2412,6 +2556,9 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         // durable bind already landed: a start failure is typed, the team
         // row stays durable, and the retry (cold path) re-drives the
         // start + the attach.
+        // A4-PR6 §6.A — THE start gate (v2 path): post durable bind, pre
+        // root start — the SAME port, the SAME law as the v1 site above.
+        await governanceStartGate('team.create', requestedRootSessionId, 'create')
         await startRootAgent(requestedRootSessionId)
         // TCM vNext §2.2 (G1) — the public Workspace.attachSession
         // (idempotent upstream: the same-root/workspace retry re-drives
@@ -2995,6 +3142,15 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
         const safe: { [key: string]: string | boolean } = { changed: result['changed'] === true }
         if (typeof result['code'] === 'string') safe['code'] = result['code']
         if (typeof result['reason'] === 'string') safe['reason'] = result['reason']
+        if (safe['changed'] === true) {
+          // A4-PR6 §6.A — the RUNTIME BOUNDARY OBSERVATION: fired only AFTER
+          // the durable commit, never on a refusal (a refused mutation changed
+          // nothing to re-check). The service's `observeRuntime` is pinned
+          // never-throw / never-block (a minted warning NEVER rides the
+          // mutation's response — spec §15.2); the fire-and-forget rides that
+          // invariant, and the ack/discovery plane stays `intervention.*`.
+          void observeGovernanceBoundary(root)
+        }
         return safe
       },
       async getPermission(

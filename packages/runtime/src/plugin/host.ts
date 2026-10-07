@@ -92,6 +92,16 @@ import type { TeamDomain } from '../../../storage/repositories/index.js'
 import { createPermissionOverlayRepositoryPort } from '../../permission-governance/index.js'
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js'
 import { createAuthorityCeilingReader, createPermissionAuthorityFacts } from './permission-plane.js'
+// A4-PR6 §6.A — the governance-warning lane: the ONE service instance the
+// Team-start gate, the runtime boundary observation, and (6.B) the v8
+// warning surface all read through. Assembled HERE because this is where
+// the ONE bound-Blueprint reader and the ONE canonicalizer already live
+// (ADR A5-12; Ruling PR6-H: zero new resolution or canonicalization call
+// sites — the docs port rides `permissionFacts`, whose leader-position
+// reads canonicalize at the ADDRESSED team's durable default workspace).
+import { createGovernanceWarningService } from '../../governance-warning/index.js'
+import type { GovernanceEnvelopeView } from '../../governance-warning/index.js'
+import { commitDurableFact } from '../../action-router/index.js'
 import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-plane.js'
 import { parseBlueprint } from '../../../domain/blueprint/src/index.js'
 import type { TemplatePermissionPolicy } from '../../../domain/blueprint/src/index.js'
@@ -1868,6 +1878,101 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       { teamSessionId: rowConfig.rootSessionId, memberInstanceId: LEADER_INSTANCE_ID },
     ],
   })
+  // A4-PR6 §6.A — the governance-warning service (Ruling PR6-H: THIN —
+  // no new bound-Blueprint resolution, no new canonicalizer, no member
+  // addressing). The gate's question is TEAM-level: the Leader expansion
+  // envelope vs the Human User hard envelope, both read through
+  // `permissionFacts` at the LEADER position (whose canonicalization basis
+  // is the ADDRESSED team's durable default workspace — the FIX-3 law),
+  // which structurally excludes placeholder/actor identities from the gate.
+  const governanceWarningEnvelopeView = (
+    document: { readonly rules: readonly {
+      readonly operationClass: string
+      readonly matcher: { readonly kind: 'exact' | 'subtree' | 'fingerprint'; readonly resource: string }
+      readonly maximumEffect: 'deny' | 'ask' | 'allow'
+    }[] },
+  ): GovernanceEnvelopeView => ({
+    rules: document.rules.map((rule) => ({
+      operationClass: rule.operationClass,
+      effect: rule.maximumEffect,
+      matcherKind: rule.matcher.kind,
+      matcherKey: rule.matcher.resource,
+    })),
+  })
+  // The funnel clock as a NAME: the durable funnel's call shape is
+  // `(repositories, root, now, FACT-TYPE-LITERAL, payload)` — the fact-type
+  // literal at position 4 is what `a4pr0a` derives statically, and the
+  // clock slot stays a bare identifier exactly like every other funnel
+  // call site in the repo (the guard's arg scanner reads that shape).
+  const governanceWarningNow = () => new Date().toISOString()
+  const governanceWarningService = createGovernanceWarningService({
+    writer: {
+      // The fact-type LITERALS ride the funnel call site ON PURPOSE (the
+      // a4pr0a closed-set guard derives them statically — a variable-typed
+      // `commitDurableFact` call would be an unresolved dynamic writer).
+      // Both types join the fact-hygiene triad (host map + client map +
+      // INTERNAL_FACT_TYPES) in the same commit.
+      writeObserved: (rootSessionId, payload) =>
+        commitDurableFact(
+          domain.repositories,
+          rootSessionId,
+          governanceWarningNow,
+          'governance-warning-observed',
+          payload,
+        ).then(() => undefined),
+      writeAcknowledged: (rootSessionId, payload) =>
+        commitDurableFact(
+          domain.repositories,
+          rootSessionId,
+          governanceWarningNow,
+          'governance-warning-acknowledged',
+          payload,
+        ).then(() => undefined),
+    },
+    reader: {
+      // FILTER, never re-shape: `LedgerEntry` already carries the port's
+      // fields structurally. A read lane must not mint write-vocabulary
+      // label shapes — the a4pr0a static guard reads any such label in a
+      // writer file as a durable write site (the scanner is on purpose
+      // text-based, so even comments carrying the label token confuse it;
+      // the discipline serves the guard, not the other way round).
+      list: (rootSessionId, factTypes) =>
+        Promise.resolve(
+          domain.repositories.ledger
+            .list()
+            .filter(
+              (row) =>
+                row.rootSessionId === rootSessionId &&
+                (factTypes as readonly string[]).includes(row.factType),
+            ),
+        ),
+    },
+    docs: {
+      async read(teamSessionId) {
+        const schemaVersion = permissionFacts.blueprintSchemaVersion(teamSessionId)
+        if (schemaVersion === undefined) return { stage: 'unreadable' }
+        if (schemaVersion !== 3) return { stage: 'pre-v3', schemaVersion }
+        const hard = await permissionFacts.teamHardEnvelope(teamSessionId, LEADER_INSTANCE_ID)
+        if (hard.status === 'unavailable') return { stage: 'unreadable' }
+        const contentHash = permissionFacts.blueprintContentHash(teamSessionId)
+        if (contentHash === undefined) return { stage: 'unreadable' }
+        const leader = await permissionFacts.permissionEnvelope(teamSessionId, LEADER_INSTANCE_ID)
+        return {
+          stage: 'v3',
+          hardStatus: hard.status === 'declared' ? 'declared' : 'absent',
+          blueprintContentHash: contentHash,
+          leader: governanceWarningEnvelopeView(leader),
+          hard:
+            hard.status === 'declared'
+              ? governanceWarningEnvelopeView(hard.document)
+              : { rules: [] },
+        }
+      },
+    },
+    contains: fsContainsKeys,
+    now: governanceWarningNow,
+  })
+
   // Loud-log only: the boot anchor's declared permissions-bearing templates.
   // (NOT an authority source — the round-4 readers resolve per addressed
   // team; this stays for the operator-facing startup line.)
@@ -2444,6 +2549,10 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // itself is NOT made here — this line injects the reader that makes it, from the
     // SAME bound-Blueprint resolution every other permission fact is read through.
     permissionAuthorityCeiling: createAuthorityCeilingReader({ facts: permissionFacts }),
+    // A4-PR6 §6.A — the ONE governance-warning port, forwarded verbatim to
+    // the s6 start gate (root.ts adds zero logic; the service is assembled
+    // above, next to the facts it reads through).
+    governanceWarning: governanceWarningService,
     permissionCanonicalize,
     legacyInspect,
     // BP5 (issue #2 blueprint-loading, plan §9): the live catalog over the

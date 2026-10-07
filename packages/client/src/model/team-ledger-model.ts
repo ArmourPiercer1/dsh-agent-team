@@ -90,6 +90,15 @@ const FACT_ROW_KIND: Readonly<Record<string, TeamLedgerRowKind>> = {
  */
 const INTERNAL_FACT_TYPES: ReadonlySet<string> = new Set([
   'artifact-read-granted',
+  // A4-PR6 §6.C (first half): the governance-warning family. These are
+  // authority-consistency audit rows, not user activity; the Events section
+  // would otherwise drop them into the `unknown` family and the generic row
+  // would JSON.stringify a whole envelope-consistency verdict (the exact
+  // shape §6.C's renderer law forbids). The warning's surface is
+  // TeamInterventions (v8 `intervention.list`), fed by the same durable
+  // fold the host reads.
+  'governance-warning-observed',
+  'governance-warning-acknowledged',
   // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry — an
   // operational compatibility-category fact, not user activity. Skipped by
   // the Events section (otherwise it would land in the `unknown` family and

@@ -137,6 +137,15 @@ const FACT_TYPE_CATEGORY: Readonly<Record<string, LedgerCategoryValue>> = {
   // whose type is absent from this map simply carries no category client-side,
   // and `a4pr0a-fact-type-closed-set.test.ts` C3 fails the drift.
   'governance-proposal-recorded': 'policy',
+  // A4-PR6 §6.C (first half, same commit as the host registration above):
+  // the governance-warning observation/acknowledgement rows classify
+  // exactly as the host fold classifies them — `policy`, no ninth category.
+  // Hidden from the generic Events rows by `INTERNAL_FACT_TYPES`
+  // (team-ledger-model): the warning's surface is TeamInterventions, and a
+  // generic JSON row of an authority verdict is the disclosure shape this
+  // repo refuses (A5-20 discipline).
+  'governance-warning-observed': 'policy',
+  'governance-warning-acknowledged': 'policy',
   // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry (the
   // compatibility category's first production writer). A compatibility
   // CATEGORY — no new category. Hidden from the Events surface by

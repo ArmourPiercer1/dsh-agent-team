@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/runtime
+
+ ❯ test/a4p6-governance-warning-service.test.ts (0 test)
+ ✓ test/a4p6-governance-warning.test.ts (5 tests) 3ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p6-governance-warning-service.test.ts [ test/a4p6-governance-warning-service.test.ts ]
+Error: Cannot find module '../governance-warning/service.js' imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr6/packages/runtime/test/a4p6-governance-warning-service.test.ts
+ ❯ test/a4p6-governance-warning-service.test.ts:29:1
+     27| import { describe, expect, it } from 'vitest'
+     28|
+     29| import { createGovernanceWarningService } from '../governance-warning/…
+       | ^
+     30| import {
+     31|   GOVERNANCE_START_CORRUPT_REASONS,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  5 passed (5)
+   Start at  15:10:37
+   Duration  146ms (transform 56ms, setup 0ms, import 50ms, tests 3ms, environment 0ms)
+

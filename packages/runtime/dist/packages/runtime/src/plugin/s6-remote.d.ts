@@ -71,6 +71,8 @@ import type { ColdRootBindingInput, FreshRootBindingInput, RootBindingResult } f
 import type { HandoffService } from '../../handoff/index.js';
 import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js';
 import type { ProjectionService } from '../../projection/index.js';
+import type { GovernanceWarningService } from '../../governance-warning/index.js';
+import type { InterventionControlSource, RequiredAuthorityFacts, RequiredAuthorityReaderInput } from '../../intervention/index.js';
 /** The stable error codes the S6 remote surfaces throw (CR-4/CR-12 boundary). */
 export declare const S6_REMOTE_ERROR_CODES: {
     /** A34 — the ledger-page tracker rejected the page (the 20.5/20.6 boundary). */
@@ -146,6 +148,23 @@ export declare const S6_REMOTE_ERROR_CODES: {
     readonly TEAM_ROOT_LIVE_OUTSIDE_TEAM: "TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM";
     /** D2-RESERVED (A3 Q2) — the glue start failed for another reason. */
     readonly TEAM_ROOT_LIVE_START_FAILED: "TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED";
+    /** A4-PR6 (plan §6.A) — the Team start gate found an UNACKNOWLEDGED
+     *  governance warning for the bound v3 documents: the durable root row
+     *  EXISTS and stays NOT LIVE (the Leader does not start; zero agent
+     *  creation). Acknowledgement re-enters the SAME gate through
+     *  `team.ensureRootLive` — the wire error is the pointer, the warning
+     *  itself is discovered through `intervention.list` (the wire-level 6.A
+     *  test owns that ride; the message must never be the only carrier). */
+    readonly TEAM_START_GOVERNANCE_WARNING: "TEAM_REMOTE_TEAM_START_GOVERNANCE_WARNING";
+    /** A4-PR6 — the start-gate authority-document read FAILED CLOSED
+     *  (unreadable or corrupt): start is blocked and the condition is NOT
+     *  acknowledgeable (plan:602). */
+    readonly TEAM_START_GOVERNANCE_CORRUPT: "TEAM_REMOTE_TEAM_START_GOVERNANCE_CORRUPT";
+    /** A4-PR6 — reserved arm (PR7 7.2 replaces the v1/v2 bridge with this
+     *  refusal): NO acknowledgement clears it, in PR6 or after (plan:594).
+     *  Unreachable through the PR6 bridge; the code exists so the wire
+     *  vocabulary is complete before the flip. */
+    readonly TEAM_START_MIGRATION_REQUIRED: "TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED";
     /** F9 (F3/F11/F9/T1.4 repair round r1, remote contract v4) —
      *  team.resolveControl: the host wiring exposes no control-service
      *  closure (the durable control plane is not reachable from this
@@ -898,6 +917,37 @@ export interface S6RemoteOptions {
      * unchanged, invariant 4a/4b).
      */
     readonly ensureRootLive?: (rootSessionId: string) => Promise<void>;
+    /**
+     * A4-PR6 (plan §6.A) — the ONE governance-warning port: the Team-start
+     * gate (consumed at EXACTLY the two `team.create` sites after the durable
+     * bind and before the root start, and at `team.ensureRootLive` after the
+     * fail-closed bound-root preflight), the runtime boundary observation
+     * (fire-after-commit, never blocking), the warning fold for
+     * `intervention.list`, and the acknowledgement plane for
+     * `intervention.act` (warning arm). Assembled by the host where the ONE
+     * bound-Blueprint reader lives (ADR A5-12; Ruling PR6-H) and forwarded by
+     * `root.ts`. Absent (test worlds / a root without the authority facts):
+     * today's behavior stands — start is ungated and the warning arms of the
+     * v8 surface answer `governance-unavailable` (disclosed; the production
+     * host ALWAYS wires it).
+     */
+    readonly governanceWarning?: GovernanceWarningService;
+    /**
+     * A4-PR6 (plan §6.B) — the open-approval-case slice the v8 intervention
+     * projection reads (the structural `InterventionControlSource` the lane
+     * was designed around; satisfied by the durable ControlService). Absent →
+     * `intervention.list` projects warnings only (a root without the control
+     * plane is a test world).
+     */
+    readonly interventionControl?: InterventionControlSource;
+    /**
+     * A4-PR6 — the fresh required-authority facts reader behind the
+     * projection's legality law (the lane-B reader-callback ruling at the
+     * wire: root.ts assembles it from the ONE ceiling-context port; this
+     * module never evaluates authority itself). The caller ref rides because
+     * `principalAlreadyActed` is caller-relative (spec 24.5).
+     */
+    readonly requiredAuthorityFacts?: (teamSessionId: string, callerRef: string, input: RequiredAuthorityReaderInput) => Promise<RequiredAuthorityFacts | undefined>;
     /**
      * C1 (restart-recovery, guide §10.2) — the one-shot ordinary activation
      * permit armer behind the host-side `team.prepareOrdinaryOpen` (the D3

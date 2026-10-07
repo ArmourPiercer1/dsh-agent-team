@@ -2420,6 +2420,13 @@ export function createTeamProductionRoot(params) {
         ensureRootLive: async (rootSessionId) => {
             await live.ensureLiveAgent(rootSessionId);
         },
+        // A4-PR6 §6.A — the ONE governance-warning port (host-assembled). The
+        // s6 start gate (two `team.create` sites + `team.ensureRootLive`) and
+        // the runtime boundary observation consume it; a world without the
+        // authority facts omits the port and the gate stays disclosed-ungated.
+        ...(params.governanceWarning === undefined
+            ? {}
+            : { governanceWarning: params.governanceWarning }),
         // C1 (restart-recovery, guide §10.2) + supplement round §2.4 — the
         // D3 ordinary-mode one-shot activation permit behind the host-side
         // team.prepareOrdinaryOpen: the live glue's allowOrdinaryActivationOnce

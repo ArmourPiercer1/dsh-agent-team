@@ -329,6 +329,17 @@ export const REMOTE_BACKING_ERROR_CODES = [
   'TEAM_REMOTE_TEAM_ROOT_LIVE_NO_DURABLE_ARTIFACT',
   'TEAM_REMOTE_TEAM_ROOT_LIVE_OUTSIDE_TEAM',
   'TEAM_REMOTE_TEAM_ROOT_LIVE_START_FAILED',
+  // A4-PR6 §6.A (remote contract v8 — a contract change, reason recorded
+  // in the PR body): the Team-start governance gate's typed refusals. The
+  // gate lives at the runtime start sites (team.create v1/v2 and
+  // team.ensureRootLive), so these codes can ride EVERY contract version
+  // the gate protects; v8 adds the discovery + acknowledgement surface
+  // (`intervention.list` / `intervention.act`) that makes the warning arm
+  // operable. `TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED` is the closed
+  // PR7 arm (unreachable through the PR6 bridge, pinned).
+  'TEAM_REMOTE_TEAM_START_GOVERNANCE_WARNING',
+  'TEAM_REMOTE_TEAM_START_GOVERNANCE_CORRUPT',
+  'TEAM_REMOTE_TEAM_START_MIGRATION_REQUIRED',
   // runtime/team-ownership-index — Team D1-D6 repair v2 D1: the durable
   // ownership-index integrity failures (a root whose binding rows are
   // inconsistent; raised by the D1 pure index module and surfaced by

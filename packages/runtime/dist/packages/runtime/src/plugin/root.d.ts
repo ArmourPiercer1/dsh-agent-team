@@ -94,6 +94,7 @@ import type { CanonicalKeyContains, TeamPermissionPlane } from './permission-pla
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js';
 import type { TeamDomain } from '../../../storage/repositories/index.js';
 import type { StorageDomainSeam } from '../../../storage/schema/index.js';
+import type { GovernanceWarningService } from '../../governance-warning/index.js';
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
 import type { RequirementFactsAuthority, TeamAgentBindings, TeamPluginConfig, TeamProductionRoot, WorkspaceAttachPort } from './types.js';
 /** BQ-18 (W3): the read-only fork reconciliation state query input. */
@@ -377,6 +378,16 @@ export interface TeamProductionRootParams {
      * its Alpha.3 behaviour. Omission is a WIRING fact, never the v3 signal.
      */
     readonly permissionAuthorityCeiling?: GovernancePermissionLaneDeps['authorityCeiling'];
+    /**
+     * A4-PR6 §6.A — the ONE governance-warning service (assembled by host.ts
+     * where the bound-Blueprint reader + canonicalizer live, Ruling PR6-H).
+     * Forwarded VERBATIM to the s6 surface: the Team-start gate at the two
+     * `team.create` sites + `team.ensureRootLive`, the runtime boundary
+     * observation, and (6.B) the v8 warning surface. root.ts adds ZERO
+     * governance logic; omission (test/legacy assemblers) leaves the gate in
+     * its disclosed ungated state.
+     */
+    readonly governanceWarning?: GovernanceWarningService;
     /**
      * pre-alpha3 PR4 ROUND 5 (FIX-2a) — the server-side canonicalizer for the
      * Leader's permission grant/revoke TOOL (the SAME fs-provider seam the
