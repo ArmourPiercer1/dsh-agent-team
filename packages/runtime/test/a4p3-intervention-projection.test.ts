@@ -73,6 +73,7 @@ import {
   P6T4_ROOT,
   P6T4_SEEDS,
   createP6T4Service,
+  constantAuthorityRecheck,
   createP6T4World,
   destroyP6T1World,
   leaderCaller,
@@ -81,6 +82,22 @@ import {
 } from './p6t4-helpers.js'
 
 const WORKER_ID = String(P6T4_SEEDS.worker.instanceId)
+
+
+/**
+ * The authority point every operation case carries from A4-PR7 Task 7.0 onward
+ * (ADR A1-14), plus the constant consumption-point recheck. This file's subject
+ * is the READ-ONLY projection (which actions a viewer may take on a case), so
+ * the recheck answers `still-sufficient`: before PR7 the consumption point asked
+ * no authority question at all, and that is what this constant restores. The
+ * authority law itself is `a4p7-a1-14-consumption-revalidation.test.ts`.
+ */
+const AUTHORITY_SCOPE = {
+  operationClass: 'fs.write',
+  matcher: { kind: 'exact', resource: 'a4p3-fixture:fileA' },
+} as const
+const RECHECK = constantAuthorityRecheck()
+const SERVICE_OPTIONS = { authorityRevalidation: RECHECK.port }
 
 const ESCALATION_FACT_TYPE = 'control-escalation-recorded'
 
@@ -136,20 +153,26 @@ function actionSet(overrides: Partial<RequiredAuthorityFacts>): readonly string[
 const durable = await (async () => {
   const world = await createP6T4World('a4p3-proj-1', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const identity = {
       subject: { kind: 'instance', instanceId: WORKER_ID } as const,
       beneficiaryAuthority: 'member' as const,
       requestedEffect: 'ask' as const,
     }
-    const scope = makeScope({ correlation: 'corr-a4p3-proj-1', operationFingerprint: 'fp-a4p3-proj-1' })
+    const scope = makeScope({
+      correlation: 'corr-a4p3-proj-1',
+      operationFingerprint: 'fp-a4p3-proj-1',
+      authorityScope: AUTHORITY_SCOPE,
+    })
     const created = await service.requestApprovalLeg({
       rootSessionId: P6T4_ROOT,
       caller: memberCaller(WORKER_ID),
       kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
       reviewAuthority: 'leader',
       requiredAuthorityAtCreation: 'leader',
-      identity: { ...identity, operationFingerprint: 'fp-a4p3-proj-1', correlation: scope.correlation },
+      identity: { ...identity, operationFingerprint: 'fp-a4p3-proj-1',
+        authorityScope: AUTHORITY_SCOPE,
+        correlation: scope.correlation },
       actionName: scope.actionName,
       toolName: scope.toolName,
       summary: 'a4p3 projected case',
@@ -205,14 +228,20 @@ const durable = await (async () => {
     })
     const escalatedItems = await projectOpen()
     // A second case, decided by the Human User: resolved + informational.
-    const secondScope = makeScope({ correlation: 'corr-a4p3-proj-2', operationFingerprint: 'fp-a4p3-proj-2' })
+    const secondScope = makeScope({
+      correlation: 'corr-a4p3-proj-2',
+      operationFingerprint: 'fp-a4p3-proj-2',
+      authorityScope: AUTHORITY_SCOPE,
+    })
     const second = await service.requestApprovalLeg({
       rootSessionId: P6T4_ROOT,
       caller: memberCaller(WORKER_ID),
       kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
       reviewAuthority: 'leader',
       requiredAuthorityAtCreation: 'leader',
-      identity: { ...identity, operationFingerprint: 'fp-a4p3-proj-2', correlation: secondScope.correlation },
+      identity: { ...identity, operationFingerprint: 'fp-a4p3-proj-2',
+        authorityScope: AUTHORITY_SCOPE,
+        correlation: secondScope.correlation },
       actionName: secondScope.actionName,
       toolName: secondScope.toolName,
     })
@@ -224,14 +253,20 @@ const durable = await (async () => {
       decision: 'deny',
     })
     // A third case, abandoned by its caller: the item goes stale.
-    const thirdScope = makeScope({ correlation: 'corr-a4p3-proj-3', operationFingerprint: 'fp-a4p3-proj-3' })
+    const thirdScope = makeScope({
+      correlation: 'corr-a4p3-proj-3',
+      operationFingerprint: 'fp-a4p3-proj-3',
+      authorityScope: AUTHORITY_SCOPE,
+    })
     const third = await service.requestApprovalLeg({
       rootSessionId: P6T4_ROOT,
       caller: memberCaller(WORKER_ID),
       kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
       reviewAuthority: 'leader',
       requiredAuthorityAtCreation: 'leader',
-      identity: { ...identity, operationFingerprint: 'fp-a4p3-proj-3', correlation: thirdScope.correlation },
+      identity: { ...identity, operationFingerprint: 'fp-a4p3-proj-3',
+        authorityScope: AUTHORITY_SCOPE,
+        correlation: thirdScope.correlation },
       actionName: thirdScope.actionName,
       toolName: thirdScope.toolName,
     })

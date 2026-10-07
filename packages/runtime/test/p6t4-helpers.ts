@@ -44,10 +44,13 @@ import type {
   P6T1WorldOptions,
 } from './p6t1-helpers.js'
 import {
+  CONTROL_AUTHORITY_RECHECK_KINDS,
   createControlService,
   isControlError,
 } from '../control/index.js'
 import type {
+  ControlAuthorityRecheck,
+  ControlAuthorityRecheckPort,
   ControlError,
   ControlGuardVerdict,
   ControlOperationScope,
@@ -236,20 +239,76 @@ export async function createP6T4World(
 }
 
 /**
+ * The consumption-point authority recheck, for a fixture whose SUBJECT is not
+ * the recheck (A4-PR7 Task 7.0, ADR A1-14).
+ *
+ * Consuming a v3 operation approval now requires the composition to answer for
+ * the authority behind it: with no port the guard refuses with
+ * `authority-undetermined` and consumes nothing. So a fixture that spends an
+ * allow has to say something about the fresh ceiling — and the honest thing for
+ * a fixture that is testing the ledger's exactly-once law, or the projection's
+ * aggregation, is a CONSTANT answer it states out loud, not a re-implementation
+ * of the ceiling.
+ *
+ * It COUNTS its calls. That is not decoration: "the recheck ran once per
+ * consumption attempt and zero times on a refusal" is a claim a fixture may need
+ * to make, and a helper that hides the count would make the claim unfalsifiable.
+ * A test that needs a NON-constant verdict (a rise, an `undetermined`) passes
+ * its own port; the recheck's own law is pinned in
+ * `a4p7-a1-14-consumption-revalidation.test.ts`, never here.
+ */
+export function constantAuthorityRecheck(
+  verdict: ControlAuthorityRecheck = {
+    kind: CONTROL_AUTHORITY_RECHECK_KINDS.STILL_SUFFICIENT,
+  },
+): { readonly port: ControlAuthorityRecheckPort; calls(): number; last(): ControlAuthorityRecheck | undefined } {
+  const seen: ControlAuthorityRecheck[] = []
+  return {
+    port: async () => {
+      seen.push(verdict)
+      return verdict
+    },
+    calls: () => seen.length,
+    last: () => seen[seen.length - 1],
+  }
+}
+
+/** The options {@link createP6T4Service} takes. */
+export interface P6T4ServiceOptions {
+  /**
+   * The consumption-point authority recheck. DELIBERATELY NOT DEFAULTED: a
+   * default of "covered" would silently authorize every consumption in every
+   * P6-T4-shaped fixture, which is the exact failure A1-14 exists to prevent.
+   * Pass {@link constantAuthorityRecheck}'s port when the fixture spends an
+   * allow and the recheck is not its subject; pass nothing when the fixture is
+   * about the refusal.
+   */
+  readonly authorityRevalidation?: ControlAuthorityRecheckPort
+}
+
+/**
  * Wire the durable control service over the world's open TeamDomain
  * (the same port family the service takes in production; the external
  * policy port is the world's wired port so a test can mutate the facts it
  * serves and have the mutation survive a restart).
  *
  * @param world - the open P6-T4 world.
+ * @param options - the optional ports a fixture opts into (see
+ *   {@link P6T4ServiceOptions}).
  * @returns the control service.
  */
-export function createP6T4Service(world: P6T1World): ControlService {
+export function createP6T4Service(
+  world: P6T1World,
+  options: P6T4ServiceOptions = {},
+): ControlService {
   return createControlService({
     teamDomain: world.domain,
     blueprintCatalog: world.catalog,
     externalPolicyFacts: world.ports.externalPolicyFacts,
     now: () => P6T4_NOW,
+    ...(options.authorityRevalidation !== undefined
+      ? { authorityRevalidation: options.authorityRevalidation }
+      : {}),
   })
 }
 

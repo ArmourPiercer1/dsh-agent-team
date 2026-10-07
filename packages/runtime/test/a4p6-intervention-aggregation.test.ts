@@ -34,6 +34,7 @@ import {
   P6T4_ROOT,
   P6T4_SEEDS,
   createP6T4Service,
+  constantAuthorityRecheck,
   createP6T4World,
   destroyP6T1World,
   leaderCaller,
@@ -42,6 +43,27 @@ import {
 } from './p6t4-helpers.js'
 
 const WORKER_ID = String(P6T4_SEEDS.worker.instanceId)
+
+
+/**
+ * The authority point every operation case carries from A4-PR7 Task 7.0 onward
+ * (ADR A1-14), plus the constant consumption-point recheck this file's services
+ * are wired with.
+ *
+ * This file's subject is the v8 INTERVENTION projection and its aggregation /
+ * consumption-ordering law, so the fresh ceiling is pinned to
+ * `still-sufficient`: before PR7 the consumption point asked no authority
+ * question at all, and the constant restores exactly that behaviour instead of
+ * replacing this file's subject with the recheck's. The recheck's own law —
+ * a rise, an `undetermined`, an unbound row, and that an ABSENT port refuses
+ * rather than permits — is pinned in `a4p7-a1-14-consumption-revalidation.test.ts`.
+ */
+const AUTHORITY_SCOPE = {
+  operationClass: 'fs.write',
+  matcher: { kind: 'exact', resource: 'a4p6-fixture:fileA' },
+} as const
+const RECHECK = constantAuthorityRecheck()
+const SERVICE_OPTIONS = { authorityRevalidation: RECHECK.port }
 
 function facts(overrides: Partial<RequiredAuthorityFacts> = {}): RequiredAuthorityFacts {
   return {
@@ -116,8 +138,12 @@ const warningAdapterReader = (service: ReturnType<typeof makeWarningService>['se
 const AGG = await (async () => {
   const world = await createP6T4World('a4p6-agg-1', ['leader', 'worker'])
   try {
-    const control = createP6T4Service(world)
-    const scope = makeScope({ correlation: 'corr-a4p6-agg', operationFingerprint: 'fp-a4p6-agg' })
+    const control = createP6T4Service(world, SERVICE_OPTIONS)
+    const scope = makeScope({
+      correlation: 'corr-a4p6-agg',
+      operationFingerprint: 'fp-a4p6-agg',
+      authorityScope: AUTHORITY_SCOPE,
+    })
     const created = await control.requestApprovalLeg({
       rootSessionId: P6T4_ROOT,
       caller: memberCaller(WORKER_ID),
@@ -129,6 +155,7 @@ const AGG = await (async () => {
         beneficiaryAuthority: 'member',
         requestedEffect: 'ask',
         operationFingerprint: 'fp-a4p6-agg',
+        authorityScope: AUTHORITY_SCOPE,
         correlation: scope.correlation,
       },
       actionName: scope.actionName,
@@ -283,8 +310,12 @@ function dataOf8(response: RemoteResponse): Record<string, unknown> {
 const W8 = await (async () => {
   const world = await createP6T4World('a4p6-wire-1', ['leader', 'worker'])
   try {
-    const control = createP6T4Service(world)
-    const scope = makeScope({ correlation: 'corr-a4p6-wire', operationFingerprint: 'fp-a4p6-wire' })
+    const control = createP6T4Service(world, SERVICE_OPTIONS)
+    const scope = makeScope({
+      correlation: 'corr-a4p6-wire',
+      operationFingerprint: 'fp-a4p6-wire',
+      authorityScope: AUTHORITY_SCOPE,
+    })
     const created = await control.requestApprovalLeg({
       rootSessionId: P6T4_ROOT,
       caller: memberCaller(WORKER_ID),
@@ -296,6 +327,7 @@ const W8 = await (async () => {
         beneficiaryAuthority: 'member',
         requestedEffect: 'ask',
         operationFingerprint: 'fp-a4p6-wire',
+        authorityScope: AUTHORITY_SCOPE,
         correlation: scope.correlation,
       },
       actionName: scope.actionName,
@@ -320,6 +352,7 @@ const W8 = await (async () => {
         beneficiaryAuthority: 'member',
         requestedEffect: 'ask',
         operationFingerprint: 'fp-a4p6-recused',
+        authorityScope: AUTHORITY_SCOPE,
         correlation: 'corr-a4p6-recused',
       },
       actionName: scope.actionName,
@@ -603,8 +636,12 @@ describe('A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, rea
 const ZOMBIE = await (async () => {
   const world = await createP6T4World('a4p6-zombie-1', ['leader', 'worker'])
   try {
-    const control = createP6T4Service(world)
-    const scope = makeScope({ correlation: 'corr-zombie', operationFingerprint: 'fp-zombie-a' })
+    const control = createP6T4Service(world, SERVICE_OPTIONS)
+    const scope = makeScope({
+      correlation: 'corr-zombie',
+      operationFingerprint: 'fp-zombie-a',
+      authorityScope: AUTHORITY_SCOPE,
+    })
     const common = {
       rootSessionId: P6T4_ROOT,
       caller: memberCaller(WORKER_ID),
@@ -621,6 +658,7 @@ const ZOMBIE = await (async () => {
         beneficiaryAuthority: 'member',
         requestedEffect: 'ask',
         operationFingerprint: 'fp-zombie-a',
+        authorityScope: AUTHORITY_SCOPE,
         correlation: 'corr-zombie',
       },
       summary: 'zombie: the pre-drift case',
@@ -636,6 +674,7 @@ const ZOMBIE = await (async () => {
         beneficiaryAuthority: 'member',
         requestedEffect: 'ask',
         operationFingerprint: 'fp-zombie-b',
+        authorityScope: AUTHORITY_SCOPE,
         correlation: 'corr-zombie',
       },
       summary: 'zombie: the drifted identity',
@@ -702,11 +741,15 @@ describe('6.C a zombie open case stays visible and abandonable (PR5 leftover B)'
 const W9 = await (async () => {
   const world = await createP6T4World('a4p6-consume-1', ['leader', 'worker'])
   try {
-    const control = createP6T4Service(world)
+    const control = createP6T4Service(world, SERVICE_OPTIONS)
     // The operation attempt: the ceiling narrowed this write to `ask` for
     // the worker, so the gate raises an approval LEG carrying the EXACT
     // operation scope — the leg IS the durable consequence of narrowing.
-    const scope = makeScope({ correlation: 'corr-a4p6-consume', operationFingerprint: 'fp-a4p6-consume' })
+    const scope = makeScope({
+      correlation: 'corr-a4p6-consume',
+      operationFingerprint: 'fp-a4p6-consume',
+      authorityScope: AUTHORITY_SCOPE,
+    })
     const leg = await control.requestApprovalLeg({
       rootSessionId: P6T4_ROOT,
       caller: memberCaller(WORKER_ID),
@@ -718,6 +761,7 @@ const W9 = await (async () => {
         beneficiaryAuthority: 'member',
         requestedEffect: 'ask',
         operationFingerprint: scope.operationFingerprint,
+        authorityScope: AUTHORITY_SCOPE,
         correlation: scope.correlation,
       },
       actionName: scope.actionName,

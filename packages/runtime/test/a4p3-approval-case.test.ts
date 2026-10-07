@@ -40,6 +40,7 @@ import {
   assertControlCode,
   controlFacts,
   createP6T4Service,
+  constantAuthorityRecheck,
   createP6T4World,
   destroyP6T1World,
   humanCaller,
@@ -53,6 +54,28 @@ import {
 const WORKER_ID = String(P6T4_SEEDS.worker.instanceId)
 const LEADER_ID = String(P6T4_SEEDS.leader.instanceId)
 const SUBJECT = { kind: 'instance', instanceId: WORKER_ID } as const
+
+/**
+ * The authority point every operation case carries from A4-PR7 Task 7.0 onward
+ * (ADR A1-14), and the constant recheck the services of this file are wired
+ * with.
+ *
+ * WHY A CONSTANT HERE, STATED ONCE: before PR7 the consumption point asked no
+ * authority question at all, so every scenario in this file ran against "no
+ * recheck". PR7 made the recheck a requirement of spending an allow, and a
+ * fixture whose SUBJECT is the case-identity law must not have its subject
+ * replaced by the recheck's — so the port answers `still-sufficient`, which is
+ * what the absence of a recheck used to mean behaviourally. The recheck's own
+ * law (a rise, an undetermined, an unbound row, and the fact that an ABSENT port
+ * refuses rather than permits) is pinned in
+ * `a4p7-a1-14-consumption-revalidation.test.ts`, never here.
+ */
+const AUTHORITY_SCOPE = {
+  operationClass: 'fs.write',
+  matcher: { kind: 'exact', resource: 'a4p3-fixture:fileA' },
+} as const
+const RECHECK = constantAuthorityRecheck()
+const SERVICE_OPTIONS = { authorityRevalidation: RECHECK.port }
 
 /** Run `fn`, capturing a throw instead of aborting the module (a module-level
  *  throw would report "no tests" and hide every other scenario). */
@@ -73,6 +96,7 @@ function identity(overrides: Partial<ApprovalCaseIdentityInput> = {}): ApprovalC
     beneficiaryAuthority: 'member',
     requestedEffect: 'ask',
     operationFingerprint: 'fp-a4p3-case',
+    authorityScope: AUTHORITY_SCOPE,
     correlation: 'corr-a4p3-case',
     ...overrides,
   }
@@ -107,6 +131,10 @@ function legRequest(
         ...(overrides.mutationProposalFingerprint !== undefined
           ? {
               operationFingerprint: undefined,
+              // A mutation case is not an operation: it carries no operation
+              // point (its ceiling question is the proposal's own region, which
+              // the mutation lane revalidates in its commit section).
+              authorityScope: undefined,
               mutationProposalFingerprint: overrides.mutationProposalFingerprint,
             }
           : {}),
@@ -123,7 +151,7 @@ function legRequest(
 const identityLaw = await (async () => {
   const world = await createP6T4World('a4p3-id-1', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const before = controlFacts(world).length
     const both = await refusal(() =>
       legRequest(service, {
@@ -227,7 +255,7 @@ const identityLaw = await (async () => {
 const healthy = await (async () => {
   const world = await createP6T4World('a4p3-case-2', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const created = await legRequest(service, { correlation: 'corr-healthy', operationFingerprint: 'fp-healthy' })
     if (created.kind !== 'leg') throw new Error('the healthy case must produce a leg')
     const approvalCaseId = created.leg.approvalCaseId ?? 'missing'
@@ -304,7 +332,7 @@ const healthy = await (async () => {
 const corrupt = await (async () => {
   const world = await createP6T4World('a4p3-case-3', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const read = (approvalCaseId: string) =>
       service.readApprovalCaseState({ rootSessionId: P6T4_ROOT, approvalCaseId })
 
@@ -400,7 +428,11 @@ const corrupt = await (async () => {
     // verdict on a corrupt case: the operation stays blocked.
     const missing = await read('case-does-not-exist')
     const guardOfCorrupt = await service.guardOperation(
-      makeScope({ correlation: 'corr-x2', operationFingerprint: 'fp-x2' }),
+      makeScope({
+        correlation: 'corr-x2',
+        operationFingerprint: 'fp-x2',
+        authorityScope: AUTHORITY_SCOPE,
+      }),
     )
 
     // (g) the sharpest corrupt shape: the ONLY row of a case, unusable (no
@@ -698,7 +730,7 @@ function codeOfCaptured(captured: { readonly error?: unknown }): string {
 const entrances = await (async () => {
   const world = await createP6T4World('a4p3-case-4', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const outcome = await legRequest(service, {
       correlation: 'corr-a4p3-entrances',
       operationFingerprint: 'fp-x8',
@@ -744,7 +776,11 @@ const entrances = await (async () => {
     )
     const factsAfter = world.domain.repositories.ledger.list().length
     const guard = await service.guardOperation(
-      makeScope({ correlation: 'corr-a4p3-entrances', operationFingerprint: 'fp-x8' }),
+      makeScope({
+        correlation: 'corr-a4p3-entrances',
+        operationFingerprint: 'fp-x8',
+        authorityScope: AUTHORITY_SCOPE,
+      }),
     )
     // The refusal is PERSONAL, not global: the rung the case rose to still acts.
     const byRisenReviewer = await refusal(() =>
@@ -810,7 +846,7 @@ describe('one durable fact, one verdict at every entrance (A2-9 across entrances
 const superseded = await (async () => {
   const world = await createP6T4World('a4p3-case-5', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const first = await legRequest(service, { correlation: 'corr-x9', operationFingerprint: 'fp-x9' })
     const leg = first.kind === 'leg' ? first.leg : undefined
     const caseId = leg?.approvalCaseId ?? 'missing-case-id'
@@ -890,7 +926,7 @@ describe('an idempotent retry on a corrupt case refuses instead of handing back 
 const tieBreak = await (async () => {
   const world = await createP6T4World('a4p3-case-6', ['leader', 'worker'])
   try {
-    const service = createP6T4Service(world)
+    const service = createP6T4Service(world, SERVICE_OPTIONS)
     const first = await legRequest(service, { correlation: 'corr-x10', operationFingerprint: 'fp-x10' })
     const leg = first.kind === 'leg' ? first.leg : undefined
     const caseId = leg?.approvalCaseId ?? 'missing-case-id'
@@ -919,7 +955,11 @@ const tieBreak = await (async () => {
     })
     const read = await service.readApprovalCaseState({ rootSessionId: P6T4_ROOT, approvalCaseId: caseId })
     const guard = await service.guardOperation(
-      makeScope({ correlation: 'corr-x10', operationFingerprint: 'fp-x10' }),
+      makeScope({
+        correlation: 'corr-x10',
+        operationFingerprint: 'fp-x10',
+        authorityScope: AUTHORITY_SCOPE,
+      }),
     )
     const state = await service.listControlState(P6T4_ROOT)
     return {

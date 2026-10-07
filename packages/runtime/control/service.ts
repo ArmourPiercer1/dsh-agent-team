@@ -3897,6 +3897,19 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         ? { executionCoupling: input.executionCoupling }
         : {}),
       ...legFieldsOf(input.leg),
+      // A4-PR7 Task 7.0 (ADR A1-14): the authority point on the LEG-FACT route
+      // too. `legFieldsOf` returns `Partial<ControlRequestRecord>` and the
+      // READ-BACK record deliberately does not carry the point (the frozen v7
+      // remote DTO is not widened by PR7), so the point rides here as its own
+      // spread — exactly as `requestControl` writes it on the creation route.
+      // Without this line the risen leg of an escalated case arrives at the
+      // consumption point unbound: the original leg's approval, re-authorized at
+      // a higher rung, would refuse its own operation with
+      // `authority-scope-unbound`, and the exactly-once law of a case chain
+      // would be pinned over a path that no longer runs.
+      ...(input.leg.authorityScope !== undefined
+        ? { authorityScope: input.leg.authorityScope }
+        : {}),
     }
     const sequence = await putEntry({
       schemaVersion: 2,
