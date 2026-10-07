@@ -177,3 +177,27 @@ same class/count; earlier 571→547 was the v99-retirement shift — both moves 
   t12a-glue-handoff-ports; p6t1-parallel did not flake this run.
 - p6t2-helpers.ts measurement (asked-for): still OFFENDING `L82=v1` + REFUSED `L256(v2)`
   sibling row — another lane's DEFERRALS path, untouched by B1.
+
+## 7. Merge-candidate re-derivation (head `bbce9142`, base `a4ef2a6b` — post C-domain + 7.3-prereqs merge)
+
+Numbers supersede §1/§6 as the merge contract; earlier sections are history, not contract.
+- fence (merged tree): `dirty(97,188) unknown(0,0) advisory(9,12) refused(52,115)
+  prose(5,5) adjudicated(16,24)`, exit 1 — matches the reviewer's merged-tree probe
+  `advisory(9,12)`. B1 residue: production-entry only, 4 sites (L118/491/843/1128), as
+  designed; the `cutover:584` pin line is byte-unchanged by the merge (sha256 aea0b830…).
+- wrapper 58/58; 13 migrated specs as one set 190/190 (witness decoupling pays off on
+  the merged tree: the factory's era is a cdom-owned question and my specs do not care);
+  p4t6 10/10; typecheck exit 0 (`scratch/b1/typecheck-merged.txt`);
+  lint-identities: new 0, resolved 0 (76 distinct, unchanged).
+- root `pnpm test`: baseline name-set holds (9 files/19 tests + 3 collection-time files),
+  plus exactly two additions, both attributed: **p6t1-parallel ×2 = the documented
+  flake** (solo re-run 9/9 green), and **a4p75-composition-smoke-classification ×1 =
+  pre-existing on pristine `origin/master`** — reproduced at detached `a4ef2a6b` with
+  zero B1 content in the tree (leg: `client plugin (packages/client)` closure gate
+  prints no PASS here; master-side bookkeeping, not B1, not a merge interaction).
+- leg hardening §4 addendum: derivation asserted as the ANCHORED declaration line
+  (comment-echo lies die — R1 transcript); M1 bare-argument absence asserted, audited
+  zero matches in-file before committing (`scratch/b1/m1-regex-audit.txt`; R2 transcript
+  shows the M1 shape slipping the colon-keyed check and reddening M1 alone). Both red
+  transcripts must preserve line counts: a line-shifting mutation reddens the line-
+  number-sensitive advisory PIN first (measured, then the mutation was reshaped).
