@@ -307,3 +307,57 @@ describe('6.C the fact-hygiene triad registers the warning family identically', 
     expect(clientTypes.sort()).toEqual([...GOVERNANCE_WARNING_FACT_TYPE_VALUES].sort())
   })
 })
+
+// ---------------------------------------------------------------------------
+// 6.C second half — the TRIAD for the two remaining PR6 fact types. Their
+// owner-3 registration is NOT the INTERNAL skip (the warning family above):
+// `governance-proposal-recorded` and `control-escalation-recorded` are
+// user-visible policy/control history, so their third owner is the
+// STRUCTURED row family in the client ledger model (a `FACT_ROW_KIND` row +
+// the closed row-kind union + a locale label). An unregistered type would
+// fall to the `unknown` family and JSON-dump the payload — the renderer
+// spec (`a4p6-interventions.client.spec.tsx`) proves the families render
+// structured; this pin proves the registration itself, per OWNER, per file.
+// ---------------------------------------------------------------------------
+
+describe('6.C the triad registers proposal + escalation with structured owners', () => {
+  const UI_MAP = readFileSync(
+    join(REPO_ROOT, 'packages', 'client', 'src', 'ui', 'TeamLedger.tsx'),
+    'utf8',
+  )
+  const LOCALES = readFileSync(
+    join(REPO_ROOT, 'packages', 'client', 'src', 'ui', 'locales.ts'),
+    'utf8',
+  )
+  const cases = [
+    { factType: 'governance-proposal-recorded', constant: 'FACT_GOVERNANCE_PROPOSAL_RECORDED', category: 'policy', kind: 'governance-proposal', key: 'view.ledger.fact.governance_proposal' },
+    { factType: 'control-escalation-recorded', constant: 'FACT_CONTROL_ESCALATION_RECORDED', category: 'control', kind: 'control-escalation', key: 'view.ledger.fact.control_escalation' },
+  ] as const
+  for (const { factType, constant, category, kind, key } of cases) {
+    it(`'${factType}': host constant + host category row '${category}'`, () => {
+      expect(HOST_MAP).toContain(`const ${constant} = '${factType}'`)
+      expect(new RegExp(`\\[${constant},\\s*'${category}'\\]`).test(HOST_MAP), 'host map row').toBe(true)
+    })
+    it(`'${factType}': client category map mirrors '${category}'`, () => {
+      expect(new RegExp(`'${factType}':\\s*'${category}'`).test(CLIENT_MAP), 'client map row').toBe(true)
+    })
+    it(`'${factType}': owner 3 — the STRUCTURED family, union, kind label (never the unknown serializer)`, () => {
+      expect(new RegExp(`'${factType}':\\s*'${kind}'`).test(INTERNAL_SET), 'FACT_ROW_KIND row').toBe(true)
+      expect(INTERNAL_SET).toContain(`| '${kind}'`)
+      expect(UI_MAP).toContain(`'${kind}': '${key}'`)
+      expect(LOCALES).toContain(`'${key}'`)
+    })
+  }
+
+  it('the proposal completeness mirror equals the host strict reader RECORD_FIELDS (root-side drift pin)', () => {
+    const store = readFileSync(
+      join(REPO_ROOT, 'packages', 'runtime', 'governance', 'proposal-store.ts'),
+      'utf8',
+    )
+    const hostFields = [...(/\[([^\]]*)\]/.exec(/const RECORD_FIELDS = (\[[\s\S]*?\])/.exec(store)![1])![1].matchAll(/'([^']+)'/g))].map((m) => m[1])
+    expect(hostFields.length).toBeGreaterThan(0)
+    const modelSrc = INTERNAL_SET
+    const mirror = [...(/const GOVERNANCE_PROPOSAL_RECORD_FIELDS: readonly string\[\] = \[([\s\S]*?)\]/.exec(modelSrc)![1].matchAll(/'([^']+)'/g))].map((m) => m[1])
+    expect([...mirror].sort()).toEqual([...hostFields].sort())
+  })
+})

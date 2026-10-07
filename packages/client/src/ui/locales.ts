@@ -104,6 +104,8 @@ export type TeamKey =
   | 'view.ledger.fact.interval_opened'
   | 'view.ledger.fact.interval_closed'
   | 'view.ledger.fact.policy'
+  | 'view.ledger.fact.governance_proposal'
+  | 'view.ledger.fact.control_escalation'
   | 'view.ledger.decision.allow'
   | 'view.ledger.decision.deny'
   | 'view.ledger.decision.stale_denied'
@@ -378,6 +380,8 @@ export const zh: Record<TeamKey, string> = {
   'view.ledger.fact.interval_opened': '活动开始',
   'view.ledger.fact.interval_closed': '活动结束',
   'view.ledger.fact.policy': '策略变更',
+  'view.ledger.fact.governance_proposal': '治理提案',
+  'view.ledger.fact.control_escalation': '控制升级',
   'view.ledger.decision.allow': '允许',
   'view.ledger.decision.deny': '拒绝',
   'view.ledger.decision.stale_denied': '过期拒绝',
@@ -643,6 +647,8 @@ export const en: Record<TeamKey, string> = {
   'view.ledger.fact.interval_opened': 'Interval opened',
   'view.ledger.fact.interval_closed': 'Interval closed',
   'view.ledger.fact.policy': 'Policy change',
+  'view.ledger.fact.governance_proposal': 'Governance proposal',
+  'view.ledger.fact.control_escalation': 'Control escalation',
   'view.ledger.decision.allow': 'Allowed',
   'view.ledger.decision.deny': 'Denied',
   'view.ledger.decision.stale_denied': 'Stale denied',

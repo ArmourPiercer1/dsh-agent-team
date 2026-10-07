@@ -570,3 +570,98 @@ describe('A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, rea
     }
   })
 })
+
+// ---------------------------------------------------------------------------
+// §6.C — PR5 visibility leftover B CLOSED here: a ZOMBIE open case (a case
+// that became unreachable because fingerprint drift opened a DIFFERENT
+// identity at the same base — spec §24.5: dedup is per identity, not per
+// base) stays visible in the SAME `listOpenApprovalCases` listing the
+// approval tooling reads, and still accepts `abandonControlRequest`; the
+// additive `control-request-abandoned` fact is the terminal mark. The fix
+// is visibility — base-scoped suppression is deliberately NOT added.
+// ---------------------------------------------------------------------------
+
+const ZOMBIE = await (async () => {
+  const world = await createP6T4World('a4p6-zombie-1', ['leader', 'worker'])
+  try {
+    const control = createP6T4Service(world)
+    const scope = makeScope({ correlation: 'corr-zombie', operationFingerprint: 'fp-zombie-a' })
+    const common = {
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      reviewAuthority: 'leader' as const,
+      requiredAuthorityAtCreation: 'leader' as const,
+      actionName: scope.actionName,
+      toolName: scope.toolName,
+    }
+    const original = await control.requestApprovalLeg({
+      ...common,
+      identity: {
+        subject: { kind: 'instance', instanceId: WORKER_ID },
+        beneficiaryAuthority: 'member',
+        requestedEffect: 'ask',
+        operationFingerprint: 'fp-zombie-a',
+        correlation: 'corr-zombie',
+      },
+      summary: 'zombie: the pre-drift case',
+    })
+    if (original.kind !== 'leg') throw new Error('the pre-drift case must have a leg')
+    // The drift: the SAME subject/base under a NEW fingerprint is a
+    // different identity — a second case opens and nothing re-points the
+    // old one (identity dedup, not base dedup).
+    const drifted = await control.requestApprovalLeg({
+      ...common,
+      identity: {
+        subject: { kind: 'instance', instanceId: WORKER_ID },
+        beneficiaryAuthority: 'member',
+        requestedEffect: 'ask',
+        operationFingerprint: 'fp-zombie-b',
+        correlation: 'corr-zombie',
+      },
+      summary: 'zombie: the drifted identity',
+    })
+    if (drifted.kind !== 'leg') throw new Error('the drifted case must have a leg')
+    const openBefore = await control.listOpenApprovalCases({ rootSessionId: P6T4_ROOT })
+    const abandoned = await control.abandonControlRequest({
+      rootSessionId: P6T4_ROOT,
+      caller: humanCaller('human-a4p6-zombie'),
+      requestId: original.leg.requestId,
+      reason: 'superseded by the drifted identity',
+    })
+    const openAfter = await control.listOpenApprovalCases({ rootSessionId: P6T4_ROOT })
+    return {
+      originalCaseId: original.leg.approvalCaseId ?? 'missing',
+      originalRequestId: original.leg.requestId,
+      driftedCaseId: drifted.leg.approvalCaseId ?? 'missing',
+      openBefore,
+      abandoned,
+      openAfter,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('6.C a zombie open case stays visible and abandonable (PR5 leftover B)', () => {
+  it('the drifted identity opens a DIFFERENT case; both are open and BOTH are listed', () => {
+    expect(ZOMBIE.driftedCaseId).not.toBe(ZOMBIE.originalCaseId)
+    const listed = ZOMBIE.openBefore.map((summary) => summary.state.identity.approvalCaseId)
+    // The zombie is NOT silently unreachable: the listing the approval
+    // tooling reads carries it (no identity/base filtering exists here).
+    expect(listed).toContain(ZOMBIE.originalCaseId)
+    expect(listed).toContain(ZOMBIE.driftedCaseId)
+  })
+
+  it('the zombie still accepts the abandon verb; the terminal mark leaves only the drifted case open', () => {
+    expect(ZOMBIE.abandoned.requestId).toBe(ZOMBIE.originalRequestId)
+    expect(ZOMBIE.abandoned.rootSessionId).toBe(P6T4_ROOT)
+    // the additive `control-request-abandoned` row is durable (a real
+    // ledger sequence — the terminal mark, not a memory).
+    expect(Number.isInteger(ZOMBIE.abandoned.abandonmentSequence)).toBe(true)
+    expect(ZOMBIE.abandoned.abandonmentSequence).toBeGreaterThan(0)
+    const listed = ZOMBIE.openAfter.map((summary) => summary.state.identity.approvalCaseId)
+    expect(listed).not.toContain(ZOMBIE.originalCaseId)
+    expect(listed).toContain(ZOMBIE.driftedCaseId)
+  })
+})

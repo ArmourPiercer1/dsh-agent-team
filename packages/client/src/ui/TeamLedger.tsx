@@ -191,6 +191,8 @@ const FACT_MARKER_KEYS: Readonly<Record<Exclude<TeamLedgerRowKind, 'unknown'>, T
   'interval-opened': 'view.ledger.fact.interval_opened',
   'interval-closed': 'view.ledger.fact.interval_closed',
   'policy-transitioned': 'view.ledger.fact.policy',
+    'governance-proposal': 'view.ledger.fact.governance_proposal',
+    'control-escalation': 'view.ledger.fact.control_escalation',
 }
 
 /** The frozen decision-value labels; an unknown wire value renders raw (fail-open display). */
@@ -223,7 +225,13 @@ function rowDot(row: TeamLedgerEventRow): StateDotState {
     case 'control-decision':
     case 'control-consumed':
     case 'interval-closed':
+    case 'control-escalation':
       return 'done'
+    case 'governance-proposal':
+      // §6.C: an incomplete durable proposal set is an ERROR state on the
+      // row, never the neutral dot — the UI cannot show a quiet wait for a
+      // record that cannot be a proposal.
+      return row.governanceRecordStatus === 'corrupt' ? 'error' : 'ongoing'
     case 'progress-recorded':
       switch (row.progressValue) {
         case 'completed': return 'done'
