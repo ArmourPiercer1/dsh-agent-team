@@ -19,12 +19,16 @@
  * plus the identity field checks:
  *
  *   - the decoded frontmatter is a single plain record;
- *   - `schemaVersion` is present, a positive integer, and SUPPORTED
- *     (`SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` — the same closed set the
- *     strong validator enforces);
+ *   - `schemaVersion` is present and a positive integer;
  *   - `blueprintId` parses (contracts `parseBlueprintId` — the same
  *     grammar the strong validator uses);
- *   - `revision` parses (contracts `parseBlueprintRevision`).
+ *   - `revision` parses (contracts `parseBlueprintRevision`);
+ *   - ONLY THEN the version is classified: a version in
+ *     `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` is `ok`, a version in
+ *     `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS` (defined once, no longer run) is
+ *     `migration-required` AND CARRIES THE IDENTITY PARSED ABOVE, and anything
+ *     else is `rejected`. The order is not cosmetic — see the comment at that
+ *     check.
  *
  * What the inspector NEVER checks (the strong parser's territory, kept
  * intact — plan §5 "不要检查"): template reference closure,
@@ -76,9 +80,33 @@ export interface BlueprintInspectionDiagnostic {
     /** The parser's verbatim message (human-readable; never branch on it). */
     readonly message: string;
 }
-/** The total inspection outcome (never throws for content issues). */
+/** The total inspection outcome (never throws for content issues).
+ *
+ * THREE states, because a directory scan can learn three different facts about a
+ * saved source (A4-PR7 Task 7.1, ADR A1-21):
+ *
+ *  - `ok` — a well-formed identity on a version this build RUNS;
+ *  - `migration-required` — a well-formed identity on a version this build
+ *    DEFINED and no longer runs (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`). The
+ *    document is the operator's, its identity is readable, and the only fact
+ *    missing is the migration. It therefore STAYS on the listing surface: the
+ *    whole reason the state exists is that "migrate everything that is left" is
+ *    a runbook an operator can only write when what is left is VISIBLE;
+ *  - `rejected` — no identity is owed. Bad YAML, a missing id, an invalid
+ *    revision, or a version nobody ever defined all say the same thing: there is
+ *    nothing to list and nothing to migrate.
+ *
+ * `migration-required` is not a softer `rejected`, and `rejected` is not a
+ * `migration-required` with the fields hidden. Collapsing the first into the
+ * second is the bug this state closes (an unmigrated Blueprint that vanishes
+ * from `listIdentities` cannot be migrated); collapsing the second into the
+ * first would put an unparseable file on a migration surface.
+ */
 export type BlueprintInspectionResult = {
     readonly status: 'ok';
+    readonly identity: BlueprintSourceIdentity;
+} | {
+    readonly status: 'migration-required';
     readonly identity: BlueprintSourceIdentity;
 } | {
     readonly status: 'rejected';
