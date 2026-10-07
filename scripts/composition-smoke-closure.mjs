@@ -57,6 +57,34 @@
  *     `findPackageDirectory`): `exports` CONDITIONS are not evaluated, so a
  *     subpath a package publishes only under a `require` or `types` condition
  *     counts as present. Again the skip direction.
+ *   - When MORE THAN ONE `exports` candidate can answer a subpath, this check ORs
+ *     across every candidate and says present if ANY mapped target exists. Node
+ *     commits to one candidate — pattern keys are ordered longest-base first, a
+ *     conditional object takes its first matching condition, an array its first
+ *     valid entry — and reports that candidate's failure without trying the rest.
+ *     Both divergences reproduced against fixture packages, child `node` versus
+ *     `packageSubpathVerdict`: with `{"./a/*": "./real/*", "./a/b/*": "./gone/*"}`
+ *     and only `real/b/x.js` on disk, `pkg/a/b/x.js` is Node
+ *     `ERR_MODULE_NOT_FOUND` and this check PRESENT; with
+ *     `{"./x": ["./gone.js", "./real.js"]}` and `real.js` on disk, `pkg/x` is Node
+ *     `ERR_MODULE_NOT_FOUND` and this check PRESENT. The Node-rejects shape that
+ *     does NOT slip through is `null`: a non-string leaf is an unreadable value, so
+ *     it surfaces as a visible bail rather than a false present.
+ *     Live blast radius, measured over every manifest installed in this workspace
+ *     (3348 read, 2726 with an `exports` field): the three pinned
+ *     `@deepseek-ai/dsh-client-*` packages publish exactly one pattern key each —
+ *     `"./src/*": "./src/*"` — with no arrays, no nulls and no overlapping bases,
+ *     so nothing on this graph hits the divergence today; elsewhere in the same
+ *     tree arrays appear 497 times (`@babel/runtime` and friends), nulls 3 times
+ *     (`vite`), and 37 packages publish two or more pattern keys, `@anthropic-ai/sdk`
+ *     overlappingly so (`./_vendor/*` beside `./_vendor/*.js`). The 17 unresolvable
+ *     upstream names are not installed, so nothing is claimed about their maps —
+ *     they are why this step SKIPs at all. The shape is therefore real in the wider
+ *     tree and only accidentally absent from this graph: a dependency that published
+ *     it would move this check toward a SKIP, never toward a false FAIL, which is
+ *     why it is disclosed here instead of closed. Adopting Node's candidate choice
+ *     and reading `null` as not-exported are recorded follow-ups; this round changes
+ *     no behaviour.
  *   - The legacy (no-`exports`) branch PROBES WIDER than Node: ESM legacy
  *     resolution tries the exact path only, while this also tries `+.js`,
  *     `+.mjs`, `+.cjs`, `+.json`, `+.node` and `/index.*`. That over-reporting
