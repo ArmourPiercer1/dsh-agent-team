@@ -246,6 +246,7 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['packages/runtime/test/a3p4-production-permission-plane.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/a3p5-permission-read-wiring.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/a3p5-permission-splice.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['packages/runtime/test/a4f1-row-version-not-document-version.test.ts', 'B-runtime-semantics (F1 row-vs-document-version proof; sites are quoted-string replace() args at :136/:146 building v3/v2 DECLARE fixtures under a row stamped 2 — runtime behavioural family per the 2026-10-08 round-3 lane ruling, NOT the fixtures family)'],
   ['packages/runtime/test/a4p6-start-gate-entrances.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
@@ -359,10 +360,8 @@ const UNKNOWN_LEDGER: ReadonlyMap<string, string> = new Map([
   ['packages/remote/test/p8t4-server.ts::L46', 'projection-envelope: p8t4Projection builder return (whole-projection DTO); hand-verified p8t4-server.ts:44-48'],
   ['packages/remote/test/p8t4-server.ts::L66', 'ledger-row: p8t4LedgerEntry builder — own comment:63 "the storage LedgerEntry shape"; hand-verified p8t4-server.ts:63-68'],
   ['packages/remote/test/p8t4-sync.test.ts::L51', 'projection-envelope: syncDto builder ("the nine frozen top-level fields"); hand-verified p8t4-sync.test.ts:48-53'],
-  ['packages/runtime/test/bp1-blueprint-authority.test.ts::L108', 'registry-row: BlueprintRegistryRecordView row — the TeamDomain ROW stamp, F1: row stamp != document version (packages/storage/schema/blueprint-registry.ts:131-139); type annotation one line above; hand-verified bp1-blueprint-authority.test.ts:107-110'],
   ['packages/runtime/test/p01-team-scoped-overlay.test.ts::L211', 'projection-envelope: createProjectionService option object {clock, schemaVersion} — deciding name two lines above; the 2026-10-08 coordinator record names this stamp projection-owned ("the number is another namespace\'s"); hand-verified p01-team-scoped-overlay.test.ts:210-212'],
   ['packages/runtime/test/p6t4-helpers.ts::L458', 'ledger-row: repositories.ledger.put argument (sequence/rootSessionId visible); ledger.put( on the head line; hand-verified p6t4-helpers.ts:456-460'],
-  ['packages/runtime/test/policy-state-bound-blueprint-production-wiring.test.ts::L168', 'registry-row: BlueprintRegistryRecordView row (F1 row stamp); type annotation one line above; hand-verified policy-state-bound-blueprint-production-wiring.test.ts:167-170'],
   ['packages/storage/test/bp1-blueprint-registry.test.ts::L146', 'registry-row: parseBlueprintRegistryRecord NEGATIVE test, SPREAD-built ({...baseRecord}); F1 row axis, name on the same line but spread guard forbids machine refusal; hand-verified bp1-blueprint-registry.test.ts:145-147'],
   ['packages/storage/test/bp1-blueprint-registry.test.ts::L159', 'registry-row: serializeBlueprintRegistryRecord round-trip argument, SPREAD-built; same F1 evidence; hand-verified bp1-blueprint-registry.test.ts:158-160'],
   ['packages/storage/test/p4-helpers.ts::L415', 'session-binding: teamMemberBinding record for parseSessionBinding — kind visible, sessionId SHORTHAND (no colon, invisible to the key scanner); binding version axis (SessionBindingDto); hand-verified p4-helpers.ts:413-416'],
@@ -593,7 +592,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     ).toContain('as-unknown-as')
     expect(named('packages/runtime/test/p5t5-helpers.ts', 80)).toContain('annotated TeamBlueprint')
     expect(named('packages/testkit/test/bp1h-blueprint-authoring.test.ts', 95)).toContain('toEqual')
-    expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 561)).toContain('toMatchObject')
+    expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 571)).toContain('toMatchObject')
   })
 
   it('every UNKNOWN site on the tree is adjudicated BY PATH in this wrapper — no unadjudicated unknown, no stale ledger row', () => {
