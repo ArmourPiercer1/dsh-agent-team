@@ -150,15 +150,36 @@ class MemRegistry implements BlueprintRegistryPort {
 }
 
 /**
+ * Rewrite the frontmatter's declared-version line, WHATEVER version the shared
+ * fixture happens to declare today. The rewrite is line-structural and THROWS
+ * when there is no version line to rewrite: a silent no-op here would hand
+ * `worldC` a "retired" source that is actually runnable, and every leg reading
+ * a state off it would then report on the wrong document. No version digit is
+ * spelled out in this file at all — every version the fixtures drive is the
+ * CALLER'S number (`V_RUNNABLE_V1` / `V_UNDEFINED`, derived from the domain's
+ * own sets), and the shared factory's private base version is not a claim of
+ * this file. (7.4 migration 2026-10-08: the previous carrier named a retired
+ * literal as its substitution key — a Blueprint-version site this file never
+ * needed to state.)
+ */
+function withDeclaredVersion(source: string, version: number): string {
+  const pattern = /^schemaVersion: \d+$/m
+  if (!pattern.test(source)) {
+    throw new Error('A4-PR7 catalog guard: the shared fixture carries no rewriteable schemaVersion line')
+  }
+  return source.replace(pattern, `schemaVersion: ${String(version)}`)
+}
+
+/**
  * A saved source whose DECLARED version is the only thing changed. A saved
  * source is only ever read at identity level by the listing, so a document that
  * would not strong-parse on a future version is a legitimate listing fixture —
  * and it must not be, for the anchor, which the root strong-parses.
  */
 function sourceOnVersion(blueprintId: string, revision: string, version: number): string {
-  return revisionSource(blueprintId, revision, `${blueprintId} lead.`).replace(
-    'schemaVersion: 1',
-    `schemaVersion: ${version}`,
+  return withDeclaredVersion(
+    revisionSource(blueprintId, revision, `${blueprintId} lead.`),
+    version,
   )
 }
 
