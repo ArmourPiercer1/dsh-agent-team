@@ -1,0 +1,62 @@
+A4-PR7 §7.4 (C-tools+harness 2/5): migrate the D4 restart/reopen harness Blueprint to v3
+
+packages/tools/harness/d4-restart-reopen.mjs embeds its boot document as
+`const BLUEPRINT_DOC` and hands it to the production row (`:740 blueprintSource:
+BLUEPRINT_DOC`); the host parses that source at boot (src/plugin/host.ts:2125
+classifyBlueprintAnchor → blueprint-authority.ts:328, and :1857-1862
+createBlueprintSourceIndex). The version is therefore read by the product, so the
+fence's `dirty` verdict is right and the disposition is migrate-by-hand: after
+§7.3's flip this harness would not boot at all on a v1 document.
+
+v3 requires both authority documents and defaults neither
+(domain/blueprint/src/validate.ts:1335-1336). Both are carried as `rules: []`:
+the narrowest legal value and the exact posture this team always had — the v1
+document carried neither carrier, an absent carrier is a typed absence meaning
+zero expansion authority, and the reader folds absent and declared-empty into the
+same ceiling. D4 proves that a durable team root survives a host restart and
+reopens with the closed wire row shape; it opens no permission expansion, so any
+rule written here would be authority the harness never exercises. Every other
+line of the document is byte-identical, and the fence, its scope and its version
+constants were not touched.
+
+Checked, not assumed, because the plan names both as hazards:
+ - no hand-copied hash or anchor: the file contains no contentHash literal, so the
+   derived identity simply moves — v1
+   `sha256:ffe5a1681a57a4f5de052eb4ffb8c985528aa12954bcc7c001ba55d0cae53625` → v3
+   `sha256:2c4f61c5c63214989eaf55c6358105b491b89914f005615ae595f4fb76d2feff`
+   (printed by the probe, never hand-written here);
+ - the file's other `schemaVersion === 2` occurrence (`:1021 domLeader(...).
+   schemaVersion === 2`) is a LeaderInstance ROW stamp read out of
+   `memberInstances[...]`, stamped by the factory and not by the document
+   (contracts/src/dto/member-instance-record.ts:238) — left exactly as it was;
+ - indentation: every YAML line is its own array element, so the two inserted
+   carriers cannot shift anything below them, and the parse below is the proof.
+
+RED FIRST:
+
+  $ pnpm exec vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts
+   × every deferred path is still dirty (a migrated path must leave the list)
+   FAIL  ... > every deferred path is still dirty (a migrated path must leave the list)
+   AssertionError: expected [ Array(1) ] to deeply equal []
+   - []
+   + [
+   +   "packages/tools/harness/d4-restart-reopen.mjs",
+   + ]
+    at packages/testkit/test/a4p7-blueprint-version-clean.test.ts:449:19
+   Tests  1 failed | 47 passed (48)
+
+Then only this lane's own DEFERRALS line was deleted (one deletion in that file,
+no reorder, no reflow, no other lane's entry touched): Tests 48 passed (48).
+
+EVIDENCE — this is the whole of the pre-§7.6 evidence for this file; the harness
+leg itself runs in §7.6. The harness was NOT run: no host was booted, no port was
+opened and nothing under tests/homes/** was created or mutated.
+  node --check packages/tools/harness/d4-restart-reopen.mjs → OK
+  node dev/.../7-4-hts/probes/probe-d4-restart-reopen.mjs → the array literal
+    sliced from the file (its own :218-… carrier, evaluated with the file's own
+    BLUEPRINT_ID/BLUEPRINT_REVISION) parses with the production parser as
+    d4v2-bp/1 at schemaVersion 3 with both carriers {rules: []}; forging the
+    version to 9 → SCHEMA_VERSION_MISMATCH; deleting either carrier →
+    MALFORMED_DTO "missing required field … at $".
+  node scripts/verify-blueprint-version-clean.mjs → no longer names this path
+    (RESULT dirty(119 files, 259→258 sites) → RESULT dirty(118 files, 257 sites)).

@@ -212,7 +212,7 @@ function humanCaller(rootSessionId) {
 function blueprintDoc(world, bpId) {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     'leader:',
@@ -245,6 +245,20 @@ function blueprintDoc(world, bpId) {
     '        - send-message',
     '        - report-progress',
     '      deny: []',
+    // Alpha.4 (A4-PR7 §7.4, pre-flip half): at schema version 3 both authority
+    // documents are required and neither is ever defaulted. `rules: []` is the
+    // narrowest legal value and the posture these three worlds have always had
+    // (the v1 document carried neither carrier). It changes no T12 verdict:
+    // V3's stage-1 HARD deny of the mcp capability is an EXTERNAL policy fact on
+    // the row config (`externalPolicyFacts` in teamRowConfig below), never a
+    // Blueprint authority document; the approval narrowing an empty document
+    // produces is the identity (domain/authority-envelope/src/authority-envelope.ts
+    // `narrowingForApproval`); and the expansion ceiling an empty document states
+    // — no-authority — is the answer an absent v1 carrier already gave.
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "The t12v default state."',
@@ -1841,7 +1855,17 @@ async function runFresh1() {
     // 1 here would be a contract contradiction to be recorded, not accepted.
     const V1_FIELDS = ['schemaVersion', 'teamSessionId', 'blueprint', 'generation', 'generatedAt', 'root', 'templates', 'members', 'ledger']
     const sv = projection?.schemaVersion
-    v5.check('projection carries the production schemaVersion 2 (P8-S contract freeze: production projection service stamps schemaVersion: 2)',
+    // A4-PR7 §7.4 note on this label: the digit this check pins is the
+    // PROJECTION axis (`SUPPORTED_PROJECTION_SCHEMA_VERSIONS`, whose supported
+    // pair the comment above quotes; production stamps the upper one), a namespace
+    // the Blueprint document cutover does not touch. The label used to spell that
+    // stamp in YAML document-key form — the key name followed by the digit — which
+    // is exactly the spelling the version-clean fence keys on, so it read this
+    // sentence as a Blueprint document this harness emits. It emits none at that
+    // version (its only documents are the three built by blueprintDoc above, now
+    // schema version 3), so the sentence now says what it means, in prose the fence
+    // classifies as prose, and the assertion — `sv === 2` — is byte-identical.
+    v5.check('projection carries the production v2 stamp (P8-S contract freeze: the production projection service stamps the projected DTO at version 2 — the projection axis, not a Blueprint document version)',
       sv === 2, `schemaVersion=${sv}`)
     v5.check('projection top-level field set matches the frozen v1 contract (superset for v2)',
       projection !== undefined && V1_FIELDS.every((f) => f in projection), `keys=${JSON.stringify(projection === undefined ? null : Object.keys(projection))}`)

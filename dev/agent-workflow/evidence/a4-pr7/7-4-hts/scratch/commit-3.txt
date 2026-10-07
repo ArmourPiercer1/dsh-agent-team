@@ -1,0 +1,56 @@
+A4-PR7 §7.4 (C-tools+harness 3/5): migrate the G5 member-E2E harness Blueprint to v3
+
+packages/tools/harness/g5-member-e2e.mjs embeds its boot document as
+`const BLUEPRINT_DOC` and hands it to the production row (`:1079 blueprintSource:
+BLUEPRINT_DOC`), which the host parses at boot (src/plugin/host.ts:2125
+classifyBlueprintAnchor → blueprint-authority.ts:328). The version line is read by
+the product, so `dirty` is the right verdict and migrate-by-hand is the right
+disposition: after §7.3's flip this live-host harness cannot boot a v1 document.
+
+Both Alpha.4 authority documents are required at v3 and are carried as `rules: []`
+— the narrowest legal value, chosen because it provably cannot move what G5
+asserts. G5 is the harness of the five that runs REAL member file and shell tool
+turns (S4a/b/c), i.e. permission APPROVAL decisions, and the approval narrowing is
+`narrowingForApproval` (packages/domain/authority-envelope/src/authority-envelope.ts
+:439): "ABSENCE OF A MATCHING RULE IMPOSES NO NARROWING", and that identity is
+what "makes the documented `teamHardEnvelope: { rules: [] }` survivable: it removes
+nothing, and the Leader's approvable set stays whatever the ladder grants". On the
+expansion plane `effectiveAuthorityCeiling` (:409) answers no-authority on no
+match — the same answer the absent v1 carrier already gave. Writing any rule here
+is what would change the member tool verdicts, so no rule was written.
+
+Identity moves with the document and is DERIVED, never hand-copied (the file
+carries no contentHash literal): v1
+`sha256:db644b600c96189ab47e44718ea630ca82d226904265ebd2f35f093357c0c550` → v3
+`sha256:bd1e78eba7fcfc52df244fa0734755034249fe675dc654e6050077a0fa58c966`, both
+printed by the probe over the bytes sliced from the file (before-copy = the
+committed file, after-copy = the working tree, same program).
+
+RED FIRST:
+
+  $ pnpm exec vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts
+   × every deferred path is still dirty (a migrated path must leave the list)
+   FAIL  ... > every deferred path is still dirty (a migrated path must leave the list)
+   AssertionError: expected [ Array(1) ] to deeply equal []
+   - []
+   + [
+   +   "packages/tools/harness/g5-member-e2e.mjs",
+   + ]
+    at packages/testkit/test/a4p7-blueprint-version-clean.test.ts:448:19
+   Tests  1 failed | 47 passed (48)
+
+Then only this lane's own DEFERRALS line was deleted (one deletion in that file,
+no reorder, no reflow, nothing else touched): Tests 48 passed (48).
+
+EVIDENCE — this is the whole of the pre-§7.6 evidence for this file; the harness
+leg itself runs in §7.6. The harness was NOT run: no host booted, no port opened,
+nothing under tests/homes/** created or mutated, and the shared :3080 instance was
+not touched.
+  node --check packages/tools/harness/g5-member-e2e.mjs → OK
+  node dev/.../7-4-hts/probes/probe-g5-member-e2e.mjs [before-copy] → production
+    parser accepts the sliced document (g5a-bp/1, schemaVersion 3, both carriers
+    {rules: []}); version forged to 9 → SCHEMA_VERSION_MISMATCH; either carrier
+    deleted → MALFORMED_DTO "missing required field … at $" (the pre-migration
+    copy has no such line at all, which is the point).
+  node scripts/verify-blueprint-version-clean.mjs → this path is no longer named
+    (RESULT dirty(118 files, 257 sites) → RESULT dirty(117 files, 256 sites)).

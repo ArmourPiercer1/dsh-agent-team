@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-hts
+
+ ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (58 tests) 1414ms
+     ✓ dropping ONE row sends THAT site back to UNKNOWN — a second literal on a ledgered line costs its own row (G2)  344ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  622ms
+
+ Test Files  1 passed (1)
+      Tests  58 passed (58)
+   Start at  05:15:32
+   Duration  1.79s (transform 70ms, setup 0ms, import 253ms, tests 1.41s, environment 0ms)
+

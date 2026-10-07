@@ -203,11 +203,6 @@ function expectSingle(f: Fixture, want: SiteClass | 'none'): Classification {
  * as a lie), never by being added to a skip list in the scanner.
  */
 const DEFERRALS: ReadonlyMap<string, string> = new Map([
-  ['packages/tools/harness/d4-restart-reopen.mjs', 'C-tools+harness (plan-named site, harness/d4-restart-reopen.mjs:220)'],
-  ['packages/tools/harness/g5-member-e2e.mjs', 'C-tools+harness (plan-named site, harness/g5-member-e2e.mjs:267)'],
-  ['packages/tools/harness/run.mjs', 'C-tools+harness (plan-named site, harness/run.mjs:214)'],
-  ['packages/tools/harness/t12-vertical.mjs', 'C-tools+harness (plan-named site, harness/t12-vertical.mjs:215; also emits a v2 document; the L1838 occurrence is comment prose, not a site)'],
-  ['packages/runtime/root-binding/harness/blueprint-source.mjs', 'C-runtime-fixtures (bounded-run harness Blueprint source)'],
   ['tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 1 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
   ['tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 2 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
   ['packages/domain/blueprint/testdata/fixtures.ts', 'C-domain STOP, ratified by the coordinator: stays dirty pending (1) the B-lane witness-ownership rewrite of the three revisionSource(...) derivations that splice the factory\'s declared-version line into their v1/v2/99 witnesses (a4f1-row-version-not-document-version, a4p7-v3-cutover-acceptance, a4p7-v8-catalog-migration-state) and (2) the coupled fixtures.ts -> v3 plus empty-rules-envelope PR that updates this file\'s own archetype test in the same PR, owned by the fence/wrapper owner, enumerating the factory\'s full consumer set. Measured evidence: dev/agent-workflow/evidence/a4-pr7/7-4-cdom/FINDINGS.md §5 (v3 without envelopes fails a consumer at COLLECTION; with them, 39 witness tests across the three deriving files). Deliberately avoids quoting the literal carrier pattern here: the fence flags its own author — an earlier draft of this justification made THIS file a dirty site.'],
@@ -366,7 +361,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expect(spawned.stdout).toContain('RESULT dirty(')
     expect(spawned.stdout).toContain('RESULT advisory(')
     expect(spawned.stdout).toContain('RESULT unknown(')
-    expect(spawned.stdout).toContain(report.split('\n')[0])
+    expect(spawned.stdout).toBe(`${report}\n`)
   })
 
   it('a directory that is not a repository reports not-run with exit 2, never clean', () => {
@@ -421,11 +416,53 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
 
   it('the fence reports sites, not a bare count, and names a file the reader can open', () => {
     // The plan's X10 law: the contract is the path set, so the report must
-    // carry paths and line numbers. `run.mjs` is a named Task 7.4 site — the
-    // positive control that detection actually finds a known v1 author.
-    expect(report).toContain('OFFENDING packages/tools/harness/run.mjs :: ')
+    // carry paths and line numbers.
+    //
+    // This control used to name ONE path — `packages/tools/harness/run.mjs` — and
+    // that shape is a landmine: the day the lane owning the file migrates, the
+    // control goes red on SUCCESS, which is precisely when a tired worker mutes
+    // it (lane C-tools+harness, §7.4). The law is asserted directly instead:
+    // every dirty PATH is named and every dirty SITE's `L<line>=v<version>` is
+    // printed, for any path, forever. The literal named path stays, because a
+    // reader must be able to open one straight out of this file, and the archetype
+    // is the one the next test pins line-by-line anyway.
+    //
+    // The sites are checked PER PATH — the OFFENDING lines are parsed back into
+    // `path -> the sites printed for it`, and a site must appear on ITS OWN path's
+    // line. Searching the whole report for the token would be a mute wearing a
+    // control: measured at this commit 69 of the 253 dirty sites have an
+    // `L<line>=v<version>` token that also occurs on some other report line, so
+    // stripping the suffix from one of those passes a whole-report `toContain`
+    // (mutation C of scratch/mutate-fence.mjs: green against the whole-report form,
+    // red against this one). A report that names no path cannot slip through either:
+    // an empty parse makes every path assertion below fail, not pass.
+    //
+    // On a hypothetical empty dirty set both loops pass vacuously, and that is the
+    // correct behaviour HERE: this leg's subject is the SHAPE of a report about
+    // dirty sites, and the claim that the set has become empty belongs to the
+    // exit-contract leg (`exit 1 iff dirty or unknown`) and to the DEFERRALS
+    // staleness legs. Giving this leg a `dirty.length > 0` guard of its own would
+    // re-arm it as the red-on-success control it was just rewritten to escape.
+    const printed = new Map<string, string[]>()
+    for (const line of report.split('\n')) {
+      const off = /^OFFENDING (.+?) :: (.*)$/.exec(line)
+      const offPath = off?.[1]
+      const offSites = off?.[2]
+      if (offPath !== undefined && offSites !== undefined) {
+        const toks = offSites.split(', ').map((t) => t.trim()).filter((t) => t !== '')
+        printed.set(offPath, [...(printed.get(offPath) ?? []), ...toks])
+      }
+    }
+    for (const path of dirtyPaths) {
+      const expected = run.dirty
+        .filter((s) => s.path === path)
+        .map((s) => `L${String(s.line)}=v${String(s.version)}`)
+        .sort()
+      expect([...(printed.get(path) ?? [])].sort(), `report must print EXACTLY the sites of ${path}`).toEqual(expected)
+    }
+    expect(report).toContain('OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: ')
     expect(report).toMatch(/OFFENDING \S+ :: L\d+=v[12]/)
-    expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)} files`)
+    expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)} files, ${String(run.dirty.length)} sites)`)
   })
 
   // --- the 7.4-scope extension: the third class is covered by path ---------
