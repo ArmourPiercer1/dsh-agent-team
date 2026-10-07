@@ -1,0 +1,7 @@
+$ bash -c grep -n 'file cap' scripts/composition-smoke-closure.mjs; echo '--- any knob? ---'; grep -nE 'process\.env|argv|maxFiles' scripts/composition-smoke.mjs; echo "grep exit=$? (1 = no knob exists)"; echo '--- measured headroom ---'; node -e "const {scanModuleClosure}=await import('./scripts/composition-smoke-closure.mjs'); const r=scanModuleClosure({entryFile:'packages/client/dist/packages/client/src/plugin/client.js', repoRoot:process.cwd()}); console.log('visitedFiles', r.visitedFiles, 'of default cap 4000')"
+701:      why: `the closure scan hit its file cap after ${closure.visitedFiles} files, so it cannot certify this repo's own artifact clean — a SKIP here would claim an unscanned graph. The ceiling is the 4000-file default of scanModuleClosure, applied at the scanModuleClosure call site in scripts/composition-smoke.mjs; there is no environment or CLI knob (measured: grep -nE 'process\\.env|argv|maxFiles' scripts/composition-smoke.mjs matches nothing), so the remedy is to raise that argument there or to shrink the graph — never to relax this classification. Measured headroom: 125 files for this repo's client closure, and 273 in the host tree where the same closure resolves (dev/agent-workflow/evidence/a4-pr7/gates/7-5-round2-raw/N3-truncation-message.txt and 7-5-client-closure-scan.txt section 5) — both far under 4000.`,
+--- any knob? ---
+grep exit=1 (1 = no knob exists)
+--- measured headroom ---
+visitedFiles 125 of default cap 4000
+exit=0

@@ -1,0 +1,30 @@
+$ node .tmp-faultscratch/r3/probe-n2.mjs
+{
+  "name": "control",
+  "visited": 2,
+  "ownUnresolved": [],
+  "upstreamUnresolved": [
+    "@a4p75/gone"
+  ],
+  "untraversed": 0,
+  "loadErrorCode": "ERR_MODULE_NOT_FOUND",
+  "verdict": "skip",
+  "THE_LINE_THE_GATE_PRINTS": "SKIP client plugin (packages/client): host module closure unavailable — 1 unresolvable: @a4p75/gone"
+}
+{
+  "name": "with-untraversed",
+  "visited": 2,
+  "ownUnresolved": [],
+  "upstreamUnresolved": [
+    "@a4p75/gone"
+  ],
+  "untraversed": 1,
+  "loadErrorCode": "ERR_MODULE_NOT_FOUND",
+  "verdict": "skip",
+  "THE_LINE_THE_GATE_PRINTS": "SKIP client plugin (packages/client): host module closure unavailable — 1 unresolvable: @a4p75/gone"
+}
+TRUNCATION MESSAGE: the closure scan hit its file cap after 1 files, so it cannot certify this repo's own artifact clean — a SKIP here would claim an unscanned graph. The ceiling is the 4000-file default of scanModuleClosure, applied at the scanModuleClosure call site in scripts/composition-smoke.mjs; there is no environment or CLI knob (measured: grep -nE 'process\.env|argv|maxFiles' scripts/composition-smoke.mjs matches nothing), so the remedy is to raise that argument there or to shrink the graph — never to relax this classification. Measured headroom: 125 files for this repo's client closure, and 273 in the host tree where the same closure resolves (dev/agent-workflow/evidence/a4-pr7/gates/7-5-round2-raw/N3-truncation-message.txt and 7-5-client-closure-scan.txt section 5) — both far under 4000.
+CONTROL SKIP LINE: host module closure unavailable — 1 unresolvable: @a4p75/gone
+HELD SKIP LINE:   host module closure unavailable — 1 unresolvable: @a4p75/gone | 1 UNTRAVERSED — present package, no manifest target this scan could follow: @a4p75/broken-entry (asked for by /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/.tmp-faultscratch/r3/fixture-n2/dist/entry-with-untraversed.js)
+IDENTICAL? no
+exit=0

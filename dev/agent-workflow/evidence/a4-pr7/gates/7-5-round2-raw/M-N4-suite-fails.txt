@@ -1,0 +1,138 @@
+$ env DSH_A4P75_MUTE=M-N4 pnpm --dir packages/testkit exec vitest run a4p75-composition-smoke-classification
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/testkit
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts (46 tests | 3 failed) 1676ms
+     ✓ runs the step when every specifier in the graph resolves 2ms
+     ✓ skips, and names every unresolvable package, when only the upstream closure is missing 5ms
+     ✓ never launders: our own undeclared import fails even while the upstream closure is also missing 1ms
+     ✓ fails on a module-evaluation throw instead of calling it a missing package 3ms
+     ✓ fails, not skips, when the artifact itself is absent 0ms
+     ✓ records a dangling subpath of an INSTALLED package as an own-zone defect, never as untraversed 38ms
+     ✓ sees an own import that is indented, not at column 0 (the skip was the EAGER direction) 37ms
+     ✓ fails instead of skipping when the closure walk hit its file cap 40ms
+     ✓ names the importing file, not the offending package.json, for a subpath error 32ms
+     ✓ still skips a THIRD-PARTY file whose own subpath does not resolve 38ms
+     ✓ parses a directory import and names its importer (and still fails it) 36ms
+     ✓ calls an exports-gated subpath missing even when the file sits on disk 2ms
+     ✓ does not launder a wildcard-covered subpath of an installed package 35ms
+     ✓ maps a pattern key through its VALUE and looks for the mapped file 0ms
+     ✓ maps through conditional and array values, every string being a real path 0ms
+     ✓ bails, never claims, on a shape it cannot read — and an unmodelled value cannot hide an absent one 0ms
+     ✓ substitutes the captured text into the value, the way Node does 0ms
+     ✓ prints the untraversed specifiers, so a held-back scan is not silent 36ms
+     ✓ prints a bail it took, and does not turn that bail into an own-zone failure 37ms
+     ✓ passes every arm on a well-formed surface 3ms
+     ✓ is red when a plugin row stops being registered 2ms
+     ✓ is red when a registered row id drifts by one character 2ms
+     ✓ is red when our own top-level code throws at evaluation 2ms
+     ✓ is red when the row loses its apply export 2ms
+     ✓ is red when the row name drifts from the pinned value 2ms
+     ✓ is red when the bundle requires a specifier the host module table does not serve 2ms
+     ✓ is red when the configured baseline names an external the bundle no longer uses 2ms
+     ✓ is red when an advertised artifact path does not exist 2ms
+     ✓ is red when the composition output is not inside a shipped install surface 2ms
+     ✓ is red when the built manifest advertises a path outside the install surface 2ms
+     × is red when a CONDITIONAL export target lies outside the install surface 5ms
+     ✓ is red when a CONDITIONAL export target does not exist, and sees it in both arms 2ms
+     × is red when an export value has nothing readable in it, rather than counting one fewer path 2ms
+     × flattens conditional export values into the paths it checks 1ms
+     ✓ is red when the built manifest advertises nothing at all 2ms
+     ✓ is red when a recorded manifest value drifts 3ms
+     ✓ is red when a file the runtime derives a URL for is not on disk 3ms
+     ✓ accepts exactly the set it requires, and names both kinds of difference 0ms
+     ✓ prints one line per required id, in the required order, whatever the arms report 0ms
+     ✓ prints a FAIL for an arm that stopped reporting, instead of no line 0ms
+     ✓ prints a FAIL for an arm that renamed itself 1ms
+     ✓ requires by id every arm this repository actually reports  1257ms
+     ✓ checks the committed client artifact and reports every arm green 11ms
+     ✓ agrees with the bundle on which externals the host must supply 6ms
+     ✓ reads the drift a renamed require would cause, straight off the emitted text 0ms
+     ✓ still finds the composition output where the builder writes it 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p75-composition-smoke-classification.test.ts > composition-smoke offline composition surface > is red when a CONDITIONAL export target lies outside the install surface
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts:913:22
+    911|     }, 'conditional-outside')
+    912|     const check = readCheck(checks, 'composition-bundle-is-install-sur…
+    913|     expect(check.ok).toBe(false)
+       |                      ^
+    914|     // Labelled by the condition path, so the reader knows which manif…
+    915|     // to go fix.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a4p75-composition-smoke-classification.test.ts > composition-smoke offline composition surface > is red when an export value has nothing readable in it, rather than counting one fewer path
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts:938:24
+    936|     const { checks } = await surfaceOf({ unreadableExportValue: true }…
+    937|     const surface = readCheck(checks, 'composition-bundle-is-install-s…
+    938|     expect(surface.ok).toBe(false)
+       |                        ^
+    939|     expect(surface.detail).toContain('exports[./broken] has no readabl…
+    940|     expect(readCheck(checks, 'manifest-targets-resolve').detail).toCon…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a4p75-composition-smoke-classification.test.ts > composition-smoke offline composition surface > flattens conditional export values into the paths it checks
+AssertionError: expected [ [ 'exports[.]', …(1) ], …(1) ] to deeply equal [ [ 'exports[.]', …(1) ], …(4) ]
+
+- Expected
++ Received
+
+@@ -2,21 +2,9 @@
+    [
+      "exports[.]",
+      "packages/client/composition-shim/index.js",
+    ],
+    [
+-     "exports[./client].types",
+-     "packages/client/composition-shim/client.d.ts",
+-   ],
+-   [
+-     "exports[./client].import",
+-     "packages/client/outside/client.js",
+-   ],
+-   [
+-     "exports[./broken]",
+-     null,
+-   ],
+-   [
+      "files[bundle.js]",
+      "packages/client/composition-shim/bundle.js",
+    ],
+  ]
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts:952:101
+    950|       files: ['bundle.js'],
+    951|     }, 'packages/client/composition-shim')
+    952|     expect(paths.map((entry: { label: string; path: string | null }) =…
+       |                                                                                                     ^
+    953|       ['exports[.]', 'packages/client/composition-shim/index.js'],
+    954|       ['exports[./client].types', 'packages/client/composition-shim/cl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 43 passed (46)
+   Start at  02:33:26
+   Duration  1.83s (transform 1.02s, setup 0ms, import 66ms, tests 1.68s, environment 0ms)
+
+exit=1

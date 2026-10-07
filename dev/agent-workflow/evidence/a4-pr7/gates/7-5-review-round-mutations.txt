@@ -265,6 +265,15 @@ M-F   the guard, shown to be the thing that bites: R-5a's mutation kept, the smo
   $ smoke → 8 PASS lines, PASS composition-smoke, exit=0
   restore the guard, same mutation → FAIL client bundle check-set … never reported
     [plugin-row-exports], exit=1
+    CORRECTION (round 2, 2026-10-08): the file originally cited for THIS line,
+    `7-5-review-round-raw-captures.txt` block `mut/M-F-restored-arm-dropped.txt`, does not
+    contain it — that capture is a healthy run (md5 026e462608899aecdb47f326905e4f31, the same
+    md5 the healthy control carries), because `restore.sh` restores the whole snapshot including
+    `composition-smoke-bundle.mjs` and so removed the dropped arm along with the weakened guard.
+    The line above is true and it is evidenced, but by the block
+    `green/G5-arm-vanishes.txt` (md5 95d45a323db38b4b5a421de6805a6460), which prints
+    `FAIL client bundle check-set …: never reported [plugin-row-exports]` over eight arms with
+    `FAIL composition-smoke`. The mapping is restated in `7-5-round2-review-mutations.txt` R3.
 
 M-G   `checkSetDifferences` neutered (`missing` can never be non-empty):
   $ test → 1 failed | 31 passed:

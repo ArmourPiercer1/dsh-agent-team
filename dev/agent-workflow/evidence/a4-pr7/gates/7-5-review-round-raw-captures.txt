@@ -5,6 +5,19 @@ Each block is the complete stdout+stderr of one `pnpm smoke:composition` run (th
 gate-level claims only; the unit-level mutation proofs are reported inside the mutations receipt).
 Paths are as captured in this worktree. Nothing here is trimmed.
 
+CORRECTIONS ADDED IN THE FOLLOWING REVIEW ROUND (2026-10-08, round 2). They annotate; no captured
+byte below was changed.
+  (a) The md5 in each block header was computed from the scratch original of that block, before it
+      was re-wrapped into this banner file, so none of the sixteen digests recomputes from the text
+      committed here. A match therefore proved output equality at best, and never that the mutation
+      the block describes had been applied. That is finding N5 in
+      `7-5-round2-review-mutations.txt`, which is why the round-2 captures are committed as
+      individual files under `7-5-round2-raw/` with their mutated inputs under `7-5-round2-mutated/`.
+      The digests below are kept unedited: they are what was measured then, and the defect is in
+      how they were published, not in their values.
+  (b) One block was mislabeled. See the annotation at `### mut/M-F-restored-arm-dropped.txt`
+      near the end of this file, and the matching annotation in `7-5-review-round-mutations.txt`.
+
 ################################################################
 ### red/healthy.txt    (md5 665df7446409d544d35161406460024e)
 ################################################################
@@ -417,6 +430,18 @@ PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (package
 
 ################################################################
 ### mut/M-F-restored-arm-dropped.txt    (md5 026e462608899aecdb47f326905e4f31)
+###   ^ MISLABELED when first committed (corrected in round 2). The scratch name said
+###     "guard restored, same mutation"; the capture below is a HEALTHY run — nine
+###     `PASS client bundle` arms, `PASS composition-smoke`, no check-set line — and its
+###     md5 is the same value this file records for `green/G-healthy-all-fixes.txt`.
+###     Cause: `restore.sh` restores the whole snapshot, `composition-smoke-bundle.mjs`
+###     included, so restoring the guard also removed the dropped arm. What this block
+###     evidences is "everything restored → healthy output", which is a useful control and
+###     a wrong label. The run that evidences "guard restored, arm still dropped →
+###     FAIL … never reported [plugin-row-exports]" is `### green/G5-arm-vanishes.txt`
+###     (md5 95d45a323db38b4b5a421de6805a6460) above, which carries that FAIL line and
+###     `FAIL composition-smoke` over eight arms. Receipt: `7-5-round2-review-mutations.txt`
+###     section R3.
 ################################################################
 $ node scripts/composition-smoke.mjs
 [dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
