@@ -9,7 +9,10 @@
  * "no siblings", i.e. a regression reported as an unbuilt tree.
  */
 
-/** What the tree says about one declared artifact. */
+/**
+ * What the tree says about one declared artifact. `artifactProvenance` throws rather than
+ * answering from the wrong directory; see its declaration below.
+ */
 export interface ArtifactProvenance {
   /** The arm's own label, carried through so a refusal can name the step. */
   readonly label: string
@@ -48,6 +51,14 @@ export interface AbsentVerdict {
   readonly why: string
 }
 
+/**
+ * @throws if `repoRoot` is not the toplevel of a worktree (compared by realpath, so a symlinked
+ * path still counts as the toplevel). Measured before the guard: called with `repoRoot` set to
+ * `packages/client`, this module answered `outputRoot: "packages"` and
+ * `manifestEntry.package: "../../../package.json"` and still returned a confident `refused` —
+ * an answer about a tree it was not standing in. A leg that refuses for a reason it has not
+ * measured is worse than one that fails, because the reason is the only part anyone reads.
+ */
 export function artifactProvenance(a: {
   repoRoot: string
   rel: string
@@ -55,6 +66,17 @@ export function artifactProvenance(a: {
   installSurfaces?: readonly string[]
 }): ArtifactProvenance
 
+/**
+ * A one-line description of the tree the verdict was reached in, from
+ * `git status --porcelain` + `git rev-parse --short HEAD`.
+ *
+ * The counts are of **entries**, which is what the sentence says it counted: an untracked
+ * directory is ONE entry, not the files inside it, and untracked entries are included because a
+ * verdict read from disk was measured over them. A previous wording claimed "N tracked file(s)
+ * not matching HEAD" for what was three files inside one new directory — a reason string
+ * describing a count it did not take, which is the same failure as a transcript with no results
+ * in it. If git answers nothing, the string says `UNREADABLE` rather than `clean`.
+ */
 export function treeShape(a: { repoRoot: string }): string
 
 export function absentArtifactVerdict(prov: ArtifactProvenance, opts?: { command?: string }): AbsentVerdict

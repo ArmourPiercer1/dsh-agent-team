@@ -42,15 +42,44 @@ export default tseslint.config(
       // and excluded: four concurrent full scans, and one running against a heavy vitest file,
       // all exited 1 with complete JSON.
       //
-      // The exclusion is identity-NEUTRAL in a quiet tree — measured 62 identities with the
-      // pattern, without it, and with fixtures present. It is not a reflexive "ignored files
-      // are invisible" move either: a scratch file a HUMAN leaves at the root stays in scope
-      // on purpose (that is what `pnpm lint` shows them), and the universe the scan read is
-      // printed by `scripts/lint-identities.mjs` on every run. What is removed here is a tree
-      // that exists only while a test is running — an identity that appears and disappears with
-      // test execution cannot belong to a baseline, and its copies of `scripts/**` are
-      // digest-compared to the originals, which ARE linted.
-      '**/.tmp-fault/**',
+      // The exclusion is LOAD-BEARING, and the CLASS is exactly as load-bearing as the one name it
+      // replaces. Measured at merged head `bfbd89a5` with five planted `.mjs` files under
+      // `packages/testkit/test/.tmp-fault/repo/scripts/` (each containing one unused binding and
+      // one undefined call), the whole-repo identity diff run once per config:
+      //
+      //   a) this line, as shipped         160 lines, 76 distinct, universe 1105, new 0
+      //   b) this line DELETED             170 lines, 86 distinct, universe 1110, new 10
+      //      (the five planted files then appear on the `universe:` line as gitignored-but-linted,
+      //       and each yields two identities: `no-undef` for the call, `no-unused-vars` for the binding)
+      //   c) the ONE NAME it replaces      160 lines, 76 distinct, universe 1105, new 0
+      //      (the same answer as (a): generalising the pattern cost nothing measurable)
+      //   d) this line + a root scratch    161 lines, 77 distinct, universe 1106, new 1
+      //      FILE `.tmp-resolve-probe.mjs`  (that file named on the `universe:` line and as
+      //       `error no-undef .tmp-resolve-probe.mjs`)
+      //
+      // The load-bearing part is the delta in (b), not the absolute counts, which move with every
+      // file this repository adds: five files that exist only while a test runs entered the lint
+      // universe and put ten phantom identities against a baseline nobody edited. Against the 7.5
+      // suite's own fixture trees review measured the same mechanism as a phantom `new 60`. The
+      // comment that used to sit here claimed "measured 62 identities with the pattern, without it,
+      // and with fixtures present" — no run reproduces that, and it is exactly the kind of number
+      // that gets a load-bearing exclusion deleted: a stale measurement in a comment is a false
+      // claim, not a summary. A leg that goes red because another suite happened to run first is
+      // not a lint signal at all.
+      //
+      // It is not an "ignored files are invisible" reflex, because case (d) is the same measurement
+      // in the other direction and the specimen stays visible: these patterns match DIRECTORIES, so
+      // a scratch FILE a human leaves at the root — the `.tmp-resolve-probe.mjs` that started this
+      // line of work — is linted, named on the `universe:` line, and reddens the diff on purpose.
+      // What is removed here is a tree that exists only while a test is running: an identity that
+      // appears and disappears with test execution cannot belong to a baseline, and those trees'
+      // copies of `scripts/**` are digest-compared to the originals, which ARE linted.
+      //
+      // And nothing tracked is collateral: no tracked path in this repository has a `.tmp-`
+      // component in it (`git ls-files | grep -c '(^|/)\.tmp-'` = 0), and §7.6 asserts that in
+      // code now — `no tracked file is invisible to lint except under a prefix this leg names` —
+      // instead of leaving it to a grep someone has to remember to run.
+      '**/.tmp-*/**',
       '.pnpm-store/**',
       '.pnpm-store-testuse/**',
       '.agents/**',

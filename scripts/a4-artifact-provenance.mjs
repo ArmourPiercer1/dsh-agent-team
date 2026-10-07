@@ -53,10 +53,27 @@
  * one word tells the reader to run `pnpm build`, the other tells them to look at the diff.
  * The ambiguity this module CANNOT resolve is stated inside its own message, because the
  * refusal text is the only part of a refused verdict anyone ever reads.
+ *
+ * THE REVIEW ROUND ADDED A FIFTH CASE, AND IT IS NOT DECIDABLE EITHER. The whole built
+ * output, moved off the declared path by a plain `mv` with no source change. Review measured
+ * it twice: to `packages/client/build` — NOT gitignored, so the moved files enter the lint
+ * universe and the run is blocked only by the lint leg, by accident (`new 6`) — and to
+ * `packages/client/out/dist`, which IS gitignored, where every leg of the machine gate went
+ * GREEN while a complete 400-file plugin sat off the path the manifest declares,
+ * `check:artifacts` still printed `OK: 1508 files` (it compares the two committed install
+ * surfaces and never looks at `packages/client/dist`), and this module's own message sent
+ * the reader to `pnpm build`, which cannot fix it. There is nothing outside the declared
+ * output root to measure: no `*.tsbuildinfo` anywhere, no `incremental` or `composite` in
+ * the tsconfigs, and the only mechanical difference between a clone and a worktree is `.git`
+ * being a directory or a file — a separator that identifies the harness, not build intent,
+ * so reading it would be manufacturing belief. So no smarter predicate is attempted here.
+ * What closes the hole is structural and lives in the gate rather than in this module: §7.6's
+ * composition leg now requires its arm to have RUN, so an arm that did not run cannot be
+ * green in any vocabulary, and the claim below is bounded to exactly what this module reads.
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 
 import { INSTALL_SURFACES } from './client-composition-surface.mjs'
@@ -137,6 +154,7 @@ function outputRootOf(repoRoot, relDir, unreadable) {
  * `refused` verdict, because "I could not tell" is not evidence that nothing is wrong.
  */
 export function artifactProvenance({ repoRoot, rel, label = rel, installSurfaces = INSTALL_SURFACES }) {
+  assertRepoRootIsToplevel(repoRoot)
   const unreadable = []
   const abs = resolve(repoRoot, rel)
   const exists = existsSync(abs)
@@ -185,12 +203,56 @@ function installSurfaceContains(surfaces, rel) {
   return surfaces.some((s) => rel === s || rel.startsWith(`${s}/`))
 }
 
+/**
+ * Review nit, and it is the same disease as everything else in this file: pointed at a
+ * SUBDIRECTORY, every field this module reports is answered by the ENCLOSING repository.
+ * Measured from a package directory, `outputRoot` came back `packages`, `manifestEntry.package`
+ * came back `../../../package.json`, and the verdict still read `refused` — harmless only for
+ * as long as every caller happens to pass the toplevel. A predicate that quietly answers for a
+ * tree other than the one its caller is standing in has stopped being a predicate, so this is
+ * raised rather than classified: the caller's bug is not a property of the artifact.
+ */
+function assertRepoRootIsToplevel(repoRoot) {
+  const top = gitOut(repoRoot, ['rev-parse', '--show-toplevel'])
+  if (top === null) {
+    throw new Error(`artifactProvenance needs a git work tree: \`git rev-parse --show-toplevel\` did not answer in ${repoRoot}`)
+  }
+  // Compare realpaths so a checkout reached through a symlink is not called a misuse.
+  const real = (p) => {
+    try {
+      return realpathSync(p)
+    } catch {
+      return resolve(p)
+    }
+  }
+  if (real(top) !== real(repoRoot)) {
+    throw new Error(
+      `artifactProvenance was pointed at ${repoRoot}, which is not the git toplevel (${top}). ` +
+        `Every field it would return is answered from ${top}, not from the directory passed in.`,
+    )
+  }
+}
+
 /** A one-line statement of the tree the leg measured, for a refusal reason. */
 export function treeShape({ repoRoot }) {
   const head = gitOut(repoRoot, ['rev-parse', '--short', 'HEAD']) ?? 'unknown'
   const status = gitOut(repoRoot, ['status', '--porcelain'])
-  const dirty = status === null ? 'unknown' : String(status ? status.split('\n').filter(Boolean).length : 0)
-  return `HEAD ${head}, ${dirty} tracked file(s) not matching HEAD`
+  if (status === null) return `HEAD ${head}, working-tree state UNREADABLE (git status did not answer)`
+  const lines = String(status).split('\n').filter(Boolean)
+  const untracked = lines.filter((line) => line.startsWith('??')).length
+  const tracked = lines.length - untracked
+  // F3, and the reason the line is worded awkwardly on purpose. `git status --porcelain`
+  // reports one line per ENTRY and collapses an untracked DIRECTORY into that directory, so a
+  // new folder holding three files is one line. Measured in review: three new files under one
+  // new directory made the previous wording print "1 tracked file(s) not matching HEAD" — a
+  // sentence about tracked files that had been counting a mixture of things, including
+  // untracked ones. A reason string that misstates what it counted is the same failure as a
+  // transcript with no results in it, so the two populations are counted apart and the
+  // untracked one is labelled as entries, never as files.
+  return (
+    `HEAD ${head}, ${String(tracked)} tracked file(s) changed vs HEAD, ` +
+    `${String(untracked)} untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]`
+  )
 }
 
 /**
@@ -234,17 +296,19 @@ export function absentArtifactVerdict(prov, { command = 'pnpm build' } = {}) {
   return {
     verdict: 'refused',
     why:
-      `${prov.label}: ${prov.rel} is not on disk, and the tree says this checkout has never produced it rather than that a build ` +
-      `went wrong — ${where} ${prov.outputRootExists ? 'exists but is empty' : 'does not exist'} (${String(prov.outputFileCount)} file(s)), ` +
+      `${prov.label}: ${prov.rel} is not on disk and there is no trace of it in ${where} — ${where} ` +
+      `${prov.outputRootExists ? 'exists but is empty' : 'does not exist'} (${String(prov.outputFileCount)} file(s) in it), ` +
       `${prov.rel} is gitignored and untracked, and it is in no install surface (the surfaces that ship are ${INSTALL_SURFACES.join(', ')}), ` +
       `so no install of this repository ever carries it` +
       (prov.manifestEntry === null
         ? ''
         : `; the owning manifest declares ${prov.manifestEntry.declared} → ${prov.manifestEntry.target}, which ${prov.manifestEntry.resolves ? 'does resolve' : 'also has no file on disk'}`) +
-      `. Run \`${command}\` and re-run this leg. What this leg cannot tell you, stated rather than guessed: an unbuilt tree and a ` +
-      `build that ran and emitted NOTHING are byte-identical here, so this is a refusal about the checkout, not a claim that the ` +
-      `build works. Tree this leg measured: ${prov.treeShape ?? '(unstated)'}. refused is not passed — this leg blocks the merge ` +
-      `exactly as a failure does, and no reading of this message makes it green.`,
+      `. The limit of that sentence, stated rather than left to the reader: this verdict is drawn from ${where} ALONE, nothing ` +
+      `outside the declared output root is examined, and there is nothing outside it to examine — so a build that ran and whose ` +
+      `output was then moved elsewhere is indistinguishable, here, from a build that never ran, and \`${command}\` would not fix ` +
+      `that. The two states this check genuinely cannot separate are also byte-identical: an unbuilt tree and a build that ran ` +
+      `and emitted NOTHING. Run \`${command}\` and re-run this leg. Tree this leg measured: ${prov.treeShape ?? '(unstated)'}. ` +
+      `refused is not passed — this leg blocks the merge exactly as a failure does, and no reading of this message makes it green.`,
   }
 }
 
