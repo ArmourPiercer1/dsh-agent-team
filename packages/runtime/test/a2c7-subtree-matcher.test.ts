@@ -1490,7 +1490,7 @@ describe('A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, 
         '    permissions:', '      default: deny', '      allow: []', '      ask:',
         '        - tool: bash', '          resource:', '            kind: exact', '            path: x',
         '      deny: []',
-        'members: []', 'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', '---',
+        'members: []', 'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', 'metadata: {}', '---',
       ].join('\n'),
     )
     expect(bashExact.code).toBe('MALFORMED_DTO')
@@ -1512,7 +1512,7 @@ describe('A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, 
         '      permissions:', '        default: ask', '        allow:',
         '          - tool: bash', '            resource:', '              kind: any',
         '        ask: []', '        deny: []',
-        'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', '---',
+        'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', 'metadata: {}', '---',
       ].join('\n'),
     )
     expect(bashAnyAllow.code).toBe('MALFORMED_DTO')

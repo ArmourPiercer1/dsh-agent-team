@@ -314,7 +314,55 @@ and its source is preserved in `tools/`.
 | eslint, touched files | `npx eslint <35 files>` | exit 1 at base and exit 1 at head, **identical 7 identities** — the operative gate is that identity set and `lint-identities.mjs --diff`, both clean; the pre-existing errors in these files (unused vars, a stale `eslint-disable`) were not mine to fix |
 | lint identities | `node scripts/lint-identities.mjs --diff …0237d487.txt` | **new 0, resolved 0** |
 
-## 11. Disclosure
+## 11. A defect this lane shipped, found by its own instrument after the review challenge
+
+**What.** Two fixture documents in `a2c7-subtree-matcher.test.ts` (base L1473, L1494) were
+committed WITHOUT their `'metadata: {}'` element: the envelope pair had been written over the
+adjacent element instead of beside it. That is not a cosmetic slip — those two arrays are fed
+straight into `runParse` and the test that consumes them is named *"the A2C-1 shell rejections
+are BYTE-IDENTICAL"*. A fixture feeding a byte-identity pin had itself stopped being base's
+fixture.
+
+**Why nothing noticed.** `metadata` is an optional closed-set field: `validate.ts:1458-1459`
+takes it with `takeRecord(...)`, and when it is absent the frozen blueprint still carries
+`metadata: {}` (`validate.ts:1518`). So the parse result, the `MALFORMED_DTO` code and both
+pinned diagnostic fragments were identical either way. The file ran **31/31 before and after**.
+An instrument with 1107 tests behind it — the P6-T1 consumer set — could not have seen this
+any more than the a2c7 run did, and neither could the fence, typecheck, or the wrapper.
+
+**What caught it.** Two boring instruments, in this order:
+1. `no-sparse-arrays` had already caught the *first* symptom of the same hand-patch
+   (§9); the fix I applied then is what removed the element.
+2. After the coordinator asked whether one silent change could hide inside an unchanged total,
+   I wrote an **executable-line census** over the whole lane diff
+   (`transcripts/executable-line-census.txt`): drop comment-only and blank lines, pair the rest
+   with `difflib`, and require every changed line to be a version carrier, an envelope element,
+   or the base/head pair of a line that merely gained envelope elements. It reported exactly
+   **2 unexplained lines, both in a2c7, both losing `'metadata: {}'`.**
+
+**Cause pinned, not guessed.** Replaying this lane's own transform on the base file
+(`git show a4ef2a6b:… | migrate.py <copy> 1`, kept at `tools/repro/`) and diffing it against the
+committed file produced **exactly those two lines** — the transform was correct all along; a
+later hand-patch of the sparse-array artifact ate the neighbouring element. That is the argument
+for keeping a mechanical transform when a lane touches 45 sites, and the argument against
+hand-editing its output.
+
+**Fix and verification.** Both elements restored, in the house order (pair before `metadata`, so
+nothing lands after the `'---'` fence). The working file is now byte-identical to the script's
+migration of base modulo comments; `a2c7` 31/31; eslint shows only the two pre-existing
+unused-type errors; fence class lines unchanged (`dirty 76/168`, `unknown 0/0`,
+`refused 52/115`, `adjudicated 16/24`); wrapper 58/58; p4t6 10/10;
+`lint-identities --diff` new 0 / resolved 0; census now reports **unexplained 0**.
+
+**The statistic the question deserved.** For the whole lane, after this fix: 240 changed
+non-comment lines across 34 files, **0 unexplained**; **exactly one assertion line in the entire
+diff** (`expect(world.blueprint.schemaVersion).toBe(2)` → `.toBe(DECLARED_DOCUMENT_VERSION)`,
+disclosed in its commit body); and in the five fixture modules — the ones carrying 738/738 and
+6 failed/388 passed consumer runs — every changed non-comment line is a document-literal element
+(5/5/5/5/4 lines) and **"anything else: none"**. There is no executable change in those helpers
+for a total to hide.
+
+## 12. Disclosure
 
 * Files changed: the 34 roster files + `packages/testkit/test/a4p7-blueprint-version-clean.test.ts`
   (34 own DEFERRALS rows deleted) + this evidence directory. Nothing else: no production

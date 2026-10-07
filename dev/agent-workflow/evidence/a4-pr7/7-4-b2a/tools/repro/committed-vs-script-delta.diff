@@ -1,0 +1,8 @@
+1107c1107
+<         'members: []', 'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', 'metadata: {}', '---',
+---
+>         'members: []', 'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', '---',
+1123c1123
+<         'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', 'metadata: {}', '---',
+---
+>         'requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', '---',
