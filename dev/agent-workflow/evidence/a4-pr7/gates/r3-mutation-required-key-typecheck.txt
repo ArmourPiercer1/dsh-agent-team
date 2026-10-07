@@ -1,0 +1,10 @@
+# MUTATION M-key (the shape decision's counterfactual, recorded in
+# r3-typecheck.txt form): with `commandFingerprint` a REQUIRED key in
+# ControlAuthorityRecheckInput (7d047dcb), deleting it at the call site stops
+# compiling. This is what "required" buys, and it is measured rather than asserted.
+$ tsc -p tsconfig.json
+control/service.ts(2580,28): error TS2345: Argument of type '{ rootSessionId: string; instanceId: string; beneficiaryAuthority: "leader" | "member" | "human-user" | "human-admin"; reviewAuthority: "leader" | "member" | "human-user" | "human-admin"; requestedEffect: "allow" | ... 1 more ... | "deny"; authorityScope: ControlAuthorityScope; }' is not assignable to parameter of type 'ControlAuthorityRecheckInput'.
+  Property 'commandFingerprint' is missing in type '{ rootSessionId: string; instanceId: string; beneficiaryAuthority: "leader" | "member" | "human-user" | "human-admin"; reviewAuthority: "leader" | "member" | "human-user" | "human-admin"; requestedEffect: "allow" | ... 1 more ... | "deny"; authorityScope: ControlAuthorityScope; }' but required in type 'ControlAuthorityRecheckInput'.
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr7c/packages/runtime:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/runtime@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2

@@ -875,6 +875,33 @@ export interface ControlAuthorityRecheckInput {
   readonly requestedEffect: PermissionOverlayEffect
   /** The persisted concrete authority point (ADR A1-14). */
   readonly authorityScope: ControlAuthorityScope
+  /**
+   * The row's canonical command identity (`operationFingerprint`), so the
+   * recheck derives the SAME candidate set the ASK derived (RULING 4).
+   *
+   * It is DURABLE in the same sense as every field above: read off the matched
+   * request row, never re-derived from the invocation now arriving — that
+   * re-derivation is the thing ADR A1-14 forbids.
+   *
+   * REQUIRED, and here is why the shape is `string | undefined` rather than
+   * optional. Without it the shell-class candidate set is the persisted
+   * tool-level point alone, and no shell rule can cover an exact target
+   * (`authority-envelope.ts:218-222` answers a decisive `{covers:false}` across
+   * shapes), so the meet collapses to the ladder default and an authority RISE
+   * on a shell command is read as coverage — the false pass this field exists to
+   * prevent. There is exactly one production caller (`control/service.ts`, the
+   * recheck inside the per-team lock) and it can ALWAYS supply it: a row with no
+   * `operationFingerprint` returns before the port is reached. So a caller may
+   * not omit the field — omitting it is a compile error, which is the law the
+   * compiler is asked to hold.
+   *
+   * `undefined` stays NAMEABLE because the runtime guard must stay a live path
+   * rather than code only reachable by casting: a caller that states the absence
+   * gets `undetermined` with `shell-point-missing` in its reason — a refusal
+   * that consumes nothing — never a narrower question and never a pass. That is
+   * the arm `test/a4p7-a1-14-consumption-revalidation.test.ts` S3 pins.
+   */
+  readonly commandFingerprint: string | undefined
 }
 
 /** One recheck verdict; see {@link CONTROL_AUTHORITY_RECHECK_KINDS}. */

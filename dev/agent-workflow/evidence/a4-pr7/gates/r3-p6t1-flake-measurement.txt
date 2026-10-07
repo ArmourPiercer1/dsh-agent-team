@@ -1,0 +1,16 @@
+--- run 1: p6t1 ALONE ---
+      Tests  9 passed (9)
+--- run 2: p6t1 ALONE ---
+     × two activated results with distinct instance ids and child Sessions 4ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+      Tests  2 failed | 7 passed (9)
+--- run 3: p6t1 ALONE ---
+     × two activated results with distinct instance ids and child Sessions 5ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+      Tests  2 failed | 7 passed (9)
+--- run 1: p6t1 WITH both a4p7 lanes ---
+      Tests  93 passed (93)
+--- run 2: p6t1 WITH both a4p7 lanes ---
+      Tests  93 passed (93)
+--- run 3: p6t1 WITH both a4p7 lanes ---
+      Tests  93 passed (93)

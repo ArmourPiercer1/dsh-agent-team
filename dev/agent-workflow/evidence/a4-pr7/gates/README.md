@@ -122,3 +122,19 @@ until a client lane reads `revisionStates`. The same body should say that the
 commit's 58-file install-surface mirror is **51 inherited + 7 authored** — the
 staleness is master-side (`b4340c50` and `e68d2c74` shipped source without
 rebuilding the mirror), owned there, and merely surfaced here.
+
+## Round 3 (`r3-*`) — the seven fixes on `feat/a4-pr7-r4-fixes`, off `689b716c`
+
+| file | the claim it supports |
+| --- | --- |
+| `run-r3-gates.sh` | the round-3 gate driver, same shape as `run-7-0.sh`, kept so the round is reproducible. |
+| `r3-typecheck.txt` | `pnpm -r run typecheck` at `bbad57aa`: 8 × `Done`, 0 `error TS`. |
+| `r3-full-test-run1.txt`, `r3-full-test-run2.txt`, `r3-final-runA.txt`, `r3-final-runB.txt` | four whole-repo runs: 19 / 21 / 19 / 19 failing tests. `r3-run1-failing-identities.txt` and `r3-run2-failing-identities.txt` are the sorted `FAIL` identity sets; their only difference is the two `p6t1-parallel` P1 tests, and the 19-set is identity-identical to `base-run1.txt`. |
+| `r3-p6t1-flake-measurement.txt` | the refutation of §8's barrel rule: `p6t1-parallel` alone goes red 2 of 3 runs with no other lane file loaded; the same file is 3-of-3 green *together with* both `a4p7` lanes. |
+| `r3-mutation-callsite-drop.txt` | the fix-2 wiring proof: deleting the threaded field **at the call site** (type kept) reddens S1/S2/S4 and leaves all 75 pre-existing tests green. |
+| `r3-mutation-required-key-typecheck.txt` | with the key required (`7d047dcb`), the same deletion is a `TS2345` compile error. |
+| `r3-mutation-M2-wrong-field.txt` | threading a real-but-wrong durable field (`authorityScope.matcher.resource`) **compiles clean** and reproduces the original fail-open `{"allowed":true}` — the mutant a type-only review cannot catch. |
+| `r3-mutation-M1-neuter-meet.txt` | the reviewer's M1 (meet neutered at both sites, set still derived and evaluated) now reddens 7 of this branch's tests in the whole runtime package: 15 failed / 3859 passed, other 8 = baseline. Header records the exact substitution and why `if (false)` was unusable. |
+| `r3-p4t6.txt`, `r3-a4pr0a-hygiene.txt`, `r3-client.txt`, `r3-lint-diff.txt`, `r3-lint-identities.txt` | p4t6 pin 10 passed from the repo root; a4pr0a + lane hygiene 35 passed; client lane 3 failed / 876 passed (baseline set, `packages/client` untouched by this branch); lint identities 160 lines / 76 distinct, `new 0, resolved 0`. |
+| `r3-build.txt`, `r3-build-composition.txt`, `r3-check-artifacts.txt` | `pnpm build` exit 0; `build:composition` and `check:artifacts` exit 1 on 51 drifted dist files. |
+| `r3-dist-drift-at-base.txt` | the drift is inherited: measured at `689b716c` (source exports `operationApprovalCandidatePoints`, committed dist does not contain it), with the 36-inherited / 15-mine split and the last commit to touch that dist file (`a1b2431b`, A4-PR4). |

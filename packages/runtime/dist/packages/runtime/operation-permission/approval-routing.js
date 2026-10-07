@@ -63,6 +63,7 @@
  */
 import { AUTHORITY_CEILING_ERROR_CODES, evaluateAuthorityCeiling, isHigherAuthority, } from '../governance/index.js';
 import { CONTROL_REQUEST_KINDS } from '../control/index.js';
+import { isShellOperationClass } from '../../domain/authority-envelope/src/index.js';
 // ---------------------------------------------------------------------------
 // The refusal vocabulary
 // ---------------------------------------------------------------------------
@@ -82,6 +83,16 @@ export const OPERATION_APPROVAL_REFUSAL_REASONS = {
     /** The evaluator answered `undetermined` (an unanswerable containment
      *  question, or a narrowing that cannot be decided for this scope). */
     CEILING_UNDETERMINED: 'ceiling-undetermined',
+    /**
+     * A SHELL-class scope whose command fingerprint was not supplied (RULING 4).
+     * The documents can only narrow a shell invocation by `fingerprint` exactly, so
+     * an ask that cannot name the command cannot see its own narrowing; answering
+     * from the tool key alone would report a ceiling no author declared. A wiring
+     * fault on this plane is reported as undetermined - never as a denial, and never
+     * as a guessed rung - which is the convention this module already keeps for
+     * malformed facts.
+     */
+    SHELL_POINT_MISSING: 'shell-point-missing',
     /** A document this ladder rung is BOUND BY could not be read
      *  (`AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE`). A missing document is not an
      *  empty one. */
@@ -132,6 +143,63 @@ function messageOf(error) {
     return error instanceof Error ? error.message : String(error);
 }
 /**
+ * The CANDIDATE POINTS that name one approval scope (A4-PR7 RULING 4).
+ *
+ * ONE FUNCTION, BOTH SITES. The ask and the consumption recheck each need the set
+ * of shapes their scope question arrives in, and they must agree about it: the
+ * consumption question is "does the rung that signed still cover what the human
+ * was shown?", and if each site derived its own set the recheck could silently ask
+ * a question the ask never asked - the false-pass failure wearing the recheck's
+ * clothes. So the set is derived here, from the point plus the command fingerprint,
+ * and `a4p7-v3-cutover-acceptance.test.ts` ASSERTS the two sites agree instead of
+ * trusting that both callers remembered.
+ *
+ * WHY A SET AT ALL: the documents pair a shell-class rule with a `fingerprint`
+ * matcher EXACTLY (`blueprint/src/validate.ts:699`: no subtree, no any, no path)
+ * while this plane names an operation by its TOOL-level exact key
+ * (`canonical-operation.ts:14`). Asking only the tool key makes every shell
+ * narrowing answer `{covers:false, undeterminable:false}` - DECISIVE, not
+ * absorbing - so the narrowing contributes nothing to the meet and the rung shown
+ * to a human can only come out LOWER than the author declared. Asking both shapes
+ * and meeting the answers closes that without changing what a document means.
+ *
+ * The file-class answer is the point alone: a file-class rule is exact or subtree,
+ * and both already answer the exact question - so a set of one is the whole law
+ * there, and no existing file-class routing moves.
+ *
+ * @param point - the scope's primary point (at the ask, the tool-level exact key;
+ *   at consumption, the persisted `authorityScope` verbatim, kind included).
+ * @param commandFingerprint - the canonical operation identity: required for the
+ *   shell class, meaningless elsewhere.
+ * @returns the candidate points, plus a refusal reason when a shell-class scope
+ *   cannot name its command (a wiring fault, never a silent narrowing-free pass).
+ *   The contract on that combination is strict: when `refused` is set, the
+ *   accompanying `points` list is a DIAGNOSTIC of the shape that could not be
+ *   completed, NOT a candidate set — both call sites check `refused` FIRST and
+ *   return, because evaluating the lone tool-level point of a shell-class scope
+ *   answers with a decisive non-coverage no author declared. Pinned by
+ *   `test/a4p7-v3-cutover-acceptance.test.ts` GROUP F.
+ */
+export function operationApprovalCandidatePoints(input) {
+    const { point, commandFingerprint } = input;
+    if (!isShellOperationClass(point.operationClass)) {
+        return { points: [point.matcher] };
+    }
+    if (point.matcher.kind === 'fingerprint') {
+        // The point already names the command. Adding the tool key would only widen
+        // the question with a shape no shell-class rule can answer, so it is not a
+        // candidate: more candidates is not automatically more conservative.
+        return { points: [point.matcher] };
+    }
+    if (commandFingerprint === undefined || commandFingerprint.length === 0) {
+        return {
+            points: [point.matcher],
+            refused: OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING,
+        };
+    }
+    return { points: [point.matcher, { kind: 'fingerprint', resource: commandFingerprint }] };
+}
+/**
  * Route one concrete operation ask to the minimum authority that may sign it
  * (spec §7.2-§7.4, §10.1, acceptance §21.4).
  *
@@ -158,40 +226,99 @@ export function routeOperationApproval(input) {
             detail: 'the authority facts for this instance are malformed (no beneficiary position or no document slot)',
         };
     }
-    let evaluation;
-    try {
-        evaluation = evaluateAuthorityCeiling({
-            beneficiaryAuthority,
-            initiatorAuthority: input.initiatorAuthority,
-            operationClass: input.operationClass,
-            // The canonical exact resource of THIS invocation. An operation is one
-            // concrete target, so the scope question is exact by construction: a
-            // document rule that covers it does so as an exact hit or a subtree
-            // that contains it, and `subtreeContains` is what answers the second.
-            matcher: { kind: 'exact', resource: input.resourceKey },
-            desiredEffect: 'allow',
-            documents,
-            ...(facts.subtreeContains !== undefined ? { subtreeContains: facts.subtreeContains } : {}),
-        });
-    }
-    catch (error) {
-        const code = codeOf(error);
-        const reason = code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE
-            ? OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE
-            : OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT;
+    // RULING 4: the scope question is asked once per candidate SHAPE and the
+    // answers are MET (highest rung governs, `undetermined` absorbs). See
+    // `operationApprovalCandidatePoints` for why the shapes differ and why a
+    // decisive cross-shape false made the single-shape question permissive.
+    const candidates = operationApprovalCandidatePoints({
+        point: { operationClass: input.operationClass, matcher: { kind: 'exact', resource: input.resourceKey } },
+        ...(input.commandFingerprint !== undefined ? { commandFingerprint: input.commandFingerprint } : {}),
+    });
+    if (candidates.refused !== undefined) {
         return {
             kind: 'authority-undetermined',
-            reason,
-            detail: messageOf(error),
+            reason: candidates.refused,
+            detail: `the ${input.operationClass} scope on ${input.resourceKey} is shell-class, so its narrowing can only be ` +
+                'declared as a command fingerprint; no canonical operation identity was supplied, and answering from ' +
+                'the tool key alone would report a ceiling no author declared',
         };
     }
-    if (evaluation.outcome === 'undetermined') {
+    // Every refusal PAST the candidate gate names both candidate shapes: a human
+    // reading a refusal has to be able to tell WHICH shape the ceiling could not
+    // decide, and the consumption point's question is about what this human was
+    // shown -- so `recheckPersistedOperationAuthority` names them in its refusals
+    // too, in the same words. The gate refusal above is the deliberate exception:
+    // it cannot name a shape it was never allowed to ask about.
+    const candidateDetail = candidates.points.length > 1
+        ? ` (candidates: ${candidates.points.map((m) => `${m.kind} ${m.resource}`).join(', ')})`
+        : '';
+    const evaluations = [];
+    for (const matcher of candidates.points) {
+        try {
+            evaluations.push(evaluateAuthorityCeiling({
+                beneficiaryAuthority,
+                initiatorAuthority: input.initiatorAuthority,
+                operationClass: input.operationClass,
+                // One candidate SHAPE of the same concrete invocation: the tool-level
+                // exact key is this plane's canonical name for an operation
+                // (`canonical-operation.ts:14`), the fingerprint is the shape the
+                // documents use for a shell-class narrowing (`validate.ts:699`).
+                matcher,
+                desiredEffect: 'allow',
+                documents,
+                ...(facts.subtreeContains !== undefined ? { subtreeContains: facts.subtreeContains } : {}),
+            }));
+        }
+        catch (error) {
+            const code = codeOf(error);
+            const reason = code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE
+                ? OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE
+                : OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT;
+            return {
+                kind: 'authority-undetermined',
+                reason,
+                detail: `${messageOf(error)}${candidateDetail}`,
+            };
+        }
+    }
+    // ABSORPTION LAW: a candidate that cannot answer outranks one that can. If one
+    // shape's containment question is unanswerable, the SCOPE's ceiling is
+    // unanswerable; returning the shape that did answer would be conservative by
+    // name only - the same failure as returning a rung nobody declared.
+    const undecided = evaluations.find((e) => e.outcome === 'undetermined');
+    if (undecided !== undefined) {
         return {
             kind: 'authority-undetermined',
             reason: OPERATION_APPROVAL_REFUSAL_REASONS.CEILING_UNDETERMINED,
             detail: `the authority ceiling for ${input.operationClass} on ${input.resourceKey} could not be ` +
-                `decided (rungs consulted: ${evaluation.evidence.consideredRoles.join(', ') || 'none'})`,
+                `decided (rungs consulted: ${undecided.evidence.consideredRoles.join(', ') || 'none'})` +
+                candidateDetail,
         };
+    }
+    // MEET over the candidates: the governing answer is the HIGHEST rung any
+    // candidate requires. Order-independent, and never below what the tool key
+    // alone would have said - so the set closes the shell gap without ever
+    // widening a scope (file-class scopes have one candidate and move not at all).
+    const firstEvaluation = evaluations[0];
+    if (firstEvaluation === undefined) {
+        // Unreachable by construction: `candidates.points` always carries the primary
+        // point, and each candidate either pushed an evaluation or returned above.
+        // Stated as a refusal rather than a cast, the way this module treats every
+        // other field the compiler cannot see past.
+        return {
+            kind: 'authority-undetermined',
+            reason: OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT,
+            detail: `no candidate evaluation was produced for this scope${candidateDetail}`,
+        };
+    }
+    let evaluation = firstEvaluation;
+    for (const other of evaluations.slice(1)) {
+        if (other.requiredAuthority === undefined || evaluation.requiredAuthority === undefined) {
+            continue;
+        }
+        if (isHigherAuthority(other.requiredAuthority, evaluation.requiredAuthority)) {
+            evaluation = other;
+        }
     }
     const requiredAuthority = evaluation.requiredAuthority;
     if (requiredAuthority === undefined) {
@@ -202,7 +329,7 @@ export function routeOperationApproval(input) {
         return {
             kind: 'authority-undetermined',
             reason: OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT,
-            detail: 'the evaluator answered with a decided outcome but no required authority',
+            detail: `the evaluator answered with a decided outcome but no required authority${candidateDetail}`,
         };
     }
     if (evaluation.outcome === 'direct') {
@@ -321,37 +448,83 @@ export function recheckPersistedOperationAuthority(input) {
         // authority questions by picking a side.
         return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.FACTS_MALFORMED, `the durable identity's beneficiary '${input.beneficiaryAuthority}' disagrees with the fresh facts' '${facts.beneficiaryAuthority}'`);
     }
-    let evaluation;
-    try {
-        evaluation = evaluateAuthorityCeiling({
-            beneficiaryAuthority: input.beneficiaryAuthority,
-            initiatorAuthority: input.reviewAuthority,
-            operationClass: input.authorityScope.operationClass,
-            // The PERSISTED point, kind included. This line is the whole reason the
-            // durable field carries a matcher kind instead of a bare resource.
-            matcher: {
-                kind: input.authorityScope.matcher.kind,
-                resource: input.authorityScope.matcher.resource,
-            },
-            desiredEffect: 'allow',
-            documents: facts.documents,
-            ...(facts.subtreeContains !== undefined ? { subtreeContains: facts.subtreeContains } : {}),
-        });
+    // RULING 4 at the consumption point: the SAME derivation as the ask, over the
+    // persisted point plus the row's command fingerprint. The persisted point stays
+    // first and keeps its kind - it is the shape the human was shown - and the
+    // fingerprint joins only where the class admits it.
+    const candidates = operationApprovalCandidatePoints({
+        point: input.authorityScope,
+        ...(input.commandFingerprint !== undefined ? { commandFingerprint: input.commandFingerprint } : {}),
+    });
+    // A refusal is TERMINAL here, exactly as it is at the ASK. The helper answers a
+    // shell-class scope that cannot name its command with `refused` AND its primary
+    // point, and that primary point is a SHAPE NO SHELL RULE CAN COVER
+    // (`authority-envelope.ts:218-222`: cross-shape coverage is a decisive
+    // `{covers:false}`). Evaluating it would therefore not be "the narrower
+    // question" — it would be an answer the documents never gave, and it is exactly
+    // how a rise on a shell command becomes a `still-covered`. So the point that
+    // accompanies a refusal is a diagnostic of what could not be named, never a
+    // candidate to evaluate; no call site consults `points` while `refused` is set.
+    if (candidates.refused !== undefined) {
+        return undetermined(candidates.refused, `the persisted ${input.authorityScope.operationClass} scope is shell-class and its row supplies no usable ` +
+            'command fingerprint, so the coverage question the ask asked cannot be re-asked here; answering from the ' +
+            'persisted tool-level point alone would report a ceiling no author declared');
     }
-    catch (error) {
-        const code = codeOf(error);
-        return undetermined(code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE
-            ? OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE
-            : OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT, messageOf(error));
+    // The same candidate naming the ASK puts in its refusals, for the same reason:
+    // the consumption refusal is shown to a human as the reason their approval did
+    // not spend, and "which shape could not be decided" is the question they can
+    // actually act on.
+    const candidateDetail = candidates.points.length > 1
+        ? ` (candidates: ${candidates.points.map((m) => `${m.kind} ${m.resource}`).join(', ')})`
+        : '';
+    const evaluations = [];
+    for (const matcher of candidates.points) {
+        try {
+            evaluations.push(evaluateAuthorityCeiling({
+                beneficiaryAuthority: input.beneficiaryAuthority,
+                initiatorAuthority: input.reviewAuthority,
+                operationClass: input.authorityScope.operationClass,
+                // The PERSISTED point, kind included, plus the shapes its class admits.
+                // This is the whole reason the durable field carries a matcher kind
+                // rather than a bare resource.
+                matcher,
+                desiredEffect: 'allow',
+                documents: facts.documents,
+                ...(facts.subtreeContains !== undefined ? { subtreeContains: facts.subtreeContains } : {}),
+            }));
+        }
+        catch (error) {
+            const code = codeOf(error);
+            return undetermined(code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE
+                ? OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_UNAVAILABLE
+                : OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT, `${messageOf(error)}${candidateDetail}`);
+        }
     }
-    if (evaluation.outcome === 'undetermined') {
+    const undecided = evaluations.find((e) => e.outcome === 'undetermined');
+    if (undecided !== undefined) {
         return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.CEILING_UNDETERMINED, `the ceiling for ${input.authorityScope.operationClass} on ${input.authorityScope.matcher.resource} ` +
             `could not be decided at the consumption point (rungs consulted: ` +
-            `${evaluation.evidence.consideredRoles.join(', ') || 'none'})`);
+            `${undecided.evidence.consideredRoles.join(', ') || 'none'})${candidateDetail}`);
+    }
+    // The same meet as the ask: the HIGHEST rung any candidate requires is what
+    // the recorded approval has to still cover, so a narrowing that only the
+    // fingerprint shape can express is no longer invisible at consumption.
+    const firstEvaluation = evaluations[0];
+    if (firstEvaluation === undefined) {
+        return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT, 'no candidate evaluation was produced for the persisted scope' + candidateDetail);
+    }
+    let evaluation = firstEvaluation;
+    for (const other of evaluations.slice(1)) {
+        if (other.requiredAuthority === undefined || evaluation.requiredAuthority === undefined) {
+            continue;
+        }
+        if (isHigherAuthority(other.requiredAuthority, evaluation.requiredAuthority)) {
+            evaluation = other;
+        }
     }
     const requiredNow = evaluation.requiredAuthority;
     if (requiredNow === undefined) {
-        return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT, 'the evaluator answered with a decided outcome but no required authority');
+        return undetermined(OPERATION_APPROVAL_REFUSAL_REASONS.DOCUMENT_BINDING_DEFECT, 'the evaluator answered with a decided outcome but no required authority' + candidateDetail);
     }
     if (isHigherAuthority(requiredNow, input.reviewAuthority)) {
         return { kind: 'stale', requiredNow };

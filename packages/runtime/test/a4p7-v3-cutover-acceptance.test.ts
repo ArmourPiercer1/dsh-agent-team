@@ -50,6 +50,23 @@
  * @module @dsh-agent-team/runtime/test/a4p7-v3-cutover-acceptance
  */
 import { afterAll, describe, expect, it } from 'vitest'
+import {
+  OPERATION_APPROVAL_REFUSAL_REASONS,
+  operationApprovalCandidatePoints,
+  operationApprovalCarrier,
+  recheckPersistedOperationAuthority,
+  routeOperationApproval,
+} from '../operation-permission/approval-routing.js'
+import type { OperationApprovalFacts } from '../operation-permission/approval-routing.js'
+import { CONTROL_REQUEST_KINDS } from '../control/types.js'
+import { evaluateAuthorityCeiling } from '../governance/runtime-authority.js'
+import { authorityRank, type AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import type { ProposalAuthorityPosition } from '../governance/proposal-store.js'
+import type {
+  AuthorityEffect,
+  AuthorityEnvelopeRule,
+  AuthorityResourceMatcher,
+} from '../../domain/authority-envelope/src/index.js'
 import { mkdirSync, rmSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 
@@ -1310,11 +1327,24 @@ describe('D9 — the Blueprint authority degrades with its anchor, and fails clo
 // claim (coordinator RULING 4, 2026-10-07).
 //
 // The ruling asked for a test in which a shell-class narrowing declared at
-// fingerprint shape is seen by BOTH the ASK and the consumption recheck. That
-// test cannot be written against this routing, and the reason is worth more
-// than the test would have been, so the gap is pinned here instead of living in
-// a comment: THREE laws each hold on their own and are mutually exclusive at the
-// shell class.
+// fingerprint shape is seen by BOTH the ASK and the consumption recheck. This
+// group is the HALF of that ruling that survives the fix: the three laws, each
+// of which holds on its own and which were mutually exclusive at the shell class
+// when the ASK asked only one shape. It depends on exactly the decisive
+// non-coverage pinned below, so this group stays as the reason the set is
+// required rather than as a stand-in for a missing test.
+//
+// WHERE THE CLOSURE ACTUALLY LANDED, because this title used to claim more than
+// the tree contained. GROUP F closes the ASK. The consumption recheck was NOT
+// closed by GROUP F: it never received the row's command fingerprint, so the set
+// it derived was the persisted point alone and the narrowing stayed invisible
+// there -- a claim of "closed" that was true of one site and false of the other,
+// printed in a title where a reader would stop looking. The consumption half
+// closed when `control/service.ts` began passing the row's `operationFingerprint`
+// through the port, and it is proved in
+// `a4p7-a1-14-consumption-revalidation.test.ts` (S group: a shell row driven
+// through `guardOperation`, rise and no-rise). Both halves are named in the
+// title below so neither can be read off the other again.
 //
 //   1. the documents: a SHELL-class rule pairs with `fingerprint` EXACTLY, no
 //      subtree, no any, no path (`packages/domain/blueprint/src/validate.ts:699`
@@ -1326,12 +1356,15 @@ describe('D9 — the Blueprint authority degrades with its anchor, and fails clo
 //   3. the algebra: coverage between the two shapes is a DECISIVE false, not an
 //      `undetermined` - the first test below.
 //
-// So no shell-class document rule can ever cover the point the ASK asks with,
-// and because the answer is decisive rather than absorbing, the narrowing does
-// not merely go unseen: it stops contributing to the meet, which can only make
-// the rung the human is shown LOWER than the author's narrowing intended. The
-// per-command protection that does exist is the one-shot grant keyed by
-// `operationFingerprint`, which is a different mechanism from the ceiling.
+// So a shell-class document rule could never cover the single point the ASK used
+// to ask with, and because the answer is decisive rather than absorbing, the
+// narrowing did not merely go unseen: it stopped contributing to the meet, which
+// can only make the rung the human is shown LOWER than the author's narrowing
+// intended. That direction - never wider, only ever lower - is the reason the
+// fix is a candidate SET rather than a migration of shell documents, and GROUP F
+// asserts that asking both shapes recovers the narrowing without widening any
+// scope. The per-command protection that also exists, the one-shot grant keyed
+// by `operationFingerprint`, is a different mechanism from the ceiling.
 //
 // Why the obvious patch is not one: flipping the ASK point to `fingerprint`
 // makes it ask a per-command question, and the same flip stops every tool-level
@@ -1341,7 +1374,7 @@ describe('D9 — the Blueprint authority degrades with its anchor, and fails clo
 // fix. The durable shape already carries a matcher `kind`, so whichever way the
 // decision goes, storage does not have to move.
 // ---------------------------------------------------------------------------
-describe('GROUP E - the shell narrowing the ASK cannot see (RULING 4)', () => {
+describe('GROUP E - why a shell narrowing was invisible to the ASK: three laws, one gap (RULING 4; closed at the ASK by GROUP F, at consumption by the a1-14 S group)', () => {
   const fingerprintRule = { kind: 'fingerprint', resource: 'sha256:npm-test-canonical-command' } as const
   const exactTarget = { kind: 'exact', resource: 'bash:tool' } as const
 
@@ -1374,5 +1407,495 @@ describe('GROUP E - the shell narrowing the ASK cannot see (RULING 4)', () => {
       covers: false,
       undeterminable: false,
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// GROUP F - the closure: the ceiling evaluates a CANDIDATE SET of points and
+// meets them (coordinator RULING 4, option (ii), 2026-10-08).
+//
+// The set is the exact tool key AND the command fingerprint. A meet over
+// candidate points is never wider than either individual evaluation, so the fix
+// is conservative BY CONSTRUCTION rather than by an argument about this fixture:
+// adding a candidate can lower the rung the human is asked to sign or leave it
+// where it was, and can never raise it. The shapes are derived by ONE function
+// that both the ASK and the consumption recheck call, because the recheck's
+// question - "does the rung that signed still cover what the human was shown?" -
+// is only answerable if the two sites asked the same question.
+//
+// ONE FUNCTION IS NOT THE CLOSURE, and this group cannot see the difference. A
+// shared derivation only agrees as far as the inputs each site is GIVEN: the
+// consumption site also needs the row's command fingerprint delivered to it, and
+// until `control/service.ts` threaded it, both sites called the same function
+// with different inputs and this group stayed green (it feeds the helper both
+// shapes by hand). That half is `a4p7-a1-14-consumption-revalidation.test.ts`
+// S1-S4, which drives the composition's own port through `guardOperation`.
+//
+// An empty candidate set is not representable at the call sites: the primary
+// point is a required argument, so there is no path from "we could not name a
+// shape" to the identity element (full reach), which is what an empty meet over
+// the document lattice means and why it would be the wrong answer here.
+// ---------------------------------------------------------------------------
+describe('GROUP F - the candidate set the ceiling meets (RULING 4 closure)', () => {
+  const shellFingerprint = 'sha256:npm-test-canonical-command'
+  const shellPoint = { operationClass: 'bash', matcher: { kind: 'exact', resource: 'bash:tool' } } as const
+  const filePoint = { operationClass: 'fs.write', matcher: { kind: 'exact', resource: 'fileA' } } as const
+
+  // The document fixtures these tests need are RUNTIME authority documents, not
+  // Blueprint sources: the ceiling evaluator is handed canonicalized documents,
+  // and every fixture below is the slot shape the plane actually passes
+  // (`{status:'declared', document}` / `{status:'absent'}`, never `undefined`,
+  // which is the absent-vs-unavailable defect A1-19 exists to prevent).
+  /** The Human User's HARD envelope, which binds every rung under it. */
+  function hardCapping(...rules: readonly AuthorityEnvelopeRule[]): AuthorityEnvelopeDocuments {
+    return {
+      teamHardEnvelope: { status: 'declared', document: { rules } },
+      permissionMutationEnvelope: { status: 'absent' },
+    }
+  }
+  /** A cap on ONE COMMAND -- `fingerprint` is the only matcher shape a
+   *  shell-class rule may take (`blueprint/src/validate.ts:699`). */
+  function commandCap(resource: string, maximumEffect: AuthorityEffect): AuthorityEnvelopeRule {
+    return { operationClass: 'bash', matcher: { kind: 'fingerprint', resource }, maximumEffect }
+  }
+  function shellFacts(documents: AuthorityEnvelopeDocuments): OperationApprovalFacts {
+    return { beneficiaryAuthority: 'member', documents }
+  }
+  /** ONE honest single-shape answer, straight from the evaluator: the rung that
+   *  shape alone requires, or `undetermined`. Everything in this group compares
+   *  the meet against these, so "never wider than either" is a measurement. */
+  function rungOf(
+    matcher: AuthorityResourceMatcher,
+    documents: AuthorityEnvelopeDocuments,
+    beneficiaryAuthority: ProposalAuthorityPosition = 'member',
+    initiatorAuthority: ProposalAuthorityPosition = 'member',
+  ): ProposalAuthorityPosition | 'undetermined' {
+    const evaluation = evaluateAuthorityCeiling({
+      beneficiaryAuthority,
+      initiatorAuthority,
+      operationClass: 'bash',
+      matcher,
+      desiredEffect: 'allow',
+      documents,
+    })
+    if (evaluation.outcome === 'undetermined' || evaluation.requiredAuthority === undefined) {
+      return 'undetermined'
+    }
+    return evaluation.requiredAuthority
+  }
+
+  it('the CANDIDATE GATE: a shell scope that cannot name its command is refused, never answered from the tool key', () => {
+    // This is the refusal law, NOT absorption — absorption is the pair of tests
+    // further down that puts an `undetermined` candidate next to a decided one.
+    // The name used to claim otherwise, which is worse than no name: a reader
+    // who wanted to know whether absorption held would have stopped here, and
+    // what this test actually proves is that a missing command fails closed.
+    const derived = operationApprovalCandidatePoints({ point: shellPoint })
+    // Refused, and STILL carrying its primary point -- and the point that comes
+    // with a refusal is a DIAGNOSTIC, never a candidate. Both call sites check
+    // `refused` first and return; evaluating this lone tool-level point would be
+    // answering from a shape no shell rule can cover (authority-envelope.ts:218-222).
+    expect(derived.refused).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+    // And the refusal is live on the routing, not just on the helper: with the
+    // facts present the ask reaches this decision and stops there.
+    const routing = routeOperationApproval({
+      operationClass: 'bash',
+      resourceKey: 'bash:tool',
+      initiatorAuthority: 'member',
+      facts: { beneficiaryAuthority: 'member', documents: {} } as never,
+    })
+    // Narrowed, not cast: `reason` exists on the refusal arm only, and a cast
+    // here would let the assertion pass against an arm that has no reason at all.
+    if (routing.kind !== 'authority-undetermined') {
+      throw new Error(`expected a refusal, got ${routing.kind}`)
+    }
+    expect(routing.reason).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+  })
+
+  it('the shell set is the tool key AND the fingerprint; the file set is the point alone', () => {
+    expect(
+      operationApprovalCandidatePoints({ point: shellPoint, commandFingerprint: shellFingerprint }).points,
+    ).toEqual([
+      { kind: 'exact', resource: 'bash:tool' },
+      { kind: 'fingerprint', resource: shellFingerprint },
+    ])
+    // The positive control that keeps the file class honest: one candidate, so
+    // nothing about existing file-class routing moves.
+    expect(operationApprovalCandidatePoints({ point: filePoint }).points).toEqual([
+      { kind: 'exact', resource: 'fileA' },
+    ])
+    expect(operationApprovalCandidatePoints({ point: filePoint }).refused).toBeUndefined()
+  })
+
+  it('a point that already names the command does not gain a second shape (more candidates is not automatically more conservative)', () => {
+    const derived = operationApprovalCandidatePoints({
+      point: { operationClass: 'bash', matcher: { kind: 'fingerprint', resource: shellFingerprint } },
+      commandFingerprint: shellFingerprint,
+    })
+    expect(derived.points).toEqual([{ kind: 'fingerprint', resource: shellFingerprint }])
+  })
+
+  it('the two PRODUCTION sites derive the SAME set: same row, same documents, same answer', () => {
+    // Two halves, because the claim has two halves. The first is the
+    // construction: the persisted `authorityScope` is what the ASK's primary
+    // point became, so identical inputs give an identical set. On its own that
+    // proves only that a pure function is pure -- which is why this test used to
+    // be the whole of the claim, and why the claim was false about production.
+    const atAsk = operationApprovalCandidatePoints({ point: shellPoint, commandFingerprint: shellFingerprint })
+    const persistedScope = {
+      operationClass: shellPoint.operationClass,
+      matcher: { kind: shellPoint.matcher.kind, resource: shellPoint.matcher.resource },
+    }
+    const atConsumption = operationApprovalCandidatePoints({
+      point: persistedScope,
+      commandFingerprint: shellFingerprint,
+    })
+    expect(atConsumption.points).toEqual(atAsk.points)
+    expect(atConsumption.refused).toBe(atAsk.refused)
+
+    // The second half is the one that needs the threading: documents on which
+    // the two shapes answer DIFFERENTLY, fed to the ASK and to the consumption
+    // recheck, both as production calls them. If the consumption site derived a
+    // different set it would answer from the tool-level point alone and say
+    // `still-covered`; deriving the same set, it names the same rung the human
+    // was asked to sign. This is the equality that matters, and it is only
+    // expressible now that the row's fingerprint reaches this site at all.
+    const diverging = hardCapping(commandCap(shellFingerprint, 'ask'))
+    const ask = routeOperationApproval({
+      operationClass: 'bash',
+      resourceKey: 'bash:tool',
+      initiatorAuthority: 'member',
+      commandFingerprint: shellFingerprint,
+      facts: shellFacts(diverging),
+    })
+    if (ask.kind !== 'approval-required') {
+      throw new Error(`the ask must name a rung, got ${ask.kind}`)
+    }
+    const recheck = recheckPersistedOperationAuthority({
+      reviewAuthority: 'leader',
+      beneficiaryAuthority: 'member',
+      authorityScope: persistedScope,
+      commandFingerprint: shellFingerprint,
+      facts: shellFacts(diverging),
+    })
+    if (recheck.kind !== 'stale') {
+      throw new Error(
+        `the consumption point must see the same rise the ask named; got ${JSON.stringify(recheck)}`,
+      )
+    }
+    expect(recheck.requiredNow).toBe(ask.requiredAuthority)
+    expect(recheck.requiredNow).toBe('human-admin')
+    // And on documents where the shapes AGREE, the two sites still agree -- the
+    // equality is not an artifact of picking a divergent fixture.
+    const agreeing = hardCapping(commandCap(shellFingerprint, 'allow'))
+    const askAgrees = routeOperationApproval({
+      operationClass: 'bash',
+      resourceKey: 'bash:tool',
+      initiatorAuthority: 'member',
+      commandFingerprint: shellFingerprint,
+      facts: shellFacts(agreeing),
+    })
+    if (askAgrees.kind === 'authority-undetermined' || askAgrees.kind === 'legacy') {
+      throw new Error(`expected a decided answer, got ${askAgrees.kind}`)
+    }
+    expect(
+      recheckPersistedOperationAuthority({
+        reviewAuthority: askAgrees.requiredAuthority,
+        beneficiaryAuthority: 'member',
+        authorityScope: persistedScope,
+        commandFingerprint: shellFingerprint,
+        facts: shellFacts(agreeing),
+      }),
+    ).toEqual({ kind: 'still-covered' })
+  })
+
+  it('a refusal is TERMINAL at the consumption point: a shell row with no command is a named refusal, not the persisted point alone', () => {
+    // The helper's shape: refused, AND still carrying its primary point.
+    const unthreaded = operationApprovalCandidatePoints({ point: shellPoint })
+    expect(unthreaded.refused).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+    expect(unthreaded.points).toEqual([{ kind: 'exact', resource: 'bash:tool' }])
+    // An empty fingerprint is the other way to arrive with no command: the
+    // caller reached the row and the row had nothing.
+    expect(
+      operationApprovalCandidatePoints({ point: shellPoint, commandFingerprint: '' }).refused,
+    ).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+    // WHAT CHANGED, and it is the whole point of the pair above: that lone
+    // point used to be EVALUATED anyway at consumption, which answered a
+    // question no shell rule can answer and reported coverage. Both call sites
+    // now treat `refused` as terminal, so the diagnostic point is never a
+    // candidate. Asserted on the consumption site, which is where it was wrong.
+    const documents = hardCapping(commandCap(shellFingerprint, 'ask'))
+    expect(
+      recheckPersistedOperationAuthority({
+        reviewAuthority: 'leader',
+        beneficiaryAuthority: 'member',
+        authorityScope: shellPoint,
+        facts: shellFacts(documents),
+      }),
+    ).toMatchObject({
+      kind: 'undetermined',
+      reason: OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING,
+    })
+    // Including the empty-string arrival: an authority rise must never be able
+    // to hide behind a fingerprint that names no command.
+    expect(
+      recheckPersistedOperationAuthority({
+        reviewAuthority: 'leader',
+        beneficiaryAuthority: 'member',
+        authorityScope: shellPoint,
+        commandFingerprint: '',
+        facts: shellFacts(documents),
+      }).kind,
+    ).toBe('undetermined')
+  })
+
+  it('a shell scope that DOES carry the fingerprint is not refused at the candidate gate (control)', () => {
+    const facts = { beneficiaryAuthority: 'member', documents: {} } as never
+    const withFingerprint = routeOperationApproval({
+      operationClass: 'bash',
+      resourceKey: 'bash:tool',
+      initiatorAuthority: 'member',
+      commandFingerprint: shellFingerprint,
+      facts,
+    })
+    // It got PAST the candidate gate and into the ceiling, where this fixture's
+    // empty document slot then fails: reaching that failure is the point, since
+    // the shell-point refusal is the only answer that names a missing command.
+    if (withFingerprint.kind !== 'authority-undetermined') {
+      throw new Error(`expected the ceiling to answer, got ${withFingerprint.kind}`)
+    }
+    expect(withFingerprint.reason).not.toBe(OPERATION_APPROVAL_REFUSAL_REASONS.SHELL_POINT_MISSING)
+    expect(operationApprovalCandidatePoints({ point: shellPoint, commandFingerprint: shellFingerprint }).refused)
+      .toBeUndefined()
+  })
+
+  // -------------------------------------------------------------------------
+  // THE MEET, AS DATA. Everything above this line pins the candidate SET; none
+  // of it pins what is DONE with the answers, because until now nothing in the
+  // suite could tell a meet from a first-wins loop. The mutation that shows it:
+  // make `isHigherAuthority(other, evaluation)` answer `false` at both sites --
+  // i.e. derive the set, evaluate every candidate, and then keep candidate 0 --
+  // which is EXACTLY the pre-ruling behaviour, and which these tests turn red.
+  // -------------------------------------------------------------------------
+
+  it('THE MEET ANSWERS AT THE FINGERPRINT RUNG: one input goes leader -> human-admin', () => {
+    const documents = hardCapping(commandCap(shellFingerprint, 'ask'))
+    // The two honest single-shape answers, computed rather than quoted. The
+    // first is what the ASK said when it asked only its canonical point.
+    expect(rungOf({ kind: 'exact', resource: 'bash:tool' }, documents)).toBe('leader')
+    expect(rungOf({ kind: 'fingerprint', resource: shellFingerprint }, documents)).toBe('human-admin')
+    const routing = routeOperationApproval({
+      operationClass: 'bash',
+      resourceKey: 'bash:tool',
+      initiatorAuthority: 'member',
+      commandFingerprint: shellFingerprint,
+      facts: shellFacts(documents),
+    })
+    if (routing.kind !== 'approval-required') {
+      throw new Error(`expected a named rung, got ${routing.kind}`)
+    }
+    // Not merely SEEN: GOVERNED. `leader` is the answer a meet that collected
+    // the fingerprint candidate and then ignored it would produce.
+    expect(routing.requiredAuthority).toBe('human-admin')
+    expect(routing.carrierKind).toBe('user-approval')
+    // The evidence is the WINNER's walk, which is the shape a human reads: the
+    // rung rose past leader and past human-user, on the strength of one command.
+    expect(routing.evidence.roseBecauseInsufficient).toEqual(['leader', 'human-user'])
+  })
+
+  it('THE MEET IS LIVE AT CONSUMPTION: the same row and documents answer `stale`, not `still-covered`', () => {
+    const documents = hardCapping(commandCap(shellFingerprint, 'ask'))
+    const verdict = recheckPersistedOperationAuthority({
+      reviewAuthority: 'leader',
+      beneficiaryAuthority: 'member',
+      authorityScope: shellPoint,
+      commandFingerprint: shellFingerprint,
+      facts: shellFacts(documents),
+    })
+    // `still-covered` is what the first candidate alone reports (its rung is
+    // the one that signed, so nothing looks like a rise). Getting `stale` here
+    // can only come from the second candidate raising the meet.
+    expect(verdict).toEqual({ kind: 'stale', requiredNow: 'human-admin' })
+    // Control in the same breath: with the command NOT narrowed, the meet stays
+    // where the tool-level point put it and the allow still covers. Without
+    // this, `stale` would be reachable from a recheck that always says stale.
+    expect(
+      recheckPersistedOperationAuthority({
+        reviewAuthority: 'leader',
+        beneficiaryAuthority: 'member',
+        authorityScope: shellPoint,
+        commandFingerprint: shellFingerprint,
+        facts: shellFacts(hardCapping(commandCap(shellFingerprint, 'allow'))),
+      }),
+    ).toEqual({ kind: 'still-covered' })
+  })
+
+  it('ABSORPTION at the ASK: one `undetermined` candidate and one decided one is `authority-undetermined`', () => {
+    // The construction that makes one candidate unanswerable while the other
+    // decides: a SUBTREE envelope rule. Against the tool-level exact target,
+    // with no containment predicate injected, coverage is `{covers:false,
+    // undeterminable:true}` (authority-envelope.ts:226-230); against the
+    // fingerprint target it is a decisive false. So the fingerprint candidate
+    // has an answer (`leader`) and the exact candidate has none -- and an
+    // answer that could not be checked is not an answer.
+    // (A subtree rule is not valid in a DECLARED shell document,
+    // validate.ts:699; these are RUNTIME documents, which is what the evaluator
+    // is handed, and the undetermined arm is reachable in production whenever
+    // the containment seam cannot answer.)
+    const documents = hardCapping({
+      operationClass: 'bash',
+      matcher: { kind: 'subtree', resource: 'bash' },
+      maximumEffect: 'ask',
+    })
+    expect(rungOf({ kind: 'exact', resource: 'bash:tool' }, documents)).toBe('undetermined')
+    expect(rungOf({ kind: 'fingerprint', resource: shellFingerprint }, documents)).toBe('leader')
+    const routing = routeOperationApproval({
+      operationClass: 'bash',
+      resourceKey: 'bash:tool',
+      initiatorAuthority: 'member',
+      commandFingerprint: shellFingerprint,
+      facts: shellFacts(documents),
+    })
+    if (routing.kind !== 'authority-undetermined') {
+      throw new Error(
+        `the decided candidate must not outvote the undetermined one; got ${JSON.stringify(routing)}`,
+      )
+    }
+    expect(routing.reason).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.CEILING_UNDETERMINED)
+  })
+
+  it('ABSORPTION at the CONSUMPTION point: the same pair is `undetermined`, never the decided candidate alone', () => {
+    const documents = hardCapping({
+      operationClass: 'bash',
+      matcher: { kind: 'subtree', resource: 'bash' },
+      maximumEffect: 'ask',
+    })
+    const verdict = recheckPersistedOperationAuthority({
+      reviewAuthority: 'leader',
+      beneficiaryAuthority: 'member',
+      authorityScope: shellPoint,
+      commandFingerprint: shellFingerprint,
+      // No `subtreeContains`: the facts carry no containment predicate, which is
+      // exactly the state that makes the subtree rule undeterminable.
+      facts: shellFacts(documents),
+    })
+    // The decided candidate (`leader`) would have answered `still-covered` for
+    // a leg signed at leader. Absorption is what stops that.
+    if (verdict.kind !== 'undetermined') {
+      throw new Error(`expected absorption, got ${JSON.stringify(verdict)}`)
+    }
+    expect(verdict.reason).toBe(OPERATION_APPROVAL_REFUSAL_REASONS.CEILING_UNDETERMINED)
+    // And the refusal says WHICH shapes were in play, at this site too. The
+    // module comment claims both candidate shapes appear in every refusal past
+    // the gate; this is where that claim used to be false, so it is checked
+    // here rather than left to a comment.
+    expect(verdict.detail).toContain('exact bash:tool')
+    expect(verdict.detail).toContain(`fingerprint ${shellFingerprint}`)
+  })
+
+  it('NEVER WIDER: the meet is exactly the highest rung any candidate requires, over a matrix of documents', () => {
+    // The law RULING 4 chose for its conservativeness argument, as a matrix
+    // rather than as a narrative: for every document and every (beneficiary,
+    // initiator) pair, the routed rung EQUALS the max of the honest
+    // single-shape answers, so adding a candidate can never widen a scope.
+    const envelopes: Array<[string, AuthorityEnvelopeDocuments]> = [
+      ['no rules', hardCapping()],
+      ['command capped at ask', hardCapping(commandCap(shellFingerprint, 'ask'))],
+      ['command capped at deny', hardCapping(commandCap(shellFingerprint, 'deny'))],
+      ['command allowed explicitly', hardCapping(commandCap(shellFingerprint, 'allow'))],
+      ['a DIFFERENT command capped at ask', hardCapping(commandCap('sha256:some-other-command', 'ask'))],
+      ['hard envelope absent', { teamHardEnvelope: { status: 'absent' }, permissionMutationEnvelope: { status: 'absent' } }],
+    ]
+    const beneficiaries: ProposalAuthorityPosition[] = ['member', 'leader']
+    const initiators: ProposalAuthorityPosition[] = ['member', 'leader', 'human-user']
+    const failures: string[] = []
+    for (const [name, documents] of envelopes) {
+      for (const beneficiary of beneficiaries) {
+        for (const initiator of initiators) {
+          const exact = rungOf({ kind: 'exact', resource: 'bash:tool' }, documents, beneficiary, initiator)
+          const command = rungOf({ kind: 'fingerprint', resource: shellFingerprint }, documents, beneficiary, initiator)
+          const routing = routeOperationApproval({
+            operationClass: 'bash',
+            resourceKey: 'bash:tool',
+            initiatorAuthority: initiator,
+            commandFingerprint: shellFingerprint,
+            facts: { beneficiaryAuthority: beneficiary, documents },
+          })
+          const label = `${name}/beneficiary=${beneficiary}/initiator=${initiator}`
+          if (exact === 'undetermined' || command === 'undetermined') {
+            // An undeterminable candidate absorbs; a refusal is never wider
+            // than a decided answer, because nothing runs on it.
+            if (routing.kind !== 'authority-undetermined') {
+              failures.push(`${label}: expected absorption, got ${routing.kind}`)
+            }
+            continue
+          }
+          if (routing.kind === 'authority-undetermined' || routing.kind === 'legacy') {
+            failures.push(`${label}: expected a decided answer, got ${routing.kind}`)
+            continue
+          }
+          const maxRank = Math.max(authorityRank(exact), authorityRank(command))
+          if (authorityRank(routing.requiredAuthority) !== maxRank) {
+            failures.push(
+              `${label}: meet ${routing.requiredAuthority} != max(${exact}, ${command}) rank ${maxRank}`,
+            )
+          }
+          if (routing.kind === 'direct' && authorityRank(routing.requiredAuthority) > authorityRank(initiator)) {
+            failures.push(`${label}: reported direct above the initiator's own rung`)
+          }
+        }
+      }
+    }
+    expect(failures).toEqual([])
+  })
+
+  // -------------------------------------------------------------------------
+  // THE DISCLOSURE THIS FIX CREATES, IN THE OPEN.
+  //
+  // Making the narrowing bite is not a free upgrade. A Team that declares a
+  // shell envelope rule BELOW `allow` used to have it ignored at the ceiling
+  // (a decisive non-coverage on the tool-level point), so its shell approvals
+  // routed at the ladder default. Now the rule governs -- and if it demands a
+  // rung above Human User's reach, the required rung IS Human Admin, which
+  // Alpha.4 has no resolver for. Such a case is closed by the control plane as
+  // `authority-unavailable` rather than left pending forever (ADR A1-12, and
+  // the arm `a4p3-approval-escalation.test.ts:718` pins). The operation does
+  // not run: the safe direction, but a real behavioural change, so it is
+  // asserted here rather than discovered by an operator.
+  //
+  // Blast radius at this commit, MEASURED rather than asserted: of every file in
+  // the repo that declares an envelope rule, the only ones pairing a shell-class
+  // `operationClass` with a `maximumEffect` below `allow` are
+  // `a4p1-authority-envelope.test.ts:308,326,731` -- parser and canonicalizer
+  // fixtures fed to `parseAuthorityEnvelope` / `buildAuthorityEnvelope`, which
+  // never reach a routing decision -- and this group. `packages/domain/blueprint
+  // /testdata/fixtures.ts` declares no `operationClass` at all, and no YAML or
+  // JSON fixture declares a fingerprint matcher. So nothing that routes today
+  // moves. This test is the case that COULD, and it states the outcome.
+  // -------------------------------------------------------------------------
+  it('DISCLOSURE: a declared shell narrowing below `allow` now bites, and the rung it demands has no Alpha.4 resolver', () => {
+    const documents = hardCapping(commandCap(shellFingerprint, 'ask'))
+    // Before the set existed, the same document said nothing to the ceiling.
+    expect(rungOf({ kind: 'exact', resource: 'bash:tool' }, documents)).toBe('leader')
+    const routing = routeOperationApproval({
+      operationClass: 'bash',
+      resourceKey: 'bash:tool',
+      initiatorAuthority: 'member',
+      commandFingerprint: shellFingerprint,
+      facts: shellFacts(documents),
+    })
+    if (routing.kind !== 'approval-required') {
+      throw new Error(`expected a named rung, got ${routing.kind}`)
+    }
+    expect(routing.requiredAuthority).toBe('human-admin')
+    // Human Admin rides `user-approval`, and that is precisely the case the
+    // control plane terminates `authority-unavailable` because no resolver
+    // exists at that rung in Alpha.4. The carrier is what the control lane
+    // consumes, so it is asserted, not described.
+    expect(operationApprovalCarrier(routing.requiredAuthority)).toBe(CONTROL_REQUEST_KINDS.USER_APPROVAL)
+    // And the alternative reading is explicitly rejected: this is NOT
+    // `undetermined`. The documents answered; they answered too high. A refusal
+    // here would be a different (and wrong) claim about the documents.
+    expect(routing.kind).not.toBe('authority-undetermined')
   })
 })

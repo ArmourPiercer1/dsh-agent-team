@@ -87,5 +87,5 @@ export { PERMISSION_COVERAGE_ERROR_CODES, PermissionCoverageUnmanagedError, isPe
 // A4-PR4 lane A (spec §10.1, §7.2-§7.4, acceptance §21.4) — the operation
 // approval routing: which rung must sign an `ask`, and the legacy request
 // kind that carries it. Pure; the durable case stays in the control plane.
-export { OPERATION_APPROVAL_REFUSAL_REASONS, OPERATION_APPROVAL_REFUSAL_REASON_VALUES, createOperationApprovalFactsReader, operationApprovalCarrier, recheckOperationApproval, recheckPersistedOperationAuthority, routeOperationApproval, } from './approval-routing.js';
+export { OPERATION_APPROVAL_REFUSAL_REASONS, OPERATION_APPROVAL_REFUSAL_REASON_VALUES, createOperationApprovalFactsReader, operationApprovalCarrier, recheckOperationApproval, operationApprovalCandidatePoints, recheckPersistedOperationAuthority, routeOperationApproval, } from './approval-routing.js';
 //# sourceMappingURL=index.js.map

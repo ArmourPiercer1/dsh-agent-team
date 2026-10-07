@@ -1,0 +1,17 @@
+# Is the dist drift inherited? Measured at the base commit 689b716c, no build needed.
+# check-artifacts compares rebuilt output against the COMMITTED dist; if a source symbol is absent
+# from committed dist at that commit, any build of that tree drifts. Both sides measured:
+
+$ git show 689b716c:packages/runtime/dist/packages/runtime/operation-permission/approval-routing.js | grep -c operationApprovalCandidatePoints
+0
+$ git show 689b716c:packages/runtime/operation-permission/approval-routing.ts | grep -c operationApprovalCandidatePoints
+4
+
+# So the tree at 689b716c already had drift: its source exports the candidate helper, its
+# committed dist does not contain it. Same for the other files whose last source commit is
+# b4340c50 / d9703292 / e68d2c74 / 60c300bc. Last commit that touched that dist file at all:
+  a1b2431b feat(a4-pr4): minimum-authority operation routing, single-shot execution, cross-case pending list
+
+# Drift split on this branch (51 files), by last commit touching the mapped source:
+#   INHERITED 36: b4340c50 x12, d9703292 x10, 689b716c x7, e68d2c74 x4, 60c300bc x3
+#   MINE      15: 7d047dcb x8, 3a213b92 x4, aa8475a9 x3

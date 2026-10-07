@@ -2584,6 +2584,14 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         reviewAuthority: row.reviewAuthority,
         requestedEffect: row.requestedEffect,
         authorityScope: row.authorityScope,
+        // RULING 4: the row's command identity goes with the persisted point, so
+        // the recheck derives the SAME candidate set the ask derived. Without it
+        // a shell-class row arrives as the tool-level exact key ALONE — a shape
+        // no shell rule can cover — and an authority rise on the command reads as
+        // `still-sufficient`. The early return above guarantees a row reaching
+        // here has one; it is passed verbatim rather than re-derived from the
+        // invocation now arriving, which is the whole point of A1-14.
+        commandFingerprint: row.operationFingerprint,
       })
     } catch {
       // A recheck that cannot run has not confirmed anything. The exception is
