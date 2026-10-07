@@ -49,6 +49,17 @@
  * row declaring version 99 is reachable TODAY, which is exactly why the boolean
  * was already lying TODAY.
  *
+ * WHAT THE WIRE DOES WHEN NOBODY TELLS IT A STATE. Two legs drive that default on
+ * purpose, because "a loud catalog, never a quiet one" is a law and a law on a
+ * branch nothing executes is a comment: a root handed a catalog but NO authority, and
+ * an authority reporting a state OUTSIDE the closed set (a fixture the type forbids —
+ * the runtime check exists exactly for producers the compiler cannot see, across a
+ * package boundary or out of a JSON file). Both must answer `unreadable` and carry NO
+ * `schemaVersion`, while the frozen `{ blueprintId, revisions }` half of the row keeps
+ * listing the blueprint: losing the state must not cost the operator the discovery.
+ * Defaulting to `current` because nothing said otherwise is the deleted defect
+ * restated as a fallback, so MUT-8 flips that default and these two legs burn.
+ *
  * Runner note: the plain-node vitest shim forbids async `it()` bodies, so the
  * worlds are built at module load and the `it` bodies assert synchronously.
  * Scratch lives under this test directory (workspace-write sandbox) and is
@@ -75,6 +86,7 @@ import {
 } from '../src/plugin/blueprint-authority.js'
 import type {
   BlueprintAnchorState,
+  BlueprintAuthority,
   BlueprintRegistryPort,
   BlueprintRegistryRecordView,
   BlueprintVersionState,
@@ -227,6 +239,53 @@ type CatalogWorld = {
  * No boot: `catalog.list` is one of the readiness-independent reads, so this is
  * the same answer a client gets from a host whose Team never started.
  */
+/**
+ * The authority wiring a root is given — three cases, and the two unusual ones are
+ * the laws group C asserts. A host that wires the catalog but not the authority, and
+ * an authority that reports a state nobody defined, must both answer `unreadable` on
+ * the wire rather than fall through to `current`.
+ */
+function rootWiring(
+  authority: BlueprintAuthority,
+  options: {
+    readonly factoryWorld?: boolean
+    readonly withoutAuthorityWiring?: boolean
+    readonly bogusStateFor?: string
+  },
+): {
+  readonly blueprintCatalog?: ReturnType<typeof createLiveBlueprintCatalog>
+  readonly blueprintAuthority?: BlueprintAuthority
+} {
+  if (options.factoryWorld === true) return {}
+  const catalog = createLiveBlueprintCatalog(authority)
+  if (options.withoutAuthorityWiring === true) return { blueprintCatalog: catalog }
+  return {
+    blueprintCatalog: catalog,
+    blueprintAuthority:
+      options.bogusStateFor === undefined ? authority : lyingAuthority(authority, options.bogusStateFor),
+  }
+}
+
+/**
+ * An authority reporting a state OUTSIDE the closed set for one identity.
+ *
+ * The cast is the fixture, not a shortcut: `BlueprintVersionState` forbids this value
+ * by construction, and the point of the leg is that the wire does not take a
+ * producer's word for it. A state that is not one of the three is not a state, and
+ * inventing `current` for it would be the deleted bug wearing a validation badge.
+ */
+function lyingAuthority(authority: BlueprintAuthority, blueprintId: string): BlueprintAuthority {
+  return {
+    ...authority,
+    listIdentities: () =>
+      authority.listIdentities().map((identity) =>
+        identity.blueprintId === blueprintId
+          ? { ...identity, migrationState: 'reached-later' as unknown as BlueprintVersionState }
+          : identity,
+      ),
+  }
+}
+
 async function catalogWorld(options: {
   readonly name: string
   readonly saved: Readonly<Record<string, string>>
@@ -235,6 +294,10 @@ async function catalogWorld(options: {
   readonly simulateSupported?: readonly number[]
   /** Inject no authority at all: the factory-world root. */
   readonly factoryWorld?: boolean
+  /** Wire the catalog but NOT the authority — the loud-catalog case. */
+  readonly withoutAuthorityWiring?: boolean
+  /** Report a state outside the closed set for this one blueprint. */
+  readonly bogusStateFor?: string
 }): Promise<CatalogWorld> {
   const dir = makeDir(options.name)
   for (const [name, source] of Object.entries(options.saved)) writeSource(dir, name, source)
@@ -261,9 +324,7 @@ async function catalogWorld(options: {
     legacyInspect: () => {
       throw new Error('A4-PR7 catalog guard: the legacy inspect seam is unused here')
     },
-    ...(options.factoryWorld === true
-      ? {}
-      : { blueprintCatalog: createLiveBlueprintCatalog(authority), blueprintAuthority: authority }),
+    ...rootWiring(authority, options),
   })
   const dispatcher: {
     current: ((endpoint: string, payload: unknown) => Promise<Record<string, unknown>>) | null
@@ -393,6 +454,33 @@ const rowsC = await worldC.list(8)
 // and it does not answer `current` for a document it refused.
 const worldF = await catalogWorld({ name: 'f-factory', saved: {}, factoryWorld: true })
 const rowsF = await worldF.list(1)
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WORLDS N and L — THE TWO WAYS NOBODY SUPPLIES A STATE. Both end at the same
+// default in `catalogRevisionState`, and that default is the ruling's own failure
+// mode written as a fallback: a document advertised as CURRENT because nothing
+// said otherwise. So the default is driven, not cited.
+//   N: the host wires the catalog and forgets the authority. Real catalog, real
+//      root, real dispatcher — the states simply are not there.
+//   L: an authority reports a state outside the closed set for one identity.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const worldN = await catalogWorld({
+  name: 'n-no-authority-wired',
+  saved: {
+    'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE_V1),
+    'runnable-b.yaml': sourceOnVersion('a4p7.catalog.runnableB', '2', V_RUNNABLE_V3),
+  },
+  withoutAuthorityWiring: true,
+})
+const rowsN = await worldN.list(8)
+
+const worldL = await catalogWorld({
+  name: 'l-bogus-state',
+  saved: { 'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE_V1) },
+  bogusStateFor: 'a4p7.catalog.runnableA',
+})
+const rowsL = await worldL.list(8)
 
 // ---------------------------------------------------------------------------
 describe('a4p7 R1 A: the version state is derived from the domain sets, never from a threshold', () => {
@@ -528,6 +616,44 @@ describe('a4p7 R1 C: catalog.list carries the state beside the revisions (real r
     const anchorState = onlyState(rowsF, 'a4p7.catalog.anchor')
     expect(anchorState.migrationState).toBe('current')
     expect(anchorState.schemaVersion).toBe(V_RUNNABLE_V1)
+  })
+
+  it('a host that wires the catalog but NOT the authority gets a LOUD catalog', () => {
+    // The absent-reader default is the ruling's law, not a courtesy, and until this
+    // leg nothing executed it: every other world supplies states. Flip that default
+    // to `current` — the reviewer's MUT-8 — and this leg is the ONLY thing in the
+    // suite that says so.
+    //
+    // What must survive is the discovery (the blueprint is still listed, the frozen
+    // `{ blueprintId, revisions }` half is intact) and what must not is the
+    // reassurance. `unreadable` with NO `schemaVersion`: the payload refuses to
+    // stand behind a version either, because nothing told it one.
+    const row = rowOf(rowsN, 'a4p7.catalog.runnableA')
+    expect(row['revisions']).toEqual([1])
+    const states = statesOf(row)
+    expect(states.length).toBe(1)
+    const state = states[0]
+    if (state === undefined) throw new Error('A4-PR7 catalog guard: the unwired root listed no state entry')
+    expect(state.revision).toBe(1)
+    expect(state.migrationState).toBe('unreadable')
+    expect(state).not.toHaveProperty('schemaVersion')
+    // Every revision of every listed blueprint degrades the same way — no row is
+    // allowed to look reassuring just because its neighbour was readable.
+    for (const listed of rowsN) {
+      for (const entry of statesOf(listed)) {
+        expect(entry.migrationState).toBe('unreadable')
+        expect(entry).not.toHaveProperty('schemaVersion')
+      }
+    }
+  })
+
+  it('a state outside the closed set never reaches the wire — it is unreadable', () => {
+    // The wire does not take a producer's word for it. The fixture writes
+    // `reached-later` through a cast (see `lyingAuthority`) precisely because the
+    // type would otherwise be the only check, and a type is not a boundary.
+    const state = onlyState(rowsL, 'a4p7.catalog.runnableA')
+    expect(state.migrationState).toBe('unreadable')
+    expect(state).not.toHaveProperty('schemaVersion')
   })
 })
 
