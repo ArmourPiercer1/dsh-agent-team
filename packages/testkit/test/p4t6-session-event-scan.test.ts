@@ -1897,6 +1897,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // that is not named here, and never by hand.
     const SCANNED_PATHS_A4PR7: readonly string[] = [
       'packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts',
+      'packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts',
     ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
@@ -1985,7 +1986,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // only when the A4-PR7 list above grows, and the by-path loop above is what
     // proves each named path really is in the scan (a total that moved for a
     // dropped file instead of an added one fails there, not here).
-    expect(SCANNED_PATHS_A4PR7.length).toBe(1017 - 1016)
+    expect(SCANNED_PATHS_A4PR7.length).toBe(1018 - 1016)
 
   })
 

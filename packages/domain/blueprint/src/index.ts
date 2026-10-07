@@ -58,7 +58,23 @@ export {
   REQUIREMENT_NAME_MAX_LENGTH,
   REQUIREMENT_NAME_PATTERN,
   SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
+  // A4-PR7 Task 7.1: the version HISTORY (what this product ever defined) and
+  // the DERIVED retired set. Both are exported because the discovery surface
+  // (the plugin's Blueprint authority, and behind it the remote v8 catalog) must
+  // classify a document as "needs migration" without re-deriving the rule — a
+  // second copy of that rule is a second answer, and the copy is what goes stale.
+  DEFINED_BLUEPRINT_DOCUMENT_VERSIONS,
+  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
+  // …and the two typed refusal names (ADR A1-21). A runtime lane that refuses a
+  // document by version throws one of THESE; a literal spelling of the same name
+  // in a second file is the fork A1-21 exists to prevent.
+  BLUEPRINT_VERSION_REFUSAL_CODES,
+  BLUEPRINT_VERSION_REFUSAL_CODE_VALUES,
 } from './schema.js'
+
+// The refusal-code type travels with its values (both live in `schema.js`,
+// beside the version sets they classify).
+export type { BlueprintVersionRefusalCode } from './schema.js'
 
 export type {
   BlueprintAuthorityEnvelope,

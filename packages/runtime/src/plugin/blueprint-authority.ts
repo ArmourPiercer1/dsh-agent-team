@@ -70,6 +70,9 @@
  */
 
 import {
+  BLUEPRINT_VERSION_REFUSAL_CODES,
+  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
+  SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
   compareBlueprintRevisions,
   parseBlueprint,
   toBlueprintSnapshotRef,
@@ -132,6 +135,28 @@ export interface BlueprintIdentity {
   readonly origin: BlueprintIdentityOrigin
   /** The saved file name (present for `origin: 'saved'` only). */
   readonly sourceFile?: string
+  /**
+   * The document version this identity was read from — for a frozen row the
+   * version the ROW carries, for the anchor the parsed anchor's, for a saved
+   * source the inspector's. Required, because the operator question "what still
+   * needs migrating?" is answered by this number and nothing else.
+   */
+  readonly schemaVersion: number
+  /**
+   * True exactly when this document carries a version this product DEFINED and
+   * no longer runs (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`): LISTED here, refused
+   * at `resolve()` with `BLUEPRINT_MIGRATION_REQUIRED`.
+   *
+   * The two facts are deliberately separate fields rather than one status
+   * string, because they have two different lifetimes: `migrationRequired` is
+   * what the listing must keep showing (it is the migration backlog), while
+   * `schemaVersion` is what an operator uses to decide WHICH migration applies.
+   * A document on a version nobody defined never reaches either: it has no
+   * readable identity, so it is not listable at all (the inspector's
+   * `rejected`, and `resolve` answers it with
+   * `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`, never with this flag — A1-21).
+   */
+  readonly migrationRequired: boolean
 }
 
 /**
@@ -216,6 +241,67 @@ function parseNamedSource(text: string, name: string): TeamBlueprint {
 }
 
 /**
+ * Does a document on this version need a migration, as opposed to being
+ * unreadable or perfectly current?
+ *
+ * The question is answered by the DOMAIN's derived set
+ * (`RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`), never by a local `version < 3`:
+ * a threshold here would be a second authority on which versions exist, and it
+ * would silently start lying the day a version 4 is defined on the other side of
+ * the package boundary.
+ */
+function migrationRequiredFor(schemaVersion: number): boolean {
+  return RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersion)
+}
+
+/**
+ * The version refusal a resolve/start path owes a document it can name but will
+ * not run (ADR A1-21). Two arms, two typed names, because the two operator
+ * actions are not the same task:
+ *
+ *  - a version this product DEFINED and retired → `BLUEPRINT_MIGRATION_REQUIRED`
+ *    (the document is the operator's; run the migration);
+ *  - a version it never defined → `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` (there
+ *    is no migration for a shape nobody knows).
+ *
+ * The order is the contract, not an optimisation. The identity's own
+ * `migrationRequired` flag is asked FIRST: that flag is what this same build just
+ * advertised on `listIdentities()`, so a resolve that answered "unsupported" (or
+ * "not found") for it would contradict its own catalog — and the flag is also the
+ * only arm that can know (a saved source is classified by the inspector, which
+ * consults the version sets; a frozen row by the retired set directly). Only when
+ * the flag is false does the version itself decide: supported → no refusal, and
+ * anything else is a version neither runnable nor retired, i.e. one this product
+ * never defined.
+ *
+ * A supported version returns `undefined`: this function only ever names a
+ * refusal, and "no refusal" is not a third answer.
+ */
+function versionRefusalOf(
+  identity: BlueprintIdentity,
+): { readonly code: string; readonly headline: string } | undefined {
+  const supported = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.join(', ')
+  if (identity.migrationRequired) {
+    return {
+      code: BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
+      headline:
+        `Blueprint ${identity.blueprintId}@${identity.revision} is a schema v${identity.schemaVersion} document; ` +
+        `this build runs [${supported}]. It is listed in the catalog with migrationRequired=true — ` +
+        `migrate it (the v3 document requires a teamHardEnvelope authority document) and it will start`,
+    }
+  }
+  if (SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(identity.schemaVersion)) {
+    return undefined
+  }
+  return {
+    code: BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED,
+    headline:
+      `Blueprint ${identity.blueprintId}@${identity.revision} declares schema v${identity.schemaVersion}, ` +
+      `a version this build never defined; this build runs [${supported}]`,
+  }
+}
+
+/**
  * Create the live authority over the frozen registry, the saved sources
  * and the bootstrap anchor.
  * @throws `TeamContractError` (the strong parser's own) when the bootstrap
@@ -246,6 +332,8 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
         revision: row.revision,
         contentHash: row.contentHash,
         origin: 'frozen',
+        schemaVersion: row.schemaVersion,
+        migrationRequired: migrationRequiredFor(row.schemaVersion),
       })
     }
 
@@ -256,13 +344,21 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
         revision: bootstrap.revision,
         contentHash: bootstrapRef.contentHash,
         origin: 'bootstrap',
+        schemaVersion: bootstrap.schemaVersion,
+        migrationRequired: migrationRequiredFor(bootstrap.schemaVersion),
       })
     }
 
     for (const name of sourceIndex.listSourceFiles()) {
       const inspection = sourceIndex.inspectSource(name)
-      if (inspection.status === 'rejected') continue // no identity → not listed (plan §7.4)
-      const { blueprintId, revision } = inspection.identity
+      // ONLY `rejected` is dropped (plan §7.4: no identity → nothing to list).
+      // `migration-required` is KEPT, and keeping it is Task 7.1's whole point:
+      // before this line the two states were one `rejected`, so a Blueprint the
+      // operator still has to migrate disappeared from `listIdentities` and from
+      // the v8 catalog — the removal made the cutover look finished and left the
+      // affected Team with no discoverable cause.
+      if (inspection.status === 'rejected') continue
+      const { blueprintId, revision, schemaVersion } = inspection.identity
       const key = identityKey(blueprintId, revision)
       const existing = map.get(key)
       if (existing !== undefined) {
@@ -285,7 +381,19 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
           },
         )
       }
-      map.set(key, { blueprintId, revision, origin: 'saved', sourceFile: name })
+      map.set(key, {
+        blueprintId,
+        revision,
+        origin: 'saved',
+        sourceFile: name,
+        schemaVersion,
+        // The STATUS is the classification, not the version: `ok` on a
+        // supported version and `migration-required` on a retired one are read
+        // from the same identity shape, and re-deriving it from
+        // `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS` here would put a second copy of
+        // the rule where the inspector already answered.
+        migrationRequired: inspection.status === 'migration-required',
+      })
     }
 
     return map
@@ -313,6 +421,27 @@ export function createBlueprintAuthority(options: CreateBlueprintAuthorityOption
         `blueprint not found in catalog: ${blueprintId}`,
         { blueprintId, reason: 'blueprint-not-found' },
       )
+    }
+    // The version gate runs BEFORE any source is read or strong-parsed, and
+    // before the origin branches: a retired document is refused the same way
+    // whether it came off disk, out of the registry, or from the pinned anchor.
+    // `parseBlueprint` would refuse it too (the same switch governs its set), but
+    // with the domain's generic "this document cannot be read" diagnosis —
+    // exactly the wording A1-21 forbids here, because the document reads
+    // perfectly well and what it needs is a migration. Refusing on the IDENTITY
+    // also means no retired source text is ever parsed, hashed, or handed to a
+    // snapshot ref on the way to saying no.
+    const refusal = versionRefusalOf(identity)
+    if (refusal !== undefined) {
+      throw new TeamPluginError(refusal.code, refusal.headline, {
+        blueprintId,
+        revision,
+        schemaVersion: identity.schemaVersion,
+        origin: identity.origin,
+        migrationRequired: identity.migrationRequired,
+        supportedVersions: [...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS],
+        ...(identity.sourceFile !== undefined ? { sourceFile: identity.sourceFile } : {}),
+      })
     }
     if (identity.origin === 'frozen') {
       // Fresh row read (never a stale listing), then strong-parse the
