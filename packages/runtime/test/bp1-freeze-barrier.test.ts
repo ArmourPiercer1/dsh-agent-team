@@ -53,10 +53,20 @@ import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
 const ROOT_SID = 'session-bp1barroot'
 const FIXTURE_ROOT_SID = 'session-bp1barfix'
 
-/** The row anchor (the full closed v1 document — the T12-B1 proven shape). */
+/**
+ * The row anchor (the full closed v3 document — the T12-B1 proven body shape,
+ * carried at the version this product runs. 7.4 migration 2026-10-08: v1 → v3
+ * with BOTH authority documents stated. Every rule set is `[]` deliberately —
+ * this fixture never performs a permission mutation or an approval, so the
+ * authority documents that reproduce its intended permissions state ZERO
+ * authority, not filler authority: on the expansion plane `{ rules: [] }`
+ * means "may expand nothing" (the fail-closed read), on the approval plane it
+ * removes nothing. The capability lanes the fixture DOES exercise
+ * (teamEnvelope / memberEnvelopes) are unchanged.
+ */
 const ANCHOR_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: BP1-BAR-A',
   'revision: "1"',
   'leader:',
@@ -91,6 +101,10 @@ const ANCHOR_SOURCE = [
   '        - send-message',
   '        - report-progress',
   '      deny: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates:',
   '  - id: default',
   '    description: The BP1-BAR-A default state.',

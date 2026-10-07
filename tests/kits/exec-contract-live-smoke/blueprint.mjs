@@ -165,13 +165,17 @@ export function scenarioBlueprintYaml(bpId, leaderPersona, workerPersona, withEx
   ]
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     ...leaderBlock,
     ...teamEnvelope,
     ...workerBlock,
     ...memberEnvelope,
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates: []',
     'metadata: {}',
     '---',
@@ -191,7 +195,7 @@ export function scenarioBlueprintYaml(bpId, leaderPersona, workerPersona, withEx
 export function anchorBlueprintYaml(bpId, persona) {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     'leader:',
@@ -202,6 +206,10 @@ export function anchorBlueprintYaml(bpId, persona) {
     '    persona: "You are a worker of the exec-contract live smoke boot team."',
     'memberEnvelopes: []',
     'requirements: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates: []',
     'metadata: {}',
     '---',

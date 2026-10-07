@@ -1,0 +1,2 @@
+tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs :: T_PS: v3; probe(v9) refused=true
+tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs :: BOOT_SAVED: v3; probe(v9) refused=true

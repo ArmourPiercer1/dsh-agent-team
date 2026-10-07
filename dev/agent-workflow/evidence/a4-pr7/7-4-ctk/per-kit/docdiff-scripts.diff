@@ -1,0 +1,20 @@
+--- tests/mock/scripts/boot.mjs::BLUEPRINT_DOC (pre)
++++ tests/mock/scripts/boot.mjs::BLUEPRINT_DOC (post)
+@@ -1,5 +1,5 @@
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: dtest-bp
+ revision: "1"
+ leader:
+@@ -46,6 +46,10 @@
+         - request-control
+         - resolve-control
+       deny: []
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ policyStates:
+   - id: default
+     description: "The dtest default state."

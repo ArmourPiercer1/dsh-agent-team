@@ -1,0 +1,84 @@
+### R1 base capture at ff9218a3 (this lane's writes absent)
+R1 vitest exit=1
+[fail-set] captured 26 identities (23 failing tests, 3 collection-failing files) from 1 report(s)
+R1 restored: spec=yes p4t6diff=1
+### R2 head capture (this lane's writes present)
+R2 vitest exit=1
+[fail-set] captured 23 identities (20 failing tests, 3 collection-failing files) from 1 report(s)
+### R3 attributable diff base -> head
+new=0 removed=3
+< TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P3: the quota race — five parallel, two may admit (no over-create) exactly three
+< TEST packages/testkit/test/a4p7-blueprint-version-clean.test.ts::a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) the dirty se
+< TEST packages/testkit/test/rc2-kit-preset-seam.test.ts::P6 the persona-import residue is closed, and the ledger stays empty no plugin sour
+### R4 outer legs on the rebased tree
+### O1 pnpm run build
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+O1 exit=0
+### O2 pnpm run build:composition (writes the committed surface)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-gate/packages/client/composition-shim/client-bundle.js (1259739 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-gate/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-gate/packages/client/composition-shim/package.json
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+O2 exit=0
+### O3 git status after the writing legs (must be empty for a clean tree)
+A  dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/FINDINGS.md
+A  dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/base-control-and-outer-legs.txt
+AM dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/p4t6-PRE-EXTEND-RED.txt
+A  dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/p6t1-parallel-load-flake.txt
+A  dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/reproduce-outer-legs.sh
+O3 lines=14
+### O4 pnpm run check:artifacts
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+O4 exit=0
+### O5 pnpm run smoke:composition (standalone, all arms printed)
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate cont
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degener
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/clie
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): al
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and 
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest recor
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both 
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module gra
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly 
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived U
+PASS composition-smoke
+O5 exit=0 (recorded, never the basis of a claim)
+### O6 blueprint-version fence at the toplevel (RESULT lines only)
+RESULT dirty(120 files, 259 sites)
+RESULT unknown(0 files, 0 sites)
+RESULT advisory(12 files, 18 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT adjudicated(16 files, 24 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+O6 exit=1
+### O7 targeted acceptance suite (plan 7.6: a4p7-v3-cutover-acceptance)
+ Test Files  1 passed (1)
+      Tests  70 passed (70)
+### O8 the new spec, second run (determinism)
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Duration  30.60s (transform 48ms, setup 0ms, import 65ms, tests 30.45s, environment 0ms)
+### O9 p4t6 after the increment
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+### O10 composition-smoke classification suite (the 7.5 classifier)
+ Test Files  1 passed (1)
+      Tests  53 passed (53)
+### O11 lint: full repo, changed-file lint and the identity diff
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+lint-identities: 160 identity lines, 76 distinct (target .)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+### O12 typecheck (whole workspace)
+8
+O12 Done-lines above; error TS lines below
+0
+### O13 client lane standalone
+ Test Files  2 failed | 53 passed (55)
+      Tests  3 failed | 877 passed (880)
+### done
+### done

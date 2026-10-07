@@ -71,13 +71,22 @@ const SEED_WORKER_ID = 'inst-p8s7r2seedw1'
 /** The second declared state (the closed set is default + strict). */
 const STRICT_STATE_ID = 'strict'
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /**
  * The R2-1 blueprint: the P8S5A structure with the own id and TWO declared
  * policy states (the closed transition set the BQ-10 surface derives).
  */
 const BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: P8S7R2-BP',
   'revision: "1"',
   'leader:',

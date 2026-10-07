@@ -12,8 +12,10 @@
  *     Writes/keeps `<blueprintDir>/<blueprintId>.draft.yaml` (NO
  *     validation — an existing draft is kept byte-for-byte; the user
  *     edits the draft directly in their editor). A fresh draft gets a
- *     minimal CLOSED v1 skeleton (the same shape the strong parser
- *     accepts). `*.draft.yaml` is IGNORED by the saved-source index —
+ *     minimal CLOSED v3 skeleton (the same shape the strong parser
+ *     accepts, INCLUDING the two authority envelopes v3 requires — an
+ *     unedited draft resolves as a valid v3 document).
+ *     `*.draft.yaml` is IGNORED by the saved-source index —
  *     a draft is invisible to the catalog until validate-save promotes
  *     it.
  *
@@ -81,15 +83,19 @@ const { inspectBlueprintSource } = await import('../packages/domain/blueprint/sr
 export const DEFAULT_BLUEPRINT_DIR = 'blueprints'
 
 /**
- * The minimal CLOSED v1 skeleton for a fresh draft (the same document
+ * The minimal CLOSED v3 skeleton for a fresh draft (the same document
  * shape the strong parser accepts — the probe fixture's shape,
- * parameterized by the blueprint id). A draft the user never edits
- * still validates + saves cleanly.
+ * parameterized by the blueprint id). v3 requires BOTH authority
+ * envelopes (§3.2: no implicit default is permitted); the skeleton
+ * declares each with `rules: []` — the narrowest honest declaration
+ * ("expansion of nothing is authorized"), which the author widens
+ * deliberately, never by default. A draft the user never edits still
+ * validates + saves cleanly and resolves as a valid v3 document.
  */
 export function draftSkeleton(blueprintId) {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${blueprintId}`,
     'revision: "1"',
     'leader:',
@@ -100,6 +106,10 @@ export function draftSkeleton(blueprintId) {
     `    persona: "You are member member-1 of the ${blueprintId} team."`,
     'requirements: []',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates: []',
     'metadata: {}',
     '---',

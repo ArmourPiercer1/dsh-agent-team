@@ -60,6 +60,7 @@ import {
 } from '../requirements/index.js'
 import { stubGlueUrl } from './p8s5a-artifacts.mjs'
 import { agentPresetsStandardDouble } from './agent-presets-double.mjs'
+import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 
 // --- the fixture identities -------------------------------------------------------
 
@@ -84,6 +85,25 @@ function requirementLines(
   return lines
 }
 
+/**
+ * §7.4 carrier migration (pre-flip half): this builder assembles the closed
+ * §E.2 **v2** structured-requirement document, and that version IS the subject:
+ * production reads `teamRequirements` and the per-template `requirements` only
+ * behind a `blueprint.schemaVersion === 2` comparison
+ * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+ * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+ * activation/provider.ts:821). Promoting the digit would not migrate this file's
+ * claim, it would delete it — measured: with the document saying 3 every
+ * requirement-scoping leg here goes red (the boot create stops refusing). See
+ * dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md.
+ *
+ * The digit therefore stays 2 and moves onto a typed code position: §7.3's
+ * narrowing of `TeamBlueprint['schemaVersion']` turns THIS line into a compile
+ * error naming this file, which is where plan §7.3's delete-or-retarget is
+ * decided in review — never silently. Emitted YAML bytes are unchanged.
+ */
+const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+
 function v2Doc(
   blueprintId: string,
   revision: string,
@@ -96,7 +116,7 @@ function v2Doc(
 ): string {
   const lines: string[] = [
     '---',
-    'schemaVersion: 2',
+    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
     `blueprintId: ${blueprintId}`,
     `revision: "${revision}"`,
     'leader:',

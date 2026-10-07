@@ -61,11 +61,20 @@ const LEADER_CALLER = { kind: 'instance', instanceId: 'inst-leader' } as const
 const WORKER_ID = 'inst-worker'
 const PRF_NOW = P6T1_FIXTURE.createdAt
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /** The P6-T1 world blueprint (the same shape the model-inspect suite pins). */
 function blueprintSource(): string {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'blueprintId: PRF-IC-BP',
     'revision: "1"',
     'leader:',

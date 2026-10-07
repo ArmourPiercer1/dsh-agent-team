@@ -203,82 +203,13 @@ function expectSingle(f: Fixture, want: SiteClass | 'none'): Classification {
  * as a lie), never by being added to a skip list in the scanner.
  */
 const DEFERRALS: ReadonlyMap<string, string> = new Map([
-  ['packages/tools/harness/d4-restart-reopen.mjs', 'C-tools+harness (plan-named site, harness/d4-restart-reopen.mjs:220)'],
-  ['packages/tools/harness/g5-member-e2e.mjs', 'C-tools+harness (plan-named site, harness/g5-member-e2e.mjs:267)'],
-  ['packages/tools/harness/run.mjs', 'C-tools+harness (plan-named site, harness/run.mjs:214)'],
-  ['packages/tools/harness/t12-vertical.mjs', 'C-tools+harness (plan-named site, harness/t12-vertical.mjs:215; also emits a v2 document; the L1838 occurrence is comment prose, not a site)'],
-  ['packages/runtime/root-binding/harness/blueprint-source.mjs', 'C-runtime-fixtures (bounded-run harness Blueprint source)'],
-  ['packages/testkit/test/bp1h-blueprint-authoring.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/testkit/test/t6-10-composition-pipeline.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/testkit/test/t6-7-fresh-per-delegation.test.ts', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['scripts/blueprint-authoring.mjs', 'C-testkit (the blueprint authoring script)'],
-  ['tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/exec-contract-live-smoke/blueprint.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs', 'C-testkit (kit fixture; also emits a v2 document)'],
-  ['tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs', 'C-testkit (kit fixture; also emits a v2 document)'],
-  ['tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs', 'C-testkit (kit fixture; also carries the V1 anchor contentHash literal that 7.3 re-pins)'],
-  ['tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs', 'C-testkit (kit fixture; also carries the V1 anchor contentHash literal that 7.3 re-pins)'],
-  ['tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs', 'C-testkit (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  ['tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 1 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
+  ['tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 2 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
   ['packages/domain/blueprint/testdata/fixtures.ts', 'C-domain STOP, ratified by the coordinator: stays dirty pending (1) the B-lane witness-ownership rewrite of the three revisionSource(...) derivations that splice the factory\'s declared-version line into their v1/v2/99 witnesses (a4f1-row-version-not-document-version, a4p7-v3-cutover-acceptance, a4p7-v8-catalog-migration-state) and (2) the coupled fixtures.ts -> v3 plus empty-rules-envelope PR that updates this file\'s own archetype test in the same PR, owned by the fence/wrapper owner, enumerating the factory\'s full consumer set. Measured evidence: dev/agent-workflow/evidence/a4-pr7/7-4-cdom/FINDINGS.md §5 (v3 without envelopes fails a consumer at COLLECTION; with them, 39 witness tests across the three deriving files). Deliberately avoids quoting the literal carrier pattern here: the fence flags its own author — an earlier draft of this justification made THIS file a dirty site.'],
-  ['packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/a3p4-production-permission-plane.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/a3p5-permission-read-wiring.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/a3p5-permission-splice.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/a4f1-row-version-not-document-version.test.ts', 'B-runtime-semantics (F1 row-vs-document-version proof; sites are quoted-string replace() args at :136/:146 building v3/v2 DECLARE fixtures under a row stamped 2 — runtime behavioural family per the 2026-10-08 round-3 lane ruling, NOT the fixtures family)'],
-  ['packages/runtime/test/a4p6-start-gate-entrances.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/bp1-dual-team-gate.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/bp1-freeze-barrier.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/bp1-red-glue-probe.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/bp1-red-probe.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s5a-production-assembly.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s6-pagination.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s6-principal.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s6-projection.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s6-push-reconnect.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s6-remote-commands.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s7r2-effective-config.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s7r2-model-state.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s7r2-policy-state-durable.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s7r4-fork-describe.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/p8s7r4-handoff-wiring.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/pbf-default-artifact-urls.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/persona-kind-provider-preflight.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/prf-inspect-same-source.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/rc2a1-fs-containment.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/requirement-probe-blueprint-scoping.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/rmr-create-or-open-boot.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/rmr-remote-mount-race.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/startup-all-templates-real-authority.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/startup-consent-production.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/startup-preflight-production-create.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/startup-template-disable-production.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/t12a-h1-nullable-mcp.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/t12a-live-bridge.mjs', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/t12b1-real-create.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/t12b2-resume-separation.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/t12b6-handoff-agent-start.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/t12m4-remote-mount.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/t14h-probe-merge.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/t4a-capability-wiring.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/tcm-m2-workspace-attach.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/team-compatibility-scope.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/team-session-startup-fence.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/template-disable-no-requirements-gate.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — raised to coordinator; carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
+  ['packages/runtime/test/t12a-live-bridge.mjs', 'B-runtime-semantics-B STOP (measured 2026-10-08): this path is the wrapper\'s own packages/*/test by-path positive control (the leg "packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path"), so cleaning it is a coupled wrapper edit. COORDINATOR RULING 2026-10-08 (reviewer recommendation adopted): this path stays DIRTY BY DESIGN -- it is the only .mjs emitter in the scan class and its 38 importers make it the most-shared fixture in the runtime tree, so retargeting the pin would retire the sole witness of that class to accommodate a migration that is neutral for every consumer. Cited by leg title, never by line number: line numbers in a persistent row go stale on contact. The default document is LIVE (a probe digit no build runs reddens t12a-m2-persona, t12a-h1-nullable-mcp and t4a-capability-wiring); promoting it to v3 with both documents declared rules: [] keeps 5/5 measurable consumers green. Evidence + the retarget options: dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md'],
+  ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — C-testkit STOPPED, file byte-identical: this is the legacy .md teammate-file format\'s OWN version axis, not a TeamBlueprint document (L380 is a NEGATIVE test of which legacy versions the adapter rejects); migrating would delete the adapter\'s acceptance proof. Awaiting the fence\'s dirty-class adjudication row — disposition recorded in dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 3 (legitimate non-Blueprint version axis pending adjudication; owner: fence owner + §7.3 emitter). Carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
   ['cordis.patch.yml', 'SCOPE ADDITION (measured 2026-10-08: the root composition patch\'s blueprintSource block is a live v1 document emitter, cordis.patch.yml:58-62) — NO §7.4 lane row — raised to coordinator'],
-  ['tests/mock/scripts/boot.mjs', 'C-testkit scope addition (measured 2026-10-08: mock-boot YAML emitter outside every prior scan)'],
 ])
 
 /**
@@ -362,7 +293,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expect(spawned.stdout).toContain('RESULT dirty(')
     expect(spawned.stdout).toContain('RESULT advisory(')
     expect(spawned.stdout).toContain('RESULT unknown(')
-    expect(spawned.stdout).toContain(report.split('\n')[0])
+    expect(spawned.stdout).toBe(`${report}\n`)
   })
 
   it('a directory that is not a repository reports not-run with exit 2, never clean', () => {
@@ -417,11 +348,53 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
 
   it('the fence reports sites, not a bare count, and names a file the reader can open', () => {
     // The plan's X10 law: the contract is the path set, so the report must
-    // carry paths and line numbers. `run.mjs` is a named Task 7.4 site — the
-    // positive control that detection actually finds a known v1 author.
-    expect(report).toContain('OFFENDING packages/tools/harness/run.mjs :: ')
+    // carry paths and line numbers.
+    //
+    // This control used to name ONE path — `packages/tools/harness/run.mjs` — and
+    // that shape is a landmine: the day the lane owning the file migrates, the
+    // control goes red on SUCCESS, which is precisely when a tired worker mutes
+    // it (lane C-tools+harness, §7.4). The law is asserted directly instead:
+    // every dirty PATH is named and every dirty SITE's `L<line>=v<version>` is
+    // printed, for any path, forever. The literal named path stays, because a
+    // reader must be able to open one straight out of this file, and the archetype
+    // is the one the next test pins line-by-line anyway.
+    //
+    // The sites are checked PER PATH — the OFFENDING lines are parsed back into
+    // `path -> the sites printed for it`, and a site must appear on ITS OWN path's
+    // line. Searching the whole report for the token would be a mute wearing a
+    // control: measured at this commit 69 of the 253 dirty sites have an
+    // `L<line>=v<version>` token that also occurs on some other report line, so
+    // stripping the suffix from one of those passes a whole-report `toContain`
+    // (mutation C of scratch/mutate-fence.mjs: green against the whole-report form,
+    // red against this one). A report that names no path cannot slip through either:
+    // an empty parse makes every path assertion below fail, not pass.
+    //
+    // On a hypothetical empty dirty set both loops pass vacuously, and that is the
+    // correct behaviour HERE: this leg's subject is the SHAPE of a report about
+    // dirty sites, and the claim that the set has become empty belongs to the
+    // exit-contract leg (`exit 1 iff dirty or unknown`) and to the DEFERRALS
+    // staleness legs. Giving this leg a `dirty.length > 0` guard of its own would
+    // re-arm it as the red-on-success control it was just rewritten to escape.
+    const printed = new Map<string, string[]>()
+    for (const line of report.split('\n')) {
+      const off = /^OFFENDING (.+?) :: (.*)$/.exec(line)
+      const offPath = off?.[1]
+      const offSites = off?.[2]
+      if (offPath !== undefined && offSites !== undefined) {
+        const toks = offSites.split(', ').map((t) => t.trim()).filter((t) => t !== '')
+        printed.set(offPath, [...(printed.get(offPath) ?? []), ...toks])
+      }
+    }
+    for (const path of dirtyPaths) {
+      const expected = run.dirty
+        .filter((s) => s.path === path)
+        .map((s) => `L${String(s.line)}=v${String(s.version)}`)
+        .sort()
+      expect([...(printed.get(path) ?? [])].sort(), `report must print EXACTLY the sites of ${path}`).toEqual(expected)
+    }
+    expect(report).toContain('OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: ')
     expect(report).toMatch(/OFFENDING \S+ :: L\d+=v[12]/)
-    expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)} files`)
+    expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)} files, ${String(run.dirty.length)} sites)`)
   })
 
   // --- the 7.4-scope extension: the third class is covered by path ---------
@@ -546,8 +519,45 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
       'the very literal the probe caught lying must SAY so',
     ).toContain('as-unknown-as')
     expect(named('packages/runtime/test/p5t5-helpers.ts', 80)).toContain('annotated TeamBlueprint')
-    expect(named('packages/testkit/test/bp1h-blueprint-authoring.test.ts', 95)).toContain('toEqual')
-    expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 571)).toContain('toMatchObject')
+    // B1's cutover-acceptance migration retired the two `schemaVersion: 99`
+    // toMatchObject advisories (the probes now read a derived constant, so no
+    // digit sits in a code position any more); the surviving named laundering in
+    // that file is the v1 bridge assertion below. (Witness ownership, phase 1:
+    // the file grew its byte-owned v1 witness builder — the bridge line shifted
+    // 547 -> 584; its class and count are unchanged.)
+    expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 584)).toContain('toMatchObject')
+    // Re-anchor safety (coordinator ruling, authorized addition): the pin above is a
+    // re-anchor, not a shift — the laundering it first named (a v99 `schemaVersion`
+    // literal in a toMatchObject argument) was RETIRED by B1's migration, and a pin
+    // can only prove the retirement if the retirement is ASSERTED, not narrated. So
+    // the tree knows both halves: (1) the text the old pin named is ABSENT from the
+    // file; (2) the replacement value is DERIVED from the domain's own version set —
+    // strip the derivation back to a literal and this leg goes red even though the
+    // fence can no longer see a value hidden behind a constant. That red is the whole
+    // safety argument: absence without derivation is just laundering that moved out
+    // of the fence's sight. (The absence check is a REGEX, not a string literal: a
+    // literal here would re-materialize the very site shape the fence hunts, and the
+    // first draft proved it — the fence filed the wrapper itself dirty at once.)
+    const cutoverSrc = readFileSync(
+      resolve(REPO_ROOT, 'packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts'),
+      'utf8',
+    )
+    expect(cutoverSrc, 're-anchored pin: the old v99 laundering site must be GONE, not re-labelled').not.toMatch(/schemaVersion:\s*99\b/)
+    // (2') The derivation half is ANCHORED to the declaration line (reviewer M2
+    // hardening, tightened): an unanchored toContain('Math.max(...)') was satisfied
+    // by a COMMENT echoing the expression — the derivation could be a lie written
+    // in prose. The line-start anchor excludes every comment shape (they put `//`,
+    // `/*` or `*` before the text); a lie would now have to BE the declaration line.
+    expect(cutoverSrc, 're-anchored pin: the DERIVATION declaration must exist, not a comment echo of it').toMatch(/^\s*const VERSION_NOBODY_DEFINED\s*=\s*Math\.max\(\.\.\.DEFINED_BLUEPRINT_DOCUMENT_VERSIONS\)\s*\+\s*1/m)
+    expect(cutoverSrc, 're-anchored pin: the site must speak the constant, not a digit').toContain('schemaVersion: VERSION_NOBODY_DEFINED')
+    // (3) M1 (reviewer hardening): the bare-argument slip shape — a retired 99
+    // re-introduced as a positional argument (`.toBe(99)`) carries no schemaVersion
+    // prefix and slips past the colon-keyed absence check above. Measured against
+    // this file BEFORE committing (dev/agent-workflow/evidence/a4-pr7/7-4-b1/transcripts/m1-regex-audit.txt): zero matches
+    // today, so no timeout/port/count collision; if a legitimate bare 99 ever
+    // lands in this plumbing file, scope this assertion to the W2 assertion region
+    // — do not delete it.
+    expect(cutoverSrc, 're-anchored pin: no bare-argument 99 may return to the file').not.toMatch(/[,(]\s*99\s*[,)]/)
   })
 
   it('unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated', () => {

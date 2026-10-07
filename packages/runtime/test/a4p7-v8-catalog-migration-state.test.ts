@@ -75,7 +75,6 @@ import {
   BLUEPRINT_VERSION_REFUSAL_CODES,
   SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
 } from '../../domain/blueprint/src/index.js'
-import { revisionSource } from '../../domain/blueprint/testdata/fixtures.js'
 import { createTeamDomain } from '../../storage/repositories/index.js'
 import { FileStorageSeam } from '../../testkit/fault-injection/file-seam.mjs'
 
@@ -149,6 +148,64 @@ class MemRegistry implements BlueprintRegistryPort {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// The versions the fixtures below DRIVE — every one of them derived from the
+// domain's own sets (never from a remembered digit, and never from the shared
+// factory's base: 7.4-B1 phase 1, C-domain FINDINGS §5). WORLD R's section
+// comment (further down) is their story; they are declared up here because the
+// module-level witnesses stamp them at mint time.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const V_RUNNABLE_V1 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
+const V_RUNNABLE_V3 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(3) ? 3 : V_RUNNABLE_V1
+const V_UNDEFINED = 99
+
+/**
+ * The file-owned witness body: the minimal CLOSED v1 document, byte-owned by
+ * this file (7.4-B1 phase 1). The shared factory's base version is a claim of
+ * the factory — the factory's own migration must not restamp this file's
+ * witnesses — so nothing here flows through `testdata/fixtures`. The base
+ * version line exists only so the structural rewrite below always finds a
+ * line to rewrite (the guard throws otherwise); every source this file uses
+ * is stamped to an explicit V_* constant before it leaves the builder.
+ */
+function witnessBody(blueprintId: string, revision: string, persona: string): string {
+  return [
+    '---',
+    `schemaVersion: ${String(V_RUNNABLE_V1)}`,
+    `blueprintId: ${blueprintId}`,
+    `revision: "${revision}"`,
+    'leader:',
+    '  templateId: leader',
+    `  persona: ${JSON.stringify(persona)}`,
+    'members: []',
+    'requirements: []',
+    'memberEnvelopes: []',
+    'policyStates: []',
+    'metadata: {}',
+    '---',
+    '',
+  ].join('\n')
+}
+
+/**
+ * Rewrite the frontmatter's declared-version line, WHATEVER version the owned
+ * witness body happens to declare today. The rewrite is line-structural and
+ * THROWS when there is no version line to rewrite: a silent no-op here would
+ * hand `worldC` a "retired" source that is actually runnable, and every leg
+ * reading a state off it would then report on the wrong document. No version
+ * digit is spelled out at a call site — every version the fixtures drive is
+ * the CALLER'S number (`V_RUNNABLE_V1` / `V_UNDEFINED`, derived from the
+ * domain's own sets) minted onto the file-owned body above.
+ */
+function withDeclaredVersion(source: string, version: number): string {
+  const pattern = /^schemaVersion: \d+$/m
+  if (!pattern.test(source)) {
+    throw new Error('A4-PR7 catalog guard: the witness body carries no rewriteable schemaVersion line')
+  }
+  return source.replace(pattern, `schemaVersion: ${String(version)}`)
+}
+
 /**
  * A saved source whose DECLARED version is the only thing changed. A saved
  * source is only ever read at identity level by the listing, so a document that
@@ -156,9 +213,9 @@ class MemRegistry implements BlueprintRegistryPort {
  * and it must not be, for the anchor, which the root strong-parses.
  */
 function sourceOnVersion(blueprintId: string, revision: string, version: number): string {
-  return revisionSource(blueprintId, revision, `${blueprintId} lead.`).replace(
-    'schemaVersion: 1',
-    `schemaVersion: ${version}`,
+  return withDeclaredVersion(
+    witnessBody(blueprintId, revision, `${blueprintId} lead.`),
+    version,
   )
 }
 
@@ -214,7 +271,17 @@ function cutoverIndex(
 
 // --- the production world (real root, real authority, real dispatcher) ---------
 
-const ANCHOR = revisionSource('a4p7.catalog.anchor', '1', 'Catalog anchor lead.')
+/**
+ * The world anchor: a CURRENTLY-RUNNABLE document this file mints at the
+ * derived constant `V_RUNNABLE_V1` (the version this build runs, read off the
+ * domain's own set — never the factory's era, 7.4-B1 phase 1). The root
+ * strong-parses it, which is exactly what a source on a simulated future
+ * version could not be.
+ */
+const ANCHOR = withDeclaredVersion(
+  witnessBody('a4p7.catalog.anchor', '1', 'Catalog anchor lead.'),
+  V_RUNNABLE_V1,
+)
 const ROOT_SID = 'session-a4p7-catalog-root'
 const NOW = '2026-10-20T00:00:00.000Z'
 
@@ -421,11 +488,9 @@ function onlyState(rows: readonly Record<string, unknown>[], blueprintId: string
 // row on version 99 is runnable to nobody and owed no migration to anybody. That
 // third one is the whole ruling: under the deleted boolean it answered `false`,
 // the same answer as the two runnable documents beside it.
+// (The V_* versions it drives are declared at the top of this file, next to the
+// witness body they are minted onto.)
 // ═══════════════════════════════════════════════════════════════════════════════
-
-const V_RUNNABLE_V1 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
-const V_RUNNABLE_V3 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(3) ? 3 : V_RUNNABLE_V1
-const V_UNDEFINED = 99
 
 const worldR = await catalogWorld({
   name: 'r-real',

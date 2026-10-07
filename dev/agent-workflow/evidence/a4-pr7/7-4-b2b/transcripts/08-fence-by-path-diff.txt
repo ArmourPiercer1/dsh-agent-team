@@ -1,0 +1,60 @@
+# fence class lines, base vs final
+## base:
+RESULT dirty(110 files, 213 sites)
+RESULT unknown(0 files, 0 sites)
+RESULT advisory(9 files, 14 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT adjudicated(16 files, 24 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+## final (run 1 == run 2, sha256 009a848c2504db57…):
+RESULT dirty(76 files, 171 sites)
+RESULT unknown(0 files, 0 sites)
+RESULT advisory(9 files, 14 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT adjudicated(16 files, 24 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+
+# by-path diff
+paths added to the dirty set (must be none):
+(none above)
+paths removed from the dirty set: 34
+of those, paths NOT in this lane's roster (must be none):
+(none above)
+
+removed paths:
+  packages/runtime/test/p8s5a-production-assembly.test.ts
+  packages/runtime/test/p8s6-pagination.test.ts
+  packages/runtime/test/p8s6-principal.test.ts
+  packages/runtime/test/p8s6-projection.test.ts
+  packages/runtime/test/p8s6-push-reconnect.test.ts
+  packages/runtime/test/p8s6-remote-commands.test.ts
+  packages/runtime/test/p8s7r2-effective-config.test.ts
+  packages/runtime/test/p8s7r2-model-state.test.ts
+  packages/runtime/test/p8s7r2-policy-state-durable.test.ts
+  packages/runtime/test/p8s7r4-fork-describe.test.ts
+  packages/runtime/test/p8s7r4-handoff-wiring.test.ts
+  packages/runtime/test/pbf-default-artifact-urls.test.ts
+  packages/runtime/test/persona-kind-provider-preflight.test.ts
+  packages/runtime/test/prf-inspect-same-source.test.ts
+  packages/runtime/test/rc2a1-fs-containment.test.ts
+  packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts
+  packages/runtime/test/requirement-probe-blueprint-scoping.test.ts
+  packages/runtime/test/rmr-create-or-open-boot.test.ts
+  packages/runtime/test/rmr-remote-mount-race.test.ts
+  packages/runtime/test/startup-all-templates-real-authority.test.ts
+  packages/runtime/test/startup-consent-production.test.ts
+  packages/runtime/test/startup-preflight-production-create.test.ts
+  packages/runtime/test/startup-template-disable-production.test.ts
+  packages/runtime/test/t12a-h1-nullable-mcp.test.ts
+  packages/runtime/test/t12b1-real-create.test.ts
+  packages/runtime/test/t12b2-resume-separation.test.ts
+  packages/runtime/test/t12b6-handoff-agent-start.test.ts
+  packages/runtime/test/t12m4-remote-mount.test.ts
+  packages/runtime/test/t14h-probe-merge.test.ts
+  packages/runtime/test/t4a-capability-wiring.test.ts
+  packages/runtime/test/tcm-m2-workspace-attach.test.ts
+  packages/runtime/test/team-compatibility-scope.test.ts
+  packages/runtime/test/team-session-startup-fence.test.ts
+  packages/runtime/test/template-disable-no-requirements-gate.test.ts

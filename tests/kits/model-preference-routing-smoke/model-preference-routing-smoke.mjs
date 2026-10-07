@@ -334,7 +334,7 @@ function dieFatal(msg, extra = {}) {
 // authoritative: schema.ts BLUEPRINT_TOP_LEVEL_FIELDS).
 export const BP_ANCHOR_YAML = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   `blueprintId: ${BP_ANCHOR_ID}`,
   'revision: "1"',
   'leader:',
@@ -343,6 +343,10 @@ export const BP_ANCHOR_YAML = [
   'members: []',
   'requirements: []',
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',
@@ -356,7 +360,7 @@ export const BP_ANCHOR_YAML = [
 export function savedMainBlueprintYaml() {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${BP_MAIN_ID}`,
     'revision: "1"',
     'leader:',
@@ -396,6 +400,10 @@ export function savedMainBlueprintYaml() {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "MPR main default state."',
@@ -414,7 +422,7 @@ export function savedMainBlueprintYaml() {
 export function savedRoleBlueprintYaml(bpId, leadModel, workerModel) {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${bpId}`,
     'revision: "1"',
     'leader:',
@@ -449,6 +457,10 @@ export function savedRoleBlueprintYaml(bpId, leadModel, workerModel) {
     '  deny:',
     '    - delete-team',
     'memberEnvelopes: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'policyStates:',
     '  - id: default',
     '    description: "MPR cross-root default state."',

@@ -1,0 +1,78 @@
+A4-PR7 §7.4 (C-tools+harness 4/5): migrate the P6-T6 / P8-S4B harness Blueprint to v3
+
+packages/tools/harness/run.mjs embeds its boot document as
+`const TEAM_BLUEPRINT_SOURCE` and passes it as the production row's
+`blueprintSource` (`:329`), which the host parses at boot
+(src/plugin/host.ts:2125 classifyBlueprintAnchor → blueprint-authority.ts:328).
+The product reads the version, so `dirty` is the right verdict and
+migrate-by-hand is the disposition: after §7.3's flip this acceptance runner would
+not boot.
+
+Both Alpha.4 authority documents are required at v3 and are carried as `rules: []`
+because that is provably the posture this fixture has always had — and this is the
+one file of the five where "provably" needed real checking, because P8-S4B's
+M-scenarios mutate governance state and assert the mutation lands:
+ - they mutate governance CELLS, and `setOverride`
+   (packages/tools/harness/plugin.mjs:659 route → :712 call;
+   governance/service.ts:331) reads only the CAPABILITY envelope —
+   writeTimeChecks (:305) → policy.readBlueprintEnvelope →
+   `capabilityValuesOf(bound.capabilityPolicy)` (src/plugin/root.ts:1897) — and for
+   an operator slot with no origin it skips even that;
+ - the v3 ceiling law is consulted only on the permission-overlay mutation lane
+   (governance/service.ts:651, :714, :1154-1178); `mutatePermission` appears
+   nowhere in this harness or its plugin (grep count 0 in both files), so no
+   scenario reaches it;
+ - the APPROVAL plane is identity for an empty document
+   (domain/authority-envelope/src/authority-envelope.ts:439 narrowingForApproval:
+   "ABSENCE OF A MATCHING RULE IMPOSES NO NARROWING"), and on the expansion plane
+   (:409) no-match is no-authority — what an absent v1 carrier already meant.
+So `rules: []` keeps the capability envelope (which the M-scenarios DO bind on,
+printed by the probe) and every E/M verdict intact; writing a rule is what would
+have changed the proof.
+
+Derived, not copied (no contentHash literal exists in this file): v1
+`sha256:35ade6577ed506374003a0e033e9ba2d836b1d181c563ed0bcc2764fd13a76b7` → v3
+`sha256:89bc04540635b868c6caa2c69e167e20f91fca01728ebc74a182024f957694c4`.
+
+One prose line also moved, because it had become false rather than merely old:
+`:1678` read "human-override records - the only v1 authority that can GRANT a
+cell". The ruling is about the human-override lane, not the document version, so
+the qualifier is gone and the sentence now says so. No assertion changed.
+
+RED FIRST — migrating this file reddened TWO legs, the second one by design
+(a positive control pinned to a file its own lane is migrating):
+
+  $ pnpm exec vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL ... > every deferred path is still dirty (a migrated path must leave the list)
+   AssertionError: expected [ 'packages/tools/harness/run.mjs' ] to deeply equal []
+   FAIL ... > the fence reports sites, not a bare count, and names a file the reader can open
+   AssertionError: expected 'scan: blueprint document-version fenc…' to contain
+     'OFFENDING packages/tools/harness/run.…'
+   - OFFENDING packages/tools/harness/run.mjs ::
+   Tests  2 failed | 56 passed (58)
+
+RESOLUTION. (1) Only this lane's own DEFERRALS line was deleted — no reorder, no
+reflow, no other lane's entry touched. (2) DEVIATION, recorded for the
+coordinator: the positive control was re-pointed, and the one-literal pin was
+replaced by the law it stood in for — the leg now asserts that EVERY dirty path
+is named and EVERY dirty site's `L<line>=v<version>` token is printed, then keeps
+a literal named path so a reader can still open one from the test text, choosing
+the archetype the next leg already pins line-by-line
+(packages/domain/blueprint/testdata/fixtures.ts). Nothing was muted and the fence,
+its scope and its version constants were not touched; the reason for going one
+step further than "name another file" is that every remaining dirty path belongs
+to a lane that is migrating it, so a bare re-point re-arms the same red-on-success
+landmine for the next lane.
+
+EVIDENCE — this is the whole of the pre-§7.6 evidence for this file; the harness
+leg itself runs in §7.6. The harness was NOT run: no host booted, no port opened,
+nothing under tests/homes/** created or mutated, :3080 untouched.
+  node --check packages/tools/harness/run.mjs → OK
+  node dev/.../7-4-hts/probes/probe-run.mjs [before-copy] → the array literal
+    sliced from the file parses with the production parser as P6T6-BP/1 at
+    schemaVersion 3 with both carriers {rules: []}, and the team/member CAPABILITY
+    envelopes the M-scenarios bind on are unchanged; version forged to 9 →
+    SCHEMA_VERSION_MISMATCH; either carrier deleted → MALFORMED_DTO.
+  node scripts/verify-blueprint-version-clean.mjs → this path is no longer named
+    (RESULT dirty(117 files, 256 sites) → RESULT dirty(116 files, 255 sites)).

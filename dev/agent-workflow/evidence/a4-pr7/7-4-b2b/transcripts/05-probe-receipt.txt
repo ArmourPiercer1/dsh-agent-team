@@ -1,0 +1,34 @@
+PROBE-RED (live)	packages/runtime/test/p8s5a-production-assembly.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s6-pagination.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s6-principal.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s6-projection.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s6-push-reconnect.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s6-remote-commands.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s7r2-effective-config.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s7r2-model-state.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s7r2-policy-state-durable.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s7r4-fork-describe.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/p8s7r4-handoff-wiring.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-GREEN (inert)	packages/runtime/test/pbf-default-artifact-urls.test.ts	exit=0	restore=OK	Tests  9 passed (9)
+PROBE-RED (live)	packages/runtime/test/persona-kind-provider-preflight.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/prf-inspect-same-source.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/rc2a1-fs-containment.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/requirement-probe-blueprint-scoping.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/rmr-create-or-open-boot.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/rmr-remote-mount-race.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/startup-all-templates-real-authority.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/startup-consent-production.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/startup-preflight-production-create.test.ts	exit=1	restore=OK	Tests  3 failed | 3 passed (6)
+PROBE-RED (live)	packages/runtime/test/startup-template-disable-production.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/t12a-h1-nullable-mcp.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/t12b1-real-create.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/t12b2-resume-separation.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/t12b6-handoff-agent-start.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/t12m4-remote-mount.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/t14h-probe-merge.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/t4a-capability-wiring.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/tcm-m2-workspace-attach.test.ts	exit=1	restore=OK	Tests  1 failed | 13 passed (14)
+PROBE-RED (live)	packages/runtime/test/team-compatibility-scope.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/team-session-startup-fence.test.ts	exit=1	restore=OK	Tests  no tests
+PROBE-RED (live)	packages/runtime/test/template-disable-no-requirements-gate.test.ts	exit=1	restore=OK	Tests  5 failed (5)

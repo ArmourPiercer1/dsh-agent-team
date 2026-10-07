@@ -1,0 +1,70 @@
+A4-PR7 §7.6 review round 1 — proof that each fix bites (all three experiments run in this worktree, 2026-10-07T21:51Z, base fe7e40f4)
+
+################################################################
+§1  F5 — the client-trio tolerance, proven against a real disappearance
+################################################################
+A tracked §7.4 spec file was moved out of the tree and back; git status is quoted
+before and after so the reversibility is on the record. Before this fix the middle
+run would have been GREEN: the surviving trio file still matched 1 of the 3 named
+failures, so the old branch ("failures reported, all disclosed, at least one
+matched") accepted it while two of the three named tests had stopped existing.
+
+=== F5 LIVE PROOF: hide one trio spec file, the client leg must REDEN ===
+--- before: git status (empty = clean) ---
+ M packages/testkit/test/a4p7-merge-gate.test.ts
+--- moving packages/client/test/team-creation-panel.client.spec.tsx out of the tree ---
+ D packages/client/test/team-creation-panel.client.spec.tsx
+ M packages/testkit/test/a4p7-merge-gate.test.ts
+--- run only the live client leg ---
+       × the client lane runs, and no failure appears outside the disclosed baseline 7624ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: client lane did not close. why: 1 of the 2 files the disclosed client baseline lives in is not in packages/client/test (team-creation-panel.client.spec.tsx) — a test that is not in the tree cannot fail, so a zero
+         ✓ renders the interventions section when the face carries the v8 slice 5ms
+         ✓ an older face (no v8 slice) keeps the section absent — the pre-v8 rendering is byte-identical 3ms
+          Tests  1 failed | 860 passed (861)
+    ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+    AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+      Tests  1 failed | 19 skipped (20)
+restore:
+--- after: git status (must be identical to before) ---
+ M packages/testkit/test/a4p7-merge-gate.test.ts
+--- re-run the leg on the restored tree ---
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (20 tests | 19 skipped) 7508ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  7507ms
+      Tests  1 passed | 19 skipped (20)
+
+################################################################
+§2  F3 — REQUIRED_CHECK_IDS resolving to [] must not be a quiet green
+################################################################
+A temporary probe in this lane's own spec shadowed the imported list with an empty
+array, the leg was run, and the probe was reverted (byte-identical check below).
+
+=== F3 PROOF: REQUIRED_CHECK_IDS resolving to [] must be a loud failure, not a green ===
+--- probe: import alias kept, local const shadows it with an empty list ---
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 772ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+Error: bundleArms() derived zero ids from REQUIRED_CHECK_IDS — the bundle half of the composition gate (9 of the 11 arms today) would stop being required at all
+      Tests  1 failed | 19 skipped (20)
+--- same probe for the step-count leg (the other consumer) ---
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (20 tests | 19 skipped) 2ms
+      Tests  1 passed | 19 skipped (20)
+--- revert the probe and prove the file is byte-identical to before ---
+revert byte-identical: OK
+
+################################################################
+§3  F1 — the two registration matchers over mention-only vs entry/argv texts
+################################################################
+No file was edited for this one: the matchers are run over the shipped texts and
+over synthetic texts in which the entry is a comment, or the script is only named.
+
+=== F1(a) negative controls: the p4t6 entry matcher ===
+1. shipped p4t6                         -> ENTRY PRESENT (passes)
+2. entry replaced by a comment mention  -> entry ABSENT from the array (fails): [// packages/testkit/test/a4p7-merge-gate.test.ts]
+3. array literal deleted entirely       -> NO ARRAY LITERAL (fails)
+   (the loose check the fix replaced, on control 2:) would still CONTAIN the path -> GREEN on a comment
+
+=== F1(b) negative control: the wiring matcher (comment mention vs argv literal) ===
+shipped file                       -> spawned from argv (passes)
+comment-only mention               -> not in any runLeg argv (fails, as intended)
+indirect const + [FENCE] in argv   -> not in any runLeg argv (fails) <- this is what bit the first version of the fix; the call sites were inlined instead of weakening the check
+loose corpus check on comment-only -> would be GREEN on a comment (the defect F1 filed)

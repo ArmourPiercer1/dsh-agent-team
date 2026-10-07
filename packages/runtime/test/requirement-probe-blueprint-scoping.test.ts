@@ -172,14 +172,24 @@ const PF1_BOILERPLATE = [
   'metadata: {}',
 ]
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /**
- * The BOOT anchor blueprint (the kit's `anchor` v1 boot): ZERO requirements
+ * The BOOT anchor blueprint (this suite's stand-in for the kit's `anchor`
+ * boot shape): ZERO requirements
  * (`requirements: []`) — the multi-blueprint host shape that exposed PF-1
  * (the boot-scoped feed of a zero-requirement boot anchor is empty).
  */
 const PF1_B0_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: pf1-b0',
   'revision: "1"',
   ...PF1_BOILERPLATE,
@@ -188,15 +198,25 @@ const PF1_B0_SOURCE = [
   '',
 ].join('\n')
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /**
- * The MAIN blueprint (the kit's `prereq-main` shape, v1 bridge): two
+ * The MAIN blueprint (this suite's stand-in for the kit's `prereq-main`
+ * shape): two
  * REQUIRED mcpServer requirements (`mcp_repo` + `mcp_leaderreq`) — the
  * engine requirement ids bridge to `req-mcp-mcp_repo` /
  * `req-mcp-mcp_leaderreq` (the `req-<domain>-<name>` derivation).
  */
 const PF1_B1_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: pf1-b1',
   'revision: "1"',
   ...PF1_BOILERPLATE,
