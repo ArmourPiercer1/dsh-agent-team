@@ -1,0 +1,18 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a4p2-authority-ceiling.test.ts (21 tests) 11ms
+ ✓ packages/runtime/test/a4p1-authority-envelope.test.ts (21 tests) 7ms
+ ✓ packages/runtime/test/a4p2-dual-envelope-mutation.test.ts (26 tests) 13ms
+ ✓ packages/runtime/test/a3p4-r4-authority-binding.test.ts (17 tests) 49ms
+ ✓ packages/runtime/test/a4p5-self-mutation.test.ts (6 tests) 76ms
+ ✓ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts (33 tests) 104ms
+ ✓ packages/runtime/test/a4p4-operation-approval-authority.test.ts (16 tests) 5ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts (33 tests) 125ms
+
+ Test Files  9 passed (9)
+      Tests  183 passed (183)
+   Start at  03:18:42
+   Duration  1.25s (transform 5.26s, setup 0ms, import 7.35s, tests 395ms, environment 1ms)
+

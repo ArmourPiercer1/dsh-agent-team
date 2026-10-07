@@ -1,0 +1,47 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.config" without a file extension (.vitest-mutant.config.ts:1:24). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (5 tests | 1 failed) 26ms
+     ✓ a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write 15ms
+     ✓ the SAME mutation with a carrier as wide as the matcher commits (the refusal is width, not the documents) 4ms
+     ✓ the ceiling is asked at the WIDTH the mutation claims, not only at the rising cell 1ms
+     ✓ at the real entry, with NO Alpha.3 Leader law in the way, the width refusal commits nothing 2ms
+     × asking the width never LOOSENS the cell: a cell the ceiling does not reach still refuses 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts > the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deletion guard) > asking the width never LOOSENS the cell: a cell the ceiling does not reach still refuses
+AssertionError: expected { status: 'sufficient' } to deeply equal { status: 'insufficient', …(3) }
+
+- Expected
++ Received
+
+  {
+-   "ceiling": "ask",
+-   "detail": {
+-     "requiredAuthority": "human-admin",
+-   },
+-   "plane": "expansion",
+-   "status": "insufficient",
++   "status": "sufficient",
+  }
+
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts:388:21
+    386|     // The CELL answers first (identity preserved: `ask`, not `no-auth…
+    387|     // is what keeps every pre-existing refusal detail byte-identical.
+    388|     expect(verdict).toEqual({
+       |                     ^
+    389|       status: 'insufficient',
+    390|       plane: 'expansion',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  03:31:12
+   Duration  887ms (transform 624ms, setup 11ms, import 769ms, tests 26ms, environment 0ms)
+

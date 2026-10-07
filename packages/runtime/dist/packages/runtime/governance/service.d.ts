@@ -73,6 +73,33 @@ export declare function createGovernanceMutationService(deps: GovernanceMutation
  * effect here", the approval ceiling answers "may it GRANT it", and they have
  * opposite no-match semantics on purpose — so one lookup cannot stand in for the
  * other.
+ *
+ * THE SET OF POINTS ASKED (A4-PR7 §7.5 prerequisite 1): the rise is judged at EVERY
+ * matcher it claims — the closed CELL (`region.region`, where the effect actually
+ * rose) AND the whole WIDTH of the mutation rule that produced it
+ * (`region.mutationMatcher`) — and both ceilings must reach the risen effect at
+ * every one of them.
+ *
+ * IT IS A SET, NOT A SWAP, AND THAT IS THE POINT. Substituting the wide matcher for
+ * the cell would be one line and would LOOSEN the ceiling: a wider question is
+ * answered by FEWER rules, so a document that caps the cell (`exact F → ask`) while
+ * granting the subtree (`subtree S → allow`) would reach `allow` at the width and no
+ * longer at the cell. Measured: asking the width alone commits exactly that rise,
+ * which is the widening a deletion-cleanup may never perform. The meet over the
+ * candidate set is therefore never wider than either individual evaluation — the same
+ * conservative shape the shell-class candidate set uses (plan §7.2 Ruling 4). The
+ * cell is asked FIRST, so every refusal this gate issued before this change keeps its
+ * plane, its ceiling value and its rung byte-identically; the width can only ever add
+ * a refusal.
+ *
+ * WHY THE WIDTH BELONGS HERE AT ALL: `leaderEnvelopeCoverage` — Alpha.3's
+ * whole-matcher coverage law, judged inside `authorizeLeaderPermissionMutation` — is
+ * the only current owner of that width, and 7.3 deletes it. The deletion is NOT part
+ * of this change and stays gated on the prerequisites in
+ * `dev/agent-workflow/evidence/a4-pr7/7-3-prereq/FINDINGS.md`; what lands here is the
+ * surviving law being able to say NO on the same rise. Pinned by
+ * `test/a4p7-carrier-width-under-ceiling.test.ts` (legs 1-2 = the law being deleted,
+ * legs 3-5 = this law, leg 5 = the direction a swap gets wrong).
  */
 export declare function createPermissionAuthorityCeilingJudge(deps: {
     readonly subtreeContains?: SubtreeContains;

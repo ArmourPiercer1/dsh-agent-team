@@ -457,9 +457,16 @@ export interface LeaderMutationAuthorizationInput {
  * invisible because each looks self-consistent on its own.
  *
  * `mutationMatcher` is the mutation rule's OWN matcher and `region` is the closed
- * cell inside it. Both are carried because they answer different questions: the
- * envelope judges the WIDTH (the whole mutation matcher), the ceiling judges the
- * CELL (where the effect actually rose).
+ * cell inside it. Both are carried because they are DIFFERENT QUESTIONS, and after
+ * A4-PR7 §7.5 prerequisite (1) neither law answers with one lookup any more: the
+ * Alpha.3 envelope judge still asks the WIDTH (the whole mutation matcher), and the
+ * v3 ceiling judge now asks EVERY point the rise claims — the CELL (where the effect
+ * actually rose) and that same WIDTH — refusing at either. Asking the cell alone let a
+ * narrow document authorize a broader mutation; asking the width alone is WORSE,
+ * because a wider question is answered by fewer rules, so a document that caps the
+ * cell while granting the subtree would reach the risen effect at the width and not
+ * at the cell. `governance/service.ts` carries that arithmetic and
+ * `test/a4p7-carrier-width-under-ceiling.test.ts` pins both directions.
  */
 export interface PermissionRiseRegion {
     readonly operationClass: string;
