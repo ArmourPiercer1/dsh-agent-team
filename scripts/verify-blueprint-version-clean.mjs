@@ -336,8 +336,18 @@ const NON_BLUEPRINT_NAMESPACES = [
  *  documents — schemaVersion, blueprintId, revision, contentHash). V3
  *  counts `members` only when >= 2 of these sit in the site's own literal. */
 const VERSION_LITERAL_TEST = /schemaVersion["']?\s*:\s*\d/
+// Round 4 item 2: the numeric-form family the TEXT predicate does not read —
+// `+1` (unary plus), `0x` hex, template/computed digits. Measured, never
+// gated: see countNumericFormVariants and the SCOPE-NOTE for the doctrine.
+const NUMERIC_FORM_VARIANTS = /\bschemaVersion["']?\s*:\s*(?:\+\s*\d|0[xX][0-9a-fA-F]|\$\{|`)/g
+function countNumericFormVariants(result, text) {
+  const hits = text.match(NUMERIC_FORM_VARIANTS)
+  if (hits !== null) result.blindNumericForms += hits.length
+}
 const DOC_SHAPE_MARKERS = /displayName|policyStates|teamEnvelope|teamHardEnvelope|requirements/
 const IDENTITY_TRIPLE = ['blueprintId', 'revision', 'contentHash']
+// DOC_ONLY_KEYS is a CLASSIFIER input (refusal evidence below); the witness
+// rule that consumed a forbidden-key SET is retired with the class (R3).
 const DOC_ONLY_KEYS = new Set([
   'displayName',
   'description',
@@ -353,6 +363,25 @@ const DOC_ONLY_KEYS = new Set([
   'capabilityPolicy',
   'metadata',
 ])
+
+// Round 4 FIX 1 (adversarial review of 70745ef7): a hand-typed allowlist of
+// keys is a snapshot of what the author thought of — mine was 9/9 correct
+// and THREE keys short (`members`, `templateId`, `persona`), and every short
+// key was load-bearing. The forbidden-witness set is therefore DERIVED from
+// the schema at run time: every key in BLUEPRINT_TOP_LEVEL_FIELDS* /
+// BLUEPRINT_TEMPLATE_FIELDS* (spreads followed) is a key a schema-valid
+// TeamBlueprint document can carry, and is forbidden as a foreign witness BY
+// CONSTRUCTION. Fail-closed: if schema.ts moved or the extractor's shape
+// assumption breaks, the fence refuses to run — an admission rule that
+// cannot enumerate the document keys must not admit anything.
+const ADJ_MAX_RANGE_LINES = 12
+// (R3 retirement): the witness-key extraction (deriveSchemaWitnessForbidden,
+// R=40 radius constants) left with the class. The completeness invariant it
+// enforced was SELF-REFERENTIAL — it demanded that the sets its own regex
+// found be found — see FINDINGS section 10 for the fail-open demonstration
+// (six sets behind a behaviour-identical second validator helper: 16 sets to
+// 10, no error, suite green). ADJ_MAX_RANGE_LINES stays: the 12-line evidence
+// window is the UNKNOWN-row rule, independent of the retired class.
 
 // --- the line state machine -------------------------------------------------------
 // Tracks line/block comments, single/double-quoted strings (terminated at
@@ -1091,6 +1120,40 @@ export function classifyText(path, text) {
  * and `:99999-100000` — basename+any-digit checked nothing checkable);
  * any violation names the offending keys and exits 2. Silence keeps
  * costing a written, path-named, VERIFIABLE row.
+ * THE `intentionally-dirty` CLASS IS RETIRED (R3 decision, 2026-10-08; the
+ * full reasoning in 7-4-cdom/FINDINGS.md section 10). It was a seventh,
+ * non-gating class: a ledger row could annotate a DIRTY site on a foreign
+ * version axis and move it out of the gated set, with an ADMISSION RULE
+ * requiring a witness key no Blueprint document may carry. Four rounds of
+ * adversarial review ended the same way each round — every tightening moved
+ * the cost of laundering, none raised it above a ledger row. The measurement
+ * that decided it (scan-scope/60-witness-census-transcript.txt): 59 of 87
+ * dirty sites admitted SOME witness under the final rule (reviewer's
+ * independent census: 63 of 87), including the SHIPPED COMPOSITION —
+ * cordis.patch.yml::L60::v1 admitted via an ordinary sibling key. Two of this
+ * file's own sentences are kept HERE, QUOTED AND REFUTED, not softened:
+ *   (1) "A literal someone merely FINDS INCONVENIENT has no such witness:
+ *        its enclosing object is keyed by Blueprint's own fields" — FALSE on
+ *        the census: the ordinary keys of a document's own file (`source:`,
+ *        `items:`, `code:`) were admissible witnesses in 59+ of 87 sites.
+ *   (2) "laundering requires a source edit in the same diff as the row" —
+ *        TRUE of the GATE only because a wrapper assertion pinned the class's
+ *        population to p7t6, and that pin was never stated beside it. A
+ *        mechanism whose safety rests on pinning its own population is not
+ *        enforcing anything; the pin is enforcing it, and relaxing the pin is
+ *        the same single edit that opens the trapdoor.
+ * The retirement condition this file wrote in round 5 is now the reason this
+ * paragraph exists instead of a fifth fix: "if a future round decides that
+ * guarantee is not worth having, the correct move is to RETIRE THE CLASS AND
+ * KEEP THOSE SITES DIRTY". A mechanism with a stated retirement condition is
+ * a tool; the clause did its job, which is the whole point of writing one.
+ * The row kind is therefore REFUSED as not-run (not silently ignored): old
+ * rows must fail loudly, and every former dirty-class site — all 9 of p7t6's,
+ * which were its entire honest population — is DIRTY again, gated, with its
+ * DEFERRALS row and executable retirement check as the honest state. The
+ * attack corpus that produced this decision lives on WITHOUT an admission
+ * path: scan-scope/61-fence-attack-suite.mjs.
+ *
  * The ledger file itself must be GIT-TRACKED (round 3.5 G4: the override
  * is the mute with a name on it — with dirty suppressed post-§7.4, a
  * scratch ledger + suppression measured `verdict: clean`, exit 0), so the
@@ -1135,6 +1198,9 @@ function loadAdjudications(cwd) {
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return { error: `adjudication ledger must be an object keyed "<path>::L<line>::v<version>" (${file})` }
   }
+  // Fix 5b: every defect prints ITS OWN reason. "fail the hand-verified rule"
+  // for no-such-file, no-such-line and not-a-version-site alike is a not-run
+  // the operator has to debug by reading the fence's source.
   const bad = []
   for (const [key, ev] of Object.entries(parsed)) {
     // G2: identity is path::L<line>::v<version> — the report already prints
@@ -1142,7 +1208,7 @@ function loadAdjudications(cwd) {
     // line (v1's verdict laundered v2). Each literal costs its own row.
     const m = /^(.+)::L(\d+)::v(\d+)$/.exec(key)
     if (m === null || typeof ev !== 'string') {
-      bad.push(key)
+      bad.push(`${key} — key is not "<path>::L<line>::v<version>" or value is not a string`)
       continue
     }
     const sitePath = m[1]
@@ -1150,27 +1216,70 @@ function loadAdjudications(cwd) {
     // G3: the citation must name the key's FULL path, and the cited range
     // must exist in that tracked file and contain the site's line —
     // "silence costs a written row" only if the row can be CHECKED.
-    const cite = new RegExp(`hand-verified ${sitePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:(\\d+)(?:-(\\d+))?`).exec(ev)
+    const cite = new RegExp(
+      `hand-verified ${sitePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:(\\d+)(?:-(\\d+))?`,
+    ).exec(ev)
     if (cite === null) {
-      bad.push(key)
+      bad.push(`${key} — no "hand-verified <key's own full path>:<line-range>" citation in the value`)
       continue
     }
     let text
     try {
       text = readFileSync(resolve(cwd, sitePath), 'utf8')
     } catch {
-      bad.push(key)
+      bad.push(`${key} — no such file for the cited path (${sitePath})`)
       continue
     }
     const a = Number(cite[1])
     const b = cite[2] === undefined ? a : Number(cite[2])
-    const lineCount = text.split('\n').length
-    if (!(1 <= a && a <= b && b <= lineCount && a <= siteLine && siteLine <= b)) bad.push(key)
+    const lines = text.split('\n')
+    if (siteLine < 1 || siteLine > lines.length) {
+      bad.push(`${key} — no such line: site is beyond file end (${String(lines.length)} lines in ${sitePath})`)
+      continue
+    }
+    if (!(1 <= a && a <= b)) {
+      bad.push(`${key} — cited range ${String(a)}-${String(b)} is malformed (need 1 <= from <= to)`)
+      continue
+    }
+    if (b > lines.length) {
+      bad.push(`${key} — cited range ${String(a)}-${String(b)} is beyond file end (${String(lines.length)} lines)`)
+      continue
+    }
+    // FIX 2: evidence is a WINDOW, not the file. `role:` four hundred lines
+    // from the site says nothing ABOUT the site; unbounded width turns "the
+    // range proves it" into "the file contains the word eventually". The
+    // reviewer's Case P laundering (legitimate `role`, range 1-598) dies on
+    // this clause alone.
+    if (b - a + 1 > ADJ_MAX_RANGE_LINES) {
+      bad.push(
+        `${key} — cited range ${String(a)}-${String(b)} is wider than the ${String(ADJ_MAX_RANGE_LINES)}-line evidence window`,
+      )
+      continue
+    }
+    if (!(a <= siteLine && siteLine <= b)) {
+      bad.push(`${key} — cited range ${String(a)}-${String(b)} does not contain the site line L${String(siteLine)}`)
+      continue
+    }
+    // Round 4 item 1 + FIX 1/5: the dirty-class kind adds owner +
+    // retirement-check + the ADMISSION RULE witness — a foreign key OUTSIDE
+    // the schema-derived document key set, present in the cited window. An
+    // invalid dirty row is as fatal to the run as an invalid unknown row:
+    // same file, same proof standard, zero second tier.
+    if (ev.trimStart().startsWith('intentionally-dirty:')) {
+      // R3 (2026-10-08): the class is RETIRED — census in
+      // scan-scope/60-witness-census-transcript.txt, reasoning in FINDINGS
+      // section 10. A retired kind that silently tolerated its old rows
+      // could be re-enabled by forgetting it was retired; so its rows fail
+      // the run LOUDLY, and the site keeps its honest class: DIRTY, gated.
+      bad.push(
+        `${key} — the intentionally-dirty row kind is RETIRED (R3 2026-10-08): its witness rule admitted the majority of dirty sites (census 59-63 of 87, shipped composition included); delete this row — the site stays DIRTY with its DEFERRALS row and retirement-check`,
+      )
+      continue
+    }
   }
   if (bad.length > 0) {
     return {
-      error:
-        `adjudication ledger entries fail the "hand-verified <own full path>:<line-range containing the site>" rule (${file}): ${bad.slice(0, 8).join(', ')}${bad.length > 8 ? ` (+${String(bad.length - 8)} more)` : ''}`,
+      error: `adjudication ledger rows rejected (${file}): ${bad.slice(0, 8).join(' | ')}${bad.length > 8 ? ` (+${String(bad.length - 8)} more)` : ''}`,
     }
   }
   return { ledger: new Map(Object.entries(parsed)), file, count: Object.keys(parsed).length }
@@ -1188,6 +1297,7 @@ export function scanBlueprintVersionSites() {
     blindKeyHalf: 0,
     blindDocMarked: 0,
     blindNonTyped: 0,
+    blindNumericForms: 0,
     ledgerFile: '',
     ledgerCount: 0,
     refused: [],
@@ -1254,6 +1364,7 @@ export function scanBlueprintVersionSites() {
       // AND a version digit) is conservative by design — but its blind spot
       // was hand-reconstructed archaeology (36 files, 7 doc-marked, at the
       // round-1 audit; all read, zero documents lost). Compute it live.
+      countNumericFormVariants(result, text)
       if (VERSION_LITERAL_TEST.test(text)) {
         result.blindKeyHalf += 1
         // The reviewer's narrower population: the typed half is safe by
@@ -1267,6 +1378,7 @@ export function scanBlueprintVersionSites() {
       }
       continue
     }
+    countNumericFormVariants(result, text)
     const c = classifyText(p, text)
     result.dirty.push(...c.dirty)
     result.advisory.push(...c.advisory)
@@ -1323,7 +1435,7 @@ export function formatReport(result) {
   )
   lines.push(`scanned-in-scope: ${String(result.scopeFiles)} tracked files`)
   lines.push(
-    `SCOPE-NOTE blind spot: ${String(result.blindKeyHalf)} files (${String(result.blindNonTyped)} non-typed, ${String(result.blindDocMarked)} doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live`,
+    `SCOPE-NOTE blind spot: ${String(result.blindKeyHalf)} files (${String(result.blindNonTyped)} non-typed, ${String(result.blindDocMarked)} doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — ${String(result.blindNumericForms)} variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use; named integrity case: pr-e-requirement-recovery-smoke asserts raw-byte equality of a saved v1 source under a pinned hash, where a numeric-form rewrite stays self-consistent (hashes cover the parsed projection) — "these exact bytes are historical" is guarded by that kit's byte assertion, not by this fence: kit-proof integrity, not runtime safety`,
   )
   lines.push(`adjudication-ledger: ${result.ledgerFile} (${String(result.ledgerCount)} entries)`)
   lines.push(
@@ -1340,7 +1452,7 @@ export function formatReport(result) {
   )
   lines.push(`blueprint-keyed files with version digits: ${String(keyed.size)}`)
   lines.push(
-    'GATE: dirty + UNADJUDICATED unknown only. Closure = dirty empty AND no unadjudicated unknown. adjudicated/refused/prose print for dispatch and audit, never gated.',
+    'GATE: dirty + UNADJUDICATED unknown only. Closure = dirty empty AND no unadjudicated unknown. adjudicated/refused/prose print for dispatch and audit, never gated. (The seventh class intentionally-dirty was RETIRED in R3 2026-10-08 — its row kind is a not-run; FINDINGS section 10.)',
   )
   lines.push(...groupByPath(result.dirty, (p, ss) => `OFFENDING ${p} :: ${ss.map(where).join(', ')}`))
   lines.push(...groupByPath(result.unknown, (p, ss) => `UNKNOWN ${p} :: ${ss.map(whereWhy).join(', ')}`))

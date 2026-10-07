@@ -262,11 +262,19 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
 // sites as ADJUDICATED (non-gating) and gates only on the unadjudicated
 // remainder; this wrapper reads the SAME file, so there is one ledger.
 const LEDGER_FILE = 'dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json'
-const UNKNOWN_LEDGER: ReadonlyMap<string, string> = new Map(
-  Object.entries(
-    JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>,
-  ),
-)
+const LEDGER_ALL: Record<string, string> = JSON.parse(
+  readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8'),
+) as Record<string, string>
+/**
+ * ONE ledger, ONE key form, ONE evidence rule. The second row kind
+ * (`intentionally-dirty:`) was RETIRED (R3, 2026-10-08, FINDINGS §10): its
+ * admission rule accepted the majority of dirty sites (census: 59/87 lower
+ * bound here, 63/87 reviewer-derived; the shipped cordis composition among
+ * them), and the class's real safety was a wrapper assertion pinning its
+ * population to p7t6 — one edit away from being a launderer. The fence now
+ * REFUSES the retired kind as not-run (leg below); sites stay dirty.
+ */
+const UNKNOWN_LEDGER: ReadonlyMap<string, string> = new Map(Object.entries(LEDGER_ALL))
 
 
 interface ScanRun {
@@ -365,7 +373,12 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
   })
 
   it('every deferred path is still dirty (a migrated path must leave the list)', () => {
-    const stale = [...DEFERRALS.keys()].filter((p) => !dirtyPaths.includes(p))
+    // R3 retirement: the dirty-class kind is gone, so DEFERRALS honesty is
+    // ONE sentence again — every deferred path must appear in the GATED
+    // dirty set. p7t6's nine sites returning to dirty is this rule working,
+    // not a regression (FINDINGS §10).
+    const owed = new Set(dirtyPaths)
+    const stale = [...DEFERRALS.keys()].filter((p) => !owed.has(p))
     expect(stale).toEqual([])
   })
 
@@ -623,7 +636,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // The soft edge the reviewer found: an EMPTY justification kept the whole
     // suite green. Now the fence itself refuses to run on an adjudication that
     // does not name its own entry with a line-referenced hand-verification.
-    for (const [key, ev] of UNKNOWN_LEDGER) {
+    for (const [key, ev] of Object.entries(LEDGER_ALL)) {
       const path = key.split('::')[0] ?? ''
       expect(typeof ev === 'string' && ev.trim().length > 0, `empty justification: ${key}`).toBe(true)
       expect(
@@ -687,7 +700,7 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
   it('the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4)', () => {
     // (a) every normal report prints the resolved path + entry count.
     expect(report).toContain(`adjudication-ledger: ${resolve(REPO_ROOT, LEDGER_FILE)}`)
-    expect(report).toContain(`(${String(UNKNOWN_LEDGER.size)} entries)`)
+    expect(report).toContain(`(${String(Object.keys(LEDGER_ALL).length)} entries)`)
     // (b) the override without test mode is refused: it is the mute with a
     // name on it, and post-7.4 (dirty suppressed) it is exactly the lever.
     const good = JSON.parse(readFileSync(resolve(REPO_ROOT, LEDGER_FILE), 'utf8')) as Record<string, string>
@@ -709,6 +722,29 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expect(report).not.toContain('round-1 audit')
   })
 
+  it('the blind-spot line names the numeric-form family the text predicate does not read', () => {
+    expect(report).toMatch(/SCOPE-NOTE blind spot:.*numeric-form family/)
+    expect(report).toMatch(/\+N/)
+    expect(report).toMatch(/parser refusing|runtime/i)
+  })
+
+  it('the RETIRED intentionally-dirty row kind is refused as not-run — a retired class never silently ignores its old rows (R3)', () => {
+    // The class is gone (R3, 2026-10-08; FINDINGS §10): the census showed its
+    // admission rule accepting the majority of dirty sites — including the
+    // shipped cordis composition — so `p7t6` is dirty again and this row kind
+    // is REFUSED, loudly, not ignored. A retired mechanism that silently
+    // tolerated its own rows could be re-enabled by forgetting it existed.
+    const retired = {
+      'packages/legacy/test/p7t6-teammates-adapter.test.ts::L118::v1':
+        'intentionally-dirty: legacy .md teammate-file version axis; foreign-axis: legacy-team-teammate-md; witness-key: role; owner: historical; retirement-check: n/a; hand-verified packages/legacy/test/p7t6-teammates-adapter.test.ts:118-122',
+    }
+    const r = spawnScratchLedger(retired)
+    expect(r.out).toContain('RESULT not-run')
+    expect(r.out, 'the refusal must name the retirement, not a generic validation error').toMatch(/RETIRED/)
+    expect(r.out).toContain('p7t6')
+    expect(r.status).toBe(2)
+  })
+
   const SCRATCH_DIR = resolve(REPO_ROOT, '.tmp-faultscratch')
 function scratchLedgerPath(name: string, obj: Record<string, string>): string {
   // G1 rule: legs create their own world — nothing in this file may depend
@@ -728,6 +764,7 @@ function spawnScratchLedger(obj: Record<string, string>): { out: string; status:
   })
   return { out: spawned.stdout + spawned.stderr, status: spawned.status ?? -1 }
 }
+
 
 // --- scope boundary -------------------------------------------------------
 

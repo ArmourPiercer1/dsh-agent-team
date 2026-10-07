@@ -1,0 +1,14 @@
+# BASE-LABELED acceptance numbers, re-captured on the MERGED tree @749243e4 (round-6 item 4b).
+# Replay script = 30bbe7c2 (round-5); tree + tracked ledger = merged head (pre-retirement state).
+# Run A: fence = 30bbe7c2 (round-5 head). mode=vulnerable -> 11 MISMATCHES, exit 1.
+#   The 11th vs the round-5 transcript's 10 is R5-radius-doc: on this tree the RADIUS fires before
+#   the comment/foreign checks change order, so the OLD expected reason is stale — an expectation
+#   drift on a moved base, not a code defect. Label matters: 10 was pre-merge; 11 is THIS base.
+mode=vulnerable verdict=11 MISMATCHES
+# Run B: fence = 4b7ca211 (round-4.5). mode=r45 UNFILTERED -> 7 MISMATCHES, exit 1.
+#   r45 expectations encode the R5-family cases; the original A–P cases still expect
+#   70745ef7-era behaviour in that mode, so 7 mismatches are the mode/base MIX, disclosed here
+#   rather than tuned away. The R5-prefixed filter run (evidence 57) is the clean r45 red.
+mode=r45 verdict=7 MISMATCHES
+# full vulnerable-vs-4b7ca211 tail for completeness:
+mode=vulnerable verdict=8 MISMATCHES

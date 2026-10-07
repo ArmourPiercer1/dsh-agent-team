@@ -1,0 +1,10 @@
+ok   A-doc-members          exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-A-doc-members.js"
+ok   B-doc-templateid       exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-B-doc-templateid"
+ok   H-doc-persona          exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-H-doc-persona.js"
+ok   P-wide-range           exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-P-wide-range.jso"
+ok   O-doc-narrow           exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-O-doc-narrow.jso"
+ok   N-not-a-dirty-site     exit=2 admitted=false reason="RESULT not-run :: dirty-class ledger rows for sites the fence does not classify dirty: packages/legacy/test/p7t6-teammates-adapter.test.ts::L119::v1 —"
+ok   L-no-such-line         exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-L-no-such-line.j"
+ok   G-no-such-file         exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-G-no-such-file.j"
+ok   CONTROL-honest-p7t6    exit=1 admitted=true 
+mode=fixed verdict=ALL CASES AS EXPECTED

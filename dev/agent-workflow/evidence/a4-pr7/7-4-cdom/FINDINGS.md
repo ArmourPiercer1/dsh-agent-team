@@ -181,3 +181,163 @@ this lane proved migration is cross-lane, with numbers.
 One commit per file group, each with the red-first ratchet transcript in the body; catalog,
 inspector, parse, validation, exec-contract, a1-permission-policy, blueprint-v1-frozen-resume,
 t2-blueprint-hash, t2-blueprint-v2-hash, t2-blueprint-v2-requirements (+ this evidence file).
+
+## 8. Keep-list after the adversarial review of the `intentionally-dirty` register
+Appended by the fence owner (branch `feat/a4-73-dirty-class-ledger`) so the DO-NOT-MERGE round
+is not over-corrected. What the review CONFIRMED and what must therefore SURVIVE its fixes:
+
+- The nine `p7t6` rows are GENUINELY foreign: legacy `.md` front-matter version axis, `role`
+  is in no `BLUEPRINT_*_FIELDS` list; every carrier file is `DEFERRALS`-listed with a real,
+  executable retirement check (intentional-retired.md row 3).
+- Non-gating holds in every measured direction: rows 9→0 move `dirty` 204→213 with exit 1
+  unchanged; unrowed dirty still gates; deleting a row returns its own site to `OFFENDING`;
+  a rotting row is exit 2 naming the key, never a quiet pass.
+- The ledger can never go falsely clean: missing / zero-byte / truncated / `[]` / `null` are
+  each exit 2; `{}` is exit 1 with closing arithmetic; no silent drop exists.
+- The classifier is SHARED not forked: the wrapper derives rows via the fence's own
+  `classifyText`; post-fix the derivation terminates in SET EQUALITY, not a count.
+- What was WRONG and is fixed (fixes 1–5, evidence 53–56): typed forbidden-witness set
+  (now schema-derived, fail-closed), unbounded cited ranges (now 12-line windows), the
+  three hardcoded 9s (now set equality), the `>100` OFFENDING-count leg (X10 — now the
+  reviewer's contract assertion), fence-silent foreign dirty-rows and one generic not-run
+  sentence (now refused at the gate, with distinct reasons).
+- §5 of this file stands: `packages/domain/blueprint/testdata/fixtures.ts` and the other
+  document-bearing files must STAY dirty — post-fix, a ledger row can no longer launder
+  them (reviewer cases A/B/H/P all exit 2; replay: `scan-scope/53-acceptance-replay.mjs fixed`).
+
+## §9 Round 5 (re-review of `4b7ca211`): the register was STILL a trapdoor — validator-anchored now
+
+The reviewer's headline, adopted verbatim as this round's target:
+**"the register is still a trapdoor for a document site, and laundering now costs one ledger row
+and no source edit at all"** — `witness-key: resource` against sites whose window holds a
+permissions block (their count: seven (site,key) pairs; measured **five** live pairs after the
+`5a2053ff` merge — the count predates it, and the replay now DERIVES the pairs from the fence's
+own output so the number can never go stale). Root cause, theirs: "my fix moved the cost from one
+invisible string to a different invisible string… I derived a forbidden set from a *naming
+convention* (`BLUEPRINT_*FIELDS*`) instead of from what the validator actually enforces."
+
+- **Fix 1 (validator-anchored, fail-closed on PARTIAL failure)**: "extract from the call sites,
+  require that the found set equals the consulted set, and make any shortfall a not-run naming the
+  missing set. A gate whose safety property degrades in the *permissive* direction on a typo is the
+  same defect class as a `catch` that defaults to allow." Every second argument of
+  `validate.ts`'s `assertNoUnknownFields` call sites is now extracted — schema lists, pure alias
+  exports, local aliases (no-semicolon style included), inline literals absorbed. Measured:
+  16 consulted sets, 53 keys; `resource`/`persona` forbidden, `role` outside the union — the nine
+  honest `p7t6` rows survive unchanged (`intentionally-dirty(1 files, 9 sites)` before and after).
+- **Fix 2 (a comment is not evidence)**: the witness must be found in code or strings — the fence's
+  own line-state machine masks comments in the cited range (reviewer B3: the only in-window
+  `role:` was `// role: no blueprint here`; the "visible code diff" "can be paid on the
+  least-reviewed line type in a diff"). The `not present in cited range` phrase is kept; a
+  parenthetical states the rule. Reason-differential proof: comment-witness scratch site refuses at
+  ADMISSION ('code/string only'), string-witness scratch site passes admission and dies at the
+  unrelated foreign-site guard ('does not classify dirty').
+- **The radius decision (the reviewer's, adopted with its price)**: "take the radius rule, at R=40,
+  and do not pretend it is a boundary." Window-independent identity-triple cluster test — a site
+  with `blueprintId`/`revision`/`contentHash` within 40 lines is refused whatever range the row
+  cites, because the window is the attacker's choice. NO mini-YAML parser was built — "every one of
+  these documents is an `Array.join` of one-line string literals… **Do not build the parser**."
+  The header states the measured residue — "**no radius is complete: a lane can always add filler
+  between YAML keys**" — next to the truest sentence available, verbatim: "*what the fence can
+  honestly guarantee is only that laundering requires a source edit in the same diff as the row,
+  and that the row is a reviewable string rather than an invisible mute*" — and next to THAT the
+  retirement option: "if a future round decides that guarantee is not worth having, the correct
+  move is to **retire the class and keep those sites dirty**, not to keep widening the radius…
+  a mechanism with a stated retirement condition is a tool and one without is a ratchet."
+- **Fix 4 (the test must cover the class, not the incident)**: leg (b)'s flavors are derived from
+  the fence's own exported extraction intersected with the site's window. "The leak survived review
+  precisely because the test copied the reviewer's imagination… **A test written from the incident
+  report protects the incident, not the class.**"
+
+Keep-list (§8, carried and re-verified):
+- The replay is SELF-FALSIFYING — "the mode label is an expectation, not a switch": `vulnerable`
+  against the round-5 fence is exit 1 with 10 mismatches (8 at round 4.5; 2 new cases joined the
+  demonstration); `fixed` is 17/17 as expected, including the five derived live `resource` pairs,
+  all refused `is a TeamBlueprint document key` (evidence 57–59).
+- Fix-4-era verification survived a master that moved mid-review: `merge-tree` clean at
+  `7e9f7544`, `OFFENDING lines = 74`, wrapper 66/66 materialised (69/69 after round-5 legs).
+- "`prose` is the one class that removes a *printed* site from dispatch, so a future line-state bug
+  would be a silent stop-reporting rather than a false clean — **that is coverage, not proof**".
+
+## §10 R3: the `intentionally-dirty` class is RETIRED — decision record (2026-10-08)
+
+**The decision.** Four rounds of adversarial review each ended the same way: every fix
+moved the cost of laundering, none raised it above a ledger row. R3 retired the class
+instead of fixing it a fifth time. The reasoning is recorded as a decision, not a loss.
+
+**The measurement that decided it** (evidence `scan-scope/60-witness-census-transcript.txt`,
+behavioral spawns of the round-5 fence on the merged tree `749243e4`): **59 of 87 dirty
+sites admitted SOME witness** (this census: lower bound, ≤8 nearest candidates per site;
+the reviewer's independent census on their base: **63 of 87**, cheapest witnesses
+`code:` ×29, `source:` ×29, `items:` ×15 — ordinary keys of the documents being gated).
+**The shipped composition was launderable with one row**: `cordis.patch.yml::L60::v1`
+admitted via `witness-key: bootPhase` (reviewer) and independently via `blueprintSource`
+(this census) — same site, different tokens, **refusal was per-key, not per-site**. The
+five live `resource` pairs from round 5 refuse — while the SAME sites admit with another
+token from their own legal window (`items`, `permissionLines`), including
+`a3p4-...-regression.test.ts::L1128`, the radius demo site. "A gate that refuses the key
+I thought to try and accepts the key next to it is not a gate."
+
+**The R3 one-sentence answer, kept because it indicts the design, not the implementation:**
+the class was only ever a register because ONE WRAPPER ASSERTION froze its population to
+`p7t6` — and relaxing that assertion is the same edit that opens the trapdoor. A mechanism
+whose safety rests on pinning its own population is not enforcing anything; the pin is
+enforcing it, and the pin is one edit away from being a launderer.
+
+**What the class bought: nine rows in one file.** `p7t6`'s legacy `.md` front-matter
+digits — honestly foreign (`role` in no field list, verified three independent ways).
+Everything else the class touched was a site that should have stayed dirty. So `p7t6`
+returns to DIRTY with its `DEFERRALS` row and executable retirement check. The merged
+tree moves `dirty(40 files, 87 sites) + intentionally-dirty(1, 9)` →
+**`dirty(41 files, 96 sites)`** — MEASURED on the post-retirement tree; that number is
+the work landing, not a regression, and this record says so. Ledger: 33 → 24 rows; the
+retired row kind is REFUSED as not-run (`RETIRED` naming the census and this section) —
+a retired mechanism that silently tolerated its own rows is one forgetful rebase from
+re-enabling.
+
+**The two false strong sentences, quoted and marked in the fence header, not softened**
+(round-5 header, kept visible where they were written): *"A literal someone merely FINDS
+INCONVENIENT has no such witness: its enclosing object is keyed by Blueprint's own
+fields"* — refuted on the census population including the shipped composition. And
+*"laundering requires a source edit in the same diff as the row"* — true of the gate ONLY
+because of the population pin, which was never stated next to the guarantee. The
+retirement clause from round 5 ("retire the class and keep those sites dirty") is now the
+reason this section exists instead of a fifth fix: **a mechanism with a stated retirement
+condition is a tool; the clause did its job, which is the whole point of writing one.**
+
+**The R2 fail-open finding — the design lesson, with its shape, because it generalises
+beyond this file.** Moving six anchor-safe field sets behind a **behaviour-identical second
+validator helper** took the round-5 extraction from 16 sets / 53 keys to 10 sets / 41 keys
+with **no error, no not-run, wrapper 69/69 green, class line unchanged**. Nothing opened
+*only* by a lost key — because those sites were already open. **The completeness invariant
+was self-referential: it demanded that the sets its own regex found be found.** And the
+reach is bounded by what the extractor can spell in exactly two files, so **any validator
+constraint expressed elsewhere is neither counted nor required.** That is why "derive it
+from the schema" — the fix requested in round 5 and quoted as doctrine since — **is not a
+safety property either. A derived set beats a typed list; neither is a boundary, and the
+honest move is to price the residual out loud.** (Doctrine line corrected accordingly.)
+
+**What survives: the attack corpus as a suite with NO ADMISSION PATH.**
+`scan-scope/61-fence-attack-suite.mjs` — 99 cases: every dirty site re-probed with its own
+window witness (census shape, DERIVED live), the cordis exhibit, B3-comment and
+radius-cluster scratch constructions; every case asserts not-run `/RETIRED/`; no mode, no
+expectation set, no path to a pass. Reviewer floors implemented: **an acceptance run that
+derives zero cases exits 3** (transcript shows the floor proving itself; the old
+`53-acceptance-replay.mjs fixed zzz` printing exit-0 `ALL CASES AS EXPECTED` was a green
+that meant nothing, in the one harness built to catch those), and the census block runs
+unconditionally. The old replay is `git rm`'d — its `vulnerable`/`r45` admission-mode
+corpus lives on only as historical transcripts (57/58/59) with base labels (63).
+
+**Evidence-integrity re-captures (round 6):** (a) eslint is re-recorded honestly — the
+repo lint is NOT clean on any tree; see `09-gate-eslint-clean.txt` rewritten to the
+b2b form (exit 1, N errors / M warnings, rule+message multiset byte-identical to pristine
+base `14ea8717`); a transcript with no results in it is not evidence, whatever its
+filename says. (b) Acceptance numbers are base-dependent and now labeled per base in
+`scan-scope/63-base-labeled-acceptance-numbers.txt`: vulnerable-mode = **11** mismatches
+against head `30bbe7c2` on the merged tree (the 11th is `R5-radius-doc`'s stale expected
+reason — the radius fires first on this base; expectation drift, not code), and **7**
+mismatches for `r45`-unfiltered against `4b7ca211` (mode/base mix, disclosed not tuned).
+
+**Environmental note for every future review worktree** (cost a false `Cannot find module
+'yaml'` typecheck failure): a root-only `cp -al node_modules` is not an install; review
+worktrees need a real install. Logged here because the cheaper instruction was coming from
+this lane's coordinator.
