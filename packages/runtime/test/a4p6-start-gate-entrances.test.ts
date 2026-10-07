@@ -23,8 +23,11 @@
  * doubles) and the assertions are the two the review demanded: the
  * TYPED refusal (the wire-shared `TEAM_START_GOVERNANCE_*` code) and
  * ZERO START (the glue's `createRootAgent` port never fires for the
- * refused root; `live.boot` never fires for a refused boot), plus ZERO
- * durable mint for a refused boot-create (fail-closed BEFORE the write).
+ * refused root; `live.boot` never fires for a refused boot), and the
+ * follow-up-run law for the refused creates: the gate sits AFTER the
+ * atomic fresh-root commit and BEFORE the agent start, so a refusal
+ * leaves the durable row NOT LIVE (full chokepoint commit, zero agent
+ * effect) and every re-entry re-runs the SAME gate.
  *
  * A source law pins the mapping discipline: the three arms are built by
  * ONE exported mapper (`governanceStartRefusal` in `s6-remote.ts`) that
@@ -53,7 +56,8 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import { createTeamProductionRoot } from '../src/plugin/root.js'
-import type { TeamPluginConfig } from '../src/plugin/types.js'
+import type { TeamAgentBindings, TeamPluginConfig, TeamProductionRoot } from '../src/plugin/types.js'
+import type { GovernanceStartOutcome, GovernanceWarningService } from '../../governance-warning/index.js'
 import { createTeamDomain, openTeamDomain } from '../../storage/repositories/index.js'
 import {
   destroyDir,
@@ -117,21 +121,22 @@ const DOC = [
  * The gate double: records every consultation (`phase:sid`) and answers
  * per `policy`. `warn` mints the closed `warning-required` arm (the
  * same outcome shape the real `runGate` produces: interventionId +
- * warningId).
+ * warningId). TYPED against the production port (`GovernanceWarningService`
+ * — the double that fakes a seam must compile against the seam; no
+ * mute): a drift in the port's shape reddens THIS file, not a lint rule.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- test double for the service port, untyped by design
-function gateStub(policy: (sid: string) => 'open' | 'warn'): { calls: string[]; service: any } {
+function gateStub(policy: (sid: string) => 'open' | 'warn'): { calls: string[]; service: GovernanceWarningService } {
   const calls: string[] = []
-  const outcome = (phase: string, sid: string): Record<string, unknown> => {
+  const outcome = (phase: string, sid: string): GovernanceStartOutcome => {
     calls.push(`${phase}:${sid}`)
     if (policy(sid) === 'warn') {
       return { status: 'warning-required', interventionId: WARN_INTERVENTION, warningId: 'warn-entrance' }
     }
     return { status: 'open' }
   }
-  const service = {
-    checkStart: async (sid: string) => outcome('start', sid),
-    checkEnsureRootLive: async (sid: string) => outcome('live', sid),
+  const service: GovernanceWarningService = {
+    checkStart: async (sid) => outcome('start', sid),
+    checkEnsureRootLive: async (sid) => outcome('live', sid),
     observeRuntime: async () => undefined,
     acknowledge: async () => ({ kind: 'not-found' }),
     listWarnings: async () => [],
@@ -171,18 +176,30 @@ function makeSessionQueryFake() {
 
 // --- the world (the d2 production-root pattern) ------------------------------------
 
+/**
+ * The NARROW local structural type over the stub glue's test-observation
+ * surface (the parent-typed-double law for review round 1: where the
+ * production side is an untyped .mjs glue, the test declares the exact
+ * shape it reads — no `any`, no mute). The glue is passed to the root
+ * through `as unknown as TeamAgentBindings`: the deliberate
+ * partial-double-to-port cast, which introduces no `any` identity.
+ */
+type StubGlue = {
+  readonly __t1: {
+    bootCount: number
+    rootAgentStarts: string[]
+  }
+}
+
 async function buildWorld(scratch: string, opts: {
   bootPhase: 'create' | 'resume'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- service-port double, untyped by design
-  governanceWarning?: any
+  governanceWarning?: GovernanceWarningService
   getSessionQuery?: () => unknown
   /** W4: reopen the SAME durable world (W2's scratch) instead of minting it. */
   reopen?: boolean
 }): Promise<{
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped production root, test double by design
-  root: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped stub glue, untyped by design
-  stub: any
+  root: TeamProductionRoot
+  stub: StubGlue
   dispatcher: (endpoint: string, params: unknown) => Promise<Record<string, unknown>>
 }> {
   const seam = new FileStorageSeam(scratch)
@@ -201,7 +218,7 @@ async function buildWorld(scratch: string, opts: {
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
   }
   const teamToolsRef = { current: undefined }
-  const stub = createStubBindings({ config, teamToolsRef, domain })
+  const stub: StubGlue = createStubBindings({ config, teamToolsRef, domain })
   const unused = (): never => {
     throw new Error('A4-PR6 gate guard: legacy inspect is unused in this world')
   }
@@ -209,8 +226,7 @@ async function buildWorld(scratch: string, opts: {
     config,
     domain,
     storageSeam: seam,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped stub glue surface, untyped by design
-    live: stub as any,
+    live: stub as unknown as TeamAgentBindings,
     now: () => NOW,
     teamToolsRef,
     controlServiceRef: { current: undefined },
@@ -332,8 +348,7 @@ const w3 = await (async () => {
   const gate = gateStub(() => 'warn')
   const world = await buildWorld(dir, { bootPhase: 'create', governanceWarning: gate.service })
   let rejectionCode = 'NOT-REJECTED'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- captured rejection, untyped by design
-  let rejectionDetails: any = null
+  let rejectionDetails: unknown = null
   try {
     await world.root.boot()
   } catch (error) {

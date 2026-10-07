@@ -1,0 +1,44 @@
+FILE packages/runtime/test/bound-blueprint-persona-root.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/bp1-freeze-barrier.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/bp1-red-probe.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/consent-scope-hash-binding.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/issue1-serial-blocking.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/mcp-target-materialization.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/p8s3b-result-effects.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/rc2a1-fs-containment.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/rmr-create-or-open-boot.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/startup-all-templates-real-authority.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/startup-consent-production.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/startup-template-disable-production.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/t12a-b2-child-identity.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/t12a-glue-handoff-ports.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/t12b1-real-create.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/t12b2-resume-separation.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/t12b6-handoff-agent-start.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/team-compatibility-scope.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/team-session-startup-fence.test.ts::COLLECTION-OR-UNHANDLED
+TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field
+TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent
+TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly
+TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly
+TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates
+TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 3. Members can have different capabilities
+TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 7. Changing capability fields changes the hash
+TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities
+TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities
+TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null
+TEST packages/runtime/test/d3-member-identity-context.test.ts::D3 the member identity context block (Team D1-D6 repair v2, B2) D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+TEST packages/runtime/test/f1-webserver-shim-isolation.test.ts::F1 the scoped webServer compatibility seam (host.ts internal/get) F1-T1: the team remote registration is served by the scoped shim (0.1.5 topology)
+TEST packages/runtime/test/f1-webserver-shim-isolation.test.ts::F1 the scoped webServer compatibility seam (host.ts internal/get) F1-T2: unrelated contexts keep the native Cordis failure (the key regression)
+TEST packages/runtime/test/f1-webserver-shim-isolation.test.ts::F1 the scoped webServer compatibility seam (host.ts internal/get) F1-T3: 0.1.2-era behavior is unchanged (the native walk resolves)
+TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+TEST packages/runtime/test/startup-preflight-production-create.test.ts::W3-B S1 — Team-level required down: the creation preflight refuses typed (guide §6.3.1) the boot create rejects with the typed creation-preflight refusal (outcome fatal)
+TEST packages/runtime/test/startup-preflight-production-create.test.ts::W3-B S2 — MemberTemplate required down (no instance): `fixOrDisable` (guide §6.3.2) the boot create rejects typed with the blocked template scope + the down requirement
+TEST packages/runtime/test/startup-preflight-production-create.test.ts::W3-B S4 — optional down without consent: `consentRequired` (guide §6.3.4) the boot create rejects typed with the consent-required requirement id
+TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session

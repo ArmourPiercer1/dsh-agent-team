@@ -25,3 +25,20 @@ instruction, so a worktree prune cannot destroy them):
   `check-art.txt` shows the STALE state the artifacts co-commit (173326b7)
   closed. `smoke.txt` — the INHERITED clsx failure, reproduced
   identically on master 77292870 (7.5-owned).
+
+- Review round 1 receipts (the `.tmp-a4pr6/` dir is DELETED at the
+  round-1 close — no gate receipt lives worktree-local anymore; this
+  directory is the only capture target, per the 1f8d4e73 law):
+  `root-66a5b5d0-runA.json`/`runB.json` + the matching
+  `root-66a5b5d0-identities-runA/runB.txt` (the x2 closure at head
+  66a5b5d0 = the 22 baseline identities EXACTLY both runs);
+  `root-orderflaw-identities-interference.txt`/`-44.txt` (the ordering
+  flaw exposed: 44 identities incl. the 18 collection failures before
+  a4140137 — the first also documents my own parallel-run interference
+  with the suite, disclosed); `lint-round-full.txt` +
+  `lint-round-identities.txt` (final head: 128 occurrences, ZERO new
+  identities vs the 160 baseline — reached with NO mutes anywhere in
+  the round's files after the parent's no-new-mutes ruling: the six
+  entrances-file mutes became typed doubles);
+  `build-round.txt`/`build-comp-round.txt`/`check-art-round.txt` +
+  `drift-round-list.txt` (the 23-file artifacts co-commit).

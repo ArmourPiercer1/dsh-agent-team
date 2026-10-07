@@ -1,0 +1,26 @@
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/client/composition-shim/client-bundle.js
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/contracts/catalog.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/contracts/catalog.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/contracts/catalog.js
+  C content-drift (git add): packages/runtime/dist/packages/remote/src/contracts/catalog.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/handoff/service.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/handoff/service.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/handoff/service.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/host.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/root.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map
+[ELIFECYCLE] Command failed with exit code 1.

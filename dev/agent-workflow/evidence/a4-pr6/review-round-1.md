@@ -48,11 +48,60 @@ stopped team; every re-entry (boot resume, `team.ensureRootLive`, replay)
 re-runs the SAME gate and re-refuses. W1/W3 updated accordingly (their
 binding-absence assertion pinned the wrong order, not a shipped law).
 
+## No-new-mutes ruling (parent, post-report): the six entrances mutes are GONE
+
+The parent's gate verified the round but caught what the report did not
+say: `a4p6-start-gate-entrances.test.ts` carried SIX
+`eslint-disable-next-line @typescript-eslint/no-explicit-any` mutes —
+and "zero new lint identities" and "six mutes" are the SAME fact: the
+mutes were exactly what kept the identity gate green, i.e. a gate closed
+by silencing it. Fixed at the source; no exception adjudicated because
+none was needed — all six type cleanly:
+
+- the gate double now declares `service: GovernanceWarningService` (the
+  production port interface — the double faking a seam compiles against
+  the seam; port drift reddens the FILE, not a lint rule), outcomes
+  typed `GovernanceStartOutcome`;
+- `root: TeamProductionRoot` (the real return type of the production
+  root factory);
+- the stub glue gets a NARROW LOCAL STRUCTURAL TYPE (`StubGlue = {
+  __t1: { bootCount, rootAgentStarts } }` — the exact shape the file
+  reads) and enters the root as `as unknown as TeamAgentBindings` (the
+  sanctioned partial-double cast — no `any`, no identity);
+- `rejectionDetails: unknown` (used only through `JSON.stringify`).
+
+The file now contains ZERO `eslint-disable` and ZERO `any`; full-tree
+lint re-extracted at the new head: 128 occurrences, ZERO new identities
+vs the 160-baseline — now honestly derived. Pre-existing mutes elsewhere
+are baseline debt, untouched. Second disclosure folded in: the fix-1
+round's "eslint clean on every touched file" claim had MISSED this file
+entirely — a second reason the mutes were load-bearing.
+
+## PR-body paragraph (the parent's plain-words demand)
+
+> Fixing the unreadable-document path is what revealed that a whole
+> entrance had never been gated: the boot gate had been positioned
+> BEFORE `bindFresh` — a position structurally unable to read the
+> governance documents it was judging, because those documents resolve
+> through the durable row `bindFresh` itself mints. With the
+> unreadable-document fix correct, 18 boot worlds failed fail-closed
+> with `authority-document-unreadable`; before the review round those
+> same worlds had been silently OPENING the gate — the pre-round boot
+> path was not a weak gate, it was a no-op. The ordering law is now
+> pinned: the start gate runs POST-fresh-root-commit, PRE-agent-start,
+> at every entrance; a refused create leaves the atomic chokepoint
+> commit (row + snapshot + team-root binding) as a durable NOT-LIVE team
+> with zero agent effect, and every re-entry (boot resume,
+> `team.ensureRootLive`, handoff replay) re-runs the SAME gate and
+> re-refuses. The full-suite closure gate caught this; the round tests
+> did not.
+
 ## Disclosures (this round)
 
 - Boot-path ruling: gate + disclose (the reviewer permitted either); `boot.create`
-  and `boot.resume` run the SAME closure as the wire entrances; the zero-mint
-  law is pinned (W3/W4: `bootCount === 0`, no LIVE binding).
+  and `boot.resume` run the SAME closure as the wire entrances; the refused-boot
+  law (post-follow-up) is pinned in W3/W4: typed refusal, `bootCount === 0`, zero
+  agent effect on a durable NOT-LIVE team (full chokepoint commit, re-gated).
 - `handoff/service.ts` extension (its `createOnly` catch passes the three
   governance refusal reasons through untouched) — handoff was not in PR6's
   original Files list; disclosed as a fix-round edit.
