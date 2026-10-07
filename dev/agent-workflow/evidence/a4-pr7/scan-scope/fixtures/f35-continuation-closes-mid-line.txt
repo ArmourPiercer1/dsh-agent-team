@@ -1,0 +1,15 @@
+;; expect: advisory
+;; rule: continuation-closes-mid-line (round 3 D) — a backslash-newline
+;;        string CONTINUES and CLOSES mid-line; after the closing quote the
+;;        line is CODE again, so a code-position version literal riding the
+;;        tail is a typed-code site (f31 parity: digit decides). The old
+;;        closed-continuation branch was DEAD (the `carry.lineString !==
+;;        null` guard after the scan loop was tautological — the loop never
+;;        cleared the carry): the whole closing line stayed string and this
+;;        site silently read DIRTY-class string carrier. Conservative
+;;        direction, but dead is dead: the branch now lives, pinned here.
+;; path: packages/example/test/fx-midclose.ts
+const MC_BP = 'team.midclose'
+const A = 'alpha\
+beta', T = { schemaVersion: 2, blueprintId: MC_BP }
+void A; void T; void MC_BP

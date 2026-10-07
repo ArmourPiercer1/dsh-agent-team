@@ -335,6 +335,8 @@ const NON_BLUEPRINT_NAMESPACES = [
  *  doc-only set itself: row DTOs legitimately share these four keys with
  *  documents — schemaVersion, blueprintId, revision, contentHash). V3
  *  counts `members` only when >= 2 of these sit in the site's own literal. */
+const VERSION_LITERAL_TEST = /schemaVersion["']?\s*:\s*\d/
+const DOC_SHAPE_MARKERS = /displayName|policyStates|teamEnvelope|teamHardEnvelope|requirements/
 const IDENTITY_TRIPLE = ['blueprintId', 'revision', 'contentHash']
 const DOC_ONLY_KEYS = new Set([
   'displayName',
@@ -435,7 +437,12 @@ function lineStates(text) {
           break
         }
       }
-      if (carry.lineString !== null) {
+      // Round 3 D: this branch was DEAD — the guard below was tautological
+      // because the scan loop never cleared the carry, so a string that
+      // CLOSED mid-line was still reported as unterminated (whole line
+      // string, openQuote true). The closed case now falls through: the
+      // line tail after the quote is CODE again (fixture f35).
+      if (closedAt === -1) {
         if (!cont) {
           // EOL without backslash and without the quote: genuinely
           // unterminated — visible through the openQuote unknown rule.
@@ -449,6 +456,8 @@ function lineStates(text) {
         states.push({ kinds, openQuote })
         return
       }
+      carry.lineString = null
+      carry.lineSeg = null
       seg.el = li
       seg.ec = closedAt
       segments.push(seg)
@@ -1127,6 +1136,8 @@ export function scanBlueprintVersionSites() {
     advisory: [],
     unknown: [],
     adjudicated: [],
+    blindKeyHalf: 0,
+    blindDocMarked: 0,
     refused: [],
     prose: [],
   }
@@ -1184,7 +1195,17 @@ export function scanBlueprintVersionSites() {
       result.dirty.push({ path: p, line: 0, version: 0, why: `unreadable(${String(e)})` })
       continue
     }
-    if (!BLUEPRINT_KEY.test(text)) continue
+    if (!BLUEPRINT_KEY.test(text)) {
+      // Round 3 D: the both-halves rule (file needs a blueprintId text half
+      // AND a version digit) is conservative by design — but its blind spot
+      // was hand-reconstructed archaeology (36 files, 7 doc-marked, at the
+      // round-1 audit; all read, zero documents lost). Compute it live.
+      if (VERSION_LITERAL_TEST.test(text)) {
+        result.blindKeyHalf += 1
+        if (DOC_SHAPE_MARKERS.test(text)) result.blindDocMarked += 1
+      }
+      continue
+    }
     const c = classifyText(p, text)
     result.dirty.push(...c.dirty)
     result.advisory.push(...c.advisory)
@@ -1236,6 +1257,12 @@ export function formatReport(result) {
     'scope: tests/kits/, scripts/, packages/**/harness/, packages/*/test/, packages/**/testdata/, tests/mock/scripts/, cordis.patch.yml (dev/agent-workflow, dist and non-code extensions excluded)',
   )
   lines.push(`scanned-in-scope: ${String(result.scopeFiles)} tracked files`)
+  lines.push(
+    `SCOPE-NOTE key-half blind spot: ${String(result.blindKeyHalf)} in-scope files carry a schemaVersion literal but no blueprintId text (excluded by the both-halves rule); ${String(result.blindDocMarked)} are doc-marked — round-1 audit (2026-10-08) read every one at 36/7 and lost zero documents; these counts are computed live`,
+  )
+  lines.push(
+    'SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior',
+  )
   if (!result.ran) {
     lines.push(`RESULT not-run :: ${result.reason ?? 'unknown reason'}`)
     return lines.join('\n')

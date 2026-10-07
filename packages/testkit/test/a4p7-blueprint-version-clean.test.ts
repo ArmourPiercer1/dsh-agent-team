@@ -837,10 +837,16 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expectSingle(fixture('f32b'), 'refused')
   })
 
+  it('f35 + scope notes: a closed continuation revives CODE on the line tail; both blind spots print (round-3 D)', () => {
+    expectSingle(fixture('f35'), 'advisory')
+    expect(report).toContain('SCOPE-NOTE key-half blind spot:')
+    expect(report).toContain('SCOPE-NOTE lineStates continuation:')
+  })
+
   it('the fixture corpus exists and every fixture was exercised', () => {
     // Guard against the corpus silently emptying (a fixture-less "test" is
     // how a gate dies): names are pinned to the f01..f31 set.
-    expect(fixtures.length).toBeGreaterThanOrEqual(34)
+    expect(fixtures.length).toBeGreaterThanOrEqual(35)
     expect(fixtures.length).toBe(new Set(fixtures.map((f) => f.name)).size)
   })
 
