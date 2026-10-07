@@ -568,6 +568,32 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     for (const s of pol) expect(s.why).toContain('/sibling')
   })
 
+  it('every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2)', () => {
+    // Measured under the real §7.3 flip (evidence 17): 1/18 reddened, 17
+    // survived. The caveat line is the dispatch truth the probe reads.
+    for (const s of run.advisory) {
+      expect(s.why, `${s.path}:${String(s.line)} advisory without caveat`).toContain('[')
+      expect(s.why).toContain('typed-code-position')
+    }
+    // The review condition is about the PRINTED REPORT, not the struct:
+    // every printed ADVISORY line carries its caveat (dispatch reads this).
+    for (const l of report.split('\n').filter((x) => x.startsWith('ADVISORY '))) {
+      expect(l, 'printed ADVISORY line without caveat').toContain('typed-code-position [')
+    }
+    const named = (path: string, line: number): string => {
+      const s = run.advisory.find((x) => x.path === path && x.line === line)
+      expect(s, `${path}:${String(s.line)} must be an advisory line`).toBeDefined()
+      return s === undefined ? '' : s.why
+    }
+    expect(
+      named('packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts', 101),
+      'the very literal the probe caught lying must SAY so',
+    ).toContain('as-unknown-as')
+    expect(named('packages/runtime/test/p5t5-helpers.ts', 80)).toContain('annotated TeamBlueprint')
+    expect(named('packages/testkit/test/bp1h-blueprint-authoring.test.ts', 95)).toContain('toEqual')
+    expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 561)).toContain('toMatchObject')
+  })
+
   it('every UNKNOWN site on the tree is adjudicated BY PATH in this wrapper — no unadjudicated unknown, no stale ledger row', () => {
     // 2026-10-08 review (BLOCKING 1b/1c): evidence outside the site's own
     // literal, or a spread-hidden literal, may not be machine-refused; it

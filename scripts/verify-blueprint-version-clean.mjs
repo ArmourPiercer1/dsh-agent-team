@@ -41,19 +41,29 @@
  * literals the type system structurally cannot see — string/template
  * carriers in .ts, every site in .mjs/.cjs/.js, and every site in data files
  * (.json/.yml/.yaml). `advisory` — code-position TypeScript literals — is
- * printed by path but NEVER gates, because Task 7.3's narrowing of
- * TeamBlueprint.schemaVersion to 3 is the instrument for that plane, and a
- * second gate there would double-count a gate tsc already holds.**
+ * printed by path but NEVER gates. NOT because tsc will catch those sites —
+ * MEASURED otherwise: under the real §7.3 flip (types.ts:416 -> `readonly
+ * schemaVersion: 3`, `pnpm -r --no-bail run typecheck`, 2026-10-08, evidence
+ * 17) exactly 1 of the 18 advisory sites reddened. It stays ungated because
+ * those lines are PROBE-dispatched, not tsc-dispatched — and every ADVISORY
+ * line therefore prints its own caveat naming the laundering mechanism that
+ * keeps the flip from reaching it.**
  *
- * The honesty limits of that split, stated rather than buried:
- *  - `advisory` claims only "this literal is visible to TypeScript as code",
- *    NOT "the 7.3 flip will redden it". A literal laundered through
- *    `as unknown as`, `toEqual(...)`/`toMatchObject(...)`, or a
- *    `Record<string, unknown>` builder sits in code position yet escapes the
- *    check — the 2026-10-08 probe caught exactly this (a test stayed 11/11
- *    green while three Blueprint-shaped literals declared version 9). Those
- *    paths are still PRINTED, because the PROBE, not this scan, dispositions
- *    them ("green after probe → live migration or a recorded strike").
+ * The honesty limits of that split, MEASURED rather than asserted (2026-10-08
+ * round-2 review): applying the real §7.3 flip (packages/domain/blueprint/
+ * src/types.ts:416 -> `readonly schemaVersion: 3`) and running
+ * `pnpm -r --no-bail run typecheck`, exactly ONE of the 18 advisory sites at
+ * head reddened (packages/runtime/test/p5t5-helpers.ts:80 — the one literal
+ * directly typed as TeamBlueprint); SEVENTEEN stayed green — `toEqual(...)`/
+ * `toMatchObject(...)` arguments, `Record<string, unknown>` builders,
+ * unannotated consts, and `as unknown as` casts, including the very literal
+ * the probe caught lying at policy-state-multi-team-bound-blueprint.test.ts
+ * :101. The flip also reddened six production-src version comparisons — the
+ * production plane, not the scan's. So `advisory` claims only "this literal
+ * is visible to TypeScript as code", NEVER "the flip will redden it", and
+ * every ADVISORY line carries a per-site caveat naming its laundering
+ * mechanism (advisoryCaveat below); the PROBE, not this scan, dispositions
+ * those paths ("green after probe → live migration or a recorded strike").
  *  - `unknown` gates on purpose: it is the shape the classifier cannot
  *    decide (conflicting namespace signatures on one object, a line whose
  *    quotes never close). A scan that resolves ambiguity by silently
@@ -803,6 +813,34 @@ function yamlCommentIndex(line) {
 // --- classification ---------------------------------------------------------------------
 
 /**
+ * The per-advisory-line caveat the 2026-10-08 round-2 review demanded
+ * (dispatch condition #2): naming WHY the §7.3 narrowing will (almost never)
+ * or will not reach this literal, measured under the real flip (evidence
+ * 17-flip-73-exact-measurement.txt: 1/18 reddened). First match wins; the
+ * search window is the site's line, the outer lines the classifier already
+ * read (heads/fn), and up to 6 lines AFTER the site (the cast closing a
+ * returned literal, `} as unknown as TeamBlueprint`, sits there).
+ */
+function advisoryCaveat(siteLine, outerTexts, lines, idx) {
+  const window = [siteLine, ...outerTexts]
+  for (let k = idx; k <= Math.min(lines.length - 1, idx + 6); k += 1) window.push(lines[k])
+  const text = window.join('\n')
+  if (/as unknown as/.test(text)) {
+    return 'typed-code-position [as-unknown-as -> §7.3\'s narrowing will NOT catch it (measured: survivor of the real flip)]'
+  }
+  if (/: *TeamBlueprint\b/.test(text) && !/Record<string, *unknown>/.test(text)) {
+    return 'typed-code-position [annotated TeamBlueprint -> the measured flip class that DOES redden (1/18)]'
+  }
+  if (/toEqual\(|toMatchObject\(/.test(text)) {
+    return 'typed-code-position [toEqual/toMatchObject argument -> §7.3\'s narrowing will NOT catch it (measured: survivor)]'
+  }
+  if (/Record<string, *unknown>/.test(text)) {
+    return 'typed-code-position [Record<string,unknown> builder -> §7.3\'s narrowing will NOT catch it (measured: survivor)]'
+  }
+  return 'typed-code-position [measured survivor of the real §7.3 flip (17/18 survived) — the probe, not tsc, dispositions this line]'
+}
+
+/**
  * Classify every version site of ONE file text into the five buckets.
  * Pure; exported so the wrapper pins each rule on a fixture text.
  */
@@ -977,7 +1015,10 @@ export function classifyText(path, text) {
       } else if (carrier === 'string') {
         out.dirty.push({ ...site, why: 'string-carrier-in-typed-file' })
       } else {
-        out.advisory.push({ ...site, why: 'typed-code-position' })
+        out.advisory.push({
+          ...site,
+          why: advisoryCaveat(line, outerCtx.map((c) => c.text), lines, idx),
+        })
       }
     }
   })
@@ -1090,7 +1131,9 @@ export function formatReport(result) {
   )
   lines.push(...groupByPath(result.dirty, (p, ss) => `OFFENDING ${p} :: ${ss.map(where).join(', ')}`))
   lines.push(...groupByPath(result.unknown, (p, ss) => `UNKNOWN ${p} :: ${ss.map(whereWhy).join(', ')}`))
-  lines.push(...groupByPath(result.advisory, (p, ss) => `ADVISORY ${p} :: ${ss.map(where).join(', ')}`))
+  lines.push(
+    ...groupByPath(result.advisory, (p, ss) => `ADVISORY ${p} :: ${ss.map(whereWhy).join(', ')}`),
+  )
   lines.push(...groupByPath(result.refused, (p, ss) => `REFUSED ${p} :: ${ss.map(whereNs).join(', ')}`))
   lines.push(...groupByPath(result.prose, (p, ss) => `PROSE ${p} :: ${ss.map(where).join(', ')}`))
   const tally = (arr) =>
