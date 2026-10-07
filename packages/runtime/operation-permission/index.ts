@@ -194,6 +194,7 @@ export {
   createOperationApprovalFactsReader,
   operationApprovalCarrier,
   recheckOperationApproval,
+  recheckPersistedOperationAuthority,
   routeOperationApproval,
 } from './approval-routing.js'
 export type {

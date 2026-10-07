@@ -281,6 +281,7 @@ import { authorityRank, planPermissionMutationApproval } from '../../governance/
 // the durable write stays inside `mutatePermission` (ADR §2) and the
 // effective answer stays inside the merged read plane (ADR §3).
 import {
+  createControlAuthorityRevalidation,
   createMemberLifecycleReader,
   createPermissionGovernanceLane,
   createTeamPermissionLanes,
@@ -2089,6 +2090,26 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // the GUI remain the recovery paths). A glue bundle without the port
   // simply does not notify (factory/unit worlds; discovery stays
   // functional through `team_list_pending_control`).
+  // A4-PR7 Task 7.0 (ADR A1-14): the CONSUMPTION-POINT authority recheck, in
+  // the ONE place that can compose it. An approval is not a standing grant:
+  // before the `control-allow-consumed` fact is written, the control service
+  // re-runs the ceiling for the authority point PERSISTED on the row and refuses
+  // with ZERO consumption when the rung that signed no longer covers it, or when
+  // the fresh documents cannot answer. The evaluation lives in the operation lane
+  // and the document reading lives in the permission plane (A5-12); the control
+  // lane sees only the closed verdict (the a3p3 consumer rows state who may ask
+  // the ceiling question, and the control lane is not among them).
+  //
+  // WHY A REF: the control service is constructed here and the plane's
+  // operation-facts reader is published BELOW, in the same function (the
+  // `permissionPlaneRef` publication — the established lazy-ref pattern of this
+  // root, cf. `controlServiceRef` above). The port is created ONCE and reads the
+  // ref per call, so the ask and the consumption point necessarily consult the
+  // SAME reader — a second reader would be a second answer, and the two could
+  // then disagree about which documents bind this Team.
+  const operationApprovalFactsRef: { current: OperationApprovalFactsReader | undefined } = {
+    current: undefined,
+  }
   const control = createControlService({
     teamDomain: domain,
     blueprintCatalog: catalog,
@@ -2101,6 +2122,24 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           }),
         }
       : {}),
+    // A4-PR7 Task 7.0 (ADR A1-14): the recheck port, present exactly when this
+    // process has an authority-ceiling reader at all. Without it the guard
+    // cannot confirm a v3 operation approval and refuses with
+    // `authority-undetermined` — the fail-closed direction, never a default
+    // "covered" (see `ControlAuthorityRecheckPort`'s contract).
+    ...(permissionAuthorityCeiling === undefined
+      ? {}
+      : {
+          authorityRevalidation: createControlAuthorityRevalidation({
+            operationApprovalFacts: async (input) => {
+              const reader = operationApprovalFactsRef.current
+              // An unpublished reader is NOT "no facts to speak of": it reaches
+              // the operation lane as `undefined` facts, which rechecks as
+              // `undetermined` and refuses with zero consumption.
+              return reader === undefined ? undefined : reader(input)
+            },
+          }),
+        }),
   })
   // A6 (alpha.2 plan §11): publish the fully-constructed control service to
   // the shared ref the glue's setup callback reads LAZILY (the teamToolsRef
@@ -2936,6 +2975,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             }),
           }
     permissionPlaneRef.current = planeForGlue ?? permissionPlane
+    // A4-PR7 Task 7.0 (ADR A1-14): publish the SAME reader into the control
+    // service's consumption-point recheck (whose declaration documents the ref).
+    // It is assigned HERE — the one place that decides whether this process has
+    // operation-side authority facts at all — because the ask and the
+    // consumption point must not be able to read two different document sets: a
+    // second reader is a second answer (A5-12), and on this path the two answers
+    // decide whether an approved operation executes.
+    operationApprovalFactsRef.current = planeForGlue?.operationApprovalFacts
   }
 
   // ROUND 7 (parent BLOCK-1/2/3): the ONE entry-side permission surface.

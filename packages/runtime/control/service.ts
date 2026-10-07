@@ -225,6 +225,8 @@ import type { PermissionOverlayEffect } from '../../storage/schema/permission-ov
 import {
   APPROVAL_CASE_IDENTITY_PROBLEMS,
   APPROVAL_CASE_READ_PROBLEMS,
+  CONTROL_AUTHORITY_MATCHER_KINDS,
+  CONTROL_AUTHORITY_RECHECK_KINDS,
   CONTROL_CASE_OUTCOMES,
   CONTROL_CASE_TERMINAL_OUTCOMES,
   CONTROL_DECISION_REASON_VALUES,
@@ -241,6 +243,7 @@ import {
   CONTROL_SUBJECT_KINDS,
   controlEscalationSuccessor,
   hasAuthorityResolver,
+  isControlAuthorityScope,
   isProposalAuthorityPosition,
 } from './types.js'
 import type {
@@ -253,6 +256,8 @@ import type {
   ApprovalCaseState,
   ApprovalCaseSummary,
   ControlAbandonmentRecord,
+  ControlAuthorityRecheck,
+  ControlAuthorityScope,
   ControlCaseClosure,
   ControlCallerRef,
   ControlConsumptionRecord,
@@ -264,6 +269,7 @@ import type {
   ControlDecisionValue,
   ControlExternalVerdict,
   ControlExecutionCoupling,
+  ControlGuardBlockReason,
   ControlGuardVerdict,
   ControlOperationScope,
   ControlRequestKind,
@@ -379,6 +385,16 @@ interface RequestPayload {
   readonly requestedEffect?: PermissionOverlayEffect
   readonly previousRequestId?: string
   readonly mutationProposalFingerprint?: string
+  /**
+   * A4-PR7 Task 7.0 (ADR A1-14): the concrete AUTHORITY point of an operation
+   * case — `{operationClass, matcher}`, the concrete point only (a
+   * region-shaped matcher is not persistable here; see
+   * {@link ControlAuthorityScope}). ABSENT on a pre-Alpha.4 row and on an
+   * `envelope-mutation` row; required by the write path on an operation row,
+   * which is what lets the consumption point re-run the ceiling for the point
+   * the human actually approved.
+   */
+  readonly authorityScope?: ControlAuthorityScope
 }
 
 /** The `control-decision-recorded` payload. */
@@ -636,6 +652,17 @@ function parseScope(value: unknown): ControlOperationScope | undefined {
   ) {
     return undefined
   }
+  // A4-PR7 Task 7.0 (ADR A1-14): the authority point is part of the recorded
+  // scope, so the scope reader carries it. Without this line the DECISION
+  // snapshot would silently drop the point the human approved, and every v3
+  // consumption would then compare a point-bearing guarded scope against a
+  // point-less snapshot — `scope-mismatch` for the correct operation, and a
+  // lost authority fact for the incorrect one. A present-but-unreadable point
+  // fails the row (fail closed), exactly like every other member.
+  const authorityScope = parseAuthorityScopeField(value['authorityScope'])
+  if (value['authorityScope'] !== undefined && authorityScope === undefined) {
+    return undefined
+  }
   return {
     rootSessionId,
     subject,
@@ -649,6 +676,7 @@ function parseScope(value: unknown): ControlOperationScope | undefined {
       ? { capabilityDomain: capabilityDomain as CapabilityName }
       : {}),
     ...(operationFingerprint !== undefined ? { operationFingerprint } : {}),
+    ...(authorityScope !== undefined ? { authorityScope } : {}),
   }
 }
 
@@ -782,6 +810,20 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
   ) {
     return undefined
   }
+  // A4-PR7 Task 7.0 (ADR A1-14): the persisted authority point. A
+  // present-but-malformed one fails the row (it is an authority-bearing field;
+  // half-reading it would let the ceiling be re-run over a point the row did
+  // not name). ABSENT stays LEGAL here on purpose: the rule "an operation case
+  // must carry it" is enforced at the WRITE (`caseIdentityProblemOf`) and at the
+  // CONSUMPTION point (`guardOperation`, which refuses), NOT here — failing the
+  // row would drop it out of `state.requests`, and the guard's answer to a
+  // missing row is `no-request`, which `packages/tools/guard.ts` reads as
+  // "proceed". A corruption must never be routed into the one verdict that
+  // executes.
+  const authorityScope = parseAuthorityScopeField(value['authorityScope'])
+  if (value['authorityScope'] !== undefined && authorityScope === undefined) {
+    return undefined
+  }
   // The strict half of ADR A2-9: a row that NAMES a case is an
   // authority-bearing leg, and a leg without its ordinal or its reviewing
   // authority is not a leg with a missing detail — it is a leg that cannot be
@@ -830,7 +872,31 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
       : {}),
     ...(previousRequestId !== undefined ? { previousRequestId } : {}),
     ...(mutationProposalFingerprint !== undefined ? { mutationProposalFingerprint } : {}),
+    ...(authorityScope !== undefined ? { authorityScope } : {}),
   }
+}
+
+/**
+ * Read the durable authority point (A4-PR7 Task 7.0, ADR A1-14) into its
+ * CANONICAL shape. The rebuild is the point: an unknown third matcher field
+ * (`{kind:'exact', resource, root: …}`) must not survive into the identity the
+ * ceiling is re-run over, so the reader returns the two members the type has,
+ * in the order the type has them — the same normalization the fingerprint and
+ * subject fields get.
+ *
+ * ABSENT reads as `undefined`, which is legal here (a pre-Alpha.4 row and an
+ * `envelope-mutation` row carry no point); the caller distinguishes "the key was
+ * present and unreadable" from "the key was absent".
+ */
+function parseAuthorityScopeField(value: unknown): ControlAuthorityScope | undefined {
+  if (!isControlAuthorityScope(value)) return undefined
+  const matcher = value.matcher
+  return matcher.kind === CONTROL_AUTHORITY_MATCHER_KINDS.EXACT
+    ? { operationClass: value.operationClass, matcher: { kind: 'exact', resource: matcher.resource } }
+    : {
+        operationClass: value.operationClass,
+        matcher: { kind: 'fingerprint', resource: matcher.resource },
+      }
 }
 
 /** Parse an abandon payload (malformed rows are treated as ABSENT). */
@@ -1044,7 +1110,26 @@ function scopeSnapshotMatches(
   // versa — the undefined !== 'x' inequality covers the present/absent
   // case; both present and equal falls through).
   if (recorded.operationFingerprint !== guarded.operationFingerprint) return false
+  // The AUTHORITY point (A4-PR7 Task 7.0, ADR A1-14): an approval covers the
+  // operation class + resource it was opened for. Present on one side only, or
+  // a different class, a different matcher KIND, or a different resource =
+  // MISMATCH. This is the check the scope key cannot do: `toolName` is the
+  // pipeline's lane name, so a read of `/fileB.txt` under the same tool,
+  // correlation and fingerprint as an approved `/fileA.txt` is a DIFFERENT
+  // authority point with an identical legacy scope.
+  if (!authorityScopesMatch(recorded.authorityScope, guarded.authorityScope)) return false
   return true
+}
+
+/** The authority-point comparison of {@link scopeSnapshotMatches}. */
+function authorityScopesMatch(
+  recorded: ControlOperationScope['authorityScope'],
+  guarded: ControlOperationScope['authorityScope'],
+): boolean {
+  if (recorded === undefined || guarded === undefined) return recorded === guarded
+  if (recorded.operationClass !== guarded.operationClass) return false
+  if (recorded.matcher.kind !== guarded.matcher.kind) return false
+  return recorded.matcher.resource === guarded.matcher.resource
 }
 
 /**
@@ -1299,6 +1384,11 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(payload.operationFingerprint !== undefined
         ? { operationFingerprint: payload.operationFingerprint }
         : {}),
+      // A4-PR7 Task 7.0: the authority point rides the row's OWN scope, so the
+      // decision snapshot and the consumption record carry the point the human
+      // approved (ADR A1-14's "fold it into the decision scope") without any
+      // call site having to re-supply it.
+      ...(payload.authorityScope !== undefined ? { authorityScope: payload.authorityScope } : {}),
     }
   }
 
@@ -1468,6 +1558,16 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         ...(args.scope.operationFingerprint !== undefined
           ? { operationFingerprint: args.scope.operationFingerprint }
           : {}),
+        // A4-PR7 Task 7.0 (ADR A1-14): the decision snapshot carries the
+        // AUTHORITY point of the row it decides. Projected field-by-field like
+        // every other member (this writer never passes the object through), so
+        // omitting it here would silently drop the fact the consumption-point
+        // recheck reads — and would make every v3 guard refuse with
+        // `scope-mismatch`, since the guarded scope names a point the snapshot
+        // lost.
+        ...(args.scope.authorityScope !== undefined
+          ? { authorityScope: args.scope.authorityScope }
+          : {}),
       },
       requestSequence: args.requestSequence,
       ...(args.reason !== undefined ? { reason: args.reason } : {}),
@@ -1514,6 +1614,13 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly beneficiaryAuthority: ProposalAuthorityPosition
     readonly requestedEffect: PermissionOverlayEffect
     readonly mutationProposalFingerprint?: string
+    /**
+     * A4-PR7 Task 7.0 (ADR A1-14): the concrete authority point of an
+     * OPERATION case. Writer-side only — it rides the durable row but NOT the
+     * projected `ControlRequestRecord`, because the remote v7 DTO is frozen and
+     * an approval-case field must not leak into an older wire.
+     */
+    readonly authorityScope?: ControlAuthorityScope
   }
 
   /**
@@ -1682,6 +1789,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         `executionCoupling outside the closed set (guarded|inline): ${JSON.stringify(args.executionCoupling)}`,
       )
     }
+    // A4-PR7 Task 7.0: a leg that names an authority point must name a
+    // CONCRETE one. Checked at the boundary rather than at the write because a
+    // row the strict reader would later refuse is a row that must never reach
+    // the ledger.
+    if (
+      args.leg?.authorityScope !== undefined &&
+      !isControlAuthorityScope(args.leg.authorityScope)
+    ) {
+      throw malformed(
+        'request',
+        'authorityScope',
+        'authorityScope must be {operationClass, matcher: {kind: exact|fingerprint, resource}} with every member a non-empty string (a region-shaped matcher is never persistable)',
+      )
+    }
 
     // Reused authority steps (the facade's typed codes surface as-is):
     // (1) caller identity/role; (2) team + target resolution (INSTANCE
@@ -1811,6 +1932,12 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           ? { executionCoupling: args.executionCoupling }
           : {}),
         ...legFieldsOf(args.leg),
+        // The authority point rides the DURABLE row only (see LegFields):
+        // `legFieldsOf` is the shared payload/record spread, and the projected
+        // record must not gain a field the frozen v7 DTO does not carry.
+        ...(args.leg?.authorityScope !== undefined
+          ? { authorityScope: args.leg.authorityScope }
+          : {}),
       }
       const sequence = await putEntry({
         schemaVersion: 2,
@@ -2386,6 +2513,96 @@ export function createControlService(options: ControlServiceOptions): ControlSer
 
   // --- guardOperation (the tool-pipeline last-mile seam) -------------------------------
 
+  /**
+   * A1-14 (A4-PR7 Task 7.0): re-run the ceiling for the point the allow covers,
+   * at the moment the allow would be spent.
+   *
+   * Called from `guardOperation` INSIDE the per-team lock, after the exact-scope
+   * match and the live external recheck, and before the consumption fact. The
+   * input is the DURABLE row and nothing else — the persisted authority point,
+   * the rung that signed, the frozen beneficiary and the requested effect — so a
+   * caller cannot present a friendlier scope to the recheck than it presented to
+   * the match.
+   *
+   * WHO ANSWERS: the injected {@link ControlServiceOptions.authorityRevalidation}
+   * port, implemented in the permission plane over the FRESHLY BOUND documents.
+   * This service never reads a document and never walks a ladder (ADR A5-12: one
+   * reader per answer; A3-2: who-may-review and what-the-ceiling-allows are
+   * decided where the documents live). It consumes the closed verdict.
+   *
+   * EVERY fail-closed direction, each of which refuses with ZERO consumption:
+   * no port at all, a port that throws, a verdict outside the closed vocabulary,
+   * an operation case whose row carries no authority point (corrupt post-
+   * cutover), and of course an `authority-risen` or `undetermined` answer.
+   *
+   * @param root - the team (root) session id.
+   * @param row - the matched durable request row that would be consumed.
+   * @returns the block reason, or `undefined` when the re-confirmation holds.
+   */
+  async function recheckConsumedAuthority(
+    root: string,
+    row: RequestPayload,
+  ): Promise<ControlGuardBlockReason | undefined> {
+    const reasons = CONTROL_GUARD_BLOCK_REASONS
+    // A pre-Alpha.4 row (no case id) has no authority point by construction and
+    // consumes exactly as it always did. So does an `envelope-mutation` case:
+    // its ceiling question is the proposal's own region, which the mutation
+    // lane revalidates inside its commit section — and an inline row never
+    // reaches this function at all.
+    if (row.approvalCaseId === undefined || row.operationFingerprint === undefined) {
+      return undefined
+    }
+    if (row.authorityScope === undefined) return reasons.AUTHORITY_SCOPE_UNBOUND
+    if (
+      row.reviewAuthority === undefined ||
+      row.beneficiaryAuthority === undefined ||
+      row.requestedEffect === undefined
+    ) {
+      // Unreachable for a row the strict reader accepted (every one of these is
+      // required on a leg); named rather than cast, because the alternative to
+      // naming it is asserting an authority fact out of a missing field.
+      return reasons.AUTHORITY_UNDETERMINED
+    }
+    if (row.subject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE) {
+      // The documents are read FOR a beneficiary instance; a template/team
+      // subject has none, so the coverage question cannot be asked.
+      return reasons.AUTHORITY_UNDETERMINED
+    }
+    const port = options.authorityRevalidation
+    if (port === undefined) {
+      // No port is not "no requirement": the guard would be spending an allow
+      // it cannot confirm. A v3 operation approval is consumable only by a
+      // composition that can answer for the authority behind it.
+      return reasons.AUTHORITY_UNDETERMINED
+    }
+    let verdict: ControlAuthorityRecheck
+    try {
+      verdict = await port({
+        rootSessionId: root,
+        instanceId: row.subject.instanceId,
+        beneficiaryAuthority: row.beneficiaryAuthority,
+        reviewAuthority: row.reviewAuthority,
+        requestedEffect: row.requestedEffect,
+        authorityScope: row.authorityScope,
+      })
+    } catch {
+      // A recheck that cannot run has not confirmed anything. The exception is
+      // never re-thrown into the tool pipeline as if it were the operation's
+      // own failure, and never read as a pass.
+      return reasons.AUTHORITY_UNDETERMINED
+    }
+    switch (verdict.kind) {
+      case CONTROL_AUTHORITY_RECHECK_KINDS.STILL_SUFFICIENT:
+        return undefined
+      case CONTROL_AUTHORITY_RECHECK_KINDS.AUTHORITY_RISEN:
+        return reasons.AUTHORITY_RISEN
+      case CONTROL_AUTHORITY_RECHECK_KINDS.UNDETERMINED:
+        return reasons.AUTHORITY_UNDETERMINED
+      default:
+        return reasons.AUTHORITY_UNDETERMINED
+    }
+  }
+
   async function guardOperation(scope: ControlOperationScope): Promise<ControlGuardVerdict> {
     const root = parseRoot(scope.rootSessionId, CONTROL_ERROR_CODES.CONTROL_GUARD_MALFORMED, 'guard')
     // Subject normalization (pre-alpha3 PR-D, D.2): the canonical
@@ -2459,6 +2676,12 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       (typeof scope.operationFingerprint !== 'string' || scope.operationFingerprint.length === 0)
     ) {
       throw guardMalformed('operationFingerprint', 'operationFingerprint must be a non-empty string when present')
+    }
+    if (scope.authorityScope !== undefined && !isControlAuthorityScope(scope.authorityScope)) {
+      throw guardMalformed(
+        'authorityScope',
+        'authorityScope must be {operationClass, matcher: {kind: exact|fingerprint, resource}} with every member a non-empty string',
+      )
     }
 
     return withTeamLock(teamLocks, root, async () => {
@@ -2681,6 +2904,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           return {
             allowed: false,
             reason: CONTROL_GUARD_BLOCK_REASONS.EXTERNAL_POLICY,
+            requestId: request.payload.requestId,
+            decisionSequence: decision.entry.sequence,
+          }
+        }
+        // A4-PR7 Task 7.0 — ADR A1-14, THE consumption-point authority recheck.
+        // Everything above this line answers "did a human allow THIS
+        // invocation"; nothing before it asked whether the authority that
+        // signed still covers it. PR4 shipped the pre-check half of that duty
+        // in the pre-execute adapter and disclosed, in that file's own header,
+        // that the half at the consumption write was unenforced because the
+        // scope carried no operation class and no canonical resource. Both
+        // halves exist now, and this one is the one that cannot be bypassed by
+        // a caller that never went through the adapter: it runs inside the
+        // per-team lock, on the DURABLE row, before the consumption fact.
+        // Refusal here writes NOTHING — the allow stays unspent, the same
+        // zero-effect discipline as the external recheck above.
+        const authority = await recheckConsumedAuthority(root, request.payload)
+        if (authority !== undefined) {
+          return {
+            allowed: false,
+            reason: authority,
             requestId: request.payload.requestId,
             decisionSequence: decision.entry.sequence,
           }
@@ -3266,6 +3510,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       input.identity.requestedEffect,
       input.identity.operationFingerprint ?? '',
       input.identity.mutationProposalFingerprint ?? '',
+      authorityScopeKeyOf(input.identity.authorityScope),
       input.identity.correlation,
     ].join('\u0000')
   }
@@ -3321,6 +3566,14 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // cheapest place to honour that is to never write such a row.
       return problems.OPERATION_FINGERPRINT_REQUIRED
     }
+    if (hasOperation && !isControlAuthorityScope(identity.authorityScope)) {
+      // A1-14 (A4-PR7 Task 7.0), the sibling rule: an operation case must also
+      // name the AUTHORITY point its allow covers, or the consumption point has
+      // nothing to re-run the ceiling over. This is the last moment the shape
+      // is cheap to fix, and the only moment a v3 row can be refused before it
+      // becomes an authority-bearing durable fact.
+      return problems.AUTHORITY_SCOPE_REQUIRED
+    }
     return undefined
   }
 
@@ -3348,8 +3601,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       payload.requestedEffect ?? '',
       payload.operationFingerprint ?? '',
       payload.mutationProposalFingerprint ?? '',
+      authorityScopeKeyOf(payload.authorityScope),
       payload.correlation,
     ].join('\u0000')
+  }
+
+  /**
+   * The canonical identity form of a persisted authority point (ADR A1-14).
+   * ABSENT reads as `''`, exactly as the optional fingerprints do, so a
+   * pre-Alpha.4 row computes the case identity it always computed and a v3 row
+   * computes one that a DIFFERENT point cannot reproduce.
+   */
+  function authorityScopeKeyOf(scope: ControlAuthorityScope | undefined): string {
+    if (scope === undefined) return ''
+    return `${scope.operationClass}\u0000${scope.matcher.kind}\u0000${scope.matcher.resource}`
   }
 
   /**
@@ -3475,6 +3740,22 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         first.entry.sequence,
       )
     }
+    if (first.payload.operationFingerprint !== undefined && first.payload.authorityScope === undefined) {
+      // A1-14 (A4-PR7 Task 7.0): an OPERATION case with no authority point is
+      // CORRUPT, not merely unsampled. After the v3-only cutover there is no
+      // transitional scope shape to fall back to, so the case has no point a
+      // ceiling could be re-run over — and an approval whose ceiling cannot be
+      // re-confirmed is a case that cannot be honoured. Reported here (the case
+      // read) and refused at the one place being wrong would execute (the
+      // guard); NOT folded into the strict row parse, because a parse failure
+      // drops the row and the guard's answer to a missing row is `no-request`,
+      // which the tool layer reads as "proceed".
+      return problem(
+        problems.IDENTITY_DISAGREEMENT,
+        `the first leg of case '${approvalCaseId}' is an operation case with no authorityScope (A1-14: nothing to re-confirm the ceiling over)`,
+        first.entry.sequence,
+      )
+    }
     for (const leg of legs) {
       if (legIdentityKeyOf(leg.payload) !== firstKey) {
         return problem(
@@ -3519,6 +3800,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         : {}),
       ...(first.payload.mutationProposalFingerprint !== undefined
         ? { mutationProposalFingerprint: first.payload.mutationProposalFingerprint }
+        : {}),
+      ...(first.payload.authorityScope !== undefined
+        ? { authorityScope: first.payload.authorityScope }
         : {}),
       correlation: first.payload.correlation,
     }
@@ -3749,6 +4033,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         requestedEffect: args.identity.requestedEffect,
         ...(args.identity.mutationProposalFingerprint !== undefined
           ? { mutationProposalFingerprint: args.identity.mutationProposalFingerprint }
+          : {}),
+        ...(args.identity.authorityScope !== undefined
+          ? { authorityScope: args.identity.authorityScope }
           : {}),
       },
     })
@@ -3991,6 +4278,13 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           requestedEffect: frozenIdentity.requestedEffect,
           ...(leg.payload.mutationProposalFingerprint !== undefined
             ? { mutationProposalFingerprint: leg.payload.mutationProposalFingerprint }
+            : {}),
+          // A1-14: the risen leg is the SAME case, so it carries the SAME
+          // frozen authority point — a leg that "forgot" it would arrive at the
+          // consumption point un-reconfirmable (and A1-10's identity-frozen
+          // escalation is exactly the rule this follows).
+          ...(leg.payload.authorityScope !== undefined
+            ? { authorityScope: leg.payload.authorityScope }
             : {}),
         },
       })
@@ -4307,6 +4601,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           requestedEffect: newCase.identity.requestedEffect,
           ...(newCase.identity.mutationProposalFingerprint !== undefined
             ? { mutationProposalFingerprint: newCase.identity.mutationProposalFingerprint }
+            : {}),
+          ...(newCase.identity.authorityScope !== undefined
+            ? { authorityScope: newCase.identity.authorityScope }
             : {}),
         },
       })

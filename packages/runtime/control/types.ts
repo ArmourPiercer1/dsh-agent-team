@@ -417,6 +417,16 @@ export interface ApprovalCaseIdentity {
   readonly operationFingerprint?: string
   /** Present iff this is an `envelope-mutation` case. */
   readonly mutationProposalFingerprint?: string
+  /**
+   * The concrete AUTHORITY point the case was opened for (ADR A1-14,
+   * A4-PR7 Task 7.0). Present on an OPERATION case — required there, exactly
+   * like `operationFingerprint`: an operation approval whose ceiling point is
+   * unknown cannot be re-confirmed at consumption, and "cannot be re-confirmed"
+   * is a refusal, not a licence. Absent on an `envelope-mutation` case, whose
+   * ceiling question is the proposal's own region and is re-checked by the
+   * mutation lane's in-section revalidation instead.
+   */
+  readonly authorityScope?: ControlAuthorityScope
   /** The caller's correlation token (per-invocation identity). */
   readonly correlation: string
 }
@@ -442,6 +452,15 @@ export const APPROVAL_CASE_IDENTITY_PROBLEMS = {
   EFFECT_UNKNOWN: 'effect-unknown',
   /** A subject that is not one of the closed canonical subjects. */
   SUBJECT_MALFORMED: 'subject-malformed',
+  /**
+   * An operation case that names no authority point (ADR A1-14, A4-PR7 Task
+   * 7.0). The sibling of `OPERATION_FINGERPRINT_REQUIRED`: the fingerprint says
+   * *which invocation*, the authority scope says *over what*, and the
+   * consumption-point re-check needs the second one. Post-cutover there is no
+   * transitional shape to fall back to, so the write is refused rather than
+   * defaulted.
+   */
+  AUTHORITY_SCOPE_REQUIRED: 'authority-scope-required',
 } as const
 
 /** One closed identity-refusal reason. */
@@ -744,6 +763,154 @@ export function isControlExecutionCoupling(value: unknown): value is ControlExec
   )
 }
 
+// --- the persisted authority scope (A4-PR7 Task 7.0, ADR A1-14) ---------------------
+
+/**
+ * The two matcher kinds a Control row may persist (ADR A1-14).
+ *
+ * `subtree` and `any` are DELIBERATELY ABSENT. A Control row authorizes ONE
+ * invocation; persisting a region-shaped matcher would silently widen the
+ * single-shot capability grant into a standing ceiling — the next operation
+ * inside the subtree would find a durable scope that "matches" it. The concrete
+ * operation point is the only thing an allow ever covered, so it is the only
+ * thing an allow may carry.
+ */
+export const CONTROL_AUTHORITY_MATCHER_KINDS = {
+  /** A file-plane operation: the canonical resource key of this invocation. */
+  EXACT: 'exact',
+  /** An exec-plane operation: the canonical fingerprint of this command. */
+  FINGERPRINT: 'fingerprint',
+} as const
+
+/** One persisted matcher kind. */
+export type ControlAuthorityMatcherKind =
+  (typeof CONTROL_AUTHORITY_MATCHER_KINDS)[keyof typeof CONTROL_AUTHORITY_MATCHER_KINDS]
+
+/** Every persisted matcher kind, for membership pins. */
+export const CONTROL_AUTHORITY_MATCHER_KIND_VALUES: readonly string[] = Object.values(
+  CONTROL_AUTHORITY_MATCHER_KINDS,
+)
+
+/**
+ * The AUTHORITY point of one concrete operation — what the ceiling is a ceiling
+ * OVER (ADR A1-14).
+ *
+ * `ControlOperationScope` answers "which invocation is this" (tool, action,
+ * correlation, fingerprint). This answers the DIFFERENT question the ceiling
+ * evaluator asks: "which operation class, over which resource". The two are not
+ * interchangeable fields — a `toolName` is the lane name the pipeline routes on,
+ * a `resource` is the canonical authority key the documents match on — and
+ * before this type existed the second question could not be asked at the
+ * consumption point at all, which is why A1-14's re-check was unenforceable
+ * rather than merely unwritten (PR4's own scope disclosure).
+ */
+export interface ControlAuthorityScope {
+  /** The operation class as the authority documents name it (the tool). */
+  readonly operationClass: string
+  /** The concrete resource point: an exact canonical key, or the canonical
+   *  command fingerprint. Never a region (see the matcher-kind note above). */
+  readonly matcher:
+    | { readonly kind: typeof CONTROL_AUTHORITY_MATCHER_KINDS.EXACT; readonly resource: string }
+    | {
+        readonly kind: typeof CONTROL_AUTHORITY_MATCHER_KINDS.FINGERPRINT
+        readonly resource: string
+      }
+}
+
+/** Type guard: is `value` a well-formed {@link ControlAuthorityScope}? */
+export function isControlAuthorityScope(value: unknown): value is ControlAuthorityScope {
+  if (typeof value !== 'object' || value === null) return false
+  const candidate = value as { operationClass?: unknown; matcher?: unknown }
+  if (typeof candidate.operationClass !== 'string' || candidate.operationClass.length === 0) {
+    return false
+  }
+  const matcher = candidate.matcher
+  if (typeof matcher !== 'object' || matcher === null) return false
+  const shaped = matcher as { kind?: unknown; resource?: unknown }
+  if (
+    typeof shaped.kind !== 'string' ||
+    !(CONTROL_AUTHORITY_MATCHER_KIND_VALUES as readonly string[]).includes(shaped.kind)
+  ) {
+    return false
+  }
+  return typeof shaped.resource === 'string' && shaped.resource.length > 0
+}
+
+/**
+ * The verdict of the A1-14 fresh-authority recheck at the consumption point.
+ *
+ * THE SHAPE IS THE POINT: the control lane consumes a CLOSED VERDICT, never
+ * documents and never a ceiling value. Reading the bound authority documents and
+ * walking the ladder is the permission plane's one answer (ADR A5-12: a reader
+ * in every judge is a second answer). The control plane must not re-decide
+ * authority, so this vocabulary names only what the guard may DO with the
+ * answer.
+ */
+export const CONTROL_AUTHORITY_RECHECK_KINDS = {
+  /** The rung that signed still covers the persisted point. */
+  STILL_SUFFICIENT: 'still-sufficient',
+  /** The documents now require a HIGHER rung than the one that signed. */
+  AUTHORITY_RISEN: 'authority-risen',
+  /** The fresh documents could not answer, so coverage is NOT confirmed. */
+  UNDETERMINED: 'undetermined',
+} as const
+
+/** Every recheck kind, for membership pins. */
+export const CONTROL_AUTHORITY_RECHECK_KIND_VALUES: readonly string[] = Object.values(
+  CONTROL_AUTHORITY_RECHECK_KINDS,
+)
+
+/** The input of one consumption-point recheck. Every field is DURABLE. */
+export interface ControlAuthorityRecheckInput {
+  /** The TeamSession the operation belongs to. */
+  readonly rootSessionId: string
+  /** The instance the persisted operation runs ON (the case's instance
+   *  subject) — the beneficiary the fresh documents are read for. */
+  readonly instanceId: string
+  /** Whose authority the case raises, as FROZEN on the leg (never re-read). */
+  readonly beneficiaryAuthority: ProposalAuthorityPosition
+  /** The rung that actually signed the leg (never the caller's claim). */
+  readonly reviewAuthority: ProposalAuthorityPosition
+  /** The effect the case asked for, as frozen on the leg. */
+  readonly requestedEffect: PermissionOverlayEffect
+  /** The persisted concrete authority point (ADR A1-14). */
+  readonly authorityScope: ControlAuthorityScope
+}
+
+/** One recheck verdict; see {@link CONTROL_AUTHORITY_RECHECK_KINDS}. */
+export type ControlAuthorityRecheck =
+  | { readonly kind: typeof CONTROL_AUTHORITY_RECHECK_KINDS.STILL_SUFFICIENT }
+  | {
+      readonly kind: typeof CONTROL_AUTHORITY_RECHECK_KINDS.AUTHORITY_RISEN
+      /** The rung the fresh documents now require (diagnostic, never a
+       *  re-routing instruction: the guard refuses, it never re-asks). */
+      readonly requiredNow: ProposalAuthorityPosition
+      readonly detail: string
+    }
+  | {
+      readonly kind: typeof CONTROL_AUTHORITY_RECHECK_KINDS.UNDETERMINED
+      /** Why the fresh answer could not be given (the plane's closed
+       *  diagnosis, passed through). */
+      readonly reason: string
+      readonly detail: string
+    }
+
+/**
+ * The injected fresh-authority recheck (ADR A1-14, spec §12.1's execution
+ * order). Production implements it in the permission plane over the FRESHLY
+ * BOUND documents (the same authority-ceiling reader the mutation lane reads);
+ * the control service calls it INSIDE the per-team lock and nowhere else.
+ *
+ * ABSENT IS NOT "COVERED". With no port the consumption point cannot confirm
+ * the authority it is about to spend, so a v3 operation case refuses: a
+ * permission-unaware composition cannot consume a v3 operation approval at all.
+ * That is the fail-closed direction, and it is why the port is wired in the
+ * production root rather than defaulted to "yes".
+ */
+export type ControlAuthorityRecheckPort = (
+  input: ControlAuthorityRecheckInput,
+) => Promise<ControlAuthorityRecheck>
+
 // --- scope ----------------------------------------------------------------------------
 
 /**
@@ -791,6 +958,22 @@ export interface ControlOperationScope {
    * for the correlation-vs-fingerprint separation.
    */
   readonly operationFingerprint?: string
+  /**
+   * The AUTHORITY point of the operation (ADR A1-14, A4-PR7 Task 7.0).
+   *
+   * PRESENT on a v3 operation case, ABSENT on a legacy row. It is the field
+   * that makes the consumption-point re-check possible at all: the ceiling is a
+   * ceiling over an operation class and a resource, and until this existed the
+   * guard had `toolName` + `operationFingerprint` and could ask neither
+   * question. It is PERSISTED (request leg, decision scope, case identity)
+   * rather than passed at consumption time — an authorization is re-confirmed
+   * against what it covered, never against whatever the caller now claims.
+   *
+   * A scope that carries it must satisfy it: a persisted `exact` point is not
+   * satisfied by a different resource under the same `toolName`, and a
+   * `fingerprint` point is not satisfied by a drifted fingerprint.
+   */
+  readonly authorityScope?: ControlAuthorityScope
 }
 
 /**
@@ -1058,6 +1241,32 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
    * `no-request`, so an unrecognized value can never execute.
    */
   DECISION_UNRECOGNIZED: 'decision-unrecognized',
+  /**
+   * A1-14 (A4-PR7 Task 7.0): at the consumption point the FRESHLY BOUND
+   * authority documents require a HIGHER rung than the one that signed. The
+   * allow is not wrong — it was true when written — it is about an invocation
+   * that no longer exists to be authorized. ZERO consumption: burning the
+   * one-shot on a drift would turn the drift into a second denial nobody voted
+   * on (the same reasoning as `EXTERNAL_POLICY` above).
+   */
+  AUTHORITY_RISEN: 'authority-risen',
+  /**
+   * A1-14: the fresh authority answer could not be obtained (an unavailable
+   * document, an unanswerable containment question, or no recheck port at all).
+   * "Could not confirm" is not "confirmed" — and an unreadable document is
+   * never an empty one (ADR A5-16). ZERO consumption, as above.
+   */
+  AUTHORITY_UNDETERMINED: 'authority-undetermined',
+  /**
+   * A1-14: the durable row is an operation case that carries NO authority point.
+   * After the v3-only cutover there is no transitional scope shape to evaluate
+   * against, so the row cannot be re-confirmed and cannot consume. This is the
+   * CORRUPT row of A2-9's rule, caught at the one place where being wrong means
+   * executing: `packages/tools/guard.ts` blocks on every reason but
+   * `no-request`, so naming this (rather than dropping the row to `no-request`)
+   * is what keeps a corrupt authority row from executing.
+   */
+  AUTHORITY_SCOPE_UNBOUND: 'authority-scope-unbound',
 } as const
 
 /** One of the closed guard block reasons. */
@@ -1180,6 +1389,20 @@ export interface ControlServiceOptions {
     readonly kind: ControlRequestKind
     readonly error: unknown
   }) => void
+  /**
+   * A4-PR7 Task 7.0 — the OPTIONAL fresh-authority recheck port of ADR A1-14.
+   *
+   * Called INSIDE the per-team lock, AFTER the exact-scope match and the live
+   * external recheck, and BEFORE the `control-allow-consumed` write, for every
+   * GUARDED allow whose row carries an `authorityScope`. Refusing costs zero
+   * consumption (the allow stays unspent, exactly as for `external-policy`).
+   *
+   * ABSENT is a refusal for a v3 operation case, never a pass — see
+   * {@link ControlAuthorityRecheckPort}. Pre-Alpha.4 rows (no authority point)
+   * are unaffected: they have nothing to re-confirm against and consume as
+   * they always did.
+   */
+  readonly authorityRevalidation?: ControlAuthorityRecheckPort
 }
 
 /**

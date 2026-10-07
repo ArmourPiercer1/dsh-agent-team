@@ -75,9 +75,14 @@ import {
   destroyP6T1World,
   leaderCaller,
   memberCaller,
+  writeRawControlFact,
 } from './p6t4-helpers.js'
 
 const WORKER_ID = String(P6T4_SEEDS.worker.instanceId)
+const LEADER_ID = String(P6T4_SEEDS.leader.instanceId)
+/** The hand-written row's id (A4): the guard echoes the ROW's id, so the
+ *  assertion below can only pass if the refusal came from that row. */
+const RAW_REQUEST_ID = 'ctrl-a4p7-a4-unbound-row'
 const SUBJECT = { kind: 'instance', instanceId: WORKER_ID } as const
 const ACTION_NAME = 'team.action.execute'
 const TOOL_NAME = 'read'
@@ -329,42 +334,91 @@ const a4 = await (async () => {
   const recheck = mutableRecheck(COVERED)
   const env = await createEnv('a4p7-a4', recheck)
   try {
-    // The DURABLE shape, written by hand: a leg row that names a case and
-    // carries an operation fingerprint but no `authorityScope`. Post-cutover
-    // the service will not WRITE such a row — which is exactly why the read
-    // side has to be constructed here rather than asked for.
-    const created = await env.service.requestApprovalLeg({
-      rootSessionId: P6T4_ROOT,
-      caller: memberCaller(WORKER_ID),
+    // (i) THE WRITE REFUSES. Post-cutover the service will not produce an
+    // operation case without an authority point at all.
+    let writeProblem = 'no refusal'
+    try {
+      await env.service.requestApprovalLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER_ID),
+        kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+        reviewAuthority: 'leader',
+        requiredAuthorityAtCreation: 'leader',
+        identity: {
+          subject: SUBJECT,
+          beneficiaryAuthority: 'member',
+          requestedEffect: 'allow',
+          operationFingerprint: FP_A,
+          correlation: 'corr-a4p7-a4',
+        },
+        actionName: ACTION_NAME,
+        toolName: TOOL_NAME,
+        executionCoupling: CONTROL_EXECUTION_COUPLINGS.GUARDED,
+      })
+    } catch (error) {
+      writeProblem = error instanceof Error ? error.message : String(error)
+    }
+    const rowsAfterRefusedWrite = env.world.domain.repositories.ledger
+      .list()
+      .filter((entry) => String(entry.factType).startsWith('control-')).length
+    // (ii) THE DURABLE SHAPE STILL HAS TO BE READABLE-BY-READ, WRONG-BY-GUARD.
+    // An old home can hold the row the old write produced; the guard is the one
+    // place where being wrong means executing, so the refusal lives there. The
+    // rows are written by hand because the service now refuses to write them.
+    const requestSequence = await writeRawControlFact(env.world, 'control-request-recorded', {
+      requestId: RAW_REQUEST_ID,
       kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
-      reviewAuthority: 'leader',
-      requiredAuthorityAtCreation: 'leader',
-      identity: {
-        subject: SUBJECT,
-        beneficiaryAuthority: 'member',
-        requestedEffect: 'allow',
-        operationFingerprint: FP_A,
-        correlation: 'corr-a4p7-a4',
-      },
+      requester: { kind: 'instance', instanceId: WORKER_ID, role: 'member' },
+      subject: SUBJECT,
+      targetInstanceId: WORKER_ID,
       actionName: ACTION_NAME,
       toolName: TOOL_NAME,
+      correlation: 'corr-a4p7-a4-durable',
+      operationFingerprint: FP_A,
       executionCoupling: CONTROL_EXECUTION_COUPLINGS.GUARDED,
+      approvalCaseId: 'case-a4p7-a4-unbound',
+      legOrdinal: 1,
+      reviewAuthority: 'leader',
+      requiredAuthorityAtCreation: 'leader',
+      beneficiaryAuthority: 'member',
+      requestedEffect: 'allow',
+      // …and NO `authorityScope`: the corrupt shape under test.
     })
-    const written = created.kind === 'leg'
-    if (!written || created.kind !== 'leg') {
-      return { written, refused: null, rows: 0, recheckCalls: recheck.calls.length }
-    }
-    await env.service.resolveControl({
-      rootSessionId: P6T4_ROOT,
-      caller: leaderCaller(),
-      requestId: created.leg.requestId,
+    await writeRawControlFact(env.world, 'control-decision-recorded', {
+      requestId: RAW_REQUEST_ID,
       decision: CONTROL_DECISION_VALUES.ALLOW,
+      decider: { kind: 'instance', instanceId: LEADER_ID, role: 'leader' },
+      requestSequence,
+      scope: {
+        rootSessionId: P6T4_ROOT,
+        subject: SUBJECT,
+        targetInstanceId: WORKER_ID,
+        actionName: ACTION_NAME,
+        toolName: TOOL_NAME,
+        correlation: 'corr-a4p7-a4-durable',
+        operationFingerprint: FP_A,
+      },
     })
-    const scope = scopeOf('corr-a4p7-a4', FP_A, SCOPE_A)
-    const refused = await env.service.guardOperation(scope)
+    const unbound = await env.service.guardOperation({
+      rootSessionId: P6T4_ROOT,
+      subject: SUBJECT,
+      targetInstanceId: WORKER_ID,
+      actionName: ACTION_NAME,
+      toolName: TOOL_NAME,
+      correlation: 'corr-a4p7-a4-durable',
+      operationFingerprint: FP_A,
+    })
+    // The case read says the same thing the guard says, in its own vocabulary.
+    const caseRead = await env.service.readApprovalCaseState({
+      rootSessionId: P6T4_ROOT,
+      approvalCaseId: 'case-a4p7-a4-unbound',
+    })
     return {
-      written,
-      refused,
+      writeProblem,
+      rowsAfterRefusedWrite,
+      unbound,
+      caseReadKind: caseRead.kind,
+      caseReadProblem: caseRead.kind === 'problem' ? caseRead.problem : 'none',
       rows: consumptionRows(env.world),
       recheckCalls: recheck.calls.length,
     }
@@ -408,6 +462,7 @@ describe('A1-14 — the consumption point re-runs the ceiling for the persisted 
       allowed: false,
       reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_RISEN,
       requestId: a1.requestId,
+      decisionSequence: 2,
     })
     expect(a1.afterRefusal).toBe(0)
     expect(a1.allowed.allowed).toBe(true)
@@ -463,10 +518,24 @@ describe('A1-14 — the consumption point re-runs the ceiling for the persisted 
     expect(a3.rows).toBe(0)
   })
 
-  it('A4: a v3 operation case with no persisted authorityScope is corrupt, not unsampled', () => {
-    expect(a4.written).toBe(false)
-    expect(a4.refused).toBeNull()
+  it('A4: an operation case with no authority point is refused at the write AND un consumable from disk', () => {
+    // (i) the write: a typed refusal, zero rows.
+    expect(a4.writeProblem).toContain('authority-scope-required')
+    expect(a4.rowsAfterRefusedWrite).toBe(0)
+    // (ii) the durable shape an older home can still hold: the guard refuses it
+    // by NAME (never `no-request`, which the tool layer reads as "proceed"),
+    // the case read files it as corrupt, and nothing is consumed.
+    expect(a4.unbound).toEqual({
+      allowed: false,
+      reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_SCOPE_UNBOUND,
+      requestId: RAW_REQUEST_ID,
+      decisionSequence: 2,
+    })
+    expect(a4.caseReadKind).toBe('problem')
+    expect(a4.caseReadProblem).toBe('identity-disagreement')
     expect(a4.rows).toBe(0)
+    // The recheck port is never consulted for a row with no point: there is
+    // nothing to evaluate, and a port call would imply an answer was possible.
     expect(a4.recheckCalls).toBe(0)
   })
 
