@@ -1,0 +1,36 @@
+;; expect: unknown
+;; why: outer-line-evidence(session-binding
+;; namespace: session-binding
+;; rule: nested-doc-under-row-same-line (round 3 F1) — ONE document written
+;;        two ways under a row's keys. When the head line opens TWO braces
+;;        (`const row: SessionBindingDto = { kind, sessionId, document: {`),
+;;        the old siblingKeys restarted at the line's first character, read
+;;        the ROW's depth-1 keys as the site's own literal, and machine-
+;;        refused the nested document (REFUSED session-binding/sibling) —
+;;        while the identical document written one-key-per-line stayed
+;;        UNKNOWN. Two spellings, one silent. The head brace is column-aware
+;;        now: both spellings take the INNERMOST literal, the row evidence
+;;        stays OUTER, both land in the same visible class. Tree exposure
+;;        today was 0 of 115 refusals — latent, and exactly the shape a lane
+;;        writes when it moves a document under a row key.
+;; path: packages/example/test/fx-nested-row.ts
+function seed(sessionBindings: SessionBindings) {
+  const BP = 'team.nestedrowsame'
+  const oneLine: SessionBindingDto = { kind: 'team-member', sessionId: 's-1', document: {
+    schemaVersion: 1,
+    blueprintId: BP,
+    displayName: 'nested doc, same line',
+    policyStates: [],
+  } }
+  const perLine: SessionBindingDto = {
+    kind: 'team-member',
+    sessionId: 's-2',
+    document: {
+      schemaVersion: 1,
+      blueprintId: BP,
+      displayName: 'nested doc, per line',
+      policyStates: [],
+    },
+  }
+  sessionBindings.put(oneLine); sessionBindings.put(perLine)
+}

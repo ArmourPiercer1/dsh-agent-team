@@ -36,11 +36,16 @@
  *   7.4 audit assigned `packages/legacy/teammates-adapter.ts` to the 7.3
  *   list, not to a fixture scan.
  *
- * THE TWO VERDICTS — WHICH ONE GATES, AND WHY (the sentence a future reader
- * quotes): **this fence gates on `dirty` plus `unknown`: Blueprint-version
- * literals the type system structurally cannot see — string/template
- * carriers in .ts, every site in .mjs/.cjs/.js, and every site in data files
- * (.json/.yml/.yaml). `advisory` — code-position TypeScript literals — is
+ * THE TWO VERDICTS — WHICH ONES GATE, AND WHY (the sentence a future reader
+ * quotes): **this fence gates on `dirty` plus UNADJUDICATED `unknown`:
+ * Blueprint-version literals the type system structurally cannot see —
+ * string/template carriers in .ts, every site in .mjs/.cjs/.js, and every
+ * site in data files (.json/.yml/.yaml). An UNKNOWN whose line carries a
+ * recorded human verdict (the adjudication ledger below) prints as the
+ * sixth class `adjudicated` and does NOT gate: closure is defined as
+ * "dirty empty AND no unadjudicated unknown", so §7.4 can actually close
+ * without anyone widening a rule to silence other namespaces' version axes
+ * (round 3, reviewer-ratified F4).** `advisory` — code-position TypeScript literals — is
  * printed by path but NEVER gates. NOT because tsc will catch those sites —
  * MEASURED otherwise: under the real §7.3 flip (types.ts:416 -> `readonly
  * schemaVersion: 3`, `pnpm -r --no-bail run typecheck`, 2026-10-08, evidence
@@ -326,6 +331,13 @@ const NON_BLUEPRINT_NAMESPACES = [
  * v3) could not even raise the conflict (2026-10-08 review, BLOCKING 1c) —
  * fixture f26 was REFUSED that way before the set was widened.
  */
+/** The identity triple a TeamBlueprint document carries (excluded from the
+ *  doc-only set itself: row DTOs legitimately share these four keys with
+ *  documents — schemaVersion, blueprintId, revision, contentHash). V3
+ *  counts `members` only when >= 2 of these sit in the site's own literal. */
+const VERSION_LITERAL_TEST = /schemaVersion["']?\s*:\s*\d/
+const DOC_SHAPE_MARKERS = /displayName|policyStates|teamEnvelope|teamHardEnvelope|requirements/
+const IDENTITY_TRIPLE = ['blueprintId', 'revision', 'contentHash']
 const DOC_ONLY_KEYS = new Set([
   'displayName',
   'description',
@@ -425,7 +437,12 @@ function lineStates(text) {
           break
         }
       }
-      if (carry.lineString !== null) {
+      // Round 3 D: this branch was DEAD — the guard below was tautological
+      // because the scan loop never cleared the carry, so a string that
+      // CLOSED mid-line was still reported as unterminated (whole line
+      // string, openQuote true). The closed case now falls through: the
+      // line tail after the quote is CODE again (fixture f35).
+      if (closedAt === -1) {
         if (!cont) {
           // EOL without backslash and without the quote: genuinely
           // unterminated — visible through the openQuote unknown rule.
@@ -439,6 +456,8 @@ function lineStates(text) {
         states.push({ kinds, openQuote })
         return
       }
+      carry.lineString = null
+      carry.lineSeg = null
       seg.el = li
       seg.ec = closedAt
       segments.push(seg)
@@ -666,7 +685,12 @@ function headChain(lines, states, idx, matchCol) {
       if (c === '}') depth += 1
       else if (c === '{') {
         if (depth > 0) depth -= 1
-        else chain.push({ line: l.trim(), idx: j })
+        // The COLUMN of the opening brace travels with the head: a head line
+        // may open TWO literals (`= { kind, sessionId, document: {`) and the
+        // site's literal is the INNER one (round-3 F1 — restarting the key
+        // scan at the line's first character read the ROW's depth-1 keys as
+        // the nested document's own, and machine-refused it).
+        else chain.push({ line: l.trim(), idx: j, col: k })
       }
     }
   }
@@ -681,7 +705,7 @@ function headChain(lines, states, idx, matchCol) {
  *  `jsDoc(overrides)`, and the spread-built registry rows at
  *  packages/storage/test/bp1-blueprint-registry.test.ts:146 proves the
  *  row-side too: hidden keys cannot be certified document-free). */
-function siblingKeys(lines, states, headIdx) {
+function siblingKeys(lines, states, headIdx, headCol = 0) {
   const keys = []
   let spread = false
   let depth = 0
@@ -689,7 +713,9 @@ function siblingKeys(lines, states, headIdx) {
   for (let j = headIdx; j < Math.min(lines.length, headIdx + 60); j += 1) {
     const l = lines[j]
     const kinds = states?.[j]?.kinds
-    for (let k = 0; k < l.length; k += 1) {
+    // Start AT the head brace, not at the line's first character: the
+    // literal whose keys we read opens at headCol (see headChain).
+    for (let k = j === headIdx ? headCol : 0; k < l.length; k += 1) {
       if (kinds !== undefined && kinds[k] !== K_CODE) {
         // Quoted keys: `"kind":` puts the KEY token inside a string, but it
         // is still a key of the literal (BLOCKING 2 parity — bare keys were
@@ -919,7 +945,8 @@ export function classifyText(path, text) {
       } else {
         const chain = headChain(lines, states, idx, m.index)
         const head = chain[0]
-        const enclosing = head === undefined ? { keys: [], spread: false } : siblingKeys(lines, states, head.idx)
+        const enclosing =
+          head === undefined ? { keys: [], spread: false } : siblingKeys(lines, states, head.idx, head.col)
         const fn = head === undefined ? '' : funcContext(lines, states, head.idx)
         outerCtx = chain.slice(0, 3).map((h, i) => ({ text: h.line, chan: `head${String(i)}` }))
         if (fn !== '') outerCtx.push({ text: fn, chan: 'fn' })
@@ -947,7 +974,21 @@ export function classifyText(path, text) {
       //    Evidence with document-only keys present in the own literal is a
       //    CONFLICT; on a spread-assisted literal, ctx evidence is not
       //    certifiable; outer-line evidence alone is UNKNOWN. Never a guess.
-      const ownDocKeys = ownKeys.filter((k) => DOC_ONLY_KEYS.has(k))
+      // V3 (round 3 F2): `members` was excluded from DOC_ONLY_KEYS because
+      // RemoteProjectionValue.members collides on wire frames
+      // (packages/remote/src/contracts/types.ts:65) — but that made the old
+      // guard a provable NO-OP: a members-only-alongside-another-doc-key
+      // document already conflicts via the other key. The reviewer's variant
+      // matrix, adopted as V3: members counts as document-only ONLY when the
+      // site's own literal also carries >= 2 of the IDENTITY triple — the
+      // triple is what distinguishes "partial document" from "projection
+      // value with a member list". Measured cost at head: zero new unknowns
+      // (f32/f32b pin both edges: members+triple under a row -> UNKNOWN;
+      // members WITHOUT the triple stays a refused wire frame).
+      const identityHits = IDENTITY_TRIPLE.filter((k) => ownKeys.includes(k)).length
+      const ownDocKeys = ownKeys.filter(
+        (k) => DOC_ONLY_KEYS.has(k) || (k === 'members' && identityHits >= 2),
+      )
       const hits = []
       let sigHit = false
       for (const ns of NON_BLUEPRINT_NAMESPACES) {
@@ -1030,6 +1071,111 @@ export function classifyText(path, text) {
 /** Scan the tracked tree. NEVER throws; a failure to read the tree is
  *  `ran: false` with the reason, which the report prints as not-run and the
  *  CLI exits 2 for — "could not run" is never "clean". */
+/**
+ * The adjudication ledger (round 3 Part C, reviewer-ratified F4). Unknowns
+ * GATE by design; every one of them must carry a human, path-named verdict.
+ * The ledger therefore lives in a FILE THE FENCE READS —
+ * dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json —
+ * keyed `<path>::L<line>` -> evidence. Ledgered sites print as a sixth,
+ * NON-GATING class ADJUDICATED with their evidence; closure is defined as
+ * "dirty empty AND no unadjudicated unknown", so §7.4's end state is
+ * reachable WITHOUT anyone widening a rule for other namespaces' version
+ * axes that must never migrate. The soft edge the reviewer found — an empty
+ * justification string kept the whole suite green — is closed by refusing to
+ * run: keys are THREE-PART "<path>::L<line>::v<version>" — a two-part key
+ * lets ONE row adjudicate EVERY literal on the line, and a second literal
+ * must cost its own row like everything else; every value must cite
+ * `hand-verified <the key's FULL path>:<line[-range]>`, the cited range
+ * must exist in that tracked file and CONTAIN the site's line (round 3.5:
+ * the fence had run with `hand-verified packages/nowhere/deeper/x.ts:94`
+ * and `:99999-100000` — basename+any-digit checked nothing checkable);
+ * any violation names the offending keys and exits 2. Silence keeps
+ * costing a written, path-named, VERIFIABLE row.
+ * The ledger file itself must be GIT-TRACKED (round 3.5 G4: the override
+ * is the mute with a name on it — with dirty suppressed post-§7.4, a
+ * scratch ledger + suppression measured `verdict: clean`, exit 0), so the
+ * resolved path is printed in every report header and an untracked ledger
+ * is refused unless DSH_SCAN_TEST_MODE=1 — which only the wrapper's own
+ * falsification legs set.
+ */
+const ADJUDICATIONS_FILE =
+  'dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json'
+
+function loadAdjudications(cwd) {
+  const override = process.env.DSH_SCAN_ADJUDICATIONS
+  const testMode = process.env.DSH_SCAN_TEST_MODE === '1'
+  const file = override === undefined ? resolve(cwd, ADJUDICATIONS_FILE) : resolve(cwd, override)
+  // G4: the override is the mute with a name on it. Today dirty(120)
+  // dominates so no false green is reachable through it; the day §7.4
+  // closes, a scratch ledger + suppressed dirty is exactly `verdict:
+  // clean`, exit 0 — measured by the reviewer. So the ledger the fence
+  // reads must be GIT-TRACKED unless the wrapper's falsification legs
+  // explicitly say otherwise (DSH_SCAN_TEST_MODE=1), and every report
+  // prints the resolved path it read.
+  if (!testMode) {
+    const tracked = spawnSync('git', ['ls-files', '--error-unmatch', file], { cwd, encoding: 'utf8' })
+    if (tracked.status !== 0) {
+      return {
+        error: `adjudication ledger ${file} is not git-tracked; the fence reads only reviewed, committed ledgers (DSH_SCAN_TEST_MODE=1 is for the wrapper's own falsification legs)`,
+      }
+    }
+  }
+  let raw
+  try {
+    raw = readFileSync(file, 'utf8')
+  } catch (e) {
+    return { error: `adjudication ledger unreadable at ${file}: ${String(e)}` }
+  }
+  let parsed
+  try {
+    parsed = JSON.parse(raw)
+  } catch (e) {
+    return { error: `adjudication ledger is not valid JSON (${file}): ${String(e)}` }
+  }
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { error: `adjudication ledger must be an object keyed "<path>::L<line>::v<version>" (${file})` }
+  }
+  const bad = []
+  for (const [key, ev] of Object.entries(parsed)) {
+    // G2: identity is path::L<line>::v<version> — the report already prints
+    // `L6=v1`; a two-part key let ONE row adjudicate EVERY literal on the
+    // line (v1's verdict laundered v2). Each literal costs its own row.
+    const m = /^(.+)::L(\d+)::v(\d+)$/.exec(key)
+    if (m === null || typeof ev !== 'string') {
+      bad.push(key)
+      continue
+    }
+    const sitePath = m[1]
+    const siteLine = Number(m[2])
+    // G3: the citation must name the key's FULL path, and the cited range
+    // must exist in that tracked file and contain the site's line —
+    // "silence costs a written row" only if the row can be CHECKED.
+    const cite = new RegExp(`hand-verified ${sitePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:(\\d+)(?:-(\\d+))?`).exec(ev)
+    if (cite === null) {
+      bad.push(key)
+      continue
+    }
+    let text
+    try {
+      text = readFileSync(resolve(cwd, sitePath), 'utf8')
+    } catch {
+      bad.push(key)
+      continue
+    }
+    const a = Number(cite[1])
+    const b = cite[2] === undefined ? a : Number(cite[2])
+    const lineCount = text.split('\n').length
+    if (!(1 <= a && a <= b && b <= lineCount && a <= siteLine && siteLine <= b)) bad.push(key)
+  }
+  if (bad.length > 0) {
+    return {
+      error:
+        `adjudication ledger entries fail the "hand-verified <own full path>:<line-range containing the site>" rule (${file}): ${bad.slice(0, 8).join(', ')}${bad.length > 8 ? ` (+${String(bad.length - 8)} more)` : ''}`,
+    }
+  }
+  return { ledger: new Map(Object.entries(parsed)), file, count: Object.keys(parsed).length }
+}
+
 export function scanBlueprintVersionSites() {
   const result = {
     ran: false,
@@ -1038,9 +1184,38 @@ export function scanBlueprintVersionSites() {
     dirty: [],
     advisory: [],
     unknown: [],
+    adjudicated: [],
+    blindKeyHalf: 0,
+    blindDocMarked: 0,
+    blindNonTyped: 0,
+    ledgerFile: '',
+    ledgerCount: 0,
     refused: [],
     prose: [],
   }
+  // Round 3 F3: every scope prefix and `git ls-files` below is cwd-relative,
+  // so a run from any subdirectory used to see 0 files and print CLEAN,
+  // exit 0, while the tree held 120 dirty files — a green handed to exactly
+  // the lane worker typing `cd packages/client && node ../../scripts/...`.
+  // The non-repo case was pinned (/tmp -> exit 2); this closes the likelier
+  // mistake: only the repository TOPLEVEL is a valid cwd.
+  const top = spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' })
+  if (top.status === 0) {
+    const toplevel = String(top.stdout ?? '').trim()
+    const here = resolve(process.cwd())
+    if (toplevel !== '' && resolve(toplevel) !== here) {
+      result.reason =
+        `cwd ${here} is not the repository toplevel (${toplevel}); the fence gates on the WHOLE tree — run it from the toplevel`
+      return result
+    }
+  }
+  const adj = loadAdjudications(process.cwd())
+  if ('error' in adj) {
+    result.reason = adj.error
+    return result
+  }
+  result.ledgerFile = adj.file
+  result.ledgerCount = adj.count
   let out
   try {
     // maxBuffer: the tracked-file list is >1 MB NUL-separated at this base,
@@ -1074,7 +1249,24 @@ export function scanBlueprintVersionSites() {
       result.dirty.push({ path: p, line: 0, version: 0, why: `unreadable(${String(e)})` })
       continue
     }
-    if (!BLUEPRINT_KEY.test(text)) continue
+    if (!BLUEPRINT_KEY.test(text)) {
+      // Round 3 D: the both-halves rule (file needs a blueprintId text half
+      // AND a version digit) is conservative by design — but its blind spot
+      // was hand-reconstructed archaeology (36 files, 7 doc-marked, at the
+      // round-1 audit; all read, zero documents lost). Compute it live.
+      if (VERSION_LITERAL_TEST.test(text)) {
+        result.blindKeyHalf += 1
+        // The reviewer's narrower population: the typed half is safe by
+        // construction (blueprintId is required on TeamBlueprint and tsc
+        // enforces it), so only NON-typed files can hide a document the
+        // fence never sees.
+        if (!/\.(ts|tsx|mts|cts)$/.test(p)) {
+          result.blindNonTyped += 1
+          if (DOC_SHAPE_MARKERS.test(text)) result.blindDocMarked += 1
+        }
+      }
+      continue
+    }
     const c = classifyText(p, text)
     result.dirty.push(...c.dirty)
     result.advisory.push(...c.advisory)
@@ -1082,8 +1274,22 @@ export function scanBlueprintVersionSites() {
     result.refused.push(...c.refused)
     result.prose.push(...c.prose)
   }
+  // Part C: ledgered unknowns leave the gated set for the ADJUDICATED class.
+  for (const site of result.unknown) {
+    const key = `${site.path}::L${String(site.line)}::v${String(site.version)}`
+    const evidence = adj.ledger.get(key)
+    if (evidence !== undefined) result.adjudicated.push({ ...site, evidence })
+  }
+  if (result.adjudicated.length > 0) {
+    const done = new Set(
+      result.adjudicated.map((a) => `${a.path}::L${String(a.line)}::v${String(a.version)}`),
+    )
+    result.unknown = result.unknown.filter(
+      (u) => !done.has(`${u.path}::L${String(u.line)}::v${String(u.version)}`),
+    )
+  }
   const byLine = (a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : a.line - b.line)
-  for (const k of ['dirty', 'advisory', 'unknown', 'refused', 'prose']) result[k].sort(byLine)
+  for (const k of ['dirty', 'advisory', 'unknown', 'adjudicated', 'refused', 'prose']) result[k].sort(byLine)
   return result
 }
 
@@ -1116,6 +1322,13 @@ export function formatReport(result) {
     'scope: tests/kits/, scripts/, packages/**/harness/, packages/*/test/, packages/**/testdata/, tests/mock/scripts/, cordis.patch.yml (dev/agent-workflow, dist and non-code extensions excluded)',
   )
   lines.push(`scanned-in-scope: ${String(result.scopeFiles)} tracked files`)
+  lines.push(
+    `SCOPE-NOTE blind spot: ${String(result.blindKeyHalf)} files (${String(result.blindNonTyped)} non-typed, ${String(result.blindDocMarked)} doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live`,
+  )
+  lines.push(`adjudication-ledger: ${result.ledgerFile} (${String(result.ledgerCount)} entries)`)
+  lines.push(
+    'SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior',
+  )
   if (!result.ran) {
     lines.push(`RESULT not-run :: ${result.reason ?? 'unknown reason'}`)
     return lines.join('\n')
@@ -1127,12 +1340,19 @@ export function formatReport(result) {
   )
   lines.push(`blueprint-keyed files with version digits: ${String(keyed.size)}`)
   lines.push(
-    'GATE: dirty + unknown only. advisory/refused/prose are printed for dispatch and audit, never gated.',
+    'GATE: dirty + UNADJUDICATED unknown only. Closure = dirty empty AND no unadjudicated unknown. adjudicated/refused/prose print for dispatch and audit, never gated.',
   )
   lines.push(...groupByPath(result.dirty, (p, ss) => `OFFENDING ${p} :: ${ss.map(where).join(', ')}`))
   lines.push(...groupByPath(result.unknown, (p, ss) => `UNKNOWN ${p} :: ${ss.map(whereWhy).join(', ')}`))
   lines.push(
     ...groupByPath(result.advisory, (p, ss) => `ADVISORY ${p} :: ${ss.map(whereWhy).join(', ')}`),
+  )
+  lines.push(
+    ...groupByPath(
+      result.adjudicated,
+      (p, ss) =>
+        `ADJUDICATED ${p} :: ${ss.map((s) => `L${String(s.line)}=v${String(s.version)} (${s.evidence})`).join(', ')}`,
+    ),
   )
   lines.push(...groupByPath(result.refused, (p, ss) => `REFUSED ${p} :: ${ss.map(whereNs).join(', ')}`))
   lines.push(...groupByPath(result.prose, (p, ss) => `PROSE ${p} :: ${ss.map(where).join(', ')}`))
@@ -1143,10 +1363,11 @@ export function formatReport(result) {
   lines.push(`RESULT advisory(${tally(result.advisory)})`)
   lines.push(`RESULT refused(${tally(result.refused)})`)
   lines.push(`RESULT prose(${tally(result.prose)})`)
+  lines.push(`RESULT adjudicated(${tally(result.adjudicated)})`)
   const gating = result.dirty.length + result.unknown.length
   lines.push(
     gating === 0
-      ? 'RESULT verdict: clean (dirty 0, unknown 0)'
+      ? 'RESULT verdict: clean (dirty 0, unadjudicated unknown 0)'
       : 'RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)',
   )
   return lines.join('\n')

@@ -1,0 +1,31 @@
+=== typecheck: 8 Done, 0 error TS, exit 0 ===
+
+=== wrapper suite (final) ===
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+
+=== p4t6 (untouched expected) ===
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+
+=== two-run byte comparison ===
+two-runs-byte-identical
+self-sites: 0
+
+=== eslint ===
+eslint-exit-0
+
+=== final head verdict ===
+SCOPE-NOTE key-half blind spot: 36 in-scope files carry a schemaVersion literal but no blueprintId text (excluded by the both-halves rule); 6 are doc-marked — round-1 audit (2026-10-08) read every one at 36/7 and lost zero documents; these counts are computed live
+SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior
+RESULT dirty(120 files, 259 sites)
+RESULT unknown(0 files, 0 sites)
+RESULT advisory(12 files, 18 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT adjudicated(16 files, 24 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+
+=== lint-identities (this worktree; main checkout carries a stale ignored probe) ===
+lint-identities: 160 identity lines, 76 distinct (target .)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0

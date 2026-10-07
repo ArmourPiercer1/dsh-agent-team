@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-round3
+
+ ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (50 tests) 220ms
+
+ Test Files  1 passed (1)
+      Tests  50 passed (50)
+   Start at  04:15:25
+   Duration  488ms (transform 40ms, setup 0ms, import 183ms, tests 220ms, environment 0ms)
+

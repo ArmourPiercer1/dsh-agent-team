@@ -1,0 +1,14 @@
+;; expect: refused
+;; channel: same-line
+;; namespace: projection-envelope
+;; rule: members-without-identity-is-still-a-row — the CONDITIONAL half of
+;;        V3, proving the code does NOT implement the naive "members always
+;;        counts" variant: a projection value carrying `members` but only
+;;        ONE identity key is a wire frame, not a rescued document — it
+;;        stays refused. Flip the rule to unconditional and this fixture
+;;        goes unknown and the suite screams.
+;; path: packages/example/test/fx-members-row.ts
+import { serializeProjectionEnvelope } from '../src/env.js'
+const MR_BP = 'team.membersrow'
+const frame: RemoteProjectionValue = { teamSessionId: 't-2', generation: 3, members: [{ id: 'm9' }], blueprintId: MR_BP, schemaVersion: 1 }
+void serializeProjectionEnvelope(frame); void MR_BP

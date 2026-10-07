@@ -1,0 +1,21 @@
+;; expect: unknown
+;; why: conflicts
+;; namespace: projection-envelope
+;; rule: members-partial-document (round 3 F2, variant V3) — a REAL
+;;        partial TeamBlueprint (members + the identity triple) carried in
+;;        one literal with the projection signature: refused in every
+;;        carrier class today, because `members` had to leave the doc-only
+;;        set for RemoteProjectionValue.members (wire frames). The old
+;;        guard was a provable NO-OP (members alongside another doc key
+;;        already conflicts via that key — the reviewer's variant matrix).
+;;        V3 makes members count ONLY when the site's own literal also
+;;        carries >= 2 of blueprintId/revision/contentHash — the identity
+;;        triple is what distinguishes "this is a document" from "this is
+;;        a projection value with a member list". Measured cost at head:
+;;        zero new unknowns. This partial document becomes UNKNOWN
+;;        (conflict), never machine-refused.
+;; path: packages/example/test/fx-members-doc.ts
+import { serializeProjectionEnvelope } from '../src/env.js'
+const MD_BP = 'team.membersdoc'
+const partial: RemoteProjectionValue = { teamSessionId: 't-1', generation: 2, members: [{ id: 'm1' }], blueprintId: MD_BP, revision: '1', contentHash: 'h1', schemaVersion: 1 }
+void serializeProjectionEnvelope(partial); void MD_BP
