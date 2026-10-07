@@ -175,6 +175,8 @@ lane's to edit): **no pin was added, and neither `packages/client/package.json` 
 | `7-5-mutations.txt` | **fifteen** mutations, each one an assertion driven red and then reverted (tracked files by `git checkout`, the built entry restored byte-for-byte, the rebuilt bundle re-compared byte-identical). The two the brief asked for by name: **M-c** puts an undeclared import in OUR built entry while the real 17-package gap is present — `FAIL … our own artifact imports specifiers this workspace cannot resolve (no-such-own-dep-75)`, exit 1, i.e. the skip path cannot launder our own bug; **M-m** breaks the entry's syntax with the real gap present (link fails before evaluation, so a module-scope *throw* is unobservable — see M-a2) — `FAIL … a reason that is not a missing upstream package (Unexpected token ':')`, exit 1. Plus **F1**, which makes the closure fake-resolvable and turns the SKIP into `PASS client plugin …`, proving the skip is conditional and the contract checks really run; **M-a3** puts a module-scope throw in the committed BUNDLE — the class the SKIP structurally cannot see — and the offline check turns it red; and one red per offline assertion (row id renamed by one character, `apply` export renamed, plugin name drift, external added, external swapped, shim path typo, shim version drift, composition file removed, placed glue moved). |
 | `7-5-p4t6-pin.txt` | this lane's own intermediate red, kept rather than hidden: adding a scannable test file moved `p4t6`'s derived total to `expected 1021 to be 1020`, fixed by the mechanism the file prescribes (name the path in `SCANNED_PATHS_A4PR7`, move the PR7 total), not by touching the total alone. |
 | `7-5-post-tightening-reverify.txt` | the command-by-command checklist to re-run after the session is switched to `workspace-write`, with the expected observable for each and what a regression would mean. Nothing in this lane needs network any more: the install is proven `--offline` from the in-workspace store, the registry probe is captured above, and the lane does not push. |
+| `7-5-review-round-mutations.txt` | **the review round (2026-10-08), and the read that matters: four of this lane's own claims did not survive an independent review, and this is the receipt for fixing them.** Each of the five findings is reproduced red against the tree at `78153938` before it is fixed — a dangling SUBPATH of an installed package asked for by a NON-ENTRY own file printed the healthy `SKIP … 17 unresolvable …` at md5-identical output and exit 0 (R-1a); an INDENTED own import did the same (R-2b, md5-identical to the clean run); the built shim manifest could advertise an existing file outside both install surfaces while `composition-bundle-is-install-surface` printed its usual PASS (R-3a); a dropped arm printed 8 PASS lines under `PASS composition-smoke` and zero arms printed 0 lines, both exit 0 (R-5a/R-5b); and `resolutionFailureOf` handed the classifier a string containing the offending `package.json` as "the importer", so the zone test was always true and the FAIL came from `package === null` while the message blamed our own artifact over a `node_modules` path. Then the same mutations green (G-1…G-5), then seven mutations of the new code itself (M-A…M-G), each one non-constant-foldable, each landing on the test that pins it. |
+| `7-5-review-round-gates.txt` | the full gate list re-run on the final tree, command by command with exit codes: typecheck 8 `Done` / 0 `error TS`, `build`, `build:composition`, `check:artifacts` `OK: 1508 files` with no artifact drift, the named SKIP with the measured 17 names and nine PASS arms at exit 0, the classifier suite 32 (was 21), `p4t6` 10, the client lane's baseline trio 3 failed / 876 passed, the full suite's exact baseline identities 9 failed files / 19 failed tests (total 6062 = the recorded 6051 plus the 11 tests this round added, no new failure), `lint-identities` 160 / 76 / `new 0, resolved 0`, eslint silent at rc 0, and the mute audit showing that the branch's only `eslint-disable` matches are two lines of prose. Its closing section explains how to read three counts that differ from the brief's numbers. |
 
 ### The offline composition-surface checks, and the line between them and the SKIP
 
@@ -184,21 +186,37 @@ A gate that stops checking has to be replaced by a gate that checks, so the nine
 upstream closure at all**: the bundle's only bare specifiers are the four module-table
 externals. They cover the defect classes the coordinator named: a missing plugin-row
 export (`plugin-row-exports`), a wrong artifact or manifest path
-(`composition-output-present`, `manifest-targets-resolve`,
-`composition-bundle-is-install-surface`, `shim-recorded-values` — asserted against the
-manifests the builder itself writes, and against `INSTALL_SURFACES` shared with
-`check-artifacts-committed.mjs` rather than restated), our own top-level code throwing
+(`composition-output-present`, `manifest-targets-resolve`, `shim-recorded-values` —
+asserted against the manifests the builder itself writes), our own top-level code throwing
 (`bundle-module-graph-evaluates`), drift in what the bundle may require
 (`external-specifier-set`, read both from the emitted `__extReq` text and from an
-evaluation that runs even when the load step skips), and a glue/seam mismatch against
+evaluation that runs even when the load step skips), a glue/seam mismatch against
 `packages/runtime/dist` (`derived-urls-resolve`, which derives the URLs with the built
 host's own `defaultGlueUrl` / `defaultSeamUrlCandidates` and compares the result to
-`PLACEMENTS`). Row shape is established by **evaluation** in a `node:vm` context with an
+`PLACEMENTS`), and — since the review round, and **not** before it — an advertised path
+that lies outside the surface a git install copies (`composition-bundle-is-install-surface`,
+see the correction below). Row shape is established by **evaluation** in a `node:vm` context with an
 inert module table — the bundle is a `window.__ModuleLoader__.load` script, not a module,
 and it touches `document` while its graph evaluates, so `import()` cannot read it; the
 stub surface is deliberately minimal so the check cannot rot into a mock that asserts
 nothing, and its own `apply` was never trusted for the fail-loud contract (that stays on
 the load step, where the real upstream exists).
+
+#### Correction (review round, 2026-10-08): what `composition-bundle-is-install-surface` did NOT cover
+
+The paragraph above credited that arm with part of the "wrong artifact or manifest path"
+class, and named `INSTALL_SURFACES` as the shared source that made it one-directional.
+Both claims were false for the arm as written. It compared `expectations.bundleInstallPath`
+against `installSurfaces`, and the caller hands it both from `client-composition-surface.mjs`
+(`CLIENT_BUNDLE_INSTALL_PATH` *is* `CLIENT_COMPOSITION_DIR + '/' + CLIENT_BUNDLE_FILENAME`;
+`INSTALL_SURFACES` *contains* `CLIENT_COMPOSITION_DIR`), so the comparison was true for
+every artifact state and the arm could not fail. Measured: pointing the built shim
+manifest's `exports["./client"]` at an existing file outside both surfaces left the arm
+printing its usual PASS and the gate exit 0 (receipt `7-5-review-round-mutations.txt`,
+R-3a). The arm now reads the paths the built shim manifest actually advertises and fails
+on any of them falling outside a surface, or on the manifest advertising nothing at all;
+`CLIENT_BUNDLE_INSTALL_PATH` remains a constant for the builder and for readers, with a
+comment there saying in as many words not to build a gate arm out of comparing it.
 
 The honest limit, stated where it belongs: **this removes a gate that was not testing
 anything; it does not make the client plugin verifiable in this workspace.** Driving the

@@ -25,9 +25,23 @@
  * closures below are therefore synthetic — they reproduce the SHAPE of the
  * failure (a bare specifier requested by a file inside `node_modules`) without
  * pretending to be the real dependency.
+ *
+ * REVIEW ROUND (this commit) added the shapes that printed the healthy output
+ * while a defect was present, each first reproduced against the real gate:
+ * a dangling SUBPATH of an installed package asked for by a non-entry own file
+ * (used to be `untraversed`, so the own zone stayed silent and the step
+ * SKIPPED); a capped closure walk, which could still be skipped; an own import
+ * that was merely INDENTED, invisible to a column-0 scanner; the
+ * `composition-bundle-is-install-surface` arm, which compared the caller's own
+ * constants and could not fail; and the arm SET itself, where a check that
+ * stopped reporting simply stopped being printed under a `PASS` summary.
+ * Resolution errors here are captured from a child `node` process, because the
+ * test runner's own resolver disagrees with Node about directory imports and
+ * subpath exports — pinning the runner would have tested the wrong thing.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -35,10 +49,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
   classifyClosureStep,
   formatSkipDetail,
+  isInsideNodeModules,
+  packageSubpathIsMissing,
+  resolutionFailureOf,
   scanModuleClosure,
 } from '../../../scripts/composition-smoke-closure.mjs'
 import {
+  REQUIRED_CHECK_IDS,
   checkCompositionSurface,
+  checkSetDifferences,
   staticExternalRequests,
 } from '../../../scripts/composition-smoke-bundle.mjs'
 import {
@@ -65,6 +84,42 @@ function readCheck(checks: ReadonlyArray<{ id: string; ok: boolean; detail: stri
   if (found === undefined) throw new Error(`check ${id} is not reported by the surface check`)
   return found
 }
+
+/**
+ * A fixture file's REAL resolution failure, captured from a child `node`
+ * process and re-raised as an Error with Node's own code and message.
+ *
+ * This cannot be done by importing inside the test: vitest resolves modules its
+ * own way, and it disagrees with Node precisely on the shapes under test — it
+ * resolves a directory import that Node rejects with
+ * `ERR_UNSUPPORTED_DIR_IMPORT`, and it words a subpath-not-exported failure
+ * differently. An error captured in-process would pin the test runner's
+ * behaviour where the gate depends on the runtime's.
+ */
+function nodeResolutionError(target: string): Error & { code: string } {
+  const url = pathToFileURL(target).href
+  const script = `try { await import(${JSON.stringify(url)}); process.stdout.write(JSON.stringify({ code: null, message: 'LOADED: no error' })) } `
+    + 'catch (error) { process.stdout.write(JSON.stringify({ code: error?.code ?? null, message: String(error?.message ?? error) })) }'
+  const run = spawnSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8' })
+  const parsed = JSON.parse(run.stdout) as { code: string | null; message: string }
+  if (parsed.code === null) throw new Error(`expected ${target} to fail to load, it loaded (${parsed.message})`)
+  return Object.assign(new Error(parsed.message), { code: parsed.code })
+}
+
+/**
+ * A scan that saw everything and found nothing. Used by the tests that isolate
+ * the LOAD-error branch of the classifier: leaving the scan's own verdict in
+ * play would let one arm of the classifier answer for the other.
+ */
+const CLEAN_CLOSURE = {
+  ran: true,
+  reason: null,
+  visitedFiles: 1,
+  truncated: false,
+  ownUnresolved: [],
+  upstreamUnresolved: [],
+  untraversed: 0,
+} as const
 
 // ── closure fixtures ────────────────────────────────────────────────────────
 
@@ -102,7 +157,7 @@ describe('composition-smoke three-state classifier', () => {
     // Every fixture is its own ESM package: without this the `.js` fixtures
     // would inherit whatever `type` the nearest package.json declares, and a
     // SyntaxError would stand in for the error under test.
-    for (const caseName of ['ok', 'upstream', 'own-bug', 'throws']) {
+    for (const caseName of ['ok', 'upstream', 'own-bug', 'throws', 'subpath', 'indented', 'subpath-upstream', 'dirimport']) {
       write(join(root, caseName, 'package.json'), JSON.stringify({ name: `@a4p75/fixture-${caseName}`, type: 'module' }, null, 2))
     }
     // (1) everything resolves -> run.
@@ -128,6 +183,42 @@ describe('composition-smoke three-state classifier', () => {
 
     // (4) the graph links and then throws -> fail.
     write(join(root, 'throws/dist/entry.js'), "throw new TypeError('mount dereferenced a seam service')\nexport const never = 1\n")
+
+    // (5) the review-round laundering case: our OWN non-entry file imports a
+    //     SUBPATH of a package that IS installed. The package is present, so
+    //     this used to be counted as `untraversed` instead of unresolved, the
+    //     own zone stayed silent, and the load error named the upstream gap —
+    //     a SKIP that was byte-identical to a clean run (receipt R-1a).
+    for (const caseName of ['subpath', 'indented']) {
+      write(join(root, `${caseName}/node_modules/@a4p75/present/package.json`), PRESENT_PACKAGE['node_modules/@a4p75/present/package.json'])
+      write(join(root, `${caseName}/node_modules/@a4p75/present/index.js`), PRESENT_PACKAGE['node_modules/@a4p75/present/index.js'])
+      write(join(root, `${caseName}/node_modules/@a4p75/present/sub/index.js`), PRESENT_PACKAGE['node_modules/@a4p75/present/sub/index.js'])
+      for (const [rel, text] of Object.entries(UPSTREAM_WITH_UNDECLARED_DEPS)) {
+        write(join(root, caseName, rel), text)
+      }
+    }
+    write(join(root, 'subpath/dist/own-side.js'), "import { nope } from '@a4p75/present/does-not-exist'\nexport const ownSide = nope\n")
+    write(join(root, 'subpath/dist/entry.js'), "import { up } from '@a4p75/upstream'\nimport { ownSide } from './own-side.js'\nexport const clientEntry = up + ownSide\n")
+    // (6) the other review-round shape: an own import that is INDENTED. The
+    //     scanner read column 0 only, so the specifier vanished and the step
+    //     skipped over our own defect (receipt R-2a).
+    write(join(root, 'indented/dist/own-side.js'), "  import { missing } from '@a4p75/own-missing-indented'\nexport const ownSide = missing\n")
+    write(join(root, 'indented/dist/entry.js'), "import { up } from '@a4p75/upstream'\nimport { ownSide } from './own-side.js'\nexport const clientEntry = up + ownSide\n")
+
+    // (7) the SAME error form on the OTHER side of the zone boundary: a
+    //     third-party file whose own subpath does not resolve. That is the
+    //     host's closure and must still skip, which is what makes (5) a zone
+    //     test rather than a blanket ban on subpath errors.
+    write(join(root, 'subpath-upstream/node_modules/@a4p75/present/package.json'), PRESENT_PACKAGE['node_modules/@a4p75/present/package.json'])
+    write(join(root, 'subpath-upstream/node_modules/@a4p75/present/index.js'), PRESENT_PACKAGE['node_modules/@a4p75/present/index.js'])
+    write(join(root, 'subpath-upstream/node_modules/@a4p75/host/package.json'), JSON.stringify({ name: '@a4p75/host', version: '1.0.0', type: 'module', exports: { '.': './lib/index.js' } }))
+    write(join(root, 'subpath-upstream/node_modules/@a4p75/host/lib/index.js'), "import { nope } from '@a4p75/present/does-not-exist'\nexport const host = nope\n")
+    write(join(root, 'subpath-upstream/dist/entry.js'), "import { host } from '@a4p75/host'\nexport const clientEntry = host\n")
+
+    // (8) a directory import, the third resolution-error form the classifier
+    //     parses. Node's message names the directory and then the importer.
+    write(join(root, 'dirimport/somedir/index.js'), 'export const dir = 1\n')
+    write(join(root, 'dirimport/dist/entry.js'), "import { dir } from '../somedir'\nexport const clientEntry = dir\n")
   })
 
   afterAll(() => {
@@ -204,6 +295,146 @@ describe('composition-smoke three-state classifier', () => {
     expect(decision.status).toBe('fail')
     expect(decision.why).toContain('pnpm build')
   })
+
+  // ── review round: the shapes that used to print the healthy output ────────
+  // Each of these was reproduced against the real gate first (receipt
+  // `gates/7-5-review-round-mutations.txt`): the dangling subpath printed
+  // `SKIP … 17 unresolvable …` + `PASS composition-smoke`, exit 0, byte-identical
+  // to a clean run; the indented import printed the same. A fixture that only
+  // asserts the fixed direction would not have caught either, so both assert the
+  // scan record AND the verdict, and both were run red against the pre-fix code.
+
+  it('records a dangling subpath of an INSTALLED package as an own-zone defect, never as untraversed', () => {
+    const root = join(SCRATCH, 'closure/subpath')
+    const entryFile = join(root, 'dist/entry.js')
+    const closure = scanModuleClosure({ entryFile, repoRoot: root })
+    // The old behaviour in one number: a present package with an unresolvable
+    // subpath was counted here instead of in the zone it belongs to.
+    expect(closure.untraversed).toBe(0)
+    expect(closure.ownUnresolved.map((entry) => entry.specifier)).toEqual(['@a4p75/present/does-not-exist'])
+    expect(closure.ownUnresolved[0]?.zone).toBe('own')
+    expect(closure.ownUnresolved[0]?.importer).toContain(join('dist', 'own-side.js'))
+    // The real import attempt, in a real `node`: the upstream gap wins the link
+    // race, so the load error ALONE would justify a SKIP. The scan is what keeps
+    // this red, and this assertion is the measurement of that race.
+    const loadError = nodeResolutionError(entryFile)
+    expect(loadError.code).toBe('ERR_MODULE_NOT_FOUND')
+    expect(loadError.message).toContain('@a4p75/no-such-clsx')
+    const decision = classifyClosureStep({ entryExists: true, closure, loadError })
+    expect(decision.status).toBe('fail')
+    expect(decision.why).toContain('@a4p75/present/does-not-exist')
+  })
+
+  it('sees an own import that is indented, not at column 0 (the skip was the EAGER direction)', () => {
+    const root = join(SCRATCH, 'closure/indented')
+    const entryFile = join(root, 'dist/entry.js')
+    const closure = scanModuleClosure({ entryFile, repoRoot: root })
+    expect(closure.ownUnresolved.map((entry) => entry.specifier)).toEqual(['@a4p75/own-missing-indented'])
+    const loadError = nodeResolutionError(entryFile)
+    expect(loadError.code).toBe('ERR_MODULE_NOT_FOUND')
+    const decision = classifyClosureStep({ entryExists: true, closure, loadError })
+    expect(decision.status).toBe('fail')
+    expect(decision.why).toContain('@a4p75/own-missing-indented')
+  })
+
+  it('fails instead of skipping when the closure walk hit its file cap', () => {
+    const root = join(SCRATCH, 'closure/upstream')
+    const entryFile = join(root, 'dist/entry.js')
+    const loadError = nodeResolutionError(entryFile)
+    // Same fixture, same real error: uncapped it skips (the test above), capped
+    // it must not — the difference is the scan's coverage, not the error.
+    const uncapped = scanModuleClosure({ entryFile, repoRoot: root })
+    expect(uncapped.truncated).toBe(false)
+    expect(classifyClosureStep({ entryExists: true, closure: uncapped, loadError }).status).toBe('skip')
+    const capped = scanModuleClosure({ entryFile, repoRoot: root, maxFiles: 1 })
+    expect(capped.truncated).toBe(true)
+    expect(capped.ownUnresolved).toEqual([])
+    const decision = classifyClosureStep({ entryExists: true, closure: capped, loadError })
+    expect(decision.status).toBe('fail')
+    expect(decision.why).toContain('file cap')
+  })
+
+  it('names the importing file, not the offending package.json, for a subpath error', () => {
+    const root = join(SCRATCH, 'closure/subpath')
+    const ownSide = join(root, 'dist/own-side.js')
+    const loadError = nodeResolutionError(ownSide)
+    expect(loadError.code).toBe('ERR_PACKAGE_PATH_NOT_EXPORTED')
+    const failure = resolutionFailureOf(loadError)
+    expect(failure).not.toBeNull()
+    // Node's message carries BOTH paths; the importer is the second one. Taking
+    // the tail made this string contain the package.json, so the zone test was
+    // true for every one of them and decided nothing.
+    expect(failure?.importer).toBe(ownSide)
+    expect(isInsideNodeModules(failure?.importer ?? '')).toBe(false)
+    // The package is recovered from the manifest path the message names, so the
+    // ZONE is what decides here — not the accident that `'./does-not-exist'` is
+    // not a bare package name, which is what really produced this FAIL before.
+    expect(failure?.package).toBe('@a4p75/present')
+    const decision = classifyClosureStep({ entryExists: true, closure: CLEAN_CLOSURE, loadError })
+    expect(decision.status).toBe('fail')
+    expect(decision.why).toContain('own-side.js')
+    expect(decision.why).toContain('this repo')
+    expect(decision.why).not.toContain('package.json')
+  })
+
+  it('still skips a THIRD-PARTY file whose own subpath does not resolve', () => {
+    const root = join(SCRATCH, 'closure/subpath-upstream')
+    const entryFile = join(root, 'dist/entry.js')
+    const closure = scanModuleClosure({ entryFile, repoRoot: root })
+    expect(closure.ownUnresolved).toEqual([])
+    expect(closure.upstreamUnresolved.map((entry) => entry.package)).toEqual(['@a4p75/present'])
+    const loadError = nodeResolutionError(entryFile)
+    const failure = resolutionFailureOf(loadError)
+    expect(failure?.code).toBe('ERR_PACKAGE_PATH_NOT_EXPORTED')
+    expect(isInsideNodeModules(failure?.importer ?? '')).toBe(true)
+    const decision = classifyClosureStep({ entryExists: true, closure, loadError })
+    expect(decision.status).toBe('skip')
+    expect(formatSkipDetail(decision.missing ?? [])).toContain('@a4p75/present')
+  })
+
+  it('parses a directory import and names its importer (and still fails it)', () => {
+    const root = join(SCRATCH, 'closure/dirimport')
+    const entryFile = join(root, 'dist/entry.js')
+    const loadError = nodeResolutionError(entryFile)
+    expect(loadError.code).toBe('ERR_UNSUPPORTED_DIR_IMPORT')
+    const failure = resolutionFailureOf(loadError)
+    expect(failure).not.toBeNull()
+    expect(failure?.importer).toBe(entryFile)
+    expect(failure?.package).toBeNull()
+    const decision = classifyClosureStep({ entryExists: true, closure: CLEAN_CLOSURE, loadError })
+    expect(decision.status).toBe('fail')
+    expect(decision.why).toContain('entry.js')
+  })
+
+  it('calls an exports-gated subpath missing even when the file sits on disk', () => {
+    const packageDirectory = join(SCRATCH, 'closure/ok/node_modules/@a4p75/present')
+    // `exports` is a gate, not a hint: `sub/index.js` exists, `./nope` is not
+    // exported, and Node fails the second one regardless of what is on disk.
+    expect(packageSubpathIsMissing(packageDirectory, '@a4p75/present/does-not-exist')).toBe(true)
+    expect(packageSubpathIsMissing(packageDirectory, '@a4p75/present/nope/deeper.js')).toBe(true)
+    expect(packageSubpathIsMissing(packageDirectory, '@a4p75/present/sub')).toBe(false)
+    expect(packageSubpathIsMissing(packageDirectory, '@a4p75/present')).toBe(false)
+    // No `exports` field: legacy path resolution, where a real file (or its
+    // index) means present.
+    const legacy = join(SCRATCH, 'closure/legacy/node_modules/@a4p75/legacy')
+    write(join(legacy, 'package.json'), JSON.stringify({ name: '@a4p75/legacy', version: '1.0.0', type: 'module' }))
+    write(join(legacy, 'lib/thing.js'), 'export const thing = 1\n')
+    write(join(legacy, 'nest/index.js'), 'export const nest = 1\n')
+    expect(packageSubpathIsMissing(legacy, '@a4p75/legacy/lib/thing.js')).toBe(false)
+    expect(packageSubpathIsMissing(legacy, '@a4p75/legacy/lib/thing')).toBe(false)
+    expect(packageSubpathIsMissing(legacy, '@a4p75/legacy/nest')).toBe(false)
+    expect(packageSubpathIsMissing(legacy, '@a4p75/legacy/lib/nope.js')).toBe(true)
+    // An unreadable manifest is unknown, and unknown is never a miss.
+    expect(packageSubpathIsMissing(join(SCRATCH, 'closure/no-such-dir'), '@a4p75/x/y')).toBe(false)
+    // Pattern exports (`./features/*`) cover what an exact-key lookup would miss.
+    const patterned = join(SCRATCH, 'closure/patterned/node_modules/@a4p75/pat')
+    write(join(patterned, 'package.json'), JSON.stringify({ name: '@a4p75/pat', version: '1.0.0', exports: { '.': './index.js', './*': './dist/*' } }))
+    expect(packageSubpathIsMissing(patterned, '@a4p75/pat/features/a.js')).toBe(false)
+    // A string `exports` publishes `.` only: every subpath is unpublished.
+    const stringy = join(SCRATCH, 'closure/stringy/node_modules/@a4p75/str')
+    write(join(stringy, 'package.json'), JSON.stringify({ name: '@a4p75/str', version: '1.0.0', exports: './index.js' }))
+    expect(packageSubpathIsMissing(stringy, '@a4p75/str/anything.js')).toBe(true)
+  })
 })
 
 // ── composition-surface fixtures ────────────────────────────────────────────
@@ -224,6 +455,10 @@ interface SurfaceOptions {
   glueRel?: string
   seamRels?: readonly string[]
   installSurfaces?: readonly string[]
+  /** Extra files to create, repo-relative, for advertised-path cases. */
+  extraFiles?: readonly string[]
+  /** Write a shim manifest that advertises nothing at all. */
+  blankShimManifest?: boolean
 }
 
 const SURFACE_ROOT = join(SCRATCH, 'surface')
@@ -262,7 +497,15 @@ function buildSurface(caseName: string, options: SurfaceOptions = {}) {
   ].join('\n')
   write(join(compositionDir, CLIENT_BUNDLE_FILENAME), bundle)
   write(join(compositionDir, CLIENT_NODE_HALF_FILENAME), 'export function apply(ctx) { void ctx }\n')
-  write(join(compositionDir, 'package.json'), JSON.stringify({
+  write(join(compositionDir, 'package.json'), JSON.stringify(options.blankShimManifest === true ? {
+    // A manifest that advertises nothing: `manifest-targets-resolve` over an
+    // empty set is vacuous, so the surface arm must fail on that alone rather
+    // than call an unknown artifact shipped.
+    name: CLIENT_SHIM_ROW_ID,
+    version: options.shimVersion ?? '1.2.3',
+    private: true,
+    type: 'module',
+  } : {
     name: CLIENT_SHIM_ROW_ID,
     version: options.shimVersion ?? '1.2.3',
     private: true,
@@ -290,6 +533,7 @@ function buildSurface(caseName: string, options: SurfaceOptions = {}) {
   write(join(root, glueRel), 'export const glue = 1\n')
   const seamRels = options.seamRels ?? ['packages/runtime/root-binding/harness/seam.mjs']
   for (const rel of seamRels) write(join(root, rel), 'export const seam = 1\n')
+  for (const rel of options.extraFiles ?? []) write(join(root, rel), 'export const extra = 1\n')
 
   const hostModule = {
     defaultGlueUrl: (hostModuleUrl: string) => new URL('./live/agent-bindings.mjs', hostModuleUrl).href,
@@ -379,6 +623,36 @@ describe('composition-smoke offline composition surface', () => {
     expect(readCheck(checks, 'composition-bundle-is-install-surface').ok).toBe(false)
   })
 
+  // Review round: the two tests above could both be satisfied by an arm that
+  // compared the caller's own constants to each other, and the arm DID —
+  // `expectations.bundleInstallPath` against `installSurfaces`, both handed in
+  // from `client-composition-surface.mjs`, true for every artifact state. These
+  // two drive the ARM through the artifact on disk instead.
+  it('is red when the built manifest advertises a path outside the install surface', async () => {
+    // The advertised file EXISTS, so `manifest-targets-resolve` stays green and
+    // only the surface question can go red. This is the shape a real builder
+    // regression produces: the manifest points a consumer at a file that no git
+    // install copies and that `check:artifacts` never compares.
+    const outside = '../dist/packages/client/src/plugin/client.js'
+    const { checks } = await surfaceOf({
+      bundleAdvertisedAs: outside,
+      extraFiles: ['packages/client/dist/packages/client/src/plugin/client.js'],
+    }, 'advertised-outside')
+    const check = readCheck(checks, 'composition-bundle-is-install-surface')
+    expect(check.ok).toBe(false)
+    expect(check.detail).toContain('packages/client/dist/packages/client/src/plugin/client.js')
+    expect(readCheck(checks, 'manifest-targets-resolve').ok).toBe(true)
+  })
+
+  it('is red when the built manifest advertises nothing at all', async () => {
+    // An empty advertised set would make the containment loop vacuously green;
+    // "we know of no path" is not evidence that everything ships.
+    const { checks } = await surfaceOf({ blankShimManifest: true }, 'blank-manifest')
+    const check = readCheck(checks, 'composition-bundle-is-install-surface')
+    expect(check.ok).toBe(false)
+    expect(check.detail).toContain('no `exports`/`files` path')
+  })
+
   it('is red when a recorded manifest value drifts', async () => {
     const drifted = await surfaceOf({ shimVersion: '9.9.9' }, 'version-drift')
     expect(readCheck(drifted.checks, 'shim-recorded-values').detail).toContain('9.9.9')
@@ -394,6 +668,41 @@ describe('composition-smoke offline composition surface', () => {
     const noSeam = await surfaceOf({ seamRels: ['packages/runtime/nowhere/seam.mjs'] }, 'seam-missing')
     expect(readCheck(noSeam.checks, 'derived-urls-resolve').ok).toBe(false)
   })
+})
+
+describe('composition-smoke required arm set', () => {
+  const arm = (id: string) => ({ id, ok: true, detail: `${id} ok` })
+
+  it('accepts exactly the set it requires, and names both kinds of difference', () => {
+    const complete = REQUIRED_CHECK_IDS.map(arm)
+    expect(checkSetDifferences(complete)).toEqual({ missing: [], unexpected: [] })
+    const dropped = complete.filter((check) => check.id !== 'plugin-row-exports')
+    expect(checkSetDifferences(dropped).missing).toEqual(['plugin-row-exports'])
+    expect(checkSetDifferences(dropped).unexpected).toEqual([])
+    // A rename is the same disappearance wearing a new name: it has to fail on
+    // both sides, or a renamed arm reads as a green extra line plus a shrug.
+    const renamed = complete.map((check) => (check.id === 'plugin-row-exports' ? { ...check, id: 'plugin-row-exportz' } : check))
+    expect(checkSetDifferences(renamed).missing).toEqual(['plugin-row-exports'])
+    expect(checkSetDifferences(renamed).unexpected).toEqual(['plugin-row-exportz'])
+    // The pre-fix state this guard exists for: no arms at all.
+    expect(checkSetDifferences([]).missing.length).toBe(REQUIRED_CHECK_IDS.length)
+  })
+
+  it('requires by id every arm this repository actually reports', async () => {
+    const hostEntryFile = join(REPO_ROOT, 'packages/runtime/dist/packages/runtime/src/plugin/host.js')
+    const hostModule = await import(pathToFileURL(hostEntryFile).href)
+    const result = await checkCompositionSurface({
+      repoRoot: REPO_ROOT,
+      installSurfaces: INSTALL_SURFACES,
+      hostEntryFile,
+      hostModule: {
+        defaultGlueUrl: hostModule.defaultGlueUrl,
+        defaultSeamUrlCandidates: hostModule.defaultSeamUrlCandidates,
+      },
+      gluePlacementDist: 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs',
+    })
+    expect(checkSetDifferences(result.checks)).toEqual({ missing: [], unexpected: [] })
+  }, 60_000)
 })
 
 describe('composition-smoke against this repository', () => {

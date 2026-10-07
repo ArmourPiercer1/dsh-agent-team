@@ -83,8 +83,22 @@ export function resolvePackageEntryFile(
   specifier: string,
   io?: Pick<ClosureIo, 'fileExists' | 'readJson'>,
 ): string | null
+/**
+ * True only when Node itself could not resolve this SUBPATH of a package that
+ * IS present: no `exports` key covers it, or (with no `exports` field) there is
+ * no file its legacy path resolution would find. A bare package name, an
+ * unreadable manifest, or a covered key whose target is absent is never a miss
+ * — unknown is not evidence of absence, and `untraversed` is where those go.
+ */
+export function packageSubpathIsMissing(
+  packageDirectory: string,
+  specifier: string,
+  io?: Pick<ClosureIo, 'fileExists' | 'readJson'>,
+): boolean
 export function scanModuleClosure(options: ScanOptions): ClosureScanResult
 export function resolutionFailureOf(error: unknown): ResolutionFailure | null
+/** `…/node_modules/@scope/name/package.json` -> `@scope/name`; null if unrelated. */
+export function packageNameOfManifestPath(path: string): string | null
 export function upstreamMissingPackages(
   closure: ClosureScanResult | null,
   loadErrorPackage?: string | null,

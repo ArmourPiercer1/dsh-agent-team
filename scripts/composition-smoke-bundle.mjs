@@ -20,10 +20,16 @@
  *   - a wrong artifact path / manifest path  -> `manifest-targets-resolve`,
  *                                               `composition-output-present`,
  *                                               `shim-recorded-values`
+ *   - a path the built manifest advertises     -> `composition-bundle-is-install-surface`
+ *     that lies outside the surface a git
+ *     install copies, so it ships to nobody
  *   - our own top-level code throwing        -> `bundle-module-graph-evaluates`
  *   - a glue/seam mismatch against
  *     `packages/runtime/dist`                -> `derived-urls-resolve`
  *   - drift in what the bundle requires      -> `external-specifier-set`
+ *   - an arm that stopped being reported,    -> `REQUIRED_CHECK_IDS` and
+ *     so PASS could print over a check set       `checkSetDifferences`, applied
+ *     that quietly shrank or changed its name    by `composition-smoke.mjs`
  *
  * HOW the bundle is read, and why. The bundle is the upstream client wire
  * format: one `var __dshFactory = (require) => { … }` plus
@@ -71,6 +77,83 @@ export const DEFAULT_EXPECTATIONS = Object.freeze({
 })
 
 const BUNDLE_REQUIRE_CALL = /__extReq\(\s*['"]([^'"]+)['"]\s*\)/g
+
+/**
+ * The arms this module is REQUIRED to report, by name.
+ *
+ * Hand-declared, and deliberately NOT derived from the `checks` array: the
+ * defect is an arm that stops being emitted, so whatever catches it has to live
+ * outside the emitting code. Before this list existed the smoke printed one
+ * line per returned check and failed only on `ok === false`, so dropping an arm
+ * — or returning no arms at all — printed `PASS composition-smoke` over a gate
+ * that had stopped checking (measured: 8 lines, exit 0; 0 lines, exit 0). That
+ * is the lint-mute failure mode exactly: the healthy output, minus the check.
+ *
+ * It is a SET OF NAMES, not a count: an arm may only be added or retired by
+ * editing this list in the same commit as its `record()` call and its red
+ * proof, and a renamed id fails on both sides at once.
+ */
+export const REQUIRED_CHECK_IDS = Object.freeze([
+  'composition-output-present',
+  'composition-bundle-is-install-surface',
+  'manifest-targets-resolve',
+  'shim-recorded-values',
+  'plugin-row-registrations',
+  'bundle-module-graph-evaluates',
+  'plugin-row-exports',
+  'external-specifier-set',
+  'derived-urls-resolve',
+])
+
+/**
+ * Which required ids went unreported, and which reported ids were never
+ * required. Both directions matter: the first is a disappeared arm, the second
+ * is an arm renamed (which otherwise reads as the first plus a free pass).
+ */
+export function checkSetDifferences(checks) {
+  const reported = (checks ?? []).map((check) => check.id)
+  const missing = REQUIRED_CHECK_IDS.filter((id) => !reported.includes(id))
+  const unexpected = [...new Set(reported)].filter((id) => !REQUIRED_CHECK_IDS.includes(id))
+  return { missing, unexpected }
+}
+
+/**
+ * Every artifact path the BUILT shim manifest advertises, repo-relative and
+ * normalised. This is what a consumer of the package is told to load — the
+ * `exports` targets and the `files` entries of the manifest sitting on disk in
+ * the composition directory, not a path this module was handed.
+ */
+export function advertisedShimPaths(shimManifest, compositionDir) {
+  const advertised = []
+  const manifest = shimManifest !== null && typeof shimManifest === 'object' ? shimManifest : {}
+  const exportsField = typeof manifest.exports === 'object' && manifest.exports !== null ? manifest.exports : {}
+  for (const [key, target] of Object.entries(exportsField)) {
+    if (typeof target !== 'string') continue
+    advertised.push({ label: `exports[${key}]`, path: normaliseRepoPath(join(compositionDir, target)) })
+  }
+  for (const entry of Array.isArray(manifest.files) ? manifest.files : []) {
+    if (typeof entry !== 'string') continue
+    advertised.push({ label: `files[${entry}]`, path: normaliseRepoPath(join(compositionDir, entry)) })
+  }
+  return advertised
+}
+
+/** `packages/x/./y/../z` -> `packages/x/z`, with forward slashes. */
+function normaliseRepoPath(path) {
+  const out = []
+  for (const part of path.split('/')) {
+    if (part === '' || part === '.') continue
+    if (part === '..') out.pop()
+    else out.push(part)
+  }
+  return out.join('/')
+}
+
+/** Is a repo-relative path the surface itself or inside it? */
+function isInsideSurface(path, surface) {
+  const normalised = normaliseRepoPath(surface)
+  return path === normalised || path.startsWith(`${normalised}/`)
+}
 
 /**
  * The minimum browser surface this bundle's module evaluation touches.
@@ -237,18 +320,42 @@ export async function checkCompositionSurface(options) {
       ? `${expectations.compositionDir}/ carries ${expectations.bundleFilename}, ${expectations.nodeHalfFilename}, package.json`
       : `missing composition output: ${missingOutputs.join(', ')}`,
   )
-  const insideSurface = installSurfaces.some((surface) => expectations.bundleInstallPath.startsWith(`${surface}/`))
+  // ── 1b. every path the BUILT artifact advertises is inside a tracked surface ──
+  //
+  // Derived from the shim manifest ON DISK, never from `expectations`. The
+  // earlier form compared `expectations.bundleInstallPath` with `installSurfaces`,
+  // and the caller hands it both from one module: `CLIENT_BUNDLE_INSTALL_PATH`
+  // IS `CLIENT_COMPOSITION_DIR + '/' + CLIENT_BUNDLE_FILENAME`, and
+  // `INSTALL_SURFACES` contains `CLIENT_COMPOSITION_DIR`
+  // (`client-composition-surface.mjs`). The arm was therefore true for every
+  // artifact state and could not fail — measured: pointing the shipped
+  // manifest's `exports["./client"]` at an existing file outside both surfaces
+  // left it printing the same PASS line and exit 0 (review-round receipt
+  // `7-5-review-round-mutations.txt`, R-3a). What the arm asks now is the
+  // question that has a defect in it: does the manifest a consumer of this
+  // package actually reads advertise anything outside the surface
+  // `check:artifacts` compares and a git install copies? Such a path ships to
+  // nobody and is invisible to every artifact gate in this repo.
+  const rootManifest = readJson(rootManifestFile)
+  const shimManifest = readJson(manifestFile)
+  const advertised = advertisedShimPaths(shimManifest, expectations.compositionDir)
+  const outsideSurface = advertised.filter(
+    (entry) => !installSurfaces.some((surface) => isInsideSurface(entry.path, surface)),
+  )
+  const surfaceProblems = []
+  if (advertised.length === 0) {
+    surfaceProblems.push('the built shim manifest advertises no `exports`/`files` path at all, so nothing about it is known to ship')
+  }
+  surfaceProblems.push(...outsideSurface.map((entry) => `${entry.label} -> ${entry.path}`))
   record(
     'composition-bundle-is-install-surface',
-    insideSurface,
-    insideSurface
-      ? `${expectations.bundleInstallPath} is inside an install surface check:artifacts compares`
-      : `${expectations.bundleInstallPath} is NOT inside any install surface (${installSurfaces.join(', ') || 'none given'}) — a bundle outside the tracked surface ships nothing`,
+    surfaceProblems.length === 0,
+    surfaceProblems.length === 0
+      ? `all ${advertised.length} path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (${installSurfaces.join(', ')})`
+      : `advertised artifact path is outside every install surface (${installSurfaces.join(', ') || 'none given'}): ${surfaceProblems.join('; ')} — a path outside the tracked surface ships to nobody and no artifact gate sees it`,
   )
 
   // ── 2. every manifest path the artifact advertises resolves on disk ─────
-  const rootManifest = readJson(rootManifestFile)
-  const shimManifest = readJson(manifestFile)
   if (rootManifest === null || shimManifest === null) {
     record('manifest-targets-resolve', false, 'a manifest needed for the path check is unreadable or missing')
     record('shim-recorded-values', false, 'the shim manifest is unreadable or missing')

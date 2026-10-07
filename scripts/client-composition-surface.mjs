@@ -68,6 +68,14 @@ export const CLIENT_COMPOSITION_DIR = 'packages/client/composition-shim'
  * The composed bundle's path inside an install surface
  * (`check-artifacts-committed.mjs` compares that surface against the git
  * index, so a bundle written OUTSIDE a surface would ship nothing).
+ *
+ * Recorded here for the builder and for humans. Do NOT build a gate arm out of
+ * comparing this against `INSTALL_SURFACES`: both come from this module, so the
+ * comparison is true for every artifact state and cannot fail — that is exactly
+ * how `composition-bundle-is-install-surface` was written and what the A4-PR7
+ * review round replaced it with. The arm now reads the paths the built shim
+ * manifest actually advertises; see `advertisedShimPaths` in
+ * `composition-smoke-bundle.mjs`.
  */
 export const CLIENT_BUNDLE_INSTALL_PATH = `${CLIENT_COMPOSITION_DIR}/${CLIENT_BUNDLE_FILENAME}`
 

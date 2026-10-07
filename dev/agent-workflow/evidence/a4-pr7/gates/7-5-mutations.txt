@@ -44,6 +44,16 @@ M-b: client apply() reduced to a silent no-op, with the fake resolvable closure:
   exit=1   (0 = gate passed, 1 = gate failed)
 
 M-c: own-zone undeclared import added to the built entry (import { z } from "no-such-own-dep-75"), with the REAL closure gap present: the skip path must not launder our own undeclared dependency
+  SCOPE, narrowed in the review round (2026-10-08) — this entry proves exactly one shape and must not be read as covering the class:
+    the import was placed in the ENTRY file, at COLUMN 0, naming a package that is not installed anywhere.
+    That is the shape `esmStaticSpecifiers` can see. Two shapes that look identical from the gate's
+    outside were NOT covered, and both printed the healthy SKIP with exit 0 (byte-identical to a clean
+    run) until the review round fixed them: an own import placed in a NON-ENTRY file whose spec only
+    survives because the 17-package upstream gap wins Node's link race first, and a dangling SUBPATH of
+    a package that IS installed. See 7-5-review-round-mutations.txt R-1a/R-1b/R-2a (red, pre-fix) and
+    G-1/G-2 (green, post-fix). The scanner's own header now states its blind spots and the direction
+    they bias the gate in; the previous comment there claimed a missed specifier made the gate skip
+    LESS eagerly, which is backwards.
   expected to go red/changed on: FAIL client plugin
   observed: FAIL client plugin (packages/client): our own artifact imports specifiers this workspace cannot resolve (no-such-own-dep-75) — an undeclared dependency in this repo, not the host module closure, so this is never skippabl
   exit=1   (0 = gate passed, 1 = gate failed)

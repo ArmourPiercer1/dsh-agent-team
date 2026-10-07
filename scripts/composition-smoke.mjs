@@ -68,7 +68,10 @@
  * upstream closure exists and `apply` can mount — is still the host-side
  * acceptance run (plan Task 7.6/7.7), not this script.
  *
- * Output: one PASS/FAIL/SKIP line per step plus a final summary line.
+ * Output: one PASS/FAIL/SKIP line per step plus a final summary line. The
+ * bundle arms are additionally required by NAME (`REQUIRED_CHECK_IDS`): an
+ * expected arm that is not reported is a FAIL line of its own, because a step
+ * that stopped reporting would otherwise vanish into the summary.
  * Exit code: 0 with no FAIL (a SKIP is allowed), 1 on any FAIL.
  *
  * Run: `pnpm smoke:composition` (or `node scripts/composition-smoke.mjs`)
@@ -86,7 +89,7 @@ import {
   formatSkipDetail,
   scanModuleClosure,
 } from './composition-smoke-closure.mjs'
-import { checkCompositionSurface } from './composition-smoke-bundle.mjs'
+import { checkCompositionSurface, checkSetDifferences } from './composition-smoke-bundle.mjs'
 
 // Asset specifiers in the client graph resolve to an inert module (see
 // header); must be registered before the first target import below.
@@ -326,6 +329,24 @@ try {
       failed = true
       console.log(`FAIL ${label}: ${check.detail}`)
     }
+  }
+  // The arms a caller must SEE. Printing one line per returned check and
+  // failing only on `ok === false` means an arm that is never returned is not
+  // a red line, it is a missing line — and a missing line still ends in
+  // `PASS composition-smoke`. Measured before this guard: dropping one arm
+  // printed 8 PASS lines and exit 0; returning no arms at all printed 0 lines
+  // and exit 0. The required set is named in `composition-smoke-bundle.mjs`,
+  // by id, in both directions (a renamed arm fails as missing AND unexpected).
+  const arms = checkSetDifferences(surface.checks)
+  if (arms.missing.length > 0 || arms.unexpected.length > 0) {
+    failed = true
+    const parts = []
+    if (arms.missing.length > 0) parts.push(`never reported [${arms.missing.join(', ')}]`)
+    if (arms.unexpected.length > 0) parts.push(`reported but not required [${arms.unexpected.join(', ')}]`)
+    console.log(
+      `FAIL client bundle check-set (packages/client/composition-shim): ${parts.join('; ')} — `
+      + 'an arm that stopped reporting is a closed gate, not a green one',
+    )
   }
 } catch (error) {
   failed = true
