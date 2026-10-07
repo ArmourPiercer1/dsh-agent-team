@@ -1,4 +1,5 @@
 ;; expect: refused
+;; channel: carrier-sibling
 ;; namespace: team-session-record
 ;; rule: string-embedded-json — a hand-built serialized record inside a TS
 ;;        string carries its OWN namespace keys (rootSessionId + blueprint

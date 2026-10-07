@@ -1,4 +1,5 @@
 ;; expect: refused
+;; channel: sibling
 ;; namespace: governance-ledger
 ;; rule: trap-approval-and-operation-rows — the approval-case row (verbatim
 ;;        shape of packages/storage/test/p4-helpers.ts:475, siblings

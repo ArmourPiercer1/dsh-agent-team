@@ -1,4 +1,5 @@
 ;; expect: refused
+;; channel: sibling
 ;; namespace: session-binding
 ;; rule: trap-session-binding — verbatim shape of
 ;;        packages/runtime/test/d1-team-ownership-index.test.ts:219 and

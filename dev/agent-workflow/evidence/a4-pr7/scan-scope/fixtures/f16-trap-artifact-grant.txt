@@ -1,4 +1,5 @@
 ;; expect: refused
+;; channel: sibling
 ;; namespace: artifact-grant-payload
 ;; rule: trap-artifact-grant-payload — the artifact-read-granted LEDGER PAYLOAD
 ;;        (verbatim shape of packages/client/test/ledger-adapter.test.ts:433

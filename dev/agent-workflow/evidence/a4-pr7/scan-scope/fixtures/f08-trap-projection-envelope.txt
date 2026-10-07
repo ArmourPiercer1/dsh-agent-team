@@ -1,4 +1,5 @@
 ;; expect: refused
+;; channel: sibling
 ;; namespace: projection-envelope
 ;; rule: trap-projection-envelope — the wire-frame form (verbatim shape of
 ;;        packages/client/test/projection-adapter.test.ts:64 and the remote

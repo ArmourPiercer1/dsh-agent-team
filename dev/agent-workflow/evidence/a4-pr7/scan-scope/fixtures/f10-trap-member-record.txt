@@ -1,4 +1,5 @@
 ;; expect: refused
+;; channel: sibling
 ;; namespace: member-instance-record
 ;; rule: trap-member-record — the MemberInstance discriminator namespace the
 ;;        coordinator named at packages/runtime/src/plugin/host.ts:2539 (the

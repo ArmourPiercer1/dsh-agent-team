@@ -64,10 +64,18 @@
  *    inventory audit — and a scan that flags them teaches people to mute
  *    the scan). Refusals are printed per line WITH the namespace and the
  *    deciding channel, so every drop is auditable; nothing is removed
- *    silently. Refusal requires POSITIVE namespace evidence (named context
- *    or an enclosing-object sibling signature); no evidence, no refusal.
- *    Each namespace entry below cites the tree evidence hand-verified on
- *    2026-10-08.
+ *    silently. After the 2026-10-08 review, refusal requires POSITIVE
+ *    namespace evidence inside the SITE'S OWN LITERAL: a namespace name on
+ *    the site's own line or inside its own carrier string, or a signature
+ *    completed by the site's own keys (the carrier string's keys for a
+ *    string carrier; the object literal's depth-1 keys for code/data). The
+ *    enclosing object's keys never refuse a string-carried site; head-line
+ *    and function-signature text never refuses anything — it becomes a
+ *    visible UNKNOWN for human adjudication. So does ctx evidence on a
+ *    SPREAD-assisted literal, whose hidden keys cannot be certified
+ *    document-free. No evidence, no refusal; wrong-literal evidence, no
+ *    refusal. Each namespace entry below cites the tree evidence
+ *    hand-verified on 2026-10-08.
  *
  * WHY `git ls-files` AND NOT A FILESYSTEM WALK. `tests/homes/` (DSH_HOME
  * worlds) and any `dist/` tree hold STORE COPIES and build output: a
@@ -291,12 +299,38 @@ const NON_BLUEPRINT_NAMESPACES = [
 ]
 
 /**
- * Positive Blueprint-document siblings: closed TeamBlueprint field names no
- * row DTO carries. Their presence AGAINST a namespace signature is a genuine
- * conflict — the classifier reports UNKNOWN rather than guessing either way
- * (fixture f18 pins this).
+ * Document-only TeamBlueprint field names (the closed interface at
+ * packages/domain/blueprint/src/types.ts:405-488 minus schemaVersion,
+ * blueprintId, revision, contentHash — the four keys row DTOs legitimately
+ * share — and minus `members`, which the 2026-10-08 audit measured on the
+ * PROJECTION DTO (packages/remote/src/contracts/types.ts:65
+ * `readonly members: readonly RemoteSafeRecord[]`): a key a row family
+ * carries cannot discriminate a document, and keeping `members` here turned
+ * 15 genuine wire frames into false conflicts. A complete TeamBlueprint
+ * smuggled into row vocabulary still conflicts through displayName /
+ * requirements / policyStates (fixtures f25/f26 pin exactly that).
+ * Their presence in the SITE'S OWN literal against a namespace signature is
+ * a genuine conflict — UNKNOWN, never a guess (fixtures f18/f26 pin this).
+ * The old three-name set ({leader, memberEnvelopes, policyStates}) was a
+ * coverage lie: a document written with displayName/teamHardEnvelope (legal
+ * v3) could not even raise the conflict (2026-10-08 review, BLOCKING 1c) —
+ * fixture f26 was REFUSED that way before the set was widened.
  */
-const DOC_SIBLINGS = new Set(['leader', 'memberEnvelopes', 'policyStates'])
+const DOC_ONLY_KEYS = new Set([
+  'displayName',
+  'description',
+  'leader',
+  'requirements',
+  'teamRequirements',
+  'teamEnvelope',
+  'memberEnvelopes',
+  'permissionMutationEnvelope',
+  'teamHardEnvelope',
+  'policyStates',
+  'quotas',
+  'capabilityPolicy',
+  'metadata',
+])
 
 // --- the line state machine -------------------------------------------------------
 // Tracks line/block comments, single/double-quoted strings (terminated at
@@ -460,10 +494,11 @@ function segmentText(lines, seg) {
   ].join('\n')
 }
 
-/** Key-like tokens (`name:` or `"name":`) inside a carried string. Extra
- *  candidates never REFUSE on their own — refusal still needs a namespace
- *  signature or named context; but serialization JSON is written with
- *  quoted keys, and refusing it means seeing keys inside the string. */
+/** Key-like tokens (`name:` or `"name":`) inside a carried string. For a
+ *  string carrier these ARE the site's own keys — the only pool a string-
+ *  carried site's refusal may rest on (serialization JSON is written with
+ *  quoted keys; refusing that class means reading keys inside the string,
+ *  and NOTHING outside it: BLOCKING 1a pool split, 2026-10-08 review). */
 function stringKeyCandidates(str) {
   const keys = []
   const re = /([A-Za-z_$][\w$]*)["']?\s*:/g
@@ -500,9 +535,17 @@ function headChain(lines, states, idx, matchCol) {
   return chain
 }
 
-/** Depth-1 key names of the object literal opened at headIdx (bounded). */
+/** Depth-1 key names of the object literal opened at headIdx (bounded),
+ *  PLUS whether the literal is SPREAD-assisted (`{...X, k: v}`): a spread can
+ *  hide document keys behind visible ones, so the classifier must never
+ *  machine-refuse a ctx-named site whose own literal spreads (2026-10-08
+ *  review BLOCKING 1c — the tree builds documents as `...BOILERPLATE` /
+ *  `jsDoc(overrides)`, and the spread-built registry rows at
+ *  packages/storage/test/bp1-blueprint-registry.test.ts:146 proves the
+ *  row-side too: hidden keys cannot be certified document-free). */
 function siblingKeys(lines, states, headIdx) {
   const keys = []
+  let spread = false
   let depth = 0
   let opened = false
   for (let j = headIdx; j < Math.min(lines.length, headIdx + 60); j += 1) {
@@ -516,8 +559,13 @@ function siblingKeys(lines, states, headIdx) {
         opened = true
       } else if (c === '}') {
         depth -= 1
-        if (opened && depth === 0) return keys
+        if (opened && depth === 0) return { keys, spread }
       } else if (depth === 1) {
+        if (c === '.' && l.slice(k, k + 3) === '...') {
+          spread = true
+          k += 2
+          continue
+        }
         const m = /^([A-Za-z_$][\w$]*)\s*:/.exec(l.slice(k))
         const prefix = l.slice(0, k)
         if (m !== null && (prefix.trim() === '' || /[{,]\s*$/.test(prefix))) {
@@ -527,7 +575,7 @@ function siblingKeys(lines, states, headIdx) {
       }
     }
   }
-  return keys
+  return { keys, spread }
 }
 
 /** The nearest plausible declaration line above the object head (function
@@ -659,65 +707,103 @@ export function classifyText(path, text) {
         continue
       }
 
-      // 2) context channels, innermost evidence first.
-      let ctxLines // [{text, chan}]
-      let sibs
+      // 2) evidence pools — SPLIT by the 2026-10-08 review (BLOCKING 1a/b).
+      //    The site's OWN pool is the only thing a refusal may rest on:
+      //     - string carrier: the keys inside the carried text (a serialized
+      //       record carries its own namespace); the ENCLOSING code object
+      //       may never refuse a string-carried site — that merge is how a
+      //       document passed as an argument to a row-shaped call vanished.
+      //     - code/data carrier: the depth-1 keys of the object literal the
+      //     site
+      //       sits in — same object, same literal.
+      //    Head-line and function-signature text is OUTER evidence: always
+      //    visible (UNKNOWN), never a refusal. A SPREAD in the site's own
+      //    literal hides keys: ctx evidence on it becomes UNKNOWN too.
+      let ownKeys = []
+      let ownSpread = false
+      let refuseCtx = [{ text: line, chan: 'same-line' }]
+      let outerCtx = []
       if (isYaml) {
-        ctxLines = [{ text: line, chan: 'same-line' }]
+        // A data file IS one literal; its indent structure is its own text.
+        ownKeys = yamlSiblings(lines, idx)
         const parent = yamlParentKey(lines, idx)
-        if (parent !== '') ctxLines.push({ text: parent, chan: 'parent-key' })
-        sibs = yamlSiblings(lines, idx)
+        if (parent !== '') refuseCtx.push({ text: parent, chan: 'parent-key' })
       } else {
         const chain = headChain(lines, states, idx, m.index)
         const head = chain[0]
-        sibs = head === undefined ? [] : siblingKeys(lines, states, head.idx)
+        const enclosing = head === undefined ? { keys: [], spread: false } : siblingKeys(lines, states, head.idx)
         const fn = head === undefined ? '' : funcContext(lines, states, head.idx)
-        ctxLines = [{ text: line, chan: 'same-line' }]
-        chain.slice(0, 3).forEach((h, i) => ctxLines.push({ text: h.line, chan: `head${String(i)}` }))
-        if (fn !== '') ctxLines.push({ text: fn, chan: 'fn' })
+        outerCtx = chain.slice(0, 3).map((h, i) => ({ text: h.line, chan: `head${String(i)}` }))
+        if (fn !== '') outerCtx.push({ text: fn, chan: 'fn' })
         if (carrier === 'string') {
-          // A string-carried site ALSO has siblings: the keys the carried
-          // text itself contains (the serialized-record class at
-          // contracts/test/serialization.test.ts:93/:207 — TS code whose
-          // enclosing object has no keys, because the document lives in a
-          // string literal). These feed the same ladder: they can complete
-          // a namespace signature, and doc-shaped keys among them keep the
-          // conflict rule honest. They never refuse on their own.
           const seg = segmentAt(segments, idx, m.index)
           if (seg !== undefined) {
-            for (const k of stringKeyCandidates(segmentText(lines, seg))) {
-              if (!sibs.includes(k)) sibs.push(k)
-            }
+            const ctext = segmentText(lines, seg)
+            ownKeys = stringKeyCandidates(ctext)
+            refuseCtx.push({ text: ctext, chan: 'carrier-text' })
           }
+        } else {
+          ownKeys = enclosing.keys
+          ownSpread = enclosing.spread
         }
       }
 
-      // 3) the namespace ladder — a refusal requires a POSITIVE match.
+      // 3) the namespace ladder — a refusal requires a POSITIVE match on the
+      //    site's own literal: a namespace name inside the site's own line /
+      //    carrier text, or a signature completed by the site's own keys.
+      //    Evidence with document-only keys present in the own literal is a
+      //    CONFLICT; on a spread-assisted literal, ctx evidence is not
+      //    certifiable; outer-line evidence alone is UNKNOWN. Never a guess.
+      const ownDocKeys = ownKeys.filter((k) => DOC_ONLY_KEYS.has(k))
       const hits = []
+      let sigHit = false
       for (const ns of NON_BLUEPRINT_NAMESPACES) {
-        for (const c of ctxLines) {
+        for (const c of refuseCtx) {
           if (ns.ctx.test(c.text)) {
             hits.push({ ns: ns.name, channel: c.chan })
             break
           }
         }
         for (const sig of ns.sibling) {
-          if (sig.every((k) => sibs.includes(k))) {
-            hits.push({ ns: ns.name, channel: 'sibling' })
+          if (sig.every((k) => ownKeys.includes(k))) {
+            hits.push({ ns: ns.name, channel: carrier === 'string' ? 'carrier-sibling' : 'sibling' })
+            sigHit = true
             break
           }
         }
       }
-      const docSib = sibs.filter((k) => DOC_SIBLINGS.has(k))
-      if (hits.length > 0 && docSib.length > 0) {
+      if (hits.length > 0 && ownDocKeys.length > 0) {
         out.unknown.push({
           ...site,
-          why: `namespace-signature(${[...new Set(hits.map((h) => h.ns))].join('+')}) conflicts with document siblings (${docSib.join(',')})`,
+          why: `namespace-signature(${[...new Set(hits.map((h) => h.ns))].join('+')}) conflicts with document siblings (${ownDocKeys.join(',')})`,
+        })
+        continue
+      }
+      if (hits.length > 0 && ownSpread && !sigHit) {
+        out.unknown.push({
+          ...site,
+          why: `named-namespace(${hits[0].ns}/${hits[0].channel}) on SPREAD-assisted literal — hidden keys cannot be certified document-free; adjudicate by hand`,
         })
         continue
       }
       if (hits.length > 0) {
         out.refused.push({ ...site, ns: hits[0].ns, why: `${hits[0].ns}/${hits[0].channel}` })
+        continue
+      }
+      const outerHits = []
+      for (const ns of NON_BLUEPRINT_NAMESPACES) {
+        for (const c of outerCtx) {
+          if (ns.ctx.test(c.text)) {
+            outerHits.push({ ns: ns.name, channel: c.chan })
+            break
+          }
+        }
+      }
+      if (outerHits.length > 0) {
+        out.unknown.push({
+          ...site,
+          why: `outer-line-evidence(${outerHits[0].ns}/${outerHits[0].channel}) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused`,
+        })
         continue
       }
 

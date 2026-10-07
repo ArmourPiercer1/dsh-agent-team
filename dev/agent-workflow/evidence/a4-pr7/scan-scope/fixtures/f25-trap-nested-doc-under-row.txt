@@ -1,0 +1,33 @@
+;; expect: unknown
+;; why: outer-line
+;; namespace: team-session-record
+;; rule: nested-doc-under-row — the review's worst real-tree shape
+;;        (2026-10-08 BLOCKING 1): a COMPLETE TeamBlueprint literal smuggled
+;;        as the `blueprint:` value inside `const row: TeamSessionRecordDto`.
+;;        The old ladder refused it team-session-record/head1 — decided by
+;;        the OUTER variable's type annotation, a line the document does not
+;;        contain. The document's own literal holds only document-only keys
+;;        (no refusal basis); the outer-line text may never refuse: UNKNOWN,
+;;        visible and gated, never a quiet REFUSED.
+;; path: packages/example/test/fx-trap-nested-doc.ts
+const row: TeamSessionRecordDto = {
+  rootSessionId: ROOT_A,
+  teamSessionId: 'team-a',
+  generation: 3,
+  createdAt: NOW,
+  blueprint: {
+    schemaVersion: 1,
+    blueprintId: 'BP-FULL-DOC',
+    revision: '1',
+    contentHash: 'sha-1',
+    displayName: 'full smuggled document',
+    description: 'every document-only field present',
+    members: [],
+    requirements: [],
+    memberEnvelopes: [],
+    policyStates: [{ id: 'default', fields: [] }],
+    teamHardEnvelope: { rules: [] },
+    metadata: { tags: [] },
+  },
+}
+void row

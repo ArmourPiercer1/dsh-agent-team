@@ -1,4 +1,5 @@
 ;; expect: refused
+;; channel: sibling
 ;; namespace: team-session-record
 ;; rule: trap-team-session-record — verbatim shape of
 ;;        packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts:140

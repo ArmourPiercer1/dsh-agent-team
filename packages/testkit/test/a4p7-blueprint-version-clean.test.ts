@@ -93,6 +93,8 @@ interface Fixture {
   expect: SiteClass | 'none'
   rule: string
   namespace?: string
+  channel?: string
+  why?: string
   path: string
   content: string
 }
@@ -121,6 +123,8 @@ function loadFixtures(): Fixture[] {
       expect: (header.get('expect') ?? 'none') as Fixture['expect'],
       rule: header.get('rule') ?? '(unnamed)',
       namespace: header.get('namespace'),
+      channel: header.get('channel'),
+      why: header.get('why'),
       path: header.get('path') ?? 'packages/example/test/fixture.ts',
       content: lines.slice(i).join('\n'),
     }
@@ -167,6 +171,24 @@ function expectSingle(f: Fixture, want: SiteClass | 'none'): Classification {
     expect(c.refused[0]?.ns, `${f.name}: refused but not by namespace ${f.namespace}`).toContain(
       f.namespace,
     )
+  }
+  // 2026-10-08 review: namespace alone hid WHICH text decided the refusal —
+  // f07-f16 asserted only `f.namespace`, never the channel. Pin the channel.
+  if (f.channel !== undefined && want === 'refused') {
+    for (const s of c.refused) {
+      expect(
+        s.why,
+        `RED (${f.name}): refused, but not by the '${f.channel}' channel — got (${s.why}); the deciding evidence must be the site's own literal`,
+      ).toContain(`/${f.channel}`)
+    }
+  }
+  if (f.why !== undefined && want === 'unknown') {
+    // Existence, not universality: one fixture may deliberately mix flavors
+    // (f11 has a SPREAD site AND an outer-line site).
+    expect(
+      c.unknown.some((s) => s.why.includes(f.why as string)),
+      `RED (${f.name}): no UNKNOWN reason contains '${f.why}' — got ${JSON.stringify(c.unknown.map((s) => s.why))}`,
+    ).toBe(true)
   }
   return c
 }
@@ -298,6 +320,52 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — raised to coordinator; carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
   ['cordis.patch.yml', 'SCOPE ADDITION (measured 2026-10-08: the root composition patch\'s blueprintSource block is a live v1 document emitter, cordis.patch.yml:58-62) — NO §7.4 lane row — raised to coordinator'],
   ['tests/mock/scripts/boot.mjs', 'C-testkit scope addition (measured 2026-10-08: mock-boot YAML emitter outside every prior scan)'],
+])
+
+/**
+ * UNKNOWN adjudications, keyed `path::L<line>` — the 2026-10-08 review made
+ * the machine honest about evidence it may not use for a refusal: a decision
+ * text on the ENCLOSING lines, or a SPREAD-assisted literal, is UNKNOWN
+ * (gates), never a quiet REFUSED. UNKNOWN gates, so every such site on the
+ * real tree must be adjudicated BY PATH here with the evidence a human
+ * verified — never by a scanner mute, never by widening a rule. A file's
+ * entries are removed by fixing the file's shape (or by its migration),
+ * never by extending this list to swallow a new shape.
+ */
+const UNKNOWN_LEDGER: ReadonlyMap<string, string> = new Map([
+  // Every entry was hand-verified at its cited source on 2026-10-08 (round 2
+  // of the review). Flavors: (a) the namespace name sits only on an OUTER
+  // line (a builder signature, a `projection:`/`ledger.put(` head line, a
+  // type annotation) or the own keys are SHORTHAND properties the key
+  // scanner cannot see (`sessionId,` carries no colon); (b) the literal is
+  // SPREAD-built, so hidden keys cannot be certified document-free.
+  // None is a Blueprint document; none is machine-refused.
+  ['packages/client/test/client-plugin-mount.test.ts::L96', 'projection-envelope: nested `projection:` wire frame (RemoteProjectionValue); own keys carry `teamSessionId,` as SHORTHAND (invisible to the key scanner); hand-verified client-plugin-mount.test.ts:94-103'],
+  ['packages/client/test/ledger-adapter.test.ts::L58', 'ledger-row: RemoteLedgerEntryValue builder return (sequence/rootSessionId visible); deciding type name on the builder line; hand-verified ledger-adapter.test.ts:54-60'],
+  ['packages/client/test/team-command-flow.test.ts::L76', 'projection-envelope: wireFrame builder return ("the 9-field wire projection" comment at :73); RemoteProjectionValue; hand-verified team-command-flow.test.ts:73-78'],
+  ['packages/client/test/team-projection-store-v6.test.ts::L65', 'projection-envelope: buildRemoteSuccess payload `projection:` wire frame; shorthand teamSessionId; hand-verified team-projection-store-v6.test.ts:62-70'],
+  ['packages/client/test/team-projection-store-v6.test.ts::L93', 'projection-envelope: same wire-frame shape, second builder; hand-verified team-projection-store-v6.test.ts:90-98'],
+  ['packages/client/test/team-projection-store-v6.test.ts::L290', 'projection-envelope: same wire-frame shape, third builder; hand-verified team-projection-store-v6.test.ts:287-295'],
+  ['packages/client/test/team-projection-store.test.ts::L74', 'projection-envelope: same wire-frame shape; hand-verified team-projection-store.test.ts:71-79'],
+  ['packages/client/test/team-view.client.spec.tsx::L199', 'ledger-row: RemoteLedgerEntryValue builder return (sequence/rootSessionId); hand-verified team-view.client.spec.tsx:195-201'],
+  ['packages/contracts/test/negative.test.ts::L151', 'team-session-record: NEGATIVE test of the TeamSessionRecord version axis (SCHEMA_VERSION_MISMATCH at 2); parse call on the same line, literal SPREAD-built ({...validTeam}) — spread guard; hand-verified negative.test.ts:150-152'],
+  ['packages/contracts/test/negative.test.ts::L155', 'team-session-record: same class (SCHEMA_VERSION_UNSUPPORTED at 0); spread guard; hand-verified negative.test.ts:154-156'],
+  ['packages/contracts/test/negative.test.ts::L157', 'team-session-record: same class (corrupt string version); spread guard; hand-verified negative.test.ts:156-159'],
+  ['packages/remote/test/c6-remote-v6.test.ts::L308', 'projection-envelope: value.data.projection wire frame (RemoteProjectionValue); hand-verified c6-remote-v6.test.ts:305-312'],
+  ['packages/remote/test/p8t3-helpers.ts::L119', 'ledger-row: p8t3LedgerEntry builder (RemoteLedgerEntryValue shape: sequence/rootSessionId visible); hand-verified p8t3-helpers.ts:117-121'],
+  ['packages/remote/test/p8t4-engine.test.ts::L62', 'projection-envelope: dto builder — own comment:59 "the nine frozen top-level fields" (RemoteProjectionValue); hand-verified p8t4-engine.test.ts:59-64'],
+  ['packages/remote/test/p8t4-server.ts::L46', 'projection-envelope: p8t4Projection builder return (whole-projection DTO); hand-verified p8t4-server.ts:44-48'],
+  ['packages/remote/test/p8t4-server.ts::L66', 'ledger-row: p8t4LedgerEntry builder — own comment:63 "the storage LedgerEntry shape"; hand-verified p8t4-server.ts:63-68'],
+  ['packages/remote/test/p8t4-sync.test.ts::L51', 'projection-envelope: syncDto builder ("the nine frozen top-level fields"); hand-verified p8t4-sync.test.ts:48-53'],
+  ['packages/runtime/test/bp1-blueprint-authority.test.ts::L108', 'registry-row: BlueprintRegistryRecordView row — the TeamDomain ROW stamp, F1: row stamp != document version (packages/storage/schema/blueprint-registry.ts:131-139); type annotation one line above; hand-verified bp1-blueprint-authority.test.ts:107-110'],
+  ['packages/runtime/test/p01-team-scoped-overlay.test.ts::L211', 'projection-envelope: createProjectionService option object {clock, schemaVersion} — deciding name two lines above; the 2026-10-08 coordinator record names this stamp projection-owned ("the number is another namespace\'s"); hand-verified p01-team-scoped-overlay.test.ts:210-212'],
+  ['packages/runtime/test/p6t4-helpers.ts::L458', 'ledger-row: repositories.ledger.put argument (sequence/rootSessionId visible); ledger.put( on the head line; hand-verified p6t4-helpers.ts:456-460'],
+  ['packages/runtime/test/policy-state-bound-blueprint-production-wiring.test.ts::L168', 'registry-row: BlueprintRegistryRecordView row (F1 row stamp); type annotation one line above; hand-verified policy-state-bound-blueprint-production-wiring.test.ts:167-170'],
+  ['packages/storage/test/bp1-blueprint-registry.test.ts::L146', 'registry-row: parseBlueprintRegistryRecord NEGATIVE test, SPREAD-built ({...baseRecord}); F1 row axis, name on the same line but spread guard forbids machine refusal; hand-verified bp1-blueprint-registry.test.ts:145-147'],
+  ['packages/storage/test/bp1-blueprint-registry.test.ts::L159', 'registry-row: serializeBlueprintRegistryRecord round-trip argument, SPREAD-built; same F1 evidence; hand-verified bp1-blueprint-registry.test.ts:158-160'],
+  ['packages/storage/test/p4-helpers.ts::L415', 'session-binding: teamMemberBinding record for parseSessionBinding — kind visible, sessionId SHORTHAND (no colon, invisible to the key scanner); binding version axis (SessionBindingDto); hand-verified p4-helpers.ts:413-416'],
+  ['packages/storage/test/p4-helpers.ts::L420', 'session-binding: teamRootBinding one-liner; same shorthand class; hand-verified p4-helpers.ts:418-421'],
+  ['packages/storage/test/p4-helpers.ts::L425', 'session-binding: ordinaryBinding one-liner; same shorthand class; hand-verified p4-helpers.ts:423-426'],
 ])
 
 
@@ -441,8 +509,14 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     ]
     const reported = new Set([
       ...run.dirty.map((s) => s.path),
-      ...run.unknown.map((s) => s.path),
       ...run.advisory.map((s) => s.path),
+      // A trap may surface as UNKNOWN only through a by-path adjudication
+      // (2026-10-08 review: outer-line evidence can no longer REFUSE, so a
+      // trap file whose only evidence is an enclosing line lands in the
+      // ledger — visible and gated, with the human verdict written here).
+      ...run.unknown
+        .filter((s) => !UNKNOWN_LEDGER.has(`${s.path}::L${String(s.line)}`))
+        .map((s) => s.path),
     ])
     for (const t of traps) {
       expect(reported, `${t} is not a Blueprint version site — it must not be reported`).not.toContain(t)
@@ -469,21 +543,47 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     for (const s of refusedHere) expect(s.ns).toContain('team-session-record')
   })
 
-  it('the REFUSED lines are visible with their namespace, so a refusal is auditable', () => {
+  it('the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable', () => {
     // "A scan that lies by omission is the defect this whole phase keeps
     // re-meeting": refusals are printed per line with the namespace and the
     // deciding channel, never just dropped.
-    const p01 = run.refused.filter((s) => s.path === 'packages/runtime/test/p01-team-scoped-overlay.test.ts')
-    expect(p01.length, 'p01:211 must appear as a visible REFUSED line').toBeGreaterThan(0)
-    expect(report).toContain('REFUSED packages/runtime/test/p01-team-scoped-overlay.test.ts :: ')
-    expect(report).toContain('projection-envelope')
+    const ser = run.refused.filter((s) => s.path === 'packages/contracts/test/serialization.test.ts')
+    expect(ser.length, 'serialization.test.ts must appear as visible REFUSED lines').toBeGreaterThan(0)
+    // The string-embedded sites (:93, :207) refuse from the string's OWN key
+    // pool (BLOCKING 1a split), never from the enclosing object's keys; the
+    // code-position sites in the same file refuse via visible sibling keys.
+    const embedded = ser.filter((s) => s.line === 93 || s.line === 207)
+    expect(embedded.map((s) => s.line), 'both string-embedded sites present').toEqual([93, 207])
+    for (const s of embedded) {
+      expect(s.why, `refusal channel must be the carrier's own keys — got (${s.why})`).toContain(
+        '/carrier-sibling',
+      )
+    }
+    expect(report).toContain('REFUSED packages/contracts/test/serialization.test.ts :: ')
+    // A code-side sibling refusal carries its channel too:
+    const pol = run.refused.filter(
+      (s) => s.path === 'packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts',
+    )
+    expect(pol.length).toBeGreaterThan(0)
+    for (const s of pol) expect(s.why).toContain('/sibling')
   })
 
-  it('unknown is empty on the current tree (every shape classifies or is refused with evidence)', () => {
-    expect(
-      run.unknown.map((u) => `${u.path}:L${u.line}`),
-      'a new ambiguous shape landed in the tree — adjudicate it by hand, do not widen a rule to swallow it',
-    ).toEqual([])
+  it('every UNKNOWN site on the tree is adjudicated BY PATH in this wrapper — no unadjudicated unknown, no stale ledger row', () => {
+    // 2026-10-08 review (BLOCKING 1b/1c): evidence outside the site's own
+    // literal, or a spread-hidden literal, may not be machine-refused; it
+    // becomes UNKNOWN, which GATES. The price of honesty is a per-path human
+    // verdict — recorded here with the evidence, checked in both directions.
+    const live = new Set(run.unknown.map((u) => `${u.path}::L${String(u.line)}`))
+    for (const u of run.unknown) {
+      expect(
+        UNKNOWN_LEDGER.has(`${u.path}::L${String(u.line)}`),
+        `unadjudicated UNKNOWN at ${u.path}:${String(u.line)} (${u.why}) — verify by hand against the cited source, then ledger it with that evidence`,
+      ).toBe(true)
+    }
+    for (const k of UNKNOWN_LEDGER.keys()) {
+      expect(live.has(k), `stale UNKNOWN_LEDGER row ${k} — the site is gone; remove the adjudication`).toBe(true)
+    }
+    expect(run.unknown.length).toBe(UNKNOWN_LEDGER.size)
   })
 
   // --- scope boundary -------------------------------------------------------
@@ -531,8 +631,8 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
   it('f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions)', () => {
     expectSingle(fixture('f06'), 'prose')
   })
-  it('f07 overlay/projection-service option is REFUSED (projection-envelope)', () => {
-    expectSingle(fixture('f07'), 'refused')
+  it('f07 overlay/projection-service option is UNKNOWN (deciding text on the enclosing line may not refuse)', () => {
+    expectSingle(fixture('f07'), 'unknown')
   })
   it('f08 projection wire envelope is REFUSED (projection-envelope)', () => {
     expectSingle(fixture('f08'), 'refused')
@@ -543,11 +643,12 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
   it('f10 MemberInstance row is REFUSED (member-instance-record)', () => {
     expectSingle(fixture('f10'), 'refused')
   })
-  it('f11 registry ROW stamp is REFUSED (registry-row, F1: row stamp != document version)', () => {
-    expectSingle(fixture('f11'), 'refused')
+  it('f11 registry ROW stamps are UNKNOWN (same-line name but SPREAD-hidden keys; head-line name) — F1 adjudicated by hand', () => {
+    const c = expectSingle(fixture('f11'), 'unknown')
+    expect(c.unknown.length).toBe(2)
   })
-  it('f12 ledger row is REFUSED (ledger-row)', () => {
-    expectSingle(fixture('f12'), 'refused')
+  it('f12 ledger row (shorthand sequence/payload) is UNKNOWN — outer-line evidence gates, never a silent drop', () => {
+    expectSingle(fixture('f12'), 'unknown')
   })
   it('f13 TeamSessionRecordDto row is REFUSED (team-session-record)', () => {
     expectSingle(fixture('f13'), 'refused')
@@ -596,18 +697,34 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // Same class, second namespace: serialization.test.ts:207.
     expectSingle(fixture('f23'), 'refused')
   })
-  it('f24 string-carried YAML WITH document siblings stays DIRTY (no ns hit, no refusal)', () => {
-    // The counterweight of f22/f23: sibling evidence alone never REFUSES.
-    // Refusal requires a positive namespace signature; doc siblings only
-    // raise the bar (signature conflict -> unknown), they never demote a
-    // dirty site into a quiet bucket.
+  it('f24 string-carried YAML WITH document siblings stays DIRTY (no own-pool ns signature, no refusal)', () => {
+    // The counterweight of f22/f23: sibling evidence refuses only from the
+    // SITE'S OWN pool. Here the string's own keys are DOCUMENT keys — the
+    // doc side never refuses either, and the enclosing object cannot touch
+    // a string-carried site (BLOCKING 1a). Doc evidence only raises the bar
+    // (signature conflict -> unknown), it never demotes a dirty site into a
+    // quiet bucket.
     expectSingle(fixture('f24'), 'dirty')
+  })
+  it('f25 a complete document smuggled under a row-type annotation is UNKNOWN, never REFUSED', () => {
+    // The review's worst real-tree shape: `blueprint:` of a
+    // TeamSessionRecordDto holding a full TeamBlueprint literal. The old
+    // ladder refused it on the OUTER variable's type annotation — a line
+    // the document does not contain.
+    expectSingle(fixture('f25'), 'unknown')
+  })
+  it('f26 document fields + row signature in ONE literal is a conflict UNKNOWN (widened doc-only set)', () => {
+    // displayName/members/teamHardEnvelope/metadata are document-only per
+    // packages/domain/blueprint/src/types.ts:405-488; the old narrow
+    // {leader, memberEnvelopes, policyStates} set let the projection
+    // signature refuse this site silently.
+    expectSingle(fixture('f26'), 'unknown')
   })
 
   it('the fixture corpus exists and every fixture was exercised', () => {
     // Guard against the corpus silently emptying (a fixture-less "test" is
-    // how a gate dies): names are pinned to the f01..f24 set.
-    expect(fixtures.length).toBeGreaterThanOrEqual(24)
+    // how a gate dies): names are pinned to the f01..f26 set.
+    expect(fixtures.length).toBeGreaterThanOrEqual(26)
     expect(fixtures.length).toBe(new Set(fixtures.map((f) => f.name)).size)
   })
 

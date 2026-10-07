@@ -1,11 +1,15 @@
-;; expect: refused
+;; expect: unknown
+;; why: outer-line
 ;; namespace: projection-envelope
-;; rule: trap-overlay-test — packages/runtime/test/p01-team-scoped-overlay.test.ts:211
-;;        verbatim. The number is the PROJECTION service's stamp (the probe
-;;        stayed green there because it belongs to another namespace — the
-;;        2026-10-08 coordinator record says so in as many words). The file
-;;        keys blueprintId (line 142), so only the enclosing-context half can
-;;        keep it out of the Blueprint class.
+;; rule: trap-overlay-test — packages/runtime/test/p01-team-scoped-overlay
+;;        .test.ts:211 verbatim. The number is the PROJECTION service's stamp
+;;        (the probe stayed green there; the 2026-10-08 coordinator record
+;;        says so in as many words). But the deciding text
+;;        `createProjectionService(` sits on the ENCLOSING line, and the
+;;        site's own object is {clock, schemaVersion} — under the 2026-10-08
+;;        review (BLOCKING 1b) a refusal may only rest on text the site's own
+;;        literal contains, so the honest verdict is a visible UNKNOWN
+;;        (gates; the wrapper ledger adjudicates the real path).
 ;; path: packages/example/test/fx-trap-projection-service.ts
 const P01 = await (async () => {
   const overlay = createLiveResidencyOverlay({
