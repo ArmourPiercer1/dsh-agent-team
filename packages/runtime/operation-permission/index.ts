@@ -78,6 +78,14 @@ export {
   OPERATION_PERMISSION_ERROR_CODE_VALUES,
   CANONICALIZATION_FAILURE_REASONS,
   PRE_EXECUTE_INSTALL_ERROR_CODES,
+  // A4-PR4 lane B (spec 13) — the typed capability/environment family: a
+  // host runtime constraint answers in its own vocabulary, never the
+  // permission one (the pre-execute carrier stays one shape, the CODE is
+  // the contract).
+  PRE_EXECUTE_CAPABILITY_ERROR_CODES,
+  PRE_EXECUTE_CAPABILITY_ERROR_CODE_VALUES,
+  PRE_EXECUTE_CAPABILITY_REASON_PREFIX,
+  capabilityDenialReason,
   OperationPermissionError,
   isOperationPermissionError,
   PermissionGuardUnavailableError,
@@ -89,6 +97,7 @@ export type {
   OperationPermissionErrorCode,
   CanonicalizationFailureReason,
   PreExecuteInstallErrorCode,
+  PreExecuteCapabilityErrorCode,
 } from './errors.js'
 
 export {
@@ -175,3 +184,25 @@ export type {
   PermissionCoverageUnmanagedToolEntry,
   PermissionCoverageErrorDetail,
 } from './errors.js'
+
+// A4-PR4 lane A (spec §10.1, §7.2-§7.4, acceptance §21.4) — the operation
+// approval routing: which rung must sign an `ask`, and the legacy request
+// kind that carries it. Pure; the durable case stays in the control plane.
+export {
+  OPERATION_APPROVAL_REFUSAL_REASONS,
+  OPERATION_APPROVAL_REFUSAL_REASON_VALUES,
+  createOperationApprovalFactsReader,
+  operationApprovalCarrier,
+  recheckOperationApproval,
+  routeOperationApproval,
+} from './approval-routing.js'
+export type {
+  OperationApprovalCeilingPort,
+  OperationApprovalCarrier,
+  OperationApprovalFacts,
+  OperationApprovalFactsReader,
+  OperationApprovalRecheck,
+  OperationApprovalRefusalReason,
+  OperationApprovalRouting,
+  OperationApprovalRoutingInput,
+} from './approval-routing.js'

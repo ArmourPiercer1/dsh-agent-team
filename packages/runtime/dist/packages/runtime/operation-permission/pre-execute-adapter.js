@@ -305,9 +305,10 @@
  */
 import { canonicalizeOperation, classifyPermissionTool, } from './canonical-operation.js';
 import { SHELL_PERMISSION_TOOL_VALUES, } from './types.js';
-import { PRE_EXECUTE_INSTALL_ERROR_CODES, PermissionGuardUnavailableError, isOperationPermissionError, } from './errors.js';
+import { PRE_EXECUTE_CAPABILITY_ERROR_CODES, PRE_EXECUTE_INSTALL_ERROR_CODES, capabilityDenialReason, PermissionGuardUnavailableError, isOperationPermissionError, } from './errors.js';
 import { resolveOperationPermission, } from './permission-resolver.js';
-import { CONTROL_ERROR_CODES, CONTROL_REQUEST_KINDS, isControlError, } from '../control/index.js';
+import { recheckOperationApproval, routeOperationApproval } from './approval-routing.js';
+import { CONTROL_ERROR_CODES, CONTROL_EXECUTION_COUPLINGS, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, isControlError, } from '../control/index.js';
 /** The closed action name the adapter uses for its control scopes. */
 const ACTION_NAME = 'parameter-permission';
 /**
@@ -446,7 +447,7 @@ export function installParameterPermissionListener(agentCtx, params) {
                 'refusing to install the parameter permission listener without it');
         }
     }
-    const { policy, resolveTarget, controlService, rootSessionId, caller, targetInstanceId, isLeader, execEnvelopeOps, authorizeArtifactRead, } = params;
+    const { policy, resolveTarget, controlService, rootSessionId, caller, targetInstanceId, isLeader, execEnvelopeOps, authorizeArtifactRead, operationApprovalRouting, } = params;
     /** The request kind this install routes asks to (plan §9.5). */
     const requestKind = isLeader
         ? CONTROL_REQUEST_KINDS.USER_APPROVAL
@@ -685,6 +686,53 @@ export function installParameterPermissionListener(agentCtx, params) {
         };
     };
     /**
+     * A4-PR4 lane B (spec §12.1/§13) — the ONE capability/environment probe
+     * of this pipeline, called first as the preflight and again at each
+     * last-mile recheck point. It wraps the shared read-only
+     * `ControlService.checkExternalOperation` (the same hard-cell evaluator
+     * the resolve-time probe and the guard use — this module never
+     * re-implements a second host policy) and translates its verdict into
+     * the typed family that separates "the host cannot run this" from "the
+     * Team did not authorize this":
+     *
+     * - `allowed: true` — the host imposes no restriction on this cell;
+     * - `EXTERNAL_RUNTIME_RESTRICTION` — the host stated a refusal (a hard
+     *   deny cell, an allow-list that does not name the tool, or the shared
+     *   check's own fail-closed reading of faulted/malformed external
+     *   facts);
+     * - `HOST_ENVIRONMENT_UNAVAILABLE` — the check itself threw, so not even
+     *   a refusal is known. Fail-closed like every other outcome here.
+     *
+     * NEVER throws, NEVER writes a durable row, NEVER decides a Team
+     * question: it answers only "can this runtime execute this tool right
+     * now", and a caller that denies on its account denies WITHOUT opening
+     * an approval case.
+     */
+    const preflightRuntimeCapability = async (toolName) => {
+        let verdict;
+        try {
+            verdict = await controlService.checkExternalOperation({
+                capabilityDomain: 'tools',
+                toolName,
+            });
+        }
+        catch (error) {
+            return {
+                allowed: false,
+                code: PRE_EXECUTE_CAPABILITY_ERROR_CODES.HOST_ENVIRONMENT_UNAVAILABLE,
+                detail: `the runtime capability check itself failed (unexpected check failure: ${error instanceof Error ? error.message : String(error)}) — no verdict about the host is available (fail-closed)`,
+            };
+        }
+        if (verdict.allowed === false) {
+            return {
+                allowed: false,
+                code: PRE_EXECUTE_CAPABILITY_ERROR_CODES.EXTERNAL_RUNTIME_RESTRICTION,
+                detail: `the host runtime does not allow ${toolName} (${verdict.reason})`,
+            };
+        }
+        return { allowed: true };
+    };
+    /**
      * The frozen pipeline (plan §10.2) for one pre-execute payload.
      * NEVER returns `ask`; NEVER awaits `next()` after a deny decision;
      * every unexpected failure fails closed to a deny.
@@ -739,6 +787,31 @@ export function installParameterPermissionListener(agentCtx, params) {
             resourceDisplay: operation.resource.display,
             fingerprint: operation.fingerprint,
         });
+        // (2b) A4-PR4 lane B (spec §12.1 — the execution order puts the
+        // environment BEFORE the permission resolve): the CAPABILITY /
+        // ENVIRONMENT PREFLIGHT. The host's live external hard policy is a
+        // fact about what this runtime can execute at all; it is not a Team
+        // decision, so it is asked BEFORE any Team question is answered and
+        // BEFORE any durable approval case is opened. A refusal here writes
+        // NOTHING durable (no request, no decision, no abandonment) and never
+        // awaits `next()`: an approval case for an operation the host forbids
+        // would ask a human to authorize the impossible, and the caller would
+        // be told — in the permission vocabulary — that someone refused.
+        // The check is the SAME shared read-only `checkExternalOperation`
+        // the last-mile rechecks use (one hard-cell evaluator, invariant 34);
+        // it is ADDITIVE: the last-mile rechecks below are retained, so a
+        // policy that tightens after this point still blocks execution.
+        const preflight = await preflightRuntimeCapability(name);
+        if (preflight.allowed === false) {
+            observe({
+                stage: 'capability-preflight-denied',
+                callId,
+                tool: name,
+                code: preflight.code,
+                detail: preflight.detail,
+            });
+            return { kind: 'deny', reason: capabilityDenialReason(preflight.code, preflight.detail) };
+        }
         // (3) resolve the static decision (A3 — pure, synchronous).
         // P1-3 (H2, option A) — BEFORE the A3 resolver is called: a
         // same-tool exact DENY rule that failed to canonicalize DENIES the
@@ -958,24 +1031,23 @@ export function installParameterPermissionListener(agentCtx, params) {
                     }
                     observe({ stage: 'artifact-grant-check', callId, tool: name, valid: grantValid });
                     if (grantValid) {
-                        let external;
-                        try {
-                            external = await controlService.checkExternalOperation({
-                                capabilityDomain: 'tools',
-                                toolName: name,
+                        // A4-PR4 lane B: the SAME capability seam as the preflight,
+                        // re-run at this last-mile point. The refusal is a host fact,
+                        // so it reads as one even though a valid artifact grant was
+                        // in hand (a grant is a floor, never a ceiling override — and
+                        // no Team authority can authorize what the host refuses).
+                        const recheck = await preflightRuntimeCapability(name);
+                        if (recheck.allowed === false) {
+                            observe({
+                                stage: 'external-recheck-denied',
+                                callId,
+                                tool: name,
+                                via: 'artifact-grant',
+                                code: recheck.code,
                             });
-                        }
-                        catch (error) {
                             return {
                                 kind: 'deny',
-                                reason: `permission denied: the external policy recheck failed (unexpected check failure: ${error instanceof Error ? error.message : String(error)})`,
-                            };
-                        }
-                        if (external.allowed === false) {
-                            observe({ stage: 'external-recheck-denied', callId, tool: name, via: 'artifact-grant' });
-                            return {
-                                kind: 'deny',
-                                reason: `permission denied: the external hard policy no longer allows ${name} (${external.reason})`,
+                                reason: capabilityDenialReason(recheck.code, recheck.detail),
                             };
                         }
                         // R6 / H1 — mark THIS exec object (the same object the
@@ -1029,29 +1101,21 @@ export function installParameterPermissionListener(agentCtx, params) {
                 // read-only ControlService check (the same hard-cell semantics
                 // the resolve-time probe uses — invariant 34: no Team decision,
                 // human included, bypasses it). This static path carries no
-                // control request — this probe is its only external gate. A deny
-                // here is zero-effect: the exec is NOT marked (the monotonic
-                // end-cap stays armed against it), next() is never awaited (the
-                // tool body never runs), and no durable control row is written or
-                // consumed. A failing check fails closed (plan §10.3).
-                let external;
-                try {
-                    external = await controlService.checkExternalOperation({
-                        capabilityDomain: 'tools',
-                        toolName: name,
-                    });
-                }
-                catch (error) {
+                // control request, and A4-PR4 moved a first probe EARLIER (the
+                // preflight) WITHOUT removing this one: the window between the
+                // permission answer and the dispatch is exactly what a tightened
+                // cell must still catch. A deny here is zero-effect: the exec is
+                // NOT marked (the monotonic end-cap stays armed against it),
+                // next() is never awaited (the tool body never runs), and no
+                // durable control row is written or consumed. A failing check
+                // fails closed (plan §10.3) and — lane B — reads as the host fact
+                // it is, not as a permission denial.
+                const recheck = await preflightRuntimeCapability(name);
+                if (recheck.allowed === false) {
+                    observe({ stage: 'external-recheck-denied', callId, tool: name, code: recheck.code });
                     return {
                         kind: 'deny',
-                        reason: `permission denied: the external policy recheck failed (unexpected check failure: ${error instanceof Error ? error.message : String(error)})`,
-                    };
-                }
-                if (external.allowed === false) {
-                    observe({ stage: 'external-recheck-denied', callId, tool: name });
-                    return {
-                        kind: 'deny',
-                        reason: `permission denied: the external hard policy no longer allows ${name} (${external.reason})`,
+                        reason: capabilityDenialReason(recheck.code, recheck.detail),
                     };
                 }
                 // R6 / H1 — mark THIS exec object as authorized by this install
@@ -1087,34 +1151,166 @@ export function installParameterPermissionListener(agentCtx, params) {
                 reason: 'the approval wait was cancelled (the call was already aborted)',
             };
         }
+        // (4a-pre) A4-PR4 lane A (spec §10.1, acceptance §21.4) — MINIMUM
+        // AUTHORITY ROUTING. The frozen routing below asks "who is holding the
+        // keyboard"; this asks "which rung must sign", and only the second is an
+        // authority answer. Absent port, or a plane that answers `undefined`,
+        // means the Team is not on the v3 authority documents and the frozen
+        // routing stands byte-identically (spec §10.1: the legacy path remains
+        // until PR7) — zero extra rows, zero extra awaits, same request kind.
+        const requestSummary = operation.resource.kind === 'tool'
+            ? [name, shellEffectTokens(operation, exec.arguments), commandPreview(exec.arguments)]
+                .filter((part) => part.length > 0)
+                .join(' ')
+            : `${name} ${operation.resource.display}`;
+        let approvalFacts;
+        try {
+            approvalFacts =
+                operationApprovalRouting === undefined
+                    ? undefined
+                    : await operationApprovalRouting({
+                        operationClass: operation.tool,
+                        resourceKey: operation.resource.key,
+                    });
+        }
+        catch (error) {
+            // An unreadable authority plane is not an empty one. Fail closed with
+            // ZERO durable rows: minting a case here would ask a guessed rung to
+            // sign (ADR A1-7), and a fallback to the caller-role routing would let
+            // a document fault widen what the documents narrow.
+            observe({ stage: 'authority-facts-failed', callId, tool: name });
+            return {
+                kind: 'deny',
+                reason: `permission denied: the approval authority facts could not be read for ${name} on ` +
+                    `${operation.resource.display} (unexpected authority-facts failure: ${error instanceof Error ? error.message : String(error)}) — no approval case was created (fail-closed)`,
+            };
+        }
+        const approvalRouting = routeOperationApproval({
+            operationClass: operation.tool,
+            resourceKey: operation.resource.key,
+            // WHO IS ACTING, from this install's own identity (the ladder rung of
+            // the acting surface, not of the beneficiary): spec §7.3's `direct`
+            // arm is unreachable without it.
+            initiatorAuthority: isLeader ? 'leader' : 'member',
+            facts: approvalFacts,
+        });
+        if (approvalRouting.kind === 'authority-undetermined') {
+            observe({
+                stage: 'approval-routing-undetermined',
+                callId,
+                tool: name,
+                reason: approvalRouting.reason,
+            });
+            return {
+                kind: 'deny',
+                reason: `permission denied: no approval authority could be determined for ${name} on ` +
+                    `${operation.resource.display} (${approvalRouting.reason}: ${approvalRouting.detail}) ` +
+                    '— no approval case was created (fail-closed)',
+            };
+        }
+        if (approvalRouting.kind === 'direct') {
+            // Spec §7.3's `direct` arm: the acting rung ALREADY holds the rung the
+            // operation requires over its own beneficiary, so no case exists to
+            // open — a case would put a signature requirement on the rung that
+            // already has the authority, which §21.4 refuses ("no self/same-level
+            // allow"). The capability recheck is STILL performed: `direct` is an
+            // answer about authority, never about the host.
+            const recheck = await preflightRuntimeCapability(name);
+            if (recheck.allowed === false) {
+                observe({
+                    stage: 'external-recheck-denied',
+                    callId,
+                    tool: name,
+                    via: 'approval-direct',
+                    code: recheck.code,
+                });
+                return {
+                    kind: 'deny',
+                    reason: capabilityDenialReason(recheck.code, recheck.detail),
+                };
+            }
+            observe({
+                stage: 'approval-direct',
+                callId,
+                tool: name,
+                requiredAuthority: approvalRouting.requiredAuthority,
+                consideredRoles: [...approvalRouting.evidence.consideredRoles],
+            });
+            authorizedExecutions.add(exec);
+            return await next();
+        }
         // (4a) request the durable control row (A4). A typed rejection
         // (malformed, stale target, envelope) fails closed — never swallowed.
+        // A4-PR4: on the v3 arm this row is a CASE LEG (spec §11.2) — the case
+        // identity is frozen at creation with the rung the routing derived, and
+        // the legacy request kind rides as the carrier. On the pre-v3 arm it is
+        // the pre-existing `requestControl` call, unchanged.
         let record;
         try {
-            record = await controlService.requestControl({
-                rootSessionId,
-                caller,
-                kind: requestKind,
-                targetInstanceId,
-                actionName: ACTION_NAME,
-                toolName: name,
-                correlation: callId,
-                operationFingerprint: operation.fingerprint,
-                // H2 P1-2 + H5 P1-B (A2C-1: the shell class): the tool-level
-                // (bash/pwsh) summary carries the bounded NON-authority effect
-                // tokens (`[cwd=<resolved display>]` always — the workdir is
-                // always effective; `[background]`; `[sandbox=<mode>]`;
-                // `[timeout=<n>ms]`) and the bounded command preview (first 120
-                // chars, whitespace flattened, `...` when truncated) — display
-                // text only, never part of the fingerprint/scope/hash (those
-                // carry the canonical effect values + the command HASH from
-                // A2/H5).
-                summary: operation.resource.kind === 'tool'
-                    ? [name, shellEffectTokens(operation, exec.arguments), commandPreview(exec.arguments)]
-                        .filter((part) => part.length > 0)
-                        .join(' ')
-                    : `${name} ${operation.resource.display}`,
-            });
+            if (approvalRouting.kind === 'approval-required') {
+                const legOutcome = await controlService.requestApprovalLeg({
+                    rootSessionId,
+                    caller,
+                    kind: approvalRouting.carrierKind,
+                    reviewAuthority: approvalRouting.requiredAuthority,
+                    requiredAuthorityAtCreation: approvalRouting.requiredAuthority,
+                    identity: {
+                        subject: { kind: 'instance', instanceId: targetInstanceId },
+                        beneficiaryAuthority: approvalRouting.beneficiaryAuthority,
+                        requestedEffect: 'allow',
+                        operationFingerprint: operation.fingerprint,
+                        correlation: callId,
+                    },
+                    actionName: ACTION_NAME,
+                    toolName: name,
+                    summary: requestSummary,
+                    executionCoupling: CONTROL_EXECUTION_COUPLINGS.GUARDED,
+                });
+                if (legOutcome.kind !== 'leg') {
+                    // The case was BORN terminal (ADR A1-12: `human-admin` has no
+                    // resolver in Alpha.4, so no leg can be reviewed). The durable
+                    // footprint is a leg plus its terminal deny, written in one
+                    // transaction; the case never appears pending anywhere, and this
+                    // invocation settles NOW — no wait, no decision to await.
+                    observe({
+                        stage: 'terminal-outcome',
+                        callId,
+                        outcome: 'authority-unavailable',
+                        approvalCaseId: legOutcome.approvalCaseId,
+                        caseOutcome: legOutcome.kind,
+                        requiredAuthority: legOutcome.requiredAuthority,
+                    });
+                    return {
+                        kind: 'deny',
+                        reason: `permission denied: the approval case for ${name} on ${operation.resource.display} ` +
+                            `requires '${legOutcome.requiredAuthority}', which has no resolver in this release ` +
+                            `(${legOutcome.kind}: ${legOutcome.detail}) — the case closed at creation`,
+                    };
+                }
+                record = legOutcome.leg;
+            }
+            else {
+                record = await controlService.requestControl({
+                    rootSessionId,
+                    caller,
+                    kind: requestKind,
+                    targetInstanceId,
+                    actionName: ACTION_NAME,
+                    toolName: name,
+                    correlation: callId,
+                    operationFingerprint: operation.fingerprint,
+                    // H2 P1-2 + H5 P1-B (A2C-1: the shell class): the tool-level
+                    // (bash/pwsh) summary carries the bounded NON-authority effect
+                    // tokens (`[cwd=<resolved display>]` always — the workdir is
+                    // always effective; `[background]`; `[sandbox=<mode>]`;
+                    // `[timeout=<n>ms]`) and the bounded command preview (first 120
+                    // chars, whitespace flattened, `...` when truncated) — display
+                    // text only, never part of the fingerprint/scope/hash (those
+                    // carry the canonical effect values + the command HASH from
+                    // A2/H5).
+                    summary: requestSummary,
+                });
+            }
         }
         catch (error) {
             const reason = isControlError(error)
@@ -1165,7 +1361,92 @@ export function installParameterPermissionListener(agentCtx, params) {
         // (4c) any non-allow durable decision denies (deny / stale-denied —
         // a stale-denied request is closed and can never become an allow).
         if (decisionRecord.decision !== 'allow') {
+            observe({
+                stage: 'terminal-outcome',
+                callId,
+                outcome: 'denied',
+                decision: decisionRecord.decision,
+            });
             return { kind: 'deny', reason: 'the approval was denied' };
+        }
+        // (4c') A4-PR4 lane C (spec §12.1's execution order; ADR A1-14: an
+        // approval is NOT a standing grant) — the fresh authority recheck. The
+        // authority plane is read AGAIN and the required rung re-derived; if the
+        // rung that must sign has RISEN above the rung that signed, this
+        // invocation is covered by an approval the Team's documents no longer
+        // consider sufficient. It terminates BEFORE the guard, which is what
+        // keeps the one-shot unspent: the durable allow stays exactly as the
+        // human wrote it (no rewritten decision row, no abandonment, no second
+        // decision), and the terminal state is recorded as a derived observation
+        // rather than as a new durable verdict.
+        //
+        // SCOPE DISCLOSURE: this is the adapter-side recheck. The same duty on the
+        // OTHER side of the seam — a recheck INSIDE `guardOperation`, immediately
+        // before the consumption write — needs an authority-facts port on
+        // `ControlServiceOptions` plus a `CONTROL_GUARD_BLOCK_REASONS` member to
+        // name it, both declared in `packages/runtime/control/types.ts`, which is
+        // outside this task's granted files. That half of A1-14 is therefore
+        // UNENFORCED at the consumption write in this PR and is reported as a
+        // file-scope blocker, not claimed.
+        if (operationApprovalRouting !== undefined && record.reviewAuthority !== undefined) {
+            const reviewAuthority = record.reviewAuthority;
+            let freshFacts;
+            try {
+                freshFacts = await operationApprovalRouting({
+                    operationClass: operation.tool,
+                    resourceKey: operation.resource.key,
+                });
+            }
+            catch (error) {
+                observe({
+                    stage: 'terminal-outcome',
+                    callId,
+                    outcome: 'authority-undetermined',
+                    via: 'fresh-recheck-fault',
+                });
+                return {
+                    kind: 'deny',
+                    reason: `permission denied: the approval authority for ${name} could not be re-checked at ` +
+                        `execution (unexpected authority-facts failure: ${error instanceof Error ? error.message : String(error)}) — the approved invocation did not execute and the one-shot allow was not consumed`,
+                };
+            }
+            const fresh = routeOperationApproval({
+                operationClass: operation.tool,
+                resourceKey: operation.resource.key,
+                initiatorAuthority: isLeader ? 'leader' : 'member',
+                facts: freshFacts,
+            });
+            const recheck = recheckOperationApproval({ reviewAuthority, fresh });
+            if (recheck.kind === 'stale') {
+                observe({
+                    stage: 'terminal-outcome',
+                    callId,
+                    outcome: 'stale',
+                    reviewAuthority,
+                    requiredNow: recheck.requiredNow,
+                });
+                return {
+                    kind: 'deny',
+                    reason: `permission denied: the approval authority for ${name} on ${operation.resource.display} ` +
+                        `rose to '${recheck.requiredNow}' after the approval was given at ` +
+                        `'${reviewAuthority}' — the approved invocation did not execute and the one-shot allow ` +
+                        'was not consumed',
+                };
+            }
+            if (recheck.kind === 'undetermined') {
+                observe({
+                    stage: 'terminal-outcome',
+                    callId,
+                    outcome: 'authority-undetermined',
+                    reason: recheck.reason,
+                });
+                return {
+                    kind: 'deny',
+                    reason: `permission denied: the approval authority for ${name} on ${operation.resource.display} ` +
+                        `could not be re-established at execution (${recheck.reason}: ${recheck.detail}) — the ` +
+                        'approved invocation did not execute and the one-shot allow was not consumed',
+                };
+            }
         }
         // (4d) the last-mile guard (A4 — check-and-reserve exactly once over
         // the EXACT scope including the operation fingerprint).
@@ -1198,6 +1479,32 @@ export function installParameterPermissionListener(agentCtx, params) {
                 : {}),
         });
         if (!verdict.allowed) {
+            // A4-PR4 lane C (spec §12.2/§13) — the guard's `external-policy`
+            // verdict is the SAME host fact the preflight answers, discovered
+            // later: the capability disappeared between the human's allow and
+            // the last-mile guard. The invocation terminates (single-shot) and
+            // the outcome is named for what actually stopped it — an execution
+            // capability loss, not a withdrawn permission. The durable allow is
+            // untouched by this: the guard did NOT consume it (zero-consumption
+            // on an external refusal, invariant 34) and no row is rewritten.
+            if (verdict.reason === CONTROL_GUARD_BLOCK_REASONS.EXTERNAL_POLICY) {
+                observe({
+                    stage: 'terminal-outcome',
+                    callId,
+                    // The frozen terminal-operation-outcome vocabulary
+                    // (`intervention/derivation.ts`, A4-PR3). Spelled as a literal
+                    // because ADR A1-17 forbids an executing path from importing the
+                    // projection lane; the test pins membership in the frozen set, so
+                    // the mirror cannot drift silently.
+                    outcome: 'execution-unavailable',
+                    via: 'guard-external-policy',
+                });
+                return {
+                    kind: 'deny',
+                    reason: capabilityDenialReason(PRE_EXECUTE_CAPABILITY_ERROR_CODES.EXTERNAL_RUNTIME_RESTRICTION, `the host runtime stopped allowing ${name} between the approval and the last-mile ` +
+                        `guard (${verdict.reason}) — the invocation terminates; the one-shot allow was not consumed`),
+                };
+            }
             // R5 — in THIS pipeline a no-request verdict is a consistency
             // anomaly (the adapter just created the request for the exact
             // scope it guards): fail closed with the diagnostic reason.
@@ -1209,7 +1516,19 @@ export function installParameterPermissionListener(agentCtx, params) {
         // R6 / H1 — the resolved ask-allow is the second (and final)
         // authorization point; mark before next().
         authorizedExecutions.add(exec);
-        return await next();
+        const executed = await next();
+        // The terminal outcome is recorded AFTER the body ran, and it claims only
+        // what is known: the guard consumed the one-shot either way, so a tool
+        // body that itself refused is recorded as `execution-unavailable`
+        // (did-not-execute, cause named by `via`) and never as a success.
+        observe({
+            stage: 'terminal-outcome',
+            callId,
+            outcome: executed.kind === 'deny' ? 'execution-unavailable' : 'execution-succeeded',
+            ...(executed.kind === 'deny' ? { via: 'tool-body-denied' } : {}),
+            requestId: record.requestId,
+        });
+        return executed;
     };
     const listener = (exec, next) => {
         // A listener that REJECTS surfaces as a tool error result through

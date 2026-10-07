@@ -121,6 +121,11 @@ import { createMemberLifecycleReader, createPermissionGovernanceLane, createTeam
 import { assertPermissionMutationTarget } from '../../permission-lifecycle/mutation-lane.js';
 import { PERMISSION_LIFECYCLE_ERROR_CODES, PermissionLifecycleError, } from '../../permission-lifecycle/types.js';
 import { canonicalizeShellOperation } from '../../operation-permission/canonical-operation.js';
+// A4-PR4 lane A: the adapter that turns the injected authority-ceiling context
+// reader into the OPERATION-plane facts the pre-execute listener routes on.
+// Cross-lane consumption goes through the lane's own barrel (ADR X12's rule for
+// governance vocabulary applies to `governance/**`; this is a lane surface).
+import { createOperationApprovalFactsReader } from '../../operation-permission/index.js';
 // alpha.3 PR5 (final splice): the permission-change NOTIFICATION awareness
 // layer over the merged durable authority (ADR §9 "notification is
 // awareness, never authorization evidence"). The root wires the emitter
@@ -2022,7 +2027,18 @@ export function createTeamProductionRoot(params) {
             },
         });
     if (permissionPlaneRef !== undefined) {
-        permissionPlaneRef.current = permissionPlane;
+        const planeForGlue = permissionPlane === undefined || permissionAuthorityCeiling === undefined
+            ? undefined
+            : {
+                ...permissionPlane,
+                operationApprovalFacts: createOperationApprovalFactsReader({
+                    // `async` because the injected port's declared return is
+                    // `T | Promise<T>` (the lane accepts a sync or async reader); the
+                    // adapter's port is Promise-typed, so the wrapper normalises.
+                    ceiling: async (teamSessionId, memberInstanceId, actor) => permissionAuthorityCeiling(teamSessionId, memberInstanceId, actor),
+                }),
+            };
+        permissionPlaneRef.current = planeForGlue ?? permissionPlane;
     }
     // ROUND 7 (parent BLOCK-1/2/3): the ONE entry-side permission surface.
     // Every production entry (the Leader tools AND the remote router) reaches

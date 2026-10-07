@@ -1,0 +1,122 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ❯ test/a4p4-capability-vs-permission.test.ts (7 tests | 6 failed) 8ms
+     × B1: a capability unavailable at preflight writes NO control request and answers in the capability family 5ms
+     × B2: a static Team allow + an unavailable capability is a capability outcome, not a permission denial 1ms
+     × B3: a host without the capability behaves the same way (zero rows, zero execution) 0ms
+     × B4: with the capability available an `ask` still opens the durable approval case (permission is not swallowed) 0ms
+     × B5: a faulting external facts probe fails closed through the capability family with zero rows 1ms
+     ✓ B6: the durable permission mutation lane carries no capability preflight (spec 13 is an execution concern) 0ms
+     × B7: the preflight is ADDITIVE — the last-mile external recheck is retained (two probes per allowed call) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p4-capability-vs-permission.test.ts > a4p4 lane B — capability/environment outcomes are not permission outcomes > B1: a capability unavailable at preflight writes NO control request and answers in the capability family
+AssertionError: expected [ 'request:leader-approval:pending' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "request:leader-approval:pending",
++ ]
+
+ ❯ test/a4p4-capability-vs-permission.test.ts:420:21
+    418|     expect(b1.decision.kind).toBe('deny')
+    419|     // The durable footprint is EMPTY: no request, no decision, no aba…
+    420|     expect(b1.rows).toEqual([])
+       |                     ^
+    421|     for (const factType of CONTROL_ROW_FACT_TYPES) {
+    422|       expect(b1.rows.join(',')).not.toContain(factType)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  test/a4p4-capability-vs-permission.test.ts > a4p4 lane B — capability/environment outcomes are not permission outcomes > B2: a static Team allow + an unavailable capability is a capability outcome, not a permission denial
+TypeError: Cannot read properties of undefined (reading 'EXTERNAL_RUNTIME_RESTRICTION')
+ ❯ test/a4p4-capability-vs-permission.test.ts:433:80
+    431|     expect(b2.executed).toBe(0)
+    432|     expect(b2.rows).toEqual([])
+    433|     expect(reasonOf(b2.decision)).toContain(PRE_EXECUTE_CAPABILITY_ERR…
+       |                                                                                ^
+    434|     // The Team decided ALLOW; the reason must not read as a permissio…
+    435|     expect(reasonOf(b2.decision)).not.toContain('permission denied')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/a4p4-capability-vs-permission.test.ts > a4p4 lane B — capability/environment outcomes are not permission outcomes > B3: a host without the capability behaves the same way (zero rows, zero execution)
+TypeError: Cannot read properties of undefined (reading 'EXTERNAL_RUNTIME_RESTRICTION')
+ ❯ test/a4p4-capability-vs-permission.test.ts:441:80
+    439|     expect(b3.executed).toBe(0)
+    440|     expect(b3.rows).toEqual([])
+    441|     expect(reasonOf(b3.decision)).toContain(PRE_EXECUTE_CAPABILITY_ERR…
+       |                                                                                ^
+    442|   })
+    443|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/a4p4-capability-vs-permission.test.ts > a4p4 lane B — capability/environment outcomes are not permission outcomes > B4: with the capability available an `ask` still opens the durable approval case (permission is not swallowed)
+TypeError: Cannot read properties of undefined (reading 'EXTERNAL_RUNTIME_RESTRICTION')
+ ❯ test/a4p4-capability-vs-permission.test.ts:447:84
+    445|     expect(b4.executed).toBe(0)
+    446|     expect(b4.pendingKinds).toEqual(['leader-approval'])
+    447|     expect(reasonOf(b4.decision)).not.toContain(PRE_EXECUTE_CAPABILITY…
+       |                                                                                    ^
+    448|   })
+    449|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/a4p4-capability-vs-permission.test.ts > a4p4 lane B — capability/environment outcomes are not permission outcomes > B5: a faulting external facts probe fails closed through the capability family with zero rows
+AssertionError: expected [ 'request:leader-approval:pending' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "request:leader-approval:pending",
++ ]
+
+ ❯ test/a4p4-capability-vs-permission.test.ts:452:21
+    450|   it('B5: a faulting external facts probe fails closed through the cap…
+    451|     expect(b5.executed).toBe(0)
+    452|     expect(b5.rows).toEqual([])
+       |                     ^
+    453|     expect(reasonOf(b5.decision)).toContain(PRE_EXECUTE_CAPABILITY_ERR…
+    454|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/a4p4-capability-vs-permission.test.ts > a4p4 lane B — capability/environment outcomes are not permission outcomes > B7: the preflight is ADDITIVE — the last-mile external recheck is retained (two probes per allowed call)
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ test/a4p4-capability-vs-permission.test.ts:467:23
+    465|     // One preflight + one last-mile recheck. A "deduplicated" single …
+    466|     // would mean the last-mile check was deleted (spec 12.1 keeps bot…
+    467|     expect(b7.probes).toBe(2)
+       |                       ^
+    468|   })
+    469| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 1 passed (7)
+   Start at  09:56:17
+   Duration  1.09s (transform 663ms, setup 0ms, import 987ms, tests 8ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

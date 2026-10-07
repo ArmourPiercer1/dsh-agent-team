@@ -1819,10 +1819,36 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p3-intervention-projection.test.ts',
       'packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts',
     ]
+    // A4-PR4 (lane A/B/C): one lane source plus its three specs, all inside the
+    // scanner's existing `packages/**/*.ts` scope. Everything else this PR
+    // touches is an EDIT to an already-counted file
+    // (operation-permission/errors.ts, operation-permission/index.ts,
+    // operation-permission/pre-execute-adapter.ts, tools/tools.ts, the amended
+    // a2c4 / a3p3 / c1 specs, src/plugin/root.ts and
+    // src/plugin/live/agent-bindings.mjs) — an edit is not an increment — and
+    // `dist/**` plus `dev/agent-workflow/evidence/**` stay outside the scanned
+    // scope. `control/service.ts` is NOT touched by this PR at all (the A1-14
+    // guard-side re-check is reported as a file-scope blocker, not implemented).
+    const SCANNED_PATHS_A4PR4: readonly string[] = [
+      'packages/runtime/operation-permission/approval-routing.ts',
+      'packages/runtime/test/a4p4-capability-vs-permission.test.ts',
+      'packages/runtime/test/a4p4-operation-approval-authority.test.ts',
+      'packages/runtime/test/a4p4-operation-single-shot.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
-    expect(scanResult.filesScanned).toBe(983 + SCANNED_PATHS_A4PR2.length + SCANNED_PATHS_A4PR3.length)
-    expect(scanResult.files.length).toBe(983 + SCANNED_PATHS_A4PR2.length + SCANNED_PATHS_A4PR3.length)
+    expect(scanResult.filesScanned).toBe(
+      983 +
+        SCANNED_PATHS_A4PR2.length +
+        SCANNED_PATHS_A4PR3.length +
+        SCANNED_PATHS_A4PR4.length,
+    )
+    expect(scanResult.files.length).toBe(
+      983 +
+        SCANNED_PATHS_A4PR2.length +
+        SCANNED_PATHS_A4PR3.length +
+        SCANNED_PATHS_A4PR4.length,
+    )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
     // dropped) is otherwise indistinguishable from one that moved for the right
@@ -1852,6 +1878,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4PR1,
       ...SCANNED_PATHS_A4PR2,
       ...SCANNED_PATHS_A4PR3,
+      ...SCANNED_PATHS_A4PR4,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -1866,6 +1893,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // The A4-PR3 tie, same form: the movement equals the named files, and every
     // one of them is asserted present by path above.
     expect(SCANNED_PATHS_A4PR3.length).toBe(995 - 987)
+    // The A4-PR4 tie, same form: the movement equals the named files, and every
+    // one of them is asserted present by path above. No number in PROSE — the
+    // difference of the two pinned totals is the only arithmetic here.
+    expect(SCANNED_PATHS_A4PR4.length).toBe(999 - 995)
 
   })
 

@@ -1,0 +1,53 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/tools
+
+ ❯ test/c1-list-pending-control.test.ts (11 tests | 2 failed) 8ms
+     ✓ is registered as the 12th closed team tool 1ms
+     ✓ case 1: Leader + zero pending -> the empty list (count 0, not truncated) 1ms
+     ✓ case 2: Leader + one pending leader-approval -> the EXACT request record 0ms
+     ✓ case 3: a decided request is excluded from the pending list 0ms
+     × case 4 (A1-11 inversion): a pending user-approval is now listed (the carrier filter is gone) 3ms
+     × case 5 (A1-11 inversion): a pending envelope-mutation is now listed too 1ms
+     ✓ case 10 (A1-11): a case is listed at its CURRENT leg and rung; a CLOSED leg never appears 0ms
+     ✓ case 6: multiple requests are sorted by durable requestSequence ascending 0ms
+     ✓ case 7: limit truncates deterministically and sets the truncated flag 0ms
+     ✓ case 8: a member caller is rejected before any read (Leader-only surface) 0ms
+     ✓ case 9: the list read causes zero ledger writes / zero decisions / zero consumption 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/c1-list-pending-control.test.ts > team_list_pending_control (C1) — the Leader pending-approval discovery read > case 4 (A1-11 inversion): a pending user-approval is now listed (the carrier filter is gone)
+AssertionError: expected [ 'leader-approval' ] to include 'user-approval'
+ ❯ test/c1-list-pending-control.test.ts:423:19
+    421|     if (r.status !== 'pending-control-listed') return
+    422|     const kinds = r.pending.map((p) => p.kind)
+    423|     expect(kinds).toContain(CONTROL_REQUEST_KINDS.USER_APPROVAL)
+       |                   ^
+    424|     expect(kinds).toContain(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
+    425|     // Being listed is not being a resolver: this row's closed resolve…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/c1-list-pending-control.test.ts > team_list_pending_control (C1) — the Leader pending-approval discovery read > case 5 (A1-11 inversion): a pending envelope-mutation is now listed too
+AssertionError: expected [ 'leader-approval' ] to include 'envelope-mutation'
+ ❯ test/c1-list-pending-control.test.ts:436:19
+    434|     if (r.status !== 'pending-control-listed') return
+    435|     const kinds = r.pending.map((p) => p.kind)
+    436|     expect(kinds).toContain(CONTROL_REQUEST_KINDS.ENVELOPE_MUTATION)
+       |                   ^
+    437|     expect(kinds).toContain(CONTROL_REQUEST_KINDS.LEADER_APPROVAL)
+    438|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 9 passed (11)
+   Start at  10:20:06
+   Duration  1.04s (transform 719ms, setup 0ms, import 940ms, tests 8ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

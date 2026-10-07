@@ -1,0 +1,52 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr4/packages/runtime
+
+ ❯ test/a4p4-operation-single-shot.test.ts (6 tests | 2 failed) 8ms
+     × C1: authority drift after the allow — no execution, no consumption, no rewritten verdict 4ms
+     ✓ C2: the capability vanishing after the allow is execution-unavailable, not a permission loss 1ms
+     ✓ C3: the exact invocation consumes the allow exactly once, and a replay is refused 0ms
+     ✓ C4: a failed tool body does not refund the allow — the retry needs its own approval 0ms
+     × C5: every terminal state the adapter reports is a member of the frozen vocabulary 1ms
+     ✓ C6: the recheck comparison — equal is covered, a rise is stale, unknown is not confirmed 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p4-operation-single-shot.test.ts > a4p4 lane C — one approval, one invocation, and an honest terminal state > C1: authority drift after the allow — no execution, no consumption, no rewritten verdict
+AssertionError: expected 'allow' to be 'deny' // Object.is equality
+
+Expected: "deny"
+Received: "allow"
+
+ ❯ test/a4p4-operation-single-shot.test.ts:564:30
+    562|     expect(c1.reviewAuthority).toBe('leader')
+    563|     // And it did not execute.
+    564|     expect(c1.decision.kind).toBe('deny')
+       |                              ^
+    565|     expect(c1.executed).toBe(0)
+    566|     expect(c1.reason.includes('rose to')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a4p4-operation-single-shot.test.ts > a4p4 lane C — one approval, one invocation, and an honest terminal state > C5: every terminal state the adapter reports is a member of the frozen vocabulary
+AssertionError: expected [ 'execution-succeeded', …(3) ] to include 'stale'
+ ❯ test/a4p4-operation-single-shot.test.ts:642:22
+    640|     // And the four arms this lane distinguishes are actually present,…
+    641|     // membership loop above is not vacuous.
+    642|     expect(outcomes).toContain('stale')
+       |                      ^
+    643|     expect(outcomes).toContain('execution-unavailable')
+    644|     expect(outcomes).toContain('execution-succeeded')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  10:13:40
+   Duration  1.08s (transform 695ms, setup 0ms, import 971ms, tests 8ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

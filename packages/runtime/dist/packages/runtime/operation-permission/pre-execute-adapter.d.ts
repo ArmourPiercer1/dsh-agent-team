@@ -304,6 +304,7 @@
  * @module @dsh-agent-team/runtime/operation-permission/pre-execute-adapter
  */
 import type { CanonicalOperation, PathTargetResolver } from './types.js';
+import type { OperationApprovalFacts } from './approval-routing.js';
 import type { CanonicalRules } from './permission-resolver.js';
 import type { ControlService, ControlWaitSignal } from '../control/index.js';
 import type { ActionCaller } from '../admission/index.js';
@@ -586,6 +587,37 @@ export interface InstallParameterPermissionListenerParams {
         /** The decision's freshly resolved opaque fs target handle (this batch only). */
         readonly targetHandle: unknown;
     }) => Promise<boolean>;
+    /**
+     * A4-PR4 lane A (alpha.4 plan Task 4, spec §10.1/§7.2-§7.4, acceptance
+     * §21.4) — the v3 AUTHORITY FACTS port for an operation ask: the plane
+     * answers with the beneficiary's ladder position and its two authority
+     * documents for this instance, and `routeOperationApproval` derives the
+     * MINIMUM AUTHORITY the operation requires. The frozen
+     * `isLeader ? 'user-approval' : 'leader-approval'` routing stays the
+     * fallback: an installer without this port, or a plane that answers
+     * `undefined` (the Team is not on the v3 authority documents), gets the
+     * pre-existing pipeline byte-identically until PR7 retires it.
+     *
+     * The port supplies FACTS and decides nothing: it never names a reviewer,
+     * a request kind, or an effect. Those are derived from the documents by
+     * the one evaluator, so "who approves" cannot be re-decided at a call
+     * site (the mapping `permission-plane.ts` was chosen to own, per the
+     * consumer rows `a3p3-governance-lane-hygiene.test.ts` states).
+     *
+     * It is consulted ONLY on the ask path — after canonicalization and the
+     * capability preflight, before any durable row exists. A throwing port
+     * fails closed with ZERO durable rows: an unreadable authority document
+     * is not an absent one, and the alternative is opening a case whose
+     * reviewer was guessed.
+     *
+     * Optional — installers without it keep today's routing exactly.
+     */
+    readonly operationApprovalRouting?: (input: {
+        /** The operation class as the authority documents name it. */
+        readonly operationClass: string;
+        /** The freshly canonicalized resource key of THIS invocation. */
+        readonly resourceKey: string;
+    }) => Promise<OperationApprovalFacts | undefined>;
     /**
      * The optional diagnostics hook (the A6 glue wires it to its
      * observation surface). Small structured rows only (no file contents,

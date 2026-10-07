@@ -72,11 +72,20 @@
  *
  * @module @dsh-agent-team/runtime/operation-permission
  */
-export { OPERATION_PERMISSION_ERROR_CODES, OPERATION_PERMISSION_ERROR_CODE_VALUES, CANONICALIZATION_FAILURE_REASONS, PRE_EXECUTE_INSTALL_ERROR_CODES, OperationPermissionError, isOperationPermissionError, PermissionGuardUnavailableError, isPermissionGuardUnavailableError, canonicalizationFailed, toCanonicalizationDetail, } from './errors.js';
+export { OPERATION_PERMISSION_ERROR_CODES, OPERATION_PERMISSION_ERROR_CODE_VALUES, CANONICALIZATION_FAILURE_REASONS, PRE_EXECUTE_INSTALL_ERROR_CODES, 
+// A4-PR4 lane B (spec 13) — the typed capability/environment family: a
+// host runtime constraint answers in its own vocabulary, never the
+// permission one (the pre-execute carrier stays one shape, the CODE is
+// the contract).
+PRE_EXECUTE_CAPABILITY_ERROR_CODES, PRE_EXECUTE_CAPABILITY_ERROR_CODE_VALUES, PRE_EXECUTE_CAPABILITY_REASON_PREFIX, capabilityDenialReason, OperationPermissionError, isOperationPermissionError, PermissionGuardUnavailableError, isPermissionGuardUnavailableError, canonicalizationFailed, toCanonicalizationDetail, } from './errors.js';
 export { PERMISSION_TOOL_VALUES, FILE_PERMISSION_TOOL_VALUES, SHELL_PERMISSION_TOOL_VALUES, } from './types.js';
 export { READ_OFFSET_DEFAULT, READ_LIMIT_DEFAULT, LSP_OPERATION_VALUES, BASH_TOOL_RESOURCE_KEY, SHELL_TOOL_RESOURCE_KEYS, classifyPermissionTool, isPermissionToolName, canonicalizeOperation, canonicalizeShellOperation, } from './canonical-operation.js';
 export { resolveOperationPermission, } from './permission-resolver.js';
 export { END_CAP_DENIAL_REASON, installParameterPermissionListener, } from './pre-execute-adapter.js';
 export { PERMISSION_COVERAGE_CLASSIFICATIONS, SAFE_UNMANAGED_TOOL_NAMES, KNOWN_SENSITIVE_TOOL_NAMES, KNOWN_SENSITIVE_TOOL_PREFIXES, SENSITIVE_REMEDIATION, UNKNOWN_REMEDIATION, UNKNOWN_REASON, classifyPermissionCoverageTool, evaluatePermissionCoverage, mcpIntroducedToolNames, permissionCoverageGateEnabled, buildPermissionCoverageErrorDetail, } from './permission-coverage.js';
 export { PERMISSION_COVERAGE_ERROR_CODES, PermissionCoverageUnmanagedError, isPermissionCoverageUnmanagedError, } from './errors.js';
+// A4-PR4 lane A (spec §10.1, §7.2-§7.4, acceptance §21.4) — the operation
+// approval routing: which rung must sign an `ask`, and the legacy request
+// kind that carries it. Pure; the durable case stays in the control plane.
+export { OPERATION_APPROVAL_REFUSAL_REASONS, OPERATION_APPROVAL_REFUSAL_REASON_VALUES, createOperationApprovalFactsReader, operationApprovalCarrier, recheckOperationApproval, routeOperationApproval, } from './approval-routing.js';
 //# sourceMappingURL=index.js.map

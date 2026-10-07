@@ -242,4 +242,71 @@ function permissionCoverageUnmanagedMessage(detail) {
         `${detail.unmanagedTools.length} unmanaged tool(s) on the final model-facing surface: ${entries} ` +
         `(code: ${PERMISSION_COVERAGE_ERROR_CODES.ALPHA2_PERMISSION_COVERAGE_UNMANAGED})`);
 }
+// ---------------------------------------------------------------------------
+// A4-PR4 lane B (alpha.4 plan Task 4, spec §12.1/§13) — the typed
+// capability/environment outcome family.
+//
+// An external runtime constraint (a host hard cell that refuses the tool,
+// an allow-list that does not name it, a `capabilityExists: false`, a
+// faulting or malformed facts probe) is an EXECUTION CAPABILITY/ENVIRONMENT
+// fact about the host. It is NOT a Team permission outcome: the Team's own
+// decision may well be ALLOW, and the call still cannot run. Before this
+// family existed the same fact was reported with the permission vocabulary
+// (`permission denied: the external hard policy no longer allows …`), which
+// tells the caller that some authority refused it and invites an approval
+// round that no authority can honor.
+//
+// The upstream pre-tool carrier has one non-execution shape, so the
+// distinction lives in the REASON: a capability denial starts with the
+// stable prefix below and embeds the closed code. Branch on the code, never
+// on the prose that follows it.
+// ---------------------------------------------------------------------------
+/** The stable prefix every capability/environment denial reason carries. */
+export const PRE_EXECUTE_CAPABILITY_REASON_PREFIX = 'execution unavailable:';
+/**
+ * The closed capability/environment codes of the pre-execute pipeline
+ * (spec §13's typed families, in this repository's existing
+ * kebab-case `alpha*-` convention).
+ *
+ * TWO members, and the omission is deliberate and measured. The frozen
+ * read-only external check (`ControlService.checkExternalOperation`) answers
+ * `{ allowed: false, reason: <free text> }` and folds EVERY fail-closed case
+ * into that one shape — a hard deny, an unnamed allow-list item, an explicit
+ * `capabilityExists: false`, a faulting facts probe and a malformed facts
+ * shape are indistinguishable through it. Spec §13's third family
+ * (`CAPABILITY_UNAVAILABLE`, the host has no such capability) therefore has
+ * NO producer that could emit it truthfully, and this PR declares no code no
+ * path can return — the same rule `governance/runtime-authority.ts:130-137`
+ * states for an unreachable outcome arm. Splitting the two needs a
+ * verdict-shape change in `packages/runtime/control/types.ts`, which is
+ * outside Task 4's declared files; the gap is reported, not papered over.
+ */
+export const PRE_EXECUTE_CAPABILITY_ERROR_CODES = {
+    /**
+     * The host's external hard policy refuses this operation (a hard deny
+     * cell, an allow-list that does not name the tool, or the shared check's
+     * own fail-closed reading of faulted/malformed external facts).
+     */
+    EXTERNAL_RUNTIME_RESTRICTION: 'alpha4-external-runtime-restriction',
+    /**
+     * The environment question could not be asked: the shared external check
+     * itself threw, so no verdict about the host is available at all.
+     * Fail-closed denial, distinct from a refusal the host actually stated.
+     */
+    HOST_ENVIRONMENT_UNAVAILABLE: 'alpha4-host-environment-unavailable',
+};
+/** Every capability/environment code value, for membership checks. */
+export const PRE_EXECUTE_CAPABILITY_ERROR_CODE_VALUES = Object.values(PRE_EXECUTE_CAPABILITY_ERROR_CODES);
+/**
+ * The deterministic reason string of one capability/environment denial: the
+ * stable prefix, the closed code in brackets, then the diagnostic. The
+ * diagnostic is free text (the frozen check's own fail-closed explanation);
+ * the PREFIX and the CODE are the contract.
+ * @param code - the closed capability/environment code.
+ * @param detail - the diagnostic (never authority data).
+ * @returns the stable denial reason.
+ */
+export function capabilityDenialReason(code, detail) {
+    return `${PRE_EXECUTE_CAPABILITY_REASON_PREFIX} [${code}] ${detail}`;
+}
 //# sourceMappingURL=errors.js.map
