@@ -1,0 +1,29 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a/packages/runtime/test/a2c7-subtree-matcher.test.ts
+  382:11  error  'Env' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  545:11  error  'RealSection' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a/packages/runtime/test/alpha2-explicit-agent-setup.test.ts
+  151:18  error  'correlation' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a/packages/runtime/test/control-abandon-without-resolve-envelope.test.ts
+  80:3  error  'ControlGuardVerdict' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a/packages/runtime/test/d2-s6-ensure-root-live.test.ts
+  505:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  510:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a/packages/runtime/test/f1-webserver-shim-isolation.test.ts
+  90:9  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a/packages/runtime/test/multi-mcp-wiring.test.ts
+  470:7  error  'w5E2LiveBefore' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  523:7  error  'w6FiberB' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a/packages/runtime/test/p8s3b-result-effects.test.ts
+  89:3  error  'P6T2_ROOT' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 10 problems (7 errors, 3 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.
+

@@ -1,0 +1,1359 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ❯ packages/runtime/test/requirement-authority-negatives.test.ts (10 tests | 1 failed) 33ms
+     ✓ 1. Team scope required down → fatal (the Team cannot run) 2ms
+     ✓ 2. Team scope required down + a disabled template → STILL fatal (a disable cannot bypass the Team fatal) 0ms
+     ✓ 3. Team scope required down + a consent for the fatal → STILL fatal (consent never unblocks a required) 0ms
+     ✓ 4. A required template down (not disabled) → fixOrDisable 0ms
+     ✓ 5. A required template down that is already disabled → proceed (the disable resolves it) 0ms
+     ✓ 6. An optional (warning) down WITHOUT consent → consentRequired 0ms
+     ✓ 7. An optional (warning) down WITH consent → proceed (the consent resolves the warning) 1ms
+     ✓ 8. A team fatal + a warning down → fatal (the fatal wins; the warning is not reported) 0ms
+     ✓ 9. A recovery marker on a NON-blocked scope → allowed as normal work (the marker is a no-op) 1ms
+     × 10. (LIVE) the durable consent + template-availability facts SURVIVE a restart 26ms
+ ❯ packages/runtime/test/recovery-leader-dispatch-review.test.ts (1 test | 1 failed) 20ms
+     × offers the recovery dispatch as a user-approval with the normalized review payload + a new per-attempt correlation 18ms
+ ❯ packages/runtime/test/p6t2-actions.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-authority.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-quota.test.ts (0 test)
+ ❯ packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts (1 test | 1 failed) 25ms
+     × a denied recovery dispatch keeps the COMPATIBILITY_BLOCKED block with controlDecision deny + controlRequestId + zero work effect 24ms
+ ✓ packages/runtime/test/a2c3-inspect-operation-permission.test.ts (14 tests) 7ms
+ ❯ packages/runtime/test/recovery-dispatch-abort-zero-effect.test.ts (1 test | 1 failed) 27ms
+     × an aborted recovery wait abandons the request (best-effort) + keeps the block with controlDecision abandoned + zero work effect 26ms
+ ❯ packages/runtime/test/required-mcp-live-outage-recovery.test.ts (3 tests | 3 failed) 36ms
+     × 1. the live unreachable verdict overrides the static available:true seed → the required scope BLOCKs (typed, recovery offered) 23ms
+     × 2. the recovery work is allowed on the reduced authority + the incident opens durably 5ms
+     × 3. the fresh evaluation recovers → normal work is admitted + the incident closes (the §E.10 exit record) 7ms
+ ❯ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts (3 tests | 3 failed) 36ms
+     × 1. the optional outage DEGRADES the scope; normal work is admitted; recovery stays closed 22ms
+     × 2. the degraded classification is stable on the fresh re-evaluation; no incident is ever recorded 7ms
+     × 3. the recovery passage over the degraded scope is the no-op allow (no reduced authority) 6ms
+ ❯ packages/runtime/test/restart-readiness-unknown.test.ts (3 tests | 3 failed) 33ms
+     × 1. required + unknown + no seed → BLOCKED until the fresh probe (fail-closed, recovery offered) 22ms
+     × 2. required + unknown + an available:true seed → the bootstrap seed feeds the engine → admitted 4ms
+     × 3. an available:false optional seed → the scope DEGRADES but is still admitted (the seed feeds both requirements the same way) 6ms
+ ✓ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts (1 test) 35ms
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts (4 tests | 4 failed) 47ms
+     × S1 (FAULT): the real abandon-commit failure SURFACES — the router does NOT claim abandoned 22ms
+     × S2 (CONCURRENT-ABANDON): the already-abandoned request KEEPS the zero-effect claim 9ms
+     × S3 (SUCCESS): the durable abandon commit → the typed abandoned (zero work effect) 6ms
+     × S4 (REGRESSION): a NORMAL allow still admits the re-run (the F2 fix does not touch the allow path) 7ms
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts (7 tests | 7 failed) 64ms
+     × 1. a blocked Leader send-message offers the recovery Human Review (user-approval + review payload) 24ms
+     × 2. deny → the typed zero-effect block stands and NO recipient input 8ms
+     × 3. allow → the re-run delivers EXACTLY ONE recipient input 8ms
+     × 4. abort → abandonment durable + the typed zero-effect block + NO recipient input 7ms
+     × 5. normal mode (no scope down) send-message needs NO extra approval 6ms
+     × 6. report-progress is STILL pure coordination (never gated, no dispatch) 6ms
+     × 7. request-control is UNHARMED (the control plane is always allowed, no dispatch) 4ms
+ ✓ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts (5 tests) 87ms
+ ✓ packages/runtime/test/leader-template-required-boundary.test.ts (7 tests) 102ms
+ ❯ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts (2 tests | 2 failed) 29ms
+     × D1: an approved-then-crashed token re-arms NO stale approval on the cold-restart retry (NEW pending request; zero work before the fresh approval; then exactly-once work) 19ms
+     × D2: a crashed-mid-wait (abandoned) token re-arms NO stale review on the cold-restart retry (NEW pending request; exactly-once work after the fresh approval) 8ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts (5 tests) 72ms
+ ❯ packages/runtime/test/tcm-m3-root-initial-work.test.ts (0 test)
+ ❯ packages/runtime/test/issue1-async-delegation.test.ts (0 test)
+ ❯ packages/runtime/test/g8s1-generation-stamp.test.ts (0 test)
+ ❯ packages/runtime/test/p8s3-work-chain.test.ts (0 test)
+ ❯ packages/runtime/test/fix-control-authz-h-send-message.test.ts (4 tests | 4 failed) 39ms
+     × S1: a blocked Leader send-message creates the durable inline request (recipient instance subject + the full message in the review payload); deny ⇒ typed zero-effect block + ZERO delivery 18ms
+     × S2: allow ⇒ EXACTLY ONE delivery (one coordination fact, one session-input call, the body preserved) 6ms
+     × S3: abort ⇒ the durable abandon + the typed zero-effect block + ZERO delivery (real router + real control) 6ms
+     × the old-code defect is a real-validator rejection (evidence guard: a template subject + targetInstanceId is CONTROL_REQUEST_MALFORMED) 7ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 11ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 6ms
+     ✓ 2. the sender holds the peer-direct grant → DIRECT to the peer session 1ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 1ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 0ms
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 1ms
+     ✓ 6. the confirmation facts record the path actually taken for both modes 0ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 0ms
+ ✓ packages/runtime/test/p6t3-send-delivery.test.ts (9 tests) 23ms
+ ❯ packages/runtime/test/p8s2-leader-contract.test.ts (0 test)
+ ❯ packages/runtime/test/p8s5b-operation-fencing.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-addressing.test.ts (0 test)
+ ❯ packages/runtime/test/tcm-d4-root-context.test.ts (0 test)
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (0 test)
+ ❯ packages/runtime/test/p8s4a-entrypoints.test.ts (0 test)
+ ❯ packages/runtime/test/issue1-serial-blocking.test.ts (0 test)
+ ❯ packages/runtime/test/p8s3-work-request.test.ts (0 test)
+ ❯ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts (0 test)
+ ❯ packages/runtime/test/f3a-lock-scope.test.ts (0 test)
+ ❯ packages/runtime/test/work-completion-async-wakeup.test.ts (0 test)
+ ✓ packages/runtime/test/c1-restart-recovery.test.ts (2 tests) 3ms
+ ❯ packages/runtime/test/tcm-g1-s6-integration.test.ts (0 test)
+ ❯ packages/runtime/test/p8s7r1-initial-work.test.ts (0 test)
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ✓ packages/runtime/test/c1-production-wiring.test.ts (5 tests) 3ms
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts (74 tests | 72 failed) 2324ms
+     × C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work 30ms
+     × C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness) 6ms
+     × C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter) 6ms
+     × C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes 9ms
+     × C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands 6ms
+     × C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator 5ms
+     × C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work 10ms
+     × C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work 9ms
+     × c9-1: delegate × decision-settle × no-mark 8ms
+     × c9-2: delegate × decision-settle × already-abandoned 7ms
+     × c9-3: delegate × terminal-snapshot × no-mark 6ms
+     × c9-4: delegate × terminal-snapshot × already-abandoned 3ms
+     × c9-5: delegate × outer-queue × no-mark 3ms
+     × c9-6: delegate × outer-queue × already-abandoned 2ms
+     × c9-7: delegate × gate-success × no-mark 2ms
+     × c9-8: delegate × gate-success × already-abandoned 2ms
+     × c9-9: delegate × gate-reject × no-mark 2ms
+     × c9-10: delegate × gate-reject × already-abandoned 3ms
+     × c9-11: delegate × control-queue × no-mark 3ms
+     × c9-12: delegate × control-queue × already-abandoned 4ms
+     × c9-13: delegate × pre-flight-authority × no-mark 4ms
+     × c9-14: delegate × pre-flight-authority × already-abandoned 3ms
+     × c9-15: delegate × pre-flight-provider-lock × no-mark 4ms
+     × c9-16: delegate × pre-flight-provider-lock × already-abandoned 2ms
+     × c9-17: delegate × pre-flight-external-facts × no-mark 2ms
+     × c9-18: delegate × pre-flight-external-facts × already-abandoned 2ms
+     × c9-19: delegate × post-commit × no-mark 5ms
+     × c9-20: follow-up × decision-settle × no-mark 7ms
+     × c9-21: follow-up × decision-settle × already-abandoned 3ms
+     × c9-22: follow-up × terminal-snapshot × no-mark 3ms
+     × c9-23: follow-up × terminal-snapshot × already-abandoned 3ms
+     × c9-24: follow-up × outer-queue × no-mark (the external named repro) 2ms
+     × c9-25: follow-up × outer-queue × already-abandoned 4ms
+     × c9-26: follow-up × gate-success × no-mark 5ms
+     × c9-27: follow-up × gate-success × already-abandoned 3ms
+     × c9-28: follow-up × gate-reject × no-mark 4ms
+     × c9-29: follow-up × gate-reject × already-abandoned 3ms
+     × c9-30: follow-up × control-queue × no-mark 3ms
+     × c9-31: follow-up × control-queue × already-abandoned 4ms
+     × c9-32: follow-up × post-commit × no-mark 4ms
+     × c9-33: follow-up × fault-admission × no-mark 7ms
+     × c9-34: send-message × decision-settle × no-mark 3ms
+     × c9-35: send-message × decision-settle × already-abandoned 2ms
+     × c9-36: send-message × terminal-snapshot × no-mark 3ms
+     × c9-37: send-message × terminal-snapshot × already-abandoned 2ms
+     × c9-38: send-message × outer-queue × no-mark 2ms
+     × c9-39: send-message × outer-queue × already-abandoned 2ms
+     × c9-40: send-message × control-queue × no-mark 2ms
+     × c9-41: send-message × control-queue × already-abandoned 2ms
+     × c9-42: create-member × decision-settle × no-mark 2ms
+     × c9-43: create-member × decision-settle × already-abandoned 2ms
+     × c9-44: create-member × terminal-snapshot × no-mark 2ms
+     × c9-45: create-member × terminal-snapshot × already-abandoned 2ms
+     × c9-46: create-member × outer-queue × no-mark 2ms
+     × c9-47: create-member × outer-queue × already-abandoned 2ms
+     × c9-48: create-member × gate-success × no-mark 2ms
+     × c9-49: create-member × gate-success × already-abandoned 2ms
+     × c9-50: create-member × gate-reject × no-mark 2ms
+     × c9-51: create-member × gate-reject × already-abandoned 2ms
+     × c9-52: create-member × control-queue × no-mark 2ms
+     × c9-53: create-member × control-queue × already-abandoned 2ms
+     × c9-54: create-member × pre-flight-authority × no-mark 3ms
+     × c9-55: create-member × pre-flight-authority × already-abandoned 3ms
+     × c9-56: create-member × pre-flight-provider-lock × no-mark 4ms
+     × c9-57: create-member × pre-flight-provider-lock × already-abandoned 4ms
+     × c9-58: create-member × pre-flight-external-facts × no-mark 4ms
+     × c9-59: create-member × pre-flight-external-facts × already-abandoned 4ms
+     × c9-60: create-member × fault-preflight × no-mark 3ms
+     ✓ c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end)  2006ms
+     ✓ c9-r3-1: v2 templateFeed — park at B's templateFacts feed await (ENTERED proven), abort, the feed REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal) 34ms
+     × c9-r3-2: legacy externalFacts — park at B's step-8 probe (ENTERED proven), abort, the probe REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal) 2ms
+     × c9-r3-3: one-shot close-failure on the reject path — the FIRST close fault propagates UNCHANGED (typed DURABLE_WRITE_FAILED carrying the injected error), zero effects, zero marks, EXACTLY ONE abandon put attempt (never re-attempted — a second attempt would succeed and mask the fault) 2ms
+     × c9-pcb-1: GATED branch (follow-up reentry) — the unit C-2 abort-close faults ONCE before the commitEffect callback enters: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged (not masked by a typed-abandoned terminal), the close attempted EXACTLY ONCE, zero effects, zero marks 2ms
+     × c9-pcb-2: FALLBACK branch (send-message reentry) — same one-shot pre-callback close fault on the fallback D2 settle path: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged, the close attempted EXACTLY ONCE, zero effects, zero marks 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 21 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts [ packages/runtime/test/d3-member-identity-context.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createP6T6World packages/tools/test/p6t6-helpers.ts:298:17
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:166:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/128]⎯
+
+ FAIL  packages/runtime/test/f3a-lock-scope.test.ts [ packages/runtime/test/f3a-lock-scope.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createF3AWorld packages/runtime/test/f3a-lock-scope.test.ts:230:17
+ ❯ packages/runtime/test/f3a-lock-scope.test.ts:420:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/128]⎯
+
+ FAIL  packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts [ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createF3BWorld packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts:241:17
+ ❯ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts:407:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/128]⎯
+
+ FAIL  packages/runtime/test/g8s1-generation-stamp.test.ts [ packages/runtime/test/g8s1-generation-stamp.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/g8s1-generation-stamp.test.ts:301:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/128]⎯
+
+ FAIL  packages/runtime/test/issue1-async-delegation.test.ts [ packages/runtime/test/issue1-async-delegation.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/issue1-async-delegation.test.ts:234:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/128]⎯
+
+ FAIL  packages/runtime/test/issue1-serial-blocking.test.ts [ packages/runtime/test/issue1-serial-blocking.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/issue1-serial-blocking.test.ts:116:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/128]⎯
+
+ FAIL  packages/runtime/test/p6t2-actions.test.ts [ packages/runtime/test/p6t2-actions.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t2-actions.test.ts:138:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/128]⎯
+
+ FAIL  packages/runtime/test/p6t2-addressing.test.ts [ packages/runtime/test/p6t2-addressing.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t2-addressing.test.ts:97:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/128]⎯
+
+ FAIL  packages/runtime/test/p6t2-authority.test.ts [ packages/runtime/test/p6t2-authority.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t2-authority.test.ts:50:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/128]⎯
+
+ FAIL  packages/runtime/test/p6t2-quota.test.ts [ packages/runtime/test/p6t2-quota.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t2-quota.test.ts:76:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/128]⎯
+
+ FAIL  packages/runtime/test/p8s2-leader-contract.test.ts [ packages/runtime/test/p8s2-leader-contract.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p8s2-leader-contract.test.ts:387:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/128]⎯
+
+ FAIL  packages/runtime/test/p8s3-work-chain.test.ts [ packages/runtime/test/p8s3-work-chain.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p8s3-work-chain.test.ts:452:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/128]⎯
+
+ FAIL  packages/runtime/test/p8s3-work-request.test.ts [ packages/runtime/test/p8s3-work-request.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p8s3-work-request.test.ts:59:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/128]⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: sessionPersistence.exists public seam is unavailable
+ ❯ durableSessionExists packages/runtime/src/plugin/live/agent-bindings.mjs:888:13
+    886|   async function durableSessionExists(sessionId) {
+    887|     if (typeof sessionPersistence?.exists !== 'function') {
+    888|       throw new Error(
+       |             ^
+    889|         'agent-bindings: sessionPersistence.exists public seam is unav…
+    890|       )
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:3897:15
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:604:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/128]⎯
+
+ FAIL  packages/runtime/test/p8s4a-entrypoints.test.ts [ packages/runtime/test/p8s4a-entrypoints.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createMutableWorld packages/runtime/test/p8s4a-entrypoints.test.ts:185:17
+ ❯ packages/runtime/test/p8s4a-entrypoints.test.ts:207:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/128]⎯
+
+ FAIL  packages/runtime/test/p8s5b-operation-fencing.test.ts [ packages/runtime/test/p8s5b-operation-fencing.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p8s5b-operation-fencing.test.ts:281:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/128]⎯
+
+ FAIL  packages/runtime/test/p8s7r1-initial-work.test.ts [ packages/runtime/test/p8s7r1-initial-work.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p8s7r1-initial-work.test.ts:336:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/128]⎯
+
+ FAIL  packages/runtime/test/tcm-d4-root-context.test.ts [ packages/runtime/test/tcm-d4-root-context.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createP6T6World packages/tools/test/p6t6-helpers.ts:298:17
+ ❯ packages/runtime/test/tcm-d4-root-context.test.ts:147:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/128]⎯
+
+ FAIL  packages/runtime/test/tcm-g1-s6-integration.test.ts [ packages/runtime/test/tcm-g1-s6-integration.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/tcm-g1-s6-integration.test.ts:351:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/128]⎯
+
+ FAIL  packages/runtime/test/tcm-m3-root-initial-work.test.ts [ packages/runtime/test/tcm-m3-root-initial-work.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/tcm-m3-root-initial-work.test.ts:339:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/128]⎯
+
+ FAIL  packages/runtime/test/work-completion-async-wakeup.test.ts [ packages/runtime/test/work-completion-async-wakeup.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/work-completion-async-wakeup.test.ts:224:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/128]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 107 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:130:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:176:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:210:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:262:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:314:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:421:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:550:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C — the durable abandonment is the TERMINAL mark > C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:633:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-1: delegate × decision-settle × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-2: delegate × decision-settle × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-3: delegate × terminal-snapshot × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-4: delegate × terminal-snapshot × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-5: delegate × outer-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-6: delegate × outer-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-7: delegate × gate-success × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-8: delegate × gate-success × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-9: delegate × gate-reject × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-10: delegate × gate-reject × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-11: delegate × control-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-12: delegate × control-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-13: delegate × pre-flight-authority × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-14: delegate × pre-flight-authority × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-15: delegate × pre-flight-provider-lock × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-16: delegate × pre-flight-provider-lock × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-17: delegate × pre-flight-external-facts × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-18: delegate × pre-flight-external-facts × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-19: delegate × post-commit × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-20: follow-up × decision-settle × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-21: follow-up × decision-settle × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-22: follow-up × terminal-snapshot × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-23: follow-up × terminal-snapshot × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-24: follow-up × outer-queue × no-mark (the external named repro)
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-25: follow-up × outer-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-26: follow-up × gate-success × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-27: follow-up × gate-success × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-28: follow-up × gate-reject × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-29: follow-up × gate-reject × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-30: follow-up × control-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-31: follow-up × control-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-32: follow-up × post-commit × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-33: follow-up × fault-admission × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-34: send-message × decision-settle × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-35: send-message × decision-settle × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-36: send-message × terminal-snapshot × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-37: send-message × terminal-snapshot × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-38: send-message × outer-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-39: send-message × outer-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-40: send-message × control-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-41: send-message × control-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-42: create-member × decision-settle × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-43: create-member × decision-settle × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-44: create-member × terminal-snapshot × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-45: create-member × terminal-snapshot × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-46: create-member × outer-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-47: create-member × outer-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-48: create-member × gate-success × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-49: create-member × gate-success × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-50: create-member × gate-reject × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-51: create-member × gate-reject × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-52: create-member × control-queue × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-53: create-member × control-queue × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-54: create-member × pre-flight-authority × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-55: create-member × pre-flight-authority × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-56: create-member × pre-flight-provider-lock × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-57: create-member × pre-flight-provider-lock × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-58: create-member × pre-flight-external-facts × no-mark
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-59: create-member × pre-flight-external-facts × already-abandoned
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9: the bounded C matrix (every pre-commit await settles to the durable close) > c9-60: create-member × fault-preflight × no-mark
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ c9RunRow packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1430:13
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:1326:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 residual-3: the pre-reservation REJECT region > c9-r3-2: legacy externalFacts — park at B's step-8 probe (ENTERED proven), abort, the probe REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ c9R3ExternalFactsReject packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2229:13
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2378:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 residual-3: the pre-reservation REJECT region > c9-r3-3: one-shot close-failure on the reject path — the FIRST close fault propagates UNCHANGED (typed DURABLE_WRITE_FAILED carrying the injected error), zero effects, zero marks, EXACTLY ONE abandon put attempt (never re-attempted — a second attempt would succeed and mask the fault)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ c9R3ExternalFactsReject packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2229:13
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2381:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 direct shared pre-callback one-shot close-fault residual > c9-pcb-1: GATED branch (follow-up reentry) — the unit C-2 abort-close faults ONCE before the commitEffect callback enters: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged (not masked by a typed-abandoned terminal), the close attempted EXACTLY ONCE, zero effects, zero marks
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ c9PreCallbackOneShotGated packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2403:13
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2530:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 direct shared pre-callback one-shot close-fault residual > c9-pcb-2: FALLBACK branch (send-message reentry) — same one-shot pre-callback close fault on the fallback D2 settle path: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged, the close attempted EXACTLY ONCE, zero effects, zero marks
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ c9PreCallbackOneShotFallback packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2467:13
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2533:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts > fix-control-authz D — every restart-unique attempt requires a fresh Human > D1: an approved-then-crashed token re-arms NO stale approval on the cold-restart retry (NEW pending request; zero work before the fresh approval; then exactly-once work)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts:123:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts > fix-control-authz D — every restart-unique attempt requires a fresh Human > D2: a crashed-mid-wait (abandoned) token re-arms NO stale review on the cold-restart retry (NEW pending request; exactly-once work after the fresh approval)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts:232:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-h-send-message.test.ts > fix-control-authz H — the recovery send-message reaches review over the REAL chain > S1: a blocked Leader send-message creates the durable inline request (recipient instance subject + the full message in the review payload); deny ⇒ typed zero-effect block + ZERO delivery
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-h-send-message.test.ts:108:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-h-send-message.test.ts > fix-control-authz H — the recovery send-message reaches review over the REAL chain > S2: allow ⇒ EXACTLY ONE delivery (one coordination fact, one session-input call, the body preserved)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-h-send-message.test.ts:162:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-h-send-message.test.ts > fix-control-authz H — the recovery send-message reaches review over the REAL chain > S3: abort ⇒ the durable abandon + the typed zero-effect block + ZERO delivery (real router + real control)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-h-send-message.test.ts:195:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/128]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-h-send-message.test.ts > fix-control-authz H — the recovery send-message reaches review over the REAL chain > the old-code defect is a real-validator rejection (evidence guard: a template subject + targetInstanceId is CONTROL_REQUEST_MALFORMED)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-h-send-message.test.ts:230:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/128]⎯
+
+ FAIL  packages/runtime/test/optional-mcp-live-outage-degraded.test.ts > W3-A optional-mcp-live-outage-degraded: an optional outage degrades, never blocks > 1. the optional outage DEGRADES the scope; normal work is admitted; recovery stays closed
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts:106:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/128]⎯
+
+ FAIL  packages/runtime/test/optional-mcp-live-outage-degraded.test.ts > W3-A optional-mcp-live-outage-degraded: an optional outage degrades, never blocks > 2. the degraded classification is stable on the fresh re-evaluation; no incident is ever recorded
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts:131:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/128]⎯
+
+ FAIL  packages/runtime/test/optional-mcp-live-outage-degraded.test.ts > W3-A optional-mcp-live-outage-degraded: an optional outage degrades, never blocks > 3. the recovery passage over the degraded scope is the no-op allow (no reduced authority)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts:153:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/128]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality
+
+Expected: "session-child-p6t3-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+    332|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    333|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    334|     expect(o.deliveredToSessionId).toBe(leader.childSessionId)
+       |                                    ^
+    335|
+    336|     // (a) the coordination fact addresses the INTENDED recipient —
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/128]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+    397|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    398|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    399|     expect(md.perSender.input.sessionId).toBe(
+       |                               ^
+    400|       P6T3_SEEDS.leader.childSessionId,
+    401|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/128]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+    413|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    414|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+    415|     expect(md.revoked.input.sessionId).toBe(
+       |                             ^
+    416|       P6T3_SEEDS.leader.childSessionId,
+    417|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/128]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+AssertionError: expected 4 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+    427|     expect(md.envelopeBlocked.errorName).toBe('TeamRuntimeError')
+    428|     expect(md.envelopeBlocked.newWrites).toBe(0)
+    429|     expect(md.envelopeBlocked.inputCount).toBe(
+       |                                           ^
+    430|       md.leaderInputs + md.scoutInputs,
+    431|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/128]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+    469|     const scout = P6T3_SEEDS.scout
+    470|     const input = md.noGrant.input
+    471|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    472|     expect(input.attribution.fromInstanceId).toBe(
+    473|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/128]⎯
+
+ FAIL  packages/runtime/test/recovery-abandon-commit-fault.test.ts > W3-E recovery-abandon-commit-fault: the F2 no-swallow abandon > S1 (FAULT): the real abandon-commit failure SURFACES — the router does NOT claim abandoned
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts:145:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/128]⎯
+
+ FAIL  packages/runtime/test/recovery-abandon-commit-fault.test.ts > W3-E recovery-abandon-commit-fault: the F2 no-swallow abandon > S2 (CONCURRENT-ABANDON): the already-abandoned request KEEPS the zero-effect claim
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts:170:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/128]⎯
+
+ FAIL  packages/runtime/test/recovery-abandon-commit-fault.test.ts > W3-E recovery-abandon-commit-fault: the F2 no-swallow abandon > S3 (SUCCESS): the durable abandon commit → the typed abandoned (zero work effect)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts:192:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/128]⎯
+
+ FAIL  packages/runtime/test/recovery-abandon-commit-fault.test.ts > W3-E recovery-abandon-commit-fault: the F2 no-swallow abandon > S4 (REGRESSION): a NORMAL allow still admits the re-run (the F2 fix does not touch the allow path)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts:218:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/128]⎯
+
+ FAIL  packages/runtime/test/recovery-dispatch-abort-zero-effect.test.ts > E.11 recovery-dispatch-abort-zero-effect: an aborted wait keeps the block, zero effect > an aborted recovery wait abandons the request (best-effort) + keeps the block with controlDecision abandoned + zero work effect
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-dispatch-abort-zero-effect.test.ts:44:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/128]⎯
+
+ FAIL  packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts > E.11 recovery-dispatch-deny-zero-effect: a durable deny keeps the block, zero effect > a denied recovery dispatch keeps the COMPATIBILITY_BLOCKED block with controlDecision deny + controlRequestId + zero work effect
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts:46:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/128]⎯
+
+ FAIL  packages/runtime/test/recovery-leader-dispatch-review.test.ts > E.11 recovery-leader-dispatch-review: the human-reviewed recovery offer > offers the recovery dispatch as a user-approval with the normalized review payload + a new per-attempt correlation
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-leader-dispatch-review.test.ts:51:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[55/128]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 1. a blocked Leader send-message offers the recovery Human Review (user-approval + review payload)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:87:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[56/128]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 2. deny → the typed zero-effect block stands and NO recipient input
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:115:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[57/128]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 3. allow → the re-run delivers EXACTLY ONE recipient input
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:133:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[58/128]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 4. abort → abandonment durable + the typed zero-effect block + NO recipient input
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:149:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[59/128]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 5. normal mode (no scope down) send-message needs NO extra approval
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:168:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[60/128]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 6. report-progress is STILL pure coordination (never gated, no dispatch)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:183:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[61/128]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 7. request-control is UNHARMED (the control plane is always allowed, no dispatch)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:202:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[62/128]⎯
+
+ FAIL  packages/runtime/test/required-mcp-live-outage-recovery.test.ts > W3-A required-mcp-live-outage-recovery: the live outage arcs > 1. the live unreachable verdict overrides the static available:true seed → the required scope BLOCKs (typed, recovery offered)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/required-mcp-live-outage-recovery.test.ts:135:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[63/128]⎯
+
+ FAIL  packages/runtime/test/required-mcp-live-outage-recovery.test.ts > W3-A required-mcp-live-outage-recovery: the live outage arcs > 2. the recovery work is allowed on the reduced authority + the incident opens durably
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/required-mcp-live-outage-recovery.test.ts:179:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[64/128]⎯
+
+ FAIL  packages/runtime/test/required-mcp-live-outage-recovery.test.ts > W3-A required-mcp-live-outage-recovery: the live outage arcs > 3. the fresh evaluation recovers → normal work is admitted + the incident closes (the §E.10 exit record)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/required-mcp-live-outage-recovery.test.ts:208:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[65/128]⎯
+
+ FAIL  packages/runtime/test/requirement-authority-negatives.test.ts > E.11 requirement-authority-negatives: the ten fail-closed authority edges > 10. (LIVE) the durable consent + template-availability facts SURVIVE a restart
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/requirement-authority-negatives.test.ts:173:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[66/128]⎯
+
+ FAIL  packages/runtime/test/restart-readiness-unknown.test.ts > W3-A restart-readiness-unknown: unknown readiness fails closed (no evidence, no admission) > 1. required + unknown + no seed → BLOCKED until the fresh probe (fail-closed, recovery offered)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/restart-readiness-unknown.test.ts:113:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[67/128]⎯
+
+ FAIL  packages/runtime/test/restart-readiness-unknown.test.ts > W3-A restart-readiness-unknown: unknown readiness fails closed (no evidence, no admission) > 2. required + unknown + an available:true seed → the bootstrap seed feeds the engine → admitted
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/restart-readiness-unknown.test.ts:145:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[68/128]⎯
+
+ FAIL  packages/runtime/test/restart-readiness-unknown.test.ts > W3-A restart-readiness-unknown: unknown readiness fails closed (no evidence, no admission) > 3. an available:false optional seed → the scope DEGRADES but is still admitted (the seed feeds both requirements the same way)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/restart-readiness-unknown.test.ts:174:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[69/128]⎯
+
+
+ Test Files  34 failed | 8 passed (42)
+      Tests  107 failed | 61 passed (168)
+   Start at  06:07:20
+   Duration  4.00s (transform 25.81s, setup 0ms, import 25.50s, tests 3.06s, environment 5ms)
+

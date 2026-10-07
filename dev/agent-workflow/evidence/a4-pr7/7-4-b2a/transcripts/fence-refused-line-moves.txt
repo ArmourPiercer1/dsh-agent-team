@@ -1,0 +1,47 @@
+Do any non-line-number facts change in the non-gating classes? (base vs head)
+===============================================================================================
+A "site" is printed by the fence as L<line>(<version>) <verdict>; only <line> may move
+when a lane inserts comments. This checks the verdict text is byte-identical.
+
+REFUSED     LINE-ONLY              a2c3-inspect-operation-permission.test.ts
+              base L318(v2) non-blueprint-namespace(governance-override/sibling)
+              head L331(v2) non-blueprint-namespace(governance-override/sibling)
+              in-roster: True
+REFUSED     LINE-ONLY              mcp-blueprint-initial-grant.test.ts
+              base L143(v2) non-blueprint-namespace(governance-override/sibling)
+              head L152(v2) non-blueprint-namespace(governance-override/sibling)
+              in-roster: True
+REFUSED     LINE-ONLY              mcp-target-materialization.test.ts
+              base L950(v1) non-blueprint-namespace(session-binding/same-line), L1189(v1) non-blueprint-namespace(session-binding/same-line), L1459(v1) non-blueprint-namespace(session-binding/same-line)
+              head L969(v1) non-blueprint-namespace(session-binding/same-line), L1208(v1) non-blueprint-namespace(session-binding/same-line), L1478(v1) non-blueprint-namespace(session-binding/same-line)
+              in-roster: True
+REFUSED     LINE-ONLY              model-blueprint-initial-routing.test.ts
+              base L97(v2) non-blueprint-namespace(governance-override/sibling)
+              head L106(v2) non-blueprint-namespace(governance-override/sibling)
+              in-roster: True
+REFUSED     LINE-ONLY              model-inspect-config.test.ts
+              base L123(v2) non-blueprint-namespace(governance-override/sibling)
+              head L136(v2) non-blueprint-namespace(governance-override/sibling)
+              in-roster: True
+REFUSED     LINE-ONLY              multi-mcp-wiring.test.ts
+              base L187(v2) non-blueprint-namespace(governance-override/sibling), L204(v2) non-blueprint-namespace(governance-override/sibling)
+              head L196(v2) non-blueprint-namespace(governance-override/sibling), L213(v2) non-blueprint-namespace(governance-override/sibling)
+              in-roster: True
+REFUSED     LINE-ONLY              p6t1-helpers.ts
+              base L389(v1) non-blueprint-namespace(session-binding/sibling)
+              head L402(v1) non-blueprint-namespace(session-binding/sibling)
+              in-roster: True
+REFUSED     LINE-ONLY              p6t2-helpers.ts
+              base L256(v2) non-blueprint-namespace(governance-ledger/sibling)
+              head L269(v2) non-blueprint-namespace(governance-ledger/sibling)
+              in-roster: True
+REFUSED     LINE-ONLY              p6t3-helpers.ts
+              base L462(v2) non-blueprint-namespace(governance-override/sibling)
+              head L475(v2) non-blueprint-namespace(governance-override/sibling)
+              in-roster: True
+
+files whose listed line numbers moved: 9; verdict text identical in all: True
+REFUSED: base 52 paths -> head 52 paths; added none; removed none
+ADVISORY: base 9 paths -> head 9 paths; added none; removed none
+PROSE: base 5 paths -> head 5 paths; added none; removed none
+ADJUDICATED: base 16 paths -> head 16 paths; added none; removed none

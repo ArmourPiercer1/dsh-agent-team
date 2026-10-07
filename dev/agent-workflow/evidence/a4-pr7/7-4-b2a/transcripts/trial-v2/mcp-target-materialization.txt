@@ -1,0 +1,31 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ❯ packages/runtime/test/mcp-target-materialization.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization.test.ts [ packages/runtime/test/mcp-target-materialization.test.ts ]
+Error: mtm T1 follow-up B: the action was ALLOWED — the target-specific block is missing (the Finding F false OPEN)
+ ❯ expectBlocked packages/runtime/test/mcp-target-materialization.test.ts:565:11
+    563|   }
+    564|   if (thrown === undefined) {
+    565|     throw new Error(`mtm ${label}: the action was ALLOWED — the target…
+       |           ^
+    566|   }
+    567|   expect(thrown).toBeInstanceOf(TeamRuntimeError)
+ ❯ packages/runtime/test/mcp-target-materialization.test.ts:852:18
+ ❯ packages/runtime/test/mcp-target-materialization.test.ts:809:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  06:15:06
+   Duration  1.73s (transform 1.09s, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

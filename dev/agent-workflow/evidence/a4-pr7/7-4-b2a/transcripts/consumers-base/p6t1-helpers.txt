@@ -1,0 +1,2325 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (0 test)
+ ❯ packages/runtime/test/p6t1-checks.test.ts (0 test)
+ ❯ packages/runtime/test/model-activation-step8.test.ts (4 tests | 4 failed) 11ms
+     × D1 member template model -> model effective allow at the template/static layer 7ms
+     × D1 model-only shorthand inherits the injected staticModel provider 1ms
+     × D2 no modelPreference -> the model cell stays unspecified (old behavior) 1ms
+     × D3 modelPreference + capabilities.mcp allow -> BOTH grants survive (no MCP regression) 1ms
+ ❯ packages/runtime/test/t14h-probe-merge.test.ts (0 test)
+ ❯ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts (3 tests | 3 failed) 10ms
+     × 1. the optional outage DEGRADES the scope; normal work is admitted; recovery stays closed 7ms
+     × 2. the degraded classification is stable on the fresh re-evaluation; no incident is ever recorded 1ms
+     × 3. the recovery passage over the degraded scope is the no-op allow (no reduced authority) 1ms
+ ❯ packages/runtime/test/requirement-authority-negatives.test.ts (10 tests | 1 failed) 12ms
+     ✓ 1. Team scope required down → fatal (the Team cannot run) 3ms
+     ✓ 2. Team scope required down + a disabled template → STILL fatal (a disable cannot bypass the Team fatal) 0ms
+     ✓ 3. Team scope required down + a consent for the fatal → STILL fatal (consent never unblocks a required) 0ms
+     ✓ 4. A required template down (not disabled) → fixOrDisable 0ms
+     ✓ 5. A required template down that is already disabled → proceed (the disable resolves it) 0ms
+     ✓ 6. An optional (warning) down WITHOUT consent → consentRequired 0ms
+     ✓ 7. An optional (warning) down WITH consent → proceed (the consent resolves the warning) 0ms
+     ✓ 8. A team fatal + a warning down → fatal (the fatal wins; the warning is not reported) 0ms
+     ✓ 9. A recovery marker on a NON-blocked scope → allowed as normal work (the marker is a no-op) 1ms
+     × 10. (LIVE) the durable consent + template-availability facts SURVIVE a restart 5ms
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts (1 test | 1 failed) 11ms
+     × L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal 10ms
+ ❯ packages/runtime/test/required-mcp-live-outage-recovery.test.ts (3 tests | 3 failed) 10ms
+     × 1. the live unreachable verdict overrides the static available:true seed → the required scope BLOCKs (typed, recovery offered) 7ms
+     × 2. the recovery work is allowed on the reduced authority + the incident opens durably 1ms
+     × 3. the fresh evaluation recovers → normal work is admitted + the incident closes (the §E.10 exit record) 1ms
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts (7 tests | 7 failed) 14ms
+     × W2: the wiring resolves [team, template:leader] for the fixture blueprint 8ms
+     × W3: the refs exclude the (unrelated) worker template scope 1ms
+     × L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch 1ms
+     × L2: a Leader OPTIONAL requirement down does not block the normal turn (auto-degraded) 1ms
+     × L4: an unrelated Member (worker) required requirement down does not block the Leader 1ms
+     × L5: a Team-level REQUIRED requirement down blocks the Leader normal turn 1ms
+     × L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority) 1ms
+ ❯ packages/runtime/test/restart-readiness-unknown.test.ts (3 tests | 3 failed) 11ms
+     × 1. required + unknown + no seed → BLOCKED until the fresh probe (fail-closed, recovery offered) 8ms
+     × 2. required + unknown + an available:true seed → the bootstrap seed feeds the engine → admitted 1ms
+     × 3. an available:false optional seed → the scope DEGRADES but is still admitted (the seed feeds both requirements the same way) 1ms
+ ❯ packages/runtime/test/recovery-dispatch-abort-zero-effect.test.ts (1 test | 1 failed) 8ms
+     × an aborted recovery wait abandons the request (best-effort) + keeps the block with controlDecision abandoned + zero work effect 7ms
+ ❯ packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts (1 test | 1 failed) 9ms
+     × a denied recovery dispatch keeps the COMPATIBILITY_BLOCKED block with controlDecision deny + controlRequestId + zero work effect 7ms
+ ❯ packages/runtime/test/recovery-leader-dispatch-review.test.ts (1 test | 1 failed) 10ms
+     × offers the recovery dispatch as a user-approval with the normalized review payload + a new per-attempt correlation 9ms
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts (7 tests | 7 failed) 21ms
+     × 1. a blocked Leader send-message offers the recovery Human Review (user-approval + review payload) 11ms
+     × 2. deny → the typed zero-effect block stands and NO recipient input 2ms
+     × 3. allow → the re-run delivers EXACTLY ONE recipient input 2ms
+     × 4. abort → abandonment durable + the typed zero-effect block + NO recipient input 1ms
+     × 5. normal mode (no scope down) send-message needs NO extra approval 1ms
+     × 6. report-progress is STILL pure coordination (never gated, no dispatch) 1ms
+     × 7. request-control is UNHARMED (the control plane is always allowed, no dispatch) 1ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts (5 tests) 84ms
+ ❯ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts (2 tests | 2 failed) 13ms
+     × D1: an approved-then-crashed token re-arms NO stale approval on the cold-restart retry (NEW pending request; zero work before the fresh approval; then exactly-once work) 10ms
+     × D2: a crashed-mid-wait (abandoned) token re-arms NO stale review on the cold-restart retry (NEW pending request; exactly-once work after the fresh approval) 1ms
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts (5 tests | 5 failed) 17ms
+     × premise: the leader template declares NO requirements (its scope has no verdict inputs) 10ms
+     × IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work) 2ms
+     × IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way 1ms
+     × IL3: with the leader disabled the legitimate control/recovery lanes still function 1ms
+     × IL4: re-enable RESUMES the initial work through the same checks (allowed again) 1ms
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts (4 tests | 4 failed) 13ms
+     × S1 (FAULT): the real abandon-commit failure SURFACES — the router does NOT claim abandoned 9ms
+     × S2 (CONCURRENT-ABANDON): the already-abandoned request KEEPS the zero-effect claim 1ms
+     × S3 (SUCCESS): the durable abandon commit → the typed abandoned (zero work effect) 1ms
+     × S4 (REGRESSION): a NORMAL allow still admits the re-run (the F2 fix does not touch the allow path) 1ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (0 test)
+ ❯ packages/runtime/test/p6t3-send-delivery.test.ts (0 test)
+ ❯ packages/runtime/test/p6t3-restart.test.ts (0 test)
+ ✓ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (42 tests) 11ms
+ ❯ packages/runtime/test/exec-contract-dual-gate.test.ts (0 test)
+ ❯ packages/runtime/test/a5a-pre-execute.test.ts (0 test)
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests | 22 failed) 14ms
+     ✓ R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap) 1ms
+     × R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees) 1ms
+     ✓ read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow) 1ms
+     ✓ bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed) 0ms
+     ✓ the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane) 2ms
+     ✓ the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject 0ms
+     ✓ a truly-unknown kind (glob) still rejects; exact and any are unchanged (any stays closed) 1ms
+     ✓ containsOperation=true matches; false never matches; rootKey is NEVER consulted 0ms
+     ✓ the tool must match; file-class operations only; deny > ask > allow with RULE provenance 0ms
+     ✓ exact and any are unchanged at A3 0ms
+     × the root itself matches (directory root and file root) 0ms
+     × a child and a deep descendant match (the subtree the exact lane could not express) 0ms
+     × a sibling is a NON-MATCH (the default outcome, zero interference) 0ms
+     × the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved) 0ms
+     × any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny 0ms
+     × deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows 0ms
+     × deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next) 0ms
+     × deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped) 0ms
+     × deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract) 0ms
+     × allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny) 0ms
+     × ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default 0ms
+     × allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted) 0ms
+     × the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside 0ms
+     × the real backend section ran (the prebuilt pinned lib is present on this host) 2ms
+     × G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule 0ms
+     × G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways 0ms
+     × G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds 0ms
+     × G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded) 0ms
+     × G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling) 0ms
+     × G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze) 0ms
+     × G1 (real) the root itself matches on the real backend (contains(self) = true) 0ms
+ ❯ packages/runtime/test/p8s5b-operation-fencing.test.ts (0 test)
+ ❯ packages/runtime/test/a2c1-pwsh-permission.test.ts (0 test)
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts (33 tests | 13 failed) 41ms
+     ✓ a production v3 context carries the REAL bound hash and the TARGET-DERIVED beneficiary 5ms
+     ✓ a v3 binding resolving WITHOUT a content hash answers an unreadable ceiling — an anchorless proposal still cannot exist 1ms
+     ✓ is deterministic, id-shaped, and order-insensitive over the rule set 2ms
+     ✓ binds the team — changing it changes the fingerprint 1ms
+     ✓ binds the target — changing it changes the fingerprint 1ms
+     ✓ binds the beneficiary — changing it changes the fingerprint 1ms
+     ✓ binds the kind — changing it changes the fingerprint 1ms
+     ✓ binds the requested effect — changing it changes the fingerprint 1ms
+     ✓ binds the matcher kind (root identity class) — changing it changes the fingerprint 1ms
+     ✓ binds the matcher root — changing it changes the fingerprint 1ms
+     ✓ binds the operation class — changing it changes the fingerprint 0ms
+     ✓ binds the blueprint anchor — changing it changes the fingerprint 0ms
+     ✓ EXCLUDES provenance: mutationId / reason / base / actor are not identity (24.5) 0ms
+     ✓ names only the base pair: same base = same correlation, new base = new one (A1-9) 0ms
+     ✓ derives the leader position from the TARGET identity, and the signature admits NOTHING else (A5-1, review item 7b) 0ms
+     ✓ names the first approval rung that reaches (hard silent -> leader for a member rise) 1ms
+     ✓ the batch is the MAX rung over its rising regions (all-or-nothing) 0ms
+     ✓ an undecided ceiling is UNDETERMINED, never a guessed rung 0ms
+     ✓ a capped hard envelope pushes the ask above the ladder -> human-admin 0ms
+     ✓ mirrors intervention TERMINAL_MUTATION_OUTCOMES without importing it 1ms
+     × creates ONE case + one proposal row per rule, commits NOTHING, and says so 7ms
+     × a retry is idempotent: same case, one leg row, no second proposal set 1ms
+     × a different effect asked is a DIFFERENT fingerprint, a DIFFERENT case 2ms
+     × a denied fingerprint at the same base is NOT re-proposable (A1-9): denied is terminal 2ms
+     × a NEW base generation re-asks with a fresh case (A1-9 recovery) 1ms
+     × the requester is the DERIVED principal the lane was given, never a host default 1ms
+     × an operator rise with NO named approval caller behaves as the unwired lane (PR2 throw) 1ms
+     × a Human User rise above the Team Hard cap terminates authority-unavailable: no rows, no pending, durable deny 1ms
+     × member initiation refuses BEFORE any proposal machinery (zero rows, zero cases) 1ms
+     × an unreadable hard envelope REFUSES (never absent, never a proposal) 1ms
+     × an undecided containment is UNDETERMINED — no rung is proposed for an undecided region 1ms
+     × with the approval lane UNWIRED the PR2 refusal is byte-identical 1ms
+     × names the kind EXPLICITLY: a silent LEADER_APPROVAL default can never swallow a mutation case 1ms
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts (0 test)
+ ❯ packages/runtime/test/p7t1-inflight-drift.test.ts (0 test)
+ ❯ packages/runtime/test/p6t1-delegate.test.ts (0 test)
+ ❯ packages/runtime/test/p7t1-cold-resume.test.ts (0 test)
+ ❯ packages/runtime/test/p7t1-probe-generation.test.ts (0 test)
+ ❯ packages/runtime/test/p6t1-explicit.test.ts (0 test)
+ ❯ packages/runtime/test/p6t1-recovery.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-actions.test.ts (0 test)
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts (0 test)
+ ❯ packages/runtime/test/a4a-control-exact-scope.test.ts (0 test)
+ ❯ packages/runtime/test/p8s3-work-chain.test.ts (0 test)
+ ❯ packages/runtime/test/issue1-async-delegation.test.ts (0 test)
+ ❯ packages/runtime/test/a4p4-operation-approval-authority.test.ts (0 test)
+ ❯ packages/runtime/test/h1a-pre-execute-endcap.test.ts (0 test)
+ ❯ packages/runtime/test/a4pr0-proposal-store.test.ts (0 test)
+ ❯ packages/runtime/test/tcm-d4-root-context.test.ts (0 test)
+ ❯ packages/runtime/test/h5-bash-effects.test.ts (0 test)
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts (0 test)
+ ❯ packages/runtime/test/a4p4-operation-single-shot.test.ts (0 test)
+ ❯ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts (0 test)
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ❯ packages/runtime/test/p8s2-leader-contract.test.ts (0 test)
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 11ms
+     ✓ D3-1 FRESH member create: the scoped persona carries the identity block (owning root + own instanceId + role=member) on the verbatim template persona 2ms
+     ✓ D3-2 COLD RESUME: the resumed member's scoped persona is byte-identical to the create-time one (shared install seam) 1ms
+     ✓ D3-3 CROSS-ROOT: the N member gets the owning root N — never the boot root — on fresh create AND cold resume; the N root keeps only the root block 0ms
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 6ms
+     ✓ D3-5 repeated setup converges: exactly ONE scoped deployment:persona section, unchanged text 0ms
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts (0 test)
+ ❯ packages/runtime/test/tcm-m3-root-initial-work.test.ts (0 test)
+ ❯ packages/runtime/test/issue2-capability-permission-precedence.test.ts (0 test)
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (28 tests) 11ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (32 tests) 14ms
+ ❯ packages/runtime/test/f9-control-exactly-once.test.ts (0 test)
+ ❯ packages/runtime/test/a2c4-external-lastmile.test.ts (0 test)
+ ✓ packages/runtime/test/send-message-liveness.test.ts (4 tests) 8ms
+ ❯ packages/runtime/test/p8s7r1-initial-work.test.ts (0 test)
+ ❯ packages/runtime/test/control-inline-wait-abort.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-addressing.test.ts (0 test)
+ ❯ packages/runtime/test/control-guard-leader.test.ts (0 test)
+ ❯ packages/runtime/test/work-completion-async-wakeup.test.ts (0 test)
+ ❯ packages/runtime/test/c1-control-notification.test.ts (0 test)
+ ❯ packages/runtime/test/a4p4-capability-vs-permission.test.ts (0 test)
+ ❯ packages/runtime/test/control-abandon-without-resolve-envelope.test.ts (0 test)
+ ❯ packages/runtime/test/p8s4a-entrypoints.test.ts (0 test)
+ ❯ packages/runtime/test/p6t2-authority.test.ts (0 test)
+ ❯ packages/runtime/test/h4-rule-identity.test.ts (0 test)
+ ✓ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts (12 tests) 5ms
+ ❯ packages/runtime/test/c1-restart-recovery.test.ts (0 test)
+ ✓ packages/runtime/test/prf-inspect-same-source.test.ts (8 tests) 8ms
+ ❯ packages/runtime/test/tcm-g1-s6-integration.test.ts (0 test)
+ ✓ packages/runtime/test/f3a-lock-scope.test.ts (7 tests) 8ms
+ ✓ packages/runtime/test/mcp-target-materialization-unit.test.ts (5 tests) 5ms
+ ❯ packages/runtime/test/p8s3-work-request.test.ts (0 test)
+ ❯ packages/runtime/test/a4pr0-proposal-generation.test.ts (0 test)
+ ❯ packages/runtime/test/control-review-payload-roundtrip.test.ts (0 test)
+ ❯ packages/runtime/test/g8s1-generation-stamp.test.ts (0 test)
+ ❯ packages/runtime/test/c1-production-wiring.test.ts (0 test)
+ ❯ packages/runtime/test/control-legacy-row-compat.test.ts (0 test)
+ ❯ packages/runtime/test/issue1-serial-blocking.test.ts (0 test)
+ ❯ packages/runtime/test/control-inline-abandon.test.ts (0 test)
+ ❯ packages/runtime/test/model-inspect-config.test.ts (0 test)
+ ✓ packages/runtime/test/f3c-messaging-sibling.test.ts (2 tests) 5ms
+ ✓ packages/runtime/test/t12a-team-tools-registration.test.ts (3 tests) 4ms
+ ❯ packages/runtime/test/p6t2-quota.test.ts (0 test)
+ ❯ packages/runtime/test/control-subject-cross-kind-alias.test.ts (0 test)
+ ✓ packages/runtime/test/d1-member-base-tools.test.ts (7 tests) 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 61 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c1-pwsh-permission.test.ts [ packages/runtime/test/a2c1-pwsh-permission.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/a2c1-pwsh-permission.test.ts:486:17
+ ❯ packages/runtime/test/a2c1-pwsh-permission.test.ts:871:17
+ ❯ packages/runtime/test/a2c1-pwsh-permission.test.ts:824:36
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/140]⎯
+
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts [ packages/runtime/test/a2c2-permission-coverage.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts:335:19
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts:280:36
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/140]⎯
+
+ FAIL  packages/runtime/test/a2c3-inspect-operation-permission.test.ts [ packages/runtime/test/a2c3-inspect-operation-permission.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:305:28
+ ❯ packages/runtime/test/a2c3-inspect-operation-permission.test.ts:302:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/140]⎯
+
+ FAIL  packages/runtime/test/a2c4-external-lastmile.test.ts [ packages/runtime/test/a2c4-external-lastmile.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/a2c4-external-lastmile.test.ts:296:17
+ ❯ packages/runtime/test/a2c4-external-lastmile.test.ts:359:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/140]⎯
+
+ FAIL  packages/runtime/test/a4a-control-exact-scope.test.ts [ packages/runtime/test/a4a-control-exact-scope.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/a4a-control-exact-scope.test.ts:194:17
+ ❯ packages/runtime/test/a4a-control-exact-scope.test.ts:193:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/140]⎯
+
+ FAIL  packages/runtime/test/a4p4-capability-vs-permission.test.ts [ packages/runtime/test/a4p4-capability-vs-permission.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/a4p4-capability-vs-permission.test.ts:197:17
+ ❯ packages/runtime/test/a4p4-capability-vs-permission.test.ts:262:15
+ ❯ packages/runtime/test/a4p4-capability-vs-permission.test.ts:260:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/140]⎯
+
+ FAIL  packages/runtime/test/a4p4-operation-approval-authority.test.ts [ packages/runtime/test/a4p4-operation-approval-authority.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/a4p4-operation-approval-authority.test.ts:360:17
+ ❯ packages/runtime/test/a4p4-operation-approval-authority.test.ts:426:15
+ ❯ packages/runtime/test/a4p4-operation-approval-authority.test.ts:425:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/140]⎯
+
+ FAIL  packages/runtime/test/a4p4-operation-single-shot.test.ts [ packages/runtime/test/a4p4-operation-single-shot.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/a4p4-operation-single-shot.test.ts:261:17
+ ❯ packages/runtime/test/a4p4-operation-single-shot.test.ts:331:15
+ ❯ packages/runtime/test/a4p4-operation-single-shot.test.ts:323:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/140]⎯
+
+ FAIL  packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts [ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts:149:17
+ ❯ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts:263:15
+ ❯ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts:261:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/140]⎯
+
+ FAIL  packages/runtime/test/a4pr0-proposal-generation.test.ts [ packages/runtime/test/a4pr0-proposal-generation.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/a4pr0-proposal-generation.test.ts:201:17
+ ❯ packages/runtime/test/a4pr0-proposal-generation.test.ts:200:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/140]⎯
+
+ FAIL  packages/runtime/test/a4pr0-proposal-store.test.ts [ packages/runtime/test/a4pr0-proposal-store.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/a4pr0-proposal-store.test.ts:194:17
+ ❯ packages/runtime/test/a4pr0-proposal-store.test.ts:193:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/140]⎯
+
+ FAIL  packages/runtime/test/a5a-pre-execute.test.ts [ packages/runtime/test/a5a-pre-execute.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/a5a-pre-execute.test.ts:315:17
+ ❯ packages/runtime/test/a5a-pre-execute.test.ts:372:15
+ ❯ packages/runtime/test/a5a-pre-execute.test.ts:371:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/140]⎯
+
+ FAIL  packages/runtime/test/c1-control-notification.test.ts [ packages/runtime/test/c1-control-notification.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/c1-control-notification.test.ts:122:17
+ ❯ packages/runtime/test/c1-control-notification.test.ts:121:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/140]⎯
+
+ FAIL  packages/runtime/test/c1-production-wiring.test.ts [ packages/runtime/test/c1-production-wiring.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/c1-production-wiring.test.ts:61:28
+ ❯ packages/runtime/test/c1-production-wiring.test.ts:59:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/140]⎯
+
+ FAIL  packages/runtime/test/c1-restart-recovery.test.ts [ packages/runtime/test/c1-restart-recovery.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/c1-restart-recovery.test.ts:40:17
+ ❯ packages/runtime/test/c1-restart-recovery.test.ts:39:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/140]⎯
+
+ FAIL  packages/runtime/test/control-abandon-without-resolve-envelope.test.ts [ packages/runtime/test/control-abandon-without-resolve-envelope.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/control-abandon-without-resolve-envelope.test.ts:209:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/140]⎯
+
+ FAIL  packages/runtime/test/control-guard-leader.test.ts [ packages/runtime/test/control-guard-leader.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/control-guard-leader.test.ts:196:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/140]⎯
+
+ FAIL  packages/runtime/test/control-inline-abandon.test.ts [ packages/runtime/test/control-inline-abandon.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/control-inline-abandon.test.ts:76:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/140]⎯
+
+ FAIL  packages/runtime/test/control-inline-wait-abort.test.ts [ packages/runtime/test/control-inline-wait-abort.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/control-inline-wait-abort.test.ts:182:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/140]⎯
+
+ FAIL  packages/runtime/test/control-legacy-row-compat.test.ts [ packages/runtime/test/control-legacy-row-compat.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/control-legacy-row-compat.test.ts:60:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/140]⎯
+
+ FAIL  packages/runtime/test/control-review-payload-roundtrip.test.ts [ packages/runtime/test/control-review-payload-roundtrip.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/control-review-payload-roundtrip.test.ts:72:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/140]⎯
+
+ FAIL  packages/runtime/test/control-subject-cross-kind-alias.test.ts [ packages/runtime/test/control-subject-cross-kind-alias.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/control-subject-cross-kind-alias.test.ts:107:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/140]⎯
+
+ FAIL  packages/runtime/test/exec-contract-dual-gate.test.ts [ packages/runtime/test/exec-contract-dual-gate.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/exec-contract-dual-gate.test.ts:207:17
+ ❯ packages/runtime/test/exec-contract-dual-gate.test.ts:251:26
+ ❯ packages/runtime/test/exec-contract-dual-gate.test.ts:250:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/140]⎯
+
+ FAIL  packages/runtime/test/f9-control-exactly-once.test.ts [ packages/runtime/test/f9-control-exactly-once.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/f9-control-exactly-once.test.ts:149:17
+ ❯ packages/runtime/test/f9-control-exactly-once.test.ts:148:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/140]⎯
+
+ FAIL  packages/runtime/test/g8s1-generation-stamp.test.ts [ packages/runtime/test/g8s1-generation-stamp.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/g8s1-generation-stamp.test.ts:301:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/140]⎯
+
+ FAIL  packages/runtime/test/h1a-pre-execute-endcap.test.ts [ packages/runtime/test/h1a-pre-execute-endcap.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createControlWorld packages/runtime/test/h1a-pre-execute-endcap.test.ts:344:17
+ ❯ packages/runtime/test/h1a-pre-execute-endcap.test.ts:446:19
+ ❯ packages/runtime/test/h1a-pre-execute-endcap.test.ts:445:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/140]⎯
+
+ FAIL  packages/runtime/test/h4-rule-identity.test.ts [ packages/runtime/test/h4-rule-identity.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/h4-rule-identity.test.ts:305:17
+ ❯ packages/runtime/test/h4-rule-identity.test.ts:377:15
+ ❯ packages/runtime/test/h4-rule-identity.test.ts:376:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/140]⎯
+
+ FAIL  packages/runtime/test/h5-bash-effects.test.ts [ packages/runtime/test/h5-bash-effects.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createEnv packages/runtime/test/h5-bash-effects.test.ts:353:17
+ ❯ packages/runtime/test/h5-bash-effects.test.ts:550:15
+ ❯ packages/runtime/test/h5-bash-effects.test.ts:549:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/140]⎯
+
+ FAIL  packages/runtime/test/issue1-async-delegation.test.ts [ packages/runtime/test/issue1-async-delegation.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/issue1-async-delegation.test.ts:234:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/140]⎯
+
+ FAIL  packages/runtime/test/issue1-serial-blocking.test.ts [ packages/runtime/test/issue1-serial-blocking.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/issue1-serial-blocking.test.ts:116:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/140]⎯
+
+ FAIL  packages/runtime/test/issue2-capability-permission-precedence.test.ts [ packages/runtime/test/issue2-capability-permission-precedence.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createControlWorld packages/runtime/test/issue2-capability-permission-precedence.test.ts:224:17
+ ❯ packages/runtime/test/issue2-capability-permission-precedence.test.ts:340:19
+ ❯ packages/runtime/test/issue2-capability-permission-precedence.test.ts:338:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/140]⎯
+
+ FAIL  packages/runtime/test/model-inspect-config.test.ts [ packages/runtime/test/model-inspect-config.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ inspectWorker packages/runtime/test/model-inspect-config.test.ts:104:28
+ ❯ packages/runtime/test/model-inspect-config.test.ts:169:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/140]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts [ packages/runtime/test/multi-mcp-wiring.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createP6T6World packages/tools/test/p6t6-helpers.ts:298:17
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts:217:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/140]⎯
+
+ FAIL  packages/runtime/test/p6t1-checks.test.ts [ packages/runtime/test/p6t1-checks.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t1-checks.test.ts:260:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/140]⎯
+
+ FAIL  packages/runtime/test/p6t1-delegate.test.ts [ packages/runtime/test/p6t1-delegate.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t1-delegate.test.ts:67:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/140]⎯
+
+ FAIL  packages/runtime/test/p6t1-explicit.test.ts [ packages/runtime/test/p6t1-explicit.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t1-explicit.test.ts:76:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/140]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts [ packages/runtime/test/p6t1-parallel.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:144:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/140]⎯
+
+ FAIL  packages/runtime/test/p6t1-recovery.test.ts [ packages/runtime/test/p6t1-recovery.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t1-recovery.test.ts:91:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/140]⎯
+
+ FAIL  packages/runtime/test/p6t2-actions.test.ts [ packages/runtime/test/p6t2-actions.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t2-actions.test.ts:138:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/140]⎯
+
+ FAIL  packages/runtime/test/p6t2-addressing.test.ts [ packages/runtime/test/p6t2-addressing.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t2-addressing.test.ts:97:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/140]⎯
+
+ FAIL  packages/runtime/test/p6t2-authority.test.ts [ packages/runtime/test/p6t2-authority.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t2-authority.test.ts:50:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/140]⎯
+
+ FAIL  packages/runtime/test/p6t2-quota.test.ts [ packages/runtime/test/p6t2-quota.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t2-quota.test.ts:76:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/140]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts [ packages/runtime/test/p6t3-mediation.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:139:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/140]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts [ packages/runtime/test/p6t3-restart.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t3-restart.test.ts:80:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/140]⎯
+
+ FAIL  packages/runtime/test/p6t3-send-delivery.test.ts [ packages/runtime/test/p6t3-send-delivery.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p6t3-send-delivery.test.ts:216:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/140]⎯
+
+ FAIL  packages/runtime/test/p7t1-cold-resume.test.ts [ packages/runtime/test/p7t1-cold-resume.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createP7T1World packages/runtime/test/p7t1-helpers.ts:126:17
+ ❯ packages/runtime/test/p7t1-cold-resume.test.ts:67:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/140]⎯
+
+ FAIL  packages/runtime/test/p7t1-inflight-drift.test.ts [ packages/runtime/test/p7t1-inflight-drift.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createP7T1World packages/runtime/test/p7t1-helpers.ts:126:17
+ ❯ packages/runtime/test/p7t1-inflight-drift.test.ts:81:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/140]⎯
+
+ FAIL  packages/runtime/test/p7t1-probe-generation.test.ts [ packages/runtime/test/p7t1-probe-generation.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createP7T1World packages/runtime/test/p7t1-helpers.ts:126:17
+ ❯ packages/runtime/test/p7t1-probe-generation.test.ts:84:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/140]⎯
+
+ FAIL  packages/runtime/test/p8s2-leader-contract.test.ts [ packages/runtime/test/p8s2-leader-contract.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p8s2-leader-contract.test.ts:387:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/140]⎯
+
+ FAIL  packages/runtime/test/p8s3-work-chain.test.ts [ packages/runtime/test/p8s3-work-chain.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p8s3-work-chain.test.ts:452:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/140]⎯
+
+ FAIL  packages/runtime/test/p8s3-work-request.test.ts [ packages/runtime/test/p8s3-work-request.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p8s3-work-request.test.ts:59:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/140]⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: sessionPersistence.exists public seam is unavailable
+ ❯ durableSessionExists packages/runtime/src/plugin/live/agent-bindings.mjs:888:13
+    886|   async function durableSessionExists(sessionId) {
+    887|     if (typeof sessionPersistence?.exists !== 'function') {
+    888|       throw new Error(
+       |             ^
+    889|         'agent-bindings: sessionPersistence.exists public seam is unav…
+    890|       )
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:3897:15
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:604:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/140]⎯
+
+ FAIL  packages/runtime/test/p8s4a-entrypoints.test.ts [ packages/runtime/test/p8s4a-entrypoints.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createMutableWorld packages/runtime/test/p8s4a-entrypoints.test.ts:185:17
+ ❯ packages/runtime/test/p8s4a-entrypoints.test.ts:207:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/140]⎯
+
+ FAIL  packages/runtime/test/p8s5b-operation-fencing.test.ts [ packages/runtime/test/p8s5b-operation-fencing.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p8s5b-operation-fencing.test.ts:281:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/140]⎯
+
+ FAIL  packages/runtime/test/p8s7r1-initial-work.test.ts [ packages/runtime/test/p8s7r1-initial-work.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/p8s7r1-initial-work.test.ts:336:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[55/140]⎯
+
+ FAIL  packages/runtime/test/requirement-probe-blueprint-scoping.test.ts [ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts:364:26
+ ❯ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts:348:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[56/140]⎯
+
+ FAIL  packages/runtime/test/t14h-probe-merge.test.ts [ packages/runtime/test/t14h-probe-merge.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ parityVariant packages/runtime/test/t14h-probe-merge.test.ts:343:19
+ ❯ packages/runtime/test/t14h-probe-merge.test.ts:373:18
+ ❯ packages/runtime/test/t14h-probe-merge.test.ts:270:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[57/140]⎯
+
+ FAIL  packages/runtime/test/tcm-d4-root-context.test.ts [ packages/runtime/test/tcm-d4-root-context.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createP6T6World packages/tools/test/p6t6-helpers.ts:298:17
+ ❯ packages/runtime/test/tcm-d4-root-context.test.ts:147:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[58/140]⎯
+
+ FAIL  packages/runtime/test/tcm-g1-s6-integration.test.ts [ packages/runtime/test/tcm-g1-s6-integration.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/tcm-g1-s6-integration.test.ts:351:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[59/140]⎯
+
+ FAIL  packages/runtime/test/tcm-m3-root-initial-work.test.ts [ packages/runtime/test/tcm-m3-root-initial-work.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/tcm-m3-root-initial-work.test.ts:339:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[60/140]⎯
+
+ FAIL  packages/runtime/test/work-completion-async-wakeup.test.ts [ packages/runtime/test/work-completion-async-wakeup.test.ts ]
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/work-completion-async-wakeup.test.ts:224:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[61/140]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 79 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 RED probes (fail on the base tree; the file LOADS on the base tree) > R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees)
+TypeError: Cannot read properties of undefined (reading 'startsWithAuthorityTrap')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1433:17
+    1431|       realContainsRejectsTrap: boolean
+    1432|     }
+    1433|     expect(trap.startsWithAuthorityTrap).toBe(true)
+       |                 ^
+    1434|     expect(trap.realContainsRejectsTrap).toBe(false)
+    1435|     // The root and operation keys really differ only by the sibling p…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[62/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > the root itself matches (directory root and file root)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1559:28
+    1557| describe('A2C-7 G1-G4 — root itself / child / deep descendant / siblin…
+    1558|   it('the root itself matches (directory root and file root)', () => {
+    1559|     expect(FLOWS.g1DirRoot.decisionKind).toBe('allow')
+       |                            ^
+    1560|     expect(FLOWS.g1DirRoot.nextCalls).toBe(1)
+    1561|     expect((FLOWS.g1DirRoot.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[63/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > a child and a deep descendant match (the subtree the exact lane could not express)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1567:26
+    1565|
+    1566|   it('a child and a deep descendant match (the subtree the exact lane …
+    1567|     expect(FLOWS.g2Child.decisionKind).toBe('allow')
+       |                          ^
+    1568|     expect(FLOWS.g2Child.nextCalls).toBe(1)
+    1569|     expect((FLOWS.g2Child.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[64/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > a sibling is a NON-MATCH (the default outcome, zero interference)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1578:28
+    1576|
+    1577|   it('a sibling is a NON-MATCH (the default outcome, zero interference…
+    1578|     expect(FLOWS.g4Sibling.decisionKind).toBe('deny')
+       |                            ^
+    1579|     expect(hasFrag(FLOWS.g4Sibling.decisionReason, 'the template\'s de…
+    1580|     expect((FLOWS.g4Sibling.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[65/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1587:32
+    1585| describe('A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>a…
+    1586|   it('the exact lane is unchanged; a different-tool rule is NEVER cano…
+    1587|     expect(FLOWS.g11ExactMatch.decisionKind).toBe('allow')
+       |                                ^
+    1588|     expect((FLOWS.g11ExactMatch.request) === undefined).toBe(true)
+    1589|     expect(FLOWS.g11ExactMismatch.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[66/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1600:30
+    1598|
+    1599|   it('any is unchanged: file-class any allow (static allow + external …
+    1600|     expect(FLOWS.g12AnyAllow.decisionKind).toBe('allow')
+       |                              ^
+    1601|     expect(FLOWS.g12AnyAllow.nextCalls).toBe(1)
+    1602|     expect((FLOWS.g12AnyAllow.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[67/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1610:30
+    1608|
+    1609|   it('deny > ask > allow: a subtree rule in ALL three lanes — the deny…
+    1610|     expect(FLOWS.g13DenyWins.decisionKind).toBe('deny')
+       |                              ^
+    1611|     expect(hasFrag(FLOWS.g13DenyWins.decisionReason, 'the template\'s …
+    1612|     expect((FLOWS.g13DenyWins.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[68/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1621:14
+    1619|   it('deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (…
+    1620|     const f = FLOWS.g15DenyUnresolvable
+    1621|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1622|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1623|     expect(hasFrag(f.decisionReason, 'src')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[69/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1633:14
+    1631|   it('deny subtree, containment UNDETERMINABLE (no opaque handle) → FA…
+    1632|     const f = FLOWS.g15DenyUndeterminable
+    1633|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1634|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1635|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[70/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1648:14
+    1646|   it('deny subtree, the containment seam FAULTS (throws) → undetermina…
+    1647|     const f = FLOWS.g15DenyContainsFault
+    1648|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1649|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1650|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[71/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1656:49
+    1654|
+    1655|   it('allow subtree, unresolvable root → NO positive grant → non-match…
+    1656|     expect(FLOWS.g15AllowUnresolvableDefaultAsk.decisionKind).toBe('al…
+       |                                                 ^
+    1657|     expect((FLOWS.g15AllowUnresolvableDefaultAsk.request) !== undefine…
+    1658|     expect(FLOWS.g15AllowUnresolvableDefaultAsk.nextCalls).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[72/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1669:14
+    1667|   it('ask subtree, unresolvable root → the rule contributes NOTHING (t…
+    1668|     const f = FLOWS.g15AskUnresolvable
+    1669|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1670|     expect(hasFrag(f.decisionReason, 'the template\'s default (deny)')…
+    1671|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[73/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1680:14
+    1678|   it('allow subtree, the containment seam FAULTS → undeterminable → no…
+    1679|     const f = FLOWS.g15AllowContainsFault
+    1680|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1681|     expect(hasFrag(f.decisionReason, 'the template\'s default (deny)')…
+    1682|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[74/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G16 — cold resume (dispose + fresh install; no stale canonical-rule cache) > the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1690:33
+    1688| describe('A2C-7 G16 — cold resume (dispose + fresh install; no stale c…
+    1689|   it('the fresh install follows the CURRENT topology: the stale target…
+    1690|     expect(FLOWS.g16T0ViaTarget.decisionKind).toBe('allow')
+       |                                 ^
+    1691|     expect((FLOWS.g16T0ViaTarget.request) === undefined).toBe(true)
+    1692|     const stale = FLOWS.g16StaleTargetNoMatch
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[75/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > the real backend section ran (the prebuilt pinned lib is present on this host)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1704:28
+    1702| describe('A2C-7 G5-G10 — the REAL pinned backend (the authority is the…
+    1703|   it('the real backend section ran (the prebuilt pinned lib is present…
+    1704|     expect(REAL.available).toBe(true)
+       |                            ^
+    1705|   })
+    1706|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[76/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule
+TypeError: Cannot read properties of undefined (reading 'g5TrapDefault')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1708:30
+    1706|
+    1707|   it('G5 the prefix trap: the deny rule rooted at `src` does NOT deny …
+    1708|     const trap = FLOWS2(REAL).g5TrapDefault
+       |                              ^
+    1709|     expect(trap.decisionKind).toBe('deny')
+    1710|     expect(hasFrag(trap.decisionReason, 'the template\'s default (deny…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[77/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways
+TypeError: Cannot read properties of undefined (reading 'g6RelRuleAbsOp')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1721:14
+    1719|   it('G6 relative/absolute aliases: one canonical identity — cross-spe…
+    1720|     const f = FLOWS2(REAL)
+    1721|     expect(f.g6RelRuleAbsOp.decisionKind).toBe('allow')
+       |              ^
+    1722|     expect((f.g6RelRuleAbsOp.request) === undefined).toBe(true)
+    1723|     expect(f.g6AbsRuleRelOp.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[78/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds
+TypeError: Cannot read properties of undefined (reading 'sameIdentity')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1729:14
+    1727|   it('G7 `..` traversal: the traversal spelling canonicalizes to the S…
+    1728|     const c = REAL.cases?.traversal as { directKey: string; traversalK…
+    1729|     expect(c.sameIdentity).toBe(true)
+       |              ^
+    1730|     expect(c.containsDirect).toBe(true)
+    1731|     expect(FLOWS2(REAL).g7Traversal.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[79/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded)
+TypeError: Cannot read properties of undefined (reading 'caseSensitiveBackend')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1737:14
+    1735|   it('G8 casing semantics BY BACKEND: this (case-sensitive) backend tr…
+    1736|     const c = REAL.cases?.casing as { baseKey: string; variantKey: str…
+    1737|     expect(c.caseSensitiveBackend).toBe(true)
+       |              ^
+    1738|     expect(c.containsVariant).toBe(false)
+    1739|     expect(FLOWS2(REAL).g8CaseVariantNoMatch.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[80/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling)
+TypeError: Cannot read properties of undefined (reading 'sameIdentity')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1746:14
+    1744|   it('G9 symlink alias identity: the rule `./alias` matches the TARGET…
+    1745|     const c = REAL.cases?.aliasIdentity as { aliasKey: string; dirAKey…
+    1746|     expect(c.sameIdentity).toBe(true)
+       |              ^
+    1747|     const f = FLOWS2(REAL)
+    1748|     expect(f.g9ViaTargetPath.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[81/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze)
+TypeError: Cannot read properties of undefined (reading 'g10T0TargetMatches')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1756:14
+    1754|   it('G10 junction retarget — the H4 fresh-decision proof: one install…
+    1755|     const f = FLOWS2(REAL)
+    1756|     expect(f.g10T0TargetMatches.decisionKind).toBe('allow')
+       |              ^
+    1757|     const oldTarget = f.g10T1OldTargetNoMatch
+    1758|     expect(oldTarget.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[82/140]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G1 (real) the root itself matches on the real backend (contains(self) = true)
+TypeError: Cannot read properties of undefined (reading 'containsSelf')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1767:14
+    1765|   it('G1 (real) the root itself matches on the real backend (contains(…
+    1766|     const c = REAL.cases?.rootItself as { containsSelf: boolean }
+    1767|     expect(c.containsSelf).toBe(true)
+       |              ^
+    1768|     expect(FLOWS2(REAL).g1RealRootItself.decisionKind).toBe('allow')
+    1769|     expect((FLOWS2(REAL).g1RealRootItself.request) === undefined).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[83/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > creates ONE case + one proposal row per rule, commits NOTHING, and says so
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:584:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[84/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a retry is idempotent: same case, one leg row, no second proposal set
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:632:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[85/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a different effect asked is a DIFFERENT fingerprint, a DIFFERENT case
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:648:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[86/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a denied fingerprint at the same base is NOT re-proposable (A1-9): denied is terminal
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:660:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[87/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a NEW base generation re-asks with a fresh case (A1-9 recovery)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:685:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[88/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > the requester is the DERIVED principal the lane was given, never a host default
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:711:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[89/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > an operator rise with NO named approval caller behaves as the unwired lane (PR2 throw)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:730:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[90/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > a Human User rise above the Team Hard cap terminates authority-unavailable: no rows, no pending, durable deny
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:748:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[91/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > member initiation refuses BEFORE any proposal machinery (zero rows, zero cases)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:775:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[92/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > an unreadable hard envelope REFUSES (never absent, never a proposal)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:792:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[93/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > an undecided containment is UNDETERMINED — no rung is proposed for an undecided region
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:810:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[94/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > with the approval lane UNWIRED the PR2 refusal is byte-identical
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:830:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[95/140]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the identity the case is opened with > names the kind EXPLICITLY: a silent LEADER_APPROVAL default can never swallow a mutation case
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:845:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[96/140]⎯
+
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+AssertionError: expected 'agent-bindings: capability template u…' to contain 'fail closed'
+
+Expected: "fail closed"
+Received: "agent-bindings: capability template unresolved for 'session-child-p6t2-w1' (reason=template-id-missing instanceId=inst-p6t2seedw01) (code: capability-template-unresolved)"
+
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:451:50
+    449|     // no block with the foreign root is ever installed.
+    450|     expect(foreignSetupError instanceof Error).toBe(true)
+    451|     expect((foreignSetupError as Error).message).toContain('fail close…
+       |                                                  ^
+    452|     expect(foreignCtxPersonaEntries.length).toBe(0)
+    453|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[97/140]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts > fix-control-authz D — every restart-unique attempt requires a fresh Human > D1: an approved-then-crashed token re-arms NO stale approval on the cold-restart retry (NEW pending request; zero work before the fresh approval; then exactly-once work)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts:123:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[98/140]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts > fix-control-authz D — every restart-unique attempt requires a fresh Human > D2: a crashed-mid-wait (abandoned) token re-arms NO stale review on the cold-restart retry (NEW pending request; exactly-once work after the fresh approval)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:127:9
+ ❯ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts:232:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[99/140]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > premise: the leader template declares NO requirements (its scope has no verdict inputs)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:265:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[100/140]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:282:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[101/140]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:319:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[102/140]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL3: with the leader disabled the legitimate control/recovery lanes still function
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:354:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[103/140]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL4: re-enable RESUMES the initial work through the same checks (allowed again)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:402:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[104/140]⎯
+
+ FAIL  packages/runtime/test/leader-recovery-next-boundary-exit.test.ts > W3-C leader-recovery-next-boundary-exit: the F8 leader recovery exit > L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:197:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[105/140]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > W2: the wiring resolves [team, template:leader] for the fixture blueprint
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:240:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[106/140]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > W3: the refs exclude the (unrelated) worker template scope
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:246:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[107/140]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:256:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[108/140]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L2: a Leader OPTIONAL requirement down does not block the normal turn (auto-degraded)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:293:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[109/140]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L4: an unrelated Member (worker) required requirement down does not block the Leader
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:320:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[110/140]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L5: a Team-level REQUIRED requirement down blocks the Leader normal turn
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:347:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[111/140]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:381:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[112/140]⎯
+
+ FAIL  packages/runtime/test/model-activation-step8.test.ts > Gate D — activation step-8 composition contract (the template/static model grant) > D1 member template model -> model effective allow at the template/static layer
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/model-activation-step8.test.ts:165:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[113/140]⎯
+
+ FAIL  packages/runtime/test/model-activation-step8.test.ts > Gate D — activation step-8 composition contract (the template/static model grant) > D1 model-only shorthand inherits the injected staticModel provider
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/model-activation-step8.test.ts:196:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[114/140]⎯
+
+ FAIL  packages/runtime/test/model-activation-step8.test.ts > Gate D — activation step-8 composition contract (the template/static model grant) > D2 no modelPreference -> the model cell stays unspecified (old behavior)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/model-activation-step8.test.ts:217:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[115/140]⎯
+
+ FAIL  packages/runtime/test/model-activation-step8.test.ts > Gate D — activation step-8 composition contract (the template/static model grant) > D3 modelPreference + capabilities.mcp allow -> BOTH grants survive (no MCP regression)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/model-activation-step8.test.ts:236:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[116/140]⎯
+
+ FAIL  packages/runtime/test/optional-mcp-live-outage-degraded.test.ts > W3-A optional-mcp-live-outage-degraded: an optional outage degrades, never blocks > 1. the optional outage DEGRADES the scope; normal work is admitted; recovery stays closed
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts:106:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[117/140]⎯
+
+ FAIL  packages/runtime/test/optional-mcp-live-outage-degraded.test.ts > W3-A optional-mcp-live-outage-degraded: an optional outage degrades, never blocks > 2. the degraded classification is stable on the fresh re-evaluation; no incident is ever recorded
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts:131:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[118/140]⎯
+
+ FAIL  packages/runtime/test/optional-mcp-live-outage-degraded.test.ts > W3-A optional-mcp-live-outage-degraded: an optional outage degrades, never blocks > 3. the recovery passage over the degraded scope is the no-op allow (no reduced authority)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts:153:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[119/140]⎯
+
+ FAIL  packages/runtime/test/recovery-abandon-commit-fault.test.ts > W3-E recovery-abandon-commit-fault: the F2 no-swallow abandon > S1 (FAULT): the real abandon-commit failure SURFACES — the router does NOT claim abandoned
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts:145:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[120/140]⎯
+
+ FAIL  packages/runtime/test/recovery-abandon-commit-fault.test.ts > W3-E recovery-abandon-commit-fault: the F2 no-swallow abandon > S2 (CONCURRENT-ABANDON): the already-abandoned request KEEPS the zero-effect claim
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts:170:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[121/140]⎯
+
+ FAIL  packages/runtime/test/recovery-abandon-commit-fault.test.ts > W3-E recovery-abandon-commit-fault: the F2 no-swallow abandon > S3 (SUCCESS): the durable abandon commit → the typed abandoned (zero work effect)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts:192:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[122/140]⎯
+
+ FAIL  packages/runtime/test/recovery-abandon-commit-fault.test.ts > W3-E recovery-abandon-commit-fault: the F2 no-swallow abandon > S4 (REGRESSION): a NORMAL allow still admits the re-run (the F2 fix does not touch the allow path)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-abandon-commit-fault.test.ts:218:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[123/140]⎯
+
+ FAIL  packages/runtime/test/recovery-dispatch-abort-zero-effect.test.ts > E.11 recovery-dispatch-abort-zero-effect: an aborted wait keeps the block, zero effect > an aborted recovery wait abandons the request (best-effort) + keeps the block with controlDecision abandoned + zero work effect
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-dispatch-abort-zero-effect.test.ts:44:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[124/140]⎯
+
+ FAIL  packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts > E.11 recovery-dispatch-deny-zero-effect: a durable deny keeps the block, zero effect > a denied recovery dispatch keeps the COMPATIBILITY_BLOCKED block with controlDecision deny + controlRequestId + zero work effect
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts:46:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[125/140]⎯
+
+ FAIL  packages/runtime/test/recovery-leader-dispatch-review.test.ts > E.11 recovery-leader-dispatch-review: the human-reviewed recovery offer > offers the recovery dispatch as a user-approval with the normalized review payload + a new per-attempt correlation
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-leader-dispatch-review.test.ts:51:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[126/140]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 1. a blocked Leader send-message offers the recovery Human Review (user-approval + review payload)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:87:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[127/140]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 2. deny → the typed zero-effect block stands and NO recipient input
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:115:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[128/140]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 3. allow → the re-run delivers EXACTLY ONE recipient input
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:133:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[129/140]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 4. abort → abandonment durable + the typed zero-effect block + NO recipient input
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:149:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[130/140]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 5. normal mode (no scope down) send-message needs NO extra approval
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:168:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[131/140]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 6. report-progress is STILL pure coordination (never gated, no dispatch)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:183:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[132/140]⎯
+
+ FAIL  packages/runtime/test/recovery-send-message-review.test.ts > W3-D recovery-send-message-review: the F9 cross-agent trigger > 7. request-control is UNHARMED (the control plane is always allowed, no dispatch)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/recovery-send-message-review.test.ts:202:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[133/140]⎯
+
+ FAIL  packages/runtime/test/required-mcp-live-outage-recovery.test.ts > W3-A required-mcp-live-outage-recovery: the live outage arcs > 1. the live unreachable verdict overrides the static available:true seed → the required scope BLOCKs (typed, recovery offered)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/required-mcp-live-outage-recovery.test.ts:135:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[134/140]⎯
+
+ FAIL  packages/runtime/test/required-mcp-live-outage-recovery.test.ts > W3-A required-mcp-live-outage-recovery: the live outage arcs > 2. the recovery work is allowed on the reduced authority + the incident opens durably
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/required-mcp-live-outage-recovery.test.ts:179:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[135/140]⎯
+
+ FAIL  packages/runtime/test/required-mcp-live-outage-recovery.test.ts > W3-A required-mcp-live-outage-recovery: the live outage arcs > 3. the fresh evaluation recovers → normal work is admitted + the incident closes (the §E.10 exit record)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/required-mcp-live-outage-recovery.test.ts:208:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[136/140]⎯
+
+ FAIL  packages/runtime/test/requirement-authority-negatives.test.ts > E.11 requirement-authority-negatives: the ten fail-closed authority edges > 10. (LIVE) the durable consent + template-availability facts SURVIVE a restart
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/requirement-authority-negatives.test.ts:173:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[137/140]⎯
+
+ FAIL  packages/runtime/test/restart-readiness-unknown.test.ts > W3-A restart-readiness-unknown: unknown readiness fails closed (no evidence, no admission) > 1. required + unknown + no seed → BLOCKED until the fresh probe (fail-closed, recovery offered)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/restart-readiness-unknown.test.ts:113:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[138/140]⎯
+
+ FAIL  packages/runtime/test/restart-readiness-unknown.test.ts > W3-A restart-readiness-unknown: unknown readiness fails closed (no evidence, no admission) > 2. required + unknown + an available:true seed → the bootstrap seed feeds the engine → admitted
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/restart-readiness-unknown.test.ts:145:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[139/140]⎯
+
+ FAIL  packages/runtime/test/restart-readiness-unknown.test.ts > W3-A restart-readiness-unknown: unknown readiness fails closed (no evidence, no admission) > 3. an available:false optional seed → the scope DEGRADES but is still admitted (the seed feeds both requirements the same way)
+TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+ ❯ teamDomainError packages/storage/schema/errors.ts:98:10
+     96|   details?: Record<string, unknown>,
+     97| ): TeamDomainError {
+     98|   return new TeamDomainError(code, message, details)
+       |          ^
+     99| }
+    100|
+ ❯ createTeamDomain packages/storage/repositories/team-domain.ts:280:13
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:359:18
+ ❯ packages/runtime/test/restart-readiness-unknown.test.ts:174:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[140/140]⎯
+
+
+ Test Files  78 failed | 12 passed (90)
+      Tests  79 failed | 197 passed (276)
+   Start at  06:05:32
+   Duration  3.84s (transform 36.95s, setup 0ms, import 38.84s, tests 403ms, environment 10ms)
+
