@@ -1970,7 +1970,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts',
       'packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts',
     ]
-    // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
+    // A4-PR7 Task 7.6 (`test/a4-pr7-76-gate`): the machine merge gate as a spec. One
+    // new scannable file — `packages/testkit/test/a4p7-merge-gate.test.ts`. The leg's
+    // other writes are this pin (an edit) and evidence `.md`/`.txt` under
+    // `dev/agent-workflow/evidence/`, which this scan's `packages/**` scope does not
+    // cover. Like every list here, the path is asserted present BY PATH below and the
+    // length is tied to the movement of the total; the total is never written by hand.
+    const SCANNED_PATHS_A4P76GATE: readonly string[] = [
+      'packages/testkit/test/a4p7-merge-gate.test.ts',
+    ]    // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
       983 +
@@ -1984,7 +1992,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4F1.length +
         SCANNED_PATHS_A4SURFACE.length +
         SCANNED_PATHS_A4ARTIFACTS.length +
-        SCANNED_PATHS_A4P7PRE.length,
+        SCANNED_PATHS_A4P7PRE.length +
+        SCANNED_PATHS_A4P76GATE.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -1998,7 +2007,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4F1.length +
         SCANNED_PATHS_A4SURFACE.length +
         SCANNED_PATHS_A4ARTIFACTS.length +
-        SCANNED_PATHS_A4P7PRE.length,
+        SCANNED_PATHS_A4P7PRE.length +
+        SCANNED_PATHS_A4P76GATE.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2038,6 +2048,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4SURFACE,
       ...SCANNED_PATHS_A4ARTIFACTS,
       ...SCANNED_PATHS_A4P7PRE,
+      ...SCANNED_PATHS_A4P76GATE,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2123,7 +2134,22 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // number for the merged tree — the derived sums above compute that, and a landed
     // file without its path here turns the sum RED rather than silently moving it.
     expect(SCANNED_PATHS_A4P7PRE.length).toBe(1028 - 1025)
-
+    // The A4-PR7 Task 7.6 tie, same form: the movement equals the one file this lane
+    // names, asserted present by path in the loop above. Its endpoints are THIS lane's OWN
+    // advancing total on the tree it merged into, and each was measured, not inferred:
+    // origin/master (which carries A4ARTIFACS above and A4P7PRE's three) measures 1028, and
+    // 1029 with this lane's gate spec added. Both numbers come from the RED capture in
+    // `dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/p4t6-PRE-EXTEND-RED.txt` — the
+    // merged-tree one reads `expected 1028 to be 1029`, taken with this file's entry in the
+    // list and the spec itself absent from disk; the two earlier captures in that file are
+    // the same lane's RED on its two pre-merge bases, kept rather than rewritten because
+    // each tie asserts the pair the lane actually moved. The comma-operator trap this file's
+    // comments warn about is a live hazard here: the term above this list's own sum entry
+    // ends in `+` and this line's last term ends in `,` — a `,` one term early silently
+    // turns the sum into a comma expression inside `.toBe(…)` and reports a total that is
+    // really just the last term. The derived sums above compute the merged total; this
+    // comment does not write it.
+    expect(SCANNED_PATHS_A4P76GATE.length).toBe(1029 - 1028)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

@@ -1,0 +1,54 @@
+### V1 the gate, run A (determinism check is V2)
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Duration  28.84s (transform 57ms, setup 0ms, import 73ms, tests 28.68s, environment 0ms)
+### V2 the gate, run B
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Duration  28.89s (transform 48ms, setup 0ms, import 64ms, tests 28.75s, environment 0ms)
+### V3 p4t6
+      Tests  10 passed (10)
+### V4 the 7.5 composition classifier suite
+      Tests  53 passed (53)
+### V5 typecheck, whole workspace
+pnpm -r run typecheck exit=0
+Done lines: 8   error TS lines: 0   Failed: 0
+### V6 eslint on the changed file, then full repo lint
+changed-file eslint exit=0
+pnpm run lint exit=1
+✖ 160 problems (128 errors, 32 warnings)
+  4 errors and 32 warnings potentially fixable with the `--fix` option.
+[ELIFECYCLE] Command failed with exit code 1.
+### V7 lint-identities --diff against the named baseline
+lint-identities: 160 identity lines, 76 distinct (target .)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+### V8 composition-smoke, exit code measured WITHOUT A PIPE
+exit_code_no_pipe=0
+step lines: 12  SKIP lines: 0  FAIL lines: 0
+footer: PASS composition-smoke
+### V9 acceptance suite (root-suite content, reported not embedded)
+### V10 the fence at the toplevel (RESULT lines), exit without a pipe
+fence exit=1
+scanned-in-scope: 745 tracked files
+RESULT dirty(110 files, 213 sites)
+RESULT unknown(0 files, 0 sites)
+RESULT advisory(9 files, 14 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT adjudicated(16 files, 24 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+### V11 tree state
+ M dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/FINDINGS.md
+ M packages/testkit/test/a4p7-merge-gate.test.ts
+### done
+
+### V9 CORRECTION — the acceptance suite moved packages since the script was written
+npx vitest run packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+ Test Files  1 passed (1)
+      Tests  70 passed (70)
+(the script looked under packages/testkit/test and vitest reported no files; the suite
+is the same 70 tests, its path changed upstream in the 7.4 C-domain range)
+
+### NOTE on V6: `pnpm run lint` exits 1 by standing repo condition (160 problems, 128
+### errors across the tree). §7.6 measures lint as the identity diff in V7, which is
+### `new 0, resolved 0`. V6 exit 1 is not a regression introduced here.
