@@ -1,0 +1,6 @@
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/client/composition-shim/client-bundle.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/s6-remote.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/s6-remote.js.map
+[ELIFECYCLE] Command failed with exit code 1.
