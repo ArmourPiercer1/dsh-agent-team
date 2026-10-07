@@ -97,10 +97,22 @@ const A_MEMBER_PERSONA = 'You are member tpl-gate of the GATE-A team.'
 const B_LEADER_PERSONA = 'You lead the GATE-B team.'
 const B_MEMBER_PERSONA = 'You are member tpl-gate of the GATE-B team.'
 
-/** Blueprint A (the row anchor): the member template allows A's tools, denies fs.write, and carries A's permission rules. */
+/**
+ * Blueprint A (the row anchor): the member template allows A's tools, denies
+ * fs.write, and carries A's permission rules.
+ *
+ * 7.4 migration 2026-10-08: v1 → v3 with BOTH authority documents stated, for
+ * A and B alike. The gate drives per-Team CAPABILITY isolation (persona /
+ * teamTools / builtinToolDeny / the pre-execute listener install) and the
+ * durable resolve chain — it never performs a permission mutation or an
+ * approval, so both authority documents state `rules: []`: on the expansion
+ * plane that means "may expand nothing" (fail-closed), on the approval plane
+ * it removes nothing. The Alpha.3 `capabilities.permissions` lanes the gate
+ * DOES assert on are unchanged — they are a different plane's vocabulary.
+ */
 const A_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: team.gate.a',
   'revision: "1"',
   'leader:',
@@ -134,16 +146,20 @@ const A_SOURCE = [
   '        deny: []',
   'requirements: []',
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',
   '',
 ].join('\n')
 
-/** Blueprint B (the saved source): the SAME member template id with B's tools, B's deny, B's rules. */
+/** Blueprint B (the saved source): the SAME member template id with B's tools, B's deny, B's rules (v3, see A_SOURCE's note). */
 const B_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: team.gate.b',
   'revision: "1"',
   'leader:',
@@ -177,6 +193,10 @@ const B_SOURCE = [
   '        deny: []',
   'requirements: []',
   'memberEnvelopes: []',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'policyStates: []',
   'metadata: {}',
   '---',

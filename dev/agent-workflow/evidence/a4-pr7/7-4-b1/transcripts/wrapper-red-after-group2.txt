@@ -1,0 +1,23 @@
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > every deferred path is still dirty (a migrated path must leave the list)
+AssertionError: expected [ …(9) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "packages/runtime/test/a3p5-permission-read-wiring.test.ts",
++   "packages/runtime/test/a3p5-permission-splice.test.ts",
++   "packages/runtime/test/a4f1-row-version-not-document-version.test.ts",
++   "packages/runtime/test/a4p6-start-gate-entrances.test.ts",
++   "packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts",
++   "packages/runtime/test/bp1-dual-team-gate.test.ts",
++   "packages/runtime/test/bp1-freeze-barrier.test.ts",
++   "packages/runtime/test/bp1-red-glue-probe.test.ts",
++   "packages/runtime/test/bp1-red-probe.test.ts",
++ ]
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:450:19
+    448|   it('every deferred path is still dirty (a migrated path must leave t…
+    449|     const stale = [...DEFERRALS.keys()].filter((p) => !dirtyPaths.incl…
