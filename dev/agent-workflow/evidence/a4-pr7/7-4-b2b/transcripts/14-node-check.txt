@@ -1,0 +1,2 @@
+$ node --check packages/runtime/test/t12a-live-bridge.mjs
+exit 0 — parses clean (the file is UNCHANGED by this lane: see the STOP)

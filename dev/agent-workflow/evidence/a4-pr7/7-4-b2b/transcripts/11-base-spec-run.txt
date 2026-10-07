@@ -1,0 +1,662 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b
+
+ ✓ packages/runtime/test/persona-kind-provider-preflight.test.ts (14 tests) 19ms
+ ✓ packages/runtime/test/t14h-probe-merge.test.ts (10 tests) 6ms
+ ✓ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts (13 tests) 8ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts (5 tests) 62ms
+ ✓ packages/runtime/test/prf-inspect-same-source.test.ts (8 tests) 4ms
+ ✓ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (42 tests) 11ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (28 tests) 7ms
+ ✓ packages/runtime/test/pbf-default-artifact-urls.test.ts (9 tests) 6ms
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-pagination.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-projection.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is absent from the plugin context (the web profile provides it through the workspace row — the team row hard-injects it)
+    at assertWorkspaceRegistryLike (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/workspace-attach.ts:65:11)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1665:7)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/tcm-m2-workspace-attach.test.ts:421:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r4-fork-describe.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-push-reconnect.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-principal.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is malformed: expected resolveByPath and list to be functions
+    at assertWorkspaceRegistryLike (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/workspace-attach.ts:75:11)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1665:7)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/tcm-m2-workspace-attach.test.ts:442:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r4-handoff-wiring.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-scp-r5" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-spfc-fat1" is 'fatal' — the durable Team bind is refused (zero durable effect; a Team-level required requirement is down — it cannot be bypassed by disabling a template; repair the environment and re-drive the creation)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-std-r3" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/tcm-m2-workspace-attach.test.ts (14 tests) 8ms
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-spfc-fix1" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p8s7r4-fork-describe.test.ts (10 tests) 7ms
+stderr | packages/runtime/test/p8s6-pagination.test.ts > p8s6-pagination teardown > the C6 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-pagination.test.ts (9 tests) 10ms
+stderr | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 100ms — the connection service appeared after the mount step)
+
+stderr | packages/runtime/test/p8s6-projection.test.ts > p8s6-projection teardown > the C2 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-projection.test.ts (14 tests) 20ms
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-spfc-con1" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/p8s6-push-reconnect.test.ts > p8s6-push-reconnect teardown > the C5 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-push-reconnect.test.ts (5 tests) 7ms
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts > p8s6-remote-commands teardown > the C4 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p8s6-remote-commands.test.ts (8 tests) 11ms
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s7r4-handoff-wiring.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/startup-preflight-production-create.test.ts (6 tests) 9ms
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/schema/errors.ts:98:10)
+    at createTeamDomain (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/repositories/team-domain.ts:280:13)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1726:14)
+
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-session-startup-fence.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p8s7r4-handoff-wiring.test.ts (8 tests) 3ms
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-rmrcooroot" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4036:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-principal.test.ts > p8s6-principal teardown > the C3 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-principal.test.ts (20 tests) 10ms
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-scp-r8" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-sa-r6" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-std-r3x" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-std-r3x" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts > p8s7r2-policy-state-durable teardown > the R2-1 worlds are disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p8s7r2-policy-state-durable.test.ts (8 tests) 7ms
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/startup-template-disable-production.test.ts (8 tests) 4ms
+stderr | packages/runtime/test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "connection" public service is malformed: expected connection.rpc.handle to be a function; a headless host should not provide a partial service
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2920:11)
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: schema_meta stamp for store 'schema_meta' is missing (partial create or corruption)
+    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/schema/errors.ts:98:10)
+    at verifyStamps (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/repositories/team-domain.ts:226:13)
+    at openTeamDomain (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/repositories/team-domain.ts:314:11)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1729:14)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12b1-real-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/schema/errors.ts:98:10)
+    at createTeamDomain (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/repositories/team-domain.ts:280:13)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1726:14)
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/t12b1-real-create.test.ts (4 tests) 5ms
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/t12m4-remote-mount.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): webserver: route /team-remote is already registered
+    at mountRemoteNow (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1542:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2925:27)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/t12m4-remote-mount.test.ts (9 tests) 4ms
+ ✓ packages/runtime/test/rmr-create-or-open-boot.test.ts (6 tests) 8ms
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/startup-consent-production.test.ts (8 tests) 6ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/t12b2-resume-separation.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-t12b2foreign" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/root.ts:4036:15)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2934:5)
+
+ ✓ packages/runtime/test/t12b6-handoff-agent-start.test.ts (7 tests) 6ms
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/t12b2-resume-separation.test.ts (5 tests) 6ms
+ ✓ packages/runtime/test/startup-all-templates-real-authority.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/team-compatibility-scope.test.ts (13 tests) 6ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: bootPhase must be "create", "resume" or "create-or-open"
+    at fail (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:603:11)
+    at validateTeamPluginConfig (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:610:97)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1641:29)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/p8s5a-production-assembly.test.ts:709:16
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/p8s5a-production-assembly.test.ts:697:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "agents" public service is absent from the plugin context
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1648:13)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/p8s5a-production-assembly.test.ts:736:16
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/p8s5a-production-assembly.test.ts:697:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p8s5a-production-assembly.test.ts (7 tests) 4ms
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts > p8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-08, projection v2) > the R2-2 worlds are disposed (close + stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s7r2-effective-config.test.ts (22 tests) 6ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts > R2-3 (P8-S7-R2): BQ-11 the model state view > R23.16: every world root closed cleanly and the scratch dirs are destroyed (reversible)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s7r2-model-state.test.ts (18 tests) 9ms
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service was absent at the mount step and did not appear within 200ms (headless host, or the web connection service was not provided in time)
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stdout | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-rc2a1-a: anchor templates declaring capabilities.permissions = ["leader"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor rc2a1.bp@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] bootstrap FAILED: Error: agent-bindings: alpha.2 permission fs containment unavailable for 'session-rc2a1-b' (the fs provider exposes no public contains() seam while the template declares exact/subtree file permission (the containment authority is incomplete), instanceId=inst-leader) (code: alpha2-permission-fs-containment-unavailable)
+    at permissionFsContainmentUnavailable (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:4368:19)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:2391:19
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:990:18
+    at makeHandle (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/t12a-live-bridge.mjs:870:7)
+    at Object.create (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/t12a-live-bridge.mjs:902:22)
+    at Object.runOwned (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/team-session-activation.ts:571:16)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:1023:16
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:814:14
+    at singleFlightTeamActivation (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:818:14)
+    at runOwnedActivation (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/live/agent-bindings.mjs:1021:12)
+
+ ✓ packages/runtime/test/rc2a1-fs-containment.test.ts (6 tests) 2ms
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: FAILED — the "connection" public service appeared malformed: expected connection.rpc.handle to be a function
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/team-session-startup-fence.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-session-startup-fence.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/team-session-startup-fence.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rmr-remote-mount-race.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: remoteMountWaitMs must be a non-negative integer (milliseconds) when present
+    at fail (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:603:11)
+    at validateTeamPluginConfig (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:686:5)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1641:29)
+    at Module.apply (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/test/rmr-remote-mount-race.test.ts:328:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+
+ ✓ packages/runtime/test/rmr-remote-mount-race.test.ts (7 tests) 3ms
+stderr | packages/runtime/test/team-session-startup-fence.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: storage seam failure during 'open' on store 'team_domain': injected domain-open failure (startup-failure isolation world)
+    at normalizeSeamError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/schema/errors.ts:177:10)
+    at openHandle (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/repositories/team-domain.ts:151:11)
+    at createOrOpenTeamDomainDetailed (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/storage/repositories/team-domain.ts:368:18)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2b/packages/runtime/src/plugin/host.ts:1732:21)
+
+ ✓ packages/runtime/test/team-session-startup-fence.test.ts (9 tests) 2ms
+
+ Test Files  34 passed (34)
+      Tests  370 passed (370)
+   Start at  06:01:19
+   Duration  4.23s (transform 35.23s, setup 0ms, import 70.07s, tests 296ms, environment 4ms)
+
+EXIT=0

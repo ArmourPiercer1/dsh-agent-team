@@ -47,10 +47,19 @@ const ROOT_SID = 'session-t12b1root'
 /** The frozen epoch-0 stamp of the seed world (the B1 defect's fingerprint). */
 const EPOCH_0 = new Date(0).toISOString()
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /** The row blueprint (structure mirrors the P8-S7R4 fixture; own id). */
 const BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: T12B1-BP',
   'revision: "1"',
   'leader:',

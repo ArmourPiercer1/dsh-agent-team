@@ -29,12 +29,23 @@ import * as host from '../src/plugin/host.js'
 const DIST_HOST_URL = 'file:///install/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js'
 const SRC_HOST_URL = 'file:///install/dsh-agent-team/packages/runtime/src/plugin/host.ts'
 
-/** The minimal valid row config (the p8s5a T2 shape, URLs omitted). */
+/**
+ * The minimal valid row config (the p8s5a T2 shape, URLs omitted).
+ *
+ * §7.4 (pre-flip): `blueprintSource` is a PLACEHOLDER in this suite — it
+ * exercises the location-derived artifact URLs and `validateTeamPluginConfig`,
+ * which requires a non-empty string and NEVER parses the document. Measured by
+ * probe: the file passed unchanged with a version digit no build runs, so the
+ * digit asserted nothing any reader consults. It is therefore dropped rather
+ * than migrated — the identity keys stay (they are what the stub is shaped
+ * like), and no authority documents are hand-authored for a document nothing
+ * parses. See dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md.
+ */
 function minimalConfig(): Record<string, unknown> {
   return {
     bootPhase: 'create',
     rootSessionId: 'session-pbf',
-    blueprintSource: 'schemaVersion: 1\nblueprintId: PBF-BP\nrevision: "1"\n',
+    blueprintSource: 'blueprintId: PBF-BP\nrevision: "1"\n',
     generation: 1,
     seedMembers: [],
     staticModel: { provider: 'p', model: 'm' },

@@ -1,0 +1,11 @@
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (58 tests | 1 failed) 942ms
+     × every deferred path is still dirty (a migrated path must leave the list) 5ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+    404|     const stale = [...DEFERRALS.keys()].filter((p) => !dirtyPaths.incl…
+    405|     expect(stale).toEqual([])
+ Test Files  1 failed (1)
+      Tests  1 failed | 57 passed (58)
+      Tests  58 passed (58)
+   Start at  06:26:43
+   Duration  1.22s (transform 47ms, setup 0ms, import 205ms, tests 924ms, environment 0ms)
+

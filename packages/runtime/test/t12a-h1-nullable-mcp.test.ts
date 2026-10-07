@@ -76,9 +76,19 @@ const memberRowC = { childSessionId: CHILD_C, instanceId: INSTANCE_C, templateId
 // The zero-MCP blueprint: the policy side SAYS mount (both the template
 // and the durable override allow server A) — the supply side is the empty
 // `mcpServers: []`, so nothing may mount.
+
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 const ZERO_BP = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: team.t12a-h1c',
   'revision: "1"',
   'leader:',

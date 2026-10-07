@@ -87,10 +87,19 @@ const SEED_CREATED_AT = '2026-08-30T00:00:00Z'
 /** The mismatched record's contentHash (same id/revision, different hash). */
 const MISMATCH_HASH = 'sha256-' + 'f'.repeat(32)
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /** The T2 blueprint (own id; structure mirrors the P8-S5A fixture). */
 const BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'blueprintId: P8S7R4-FKB',
   'revision: "1"',
   'leader:',

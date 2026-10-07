@@ -153,6 +153,11 @@ const WORLD_A_ROOT = 'session-rc2a1-a'
 const WORLD_B_ROOT = 'session-rc2a1-b'
 const A1_WORKSPACE = '/data'
 
+// §7.4 (pre-flip): a v3 document declares BOTH authority documents; both are
+// `rules: []`, which is the honest zero this fixture always meant (an absent
+// pre-v3 carrier already reads as `{rules: []}`, and an empty hard envelope
+// narrows nothing). No test here reaches the permission-mutation lane, so the
+// v3 ceiling gate stays unspent — the document moved, this fixture's claim did not.
 /**
  * The shared blueprint (World A and World B): a subtree ALLOW (read
  * `/data/team`), a subtree DENY (read `/data/runtime`), default deny.
@@ -161,7 +166,11 @@ const A1_WORKSPACE = '/data'
  * the relative spelling `team/a.md` canonicalizes into the allow subtree.
  */
 const A1_BLUEPRINT = `---
-schemaVersion: 1
+schemaVersion: 3
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
 blueprintId: rc2a1.bp
 revision: "1"
 leader:
