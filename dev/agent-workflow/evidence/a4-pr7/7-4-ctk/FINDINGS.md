@@ -7,9 +7,12 @@ G1 (group 1) → G2 (boot) → pin (bp1h:95 retirement) → evidence → G3 (twe
 
 ## 1. Dispositions used
 
-Only the two lawful pre-flip dispositions: **migrate-by-hand** (17 files) and
-**stop-and-report / keep-dirty-on-purpose** (3 files: `pr-e`, `pr-f` — migrated live docs,
-protected historical anchor keeps them dirty; `p7t6` — not touched at all).
+Only the two lawful pre-flip dispositions: **migrate-by-hand** (19 files) and
+**stop-and-disclose** (1 file: `p7t6`, not touched at all). The `pr-e`/`pr-f`
+files are **migrated** (live docs) AND **keep one site each** (the protected
+historical anchor). Counting, per the review correction (c): **19 migrated,
+1 stopped-and-disclosed; 17 files at zero sites; 3 files keep sites
+(1 + 1 + 9 = 11).**
 No site was inverted, no skip/only/todo added, no vacuous assertion, no version constant,
 scan script, or scan scope touched, no fixture padded with identity keys.
 
@@ -71,9 +74,11 @@ then parsed with the tree's strong parser (`parseBlueprint`) and probe(v9)-refus
 PRISTINE world parses 44/44 at the OLD versions (harness fidelity), CURRENT world parses
 every migrated document at v3 (`parse-probe-current-final.txt: ALL-OK`).
 Per-kit transcripts: `per-kit/parse-<kit>.txt` (parse+probe) and `per-kit/docdiff-<kit>.diff`
-(emitted bytes, pre vs post: across all 32 group-3 documents the ONLY non-noise delta is one
+(emitted bytes, pre vs post: across all **31** group-3 documents the ONLY non-noise delta is one
 version line + the four envelope lines; the only other deltas are per-run `RUN_STAMP` marker
-noise in personas).
+noise in personas). [Correction (b) from the review: the G3 commit message says "32 emitted
+docs"; the correct count is **31** — the 44-document headline stands: 31 (twelve kits) + 5
+(pr-e) + 7 (pr-f) + 1 (boot).]
 
 Downstream consumer of each document (what would break silently if assembly broke):
 - `boot.mjs` — the mock host's row-anchor document, ingested by the host's strong parser at
@@ -137,6 +142,15 @@ stamps these rows and this is the fence's **false-positive class** (it keys on
 reads as a Blueprint document) — the instrument's class, recorded by the coordinator, not
 my fixtures, which were right.
 
+**Site arithmetic for the vanished OFFENDING count (review correction (d)):** my file set
+carried **55** baseline OFFENDING sites (`baseline-sites-mine.txt`); it carries **11** now
+(`scan-final.txt`: p7t6 9 + pr-e 1 + pr-f 1), so **44 OFFENDING sites vanished — of those,
+4 are TeamDomain LEDGER-ROW stamps (pr-e L795/L810, pr-f L787/L802), not documents**; the
+other 40 are document-version sites. The review's **46** counts the two bp1h sites
+(L95/L149) which vanished from the ADVISORY class, not the OFFENDING class; the full
+classified-site delta is 44 OFFENDING + 2 ADVISORY = 46. Without this line the drop would
+read as 46 documents migrated; 42 documents + 4 ledger stamps is the truth.
+
 **`p7t6-teammates-adapter.test.ts` — open disposition, NOT resolved by this lane.** File
 byte-identical (9 dirty sites stand). It is the legacy `.md` teammate-file format's own
 version axis (L380 is the adapter's negative rejection test); migrating would delete the
@@ -146,11 +160,18 @@ non-Blueprint version axis awaiting the fence's dirty-class adjudication row
 
 ## 6. Deviations, accidents, environment facts (with error text)
 
-1. **bp1h:95 named advisory pin retired by me** (coordinator-ruled, own commit, four
-   conditions met): error text that started it —
-   `AssertionError: packages/testkit/test/bp1h-blueprint-authoring.test.ts:95 must be an advisory line: expected undefined to be defined`.
-   Proof of retirement in commit body (wrapper 48/48; zero scan lines naming bp1h). No
-   re-pin to a new line; no advisory site was created by my migrations, so no new pin owed.
+1. **bp1h named advisory pin retired by me** (coordinator-ruled, own commit, four
+   conditions met). **Causality stated correctly per review correction (a) — this also
+   corrects the coordinator's brief, which had it backwards:** the ADVISORY drop from my
+   file set was **two** sites (`bp1h:95` **and** `bp1h:149`) and was **caused by the
+   migration** (the identity pins moved to `schemaVersion: 3`, which the fence does not
+   classify) — `bp1h` left the advisory class **entirely**, taking the repo-wide advisory
+   class from 12 to 11 files. The wrapper's named-pin failure
+   (`AssertionError: packages/testkit/test/bp1h-blueprint-authoring.test.ts:95 must be an
+   advisory line: expected undefined to be defined`) was the **consequence** of the
+   migration, and its retirement was the consequence of that consequence — deleting the
+   pin changed nothing about the class counts. No re-pin to a new line; no advisory site
+   was created by my migrations, so no new pin owed.
 2. **sed quoting accident on the wrapper during G3** (mangling, caught immediately):
    `sed: -e expression #1, char 60: unknown command: ...` and vitest
    `FAIL packages/testkit/test/a4p7-blueprint-version-clean.test.ts [ ... ]` (collection error).
@@ -190,3 +211,33 @@ Ports 31xx stayed clear; `tests/homes/**`, `references/**`, `tests/deepseek-harn
   lines and the coordinator-ruled bp1h pin retirement, untouched: no rule, no classifier,
   no scope, no other lane's entry; DEFERRALS deletions were single-line content matches
   (12+1+4 lines) with zero reflow.
+
+## 9. F1 — prose that named the migrated versions (review fix, one commit)
+
+The migration changed version BYTES; this pass changed the prose that NAMED those versions
+so it no longer lies — 29 lines across five emitters (f15, mcp-initial-grant, pr-c, pr-e,
+pr-f). **Every line is quoted verbatim before and after in
+`prose-fixes-before-after.txt`** (driver-asserted: the needle was present exactly once on
+each cited line, or the run aborts). The dangerous instances were the PRINTED check names —
+f15 L233 (criteria table `C0`) and L1266 (`check('C0', …)`) — which would have carried a
+wrong version into §7.6's real receipts; after the fix each check still names the SAME
+thing (`C0`, same subject: catalog.get resolves the blueprint + intent.probe PASS), only the
+version token moved v2→v3. Doc-comment versions on migrated emitters (f15 L620
+`schemaVersion 2→3`, "closed-v1→closed-v3" headers, the `(v2)`/`(v1)` team consts and builder
+docs in pr-e/pr-f, `LEGACY v1 leader→LEGACY-shape leader`, `v1 flat list→flat requirements
+list`) follow the same one-token discipline.
+
+**Deliberately NOT touched** (different axis or still-correct prose, per the review):
+`team.create` contract v1 RPC cells (team-view L26, rc2 L337/339 `version` = remote contract,
+pr-d L334 `team.getLedgerPage (v1)`), `MemberInstanceRecordDto v1` (pr-b L627),
+`recovery-dispatch/v1` payload shape (pr-e L494/L2547), preset-id semantics (pr-f L144),
+the PR-F-G5 finding name (pr-f L26), boot-chain/profile "v2" (boot.mjs L7/L148), historical
+mapping labels kept beside corrected ones (pr-f L25 `E.12 S1 (v2 create)`, L88 tail
+`the E.12 main world shape`), and ALL frozen-anchor prose: pr-e L186/498/2273, pr-f L24,
+plus the inherited-fixture comments pr-f L359/L362 — those name the V1 anchor, which is
+still v1 and correct as written.
+
+Gates for this commit: `node --check` on all five touched `.mjs` (prose inside .mjs must
+parse), wrapper 58/58, fence run twice with byte-identical output (`scan-f1-a.txt` =
+`scan-f1-b.txt`), eslint on the touched kits (config-ignored; forced-lint error counts
+unchanged pre/post this commit).

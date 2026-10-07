@@ -447,7 +447,7 @@ function toolValue(result, name) {
   return value
 }
 
-// ── the saved team blueprints (strict closed-v1, the d-smoke shape) ─────────
+// ── the saved team blueprints (strict closed-v3, the d-smoke shape) ─────────
 // The LEADER declares the full team-tools set + mcp allow (the initial
 // grant under test). No `permissions` block (absent policy = no permission
 // listener — the legacy/alpha.1 path, d-smoke precedent). The row ANCHOR is

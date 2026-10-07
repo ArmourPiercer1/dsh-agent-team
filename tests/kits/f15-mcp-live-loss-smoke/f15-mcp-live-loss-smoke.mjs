@@ -34,7 +34,7 @@
  * SLO, plan §8.2); R4 + R5 run verbatim per plan §10.
  *
  * ══ LEGS ═══════════════════════════════════════════════════════════════════
- * C0  blueprint preflight: catalog.get resolves the v2 blueprint (with the
+ * C0  blueprint preflight: catalog.get resolves the v3 blueprint (with the
  *     complete:true mcpServer teamRequirement) + intent.probe PASSes pre-
  *     create (the row environmentFacts seed feeds the unknown live verdict —
  *     the create-preflight fact source, host.ts:1932-1935).
@@ -199,7 +199,7 @@ const BLUEPRINT_DIR = join(HOME, 'blueprints') // saved sources live IN the worl
 
 const ROOT = `session-f15-boot-${RUN_STAMP}` // the row anchor's boot root (the directive root)
 const ROOT_T1 = `session-f15-t1-${RUN_STAMP}` // the F15 team root (the leader session)
-const BP_F15_ID = 'f15.leader' // the v2 team blueprint (the real team)
+const BP_F15_ID = 'f15.leader' // the v3 team blueprint (the real team)
 const BP_ANCHOR_ID = 'f15.anchor' // the row anchor (legacy, capabilities-LESS)
 
 const NONCE = RUN_STAMP
@@ -230,7 +230,7 @@ function log(line) {
 
 const CRITERIA = [
   { id: 'PREF', name: 'preflight (dist present, test-use pristine @ baseline, stable probes, ports, fresh home)' },
-  { id: 'C0', name: 'blueprint preflight: catalog.get resolves v2 + intent.probe PASS (row seed feeds the unknown verdict)' },
+  { id: 'C0', name: 'blueprint preflight: catalog.get resolves v3 + intent.probe PASS (row seed feeds the unknown verdict)' },
   { id: 'C1', name: 'team.create (v1 envelope + initialWork) → fresh-root' },
   { id: 'C2', name: 'baseline: initial work calls MCP (pong:alpha), slot mounted attempts=1, surface visible, zero capability facts' },
   { id: 'R1', name: 'transient blip: transparent recovery — no false loss, zero capability-lost, fiber not recycled, boundary admitted' },
@@ -617,7 +617,7 @@ async function waitForTurnDone(mock, marker, doneText, timeoutMs) {
 
 // ── the saved team blueprints ───────────────────────────────────────────────
 
-/** The F15 team (schemaVersion 2 — the PR-E real-host-proven shape): the
+/** The F15 team (schemaVersion 3 — the PR-E real-host-proven shape): the
  *  complete:true mcpServer teamRequirement + the leader's mcp initial grant
  *  [mcp-f15] + the worker template (mcp allow [] = fail-closed). K4/K12: the
  *  leader envelope carries request-control + resolve-control (the recovery
@@ -717,7 +717,7 @@ const BP_ANCHOR_YAML = [
   // gate fail closed for any complete requirement and the row
   // environmentFacts seed (now a seed-ONLY fallback for unknown live
   // verdicts) is unreachable. Declaring the row's mcp supply requirement
-  // here (v1 flat list: domain mcp -> mcpServer, subject = name) makes the
+  // here (flat requirements list: domain mcp -> mcpServer, subject = name) makes the
   // provider probe mcp-f15 in the thunk scope: fresh boot -> unknown ->
   // the row seed (available:true) -> the pre-create probe is OPEN and the
   // create admission passes. (First-class finding F15-W3AE-1; recorded in
@@ -1263,7 +1263,7 @@ async function main() {
       const pErr = resultError(probe.body)
       const compat = pErr === null ? resultData(probe.body)?.compatibility ?? null : null
       const reqRow = Array.isArray(compat?.requirements) ? compat.requirements.find((r) => r?.requirementId === 'req-f15-mcp') ?? null : null
-      check('C0', 'catalog.get resolves the v2 blueprint; intent.probe: req-f15-mcp (complete:true mcpServer) outcome=PASS with status=OPEN — the row environmentFacts seed feeds the pre-create unknown live verdict',
+      check('C0', 'catalog.get resolves the v3 blueprint; intent.probe: req-f15-mcp (complete:true mcpServer) outcome=PASS with status=OPEN — the row environmentFacts seed feeds the pre-create unknown live verdict',
         catOk && pErr === null && compat?.status === 'OPEN' && reqRow?.outcome === 'PASS',
         `catalog=${catOk} status=${compat?.status} req=${JSON.stringify(reqRow ?? null).slice(0, 200)}`)
       finishCriterion('C0')

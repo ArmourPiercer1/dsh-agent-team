@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * pre-alpha3 PR-E E.12 — the real-host / browser gate: PR-E Blueprint v2 +
+ * pre-alpha3 PR-E E.12 — the real-host / browser gate: PR-E Blueprint v3 +
  * Requirement/Recovery atomic cutover — the plan §E.12 fourteen-scenario
  * live matrix on the pristine 0.1.7-rc.1 host (TEST_USE_BASELINE_SHA,
  * `tests/deepseek-harness-test-use`), CORE PATCH BUDGET = 0 (the worktree
@@ -91,7 +91,7 @@
  *       mini-MCP is a BLACKHOLE (accepts, never answers). The
  *       `team.admitInitialWork` runs while the main root is still COLD
  *       (the gate precedes the root attach): the ONLY live session is
- *       the boot anchor, which structurally admits nothing (v1
+ *       the boot anchor, which structurally admits nothing (legacy-shape
  *       zero-requirement template; the domain carries ZERO mcp
  *       governance-override records -> its pendingNextBoundary is empty
  *       — the p6t6 `pending` projection on that view is the empty-array
@@ -428,15 +428,15 @@ let uiTargetClaimed = false // UI mode: the FIRST observed recovery request is t
 const uiObserveRecords = []
 
 const ROOT = `session-prereq-boot-${RUN_STAMP}` // the row anchor's boot root
-const T = `session-prereq-main-${RUN_STAMP}` // the main scenario team (v2)
-const T2 = `session-prereq-iso-${RUN_STAMP}` // the dual-team isolation team (v2)
-const T9 = `session-prereq-persona-${RUN_STAMP}` // the persona team (v2)
+const T = `session-prereq-main-${RUN_STAMP}` // the main scenario team (v3)
+const T2 = `session-prereq-iso-${RUN_STAMP}` // the dual-team isolation team (v3)
+const T9 = `session-prereq-persona-${RUN_STAMP}` // the persona team (v3)
 const T13 = `session-prereq-v1-${RUN_STAMP}` // the frozen pre-PR-E v1 team
 
 const BP_MAIN_ID = 'team.prereq-main'
 const BP_ISO_ID = 'team.prereq-iso'
 const BP_PERSONA_ID = 'team.prereq-persona'
-const BP_ANCHOR_ID = 'team.prereq-anchor' // the row anchor (v1, capabilities-less)
+const BP_ANCHOR_ID = 'team.prereq-anchor' // the row anchor (v3, capabilities-less)
 const BP_V1_ID = 'team.mpr-anchor' // the EXACT pre-PR-E v1 blueprint (S13)
 
 // S13 — the byte-exact pre-PR-E `team.mpr-anchor@1` saved source (from the
@@ -1149,7 +1149,7 @@ const LEADER_TEAM_TOOLS = [
   'team_list_templates', 'team_inspect_config', 'team_archive_member',
 ]
 
-/** The main scenario team (v2): the requirement matrix under test. */
+/** The main scenario team (v3): the requirement matrix under test. */
 function mainTeamBlueprintYaml() {
   return [
     '---',
@@ -1318,7 +1318,7 @@ function mainTeamBlueprintYaml() {
   ].join('\n')
 }
 
-/** The isolation team (v2): NARROWER requirements (repo only) — the S14
+/** The isolation team (v3): NARROWER requirements (repo only) — the S14
  *  proof that per-ROOT durable state is isolated even though the world
  *  facts (row level) are shared. */
 function isoTeamBlueprintYaml() {
@@ -1411,7 +1411,7 @@ function isoTeamBlueprintYaml() {
   ].join('\n')
 }
 
-/** The persona team (v2): the S12 `ptc` regression subject. */
+/** The persona team (v3): the S12 `ptc` regression subject. */
 function personaTeamBlueprintYaml() {
   return [
     '---',
@@ -1502,7 +1502,7 @@ function personaTeamBlueprintYaml() {
   ].join('\n')
 }
 
-/** The row anchor: a plain LEGACY v1 leader (no capabilities, no
+/** The row anchor: a plain LEGACY-shape leader (no capabilities, no
  *  requirements) — the directive root (C.10 pattern). */
 const BP_ANCHOR_YAML = [
   '---',

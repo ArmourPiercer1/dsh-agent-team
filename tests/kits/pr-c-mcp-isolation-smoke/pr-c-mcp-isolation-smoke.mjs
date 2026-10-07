@@ -559,7 +559,7 @@ function msgContentsOf(req) {
   })
 }
 
-// ── the saved team blueprints (strict closed-v1) ────────────────────────────
+// ── the saved team blueprints (strict closed-v3) ────────────────────────────
 
 /** Team-1 (ROOT_T1): the MCP team. The leader declares mcp allow [A,B,C] and
  *  NO team tools (the MCP-only surface — the isolation under test). */
