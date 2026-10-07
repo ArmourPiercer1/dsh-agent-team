@@ -1,12 +1,18 @@
 # A4-PR7 §7.4 (pre-flip half) — lane **C-tools+harness** findings
 
-**Branch** `feat/a4-74-hts-fixtures` (worktree `.worktrees/a4-74-hts`), **rebased onto
-`origin/master` = `ff9218a3`** as the coordinator ruled; the lane was originally cut from `5ea79126`
-(fence round 3 + R3.5, merged at `0af1bd63`). Eight commits on the base, nothing pushed: the five
-file commits `528b552c`, `2e22a43d`, `9a3aa5ef`, `3f303e78`, `94202668`, then the findings commit
-`235c4962`, the control rewrite `561c3164`, the typecheck fix `2ead5aa1`, and the evidence commit
-for the post-approval round. Old → new SHAs for every one: the map in
-[The rebase](#the-rebase).
+**Branch** `feat/a4-74-hts-fixtures` (worktree `.worktrees/a4-74-hts`). **The base moved twice
+since this file was written**: rebased onto `ff9218a3` as the coordinator ruled (the lane was
+originally cut from `5ea79126`, fence round 3 + R3.5, merged at `0af1bd63`), then **merged**
+`ef937cd0`, then **merged** `origin/master` = `73ffd06c` at the coordinator's instruction, because
+*"a candidate whose contract numbers were measured against a base that no longer exists"* is not a
+candidate. Head `95d6b1bc`, **14 commits on the base**, nothing pushed. The five file commits
+`528b552c`, `2e22a43d`, `9a3aa5ef`, `3f303e78`, `94202668`, then the findings commit `235c4962`,
+the control rewrite `561c3164`, the typecheck fix `2ead5aa1`, the post-approval evidence commit,
+the headline/header fix `9c30448a`, the applied reviewer hardening `0eadc205`, the first merge
+`5b1093ed`, its evidence `8019759a`, and the second merge `95d6b1bc`. Old → new SHAs for the
+rebased set: the map in [The rebase](#the-rebase). Every gate number quoted for the *candidate*
+is measured on `73ffd06c`; earlier numbers stay in this file labelled by the base they were
+measured on, because a number without its base is not a measurement.
 
 **Two lessons this lane earned the hard way, stated where a reader will hit them first.**
 (1) **vitest strips types without checking them.** A spec leg can be syntactically live, pass 58/58,
@@ -516,6 +522,140 @@ prediction was taken on, not to this merge: 27 `DEFERRALS` rows disappeared betw
 and `ef937cd0` as other lanes migrated their files, so a measurement taken before those merges
 landed is necessarily higher. Treat `88/163` as the candidate's contract and the prediction as a
 base-drift marker.
+
+## Second merge (`73ffd06c`), and the round the battery went green for the wrong reason
+
+The coordinator's instruction was to move the candidate onto the tip rather than let it be
+merged on a base that had stopped existing (`#148` = lane **B1** edits the same `DEFERRALS`
+map, and `#146` put the §7.6 machine gate into root `pnpm test`'s universe). 22 commits merged,
+**no conflict this time** — and the reason is worth recording, because "no conflict" is usually
+the answer a lazy merge gives: B1's 13 row deletions sit in a different region of the map from my
+5 deletions, and its pin re-anchor is inside a `named()` leg I never touched. Disjoint regions,
+not luck.
+
+### The referee held, and every invariant was re-asserted rather than assumed
+
+| check | command / measurement | result |
+|-------|-----------------------|--------|
+| ledger row arithmetic | `grep -c "^  \['"` on the `DEFERRALS` block | `88 → 75`, exactly `88 − 13` (B1's deletions); my 5 rows still absent (`grep -cE "tools/harness\|root-binding/harness"` → **0**) |
+| **rows ≡ dirty paths** | `diff <(OFFENDING paths) <(DEFERRALS paths)` → `scratch/tip-ledger-vs-dirty.txt` | **0 diff lines: 75 rows, 75 dirty paths** — the invariant survived the base change, so neither side changed meaning |
+| anchor, master's side | `grep -c 'OFFENDING packages/tools/harness/run.mjs'` | **0** (the red-on-success control did not come back) |
+| anchor, mine | `grep -c 'OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: '` | **1** |
+| leg inventory | leg-title lists, **set and order**, master vs merged | **identical, 58 legs, 0 diff lines** |
+| what the merge left of my work | `diff origin/master:… vs working tree` | **64 diff lines, every one attributable**: the 5 `DEFERRALS` deletions, `toBe(\`${report}\\n\`)`, the exact-multiset loop + `files, sites` tally |
+| vs the reviewer's reviewed copy | `diff` vs `hard/a4p7-blueprint-version-clean.test.ts` | no longer byte-identical (99 lines), and **all of it is base drift**: DEFERRALS rows + B1's `named()` re-anchor block; filtering out row lines leaves **zero** differences in the control legs |
+
+The fence script itself is byte-identical to the recorded anchor (`bcb569c1…`, unchanged in
+`ef937cd0..origin/master`), which is why the mutation anchors still matched — and if it *had*
+moved, the harness would have thrown rather than mutated a stale base, because it now mutates
+`git show HEAD:scripts/…` and prints the sha it used.
+
+### The candidate's contract on the real base
+
+`scanned-in-scope: 748` (+1 file: the §7.6 `a4p7-merge-gate.test.ts` enters scope; 15 files
+modified, 0 deleted), fence ×2 exit `1/1`, **byte-identical** (`32d0ee40…`), by-path diff empty,
+**`dirty(75 files, 138 sites)`**, `unknown(0 files, 0 sites)`, `advisory(8 files, 10 sites)`,
+`refused(52, 115)`, `prose(5, 5)`, `adjudicated(16, 24)`, verdict `dirty-or-unknown`. My five
+paths appear in no gated class (only the non-gating `PROSE … t12-vertical.mjs :: L1852=v2`).
+
+The `88, 163 → 75, 138` delta is fully attributed to B1, not to this lane: the by-path diff
+between the two bases is **exactly B1's 13 `packages/runtime/test/*` files** and **zero newly
+dirty paths** (`scratch/tip-base-delta-paths.txt`). `advisory` dropping 12 → 10 sites is also
+B1's: the two `schemaVersion: 99` `toMatchObject` advisories it retired, whose retirement its own
+re-anchored pin now asserts.
+
+Gate battery on `73ffd06c` — wrapper **58 passed (58)** · `p4t6` **10 passed (10)** (its count pin
+lists moved upstream and still agrees) · `pnpm -r run typecheck` exit **0**, 0 `error TS` · eslint
+on the five: **one pre-existing error**, `g5-member-e2e.mjs 640:16 'apiPage'`, attributed by
+`git log -S apiPage` and `git blame -L 640` to `2602d730` (2026-09-07), an ancestor of the base —
+reported as pre-existing, never as clean · identity lint `160 lines, 76 distinct; new 0,
+resolved 0` · `node --check` ×5 all OK. Root `pnpm test` still **not run** by this lane. For the
+reader of a future red root run: `a4p7-merge-gate`'s lint leg can report `refused`
+(`eslint produced no JSON, status 2`) under load while passing solo — the coordinator measured
+that on another branch and is diagnosing it there; it is **not** this lane's regression, and
+nothing here papers it over.
+
+### The finding this round was actually about: two mutations had gone vacuous
+
+Re-running the battery on the new base, **B (drop-a-path) and C (strip-one-colliding-site) came
+back GREEN** — `58 passed (58)`, reported exactly like a control that had been probed. Neither
+mutation had been fixed by anything: **their target paths had been migrated by another lane.**
+`packages/domain/test/a1-permission-policy.test.ts` and
+`packages/domain/test/blueprint-v1-frozen-resume.test.ts` are no longer dirty, so the text both
+mutations inject matched nothing, the report came out byte-identical, and the wrapper passed
+because there was nothing to fail.
+
+That is the *same class of lie* as the drifted anchor from the previous round, arriving by a
+different door: the first round's harness could fail silently in the **code** it patched; this one
+failed silently in the **data** it pointed at. A green baseline run — which I did have — cannot
+see it at all, because the control really is green: on a mutation that changed nothing.
+
+Three structural fixes, all in `scratch/mutate-fence.mjs`:
+
+1. **Every target is resolved from the live dirty set** before applying (a multi-site path for
+   the drop, and for C a token that genuinely occurs under two paths — re-measured on this base
+   as `L114=v1`), with a hard error if no such target exists here. Targets can no longer rot.
+2. **The pristine base is `git show HEAD:scripts/…`**, materialized fresh, its sha printed every
+   run — the harness cannot mutate a copy that upstream left behind.
+3. **A mutation that changes nothing is refused.** After applying, the harness runs the mutated
+   producer and throws (restoring first) if its report is byte-identical to the pristine one:
+   *"a mutation that changes nothing cannot prove anything, and must not be allowed to print a
+   result."*
+
+Then it caught a **third** one on the spot: **J**, the by-design green that reversed the token
+order inside a `PROSE` line, was also vacuous here — prose is `5 files, 5 sites` on this base, so
+every prose path prints exactly one token and reversing one element is a no-op. J is now expressed
+as the prose class reordering its **lines**, which changes bytes and is still something this leg
+must ignore. J is exactly the mutation whose purpose is to detect a mangled harness, so a vacuous
+J meant the harness's own test had silently stopped testing; the guard found it, which is the
+whole argument for the guard.
+
+`V` is now a permanent mutation id: **mutation B's pre-fix hardcoded form**, whose expected
+outcome is *refusal*. If it ever prints a result instead of throwing, the vacuity guard is gone.
+This is the same trick as the expected-green, applied one level up — the harness must carry a test
+of itself, not just of the control.
+
+### The battery, re-derived on `73ffd06c` (`scratch/battery-tip.txt`)
+
+| id | defect | result on the new base | leg |
+|----|--------|------------------------|-----|
+| A | first site of every dirty line loses `=v<version>` | **RED** `expected [ 'L60' ] to deeply equal [ 'L60=v1' ]` | sites-not-a-count |
+| B | `fixtures.ts` vanishes from the naming | **RED** — and it reddens **two** legs now: `report must print EXACTLY the sites of packages/domain/blueprint/testdata/fixtures.ts: expected [] to deeply equal [ 'L1241=v1', 'L1264=v1', …(32) ]`, plus `to contain 'OFFENDING packages/domain/blueprint/t…'` | sites-not-a-count + factory-file pin |
+| C | colliding site `a2c3-inspect-operation-permission.test.ts:L114` loses its suffix | **RED** | sites-not-a-count |
+| E | phantom `L99999=v1` on every path | **RED** `[ 'L60=v1', 'L99999=v1' ]` | sites-not-a-count |
+| F | first site of `cordis.patch.yml` printed twice | **RED** `[ 'L60=v1', 'L60=v1' ]` | sites-not-a-count |
+| D | CLI truncates long OFFENDING lines on stdout | **RED** | **invoking-the-script only** — unchanged from the previous base |
+| G | tally under-reports sites | **RED**: the artifact prints `…137 sites`, the run says 138 — `to contain 'RESULT dirty(75 files, 138 sites)'`. The counts are derived from the run, so the message tracked the new base with no literal to update | sites-not-a-count |
+| I | reverse token order on a path | **GREEN by design** | — |
+| J | PROSE reorders its output lines | **GREEN by design** (after the vacuity catch) | — |
+| V | the pre-fix hardcoded B | **REFUSED**: `MUTATION V is VACUOUS … restore ran, nothing was measured` | guard self-test |
+
+Green baseline after all restores: **58 passed (58)**, `git status --porcelain scripts/` empty.
+The one honest correction to the previous round's table: "each red fails exactly one leg" was a
+property of that base, not of the control — B reddens two legs here because the ratified STOP row
+and the archetype literal name the same file.
+
+### Three sentences for the plan's mutation doctrine, kept verbatim
+
+> **Expected-greens are the harness's own test.** Your first extended battery was worthless
+> because a helper dropped `.join(', ')`, so mutation A printed *an arrow function's source*
+> where the sites should have been — every hole still went red, **for the wrong reason**, and only
+> a mutation that was *supposed* to stay green caught it. A mutation harness with no expected-green
+> is a machine that manufactures reds and calls them teeth.
+
+> A drifted anchor made the harness apply *nothing* while the wrapper reported 58/58 against a
+> pristine script — a fake green under mutation. Your fix (refuse on a missing anchor,
+> `node --check` the mutated producer, restore on failure, **print the mutated line so the
+> transcript shows the defect's shape instead of asserting it**) is now the reference shape for how
+> the rest of us should be doing this.
+
+> **Defect D reddens only the leg that spawns the CLI and nothing that formats the report
+> in-process** — the cleanest possible proof of the "instrument reading the library tests a
+> different program" point. That sentence goes in the plan.
+
+This lane adds a fourth in the same voice, because `73ffd06c` proved it: **a mutation whose target
+is no longer dirty is a fake green too, and a harness must refuse to report a result for a
+mutation that changed nothing.** Targets belong to the live data set, not to the source file.
 
 ## Deviations and stops
 

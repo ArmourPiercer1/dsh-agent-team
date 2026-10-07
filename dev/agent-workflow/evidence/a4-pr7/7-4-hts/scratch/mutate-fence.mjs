@@ -1,6 +1,6 @@
 // Mutation harness for the fence wrapper's report-shape control (§7.4 lane
-// C-tools+harness, D3 "prove it can fail"; extended after the reviewer's
-// MERGE-with-fixes round).
+// C-tools+harness; extended across the reviewer's MERGE-with-fixes round and the
+// `73ffd06c` re-derive).
 //
 // It mutates the report PRODUCER (`scripts/verify-blueprint-version-clean.mjs`) and
 // never the scanner's classification rules, never the wrapper, never a version
@@ -9,18 +9,9 @@
 // in how a finding is RENDERED: a stripped suffix, a dropped path, a phantom site, a
 // duplicated site, a truncated artifact, an off-by-one tally, a reordering.
 //
-// The pristine bytes live in ./fence-script-pristine.mjs, restored by `cp` and
-// re-checked against ./fence-script-sha.txt. That copy is NOT committed (a second copy
-// of the fence in the tree invites "which one is real?"); materialize it first:
-//
-//   git show 5ea79126:scripts/verify-blueprint-version-clean.mjs \
-//     > dev/agent-workflow/evidence/a4-pr7/7-4-hts/scratch/fence-script-pristine.mjs
-//
-// This lane never uses `git checkout --`.
-//
 // Usage:
-//   node mutate-fence.mjs <id>       apply one mutation, print the first dirty line
-//   node mutate-fence.mjs restore    cp the pristine copy back
+//   node mutate-fence.mjs <id>     apply one mutation; print target + resulting shape
+//   node mutate-fence.mjs restore  put the committed script back (cp, never git checkout)
 //
 // Holes — each must redden a sharp control:
 //   A  the FIRST site of every dirty OFFENDING line loses its `=v<version>` suffix
@@ -39,41 +30,134 @@
 //   J  the PROSE class reorders its own tokens: this leg's subject is dirty sites;
 //      prose is another leg's business and is not gated at all
 //
-// SURGICAL BY CONSTRUCTION, and that is a hard-won clause. Every dirty-line mutation
-// goes through `offending()`, which keeps `ss.map(...)` and the `.join(', ')` intact and
-// changes only the per-site token. The first version of this harness interpolated a bare
-// expression and dropped the join, so mutation A did not strip a suffix — it printed an
-// arrow function's source where the sites used to be. Every hole still reddened the
-// control, for the wrong reason, which is the only kind of reason that makes a mutation
-// table worthless. What exposed it was mutation I: the expected-GREEN is the harness's
-// own test, and no mangled line can pass it. `--show` therefore prints the first dirty
-// OFFENDING line after each apply, so a transcript proves the SHAPE of a defect instead
-// of asserting it.
-import { copyFileSync, readFileSync, writeFileSync } from 'node:fs'
+// ── Three failure modes this harness now structurally refuses ──────────────────────
+// 1. A BROKEN ANCHOR. It throws when an anchor is absent instead of applying nothing.
+//    That caught two of my own malformed anchors this round; before the check, a run
+//    reported "58 passed" against a PRISTINE script and read as a green under mutation.
+// 2. A MANGLED MUTATION. Every dirty-line mutation goes through `offending()`, which
+//    keeps `ss.map(...)` and the `.join(', ')` intact and changes only the per-site
+//    token. The first version interpolated a bare expression and dropped the join, so
+//    mutation A printed an ARROW FUNCTION'S SOURCE where the sites used to be: every
+//    hole still reddened the control, for the wrong reason. `node --check` on the
+//    mutated producer and the expected-GREENs are the guards — the expected-green is the
+//    harness's own test, because no mangled line can pass it.
+// 3. A VACUOUS TARGET — found on the `73ffd06c` re-derive, not before. B and C named
+//    specific dirty paths; another lane migrated those files, so both mutations applied
+//    text that matched NOTHING and the wrapper reported 58/58 as though the control had
+//    been probed. Data drift is the same lie as anchor drift. Now: every target is
+//    RESOLVED FROM THE LIVE DIRTY SET before applying, a target that is not dirty is a
+//    hard error, and after applying the harness runs the mutated producer and THROWS if
+//    its report is byte-identical to the pristine one. A mutation that changes nothing
+//    must not be allowed to print a result.
+//
+// The pristine base is the COMMITTED blob (`git show HEAD:scripts/…`), materialized to
+// ./fence-script-pristine.mjs, so the harness cannot mutate a stale copy after upstream
+// edits the producer; the sha it mutated is printed on every run.
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { execSync } from 'node:child_process'
-
 
 const HERE = new URL('.', import.meta.url).pathname
 const REPO = new URL('../../../../../../', import.meta.url).pathname
-const TARGET = REPO + 'scripts/verify-blueprint-version-clean.mjs'
+const REL = 'scripts/verify-blueprint-version-clean.mjs'
+const TARGET = REPO + REL
 const PRISTINE = HERE + 'fence-script-pristine.mjs'
+const SHA_FILE = HERE + 'fence-script-sha.txt'
 
-const B = '`' // a backtick, so the fragments below stay readable
+const sha = (text) => createHash('sha256').update(text).digest('hex')
 
-// Anchors are the producer's own source lines, written literally (a double-quoted JS
-// string keeps both the backticks and `${` intact). The harness refuses to apply when
-// an anchor is absent, so a stale anchor is a hard error rather than a silent no-op —
-// that check has already caught two of my own broken anchors in this round.
+/** The committed producer, materialized as the pristine base. */
+function committedBase() {
+  const blob = execSync('git show HEAD:' + REL, {
+    cwd: REPO,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  })
+  writeFileSync(PRISTINE, blob)
+  const digest = sha(blob)
+  const recorded = existsSync(SHA_FILE) ? readFileSync(SHA_FILE, 'utf8').trim().split(' ')[0] : ''
+  const note =
+    recorded === ''
+      ? ''
+      : recorded === digest
+        ? ', matches fence-script-sha.txt'
+        : '; NOTE: upstream has edited the producer since that record'
+  console.log('  pristine base  : sha256 ' + digest.slice(0, 16) + '… (HEAD blob' + note + ')')
+  return blob
+}
+
+/** What the gate would read on stdout (the fence exits 1 while dirty, so catch). */
+function reportOf(path) {
+  try {
+    return execSync('node ' + JSON.stringify(path) + ' 2>&1', {
+      cwd: REPO,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    })
+  } catch (error) {
+    return String(error.stdout ?? '')
+  }
+}
+
+/** `path -> printed tokens`, parsed exactly as the hardened control leg parses it. */
+function parseOffending(report) {
+  const printed = new Map()
+  for (const line of report.split('\n')) {
+    const off = /^OFFENDING (.+?) :: (.*)$/.exec(line)
+    const offPath = off?.[1]
+    const offSites = off?.[2]
+    if (offPath !== undefined && offSites !== undefined) {
+      const toks = offSites
+        .split(', ')
+        .map((t) => t.trim())
+        .filter((t) => t !== '')
+      printed.set(offPath, [...(printed.get(offPath) ?? []), ...toks])
+    }
+  }
+  return printed
+}
+
+/**
+ * Resolve every target from the CURRENT dirty set, so the mutations cannot rot into
+ * no-ops the way two hardcoded paths did. Deterministic: sorted, first match.
+ */
+function resolveTargets(report) {
+  const printed = parseOffending(report)
+  const paths = [...printed.keys()].sort()
+  if (paths.length === 0) throw new Error('the pristine report names no dirty path; nothing to attack')
+  const sitesOf = (p) => printed.get(p) ?? []
+  const multi = paths.filter((p) => sitesOf(p).length >= 2)
+  if (multi.length === 0) throw new Error('no dirty path carries two sites; C/F/I are unattackable here')
+
+  // B: a path with >= 2 sites, so the drop is "a path vanishes", not "the shortest line".
+  const dropped = multi[0]
+
+  // C: a site whose `L<line>=v<version>` token also occurs under ANOTHER path — the
+  // collision is what makes a whole-report `toContain` blind to it (measured at 69 of
+  // 253 sites when this was first counted).
+  const seen = new Map()
+  for (const p of paths) for (const t of sitesOf(p)) seen.set(t, [...(seen.get(t) ?? []), p])
+  const collidingToken = [...seen.entries()]
+    .filter(([t, ps]) => ps.length >= 2 && /^L\d+=v\d+$/.test(t))
+    .sort(([a], [b]) => a.localeCompare(b))[0]
+  if (collidingToken === undefined) throw new Error('no colliding site token on this base; C is unattackable')
+  const [token, tokenPaths] = collidingToken
+  const collidingPath = tokenPaths.filter((p) => sitesOf(p).length >= 2).sort()[0] ?? tokenPaths[0]
+  const collidingLine = Number(/^L(\d+)=v\d+$/.exec(token)?.[1])
+  if (!Number.isFinite(collidingLine)) throw new Error('could not parse the colliding token ' + token)
+
+  // F: a multi-site path, preferred stable name so transcripts stay readable across rounds.
+  const duplicated = paths.includes('cordis.patch.yml') ? 'cordis.patch.yml' : multi[0]
+
+  return { dropped, collidingPath, collidingLine, collidingToken: token, duplicated, pathCount: paths.length }
+}
+
 const DIRTY_LINE =
   "lines.push(...groupByPath(result.dirty, (p, ss) => `OFFENDING ${p} :: ${ss.map(where).join(', ')}`))"
 const PROSE_LINE =
   "lines.push(...groupByPath(result.prose, (p, ss) => `PROSE ${p} :: ${ss.map(where).join(', ')}`))"
 const WRITE_LINE = 'process.stdout.write(`${formatReport(result)}\\n`)'
 const TALLY_DIRTY = 'lines.push(`RESULT dirty(${tally(result.dirty)})`)'
-
-const DROPPED_PATH = 'packages/domain/test/a1-permission-policy.test.ts'
-const COLLIDING_PATH = 'packages/domain/test/blueprint-v1-frozen-resume.test.ts'
-const DUPLICATED_PATH = 'cordis.patch.yml'
 
 /** A dirty OFFENDING line rendering every site through `inner`; join and shape kept. */
 const offending = (inner) =>
@@ -87,112 +171,164 @@ const offendingList = (list) =>
   list +
   ".join(', ')}`))"
 
+/** id -> { anchor, expr(t), expect, note(t) } */
 const MUTATIONS = {
   A: {
     anchor: DIRTY_LINE,
-    expr: offending('(s, i) => (i === 0 ? `L${String(s.line)}` : where(s))'),
+    expr: () => offending('(s, i) => (i === 0 ? `L${String(s.line)}` : where(s))'),
     expect: 'red',
-    note: 'every dirty line prints its FIRST site as `L<line>` — the `=v<version>` is gone',
+    note: () => 'every dirty line prints its FIRST site as `L<line>` — the `=v<version>` is gone',
   },
   B: {
     anchor: DIRTY_LINE,
-    expr:
+    expr: (t) =>
       "lines.push(...groupByPath(result.dirty.filter((s) => s.path !== '" +
-      DROPPED_PATH +
+      t.dropped +
       "'), (p, ss) => `OFFENDING ${p} :: ${ss.map(where).join(', ')}`))",
     expect: 'red',
-    note: DROPPED_PATH + ' disappears from the naming while its sites stay in the result',
+    note: (t) => t.dropped + ' disappears from the naming while its sites stay in the result',
   },
   C: {
     anchor: DIRTY_LINE,
-    expr: offending(
-      "(s) => (p === '" + COLLIDING_PATH + "' && s.line === 76 ? `L${String(s.line)}` : where(s))",
-    ),
+    expr: (t) =>
+      offending(
+        "(s) => (p === '" +
+          t.collidingPath +
+          "' && s.line === " +
+          String(t.collidingLine) +
+          ' ? `L${String(s.line)}` : where(s))',
+      ),
     expect: 'red',
-    note: COLLIDING_PATH + ' L76 alone loses its suffix — a token that also occurs elsewhere',
+    note: (t) =>
+      t.collidingPath +
+      ' L' +
+      String(t.collidingLine) +
+      " alone loses its suffix — the token `" +
+      t.collidingToken +
+      '` also occurs elsewhere, so a whole-report search is blind to it',
   },
   E: {
     anchor: DIRTY_LINE,
-    expr: offendingList('[...ss.map(where), `L99999=v1`]'),
+    expr: () => offendingList('[...ss.map(where), `L99999=v1`]'),
     expect: 'red',
-    note: 'a PHANTOM site `L99999=v1` is appended to every dirty path: printed, never found',
+    note: () => 'a PHANTOM site `L99999=v1` is appended to every dirty path: printed, never found',
   },
   F: {
     anchor: DIRTY_LINE,
-    expr: offendingList(
-      // parenthesised: `.join` would otherwise bind to the false branch only, and the
-      // mutated line would differ in its delimiter as well as in its duplicate
-      "(" + "p === '" + DUPLICATED_PATH + "' ? [...ss.map(where), where(ss[0])] : ss.map(where))",
-    ),
+    expr: (t) =>
+      offendingList(
+        // parenthesised: `.join` would otherwise bind to the false branch only, and the
+        // mutated line would then differ in its delimiter as well as in its duplicate
+        "(" + "p === '" + t.duplicated + "' ? [...ss.map(where), where(ss[0])] : ss.map(where))",
+      ),
     expect: 'red',
-    note: 'the first site of ' + DUPLICATED_PATH + ' is printed TWICE on its own line',
+    note: (t) => 'the first site of ' + t.duplicated + ' is printed TWICE on its own line',
   },
   D: {
     anchor: WRITE_LINE,
-    expr:
+    expr: () =>
       "process.stdout.write(formatReport(result).split('\\n').map((l) => (l.startsWith('OFFENDING ') && l.length > 80 ? `${l.slice(0, 80)}…[truncated]` : l)).join('\\n') + '\\n')",
     expect: 'red',
-    note: 'the CLI truncates long OFFENDING lines on stdout; the returned string stays whole',
+    note: () => 'the CLI truncates long OFFENDING lines on stdout; the returned string stays whole',
   },
   G: {
     anchor: TALLY_DIRTY,
-    expr:
+    expr: () =>
       'lines.push(`RESULT dirty(${String(new Set(result.dirty.map((s) => s.path)).size)} files, ${String(result.dirty.length - 1)} sites)`)',
     expect: 'red',
-    note: 'the dirty tally under-reports its SITE count by one (file count untouched)',
+    note: () => 'the dirty tally under-reports its SITE count by one (file count untouched)',
   },
   I: {
     anchor: DIRTY_LINE,
-    expr: offendingList('[...ss.map(where)].reverse()'),
+    expr: () => offendingList('[...ss.map(where)].reverse()'),
     expect: 'green',
-    note: 'BY DESIGN: a path prints its sites in reverse order — order on the line is not the contract',
+    note: () => 'BY DESIGN: a path prints its sites in reverse order — order is not the contract',
   },
   J: {
     anchor: PROSE_LINE,
-    expr:
-      "lines.push(...groupByPath(result.prose, (p, ss) => `PROSE ${p} :: ${[...ss.map(where)].reverse().join(', ')}`))",
+    // Reorders the PROSE LINES, not the tokens within a line. It started as a token
+    // reversal and the vacuity guard caught it going vacuous on `73ffd06c`: the prose
+    // class is `5 files, 5 sites`, so every prose path prints exactly ONE token and
+    // reversing one element is byte-identical. Line order is still the same claim — the
+    // prose class reorders its output and this leg must not care — and it changes bytes.
+    expr: () =>
+      "lines.push(...[...groupByPath(result.prose, (p, ss) => `PROSE ${p} :: ${ss.map(where).join(', ')}`)].reverse())",
     expect: 'green',
-    note: 'BY DESIGN: PROSE reorders its own tokens — prose is another leg and is not gated',
+    note: () =>
+      'BY DESIGN: PROSE reorders its own output lines — prose is another leg and is not gated',
+  },
+  // The harness testing itself. This is mutation B's PRE-FIX form: the hardcoded path
+  // was dirty when it was written and has since been migrated by the C-domain lane, so
+  // the mutation text matches nothing and the report comes out byte-identical. On the
+  // `73ffd06c` re-derive that shape produced a reported "58 passed" for a control that
+  // was never probed. Expected outcome now: the harness REFUSES and restores. If this
+  // ever prints a result instead of throwing, the vacuity guard is gone.
+  V: {
+    anchor: DIRTY_LINE,
+    expr: () =>
+      "lines.push(...groupByPath(result.dirty.filter((s) => s.path !== " +
+      "'packages/domain/test/a1-permission-policy.test.ts'), " +
+      "(p, ss) => `OFFENDING ${p} :: ${ss.map(where).join(', ')}`))",
+    expect: 'refused (vacuous by construction: its target path is clean on this base)',
+    note: () => 'the pre-fix hardcoded B, kept as the guard\'s own test',
   },
 }
 
 const which = process.argv[2]
 if (which === 'restore') {
+  committedBase()
   copyFileSync(PRISTINE, TARGET)
-  console.log('restored the pristine fence script by cp; verify it against fence-script-sha.txt')
-} else {
-  const mutation = MUTATIONS[which]
-  if (mutation === undefined) {
-    console.error('unknown mutation; known: ' + Object.keys(MUTATIONS).join(', '))
-    process.exit(64)
-  }
-  const src = readFileSync(PRISTINE, 'utf8')
-  if (!src.includes(mutation.anchor)) {
-    throw new Error('anchor not found in the pristine script — refusing to mutate blindly: ' + which)
-  }
-  if (mutation.expr === mutation.anchor) throw new Error('mutation would be a no-op: ' + which)
-  const mutated = src.replace(mutation.anchor, mutation.expr)
-  writeFileSync(TARGET, mutated)
-  // A mutation that does not parse is a defect in the harness, not in the report:
-  // check it here, where the failure is loud, rather than letting vitest report an
-  // import error that looks like a control result.
-  try {
-    execSync('node --check ' + JSON.stringify(TARGET), { stdio: 'pipe' })
-  } catch (error) {
-    copyFileSync(PRISTINE, TARGET)
-    throw new Error(
-      'MUTATION ' + which + ' does not parse; restored.\n' + String(error.stderr ?? error),
-    )
-  }
-  console.log('MUTATION ' + which + ' (expect ' + mutation.expect + '): ' + mutation.note)
-  // Prove the shape, don't assert it: what the mutated producer actually prints first.
-  try {
-    const out = execSync('node ' + JSON.stringify(TARGET) + ' 2>&1 || true', { encoding: 'utf8' })
-    const first = out.split('\n').find((l) => l.startsWith('OFFENDING ')) ?? '(no OFFENDING line)'
-    const tally = out.split('\n').find((l) => l.startsWith('RESULT dirty(')) ?? '(no tally line)'
-    console.log('  first dirty line : ' + first.slice(0, 120))
-    console.log('  tally line       : ' + tally)
-  } catch (error) {
-    console.log('  (producer would not run: ' + String(error) + ')')
-  }
+  console.log('restored the committed fence script by cp; sha above must match the base record')
+  process.exit(0)
 }
+
+const mutation = MUTATIONS[which]
+if (mutation === undefined) {
+  console.error('unknown mutation; known: ' + Object.keys(MUTATIONS).join(', '))
+  process.exit(64)
+}
+
+const base = committedBase()
+if (!base.includes(mutation.anchor)) {
+  throw new Error('anchor not found in the committed producer — refusing to mutate blindly: ' + which)
+}
+const pristineReport = reportOf(PRISTINE)
+if (!/^OFFENDING /m.test(pristineReport)) {
+  copyFileSync(PRISTINE, TARGET)
+  throw new Error('the pristine producer printed no OFFENDING line; the gate premise is gone')
+}
+const targets = resolveTargets(pristineReport)
+const expr = mutation.expr(targets)
+if (expr === mutation.anchor) throw new Error('mutation would be a no-op: ' + which)
+writeFileSync(TARGET, base.replace(mutation.anchor, expr))
+
+// A mutation that does not parse is a defect in the harness, not in the report: fail
+// here, loudly, rather than letting vitest report an import error shaped like a result.
+try {
+  execSync('node --check ' + JSON.stringify(TARGET), { cwd: REPO, stdio: 'pipe' })
+} catch (error) {
+  copyFileSync(PRISTINE, TARGET)
+  throw new Error('MUTATION ' + which + ' does not parse; restored.\n' + String(error.stderr ?? error))
+}
+
+const mutatedReport = reportOf(TARGET)
+if (mutatedReport === pristineReport) {
+  copyFileSync(PRISTINE, TARGET)
+  throw new Error(
+    'MUTATION ' + which +
+      ' is VACUOUS: the mutated producer printed a byte-identical report. A mutation ' +
+      ' that changes nothing cannot prove anything — restore ran, nothing was measured.',
+  )
+}
+
+const firstOf = (report, tag) => report.split('\n').find((l) => l.startsWith(tag)) ?? '(none)'
+console.log(
+  'MUTATION ' + which + ' (expect ' + mutation.expect + '): ' + mutation.note(targets) +
+    '\n  targets        : dirty paths=' + String(targets.pathCount) +
+    ' dropped=' + targets.dropped +
+    ' colliding=' + targets.collidingPath + ':L' + String(targets.collidingLine) +
+    ' duplicated=' + targets.duplicated,
+)
+console.log('  first dirty line : ' + firstOf(mutatedReport, 'OFFENDING ').slice(0, 120))
+console.log('  tally line       : ' + firstOf(mutatedReport, 'RESULT dirty('))
+console.log('  report changed   : YES (differs from the pristine report)')

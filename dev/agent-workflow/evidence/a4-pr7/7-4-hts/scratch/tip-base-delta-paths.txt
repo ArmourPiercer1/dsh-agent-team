@@ -1,0 +1,13 @@
+packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts
+packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts
+packages/runtime/test/a3p4-production-permission-plane.test.ts
+packages/runtime/test/a3p5-permission-read-wiring.test.ts
+packages/runtime/test/a3p5-permission-splice.test.ts
+packages/runtime/test/a4f1-row-version-not-document-version.test.ts
+packages/runtime/test/a4p6-start-gate-entrances.test.ts
+packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
+packages/runtime/test/bp1-dual-team-gate.test.ts
+packages/runtime/test/bp1-freeze-barrier.test.ts
+packages/runtime/test/bp1-red-glue-probe.test.ts
+packages/runtime/test/bp1-red-probe.test.ts
