@@ -1,0 +1,14 @@
+# packages/runtime/test/p6t1-parallel.test.ts, six standalone runs against the review-fix head
+# (the file is a parallel-activation/quota race: which of P1/P2/P3 fails moves run to run).
+run 1:  Tests 9 passed (9)
+  failing: none
+run 2:  Tests 9 passed (9)
+  failing: none
+run 3:  Tests 9 passed (9)
+  failing: none
+run 4:  Tests 1 failed | 8 passed (9)
+  failing: P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions|
+run 5:  Tests 9 passed (9)
+  failing: none
+run 6:  Tests 9 passed (9)
+  failing: none

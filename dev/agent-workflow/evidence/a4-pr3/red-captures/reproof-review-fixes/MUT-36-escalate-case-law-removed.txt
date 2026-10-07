@@ -1,0 +1,124 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-escalation.test.ts (0 test)
+ ❯ test/a4p3-approval-case.test.ts (28 tests | 3 failed) 15ms
+     ✓ refuses a case carrying BOTH fingerprints, with zero durable side effects 1ms
+     ✓ refuses a mutation-kind case with no mutation fingerprint and an operation case with an empty one 0ms
+     ✓ refuses every non-closed-set vocabulary value in the identity 0ms
+     ✓ derives the case id from the identity and keeps the caller out of it (A2-7) 1ms
+     ✓ is idempotent per invocation and separates cases by correlation 0ms
+     ✓ reads an open case: one leg, no escalations, nothing reviewed yet 0ms
+     ✓ lists the open case, honours the subject filter, and never lists another subject 0ms
+     ✓ carries the risen leg in the SAME case and records who already acted 1ms
+     ✓ leaves a decided case out of the open list but keeps it readable 0ms
+     ✓ reconstructs the whole chain from the durable rows after a restart 0ms
+     ✓ names a leg row without a leg ordinal as a leg-ordinal problem 0ms
+     ✓ names an off-ladder review authority as a review-authority problem 0ms
+     ✓ names two legs that disagree about the frozen identity as an identity disagreement 0ms
+     ✓ names a duplicated ordinal as a broken chain 0ms
+     ✓ reports an unknown case as not-found 0ms
+     ✓ lists the healthy case anyway: one corrupt case does not poison the read plane 0ms
+     ✓ refuses to authorize on a row the case read refuses, even with a durable allow (A2-9) 0ms
+     ✓ refuses to authorize an operation whose case is corrupt 0ms
+     ✓ the scenario reached a risen leg to test against 0ms
+     × resolveControl, appendTerminalOutcome and escalateApprovalLeg agree 5ms
+     × no entrance wrote anything, and the operation stayed unauthorized 1ms
+     × the refusal binds the principal who acted, not every principal 0ms
+     ✓ the case is corrupt (the read names the problem the retry must not paper over) 0ms
+     ✓ the retry is refused typed, naming that problem 0ms
+     ✓ no leg is handed back, and nothing is written 0ms
+     ✓ the scenario really built the split: a durable allow and a broken chain 0ms
+     ✓ the guard does not proceed on the row the reader refused 0ms
+     ✓ and it burns no approval doing so 0ms
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 25 passed (28)
+   Start at  09:30:32
+   Duration  977ms (transform 1.23s, setup 0ms, import 867ms, tests 15ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-escalation.test.ts [ test/a4p3-approval-escalation.test.ts ]
+ControlError: ControlService: request 'ctrl-0xb6x700dooh091xvoyla0rb' already carries a durable decision (the first decision is authoritative)
+ ❯ control/service.ts:1965:15
+    1963|       }
+    1964|       if (state.decisions.some((d) => d.payload.requestId === args.req…
+    1965|         throw new ControlError(
+       |               ^
+    1966|           CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED,
+    1967|           `ControlService: request '${args.requestId}' already carries…
+ ❯ action-router/effects.ts:336:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > one durable fact, one verdict at every entrance (A2-9 across entrances) > resolveControl, appendTerminalOutcome and escalateApprovalLeg agree
+AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+  [
+    "CONTROL_RESOLVER_NOT_AUTHORIZED",
+    "CONTROL_RESOLVER_NOT_AUTHORIZED",
+-   "CONTROL_RESOLVER_NOT_AUTHORIZED",
++   "no-error",
+  ]
+
+ ❯ test/a4p3-approval-case.test.ts:783:29
+    781|   it('resolveControl, appendTerminalOutcome and escalateApprovalLeg ag…
+    782|     const refusal1 = CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZ…
+    783|     expect(entrances.codes).toEqual([refusal1, refusal1, refusal1])
+       |                             ^
+    784|   })
+    785|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > one durable fact, one verdict at every entrance (A2-9 across entrances) > no entrance wrote anything, and the operation stayed unauthorized
+AssertionError: expected 6 to be 4 // Object.is equality
+
+- Expected
++ Received
+
+- 4
++ 6
+
+ ❯ test/a4p3-approval-case.test.ts:787:34
+    785|
+    786|   it('no entrance wrote anything, and the operation stayed unauthorize…
+    787|     expect(entrances.factsAfter).toBe(entrances.factsBefore)
+       |                                  ^
+    788|     expect(entrances.guard.allowed).toBe(false)
+    789|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/a4p3-approval-case.test.ts > one durable fact, one verdict at every entrance (A2-9 across entrances) > the refusal binds the principal who acted, not every principal
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/a4p3-approval-case.test.ts:792:45
+    790|
+    791|   it('the refusal binds the principal who acted, not every principal',…
+    792|     expect(entrances.byRisenReviewer.threw).toBe(false)
+       |                                             ^
+    793|     expect((entrances.byRisenReviewer.value as { decision: string }).d…
+    794|       CONTROL_DECISION_VALUES.ALLOW,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

@@ -47,6 +47,7 @@ import {
   CONTROL_ESCALATION_SUCCESSOR,
   CONTROL_GUARD_BLOCK_REASONS,
   CONTROL_LEG_TERMINAL_REASON_VALUES,
+  CONTROL_LEG_TERMINAL_REASONS,
   CONTROL_ERROR_CODES,
   CONTROL_REQUEST_KINDS,
   CONTROL_REVIEW_ACTIONS,
@@ -56,10 +57,12 @@ import {
   isProposalAuthorityPosition,
 } from '../control/index.js'
 import { CONTROL_DECISION_REASON_VALUES } from '../control/types.js'
+import { TEAM_RUNTIME_ERROR_CODES, isTeamRuntimeError } from '../admission/index.js'
 import type {
   ApprovalCaseIdentityInput,
   ControlDecisionRecord,
   ControlLegTerminalReason,
+  ControlCaseClosure,
   ControlEscalationRecord,
   ControlGuardVerdict,
   ControlRequestRecord,
@@ -1115,5 +1118,607 @@ describe('the frozen PR3 leg vocabularies (A2-8, A5-16)', () => {
     expect(CONTROL_ESCALATION_SUCCESSOR['human-user']).toBe('human-admin')
     expect(hasAuthorityResolver('human-admin')).toBe(false)
     expect(hasAuthorityResolver('leader')).toBe(true)
+  })
+})
+
+// --- the DECISION entrance and the escalated-away reviewer (fidelity review #1) --------
+
+/**
+ * The reachable path the fidelity review named, end to end: the leader
+ * escalates leg 1, the case rises to Human User, and the SAME leader then
+ * answers the risen leg. Nothing in the pre-PR3 decision path notices — the
+ * leg is neither decided nor abandoned, the role passes (`leader-approval`
+ * admits `leader`), and the envelope it must clear is the one that same
+ * escalation cleared a moment earlier.
+ *
+ * Spec 21.5 ("no self/same-level allow") and 24.5 (`reviewedBy` is the durable
+ * backing of "an escalated-away reviewer cannot return and allow") are LAWS.
+ * A law enforced only in the advisory legal-action list PR4 renders is not a
+ * law: a menu cannot refuse a write. So BOTH decision entrances —
+ * `resolveControl` and `appendTerminalOutcome` — must refuse it, with the same
+ * code the escalate entrance already used, and with zero durable side effects.
+ */
+const selfDecision = await (async () => {
+  const world = await createP6T4World('a4p3-esc-5', ['leader', 'worker'])
+  try {
+    const service = createP6T4Service(world)
+    const { leg, scope } = await requestLeg(service, { correlation: 'corr-a4p3-self-allow' })
+    const risen = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: leg.requestId,
+      reason: 'above my reach',
+    })
+    const risenRequestId = risen.nextLeg?.requestId ?? 'no-risen-leg'
+    const factsBefore = world.domain.repositories.ledger.list().length
+    // The escalated-away reviewer returns with an allow.
+    const allowByOldReviewer = await refusal(() =>
+      service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: risenRequestId,
+        decision: 'allow',
+      }),
+    )
+    const factsAfterAllow = world.domain.repositories.ledger.list().length
+    // …and with the other decision entrance, a terminal outcome.
+    const closeByOldReviewer = await refusal(() =>
+      service.appendTerminalOutcome({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: risenRequestId,
+        terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOURCE_IDENTITY_DRIFT,
+      }),
+    )
+    const factsAfterClose = world.domain.repositories.ledger.list().length
+    const guardAfterAttempts = await service.guardOperation(scope)
+    // A refusal must not WEDGE the case: the rung it rose to can still decide.
+    // Captured, not awaited bare: while the law is missing the old reviewer's
+    // allow SUCCEEDS, which would make this call a module-level throw and
+    // erase every other scenario in the file instead of colouring this law.
+    const allowByRisenReviewer = await refusal(() =>
+      service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: humanCaller(),
+        requestId: risenRequestId,
+        decision: 'allow',
+      }),
+    )
+    const guardAfterRisen = await service.guardOperation(scope)
+    const state = await service.listControlState(P6T4_ROOT)
+    return {
+      leg,
+      risen,
+      risenRequestId,
+      factsBefore,
+      allowByOldReviewer,
+      factsAfterAllow,
+      closeByOldReviewer,
+      factsAfterClose,
+      guardAfterAttempts,
+      allowByRisenReviewer,
+      guardAfterRisen,
+      state,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('every decision entrance refuses the escalated-away reviewer (spec 21.5, 24.5; ADR A1-10)', () => {
+  it('resolveControl(escalated-away reviewer, risen leg, `allow`) is refused typed', () => {
+    expect(selfDecision.risen.caseOutcome).toBe(CONTROL_CASE_OUTCOMES.ESCALATED)
+    expect(selfDecision.allowByOldReviewer.threw, 'the old reviewer was allowed to decide the risen leg').toBe(true)
+    assertControlCode(
+      selfDecision.allowByOldReviewer.error,
+      CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+    )
+  })
+
+  it('the refused allow wrote NOTHING at all', () => {
+    expect(selfDecision.factsAfterAllow).toBe(selfDecision.factsBefore)
+  })
+
+  it('appendTerminalOutcome by the same principal is refused with the SAME code (one law, one home)', () => {
+    assertControlCode(
+      selfDecision.closeByOldReviewer.error,
+      CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+    )
+    expect(selfDecision.factsAfterClose).toBe(selfDecision.factsAfterAllow)
+  })
+
+  it('neither refusal authorizes or consumes anything', () => {
+    expect(selfDecision.guardAfterAttempts.allowed).toBe(false)
+    expect(blockReasonOf(selfDecision.guardAfterAttempts)).toBe(
+      CONTROL_GUARD_BLOCK_REASONS.REQUEST_PENDING,
+    )
+  })
+
+  it('the refusals do not wedge the case — the risen rung still decides it exactly once', () => {
+    expect(selfDecision.allowByRisenReviewer.threw).toBe(false)
+    expect((selfDecision.allowByRisenReviewer.value as ControlDecisionRecord).decision).toBe(
+      CONTROL_DECISION_VALUES.ALLOW,
+    )
+    expect(selfDecision.guardAfterRisen.allowed).toBe(true)
+    expect(selfDecision.state.consumptions).toHaveLength(1)
+  })
+})
+
+// --- a corrupt case is FOUND by its identity (fidelity review #2) ----------------------
+
+/**
+ * `findApprovalCaseByIdentity` is the ONLY frozen route from a fingerprint
+ * back to a case id. A case whose leg rows all fail the strict parser is
+ * held in `state.corruptLegs` — and if the lookup scans only the rows that
+ * parsed, it answers `none` for a case the ledger contains. The caller is
+ * then told the case does not exist and opens a SECOND one, which is the
+ * SF1/X7-R5 collapse relocated, not solved: `listOpenApprovalCases` excludes
+ * the corrupt case and `readApprovalCaseState` needs an id it cannot get.
+ *
+ * Two worlds because the case id is DERIVED (A2-7: no caller ever supplies
+ * one): the first derives it from a real case, the second holds nothing but
+ * the corrupt row under that same id.
+ */
+const corruptIdentity = await (async () => {
+  const deriving = await createP6T4World('a4p3-esc-6', ['leader', 'worker'])
+  let caseId = 'unresolved'
+  let identity: ApprovalCaseIdentityInput | undefined
+  try {
+    const service = createP6T4Service(deriving)
+    const { leg } = await requestLeg(service, {
+      correlation: 'corr-a4p3-corrupt-id',
+      operationFingerprint: 'fp-a4p3-corrupt-id',
+    })
+    caseId = leg.approvalCaseId ?? 'missing-case-id'
+    identity = {
+      subject: { kind: 'instance', instanceId: WORKER_ID },
+      beneficiaryAuthority: 'member',
+      requestedEffect: 'ask',
+      operationFingerprint: 'fp-a4p3-corrupt-id',
+      correlation: 'corr-a4p3-corrupt-id',
+    }
+  } finally {
+    await destroyP6T1World(deriving)
+  }
+  const world = await createP6T4World('a4p3-esc-7', ['leader', 'worker'])
+  try {
+    const service = createP6T4Service(world)
+    // The case's ONLY row, and it is corrupt: a case id with no leg ordinal.
+    await writeRawControlFact(world, 'control-request-recorded', {
+      requestId: 'req-raw-corrupt-only',
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      requester: { kind: 'instance', instanceId: WORKER_ID, role: 'member' },
+      subject: { kind: 'instance', instanceId: WORKER_ID },
+      targetInstanceId: WORKER_ID,
+      actionName: 'write-file',
+      correlation: 'corr-a4p3-corrupt-id',
+      operationFingerprint: 'fp-a4p3-corrupt-id',
+      approvalCaseId: caseId,
+      reviewAuthority: 'leader',
+      beneficiaryAuthority: 'member',
+      requestedEffect: 'ask',
+    })
+    const found = await service.findApprovalCaseByIdentity({
+      rootSessionId: P6T4_ROOT,
+      identity: identity as ApprovalCaseIdentityInput,
+    })
+    const read = await service.readApprovalCaseState({
+      rootSessionId: P6T4_ROOT,
+      approvalCaseId: caseId,
+    })
+    return { caseId, found, read }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('a corrupt case is still FOUND by the identity that produced it (fidelity review #2)', () => {
+  it('the identity lookup answers `found` for a case whose only leg is corrupt', () => {
+    expect(corruptIdentity.found).toEqual({
+      kind: 'found',
+      approvalCaseId: corruptIdentity.caseId,
+    })
+  })
+
+  it('and the case read then names the typed problem, not a missing case', () => {
+    expect(corruptIdentity.read.kind).toBe('problem')
+    if (corruptIdentity.read.kind !== 'problem') return
+    expect(corruptIdentity.read.problem).toBe('leg-ordinal')
+  })
+})
+
+// --- a risen leg never invents an identity (fidelity review #4) ------------------------
+
+/**
+ * The risen leg used to default `requiredAuthorityAtCreation`,
+ * `beneficiaryAuthority` and `requestedEffect` to invented values on a
+ * durable, authority-bearing row. `beneficiaryAuthority` PARTICIPATES in the
+ * frozen case identity, so an invented one makes the legs of a case disagree
+ * — which the case read reports as IDENTITY_DISAGREEMENT, i.e. the invention
+ * destroys the case. A2-9: refusal, never invention.
+ */
+const fabricatedRise = await (async () => {
+  const world = await createP6T4World('a4p3-esc-8', ['leader', 'worker'])
+  try {
+    const service = createP6T4Service(world)
+    // A leg row the STRICT parser accepts (case id + ordinal + authority) and
+    // which carries NO identity fields beyond them — the shape a widened
+    // PR4/PR5 vocabulary can produce.
+    await writeRawControlFact(world, 'control-request-recorded', {
+      requestId: 'req-raw-bare-identity',
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      requester: { kind: 'instance', instanceId: WORKER_ID, role: 'member' },
+      subject: { kind: 'instance', instanceId: WORKER_ID },
+      targetInstanceId: WORKER_ID,
+      actionName: 'write-file',
+      correlation: 'corr-a4p3-bare-identity',
+      operationFingerprint: 'fp-a4p3-bare-identity',
+      approvalCaseId: 'case-a4p3-bare-identity',
+      legOrdinal: 1,
+      reviewAuthority: 'leader',
+    })
+    const factsBefore = world.domain.repositories.ledger.list().length
+    const rise = await refusal(() =>
+      service.escalateApprovalLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: 'req-raw-bare-identity',
+        reason: 'the row carries no identity to carry up',
+      }),
+    )
+    const factsAfter = world.domain.repositories.ledger.list().length
+    const risenRows = (await service.listControlState(P6T4_ROOT)).requests.filter(
+      (row) => row.approvalCaseId === 'case-a4p3-bare-identity',
+    ).length
+    return { rise, factsBefore, factsAfter, risenRows }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('a risen leg never invents the identity it must carry (ADR A2-7, A2-9; fidelity review #4)', () => {
+  it('rising a leg that carries no frozen identity is refused typed', () => {
+    expect(fabricatedRise.rise.threw).toBe(true)
+    assertControlCode(
+      fabricatedRise.rise.error,
+      CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+    )
+  })
+
+  it('and no leg row is written with an invented beneficiary', () => {
+    expect(fabricatedRise.factsAfter).toBe(fabricatedRise.factsBefore)
+    expect(fabricatedRise.risenRows).toBe(1)
+  })
+})
+
+// --- a faulted multi-write, injected through the same ledger seam (review #3) ----------
+
+/**
+ * "One lock-held transaction" is SERIALIZATION, not atomicity: `withTeamLock`
+ * is one acquisition per unit of work, and the writes inside it are separate
+ * `ledger.put` calls. A fault between them leaves a partial state, so the
+ * question is what the RETRY does with it. Both shapes are injected here
+ * against the same seam `control-abandon-storage-fault.test.ts` uses.
+ */
+
+/** The zero-review close: leg row lands, its terminal deny faults. */
+const faultClose = await (async () => {
+  const world = await createP6T4World('a4p3-esc-9', ['leader', 'worker'])
+  const identity: ApprovalCaseIdentityInput = {
+    subject: { kind: 'instance', instanceId: WORKER_ID },
+    beneficiaryAuthority: 'member',
+    requestedEffect: 'ask',
+    operationFingerprint: 'fp-a4p3-fault-close',
+    correlation: 'corr-a4p3-fault-close',
+  }
+  const closeArgs = {
+    rootSessionId: P6T4_ROOT,
+    caller: humanCaller(),
+    identity,
+    carrier: {
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      reviewAuthority: 'human-admin' as const,
+      actionName: 'write-file',
+      toolName: 'fs.write',
+    },
+    terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE,
+  }
+  try {
+    const service = createP6T4Service(world)
+    const ledger = world.domain.repositories.ledger
+    const originalPut = ledger.put.bind(ledger)
+    let puts = 0
+    ledger.put = async (entry) => {
+      puts += 1
+      if (puts === 2) throw new Error('injected: the terminal deny could not be written')
+      return originalPut(entry)
+    }
+    let first
+    try {
+      first = await refusal(() => service.closeApprovalCaseWithoutLeg(closeArgs))
+    } finally {
+      ledger.put = originalPut
+    }
+    const partialRequests = (await service.listControlState(P6T4_ROOT)).requests.length
+    const partialDecisions = controlFacts(world, 'control-decision-recorded').length
+    // The retry, fault removed.
+    const retry = await refusal(() => service.closeApprovalCaseWithoutLeg(closeArgs))
+    const state = await service.listControlState(P6T4_ROOT)
+    const openCases = await service.listOpenApprovalCases({ rootSessionId: P6T4_ROOT })
+    const guard = await service.guardOperation(
+      makeScope({
+        correlation: 'corr-a4p3-fault-close',
+        operationFingerprint: 'fp-a4p3-fault-close',
+      }),
+    )
+    return {
+      first,
+      partialRequests,
+      partialDecisions,
+      retry,
+      decisionsAfterRetry: controlFacts(world, 'control-decision-recorded').length,
+      state,
+      openCases,
+      guard,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+/** The escalation: the deny and the leg fact land, the risen leg faults. */
+const faultEscalate = await (async () => {
+  const world = await createP6T4World('a4p3-esc-10', ['leader', 'worker'])
+  try {
+    const service = createP6T4Service(world)
+    const { leg, scope } = await requestLeg(service, { correlation: 'corr-a4p3-fault-escalate' })
+    const ledger = world.domain.repositories.ledger
+    const originalPut = ledger.put.bind(ledger)
+    let puts = 0
+    ledger.put = async (entry) => {
+      puts += 1
+      if (puts === 3) throw new Error('injected: the risen leg could not be written')
+      return originalPut(entry)
+    }
+    let first
+    try {
+      first = await refusal(() =>
+        service.escalateApprovalLeg({
+          rootSessionId: P6T4_ROOT,
+          caller: leaderCaller(),
+          requestId: leg.requestId,
+          reason: 'the rise faulted',
+        }),
+      )
+    } finally {
+      ledger.put = originalPut
+    }
+    const retry = await refusal(() =>
+      service.escalateApprovalLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: leg.requestId,
+        reason: 'retry of the faulted rise',
+      }),
+    )
+    const state = await service.listControlState(P6T4_ROOT)
+    const openCases = await service.listOpenApprovalCases({ rootSessionId: P6T4_ROOT })
+    const guard = await service.guardOperation(scope)
+    return {
+      first,
+      retry,
+      state,
+      openCases,
+      guard,
+      escalationFacts: controlFacts(world, 'control-escalation-recorded').length,
+      deniedEscalated: controlFacts(world, 'control-decision-recorded').filter(
+        (entry) => (entry.payload as Record<string, unknown>)['reason'] === 'escalated',
+      ).length,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('a faulted close is COMPLETED by the retry, never wedged (acceptance 21.10; review #3)', () => {
+  it('the fault surfaces the typed durable-write failure and claims no closure', () => {
+    expect(faultClose.first.threw).toBe(true)
+    expect(isTeamRuntimeError(faultClose.first.error)).toBe(true)
+    expect(
+      (faultClose.first.error as { readonly code: string }).code,
+    ).toBe(TEAM_RUNTIME_ERROR_CODES.DURABLE_WRITE_FAILED)
+  })
+
+  it('the fault leaves exactly the partial state: a leg row and no deny', () => {
+    expect(faultClose.partialRequests).toBe(1)
+    expect(faultClose.partialDecisions).toBe(0)
+  })
+
+  it('the retry completes the close instead of being refused by its own partial state', () => {
+    expect(faultClose.retry.threw, 'the retry was refused by the leg the fault left behind').toBe(false)
+    expect((faultClose.retry.value as ControlCaseClosure).terminalDecision.decision).toBe(
+      CONTROL_DECISION_VALUES.DENY,
+    )
+    expect(faultClose.decisionsAfterRetry).toBe(1)
+  })
+
+  it('the completed case is durable-terminal: nothing pending, nothing open, nothing authorized', () => {
+    expect(faultClose.state.requests[0]?.status).toBe('decided')
+    expect(faultClose.openCases).toHaveLength(0)
+    expect(faultClose.guard.allowed).toBe(false)
+  })
+})
+
+describe('a faulted rise leaves the case fail-closed, and the dead end is pinned (review #3)', () => {
+  it('the fault surfaces the typed durable-write failure', () => {
+    expect(faultEscalate.first.threw).toBe(true)
+    expect(isTeamRuntimeError(faultEscalate.first.error)).toBe(true)
+  })
+
+  it('the partial state is fail-closed for the operation: denied `escalated`, nothing consumable', () => {
+    expect(faultEscalate.deniedEscalated).toBe(1)
+    expect(faultEscalate.guard.allowed).toBe(false)
+    expect(faultEscalate.state.consumptions).toHaveLength(0)
+  })
+
+  it('the leg fact is durable while the risen leg is absent, and the case is not open', () => {
+    expect(faultEscalate.escalationFacts).toBe(1)
+    expect(faultEscalate.state.requests).toHaveLength(1)
+    expect(faultEscalate.openCases).toHaveLength(0)
+  })
+
+  it('the retry is refused DECIDED — this lane does NOT reconcile a faulted rise (disclosed)', () => {
+    assertControlCode(faultEscalate.retry.error, CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED)
+  })
+})
+
+// --- the DURABLE bases of the case law: each one driven alone -------------------------
+
+/**
+ * The law has TWO durable bases and today's writers co-write them, so a
+ * mutation that kills either branch would survive unless each is driven on its
+ * own. PR5 writes these rows too, and A2-9 judges a reader on the shapes it did
+ * not create — so each basis gets its own shape here, from raw rows:
+ *
+ *  (A) an EARLIER leg this caller DECIDED, with no escalation fact anywhere —
+ *      the shape `appendTerminalOutcome` leaves, extended by a later leg;
+ *  (B) an EARLIER leg this caller ESCALATED whose terminal decision row is
+ *      missing — the shape a foreign writer can leave.
+ *
+ * Each must refuse the same `allow` on the later leg, and a principal who never
+ * acted must still be able to decide it: the law binds the principal who acted,
+ * not the case.
+ */
+const caseLawBases = await (async () => {
+  const world = await createP6T4World('a4p3-esc-11', ['leader', 'worker'])
+  const rawLeg = (
+    requestId: string,
+    approvalCaseId: string,
+    legOrdinal: number,
+    correlation: string,
+    operationFingerprint: string,
+  ) =>
+    writeRawControlFact(world, 'control-request-recorded', {
+      requestId,
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      requester: { kind: 'instance', instanceId: WORKER_ID, role: 'member' },
+      subject: { kind: 'instance', instanceId: WORKER_ID },
+      targetInstanceId: WORKER_ID,
+      actionName: 'write-file',
+      toolName: 'fs.write',
+      correlation,
+      operationFingerprint,
+      approvalCaseId,
+      legOrdinal,
+      reviewAuthority: 'human-user',
+      requiredAuthorityAtCreation: 'leader',
+      beneficiaryAuthority: 'member',
+      requestedEffect: 'ask',
+    })
+  try {
+    const service = createP6T4Service(world)
+    // (A) a decided earlier leg, and no escalation fact.
+    const a = await requestLeg(service, {
+      correlation: 'corr-a4p3-basis-a',
+      operationFingerprint: 'fp-a4p3-basis-a',
+    })
+    const aCase = a.leg.approvalCaseId ?? 'missing-case-id'
+    await service.appendTerminalOutcome({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: a.leg.requestId,
+      terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOURCE_IDENTITY_DRIFT,
+    })
+    await rawLeg('req-a4p3-basis-a-leg2', aCase, 2, 'corr-a4p3-basis-a', 'fp-a4p3-basis-a')
+    const factsBeforeA = world.domain.repositories.ledger.list().length
+    const aByActor = await refusal(() =>
+      service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: 'req-a4p3-basis-a-leg2',
+        decision: 'allow',
+      }),
+    )
+    const factsAfterA = world.domain.repositories.ledger.list().length
+    // The premise of shape (A), measured AT the refusal: the case has a
+    // decision and the world has no escalation fact at all, so nothing but the
+    // decision branch can be what refused this allow.
+    const escalationFactsAtA = controlFacts(world, 'control-escalation-recorded').length
+    const decisionsAtA = controlFacts(world, 'control-decision-recorded').length
+    const aByFreshReviewer = await refusal(() =>
+      service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: humanCaller(),
+        requestId: 'req-a4p3-basis-a-leg2',
+        decision: 'allow',
+      }),
+    )
+    // (B) an escalated earlier leg whose decision row is missing.
+    const b = await requestLeg(service, {
+      correlation: 'corr-a4p3-basis-b',
+      operationFingerprint: 'fp-a4p3-basis-b',
+    })
+    const bCase = b.leg.approvalCaseId ?? 'missing-case-id'
+    await writeRawControlFact(world, 'control-escalation-recorded', {
+      approvalCaseId: bCase,
+      legOrdinal: 1,
+      previousRequestId: b.leg.requestId,
+      escalatedBy: { kind: 'instance', instanceId: LEADER_ID, role: 'leader' },
+      reason: 'a foreign writer rose this case',
+    })
+    await rawLeg('req-a4p3-basis-b-leg2', bCase, 2, 'corr-a4p3-basis-b', 'fp-a4p3-basis-b')
+    const factsBeforeB = world.domain.repositories.ledger.list().length
+    const bByActor = await refusal(() =>
+      service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: 'req-a4p3-basis-b-leg2',
+        decision: 'allow',
+      }),
+    )
+    const factsAfterB = world.domain.repositories.ledger.list().length
+    return {
+      aCase,
+      bCase,
+      aByActor,
+      factsBeforeA,
+      factsAfterA,
+      escalationFactsAtA,
+      decisionsAtA,
+      aByFreshReviewer,
+      bByActor,
+      factsBeforeB,
+      factsAfterB,
+      escalationFacts: controlFacts(world, 'control-escalation-recorded').length,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('each durable basis of the case law refuses on its own (spec 24.5; A2-9)', () => {
+  it('(A) a decided earlier leg refuses, with no escalation fact in the world', () => {
+    expect(caseLawBases.escalationFactsAtA, 'shape A must have no escalation fact to lean on').toBe(0)
+    expect(caseLawBases.decisionsAtA, 'shape A must have the earlier leg\'s decision').toBe(1)
+    assertControlCode(
+      caseLawBases.aByActor.error,
+      CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+    )
+    expect(caseLawBases.factsAfterA).toBe(caseLawBases.factsBeforeA)
+  })
+
+  it('(B) an escalated earlier leg refuses, with no decision row on it', () => {
+    assertControlCode(
+      caseLawBases.bByActor.error,
+      CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+    )
+    expect(caseLawBases.factsAfterB).toBe(caseLawBases.factsBeforeB)
+  })
+
+  it('the law binds the principal who acted — a fresh reviewer still decides', () => {
+    expect(caseLawBases.aByFreshReviewer.threw, 'the law refused a principal who never acted').toBe(false)
+    expect((caseLawBases.aByFreshReviewer.value as ControlDecisionRecord).decision).toBe(
+      CONTROL_DECISION_VALUES.ALLOW,
+    )
   })
 })

@@ -177,12 +177,16 @@ Semantics PR4/PR5 depend on:
   The caller must be a resolver of `carrier.kind` (`CONTROL_RESOLVER_ROLES`, the
   same table the resolve path uses) — the only authority gate is that one, and the
   asymmetry that makes it sufficient is that a close can only ever write a `deny`.
-  `requestApprovalLeg`'s A1-12 branch and this member share one locked writer
-  (`closeZeroReviewCaseLocked`), so there is exactly one durable shape.
+  `requestApprovalLeg`'s A1-12 branch and this member share one writer
+  (`closeZeroReviewCaseLocked`, renamed `closeZeroReviewCaseTransactionally` at
+  §11 R3 — it ACQUIRES the lock, which `*Locked` elsewhere in the file does not
+  mean), so there is exactly one durable shape. Its retry path now also COMPLETES
+  a close that a `ledger.put` fault left half-written (§11 R3).
 - **`findApprovalCaseByIdentity`** resolves a frozen identity to its case
   (A2-7): the id is **derived** by the same `approvalCaseIdOf` the writer uses and
-  then **verified** against the durable rows, so it answers `found` only for a case
-  that exists and `none` otherwise (F3 — without it, a lane holding a fingerprint
+  then **verified** against the durable rows — `state.requests` AND
+  `state.corruptLegs`, so a case whose legs all failed the strict parser is still
+  `found` (§11 R2) — and it answers `none` only for a case that does not exist (F3 — without it, a lane holding a fingerprint
   had no frozen path back to a case that `listOpenApprovalCases` cannot show,
   because a decided case is by definition not open).
 - **`escalateApprovalLeg`** writes THREE rows in one lock-held transaction:
@@ -607,3 +611,122 @@ stay in `red-captures/`, since evidence is append-only, but they describe the
 destroyed file). `MUT-19` is the single flip that could not be re-run, and
 `MUT-15` was green on the first re-run and red after the fix — both facts are in
 the PR body.
+
+---
+
+## 11. Amendments at fidelity-review time (R1-R4) — this section supersedes §9 where they differ
+
+The fidelity review's verdict was **TRUST WITH CORRECTIONS**: the rebuild was
+faithful, four findings blocked merge. All four are fixed in production code, each
+with a raw RED capture (`red-captures/RED-07…`, `red-captures/RED-08…`) and a
+production-only mutation proof (`red-captures/reproof-review-fixes/`,
+`MUT-34`…`MUT-45`). **Zero new error codes**; the frozen surface keeps its shape,
+with two additions inside already-frozen signatures (R2's refusal, R4's refusal),
+both typed from the existing vocabulary.
+
+### R1 — the escalated-away law has one home, and it is on the DECISION path
+
+`assertNoActOnEarlierLeg` (in `control/service.ts`, beside `sameCallerRef`) is the
+single place this law lives. Its three callers are `escalateApprovalLeg`,
+`resolveControl` and `appendTerminalOutcome` — each **after the role gate and
+before the envelope and before any write**, so a refusal never needs authority the
+caller had not already used and leaves the ledger byte-unchanged. Its basis is the
+case's OWN durable rows: a decision by this caller on a lower-ordinal leg, or an
+escalation fact this caller wrote for a lower-ordinal leg. It deliberately does not
+read the derived `reviewedBy` view (which still has no write-path consumer): a law
+resting on a display value is not a law. Pre-Alpha.4 rows carry no case id and are
+untouched by it.
+
+Proofs: `MUT-34`/`MUT-35`/`MUT-36` remove the call at one entrance each;
+`MUT-37`/`MUT-38` kill one durable basis each — both bases are driven **alone**,
+from raw rows, because today's writers co-write them and a co-written pair hides
+either branch; `MUT-39` broadens the law to every principal and is reported
+**CAUGHT-COARSE**: that mutant is over-broad by construction, so it also refuses
+legitimate reviewers and crashed both lane modules instead of colouring one
+assertion. The precise positive-side pin is
+`the law binds the principal who acted — a fresh reviewer still decides`. The
+anti-divergence pin the review asked for lives in lane A:
+`resolveControl, appendTerminalOutcome and escalateApprovalLeg agree`, which
+compares the three verdicts as data rather than re-asserting the refusal.
+
+**The review's direct question — did the pre-destruction file touch
+`resolveControl`? Answer: CANNOT TELL.** The rebuilt body is byte-identical to
+HEAD's (184 lines), and no surviving artifact — the 08:07 fragment, the patch
+scripts, the driver needles, the vitest transform cache, a scan of every object in
+the git store — contains a single line of it; the freeze never named it either.
+Because no test of mine drove `resolveControl(escalated-away reviewer, risen leg)`,
+no captured result distinguishes "it was never touched" from "it was touched and
+the touch was lost". That is the honest limit of the evidence, and it is why R1 is
+now pinned by tests rather than by recollection.
+
+### R2 — the identity route and the idempotent retry stop collapsing a corrupt case
+
+* `findApprovalCaseByIdentity` verifies the derived id against `state.requests`
+  **and** `state.corruptLegs`. Answering `none` for a case the ledger holds was the
+  SF1/X7-R5 double-case collapse relocated: this is the only frozen route from a
+  fingerprint back to a case id, and `listOpenApprovalCases` cannot show a corrupt
+  case. `found` here means "the ledger has this case", **not** "the case is
+  usable" — the read that follows names the typed problem.
+* `requestApprovalLeg`'s current-leg retry now **refuses** a `problem` read
+  (`CONTROL_REQUEST_MALFORMED`, detail naming the problem) instead of concluding
+  "no current leg" and handing back the closed first leg, which an inline waiter
+  would then wait on forever. The frozen return union has no arm for a corrupt
+  read, so the corruption surfaces as a typed throw; the precedent inside these
+  paths is `writeLegRowLocked`'s read-back failure. This amends F14's wording: a
+  retry after a rise returns the CURRENT leg **or refuses** — never a superseded
+  one.
+
+Proofs: `MUT-40` (lookup blind to the corrupt bucket), `MUT-41` (retry answers a
+corrupt case with a closed leg — this flip IS the pre-fix code, so the RED for this
+half of R2 is a mutation capture, `RED-08` covering the rest).
+
+### R3 — "one lock-held transaction" is serialization; the close reconciles, the rise discloses
+
+* **Rename:** `closeZeroReviewCaseLocked` → **`closeZeroReviewCaseTransactionally`**.
+  It acquires the per-team lock itself, so its callers must not hold it
+  (`withTeamLock` is not reentrant); a `*Locked` helper elsewhere in the file still
+  means "the caller holds the lock", and that distinction was the lie being told.
+* **The close reconciles its own partial state.** A fault between the leg write and
+  the deny left an open leg on a rung with no resolver — reviewable by nobody, and
+  the retry was refused by it, so the fake-pending state acceptance 21.10 forbids
+  was permanent. Such a leg is now COMPLETED by the retry: the same locked writer
+  writes the missing `deny` and returns the closure. The recorded `terminalReason`
+  is the retry's, which is the only one the ledger was ever told. A leg whose rung
+  CAN review it still refuses (that leg is `appendTerminalOutcome`'s). Proofs:
+  `MUT-42` (the old refusal returns), `MUT-43` (reconciling a reviewable leg steals
+  a review — the pre-existing `an open leg is appendTerminalOutcome's` pin dies).
+* **Disclosed, not reconciled:** a fault between write 2 and write 3 of
+  `escalateApprovalLeg` leaves the case **decided** with reason `escalated`, the
+  `control-escalation-recorded` fact durable, and **no risen leg**. The state is
+  survivable and fail-closed: the leg is denied, nothing is consumable, the case is
+  readable and not open, no authority is minted, and the caller's
+  `DURABLE_WRITE_FAILED` retry is refused `CONTROL_REQUEST_DECIDED`. Recovery is a
+  NEW case on the same identity, not a retry of this one. PR5 must render an
+  escalation with no successor leg as "the rise failed" — never as "awaiting
+  <successor>". This lane does not reconcile it, because a repair would have to
+  distinguish it from a top-of-ladder escalation, which legitimately has no risen
+  leg. The behaviour is pinned so that changing it later is a deliberate act:
+  `the retry is refused DECIDED — this lane does NOT reconcile a faulted rise`.
+
+### R4 — a risen leg carries the case's frozen identity or the rise is refused
+
+The three invented values (`requiredAuthorityAtCreation ?? successor`,
+`beneficiaryAuthority ?? successor`, `requestedEffect ?? 'ask'`) are gone. The
+identity is copied from the parent leg row and verified **before any write**; a row
+that carries none is refused `CONTROL_REQUEST_MALFORMED` naming the fields.
+Invention was not the safe option here: `beneficiaryAuthority` participates in the
+derived case id, so an invented one makes the legs of one case disagree and the
+case read answers `IDENTITY_DISAGREEMENT` — the rise would have destroyed the case
+it was advancing (ADR A2-9: refusal, not invention). Only a rise that actually
+mints a leg requires one; the top of the ladder and a no-resolver successor
+terminate as before. Proof: `MUT-44`.
+
+### Items the review asked to carry
+
+| item | amendment |
+| --- | --- |
+| `kind` default | `findApprovalCaseByIdentity` and `closeApprovalCaseWithoutLeg` default `kind` to `CONTROL_REQUEST_KINDS.LEADER_APPROVAL` when the caller omits it, and `kind` participates in the derived id. PR4/PR5 must pass `kind` explicitly whenever the carrier is not `leader-approval`, or they will look up (or write) a different case than they named. |
+| `reviewPayload` on the rise | the risen leg does not carry `reviewPayload` / `reviewPayloadDigest`. **Not reachable today**: `requestApprovalLeg` accepts no reviewPayload, so no case leg can ever hold one. If PR5 widens that input, the rise MUST forward both fields — recorded now so the evidence attached to a case cannot be silently dropped at the rung that most needs it. |
+| read-back asymmetry | `writeLegRowLocked` re-reads its row and fails (`DURABLE_WRITE_FAILED`) when the durable row disagrees with what it wrote; the pre-existing `requestControl({leg})` entrance does not. Reachable when PR4/PR5 widen the vocabulary. Disclosed, not changed: that function is HEAD's and this lane's budget is zero. |
+| current-leg law | one home now: `currentLegOf` / `isLaterLegThan` — highest leg ordinal, ties to the LATER durable row, used by `guardOperation`'s candidate filter AND by `buildApprovalCaseState`. The two rules this replaced disagreed on equal ordinals and only the duplicate-ordinal refusal hid it. Proof: `MUT-45` against the new pin `the guard does not proceed on the row the reader refused`. |
+| "refuses to authorize" is not "blocked" | the strict leg-row rule IS on the guard path (via the shared parser, so there is no A2-9 divergence between reader and guard), but its verdict for an unreadable row is `no-request`, and `packages/tools/src/guard.ts` maps `no-request` to **proceed** (a pre-existing, documented deviation: the tool layer hosts the whole team surface, not one guarded operation). A strict-row refusal therefore removes the control plane's authorization; it does not by itself stop the tool. PR4/PR5 must never describe a `no-request` verdict as a blocked operation. |

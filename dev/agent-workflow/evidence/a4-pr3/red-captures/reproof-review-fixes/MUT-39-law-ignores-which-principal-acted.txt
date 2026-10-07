@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3/packages/runtime
+
+ ❯ test/a4p3-approval-case.test.ts (0 test)
+ ❯ test/a4p3-approval-escalation.test.ts (0 test)
+
+ Test Files  2 failed (2)
+      Tests  no tests
+   Start at  09:30:36
+   Duration  926ms (transform 1.22s, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p3-approval-case.test.ts [ test/a4p3-approval-case.test.ts ]
+ FAIL  test/a4p3-approval-escalation.test.ts [ test/a4p3-approval-escalation.test.ts ]
+ControlError: mutant: the law binds every principal
+ ❯ assertNoActOnEarlierLeg control/service.ts:3217:71
+    3215|     for (const earlier of state.requests) {
+    3216|       if (earlier.payload.approvalCaseId !== input.approvalCaseId) con…
+    3217|       if ((earlier.payload.legOrdinal ?? 0) < input.legOrdinal) throw …
+       |                                                                       ^
+    3218|       if ((earlier.payload.legOrdinal ?? 0) >= input.legOrdinal) conti…
+    3219|       const decided = state.decisions.find(
+ ❯ control/service.ts:1996:9
+ ❯ action-router/effects.ts:336:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

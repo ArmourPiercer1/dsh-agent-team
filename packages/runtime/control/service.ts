@@ -1985,6 +1985,23 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           },
         )
       }
+      // Alpha.4 A4-PR3 (spec 21.5, 24.5; fidelity review #1) — the DECISION
+      // entrance carries the case law the escalate entrance carries: a
+      // principal who already acted on an earlier leg of this case may not
+      // decide a later one. Checked BEFORE the envelope, so a refusal needs no
+      // authority the caller already used to reach this point, and it writes
+      // nothing. A pre-Alpha.4 row (no case id) is untouched by it.
+      const caseIdOfLeg = request.payload.approvalCaseId
+      if (caseIdOfLeg !== undefined) {
+        assertNoActOnEarlierLeg(state, {
+          root,
+          stage: 'resolveControl',
+          requestId: args.requestId,
+          approvalCaseId: caseIdOfLeg,
+          legOrdinal: request.payload.legOrdinal ?? 0,
+          decider: callerRefOf(caller),
+        })
+      }
       // Envelope (the resolve-control op; a human is not envelope-bound).
       enforceEnvelope(
         RESOLVE_CONTROL_SPEC,
@@ -2504,18 +2521,19 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // leg carries a durable terminal deny and must never come back as the
       // row that executes the operation. Rows with no case are unaffected —
       // for them this filter keeps everything.
+      // "Only the CURRENT leg of a case can authorize" (acceptance 21.4), using
+      // the one current-leg rule this file has (`currentLegOf`).
+      const currentByCase = new Map<string, StoredFact<RequestPayload>>()
+      for (const row of matching) {
+        const caseId = row.payload.approvalCaseId
+        if (caseId === undefined) continue
+        const seen = currentByCase.get(caseId)
+        if (seen === undefined || isLaterLegThan(row, seen)) currentByCase.set(caseId, row)
+      }
       const candidates = matching.filter((row) => {
         const caseId = row.payload.approvalCaseId
         if (caseId === undefined) return true
-        let current: StoredFact<RequestPayload> | undefined
-        for (const other of matching) {
-          if (other.payload.approvalCaseId !== caseId) continue
-          const ordinal = other.payload.legOrdinal ?? 0
-          if (current === undefined || ordinal > (current.payload.legOrdinal ?? 0)) {
-            current = other
-          }
-        }
-        return current?.payload.requestId === row.payload.requestId
+        return currentByCase.get(caseId)?.payload.requestId === row.payload.requestId
       })
       const unconsumedAllows: {
         readonly request: StoredFact<RequestPayload>
@@ -3130,6 +3148,107 @@ export function createControlService(options: ControlServiceOptions): ControlSer
   }
 
   /**
+   * THE one home of "which leg row of a case is current" — the fidelity review
+   * counted two separate rules (the guard's candidate filter kept the FIRST row
+   * of equal ordinal, the case read's sorted tail kept the LAST) and only the
+   * duplicate-ordinal refusal masked the difference. One law, one home: the
+   * highest leg ordinal wins, and equal ordinals break to the LATER durable row,
+   * which is what the case read already did. Equal ordinals are themselves a
+   * corrupt chain the case read refuses (ADR A2-9); this rule only decides what
+   * the guard examines while that refusal stands.
+   *
+   * `rows` must be in durable (sequence) order, as `loadControlState` returns.
+   */
+  function isLaterLegThan(
+    candidate: StoredFact<RequestPayload>,
+    current: StoredFact<RequestPayload>,
+  ): boolean {
+    const ordinal = candidate.payload.legOrdinal ?? 0
+    const bestOrdinal = current.payload.legOrdinal ?? 0
+    return (
+      ordinal > bestOrdinal ||
+      (ordinal === bestOrdinal && candidate.entry.sequence > current.entry.sequence)
+    )
+  }
+
+  /** The current leg of a set of same-case leg rows (see `isLaterLegThan`). */
+  function currentLegOf(
+    rows: readonly StoredFact<RequestPayload>[],
+  ): StoredFact<RequestPayload> | undefined {
+    let current: StoredFact<RequestPayload> | undefined
+    for (const row of rows) {
+      if (current === undefined || isLaterLegThan(row, current)) current = row
+    }
+    return current
+  }
+
+  /**
+   * THE one home of the law "a principal who already acted on an approval case
+   * may not act on it again" (spec 21.5 "no self/same-level allow", spec 24.5
+   * (`reviewedBy` is its durable backing), ADR A1-10; fidelity review #1).
+   *
+   * The basis is the case's OWN durable rows: a decision on an earlier leg of
+   * the case whose `decider` is this caller, or an escalation fact this caller
+   * wrote on an earlier leg. It reads the durable rows rather than the derived
+   * `reviewedBy` view on purpose — the derived field has no write-path
+   * consumer, so a law built on it would be a law built on a display value.
+   *
+   * Every entrance that can decide or terminalise a leg calls this BEFORE it
+   * writes: `escalateApprovalLeg`, `resolveControl` and
+   * `appendTerminalOutcome`. A law enforced only in the advisory legal-action
+   * list PR4 renders is not a law — a menu cannot refuse a write, and the
+   * guard would then honour a decision the ladder forbade.
+   *
+   * Precondition: the caller holds the per-team lock.
+   */
+  function assertNoActOnEarlierLeg(
+    state: ControlState,
+    input: {
+      readonly root: string
+      readonly stage: string
+      readonly requestId: string
+      readonly approvalCaseId: string
+      readonly legOrdinal: number
+      readonly decider: ControlCallerRef
+    },
+  ): void {
+    for (const earlier of state.requests) {
+      if (earlier.payload.approvalCaseId !== input.approvalCaseId) continue
+      if ((earlier.payload.legOrdinal ?? 0) >= input.legOrdinal) continue
+      const decided = state.decisions.find(
+        (row) => row.payload.requestId === earlier.payload.requestId,
+      )
+      if (decided !== undefined && sameCallerRef(decided.payload.decider, input.decider)) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+          `ControlService: ${input.stage} refused — this principal already decided leg ${earlier.payload.legOrdinal} of case '${input.approvalCaseId}', and an escalated-away reviewer cannot act on the case again (zero durable side effects)`,
+          {
+            rootSessionId: input.root,
+            requestId: input.requestId,
+            approvalCaseId: input.approvalCaseId,
+            alreadyActedOnLegOrdinal: earlier.payload.legOrdinal,
+          },
+        )
+      }
+      const escalated = state.escalations.find(
+        (row) => row.payload.previousRequestId === earlier.payload.requestId,
+      )
+      if (escalated !== undefined && sameCallerRef(escalated.payload.escalatedBy, input.decider)) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+          `ControlService: ${input.stage} refused — this principal already escalated leg ${earlier.payload.legOrdinal} of case '${input.approvalCaseId}', and an escalated-away reviewer cannot act on the case again (zero durable side effects)`,
+          {
+            rootSessionId: input.root,
+            requestId: input.requestId,
+            approvalCaseId: input.approvalCaseId,
+            alreadyActedOnLegOrdinal: earlier.payload.legOrdinal,
+          },
+        )
+      }
+    }
+  }
+
+  /**
    * The canonical key of a frozen case identity (spec 11.1). The team and
    * the carrier kind participate, so two Teams never share a case id and a
    * case never changes carrier under a steady id (acceptance 21.11).
@@ -3306,7 +3425,8 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       return problem(problems.NOT_FOUND, 'no durable leg row carries this approvalCaseId')
     }
     const first = legs[0]
-    const lastLeg = legs[legs.length - 1]
+    // The same current-leg rule the guard uses (one home: `currentLegOf`).
+    const lastLeg = currentLegOf(legs)
     if (first === undefined || lastLeg === undefined) {
       // Unreachable — `legs.length === 0` returned above. `noUncheckedIndexedAccess`
       // cannot see that, and a guard is cheaper than a non-null assertion on an
@@ -3581,7 +3701,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // is what acceptance 21.10 forbids). Not a `return` without the write: an
       // unobservable termination cannot be reported, closed by a later lane, or
       // awaited by A5-5's inline waiter.
-      await closeZeroReviewCaseLocked({
+      await closeZeroReviewCaseTransactionally({
         root,
         approvalCaseId,
         decider: callerRefOf(resolveCaller(repositories, root, args.caller)),
@@ -3636,7 +3756,21 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     // CURRENT leg, never the closed first leg: the caller must never be
     // handed a terminal row to wait on (the same reasoning as A5-5).
     const read = await readApprovalCaseState({ rootSessionId: root, approvalCaseId })
-    if (read.kind === 'case' && read.state.currentLeg !== undefined) {
+    if (read.kind === 'problem') {
+      // A corrupt chain has NO current leg, and "therefore hand back the FIRST
+      // one" is the wrong conclusion (fidelity review #2): the first leg of a
+      // risen case is terminal, and an inline waiter told to wait on it waits
+      // on a closed row while the case sits at another authority. The frozen
+      // return type has no arm for a corrupt read, so the corruption surfaces
+      // as a typed refusal naming the problem — the same shape as the
+      // `writeLegRowLocked` read-back throw: refuse rather than guess.
+      throw new ControlError(
+        CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+        `ControlService: requestApprovalLeg refused — case '${approvalCaseId}' is corrupt (${read.problem}), so its current leg cannot be handed back; repair or terminate the case instead of retrying the identity`,
+        { rootSessionId: root, approvalCaseId, problem: read.problem },
+      )
+    }
+    if (read.state.currentLeg !== undefined) {
       return { kind: 'leg', leg: read.state.currentLeg }
     }
     return { kind: 'leg', leg }
@@ -3729,31 +3863,49 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)),
       )
       const decider = callerRefOf(caller)
-      // Spec 11.4 / ADR A1-10 + 24.5 — a principal who already acted on an
-      // EARLIER leg of this case has handed the case up and cannot take it
-      // back down (the durable backing of "escalated reviewer cannot later
-      // allow", acceptance 21.5).
-      const caseRows = state.requests.filter((row) => row.payload.approvalCaseId === approvalCaseId)
-      for (const earlier of caseRows) {
-        if ((earlier.payload.legOrdinal ?? 0) >= legOrdinal) continue
-        const decided = state.decisions.find((d) => d.payload.requestId === earlier.payload.requestId)
-        if (decided !== undefined && sameCallerRef(decided.payload.decider, decider)) {
-          throw new ControlError(
-            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
-            `ControlService: this principal already decided leg ${earlier.payload.legOrdinal} of case '${approvalCaseId}' — an escalated-away reviewer cannot act on the case again`,
-            { rootSessionId: root, requestId: args.requestId, approvalCaseId, legOrdinal: earlier.payload.legOrdinal },
-          )
-        }
-        const escalated = state.escalations.find((e) => e.payload.previousRequestId === earlier.payload.requestId)
-        if (escalated !== undefined && sameCallerRef(escalated.payload.escalatedBy, decider)) {
-          throw new ControlError(
-            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
-            `ControlService: this principal already escalated leg ${earlier.payload.legOrdinal} of case '${approvalCaseId}' — an escalated-away reviewer cannot act on the case again`,
-            { rootSessionId: root, requestId: args.requestId, approvalCaseId, legOrdinal: earlier.payload.legOrdinal },
-          )
-        }
-      }
+      // Spec 11.4 / ADR A1-10 + 24.5 — the shared case law (one home:
+      // `assertNoActOnEarlierLeg`), applied at every decision entrance.
+      assertNoActOnEarlierLeg(state, {
+        root,
+        stage: 'escalateApprovalLeg',
+        requestId: args.requestId,
+        approvalCaseId,
+        legOrdinal,
+        decider,
+      })
       const scope = scopeOf(leg.entry, leg.payload)
+      // A risen leg is a NEW durable, authority-bearing row, and it carries the
+      // case's FROZEN identity (A2-7). The three identity fields are therefore
+      // copied from the parent row and verified BEFORE anything is written
+      // (fidelity review #4, A2-9): they were previously defaulted to the
+      // successor and to `ask`. Invention is the worse failure here, not the
+      // safer one — `beneficiaryAuthority` PARTICIPATES in the derived case id,
+      // so an invented value makes the legs of one case disagree, and the case
+      // read reports that as IDENTITY_DISAGREEMENT: the rise would have
+      // destroyed the case it was advancing. A pre-Alpha.4-shaped row that
+      // carries no identity is refused, naming the missing fields.
+      // Only a rise that actually MINTS a leg needs one: at the top of the
+      // ladder, or below a rung with no resolver, the case terminates instead
+      // (spec 11.6, ADR A1-12) and writes no identity anywhere.
+      const frozenIdentity =
+        leg.payload.requiredAuthorityAtCreation !== undefined &&
+        leg.payload.beneficiaryAuthority !== undefined &&
+        leg.payload.requestedEffect !== undefined
+          ? {
+              requiredAuthorityAtCreation: leg.payload.requiredAuthorityAtCreation,
+              beneficiaryAuthority: leg.payload.beneficiaryAuthority,
+              requestedEffect: leg.payload.requestedEffect,
+            }
+          : undefined
+      const successor = controlEscalationSuccessor(reviewAuthority)
+      const mintsRisenLeg = successor !== null && hasAuthorityResolver(successor)
+      if (mintsRisenLeg && frozenIdentity === undefined) {
+        throw malformed(
+          'escalateApprovalLeg',
+          'requiredAuthorityAtCreation',
+          `the leg row '${args.requestId}' carries no frozen case identity (requiredAuthorityAtCreation / beneficiaryAuthority / requestedEffect) — a risen leg is never written with an invented one, and an invented beneficiary would split case '${approvalCaseId}' (zero durable side effects)`,
+        )
+      }
       // WRITE 1 of 3 (ADR A5-5): the terminal deny carrying the additive
       // reason `escalated`. This is the row that makes the inline waiter
       // settle; if it were written with an out-of-vocabulary reason the read
@@ -3801,8 +3953,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // from a caller-supplied "someone can review this" flag: a successor
       // that exists on the ladder but has no resolver in Alpha.4 terminates
       // the case exactly like the top of the ladder does (ADR A1-12).
-      const successor = controlEscalationSuccessor(reviewAuthority)
-      if (successor === null || !hasAuthorityResolver(successor)) {
+      // The `frozenIdentity === undefined` disjunct is unreachable — the
+      // refusal above already threw for it; it stands here so the mint below is
+      // typed off the verified values instead of off a default.
+      if (!mintsRisenLeg || frozenIdentity === undefined) {
         return {
           escalation,
           terminalDecision,
@@ -3831,10 +3985,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           approvalCaseId,
           legOrdinal: legOrdinal + 1,
           reviewAuthority: successor,
-          requiredAuthorityAtCreation: leg.payload.requiredAuthorityAtCreation ?? successor,
+          requiredAuthorityAtCreation: frozenIdentity.requiredAuthorityAtCreation,
           previousRequestId: args.requestId,
-          beneficiaryAuthority: leg.payload.beneficiaryAuthority ?? successor,
-          requestedEffect: leg.payload.requestedEffect ?? 'ask',
+          beneficiaryAuthority: frozenIdentity.beneficiaryAuthority,
+          requestedEffect: frozenIdentity.requestedEffect,
           ...(leg.payload.mutationProposalFingerprint !== undefined
             ? { mutationProposalFingerprint: leg.payload.mutationProposalFingerprint }
             : {}),
@@ -4005,6 +4159,21 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           { rootSessionId: root, requestId: args.requestId, role: caller.role },
         )
       }
+      // Alpha.4 A4-PR3 (fidelity review #1) — the OTHER decision entrance, the
+      // SAME law from the SAME home. Two entrances that could diverge is how
+      // finding #1 stayed invisible: the terminal-outcome path was as blind to
+      // the case as `resolveControl` was.
+      const caseIdOfTerminalLeg = leg.payload.approvalCaseId
+      if (caseIdOfTerminalLeg !== undefined) {
+        assertNoActOnEarlierLeg(state, {
+          root,
+          stage: 'appendTerminalOutcome',
+          requestId: args.requestId,
+          approvalCaseId: caseIdOfTerminalLeg,
+          legOrdinal: leg.payload.legOrdinal ?? 0,
+          decider: callerRefOf(caller),
+        })
+      }
       enforceEnvelope(
         RESOLVE_CONTROL_SPEC,
         callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)),
@@ -4022,17 +4191,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
   }
 
   /**
-   * The ONE locked writer of a born-terminal close (audit F2). Both entry
-   * points route through it, so a case that cannot be reviewed has exactly one
-   * durable shape anywhere in the plane: a leg row at ordinal 1 carrying the
-   * frozen identity and naming the rung that could not review it, plus its
-   * terminal `deny`, in one transaction.
+   * The ONE writer of a born-terminal close (audit F2). Both entry points route
+   * through it, so a case that cannot be reviewed has exactly one durable shape
+   * anywhere in the plane: a leg row at ordinal 1 carrying the frozen identity
+   * and naming the rung that could not review it, plus its terminal `deny`.
+   *
+   * NAMING (fidelity review #3). Everywhere else in this file a `*Locked` suffix
+   * means "the CALLER already holds the per-team lock". This function is the
+   * transaction OWNER: it ACQUIRES the lock itself, so its callers must not hold
+   * it (`withTeamLock` is not reentrant). It is therefore named
+   * `Transactionally`, not `Locked`.
+   *
+   * "Transactionally" means SERIALIZED, not ATOMIC (fidelity review #3): the two
+   * rows land through two `ledger.put` calls inside one lock acquisition, so a
+   * fault between them can leave the leg row without its deny. What matters is
+   * what the RETRY does with that half-state — see the open-leg branch below.
    *
    * Idempotency is the CASE, not the call: a second close returns the closure
    * the first one wrote, and the idempotent return is READ BACK from the durable
    * rows so a retry cannot report something the ledger does not hold.
    */
-  async function closeZeroReviewCaseLocked(input: {
+  async function closeZeroReviewCaseTransactionally(input: {
     readonly root: string
     readonly approvalCaseId: string
     readonly decider: ControlCallerRef
@@ -4056,13 +4235,41 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           (row) => row.payload.requestId === leg.payload.requestId,
         )
         if (decision === undefined) {
-          // The case has a leg with no decision: that leg is REVIEWABLE, and a
-          // reviewable leg belongs to `appendTerminalOutcome`, never here.
-          throw new ControlError(
-            CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
-            `ControlService: case '${input.approvalCaseId}' has an open leg '${leg.payload.requestId}' — close it with appendTerminalOutcome, not with a zero-review close (zero durable side effects)`,
-            { rootSessionId: input.root, approvalCaseId: input.approvalCaseId },
-          )
+          // Two shapes share this branch (fidelity review #3).
+          // (a) A leg on a rung that CAN review it: that leg belongs to
+          //     `appendTerminalOutcome`, and closing it here would steal a
+          //     review — refuse, zero writes.
+          // (b) A leg on a rung with NO resolver: nobody can ever review it, so
+          //     this is a close half-written by a `ledger.put` fault (the leg row
+          //     landed, its deny did not). Refusing the retry would keep an open
+          //     leg on an unreviewable rung forever — the fake-pending state
+          //     ADR A1-12 and acceptance 21.10 forbid, unreachable by any
+          //     entrance — so the retry COMPLETES the missing write and returns
+          //     the closure the first attempt was trying to produce. The
+          //     recorded `terminalReason` is the retry's, which is the only one
+          //     the ledger was ever told about.
+          const legAuthority = leg.payload.reviewAuthority
+          if (legAuthority === undefined || hasAuthorityResolver(legAuthority)) {
+            throw new ControlError(
+              CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+              `ControlService: case '${input.approvalCaseId}' has an open leg '${leg.payload.requestId}' — close it with appendTerminalOutcome, not with a zero-review close (zero durable side effects)`,
+              { rootSessionId: input.root, approvalCaseId: input.approvalCaseId },
+            )
+          }
+          const completedDecision = await commitDecision({
+            requestId: leg.payload.requestId,
+            value: terminalDecisionValueFor(input.terminalReason),
+            decider: input.decider,
+            scope: scopeOf(leg.entry, leg.payload),
+            requestSequence: leg.entry.sequence,
+            terminalReason: input.terminalReason,
+            ...(input.note !== undefined ? { note: input.note } : {}),
+          })
+          return {
+            approvalCaseId: input.approvalCaseId,
+            leg: toRequestRecord(leg.entry, leg.payload, state),
+            terminalDecision: completedDecision,
+          }
         }
         return {
           approvalCaseId: input.approvalCaseId,
@@ -4231,7 +4438,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       RESOLVE_CONTROL_SPEC,
       callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)),
     )
-    return await closeZeroReviewCaseLocked({
+    return await closeZeroReviewCaseTransactionally({
       root,
       approvalCaseId,
       decider: callerRefOf(caller),
@@ -4278,7 +4485,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       const derived = approvalCaseIdOf(root, kind, args.identity)
       // DERIVED, then VERIFIED against the durable rows (A2-7): a lookup that
       // only derived would answer `found` for a case that was never opened.
-      const owned = state.requests.some((row) => row.payload.approvalCaseId === derived)
+      // DERIVED, then VERIFIED against the durable rows (A2-7): a lookup that
+      // only derived would answer `found` for a case that was never opened.
+      // The VERIFICATION scans the corrupt bucket too (fidelity review #2): a
+      // case whose leg rows ALL failed the strict parser lives in
+      // `state.corruptLegs`, and this is the only frozen route from a
+      // fingerprint back to a case id. Answering `none` there tells the caller
+      // to open a SECOND case for the same identity — the SF1/X7-R5 double-case
+      // collapse relocated, since `listOpenApprovalCases` skips the corrupt
+      // case and `readApprovalCaseState` needs the id it just denied having.
+      // `found` here does NOT mean "usable": the read that follows names the
+      // typed problem (ADR A2-9 — report the corruption, never hide it).
+      const owned =
+        state.requests.some((row) => row.payload.approvalCaseId === derived) ||
+        state.corruptLegs.some((row) => row.payload['approvalCaseId'] === derived)
       return owned ? { kind: 'found', approvalCaseId: derived } : { kind: 'none' }
     })
   }

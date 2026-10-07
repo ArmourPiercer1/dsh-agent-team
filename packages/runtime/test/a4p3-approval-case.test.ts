@@ -672,3 +672,283 @@ describe('the corrupt durable shapes are reported, never defaulted (A2-9)', () =
     expect(verdict.reason).toBe('request-pending')
   })
 })
+
+// --- the A2-9 pin, on the ENTRANCES (fidelity review #1) -------------------------------
+
+/** The error code a captured refusal carries, as data (so a comparison of the
+ *  three entrances is one assertion over one captured set). */
+function codeOfCaptured(captured: { readonly error?: unknown }): string {
+  if (captured.error === undefined) return 'no-error'
+  const code = (captured.error as { readonly code?: unknown }).code
+  return typeof code === 'string' ? code : 'no-error'
+}
+
+/**
+ * A2-9 is the law that ONE durable fact gets ONE verdict wherever it is
+ * consulted — the pin above applies it to the reads, this one to the
+ * entrances. Finding #1 was that law breaking in the other direction: the
+ * escalate entrance refused a principal that `resolveControl` and
+ * `appendTerminalOutcome` both accepted, because the case law had been written
+ * into one function's body instead of into a rule all three consult. So this
+ * does not re-assert the refusal (the escalation lane owns that assertion): it
+ * pins that the three entrances CANNOT disagree, by driving the same principal
+ * against the same risen leg at each of them and comparing the verdicts as
+ * data.
+ */
+const entrances = await (async () => {
+  const world = await createP6T4World('a4p3-case-4', ['leader', 'worker'])
+  try {
+    const service = createP6T4Service(world)
+    const outcome = await legRequest(service, {
+      correlation: 'corr-a4p3-entrances',
+      operationFingerprint: 'fp-x8',
+    })
+    const leg = outcome.kind === 'leg' ? outcome.leg : undefined
+    const caseId = leg?.approvalCaseId ?? 'missing-case-id'
+    await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: leg?.requestId ?? 'missing-leg',
+      reason: 'above my reach',
+    })
+    const read = await service.readApprovalCaseState({
+      rootSessionId: P6T4_ROOT,
+      approvalCaseId: caseId,
+    })
+    const risen = read.kind === 'case' ? read.state.currentLeg : undefined
+    const requestId = risen?.requestId ?? 'missing-risen-leg'
+    const factsBefore = world.domain.repositories.ledger.list().length
+    const decide = await refusal(() =>
+      service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId,
+        decision: 'allow',
+      }),
+    )
+    const terminalise = await refusal(() =>
+      service.appendTerminalOutcome({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId,
+        terminalReason: 'resource-identity-drift',
+      }),
+    )
+    const riseAgain = await refusal(() =>
+      service.escalateApprovalLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId,
+        reason: 'try to rise it again',
+      }),
+    )
+    const factsAfter = world.domain.repositories.ledger.list().length
+    const guard = await service.guardOperation(
+      makeScope({ correlation: 'corr-a4p3-entrances', operationFingerprint: 'fp-x8' }),
+    )
+    // The refusal is PERSONAL, not global: the rung the case rose to still acts.
+    const byRisenReviewer = await refusal(() =>
+      service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: humanCaller(),
+        requestId,
+        decision: 'allow',
+      }),
+    )
+    return {
+      leg,
+      risen,
+      decide,
+      terminalise,
+      riseAgain,
+      factsBefore,
+      factsAfter,
+      guard,
+      byRisenReviewer,
+      codes: [codeOfCaptured(decide), codeOfCaptured(terminalise), codeOfCaptured(riseAgain)],
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('one durable fact, one verdict at every entrance (A2-9 across entrances)', () => {
+  it('the scenario reached a risen leg to test against', () => {
+    expect(entrances.leg?.approvalCaseId, 'no first leg was opened').toBeDefined()
+    expect(entrances.risen?.requestId, 'the case did not rise').toBeDefined()
+  })
+
+  it('resolveControl, appendTerminalOutcome and escalateApprovalLeg agree', () => {
+    const refusal1 = CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED
+    expect(entrances.codes).toEqual([refusal1, refusal1, refusal1])
+  })
+
+  it('no entrance wrote anything, and the operation stayed unauthorized', () => {
+    expect(entrances.factsAfter).toBe(entrances.factsBefore)
+    expect(entrances.guard.allowed).toBe(false)
+  })
+
+  it('the refusal binds the principal who acted, not every principal', () => {
+    expect(entrances.byRisenReviewer.threw).toBe(false)
+    expect((entrances.byRisenReviewer.value as { decision: string }).decision).toBe(
+      CONTROL_DECISION_VALUES.ALLOW,
+    )
+  })
+})
+
+// --- a corrupt case is never answered with a superseded leg (review #2, second half) ---
+
+/**
+ * The smaller collapse the fidelity review counted next to the identity one:
+ * the idempotent retry of `requestApprovalLeg` reads the case to find its
+ * CURRENT leg, and when that read reports a problem the code concluded "there
+ * is no current leg" and handed back the leg `requestControl` had just returned
+ * idempotently — the CLOSED FIRST leg of a risen case. An inline waiter
+ * told to wait on a terminal row never wakes, while the case sits at another
+ * authority. A2-9: the corruption is reported, not answered with a guess.
+ */
+const superseded = await (async () => {
+  const world = await createP6T4World('a4p3-case-5', ['leader', 'worker'])
+  try {
+    const service = createP6T4Service(world)
+    const first = await legRequest(service, { correlation: 'corr-x9', operationFingerprint: 'fp-x9' })
+    const leg = first.kind === 'leg' ? first.leg : undefined
+    const caseId = leg?.approvalCaseId ?? 'missing-case-id'
+    await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: leg?.requestId ?? 'missing-leg',
+      reason: 'above my reach',
+    })
+    // The case as a whole is now unreadable: one of its rows has a case id and
+    // no leg ordinal, so the read reports a typed problem.
+    await writeRawControlFact(world, 'control-request-recorded', {
+      requestId: 'req-raw-supersede',
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      requester: { kind: 'instance', instanceId: WORKER_ID, role: 'member' },
+      subject: SUBJECT,
+      targetInstanceId: WORKER_ID,
+      actionName: 'write-file',
+      toolName: 'fs.write',
+      correlation: 'corr-x9',
+      operationFingerprint: 'fp-x9',
+      approvalCaseId: caseId,
+      reviewAuthority: 'leader',
+      beneficiaryAuthority: 'member',
+      requestedEffect: 'ask',
+    })
+    const factsBefore = world.domain.repositories.ledger.list().length
+    const retry = await refusal(() =>
+      legRequest(service, { correlation: 'corr-x9', operationFingerprint: 'fp-x9' }),
+    )
+    const factsAfter = world.domain.repositories.ledger.list().length
+    const read = await service.readApprovalCaseState({ rootSessionId: P6T4_ROOT, approvalCaseId: caseId })
+    return {
+      caseId,
+      retry,
+      factsBefore,
+      factsAfter,
+      read,
+      handedBack: retry.value as { kind?: string; leg?: { status?: string } } | undefined,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('an idempotent retry on a corrupt case refuses instead of handing back a closed leg', () => {
+  it('the case is corrupt (the read names the problem the retry must not paper over)', () => {
+    expect(superseded.read.kind).toBe('problem')
+  })
+
+  it('the retry is refused typed, naming that problem', () => {
+    expect(superseded.retry.threw, 'the retry answered a corrupt case with a leg').toBe(true)
+    assertControlCode(superseded.retry.error, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED)
+    const message = String((superseded.retry.error as { message?: string } | undefined)?.message ?? '')
+    expect(message).toContain(APPROVAL_CASE_READ_PROBLEMS.LEG_ORDINAL)
+  })
+
+  it('no leg is handed back, and nothing is written', () => {
+    expect(superseded.handedBack).toBeUndefined()
+    expect(superseded.factsAfter).toBe(superseded.factsBefore)
+  })
+})
+
+// --- one current-leg law, so the guard cannot outrun the reader -----------------------
+
+/**
+ * The file used to hold TWO rules for "which leg of a case is current" — the
+ * guard's candidate filter kept the FIRST row of an equal ordinal, the case
+ * read's sorted tail kept the LAST — and the duplicate-ordinal refusal is what
+ * hid the difference. This is the shape where they part: a case with two rows
+ * at ordinal 1, the EARLIER one carrying a durable allow. The reader refuses
+ * the case (broken chain); under the first-wins rule the guard nevertheless
+ * consulted the earlier row and let the operation proceed on a row nobody can
+ * read. One law, one home (`currentLegOf`), so the guard cannot outrun the
+ * reader (A2-9).
+ */
+const tieBreak = await (async () => {
+  const world = await createP6T4World('a4p3-case-6', ['leader', 'worker'])
+  try {
+    const service = createP6T4Service(world)
+    const first = await legRequest(service, { correlation: 'corr-x10', operationFingerprint: 'fp-x10' })
+    const leg = first.kind === 'leg' ? first.leg : undefined
+    const caseId = leg?.approvalCaseId ?? 'missing-case-id'
+    const allowed = await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: leg?.requestId ?? 'missing-leg',
+      decision: 'allow',
+    })
+    // The duplicate, LATER in the ledger, same ordinal, same scope.
+    await writeRawControlFact(world, 'control-request-recorded', {
+      requestId: 'req-raw-tie',
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      requester: { kind: 'instance', instanceId: WORKER_ID, role: 'member' },
+      subject: SUBJECT,
+      targetInstanceId: WORKER_ID,
+      actionName: 'write-file',
+      toolName: 'fs.write',
+      correlation: 'corr-x10',
+      operationFingerprint: 'fp-x10',
+      approvalCaseId: caseId,
+      legOrdinal: 1,
+      reviewAuthority: 'leader',
+      beneficiaryAuthority: 'member',
+      requestedEffect: 'ask',
+    })
+    const read = await service.readApprovalCaseState({ rootSessionId: P6T4_ROOT, approvalCaseId: caseId })
+    const guard = await service.guardOperation(
+      makeScope({ correlation: 'corr-x10', operationFingerprint: 'fp-x10' }),
+    )
+    const state = await service.listControlState(P6T4_ROOT)
+    return {
+      allowed,
+      read,
+      guard,
+      consumptions: state.consumptions.filter((row) => row.requestId === leg?.requestId).length,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+describe('the guard uses the case read’s current-leg law (one law, one home)', () => {
+  it('the scenario really built the split: a durable allow and a broken chain', () => {
+    expect(tieBreak.allowed.decision).toBe(CONTROL_DECISION_VALUES.ALLOW)
+    if (tieBreak.read.kind !== 'problem') {
+      throw new Error('the duplicated ordinal must be a broken chain')
+    }
+    expect(tieBreak.read.problem).toBe(APPROVAL_CASE_READ_PROBLEMS.CHAIN_BROKEN)
+  })
+
+  it('the guard does not proceed on the row the reader refused', () => {
+    expect(tieBreak.guard.allowed).toBe(false)
+    if (tieBreak.guard.allowed === true) return
+    expect(tieBreak.guard.reason).toBe('request-pending')
+  })
+
+  it('and it burns no approval doing so', () => {
+    expect(tieBreak.consumptions).toBe(0)
+  })
+})

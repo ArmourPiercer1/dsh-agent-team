@@ -1,0 +1,17 @@
+# a4pr0a from the repo ROOT (path-anchored guard); review-fix round
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr3
+
+ ✓ packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts (9 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  09:33:20
+   Duration  162ms (transform 23ms, setup 0ms, import 72ms, tests 4ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
