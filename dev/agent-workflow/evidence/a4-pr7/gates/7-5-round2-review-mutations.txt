@@ -1,0 +1,377 @@
+A4-PR7 Task 7.5 — review round 2: R1, R2, R3 and N1–N4, each reproduced red before it
+was fixed and each proven red again as a mutation after it.
+(SIMULATED / MACHINE evidence. Not a human acceptance pass; human acceptance stays
+BLOCKED / NOT_RUN — driving the real client row inside a real host is Task 7.6/7.7.)
+
+worktree .worktrees/a4-pr75 · branch feat/a4-pr75-smoke-gate · reviewed head 00dbd416 · base 991348e0
+gate transcript for the final tree: `7-5-round2-gates.txt`
+raw captures: `7-5-round2-raw/*.txt` · mutated inputs: `7-5-round2-mutated/*`
+
+====================================================================================================
+0. HOW TO READ THIS ONE, AND WHY IT IS SHAPED DIFFERENTLY
+====================================================================================================
+The previous receipt embedded sixteen captures inside a banner file and hashed the scratch
+originals of those blocks. None of its sixteen digests recomputed from the committed text
+(finding N5), which meant a digest match there could prove at best that two outputs were
+equal — never that the mutation it described had actually been applied. So in this receipt:
+
+  * every capture is its OWN committed file under `7-5-round2-raw/`;
+  * every digest below is recomputed from the committed file by the script that writes this
+    receipt, and the same values are re-listed at the bottom from the committed bytes;
+  * every MUTATED input is committed too, under `7-5-round2-mutated/`, so a reader can copy
+    it over the real path and reproduce the red — sha256 of the mutated file is the proof the
+    mutation was applied, which is what N5 asked for;
+  * a capture file contains the tool's own bytes and nothing else but one disclosed
+    `$ <command>` header line and one disclosed `exit=<code>` trailer;
+  * "AT-reviewed-head" means all three gate modules were replaced with `git show HEAD:<path>`
+    for that run. Generations cannot be mixed: the round-3 bundle imports `collectExportTargets`
+    from the round-3 closure, so a mixed tree dies on import instead of measuring anything;
+  * every mutation of the new code is gated on `process.env.DSH_A4P75_MUTE` and read at call
+    time, so the SAME file passes with the variable unset and fails with it set: the red comes
+    from executing the weakened branch, not from an edit that quietly also changed what a test
+    expects;
+  * captures run back-to-back from a script (`.tmp-faultscratch/r3/capture-r2.sh`), and each
+    mutation restores its file and verifies its sha256 before continuing. The five touched
+    files are PRISTINE at the end of the run.
+
+This receipt's own tree was not clean on the first try, and the gate is what said so. The first
+full gate run on it failed two steps: `lint-identities` reported `NEW IDENTITIES (1): error
+no-useless-escape scripts/composition-smoke-closure.mjs` and eslint pointed at the column.
+N3's new message quoted a grep inside a template literal as `process\.env` — one backslash, which
+JS consumes as a pointless escape, so the message the reader actually got said `process.env` and
+did not quote the grep it was citing. The linter knew; the identity lint recorded it as a NEW
+identity. Fixed by doubling the escape in the source so the printed message carries the backslash.
+Identity lint is back to 160 lines / 76 distinct / new 0 / resolved 0, eslint is silent at rc 0. The failing run is kept, unedited, as
+`7-5-round2-gates-run1-eslint-caught-own-defect.txt`; `7-5-round2-gates.txt` is the run on the tree
+this receipt describes. The captures below were re-made after that fix, so every digest here binds
+to the committed bytes.
+
+The five files the runs touched still hold the bytes the capture recorded as pristine, checked
+again when this receipt was written. Three of them are the tracked gate modules; the shim
+manifest is tracked too and rebuilds to the same bytes; `packages/client/dist/**` is a gitignored
+build output, so its value is stated rather than committed and is reproducible by `pnpm build`
+plus `pnpm run build:composition` (the mutated copy of it is committed under
+`7-5-round2-mutated/`, which is what makes the R1 red reproducible):
+
+| `scripts/composition-smoke-closure.mjs` | `80d579cc9b81580948c0864c5937c8c3b43d4d67f04d336866fa98c982a262cc` |
+| `scripts/composition-smoke-bundle.mjs` | `3f57dcd35079b81feab5cea68a37ee43e395c0f7e990f8cf8291934e7cd2a02c` |
+| `scripts/composition-smoke.mjs` | `ee315922f47c288c818725b83f9a1d0df1843d47e7210589df6f6af0b0199a0c` |
+| `packages/client/dist/packages/client/src/ui/TeamDock.js` | `3b98b678fb8c9df2857b5197c94063fcc22d55ac97a4ad6d305c00f7b6c9bb61` |
+| `packages/client/composition-shim/package.json` | `1cbb0f5a1341b8e5ceb9f4d5dd716ca9d82b087aef4a70120dc7749eca0028a5` |
+
+DIGESTS (recomputed from the committed files; see section 7 for the same list generated
+straight off the committed bytes)
+
+| file | sha256 |
+|---|---|
+| `7-5-round2-raw/M-N2-suite-fails.txt` | `471bea0621279260a62609f4d0ef1d055721600fd669c14da4d47c709fea344f` |
+| `7-5-round2-raw/M-N4-suite-fails.txt` | `76698ad8393778507964f3a98708ab4454833ae5cc4c59361d910aef1a3621df` |
+| `7-5-round2-raw/M-R1-suite-fails.txt` | `1fff0accfb5b6be79ed0d837f0f9398e01aa1d1f6bc34692e01a8a37ad280132` |
+| `7-5-round2-raw/M-R2-suite-fails.txt` | `9b7fa1883b78d655903f59a9938e7ba57a43818ae6bc59027206779b382a4c92` |
+| `7-5-round2-raw/N2-AFTER-held-back-lines-are-printed.txt` | `a967e64e5524d7a4dd5c546483cfe8fab881d96a531e8a31df991c8652bb0ea8` |
+| `7-5-round2-raw/N2-BEFORE-fix-at-reviewed-head.txt` | `e14c738f32df907fb0ff2ffc99030cb7bee877eca58a6aa4c14579ed636c8963` |
+| `7-5-round2-raw/N3-truncation-message.txt` | `b8316864dc884cd99a91a61cc354f4984e9eb6c5a0f744eb673dfbbc3475c58a` |
+| `7-5-round2-raw/N4-AFTER-fix.txt` | `6e064781a6879b9eef2703815aa060daa106d66b69dc324707ef52c94829a071` |
+| `7-5-round2-raw/N4-BEFORE-fix-at-reviewed-head.txt` | `18b7d989c910837503df010c16a6e383484f72a7c19edb9e751551afc5144611` |
+| `7-5-round2-raw/R1-AFTER-fix.txt` | `e70b2f42957a532a82309f412acf9985cb2aaa8b6c23dbe2623d11439617f707` |
+| `7-5-round2-raw/R1-BEFORE-fix-at-reviewed-head.txt` | `ff04bd40fd858c4cc3cdb454c3a29cbd43b9d72d910e44f8ce122ac72da7d0bb` |
+| `7-5-round2-raw/R2A-control-filter-hides-nothing.txt` | `752f5c4e70f3c4903ef8ece781cf431a71f41450f524ab87cb4d41d7b8c87e05` |
+| `7-5-round2-raw/R2A-print-filter-hides-one-arm.txt` | `d097145ed1780bc80e187495cb7c888b5835c9e9783008d7a76f4f5627419b34` |
+| `7-5-round2-raw/R2B-residual-window-not-closed.txt` | `fa16a771aabd72e07ac40142cf443bc4296f01dab586bcbe5947a30557fccf94` |
+| `7-5-round2-raw/control-suite-green.txt` | `4c09f90939cca44ed0a8b54b7ed0b96ef237edda7852a24d2934825e9485c597` |
+| `7-5-round2-raw/healthy-merged.txt` | `21471c5de8e45d4691038a67740bf52206aaf0a701aff42dda5c3387a38e6b54` |
+| `7-5-round2-raw/healthy-stderr.txt` | `0306c2751343da894e5f21c7ee70f7e28f24157c4fb5c571e6acf662f39b0ec2` |
+| `7-5-round2-raw/healthy-stdout.txt` | `1a3928f2ebc6f3d95c28716367380139ac81e1ef2f38b5dcb580ea26691c4b5f` |
+| `7-5-round2-raw/p6t1-parallel-isolated-twice.txt` | `b01495c675636ffd15fa5084d7ef2c0f426f4fca71fd6981d428cfd077f6c010` |
+| `7-5-round2-mutated/M-N2-composition-smoke-closure.mjs` | `e781e8c98125100c2dcd9acb14e3a1a27568d670352525e0c23902d5e562e656` |
+| `7-5-round2-mutated/M-N4-composition-smoke-bundle.mjs` | `9572a63d24cbc935f12e9c377634f4f356643f400feee0aea98ab18cb6f58247` |
+| `7-5-round2-mutated/M-R1-composition-smoke-closure.mjs` | `23a2165fb68fbb1948775c3dfa0e04cef384bde826208c942ef23f8389b06797` |
+| `7-5-round2-mutated/M-R2-composition-smoke-bundle.mjs` | `429da6a91bd95a9f6b6369ba90bbad8cbc381c8f3a1eb9d45537eab180d27e02` |
+| `7-5-round2-mutated/N4-shim-package.json` | `47541a11d5e6774d91fde2a8d9472214ea7b11938ea6b83d21d9d77e0637f0fa` |
+| `7-5-round2-mutated/R1-TeamDock.js` | `374107b9dc2927a14d4ddd1827e6129f76be51df503616a248a35f07e224c371` |
+| `7-5-round2-mutated/R2A-smoke-print-filter-upstream-of-derivation.mjs` | `e97da2c4318c94573bdaf64eb5923b4b487c9d9e8f7b72ecc21de90710cf0846` |
+| `7-5-round2-mutated/R2B-smoke-print-filter-below-derivation.mjs` | `d1af251561607d2f6391f69a8b159ae49c5e0fefc1f4bd0cc04719a9f660bc69` |
+
+====================================================================================================
+R1 — a dangling subpath of an installed package was STILL laundered when the package
+     publishes a wildcard `exports` key. Verdict: real, reproduced, fixed.
+====================================================================================================
+The finding, measured at the reviewed head before any edit. Mutation: one line prepended to a
+NON-ENTRY own file of the built artifact,
+`packages/client/dist/packages/client/src/ui/TeamDock.js`:
+
+    import '@deepseek-ai/dsh-client-store/src/rr-nope.js'
+
+  mutated file   sha256 374107b9dc2927a14d4ddd1827e6129f76be51df503616a248a35f07e224c371  (committed: 7-5-round2-mutated/R1-TeamDock.js)
+  restored file  sha256 3b98b678fb8c9df2857b5197c94063fcc22d55ac97a4ad6d305c00f7b6c9bb61 (verified)
+  HEAD run       7-5-round2-raw/R1-BEFORE-fix-at-reviewed-head.txt  sha256 ff04bd40fd858c4cc3cdb454c3a29cbd43b9d72d910e44f8ce122ac72da7d0bb
+                 → exit 0, nine `PASS client bundle` arms, `PASS composition-smoke`;
+                   its stdout is the healthy stdout, sha256 1a3928f2ebc6f3d95c28716367380139ac81e1ef2f38b5dcb580ea26691c4b5f / md5 66cf6d9784a4a325b1bfa69d91eccb54
+  after the fix  7-5-round2-raw/R1-AFTER-fix.txt  sha256 e70b2f42957a532a82309f412acf9985cb2aaa8b6c23dbe2623d11439617f707
+                 → exit 1 and the line
+                   `FAIL client plugin (packages/client): our own artifact imports specifiers
+                    this workspace cannot resolve (@deepseek-ai/dsh-client-store/src/rr-nope.js)`
+
+The reviewer's measurement is confirmed, including the mechanism: `packageSubpathIsMissing`
+answered "covered" from the KEY's prefix and suffix and never looked at the value the key
+maps to, and `@deepseek-ai/dsh-client-store` publishes `"./src/*": "./src/*"` — read off the
+installed manifest, with `-ui-primitives` and `-locale` publishing `./src/*` as well.
+
+Node's own verdicts for the same package, measured in a child `node` from `packages/client`
+(the matrix this fix had to match, including the one case that must NOT read as missing):
+
+    @deepseek-ai/dsh-client-store                 LOADED
+    …/package.json                                ERR_IMPORT_ATTRIBUTE_MISSING   (resolves! not a miss)
+    …/src/rr-nope.js                              ERR_MODULE_NOT_FOUND           (pattern covered, file absent)
+    …/src/index.js                                ERR_MODULE_NOT_FOUND           (ditto)
+    …/nope/x.js                                   ERR_PACKAGE_PATH_NOT_EXPORTED  (no key covers)
+
+The fix, and what it does NOT claim:
+  * `scripts/composition-smoke-closure.mjs:270` `collectExportTargets` — every string an
+    `exports` value advertises, labelled by its condition path, plus `understood: false` for a
+    shape it cannot read (non-string leaf, empty condition object, nesting past depth 8).
+  * `:306` `exportPatternTarget` — Node's substitution rule: the key's `*` captures the middle
+    of the subpath and that text goes into the value's `*`; an exact key must match exactly.
+  * `:359` `packageSubpathVerdict` — returns `{missing, bail, why}`: covered-and-every-target-
+    absent is a miss (exact or pattern-mapped), uncovered is a miss, and anything un-readable
+    is a BAIL with a reason. `:448` `packageSubpathIsMissing` is the boolean view, so a bail is
+    never a miss.
+  * The header's blind-spot list `:60-71` gained the third shape and the honest line that the
+    legacy candidate probing (`+.js/.mjs/.cjs/.json/.node`, `/index.*`) is WIDER than Node's
+    ESM resolver, which tries the exact path only — a bias that can only ever cost a SKIP, in
+    the same direction as every other blind spot in that list.
+  * Conditions are still NOT evaluated (a subpath exported only for `require` reads present).
+    That limit is stated in the same list, not here for the first time.
+  Suite proof: `M-R1` below (6 tests red), plus the new fixture `wildcard` which reproduces the
+  laundering shape — non-entry own file, wildcard-covered target, host gap winning Node's link
+  race so that ONLY the scan can keep it red.
+
+====================================================================================================
+R2 — the new guard validated the returned array, not the printed lines. Verdict: real, fixed,
+     and the residual window measured rather than glossed.
+====================================================================================================
+The finding: `composition-smoke.mjs` printed `surface.checks.filter(...)`-able lines while the
+guard compared `surface.checks` against `REQUIRED_CHECK_IDS`. One print-site filter —
+`(c) => c.id !== 'external-specifier-set'` — produced the healthy output minus one line at
+exit 0, and the classifier suite stayed green because nothing imported `composition-smoke.mjs`.
+
+  A) the reviewed mutation, placed UPSTREAM of the printed-set derivation
+     mutated smoke sha256 e97da2c4318c94573bdaf64eb5923b4b487c9d9e8f7b72ecc21de90710cf0846
+     (committed: 7-5-round2-mutated/R2A-smoke-print-filter-upstream-of-derivation.mjs)
+     hiding one arm → 7-5-round2-raw/R2A-print-filter-hides-one-arm.txt sha256 d097145ed1780bc80e187495cb7c888b5835c9e9783008d7a76f4f5627419b34
+        → exit 1, eight `PASS client bundle` lines and
+          `FAIL client bundle never-printed (packages/client/composition-shim): required arm(s)
+           [external-specifier-set] produced no line — a check whose result is never printed is
+           a check that is off`
+     control, same filter hiding NOTHING → 7-5-round2-raw/R2A-control-filter-hides-nothing.txt
+        sha256 752f5c4e70f3c4903ef8ece781cf431a71f41450f524ab87cb4d41d7b8c87e05 → exit 0, nine arms. So the red is
+        the hiding, not the presence of extra code.
+  B) the SAME filter placed BELOW the derivation — the window this does NOT close
+     mutated smoke sha256 d1af251561607d2f6391f69a8b159ae49c5e0fefc1f4bd0cc04719a9f660bc69
+     → 7-5-round2-raw/R2B-residual-window-not-closed.txt sha256 fa16a771aabd72e07ac40142cf443bc4296f01dab586bcbe5947a30557fccf94
+       → exit 0, eight arm lines, `PASS composition-smoke`. Recorded as measured. This is mute 3
+       in the module comment; it is author-visible by policy and is not claimed as closed.
+
+The fix: `composition-smoke-bundle.mjs:163` `renderSurfaceStepLines(surface, compositionDir)`
+builds the step's lines by iterating `REQUIRED_CHECK_IDS` — nothing iterates the arms' result
+anymore, so an unreported arm prints a `FAIL … never reported` line and a renamed arm prints
+`reported but not required` — and `composition-smoke.mjs:356-382` takes that array, derives
+`unprinted` from THAT array, then prints it. A filter anywhere upstream of the derivation is
+caught by the derivation; only a filter in the four lines below it is not, and the comment at
+`composition-smoke.mjs:365-370` says so with both measurements.
+
+Which of the three mutes is closed how, from the module comment at
+`composition-smoke-bundle.mjs:36-63` — quoted here so a reader does not have to open the file:
+  1. an arm stops being REPORTED — closed mechanically (required-id iteration);
+  2. a reported arm stops being PRINTED — closed mechanically (the only iteration is over
+     required ids, and the caller re-derives the printed set from the array it prints);
+  3. an id deleted from `REQUIRED_CHECK_IDS`, its `record()` dropped, or a filter between the
+     last derivation and `console.log` — NOT closable inside the program, because the guard and
+     the guarded thing are the same text. Author-visible by policy: the id list is one named
+     frozen set with its reason attached, and changing it needs its own red proof.
+Suite proof: `M-R2` below (3 tests red, including a new one that feeds the arms in reverse
+order so an implementation that merely echoed `surface.checks` cannot pass by luck).
+
+====================================================================================================
+R3 — one raw capture was mislabeled, and the digest on it was load-bearing. Verdict: real.
+====================================================================================================
+What was wrong, verified against the committed text rather than against memory:
+  * `7-5-review-round-raw-captures.txt`, block `### mut/M-F-restored-arm-dropped.txt`
+    (md5 026e462608899aecdb47f326905e4f31) is a HEALTHY run: nine `PASS client bundle` arms,
+    `PASS composition-smoke`, no check-set line at all — and that md5 is the same value the
+    same file records for `green/G-healthy-all-fixes.txt`.
+  * The receipt line it was cited for — `7-5-review-round-mutations.txt`, M-F: "restore the
+    guard, same mutation → FAIL client bundle check-set … never reported [plugin-row-exports]"
+    — is evidenced by the block `### green/G5-arm-vanishes.txt` (md5 95d45a323db38b4b5a421de6805a6460),
+    which contains `FAIL client bundle check-set …: never reported [plugin-row-exports]` and
+    `FAIL composition-smoke` over eight arms. That is the file that evidences that claim.
+  * Why the wrong file existed: `restore.sh` restores the whole seven-file snapshot, including
+    `composition-smoke-bundle.mjs`, so running it removed the arm-drop mutation along with the
+    weakened guard. The run therefore evidenced "everything restored → healthy", which is a
+    fine control and a wrong label.
+What was done: the block header and the receipt line carry dated correction annotations
+(noting the file that actually evidences the claim), and this receipt states the mapping. The
+underlying capture text was left byte-for-byte as it was captured.
+Not re-captured: the round-1 M-F shape itself. Its evidence is G5, and the shape is covered
+again this round by M-G's successor — the required-id printing tests above — so no new
+capture was needed to keep the claim honest.
+
+====================================================================================================
+N1 — `closure.mjs:7-8` still said the published manifest "declares `dependencies: {}`".
+====================================================================================================
+Real. The measured fact is that the manifest has NO `dependencies` KEY AT ALL, which is not the
+same statement: an empty declared set and an absent key read differently to a resolver and to a
+reader. Corrected at `scripts/composition-smoke-closure.mjs:6-11`, wording now:
+"whose published manifest has no `dependencies` KEY AT ALL (measured at 0.2.0-rc.2, both on
+disk and in the public registry packument — not `dependencies: {}`, which would be a declared
+empty set; nothing is declared, and the only dependency of any kind is the
+`@deepseek-ai/cordis` PEER)".
+
+====================================================================================================
+N2 — `untraversed` was counted and printed nowhere, so the class R1 belongs to could still hide.
+====================================================================================================
+Red proof, same fixture twice, printed by the gate's own functions
+(`.tmp-faultscratch/r3/probe-n2.mjs`):
+  AT reviewed head  7-5-round2-raw/N2-BEFORE-fix-at-reviewed-head.txt sha256 e14c738f32df907fb0ff2ffc99030cb7bee877eca58a6aa4c14579ed636c8963
+    CONTROL SKIP LINE: host module closure unavailable — 1 unresolvable: @a4p75/gone
+    HELD   SKIP LINE:  host module closure unavailable — 1 unresolvable: @a4p75/gone
+    IDENTICAL? YES — a held-back scan is invisible in the output
+  after the fix     7-5-round2-raw/N2-AFTER-held-back-lines-are-printed.txt sha256 a967e64e5524d7a4dd5c546483cfe8fab881d96a531e8a31df991c8652bb0ea8
+    IDENTICAL? no
+    … | 1 UNTRAVERSED — present package, no manifest target this scan could follow:
+        @a4p75/broken-entry (asked for by …/untraversed/dist/own-side.js)
+The fix: the scan keeps the items, not just the count (`untraversedItems`, `subpathBails`,
+`composition-smoke-closure.mjs:572` and `:581`), and `formatSkipDetail` (`:746`, with the cap
+`namedList` at `:733`) prints both lists whenever they are non-empty; the smoke passes them at
+`composition-smoke.mjs:270`. An empty pair of lists produces the old sentence unchanged, which
+is what keeps the healthy output byte-stable (see `7-5-round2-gates.txt` step 5).
+A bail is NOT a miss — `@a4p75/odd` with `{"./src/*": {"import": 42}}` stays out of
+`ownUnresolved` — but it is printed, so "I could not read this" can no longer look like a pass.
+With both lists printed, no defect in this class can produce the previous round's byte-identical
+output again.
+Suite proof: `M-N2` (2 tests red).
+
+====================================================================================================
+N3 — the truncation message told the reader to raise a knob that does not exist.
+====================================================================================================
+Real, and mechanically checkable:
+  7-5-round2-raw/N3-truncation-message.txt sha256 b8316864dc884cd99a91a61cc354f4984e9eb6c5a0f744eb673dfbbc3475c58a
+    grep -nE 'process\.env|argv|maxFiles' scripts/composition-smoke.mjs → exit 1 (no knob)
+    measured headroom: visitedFiles 125 of the default cap 4000; 273 in the host tree where the
+    same closure resolves (7-5-client-closure-scan.txt section 5)
+The message at `composition-smoke-closure.mjs:701` now names the real remedy (the
+`scanModuleClosure` argument at its call site in `scripts/composition-smoke.mjs`, or a smaller
+graph), says in as many words that there is no environment or CLI knob, cites the grep that
+shows it, states the headroom, and keeps the one thing that must stay constant: never relax the
+classification to get a green.
+
+====================================================================================================
+N4 — both path arms skipped non-string `exports` targets, so a conditional target was invisible.
+====================================================================================================
+Real. At the reviewed head, advertising the bundle as
+`"./client": { "import": "../dist/packages/client/src/plugin/client.js" }` printed
+`all 4 path(s) the built shim manifest advertises land inside an install surface` and exit 0 —
+one fewer path than the flat spelling of the same manifest, because the value was skipped:
+  mutated shim manifest sha256 47541a11d5e6774d91fde2a8d9472214ea7b11938ea6b83d21d9d77e0637f0fa (committed: 7-5-round2-mutated/N4-shim-package.json)
+  restored shim manifest sha256 1cbb0f5a1341b8e5ceb9f4d5dd716ca9d82b087aef4a70120dc7749eca0028a5 (verified)
+  HEAD run      7-5-round2-raw/N4-BEFORE-fix-at-reviewed-head.txt sha256 18b7d989c910837503df010c16a6e383484f72a7c19edb9e751551afc5144611 → exit 0, "all 4 path(s)"
+  after the fix 7-5-round2-raw/N4-AFTER-fix.txt sha256 6e064781a6879b9eef2703815aa060daa106d66b69dc324707ef52c94829a071 → exit 1,
+      `FAIL client bundle composition-bundle-is-install-surface …: exports[./client].import
+       -> packages/client/dist/packages/client/src/plugin/client.js`
+Flattening is the right fix, not a documented hole: a conditional value's string IS the file a
+consumer under that condition is sent to, so both questions — does it exist, and does it lie
+inside a surface `check:artifacts` compares — apply to it. Implemented once, in
+`collectExportTargets`, used by `advertisedShimPaths` (`composition-smoke-bundle.mjs:210`) and
+by `manifest-targets-resolve` (`:460`). A value with nothing readable in it is still advertised,
+carrying `path: null`, so the arms say "has no readable string target"
+(`:439`, `:464`) instead of quietly counting one path fewer — that is N2's rule applied here.
+Suite proof: `M-N4` (3 tests red: the unit flattening case, the conditional-outside arm case,
+and the unreadable-value case).
+
+====================================================================================================
+5. MUTATIONS OF THE NEW CODE — same file, env-gated, red only when the mute executes
+====================================================================================================
+Each row: the committed mutated input (with its sha256, so the run can be reproduced), the
+committed failing run, and the tests that went red. Control, with no mute active:
+`7-5-round2-raw/control-suite-green.txt` sha256 4c09f90939cca44ed0a8b54b7ed0b96ef237edda7852a24d2934825e9485c597 → 46 passed.
+
+  M-R1  closure, pattern key matching on prefix/suffix answers "covered" again
+        mutated closure sha256 23a2165fb68fbb1948775c3dfa0e04cef384bde826208c942ef23f8389b06797
+        run 7-5-round2-raw/M-R1-suite-fails.txt sha256 1fff0accfb5b6be79ed0d837f0f9398e01aa1d1f6bc34692e01a8a37ad280132 → 6 failed / 40 passed
+          x composition-smoke three-state classifier > calls an exports-gated subpath missing even when the file sits on disk
+          x composition-smoke exports pattern mapping (round 2 R1) > does not launder a wildcard-covered subpath of an installed package
+          x composition-smoke exports pattern mapping (round 2 R1) > maps a pattern key through its VALUE and looks for the mapped file
+          x composition-smoke exports pattern mapping (round 2 R1) > maps through conditional and array values, every string being a real path
+          x composition-smoke exports pattern mapping (round 2 R1) > bails, never claims, on a shape it cannot read — and an unmodelled value cannot hide an absent one
+          x composition-smoke what-the-scan-held-back (round 2 N2) > prints a bail it took, and does not turn that bail into an own-zone failure
+  M-N2  formatSkipDetail ignores what the scan held back
+        mutated closure sha256 e781e8c98125100c2dcd9acb14e3a1a27568d670352525e0c23902d5e562e656
+        run 7-5-round2-raw/M-N2-suite-fails.txt sha256 471bea0621279260a62609f4d0ef1d055721600fd669c14da4d47c709fea344f → 2 failed / 44 passed
+          x composition-smoke what-the-scan-held-back (round 2 N2) > prints the untraversed specifiers, so a held-back scan is not silent
+          x composition-smoke what-the-scan-held-back (round 2 N2) > prints a bail it took, and does not turn that bail into an own-zone failure
+  M-N4  advertisedShimPaths skips non-string export values again
+        mutated bundle sha256 9572a63d24cbc935f12e9c377634f4f356643f400feee0aea98ab18cb6f58247
+        run 7-5-round2-raw/M-N4-suite-fails.txt sha256 76698ad8393778507964f3a98708ab4454833ae5cc4c59361d910aef1a3621df → 3 failed / 43 passed
+          x composition-smoke offline composition surface > is red when a CONDITIONAL export target lies outside the install surface
+          x composition-smoke offline composition surface > is red when an export value has nothing readable in it, rather than counting one fewer path
+          x composition-smoke offline composition surface > flattens conditional export values into the paths it checks
+  M-R2  renderSurfaceStepLines prints what the arms returned, not what is required
+        mutated bundle sha256 429da6a91bd95a9f6b6369ba90bbad8cbc381c8f3a1eb9d45537eab180d27e02
+        run 7-5-round2-raw/M-R2-suite-fails.txt sha256 9b7fa1883b78d655903f59a9938e7ba57a43818ae6bc59027206779b382a4c92 → 3 failed / 43 passed
+          x composition-smoke required arm set > prints one line per required id, in the required order, whatever the arms report
+          x composition-smoke required arm set > prints a FAIL for an arm that stopped reporting, instead of no line
+          x composition-smoke required arm set > prints a FAIL for an arm that renamed itself
+
+====================================================================================================
+6. WHAT THIS ROUND DOES NOT CLAIM
+====================================================================================================
+  * The client plugin is not verifiable in this workspace. The gate still prints the NAMED SKIP
+    for the 17 measured unresolvable packages of the upstream closure; nothing here installs a
+    dependency to make that line prettier, and a SKIP is an unverified claim, not a green.
+  * `exports` CONDITIONS are not evaluated by the closure scan, and the scan still reads static
+    ESM statements only. Both are in the header's blind-spot list with their direction; every
+    one of them biases toward skipping, which is the direction that costs coverage, not truth.
+  * The legacy (no-`exports`) candidate probe is wider than Node ESM resolution. Stated at
+    `composition-smoke-closure.mjs:60-65`; it can produce a false "present", never a false miss.
+  * Mute 3 (deleting an id from `REQUIRED_CHECK_IDS`, dropping its `record()`, or filtering in
+    the four lines between the last derivation and `console.log`) is NOT closed. R2(B) above is
+    that window, measured, exit 0, eight lines.
+  * The suite's flaky file is not evidence about this round. `packages/runtime/test/p6t1-parallel.test.ts`
+    failed 3 of 9 tests in the full-suite gate run and also failed in the round-1 gate run, so the
+    failing-file identity set is identical across the two runs (10 files, none new, none resolved).
+    Two isolated re-runs of just that file, recorded at
+    `7-5-round2-raw/p6t1-parallel-isolated-twice.txt`, give 1 failed (a DIFFERENT test, at :193
+    rather than :154) and then all passed: the failure is timing-dependent, not a consequence of
+    anything here. It is reported, not silenced, and not counted against the baseline.
+  * No dependency, no lockfile, no `packages/client/package.json`, no other worktree, no push.
+
+====================================================================================================
+7. DIGESTS AS RECOMPUTED FROM THE COMMITTED BYTES
+====================================================================================================
+471bea0621279260a62609f4d0ef1d055721600fd669c14da4d47c709fea344f  7-5-round2-raw/M-N2-suite-fails.txt
+76698ad8393778507964f3a98708ab4454833ae5cc4c59361d910aef1a3621df  7-5-round2-raw/M-N4-suite-fails.txt
+1fff0accfb5b6be79ed0d837f0f9398e01aa1d1f6bc34692e01a8a37ad280132  7-5-round2-raw/M-R1-suite-fails.txt
+9b7fa1883b78d655903f59a9938e7ba57a43818ae6bc59027206779b382a4c92  7-5-round2-raw/M-R2-suite-fails.txt
+a967e64e5524d7a4dd5c546483cfe8fab881d96a531e8a31df991c8652bb0ea8  7-5-round2-raw/N2-AFTER-held-back-lines-are-printed.txt
+e14c738f32df907fb0ff2ffc99030cb7bee877eca58a6aa4c14579ed636c8963  7-5-round2-raw/N2-BEFORE-fix-at-reviewed-head.txt
+b8316864dc884cd99a91a61cc354f4984e9eb6c5a0f744eb673dfbbc3475c58a  7-5-round2-raw/N3-truncation-message.txt
+6e064781a6879b9eef2703815aa060daa106d66b69dc324707ef52c94829a071  7-5-round2-raw/N4-AFTER-fix.txt
+18b7d989c910837503df010c16a6e383484f72a7c19edb9e751551afc5144611  7-5-round2-raw/N4-BEFORE-fix-at-reviewed-head.txt
+e70b2f42957a532a82309f412acf9985cb2aaa8b6c23dbe2623d11439617f707  7-5-round2-raw/R1-AFTER-fix.txt
+ff04bd40fd858c4cc3cdb454c3a29cbd43b9d72d910e44f8ce122ac72da7d0bb  7-5-round2-raw/R1-BEFORE-fix-at-reviewed-head.txt
+752f5c4e70f3c4903ef8ece781cf431a71f41450f524ab87cb4d41d7b8c87e05  7-5-round2-raw/R2A-control-filter-hides-nothing.txt
+d097145ed1780bc80e187495cb7c888b5835c9e9783008d7a76f4f5627419b34  7-5-round2-raw/R2A-print-filter-hides-one-arm.txt
+fa16a771aabd72e07ac40142cf443bc4296f01dab586bcbe5947a30557fccf94  7-5-round2-raw/R2B-residual-window-not-closed.txt
+4c09f90939cca44ed0a8b54b7ed0b96ef237edda7852a24d2934825e9485c597  7-5-round2-raw/control-suite-green.txt
+21471c5de8e45d4691038a67740bf52206aaf0a701aff42dda5c3387a38e6b54  7-5-round2-raw/healthy-merged.txt
+0306c2751343da894e5f21c7ee70f7e28f24157c4fb5c571e6acf662f39b0ec2  7-5-round2-raw/healthy-stderr.txt
+1a3928f2ebc6f3d95c28716367380139ac81e1ef2f38b5dcb580ea26691c4b5f  7-5-round2-raw/healthy-stdout.txt
+b01495c675636ffd15fa5084d7ef2c0f426f4fca71fd6981d428cfd077f6c010  7-5-round2-raw/p6t1-parallel-isolated-twice.txt
+e781e8c98125100c2dcd9acb14e3a1a27568d670352525e0c23902d5e562e656  7-5-round2-mutated/M-N2-composition-smoke-closure.mjs
+9572a63d24cbc935f12e9c377634f4f356643f400feee0aea98ab18cb6f58247  7-5-round2-mutated/M-N4-composition-smoke-bundle.mjs
+23a2165fb68fbb1948775c3dfa0e04cef384bde826208c942ef23f8389b06797  7-5-round2-mutated/M-R1-composition-smoke-closure.mjs
+429da6a91bd95a9f6b6369ba90bbad8cbc381c8f3a1eb9d45537eab180d27e02  7-5-round2-mutated/M-R2-composition-smoke-bundle.mjs
+47541a11d5e6774d91fde2a8d9472214ea7b11938ea6b83d21d9d77e0637f0fa  7-5-round2-mutated/N4-shim-package.json
+374107b9dc2927a14d4ddd1827e6129f76be51df503616a248a35f07e224c371  7-5-round2-mutated/R1-TeamDock.js
+e97da2c4318c94573bdaf64eb5923b4b487c9d9e8f7b72ecc21de90710cf0846  7-5-round2-mutated/R2A-smoke-print-filter-upstream-of-derivation.mjs
+d1af251561607d2f6391f69a8b159ae49c5e0fefc1f4bd0cc04719a9f660bc69  7-5-round2-mutated/R2B-smoke-print-filter-below-derivation.mjs

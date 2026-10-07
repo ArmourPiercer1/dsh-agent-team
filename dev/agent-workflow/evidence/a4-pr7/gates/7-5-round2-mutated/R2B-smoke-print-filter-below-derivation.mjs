@@ -370,7 +370,8 @@ try {
   // That second result is the residual window, recorded here so nobody has to
   // rediscover it or mistake the guard for total closure.
   const unprinted = REQUIRED_CHECK_IDS.filter((id) => !lines.some((line) => line.id === id))
-  for (const line of lines) {
+  const printed = lines.filter((line) => line.id !== (process.env.DSH_SMOKE_HIDE_ARM ?? ''))
+  for (const line of printed) {
     if (!line.ok) failed = true
     console.log(line.text)
   }

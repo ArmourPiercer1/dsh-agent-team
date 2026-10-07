@@ -1,0 +1,13 @@
+$ pnpm --dir packages/testkit exec vitest run a4p75-composition-smoke-classification
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/testkit
+
+ ✓ test/a4p75-composition-smoke-classification.test.ts (46 tests) 1705ms
+     ✓ requires by id every arm this repository actually reports  1295ms
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  02:33:31
+   Duration  1.85s (transform 1.06s, setup 0ms, import 66ms, tests 1.71s, environment 0ms)
+
+exit=0

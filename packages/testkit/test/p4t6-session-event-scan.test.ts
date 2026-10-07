@@ -1908,6 +1908,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       // ruling touches is an EDIT to a path this scan already counts, and an edit
       // is not an increment. The total below moves because this line does.
       'packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts',
+      // A4-PR7 Task 7.5 (this commit): the smoke classifier's test. One new
+      // scannable file — Task 7.5's other new paths are `scripts/*.mjs`
+      // (+ their `.d.mts`), which this scan's `packages/**` scope does not
+      // cover, and its edits to `scripts/build-client-composition.mjs` /
+      // `scripts/check-artifacts-committed.mjs` are edits, not increments.
+      'packages/testkit/test/a4p75-composition-smoke-classification.test.ts',
     ]
     // a4-escalate-act-truth (fix/a4-escalate-receipt-truth): the ONE new
     // scannable file of this fix lane — the escalate-terminate act-truth spec.
@@ -2004,18 +2010,27 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // PRs' numbers stay untouched. Review round 1 moved it with the three
     // review-round specs named in the list.
     expect(SCANNED_PATHS_A4PR6.length).toBe(1016 - 1003)
-    // The A4-PR7 tie, same form. `1020` is PR7's own advancing total: it moves
+    // The A4-PR7 tie, same form. `1021` is PR7's own advancing total: it moves
     // only when the A4-PR7 list above grows, and the by-path loop above is what
     // proves each named path really is in the scan (a total that moved for a
     // dropped file instead of an added one fails there, not here). Ruling 1 moved
     // it with the ONE file it added — every other path that ruling touched was
-    // already counted, and an edit is not an increment.
-    expect(SCANNED_PATHS_A4PR7.length).toBe(1020 - 1016)
-    // The a4-escalate-act-truth tie, same form: the movement (1020 -> 1021)
-    // equals the named files in SCANNED_PATHS_A4ESCALATE, each asserted present
-    // by path in the loop above. A file added without a name, or a name without
-    // a file, fails there — the total is still never written by hand.
+    // already counted, and an edit is not an increment. Task 7.5 moved it again
+    // for the same reason: one new test file under `packages/**`.
+    expect(SCANNED_PATHS_A4PR7.length).toBe(1021 - 1016)
+    // The a4-escalate-act-truth tie, same form: the movement equals the named
+    // files in SCANNED_PATHS_A4ESCALATE, each asserted present by path in the
+    // loop above. A file added without a name, or a name without a file, fails
+    // there — the total is still never written by hand.
     expect(SCANNED_PATHS_A4ESCALATE.length).toBe(1021 - 1020)
+    // Reading these two ties together after the merge with `origin/master`: each
+    // endpoint is that lane's OWN advancing total on the branch where it landed,
+    // so the two endpoints come from two ladders and neither one is this merged
+    // tree's total. Each tie asserts only "the movement equals the files I name",
+    // which is the whole contract, and neither number was edited to make the
+    // ladders look sequential — renumbering a tie is exactly how a pin starts
+    // agreeing with a wrong tree. The merged total is the sum of the lists above;
+    // it is derived by the two `toBe` sums and deliberately not written here.
 
   })
 

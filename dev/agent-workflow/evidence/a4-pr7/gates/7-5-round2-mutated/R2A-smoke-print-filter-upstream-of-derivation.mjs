@@ -354,6 +354,8 @@ try {
   // before that guard existed: dropping one arm printed 8 PASS lines at exit 0,
   // and returning no arms at all printed 0 lines at exit 0).
   const lines = renderSurfaceStepLines(surface, compositionDir)
+  const hidden = process.env.DSH_SMOKE_HIDE_ARM ?? ''
+  const hiddenLines = lines.filter((line) => line.id !== hidden)
   // And closed a second time, on the LINES rather than on the array the arms
   // returned. The first guard compared `surface.checks` against the required set
   // while the terminal iterated something else, so a print-site filter
@@ -369,8 +371,8 @@ try {
   // exit 1; placed below it, it prints the healthy output minus one line at exit 0.
   // That second result is the residual window, recorded here so nobody has to
   // rediscover it or mistake the guard for total closure.
-  const unprinted = REQUIRED_CHECK_IDS.filter((id) => !lines.some((line) => line.id === id))
-  for (const line of lines) {
+  const unprinted = REQUIRED_CHECK_IDS.filter((id) => !hiddenLines.some((line) => line.id === id))
+  for (const line of hiddenLines) {
     if (!line.ok) failed = true
     console.log(line.text)
   }

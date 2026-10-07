@@ -1,0 +1,172 @@
+$ env DSH_A4P75_MUTE=M-R1 pnpm --dir packages/testkit exec vitest run a4p75-composition-smoke-classification
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/testkit
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts (46 tests | 6 failed) 1714ms
+     ✓ runs the step when every specifier in the graph resolves 3ms
+     ✓ skips, and names every unresolvable package, when only the upstream closure is missing 6ms
+     ✓ never launders: our own undeclared import fails even while the upstream closure is also missing 1ms
+     ✓ fails on a module-evaluation throw instead of calling it a missing package 2ms
+     ✓ fails, not skips, when the artifact itself is absent 0ms
+     ✓ records a dangling subpath of an INSTALLED package as an own-zone defect, never as untraversed 40ms
+     ✓ sees an own import that is indented, not at column 0 (the skip was the EAGER direction) 38ms
+     ✓ fails instead of skipping when the closure walk hit its file cap 36ms
+     ✓ names the importing file, not the offending package.json, for a subpath error 37ms
+     ✓ still skips a THIRD-PARTY file whose own subpath does not resolve 39ms
+     ✓ parses a directory import and names its importer (and still fails it) 35ms
+     × calls an exports-gated subpath missing even when the file sits on disk 6ms
+     × does not launder a wildcard-covered subpath of an installed package 2ms
+     × maps a pattern key through its VALUE and looks for the mapped file 1ms
+     × maps through conditional and array values, every string being a real path 1ms
+     × bails, never claims, on a shape it cannot read — and an unmodelled value cannot hide an absent one 1ms
+     ✓ substitutes the captured text into the value, the way Node does 0ms
+     ✓ prints the untraversed specifiers, so a held-back scan is not silent 40ms
+     × prints a bail it took, and does not turn that bail into an own-zone failure 1ms
+     ✓ passes every arm on a well-formed surface 3ms
+     ✓ is red when a plugin row stops being registered 2ms
+     ✓ is red when a registered row id drifts by one character 3ms
+     ✓ is red when our own top-level code throws at evaluation 2ms
+     ✓ is red when the row loses its apply export 2ms
+     ✓ is red when the row name drifts from the pinned value 2ms
+     ✓ is red when the bundle requires a specifier the host module table does not serve 2ms
+     ✓ is red when the configured baseline names an external the bundle no longer uses 2ms
+     ✓ is red when an advertised artifact path does not exist 2ms
+     ✓ is red when the composition output is not inside a shipped install surface 2ms
+     ✓ is red when the built manifest advertises a path outside the install surface 2ms
+     ✓ is red when a CONDITIONAL export target lies outside the install surface 2ms
+     ✓ is red when a CONDITIONAL export target does not exist, and sees it in both arms 2ms
+     ✓ is red when an export value has nothing readable in it, rather than counting one fewer path 2ms
+     ✓ flattens conditional export values into the paths it checks 0ms
+     ✓ is red when the built manifest advertises nothing at all 2ms
+     ✓ is red when a recorded manifest value drifts 4ms
+     ✓ is red when a file the runtime derives a URL for is not on disk 3ms
+     ✓ accepts exactly the set it requires, and names both kinds of difference 0ms
+     ✓ prints one line per required id, in the required order, whatever the arms report 0ms
+     ✓ prints a FAIL for an arm that stopped reporting, instead of no line 0ms
+     ✓ prints a FAIL for an arm that renamed itself 0ms
+     ✓ requires by id every arm this repository actually reports  1345ms
+     ✓ checks the committed client artifact and reports every arm green 22ms
+     ✓ agrees with the bundle on which externals the host must supply 3ms
+     ✓ reads the drift a renamed require would cause, straight off the emitted text 0ms
+     ✓ still finds the composition output where the builder writes it 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p75-composition-smoke-classification.test.ts > composition-smoke three-state classifier > calls an exports-gated subpath missing even when the file sits on disk
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts:520:70
+    518|     // `./*` -> `./dist/*`, so `@a4p75/pat/exists.js` is `dist/exists.…
+    519|     expect(packageSubpathIsMissing(patterned, '@a4p75/pat/exists.js'))…
+    520|     expect(packageSubpathIsMissing(patterned, '@a4p75/pat/nope.js')).t…
+       |                                                                      ^
+    521|     // A key that matches but whose value cannot be read is a bail, no…
+    522|     expect(packageSubpathIsMissing(patterned, '@a4p75/pat/nope.js', {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  test/a4p75-composition-smoke-classification.test.ts > composition-smoke exports pattern mapping (round 2 R1) > does not launder a wildcard-covered subpath of an installed package
+AssertionError: expected [] to deeply equal [ '@a4p75/wild/src/nope.js' ]
+
+- Expected
++ Received
+
+- [
+-   "@a4p75/wild/src/nope.js",
+- ]
++ []
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts:544:67
+    542|     // The review-round shape, third variant: the key matched, the map…
+    543|     // not exist, and the answer given was "covered".
+    544|     expect(closure.ownUnresolved.map((entry) => entry.specifier)).toEq…
+       |                                                                   ^
+    545|     expect(closure.ownUnresolved[0]?.zone).toBe('own')
+    546|     expect(closure.ownUnresolved[0]?.importer).toContain(join('dist', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/a4p75-composition-smoke-classification.test.ts > composition-smoke exports pattern mapping (round 2 R1) > maps a pattern key through its VALUE and looks for the mapped file
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts:577:28
+    575|     expect(present.bail).toBeNull()
+    576|     const absent = packageSubpathVerdict('/pkg', '@a4p75/any/dist/nope…
+    577|     expect(absent.missing).toBe(true)
+       |                            ^
+    578|     // The name of the mapped target, not just of the specifier: the r…
+    579|     // to be able to see WHICH file the manifest sent the resolver to.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/a4p75-composition-smoke-classification.test.ts > composition-smoke exports pattern mapping (round 2 R1) > maps through conditional and array values, every string being a real path
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts:587:34
+    585|     expect(packageSubpathVerdict('/pkg', '@a4p75/any/lib/real.js', con…
+    586|     const nestedAbsent = packageSubpathVerdict('/pkg', '@a4p75/any/lib…
+    587|     expect(nestedAbsent.missing).toBe(true)
+       |                                  ^
+    588|     expect(nestedAbsent.why).toContain('exports[./*].import -> ./lib/n…
+    589|     // A candidate array: present under one condition is present.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/a4p75-composition-smoke-classification.test.ts > composition-smoke exports pattern mapping (round 2 R1) > bails, never claims, on a shape it cannot read — and an unmodelled value cannot hide an absent one
+AssertionError: the given combination of arguments (null and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ test/a4p75-composition-smoke-classification.test.ts:597:29
+    595|     const unreadable = packageSubpathVerdict('/pkg', '@a4p75/any/src/x…
+    596|     expect(unreadable.missing).toBe(false)
+    597|     expect(unreadable.bail).toContain('cannot map')
+       |                             ^
+    598|     // The hard case: the readable half maps to nothing. Reporting a m…
+    599|     // be honest about that half, but a bail is what keeps the check f…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/a4p75-composition-smoke-classification.test.ts > composition-smoke what-the-scan-held-back (round 2 N2) > prints a bail it took, and does not turn that bail into an own-zone failure
+AssertionError: expected [] to deeply equal [ '@a4p75/odd/src/whatever.js' ]
+
+- Expected
++ Received
+
+- [
+-   "@a4p75/odd/src/whatever.js",
+- ]
++ []
+
+ ❯ test/a4p75-composition-smoke-classification.test.ts:663:87
+    661|     // A bail is not a miss: the own zone stays clean, because nothing…
+    662|     expect(closure.ownUnresolved).toEqual([])
+    663|     expect(closure.subpathBails.map((item: { specifier: string }) => i…
+       |                                                                                       ^
+    664|     const loadError = nodeResolutionError(join(root, 'dist/entry.js'))
+    665|     const decision = classifyClosureStep({ entryExists: true, closure,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 40 passed (46)
+   Start at  02:33:21
+   Duration  1.87s (transform 1.11s, setup 0ms, import 76ms, tests 1.71s, environment 0ms)
+
+exit=1

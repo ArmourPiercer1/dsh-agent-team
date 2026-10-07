@@ -1,0 +1,104 @@
+A4-PR7 Task 7.5 — mutation receipts: every new or changed assertion, driven red
+(SIMULATED / MACHINE evidence. Not a human acceptance pass.)
+
+Each mutation was applied to a build output or a committed artifact, the gate was
+run, the exit code and the one line that had to change were recorded, and the tree
+was restored (git checkout for tracked files; the entry was restored byte-for-byte;
+the restored bundle re-compared byte-identical against a saved copy). The fake
+closure used by F1/M-a1/M-b is a stub package exporting only the 6 names our dist
+imports from @deepseek-ai/dsh-client-ui-primitives — it makes the graph LINKABLE so
+the load-side checks can execute at all, and it is NOT a claim about the real UI.
+
+F1: fake closure made resolvable (stub @deepseek-ai/dsh-client-ui-primitives exported the 6 names our dist imports): the SKIP becomes a PASS, so the skip is conditional and the load-side contract really runs
+  expected to go red/changed on: PASS client plugin
+  observed: PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+  exit=0   (0 = gate passed, 1 = gate failed)
+
+M-a1: module-scope throw injected into the built client entry, WITH the fake resolvable closure: a non-resolution failure must never be laundered by the skip path
+  expected to go red/changed on: FAIL client plugin
+  observed: FAIL client plugin (packages/client): the entry failed to load for a reason that is not a missing upstream package (MUTATION-A1 module-scope defect)
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-m: a SYNTAX error injected into the built client entry while the REAL closure gap is present.
+  This is the case the brief asked for literally: the closure check WAS going to skip, and a
+  failure unrelated to the closure (Node parses the entry before it resolves that entry's
+  imports, so a broken entry fails at link time even with 17 packages missing) must still be
+  a red gate.
+  expected to go red/changed on: FAIL client plugin
+  observed: FAIL client plugin (packages/client): the entry failed to load for a reason that is not a missing upstream package (Unexpected token ':')
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-a2: the SAME module-scope throw with the real closure gap: link fails before evaluation, so a load-side gate cannot see it — this is the honest limit, and M-a3 is what covers the class
+  expected to go red/changed on: SKIP client plugin
+  observed: SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark
+  exit=0   (0 = gate passed, 1 = gate failed)
+
+M-a3: module-scope throw injected into the committed BUILT BUNDLE (packages/client/composition-shim/client-bundle.js): the class the SKIP cannot see is checked offline
+  expected to go red/changed on: FAIL client bundle bundle-module-graph-evaluates
+  observed: FAIL client bundle bundle-module-graph-evaluates (packages/client/composition-shim): the registration script threw: TypeError: MUTATION-A3 bundle module-scope defect
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-b: client apply() reduced to a silent no-op, with the fake resolvable closure: the contract check still has teeth
+  expected to go red/changed on: FAIL client plugin
+  observed: FAIL client plugin (packages/client): apply on a degenerate context must fail loud, but it succeeded silently
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-c: own-zone undeclared import added to the built entry (import { z } from "no-such-own-dep-75"), with the REAL closure gap present: the skip path must not launder our own undeclared dependency
+  SCOPE, narrowed in the review round (2026-10-08) — this entry proves exactly one shape and must not be read as covering the class:
+    the import was placed in the ENTRY file, at COLUMN 0, naming a package that is not installed anywhere.
+    That is the shape `esmStaticSpecifiers` can see. Two shapes that look identical from the gate's
+    outside were NOT covered, and both printed the healthy SKIP with exit 0 (byte-identical to a clean
+    run) until the review round fixed them: an own import placed in a NON-ENTRY file whose spec only
+    survives because the 17-package upstream gap wins Node's link race first, and a dangling SUBPATH of
+    a package that IS installed. See 7-5-review-round-mutations.txt R-1a/R-1b/R-2a (red, pre-fix) and
+    G-1/G-2 (green, post-fix). The scanner's own header now states its blind spots and the direction
+    they bias the gate in; the previous comment there claimed a missed specifier made the gate skip
+    LESS eagerly, which is backwards.
+  expected to go red/changed on: FAIL client plugin
+  observed: FAIL client plugin (packages/client): our own artifact imports specifiers this workspace cannot resolve (no-such-own-dep-75) — an undeclared dependency in this repo, not the host module closure, so this is never skippabl
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-d: a plugin-row registration id in the committed bundle renamed by one character (@dsh-agent-team/clien): one install world loses its client half
+  expected to go red/changed on: FAIL client bundle plugin-row-registrations
+  observed: FAIL client bundle plugin-row-registrations (packages/client/composition-shim): registered [dsh-agent-team, @dsh-agent-team/clien] but the host claims [dsh-agent-team, @dsh-agent-team/client]
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-e: a fake external __extReq("@deepseek-ai/dsh-client-not-a-real-external") added at bundle top level: drift is visible from the emitted text even when evaluation itself throws
+  expected to go red/changed on: FAIL client bundle external-specifier-set
+  observed: FAIL client bundle external-specifier-set (packages/client/composition-shim): external set drifted — requires-but-unserved [@deepseek-ai/dsh-client-not-a-real-external], configured-but-not-required [none]
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-f: an in-factory __extReq("react/jsx-runtime") renamed to react/jsx-dev-runtime: the bundle now requires a specifier the host module table does not serve, and a configured one goes unused
+  expected to go red/changed on: FAIL client bundle external-specifier-set
+  observed: FAIL client bundle external-specifier-set (packages/client/composition-shim): external set drifted — requires-but-unserved [react/jsx-dev-runtime], configured-but-not-required [react/jsx-runtime]
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-g: the entry module stops exporting "apply" (defineProperty key renamed): a missing plugin-row export
+  expected to go red/changed on: FAIL client bundle plugin-row-exports
+  observed: FAIL client bundle plugin-row-exports (packages/client/composition-shim): apply is undefined, not a function
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-h: the plugin row name drifts from the pinned value (dsh-agent-team-clientX)
+  expected to go red/changed on: FAIL client bundle plugin-row-exports
+  observed: FAIL client bundle plugin-row-exports (packages/client/composition-shim): name "dsh-agent-team-clientX" != "dsh-agent-team-client"
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-i: packages/client/composition-shim/index.js removed: the composition output is not what the builder writes
+  expected to go red/changed on: FAIL client bundle composition-output-present
+  observed: FAIL client bundle composition-output-present (packages/client/composition-shim): missing composition output: /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/client/composition-shim/index.js
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-j: shim manifest advertises ./client-bundle-TYPO.js: a recorded artifact path that does not exist
+  expected to go red/changed on: FAIL client bundle manifest-targets-resolve
+  observed: FAIL client bundle manifest-targets-resolve (packages/client/composition-shim): advertised artifact path does not exist: shim exports[./client] -> ./client-bundle-TYPO.js
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-k: shim manifest version bumped to 9.9.9 while packages/client stays 0.1.1-alpha.2: a recorded public value that drifted
+  expected to go red/changed on: FAIL client bundle shim-recorded-values
+  observed: FAIL client bundle shim-recorded-values (packages/client/composition-shim): version "9.9.9" != packages/client "0.1.1-alpha.2"
+  exit=1   (0 = gate passed, 1 = gate failed)
+
+M-l: the placed glue file (packages/runtime/dist/.../live/agent-bindings.mjs) moved: the URL the built host derives at runtime points at nothing (A5-19 / dist co-commit class)
+  expected to go red/changed on: FAIL client bundle derived-urls-resolve
+  observed: FAIL client bundle derived-urls-resolve (packages/client/composition-shim): the glue URL the host derives from its own module location does not exist: file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packa
+  exit=1   (0 = gate passed, 1 = gate failed)

@@ -158,3 +158,103 @@ The mutation sweep was NOT re-run, and the honest reason is recorded rather than
 assumed: no production line of this branch changed in the merge — `7-r1-s2-merge-shape.txt`
 proves it file by file — and a mutation proof measures a production change that is
 still byte-identical to the one already measured.
+
+## Task 7.5 (`7-5-client-closure-scan`, `7-5-mutations`, …): the composition smoke stops lying
+
+Task 7.5 as written in the plan said "`pnpm smoke:composition` fails on the missing `clsx`
+dependency" and prescribed adding pins. The ruling executed here is the opposite, and the
+plan line stays wrong until the coordinator's records commit (`docs/**` is not this
+lane's to edit): **no pin was added, and neither `packages/client/package.json` nor
+`pnpm-lock.yaml` is in the diff.** What the round actually changed is the gate.
+
+| file | the claim it supports |
+| --- | --- |
+| `7-5-client-closure-scan.txt` | the measurement that replaces the plan's diagnosis. `@deepseek-ai/dsh-client-ui-primitives@0.2.0-rc.2` has **no `dependencies` field at all** and one peer (`@deepseek-ai/cordis@~4.0.4`), while its `lib/index.js` statically imports **23** bare packages: **6 resolve** in this workspace and **17 do not**, and the scan the gate itself runs reports `ownUnresolved=0` — every unresolvable specifier is asked for by a third-party file, none by ours. §4 records that `clsx` is only the first of the 17 (pinning it moves the error to `simple-icons`), and §5 is the control that settles the causal story: the host's `lib/index.js` is **byte-identical** (sha256 `6b551f0039ae2632…`, 530719 B) and the identical scan **in the host tree resolves 23/23**. Same bytes, same imports, different install surface. |
+| `7-5-registry-probe.txt` | the public-registry half of the same correction, captured while network was available: `0.2.0-rc.2` is published for all four `@deepseek-ai` client packages (`dist-tags.latest` is stale for every one of them — a stale dist-tag is an `npm view` artifact, not a missing version), and `dependencies` is empty for all four at that version. Records too that re-running it needs network plus an in-workspace npm cache. |
+| `7-5-smoke-three-state.txt` | `pnpm smoke:composition` verbatim before and after. Before: `FAIL client plugin … Cannot find package 'clsx' …`, exit 1 — a red gate that had been failing for a reason no configuration of this workspace can fix, since the client entry stopped being a skeleton. After: `PASS host plugin` (unchanged, still a real check), `SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: <the 17 names>`, nine `PASS client bundle <check-id>` lines, and a summary that says out loud `1 step NOT RUN and NOT passed`. Exit 0. Same file carries the rest of the battery on the final tree: typecheck 8 `Done` / 0 `error TS`, `build` / `build:composition` / `check:artifacts` `OK: 1508 files` with the rebuild **byte-identical** (so no artifact co-commit), eslint exit 0 with zero mutes, `lint-identities` 160 / 76 distinct / `new 0, resolved 0`, client lane 3 failed / 876 passed (the same baseline trio). |
+| `7-5-mutations.txt` | **fifteen** mutations, each one an assertion driven red and then reverted (tracked files by `git checkout`, the built entry restored byte-for-byte, the rebuilt bundle re-compared byte-identical). The two the brief asked for by name: **M-c** puts an undeclared import in OUR built entry while the real 17-package gap is present — `FAIL … our own artifact imports specifiers this workspace cannot resolve (no-such-own-dep-75)`, exit 1, i.e. the skip path cannot launder our own bug; **M-m** breaks the entry's syntax with the real gap present (link fails before evaluation, so a module-scope *throw* is unobservable — see M-a2) — `FAIL … a reason that is not a missing upstream package (Unexpected token ':')`, exit 1. Plus **F1**, which makes the closure fake-resolvable and turns the SKIP into `PASS client plugin …`, proving the skip is conditional and the contract checks really run; **M-a3** puts a module-scope throw in the committed BUNDLE — the class the SKIP structurally cannot see — and the offline check turns it red; and one red per offline assertion (row id renamed by one character, `apply` export renamed, plugin name drift, external added, external swapped, shim path typo, shim version drift, composition file removed, placed glue moved). |
+| `7-5-p4t6-pin.txt` | this lane's own intermediate red, kept rather than hidden: adding a scannable test file moved `p4t6`'s derived total to `expected 1021 to be 1020`, fixed by the mechanism the file prescribes (name the path in `SCANNED_PATHS_A4PR7`, move the PR7 total), not by touching the total alone. |
+| `7-5-post-tightening-reverify.txt` | the command-by-command checklist to re-run after the session is switched to `workspace-write`, with the expected observable for each and what a regression would mean. Nothing in this lane needs network any more: the install is proven `--offline` from the in-workspace store, the registry probe is captured above, and the lane does not push. |
+| `7-5-review-round-mutations.txt` | **the review round (2026-10-08), and the read that matters: four of this lane's own claims did not survive an independent review, and this is the receipt for fixing them.** Each of the five findings is reproduced red against the tree at `78153938` before it is fixed — a dangling SUBPATH of an installed package asked for by a NON-ENTRY own file printed the healthy `SKIP … 17 unresolvable …` at md5-identical output and exit 0 (R-1a); an INDENTED own import did the same (R-2b, md5-identical to the clean run); the built shim manifest could advertise an existing file outside both install surfaces while `composition-bundle-is-install-surface` printed its usual PASS (R-3a); a dropped arm printed 8 PASS lines under `PASS composition-smoke` and zero arms printed 0 lines, both exit 0 (R-5a/R-5b); and `resolutionFailureOf` handed the classifier a string containing the offending `package.json` as "the importer", so the zone test was always true and the FAIL came from `package === null` while the message blamed our own artifact over a `node_modules` path. Then the same mutations green (G-1…G-5), then seven mutations of the new code itself (M-A…M-G), each one non-constant-foldable, each landing on the test that pins it. |
+| `7-5-review-round-gates.txt` | the full gate list re-run on the final tree, command by command with exit codes: typecheck 8 `Done` / 0 `error TS`, `build`, `build:composition`, `check:artifacts` `OK: 1508 files` with no artifact drift, the named SKIP with the measured 17 names and nine PASS arms at exit 0, the classifier suite 32 (was 21), `p4t6` 10, the client lane's baseline trio 3 failed / 876 passed, the full suite's exact baseline identities 9 failed files / 19 failed tests (total 6062 = the recorded 6051 plus the 11 tests this round added, no new failure), `lint-identities` 160 / 76 / `new 0, resolved 0`, eslint silent at rc 0, and the mute audit showing that the branch's only `eslint-disable` matches are two lines of prose. Its closing section explains how to read three counts that differ from the brief's numbers. **Correction (second round, same day): the counts quoted for the full suite in this row are the brief's baseline numbers, not this transcript's.** The transcript several lines below reports `Test Files 10 failed | 478 passed (488)` and `Tests 22 failed | 6040 passed (6062)`; the ten identities are the brief's nine plus `packages/runtime/test/p6t1-parallel.test.ts` (3 failures; the known parallel-activation flake — two isolated re-runs of that file gave 1 failure at a DIFFERENT test and then a clean pass, so it is timing-dependent and reported, not silenced: `7-5-round2-raw/p6t1-parallel-isolated-twice.txt`), so 22 = 19 + 3 and no own failure entered. The 9/19 wording was copied from the baseline instead of read off the run — the same species of error finding R3 in `7-5-round2-review-mutations.txt` is about. |
+| `7-5-review-round-raw-captures.txt` | the untrimmed stdout+stderr of every gate-level run behind the two receipts above, sixteen `pnpm smoke:composition` invocations, each headed by its md5. The md5s are the point — **as a match between two runs, not as a
+binding to a mutation**: the second round established that these sixteen headers cannot be recomputed
+from this file's text (finding N5, and the header of that file now says so in as many words), which
+is why the round-2 captures are separate committed files with their mutated inputs beside them.
+What the match below does establish is exactly what it was used for: that a defective artifact
+printed byte-identical healthy output. `red/healthy.txt`,
+`red/R1-nondentry-dangling-subpath.txt` and `red/R3-manifest-advertises-outside-surface.txt`
+share one digest (`665df744…`), and `red/R2b-gate-indented-own-import-…` shares the digest of
+the healthy run of its own tree (`026e4626…`, same as `green/G-healthy-all-fixes.txt` and
+`mut/M-A-gate-dangling-subpath.txt`) — which is the exact sense in which a defective artifact
+"printed the healthy output": not a paraphrase, a digest match. That `026e4626…` output is also
+what the column-0 scanner and the pre-fix subpath rule produced on a **clean** artifact, and it
+differs from the pre-round capture only in the install-surface arm's sentence and three shifted
+stack-trace lines. |
+| `7-5-round2-review-mutations.txt` | **the second review round (2026-10-08), and the receipt for the round after that: three required items and four hygiene items, all real, all reproduced red first.** R1 — a dangling subpath of an installed package was STILL laundered when that package publishes a wildcard `exports` key (`"./src/*": "./src/*"`), because the pre-fix rule matched the key on prefix and suffix and never looked at the value it maps to: at the reviewed head the mutated artifact printed the healthy nine arms at exit 0, byte-identical stdout to the clean run, and now exits 1 naming `@deepseek-ai/dsh-client-store/src/rr-nope.js`; R2 — the round-1 guard validated the array a function returned instead of the lines the gate prints, so one print-site filter was the healthy output minus one arm at exit 0, and what closes it is printing by iterating `REQUIRED_CHECK_IDS` (with the residual window — the same filter four lines lower — recorded as measured, exit 0, eight lines, not glossed); R3 — a raw capture was mislabeled, the wrong file was cited for a true claim, and section R3 says which file evidences which claim. N1 the manifest has no `dependencies` key rather than `dependencies: {}`; N2 the `untraversed` count that reached no output, red as "IDENTICAL? YES" and green as a printed line naming the specifier and its importer; N3 a truncation message that named a knob which does not exist; N4 non-string `exports` targets skipped by both path arms, fixed by flattening rather than by documenting the hole. Section 0 explains the new evidence format, and the first gate run on this tree is included because the gate caught a defect in this round's own wording. |
+| `7-5-round2-raw/*.txt`, `7-5-round2-mutated/*` | the round-2 captures as **individual committed files**, with every mutated input committed beside them. This is the fix for N5: the round-1 digests could not recompute from the committed text, so a match proved output equality and nothing about the mutation. Here every sha256 in the receipt is recomputed from the file it names, and a reader can copy a file out of `7-5-round2-mutated/` over the real path and reproduce the red. |
+| `7-5-round2-gates.txt` | the full gate list re-run on the final round-2 tree: typecheck 8 `Done` / 0 `error TS`, `build`, `build:composition`, `check:artifacts` `OK: 1508 files`, the named SKIP with the measured 17 names and nine PASS arms at exit 0, the classifier suite **46** (was 32), `p4t6` 10, the client lane's baseline trio 3 failed / 876 passed (879), the full suite 10 failed files / 22 failed tests of 488 files / **6076** tests — the same ten failing-file identities as the round-1 gate run, none new, none resolved, and 6076 = the round-1 run's 6062 plus this round's 14 tests — `lint-identities` 160 / 76 / `new 0, resolved 0`, eslint silent at rc 0, and the mute audit whose only matches are two prose lines naming `eslint-disable` while describing why a mute is not a fix. |
+| `7-5-round2-gates-run1-eslint-caught-own-defect.txt` | the same gate list one fix earlier, kept because it is the honest case: steps 9 and 10 failed on `no-useless-escape` in this round's own new message string, which also meant the message did not contain the grep it was quoting. The gate found what the author's reading had not. |
+
+### The offline composition-surface checks, and the line between them and the SKIP
+
+A gate that stops checking has to be replaced by a gate that checks, so the nine
+`client bundle <check-id>` arms verify the composed artifact
+(`packages/client/composition-shim/`) — the thing a real host actually loads — with **no
+upstream closure at all**: the bundle's only bare specifiers are the four module-table
+externals. They cover the defect classes the coordinator named: a missing plugin-row
+export (`plugin-row-exports`), a wrong artifact or manifest path
+(`composition-output-present`, `manifest-targets-resolve`, `shim-recorded-values` —
+asserted against the manifests the builder itself writes), our own top-level code throwing
+(`bundle-module-graph-evaluates`), drift in what the bundle may require
+(`external-specifier-set`, read both from the emitted `__extReq` text and from an
+evaluation that runs even when the load step skips), a glue/seam mismatch against
+`packages/runtime/dist` (`derived-urls-resolve`, which derives the URLs with the built
+host's own `defaultGlueUrl` / `defaultSeamUrlCandidates` and compares the result to
+`PLACEMENTS`), and — since the review round, and **not** before it — an advertised path
+that lies outside the surface a git install copies (`composition-bundle-is-install-surface`,
+see the correction below). Row shape is established by **evaluation** in a `node:vm` context with an
+inert module table — the bundle is a `window.__ModuleLoader__.load` script, not a module,
+and it touches `document` while its graph evaluates, so `import()` cannot read it; the
+stub surface is deliberately minimal so the check cannot rot into a mock that asserts
+nothing, and its own `apply` was never trusted for the fail-loud contract (that stays on
+the load step, where the real upstream exists).
+
+#### Correction (review round, 2026-10-08): what `composition-bundle-is-install-surface` did NOT cover
+
+The paragraph above credited that arm with part of the "wrong artifact or manifest path"
+class, and named `INSTALL_SURFACES` as the shared source that made it one-directional.
+Both claims were false for the arm as written. It compared `expectations.bundleInstallPath`
+against `installSurfaces`, and the caller hands it both from `client-composition-surface.mjs`
+(`CLIENT_BUNDLE_INSTALL_PATH` *is* `CLIENT_COMPOSITION_DIR + '/' + CLIENT_BUNDLE_FILENAME`;
+`INSTALL_SURFACES` *contains* `CLIENT_COMPOSITION_DIR`), so the comparison was true for
+every artifact state and the arm could not fail. Measured: pointing the built shim
+manifest's `exports["./client"]` at an existing file outside both surfaces left the arm
+printing its usual PASS and the gate exit 0 (receipt `7-5-review-round-mutations.txt`,
+R-3a). The arm now reads the paths the built shim manifest actually advertises and fails
+on any of them falling outside a surface, or on the manifest advertising nothing at all;
+`CLIENT_BUNDLE_INSTALL_PATH` remains a constant for the builder and for readers, with a
+comment there saying in as many words not to build a gate arm out of comparing it.
+
+The honest limit, stated where it belongs: **this removes a gate that was not testing
+anything; it does not make the client plugin verifiable in this workspace.** Driving the
+real client row inside a real host is Task 7.6/7.7, and human acceptance stays
+`BLOCKED` / `NOT_RUN`.
+
+#### Correction (second review round, 2026-10-08): what that arm and the closure scan still did not see
+
+The paragraph above is about an arm that could not fail. The second round found two ways to be
+blind while the arm could still fail, and both are now closed by execution-tested code rather than
+by a comment. `advertisedShimPaths` and `manifest-targets-resolve` skipped any `exports` value
+that was not a plain string, so advertising the bundle as
+`"./client": { "import": "../dist/…/client.js" }` made the arm report one fewer advertised path and
+pass (finding N4); both arms now flatten conditional and array values through one function, and a
+value with no readable string in it is still advertised, so it fails loudly instead of vanishing.
+And the closure scan answered "covered" for a subpath matching a wildcard `exports` key without
+looking at what that key maps to, which laundered a dangling subpath of `@deepseek-ai/dsh-client-store`
+at byte-identical healthy output (finding R1): the key's `*` is now substituted into the value's `*`
+and the mapped file is looked for, while a shape this check cannot read is reported as a visible
+bail rather than a pass (finding N2, which also made the scan's held-back `untraversed` items print).
+The header blind-spot list in `scripts/composition-smoke-closure.mjs` gained both the closed shape
+and the honest line that its legacy candidate probing is **wider** than Node's ESM resolver — a bias
+that can only cost a SKIP. Receipt: `7-5-round2-review-mutations.txt`.
