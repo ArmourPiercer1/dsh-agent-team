@@ -1,0 +1,95 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-ctk
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (48 tests | 2 failed) 227ms
+     ✓ the scan ran (a scan that could not run is never reported as clean) 1ms
+     ✓ invoking the script by name is a real gate: non-zero exit while dirty sites exist 172ms
+     ✓ a directory that is not a repository reports not-run with exit 2, never clean 40ms
+     ✓ the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path) 0ms
+     × every deferred path is still dirty (a migrated path must leave the list) 5ms
+     ✓ the fence needs no exemption for its own author 1ms
+     ✓ the fence reports sites, not a bare count, and names a file the reader can open 1ms
+     ✓ the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line 1ms
+     ✓ packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path 0ms
+     ✓ the named namespace traps are never reported as Blueprint sites 0ms
+     ✓ the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused 0ms
+     ✓ the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable 0ms
+     × every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2) 1ms
+     ✓ every UNKNOWN site on the tree is adjudicated BY PATH in this wrapper — no unadjudicated unknown, no stale ledger row 1ms
+     ✓ the scope function is the plan's list plus the measured third class — no more, no less 0ms
+     ✓ f01 YAML-string carrier is DIRTY (the type system cannot see it) 0ms
+     ✓ f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here) 0ms
+     ✓ f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it) 0ms
+     ✓ f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide) 0ms
+     ✓ f05 untyped .mjs object literal is DIRTY (nothing type-checks the file) 0ms
+     ✓ f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions) 0ms
+     ✓ f07 overlay/projection-service option is UNKNOWN (deciding text on the enclosing line may not refuse) 0ms
+     ✓ f08 projection wire envelope is REFUSED (projection-envelope) 0ms
+     ✓ f09 session-binding row is REFUSED (session-binding) 0ms
+     ✓ f10 MemberInstance row is REFUSED (member-instance-record) 0ms
+     ✓ f11 registry ROW stamps are UNKNOWN (same-line name but SPREAD-hidden keys; head-line name) — F1 adjudicated by hand 0ms
+     ✓ f12 ledger row (shorthand sequence/payload) is UNKNOWN — outer-line evidence gates, never a silent drop 0ms
+     ✓ f13 TeamSessionRecordDto row is REFUSED (team-session-record) 0ms
+     ✓ f14 governance-override row is REFUSED (governance-override) 0ms
+     ✓ f15 approval-case + operation rows are REFUSED (governance-ledger) 0ms
+     ✓ f16 artifact-grant payload is REFUSED (artifact-grant-payload) 0ms
+     ✓ f17 prose document without the blueprintId half is not a site at all 0ms
+     ✓ f18 ambiguous hybrid shape is UNKNOWN and gates (no silent drop, no guessed verdict) 0ms
+     ✓ f19 JSON data is DIRTY (data is never type-checked) 0ms
+     ✓ f20 YAML config blueprintSource block is DIRTY (cordis.patch.yml shape) 0ms
+     ✓ f21 supported-version fixtures stay clean in every carrier (reading decision) 0ms
+     ✓ f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string) 0ms
+     ✓ f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId) 0ms
+     ✓ f24 string-carried YAML WITH document siblings stays DIRTY (no own-pool ns signature, no refusal) 0ms
+     ✓ f25 a complete document smuggled under a row-type annotation is UNKNOWN, never REFUSED 0ms
+     ✓ f26 document fields + row signature in ONE literal is a conflict UNKNOWN (widened doc-only set) 0ms
+     ✓ f27 backtick carriers reach the SAME verdict AND channel as the single-quoted twin 0ms
+     ✓ f28 a document in a multi-line backtick under a row call is UNKNOWN, never refused by the row 0ms
+     ✓ f29 a backtick inside a regex literal opens no phantom template (YAML stays DIRTY) 0ms
+     ✓ f30 a backslash-newline string continuation keeps the carrier a carrier (DIRTY) 0ms
+     ✓ f31 quoted and bare key spellings of one typed object share ONE class 0ms
+     ✓ the fixture corpus exists and every fixture was exercised 0ms
+     ✓ a real in-scope file that keys blueprintId WITHOUT a version literal is not a site 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > every deferred path is still dirty (a migrated path must leave the list)
+AssertionError: expected [ 'tests/mock/scripts/boot.mjs' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "tests/mock/scripts/boot.mjs",
++ ]
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:446:19
+    444|   it('every deferred path is still dirty (a migrated path must leave t…
+    445|     const stale = [...DEFERRALS.keys()].filter((p) => !dirtyPaths.incl…
+    446|     expect(stale).toEqual([])
+       |                   ^
+    447|   })
+    448|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2)
+AssertionError: packages/testkit/test/bp1h-blueprint-authoring.test.ts:95 must be an advisory line: expected undefined to be defined
+ ❯ named packages/testkit/test/a4p7-blueprint-version-clean.test.ts:582:69
+    580|     const named = (path: string, line: number): string => {
+    581|       const s = run.advisory.find((x) => x.path === path && x.line ===…
+    582|       expect(s, `${path}:${String(line)} must be an advisory line`).to…
+       |                                                                     ^
+    583|       return s?.why ?? ''
+    584|     }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:590:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 46 passed (48)
+   Start at  04:45:53
+   Duration  492ms (transform 38ms, setup 0ms, import 177ms, tests 227ms, environment 0ms)
+
