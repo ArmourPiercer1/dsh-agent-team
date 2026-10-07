@@ -244,7 +244,6 @@ import {
 } from '../../intervention/index.js'
 import type {
   InterventionControlSource,
-  InterventionItem,
   InterventionWarningSourceView,
   RequiredAuthorityFacts,
   RequiredAuthorityReaderInput,
