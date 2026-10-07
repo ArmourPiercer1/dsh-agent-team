@@ -1951,6 +1951,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4ARTIFACTS: readonly string[] = [
       'packages/testkit/test/a4-artifacts-nonempty.test.ts',
     ]
+    // A4-PR7 Task 7.6 (`test/a4-pr7-76-gate`): the machine merge gate as a spec. One
+    // new scannable file — `packages/testkit/test/a4p7-merge-gate.test.ts`. The leg's
+    // other writes are this pin (an edit) and evidence `.md`/`.txt` under
+    // `dev/agent-workflow/evidence/`, which this scan's `packages/**` scope does not
+    // cover. Like every list here, the path is asserted present BY PATH below and the
+    // length is tied to the movement of the total; the total is never written by hand.
+    const SCANNED_PATHS_A4P76GATE: readonly string[] = [
+      'packages/testkit/test/a4p7-merge-gate.test.ts',    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
@@ -1964,7 +1972,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4ESCALATE.length +
         SCANNED_PATHS_A4F1.length +
         SCANNED_PATHS_A4SURFACE.length +
-        SCANNED_PATHS_A4ARTIFACTS.length,
+        SCANNED_PATHS_A4ARTIFACTS.length +
+        SCANNED_PATHS_A4P76GATE.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -1977,7 +1986,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4ESCALATE.length +
         SCANNED_PATHS_A4F1.length +
         SCANNED_PATHS_A4SURFACE.length +
-        SCANNED_PATHS_A4ARTIFACTS.length,
+        SCANNED_PATHS_A4ARTIFACTS.length +
+        SCANNED_PATHS_A4P76GATE.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2016,6 +2026,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4F1,
       ...SCANNED_PATHS_A4SURFACE,
       ...SCANNED_PATHS_A4ARTIFACTS,
+      ...SCANNED_PATHS_A4P76GATE,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2091,7 +2102,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // file present but the list absent); neither number is written for the
     // merged tree by hand — the derived sums above compute that.
     expect(SCANNED_PATHS_A4ARTIFACTS.length).toBe(1025 - 1024)
-
+    // The A4-PR7 Task 7.6 tie, same form: the movement equals the one file this lane
+    // names, asserted present by path in the loop above. Its endpoints are THIS lane's
+    // OWN advancing total on the base it rebased onto: master measured 1025 with the
+    // A4ARTIFACTS list above present, and 1026 with this lane's gate spec added. Both
+    // numbers are the RED capture
+    // (`dev/agent-workflow/evidence/a4-pr7/7-6-merge-gate/p4t6-PRE-EXTEND-RED.txt`:
+    // `expected 1025 to be 1026`, taken with the file on disk absent and this tie
+    // already written), not a ladder made to look sequential — the earlier capture in
+    // the same directory is this lane's RED on its pre-rebase base (`79aeddb2`), kept
+    // rather than replaced, because the endpoint pair each tie asserts is the pair that
+    // lane actually moved. The derived sums above compute the merged total; this comment
+    // does not write it.
+    expect(SCANNED_PATHS_A4P76GATE.length).toBe(1026 - 1025)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
