@@ -1,0 +1,17 @@
+ 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p75-composition-smoke-classification.test.ts > composition-smoke verdict: an unrun step is not a passing gate > exits non-zero when a step is skipped, and still prints the SKIP line with its reason
+AssertionError: expected 'PASS host plugin (packages/runtime): …' not to contain 'PASS composition-smoke'
+
+- Expected
++ Received
+
+- PASS composition-smoke
++ PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
++ SKIP client plugin (packages/client): host module closure unavailable — 1 unresolvable: @a4p75/no-such-clsx
++ PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
++ PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
++ PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
++ PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v1.2.3)
++ PASS client bund
+=== restored: True True

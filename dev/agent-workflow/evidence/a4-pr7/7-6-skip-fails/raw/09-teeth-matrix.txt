@@ -1,0 +1,45 @@
+--- P0 fixed gate, untouched suite (control)
+    [vitest exit 0]
+    Tests  1 passed | 52 skipped (53)
+--- P1 BASE gate, untouched suite (the defect)
+    [vitest exit 1]
+    Tests  1 failed | 52 skipped (53)
+--- P2 BASE gate, assertion DELETED: expect(skipped.status).not.toBe(0)
+    [vitest exit 1]
+    Tests  1 failed | 52 skipped (53)
+--- P2 BASE gate, assertion DELETED: expect(skipped.failures).toHaveLength(1)
+    [vitest exit 1]
+    Tests  1 failed | 52 skipped (53)
+--- P2 BASE gate, assertion DELETED: expect(skipped.stdout).not.toContain('PASS composition-smoke')
+    [vitest exit 1]
+    Tests  1 failed | 52 skipped (53)
+--- P3 BASE gate, real-repo leg, untouched (control red)
+    [vitest exit 0]
+    Tests  1 passed | 52 skipped (53)
+--- P3b BASE gate, real-repo assertion DELETED
+    [vitest exit 0]
+    Tests  1 passed | 52 skipped (53)
+--- P4 fixed gate, SKIP line RENUMBED (report goes quiet)
+    [vitest exit 1]
+    Tests  1 failed | 52 skipped (53)
+--- P5 fixed gate, footer wording REWORDED
+    [vitest exit 1]
+    Tests  1 failed | 52 skipped (53)
+--- P6 fixed gate, always-red verdict (green leg must catch it)
+    [vitest exit 1]
+    Tests  1 failed | 52 skipped (53)
+--- P7 fixed gate, skip clause REMOVED from the verdict (the bug, re-added)
+    [vitest exit 1]
+    Tests  1 failed | 52 skipped (53)
+=== exit codes in order: [0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1]
+=== restored: True True
+--- P3  BASE gate, real-repo leg untouched (must be RED: exit 0 over a SKIP)
+    [gate sha ee315922f47c | vitest exit 1]
+    Tests  1 failed | 52 skipped (53)
+--- P3b BASE gate, that assertion DELETED (the red must go away)
+    [gate sha ee315922f47c | vitest exit 0]
+    Tests  1 passed | 52 skipped (53)
+--- P3c FIXED gate, real-repo leg restored (must be GREEN)
+    [gate sha 706fdf749689 | vitest exit 0]
+    Tests  1 passed | 52 skipped (53)
+=== restored: True True
