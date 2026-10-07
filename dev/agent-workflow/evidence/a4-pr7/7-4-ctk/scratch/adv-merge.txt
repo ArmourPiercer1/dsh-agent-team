@@ -1,0 +1,8 @@
+packages/domain/test/t1-capability-schema.test.ts
+packages/domain/test/t2-blueprint-immutability.test.ts
+packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
+packages/runtime/test/p5t5-helpers.ts
+packages/runtime/test/p8s7r2-disposed-history.test.ts
+packages/runtime/test/policy-state-bound-blueprint-production-wiring.test.ts
+packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts

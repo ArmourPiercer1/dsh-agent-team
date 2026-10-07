@@ -241,3 +241,36 @@ Gates for this commit: `node --check` on all five touched `.mjs` (prose inside .
 parse), wrapper 58/58, fence run twice with byte-identical output (`scan-f1-a.txt` =
 `scan-f1-b.txt`), eslint on the touched kits (config-ignored; forced-lint error counts
 unchanged pre/post this commit).
+
+## 10. Merge of `origin/master = a4ef2a6b` (merge commit `c8ce6c7f`, NOT a rebase)
+
+C-domain (#143) and §7.3 prerequisites (#144) landed under us and both touched the shared
+wrapper; GitHub reported CONFLICTING, so per the coordinator the merge (not rebase) keeps
+the reviewed head addressable. **One conflict region**, the `DEFERRALS` block — resolved
+keep-both-lists: my two anchor rows (long G4 notes) stay, master's `fixtures.ts` row arrives
+carrying C-domain's ratified STOP note (another lane's row, master's version), C-domain's
+ten rows stay DELETED (their own lane deleted them on master), my seventeen rows stay
+DELETED (my lane deleted them); zero reflow, zero renumbering. The wrapper's own ratchet leg
+(`every deferred path is still dirty`) passing is the proof no row was removed that
+shouldn't have been. `p4t6` `SCANNED_PATHS_*` did **not** conflict (clean auto-merge;
+#143/#144 added tests inside counted files — no inventory change, total stayed derived).
+
+**Post-merge numbers are this merge candidate's numbers** (pre-merge counts are history):
+
+| gate | merged tree (`c8ce6c7f`) |
+| --- | --- |
+| fence ×2 | byte-identical (`scan-merge-a.txt` = `scan-merge-b.txt`) |
+| fence classes | `dirty(93,169) unknown(0,0) advisory(8,12) refused(52,115) prose(5,5) adjudicated(16,24)`, verdict dirty-or-unknown, exit 1 |
+| delta vs pre-merge `dirty(103,215)` | −10 files / −46 sites = **C-domain's #143 migration** of its ten files (exactly the ten rows deleted on master); advisory −3 files are likewise `packages/domain/test/` carriers (bp1-blueprint-inspector, t2-blueprint-catalog, t2-blueprint-validation) — attributed, none mine (`scratch/adv-final.txt` vs `scratch/adv-merge.txt`) |
+| my contribution to every class | exactly two sites: `pr-e L447=v1`, `pr-f L376=v1` (anchors); p7t6's 9 sites stand as the kept-deferral entry |
+| wrapper | 58/58 (incl. ratchet leg) |
+| p4t6 | 10/10, counts unmoved |
+| `node --check` ×5 touched kits | clean |
+| forced-lint | pr-e 33, mcp-initial 34, f15 32 — unchanged |
+
+**Intentional-retired.md citation audit (acknowledged, nothing re-pointed):** rows 1–2 cite
+the anchors **by identifier** (`V1_ANCHOR_SOURCE` + `V1_ANCHOR_HASH_PRE_PR_E`), never by line
+number, so master's shifts cannot strand them; the only numeric citation in the file is
+p7t6's `L380` in row 3, re-verified: it is still the `Too new.` rejection fixture (the
+negative test), and master never touched `packages/legacy/` or `tests/kits/`. These rows are
+emptied by executing flip-verification, not by editing.
