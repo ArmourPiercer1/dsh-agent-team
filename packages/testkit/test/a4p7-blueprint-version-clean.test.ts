@@ -318,7 +318,6 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['packages/runtime/test/template-disable-no-requirements-gate.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — raised to coordinator; carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
   ['cordis.patch.yml', 'SCOPE ADDITION (measured 2026-10-08: the root composition patch\'s blueprintSource block is a live v1 document emitter, cordis.patch.yml:58-62) — NO §7.4 lane row — raised to coordinator'],
-  ['tests/mock/scripts/boot.mjs', 'C-testkit scope addition (measured 2026-10-08: mock-boot YAML emitter outside every prior scan)'],
 ])
 
 /**
