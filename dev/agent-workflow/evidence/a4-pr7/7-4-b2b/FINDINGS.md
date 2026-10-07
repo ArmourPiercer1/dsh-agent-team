@@ -152,7 +152,7 @@ The ratchet was reproduced rather than assumed: re-adding a single deleted row m
 
 ## 9. Disclosed residuals and limits
 
-* **Base-control for eslint** was taken in a separate pristine worktree at `a4ef2a6b` (`.worktrees/a4-74-b2b-base`) because my worktree already carries the edits; both trees were then deleted/left as noted in §10.
+* **Base-control for eslint** was taken in a second worktree at the pristine base commit `a4ef2a6b` (`.worktrees/a4-74-b2b-base`, created only for this control). That control worktree was removed after the measurement; the transcripts it produced (`17-`) are committed here.
 * **`t12a-b2-child-identity.test.ts` is red at base** (`Tests no tests`; `the "connection" public service is malformed: expected connection.rpc.handle to be a function`) in this environment, reproduced in the pristine base worktree. It is **not** in this roster and none of my edits touch it; it appears in §4.4's consumer set only because the bridge imports it. Reported so nobody reads it as lane damage.
 * **Measurement hazard worth the router log:** a crashed run leaves `packages/testkit/test/.tmp-fault/` behind, and the next run of a `scratchDir()` world then dies with `team_domain already exists` — a *false* red. Two of my early experiment reds (`p8s7r4-fork-describe`, `p8s7r4-handoff-wiring`) were that pollution, not semantics; after clearing the dir the same files were green. Every run in this lane clears the dir before executing.
 * **Merge caution:** `origin/master` moved to `62488ce5` after my base. It touches **none** of my 35 roster paths (checked), but it deleted **38 other DEFERRALS rows** in the same map region, so my 34 deletions will conflict textually on merge. The merge owner should re-apply them **by path** and re-run fence + wrapper; the row set on master still contains all 35 of my paths, so no deletion of mine is stale.
@@ -170,6 +170,9 @@ pnpm -r run typecheck
 npx eslint $(git diff --name-only | tr '\n' ' ')       # compare multiset with transcripts/17
 node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
 ```
-Experiment harnesses (probe, sweeps, bridge measurement, restore-with-hash-check) are in
-`.tmp-faultscratch/{probe,probe.py,promote2.py,migrate.py,carrier.py,bridge-exp.py}` while the
-worktree lives; their outputs are the `0x`–`1x` transcripts here.
+Experiment harnesses are in the worktree's gitignored scratch while it lives —
+`.tmp-faultscratch/probe/probe.py` (the probe pass, saved with its method and verdict rule),
+`.tmp-faultscratch/{migrate,promote,promote2,v3exp,carrier,bridge-exp}.py` (the three sweeps and
+the bridge measurement), `.tmp-faultscratch/perspec.sh` (per-spec gate) — and
+`.tmp-faultscratch/base/` holds the sha256-recorded byte snapshots every restore was checked
+against. Their outputs are the transcripts in this directory.
