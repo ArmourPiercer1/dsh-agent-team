@@ -354,10 +354,12 @@ describe('6.C the triad registers proposal + escalation with structured owners',
       join(REPO_ROOT, 'packages', 'runtime', 'governance', 'proposal-store.ts'),
       'utf8',
     )
-    const hostFields = [...(/\[([^\]]*)\]/.exec(/const RECORD_FIELDS = (\[[\s\S]*?\])/.exec(store)![1])![1].matchAll(/'([^']+)'/g))].map((m) => m[1])
+    const recordBlock = /const RECORD_FIELDS = \[[\s\S]*?\]/.exec(store)?.[0] ?? ''
+    const hostFields = [...recordBlock.matchAll(/'([^']+)'/g)].map((m) => m[1] ?? '')
     expect(hostFields.length).toBeGreaterThan(0)
     const modelSrc = INTERNAL_SET
-    const mirror = [...(/const GOVERNANCE_PROPOSAL_RECORD_FIELDS: readonly string\[\] = \[([\s\S]*?)\]/.exec(modelSrc)![1].matchAll(/'([^']+)'/g))].map((m) => m[1])
+    const mirrorBlock = /const GOVERNANCE_PROPOSAL_RECORD_FIELDS: readonly string\[\] = \[[\s\S]*?\]/.exec(modelSrc)?.[0] ?? ''
+    const mirror = [...mirrorBlock.matchAll(/'([^']+)'/g)].map((m) => m[1] ?? '')
     expect([...mirror].sort()).toEqual([...hostFields].sort())
   })
 })
