@@ -58,9 +58,15 @@ Alpha.4 supports Blueprint schema v3 only.
 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]
 ```
 
-v1/v2 parsing/admission must fail with a typed unsupported/migration-required error.
+v1/v2 parsing yields a **typed, three-state** outcome rather than a single failure: an unsupported document is `migration-required` (its identity parses), while a document that cannot be parsed at all is `rejected`. `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` / `BLUEPRINT_MIGRATION_REQUIRED` are the refusal codes (§20, §24.8).
 
-Cold resume of a Team bound to v1/v2 must fail closed before agent startup.
+**Three planes, and they never merge into one sentence.** Any wording that lets a reader re-merge them is a defect in this document, not an ambiguity to resolve:
+
+1. **Host / plugin boot.** A host whose bootstrap or source Blueprint is v1/v2 **boots in a degraded state**. Construction-time anchor parses must not kill the host: an operator who cannot boot cannot migrate anything (ADR A1-20(c)).
+2. **A specific Team's start or cold resume.** A TeamSession bound to a v1/v2 Blueprint is **refused** with `BLUEPRINT_MIGRATION_REQUIRED` **before any agent is created** — zero agent creation, zero compatibility/prober writes. **This refusal is not a warning and acknowledgement never clears it.**
+3. **The catalog / migration surface.** The unmigrated document **remains listed**, with `status = migration-required` and its identity, so a migration runbook can still see what is left (§20.1, §26.7).
+
+"Host can boot" and "this old Team can start" are separate statements with separate outcomes; a sentence that grants the second because of the first, or refuses the first because of the second, is wrong.
 
 ### 3.2 Required top-level fields
 
@@ -567,15 +573,17 @@ An `allow` decision is never reusable by a later invocation.
 
 External runtime constraints are modeled as execution capability/environment outcomes, not permission denial.
 
-Recommended typed families:
+Implemented typed families (PR4; these are the operative names, not a suggestion):
 
 ```text
-CAPABILITY_UNAVAILABLE
-EXTERNAL_RUNTIME_RESTRICTION
-HOST_ENVIRONMENT_UNAVAILABLE
+PRE_EXECUTE_CAPABILITY_ERROR_CODES.EXTERNAL_RUNTIME_RESTRICTION = 'alpha4-external-runtime-restriction'
+PRE_EXECUTE_CAPABILITY_ERROR_CODES.HOST_ENVIRONMENT_UNAVAILABLE = 'alpha4-host-environment-unavailable'
+PRE_EXECUTE_CAPABILITY_REASON_PREFIX                            = 'execution unavailable:'
 ```
 
-Exact names may follow existing error conventions.
+All three live in `packages/runtime/operation-permission/errors.ts` (prefix `:455`, code table `:481`/`:487`), and `pre-execute-adapter.ts:1164,1174` is where the two branches are chosen: a stated host refusal is `EXTERNAL_RUNTIME_RESTRICTION`, while a check that **threw** — where not even an answer was obtainable — is `HOST_ENVIRONMENT_UNAVAILABLE`. That distinction is the "unavailable vs. restricted" split this document asks for; it already exists.
+
+**`CAPABILITY_UNAVAILABLE` is resolved here, in the Spec, and it is not a family to build.** PR4 already separates capability failure behind `PRE_EXECUTE_CAPABILITY_*` and the `execution unavailable:` reason prefix (`packages/runtime/operation-permission/errors.ts:455,475`), and PR6's intervention adapter normalizes that whole family to Intervention `kind = error | warning` with `requiredAuthority = none`. **No second error family and no new wire code may be invented for the string `CAPABILITY_UNAVAILABLE`.** The live symbol of that name is `COMPATIBILITY_REASON_CODES.CAPABILITY_UNAVAILABLE` (`packages/domain/compatibility/src/result.ts:69`) — a **compatibility-requirement** reason on a different plane, and reusing or cloning it for operation failures would merge two planes the way §21.1's retired row once did.
 
 These outcomes:
 
@@ -657,13 +665,15 @@ Blueprint create/publish:
 - mismatch/undetermined -> warning;
 - wait-for-response;
 - block configuration operation only;
-- acknowledgement allows publication.
+- acknowledgement allows publication **of a v3 configuration**. A `migration-required` document is not in this stage at all: it has no publishable v3 form until it is authored anew (§3.1).
 
 Team start:
 
 - repeat with concrete workspace/provider context;
 - mismatch/undetermined -> warning;
-- acknowledgement allows startup.
+- acknowledgement allows startup **of that v3 Team**.
+
+**Scope of that last line, stated because it was once read as a blanket rule:** the acknowledgement leg gates only the **envelope-consistency diagnostic on a document the version gate already admitted (v3)**. It never touches a `migration-required` document: a v1/v2 Team's start/resume refusal is **not** a warning, has no acknowledgement, and stays refused with zero agent creation (§3.1, §20.2, §21.1). Envelope consistency and Blueprint document version are different questions with different outcomes.
 
 Runtime:
 
@@ -873,15 +883,18 @@ Add a post-Alpha.4 cleanup item to:
 
 ### 20.1 Blueprint load
 
-v1/v2 -> typed unsupported/migration-required.
+v1/v2 -> typed `migration-required`; unparseable -> `rejected`. **The two are distinct outcomes with different consequences**, because `inspect.ts` is the catalog's discovery surface: if an unmigrated document is reported as merely `rejected`, every consumer that skips `rejected` (the authority catalog does) drops it, and the set needing migration becomes undiscoverable at exactly the moment a migration runbook needs it. So `BlueprintInspectionResult` is three-state `ok | migration-required | rejected`, identity is parsed for the first two, and a `migration-required` identity stays on `listIdentities()` while `resolve`/`start` on it throw `BLUEPRINT_MIGRATION_REQUIRED`.
 
 ### 20.2 Cold resume
 
 If a TeamSession references v1/v2:
 
 - stop before agent restoration;
-- return migration-required;
-- no implicit conversion.
+- return `BLUEPRINT_MIGRATION_REQUIRED`;
+- **zero agent creation, and no compatibility/prober durable write before the refusal**;
+- **no implicit conversion**;
+- **no acknowledgement path**: this is a refusal, not an ack-able warning;
+- the refusal is per Team. It does not prevent the host from booting in a degraded state (§3.1 plane 1), and it does not remove the document from the catalog (§3.1 plane 3).
 
 ### 20.3 Storage schema
 
@@ -902,8 +915,12 @@ If ApprovalCase linkage cannot be represented safely with additive Control field
 - v2 rejected;
 - old-Team cold resume rejected.
 
-- governance authority **unreadable or corrupt** at start -> **start blocked** (ADR A5-10; nothing downstream is trustworthy)
-- governance authority present but **incompatible/unmigrated** (v1/v2 Team) -> warning; acknowledgement allows startup (ADR A5-10; a hard block would make every unmigrated Team unstartable)
+Start outcomes, one row per plane (ADR A5-10 as restated; the retired row that paired "unmigrated v1/v2 Team" with "acknowledgement allows startup" **is inverted here** — it merged a version refusal with a consistency warning and made an acknowledgement look like an escape hatch):
+
+- governance authority **unreadable or corrupt** at start -> **start blocked**, fail closed; not acknowledgeable (nothing downstream is trustworthy);
+- governance authority present but **incompatible/unmigrated** (v1/v2 Team) -> **`BLUEPRINT_MIGRATION_REQUIRED` with zero agent creation; acknowledgement never clears it**;
+- **host** whose boot anchor / source Blueprint is v1/v2 -> **degraded boot, not a dead host**; the document is still listed as `migration-required`;
+- v3 Team whose envelope consistency is `mismatch` / `undetermined` -> **warning**; acknowledgement allows that Team's startup (this is the only acknowledgement-gated start leg).
 ### 21.2 Effective ceiling
 
 - no match -> no authority;
@@ -1054,13 +1071,13 @@ Normative; supersedes the sections above on conflict. Design rationale lives in 
 
 **24.4 Decision write is one function, two entrances (ADR A1-3/A1-11/A1-15).** `team.resolveControl` and `intervention.act` call the same `ControlService` write path, which re-derives the caller principal, the leg's `reviewAuthority`, and the legal action set, and rejects `caller == beneficiary`. `operationFingerprint` is mandatory for v3 operation cases. `team_resolve_control` gains `escalate`, and the pending list spans approval cases rather than one carrier kind.
 
-**24.5 Durable case identity (ADR A1-8/A1-9/A1-10/A1-13).** Proposal binding fields `baseGeneration` and `baseSnapshotId` are required (not optional; `baseSnapshotId` is `null` with `baseGeneration: 0` for an empty overlay history — ADR A4-3 withdraws the earlier `baseSnapshotHash`, because snapshot identity plus generation already pins content and the append path refuses a moved base with `previous-snapshot-id-mismatch` / `generation-conflict`). Fingerprint inputs exclude caller-chosen `mutationId` and `reason`; a denied semantic fingerprint is suppressed for the same `(team, target, baseGeneration)`. Leg identity = `f(approvalCaseId, legOrdinal, previousRequestId)`; a per-case `reviewedBy` set of **principals** (not legs) backs "an escalated-away reviewer cannot return and allow"; abandon is leg-scoped. Target lifecycle participates in the frozen identity; expansion requires live at commit.
+**24.5 Durable case identity (ADR A1-8/A1-9/A1-10/A1-13).** Proposal binding fields `baseGeneration` and `baseSnapshotId` are required (not optional; `baseSnapshotId` is `null` with `baseGeneration: 0` for an empty overlay history — ADR A4-3 withdraws the earlier `baseSnapshotHash`, because snapshot identity plus generation already pins content and the append path refuses a moved base with `previous-snapshot-id-mismatch` / `generation-conflict`). Fingerprint inputs exclude caller-chosen `mutationId` and `reason`; a denied semantic fingerprint is suppressed for the same `(team, target, baseGeneration)`. **Suppression is per identity, not per base**: because the fingerprint covers the requested effect, `requestedEffect` drift at the same base produces a *different* identity, so an earlier open case at that base is not superseded and becomes unreachable while still open. **"One open case per (team, target, base)" is therefore not a guarantee and must not be asserted or tested as one.** The Alpha.4 obligation is visibility, not suppression: the open case stays listed and abandonable (plan Task 6 §6.C). Base-scoped dedup, and proposal-record atomicity, are explicitly **post-Alpha.4**. Leg identity = `f(approvalCaseId, legOrdinal, previousRequestId)`; a per-case `reviewedBy` set of **principals** (not legs) backs "an escalated-away reviewer cannot return and allow"; abandon is leg-scoped. Target lifecycle participates in the frozen identity; expansion requires live at commit.
 
-**24.6 Consumption-point revalidation (ADR A1-14).** The operation guard performs the authority/ceiling recheck under the per-team lock before recording the consumption fact; `guardOperation` is not permitted to verify only liveness + exact-scope allow + external hard cell.
+**24.6 Consumption-point revalidation (ADR A1-14).** The operation guard performs the authority/ceiling recheck under the per-team lock before recording the consumption fact; `guardOperation` is not permitted to verify only liveness + exact-scope allow + external hard cell. For that recheck to be possible at all, **a v3 operation case persists `authorityScope: { operationClass, matcher: { kind: 'exact' | 'fingerprint', resource } }`** — the concrete operation point, **never a subtree matcher**, which would silently widen a single-shot capability into a standing ceiling — folded into the approval-case identity, the request leg, and the decision scope. Required for v3 operation cases, absent for legacy rows, and after PR7 a v3 operation case without it is corrupt rather than unsampled. The recheck loads the **freshly bound** authority documents and re-runs the ceiling evaluation with that persisted scope: `undetermined`, or any rise in required authority, **refuses with zero consumption** (no `control-allow-consumed` row). Until this lands the A1-14 acceptance gate stays closed; the only lawful alternative is a formal amendment deferring A1-14 past Alpha.4 — an ADR saying MUST beside a report saying BLOCKED-and-done is not an option (plan Task 7 §7.0).
 
 **24.7 Remote v8 closed surfaces (ADR A1-2/A1-17).** `intervention` and `override.getPermissionAdministration` params are **closed field sets with unknown-field rejection**, so a future `asRole`/`impersonate` field cannot be added without a version bump. `intervention.act` accepts only `{ teamSessionId, interventionId, action, note? }` and derives its principal explicitly; the administration read strips authority-bearing and round-trippable decision fields. A lane-hygiene test forbids import edges from evaluator / authority kernel / control service / operation guard into `intervention/**`.
 
-**24.8 Cutover contract (ADR A1-18/A1-20/A1-21/A1-22).** v3 rejection uses `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` / `BLUEPRINT_MIGRATION_REQUIRED` (new codes). The cold-resume gate resolves and parses the bound Blueprint, treats reference-less legacy rows as migration-required, and never fails the whole host boot on a v1/v2 boot anchor. PR7 deletes the `PermissionMutationEnvelope` / `PermissionEnvelopeRule` aliases and re-pins the golden contentHash.
+**24.8 Cutover contract (ADR A1-18/A1-20/A1-21/A1-22).** v3 rejection uses `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` / `BLUEPRINT_MIGRATION_REQUIRED` (new codes). Cutover means **both** `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]` **and** the `TeamBlueprint.schemaVersion` type narrowed from `1 | 2 | 3` to `3`: a validator narrowed without the type leaves every typed v1/v2 fixture asserting a contract the product no longer honours. The cold-resume gate resolves and parses the bound Blueprint, treats reference-less legacy rows as migration-required, and never fails the whole host boot on a v1/v2 boot anchor — construction-time anchor parses become non-fatal and the refusal happens in `boot()`/`ensureRootLive`, asserted as **successful construction plus zero agent creation plus a typed refusal**, never as a constructor throw. The catalog keeps listing those documents as `migration-required`. Tests whose *subject* is v1/v2 compatibility ("a v1 document parses") are deleted or inverted into migration-required contract tests; retargeting one at a v3 fixture under the same name is forbidden. PR7 deletes the `PermissionMutationEnvelope` / `PermissionEnvelopeRule` aliases and re-pins **every** golden blueprint-contentHash literal, enumerated by path in plan Task 7 §7.3 — a set, never a remembered count (X10).
 
 ---
 
@@ -1086,9 +1103,9 @@ Normative under the ADR's **Global Precedence** (A3 > A2 > A1 > body; ceilings n
 - **26.2** `mayReview()` and `grantCeiling()` are distinct functions (§7.4); `requiredAuthority` is derived from ladder + ceiling reach and rises only on ceiling insufficiency. No `minimumAuthority` field exists or may be added.
 - **26.3** *(repaired in place 2026-10-07: this clause's second sentence legislated A3-4, which **A5-4 withdrew** — see the ADR: the withdrawn text "an envelope with no shell-class rule imposes no narrowing" would have **reversed** production behaviour, and A5 > A3 governs.)* A shell-class envelope rule caps exec to its fingerprint scope and a non-matching fingerprint narrows to `ask`; **an envelope with no shell-class rule keeps today's fail-closed token-absence gate — it does NOT impose "no narrowing"** (ADR A5-4). PR1 must not legislate shell-rule→exec coupling into the shared grammar module, and PR4 owns the exec dual-gate.
 - **26.4** PR0 requires **no storage schema edit** (`factType` is an open hygienic string: `storage/schema/ledger.ts:15-17, 87-88`; repository whitelists nothing: `repositories/ledger.ts:139, 241`). It owns `packages/runtime/governance/proposal-store.ts`, factType `governance-proposal-recorded` (append-only, superseded by a newer fact, never mutated), and its typed `corrupt-record` outcome (ADR A3-6).
-- **26.5** Any new `factType` must be registered in `plugin/projection-source.ts`'s `FACT_TYPE_CATEGORY` in the same PR: an unmapped type throws `TEAM_PROJECTION_SOURCE_LEDGER_CATEGORY_UNKNOWN` and breaks the whole ledger read plane, not one row. Target category is the existing `policy`; the eight frozen categories do not grow. Client mapping is PR6 (ADR A3-7).
+- **26.5** Any new `factType` must be registered in `plugin/projection-source.ts`'s `FACT_TYPE_CATEGORY` in the same PR: an unmapped type throws `TEAM_PROJECTION_SOURCE_LEDGER_CATEGORY_UNKNOWN` and breaks the whole ledger read plane, not one row. Target category is the existing `policy`; the eight frozen categories do not grow. **Client mapping is PR6 and is a three-site duty, not one** (ADR A5-7): the client category map in `client/src/model/ledger-adapter.ts`, **and** `INTERNAL_FACT_TYPES` in `client/src/model/team-ledger-model.ts` — the latter is silent when missed (the row renders as a generic JSON Event row with no red), so PR6 also owes a renderer test per new fact type (plan Task 6 §6.C).
 - **26.6** Shared grammar: the **config-shaped** `{ kind, path | fingerprint }` AST wins because it is bound into the Blueprint contentHash; the runtime `{ kind, resource }` shape becomes a boundary adapter. The effect vocabulary is structurally re-declared in `packages/domain` with a mutual-assignability test against `PermissionOverlayEffect`; `domain` imports neither `runtime` nor `storage` (ADR A3-9).
-- **26.7** Cutover vocabulary: `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` / `BLUEPRINT_MIGRATION_REQUIRED` (A1-21). `inspect.ts` stays able to **list** v1/v2 sources with that reason so unmigrated blueprints remain discoverable; `SCHEMA_VERSION_MISMATCH` is never overloaded (ADR A3-11).
+- **26.7** Cutover vocabulary: `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` / `BLUEPRINT_MIGRATION_REQUIRED` (A1-21). `inspect.ts` stays able to **list** v1/v2 sources so unmigrated blueprints remain discoverable — which requires the **three-state** `ok | migration-required | rejected`: while `rejected` is the only non-`ok` status, the authority catalog's `rejected`-skip drops the whole unmigrated set from `catalog.list()` and the migration surface disappears with it. `SCHEMA_VERSION_MISMATCH` is never overloaded (ADR A3-11, plan Task 7 §7.1).
 - **26.8** Escalation: caller-visible terminal `escalated` outcome for the inline waiter; durable leg fact `control-escalation-recorded` `{ approvalCaseId, legOrdinal, previousRequestId, escalatedBy, reason }`; `stale-denied` may not be reused (it asserts target-terminal and renders as "stale"); the guard RED test injects at the guard input because foreign values are dropped by the read gate (ADR A3-12).
 - **26.9** Single-writer invariant restated: one kernel writer + one sanctioned port adapter + no third call site (ADR A3-10).
-- **26.10** Vocabulary and fixture corrections of record: the Control request kind is spelled exactly `'envelope-mutation'` (`control/types.ts:129`) wherever these documents cite it; durable decision values stay `allow | deny | stale-denied` (`control/types.ts:169-182`) with no `escalate`; PR7's real fixture inventory is 18 files (restated by ADR A5-9: 16 kit files + the authoring helper + the root-binding harness; `packages/testkit/domain/src/scenario.ts` and `tools.ts:961` struck) plus the authoring helper `scripts/blueprint-authoring.mjs:92` and `root-binding/harness/blueprint-source.mjs:30`, with **two** golden contentHash pins; enforcement is the static scan `scripts/verify-blueprint-version-clean.mjs`, since the affected kits are exactly the environment-blocked lanes (ADR A3-14/A3-16).
+- **26.10** Vocabulary and fixture corrections of record: the Control request kind is spelled exactly `'envelope-mutation'` (`control/types.ts:129`) wherever these documents cite it; durable decision values stay `allow | deny | stale-denied` (`control/types.ts:169-182`) with no `escalate`; PR7's fixture inventory is **emitted by path by the scan, never carried as a count in a document**: the recorded 18 was wrong in both directions and X10's measurement under the stated predicate gives **20** (14 kit files + `scripts/blueprint-authoring.mjs:92` + `packages/runtime/root-binding/harness/blueprint-source.mjs:30` + four `packages/tools/harness/**` sites that no earlier count included; `packages/testkit/domain/src/scenario.ts` and `tools.ts:961` stay struck as storage DTOs / non-fixtures), and the golden contentHash **literal** re-pin sites are enumerated by path in plan Task 7 §7.3 — the recorded "two" was wrong, and a count here would go stale the same way (X10). Enforcement is `scripts/verify-blueprint-version-clean.mjs` **wrapped by a committed test** (`packages/testkit/test/a4p7-blueprint-version-clean.test.ts`) — a script no test calls is not a gate — scanning `git ls-files`, never `rg` (absent here) and never a bare walk (ADR A3-14/A3-16, plan Task 7 §7.4/§7.5).
