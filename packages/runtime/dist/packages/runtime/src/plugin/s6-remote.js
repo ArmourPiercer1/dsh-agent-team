@@ -41,6 +41,7 @@
  */
 import { REMOTE_CATEGORIES, isRemoteMethod, remoteCategoryOf, } from '../../../remote/src/contracts/catalog.js';
 import { REMOTE_CONTRACT_ERROR_CODES, isRemoteContractError, remoteContractError, } from '../../../remote/src/contracts/errors.js';
+import { REMOTE_INTERVENTION_ACT_OUTCOMES } from '../../../remote/src/contracts/types.js';
 import { parseRemoteMethodParams, parseRemoteTeamGetLedgerPageParams, } from '../../../remote/src/contracts/params.js';
 import { parseRemoteRequest } from '../../../remote/src/contracts/request.js';
 import { buildRemoteError, buildRemoteSuccess, } from '../../../remote/src/contracts/response.js';
@@ -191,6 +192,49 @@ export const S6_REMOTE_ERROR_CODES = {
      *  typed, never with a null token. */
     TEAM_LIVE_TOKEN_PORT_UNAVAILABLE: 'TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE',
 };
+/**
+ * A4-PR6 review round 1 (BLOCKER 1) — ONE mapper, every gated entrance.
+ *
+ * Builds the typed refusal of a non-`open` governance start outcome. The
+ * mapper is module-level and exported because the gate is not only a
+ * WIRE concern: the three `team.create`/`team.ensureRootLive` sites call
+ * it through `governanceStartGate` (below, inside the ports factory) and
+ * the two non-wire entrances the review found ungated — the handoff
+ * target start (`root.ts` → `createAndStartTeam`, which the with-context
+ * handoff ALWAYS reaches) and the production boot (create and resume) —
+ * call the SAME function from `root.ts`. Every entrance therefore
+ * produces byte-identical arms (the `method` prefix aside): drift
+ * between entrances is structurally impossible, and no second copy of
+ * the three wire codes may exist anywhere (pinned by
+ * `a4p6-start-gate-entrances.test.ts`, behaviour + source law).
+ *
+ * The arms (the union is CLOSED — `GOVERNANCE_START_STATUSES`):
+ * - `warning-required`: the durable root row EXISTS and stays NOT LIVE —
+ *   the typed error carries the `interventionId`; the warning itself is
+ *   discovered through `intervention.list`, and acknowledgement re-enters
+ *   the SAME gate through `team.ensureRootLive`, never bypasses it;
+ * - `corrupt`: blocked, NOT acknowledgeable (fail closed);
+ * - `migration-required`: the PR7 arm — ack-immune by law (plan:594).
+ * There is no arm this mapper can turn into `wait-for-response`, and
+ * nothing here mints a ControlRequest — the warning is not an approval
+ * case. The service's own throws propagate UNMAPPED (they are backing
+ * faults, invariant 4b); only the outcomes are interpreted.
+ */
+export function governanceStartRefusal(method, outcome) {
+    if (outcome.status === 'warning-required') {
+        return new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_START_GOVERNANCE_WARNING, `${method}: the Team start is gated by an unacknowledged governance warning ` +
+            `(intervention '${outcome.interventionId}'); the durable root stays not-live and ` +
+            `acknowledgement re-enters this gate through team.ensureRootLive`, { reason: 'governance-warning-required', interventionId: outcome.interventionId });
+    }
+    if (outcome.status === 'corrupt') {
+        return new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_START_GOVERNANCE_CORRUPT, `${method}: the authority-document read failed closed (${outcome.reason}) — ` +
+            `start is blocked and this condition is not acknowledgeable`, { reason: 'governance-authority-document-fault', document: outcome.reason });
+    }
+    // `migration-required` (the closed fourth arm; PR7 7.2 reaches it when
+    // the v1/v2 bridge flips). No acknowledgement path exists or may exist.
+    return new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_START_MIGRATION_REQUIRED, `${method}: the bound Blueprint document predates the v3 governance grammar; ` +
+        `start is refused until the Team is migrated (acknowledgement never clears this)`, { reason: 'blueprint-migration-required' });
+}
 /**
  * BP-G (issue #2 blueprint-loading, plan §12.2) — the methods the
  * readiness gate does NOT refuse while the state is not `ready`: the
@@ -567,19 +611,7 @@ export function createS6RemotePorts(options) {
             : await service.checkEnsureRootLive(teamSessionId);
         if (outcome.status === 'open')
             return;
-        if (outcome.status === 'warning-required') {
-            throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_START_GOVERNANCE_WARNING, `${method}: the Team start is gated by an unacknowledged governance warning ` +
-                `(intervention '${outcome.interventionId}'); the durable root stays not-live and ` +
-                `acknowledgement re-enters this gate through team.ensureRootLive`, { reason: 'governance-warning-required', interventionId: outcome.interventionId });
-        }
-        if (outcome.status === 'corrupt') {
-            throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_START_GOVERNANCE_CORRUPT, `${method}: the authority-document read failed closed (${outcome.reason}) — ` +
-                `start is blocked and this condition is not acknowledgeable`, { reason: 'governance-authority-document-fault', document: outcome.reason });
-        }
-        // `migration-required` (the closed fourth arm; PR7 7.2 reaches it when
-        // the v1/v2 bridge flips). No acknowledgement path exists or may exist.
-        throw new TeamPluginError(S6_REMOTE_ERROR_CODES.TEAM_START_MIGRATION_REQUIRED, `${method}: the bound Blueprint document predates the v3 governance grammar; ` +
-            `start is refused until the Team is migrated (acknowledgement never clears this)`, { reason: 'blueprint-migration-required' });
+        throw governanceStartRefusal(method, outcome);
     }
     /** A4-PR6 — the runtime boundary observation: fire AFTER a committed
      *  permission mutation; NEVER blocks, NEVER throws at the caller (spec
@@ -2663,7 +2695,23 @@ function buildS6CategoryHandlers(ports, principal) {
                         interventionId: actParams.interventionId,
                         action: actParams.action,
                         ...(actParams.note !== undefined ? { note: actParams.note } : {}),
-                    })).then((receipt) => ({ data: { outcome: receipt.outcome } }));
+                    })).then((receipt) => {
+                        // A4-PR6 review round 1 (fix 6/6): the s6 lane forwards to
+                        // the SAME frozen wire contract as the generic dispatcher,
+                        // and that dispatcher validates the act receipt against the
+                        // closed outcome set before it reaches the wire
+                        // (`remote/src/handlers/intervention.ts` — unknown outcome
+                        // = `internal-error` / reason `port-contract`). Forwarding
+                        // `receipt.outcome` unvalidated let a plane that returns a
+                        // non-vocabulary value mint a wire value the contract
+                        // closed at v8 — the client renderer's domain, not the
+                        // plane's. Same contract, same answer on both lanes.
+                        const outcome = receipt.outcome;
+                        if (typeof outcome !== 'string' || !REMOTE_INTERVENTION_ACT_OUTCOMES.includes(outcome)) {
+                            throw remoteContractError('internal-error', `intervention.act: the plane returned a malformed receipt outcome '${String(outcome)}'`, { field: 'outcome', reason: 'port-contract' });
+                        }
+                        return { data: { outcome } };
+                    });
                 }
                 default:
                     return Promise.reject(new Error(`intervention handler routed an unknown method: ${method}`));

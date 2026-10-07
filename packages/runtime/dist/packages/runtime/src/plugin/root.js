@@ -160,7 +160,7 @@ import { createLiveResidencyOverlay } from './s6-live-overlay.js';
 import { computeTeamLiveToken } from './live-token.js';
 import { resolveSessionReadState } from './team-read-state.js';
 import { createServerPrincipalDerivation } from './s6-principal.js';
-import { createS6RemoteSurfaces } from './s6-remote.js';
+import { createS6RemoteSurfaces, governanceStartRefusal } from './s6-remote.js';
 import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../team-ownership-index.js';
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError } from './types.js';
 // --- the ephemeral mutation store (documented boot-world wiring) -------------------
@@ -1603,15 +1603,62 @@ export function createTeamProductionRoot(params) {
         return { start, deliver };
     };
     /**
+     * A4-PR6 review round 1 (BLOCKER 1) — the gate for the NON-WIRE start
+     * entrances this file owns: the handoff target start (the with-handoff
+     * operation ALWAYS carries the frozen context, so it reaches
+     * `createAndStartTeam` and calls the target Root Agent start — the
+     * SAME `live.createRootAgent` entry the gated wire path uses) and the
+     * production boot (create and resume). Before this closure those
+     * entrances started Teams WITHOUT consulting the governance gate.
+     * Same service port the wire sites use (`params.governanceWarning`,
+     * assembled by host.ts), same per-entry method (`checkStart` for a
+     * create, `checkEnsureRootLive` for the resume), same
+     * `governanceStartRefusal` mapping — the arms are wire-identical to
+     * the `team.create` refusals (shared mapper, no drift). An absent port
+     * is the disclosed-ungated world (test/simulator roots; the production
+     * host always supplies it). The closure runs EXACTLY ONCE per start
+     * entrance: `runGate` mints a durable observation on every
+     * non-consistent pass, so a second consultation per operation would
+     * inflate observation counts (the law the 6.A suites pin).
+     */
+    const startGovernanceGate = async (method, teamSessionId, entry) => {
+        const service = params.governanceWarning;
+        if (service === undefined)
+            return;
+        const outcome = entry === 'create'
+            ? await service.checkStart(teamSessionId)
+            : await service.checkEnsureRootLive(teamSessionId);
+        if (outcome.status === 'open')
+            return;
+        throw governanceStartRefusal(method, outcome);
+    };
+    /**
      * T12-B6 (plan §7-B4) — the ONE formal team-create-and-start entry:
-     * the canonical fresh-root binding, then — only when `initialContext`
-     * is present — the target Root Agent start (create-or-ensure,
-     * idempotent per rootSessionId) and the frozen-context acceptance
-     * through the real Agent input/context seam (at-least-once, the
-     * contextToken is the explicit request identity the target dedupes
-     * on). A with-context handoff is COMPLETE only after both succeeded.
+     * the canonical fresh-root binding, then THE governance start gate
+     * (A4-PR6 review round 1; the follow-up run moved it from before the
+     * mint to AFTER it — the governance documents resolve through the
+     * addressed team's TeamSession row + bound snapshot, so a pre-mint
+     * gate could only ever read `unreadable`; the wire lane already
+     * pinned post-bind, pre-start), then — only when `initialContext` is
+     * present — the target Root Agent start (create-or-ensure, idempotent
+     * per rootSessionId) and the frozen-context acceptance through the
+     * real Agent input/context seam (at-least-once, the contextToken is
+     * the explicit request identity the target dedupes on). A with-context
+     * handoff is COMPLETE only after both succeeded. A refused start
+     * leaves the minted binding NOT LIVE — the same durable residue the
+     * refused wire `team.create` leaves (W1/W3 pin both) — and starts
+     * nothing; every re-drive re-runs the SAME gate.
      */
     const createAndStartTeam = async (input) => {
+        // Fail closed BEFORE the Root Agent start: the gate runs on the
+        // DURABLE state of the addressed team (post-bind — the governance
+        // documents resolve through the TeamSession row + its bound
+        // snapshot, so a gate placed before the mint could only ever read
+        // `unreadable`; review round 1 fix-1 follow-up aligned this entry
+        // with the wire law the s6 lane pins: post durable bind, pre root
+        // start). A refusal therefore leaves the minted binding NOT LIVE —
+        // the same durable residue a refused wire `team.create` leaves —
+        // and starts nothing; a retry re-drives the SAME gate.
         const context = input.initialContext;
         const ports = context !== undefined ? requireHandoffAgentPorts() : undefined;
         const result = await rootBinding.bindFresh({
@@ -1626,6 +1673,7 @@ export function createTeamProductionRoot(params) {
         if (rootSessionId === undefined) {
             throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_CREATE_FAILED, `the fresh binding of root "${String(input.rootSessionId)}" reported no durable state`);
         }
+        await startGovernanceGate(input.gateMethod, rootSessionId, 'create');
         if (context !== undefined && ports !== undefined) {
             await ports.start(rootSessionId);
             await ports.deliver({
@@ -1715,10 +1763,15 @@ export function createTeamProductionRoot(params) {
         // then (with-context only) the target Root Agent start + the
         // frozen-context acceptance through the real Agent input/context
         // seam (at-least-once, deduped by contextToken in the target).
+        // A4-PR6 review round 1 (BLOCKER 1): the primitive now gates the
+        // start FIRST — this entrance (`handoff.create`) was the review's
+        // bypass: the with-handoff operation always carries the context, so
+        // it always reaches the target start port.
         return createAndStartTeam({
             rootSessionId: minted,
             blueprint: snapshot,
             generation: 1,
+            gateMethod: 'handoff.create',
             // P9-S8 — the created team inherits the host default workspace (the
             // boot create passes it too; without it the created team's projection
             // fold cannot resolve the leader's effective workspace and fails
@@ -2830,6 +2883,12 @@ export function createTeamProductionRoot(params) {
                     rootSessionId: parseRootSessionId(rootSid),
                     blueprint: boundSnapshot,
                     generation: config.generation,
+                    // A4-PR6 review round 1 (BLOCKER 1): the production boot
+                    // create is a real start entrance too — the gate runs before
+                    // the durable mint (disclosed in the PR body: a
+                    // warning-gated row now refuses to BOOT, not merely to
+                    // start-on-demand; fail closed is the point).
+                    gateMethod: 'boot.create',
                     ...(config.defaultWorkspace !== undefined
                         ? { defaultWorkspace: config.defaultWorkspace }
                         : {}),
@@ -2858,6 +2917,14 @@ export function createTeamProductionRoot(params) {
             if (repos.memberInstances.get(rootSid, LEADER_INSTANCE_ID) === undefined) {
                 throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_RESUME_STATE_MISSING, `the resume of root "${rootSid}" found no durable Leader member row — a resume loads the existing member residency, it never mints one`);
             }
+            // A4-PR6 review round 1 (BLOCKER 1): the resume entrance re-enters
+            // the SAME gate `team.ensureRootLive` uses (the `checkEnsureRootLive`
+            // entry) BEFORE the live layer resumes the Root Agent below — a
+            // durable Team whose authority document faults or whose governance
+            // warning stands unacknowledged must NOT become live through the
+            // boot. The resume phase writes nothing; a refusal leaves the
+            // durable state exactly as found.
+            await startGovernanceGate('boot.resume', rootSid, 'resume');
         }
         // Boot-time initial compatibility state (wiring decision (x)): the
         // frozen runtime's new-work gate (admission/gate.ts) and activation

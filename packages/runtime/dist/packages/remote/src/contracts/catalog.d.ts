@@ -161,6 +161,16 @@ export declare const REMOTE_V8_ONLY_METHODS: readonly string[];
  * are deliberately absent: they write nothing and the default branch
  * exists for host-initiated reads. A new governance-writing method MUST
  * join this set and the routing set in the same commit.
+ *
+ * A4-PR6 review round 1 (fix 5/6): the enumeration itself was incomplete.
+ * `team.resolveControl` records durable control DECISIONS and
+ * `compatibility.ack` records the governance-warning ACKNOWLEDGMENT —
+ * both write governance state and both are explicitly routed to decider
+ * derivations in `s6-principal.ts`; omitting them meant the law "every
+ * classified method appears in a route" could never notice a future
+ * governance-writing method that ALSO went un-named here. The reverse
+ * direction is now pinned too (routed-to-a-decider-derivation ⇒
+ * enumerated), so this list can no longer silently under-enumerate.
  */
 export declare const REMOTE_GOVERNANCE_WRITING_METHODS: readonly string[];
 /**

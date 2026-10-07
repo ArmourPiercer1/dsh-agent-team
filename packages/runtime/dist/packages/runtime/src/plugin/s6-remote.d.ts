@@ -43,6 +43,7 @@ import { type RemoteLedgerEntryValue } from '../../../remote/src/contracts/types
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js';
 import type { TeamRootWireRow } from '../team-ownership-index.js';
+import { TeamPluginError } from './types.js';
 import type { RemoteHandlerRegistration, RemoteQueryCommandCompletion, ServerPrincipalDerivation, WorkspaceAttachPort } from './types.js';
 import type { ServerPrincipalContext } from './s6-principal.js';
 import type { SessionReadStateDurableValue } from './team-read-state.js';
@@ -71,7 +72,7 @@ import type { ColdRootBindingInput, FreshRootBindingInput, RootBindingResult } f
 import type { HandoffService } from '../../handoff/index.js';
 import type { LegacyHomePort, LegacyInspectFn } from './legacy-surface.js';
 import type { ProjectionService } from '../../projection/index.js';
-import type { GovernanceWarningService } from '../../governance-warning/index.js';
+import type { GovernanceWarningService, GovernanceStartOutcome } from '../../governance-warning/index.js';
 import type { InterventionControlSource, RequiredAuthorityFacts, RequiredAuthorityReaderInput } from '../../intervention/index.js';
 /** The stable error codes the S6 remote surfaces throw (CR-4/CR-12 boundary). */
 export declare const S6_REMOTE_ERROR_CODES: {
@@ -195,6 +196,37 @@ export declare const S6_REMOTE_ERROR_CODES: {
     readonly TEAM_LIVE_TOKEN_PORT_UNAVAILABLE: "TEAM_REMOTE_TEAM_LIVE_TOKEN_PORT_UNAVAILABLE";
 };
 export type S6RemoteErrorCode = (typeof S6_REMOTE_ERROR_CODES)[keyof typeof S6_REMOTE_ERROR_CODES];
+/**
+ * A4-PR6 review round 1 (BLOCKER 1) — ONE mapper, every gated entrance.
+ *
+ * Builds the typed refusal of a non-`open` governance start outcome. The
+ * mapper is module-level and exported because the gate is not only a
+ * WIRE concern: the three `team.create`/`team.ensureRootLive` sites call
+ * it through `governanceStartGate` (below, inside the ports factory) and
+ * the two non-wire entrances the review found ungated — the handoff
+ * target start (`root.ts` → `createAndStartTeam`, which the with-context
+ * handoff ALWAYS reaches) and the production boot (create and resume) —
+ * call the SAME function from `root.ts`. Every entrance therefore
+ * produces byte-identical arms (the `method` prefix aside): drift
+ * between entrances is structurally impossible, and no second copy of
+ * the three wire codes may exist anywhere (pinned by
+ * `a4p6-start-gate-entrances.test.ts`, behaviour + source law).
+ *
+ * The arms (the union is CLOSED — `GOVERNANCE_START_STATUSES`):
+ * - `warning-required`: the durable root row EXISTS and stays NOT LIVE —
+ *   the typed error carries the `interventionId`; the warning itself is
+ *   discovered through `intervention.list`, and acknowledgement re-enters
+ *   the SAME gate through `team.ensureRootLive`, never bypasses it;
+ * - `corrupt`: blocked, NOT acknowledgeable (fail closed);
+ * - `migration-required`: the PR7 arm — ack-immune by law (plan:594).
+ * There is no arm this mapper can turn into `wait-for-response`, and
+ * nothing here mints a ControlRequest — the warning is not an approval
+ * case. The service's own throws propagate UNMAPPED (they are backing
+ * faults, invariant 4b); only the outcomes are interpreted.
+ */
+export declare function governanceStartRefusal(method: string, outcome: Exclude<GovernanceStartOutcome, {
+    status: 'open';
+}>): TeamPluginError;
 /**
  * The admission request the `member.create` / `member.send` /
  * `member.followup` handlers build (the structural mirror of the frozen

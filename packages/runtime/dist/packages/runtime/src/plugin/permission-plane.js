@@ -404,6 +404,14 @@ export function createPermissionAuthorityFacts(deps) {
     }
     const staticLayers = (teamSessionId, memberInstanceId) => readFresh(teamSessionId, memberInstanceId, (blueprint, tuple) => buildStaticFacts(blueprint, tuple.templateId, tuple.cwd), undefined).then((r) => r.value);
     const permissionEnvelope = (teamSessionId, memberInstanceId) => readFresh(teamSessionId, memberInstanceId, (blueprint, tuple) => buildEnvelope(blueprint, tuple.cwd), NO_ENVELOPE).then((r) => r.value);
+    // A4-PR6 review round 1 (BLOCKER 2) — the three-state twin for the
+    // comparator. `readFresh`'s `ok` flag ALREADY carries the exact
+    // declared/unavailable distinction (unknown binding, canonicalization fault,
+    // drift across the await); this reader PRESERVES it instead of collapsing it
+    // into the lane-facing zero-authority value.
+    const permissionEnvelopeState = (teamSessionId, memberInstanceId) => readFresh(teamSessionId, memberInstanceId, (blueprint, tuple) => buildEnvelope(blueprint, tuple.cwd), NO_ENVELOPE).then((r) => r.ok === true
+        ? { status: 'declared', document: r.value }
+        : { status: 'unavailable' });
     // The v3 hard ceiling (A4-PR1). `readFresh`'s abstention value is
     // `unavailable` — the SAME slot that carries `NO_ENVELOPE` above, filled with
     // the opposite polarity on purpose: an abstained expansion read must mean zero
@@ -438,6 +446,7 @@ export function createPermissionAuthorityFacts(deps) {
         // surface is exactly-Promise (the PermissionAuthorityFacts contract).
         staticLayers: async (teamSessionId, memberInstanceId) => staticLayers(teamSessionId, memberInstanceId),
         permissionEnvelope: async (teamSessionId, memberInstanceId) => permissionEnvelope(teamSessionId, memberInstanceId),
+        permissionEnvelopeState: async (teamSessionId, memberInstanceId) => permissionEnvelopeState(teamSessionId, memberInstanceId),
         teamHardEnvelope: async (teamSessionId, memberInstanceId) => teamHardEnvelope(teamSessionId, memberInstanceId),
         blueprintSchemaVersion: (teamSessionId) => deps.resolveBlueprint(teamSessionId)?.schemaVersion,
         blueprintContentHash: (teamSessionId) => deps.resolveBlueprint(teamSessionId)?.contentHash,

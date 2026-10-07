@@ -9627,6 +9627,20 @@ REMOTE_INTERVENTION_AUTHORITY_POSITIONS });
 			    // fold the host reads.
 			    'governance-warning-observed',
 			    'governance-warning-acknowledged',
+			    // A4-PR6 review round 1 (fix 4/6) — the plan:1031 rendering decision for
+			    // the PRE-ALPHA3 PR-D close fact. Its category registration landed in
+			    // PR0 (`control`), but the RENDERING layer was PR6's explicit check, and
+			    // the fact was in NEITHER `FACT_ROW_KIND` NOR this set: `?? 'unknown'`
+			    // made it a generic row that JSON.stringify'd the whole abandonment
+			    // payload — the exact shape §6.C's renderer law forbids. The DECISION is
+			    // the skip, not a structured family: `control-request-abandoned` is the
+			    // TERMINAL audit close of a control request, and its surface already
+			    // exists — `ledger-adapter.adaptControlAbandonDraft` pairs it onto its
+			    // request chain by the frozen `requestId` (the chain never displays
+			    // pending, never offers Allow; the coordinator-ruled PR #56 uniformity).
+			    // A second Events row would double-surface one close with a payload that
+			    // carries no subject leaf to render.
+			    'control-request-abandoned',
 			    // pre-alpha3 PR-C §C.7: the durable capability readiness telemetry — an
 			    // operational compatibility-category fact, not user activity. Skipped by
 			    // the Events section (otherwise it would land in the `unknown` family and
@@ -11551,6 +11565,16 @@ REMOTE_INTERVENTION_AUTHORITY_POSITIONS });
 			 * are deliberately absent: they write nothing and the default branch
 			 * exists for host-initiated reads. A new governance-writing method MUST
 			 * join this set and the routing set in the same commit.
+			 *
+			 * A4-PR6 review round 1 (fix 5/6): the enumeration itself was incomplete.
+			 * `team.resolveControl` records durable control DECISIONS and
+			 * `compatibility.ack` records the governance-warning ACKNOWLEDGMENT —
+			 * both write governance state and both are explicitly routed to decider
+			 * derivations in `s6-principal.ts`; omitting them meant the law "every
+			 * classified method appears in a route" could never notice a future
+			 * governance-writing method that ALSO went un-named here. The reverse
+			 * direction is now pinned too (routed-to-a-decider-derivation ⇒
+			 * enumerated), so this list can no longer silently under-enumerate.
 			 */
 			const REMOTE_GOVERNANCE_WRITING_METHODS = [
 			    'override.set',
@@ -11558,6 +11582,8 @@ REMOTE_INTERVENTION_AUTHORITY_POSITIONS });
 			    'policyState.set',
 			    'override.mutatePermission',
 			    'intervention.act',
+			    'team.resolveControl',
+			    'compatibility.ack',
 			];
 			Object.defineProperty(exports, "REMOTE_GOVERNANCE_WRITING_METHODS", { enumerable: true, get: () => REMOTE_GOVERNANCE_WRITING_METHODS });
 			/**

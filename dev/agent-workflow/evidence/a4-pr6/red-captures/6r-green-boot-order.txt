@@ -1,0 +1,8 @@
+
+ ✓ packages/runtime/test/bp1-freeze-barrier.test.ts (3 tests) 3ms
+
+ Test Files  2 passed (2)
+      Tests  9 passed (9)
+   Start at  17:13:42
+   Duration  1.35s (transform 1.63s, setup 0ms, import 2.44s, tests 6ms, environment 0ms)
+
