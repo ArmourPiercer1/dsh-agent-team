@@ -1,0 +1,19 @@
+;; expect: refused
+;; channel: sibling
+;; namespace: session-binding
+;; rule: trap-session-binding — verbatim shape of
+;;        packages/runtime/test/d1-team-ownership-index.test.ts:219 and
+;;        packages/storage/test/p4-helpers.ts:415 (teamMemberBinding →
+;;        parseSessionBinding). SessionBindingDto is its own version axis;
+;;        Blueprint documents have no kind/sessionId sibling keys.
+;; path: packages/example/test/fx-trap-session-binding.ts
+async function bindTeamMember(repos: Repos, root: string, instance: string, child: string) {
+  await repos.sessionBindings.put({
+    instanceId: instance,
+    kind: 'team-member',
+    rootSessionId: root,
+    schemaVersion: 1,
+    sessionId: child,
+  })
+}
+const SOME_BP = 'team.alpha' // blueprintId: the file-level key half

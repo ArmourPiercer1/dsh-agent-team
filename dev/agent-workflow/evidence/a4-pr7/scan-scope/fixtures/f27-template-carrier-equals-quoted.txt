@@ -1,0 +1,37 @@
+;; expect: refused
+;; channel: carrier-sibling
+;; namespace: session-binding
+;; rule: template-carrier-equals-quoted (BLOCKING 2) — the f23 payload in
+;;        BACKTICKS instead of single quotes, single-line and multi-line,
+;;        inside the SAME enclosing sessionBindings.put row. The old
+;;        lineStates published only UNCLOSED template segments (openSegs
+;;        leftovers), so segmentAt was undefined for closed templates:
+;;        single-line/multi-line read dirty where the single-quoted twin
+;;        refused — equivalent spellings, three verdicts; with the enclosing
+;;        row added, both backtick forms were REFUSED session-binding/sibling
+;;        by the ENCLOSING object's keys — invisible sites decided by the
+;;        wrong literal (BLOCKING 1 killed that merge, so this fixture's RED
+;;        capture already shows the third stage: unknown/outer-line — the
+;;        keys unread, the row call's name the only evidence the machine can
+;;        still see). After publishing closed template segments the
+;;        template carrier must refuse from its OWN keys: identical verdict
+;;        AND identical channel across all three carriers.
+;; path: packages/contracts/test/fx-template-binding.ts
+import { serializeSessionBinding } from '../src/serialization.js'
+
+it('backtick bindings serialize identically', () => {
+  const single = sessionBindings.put({
+    kind: 'team-member',
+    json: `{"instanceId":"inst-b2","kind":"team-member","rootSessionId":"session-1","schemaVersion":1,"sessionId":"s-child"}`,
+  })
+  const multi = sessionBindings.put({
+    kind: 'team-root',
+    json: `{"kind":"team-root","rootSessionId":"session-1",
+"schemaVersion":1,"sessionId":"s-root"}`,
+  })
+  void single; void multi
+})
+
+it('the snapshot ref keys on the blueprint', () => {
+  expect(ref.blueprintId).toBe('AIUED-ALGO')
+})

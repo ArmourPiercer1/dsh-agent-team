@@ -1,0 +1,23 @@
+;; expect: unknown
+;; why: conflicts
+;; namespace: projection-envelope
+;; rule: doc-in-template-under-row — the review's exact payload (document
+;;        fields PLUS the projection signature pair) carried in a BACKTICK
+;;        string inside a sessionBindings.put row call. Before BLOCKING 1
+;;        the ENCLOSING row refused it session-binding/sibling — invisible.
+;;        After BLOCKING 1 it is UNKNOWN for the WRONG reason (outer-line:
+;;        the template's own keys are unread — segmentAt never sees a CLOSED
+;;        template). After BLOCKING 2 publishes closed template segments the
+;;        carrier's own keys expose BOTH the namespace signature and the
+;;        document keys: the honest reason becomes the key CONFLICT, exactly
+;;        as in the single-quoted twin. Same class, same reason, every
+;;        carrier; never refused.
+;; path: packages/example/test/fx-doc-in-template.ts
+function seedStore(sessionBindings: Bindings) {
+  const DOC_BP = 'team.docintemplate'
+  const carrier = sessionBindings.put({
+    kind: 'team-member',
+    json: `{"schemaVersion":1,"blueprintId":"team.docintemplate","displayName":"document plus row keys","policyStates":[],"teamHardEnvelope":{"rules":[]},"teamSessionId":"team-x","generation":1}`,
+  })
+  void carrier; void DOC_BP
+}

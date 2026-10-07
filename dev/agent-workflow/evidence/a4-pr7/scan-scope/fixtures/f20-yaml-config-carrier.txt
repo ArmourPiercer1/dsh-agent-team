@@ -1,0 +1,15 @@
+;; expect: dirty
+;; rule: yaml-config-carrier — cordis.patch.yml:58-62 carries a live
+;;        `blueprintSource:` block (measured 2026-10-08: the patch the host
+;;        composes from is a v1 DOCUMENT EMITTER, a pocket neither the old
+;;        scan nor a TS-only scan sees). YAML is data: every version site is
+;;        dirty.
+;; path: cordis.example.patch.yml
+plugins:
+  - id: dsh-agent-team
+    config:
+      blueprintSource: |
+        ---
+        schemaVersion: 1
+        blueprintId: my-team-bp-1
+        revision: "1"

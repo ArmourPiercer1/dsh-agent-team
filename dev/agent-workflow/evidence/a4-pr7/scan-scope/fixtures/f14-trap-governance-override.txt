@@ -1,0 +1,21 @@
+;; expect: refused
+;; channel: sibling
+;; namespace: governance-override
+;; rule: trap-governance-override — verbatim shapes of
+;;        packages/runtime/test/p8s7r2-effective-config.test.ts:848 (a typed
+;;        GovernanceOverrideRecord[] row) and packages/storage/test/p4-helpers
+;;        .ts:435 (humanOverride rows with generation+kind+scope+values).
+;; path: packages/example/test/fx-trap-governance-override.ts
+const overrides16a: GovernanceOverrideRecord[] = [
+  {
+    schemaVersion: 1,
+    kind: 'autonomy-overlay',
+    recordId: 'mut-tools-r22x',
+    scope: 'instance',
+    rootSessionId: parseRootSessionId(ROOT_X),
+    values: { autonomy: 'guarded' },
+    updatedAt: NOW,
+    generation: 1,
+  },
+]
+const OVERRIDE_BP = 'team.overridehost' // blueprintId: the file-level key half

@@ -1,0 +1,26 @@
+;; expect: unknown
+;; why: SPREAD
+;; namespace: registry-row
+;; rule: trap-registry-row — F1's lesson: a BlueprintRegistryRecord row's
+;;        schemaVersion is TEAM_DOMAIN_SCHEMA_VERSION, "the TeamDomain schema
+;;        version that shaped the row, L3 discipline"
+;;        (packages/storage/schema/blueprint-registry.ts:131-139) — a ROW
+;;        stamp, not a document version. Verbatim shapes of
+;;        packages/storage/test/bp1-blueprint-registry.test.ts:146/:159.
+;;        Under the 2026-10-08 review (BLOCKING 1c) BOTH sites are UNKNOWN,
+;;        not REFUSED: site 1 names the parser on its own line but the
+;;        literal is SPREAD-built — hidden keys cannot be certified
+;;        document-free, and a spread-assisted literal gets no machine
+;;        refusal; site 2's name sits on the head line (outer-line).
+;;        UNKNOWN gates; the wrapper ledger adjudicates the real paths
+;;        against the F1 evidence.
+;; path: packages/example/test/fx-trap-registry-row.ts
+const badVersion = await capture(() =>
+  parseBlueprintRegistryRecord({ ...baseRecord, schemaVersion: 1 }),
+)
+const row: BlueprintRegistryRecordView = {
+  schemaVersion: 2,
+  blueprintId: BP_ALPHA,
+  revision: REV_1,
+}
+void badVersion

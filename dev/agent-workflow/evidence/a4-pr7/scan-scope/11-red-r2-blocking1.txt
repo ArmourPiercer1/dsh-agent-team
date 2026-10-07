@@ -1,0 +1,290 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-scanscope
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (42 tests | 13 failed) 219ms
+     ✓ the scan ran (a scan that could not run is never reported as clean) 1ms
+     ✓ invoking the script by name is a real gate: non-zero exit while dirty sites exist 167ms
+     ✓ a directory that is not a repository reports not-run with exit 2, never clean 36ms
+     ✓ the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path) 0ms
+     ✓ every deferred path is still dirty (a migrated path must leave the list) 0ms
+     ✓ the fence needs no exemption for its own author 1ms
+     ✓ the fence reports sites, not a bare count, and names a file the reader can open 0ms
+     ✓ the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line 0ms
+     ✓ packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path 0ms
+     ✓ the named namespace traps are never reported as Blueprint sites 0ms
+     ✓ the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused 0ms
+     × the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable 4ms
+     ✓ every UNKNOWN site on the tree is adjudicated BY PATH in this wrapper — no unadjudicated unknown, no stale ledger row 0ms
+     ✓ the scope function is the plan's list plus the measured third class — no more, no less 0ms
+     ✓ f01 YAML-string carrier is DIRTY (the type system cannot see it) 0ms
+     ✓ f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here) 0ms
+     ✓ f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it) 0ms
+     ✓ f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide) 0ms
+     ✓ f05 untyped .mjs object literal is DIRTY (nothing type-checks the file) 0ms
+     ✓ f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions) 0ms
+     × f07 overlay/projection-service option is UNKNOWN (deciding text on the enclosing line may not refuse) 1ms
+     × f08 projection wire envelope is REFUSED (projection-envelope) 0ms
+     × f09 session-binding row is REFUSED (session-binding) 0ms
+     ✓ f10 MemberInstance row is REFUSED (member-instance-record) 0ms
+     × f11 registry ROW stamps are UNKNOWN (same-line name but SPREAD-hidden keys; head-line name) — F1 adjudicated by hand 0ms
+     × f12 ledger row is REFUSED (ledger-row) 0ms
+     × f13 TeamSessionRecordDto row is REFUSED (team-session-record) 0ms
+     × f14 governance-override row is REFUSED (governance-override) 0ms
+     ✓ f15 approval-case + operation rows are REFUSED (governance-ledger) 0ms
+     × f16 artifact-grant payload is REFUSED (artifact-grant-payload) 0ms
+     ✓ f17 prose document without the blueprintId half is not a site at all 0ms
+     ✓ f18 ambiguous hybrid shape is UNKNOWN and gates (no silent drop, no guessed verdict) 0ms
+     ✓ f19 JSON data is DIRTY (data is never type-checked) 0ms
+     ✓ f20 YAML config blueprintSource block is DIRTY (cordis.patch.yml shape) 0ms
+     ✓ f21 supported-version fixtures stay clean in every carrier (reading decision) 0ms
+     × f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string) 0ms
+     × f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId) 0ms
+     ✓ f24 string-carried YAML WITH document siblings stays DIRTY (no own-pool ns signature, no refusal) 0ms
+     × f25 a complete document smuggled under a row-type annotation is UNKNOWN, never REFUSED 0ms
+     × f26 document fields + row signature in ONE literal is a conflict UNKNOWN (widened doc-only set) 0ms
+     ✓ the fixture corpus exists and every fixture was exercised 0ms
+     ✓ a real in-scope file that keys blueprintId WITHOUT a version literal is not a site 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable
+AssertionError: refusal channel must be the carrier's own keys — got (team-session-record/sibling): expected 'team-session-record/sibling' to contain '/carrier-sibling'
+
+Expected: "/carrier-sibling"
+Received: "team-session-record/sibling"
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:524:88
+    522|       // The string-embedded class refuses from the string's OWN key p…
+    523|       // (BLOCKING 1a split), never from the enclosing object's keys.
+    524|       expect(s.why, `refusal channel must be the carrier's own keys — …
+       |                                                                                        ^
+    525|         '/carrier-sibling',
+    526|       )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f07 overlay/projection-service option is UNKNOWN (deciding text on the enclosing line may not refuse)
+AssertionError: (f07-trap-projection-service.txt, rule: trap-overlay-test — packages/runtime/test/p01-team-scoped-overlay): expected exactly [unknown], got ["refused:L9=v1(projection-envelope/head0)"]: expected [ 'refused' ] to deeply equal [ 'unknown' ]
+
+- Expected
++ Received
+
+  [
+-   "unknown",
++   "refused",
+  ]
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:169:5
+    167|       present.map((k) => `${k}:${c[k].map((s) => `L${s.line}=v${s.vers…
+    168|     )}`,
+    169|   ).toEqual([want])
+       |     ^
+    170|   if (f.namespace !== undefined && want === 'refused') {
+    171|     expect(c.refused[0]?.ns, `${f.name}: refused but not by namespace …
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:601:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f08 projection wire envelope is REFUSED (projection-envelope)
+AssertionError: RED (f08-trap-projection-envelope.txt): refused, but not by the 'sibling' channel — got (projection-envelope/head1); the deciding evidence must be the site's own literal: expected 'projection-envelope/head1' to contain '/sibling'
+
+Expected: "/sibling"
+Received: "projection-envelope/head1"
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:182:9
+    180|         s.why,
+    181|         `RED (${f.name}): refused, but not by the '${f.channel}' chann…
+    182|       ).toContain(`/${f.channel}`)
+       |         ^
+    183|     }
+    184|   }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:604:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f09 session-binding row is REFUSED (session-binding)
+AssertionError: RED (f09-trap-session-binding.txt): refused, but not by the 'sibling' channel — got (session-binding/head0); the deciding evidence must be the site's own literal: expected 'session-binding/head0' to contain '/sibling'
+
+Expected: "/sibling"
+Received: "session-binding/head0"
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:182:9
+    180|         s.why,
+    181|         `RED (${f.name}): refused, but not by the '${f.channel}' chann…
+    182|       ).toContain(`/${f.channel}`)
+       |         ^
+    183|     }
+    184|   }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:607:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f11 registry ROW stamps are UNKNOWN (same-line name but SPREAD-hidden keys; head-line name) — F1 adjudicated by hand
+AssertionError: (f11-trap-registry-row.txt, rule: trap-registry-row — F1's lesson: a BlueprintRegistryRecord row's): expected exactly [unknown], got ["refused:L2=v1(registry-row/same-line),L5=v2(registry-row/head0)"]: expected [ 'refused' ] to deeply equal [ 'unknown' ]
+
+- Expected
++ Received
+
+  [
+-   "unknown",
++   "refused",
+  ]
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:169:5
+    167|       present.map((k) => `${k}:${c[k].map((s) => `L${s.line}=v${s.vers…
+    168|     )}`,
+    169|   ).toEqual([want])
+       |     ^
+    170|   if (f.namespace !== undefined && want === 'refused') {
+    171|     expect(c.refused[0]?.ns, `${f.name}: refused but not by namespace …
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:613:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f12 ledger row is REFUSED (ledger-row)
+AssertionError: RED (f12-trap-ledger-row.txt): refused, but not by the 'sibling' channel — got (ledger-row/head0); the deciding evidence must be the site's own literal: expected 'ledger-row/head0' to contain '/sibling'
+
+Expected: "/sibling"
+Received: "ledger-row/head0"
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:182:9
+    180|         s.why,
+    181|         `RED (${f.name}): refused, but not by the '${f.channel}' chann…
+    182|       ).toContain(`/${f.channel}`)
+       |         ^
+    183|     }
+    184|   }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:617:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f13 TeamSessionRecordDto row is REFUSED (team-session-record)
+AssertionError: RED (f13-trap-session-record.txt): refused, but not by the 'sibling' channel — got (team-session-record/fn); the deciding evidence must be the site's own literal: expected 'team-session-record/fn' to contain '/sibling'
+
+Expected: "/sibling"
+Received: "team-session-record/fn"
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:182:9
+    180|         s.why,
+    181|         `RED (${f.name}): refused, but not by the '${f.channel}' chann…
+    182|       ).toContain(`/${f.channel}`)
+       |         ^
+    183|     }
+    184|   }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:620:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f14 governance-override row is REFUSED (governance-override)
+AssertionError: RED (f14-trap-governance-override.txt): refused, but not by the 'sibling' channel — got (governance-override/fn); the deciding evidence must be the site's own literal: expected 'governance-override/fn' to contain '/sibling'
+
+Expected: "/sibling"
+Received: "governance-override/fn"
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:182:9
+    180|         s.why,
+    181|         `RED (${f.name}): refused, but not by the '${f.channel}' chann…
+    182|       ).toContain(`/${f.channel}`)
+       |         ^
+    183|     }
+    184|   }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:623:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f16 artifact-grant payload is REFUSED (artifact-grant-payload)
+AssertionError: RED (f16-trap-artifact-grant.txt): refused, but not by the 'sibling' channel — got (artifact-grant-payload/head0); the deciding evidence must be the site's own literal: expected 'artifact-grant-payload/head0' to contain '/sibling'
+
+Expected: "/sibling"
+Received: "artifact-grant-payload/head0"
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:182:9
+    180|         s.why,
+    181|         `RED (${f.name}): refused, but not by the '${f.channel}' chann…
+    182|       ).toContain(`/${f.channel}`)
+       |         ^
+    183|     }
+    184|   }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:630:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string)
+AssertionError: RED (f22-trap-string-embedded-session-record.txt): refused, but not by the 'carrier-sibling' channel — got (team-session-record/sibling); the deciding evidence must be the site's own literal: expected 'team-session-record/sibling' to contain '/carrier-sibling'
+
+Expected: "/carrier-sibling"
+Received: "team-session-record/sibling"
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:182:9
+    180|         s.why,
+    181|         `RED (${f.name}): refused, but not by the '${f.channel}' chann…
+    182|       ).toContain(`/${f.channel}`)
+       |         ^
+    183|     }
+    184|   }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:656:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId)
+AssertionError: RED (f23-trap-string-embedded-binding.txt): refused, but not by the 'carrier-sibling' channel — got (session-binding/sibling); the deciding evidence must be the site's own literal: expected 'session-binding/sibling' to contain '/carrier-sibling'
+
+Expected: "/carrier-sibling"
+Received: "session-binding/sibling"
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:182:9
+    180|         s.why,
+    181|         `RED (${f.name}): refused, but not by the '${f.channel}' chann…
+    182|       ).toContain(`/${f.channel}`)
+       |         ^
+    183|     }
+    184|   }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:664:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f25 a complete document smuggled under a row-type annotation is UNKNOWN, never REFUSED
+AssertionError: RED (f25-trap-nested-doc-under-row.txt): unknown, but the reason is wrong — got (namespace-signature(team-session-record) conflicts with document siblings (memberEnvelopes,policyStates)), must contain 'outer-line': expected 'namespace-signature(team-session-reco…' to contain 'outer-line'
+
+Expected: "outer-line"
+Received: "namespace-signature(team-session-record) conflicts with document siblings (memberEnvelopes,policyStates)"
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:190:9
+    188|         s.why,
+    189|         `RED (${f.name}): unknown, but the reason is wrong — got (${s.…
+    190|       ).toContain(f.why)
+       |         ^
+    191|     }
+    192|   }
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:680:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f26 document fields + row signature in ONE literal is a conflict UNKNOWN (widened doc-only set)
+AssertionError: (f26-doc-plus-row-keys-one-object.txt, rule: doc-plus-row-keys — a real document's fields (displayName/members/): expected exactly [unknown], got ["refused:L2=v1(projection-envelope/sibling)"]: expected [ 'refused' ] to deeply equal [ 'unknown' ]
+
+- Expected
++ Received
+
+  [
+-   "unknown",
++   "refused",
+  ]
+
+ ❯ expectSingle packages/testkit/test/a4p7-blueprint-version-clean.test.ts:169:5
+    167|       present.map((k) => `${k}:${c[k].map((s) => `L${s.line}=v${s.vers…
+    168|     )}`,
+    169|   ).toEqual([want])
+       |     ^
+    170|   if (f.namespace !== undefined && want === 'refused') {
+    171|     expect(c.refused[0]?.ns, `${f.name}: refused but not by namespace …
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:687:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 29 passed (42)
+   Start at  03:41:07
+   Duration  507ms (transform 38ms, setup 0ms, import 183ms, tests 219ms, environment 0ms)
+

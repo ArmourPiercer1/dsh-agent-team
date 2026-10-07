@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-scanscope
+
+ ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (47 tests) 218ms
+
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+   Start at  03:49:26
+   Duration  487ms (transform 39ms, setup 0ms, import 182ms, tests 218ms, environment 0ms)
+

@@ -1,0 +1,28 @@
+;; expect: unknown
+;; why: conflicts
+;; namespace: projection-envelope
+;; rule: doc-plus-row-keys — a real document's fields (displayName /
+;;        requirements / teamHardEnvelope / metadata — all OUTSIDE the old
+;;        narrow {leader, memberEnvelopes, policyStates} doc set, which is
+;;        why the old classifier REFUSED this site
+;;        projection-envelope/sibling; `members` is deliberately NOT in the
+;;        conflict set — RemoteProjectionValue carries it, measured) and
+;;        the projection DTO's signature pair (teamSessionId + generation)
+;;        in ONE literal: a genuine conflict. The widened closed document-
+;;        only set from packages/domain/blueprint/src/types.ts (405-488)
+;;        must raise the conflict: UNKNOWN, gates, human adjudicates.
+;; path: packages/example/test/fx-doc-plus-row-keys.ts
+const hybrid = {
+  schemaVersion: 1,
+  blueprintId: 'BP-HYBRID',
+  revision: '1',
+  contentHash: 'sha-1',
+  displayName: 'a real document next to row keys',
+  members: [],
+  requirements: [],
+  teamHardEnvelope: { rules: [] },
+  metadata: { tags: [] },
+  teamSessionId: 'team-x',
+  generation: 1,
+}
+void hybrid

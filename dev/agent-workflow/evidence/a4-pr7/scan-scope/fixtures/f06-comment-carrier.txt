@@ -1,0 +1,11 @@
+;; expect: prose
+;; rule: comment-carrier — a version written in a `//` comment (and in a block
+;;        comment) is prose about versions, not a document key: the plan's
+;;        predicate half ("not prose about versions") applies inside a
+;;        Blueprint file too. Visible as a PROSE line, never a site.
+;;        Shape taken from packages/tools/harness/t12-vertical.mjs:1838.
+;; path: packages/example/harness/fx-comment-carrier.mjs
+// production stamps schemaVersion: 2 per P8-S contract freeze.
+/* A frozen row stamped schemaVersion: 1 is refused. */
+export const EXPECTED = 2
+export const BLUEPRINT_ID = 'bp1' // blueprintId stays here for the both-halves key

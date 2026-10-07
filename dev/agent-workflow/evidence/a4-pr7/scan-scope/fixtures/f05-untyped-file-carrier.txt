@@ -1,0 +1,13 @@
+;; expect: dirty
+;; rule: untyped-file-carrier — a .mjs source is never type-checked at all, so
+;;        EVERY non-comment version site in it is dirty regardless of carrier
+;;        (verbatim shape of tests/kits/exec-contract-live-smoke/blueprint.mjs).
+;; path: packages/example/harness/fx-untyped-carrier.mjs
+export const BLUEPRINT_SOURCE = [
+  '---',
+  'schemaVersion: 1',
+  'blueprintId: team.exec',
+  'revision: "1"',
+  'leader:',
+  '  templateId: leader',
+].join('\n')

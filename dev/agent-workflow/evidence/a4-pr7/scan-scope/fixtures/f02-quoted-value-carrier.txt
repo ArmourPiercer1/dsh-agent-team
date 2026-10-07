@@ -1,0 +1,19 @@
+;; expect: dirty
+;; rule: quoted-value-carrier — the quoted form, verbatim shape of
+;;        packages/domain/blueprint/testdata/fixtures.ts:286
+;;        (`'schemaVersion: "1"'` inside a YAML string). A probe or AST rule
+;;        that only rewrites numeric literals edits nothing here; the fence
+;;        must still see the version.
+;; path: packages/example/test/fx-quoted-value-carrier.ts
+export const NEG_SCHEMA_VERSION_UNSUPPORTED: NegativeFixture = {
+  name: 'schemaVersion is a string, not a positive integer',
+  code: 'SCHEMA_VERSION_UNSUPPORTED',
+  source: [
+    '---',
+    'schemaVersion: "1"',
+    'blueprintId: team.min',
+    'revision: "1"',
+    'leader:',
+    '  templateId: leader',
+  ].join('\n'),
+}

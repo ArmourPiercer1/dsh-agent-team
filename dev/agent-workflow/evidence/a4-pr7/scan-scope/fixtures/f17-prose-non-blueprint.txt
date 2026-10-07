@@ -1,0 +1,10 @@
+;; expect: none
+;; rule: prose-file — a non-code, non-Blueprint document that discusses
+;;        versions in prose must not be reported at all (both the extension
+;;        filter and the missing blueprintId half exclude it). This is the
+;;        shape of the 217-inventory's 8 Markdown false alarms.
+;; path: docs/example/versions-notes.md
+# Notes
+
+The old schemaVersion: 1 documents were refused after the cutover, and a
+schemaVersion: 2 row kept parsing for one release.

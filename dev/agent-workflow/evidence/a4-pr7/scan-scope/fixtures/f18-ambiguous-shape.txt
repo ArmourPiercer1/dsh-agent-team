@@ -1,0 +1,17 @@
+;; expect: unknown
+;; rule: ambiguous-shape — an object whose sibling key set carries BOTH the
+;;        session-binding signature (kind + sessionId) and the Blueprint
+;;        document signature (leader): the scan refuses to guess. A scan that
+;;        silently drops the site lies by omission; a scan that files it by
+;;        majority of keys invents a discriminator it does not have. The
+;;        correct verdict is a visible UNKNOWN line that gates until a human
+;;        adjudicates the path.
+;; path: packages/example/test/fx-ambiguous-shape.ts
+const hybrid = {
+  schemaVersion: 1,
+  kind: 'team-member',
+  sessionId: 'sess-1',
+  blueprintId: 'team.hybrid',
+  leader: { templateId: 'leader', persona: 'Lead.' },
+}
+void hybrid

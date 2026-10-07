@@ -1,0 +1,21 @@
+;; expect: refused
+;; channel: carrier-sibling
+;; namespace: session-binding
+;; rule: string-embedded-json binding row — the serialized SessionBinding
+;;        shape (kind + sessionId) is the binding namespace, not a Blueprint
+;;        document. Tree evidence:
+;;        packages/contracts/test/serialization.test.ts:207 (same file keys
+;;        blueprintId for its snapshot-ref tests, so the file-level
+;;        both-halves gate passes and only the string's own keys decide).
+;; path: packages/contracts/test/fx-string-binding.ts
+import { serializeSessionBinding } from '../src/serialization.js'
+
+it('serializes the binding with closed key order', () => {
+  const json =
+    '{"instanceId":"inst-b2","kind":"team-member","rootSessionId":"session-1","schemaVersion":1,"sessionId":"s-member-child"}'
+  expect(serializeSessionBinding(binding)).toBe(json)
+})
+
+it('the snapshot ref keys on the blueprint', () => {
+  expect(ref.blueprintId).toBe('AIUED-ALGO')
+})

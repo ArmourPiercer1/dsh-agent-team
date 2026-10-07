@@ -1,0 +1,17 @@
+;; expect: refused
+;; channel: sibling
+;; namespace: artifact-grant-payload
+;; rule: trap-artifact-grant-payload — the artifact-read-granted LEDGER PAYLOAD
+;;        (verbatim shape of packages/client/test/ledger-adapter.test.ts:433
+;;        and :450). Its schemaVersion is the grant-payload's own field,
+;;        distinct from the row stamp and from the document version.
+;; path: packages/example/test/fx-trap-artifact-grant.ts
+const grant = (seq: number, instanceId: string, callId: string) =>
+  entry(seq, 'artifact-read-granted', {
+    schemaVersion: 2,
+    instanceId,
+    locator: { kind: 'file', path: '/out/report.md' },
+    targetKeyDigest: 't-digest-0123456789abcdef',
+    versionDigest: 'v-digest-0123456789abcdef',
+  })
+const GRANT_BP = 'team.granthost' // blueprintId: the file-level key half

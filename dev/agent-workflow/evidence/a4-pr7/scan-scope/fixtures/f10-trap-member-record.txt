@@ -1,0 +1,22 @@
+;; expect: refused
+;; channel: sibling
+;; namespace: member-instance-record
+;; rule: trap-member-record — the MemberInstance discriminator namespace the
+;;        coordinator named at packages/runtime/src/plugin/host.ts:2539 (the
+;;        runtime reads `record.schemaVersion === 2` — a comparison, invisible
+;;        to the scan by construction, plan 7.4 audit reason (2)) and its row
+;;        form, verbatim shape of packages/runtime/test/p8s7r2-disposed-history
+;;        .test.ts:109 (instanceId + templateId + lifecycle row siblings).
+;; path: packages/example/test/fx-trap-member-record.ts
+/** One MemberInstanceRecord row (the disposed-history shape). */
+const workerRow = {
+  schemaVersion: 1,
+  rootSessionId: ROOT_SID,
+  instanceId: 'inst-p8s7r2dh-worker',
+  templateId: 'worker',
+  label: 'worker',
+  childSessionId: 'child-worker',
+  lifecycle: 'disposed',
+  createdAt: '2026-08-01T00:00:00.000Z',
+}
+const BLUEPRINT_REF = 'team.p8s7r2' // blueprintId: the file-level key half

@@ -1,0 +1,11 @@
+;; expect: dirty
+;; rule: json-data-carrier — a JSON document is DATA: nothing type-checks it,
+;;        so a Blueprint-shaped record carrying a retired version is dirty by
+;;        construction (the recorded store-dump shape; tests/mock/hosts/**
+;;        dumps stay out of the universe as leave-inert per the 7.4 ruling).
+;; path: packages/example/test/fx-json-data.json
+{
+  "schemaVersion": 1,
+  "blueprintId": "team.dumped",
+  "revision": "1"
+}

@@ -1,0 +1,31 @@
+;; expect: refused
+;; channel: sibling
+;; namespace: governance-ledger
+;; rule: trap-approval-and-operation-rows — the approval-case row (verbatim
+;;        shape of packages/storage/test/p4-helpers.ts:475, siblings
+;;        acknowledgements+fingerprint+outcomes) and the operation row (same
+;;        file :505, siblings intent+phase). GovernanceLedger is one of the
+;;        eight schemaVersion namespaces named by the 2026-10-08 audit.
+;; path: packages/example/test/fx-trap-governance-rows.ts
+function approvalCase(rootSessionId: string): Record<string, unknown> {
+  return {
+    acknowledgements: [],
+    computedAt: P4_FIXTURE.createdAt,
+    fingerprint: 'fp-1',
+    generation: 1,
+    outcomes: { 'req.autonomy-boundary': 'PASS' },
+    rootSessionId,
+    schemaVersion: 2,
+    status: 'OPEN',
+  }
+}
+function operationRecord(rootSessionId: string, operationId: string): Record<string, unknown> {
+  return {
+    intent: { payload: { note: 'fixture' }, type: 'create-member-instance' },
+    operationId,
+    phase: 'PREPARED',
+    schemaVersion: 2,
+    updatedAt: P4_FIXTURE.createdAt,
+  }
+}
+const OPS_BP = 'team.ops' // blueprintId: the file-level key half

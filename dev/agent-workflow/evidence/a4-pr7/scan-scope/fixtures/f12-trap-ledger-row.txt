@@ -1,0 +1,28 @@
+;; expect: unknown
+;; why: outer-line
+;; namespace: ledger-row
+;; rule: trap-ledger-row — the artifact/governance ledger row stamp (verbatim
+;;        shape of packages/runtime/src/plugin/host.ts:2837 which stamps
+;;        `schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION` — a constant, no digit,
+;;        invisible by construction — and its digit-bearing test forms at
+;;        packages/runtime/test/p6t4-helpers.ts:458 and
+;;        packages/remote/test/p8t4-engine.test.ts:122. The REAL ledger rows
+;;        write `sequence,` and `payload,` as shorthand properties (no colon
+;;        — invisible to the key scanner, recorded follow-up), so the
+;;        signature cannot complete from the site's own visible keys and the
+;;        `ledger.put(` head line is OUTER evidence: UNKNOWN, gated,
+;;        adjudicated by path in the wrapper ledger. UNKNOWN still GATES —
+;;        the trap cannot leak into a silent bucket either way.
+;; path: packages/example/test/fx-trap-ledger-row.ts
+async function appendGranted(repos: Repos, rootSessionId: string, payload: Record<string, unknown>) {
+  const sequence = await repos.ledger.allocateSequence()
+  await repos.ledger.put({
+    schemaVersion: 2,
+    sequence,
+    rootSessionId,
+    factType: 'artifact-read-granted',
+    payload,
+    createdAt: new Date().toISOString(),
+  })
+}
+const LEDGER_BP = 'team.ledgerref' // blueprintId: the file-level key half

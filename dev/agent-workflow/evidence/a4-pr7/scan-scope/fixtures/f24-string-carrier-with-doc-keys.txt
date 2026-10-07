@@ -1,0 +1,22 @@
+;; expect: dirty
+;; rule: string-carrier-with-doc-keys — the counterweight the review
+;;        demanded (f07-f16 pinned only namespaces; f24 pins that the
+;;        DOC side never refuses either). A YAML fragment carried in a
+;;        string whose own keys are DOCUMENT keys (leader/policyStates) and
+;;        that carries no namespace signature stays DIRTY. Refusal requires
+;;        a positive namespace signature IN THE SITE'S OWN POOL (keys inside
+;;        the string for a string carrier); doc-only keys in that pool block
+;;        refusal outright, and the enclosing object's keys cannot touch a
+;;        string-carried site at all (BLOCKING 1a). Sibling evidence refuses
+;;        only from the site's own pool — never from a neighbour's.
+;; path: packages/domain/blueprint/testdata/fx-doc-keys.ts
+export const DOC_FRAGMENT_LINES = [
+  '---',
+  'schemaVersion: 1',
+  'blueprintId: team.docfragment',
+  'revision: "1"',
+  'leader:',
+  '  templateId: leader',
+  'policyStates:',
+  '  - id: default',
+]
