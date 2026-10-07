@@ -46,7 +46,12 @@
  *    `INTERVENTION_NOT_FOUND`) — a fetch-semantics question outside the
  *    projection/list plane, measured here and reported as a follow-up;
  *  - durable rows: this is a read-side view. The zero-writes leg below
- *    measures that `intervention.list` appends nothing.
+ *    measures that `intervention.list` appends nothing;
+ *  - torn window: the open read and the decided read run under SEPARATE
+ *    team locks, so one case can appear OPEN in one snapshot and DECIDED
+ *    in the other. The final leg pins what the projection owes the
+ *    operator then: exactly one item, the open snapshot winning, and the
+ *    act lane (fresh open re-read) still refusing the truly-decided id.
  *
  * Offline, host-free, at the PRODUCTION entry, on the same assembly pattern
  * PR #118 established: real durable `ControlService`, real v8 dispatcher
@@ -58,7 +63,9 @@
 import { describe, expect, it } from 'vitest'
 
 import { CONTROL_REQUEST_KINDS } from '../control/index.js'
+import type { ApprovalCaseState } from '../control/index.js'
 import { projectInterventions } from '../intervention/index.js'
+import type { InterventionControlSource } from '../intervention/index.js'
 import { createS6RemoteDispatcher, createS6RemotePorts } from '../src/plugin/s6-remote.js'
 import type { S6RemoteOptions } from '../src/plugin/s6-remote.js'
 import { createServerPrincipalDerivation } from '../src/plugin/s6-principal.js'
@@ -334,6 +341,47 @@ const MEASUREMENT = await (async () => {
           ).listDecidedApprovalCases({ rootSessionId: P6T4_ROOT })
         : null
 
+    // THE TORN WINDOW (review round 1, the dedupe pin): the open read and
+    // the decided read run under SEPARATE team locks, so a terminate that
+    // lands BETWEEN them hands the projection one case twice — OPEN in the
+    // first snapshot, DECIDED+stamped in the second. The dedupe must surface
+    // EXACTLY ONE item, and it must keep the OPEN snapshot (open precedence:
+    // a display never fabricates a terminal close the open fold did not see,
+    // and never shows the same case twice). The fake below reproduces that
+    // window on the REAL decided fold of the wire case: the open-side view
+    // is the same durable rows as the fold saw one lock window earlier.
+    const tornDecided = await control.listDecidedApprovalCases({ rootSessionId: P6T4_ROOT })
+    const tornDecidedEntry = tornDecided.find(
+      (summary) => summary.state.identity.approvalCaseId === terminateCaseId,
+    )
+    const tornDecidedState = tornDecidedEntry?.state
+    const tornOpenState: ApprovalCaseState | undefined =
+      tornDecidedState === undefined
+        ? undefined
+        : { ...tornDecidedState, status: 'open', terminalDecision: undefined }
+    const tornCarrierKind = tornDecidedEntry?.carrierKind
+    const tornControl: InterventionControlSource = {
+      listOpenApprovalCases: async () =>
+        tornOpenState !== undefined && tornCarrierKind !== undefined
+          ? [{ state: tornOpenState, carrierKind: tornCarrierKind }]
+          : [],
+      listDecidedApprovalCases: async () =>
+        tornDecidedEntry !== undefined ? [tornDecidedEntry] : [],
+    }
+    const tornProjected = await projectInterventions({
+      rootSessionId: P6T4_ROOT,
+      control: tornControl,
+      reader: async () => facts(),
+    })
+    // The display may be one window stale; the ACT lane never is — it
+    // re-reads OPEN cases fresh, so acting on the truly-decided id stays
+    // refused whatever the projection happened to show.
+    const actAllowOnTorn = await v8('intervention.act', {
+      teamSessionId: P6T4_ROOT,
+      interventionId: `int-${terminateCaseId}`,
+      action: 'allow',
+    })
+
     // The born-terminal twin must surface CONSISTENTLY with the
     // escalate-terminate close: same status/responseBehavior/legalActions.
     return {
@@ -351,6 +399,12 @@ const MEASUREMENT = await (async () => {
       getAfter,
       getOrdinary,
       fakeIds: fakeProjected.map((item) => item.interventionId),
+      tornDecidedSeen: tornDecidedEntry !== undefined,
+      tornIds: tornProjected.map((item) => item.interventionId),
+      tornItem: tornProjected.find(
+        (item) => item.interventionId === `int-${terminateCaseId}`,
+      ) as unknown as Record<string, unknown> | undefined,
+      actAllowOnTorn,
       decidedRead,
       terminateItem: itemFor(itemsAfter, terminateCaseId),
       risenItems: itemsAfter.filter((item) => item['interventionId'] === `int-${risenCaseId}`),
@@ -470,6 +524,35 @@ describe('a4-surface: an A1-12 escalate-terminate close is TOLD as a terminal au
     expect(MEASUREMENT.fakeIds).not.toContain(`int-${MEASUREMENT.terminateCaseId}`)
     expect(MEASUREMENT.fakeIds).not.toContain(`int-${MEASUREMENT.bornTerminalCaseId}`)
     expect(MEASUREMENT.fakeIds).not.toContain(`int-${MEASUREMENT.ordinaryCaseId}`)
+  })
+
+  it('torn-window dedupe (the two control reads run under SEPARATE locks): one case appearing in the OPEN snapshot AND the DECIDED snapshot surfaces EXACTLY ONE item, the OPEN snapshot wins, and the act lane — re-reading OPEN fresh — still refuses acting on the truly-decided id', () => {
+    console.info(`${BANNER} torn-window projection ids: ${JSON.stringify(MEASUREMENT.tornIds)}`)
+    expect(
+      MEASUREMENT.tornDecidedSeen,
+      'the decided read must carry the torn case for the window to be real',
+    ).toBe(true)
+    // EXACTLY ONE. Neutralize the dedupe in projection.ts and THIS line is
+    // the one that reddens: the decided snapshot joins the set and the same
+    // interventionId surfaces a second (terminal) time.
+    expect(MEASUREMENT.tornIds).toEqual([`int-${MEASUREMENT.terminateCaseId}`])
+    // OPEN PRECEDENCE: the surviving surface is the wait-for-response leg
+    // with its affordances — never the authority-unavailable cell. (A
+    // dedupe that kept the decided snapshot instead would answer
+    // authority-unavailable here; showing either twice is already fatal.)
+    const torn = MEASUREMENT.tornItem
+    expect(torn?.['status'], 'torn window: the OPEN snapshot must win').toBe('open')
+    expect(torn?.['responseBehavior']).toBe('wait-for-response')
+    expect(torn?.['legalActions'] as readonly string[]).toContain('escalate')
+    expect(
+      (torn?.['derivationReasons'] as readonly string[] | undefined) ?? [],
+    ).not.toContain('no-resolver')
+    // Staleness is DISPLAY-only: the act plane re-validates against a fresh
+    // OPEN read, and this case is durably decided — so the act stays refused.
+    console.info(
+      `${BANNER} act 'allow' on the truly-decided id: ${JSON.stringify(errorOf(MEASUREMENT.actAllowOnTorn))}`,
+    )
+    expect(errorOf(MEASUREMENT.actAllowOnTorn)['code']).toBe('INTERVENTION_NOT_FOUND')
   })
 
   it('the generic decided read lives in CONTROL and carries EVERY decided case (the resolver-unavailable FILTER is the intervention lane law, not a control-lane opinion)', () => {
