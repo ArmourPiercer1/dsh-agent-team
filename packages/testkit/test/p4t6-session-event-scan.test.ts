@@ -1891,6 +1891,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts',
       'packages/runtime/test/a4p6-driven-principal-act.test.ts',
     ]
+    // A4-PR7 (feat/a4-pr7-v3-cutover): A1-14's consumption-point revalidation
+    // suite. This list grows with every scannable file PR7 adds, and the
+    // advancing total below moves exactly when this list does — never for a file
+    // that is not named here, and never by hand.
+    const SCANNED_PATHS_A4PR7: readonly string[] = [
+      'packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
@@ -1899,7 +1906,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR3.length +
         SCANNED_PATHS_A4PR4.length +
         SCANNED_PATHS_A4PR5.length +
-        SCANNED_PATHS_A4PR6.length,
+        SCANNED_PATHS_A4PR6.length +
+        SCANNED_PATHS_A4PR7.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -1907,7 +1915,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR3.length +
         SCANNED_PATHS_A4PR4.length +
         SCANNED_PATHS_A4PR5.length +
-        SCANNED_PATHS_A4PR6.length,
+        SCANNED_PATHS_A4PR6.length +
+        SCANNED_PATHS_A4PR7.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -1941,6 +1950,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4PR4,
       ...SCANNED_PATHS_A4PR5,
       ...SCANNED_PATHS_A4PR6,
+      ...SCANNED_PATHS_A4PR7,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -1971,6 +1981,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // PRs' numbers stay untouched. Review round 1 moved it with the three
     // review-round specs named in the list.
     expect(SCANNED_PATHS_A4PR6.length).toBe(1016 - 1003)
+    // The A4-PR7 tie, same form. `1017` is PR7's own advancing total: it moves
+    // only when the A4-PR7 list above grows, and the by-path loop above is what
+    // proves each named path really is in the scan (a total that moved for a
+    // dropped file instead of an added one fails there, not here).
+    expect(SCANNED_PATHS_A4PR7.length).toBe(1017 - 1016)
 
   })
 

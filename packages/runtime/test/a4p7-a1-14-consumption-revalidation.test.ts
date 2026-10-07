@@ -772,7 +772,7 @@ const p5 = await (async () => {
   const unavailable = await planeRecheck({
     beneficiaryAuthority: 'member',
     documents: {
-      teamHardEnvelope: { status: 'unavailable', reason: 'authority-ceiling-document-unavailable' },
+      teamHardEnvelope: { status: 'unavailable' },
       permissionMutationEnvelope: { status: 'absent' },
     },
   }).port(RECHECK_INPUT)
