@@ -1,0 +1,442 @@
+A4-PR7 Task 7.5 — review round: the raw gate captures behind 7-5-review-round-mutations.txt
+(SIMULATED / MACHINE evidence. Not a human acceptance pass.)
+
+Each block is the complete stdout+stderr of one `pnpm smoke:composition` run (the review round's
+gate-level claims only; the unit-level mutation proofs are reported inside the mutations receipt).
+Paths are as captured in this worktree. Nothing here is trimmed.
+
+################################################################
+### red/healthy.txt    (md5 665df7446409d544d35161406460024e)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:180:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:261:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): packages/client/composition-shim/client-bundle.js is inside an install surface check:artifacts compares
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+################################################################
+### red/R1-nondentry-dangling-subpath.txt    (md5 665df7446409d544d35161406460024e)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:180:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:261:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): packages/client/composition-shim/client-bundle.js is inside an install surface check:artifacts compares
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+################################################################
+### red/R1b-entry-dangling-subpath.txt    (md5 5eb1068dad1960770e0e81f25e4dbe78)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:180:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:261:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+FAIL client plugin (packages/client): resolution failure inside this repo's own artifact ('./does-not-exist' from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/client/node_modules/@dsh-agent-team/contracts/package.json imported from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/client/dist/packages/client/src/plugin/client.js)
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): packages/client/composition-shim/client-bundle.js is inside an install surface check:artifacts compares
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+FAIL composition-smoke
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:337
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:337:9
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+
+################################################################
+### red/R2b-gate-indented-own-import-column0only.txt    (md5 026e462608899aecdb47f326905e4f31)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:183:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:264:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+################################################################
+### red/R3-manifest-advertises-outside-surface.txt    (md5 665df7446409d544d35161406460024e)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:180:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:261:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): packages/client/composition-shim/client-bundle.js is inside an install surface check:artifacts compares
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+################################################################
+### red/R5-arm-vanishes.txt    (md5 f5dd2c4fc4b591eff1f5aeb75c975e92)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:180:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:261:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): packages/client/composition-shim/client-bundle.js is inside an install surface check:artifacts compares
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+################################################################
+### red/R5-no-arms-at-all.txt    (md5 c33c1a37652efe88ae3195dad9d937f2)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:180:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:261:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+################################################################
+### green/G-healthy-all-fixes.txt    (md5 026e462608899aecdb47f326905e4f31)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:183:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:264:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+################################################################
+### green/G1-nondentry-dangling-subpath.txt    (md5 a5da59cde6ca1c09b63cec30abafbffb)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:180:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:261:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+FAIL client plugin (packages/client): our own artifact imports specifiers this workspace cannot resolve (@dsh-agent-team/contracts/does-not-exist) — an undeclared dependency in this repo, not the host module closure, so this is never skippable
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): packages/client/composition-shim/client-bundle.js is inside an install surface check:artifacts compares
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+FAIL composition-smoke
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:337
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:337:9
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+
+################################################################
+### green/G2-indented-own-import.txt    (md5 b8abe7f4709d3a74341d01c2de6a2385)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:183:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:264:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+FAIL client plugin (packages/client): our own artifact imports specifiers this workspace cannot resolve (@a4p75/own-not-installed-75) — an undeclared dependency in this repo, not the host module closure, so this is never skippable
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+FAIL composition-smoke
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:358
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:358:9
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+
+################################################################
+### green/G3-manifest-advertises-outside-surface.txt    (md5 fa401714aac7638eb0bee4f75eb3222d)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:183:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:264:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+FAIL client bundle composition-bundle-is-install-surface (packages/client/composition-shim): advertised artifact path is outside every install surface (packages/runtime/dist, packages/client/composition-shim): exports[./client] -> packages/client/dist/packages/client/src/plugin/client.js — a path outside the tracked surface ships to nobody and no artifact gate sees it
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+FAIL composition-smoke
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:358
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:358:9
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+
+################################################################
+### green/G5-arm-vanishes.txt    (md5 95d45a323db38b4b5a421de6805a6460)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:183:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:264:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+FAIL client bundle check-set (packages/client/composition-shim): never reported [plugin-row-exports] — an arm that stopped reporting is a closed gate, not a green one
+FAIL composition-smoke
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:358
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:358:9
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+
+################################################################
+### green/G5-no-arms-at-all.txt    (md5 c0722fe19d37d8dabad23f403ba0ad84)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:183:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:264:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+FAIL client bundle check-set (packages/client/composition-shim): never reported [composition-output-present, composition-bundle-is-install-surface, manifest-targets-resolve, shim-recorded-values, plugin-row-registrations, bundle-module-graph-evaluates, plugin-row-exports, external-specifier-set, derived-urls-resolve] — an arm that stopped reporting is a closed gate, not a green one
+FAIL composition-smoke
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:358
+  throw new Error('composition smoke failed')
+        ^
+
+Error: composition smoke failed
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:358:9
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+
+################################################################
+### mut/M-A-gate-dangling-subpath.txt    (md5 026e462608899aecdb47f326905e4f31)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:183:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:264:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+################################################################
+### mut/M-F-guard-weakened-arm-dropped.txt    (md5 4ca21f666da3fb2179db3fc64ea1f96a)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:183:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:264:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+
+################################################################
+### mut/M-F-restored-arm-dropped.txt    (md5 026e462608899aecdb47f326905e4f31)
+################################################################
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:183:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-pr75/scripts/composition-smoke.mjs:264:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, katex, mdast-util-from-markdown, mdast-util-gfm, mdast-util-math, micromark-core-commonmark, micromark-extension-gfm, micromark-extension-math, micromark-factory-space, micromark-util-character, micromark-util-classify-character, micromark-util-sanitize-uri, micromark-util-symbol, shiki, simple-icons
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). A skipped step is an unverified claim, not a green one.
+

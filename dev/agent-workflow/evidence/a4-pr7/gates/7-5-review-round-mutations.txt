@@ -1,0 +1,293 @@
+A4-PR7 Task 7.5 — review round: the four required fixes, each reproduced red first
+(SIMULATED / MACHINE evidence. Not a human acceptance pass.)
+
+worktree: .worktrees/a4-pr75   branch: feat/a4-pr75-smoke-gate   head at start: 78153938   base: 991348e0
+node v24.21.0, pnpm 11.7.0, strict virtual store
+Every RED entry below was observed BEFORE the fix it belongs to, on the tree at 78153938 plus the
+single artifact mutation named. Every GREEN entry is the SAME mutation against the fixed code.
+Artifacts mutated under `packages/client/dist` (gitignored) were restored by copy and their sha256
+re-verified; tracked artifacts were restored by copy and re-verified the same way. `git status
+--porcelain` was empty of stray paths at the end of every pair.
+
+Conventions
+  $ smoke           = pnpm smoke:composition            (run from the worktree root)
+  Raw captures      = 7-5-review-round-raw-captures.txt holds the complete, untrimmed output of
+                      every $ smoke run quoted below, each block headed by its md5, so every
+                      "identical to the healthy output" claim in this file is checkable as a
+                      digest match rather than taken on trust.
+  $ test            = pnpm exec vitest run packages/testkit/test/a4p75-composition-smoke-classification.test.ts
+  healthy baseline  = SKIP client plugin … 17 unresolvable … + nine PASS client bundle lines
+                      + PASS composition-smoke, exit 0. Saved and diffed against, not described.
+
+================================================================================================
+FIX 1 — a dangling subpath of a package we ship was laundered into a SKIP
+================================================================================================
+
+Every comparison below is an md5 of captured stdout+stderr, not a prose impression:
+  healthy.txt and R1-nondentry-dangling-subpath.txt = md5 665df7446409d544d35161406460024e (identical)
+  the healthy capture with this round's arms and R2b                        = md5 026e462608899aecdb47f326905e4f31 (identical)
+
+R-1a  RED (pre-fix), the real artifact, a NON-ENTRY own file
+  mutation: prepend `import { dangling } from '@dsh-agent-team/contracts/does-not-exist'` to
+            packages/client/dist/packages/client/src/ui/TeamDock.js
+            (sha256 before/after restore: 3b98b678fb8c…, verified identical)
+  $ smoke
+  SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: @shikijs/langs, anser, clsx, …
+  PASS composition-smoke — 1 step NOT RUN and NOT passed: client plugin (packages/client). …
+  exit=0
+  diff against the healthy baseline captured minutes earlier: BYTE-IDENTICAL TO HEALTHY RUN
+  Why: `@dsh-agent-team/contracts` IS installed, so `findPackageDirectory` found it and
+  `resolvePackageEntryFile` fell through to `manifest.main` — the scan silently traversed the
+  package ROOT instead of the requested subpath, so the specifier was neither own-unresolved nor
+  even `untraversed`. The load error that decided the verdict was the upstream gap
+  (`Cannot find package 'clsx' imported from …/node_modules/…`), because the 17-package gap wins
+  Node's link race for anything deeper than the entry.
+
+R-1b  the same import in the ENTRY file (the asymmetry the reviewer reported)
+  $ smoke
+  FAIL client plugin (packages/client): resolution failure inside this repo's own artifact ('./does-not-exist' from
+    /…/packages/client/node_modules/@dsh-agent-team/contracts/package.json imported from
+    /…/packages/client/dist/packages/client/src/plugin/client.js)
+  FAIL composition-smoke
+  exit=1
+  Note the message: it says "inside this repo's own artifact" while quoting a node_modules path.
+  That sentence is FIX 4; the FAIL itself came from `package === null`, not from the zone test.
+  Measured reason for the asymmetry: in the entry file the dangling request is resolved before the
+  upstream subgraph is entered, so the error names our file; in a deeper own file it never surfaces.
+
+G-1   GREEN (post-fix), same mutation, same file
+  $ smoke
+  FAIL client plugin (packages/client): our own artifact imports specifiers this workspace cannot resolve
+    (@dsh-agent-team/contracts/does-not-exist) — an undeclared dependency in this repo, not the host module
+    closure, so this is never skippable
+  FAIL composition-smoke
+  exit=1
+
+M-A   the fix, broken by execution. `packageSubpathIsMissing(…)` kept, its action reverted to the
+      pre-fix classification (`result.untraversed += 1` instead of `recordUnresolved()`).
+      Not constant-foldable: it is a different statement, not a folded condition.
+      (a) $ test  → 2 failed | 30 passed (32):
+            RED: records a dangling subpath of an INSTALLED package as an own-zone defect, never as untraversed
+            RED: still skips a THIRD-PARTY file whose own subpath does not resolve
+      (b) $ smoke with R-1a's artifact mutation applied → back to
+            SKIP client plugin … 17 unresolvable …   exit=0
+          i.e. the new scan rule, and nothing else in this diff, is what turns the real gate red.
+
+M-B   closure truncation made skippable again: the classifier's truncation guard additionally
+      requires `closure.reason !== null` (a capped walk always has reason null, so the guard stops
+      firing — a runtime condition, nothing to fold away).
+      (a) $ test → 1 failed | 31 passed:
+            RED: fails instead of skipping when the closure walk hit its file cap
+      (b) the paired control lives in the test itself: the same fixture and the same real load
+          error classify `skip` uncappped and `fail` with `maxFiles: 1`, so only `truncated`
+          distinguishes them.
+
+Fix 1 also added a test that a present package's subpath is judged by NODE's rules, not by what
+happens to be on disk: with an `exports` field present an uncovered subpath is a miss EVEN IF the
+file exists (`ERR_PACKAGE_PATH_NOT_EXPORTED` is unconditional), while with no `exports` field the
+legacy candidates (exact, +.js/.mjs/.cjs/.json/.node, /index.*) decide, and an unreadable manifest
+or a bare package name is never a miss. Pattern keys (`"./*"`) count as covered.
+
+Measured blast radius on the real artifact — the rule must not manufacture a new SKIP list:
+  $ pnpm smoke:composition   (final tree, no mutation)
+  … the same 17 named packages, the same nine PASS arms, exit 0. Against the pre-fix healthy
+  capture the output differs in exactly two ways, both intended by this round: the install-surface
+  arm's detail sentence (FIX 3 rewrote it) and two stack-trace line numbers inside the SKIP
+  detail, which moved because composition-smoke.mjs grew by three lines. Nothing else: no new
+  name in the SKIP list, no new FAIL, no arm lost.
+
+================================================================================================
+FIX 2 — the comment at composition-smoke-closure.mjs:113-115 was false, and backwards
+================================================================================================
+
+R-2a  RED (pre-fix), a minimal fixture reproducing the shape (`.tmp-faultscratch/R2/probe.mjs`,
+      re-run under the review round; own NON-ENTRY file whose only defect is an INDENTED import of
+      a package that is not installed anywhere, plus an upstream file with a real gap):
+        visited=3 ownUnresolved=[] upstreamUnresolved=["@x/gone"] untraversed=0 truncated=false
+        loadError: code=ERR_MODULE_NOT_FOUND msg=Cannot find package '@x/gone' imported from …/node_modules/@x/up/lib/index.js
+        classify: {"status":"skip","why":"closure","missing":["@x/gone"]}
+      CONTROL, the identical file with the import moved to column 0 (one space of difference):
+        ownUnresolved=["@x/own-missing"] …
+        classify: {"status":"fail","why":"our own artifact imports specifiers this workspace cannot resolve …"}
+      The missed specifier deletes the own FAIL, then the load error names upstream, so the step
+      skips. That is the opposite of what the comment asserted ("can only ever make the gate skip
+      LESS eagerly"), and it is why the shape survived a round.
+
+R-2b  RED (pre-fix), the real artifact: the same INDENTED own import in
+      packages/client/dist/…/ui/TeamDock.js with the pre-fix column-0 scanner
+      (`STATEMENT_START = /^(?:import|export)\b/`):
+      $ smoke
+      SKIP client plugin (packages/client): host module closure unavailable — 17 unresolvable: …
+      PASS composition-smoke …   exit=0
+
+G-2   GREEN (post-fix), same artifact mutation, leading whitespace admitted:
+      $ smoke
+      FAIL client plugin (packages/client): our own artifact imports specifiers this workspace cannot resolve
+        (@a4p75/own-not-installed-75) — …   exit=1
+
+M-C   the allowance removed again (`STATEMENT_START` back to the column-0 anchor):
+      $ test → 1 failed | 31 passed:
+        RED: sees an own import that is indented, not at column 0 (the skip was the EAGER direction)
+
+      Safety of the allowance, measured two ways on the real artifact. Gate level, and the stronger
+      of the two: the healthy `pnpm smoke:composition` output of the tree WITHOUT the allowance
+      (column-0 scanner, every other fix present) and the healthy output of the tree WITH it are
+      the same bytes — md5 026e462608899aecdb47f326905e4f31 for both captures. Admitting leading whitespace changes nothing
+      about a clean artifact's verdict.
+      Scanner level, a copy of the walk that swaps ONLY the specifier extractor, run twice over
+      the same files —
+        column-0 only : visited=125 own=0 upstream=20
+        leading-space : visited=125 own=0 upstream=20
+        own same? true  upstream same? true
+        specifiers newly seen with leading whitespace allowed: 0
+      (Those are the probe's own counters — a second implementation of the walk, so its totals are
+      not the gate's 125/0/17; what they establish is that strict and wide extraction agree.) Comment and JSDoc lines still fail the
+      pattern on their leading `*`/`//`, which is what kept the invented-package failure the earlier
+      receipt measured out of the scan.
+
+Documentation landed with this fix: the false claim is gone; `esmStaticSpecifiers`' comment now
+states that under-reporting is the EAGER-skip direction and that the two failure modes are not
+symmetric (a false positive fails loud); the module header's "WHAT THIS IS NOT" list names the
+blind spots that remain — static statements only (`await import()`, `require`, computed strings,
+`import type`, and a wrapped statement longer than the 12-line growth guard are invisible), and
+presence-not-Node-resolution (`exports` CONDITIONS are not evaluated) — each with the direction it
+biases the gate. `7-5-mutations.txt` M-c now carries a SCOPE block naming the one shape it proved
+(entry-placed, column-0, package not installed anywhere) and pointing here for the two it did not;
+its observed output is kept verbatim, because it is a measurement.
+
+================================================================================================
+FIX 3 — composition-bundle-is-install-surface was an arm that could not fail
+================================================================================================
+
+R-3a  RED (pre-fix), the committed shim manifest, which the arm never looked at:
+  mutation: packages/client/composition-shim/package.json  exports["./client"] = "../dist/packages/client/src/plugin/client.js"
+            (the target EXISTS on disk, so `manifest-targets-resolve` stays green and only the
+             surface question can go red; sha256 of the manifest before/after restore 1cbb0f5a1341…)
+  $ smoke
+  PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): packages/client/composition-shim/client-bundle.js is inside an install surface check:artifacts compares
+  PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+  PASS composition-smoke …   exit=0
+  Same static fact the reviewer cited: `CLIENT_BUNDLE_INSTALL_PATH` is
+  `CLIENT_COMPOSITION_DIR + '/' + CLIENT_BUNDLE_FILENAME` and `INSTALL_SURFACES` contains
+  `CLIENT_COMPOSITION_DIR` (scripts/client-composition-surface.mjs:65,72,90), and
+  scripts/composition-smoke.mjs passed exactly those — so the arm's verdict was a property of the
+  constants, not of the artifact. The pre-existing test for this arm mutated the INPUT
+  (`installSurfaces: ['packages/runtime/dist']`), which is why it never noticed.
+
+G-3   GREEN (post-fix), same mutation:
+  $ smoke
+  FAIL client bundle composition-bundle-is-install-surface (packages/client/composition-shim): advertised artifact path
+    is outside every install surface (packages/runtime/dist, packages/client/composition-shim):
+    exports[./client] -> packages/client/dist/packages/client/src/plugin/client.js — a path outside the tracked
+    surface ships to nobody and no artifact gate sees it
+  PASS client bundle manifest-targets-resolve …        (still green: the two arms are independent)
+  FAIL composition-smoke   exit=1
+  Healthy run now reads: `all 5 path(s) the built shim manifest advertises land inside an install
+  surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)`.
+
+M-D   arm derived from `expectations` again (`advertised = [{ path: expectations.bundleInstallPath }]`):
+  $ test → 2 failed | 30 passed:
+    RED: is red when the built manifest advertises a path outside the install surface
+    RED: is red when the built manifest advertises nothing at all
+  The second test is the vacuity guard: an empty advertised set would make the containment loop
+  trivially green, so "the manifest names no path" is itself a failure.
+  Docs corrected to match what landed: gates/README.md (the paragraph that credited this arm with
+  "a wrong artifact or manifest path" now says so explicitly, with a dated correction block) and
+  the module's own defect-class table, which had omitted the class entirely.
+
+================================================================================================
+FIX 4 — resolutionFailureOf got the importer right by accident
+================================================================================================
+
+Node 24's verbatim messages, captured from a child `node` (fixtures under .tmp-faultscratch/probe75):
+  ERR_PACKAGE_PATH_NOT_EXPORTED
+    Package subpath './does-not-exist' is not defined by "exports" in <fixture>/node_modules/probe-pkg/package.json imported from <fixture>/subpath-importer.js
+  ERR_UNSUPPORTED_DIR_IMPORT
+    Directory import '<fixture>/somedir' is not supported resolving ES modules imported from <fixture>/dir-importer.js
+
+Pre-fix parse of the first, run against the real error object (`.tmp-faultscratch/probe75/probe2.mjs`):
+  parsed: {"code":"ERR_PACKAGE_PATH_NOT_EXPORTED","specifier":"./does-not-exist",
+           "importer":"<fixture>/node_modules/probe-pkg/package.json imported from <fixture>/subpath-importer.js",
+           "package":null}
+  isInsideNodeModules(importer)=true
+  classify: {"status":"fail","why":"resolution failure inside this repo's own artifact ('./does-not-exist' from
+             <fixture>/node_modules/probe-pkg/package.json imported from <fixture>/subpath-importer.js)"}
+  → the zone test was always true (the captured tail always contains the package.json), the FAIL
+    came from `package === null`, and the message named node_modules while claiming our artifact.
+  The second message parsed to `null` entirely: the directory form was not recognised at all.
+
+Post-fix, same real errors:
+  parsed.importer = <fixture>/subpath-importer.js          (the file that asked for it)
+  isInsideNodeModules(importer)=false
+  package recovered as '@a4p75/present' from the manifest path, so the ZONE decides
+  classify: {"status":"fail","why":"resolution failure in this repo's own artifact: './does-not-exist' imported
+             from <fixture>/own-side.js"}
+  ERR_UNSUPPORTED_DIR_IMPORT now parses (code + importer + null package) and still fails, naming
+  the file it means.
+
+M-E   the pre-fix parse restored (tail-as-importer, no directory form, no package recovery):
+  $ test → 3 failed | 29 passed:
+    RED: names the importing file, not the offending package.json, for a subpath error
+    RED: still skips a THIRD-PARTY file whose own subpath does not resolve
+    RED: parses a directory import and names its importer (and still fails it)
+  Both zones are driven by REAL child-`node` errors, not hand-written strings: an own importer
+  fails, a third-party importer of the same error form still SKIPS and names the package. The
+  tests spawn `node` because the vitest runner resolves these two shapes differently from Node (it
+  resolves a directory import Node rejects, and words a subpath failure differently); pinning the
+  runner's behaviour would have tested the wrong runtime.
+
+================================================================================================
+FIX 5 — the arm set was unguarded: PASS printed over an empty or shrunken check set
+================================================================================================
+
+R-5a  RED (pre-fix), one arm silently not reported
+  mutation (in scripts/composition-smoke-bundle.mjs, runtime condition — not a folded constant):
+    const record = (id, ok, detail) => { if (id === EXPECTED_DROP) return; checks.push({ id, ok, detail }) }
+    with export const EXPECTED_DROP = 'plugin-row-exports'
+  $ smoke  → 8 "PASS client bundle" lines, plugin-row-exports absent entirely
+  PASS composition-smoke …   exit=0
+
+R-5b  RED (pre-fix), ZERO arms returned: `return { ran: true, checks: checks.slice(0, 0), evaluation }`
+  $ smoke  → 0 client-bundle lines
+  PASS composition-smoke …   exit=0
+
+G-5a  GREEN (post-fix), the identical R-5a mutation:
+  FAIL client bundle check-set (packages/client/composition-shim): never reported [plugin-row-exports] —
+    an arm that stopped reporting is a closed gate, not a green one
+  FAIL composition-smoke   exit=1     (8 PASS lines + the check-set FAIL line)
+
+G-5b  GREEN (post-fix), the identical R-5b mutation: the FAIL line names all nine required ids.
+  exit=1
+
+M-F   the guard, shown to be the thing that bites: R-5a's mutation kept, the smoke's guard
+      weakened to fire only when nothing at all was returned
+      (`if (surface.checks.length === 0 && arms.missing.length > 0 && surface.ran === false)`):
+  $ smoke → 8 PASS lines, PASS composition-smoke, exit=0
+  restore the guard, same mutation → FAIL client bundle check-set … never reported
+    [plugin-row-exports], exit=1
+
+M-G   `checkSetDifferences` neutered (`missing` can never be non-empty):
+  $ test → 1 failed | 31 passed:
+    RED: accepts exactly the set it requires, and names both kinds of difference
+  The doctrine is by-name, not by-count: a rename fails as BOTH missing [plugin-row-exports] and
+  unexpected [plugin-row-exportz]; an arm may be added or retired only by editing
+  REQUIRED_CHECK_IDS in the same commit as its `record()` call and its red proof. A test asserts
+  that the required set is exactly the set this repository's real artifact reports.
+
+================================================================================================
+State at the end of this file's measurements
+================================================================================================
+  $ test → 32 passed (21 before the review round; the 11 additions are the pairs above)
+  $ pnpm --filter @dsh-agent-team/testkit run typecheck → clean
+  $ npx eslint scripts/composition-smoke-closure.mjs scripts/composition-smoke-bundle.mjs \
+      scripts/composition-smoke.mjs scripts/client-composition-surface.mjs \
+      packages/testkit/test/a4p75-composition-smoke-classification.test.ts → silent, rc 0
+  No `eslint-disable` of any kind was added; no `@ts-*` comment was added. Grepping the branch
+  diff for "eslint-disable" still returns two hits, both prose (this repo's doctrine text quoted
+  in comments in composition-smoke-closure.mjs and a4p75-composition-smoke-classification.test.ts);
+  read the matched lines rather than trusting the count.
+  No mutation survived: every mutated file was restored from a snapshot taken before the first
+  mutation and re-checked with `git status --porcelain`; the two gitignored dist files were
+  restored by copy with their sha256 verified (TeamDock.js 3b98b678fb8c…, client.js 299b378b9c71…).
+  Scratch lived under the repo (.tmp-faultscratch/, gitignored): a private /tmp per bash call makes
+  /tmp useless for multi-step work.
