@@ -1,0 +1,1 @@
+lint-identities: NOT RUN :: eslint produced no JSON (status 2, signal null, error none)

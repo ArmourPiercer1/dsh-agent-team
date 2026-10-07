@@ -1,0 +1,52 @@
+############ BATTERY at 69f7fdad (head is the commit made from this tree)
+### 1. p4t6 scannable-file ledger
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+
+### 2. the 7.6 gate in the CHECKOUT A REVIEWER CLONES (committed surfaces only, no client build)
+packages/client/dist: ABSENT
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+### 2b. the 7.5 classifier suite in the same tree
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD 69f7fdad, 7 tracked file(s) not matching HEAD; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+
+### 3. build, then the gate and classifier in the HEALTHY tree (build must not touch the committed surface)
+build exit=0
+git status identical after build: yes
+entry present: yes   files under packages/client/dist: 400
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+### 3b. the 7.5 classifier suite in the healthy tree
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+
+### 4. pnpm -r run typecheck
+typecheck exit=0
+Done lines: 8   error TS lines: 0
+
+### 5. changed-file eslint (the files this task touched)
+eslint changed files exit=0
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+### 6. lint-identities --diff <baseline>, exit measured without a pipe
+lint-identities exit=0
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1104 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+
+### 7. composition-smoke, exit measured without a pipe
+composition-smoke exit=0
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke
+
+### 8. tree state at the end
+ M eslint.config.mjs
+ M packages/testkit/test/a4p7-merge-gate.test.ts
+ M packages/testkit/test/a4p75-composition-smoke-classification.test.ts
+ M scripts/lint-identities.mjs
+?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/
+?? scripts/a4-artifact-provenance.d.mts
+?? scripts/a4-artifact-provenance.mjs
+scratch leftovers: packages/testkit/test/.tmp-fault (none expected)

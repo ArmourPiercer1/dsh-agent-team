@@ -30,6 +30,27 @@ export default tseslint.config(
       // read, so `pnpm lint` crashed with ENOENT (exit 2) instead of reporting.
       // `.tmp-*/**` is a pattern so a new scratch directory cannot re-break the gate.
       '.tmp-*/**',
+      // The `.tmp-*/**` pattern above is ROOT-ANCHORED, so it never reached the fixture
+      // scratch the suites build under their own packages: `packages/testkit/test/.tmp-fault/`
+      // was in the lint universe (measured: a file placed there is linted by `eslint .`, which
+      // reports 1103 files with a fixture present and 1102 without). That directory is created
+      // and `rmSync`ed by the suite that owns it, so during any root run the scan walks a tree
+      // that is being deleted underneath it — measured, 3 of 3 attempts: `eslint` exits 2 with
+      // `Error: ENOENT: no such file or directory, open '…/.tmp-fault/repo/scripts/h1.mjs'` at
+      // `eslint-helpers.js readAndVerifyFile`, printing no JSON, which reaches §7.6's lint leg
+      // as `NOT RUN` (the flake class reported against the root suite). Contention was measured
+      // and excluded: four concurrent full scans, and one running against a heavy vitest file,
+      // all exited 1 with complete JSON.
+      //
+      // The exclusion is identity-NEUTRAL in a quiet tree — measured 62 identities with the
+      // pattern, without it, and with fixtures present. It is not a reflexive "ignored files
+      // are invisible" move either: a scratch file a HUMAN leaves at the root stays in scope
+      // on purpose (that is what `pnpm lint` shows them), and the universe the scan read is
+      // printed by `scripts/lint-identities.mjs` on every run. What is removed here is a tree
+      // that exists only while a test is running — an identity that appears and disappears with
+      // test execution cannot belong to a baseline, and its copies of `scripts/**` are
+      // digest-compared to the originals, which ARE linted.
+      '**/.tmp-fault/**',
       '.pnpm-store/**',
       '.pnpm-store-testuse/**',
       '.agents/**',

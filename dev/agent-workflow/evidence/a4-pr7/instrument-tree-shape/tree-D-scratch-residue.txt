@@ -1,0 +1,33 @@
+### TREE D: a checkout carrying one gitignored root-level scratch .mjs
+HEAD=69f7fdad   (this is the coordinator's specimen, reproduced by name)
+git says about it: .gitignore:92:.tmp-resolve-probe.mjs	.tmp-resolve-probe.mjs
+git status --porcelain: 7 line(s), of which untracked-and-not-ignored: 3 — the scratch file appears in neither column, so only the lint scan can see it
+
+### 1. what the instrument reports (raw lint-identities, exit code without a pipe)
+exit=1
+lint-identities: 162 identity lines, 77 distinct (target .)
+lint-identities: universe: 1105 file(s) linted, 1 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): .tmp-resolve-probe.mjs
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 1, resolved 0
+NEW IDENTITIES (1):
+  error no-undef .tmp-resolve-probe.mjs
+
+### 2. what the merge gate's lint leg answers (the leg, not the script)
+       × lint closes as an identity diff against the named baseline, not against a count 9444ms
+AssertionError: lint leg did not close. why: new lint identities against the accepted baseline (universe: 1105 file(s) linted, 1 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): .tmp-resolve-probe.mjs):  | NEW IDENTITIES (1): |   error no-undef .tmp-resolve-probe.mjs
+    lint-identities: universe: 1105 file(s) linted, 1 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): .tmp-resolve-probe.mjs
+      error no-undef .tmp-resolve-probe.mjs: expected 'failed' to be 'passed' // Object.is equality
+      Tests  1 failed | 21 skipped (22)
+
+### 3. what check:artifacts answers in the same tree
+exit=0
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+
+### 4. the same scratch file seen by the fence (the tracked-only leg), for contrast
+the fence reads git ls-files in scope, so a file git ignores is not in its universe at all
+fence exit=1
+scanned-in-scope: 748 tracked files
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+(compare: at this base with no scratch file the fence printed scanned-in-scope: 748)
+scratch removed: yes
+and with it gone, the leg's own verdict:
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0

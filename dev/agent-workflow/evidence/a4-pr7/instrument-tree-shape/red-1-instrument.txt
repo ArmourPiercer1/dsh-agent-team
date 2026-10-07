@@ -1,0 +1,32 @@
+### TREE SHAPE (clean lab, no build) ###
+HEAD=69f7fdadfc1e80459bd8841abdc8e5d356a5ff93
+client dist: ABSENT
+packages/runtime/dist: 1505 files (committed)
+packages/client/composition-shim: 3 files (committed)
+
+### C1 the real composition-smoke in an unbuilt tree (exit measured without a pipe)
+exit=1
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+FAIL composition-smoke
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/scripts/composition-smoke.mjs:422
+  throw new Error(failed
+        ^
+
+Error: composition smoke failed
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/scripts/composition-smoke.mjs:422:9
+
+Node.js v24.21.0
+
+### C2 check:artifacts in an unbuilt tree
+exit=0
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))

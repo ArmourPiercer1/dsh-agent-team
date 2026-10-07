@@ -1,0 +1,31 @@
+### P2a does the client build output SHIP? root package.json files:
+[".agents/skills","cordis.patch.yml","packages/client/composition-shim","packages/runtime/dist","packages/runtime/root-binding","packages/runtime/src/plugin/upstream-resolver.mjs"]
+
+### P2b packages/client/package.json declared entry points:
+{
+ "main": "./dist/index.js",
+ "exports": {
+  ".": {
+   "types": "./dist/index.d.ts",
+   "import": "./dist/index.js"
+  }
+ },
+ "files": [
+  "dist"
+ ]
+}
+
+### P2c does any manifest target packages/client/dist?
+(empty = no manifest names it)
+
+### P1 inventory: tracked vs on-disk per candidate build-output root
+packages/runtime/dist              disk=1505   tracked=1505
+packages/client/composition-shim   disk=3      tracked=3
+packages/client/dist               disk=ABSENT tracked=0
+packages/testkit/dist              disk=ABSENT tracked=0
+packages/contracts/dist            disk=ABSENT tracked=0
+
+### P1b git check-ignore verdicts (is the artifact gitignored build output?)
+packages/runtime/dist/packages/runtime/src/plugin/host.js                ignored=no tracked=YES
+packages/client/dist/packages/client/src/plugin/client.js                ignored=YES tracked=no
+packages/client/composition-shim/client-bundle.js                        ignored=no tracked=YES

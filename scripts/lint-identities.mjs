@@ -58,11 +58,21 @@ export function captureIdentities(target, cwd) {
   const stdout = eslint.stdout ?? ''
   const start = stdout.indexOf('[')
   if (start < 0) {
+    // A NOT-RUN reason is the only part of a NOT-RUN anyone reads, and this one stopped at
+    // the exit code: `status 2, signal null, error none` says eslint died and says nothing
+    // about what it said while dying. Its stderr WAS captured by the spawn and thrown away.
+    // "empty" and "not captured" are different facts and are printed as different facts.
+    const stderr = eslint.stderr
+    const said = stderr === undefined
+      ? 'not captured (stdio was not a pipe)'
+      : stderr.trim() === ''
+        ? `empty (${String(stderr.length)} bytes)`
+        : `${String(stderr.length)} bytes, tail: ${stderr.trim().split('\n').slice(-8).join(' | ')}`
     return {
       ran: false,
       reason:
         `eslint produced no JSON (status ${String(eslint.status)}, ` +
-        `signal ${String(eslint.signal)}, error ${String(eslint.error ?? 'none')})`,
+        `signal ${String(eslint.signal)}, error ${String(eslint.error ?? 'none')}); eslint stderr: ${said}`,
       ids: [],
     }
   }
@@ -74,16 +84,42 @@ export function captureIdentities(target, cwd) {
   }
   const prefix = `${cwd}/`
   const ids = []
+  const scanned = []
   for (const file of parsed) {
     const path = String(file.filePath).startsWith(prefix)
       ? String(file.filePath).slice(prefix.length)
       : String(file.filePath)
+    scanned.push(path)
     for (const m of file.messages ?? []) {
       ids.push(`${m.severity === 2 ? 'error' : 'warning'} ${String(m.ruleId ?? '(parse-fatal)')} ${path}`)
     }
   }
   ids.sort()
-  return { ran: true, reason: null, ids }
+  return { ran: true, reason: null, ids, universe: lintUniverse(cwd, scanned) }
+}
+
+/**
+ * What the scan actually read, printed next to the verdict it produced.
+ *
+ * ESLint does not read `.gitignore`, so the identity set is a function of the FILES, not of
+ * the tree a reviewer can see with `git status`. That is deliberate (the baseline is what a
+ * human gets when they run `pnpm lint`) and it is also how a lane that leaves one scratch
+ * `.mjs` at the repository root turns §7.6's lint leg red without touching a tracked byte —
+ * measured: a root-level `.tmp-resolve-probe.mjs`, listed by name in `.gitignore`, is linted,
+ * produces `error no-undef .tmp-resolve-probe.mjs`, and reads as a new identity. A leg whose
+ * universe can change underneath it without saying so is not a measurement, so the universe
+ * is stated on every run: file count, and how many of those files git is told to ignore.
+ */
+export function lintUniverse(cwd, paths) {
+  if (paths.length === 0) return { files: 0, ignored: [] }
+  const r = spawnSync('git', ['check-ignore', '--stdin'], {
+    cwd,
+    encoding: 'utf8',
+    input: `${paths.join('\n')}\n`,
+    maxBuffer: 64 * 1024 * 1024,
+  })
+  if (r.status !== 0 && r.status !== 1) return { files: paths.length, ignored: [], unreadable: `git check-ignore exited ${String(r.status)}` }
+  return { files: paths.length, ignored: (r.stdout ?? '').split('\n').filter(Boolean).sort() }
 }
 
 /** The set-criterion: identities present on the right and absent on the left. */
@@ -113,6 +149,16 @@ process.stdout.write(
   `lint-identities: ${String(capture.ids.length)} identity lines, ` +
     `${String(new Set(capture.ids).size)} distinct (target ${args.target})\n`,
 )
+{
+  const u = capture.universe ?? { files: 0, ignored: [] }
+  const shown = u.ignored.slice(0, 8).join(', ')
+  process.stdout.write(
+    `lint-identities: universe: ${String(u.files)} file(s) linted, ${String(u.ignored.length)} of them gitignored ` +
+      `(ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)` +
+      `${u.ignored.length > 0 ? `: ${shown}${u.ignored.length > 8 ? ` (+${String(u.ignored.length - 8)} more)` : ''}` : ''}` +
+      `${'unreadable' in u && u.unreadable !== undefined ? `; universe provenance INCOMPLETE: ${String(u.unreadable)}` : ''}\n`,
+  )
+}
 if (args.baseline !== null) {
   const { readFileSync } = await import('node:fs')
   const baselineLines = readFileSync(resolve(cwd, args.baseline), 'utf8').split('\n')

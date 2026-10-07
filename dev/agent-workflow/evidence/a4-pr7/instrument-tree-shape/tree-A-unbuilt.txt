@@ -1,0 +1,13 @@
+### TREE A: no build output at all (fresh-checkout shape). HEAD=69f7fdad
+client dist: ABSENT
+
+### the 7.6 gate
+       × refuses the leg, by name, when the host module closure cannot be traversed 380ms
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 passed (22)
+
+### the 7.5 classifier suite
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD 69f7fdad, 5 tracked file(s) not matching HEAD; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+restored: yes
