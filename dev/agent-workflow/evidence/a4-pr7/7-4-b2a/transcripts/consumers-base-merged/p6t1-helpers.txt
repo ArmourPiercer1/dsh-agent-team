@@ -1,0 +1,314 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ✓ packages/runtime/test/p6t1-checks.test.ts (27 tests) 20ms
+ ✓ packages/runtime/test/mcp-target-materialization-unit.test.ts (5 tests) 6ms
+ ✓ packages/runtime/test/model-activation-step8.test.ts (4 tests) 98ms
+ ✓ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts (1 test) 38ms
+ ✓ packages/runtime/test/requirement-authority-negatives.test.ts (10 tests) 40ms
+ ✓ packages/runtime/test/recovery-dispatch-abort-zero-effect.test.ts (1 test) 37ms
+ ✓ packages/runtime/test/required-mcp-live-outage-recovery.test.ts (3 tests) 64ms
+ ✓ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts (3 tests) 68ms
+ ✓ packages/runtime/test/restart-readiness-unknown.test.ts (3 tests) 65ms
+ ✓ packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts (1 test) 44ms
+ ✓ packages/runtime/test/recovery-leader-dispatch-review.test.ts (1 test) 63ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts (5 tests) 99ms
+ ✓ packages/runtime/test/leader-template-required-boundary.test.ts (7 tests) 126ms
+ ✓ packages/runtime/test/recovery-send-message-review.test.ts (7 tests) 124ms
+ ✓ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts (5 tests) 110ms
+ ✓ packages/runtime/test/recovery-abandon-commit-fault.test.ts (4 tests) 86ms
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed) 11ms
+     ✓ 1. the pending DIRECT intent is recovered exactly once, through the fresh port, with the ORIGINAL correlation 3ms
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 4ms
+     ✓ 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once) 0ms
+     ✓ 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4) 0ms
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 2ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 16ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 8ms
+     ✓ 2. the sender holds the peer-direct grant → DIRECT to the peer session 1ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 1ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 1ms
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 2ms
+     ✓ 6. the confirmation facts record the path actually taken for both modes 0ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 0ms
+ ✓ packages/runtime/test/p6t3-send-delivery.test.ts (9 tests) 34ms
+ ✓ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts (2 tests) 168ms
+ ✓ packages/runtime/test/a4a-control-exact-scope.test.ts (28 tests) 7ms
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed) 16ms
+     ✓ reads: list-members / list-templates / inspect-config execute with lossless effects 3ms
+     ✓ E1/E4: template-addressed creations admit DISTINCT new instances (member-activated) 1ms
+     ✓ E6: at-limit admitted; over the TEMPLATE limit rejected; over the TEAM limit rejected 0ms
+     ✓ E3: persistent follow-up keeps the SAME bound child session (durable read-back) 0ms
+     ✓ E2: label and template addressing on instance-addressed tools are live-rejected 0ms
+     × messaging: worker -> leader is delivered direct to the leader bound session 8ms
+     ✓ progress: per-subject sequences (1,2 on unit-a; the other subject restarts at 1) 0ms
+     ✓ the request-token contract: missing/empty/over-long -> BAD_ARGUMENTS 0ms
+     ✓ argument-shape rejections: missing/non-string root, non-object args -> BAD_ARGUMENTS 0ms
+     ✓ caller resolution: no agent / unknown session / throwing resolver -> CALLER_UNRESOLVED 0ms
+     ✓ delegate XOR: neither or both delegation fields -> BAD_ARGUMENTS 0ms
+     ✓ closed vocabularies: bad progress / kind / decision -> BAD_ARGUMENTS 0ms
+     ✓ a well-formed unknown instance id is blocked target-stale by the guard (SD-GUARD) 0ms
+     ✓ the stale-head retry: one ACTIVITY_SEQUENCE_STALE is retried with a fresh head 0ms
+ ✓ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts (14 tests) 9ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts (33 tests) 238ms
+ ✓ packages/runtime/test/a5a-pre-execute.test.ts (50 tests) 16ms
+ ✓ packages/runtime/test/p7t1-probe-generation.test.ts (19 tests) 12ms
+ ✓ packages/runtime/test/p7t1-cold-resume.test.ts (12 tests) 7ms
+ ✓ packages/runtime/test/p7t1-inflight-drift.test.ts (14 tests) 9ms
+ ✓ packages/runtime/test/p6t2-addressing.test.ts (13 tests) 7ms
+ ✓ packages/runtime/test/p6t1-recovery.test.ts (15 tests) 11ms
+ ✓ packages/runtime/test/p6t1-delegate.test.ts (15 tests) 12ms
+ ✓ packages/runtime/test/a4pr0-proposal-store.test.ts (15 tests) 10ms
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 21ms
+     ✓ D3-1 FRESH member create: the scoped persona carries the identity block (owning root + own instanceId + role=member) on the verbatim template persona 3ms
+     ✓ D3-2 COLD RESUME: the resumed member's scoped persona is byte-identical to the create-time one (shared install seam) 2ms
+     ✓ D3-3 CROSS-ROOT: the N member gets the owning root N — never the boot root — on fresh create AND cold resume; the N root keeps only the root block 1ms
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 12ms
+     ✓ D3-5 repeated setup converges: exactly ONE scoped deployment:persona section, unchanged text 1ms
+ ✓ packages/runtime/test/p6t2-actions.test.ts (30 tests) 12ms
+ ✓ packages/runtime/test/multi-mcp-wiring.test.ts (49 tests) 17ms
+ ✓ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (42 tests) 16ms
+ ✓ packages/runtime/test/model-inspect-config.test.ts (7 tests) 9ms
+ ✓ packages/runtime/test/p6t1-explicit.test.ts (26 tests) 24ms
+ ✓ packages/runtime/test/tcm-m3-root-initial-work.test.ts (18 tests) 9ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (32 tests) 14ms
+ ✓ packages/runtime/test/a2c2-permission-coverage.test.ts (18 tests) 14ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts (12 tests) 17ms
+ ✓ packages/runtime/test/h1a-pre-execute-endcap.test.ts (49 tests) 13ms
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ✓ packages/runtime/test/a2c4-external-lastmile.test.ts (11 tests) 9ms
+ ✓ packages/runtime/test/a4p4-operation-approval-authority.test.ts (16 tests) 11ms
+ ✓ packages/runtime/test/exec-contract-dual-gate.test.ts (14 tests) 37ms
+ ✓ packages/runtime/test/f3a-lock-scope.test.ts (7 tests) 8ms
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (28 tests) 7ms
+ ✓ packages/runtime/test/a2c3-inspect-operation-permission.test.ts (14 tests) 5ms
+ ✓ packages/runtime/test/p8s7r1-initial-work.test.ts (9 tests) 8ms
+ ✓ packages/runtime/test/issue1-async-delegation.test.ts (18 tests) 8ms
+ ✓ packages/runtime/test/p8s4a-entrypoints.test.ts (11 tests) 6ms
+ ✓ packages/runtime/test/issue2-capability-permission-precedence.test.ts (12 tests) 7ms
+ ✓ packages/runtime/test/p6t2-authority.test.ts (10 tests) 7ms
+ ✓ packages/runtime/test/prf-inspect-same-source.test.ts (8 tests) 6ms
+ ✓ packages/tools/test/rc2-team-deny-least-privilege.test.ts (13 tests) 13ms
+ ✓ packages/runtime/test/p8s2-leader-contract.test.ts (12 tests) 7ms
+ ✓ packages/runtime/test/f9-control-exactly-once.test.ts (10 tests) 11ms
+ ✓ packages/runtime/test/c1-control-notification.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/t14h-probe-merge.test.ts (10 tests) 7ms
+ ✓ packages/runtime/test/a4p4-operation-single-shot.test.ts (6 tests) 7ms
+ ✓ packages/runtime/test/control-legacy-row-compat.test.ts (5 tests) 5ms
+ ✓ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts (12 tests) 8ms
+ ✓ packages/runtime/test/a4pr0-proposal-generation.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts (13 tests) 10ms
+ ✓ packages/runtime/test/tcm-g1-s6-integration.test.ts (11 tests) 6ms
+ ✓ packages/runtime/test/control-guard-leader.test.ts (13 tests) 11ms
+ ✓ packages/runtime/test/control-abandon-without-resolve-envelope.test.ts (8 tests) 6ms
+ ✓ packages/tools/test/c1-list-pending-control.test.ts (15 tests) 11ms
+ ✓ packages/runtime/test/work-completion-async-wakeup.test.ts (6 tests) 8ms
+ ✓ packages/tools/test/archive-member-tool.test.ts (11 tests) 9ms
+ ✓ packages/tools/test/p6t6-guard.test.ts (9 tests) 6ms
+ ✓ packages/runtime/test/p8s5b-operation-fencing.test.ts (26 tests) 35ms
+ ✓ packages/runtime/test/f3c-messaging-sibling.test.ts (2 tests) 5ms
+ ✓ packages/runtime/test/g8s1-generation-stamp.test.ts (5 tests) 5ms
+ ✓ packages/runtime/test/tcm-d4-root-context.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/p6t2-quota.test.ts (6 tests) 4ms
+ ✓ packages/runtime/test/c1-restart-recovery.test.ts (2 tests) 5ms
+ ✓ packages/runtime/test/h4-rule-identity.test.ts (10 tests) 7ms
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 1 failed) 13ms
+     ✓ two activated results with distinct instance ids and child Sessions 2ms
+     ✓ two COMMITTED operations, two members, two distinct child Sessions 0ms
+     × five activated results, five COMMITTED operations, five members, five child Sessions 7ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+ ✓ packages/runtime/test/control-review-payload-roundtrip.test.ts (6 tests) 3ms
+ ✓ packages/runtime/test/p8s3-work-request.test.ts (5 tests) 4ms
+ ✓ packages/tools/test/issue1-collect-tools.test.ts (12 tests) 5ms
+ ✓ packages/runtime/test/control-subject-cross-kind-alias.test.ts (2 tests) 3ms
+ ✓ packages/runtime/test/control-inline-abandon.test.ts (6 tests) 5ms
+ ✓ packages/tools/test/c1-caller-root-binding.test.ts (6 tests) 5ms
+ ✓ packages/runtime/test/a4p4-capability-vs-permission.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/issue1-serial-blocking.test.ts (3 tests) 2ms
+ ✓ packages/runtime/test/control-inline-wait-abort.test.ts (10 tests) 3ms
+ ✓ packages/runtime/test/send-message-liveness.test.ts (4 tests) 4ms
+ ✓ packages/runtime/test/t12a-team-tools-registration.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/d1-member-base-tools.test.ts (7 tests) 4ms
+ ✓ packages/runtime/test/c1-production-wiring.test.ts (5 tests) 3ms
+ ✓ packages/runtime/test/a2c1-pwsh-permission.test.ts (28 tests) 6ms
+ ✓ packages/runtime/test/h5-bash-effects.test.ts (25 tests) 4ms
+ ✓ packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests) 7ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: sessionPersistence.exists public seam is unavailable
+ ❯ durableSessionExists packages/runtime/src/plugin/live/agent-bindings.mjs:888:13
+    886|   async function durableSessionExists(sessionId) {
+    887|     if (typeof sessionPersistence?.exists !== 'function') {
+    888|       throw new Error(
+       |             ^
+    889|         'agent-bindings: sessionPersistence.exists public seam is unav…
+    890|       )
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:3897:15
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:629:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality
+
+Expected: "session-child-p6t2-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/tools/test/p6t6-actions.test.ts:893:46
+    891|       expect(delivered.deliveryMode).toBe('direct')
+    892|       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
+    893|       expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.le…
+       |                                              ^
+    894|     }
+    895|     const inputs = A.recordedInputs
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+AssertionError: expected 'agent-bindings: capability template u…' to contain 'fail closed'
+
+Expected: "fail closed"
+Received: "agent-bindings: capability template unresolved for 'session-child-p6t2-w1' (reason=template-id-missing instanceId=inst-p6t2seedw01) (code: capability-template-unresolved)"
+
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:451:50
+    449|     // no block with the foreign root is ever installed.
+    450|     expect(foreignSetupError instanceof Error).toBe(true)
+    451|     expect((foreignSetupError as Error).message).toContain('fail close…
+       |                                                  ^
+    452|     expect(foreignCtxPersonaEntries.length).toBe(0)
+    453|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+AssertionError: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:206:31
+    204| describe('P6-T1 P2: N=5 same-template parallel activations all succeed…
+    205|   it('five activated results, five COMMITTED operations, five members,…
+    206|     expect(p2?.errors.length).toBe(0)
+       |                               ^
+    207|     expect(p2?.results.length).toBe(5)
+    208|     if (p2 === undefined) throw new Error('P2: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality
+
+Expected: "session-child-p6t3-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+    332|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    333|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    334|     expect(o.deliveredToSessionId).toBe(leader.childSessionId)
+       |                                    ^
+    335|
+    336|     // (a) the coordination fact addresses the INTENDED recipient —
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+    397|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    398|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    399|     expect(md.perSender.input.sessionId).toBe(
+       |                               ^
+    400|       P6T3_SEEDS.leader.childSessionId,
+    401|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+    413|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    414|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+    415|     expect(md.revoked.input.sessionId).toBe(
+       |                             ^
+    416|       P6T3_SEEDS.leader.childSessionId,
+    417|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+AssertionError: expected 4 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+    427|     expect(md.envelopeBlocked.errorName).toBe('TeamRuntimeError')
+    428|     expect(md.envelopeBlocked.newWrites).toBe(0)
+    429|     expect(md.envelopeBlocked.inputCount).toBe(
+       |                                           ^
+    430|       md.leaderInputs + md.scoutInputs,
+    431|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+    469|     const scout = P6T3_SEEDS.scout
+    470|     const input = md.noGrant.input
+    471|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    472|     expect(input.attribution.fromInstanceId).toBe(
+    473|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-restart.test.ts:404:18
+    402|
+    403|     const input = rt.inputMed
+    404|     expect(input.sessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+       |                  ^
+    405|     expect(input.attribution).toEqual({
+    406|       kind: 'team-relay',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:360:11
+    358| ): { readonly code: string; readonly details?: Record<string, unknown>…
+    359|   if (!isMessagingError(error)) {
+    360|     throw new Error(
+       |           ^
+    361|       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    362|     )
+ ❯ packages/runtime/test/p6t3-restart.test.ts:451:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  6 failed | 91 passed (97)
+      Tests  10 failed | 1185 passed (1195)
+   Start at  07:28:46
+   Duration  13.24s (transform 31.74s, setup 0ms, import 103.40s, tests 2.24s, environment 11ms)
+

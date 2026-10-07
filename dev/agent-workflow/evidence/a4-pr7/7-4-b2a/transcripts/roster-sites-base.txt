@@ -1,0 +1,55 @@
+packages/runtime/test/a2c1-pwsh-permission.test.ts:211:    'schemaVersion: 1',
+packages/runtime/test/a2c1-pwsh-permission.test.ts:248:    'schemaVersion: 1',
+packages/runtime/test/a2c3-inspect-operation-permission.test.ts:114:  'schemaVersion: 1',
+packages/runtime/test/a2c3-inspect-operation-permission.test.ts:318:      schemaVersion: 2,
+packages/runtime/test/a2c3-inspect-operation-permission.test.ts:463:  'schemaVersion: 1',
+packages/runtime/test/a2c7-subtree-matcher.test.ts:569:      'schemaVersion: 1',
+packages/runtime/test/a2c7-subtree-matcher.test.ts:1473:        '---', 'schemaVersion: 1', 'blueprintId: a2c7-probe', 'revision: "1"',
+packages/runtime/test/a2c7-subtree-matcher.test.ts:1494:        '---', 'schemaVersion: 1', 'blueprintId: a2c7-probe', 'revision: "1"',
+packages/runtime/test/a6a-production-wiring.test.ts:103:  'schemaVersion: 1',
+packages/runtime/test/a6a-production-wiring.test.ts:198:  'schemaVersion: 1',
+packages/runtime/test/alpha2-explicit-agent-setup.test.ts:83:  'schemaVersion: 1',
+packages/runtime/test/bound-blueprint-persona-helpers.ts:55:schemaVersion: 1
+packages/runtime/test/bound-blueprint-persona-helpers.ts:73:schemaVersion: 1
+packages/runtime/test/bound-blueprint-persona-helpers.ts:94:schemaVersion: 1
+packages/runtime/test/bound-blueprint-persona-helpers.ts:112:schemaVersion: 1
+packages/runtime/test/consent-scope-hash-binding.test.ts:130:    'schemaVersion: 2',
+packages/runtime/test/control-abandon-without-resolve-envelope.test.ts:121:  'schemaVersion: 1',
+packages/runtime/test/control-subject-cross-kind-alias.test.ts:60:  'schemaVersion: 1',
+packages/runtime/test/d2-s6-ensure-root-live.test.ts:402:    'schemaVersion: 1',
+packages/runtime/test/exec-contract-dual-gate.test.ts:491:    'schemaVersion: 1',
+packages/runtime/test/exec-contract-dual-gate.test.ts:626:      'schemaVersion: 1',
+packages/runtime/test/f1-webserver-shim-isolation.test.ts:123:      'schemaVersion: 1',
+packages/runtime/test/f15-mcp-live-loss-characterization.test.ts:97:  'schemaVersion: 1',
+packages/runtime/test/f15-mcp-live-loss.test.ts:82:    schemaVersion: 2,
+packages/runtime/test/f15-mcp-live-loss.test.ts:143:    'schemaVersion: 1',
+packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:806://    (`targetTemplateInputs` is present only for schemaVersion 2). The
+packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:807://    P6-T2 fixture blueprint is schemaVersion 1 — the await is
+packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2103: *  c9-r3-1): the SAME world at schemaVersion 2 with the worker
+packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2115:  'schemaVersion: 2',
+packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:116:  'schemaVersion: 2',
+packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:277:    expect(world.blueprint.schemaVersion).toBe(2)
+packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:51:  'schemaVersion: 2',
+packages/runtime/test/leader-template-required-boundary.test.ts:77:  'schemaVersion: 2',
+packages/runtime/test/mcp-blueprint-initial-grant.test.ts:121:    'schemaVersion: 1',
+packages/runtime/test/mcp-blueprint-initial-grant.test.ts:143:    schemaVersion: 2,
+packages/runtime/test/mcp-supply-config.test.ts:320:      blueprintSource: 'schemaVersion: 1\nblueprintId: MMSUPPLY-BP\nrevision: "1"\n',
+packages/runtime/test/mcp-target-materialization-unit.test.ts:88:  'schemaVersion: 2',
+packages/runtime/test/mcp-target-materialization.test.ts:188:    'schemaVersion: 2',
+packages/runtime/test/mcp-target-materialization.test.ts:950:  await repos.sessionBindings.put({ kind: 'team-root', schemaVersion: 1, sessionId: B_ROOT2 })
+packages/runtime/test/mcp-target-materialization.test.ts:1189:  await repos.sessionBindings.put({ kind: 'team-root', schemaVersion: 1, sessionId: R2_ROOT2 })
+packages/runtime/test/mcp-target-materialization.test.ts:1459:  await repos.sessionBindings.put({ kind: 'team-root', schemaVersion: 1, sessionId: L3_ROOT2 })
+packages/runtime/test/model-activation-step8.test.ts:88:    'schemaVersion: 1',
+packages/runtime/test/model-blueprint-initial-routing.test.ts:73:    'schemaVersion: 1',
+packages/runtime/test/model-blueprint-initial-routing.test.ts:97:    schemaVersion: 2,
+packages/runtime/test/model-inspect-config.test.ts:47:    'schemaVersion: 1',
+packages/runtime/test/model-inspect-config.test.ts:123:        schemaVersion: 2,
+packages/runtime/test/multi-mcp-wiring.test.ts:157:    'schemaVersion: 1',
+packages/runtime/test/multi-mcp-wiring.test.ts:187:    schemaVersion: 2,
+packages/runtime/test/multi-mcp-wiring.test.ts:204:    schemaVersion: 2,
+packages/runtime/test/p6t1-checks.test.ts:393:  'schemaVersion: 1',
+packages/runtime/test/p6t1-checks.test.ts:427:  'schemaVersion: 1',
+packages/runtime/test/p6t1-checks.test.ts:556:  'schemaVersion: 1',
+packages/runtime/test/p6t1-parallel.test.ts:42:  'schemaVersion: 1',
+packages/runtime/test/p8s3b-result-effects.test.ts:414:      'schemaVersion: 1',
+packages/runtime/test/p8s5a-host-loadability.test.ts:76:      blueprintSource: 'schemaVersion: 1\nblueprintId: T2-BP\nrevision: "1"\n',

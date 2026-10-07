@@ -1,0 +1,6 @@
+14be49bec6068ddc6367cea709d5413c2cfdf3c1a365d3716f7460aec68f6f8d  packages/runtime/test/bound-blueprint-persona-helpers.ts
+85cad6f3379e81607f2c0f3e22c19b6e9a46a54fe4a4ce27868731bc63e781a2  packages/runtime/test/p6t1-helpers.ts
+57145a204238fc785a6fc7334c337f9b394609be2f4ae28c01c4223afb27ec5f  packages/runtime/test/p6t2-helpers.ts
+c6b745656a4ea75b2208c3bc431507e6c479f592518f3a00eb00ebcf61b9847e  packages/runtime/test/p6t3-helpers.ts
+ee32324d830577bc8fdb6c49ca720ff91937bdd84ce9601fc32d5a4f1fb92cb1  packages/runtime/test/p6t4-helpers.ts
+797c2f0b73a74069d5d6384f253d45d9c9ec2506b91ae4fb47948668bcace5ed  packages/runtime/test/p8s3b-result-effects.test.ts

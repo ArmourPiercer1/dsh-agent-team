@@ -1,0 +1,78 @@
+fence by-path diff: base (transcripts/fence-base.txt) vs head (transcripts/fence-final-1.txt)
+===============================================================================================
+
+OFFENDING: base 110 sites / 110 paths -> head 76 sites / 76 paths
+  paths gone  (34):
+    - packages/runtime/test/a2c1-pwsh-permission.test.ts
+    - packages/runtime/test/a2c3-inspect-operation-permission.test.ts
+    - packages/runtime/test/a2c7-subtree-matcher.test.ts
+    - packages/runtime/test/a6a-production-wiring.test.ts
+    - packages/runtime/test/alpha2-explicit-agent-setup.test.ts
+    - packages/runtime/test/bound-blueprint-persona-helpers.ts
+    - packages/runtime/test/consent-scope-hash-binding.test.ts
+    - packages/runtime/test/control-abandon-without-resolve-envelope.test.ts
+    - packages/runtime/test/control-subject-cross-kind-alias.test.ts
+    - packages/runtime/test/d2-s6-ensure-root-live.test.ts
+    - packages/runtime/test/exec-contract-dual-gate.test.ts
+    - packages/runtime/test/f1-webserver-shim-isolation.test.ts
+    - packages/runtime/test/f15-mcp-live-loss-characterization.test.ts
+    - packages/runtime/test/f15-mcp-live-loss.test.ts
+    - packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts
+    - packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts
+    - packages/runtime/test/leader-recovery-next-boundary-exit.test.ts
+    - packages/runtime/test/leader-template-required-boundary.test.ts
+    - packages/runtime/test/mcp-blueprint-initial-grant.test.ts
+    - packages/runtime/test/mcp-supply-config.test.ts
+    - packages/runtime/test/mcp-target-materialization-unit.test.ts
+    - packages/runtime/test/mcp-target-materialization.test.ts
+    - packages/runtime/test/model-activation-step8.test.ts
+    - packages/runtime/test/model-blueprint-initial-routing.test.ts
+    - packages/runtime/test/model-inspect-config.test.ts
+    - packages/runtime/test/multi-mcp-wiring.test.ts
+    - packages/runtime/test/p6t1-checks.test.ts
+    - packages/runtime/test/p6t1-helpers.ts
+    - packages/runtime/test/p6t1-parallel.test.ts
+    - packages/runtime/test/p6t2-helpers.ts
+    - packages/runtime/test/p6t3-helpers.ts
+    - packages/runtime/test/p6t4-helpers.ts
+    - packages/runtime/test/p8s3b-result-effects.test.ts
+    - packages/runtime/test/p8s5a-host-loadability.test.ts
+  paths added (0): none
+
+UNKNOWN: base 0 sites / 0 paths -> head 0 sites / 0 paths
+  paths gone  (0):
+  paths added (0): none
+
+ADVISORY: base 9 sites / 9 paths -> head 9 sites / 9 paths
+  paths gone  (0):
+  paths added (0): none
+  same paths, site-list changed (line moves only; count unchanged): 0
+
+REFUSED: base 52 sites / 52 paths -> head 52 sites / 52 paths
+  paths gone  (0):
+  paths added (0): none
+  same paths, site-list changed (line moves only; count unchanged): 9
+    ~ packages/runtime/test/a2c3-inspect-operation-permission.test.ts
+    ~ packages/runtime/test/mcp-blueprint-initial-grant.test.ts
+    ~ packages/runtime/test/mcp-target-materialization.test.ts
+    ~ packages/runtime/test/model-blueprint-initial-routing.test.ts
+    ~ packages/runtime/test/model-inspect-config.test.ts
+    ~ packages/runtime/test/multi-mcp-wiring.test.ts
+    ~ packages/runtime/test/p6t1-helpers.ts
+    ~ packages/runtime/test/p6t2-helpers.ts
+    ~ packages/runtime/test/p6t3-helpers.ts
+
+PROSE: base 5 sites / 5 paths -> head 5 sites / 5 paths
+  paths gone  (0):
+  paths added (0): none
+  same paths, site-list changed (line moves only; count unchanged): 0
+
+ADJUDICATED: base 16 sites / 16 paths -> head 16 sites / 16 paths
+  paths gone  (0):
+  paths added (0): none
+  same paths, site-list changed (line moves only; count unchanged): 0
+
+===============================================================================================
+ALL removed OFFENDING paths are in this lane roster: True
+roster paths that gained or kept a dirty site: none
+roster paths missing from the removed set (i.e. not cleaned): none

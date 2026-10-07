@@ -1,0 +1,2 @@
+packages/runtime/test/bound-blueprint-persona-live.test.ts
+packages/runtime/test/bound-blueprint-persona-root.test.ts

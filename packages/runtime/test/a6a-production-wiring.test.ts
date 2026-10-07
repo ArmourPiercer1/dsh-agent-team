@@ -98,9 +98,17 @@ const DEFAULT_WS = join(WORKTREE_ROOT, 'default-workspace')
 // the alpha.2 `permissions` block (A1-normalized by parseBlueprint).
 // tpl-b carries capabilities WITHOUT permissions: the per-agent scoping
 // control (it must get ZERO listeners while its siblings get one each).
+// A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+// supported version, and the two envelope documents that version REQUIRES are
+// declared — in their zero form `rules: []`, which is a POSITION: on the
+// expansion plane a no-match answers `no-authority`, on the approval plane a
+// no-match is identity. The zeros are honest here rather than convenient:
+// nothing in this file boots a world from this document — it is fed to the
+// parser / the production wiring surface, which reads declared fields, not an
+// authority posture — so the pair satisfies the grammar and claims nothing.
 const PERMISSION_BLUEPRINT = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: team.a6a',
   'revision: "1"',
   'leader:',
@@ -185,6 +193,10 @@ const PERMISSION_BLUEPRINT = [
   'memberEnvelopes: []',
   'policyStates: []',
   'metadata: {}',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   '---',
   '',
 ].join('\n')
@@ -195,7 +207,7 @@ const PERMISSION_BLUEPRINT = [
 // permission listeners may install).
 const ALPHA1_BLUEPRINT = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: team.a6a-alpha1',
   'revision: "1"',
   'leader:',
@@ -243,6 +255,10 @@ const ALPHA1_BLUEPRINT = [
   'memberEnvelopes: []',
   'policyStates: []',
   'metadata: {}',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   '---',
   '',
 ].join('\n')

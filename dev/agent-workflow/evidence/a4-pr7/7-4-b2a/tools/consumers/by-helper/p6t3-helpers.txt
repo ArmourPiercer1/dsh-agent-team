@@ -1,0 +1,5 @@
+packages/runtime/test/f3c-messaging-sibling.test.ts
+packages/runtime/test/p6t3-mediation.test.ts
+packages/runtime/test/p6t3-restart.test.ts
+packages/runtime/test/p6t3-send-delivery.test.ts
+packages/runtime/test/send-message-liveness.test.ts

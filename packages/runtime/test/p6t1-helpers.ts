@@ -95,6 +95,15 @@ export const P6T1_FIXTURE_STATIC_MODEL: ModelSelection = {
   model: 'p6t1-default-model',
 }
 
+// A4-PR7 §7.4 (lane B-runtime-semantics-A): this emitted document rides the
+// supported version, and the two envelope documents that version REQUIRES are
+// declared — in their zero form `rules: []`, which is a POSITION: on the
+// expansion plane a no-match answers `no-authority`, on the approval plane a
+// no-match is identity. Consumers read the document as emitted and build
+// root-direct worlds (the only production producer of
+// `permissionAuthorityCeiling` is the plugin host), so the pair satisfies the
+// v3 grammar without inventing an authority posture no consumer exercises: the
+// helper's full consumer-set run is red-name identical to the base run.
 /**
  * The fixture blueprint source (the closed v1 schema): two member templates
  * (`worker` = default persistent context, `scout` = fresh_per_delegation),
@@ -104,7 +113,7 @@ export const P6T1_FIXTURE_STATIC_MODEL: ModelSelection = {
  */
 export const P6T1_BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: P6T1-BP',
   'revision: "1"',
   'leader:',
@@ -150,6 +159,10 @@ export const P6T1_BLUEPRINT_SOURCE = [
   '  members:',
   '    maxInstances: 2',
   'metadata: {}',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   '---',
   '',
 ].join('\n')

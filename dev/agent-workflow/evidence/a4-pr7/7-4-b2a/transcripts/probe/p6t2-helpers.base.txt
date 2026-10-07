@@ -1,0 +1,172 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ✓ packages/runtime/test/requirement-authority-negatives.test.ts (10 tests) 30ms
+ ✓ packages/runtime/test/a2c3-inspect-operation-permission.test.ts (14 tests) 8ms
+ ✓ packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts (1 test) 38ms
+ ✓ packages/runtime/test/recovery-dispatch-abort-zero-effect.test.ts (1 test) 41ms
+ ✓ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts (1 test) 43ms
+ ✓ packages/runtime/test/p6t2-addressing.test.ts (13 tests) 5ms
+ ✓ packages/runtime/test/recovery-leader-dispatch-review.test.ts (1 test) 50ms
+ ✓ packages/runtime/test/p6t2-authority.test.ts (10 tests) 11ms
+ ✓ packages/runtime/test/required-mcp-live-outage-recovery.test.ts (3 tests) 73ms
+ ✓ packages/runtime/test/recovery-abandon-commit-fault.test.ts (4 tests) 81ms
+ ✓ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts (3 tests) 72ms
+ ✓ packages/runtime/test/restart-readiness-unknown.test.ts (3 tests) 70ms
+ ✓ packages/runtime/test/template-disable-no-requirements-gate.test.ts (5 tests) 89ms
+ ✓ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts (5 tests) 104ms
+ ✓ packages/runtime/test/leader-template-required-boundary.test.ts (7 tests) 135ms
+ ✓ packages/runtime/test/recovery-send-message-review.test.ts (7 tests) 148ms
+ ✓ packages/runtime/test/p6t2-quota.test.ts (6 tests) 5ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 17ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 10ms
+     ✓ 2. the sender holds the peer-direct grant → DIRECT to the peer session 1ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 1ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 1ms
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 2ms
+     ✓ 6. the confirmation facts record the path actually taken for both modes 0ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 1ms
+ ✓ packages/runtime/test/p6t3-send-delivery.test.ts (9 tests) 28ms
+ ✓ packages/runtime/test/g8s1-generation-stamp.test.ts (5 tests) 7ms
+ ✓ packages/runtime/test/p6t2-actions.test.ts (30 tests) 14ms
+ ✓ packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts (2 tests) 173ms
+ ✓ packages/runtime/test/issue1-serial-blocking.test.ts (3 tests) 3ms
+ ✓ packages/runtime/test/fix-control-authz-h-send-message.test.ts (4 tests) 142ms
+ ✓ packages/runtime/test/issue1-async-delegation.test.ts (18 tests) 8ms
+ ✓ packages/runtime/test/p8s2-leader-contract.test.ts (12 tests) 5ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts (12 tests) 5ms
+ ✓ packages/runtime/test/c1-restart-recovery.test.ts (2 tests) 3ms
+ ✓ packages/runtime/test/p8s3-work-request.test.ts (5 tests) 4ms
+ ✓ packages/runtime/test/p8s4a-entrypoints.test.ts (11 tests) 3ms
+ ✓ packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts (12 tests) 4ms
+ ✓ packages/runtime/test/tcm-m3-root-initial-work.test.ts (18 tests) 6ms
+ ✓ packages/runtime/test/f3a-lock-scope.test.ts (7 tests) 4ms
+ ✓ packages/runtime/test/work-completion-async-wakeup.test.ts (6 tests) 4ms
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 14ms
+     ✓ D3-1 FRESH member create: the scoped persona carries the identity block (owning root + own instanceId + role=member) on the verbatim template persona 2ms
+     ✓ D3-2 COLD RESUME: the resumed member's scoped persona is byte-identical to the create-time one (shared install seam) 1ms
+     ✓ D3-3 CROSS-ROOT: the N member gets the owning root N — never the boot root — on fresh create AND cold resume; the N root keeps only the root block 1ms
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 8ms
+     ✓ D3-5 repeated setup converges: exactly ONE scoped deployment:persona section, unchanged text 0ms
+ ✓ packages/runtime/test/p8s7r1-initial-work.test.ts (9 tests) 4ms
+ ✓ packages/runtime/test/tcm-g1-s6-integration.test.ts (11 tests) 5ms
+ ✓ packages/runtime/test/c1-production-wiring.test.ts (5 tests) 3ms
+ ✓ packages/runtime/test/tcm-d4-root-context.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/p8s5b-operation-fencing.test.ts (26 tests) 15ms
+ ✓ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts (74 tests) 4257ms
+     ✓ c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end)  2003ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: sessionPersistence.exists public seam is unavailable
+ ❯ durableSessionExists packages/runtime/src/plugin/live/agent-bindings.mjs:888:13
+    886|   async function durableSessionExists(sessionId) {
+    887|     if (typeof sessionPersistence?.exists !== 'function') {
+    888|       throw new Error(
+       |             ^
+    889|         'agent-bindings: sessionPersistence.exists public seam is unav…
+    890|       )
+ ❯ Object.createRootAgent packages/runtime/src/plugin/live/agent-bindings.mjs:3897:15
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:604:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+AssertionError: expected 'agent-bindings: capability template u…' to contain 'fail closed'
+
+Expected: "fail closed"
+Received: "agent-bindings: capability template unresolved for 'session-child-p6t2-w1' (reason=template-id-missing instanceId=inst-p6t2seedw01) (code: capability-template-unresolved)"
+
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:451:50
+    449|     // no block with the foreign root is ever installed.
+    450|     expect(foreignSetupError instanceof Error).toBe(true)
+    451|     expect((foreignSetupError as Error).message).toContain('fail close…
+       |                                                  ^
+    452|     expect(foreignCtxPersonaEntries.length).toBe(0)
+    453|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality
+
+Expected: "session-child-p6t3-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+    332|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    333|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    334|     expect(o.deliveredToSessionId).toBe(leader.childSessionId)
+       |                                    ^
+    335|
+    336|     // (a) the coordination fact addresses the INTENDED recipient —
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+    397|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    398|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    399|     expect(md.perSender.input.sessionId).toBe(
+       |                               ^
+    400|       P6T3_SEEDS.leader.childSessionId,
+    401|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+    413|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    414|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+    415|     expect(md.revoked.input.sessionId).toBe(
+       |                             ^
+    416|       P6T3_SEEDS.leader.childSessionId,
+    417|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+AssertionError: expected 4 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+    427|     expect(md.envelopeBlocked.errorName).toBe('TeamRuntimeError')
+    428|     expect(md.envelopeBlocked.newWrites).toBe(0)
+    429|     expect(md.envelopeBlocked.inputCount).toBe(
+       |                                           ^
+    430|       md.leaderInputs + md.scoutInputs,
+    431|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+    469|     const scout = P6T3_SEEDS.scout
+    470|     const input = md.noGrant.input
+    471|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    472|     expect(input.attribution.fromInstanceId).toBe(
+    473|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  3 failed | 39 passed (42)
+      Tests  6 failed | 388 passed (394)
+   Start at  06:07:13
+   Duration  5.93s (transform 24.85s, setup 0ms, import 48.93s, tests 5.74s, environment 4ms)
+

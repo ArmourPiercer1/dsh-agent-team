@@ -1,0 +1,21 @@
+Executable-line census of this lane: every changed line must be accounted for.
+===============================================================================================
+Method: base = a4ef2a6b, head = HEAD (a2c7 taken from the working copy so the
+in-flight fix is measured). Comment-only and blank lines are dropped (no semantics).
+difflib opcode pairing over the remaining lines; a changed line is EXPLAINED if it
+mentions a version carrier / envelope element, or is the base/head pair of a line that
+merely gained envelope elements (strip-envelope equality both ways).
+
+34 roster files; 240 changed non-comment lines; unexplained: 0
+
+Assertion lines anywhere in the diff (there is exactly one, disclosed):
+    -    expect(world.blueprint.schemaVersion).toBe(2)
+    +    expect(world.blueprint.schemaVersion).toBe(DECLARED_DOCUMENT_VERSION)
+
+Helper files (the ones with the large consumer runs) — any changed non-comment line that
+is not a document-literal element?
+  bound-blueprint-persona-helpers    changed literal lines:  5   anything else: none
+  p6t1-helpers                       changed literal lines:  5   anything else: none
+  p6t2-helpers                       changed literal lines:  5   anything else: none
+  p6t3-helpers                       changed literal lines:  5   anything else: none
+  p6t4-helpers                       changed literal lines:  4   anything else: none

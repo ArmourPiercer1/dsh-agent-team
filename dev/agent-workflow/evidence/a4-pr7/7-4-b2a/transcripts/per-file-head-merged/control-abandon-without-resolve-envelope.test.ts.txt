@@ -1,0 +1,11 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ✓ packages/runtime/test/control-abandon-without-resolve-envelope.test.ts (8 tests) 3ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  07:35:02
+   Duration  831ms (transform 539ms, setup 0ms, import 746ms, tests 3ms, environment 0ms)
+

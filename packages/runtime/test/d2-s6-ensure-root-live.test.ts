@@ -396,10 +396,19 @@ const D2 = await (async () => {
 
 const R6 = await (async () => {
   const R6_NOW = '2026-08-31T00:00:00.000Z'
+  // A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+  // supported version, and the two envelope documents that version REQUIRES are
+  // declared — in their zero form `rules: []`, which is a POSITION: on the
+  // expansion plane a no-match answers `no-authority` (the document claims no
+  // expansion authority for its Leader), on the approval plane a no-match is
+  // identity (it removes no rung). The zeros are honest here rather than
+  // convenient: this world is built root-direct, and the only production producer
+  // of `permissionAuthorityCeiling` is the plugin host, so no ceiling reader ever
+  // consults these documents. (The same disposition covers every document below.)
   /** The R6 row blueprint (own id; structure mirrors the t12b1 fixture). */
   const DOC_R6 = [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: D2-R6-BP',
     'revision: "1"',
     'leader:',
@@ -441,6 +450,10 @@ const R6 = await (async () => {
     '      maxInstances: 4',
     '      maxConcurrent: 4',
     'metadata: {}',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     '---',
   ].join('\n')
   /** The bound snapshot ref of DOC_R6 (the strong parse supplies the hash). */

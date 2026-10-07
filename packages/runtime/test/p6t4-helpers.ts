@@ -76,12 +76,12 @@ export const P6T4_ROOT = String(P6T1_FIXTURE.rootSessionId)
 export const P6T4_NOW = '2026-09-01T09:00:00Z'
 
 /**
- * The P6-T4 fixture blueprint source (own ids, quotas and the deliberate
- * envelope surface documented in the file header).
+ * The P6-T4 fixture blueprint source (own ids, quotas and the deliberate envelope surface documented in the file header). It rides the supported document version, and the two envelope documents that version REQUIRES are declared rather than omitted, in their zero form `rules: []` — a position, not a blank: on the expansion plane a no-match answers `no-authority` (this document claims no expansion authority for its Leader), on the approval plane a no-match is identity (it removes no rung). Every consumer builds a root-direct world from this source, and the only production producer of `permissionAuthorityCeiling` is the plugin host, so no ceiling reader is ever consulted here and the zeros change no verdict.
+ * The envelope pair sits on ONE source line below on purpose: the §7.4 unknown-adjudication ledger keys the ledger-row literal further down this file by path AND line, so a line-count change above it silently unadjudicates that reviewed verdict and reddens the fence with an UNKNOWN.
  */
 export const P6T4_BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: P6T4-BP',
   'revision: "1"',
   'leader:',
@@ -149,7 +149,7 @@ export const P6T4_BLUEPRINT_SOURCE = [
   '  members:',
   '    maxInstances: 2',
   '    maxConcurrent: 2',
-  'metadata: {}',
+  'metadata: {}', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
   '---',
 ].join('\n')
 

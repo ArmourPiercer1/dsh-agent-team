@@ -1,0 +1,103 @@
+# element-set census over EVERY test file that changed between a4ef2a6b and this branch (merged tree): 0 files.
+# It is a HANDOVER SCREEN, NOT A VERDICT. The 34 files of this roster are clean here (see element-set-census.txt).
+# Every flag below is in a file another lane migrated; each one is a document SHAPE this screen does not yet classify
+# (row-version literals that are deliberately not document versions, documents built by string interpolation from
+# parameters, files new since the base). The lane that owns each file says which of the three it is - this lane
+# does not adjudicate foreign fixtures. Rules are R1-R6 in tools/element-set-census.py; the tool's own
+# self-test (5 mutants: 4 must-fail, 1 must-stay-clean) is the guard against a complacent zero.
+# Command: python3 tools/element-set-census.py a4ef2a6b $(cat <this list>)
+#
+a2c1-pwsh-permission.test.ts                         elements  126  changed regions  4  anomalies 0
+a2c3-inspect-operation-permission.test.ts            elements  179  changed regions  4  anomalies 0
+a2c7-subtree-matcher.test.ts                         elements  129  changed regions  6  anomalies 0
+a3p4-pr4-decision-routing-regression.test.ts         elements   53  changed regions  2  anomalies 0
+a3p4-pr7-entry-exec-contract-regression.test.ts      elements   85  changed regions  2  anomalies 3
+a3p4-production-permission-plane.test.ts             elements   45  changed regions  2  anomalies 0
+a3p5-permission-read-wiring.test.ts                  elements   42  changed regions  2  anomalies 0
+a3p5-permission-splice.test.ts                       elements   45  changed regions  2  anomalies 0
+a4f1-row-version-not-document-version.test.ts        elements   16  changed regions  1  anomalies 2
+a4p6-start-gate-entrances.test.ts                    elements   53  changed regions  2  anomalies 0
+a4p7-v3-cutover-acceptance.test.ts                   elements   56  changed regions  5  anomalies 2
+a4p7-v8-catalog-migration-state.test.ts              elements   17  changed regions  1  anomalies 1
+a6a-production-wiring.test.ts                        elements  154  changed regions  4  anomalies 0
+alpha2-explicit-agent-setup.test.ts                  elements   49  changed regions  2  anomalies 0
+bound-blueprint-persona-helpers.ts                   elements   83  changed regions  8  anomalies 0
+bp1-dual-team-gate.test.ts                           elements   87  changed regions  4  anomalies 0
+bp1-freeze-barrier.test.ts                           elements   53  changed regions  2  anomalies 0
+bp1-red-glue-probe.test.ts                           elements   21  changed regions  2  anomalies 0
+bp1-red-probe.test.ts                                elements   54  changed regions  2  anomalies 0
+consent-scope-hash-binding.test.ts                   elements   55  changed regions  1  anomalies 0
+control-abandon-without-resolve-envelope.test.ts     elements   54  changed regions  2  anomalies 0
+control-subject-cross-kind-alias.test.ts             elements   41  changed regions  2  anomalies 0
+d2-s6-ensure-root-live.test.ts                       elements   50  changed regions  2  anomalies 0
+exec-contract-dual-gate.test.ts                      elements   62  changed regions  4  anomalies 0
+f1-webserver-shim-isolation.test.ts                  elements   17  changed regions  2  anomalies 0
+f15-mcp-live-loss-characterization.test.ts           elements   30  changed regions  2  anomalies 0
+f15-mcp-live-loss.test.ts                            elements   35  changed regions  2  anomalies 0
+fix-control-authz-c-abandon-terminal.test.ts         elements   85  changed regions  1  anomalies 0
+leader-disable-no-requirements-initial-work.test.ts  elements   57  changed regions  1  anomalies 0
+leader-recovery-next-boundary-exit.test.ts           elements   62  changed regions  1  anomalies 0
+leader-template-required-boundary.test.ts            elements   70  changed regions  1  anomalies 0
+mcp-blueprint-initial-grant.test.ts                  elements   18  changed regions  2  anomalies 0
+mcp-supply-config.test.ts                            elements    2  changed regions  1  anomalies 0
+mcp-target-materialization-unit.test.ts              elements   45  changed regions  1  anomalies 0
+mcp-target-materialization.test.ts                   elements   87  changed regions  1  anomalies 0
+model-activation-step8.test.ts                       elements   65  changed regions  2  anomalies 0
+model-blueprint-initial-routing.test.ts              elements   22  changed regions  2  anomalies 0
+model-inspect-config.test.ts                         elements   45  changed regions  2  anomalies 0
+multi-mcp-wiring.test.ts                             elements   19  changed regions  2  anomalies 0
+p6t1-checks.test.ts                                  elements   93  changed regions  6  anomalies 0
+p6t1-helpers.ts                                      elements   54  changed regions  2  anomalies 0
+p6t1-parallel.test.ts                                elements   59  changed regions  2  anomalies 0
+p6t2-helpers.ts                                      elements   65  changed regions  2  anomalies 0
+p6t3-helpers.ts                                      elements   73  changed regions  2  anomalies 0
+p6t4-helpers.ts                                      elements   81  changed regions  2  anomalies 0
+p8s3b-result-effects.test.ts                         elements   39  changed regions  2  anomalies 0
+p8s5a-host-loadability.test.ts                       elements    4  changed regions  1  anomalies 0
+p8s5a-production-assembly.test.ts                    elements   65  changed regions  1  anomalies 0
+p8s6-pagination.test.ts                              elements   64  changed regions  1  anomalies 0
+p8s6-principal.test.ts                               elements   64  changed regions  1  anomalies 0
+p8s6-projection.test.ts                              elements   66  changed regions  1  anomalies 0
+p8s6-push-reconnect.test.ts                          elements   64  changed regions  1  anomalies 0
+p8s6-remote-commands.test.ts                         elements   66  changed regions  1  anomalies 0
+p8s7r2-effective-config.test.ts                      elements   77  changed regions  1  anomalies 0
+p8s7r2-model-state.test.ts                           elements   80  changed regions  1  anomalies 0
+p8s7r2-policy-state-durable.test.ts                  elements   68  changed regions  1  anomalies 0
+p8s7r4-fork-describe.test.ts                         elements   64  changed regions  1  anomalies 0
+p8s7r4-handoff-wiring.test.ts                        elements   61  changed regions  1  anomalies 0
+pbf-default-artifact-urls.test.ts                    elements   13  changed regions  1  anomalies 1
+persona-kind-provider-preflight.test.ts              elements   81  changed regions  2  anomalies 0
+prf-inspect-same-source.test.ts                      elements   52  changed regions  1  anomalies 0
+rc2a1-fs-containment.test.ts                         elements   63  changed regions  1  anomalies 0
+requirement-d1-d3-decision-scoping.test.ts           elements  139  changed regions  5  anomalies 0
+requirement-probe-blueprint-scoping.test.ts          elements   57  changed regions  2  anomalies 0
+rmr-create-or-open-boot.test.ts                      elements   63  changed regions  1  anomalies 0
+rmr-remote-mount-race.test.ts                        elements   41  changed regions  1  anomalies 0
+startup-all-templates-real-authority.test.ts         elements   45  changed regions  1  anomalies 0
+startup-consent-production.test.ts                   elements   44  changed regions  1  anomalies 0
+startup-preflight-production-create.test.ts          elements   45  changed regions  1  anomalies 0
+startup-template-disable-production.test.ts          elements   48  changed regions  1  anomalies 0
+t12a-h1-nullable-mcp.test.ts                         elements   41  changed regions  1  anomalies 0
+t12b1-real-create.test.ts                            elements   60  changed regions  1  anomalies 0
+t12b2-resume-separation.test.ts                      elements   66  changed regions  1  anomalies 0
+t12b6-handoff-agent-start.test.ts                    elements   67  changed regions  1  anomalies 0
+t12m4-remote-mount.test.ts                           elements   65  changed regions  1  anomalies 0
+t14h-probe-merge.test.ts                             elements   55  changed regions  1  anomalies 0
+t4a-capability-wiring.test.ts                        elements   67  changed regions  1  anomalies 0
+tcm-m2-workspace-attach.test.ts                      elements   71  changed regions  1  anomalies 0
+team-compatibility-scope.test.ts                     elements  161  changed regions  3  anomalies 0
+team-session-startup-fence.test.ts                   elements   55  changed regions  1  anomalies 0
+template-disable-no-requirements-gate.test.ts        elements   52  changed regions  1  anomalies 0
+--------------------------------------------------------------------------------------------
+files 81   head document elements seen 4926   changed element regions 152   anomalies 9
+  ~~ packages/runtime/test/mcp-supply-config.test.ts: version-carrying elements 1 -> 0 — DISCLOSED delete-lie: blueprintSource is only checked to be a non-empty string (src/plugin/host.ts:612); the version claim is deleted with the document body, not migrated
+  ~~ packages/runtime/test/p8s5a-host-loadability.test.ts: version-carrying elements 1 -> 0 — DISCLOSED delete-lie: same: no reader consults the version in this string, so the claim is deleted
+  !! packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts: [base] envelope pair not contiguous at element 38 (run length 1)
+  !! packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts: [head] envelope pair not contiguous at element 38 (run length 1)
+  !! packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts: [head] envelope pair not contiguous at element 60 (run length 2)
+  !! packages/runtime/test/a4f1-row-version-not-document-version.test.ts: version-carrying element count 4 -> 2 (a document was added, lost or split; not a disclosed delete-lie)
+  !! packages/runtime/test/a4f1-row-version-not-document-version.test.ts: insertion that is neither the pair nor a version element: ['---', 'blueprintId: ${blueprintId}', 'revision: "${revision}"', 'leader:', '  templateId: leader']
+  !! packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts: version-carrying element count 12 -> 4 (a document was added, lost or split; not a disclosed delete-lie)
+  !! packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts: insertion that is neither the pair nor a version element: ['blueprintId: ${blueprintId}', 'revision: "${revision}"', 'leader:', '  templateId: leader', 'persona: ${JSON.stringify(persona)}']
+  !! packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts: insertion that is neither the pair nor a version element: ['---', 'blueprintId: ${blueprintId}', 'revision: "${revision}"', 'leader:', '  templateId: leader']
+  !! packages/runtime/test/pbf-default-artifact-urls.test.ts: version-carrying element count 1 -> 0 (a document was added, lost or split; not a disclosed delete-lie)

@@ -72,6 +72,15 @@ function scopeTagOf(ctx: AgentCtxDouble): object | undefined {
 // ── the world identities ───────────────────────────────────────────────────
 const ROOT = 'session-a2x-root'
 
+// A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+// supported version, and the two envelope documents that version REQUIRES are
+// declared — in their zero form `rules: []`, which is a POSITION: on the
+// expansion plane a no-match answers `no-authority` (the document claims no
+// expansion authority for its Leader), on the approval plane a no-match is
+// identity (it removes no rung). The zeros are honest here rather than
+// convenient: this world is built root-direct, and the only production producer
+// of `permissionAuthorityCeiling` is the plugin host, so no ceiling reader ever
+// consults these documents. (The same disposition covers every document below.)
 /**
  * The leader-only permissions blueprint (the closed-v1 leader declaration:
  * all four alpha.1 sub-fields + the alpha.2 `permissions` block — the
@@ -80,7 +89,7 @@ const ROOT = 'session-a2x-root'
  */
 const LEADER_PERMISSIONS_BLUEPRINT = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: team.a2x',
   'revision: "1"',
   'leader:',
@@ -117,6 +126,10 @@ const LEADER_PERMISSIONS_BLUEPRINT = [
   'memberEnvelopes: []',
   'policyStates: []',
   'metadata: {}',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   '---',
   '',
 ].join('\n')
