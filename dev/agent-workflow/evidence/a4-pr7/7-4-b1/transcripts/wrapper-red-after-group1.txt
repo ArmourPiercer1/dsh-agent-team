@@ -1,0 +1,30 @@
+     × every deferred path is still dirty (a migrated path must leave the list) 14ms
+     ✓ the fence needs no exemption for its own author 1ms
+     ✓ the fence reports sites, not a bare count, and names a file the reader can open 0ms
+     ✓ the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line 1ms
+     ✓ packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path 0ms
+     ✓ the named namespace traps are never reported as Blueprint sites 1ms
+     ✓ the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused 1ms
+     ✓ the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable 0ms
+     ✓ every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2) 2ms
+     ✓ every UNKNOWN site on the tree is adjudicated BY PATH in this wrapper — no unadjudicated unknown, no stale ledger row 1ms
+     ✓ the scope function is the plan's list plus the measured third class — no more, no less 0ms
+     ✓ f01 YAML-string carrier is DIRTY (the type system cannot see it) 1ms
+     ✓ f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here) 0ms
+     ✓ f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it) 0ms
+     ✓ f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide) 0ms
+     ✓ f05 untyped .mjs object literal is DIRTY (nothing type-checks the file) 0ms
+     ✓ f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions) 0ms
+--
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > every deferred path is still dirty (a migrated path must leave the list)
+AssertionError: expected [ …(6) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "packages/runtime/test/a4f1-row-version-not-document-version.test.ts",
++   "packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts",
++   "packages/runtime/test/bp1-dual-team-gate.test.ts",
++   "packages/runtime/test/bp1-freeze-barrier.test.ts",

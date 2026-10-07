@@ -1,0 +1,216 @@
+scan: blueprint document-version fence (A4-PR7 7.5 + 7.4-scope, ADR A3-16)
+scope: tests/kits/, scripts/, packages/**/harness/, packages/*/test/, packages/**/testdata/, tests/mock/scripts/, cordis.patch.yml (dev/agent-workflow, dist and non-code extensions excluded)
+scanned-in-scope: 741 tracked files
+blueprint-keyed files with version digits: 162
+GATE: dirty + unknown only. advisory/refused/prose are printed for dispatch and audit, never gated.
+OFFENDING cordis.patch.yml :: L60=v1
+OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: L26=v1, L72=v1, L242=v1, L264=v1, L286=v1, L323=v4, L344=v1, L362=v1, L383=v1, L403=v1, L424=v1, L445=v1, L466=v1, L487=v1, L512=v1, L535=v1, L560=v1, L586=v1, L612=v1, L635=v1, L659=v1, L682=v1, L707=v1, L732=v1, L756=v1, L779=v1, L801=v1, L823=v1, L854=v1, L1241=v1, L1264=v1, L1287=v1, L1299=v1, L1313=v1
+OFFENDING packages/domain/test/a1-permission-policy.test.ts :: L165=v1, L219=v1, L373=v1, L442=v1, L497=v1, L635=v1, L733=v1, L787=v1
+OFFENDING packages/domain/test/blueprint-v1-frozen-resume.test.ts :: L32=v1, L76=v1
+OFFENDING packages/domain/test/bp1-blueprint-inspector.test.ts :: L85=v1, L128=v1, L134=v99, L141=v1, L147=v1, L153=v1, L159=v1, L165=v1, L180=v1, L203=v1
+OFFENDING packages/domain/test/exec-contract-a1-leader-allow.test.ts :: L97=v1, L120=v1, L211=v1
+OFFENDING packages/domain/test/t2-blueprint-catalog.test.ts :: L152=v9
+OFFENDING packages/domain/test/t2-blueprint-hash.test.ts :: L158=v1
+OFFENDING packages/domain/test/t2-blueprint-parse.test.ts :: L59=v1, L148=v1, L164=v1, L177=v1, L185=v1, L193=v1
+OFFENDING packages/domain/test/t2-blueprint-v2-hash.test.ts :: L26=v2, L85=v2, L154=v1
+OFFENDING packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L33=v2, L58=v2, L106=v2, L133=v2, L172=v2, L197=v2, L222=v2, L247=v2, L276=v1, L302=v1, L334=v2
+OFFENDING packages/domain/test/t2-blueprint-validation.test.ts :: L39=v1
+OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: L118=v1, L248=v1, L275=v1, L380=v2, L398=v1, L416=v1, L458=v1, L460=v1, L462=v1
+OFFENDING packages/runtime/root-binding/harness/blueprint-source.mjs :: L30=v1
+OFFENDING packages/runtime/test/a2c1-pwsh-permission.test.ts :: L211=v1, L248=v1
+OFFENDING packages/runtime/test/a2c3-inspect-operation-permission.test.ts :: L114=v1, L463=v1
+OFFENDING packages/runtime/test/a2c7-subtree-matcher.test.ts :: L569=v1, L1473=v1, L1494=v1
+OFFENDING packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts :: L89=v1
+OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: L118=v1, L491=v1, L843=v1, L1128=v1
+OFFENDING packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts :: L118=v1
+OFFENDING packages/runtime/test/a3p4-production-permission-plane.test.ts :: L88=v1
+OFFENDING packages/runtime/test/a3p5-permission-read-wiring.test.ts :: L62=v1
+OFFENDING packages/runtime/test/a3p5-permission-splice.test.ts :: L70=v1
+OFFENDING packages/runtime/test/a4f1-row-version-not-document-version.test.ts :: L136=v1, L146=v1, L146=v2
+OFFENDING packages/runtime/test/a4p6-start-gate-entrances.test.ts :: L82=v1
+OFFENDING packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts :: L246=v99, L268=v99, L279=v1, L279=v99, L288=v1, L288=v1, L316=v1, L550=v1, L551=v99, L656=v1
+OFFENDING packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts :: L160=v1
+OFFENDING packages/runtime/test/a6a-production-wiring.test.ts :: L103=v1, L198=v1
+OFFENDING packages/runtime/test/alpha2-explicit-agent-setup.test.ts :: L83=v1
+OFFENDING packages/runtime/test/bound-blueprint-persona-helpers.ts :: L55=v1, L73=v1, L94=v1, L112=v1
+OFFENDING packages/runtime/test/bp1-dual-team-gate.test.ts :: L103=v1, L146=v1
+OFFENDING packages/runtime/test/bp1-freeze-barrier.test.ts :: L59=v1
+OFFENDING packages/runtime/test/bp1-red-glue-probe.test.ts :: L63=v1
+OFFENDING packages/runtime/test/bp1-red-probe.test.ts :: L64=v1
+OFFENDING packages/runtime/test/consent-scope-hash-binding.test.ts :: L130=v2
+OFFENDING packages/runtime/test/control-abandon-without-resolve-envelope.test.ts :: L121=v1
+OFFENDING packages/runtime/test/control-subject-cross-kind-alias.test.ts :: L60=v1
+OFFENDING packages/runtime/test/d2-s6-ensure-root-live.test.ts :: L402=v1
+OFFENDING packages/runtime/test/exec-contract-dual-gate.test.ts :: L491=v1, L626=v1
+OFFENDING packages/runtime/test/f1-webserver-shim-isolation.test.ts :: L123=v1
+OFFENDING packages/runtime/test/f15-mcp-live-loss-characterization.test.ts :: L97=v1
+OFFENDING packages/runtime/test/f15-mcp-live-loss.test.ts :: L143=v1
+OFFENDING packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts :: L2115=v2
+OFFENDING packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts :: L116=v2
+OFFENDING packages/runtime/test/leader-recovery-next-boundary-exit.test.ts :: L51=v2
+OFFENDING packages/runtime/test/leader-template-required-boundary.test.ts :: L77=v2
+OFFENDING packages/runtime/test/mcp-blueprint-initial-grant.test.ts :: L121=v1
+OFFENDING packages/runtime/test/mcp-supply-config.test.ts :: L320=v1
+OFFENDING packages/runtime/test/mcp-target-materialization-unit.test.ts :: L88=v2
+OFFENDING packages/runtime/test/mcp-target-materialization.test.ts :: L188=v2
+OFFENDING packages/runtime/test/model-activation-step8.test.ts :: L88=v1
+OFFENDING packages/runtime/test/model-blueprint-initial-routing.test.ts :: L73=v1
+OFFENDING packages/runtime/test/model-inspect-config.test.ts :: L47=v1
+OFFENDING packages/runtime/test/multi-mcp-wiring.test.ts :: L157=v1
+OFFENDING packages/runtime/test/p6t1-checks.test.ts :: L393=v1, L427=v1, L556=v1
+OFFENDING packages/runtime/test/p6t1-helpers.ts :: L107=v1
+OFFENDING packages/runtime/test/p6t1-parallel.test.ts :: L42=v1
+OFFENDING packages/runtime/test/p6t2-helpers.ts :: L82=v1
+OFFENDING packages/runtime/test/p6t3-helpers.ts :: L70=v1
+OFFENDING packages/runtime/test/p6t4-helpers.ts :: L84=v1
+OFFENDING packages/runtime/test/p8s3b-result-effects.test.ts :: L414=v1
+OFFENDING packages/runtime/test/p8s5a-host-loadability.test.ts :: L76=v1
+OFFENDING packages/runtime/test/p8s5a-production-assembly.test.ts :: L97=v1
+OFFENDING packages/runtime/test/p8s6-pagination.test.ts :: L76=v1
+OFFENDING packages/runtime/test/p8s6-principal.test.ts :: L104=v1
+OFFENDING packages/runtime/test/p8s6-projection.test.ts :: L74=v1
+OFFENDING packages/runtime/test/p8s6-push-reconnect.test.ts :: L61=v1
+OFFENDING packages/runtime/test/p8s6-remote-commands.test.ts :: L77=v1
+OFFENDING packages/runtime/test/p8s7r2-effective-config.test.ts :: L171=v1
+OFFENDING packages/runtime/test/p8s7r2-model-state.test.ts :: L148=v1
+OFFENDING packages/runtime/test/p8s7r2-policy-state-durable.test.ts :: L80=v1
+OFFENDING packages/runtime/test/p8s7r4-fork-describe.test.ts :: L93=v1
+OFFENDING packages/runtime/test/p8s7r4-handoff-wiring.test.ts :: L72=v1
+OFFENDING packages/runtime/test/pbf-default-artifact-urls.test.ts :: L37=v1
+OFFENDING packages/runtime/test/persona-kind-provider-preflight.test.ts :: L159=v2, L181=v2
+OFFENDING packages/runtime/test/prf-inspect-same-source.test.ts :: L68=v1
+OFFENDING packages/runtime/test/rc2a1-fs-containment.test.ts :: L164=v1
+OFFENDING packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts :: L209=v1, L221=v1, L237=v1, L256=v1, L278=v2
+OFFENDING packages/runtime/test/requirement-probe-blueprint-scoping.test.ts :: L182=v1, L199=v1
+OFFENDING packages/runtime/test/rmr-create-or-open-boot.test.ts :: L70=v1
+OFFENDING packages/runtime/test/rmr-remote-mount-race.test.ts :: L71=v1
+OFFENDING packages/runtime/test/startup-all-templates-real-authority.test.ts :: L86=v2
+OFFENDING packages/runtime/test/startup-consent-production.test.ts :: L97=v2
+OFFENDING packages/runtime/test/startup-preflight-production-create.test.ts :: L113=v2
+OFFENDING packages/runtime/test/startup-template-disable-production.test.ts :: L99=v2
+OFFENDING packages/runtime/test/t12a-h1-nullable-mcp.test.ts :: L81=v1
+OFFENDING packages/runtime/test/t12a-live-bridge.mjs :: L1347=v1
+OFFENDING packages/runtime/test/t12b1-real-create.test.ts :: L53=v1
+OFFENDING packages/runtime/test/t12b2-resume-separation.test.ts :: L65=v1
+OFFENDING packages/runtime/test/t12b6-handoff-agent-start.test.ts :: L86=v1
+OFFENDING packages/runtime/test/t12m4-remote-mount.test.ts :: L63=v1
+OFFENDING packages/runtime/test/t14h-probe-merge.test.ts :: L114=v1
+OFFENDING packages/runtime/test/t4a-capability-wiring.test.ts :: L109=v1
+OFFENDING packages/runtime/test/tcm-m2-workspace-attach.test.ts :: L320=v1
+OFFENDING packages/runtime/test/team-compatibility-scope.test.ts :: L149=v1, L206=v1, L727=v1
+OFFENDING packages/runtime/test/team-session-startup-fence.test.ts :: L87=v1
+OFFENDING packages/runtime/test/template-disable-no-requirements-gate.test.ts :: L73=v2
+OFFENDING packages/testkit/test/bp1h-blueprint-authoring.test.ts :: L128=v1
+OFFENDING packages/testkit/test/t6-10-composition-pipeline.test.ts :: L64=v1
+OFFENDING packages/testkit/test/t6-7-fresh-per-delegation.test.ts :: L63=v1
+OFFENDING packages/tools/harness/d4-restart-reopen.mjs :: L220=v1
+OFFENDING packages/tools/harness/g5-member-e2e.mjs :: L267=v1
+OFFENDING packages/tools/harness/run.mjs :: L214=v1
+OFFENDING packages/tools/harness/t12-vertical.mjs :: L215=v1, L1844=v2
+OFFENDING scripts/blueprint-authoring.mjs :: L92=v1
+OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L506=v1, L628=v1
+OFFENDING tests/kits/exec-contract-live-smoke/blueprint.mjs :: L168=v1, L194=v1
+OFFENDING tests/kits/f15-mcp-live-loss-smoke/f15-mcp-live-loss-smoke.mjs :: L628=v2, L701=v1
+OFFENDING tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs :: L475=v1, L510=v1
+OFFENDING tests/kits/model-preference-routing-smoke/model-preference-routing-smoke.mjs :: L337=v1, L359=v1, L417=v1
+OFFENDING tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs :: L688=v1, L748=v1
+OFFENDING tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs :: L569=v1, L622=v1, L661=v1
+OFFENDING tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs :: L1158=v1, L1292=v1
+OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L446=v1, L795=v2, L810=v2, L1155=v2, L1322=v2, L1409=v2, L1496=v1
+OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L375=v1, L787=v2, L802=v2, L1175=v2, L1352=v2, L1446=v1, L1490=v2, L1577=v2, L1664=v1
+OFFENDING tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs :: L603=v1, L643=v1
+OFFENDING tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs :: L480=v1, L601=v1
+OFFENDING tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs :: L217=v1
+OFFENDING tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs :: L489=v1, L604=v1
+OFFENDING tests/mock/scripts/boot.mjs :: L248=v1
+UNKNOWN packages/client/test/client-plugin-mount.test.ts :: L96=v1(outer-line-evidence(projection-envelope/head0) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/client/test/ledger-adapter.test.ts :: L58=v1(outer-line-evidence(ledger-row/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/client/test/team-command-flow.test.ts :: L76=v1(outer-line-evidence(projection-envelope/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/client/test/team-projection-store-v6.test.ts :: L65=v1(outer-line-evidence(projection-envelope/head0) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused), L93=v1(outer-line-evidence(projection-envelope/head0) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused), L290=v1(outer-line-evidence(projection-envelope/head0) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/client/test/team-projection-store.test.ts :: L74=v1(outer-line-evidence(projection-envelope/head0) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/client/test/team-view.client.spec.tsx :: L199=v1(outer-line-evidence(ledger-row/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/contracts/test/negative.test.ts :: L151=v2(named-namespace(team-session-record/same-line) on SPREAD-assisted literal — hidden keys cannot be certified document-free; adjudicate by hand), L155=v0(named-namespace(team-session-record/same-line) on SPREAD-assisted literal — hidden keys cannot be certified document-free; adjudicate by hand), L157=v1(named-namespace(team-session-record/same-line) on SPREAD-assisted literal — hidden keys cannot be certified document-free; adjudicate by hand)
+UNKNOWN packages/remote/test/c6-remote-v6.test.ts :: L308=v1(outer-line-evidence(projection-envelope/head0) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/remote/test/p8t3-helpers.ts :: L119=v1(outer-line-evidence(projection-envelope/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/remote/test/p8t4-engine.test.ts :: L62=v1(outer-line-evidence(projection-envelope/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/remote/test/p8t4-server.ts :: L46=v1(outer-line-evidence(projection-envelope/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused), L66=v1(outer-line-evidence(projection-envelope/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/remote/test/p8t4-sync.test.ts :: L51=v1(outer-line-evidence(projection-envelope/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/runtime/test/p01-team-scoped-overlay.test.ts :: L211=v1(outer-line-evidence(projection-envelope/head0) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/runtime/test/p6t4-helpers.ts :: L458=v2(outer-line-evidence(ledger-row/head0) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+UNKNOWN packages/storage/test/bp1-blueprint-registry.test.ts :: L146=v1(named-namespace(registry-row/same-line) on SPREAD-assisted literal — hidden keys cannot be certified document-free; adjudicate by hand), L159=v1(named-namespace(registry-row/same-line) on SPREAD-assisted literal — hidden keys cannot be certified document-free; adjudicate by hand)
+UNKNOWN packages/storage/test/p4-helpers.ts :: L415=v1(outer-line-evidence(session-binding/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused), L420=v1(outer-line-evidence(session-binding/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused), L425=v1(outer-line-evidence(session-binding/head1) — deciding text is not in the site's own literal; adjudicate by hand, never machine-refused)
+ADVISORY packages/domain/test/bp1-blueprint-inspector.test.ts :: L58=v1(typed-code-position [toEqual/toMatchObject argument -> §7.3's narrowing will NOT catch it (measured: survivor)]), L190=v1(typed-code-position [toEqual/toMatchObject argument -> §7.3's narrowing will NOT catch it (measured: survivor)])
+ADVISORY packages/domain/test/t1-capability-schema.test.ts :: L36=v1(typed-code-position [Record<string,unknown> builder -> §7.3's narrowing will NOT catch it (measured: survivor)])
+ADVISORY packages/domain/test/t2-blueprint-catalog.test.ts :: L157=v9(typed-code-position [measured survivor of the real §7.3 flip (17/18 survived) — the probe, not tsc, dispositions this line])
+ADVISORY packages/domain/test/t2-blueprint-immutability.test.ts :: L69=v1(typed-code-position [measured survivor of the real §7.3 flip (17/18 survived) — the probe, not tsc, dispositions this line])
+ADVISORY packages/domain/test/t2-blueprint-validation.test.ts :: L68=v1(typed-code-position [Record<string,unknown> builder -> §7.3's narrowing will NOT catch it (measured: survivor)])
+ADVISORY packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts :: L432=v1(typed-code-position [toEqual/toMatchObject argument -> §7.3's narrowing will NOT catch it (measured: survivor)]), L471=v1(typed-code-position [toEqual/toMatchObject argument -> §7.3's narrowing will NOT catch it (measured: survivor)]), L527=v1(typed-code-position [toEqual/toMatchObject argument -> §7.3's narrowing will NOT catch it (measured: survivor)]), L571=v99(typed-code-position [toEqual/toMatchObject argument -> §7.3's narrowing will NOT catch it (measured: survivor)]), L577=v99(typed-code-position [toEqual/toMatchObject argument -> §7.3's narrowing will NOT catch it (measured: survivor)])
+ADVISORY packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts :: L692=v1(typed-code-position [measured survivor of the real §7.3 flip (17/18 survived) — the probe, not tsc, dispositions this line])
+ADVISORY packages/runtime/test/p5t5-helpers.ts :: L80=v1(typed-code-position [annotated TeamBlueprint -> the measured flip class that DOES redden (1/18)])
+ADVISORY packages/runtime/test/p8s7r2-disposed-history.test.ts :: L147=v1(typed-code-position [Record<string,unknown> builder -> §7.3's narrowing will NOT catch it (measured: survivor)])
+ADVISORY packages/runtime/test/policy-state-bound-blueprint-production-wiring.test.ts :: L233=v1(typed-code-position [as-unknown-as -> §7.3's narrowing will NOT catch it (measured: survivor of the real flip)])
+ADVISORY packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts :: L101=v1(typed-code-position [as-unknown-as -> §7.3's narrowing will NOT catch it (measured: survivor of the real flip)])
+ADVISORY packages/testkit/test/bp1h-blueprint-authoring.test.ts :: L95=v1(typed-code-position [toEqual/toMatchObject argument -> §7.3's narrowing will NOT catch it (measured: survivor)]), L149=v1(typed-code-position [toEqual/toMatchObject argument -> §7.3's narrowing will NOT catch it (measured: survivor)])
+REFUSED packages/client/test/d2-team-mode-entry.client.spec.tsx :: L91(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/client/test/d3-ordinary-mode-entry.client.spec.tsx :: L98(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/client/test/f9u-control-surface-probe.client.spec.tsx :: L141(v1) non-blueprint-namespace(projection-envelope/sibling), L162(v1) non-blueprint-namespace(ledger-row/sibling)
+REFUSED packages/client/test/ledger-adapter.test.ts :: L90(v1) non-blueprint-namespace(projection-envelope/sibling), L433(v2) non-blueprint-namespace(artifact-grant-payload/sibling), L450(v2) non-blueprint-namespace(artifact-grant-payload/sibling)
+REFUSED packages/client/test/projection-adapter.test.ts :: L64(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/client/test/team-dock.client.spec.tsx :: L108(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/client/test/team-roots-zero-state.client.spec.tsx :: L145(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/client/test/team-session-resolution.test.ts :: L35(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/client/test/team-view.client.spec.tsx :: L159(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/contracts/test/negative.test.ts :: L23(v1) non-blueprint-namespace(team-session-record/sibling), L36(v1) non-blueprint-namespace(member-instance-record/sibling), L49(v1) non-blueprint-namespace(session-binding/sibling), L265(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/contracts/test/p8t1-projection-fixtures.ts :: L137(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/contracts/test/serialization.test.ts :: L93(v1) non-blueprint-namespace(team-session-record/carrier-sibling), L157(v1) non-blueprint-namespace(member-instance-record/sibling), L178(v1) non-blueprint-namespace(session-binding/same-line), L179(v1) non-blueprint-namespace(session-binding/same-line), L181(v1) non-blueprint-namespace(session-binding/sibling), L199(v1) non-blueprint-namespace(session-binding/sibling), L207(v1) non-blueprint-namespace(session-binding/carrier-sibling)
+REFUSED packages/remote/test/c6-remote-v6.test.ts :: L361(v1) non-blueprint-namespace(projection-envelope/sibling), L382(v1) non-blueprint-namespace(projection-envelope/sibling), L402(v1) non-blueprint-namespace(projection-envelope/sibling), L589(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/remote/test/p8t3-helpers.ts :: L95(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/remote/test/p8t3-round-trip.test.ts :: L215(v1) non-blueprint-namespace(projection-envelope/sibling), L250(v1) non-blueprint-namespace(ledger-row/sibling), L259(v1) non-blueprint-namespace(ledger-row/sibling), L276(v1) non-blueprint-namespace(ledger-row/sibling)
+REFUSED packages/remote/test/p8t4-engine.test.ts :: L122(v1) non-blueprint-namespace(ledger-row/sibling)
+REFUSED packages/runtime/test/a2c3-inspect-operation-permission.test.ts :: L318(v2) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts :: L212(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/bound-blueprint-persona-root.test.ts :: L232(v1) non-blueprint-namespace(session-binding/same-line), L257(v1) non-blueprint-namespace(session-binding/same-line), L295(v1) non-blueprint-namespace(session-binding/sibling), L386(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/d1-team-ownership-index.test.ts :: L214(v1) non-blueprint-namespace(session-binding/same-line), L219(v1) non-blueprint-namespace(session-binding/sibling), L229(v1) non-blueprint-namespace(session-binding/sibling), L304(v1) non-blueprint-namespace(session-binding/sibling), L320(v1) non-blueprint-namespace(session-binding/same-line), L331(v1) non-blueprint-namespace(session-binding/same-line), L345(v1) non-blueprint-namespace(session-binding/same-line), L360(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/d3-member-identity-context.test.ts :: L186(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/f15-mcp-live-loss.test.ts :: L82(v2) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/mcp-blueprint-initial-grant.test.ts :: L143(v2) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/mcp-target-materialization.test.ts :: L950(v1) non-blueprint-namespace(session-binding/same-line), L1189(v1) non-blueprint-namespace(session-binding/same-line), L1459(v1) non-blueprint-namespace(session-binding/same-line)
+REFUSED packages/runtime/test/model-blueprint-initial-routing.test.ts :: L97(v2) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/model-inspect-config.test.ts :: L123(v2) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/multi-mcp-wiring.test.ts :: L187(v2) non-blueprint-namespace(governance-override/sibling), L204(v2) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/p5t1-helpers.ts :: L146(v1) non-blueprint-namespace(session-binding/same-line), L167(v1) non-blueprint-namespace(session-binding/sibling), L172(v1) non-blueprint-namespace(session-binding/same-line)
+REFUSED packages/runtime/test/p5t5-helpers.ts :: L241(v1) non-blueprint-namespace(session-binding/sibling), L250(v1) non-blueprint-namespace(session-binding/sibling), L257(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/p5t6-helpers.ts :: L371(v1) non-blueprint-namespace(session-binding/sibling), L378(v1) non-blueprint-namespace(session-binding/sibling), L385(v1) non-blueprint-namespace(session-binding/sibling), L409(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/p6t1-helpers.ts :: L389(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/p6t2-helpers.ts :: L256(v2) non-blueprint-namespace(governance-ledger/sibling)
+REFUSED packages/runtime/test/p6t3-helpers.ts :: L462(v2) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/p7t3-helpers.ts :: L638(v1) non-blueprint-namespace(session-binding/sibling), L658(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/p8s6-pagination.test.ts :: L244(v2) non-blueprint-namespace(ledger-row/sibling), L257(v1) non-blueprint-namespace(ledger-row/sibling)
+REFUSED packages/runtime/test/p8s6-principal.test.ts :: L427(v2) non-blueprint-namespace(ledger-row/sibling), L436(v2) non-blueprint-namespace(ledger-row/sibling)
+REFUSED packages/runtime/test/p8s6-projection.test.ts :: L462(v1) non-blueprint-namespace(member-instance-record/sibling), L473(v1) non-blueprint-namespace(member-instance-record/sibling)
+REFUSED packages/runtime/test/p8s6-remote-commands.test.ts :: L389(v2) non-blueprint-namespace(ledger-row/sibling)
+REFUSED packages/runtime/test/p8s7r2-disposed-history.test.ts :: L87(v1) non-blueprint-namespace(team-session-record/sibling), L101(v1) non-blueprint-namespace(member-instance-record/sibling), L109(v1) non-blueprint-namespace(member-instance-record/sibling), L119(v1) non-blueprint-namespace(member-instance-record/sibling), L130(v1) non-blueprint-namespace(member-instance-record/sibling)
+REFUSED packages/runtime/test/p8s7r2-effective-config.test.ts :: L783(v1) non-blueprint-namespace(session-binding/sibling), L848(v1) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/p8s7r4-fork-describe.test.ts :: L253(v1) non-blueprint-namespace(session-binding/same-line), L262(v1) non-blueprint-namespace(session-binding/same-line), L265(v1) non-blueprint-namespace(session-binding/same-line), L268(v1) non-blueprint-namespace(session-binding/same-line), L277(v1) non-blueprint-namespace(session-binding/same-line), L286(v1) non-blueprint-namespace(session-binding/same-line), L304(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/policy-state-bound-blueprint-production-wiring.test.ts :: L202(v1) non-blueprint-namespace(team-session-record/sibling), L209(v1) non-blueprint-namespace(team-session-record/sibling), L220(v1) non-blueprint-namespace(team-session-record/sibling)
+REFUSED packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts :: L140(v1) non-blueprint-namespace(team-session-record/sibling), L147(v1) non-blueprint-namespace(team-session-record/sibling)
+REFUSED packages/runtime/test/prf-inspect-same-source.test.ts :: L197(v2) non-blueprint-namespace(governance-ledger/sibling)
+REFUSED packages/runtime/test/s6t-remote-v6.test.ts :: L162(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/runtime/test/t12a-h1-nullable-mcp.test.ts :: L122(v2) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/t4a-capability-wiring.test.ts :: L181(v2) non-blueprint-namespace(governance-override/sibling), L337(v2) non-blueprint-namespace(governance-override/sibling)
+REFUSED packages/runtime/test/tcm-d4-root-context.test.ts :: L167(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/runtime/test/tcm-m1-s6-v2-routing.test.ts :: L61(v1) non-blueprint-namespace(projection-envelope/sibling)
+REFUSED packages/storage/test/p4-helpers.ts :: L435(v2) non-blueprint-namespace(governance-override/sibling), L456(v2) non-blueprint-namespace(governance-override/sibling), L475(v2) non-blueprint-namespace(governance-ledger/sibling), L505(v2) non-blueprint-namespace(governance-ledger/sibling), L524(v2) non-blueprint-namespace(ledger-row/sibling)
+REFUSED packages/testkit/test/t6-8-serialization-roundtrip.test.ts :: L112(v1) non-blueprint-namespace(session-binding/sibling), L117(v1) non-blueprint-namespace(session-binding/sibling), L122(v1) non-blueprint-namespace(session-binding/sibling)
+REFUSED packages/tools/test/c1-caller-root-binding.test.ts :: L198(v1) non-blueprint-namespace(session-binding/sibling)
+PROSE packages/domain/blueprint/testdata/fixtures.ts :: L303=v2
+PROSE packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L7=v2
+PROSE packages/runtime/test/a4f1-row-version-not-document-version.test.ts :: L9=v2
+PROSE packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts :: L622=v99
+PROSE packages/tools/harness/t12-vertical.mjs :: L1838=v2
+RESULT dirty(120 files, 259 sites)
+RESULT unknown(16 files, 24 sites)
+RESULT advisory(12 files, 18 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)

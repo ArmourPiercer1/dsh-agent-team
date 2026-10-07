@@ -69,7 +69,6 @@ import {
   parseBlueprint,
   toBlueprintSnapshotRef,
 } from '../../domain/blueprint/src/index.js'
-import { revisionSource } from '../../domain/blueprint/testdata/fixtures.js'
 import { parseBlueprintSnapshotRef } from '../../contracts/src/index.js'
 import { createTeamDomain } from '../../storage/repositories/index.js'
 import { createBlueprintRegistryRecord } from '../../storage/schema/blueprint-registry.js'
@@ -121,9 +120,66 @@ afterAll(() => {
 
 // --- the fixtures --------------------------------------------------------------
 
-/** A v1 document — the version the acceptance world's frozen rows carry inside. */
+/**
+ * The document versions these fixtures DECLARE. They are claims of THIS file,
+ * minted by the file-owned builder below — not the shared factory's base
+ * version (a claim of the factory, which the factory's own migration will
+ * move; C-domain FINDINGS §5). And none of them is the L3 ROW stamp: rows get
+ * `TEAM_DOMAIN_SCHEMA_VERSION` from the real storage factory, and this file's
+ * whole subject is that the row stamp and the declared version are DIFFERENT
+ * numbers coming from DIFFERENT sources. That `WITNESS_V2` happens to equal
+ * the row stamp today is the fixture's deliberate collision case (see
+ * declaredV2Source), not a shared source of truth — the anti-vacuity guard
+ * below re-measures the divergence on every other row.
+ */
+const WITNESS_V1 = 1
+const WITNESS_V2 = 2
+const WITNESS_V3 = 3
+
+/**
+ * A v1 document — the version the acceptance world's frozen rows carry inside.
+ * This file owns the bytes (7.4-B1 phase 1): an era witness must not be minted
+ * from a factory whose base version is a claim about the factory's era. The
+ * shape is the minimal CLOSED v1 document — every field belongs to the v1
+ * closed set, so it strong-parses while the bridge runs v1, exactly what the
+ * rows and anchors below need.
+ */
 function v1Source(blueprintId: string, revision: string, persona = 'Lead.'): string {
-  return revisionSource(blueprintId, revision, persona)
+  return [
+    '---',
+    `schemaVersion: ${String(WITNESS_V1)}`,
+    `blueprintId: ${blueprintId}`,
+    `revision: "${revision}"`,
+    'leader:',
+    '  templateId: leader',
+    `  persona: ${JSON.stringify(persona)}`,
+    'members: []',
+    'requirements: []',
+    'memberEnvelopes: []',
+    'policyStates: []',
+    'metadata: {}',
+    '---',
+    '',
+  ].join('\n')
+}
+
+/**
+ * Rewrite the frontmatter's declared-version line to the version the LEG needs
+ * the document to DECLARE. The rewrite is line-structural and THROWS if there
+ * is no version line: a silent no-op would collapse the fixture's whole point —
+ * this file's rows are only meaningful because what the document declares and
+ * what the row stamps are DIFFERENT numbers (the anti-vacuity guard below
+ * re-measures the divergence, so a collapse could not pass quietly). The base
+ * body is this file's own (see v1Source), never the shared factory's, so no
+ * factory migration can restamp these witnesses (7.4-B1 phase 1, C-domain
+ * FINDINGS §5).
+ */
+function withDeclaredVersion(source: string, version: number): string {
+  const pattern = /^schemaVersion: \d+$/m
+  if (!pattern.test(source)) {
+    throw new Error('A4-F1 guard: the witness body carries no rewriteable schemaVersion line')
+  }
+  return source.replace(pattern, `schemaVersion: ${String(version)}`)
 }
 
 /**
@@ -133,7 +189,7 @@ function v1Source(blueprintId: string, revision: string, persona = 'Lead.'): str
  * v3 document under a row stamped `2`.
  */
 function declaredV3Source(blueprintId: string, revision: string): string {
-  return v1Source(blueprintId, revision, 'Three.').replace('schemaVersion: 1', 'schemaVersion: 3')
+  return withDeclaredVersion(v1Source(blueprintId, revision, 'Three.'), WITNESS_V3)
 }
 
 /**
@@ -143,7 +199,7 @@ function declaredV3Source(blueprintId: string, revision: string): string {
  * that is what its frontmatter says.
  */
 function declaredV2Source(blueprintId: string, revision: string): string {
-  return v1Source(blueprintId, revision, 'Two.').replace('schemaVersion: 1', 'schemaVersion: 2')
+  return withDeclaredVersion(v1Source(blueprintId, revision, 'Two.'), WITNESS_V2)
 }
 
 /** A stored source that is not a readable document at all (a corrupt row). */

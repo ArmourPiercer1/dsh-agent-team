@@ -1,4 +1,76 @@
-/**
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b1
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (58 tests | 1 failed) 861ms
+     ✓ the scan ran (a scan that could not run is never reported as clean) 1ms
+     ✓ invoking the script by name is a real gate: non-zero exit while dirty sites exist 178ms
+     ✓ a directory that is not a repository reports not-run with exit 2, never clean 38ms
+     ✓ run from a SUBDIRECTORY the fence reports not-run with exit 2, never a false clean (round-3 F3) 36ms
+     ✓ the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path) 1ms
+     ✓ every deferred path is still dirty (a migrated path must leave the list) 0ms
+     ✓ the fence needs no exemption for its own author 1ms
+     ✓ the fence reports sites, not a bare count, and names a file the reader can open 0ms
+     ✓ the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line 0ms
+     ✓ packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path 0ms
+     ✓ the named namespace traps are never reported as Blueprint sites 0ms
+     ✓ the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused 0ms
+     ✓ the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable 0ms
+     × every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2) 4ms
+     ✓ unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated 1ms
+     ✓ every ledger entry cites hand-verified <its own path>:<line> — silence costs a written row 0ms
+     ✓ the ledger is keyed path::L<line>::v<version>: an old two-part key is NOT-RUN naming it (G2) 40ms
+     ✓ dropping ONE row sends THAT site back to UNKNOWN — a second literal on a ledgered line costs its own row (G2) 171ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  340ms
+     ✓ the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4) 41ms
+     ✓ the blind-spot note prints the load-bearing sentence and the two-number audit clause is gone 0ms
+     ✓ the scope function is the plan's list plus the measured third class — no more, no less 1ms
+     ✓ f01 YAML-string carrier is DIRTY (the type system cannot see it) 0ms
+     ✓ f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here) 0ms
+     ✓ f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it) 0ms
+     ✓ f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide) 0ms
+     ✓ f05 untyped .mjs object literal is DIRTY (nothing type-checks the file) 0ms
+     ✓ f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions) 0ms
+     ✓ f07 overlay/projection-service option is UNKNOWN (deciding text on the enclosing line may not refuse) 0ms
+     ✓ f08 projection wire envelope is REFUSED (projection-envelope) 0ms
+     ✓ f09 session-binding row is REFUSED (session-binding) 0ms
+     ✓ f10 MemberInstance row is REFUSED (member-instance-record) 0ms
+     ✓ f11 registry ROW stamps are UNKNOWN (same-line name but SPREAD-hidden keys; head-line name) — F1 adjudicated by hand 0ms
+     ✓ f12 ledger row (shorthand sequence/payload) is UNKNOWN — outer-line evidence gates, never a silent drop 0ms
+     ✓ f13 TeamSessionRecordDto row is REFUSED (team-session-record) 0ms
+     ✓ f14 governance-override row is REFUSED (governance-override) 0ms
+     ✓ f15 approval-case + operation rows are REFUSED (governance-ledger) 0ms
+     ✓ f16 artifact-grant payload is REFUSED (artifact-grant-payload) 0ms
+     ✓ f17 prose document without the blueprintId half is not a site at all 0ms
+     ✓ f18 ambiguous hybrid shape is UNKNOWN and gates (no silent drop, no guessed verdict) 0ms
+     ✓ f19 JSON data is DIRTY (data is never type-checked) 0ms
+     ✓ f20 YAML config blueprintSource block is DIRTY (cordis.patch.yml shape) 0ms
+     ✓ f21 supported-version fixtures stay clean in every carrier (reading decision) 0ms
+     ✓ f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string) 0ms
+     ✓ f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId) 0ms
+     ✓ f24 string-carried YAML WITH document siblings stays DIRTY (no own-pool ns signature, no refusal) 0ms
+     ✓ f25 a complete document smuggled under a row-type annotation is UNKNOWN, never REFUSED 0ms
+     ✓ f26 document fields + row signature in ONE literal is a conflict UNKNOWN (widened doc-only set) 0ms
+     ✓ f27 backtick carriers reach the SAME verdict AND channel as the single-quoted twin 0ms
+     ✓ f28 a document in a multi-line backtick under a row call is UNKNOWN, never refused by the row 0ms
+     ✓ f29 a backtick inside a regex literal opens no phantom template (YAML stays DIRTY) 0ms
+     ✓ f30 a backslash-newline string continuation keeps the carrier a carrier (DIRTY) 0ms
+     ✓ f31 quoted and bare key spellings of one typed object share ONE class 0ms
+     ✓ f33 one document, two brace spellings under a row: SAME class, both visible (round-3 F1) 0ms
+     ✓ f32 V3: members + identity triple under a row conflict is UNKNOWN; f32b: members WITHOUT the triple stays refused (round-3 F2) 0ms
+     ✓ f35 + scope notes: a closed continuation revives CODE on the line tail; both blind spots print (round-3 D) 0ms
+     ✓ the fixture corpus exists and every fixture was exercised 0ms
+     ✓ a real in-scope file that keys blueprintId WITHOUT a version literal is not a site 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2)
+AssertionError: re-anchored pin: the old v99 laundering site must be GONE, not re-labelled: expected '/**\n * a4p7-v3-cutover-acceptance.te…' not to match /schemaVersion:\s*99\b/
+
+- Expected:
+/schemaVersion:\s*99\b/
+
++ Received:
+"/**
  * a4p7-v3-cutover-acceptance.test.ts — A4-PR7 Task 7 acceptance lane.
  *
  * GROUPS A/B/C (Task 7.1): MIGRATION DISCOVERABILITY. The bug this file closes
@@ -99,7 +171,7 @@ const BRIDGE_RUNS_V1 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(1)
 // --- scratch world -------------------------------------------------------------
 
 const thisFile = fileURLToPath(import.meta.url)
-const sep = thisFile.includes('\\') ? '\\' : '/'
+const sep = thisFile.includes('\\\\') ? '\\\\' : '/'
 const scratchRoot = thisFile.slice(0, thisFile.lastIndexOf(sep)) + sep + '.tmp-a4p7-cutover'
 
 // Wipe FIRST: a stale file from an aborted run would join the scan and make a
@@ -185,7 +257,7 @@ function pluginCodeOf(error: unknown): string | undefined {
 
 /**
  * A version NOBODY DEFINED, derived from the domain's own set — the proof these
- * legs pin is SET MEMBERSHIP ("outside every defined version"), not a remembered
+ * legs pin is SET MEMBERSHIP (\"outside every defined version\"), not a remembered
  * number, and this file already asserts that way where the question is the
  * version this build RUNS. The pre-migration fixture spelled the value as 99;
  * the derivation renders 99's successor today and keeps the probe outside the
@@ -200,10 +272,10 @@ const VERSION_NOBODY_DEFINED = Math.max(...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS) 
  * about the version it names.
  */
 function withDeclaredVersion(source: string, version: string | number): string {
-  if (!/^schemaVersion: \d+$/m.test(source)) {
+  if (!/^schemaVersion: \\d+$/m.test(source)) {
     throw new Error('a4p7 cutover fixture: the source carries no rewriteable schemaVersion line')
   }
-  return source.replace(/^schemaVersion: \d+$/m, `schemaVersion: ${String(version)}`)
+  return source.replace(/^schemaVersion: \\d+$/m, `schemaVersion: ${String(version)}`)
 }
 
 /**
@@ -218,9 +290,9 @@ const WITNESS_V1 = 1
 
 /**
  * A byte-owned v1 witness: the minimal CLOSED v1 document, declared at
- * `WITNESS_V1` by this file. Everything the W1 group asserts — "unmigrated",
- * "the bridge still runs it", "the strong parser accepts it while the bridge
- * runs v1" — is a claim about THIS version, so the bytes must not be the
+ * `WITNESS_V1` by this file. Everything the W1 group asserts — \"unmigrated\",
+ * \"the bridge still runs it\", \"the strong parser accepts it while the bridge
+ * runs v1\" — is a claim about THIS version, so the bytes must not be the
  * factory's era. Documents whose whole point is the version this build RUNS
  * keep flowing through `revisionSource`: those correctly follow the factory.
  */
@@ -229,7 +301,7 @@ function witnessV1Source(blueprintId: string, revision: string, persona = 'Lead.
     '---',
     `schemaVersion: ${String(WITNESS_V1)}`,
     `blueprintId: ${blueprintId}`,
-    `revision: "${revision}"`,
+    `revision: \"${revision}\"`,
     'leader:',
     '  templateId: leader',
     `  persona: ${JSON.stringify(persona)}`,
@@ -240,7 +312,7 @@ function witnessV1Source(blueprintId: string, revision: string, persona = 'Lead.
     'metadata: {}',
     '---',
     '',
-  ].join('\n')
+  ].join('\\n')
 }
 
 /**
@@ -304,11 +376,11 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
       [
         '---',
         `schemaVersion: ${VERSION_NOBODY_DEFINED}`,
-        'blueprintId: "not an id!!"',
-        'revision: "1"',
+        'blueprintId: \"not an id!!\"',
+        'revision: \"1\"',
         'leader:',
         '  templateId: leader',
-        '  persona: "Lead."',
+        '  persona: \"Lead.\"',
         'members: []',
         'requirements: []',
         'memberEnvelopes: []',
@@ -316,7 +388,7 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
         'metadata: {}',
         '---',
         '',
-      ].join('\n'),
+      ].join('\\n'),
     )
     expect(result.status).toBe('rejected')
     if (result.status !== 'rejected') return
@@ -325,7 +397,7 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
 
   it('a document with no blueprintId is refused for the missing identity whatever its version', () => {
     const result = inspectBlueprintSource(
-      ['---', `schemaVersion: ${VERSION_NOBODY_DEFINED}`, 'revision: "1"', '---', ''].join('\n'),
+      ['---', `schemaVersion: ${VERSION_NOBODY_DEFINED}`, 'revision: \"1\"', '---', ''].join('\\n'),
     )
     expect(result.status).toBe('rejected')
     if (result.status !== 'rejected') return
@@ -359,7 +431,7 @@ describe('a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges
   it('an unreadable file is refused where it fails to decode, never on the version line', () => {
     // Same law as the first test, one stage earlier: the frontmatter never
     // decodes, so nothing downstream — including the version question — is asked.
-    const result = inspectBlueprintSource('---\n\tblueprintId: [unclosed\n---\n')
+    const result = inspectBlueprintSource('---\\n\\tblueprintId: [unclosed\\n---\\n')
     expect(result.status).toBe('rejected')
     if (result.status !== 'rejected') return
     expect(result.diagnostics[0]?.reason).toBe('yaml-invalid')
@@ -402,7 +474,7 @@ describe('a4p7 7.1 B: the retired set is derived, and the two refusal names stay
 
   it('every version the product once defined is in the history set, so the flip makes a backlog and not a mystery', () => {
     // If a retired version were missing from DEFINED, the cutover would answer
-    // `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` ("nothing to migrate") for a
+    // `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED` (\"nothing to migrate\") for a
     // document that IS the operator's to migrate. That is A1-21's fold arriving
     // by omission instead of by overload, so membership is pinned here.
     for (const version of [1, 2, 3]) {
@@ -494,7 +566,7 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
   it('it is distinguishable from a parse-rejected file, which is still NOT listed', () => {
     // `unmigrated.yaml` and `broken.yaml` sit in the same directory and neither
     // can run. Only one of them is the operator's backlog, and the listing is
-    // what tells them apart — which is why `rejected` keeps meaning "skip".
+    // what tells them apart — which is why `rejected` keeps meaning \"skip\".
     expect(w1Listed.map((identity) => identity.blueprintId)).toContain('a4p7.unmigrated')
     expect(w1Listed.filter((identity) => identity.sourceFile === 'broken.yaml')).toEqual([])
   })
@@ -531,7 +603,7 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
       sourceFile: 'unmigrated.yaml',
     })
     // The message is operator-facing: it names the document, its version, and the
-    // action. A refusal that never says "migrate" turns a runbook step into a
+    // action. A refusal that never says \"migrate\" turns a runbook step into a
     // support ticket.
     expect(error.message).toContain('schema v1')
     expect(error.message).toContain('migrate')
@@ -546,7 +618,7 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
 
   it('a revision-less resolve reaches the same refusal (the latest-revision walk keeps it visible)', () => {
     // If the latest-revision walk dropped migration-required entries, the
-    // revision-less resolve would answer "blueprint not found" — a lie that sends
+    // revision-less resolve would answer \"blueprint not found\" — a lie that sends
     // the operator to a file that does not exist.
     const error = captureError(() => w1Authority.resolve('a4p7.unmigrated'))
     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED)
@@ -556,7 +628,7 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
     // The one place where a build could be its own enemy: `listIdentities()`
     // publishes `migrationState` from the inspector's classification, and a
     // resolve that re-derived the answer from the version set could answer
-    // "unsupported" — or "not found" — for the very entry it just listed as
+    // \"unsupported\" — or \"not found\" — for the very entry it just listed as
     // migratable. Asserted by reading both surfaces for the same identity.
     const listed = w1Authority.listIdentities().find((identity) => identity.blueprintId === 'a4p7.unmigrated')
     const error = captureError(() => w1Authority.resolve('a4p7.unmigrated', '1'))
@@ -626,7 +698,7 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version its document de
     // listing said current, the resolve said no, and both were this component's
     // truthful output. `unreadable` is what the listing actually knows.
     expect(w2Listed.find((identity) => identity.blueprintId === 'a4p7.frozen-unknown')).toMatchObject(
-      { origin: 'frozen', schemaVersion: VERSION_NOBODY_DEFINED, migrationState: 'unreadable' },
+      { origin: 'frozen', schemaVersion: 99, migrationState: 'unreadable' },
     )
     const error = captureError(() => w2Authority.resolve('a4p7.frozen-unknown', '7'))
     expect(pluginCodeOf(error)).toBe(BLUEPRINT_VERSION_REFUSAL_CODES.SCHEMA_VERSION_UNSUPPORTED)
@@ -655,8 +727,8 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version its document de
   it('the strong parser accepts a v1 document exactly while the bridge runs it', () => {
     // Why the version gate cannot be delegated to `parseBlueprint`: the parser's
     // answer tracks the same set, so it is either silent (bridge) or refuses with
-    // the DOMAIN's words — `SCHEMA_VERSION_UNSUPPORTED`, "this document cannot be
-    // read" — never with the actionable migration name the operator needs. One
+    // the DOMAIN's words — `SCHEMA_VERSION_UNSUPPORTED`, \"this document cannot be
+    // read\" — never with the actionable migration name the operator needs. One
     // law, both states, no branch.
     const refused = captureError(() => parseBlueprint(witnessV1Source('a4p7.parse', '1'))) !== undefined
     expect(refused).toBe(!BRIDGE_RUNS_V1)
@@ -687,7 +759,7 @@ describe('a4p7 7.1 C2: a frozen row is classified by the version its document de
 //
 // The bright line this group exists to keep: **a version refusal degrades; a
 // document that is not a document still fails the constructor.** D1 pins it,
-// because "make the constructor non-fatal" said without that line would boot a
+// because \"make the constructor non-fatal\" said without that line would boot a
 // host whose anchor is a YAML syntax error and hand every consumer a value that
 // was never parsed.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -718,7 +790,7 @@ function anchorOnVersion(blueprintId: string, version: string | number): string 
 
 const ANCHOR_RUNNABLE = revisionSource('a4p7.degraded.anchor', '1', 'Runnable anchor lead.')
 const ANCHOR_UNKNOWN_VERSION = anchorOnVersion('a4p7.degraded.anchor', VERSION_NOBODY_DEFINED)
-const ANCHOR_NOT_A_DOCUMENT = 'this anchor is not a blueprint document at all\n'
+const ANCHOR_NOT_A_DOCUMENT = 'this anchor is not a blueprint document at all\\n'
 
 function dConfig(bootPhase: 'create' | 'resume', blueprintSource: string): TeamPluginConfig {
   return {
@@ -1134,8 +1206,8 @@ describe('D2 — a host anchored on a version it does not run boots, and its Tea
     )
   })
   it('ZERO durable writes: no TeamSession row, no binding, no compatibility state', () => {
-    // The plan's words: "with zero agent creation and zero compatibility/prober
-    // writes before the refusal". Counted at the storage facility itself, not by
+    // The plan's words: \"with zero agent creation and zero compatibility/prober
+    // writes before the refusal\". Counted at the storage facility itself, not by
     // checking which repositories happen to have rows.
     expect(dCreateRefused.writes.length).toBe(0)
     expect(dCreateRefused.root.domain.repositories.teamSessions.list().length).toBe(0)
@@ -1298,9 +1370,9 @@ describe('D5 — the start ports refuse before the glue is reached', () => {
 describe('D6 — the resume entrance is gated on its ROW, before its first durable write', () => {
   it('the entrance asked the bound-document resolver for THIS root', () => {
     // `boundSnapshot` is derived from the anchor; a resumed Team is bound to its
-    // row. Consulting the resolver here is what makes "the migrated Team on a
-    // host with an old anchor resumes" and "the unmigrated Team on a new host is
-    // refused" the same correct code.
+    // row. Consulting the resolver here is what makes \"the migrated Team on a
+    // host with an old anchor resumes\" and \"the unmigrated Team on a new host is
+    // refused\" the same correct code.
     expect(dRefusedSids.length).toBeGreaterThan(0)
     expect(dRefusedSids[0]).toBe(D_ROOT_SID)
   })
@@ -1410,7 +1482,7 @@ describe('D9 — the Blueprint authority degrades with its anchor, and fails clo
 // the tree contained. GROUP F closes the ASK. The consumption recheck was NOT
 // closed by GROUP F: it never received the row's command fingerprint, so the set
 // it derived was the persisted point alone and the narrowing stayed invisible
-// there -- a claim of "closed" that was true of one site and false of the other,
+// there -- a claim of \"closed\" that was true of one site and false of the other,
 // printed in a title where a reader would stop looking. The consumption half
 // closed when `control/service.ts` began passing the row's `operationFingerprint`
 // through the port, and it is proved in
@@ -1454,7 +1526,7 @@ describe('GROUP E - why a shell narrowing was invisible to the ASK: three laws, 
     const verdict = matcherCovers(fingerprintRule, exactTarget)
     expect(verdict.covers).toBe(false)
     // The direction of the danger lives in this assertion: an absorbing
-    // `undetermined` would have failed closed. This answers "no", so the rule
+    // `undetermined` would have failed closed. This answers \"no\", so the rule
     // contributes nothing to the ceiling and the required rung can only fall.
     expect(verdict.undeterminable).toBe(false)
   })
@@ -1492,7 +1564,7 @@ describe('GROUP E - why a shell narrowing was invisible to the ASK: three laws, 
 // adding a candidate can lower the rung the human is asked to sign or leave it
 // where it was, and can never raise it. The shapes are derived by ONE function
 // that both the ASK and the consumption recheck call, because the recheck's
-// question - "does the rung that signed still cover what the human was shown?" -
+// question - \"does the rung that signed still cover what the human was shown?\" -
 // is only answerable if the two sites asked the same question.
 //
 // ONE FUNCTION IS NOT THE CLOSURE, and this group cannot see the difference. A
@@ -1504,13 +1576,19 @@ describe('GROUP E - why a shell narrowing was invisible to the ASK: three laws, 
 // S1-S4, which drives the composition's own port through `guardOperation`.
 //
 // An empty candidate set is not representable at the call sites: the primary
-// point is a required argument, so there is no path from "we could not name a
-// shape" to the identity element (full reach), which is what an empty meet over
+// point is a required argument, so there is no path from \"we could not name a
+// shape\" to the identity element (full reach), which is what an empty meet over
 // the document lattice means and why it would be the wrong answer here.
 // ---------------------------------------------------------------------------
 describe('GROUP F - the candidate set the ceiling meets (RULING 4 closure)', () => {
   const shellFingerprint = 'sha256:npm-test-canonical-command'
-  const shellPoint = { operationClass: 'bash', matcher: { kind: 'exact', resource: 'bash:tool' } } as const
+  const shellPoint = { operationClass: '
+ Test Files  1 failed (1)
+      Tests  1 failed | 57 passed (58)
+   Start at  05:27:32
+   Duration  1.16s (transform 50ms, setup 0ms, import 210ms, tests 861ms, environment 0ms)
+
+bash', matcher: { kind: 'exact', resource: 'bash:tool' } } as const
   const filePoint = { operationClass: 'fs.write', matcher: { kind: 'exact', resource: 'fileA' } } as const
 
   // The document fixtures these tests need are RUNTIME authority documents, not
@@ -1535,7 +1613,7 @@ describe('GROUP F - the candidate set the ceiling meets (RULING 4 closure)', () 
   }
   /** ONE honest single-shape answer, straight from the evaluator: the rung that
    *  shape alone requires, or `undetermined`. Everything in this group compares
-   *  the meet against these, so "never wider than either" is a measurement. */
+   *  the meet against these, so \"never wider than either\" is a measurement. */
   function rungOf(
     matcher: AuthorityResourceMatcher,
     documents: AuthorityEnvelopeDocuments,
@@ -1971,3 +2049,15 @@ describe('GROUP F - the candidate set the ceiling meets (RULING 4 closure)', () 
     expect(routing.kind).not.toBe('authority-undetermined')
   })
 })
+"
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:604:106
+    602|       'utf8',
+    603|     )
+    604|     expect(cutoverSrc, 're-anchored pin: the old v99 laundering site m…
+       |                                                                                                          ^
+    605|     expect(cutoverSrc, 're-anchored pin: the replacement must be COMPU…
+    606|     expect(cutoverSrc, 're-anchored pin: the site must speak the const…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
