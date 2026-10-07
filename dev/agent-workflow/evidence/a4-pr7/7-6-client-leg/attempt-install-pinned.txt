@@ -1,0 +1,14 @@
+$ pnpm install --offline --store-dir=/home/user/dsh-plugins/dsh-agent-team/.tmp-pnpm-store --ignore-scripts --config.confirmModulesPurge=false --no-frozen-lockfile   (17 devDeps + 6 host-parity overrides)
+Scope: all 10 workspace projects
+✓ Lockfile passes supply-chain policies (verified 1d ago)
+Progress: resolved 1, reused 0, downloaded 0, added 0
+[WARN] deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+Progress: resolved 528, reused 522, downloaded 0, added 0
+Progress: resolved 874, reused 806, downloaded 0, added 0
+[WARN] 1 deprecated subdependencies found: node-domexception@1.0.0
+Progress: resolved 908, reused 815, downloaded 0, added 0
+Packages: +94
+Progress: resolved 908, reused 815, downloaded 0, added 94, done
+
+Done in 4s using pnpm v11.7.0
+exit=0

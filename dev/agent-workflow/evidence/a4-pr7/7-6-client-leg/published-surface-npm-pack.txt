@@ -1,0 +1,22 @@
+# Published-surface proof: the tarball npm would publish, before vs after
+# (npm pack --dry-run, local only, no network, nothing written to disk)
+
+base tree: /home/user/dsh-plugins/dsh-agent-team @ fba82095 (clean of this task's change)
+after tree: /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx @ 0d6ab2a5 (with it)
+
+base : entry count=1533 unpackedSize=11164847  files=1533
+after: entry count=1533 unpackedSize=11164847  files=1533
+
+## diff of the per-file (size, path) list — empty means the published surface is byte-for-byte the same set
+(no differences)
+
+## where the 17 packages could have leaked in, and why they cannot
+root package.json files[]:
+  .agents/skills
+  cordis.patch.yml
+  packages/client/composition-shim
+  packages/runtime/dist
+  packages/runtime/root-binding
+  packages/runtime/src/plugin/upstream-resolver.mjs
+packages/client/package.json: private=true  has dependencies field=false
+pnpm-workspace.yaml / pnpm-lock.yaml in root files[]? false

@@ -1,0 +1,18 @@
+$ npx eslint <every file this task wrote or touched>
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/dev/agent-workflow/evidence/a4-pr7/7-6-client-leg/probe-enumerate.mjs
+  0:0  warning  File ignored because of a matching ignore pattern. Use "--no-ignore" to disable file ignore settings or use "--no-warn-ignored" to suppress this warning
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/dev/agent-workflow/evidence/a4-pr7/7-6-client-leg/store-query.mjs
+  0:0  warning  File ignored because of a matching ignore pattern. Use "--no-ignore" to disable file ignore settings or use "--no-warn-ignored" to suppress this warning
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/client/package.json
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/pnpm-workspace.yaml
+  0:0  warning  File ignored because no matching configuration was supplied
+
+✖ 4 problems (0 errors, 4 warnings)
+
+exit=0

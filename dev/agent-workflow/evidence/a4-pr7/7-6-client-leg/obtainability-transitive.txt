@@ -1,0 +1,43 @@
+# Transitive obtainability record — the six pinned floaters and the one package that is simply absent
+# (pnpm --offline needs BOTH a cached packument under $XDG_CACHE_HOME/pnpm/v11/metadata AND the
+#  package files listed in the store index; absence from either is fatal offline.)
+
+## 1. Store index ($STORE/v11/index.db package_index) for the six + edit-map
+store: /home/user/dsh-plugins/dsh-agent-team/.tmp-pnpm-store/v11/index.db
+rows=1851 distinctNames=1510
+PRESENT micromark: 4.0.2
+PRESENT micromark-util-types: 2.0.2
+PRESENT mdast-util-find-and-replace: 3.0.2
+PRESENT mdast-util-gfm-strikethrough: 2.0.0
+PRESENT mdast-util-to-markdown: 2.1.2
+PRESENT micromark-extension-gfm-table: 2.1.1
+ABSENT  micromark-util-edit-map: -
+
+## 2. Metadata cache: is micromark-util-edit-map even published to the local mirror's cached packuments?
+cached packuments: 874
+  ls: cannot access '/home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/cache/pnpm/v11/metadata/registry.npmjs.org/micromark-util-edit-map.jsonl': No such file or directory
+  -> absent from the metadata cache AND absent from the store: unreachable offline by any route.
+  -> and its absence is not hypothetical: micromark@4.0.3 (which the cached packuments
+     advertise for mdast-util-from-markdown's ^4.0.0) depends on it, so the offline
+     install fails on ERR_PNPM_NO_OFFLINE_META before any file is fetched.
+
+## 3. Host-parity proof — the pinned host's own resolutions for these six names
+  host-lock 20042:  mdast-util-find-and-replace@3.0.2:
+  host-lock 20054:  mdast-util-gfm-strikethrough@2.0.0:
+  host-lock 20075:  mdast-util-to-markdown@2.1.2:
+  host-lock 20107:  micromark-extension-gfm-table@2.1.1:
+  host-lock 20176:  micromark-util-types@2.0.2:
+  host-lock 20179:  micromark@4.0.2:
+  host-lock 27439:  mdast-util-find-and-replace@3.0.2:
+  host-lock 27481:  mdast-util-gfm-strikethrough@2.0.0:
+  host-lock 27549:  mdast-util-to-markdown@2.1.2:
+  host-lock 27641:  micromark-extension-gfm-table@2.1.1:
+  host-lock 27774:  micromark@4.0.2(supports-color@9.4.0):
+
+## 4. Base lockfile had none of these names at all (override blast radius = the new closure only)
+  micromark                        0
+  micromark-util-types             0
+  mdast-util-find-and-replace      0
+  mdast-util-gfm-strikethrough     0
+  mdast-util-to-markdown           0
+  micromark-extension-gfm-table    0

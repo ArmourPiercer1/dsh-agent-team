@@ -1,0 +1,19 @@
+store: /home/user/dsh-plugins/dsh-agent-team/.tmp-pnpm-store/v11/index.db
+rows=1851 distinctNames=1510
+PRESENT @shikijs/langs: 2.5.0, 4.3.1, 4.4.3
+PRESENT anser: 2.3.5
+PRESENT clsx: 2.1.1
+PRESENT katex: 0.16.47
+PRESENT mdast-util-from-markdown: 2.0.3
+PRESENT mdast-util-gfm: 3.1.0
+PRESENT mdast-util-math: 3.0.0
+PRESENT micromark-core-commonmark: 2.0.3
+PRESENT micromark-extension-gfm: 3.0.0
+PRESENT micromark-extension-math: 3.1.0
+PRESENT micromark-factory-space: 2.0.1
+PRESENT micromark-util-character: 2.1.1
+PRESENT micromark-util-classify-character: 2.0.1
+PRESENT micromark-util-sanitize-uri: 2.0.1
+PRESENT micromark-util-symbol: 2.0.1
+PRESENT shiki: 2.5.0, 4.3.1, 4.4.3
+PRESENT simple-icons: 16.31.0

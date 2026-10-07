@@ -1,0 +1,194 @@
+repo:  /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx
+entry: /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-clsx/packages/client/dist/packages/client/src/plugin/client.js  exists=true
+
+=== A. gate scanner (scanModuleClosure) on the built entry ===
+ran=true reason=null visitedFiles=125 truncated=false
+ownUnresolved=0 upstreamUnresolved=20 untraversed=0 subpathBails=0
+
+distinct unresolvable PACKAGES (gate scanner): 17
+  @shikijs/langs
+      specifiers: @shikijs/langs/json, @shikijs/langs/shellscript, @shikijs/langs/typescript
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  anser
+      specifiers: anser
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  clsx
+      specifiers: clsx
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  katex
+      specifiers: katex
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  mdast-util-from-markdown
+      specifiers: mdast-util-from-markdown
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  mdast-util-gfm
+      specifiers: mdast-util-gfm
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  mdast-util-math
+      specifiers: mdast-util-math
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  micromark-core-commonmark
+      specifiers: micromark-core-commonmark
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  micromark-extension-gfm
+      specifiers: micromark-extension-gfm
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  micromark-extension-math
+      specifiers: micromark-extension-math
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  micromark-factory-space
+      specifiers: micromark-factory-space
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  micromark-util-character
+      specifiers: micromark-util-character
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  micromark-util-classify-character
+      specifiers: micromark-util-classify-character
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  micromark-util-sanitize-uri
+      specifiers: micromark-util-sanitize-uri
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  micromark-util-symbol
+      specifiers: micromark-util-symbol
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  shiki
+      specifiers: shiki/core, shiki/engine/javascript
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+  simple-icons
+      specifiers: simple-icons
+      importers : node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-client-ui-primitives/lib/index.js
+
+=== B. direct scan: every bare specifier in each installed upstream client package ===
+
+@deepseek-ai/cordis@4.0.4: 3 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/cordis-plugin-loader
+   ok      @deepseek-ai/cosmokit
+   ok      node:url
+
+@deepseek-ai/dsh-client-connection@0.2.0-rc.2: 7 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/cordis
+   ok      @deepseek-ai/dsh-credentials
+   ok      @deepseek-ai/dsh-scope
+   ok      @deepseek-ai/schemastery
+   ok      node:crypto
+   ok      node:stream
+   ok      zod
+
+@deepseek-ai/dsh-client-file-upload@0.2.0-rc.2: 7 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/cordis
+   ok      @deepseek-ai/dsh-brand
+   ok      @deepseek-ai/dsh-scope
+   ok      @deepseek-ai/dsh-typert-protocol
+   ok      @deepseek-ai/dsh-util-crypto
+   ok      node:crypto
+   ok      zod
+
+@deepseek-ai/dsh-client-hmr@0.2.0-rc.2: 2 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+   ok      node:fs
+
+@deepseek-ai/dsh-client-locale@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-modules@0.2.0-rc.2: 6 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/cordis
+   ok      node:crypto
+   ok      node:fs
+   ok      node:module
+   ok      node:path
+   ok      node:url
+
+@deepseek-ai/dsh-client-product-analytics@0.2.0-rc.2: 3 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/dsh-typert-protocol
+   ok      @deepseek-ai/schemastery
+   ok      zod
+
+@deepseek-ai/dsh-client-shortcuts@0.2.0-rc.2: 3 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/dsh-util-crypto
+   ok      @deepseek-ai/dsh-util-values
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-store@0.2.0-rc.2: 2 bare package(s) asked for, 0 unresolvable
+   ok      immer
+   ok      zustand
+
+@deepseek-ai/dsh-client-ui-chat@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-ui-conversation@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-ui-deliverables@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/dsh-typert-protocol
+
+@deepseek-ai/dsh-client-ui-plugin-manager@0.2.0-rc.2: 4 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/dsh-timeout
+   ok      @deepseek-ai/dsh-typert-protocol
+   ok      @deepseek-ai/schemastery
+   ok      zod
+
+@deepseek-ai/dsh-client-ui-primitives@0.2.0-rc.2: 23 bare package(s) asked for, 17 unresolvable
+   MISSING @shikijs/langs
+   MISSING anser
+   MISSING clsx
+   MISSING katex
+   MISSING mdast-util-from-markdown
+   MISSING mdast-util-gfm
+   MISSING mdast-util-math
+   MISSING micromark-core-commonmark
+   MISSING micromark-extension-gfm
+   MISSING micromark-extension-math
+   MISSING micromark-factory-space
+   MISSING micromark-util-character
+   MISSING micromark-util-classify-character
+   MISSING micromark-util-sanitize-uri
+   MISSING micromark-util-symbol
+   MISSING shiki
+   MISSING simple-icons
+   ok      @deepseek-ai/dsh-client-store
+   ok      @deepseek-ai/dsh-util-code-language
+   ok      @deepseek-ai/dsh-util-workspace-path
+   ok      diff
+   ok      react
+   ok      react-dom
+
+@deepseek-ai/dsh-client-ui-settings-account@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-ui-settings-general@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-ui-settings-models@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-ui-settings@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-ui-theme@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/schemastery
+
+@deepseek-ai/dsh-client-web@0.2.0-rc.2: 8 bare package(s) asked for, 1 unresolvable
+   MISSING @deepseek-ai/dsh-client-ui-dockkit
+   ok      @deepseek-ai/cordis
+   ok      @deepseek-ai/cordis-plugin-loader
+   ok      @deepseek-ai/dsh-client-store
+   ok      @deepseek-ai/dsh-client-ui-primitives
+   ok      @deepseek-ai/dsh-client-ui-slots
+   ok      react
+   ok      react-dom
+
+@deepseek-ai/dsh-credentials@0.2.0-rc.2: 2 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/cordis
+   ok      @deepseek-ai/dsh-brand
+
+@deepseek-ai/dsh-scope@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/cordis
+
+@deepseek-ai/dsh-typert-protocol@0.2.0-rc.2: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/cordis
+
+@deepseek-ai/schemastery@3.18.4: 1 bare package(s) asked for, 0 unresolvable
+   ok      @deepseek-ai/cosmokit

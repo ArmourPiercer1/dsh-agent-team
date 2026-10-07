@@ -1,0 +1,32 @@
+[
+  {
+    "name": "micromark",
+    "version": "4.0.2",
+    "note": "metadata missing for micromark-util-edit-map@>=1.0.0 <2.0.0-0, asked for by micromark@4.0.3"
+  },
+  {
+    "name": "micromark-util-types",
+    "version": "2.0.2",
+    "note": "tarball missing for micromark-util-types@2.0.3"
+  },
+  {
+    "name": "mdast-util-find-and-replace",
+    "version": "3.0.2",
+    "note": "tarball missing for mdast-util-find-and-replace@3.0.3"
+  },
+  {
+    "name": "mdast-util-gfm-strikethrough",
+    "version": "2.0.0",
+    "note": "tarball missing for mdast-util-gfm-strikethrough@2.0.1"
+  },
+  {
+    "name": "mdast-util-to-markdown",
+    "version": "2.1.2",
+    "note": "tarball missing for mdast-util-to-markdown@2.2.0"
+  },
+  {
+    "name": "micromark-extension-gfm-table",
+    "version": "2.1.1",
+    "note": "tarball missing for micromark-extension-gfm-table@2.1.2"
+  }
+]

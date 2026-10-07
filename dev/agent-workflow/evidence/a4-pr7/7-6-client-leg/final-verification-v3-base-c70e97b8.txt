@@ -1,0 +1,105 @@
+# Final verification, round 3 — the delivered head, on top of origin/master c70e97b8
+
+head `a105c0bbbfc5b5ecd0edf33ebc5d9b67bf77e8ed`, base `origin/master c70e97b8e8630ba3d5a3b57a725febcc868f4c6a`.
+pnpm 11.7.0, node v24.21.0, `CI=true`, every install `--offline` against the shared store:
+no network, no host booted on any port, CORE PATCH BUDGET untouched.
+
+Round 2's record (`final-verification-v2-base-d8b145c1.txt`) still stands for the gates that did
+not change. This file is the re-run at the head carrying the review fixes, plus the two measurements
+the review asked for, plus the attribution of a neighbour suite that went red under the branch while
+it was in flight.
+
+
+# Final battery, head a105c0bbbfc5b5ecd0edf33ebc5d9b67bf77e8ed on origin/master c70e97b8e8630ba3d5a3b57a725febcc868f4c6a
+# pnpm 11.7.0  node v24.21.0  CI=true
+
+## F1  CI-path install, node_modules removed first so nothing can short-circuit
+  Progress: resolved 1, reused 0, downloaded 0, added 0
+  Packages: +815
+  Progress: resolved 815, reused 815, downloaded 0, added 815, done
+  Done in 1.3s using pnpm v11.7.0
+  exit=0
+  tracked files changed by the install: 0  (0 expected)
+  untracked paths left behind: 0  (0 expected)
+  downloaded: downloaded 0   reused: reused 815
+
+## F2  byte-canonical lock, the reviewer's command (node_modules present)
+  cmp committed vs regenerated: byte-identical (exit 0)
+  07db804169a921a53ad463d83642cdf2e417794116c9ff1b44e46788cc427398  lock.final.yaml
+  07db804169a921a53ad463d83642cdf2e417794116c9ff1b44e46788cc427398  pnpm-lock.yaml
+  git reports the lockfile as changed: 0  (0 = the regenerated file is the committed file)
+
+## F3  the discriminating version: lock AND node_modules absent, so pnpm must re-resolve
+  [cure] overrides order emitted from the manifests: micromark,micromark-util-types,mdast-util-find-and-replace,mdast-util-gfm-strikethrough,mdast-util-to-markdown,micromark-extension-gfm-table,vite
+  [cure] overrides block vs committed lock: BYTE-IDENTICAL
+  [cure] whole-file drift: 1577 lines, touching the 17+6: 0
+  [defect] overrides order emitted from the manifests: vite,micromark,micromark-util-types,mdast-util-find-and-replace,mdast-util-gfm-strikethrough,mdast-util-to-markdown,micromark-extension-gfm-table
+  [defect] overrides block vs committed lock: 2 lines differ
+  [defect] whole-file drift: 1579 lines, touching the 17+6: 0
+  [control: pristine origin/master, none of this change] drift against its own committed lock: 1577 lines
+
+## F4  check:artifacts
+  [check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+
+## F5  composition-smoke, every arm
+       1	PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+       2	PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+       3	PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+       4	PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+       5	PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+       6	PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+       7	PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+       8	PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+       9	PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+      10	PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+      11	PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+      12	PASS composition-smoke
+  exit=0  PASS arms=11  SKIP=0  FAIL=0  NOT RUN=0
+
+## F6  lint:identities against the accepted baseline
+  lint-identities: 160 identity lines, 76 distinct (target .)
+  baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+  exit=0
+
+## F8  pnpm -r run typecheck
+  exit=0  Done lines=8  error TS=0
+
+## F9  the two neighbour suites that own this leg's wording
+  test/a4p75-composition-smoke-classification.test.ts -> exit=0        Tests  46 passed (46)
+  test/p4t6-session-event-scan.test.ts -> exit=0        Tests  10 passed (10)
+
+## F7  published surface: the tarball this change publishes is the tarball master publishes
+  base(origin/master): entryCount=1533  unpackedSize=11176289
+  head(this branch)  : entryCount=1533  unpackedSize=11176289
+  per-entry (size, path) set diff: EMPTY -> the same bytes-set is published
+  packages/client/* entries published: 3
+    1259739 packages/client/composition-shim/client-bundle.js
+    328 packages/client/composition-shim/index.js
+    505 packages/client/composition-shim/package.json
+  packages/client/package.json (the manifest carrying the 17) in the tarball: 0
+
+## F10  a pristine clone of the delivered branch, end to end, offline
+  Progress: resolved 1, reused 0, downloaded 0, added 0
+  Packages: +815
+  Progress: resolved 815, reused 815, downloaded 0, added 815, done
+  Done in 1.7s using pnpm v11.7.0
+  hoisted copies in node_modules/.pnpm/node_modules: 17 / 17
+  gate before any build: exit=1  FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)
+  pnpm run build: exit=0
+  gate after build: exit=0  PASS=11  SKIP=0  FAIL=0  footer=PASS composition-smoke
+
+## F11  client suite: pnpm --filter ./packages/client run test
+   Test Files  2 failed | 53 passed (55)
+        Tests  3 failed | 877 passed (880)
+  the 3 failures, unchanged from the baseline at every base measured — 2 + 1, no new failure, none silently fixed:
+  - FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)
+  - FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > switching the runtime preset re-runs the probe with the new persona fact (UI §7.3)
+  - FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success
+
+
+## F9b  the 7.4-scope fence suite, which is red at this base — attributed, not mine
+  command: pnpm --filter ./packages/testkit exec vitest run test/a4p7-blueprint-version-clean.test.ts
+  on the delivered branch :       Tests  12 failed | 36 passed (48)
+  on pristine origin/master:       Tests  12 failed | 36 passed (48)
+  failing test names identical on both sides: YES
+  files this branch changes that the suite reads: 0  (0 — it is the 7.4-scope lane, owned elsewhere, and master's own record says the scan turned master red)

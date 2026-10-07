@@ -1,0 +1,67 @@
+# Hoist-copy experiment (each step reverted immediately after)
+
+## baseline
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+exit=0
+
+## 1. hide ONLY packages/client/node_modules/clsx (the devDependency link)
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+(restored: yes)  gate exit=0
+
+## 2. hide ONLY node_modules/.pnpm/node_modules/clsx (the hoist copy)
+SKIP client plugin (packages/client): host module closure unavailable — 1 unresolvable: clsx
+(restored: yes)  gate exit=0
+
+## 3. both back
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+PASS composition-smoke
+
+# What the layout actually is (measured, not assumed)
+
+$ node -e "require('.../dsh-client-ui-primitives/package.json')"
+  dependencies: null
+  peerDependencies count: 1
+  devDependencies count: 28
+$ ls node_modules/.pnpm/@deepseek-ai+dsh-client-ui-primitives@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules
+  @deepseek-ai          (count: 1)  — only its peer is linked next to it
+$ node -e "createRequire(<that lib/index.js>).resolve(s)"
+  clsx  -> node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.js
+  shiki -> node_modules/.pnpm/shiki@4.3.1/node_modules/shiki/dist/index.mjs
+  katex -> node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.js
+  anser -> node_modules/.pnpm/anser@2.3.5/node_modules/anser/lib/index.js
+$ hoisted into node_modules/.pnpm/node_modules: 17 of the 17 newly wired packages
+$ grep -rniE hoist package.json pnpm-workspace.yaml .npmrc packages/*/package.json
+  declared nowhere (0 matches)          $ pnpm config get hoist-pattern -> undefined (the built-in default)
+
+Node walks the ancestor chain of the realpath, and every package under .pnpm/ has
+node_modules/.pnpm/node_modules/ in that chain, so an import the upstream package never
+declared is answered by the hoist directory — pnpm's default hoist-pattern ['*'].
+packages/client/node_modules/clsx exists but is not on that chain; experiment 1 and 2 above
+are exactly that distinction.
+
+# Is declaring hoistPattern: ['*'] lockfile-neutral? (the discriminating test)
+
+Two pristine `git archive HEAD` exports, identical except for the declaration, each with
+node_modules AND pnpm-lock.yaml absent so pnpm must really re-resolve:
+$ rm -f pnpm-lock.yaml && pnpm install --lockfile-only --offline --store-dir=$STORE --ignore-scripts --no-frozen-lockfile
+  without declaration -> lock A      with declaration -> lock B
+$ cmp A B  ->  byte-identical   => LOCKFILE-NEUTRAL
+  settings block, either side:  autoInstallPeers: true / excludeLinksFromLockfile: false
+  (hoistPattern is not recorded in the lockfile's settings at all, which is why the
+   override-order fix in byte-canonical-lock.txt was load-bearing and this is not)
+
+# POSITIVE CONTROL: pnpm really reads the key (it is not silently ignored)
+
+Pristine export, full offline frozen install with hoistPattern: ['@types/*']:
+  clsx in .pnpm/node_modules:      NO  — the narrowed pattern took effect
+  @types/node in .pnpm/node_modules: yes
+  node_modules/.modules.yaml:      "hoistPattern": [ "@types/*" ]
+Declaring ['*'] instead, .modules.yaml records no hoistPattern key (it equals the default)
+and the worktree install prints "Already up to date" — no relink, no layout change.
+
+# Decision and its end-to-end check
+
+Declared, because it is lockfile-neutral and the leg's greenness depends on it. Pristine
+export of the branch with the declaration, fresh offline frozen install + fresh build:
+  all 17 hoisted: 17 / 17
+  gate: 12 PASS lines, 0 SKIP, 0 FAIL

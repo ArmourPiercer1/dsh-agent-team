@@ -1,0 +1,23 @@
+
+## W4. pnpm -r run typecheck
+Done count: 8
+error TS count: 0
+
+## W5. client suite
+ ❯ test/team-creation-panel.client.spec.tsx (19 tests | 2 failed) 2675ms
+ ❯ test/team-governance.client.spec.tsx (30 tests | 1 failed) 2659ms
+ Test Files  2 failed | 53 passed (55)
+      Tests  3 failed | 877 passed (880)
+
+## W6. lint-identities --diff
+lint-identities: 160 identity lines, 76 distinct (target .)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+exit=0
+
+## W7. neighbour suites (7.5 classifier + p4t6 + blueprint-version-clean) on the merged base
+ Test Files  3 passed (3)
+      Tests  65 passed (65)
+
+## W8. check:artifacts again + install-surface drift
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+(empty = no drift)
