@@ -239,3 +239,35 @@ unexpected errors surface as tool errors.
   best-effort liveness for NEW requests; the durable request + the pending
   list are the recovery path (notifications are not replayed after a
   restart).
+
+---
+
+## Do not narrow a shell-class permission below `allow` (Alpha.4, 2026-10-08)
+
+`team_grant_permission` / `team_revoke_permission` (and the operator-side
+`override.mutatePermission`) will happily **narrow** a shell-class rule from
+`allow` to `ask`: the mutation is authorized inside the hard envelope, it
+commits, and the write leg reports `changed: true`.
+
+What you must know before you do it: an `ask` on a shell-class command requires
+approval from the rung that owns the envelope — **Human Admin** — and Alpha.4
+ships **no Human Admin resolver** (`CONTROL_UNRESOLVABLE_AUTHORITIES =
+['human-admin']`). The control case terminates **synchronously** as
+`authority-unavailable`, writing a leg row that is *born terminal* together with
+its terminal deny (ADR A1-12). Consequences you will observe:
+
+- the member's affected command is **permanently unavailable at runtime** — no
+  pending approval appears, `team_list_pending_approvals` will not show it, and
+  nothing retries or unblocks it;
+- there is **no UI affordance** to release it; `team_resolve_control` cannot
+  answer a case whose reviewer cannot exist;
+- the audit trail is intact and awaitable — the refusal is recorded, it is not a
+  silent failure. Fail-closed is the correct security outcome; the gap is
+  recoverability, not safety.
+
+If you must reduce a member's shell capability, reduce it by **removing the
+capability** (deny, or narrowing the resource so the command is simply outside
+the member's reach) rather than by routing it through `ask`. Escalating an
+existing `allow` to `ask` is reserved for a future Human Admin resolver and is
+**tracked as a post-Alpha.4 item**; until then treat `ask` on shell-class
+resources as authoring-time intent only, never as a Leader-runtime operation.

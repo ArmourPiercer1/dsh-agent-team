@@ -1,0 +1,20 @@
+### typecheck
+8
+0
+0 error TS
+### eslint touched files
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-escalate/packages/runtime/control/service.ts
+  174:3  error  'parseTemplateId' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (1 error, 0 warnings)
+
+eslint exit=1
+### mute audit over diff (read)
+zero mute tokens in diff
+ .../evidence/a4-escalate-truth/README.md           | 77 +++++++++++++++++-----
+ packages/runtime/control/service.ts                |  6 +-
+ .../dist/packages/runtime/control/service.js       |  6 +-
+ .../dist/packages/runtime/control/service.js.map   |  2 +-
+ .../runtime/test/a4-escalate-act-truth.test.ts     |  8 +--
+ 5 files changed, 70 insertions(+), 29 deletions(-)

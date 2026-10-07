@@ -1915,6 +1915,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       // `scripts/check-artifacts-committed.mjs` are edits, not increments.
       'packages/testkit/test/a4p75-composition-smoke-classification.test.ts',
     ]
+    // a4-escalate-act-truth (fix/a4-escalate-receipt-truth): the ONE new
+    // scannable file of this fix lane — the escalate-terminate act-truth spec.
+    // The fix's other paths (control/service.ts, this pin) are EDITS to
+    // already-counted files, and an edit is not an increment. Like every list
+    // above, this one is asserted present by path below and its length is tied
+    // to the movement of the total; the total itself is never written by hand.
+    const SCANNED_PATHS_A4ESCALATE: readonly string[] = [
+      'packages/runtime/test/a4-escalate-act-truth.test.ts',
+    ]
     // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
     expect(scanResult.filesScanned).toBe(
@@ -1924,7 +1933,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR4.length +
         SCANNED_PATHS_A4PR5.length +
         SCANNED_PATHS_A4PR6.length +
-        SCANNED_PATHS_A4PR7.length,
+        SCANNED_PATHS_A4PR7.length +
+        SCANNED_PATHS_A4ESCALATE.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -1933,7 +1943,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4PR4.length +
         SCANNED_PATHS_A4PR5.length +
         SCANNED_PATHS_A4PR6.length +
-        SCANNED_PATHS_A4PR7.length,
+        SCANNED_PATHS_A4PR7.length +
+        SCANNED_PATHS_A4ESCALATE.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -1968,6 +1979,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4PR5,
       ...SCANNED_PATHS_A4PR6,
       ...SCANNED_PATHS_A4PR7,
+      ...SCANNED_PATHS_A4ESCALATE,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2006,6 +2018,19 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // already counted, and an edit is not an increment. Task 7.5 moved it again
     // for the same reason: one new test file under `packages/**`.
     expect(SCANNED_PATHS_A4PR7.length).toBe(1021 - 1016)
+    // The a4-escalate-act-truth tie, same form: the movement equals the named
+    // files in SCANNED_PATHS_A4ESCALATE, each asserted present by path in the
+    // loop above. A file added without a name, or a name without a file, fails
+    // there — the total is still never written by hand.
+    expect(SCANNED_PATHS_A4ESCALATE.length).toBe(1021 - 1020)
+    // Reading these two ties together after the merge with `origin/master`: each
+    // endpoint is that lane's OWN advancing total on the branch where it landed,
+    // so the two endpoints come from two ladders and neither one is this merged
+    // tree's total. Each tie asserts only "the movement equals the files I name",
+    // which is the whole contract, and neither number was edited to make the
+    // ladders look sequential — renumbering a tie is exactly how a pin starts
+    // agreeing with a wrong tree. The merged total is the sum of the lists above;
+    // it is derived by the two `toBe` sums and deliberately not written here.
 
   })
 

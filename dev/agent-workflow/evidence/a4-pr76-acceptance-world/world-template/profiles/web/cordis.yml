@@ -1,0 +1,6 @@
+# dsh profile root — an empty entry list. The tree is composed as patches:
+# each bundle in package.json's dsh.profile.bundles, then cordis.patch.yml, then any
+# --patch overlays. Edit cordis.patch.yml, not this file.
+# (Byte-copy of the TEST_METHODS §2 world pattern established by
+# tests/homes/f15-2026-09-30-01-03-43; regenerated idempotently by boot.mjs.)
+[]
