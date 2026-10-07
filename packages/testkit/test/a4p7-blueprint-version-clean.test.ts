@@ -781,10 +781,17 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     expectSingle(fixture('f31'), 'advisory')
   })
 
+  it('f33 one document, two brace spellings under a row: SAME class, both visible (round-3 F1)', () => {
+    // The nested document under a same-line double brace opening used to be
+    // REFUSED by the ROW's keys (invisible) while the per-line spelling was
+    // UNKNOWN. One class now — and it is the visible one.
+    expectSingle(fixture('f33'), 'unknown')
+  })
+
   it('the fixture corpus exists and every fixture was exercised', () => {
     // Guard against the corpus silently emptying (a fixture-less "test" is
     // how a gate dies): names are pinned to the f01..f31 set.
-    expect(fixtures.length).toBeGreaterThanOrEqual(31)
+    expect(fixtures.length).toBeGreaterThanOrEqual(32)
     expect(fixtures.length).toBe(new Set(fixtures.map((f) => f.name)).size)
   })
 

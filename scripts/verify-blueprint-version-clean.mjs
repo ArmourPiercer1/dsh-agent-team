@@ -666,7 +666,12 @@ function headChain(lines, states, idx, matchCol) {
       if (c === '}') depth += 1
       else if (c === '{') {
         if (depth > 0) depth -= 1
-        else chain.push({ line: l.trim(), idx: j })
+        // The COLUMN of the opening brace travels with the head: a head line
+        // may open TWO literals (`= { kind, sessionId, document: {`) and the
+        // site's literal is the INNER one (round-3 F1 — restarting the key
+        // scan at the line's first character read the ROW's depth-1 keys as
+        // the nested document's own, and machine-refused it).
+        else chain.push({ line: l.trim(), idx: j, col: k })
       }
     }
   }
@@ -681,7 +686,7 @@ function headChain(lines, states, idx, matchCol) {
  *  `jsDoc(overrides)`, and the spread-built registry rows at
  *  packages/storage/test/bp1-blueprint-registry.test.ts:146 proves the
  *  row-side too: hidden keys cannot be certified document-free). */
-function siblingKeys(lines, states, headIdx) {
+function siblingKeys(lines, states, headIdx, headCol = 0) {
   const keys = []
   let spread = false
   let depth = 0
@@ -689,7 +694,9 @@ function siblingKeys(lines, states, headIdx) {
   for (let j = headIdx; j < Math.min(lines.length, headIdx + 60); j += 1) {
     const l = lines[j]
     const kinds = states?.[j]?.kinds
-    for (let k = 0; k < l.length; k += 1) {
+    // Start AT the head brace, not at the line's first character: the
+    // literal whose keys we read opens at headCol (see headChain).
+    for (let k = j === headIdx ? headCol : 0; k < l.length; k += 1) {
       if (kinds !== undefined && kinds[k] !== K_CODE) {
         // Quoted keys: `"kind":` puts the KEY token inside a string, but it
         // is still a key of the literal (BLOCKING 2 parity — bare keys were
@@ -919,7 +926,8 @@ export function classifyText(path, text) {
       } else {
         const chain = headChain(lines, states, idx, m.index)
         const head = chain[0]
-        const enclosing = head === undefined ? { keys: [], spread: false } : siblingKeys(lines, states, head.idx)
+        const enclosing =
+          head === undefined ? { keys: [], spread: false } : siblingKeys(lines, states, head.idx, head.col)
         const fn = head === undefined ? '' : funcContext(lines, states, head.idx)
         outerCtx = chain.slice(0, 3).map((h, i) => ({ text: h.line, chan: `head${String(i)}` }))
         if (fn !== '') outerCtx.push({ text: fn, chan: 'fn' })
