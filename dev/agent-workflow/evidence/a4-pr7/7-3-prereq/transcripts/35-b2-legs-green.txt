@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ✓ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (7 tests) 17ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  04:43:23
+   Duration  986ms (transform 702ms, setup 0ms, import 887ms, tests 17ms, environment 0ms)
+

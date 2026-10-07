@@ -351,13 +351,23 @@ export declare function createPermissionAuthorityFacts(deps: PermissionAuthority
  * `test/a4p2-dual-envelope-mutation.test.ts` (A5-12: one file, so the existential
  * leg cannot be deleted when the v3 leg starts passing).
  *
- * `undefined` from the version reader means the binding is UNKNOWN, and the
- * answer is the v1/v2 branch on purpose: an unresolved binding must not conjure a
- * v3 gate that invents authority facts it never read, and the v1/v2 path's own
- * readers already fail closed (an unknown binding yields the zero-authority
- * envelope, which refuses every Leader expansion). Choosing the OTHER branch here
- * would make a storage fault read as "this Team is v3 and its ceiling is empty",
- * i.e. an authority verdict invented from an absence.
+ * THREE ANSWERS, AND THE MIDDLE ONE IS THE ONE THAT MATTERS.
+ *  1. `schemaVersion` is 1 or 2 — a DECIDED pre-v3 Team: `undefined`, the
+ *     existential branch, Alpha.3 behaviour byte-identical. That answer is a fact
+ *     about the DOCUMENT, and it dies with the cutover, when no document below 3
+ *     can be bound at all.
+ *  2. `schemaVersion` is `undefined`, or it is 3 but the content hash no longer
+ *     resolves: `unreadableAuthorityCeilingContext` above — a refusal. `undefined`
+ *     from this seam has ALWAYS meant "no resolvable bound Blueprint" (a resolvable
+ *     v1/v2 document answers 1 or 2), so it never meant "pre-v3 Team" and cannot be
+ *     allowed to keep buying a skipped gate. Post-cutover it is the ONLY thing the
+ *     branch can mean, which is why it must not be carrying a silent commit into
+ *     the window where the ceiling gate is the last law standing.
+ *  3. `schemaVersion === 3` with a resolvable hash: the real v3 context, unchanged.
+ *
+ * The distinction the old two-answer shape erased is the one A5-12 exists to keep:
+ * "this Team is not governed by the v3 ceiling" and "nobody can tell" are different
+ * facts with different remedies, and only the first is allowed to skip a gate.
  */
 export declare function createAuthorityCeilingReader(deps: {
     readonly facts: Pick<PermissionAuthorityFacts, 'teamHardEnvelope' | 'permissionEnvelope' | 'blueprintSchemaVersion' | 'blueprintContentHash'>;

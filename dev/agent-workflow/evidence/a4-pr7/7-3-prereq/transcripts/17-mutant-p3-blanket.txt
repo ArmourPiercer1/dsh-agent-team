@@ -1,0 +1,85 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./vitest.config" without a file extension (.vitest-mutant.config.ts:1:20). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (9 tests | 2 failed) 34ms
+     ✓ 1. an UNREADABLE binding refuses a rising operator mutation with ZERO WRITE 6ms
+     ✓ 2. the refusal is the CONTEXT law, not an authorization law, and it mints nothing 3ms
+     ✓ 3. a v3 binding whose ANCHOR vanished takes the same refusal, not the skip 3ms
+     ✓ 4. a TIGHTENING under the same unreadable binding still commits 4ms
+     × 5. a DECIDED v1/v2 binding still answers NO context and the same rise commits (A5-12 existential) 5ms
+     ✓ 6. a readable, anchored v3 binding commits the same rise (the refusal is specific) 3ms
+     × 7. the reader has THREE answers, and the abstention is not the existential one 4ms
+     ✓ 8. a Leader rise the carrier COVERS also refused (the fail-open was not operator-only) 2ms
+     ✓ 9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched) 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 5. a DECIDED v1/v2 binding still answers NO context and the same rise commits (A5-12 existential)
+AssertionError: expected { Object (beneficiaryAuthority, initiatorAuthority, ...) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "beneficiaryAuthority": "member",
+  "documents": {
+    "permissionMutationEnvelope": {
+      "status": "unavailable",
+    },
+    "teamHardEnvelope": {
+      "status": "unavailable",
+    },
+  },
+  "initiatorAuthority": "leader",
+}
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:314:86
+    312|     const w = await openWorldAtEntry(V2_DECIDED)
+    313|     try {
+    314|       expect(await w.reader(FIXTURE_TEAM_SESSION_ID, FIXTURE_INSTANCE_…
+       |                                                                                      ^
+    315|       const error = await w.mutateOperator(RISE)
+    316|       expect(error).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 7. the reader has THREE answers, and the abstention is not the existential one
+AssertionError: expected { Object (beneficiaryAuthority, initiatorAuthority, ...) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "beneficiaryAuthority": "member",
+  "documents": {
+    "permissionMutationEnvelope": {
+      "status": "unavailable",
+    },
+    "teamHardEnvelope": {
+      "status": "unavailable",
+    },
+  },
+  "initiatorAuthority": "leader",
+}
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:357:27
+    355|       expect(abstention?.beneficiaryAuthority).toBe('member')
+    356|       const existential = await decided.reader(FIXTURE_TEAM_SESSION_ID…
+    357|       expect(existential).toBeUndefined()
+       |                           ^
+    358|       expect(existential).not.toEqual(abstention)
+    359|       const anchoredWorld = await openWorldAtEntry(V3_ANCHORED)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+   Start at  03:46:53
+   Duration  1.02s (transform 718ms, setup 11ms, import 886ms, tests 34ms, environment 0ms)
+

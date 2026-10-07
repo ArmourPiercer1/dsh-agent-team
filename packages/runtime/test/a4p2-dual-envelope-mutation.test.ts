@@ -358,7 +358,7 @@ describe('the service places the gate where ADR X7-R5 puts it', () => {
 // A4-PR2 rework (coordinator items 1-3): the production reader, the operator
 // normalization, and the C7 impossibility argument made testable.
 // ---------------------------------------------------------------------------
-describe('the production reader: the v3 switch, BOTH branches, one file (ADR A5-12)', () => {
+describe('the production reader: the v3 switch, its THREE answers, one file (ADR A5-12)', () => {
   // The plane's hard-ceiling read is a THREE-WAY read, so a bare document is a
   // `declared` outcome in this fixture rather than a slot value.
   const hardRead = (slot: AuthorityEnvelopeDocuments['teamHardEnvelope']): AuthorityDocumentRead =>
@@ -412,11 +412,36 @@ describe('the production reader: the v3 switch, BOTH branches, one file (ADR A5-
     })
   })
 
-  it('an UNKNOWN binding takes the v1/v2 branch rather than inventing a v3 ceiling', async () => {
-    // Documented choice, not an oversight: an unresolved binding must not conjure a
-    // v3 gate out of facts it never read. The v1/v2 path fails closed on its own
-    // reads (zero-authority envelope ⇒ every Leader expansion refuses).
-    expect(await read(undefined, UNAVAILABLE, 'leader')).toBeUndefined()
+  it('an UNKNOWN binding is NOT the v1/v2 branch: it answers an unreadable ceiling the gate refuses', async () => {
+    // INVERTED by A4-PR7 §7.5 prerequisite 3, with the assertion it replaces quoted
+    // where it stood:
+    //
+    //   expect(await read(undefined, UNAVAILABLE, 'leader')).toBeUndefined()
+    //
+    // under the title "an UNKNOWN binding takes the v1/v2 branch rather than
+    // inventing a v3 ceiling". The reason that leg gave was sound — "an unresolved
+    // binding must not conjure a v3 gate out of facts it never read" — and it is
+    // still honoured: the answer invents NO facts, it DECLARES both slots
+    // `unavailable`. What was wrong was the vehicle. `undefined` is the very value a
+    // DECIDED v1/v2 Team answers (the EXISTENTIAL BRANCH leg above), and
+    // `governance/service.ts:1158` reads that value as "no v3 ceiling for you" and
+    // appends — so a Team whose binding simply could not be read bought a skipped
+    // gate, measured COMMITTING a rise at the real entry (FINDINGS cases (f)/(h)).
+    // That was invisible to this file's two-branch shape because one value was
+    // answering two different questions: "is this Team pre-v3?" and "can anyone
+    // tell?". The refusal is pinned BY BEHAVIOUR at the entry in
+    // `a4p7-ceiling-no-context-refusal.test.ts`; this leg pins the seam's answer.
+    const context = await read(undefined, UNAVAILABLE, 'leader')
+    expect(context, 'an unreadable binding is not a pre-v3 Team').toBeDefined()
+    expect(context?.documents).toEqual({
+      teamHardEnvelope: UNAVAILABLE,
+      permissionMutationEnvelope: UNAVAILABLE,
+    })
+    expect(context?.blueprintContentHash, 'nothing resolvable to anchor a fingerprint to').toBeUndefined()
+    expect(createPermissionAuthorityCeilingJudge({ subtreeContains: contains })(context!, rise('allow'))).toMatchObject({
+      status: 'unavailable',
+      code: 'AUTHORITY_CEILING_DOCUMENT_UNAVAILABLE',
+    })
   })
 
   it('a trusted operator becomes `human-user`; no path constructs `human-admin` (plan:261)', async () => {

@@ -1,0 +1,70 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73pre
+
+ ✓ packages/runtime/test/a4p2-dual-envelope-mutation.test.ts (26 tests) 29ms
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (8 tests | 1 failed) 50ms
+     × a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write 25ms
+     ✓ the SAME mutation with a carrier as wide as the matcher commits (the refusal is width, not the documents) 9ms
+     ✓ the ceiling is asked at the WIDTH the mutation claims, not only at the rising cell 1ms
+     ✓ at the real entry, with NO Alpha.3 Leader law in the way, the width refusal commits nothing 5ms
+     ✓ asking the width never LOOSENS the cell: a cell the ceiling does not reach still refuses 1ms
+     ✓ when BOTH points refuse, the refusal keeps the CELL's identity, not the width's 2ms
+     ✓ the dedupe: a region whose cell IS its width asks ONE question and answers today's refusal 1ms
+     ✓ 12. the malformed-static posture: a parse fault is ONCE, OUTSIDE the point loop (review FU-2) 1ms
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (12 tests | 1 failed) 102ms
+     ✓ 1. an UNREADABLE binding refuses a rising operator mutation with ZERO WRITE 13ms
+     ✓ 2. the refusal is the CONTEXT law, not an authorization law, and it mints nothing 6ms
+     ✓ 3. a v3 binding whose ANCHOR vanished takes the same refusal, not the skip 7ms
+     ✓ 4. a TIGHTENING under the same unreadable binding still commits 8ms
+     ✓ 5. a DECIDED v1/v2 binding still answers NO context and the same rise commits (A5-12 existential) 6ms
+     ✓ 6. a readable, anchored v3 binding commits the same rise (the refusal is specific) 6ms
+     ✓ 7. the reader has THREE answers, and the abstention is not the existential one 16ms
+     ✓ 8. a Leader rise the carrier COVERS also refused (the fail-open was not operator-only) 6ms
+     × 9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched) 14ms
+     ✓ 10. a bound-Blueprint read that THROWS is the same refusal, not a crash (review FU-3) 12ms
+     ✓ 11. the abstention reaches the OPERATION lane too, and flips its arm on purpose (review FU-1) 2ms
+     ✓ 12. a MALFORMED static document refuses the whole mutation, once, before any point (review FU-2) 5ms
+ ✓ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts (12 tests) 219ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts (33 tests) 309ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts (23 tests) 459ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts > the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deletion guard) > a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write
+AssertionError: expected 'PERMISSION_AUTHORITY_CEILING_INSUFFIC…' to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+Expected: "PERMISSION_ENVELOPE_EXPANSION_DENIED"
+Received: "PERMISSION_AUTHORITY_CEILING_INSUFFICIENT"
+
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts:251:62
+    249|       // moment `leaderEnvelopeCoverage` is deleted — legs 3-5 are why…
+    250|       // surviving ceiling gate CAN then take the law over.
+    251|       expect((error as { code?: string } | undefined)?.code).toBe('PER…
+       |                                                              ^
+    252|       expect((error as { details?: Record<string, unknown> } | undefin…
+    253|       expect((error as { details?: Record<string, unknown> } | undefin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched)
+AssertionError: expected 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+Expected: "PERMISSION_ENVELOPE_EXPANSION_DENIED"
+Received: "PERMISSION_EFFECT_CONTEXT_UNAVAILABLE"
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:417:27
+    415|     try {
+    416|       const error = await w.mutateLeader(RISE)
+    417|       expect(error?.code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+       |                           ^
+    418|       expect(error?.details?.['authorityCeilingCode'], 'refused before…
+    419|       expect(await w.listRules()).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 4 passed (6)
+      Tests  2 failed | 112 passed (114)
+   Start at  05:16:05
+   Duration  3.25s (transform 9.88s, setup 0ms, import 13.98s, tests 1.17s, environment 1ms)
+
