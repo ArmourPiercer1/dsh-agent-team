@@ -40,10 +40,11 @@
  * `module.register`) maps asset specifiers to an inert module so the
  * graph loads; component render functions never execute during import.
  *
- * THREE STATES, NOT TWO (A4-PR7 7.5). A step is reported `PASS`, `FAIL`,
- * or — when it cannot be executed here at all — `SKIP`, and `SKIP` names
- * what it skipped and why (plan ADR X12: "a gate step that cannot be run
- * is not a gate step"). Exactly one step qualifies today: the client
+ * THREE STATES FOR THE STEP, TWO FOR THE RUN (A4-PR7 7.5, verdict fixed in the
+ * 7.6 skip-fails round). A step is reported `PASS`, `FAIL`, or — when it cannot
+ * be executed here at all — `SKIP`, and `SKIP` names what it skipped and why
+ * (plan ADR X12: "a gate step that cannot be run is not a gate step"). Exactly
+ * one step qualifies today: the client
  * entry statically imports `@deepseek-ai/dsh-client-ui-primitives`, whose
  * published manifest declares no runtime dependencies at all while its
  * `lib/index.js` imports 23 bare packages; seventeen of them are not
@@ -56,6 +57,16 @@
  * defect — an undeclared dependency of ours, a module-evaluation throw, a
  * dangling path in our own dist — still prints `FAIL` and exits non-zero.
  * The host-plugin step is not closure-gated and is unchanged.
+ *
+ * WHAT A SKIP COSTS THE RUN. The three step states are unchanged; the RUN has
+ * two states, and `SKIP` is on the losing side of that split. Measured at the
+ * base of this change, a run with the client step skipped printed its honest
+ * `NOT RUN and NOT passed` footer and exited **0** — every install surface that
+ * cannot resolve the upstream closure (`--config.hoist=false`: 25 unresolvable,
+ * exit 0) was silently de-graded, and the machine gate downstream reads the
+ * exit code. `SKIP` is still the honest *classification* — it is the category
+ * that distinguishes "this workspace cannot run the step" from "the step ran and
+ * found a defect" — and it is no longer ever a passing gate.
  *
  * WHAT THE SKIP DOES NOT MUTE. A gate that stops checking has to be
  * replaced by a gate that checks, so step 3 verifies the COMPOSED client
@@ -73,7 +84,23 @@
  * name list is what the lines are BUILT from, twice over: an arm that is not
  * reported gets a FAIL line of its own, and a required id that produced no line
  * at all fails as never-printed. Nothing iterates the arms' own result.
- * Exit code: 0 with no FAIL (a SKIP is allowed), 1 on any FAIL.
+ * Exit code: 0 only when every step printed PASS; 1 on any FAIL **or any SKIP**.
+ * If a module cannot be imported at all, the import error propagates and node
+ * exits non-zero.
+ *
+ * THE CONTRACT A CALLER MAY ASSERT (plan Task 7.6's machine gate, and the exact
+ * form its leg has to take). The exit code is necessary and was not sufficient:
+ * it read 0 across a skipped step for a whole review round. So a caller asserts
+ * three things about the OUTPUT, and never a step count —
+ *   1. no line matches `^SKIP ` (a step that did not run is not a pass);
+ *   2. the client leg is present BY NAME — `PASS client plugin (packages/client)`
+ *      — because an absent line, a skipped one and a passing one all leave the
+ *      run unverified-or-verified in ways the footer alone cannot distinguish;
+ *   3. the footer contains no `NOT RUN` clause.
+ * The step count is `PLUGIN_TARGETS.length + REQUIRED_CHECK_IDS.length` and BOTH
+ * sides are derived (see `./composition-smoke-targets.mjs`): a leg that hard-codes
+ * how many arms exist goes stale on the first new arm, and a shrunk gate then
+ * reads as green.
  *
  * Run: `pnpm smoke:composition` (or `node scripts/composition-smoke.mjs`)
  * from the repository root, after `pnpm build`.
@@ -96,6 +123,7 @@ import {
   checkCompositionSurface,
   renderSurfaceStepLines,
 } from './composition-smoke-bundle.mjs'
+import { PLUGIN_TARGETS } from './composition-smoke-targets.mjs'
 
 // Asset specifiers in the client graph resolve to an inert module (see
 // header); must be registered before the first target import below.
@@ -103,28 +131,12 @@ register(new URL('./composition-smoke-assets-loader.mjs', import.meta.url))
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-const targets = [
-  {
-    label: 'host plugin (packages/runtime)',
-    rel: 'packages/runtime/dist/packages/runtime/src/plugin/host.js',
-    expectedName: 'dsh-agent-team',
-    contract: 'ready-rejection',
-    // The documented fail-loud contract of validateTeamPluginConfig:
-    // a degenerate (config-less) bootstrap rejects `ready` with this
-    // typed code.
-    expectCode: 'TEAM_PLUGIN_CONFIG_INVALID',
-  },
-  {
-    label: 'client plugin (packages/client)',
-    rel: 'packages/client/dist/packages/client/src/plugin/client.js',
-    expectedName: 'dsh-agent-team-client',
-    contract: 'throw',
-    // Closure-gated: this entry links upstream UI packages this workspace
-    // cannot install (see the header). Its checks run whenever the closure
-    // is available; otherwise the step says so by name.
-    closureGate: true,
-  },
-]
+/**
+ * The plugin arms. A module import, not a literal, so the gate's own test can
+ * DERIVE the step count from the list the gate iterates instead of restating it
+ * (see `./composition-smoke-targets.mjs` for the reason and the rule it follows).
+ */
+const targets = PLUGIN_TARGETS
 
 /**
  * The closed set of host seam events a production `apply()` is allowed to
@@ -386,14 +398,29 @@ try {
   console.log(`FAIL client bundle composition surface: ${error instanceof Error ? error.message : String(error)}`)
 }
 
-if (failed) {
-  console.log('FAIL composition-smoke')
-  throw new Error('composition smoke failed')
+// THE VERDICT. `failed` means a check ran and found something; `skipped.length`
+// means a step never ran at all. Both are red, and they have always been meant
+// to be: plan ADR X12 says a gate step that cannot be run is not a gate step,
+// and the sentence this footer carries is the one the gate has been printing
+// about it since 7.5 — the defect was that it printed it beside `PASS` and
+// exited 0, so the only honest line in the output was also the one nothing
+// could act on. A gate that reports an unrun step as a pass is the same mute
+// this phase closed in A4-PR6 (six `eslint-disable no-explicit-any` under a
+// green lint gate), wearing a SKIP badge instead of a disable comment.
+//
+// The SKIP lines above still name the step and its reason, and the wording
+// below is unchanged apart from the verdict word: the fix is that an unrun step
+// can no longer be reported as a passing gate, not a re-labelling of anything.
+if (failed || skipped.length > 0) {
+  console.log(
+    'FAIL composition-smoke'
+    + (skipped.length === 0
+      ? ''
+      : ` — ${skipped.length} step NOT RUN and NOT passed: ${skipped.join('; ')}. `
+        + 'A skipped step is an unverified claim, not a green one.'),
+  )
+  throw new Error(failed
+    ? 'composition smoke failed'
+    : `composition smoke did not run every step: ${skipped.join('; ')}`)
 }
-console.log(
-  'PASS composition-smoke'
-  + (skipped.length === 0
-    ? ''
-    : ` — ${skipped.length} step NOT RUN and NOT passed: ${skipped.join('; ')}. `
-      + 'A skipped step is an unverified claim, not a green one.'),
-)
+console.log('PASS composition-smoke')

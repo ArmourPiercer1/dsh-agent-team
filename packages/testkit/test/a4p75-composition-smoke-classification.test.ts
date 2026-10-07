@@ -38,10 +38,24 @@
  * Resolution errors here are captured from a child `node` process, because the
  * test runner's own resolver disagrees with Node about directory imports and
  * subpath exports — pinning the runner would have tested the wrong thing.
+ *
+ * SKIP-FAILS ROUND (A4-PR7 7.6) added the two describes at the bottom of this
+ * file. They exist because the sentence above — "a gate must not be able to go
+ * quiet" — was only ever enforced about the PRINTING, never about the VERDICT:
+ * the gate printed `1 step NOT RUN and NOT passed` in complete honesty and
+ * exited **0** beside it, so everything downstream that reads the exit code
+ * (Task 7.6's machine gate, any `&&` chain, any CI) inherited a green from a run
+ * that had verified one arm fewer than it claimed. The new legs drive the whole
+ * gate script end to end over three fixture repositories — every arm runnable,
+ * one arm skipped, one arm genuinely broken — because the contract that failed
+ * was a process exit code, and no in-process call into `checkCompositionSurface`
+ * can produce one. See the block above `GATE_ROOT` for the contract they pin and
+ * for why the synthetic skip is injected as a FILE rather than as a switch.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -65,6 +79,8 @@ import {
   renderSurfaceStepLines,
   staticExternalRequests,
 } from '../../../scripts/composition-smoke-bundle.mjs'
+import { PLUGIN_TARGETS } from '../../../scripts/composition-smoke-targets.mjs'
+import type { CompositionSmokeTarget } from '../../../scripts/composition-smoke-targets.mjs'
 import {
   CLIENT_BUNDLE_FILENAME,
   CLIENT_COMPOSITION_DIR,
@@ -719,9 +735,12 @@ const SURFACE_ROOT = join(SCRATCH, 'surface')
  * text is the upstream `window.__ModuleLoader__.load` format, reduced to what
  * the checks read — so a red here means a check stopped matching, not that a
  * fixture went malformed.
+ *
+ * `root` defaults to this suite's scratch dir; the verdict tests below pass a
+ * fixture-repo root of their own, because they run the WHOLE gate and a whole
+ * gate derives its repo root from where its script sits.
  */
-function buildSurface(caseName: string, options: SurfaceOptions = {}) {
-  const root = join(SURFACE_ROOT, caseName)
+function buildSurface(caseName: string, options: SurfaceOptions = {}, root = join(SURFACE_ROOT, caseName)) {
   const compositionDir = join(root, CLIENT_COMPOSITION_DIR)
   const rows = options.rows ?? CLIENT_ROW_IDS
   const externals = options.externals ?? CLIENT_MODULE_TABLE_EXTERNALS
@@ -1093,4 +1112,344 @@ describe('composition-smoke against this repository', () => {
     expect(existsSync(join(REPO_ROOT, CLIENT_COMPOSITION_DIR, CLIENT_NODE_HALF_FILENAME))).toBe(true)
     expect(INSTALL_SURFACES).toContain(CLIENT_COMPOSITION_DIR)
   })
+})
+
+// ── the gate as a whole: an unrun step is not a passing gate ────────────────
+
+/**
+ * THE GATE CONTRACT, in the form the next integrator has to write it — plan
+ * Task 7.6's machine-gate leg, and the same three clauses now sit in the header
+ * of `scripts/composition-smoke.mjs`, where a reader of the gate looks:
+ *
+ *   1. no line of the output matches `^SKIP `;
+ *   2. the closure-gated client leg appears BY NAME behind a `PASS ` prefix;
+ *   3. the footer carries no `NOT RUN` clause.
+ *
+ * Never the exit code alone: it read **0** across a skipped step for a whole
+ * review round, which is the defect these legs exist to make impossible to
+ * re-introduce. And never a literal arm count — a leg that asserts "11 lines"
+ * is satisfied by a gate that has lost an arm, which is ADR X10's failure mode
+ * wearing a different hat.
+ *
+ * WHY A FIXTURE REPOSITORY, when the subject is a process exit code. The gate
+ * derives its repo root from its own file location, so the only tree it will
+ * ever examine is the one it lives in — and in this workspace the client
+ * closure can never resolve, which makes a green run unproducible here at all
+ * (measured: `SKIP … 17 unresolvable`, and `--config.hoist=false` makes it 25).
+ * So each case gets a repository of its own under `.tmp-fault/`: the gate's own
+ * scripts copied in BYTE-IDENTICALLY (digest-compared below, because a stale or
+ * edited copy would silently become the thing under test) plus a surface that is
+ * complete except for the one thing the case is about.
+ *
+ * HOW THE SKIP IS INJECTED, and why it is not a knob. The synthetic skip is a
+ * FILE: a third-party fixture package inside the fixture's own `node_modules`
+ * asking for a package nothing installs, reached from a fixture entry the gate
+ * imports for real. The decision the gate makes is made on `existsSync` and
+ * `readFileSync` over a tree written at run time, so there is no literal
+ * `if (false)` anywhere for a bundler to erase — the trap recorded in
+ * `SESSION_ROUTER_LOG.md` (round 8) is an injected constant, and the strongest
+ * non-foldable shape is a filesystem read the bundler cannot see at all.
+ * Injecting through a `globalThis` read instead would have meant the GATE
+ * consulting a global, i.e. a runtime override on a security-adjacent gate;
+ * `scripts/composition-smoke-closure.mjs:729` records "no environment or CLI
+ * knob" as a measured property of this file family, and a knob that can add an
+ * arm is a knob that can be argued into removing one. The leg below therefore
+ * pins that emptiness rather than weakening it, and the FINDINGS record
+ * (`dev/agent-workflow/evidence/a4-pr7/7-6-skip-fails/FINDINGS.md`) states the
+ * deviation from the requested injection mechanism and this reason for it.
+ */
+const GATE_ROOT = join(REPO_ROOT, 'packages/testkit/test/.tmp-fault/a4p75-gate-verdict')
+
+/** Every script the gate reaches by relative path; copied verbatim per fixture. */
+const GATE_SCRIPT_FILES = [
+  'composition-smoke.mjs',
+  'composition-smoke-bundle.mjs',
+  'composition-smoke-closure.mjs',
+  'composition-smoke-targets.mjs',
+  'composition-smoke-assets-loader.mjs',
+  'client-composition-surface.mjs',
+  'place-dist-glue.mjs',
+] as const
+
+/**
+ * The step lines a complete run owes, DERIVED from the two lists the gate
+ * iterates. Nothing below states this number, and nothing below states the
+ * arm names either: both come from the gate's own lists, so adding an arm adds
+ * a requirement to these legs in the same commit that adds it to the gate.
+ */
+const EXPECTED_STEP_LINES = PLUGIN_TARGETS.length + REQUIRED_CHECK_IDS.length
+
+/** The closure-gated arm, located by ROLE — the flag, never the label text. */
+function closureGatedArm(): CompositionSmokeTarget {
+  const found = PLUGIN_TARGETS.find((target) => target.closureGate === true)
+  if (found === undefined) {
+    throw new Error('the arm list carries no closure-gated target, so there is no step a skip verdict could be about')
+  }
+  return found
+}
+
+const CLIENT_ARM: CompositionSmokeTarget = closureGatedArm()
+
+function sha256Of(file: string): string {
+  return createHash('sha256').update(readFileSync(file)).digest('hex')
+}
+
+/**
+ * Copy the gate into a fixture repo and PROVE the copy is the shipped file.
+ * Without the digest comparison the suite would be measuring whatever happened
+ * to be in the scratch directory, and a scratch directory is exactly where a
+ * stale copy lives.
+ */
+function installGateScripts(root: string): void {
+  for (const name of GATE_SCRIPT_FILES) {
+    const source = join(REPO_ROOT, 'scripts', name)
+    const target = join(root, 'scripts', name)
+    write(target, readFileSync(source, 'utf8'))
+    if (sha256Of(target) !== sha256Of(source)) {
+      throw new Error(`the fixture copy of scripts/${name} differs from the shipped script`)
+    }
+  }
+}
+
+/** The three states the top-level verdict is exercised across. */
+type GateCase = 'green' | 'skipped' | 'failed'
+
+/**
+ * A built entry, written from the arm's own description rather than from a
+ * remembered path or name: the label, the plugin `name` export and the
+ * fail-loud contract all come from `PLUGIN_TARGETS`, so an arm added to the
+ * gate gets a fixture and a required leg here in the same commit, and an arm
+ * renamed in the gate cannot be quietly satisfied by the old fixture.
+ *
+ * `ready-rejection` is the host contract — `apply` resolves, and the loud
+ * failure travels through the `teamRoot` facade's `ready` promise with the
+ * pinned typed code; the two URL derivations the bundle arms read are the real
+ * host's, so `derived-urls-resolve` measures a graph and not a placeholder.
+ */
+function gateEntrySource(target: CompositionSmokeTarget, entryCase: GateCase): string {
+  if (target.contract === 'ready-rejection') {
+    return [
+      `export const name = ${JSON.stringify(target.expectedName)}`,
+      'export function apply(ctx) {',
+      `  const failure = new Error(${JSON.stringify(`fixture: the ${target.label} row config is missing`)})`,
+      `  failure.code = ${JSON.stringify(target.expectCode ?? 'NO_PINNED_CODE')}`,
+      "  ctx.provide('teamRoot', { ready: Promise.reject(failure) })",
+      '}',
+      "export const defaultGlueUrl = (hostModuleUrl) => new URL('./live/agent-bindings.mjs', hostModuleUrl).href",
+      'export const defaultSeamUrlCandidates = (hostModuleUrl) => [',
+      "  new URL('../../../../../root-binding/harness/seam.mjs', hostModuleUrl).href,",
+      "  new URL('../../root-binding/harness/seam.mjs', hostModuleUrl).href,",
+      ']',
+      '',
+    ].join('\n')
+  }
+  const body = [
+    `export const name = ${JSON.stringify(target.expectedName)}`,
+    "export const inject = ['slots', 'sessions']",
+    'export function apply() {',
+    '  throw new TypeError(\'fixture: the mount dereferenced a seam service it was never given\')',
+    '}',
+    '',
+  ]
+  if (entryCase === 'skipped') {
+    // A THIRD-PARTY file asks for the package nothing installs. That is the
+    // whole mechanism: `SKIP` requires the gap to sit behind a file outside
+    // this repository's own artifact, so the injected state is the real state,
+    // only smaller.
+    return [
+      "import { gap } from '@a4p75/upstream'",
+      'export const pulledFromUpstream = gap',
+      ...body,
+    ].join('\n')
+  }
+  if (entryCase === 'failed') {
+    // An own defect: it must stay RED for its own reason, never reclassified.
+    return [
+      "throw new TypeError('fixture: our own artifact threw while evaluating')",
+      ...body,
+    ].join('\n')
+  }
+  return body.join('\n')
+}
+
+/** A complete fixture repository whose only variable is the client entry. */
+function buildGateRepo(entryCase: GateCase): string {
+  const root = join(GATE_ROOT, entryCase)
+  buildSurface(`gate-${entryCase}`, {}, root)
+  // The real `packages/client/package.json` is `type: module` and its version
+  // is what `shim-recorded-values` compares the shim against; the shared surface
+  // fixture writes neither, so the manifest these entries load under is rewritten
+  // here rather than in the builder every other case in this file depends on.
+  write(join(root, 'packages/client/package.json'), JSON.stringify({
+    name: '@a4p75/client',
+    version: '1.2.3',
+    type: 'module',
+  }, null, 2))
+  for (const target of PLUGIN_TARGETS) write(join(root, target.rel), gateEntrySource(target, entryCase))
+  if (entryCase === 'skipped') {
+    write(join(root, 'node_modules/@a4p75/upstream/package.json'), JSON.stringify({
+      name: '@a4p75/upstream',
+      version: '1.0.0',
+      type: 'module',
+      exports: { '.': './lib/index.js' },
+    }, null, 2))
+    write(join(root, 'node_modules/@a4p75/upstream/lib/index.js'),
+      "import { nope } from '@a4p75/no-such-clsx'\nexport const gap = nope\n")
+  }
+  installGateScripts(root)
+  return root
+}
+
+/** One run of the real gate script, parsed into the parts the contract names. */
+function runGate(root: string) {
+  const run = spawnSync(process.execPath, [join(root, 'scripts/composition-smoke.mjs')], {
+    encoding: 'utf8',
+    cwd: root,
+  })
+  const lines = (run.stdout ?? '').split('\n').filter((line) => line.length > 0)
+  const footer = lines.at(-1) ?? ''
+  return {
+    status: run.status,
+    stdout: run.stdout ?? '',
+    stderr: run.stderr ?? '',
+    lines,
+    footer,
+    steps: lines.filter((line) => line !== footer),
+    skips: lines.filter((line) => line.startsWith('SKIP ')),
+    passes: lines.filter((line) => line.startsWith('PASS ')),
+    failures: lines.filter((line) => line.startsWith('FAIL ')),
+  }
+}
+
+/**
+ * The clause-by-clause form of the contract, as a function so a leg can name
+ * WHICH clause a run broke instead of only that it broke. Returns the reasons
+ * the run is NOT green: empty means every clause held.
+ */
+function notGreenBecause(output: ReturnType<typeof runGate>): string[] {
+  const reasons: string[] = []
+  if (output.skips.length > 0) reasons.push(`a step printed SKIP: ${output.skips[0] ?? ''}`)
+  if (!output.passes.some((line) => line.startsWith(`PASS ${CLIENT_ARM.label}:`))) {
+    reasons.push(`the closure-gated leg did not print PASS by name (${CLIENT_ARM.label})`)
+  }
+  if (output.footer.includes('NOT RUN')) reasons.push('the footer carries a NOT RUN clause')
+  return reasons
+}
+
+describe('composition-smoke verdict: an unrun step is not a passing gate', () => {
+  let green: ReturnType<typeof runGate>
+  let skipped: ReturnType<typeof runGate>
+  let failed: ReturnType<typeof runGate>
+
+  beforeAll(() => {
+    rmSync(GATE_ROOT, { recursive: true, force: true })
+    green = runGate(buildGateRepo('green'))
+    skipped = runGate(buildGateRepo('skipped'))
+    failed = runGate(buildGateRepo('failed'))
+  }, 120_000)
+
+  afterAll(() => {
+    rmSync(GATE_ROOT, { recursive: true, force: true })
+  })
+
+  it('exits 0 with every arm green once the closure can resolve', () => {
+    // The state this workspace cannot produce, so it is built: without it the
+    // fix would be unfalsifiable — every "skip is red" leg passes trivially if
+    // nothing in the suite can ever print a green footer.
+    expect(green.footer).toBe('PASS composition-smoke')
+    expect(green.status).toBe(0)
+    expect(green.skips).toEqual([])
+    expect(green.failures).toEqual([])
+    expect(green.steps.filter((line) => line.startsWith(`PASS ${CLIENT_ARM.label}:`))).toHaveLength(1)
+  })
+
+  it('exits non-zero when a step is skipped, and still prints the SKIP line with its reason', () => {
+    expect(skipped.status).not.toBe(0)
+    // The SKIP line keeps naming the step and why, unchanged: the fix is the
+    // verdict, never a quieter report of the skip.
+    expect(skipped.skips).toHaveLength(1)
+    expect(skipped.skips[0]).toContain(CLIENT_ARM.label)
+    expect(skipped.skips[0]).toContain('@a4p75/no-such-clsx')
+    // And the red is attributable to that one step and nothing else.
+    expect(skipped.failures).toHaveLength(1)
+    expect(skipped.failures[0]).toBe(
+      `FAIL composition-smoke — 1 step NOT RUN and NOT passed: ${CLIENT_ARM.label}. `
+      + 'A skipped step is an unverified claim, not a green one.',
+    )
+    expect(skipped.stdout).not.toContain('PASS composition-smoke')
+  })
+
+  it('still exits 1 on a real failure, with that failure\'s own message and no skip clause', () => {
+    expect(failed.status).toBe(1)
+    expect(failed.skips).toEqual([])
+    expect(failed.failures.some((line) => line.includes('our own artifact threw while evaluating'))).toBe(true)
+    // A failure that did not skip anything must not borrow the skip footer.
+    expect(failed.footer).toBe('FAIL composition-smoke')
+  })
+
+  it('owes exactly as many step lines as the two lists the gate iterates, by name', () => {
+    // Derivation, not number: every plugin arm label and every required bundle
+    // id has to appear, so the count below cannot be met by an empty set and a
+    // stale literal cannot hide a dropped arm.
+    expect(PLUGIN_TARGETS.length).toBeGreaterThan(0)
+    expect(REQUIRED_CHECK_IDS.length).toBeGreaterThan(0)
+    for (const target of PLUGIN_TARGETS) {
+      expect(green.steps.some((line) => line.startsWith(`PASS ${target.label}:`))).toBe(true)
+    }
+    for (const id of REQUIRED_CHECK_IDS) {
+      expect(green.steps.some((line) => line.includes(`bundle ${id} (`))).toBe(true)
+    }
+    expect(green.steps).toHaveLength(EXPECTED_STEP_LINES)
+    // A skipped step still prints its line: the count is what proves the verdict
+    // went red WITHOUT the report going quiet.
+    expect(skipped.steps).toHaveLength(EXPECTED_STEP_LINES)
+  })
+
+  it('passes the Task 7.6 assertion form on a green run and rejects it on a skipping run', () => {
+    // The form itself, driven both ways: a contract nobody has seen fail is a
+    // contract that might be satisfied by anything.
+    expect(notGreenBecause(green)).toEqual([])
+    expect(notGreenBecause(skipped)).toEqual([
+      `a step printed SKIP: ${skipped.skips[0] ?? ''}`,
+      `the closure-gated leg did not print PASS by name (${CLIENT_ARM.label})`,
+      'the footer carries a NOT RUN clause',
+    ])
+    // The failing run trips clauses 2 and 3-of-one but never the SKIP clause:
+    // each clause answers to a different defect, which is the whole reason the
+    // leg is three clauses and not an exit code.
+    expect(notGreenBecause(failed)).toEqual([
+      `the closure-gated leg did not print PASS by name (${CLIENT_ARM.label})`,
+    ])
+  })
+
+  it('injects the skip by fixture, not by knob: the gate reads no env, argv, or global', () => {
+    // The property `composition-smoke-closure.mjs:729` records as measured, now
+    // pinned: there is no runtime override on this gate, which is why the
+    // synthetic skip above had to be a file. A test seam here would be a mute
+    // seam with a test written against it.
+    for (const name of ['composition-smoke.mjs', 'composition-smoke-bundle.mjs', 'composition-smoke-targets.mjs']) {
+      const source = readFileSync(join(REPO_ROOT, 'scripts', name), 'utf8')
+      expect({ name, hits: source.match(/process\.env|globalThis|process\.argv/g) ?? [] }).toEqual({ name, hits: [] })
+    }
+  })
+})
+
+describe('composition-smoke verdict against this repository', () => {
+  it('never reports a passing gate over a step it did not run', () => {
+    // The real gate, the real artifact, this workspace's real install surface:
+    // whichever way the client closure falls out here, the verdict and the
+    // output have to agree. At the base of this change the output said
+    // `NOT RUN and NOT passed` while the exit code said 0.
+    const run = runGate(REPO_ROOT)
+    if (run.skips.length === 0) {
+      expect(notGreenBecause(run)).toEqual([])
+      expect(run.status).toBe(0)
+      return
+    }
+    expect(run.status).not.toBe(0)
+    expect(run.footer).toContain('NOT RUN and NOT passed')
+    for (const skip of run.skips) {
+      expect(run.footer).toContain(skip.slice('SKIP '.length).split(':')[0] ?? '')
+    }
+  }, 120_000)
 })
