@@ -717,3 +717,135 @@ Not claimed, still, after F1–F6:
 | `scripts/lint-identities.d.mts` | **new** typed sidecar so §7.6 can import the instrument instead of re-implementing its notion of an identity |
 | `eslint.config.mjs` | `'**/.tmp-fault/**'` → `'**/.tmp-*/**'`; the unreproducible `62 identities` paragraph replaced by the four measured cases and the correction that they supersede it |
 | `dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/` | §§5–8 corrected and labelled by base; §§12–16 added; transcripts `review-round-merged-head-before-fix`, `review-round-confirmation-at-67689c7c`, `review-round-f1-gate-across-trees`, `review-round-verdicts-battery-and-f5-ab`, `review-round-f5-narrow-and-root-case`, `review-round-f5-f6-first-measurements`, `review-round-eslint-instrument-shape`, `review-round-eslint-argv-invocation`, `review-round-battery-at-992b416b`, `reproduce-off-path-output.sh` |
+
+---
+
+## 17. The second merge (`4a11694a`), and the four numbers re-derived on it
+
+Merge `d6e786c7` = `f9741db9` + `origin/master` `4a11694a` (+24 commits, 299 files: the §7.4
+scan-scope work, `#152`/`#154`/`#155`). Zero overlap with this lane's 40 files, so no conflicts, and
+no dependency manifest moved, so nothing needed reinstalling. What the merge *does* bring is master's
+`scripts/verify-blueprint-version-clean.mjs` and master's `packages/testkit/test/a4p7-blueprint-version-clean.test.ts`
+— the two instruments this lane's fence numbers are read through. Receipts:
+`review-round-battery-at-d6e786c7.txt`, `review-round-verdicts-at-d6e786c7.txt`.
+
+### The identity diff (`new 0, resolved 0`, and why the 33 minted nothing)
+
+```
+exit=0
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1105 file(s) linted, 0 of them gitignored
+baseline …/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+```
+
+**`new 0, resolved 0` — no baseline decision arises from this merge, and nothing was re-pinned.** The
+reason is mechanical, not lucky, and it is worth writing down because §16's prediction refused to
+guess it: the 33 `packages/runtime/test/**` specs master brought are **modifications at paths that
+were already in the linted population**, so they changed the *content* eslint read without changing
+*how many* files it read — `universe:` stayed **1105**, exactly. The three lintable paths master
+actually *added* are all under `dev/`, which the flat config ignores, so they entered the hidden half
+of the census and not the linted half: hidden **1313 → 1316**, of which `dev/` alone **442 → 445**
+(`packages/client/composition-shim` 2, `packages/runtime/dist` 753, `tests/` 116 unmoved). An
+identity diff is a function of files read, and the set read did not change; had the §7.4 lane added a
+lintable file outside an ignored prefix, this line would have moved and the decision would have been
+the coordinator's. It is still the coordinator's decision whenever it moves — this lane does not
+re-baseline inside a branch.
+
+### The fence: the four phase-tracked numbers are exactly as expected, and this tree owns none of them
+
+`dirty(7 files, 51 sites)`, `unknown(0 files, 0 sites)`, `refused(52 files, 115 sites)`,
+`adjudicated(16 files, 24 sites)`; also `advisory(8, 10)`, `prose(5, 5)`, `verdict: dirty-or-unknown`,
+exit 1, `scanned-in-scope: **751 tracked files**`; three runs **byte-identical** (20 987 bytes,
+`sha256 58e60496…`), including a run after every tree mutation in §§7-9 of the battery.
+
+Two things had to be established before those four numbers could be attributed to master rather than
+to this merge, because the previous tree printed `dirty(41 files, 96 sites)` and that is a large move:
+
+- **The scope predicate did not change.** `isScanScopePath` is byte-identical between `14ea8717` and
+  `4a11694a` (9 lines, `cmp` clean), so §7's per-head table remains valid and extends without
+  recomputation: `69f7fdad` 748, `14ea8717` 748, `4d331349` 750, `992b416b` 751, `4a11694a` **748**
+  (master's 259 added tracked paths put nothing in scope), `d6e786c7` **751** — this lane's three
+  `scripts/` files are the whole delta. The measured `scanned-in-scope` agrees with the computed one.
+- **The 41 → 7 movement is master's R3 retirement, not this tree.** The fence commit that changed is
+  `d30139ab` *"§7.4 R3 retirement: the intentionally-dirty class is retired; its attack corpus lands
+  as a suite with no admission path"*, and the 7 remaining dirty files name it: `cordis.patch.yml`,
+  `packages/domain/blueprint/testdata/fixtures.ts`, `packages/legacy/test/p7t6-teammates-adapter.test.ts`,
+  `packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts`,
+  `packages/runtime/test/t12a-live-bridge.mjs`, `tests/kits/pr-e-requirement-recovery-smoke/…`,
+  `tests/kits/pr-f-closure-smoke/…`. **0** OFFENDING/UNKNOWN/advisory lines name a file this lane owns
+  (measured by grepping the report for this lane's seven paths and its evidence directory).
+
+### The F6 denominator, and the skipped count is not zero
+
+```
+lint-visibility: eslint read 1105 of 2421 tracked lintable file(s); 1316 are hidden by an ignore
+pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) —
+1 tracked lintable path(s) are not a file on disk and were skipped:
+dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+```
+
+**The skipped count is still 1, and the thing being skipped is the same symlink, not a new fact.** It
+is still tracked in `4a11694a` (`git ls-files -s` → mode `120000`, blob `9f3c36d7`), its absolute
+target under gitignored `.worktrees/a2c-1/` does not resolve here, and `git status` for that path is
+empty. When the removal lands the line should read `… read 1105 of **2421** tracked lintable file(s);
+**1316** are hidden … 0 skipped`: the symlink was *skipped*, never offered, so it never entered the
+hidden half — removing it takes the tracked total to 2421, which is already the offered count, and
+leaves both read (1105) and hidden (1316) exactly where they are. Until then the arithmetic to check
+is `1105 read + 1316 hidden = 2421 offered`, `+ 1 skipped = 2422` tracked lintable paths (both halves
+measured from `git ls-files`). One wording note while that is open: the
+message says "of *2421* tracked lintable file(s)" where 2421 is the count **offered to eslint**, and
+the skipped note supplies the missing one; after the symlink goes the two coincide and the sentence
+stops needing the reconciliation. Say the word and that becomes a one-line message change.
+
+### The legs, the never-built red, and the pair total that did move
+
+- Healthy tree: **`25 passed (25)`**, classifier **`54 passed (54)`**, instrument exit 0 (11 steps +
+  footer, 0 `SKIP`), `check:artifacts OK: 1508 files`, `pnpm -r run typecheck` exit 0 / 8 `Done` /
+  0 `error TS`, `node --check` × 4 (three of this lane's scripts plus master's fence), eslint exit 0
+  on this lane's 7 files.
+- **No leg count moved**: the merge did not touch either of this lane's specs (measured: `git diff`
+  of the merge against this lane's side names none of them).
+- Never-built tree: instrument exit **1**, `10 PASS` + **exactly one step FAIL** + footer
+  `FAIL composition-smoke`, 0 `SKIP`; gate **`1 failed | 24 passed (25)`**, the failing leg being
+  `is green, asserted by arm name and by absence of a skip — never by the exit code`, whose stderr
+  names the artifact and the tree (`HEAD d6e786c7, 0 tracked file(s) changed vs HEAD, 1 untracked
+  entr(ies) [counted from git-status entries: an untracked directory counts as one]`). F1 holds on
+  the second merged tree.
+- **The pair the phase reads as 68 is now 70**: `p4t6` 10 legs unchanged, the wrapper
+  **58 → 60**, added by master's §7.4 work. Re-derived per file rather than assumed, because the
+  wrapper file is exactly the one the merge replaced.
+- Tree verdicts on this tree (`review-round-verdicts-at-d6e786c7.txt`): A (root moved aside) →
+  `refused`, `outputFileCount 0`; **C (entry removed, 399 siblings) → `failed`**; E (whole output
+  relocated off-path) → `refused`, `outputFileCount 0`. The asymmetry is intact; A and E remain
+  indistinguishable, which is F2's bound stated in the refusal text.
+
+### §17's own finding: a helper that answers out of contract, and two fictions by memory
+
+`classifyAbsentArtifact` — and the `absentArtifactVerdict` under it — is documented and gated on the
+precondition *the artifact is absent*: every caller checks `exists` first. Called on a **healthy**
+tree it does not refuse; it prints
+
+> `packages/client/dist/packages/client/src/plugin/client.js **is missing** while
+> packages/client/dist carries 400 other file(s): a build ran in this tree and produced a surface
+> that does not contain what the client plugin (packages/client) arm declares…`
+
+about a tree in which nothing is missing, and returns `failed`. Unreachable through the gate;
+reachable by any caller that forgets the precondition — including this round's author, twice in one
+hour, while writing the transcript above. A helper whose out-of-contract answer is a confident false
+sentence about the tree is the F2/F3 failure with a new author, so it is recorded here rather than
+left in a scratch file. Proposed fix, **not implemented** (holding as instructed): when
+`prov.exists` is true, return `refused` naming that the artifact is present and the absent-artifact
+classifier is the wrong instrument — `refused` for "you asked this helper the wrong question", the
+same vocabulary the legs already speak, no new state.
+
+The two fictions, logged because §15's rule is the one they broke: the option is `rel`, not
+`relPath` (the throw was `ERR_INVALID_ARG_TYPE` out of `join(repoRoot, undefined)`, and the first
+version of the probe printed a stack trace where the answer should have been); and the sibling count
+is `outputFileCount`, not `filesInRoot`, which is why the first transcript carried
+`filesInDeclaredRoot=undefined` — an invented field name printed as if it were a measurement. The
+corrected probe prints `exists`, `outputRoot`, `outputRootExists`, `outputFileCount`, and the header
+of that transcript keeps the correction instead of hiding it. Third instance of the same family in
+the same round: the header prose was written inside double quotes with backticks, so three lines were
+**command-substituted** into `command not found` errors on the way into the receipt; re-run with
+single quotes, and the previous run's mangled output is what prompted the re-run rather than being
+quietly overwritten in place.
