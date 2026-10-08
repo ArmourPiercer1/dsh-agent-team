@@ -1,0 +1,32 @@
+# loop label=diag n=24 file=packages/runtime/test/p6t1-parallel.test.ts
+# host=Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 node=v24.21.0 date=2026-10-08T08:20:14Z
+# head=ac54ffb8e37a862252a08ea1593554f738b0b114 dirty=3
+# one run = rm -rf packages/testkit/test/.tmp-fault && vitest run <file>, strictly sequential
+run    result   pass       fail      real_s  total_ms
+note                                         
+1      PASS     9          0         1.10    vitest_total_ms=693 rc=0
+2      PASS     9          0         1.03    vitest_total_ms=662 rc=0
+3      PASS     9          0         1.03    vitest_total_ms=676 rc=0
+4      PASS     9          0         1.15    vitest_total_ms=803 rc=0
+5      PASS     9          0         1.06    vitest_total_ms=705 rc=0
+6      PASS     9          0         1.11    vitest_total_ms=728 rc=0
+7      PASS     9          0         1.48    vitest_total_ms=969 rc=0
+8      PASS     9          0         1.19    vitest_total_ms=806 rc=0
+9      PASS     9          0         1.27    vitest_total_ms=883 rc=0
+10     FAIL     ?          0         1.07    vitest_total_ms=704 rc=1
+11     PASS     9          0         1.06    vitest_total_ms=712 rc=0
+12     PASS     9          0         1.35    vitest_total_ms=871 rc=0
+13     PASS     9          0         1.12    vitest_total_ms=726 rc=0
+14     FAIL     ?          0         1.14    vitest_total_ms=742 rc=1
+15     PASS     9          0         1.10    vitest_total_ms=716 rc=0
+16     PASS     9          0         1.10    vitest_total_ms=758 rc=0
+17     PASS     9          0         1.08    vitest_total_ms=695 rc=0
+18     PASS     9          0         1.05    vitest_total_ms=686 rc=0
+19     PASS     9          0         1.09    vitest_total_ms=701 rc=0
+20     FAIL     ?          0         1.14    vitest_total_ms=749 rc=1
+21     PASS     9          0         1.08    vitest_total_ms=698 rc=0
+22     PASS     9          0         1.15    vitest_total_ms=786 rc=0
+23     FAIL     ?          0         1.09    vitest_total_ms=669 rc=1
+24     PASS     9          0         1.03    vitest_total_ms=679 rc=0
+# RESULT diag: failures/24 = 4/24
+# end=2026-10-08T08:20:41Z

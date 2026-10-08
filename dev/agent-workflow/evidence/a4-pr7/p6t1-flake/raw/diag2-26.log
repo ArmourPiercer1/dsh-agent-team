@@ -1,0 +1,72 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p1 outcomes: results=2 errors=0 committedOps=2 members=2 ops=[{"id":"qb90bm","phase":"COMMITTED"},{"id":"0ku1ez","phase":"COMMITTED"}] err=[]
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPROBE cause=TeamDomainError/RECORD_DUPLICATE: a compatibility state for root session 'session-root-p6t1' already exists stack=    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/schema/errors.ts:98:10) |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/repositories/compatibility.ts:60:13 |     at CompatibilityRepository.putRecord (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/repositories/base.ts:156:33)
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p2 outcomes: results=4 errors=1 committedOps=4 members=4 ops=[{"id":"ax202m","phase":"COMMITTED"},{"id":"6b60l1","phase":"COMMITTED"},{"id":"19d0jg","phase":"COMMITTED"},{"id":"6sv0pq","phase":"COMMITTED"}] err=["ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)"]
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPROBE cause=TeamDomainError/RECORD_DUPLICATE: a compatibility state for root session 'session-root-p6t1' already exists stack=    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/schema/errors.ts:98:10) |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/repositories/compatibility.ts:60:13 |     at CompatibilityRepository.putRecord (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/repositories/base.ts:156:33)
+DIAGREPROBE cause=TeamDomainError/RECORD_DUPLICATE: a compatibility state for root session 'session-root-p6t1' already exists stack=    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/schema/errors.ts:98:10) |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/repositories/compatibility.ts:60:13 |     at CompatibilityRepository.putRecord (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/repositories/base.ts:156:33)
+DIAGREPROBE cause=TeamDomainError/RECORD_DUPLICATE: a compatibility state for root session 'session-root-p6t1' already exists stack=    at teamDomainError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/schema/errors.ts:98:10) |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/repositories/compatibility.ts:60:13 |     at CompatibilityRepository.putRecord (/home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake/packages/storage/repositories/base.ts:156:33)
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p3 outcomes: results=2 errors=3 committedOps=2 members=2 ops=[{"id":"c980uf","phase":"COMMITTED"},{"id":"y5i0vd","phase":"COMMITTED"}] err=["ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)","ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)","ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)"]
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 2 failed) 18ms
+     ✓ two activated results with distinct instance ids and child Sessions 4ms
+     ✓ two COMMITTED operations, two members, two distinct child Sessions 0ms
+     × five activated results, five COMMITTED operations, five members, five child Sessions 8ms
+     ✓ exactly two activations succeed 0ms
+     × exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 2ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:215:31
+    213| describe('P6-T1 P2: N=5 same-template parallel activations all succeed…
+    214|   it('five activated results, five COMMITTED operations, five members,…
+    215|     expect(p2?.errors.length).toBe(0)
+       |                               ^
+    216|     expect(p2?.results.length).toBe(5)
+    217|     if (p2 === undefined) throw new Error('P2: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota)
+Error: assertActivationCode: expected ActivationError code 'ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES' but got ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)
+ ❯ assertActivationCode packages/runtime/test/p6t1-helpers.ts:594:11
+    592|         ? `${record.name ?? error.name}/${record.code ?? 'n/a'}: ${err…
+    593|         : String(error)
+    594|     throw new Error(`assertActivationCode: expected ActivationError co…
+       |           ^
+    595|   }
+    596|   const details = record.details
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:253:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+   Start at  16:22:22
+   Duration  1.31s (transform 713ms, setup 0ms, import 1.10s, tests 18ms, environment 0ms)
+

@@ -1,0 +1,148 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p657-1 BEGIN gen=1 at=2026-10-08T08:25:54.949Z
+DIAGREPL p43-1 BEGIN gen=1 at=2026-10-08T08:25:54.950Z
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p657-1 AFTER-DELETE gen=1
+DIAGREPL p43-1 AFTER-DELETE gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p657-1 AFTER-PUT gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p657-1 END gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p1 outcomes: results=1 errors=1 committedOps=1 members=1 ops=[{"id":"qb90bm","phase":"COMMITTED"}] err=["ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)"]
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p589-1 BEGIN gen=1 at=2026-10-08T08:25:54.967Z
+DIAGREPL p932-1 BEGIN gen=1 at=2026-10-08T08:25:54.967Z
+DIAGREPL p708-1 BEGIN gen=1 at=2026-10-08T08:25:54.967Z
+DIAGREPL p295-1 BEGIN gen=1 at=2026-10-08T08:25:54.967Z
+DIAGREPL p133-1 BEGIN gen=1 at=2026-10-08T08:25:54.967Z
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p589-1 AFTER-DELETE gen=1
+DIAGREPL p932-1 AFTER-DELETE gen=1
+DIAGREPL p708-1 AFTER-DELETE gen=1
+DIAGREPL p295-1 AFTER-DELETE gen=1
+DIAGREPL p133-1 AFTER-DELETE gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p932-1 AFTER-PUT gen=1
+DIAGREPL p708-1 AFTER-PUT gen=1
+DIAGREPL p295-1 AFTER-PUT gen=1
+DIAGREPL p133-1 AFTER-PUT gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p589-1 AFTER-PUT gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p932-1 END gen=1
+DIAGREPL p708-1 END gen=1
+DIAGREPL p295-1 END gen=1
+DIAGREPL p133-1 END gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p589-1 END gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p2 outcomes: results=5 errors=0 committedOps=5 members=5 ops=[{"id":"ax202m","phase":"COMMITTED"},{"id":"xuj1hi","phase":"COMMITTED"},{"id":"6b60l1","phase":"COMMITTED"},{"id":"19d0jg","phase":"COMMITTED"},{"id":"6sv0pq","phase":"COMMITTED"}] err=[]
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p660-1 BEGIN gen=1 at=2026-10-08T08:25:54.990Z
+DIAGREPL p981-1 BEGIN gen=1 at=2026-10-08T08:25:54.990Z
+DIAGREPL p305-1 BEGIN gen=1 at=2026-10-08T08:25:54.990Z
+DIAGREPL p407-1 BEGIN gen=1 at=2026-10-08T08:25:54.990Z
+DIAGREPL p659-1 BEGIN gen=1 at=2026-10-08T08:25:54.990Z
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p660-1 AFTER-DELETE gen=1
+DIAGREPL p981-1 AFTER-DELETE gen=1
+DIAGREPL p305-1 AFTER-DELETE gen=1
+DIAGREPL p407-1 AFTER-DELETE gen=1
+DIAGREPL p659-1 AFTER-DELETE gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p981-1 AFTER-PUT gen=1
+DIAGREPL p305-1 AFTER-PUT gen=1
+DIAGREPL p407-1 AFTER-PUT gen=1
+DIAGREPL p659-1 AFTER-PUT gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p660-1 AFTER-PUT gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p981-1 END gen=1
+DIAGREPL p305-1 END gen=1
+DIAGREPL p407-1 END gen=1
+DIAGREPL p659-1 END gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p660-1 END gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p3 outcomes: results=2 errors=3 committedOps=2 members=2 ops=[{"id":"c980uf","phase":"COMMITTED"},{"id":"pr21fb","phase":"COMMITTED"}] err=["ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES: activation: member quota maxInstances=2 exhausted for template 'worker' (current+reserved=2, +1 requested)","ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES: activation: member quota maxInstances=2 exhausted for template 'worker' (current+reserved=2, +1 requested)","ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES: activation: member quota maxInstances=2 exhausted for template 'worker' (current+reserved=2, +1 requested)"]
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 2 failed) 8ms
+     × two activated results with distinct instance ids and child Sessions 4ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+     ✓ five activated results, five COMMITTED operations, five members, five child Sessions 0ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:176:31
+    174| describe('P6-T1 P1: N=2 same-template parallel activations both succee…
+    175|   it('two activated results with distinct instance ids and child Sessi…
+    176|     expect(p1?.errors.length).toBe(0)
+       |                               ^
+    177|     expect(p1?.results.length).toBe(2)
+    178|     if (p1 === undefined) throw new Error('P1: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:189:30
+    187|
+    188|   it('two COMMITTED operations, two members, two distinct child Sessio…
+    189|     expect(p1?.committedOps).toBe(2)
+       |                              ^
+    190|     expect(p1?.memberCount).toBe(2)
+    191|     expect(p1?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+   Start at  16:25:54
+   Duration  672ms (transform 403ms, setup 0ms, import 578ms, tests 8ms, environment 0ms)
+

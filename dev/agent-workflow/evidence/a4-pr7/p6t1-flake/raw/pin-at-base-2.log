@@ -1,0 +1,127 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (12 tests | 2 failed) 24ms
+     ✓ two activated results with distinct instance ids and child Sessions 2ms
+     ✓ two COMMITTED operations, two members, two distinct child Sessions 0ms
+     ✓ five activated results, five COMMITTED operations, five members, five child Sessions 2ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the three refusals are QUOTA_MEMBER_MAX_INSTANCES identities and nothing else 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 1ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+     × every burst admits EXACTLY two of five, with no refusal outside the quota vocabulary 12ms
+     × every burst ends with exactly two members, two COMMITTED operations, two child Sessions 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P5: the same law under distinct re-probe stamps (A4-PR7 p6t1-flake pin) > every burst admits EXACTLY two of five, with no refusal outside the quota vocabulary
+AssertionError: expected [ { 'burst-0': [ …(4) ] }, …(2) ] to deeply equal [ { 'burst-0': [ …(3) ] }, …(2) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "burst-0": [
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
+      ],
+    },
+    {
+      "burst-1": [
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
+      ],
+    },
+    {
+      "burst-2": [
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
+      ],
+    },
+  ]
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:426:22
+    424|   it('every burst admits EXACTLY two of five, with no refusal outside …
+    425|     const observed = p5.map((b) => ({ [b.label]: b.outcome.rejections …
+    426|     expect(observed).toEqual(
+       |                      ^
+    427|       p5.map((b) => ({
+    428|         [b.label]: [QUOTA_REFUSAL, QUOTA_REFUSAL, QUOTA_REFUSAL],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P5: the same law under distinct re-probe stamps (A4-PR7 p6t1-flake pin) > every burst ends with exactly two members, two COMMITTED operations, two child Sessions
+AssertionError: expected [ { 'burst-0': { …(3) } }, …(2) ] to deeply equal [ { 'burst-0': { …(3) } }, …(2) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "burst-0": {
+-       "childSessions": 2,
+-       "committedOperations": 2,
+-       "members": 2,
++       "childSessions": 1,
++       "committedOperations": 1,
++       "members": 1,
+      },
+    },
+    {
+      "burst-1": {
+-       "childSessions": 2,
+-       "committedOperations": 2,
+-       "members": 2,
++       "childSessions": 1,
++       "committedOperations": 1,
++       "members": 1,
+      },
+    },
+    {
+      "burst-2": {
+-       "childSessions": 2,
+-       "committedOperations": 2,
+-       "members": 2,
++       "childSessions": 1,
++       "committedOperations": 1,
++       "members": 1,
+      },
+    },
+  ]
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:444:21
+    442|       },
+    443|     }))
+    444|     expect(durable).toEqual(
+       |                     ^
+    445|       p5.map((b) => ({
+    446|         [b.label]: { members: 2, committedOperations: 2, childSessions…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 10 passed (12)
+   Start at  16:36:55
+   Duration  1.48s (transform 823ms, setup 0ms, import 1.28s, tests 24ms, environment 0ms)
+

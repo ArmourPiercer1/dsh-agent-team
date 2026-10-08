@@ -1,0 +1,118 @@
+FINAL-BATTERY — A4-PR7 p6t1-flake instrument lane
+commit: de18a7bccd93f71b7be0adbf93474c82ee7ae9e9   base: ac54ffb8e37a862252a08ea1593554f738b0b114   branch: fix-a4-p6t1-flake
+host: Linux 6.18.33.2-microsoft-standard-WSL2 x86_64  node: v24.21.0  vitest: 4.1.11  pnpm: 11.7.0
+collected: 2026-10-08T08:51:33Z
+
+=== 1. RATE: before / after, solo runs, rm -rf packages/testkit/test/.tmp-fault before each, strictly sequential ===
+before       # RESULT before: failures/20 = 4/20
+before-load  # RESULT before-load: failures/10 = 4/10
+after        # RESULT after: failures/20 = 0/20
+after-final  # RESULT after-final: failures/20 = 0/20
+after-load   # RESULT after-load: failures/10 = 0/10
+-- per-run lines: <label>-transcript.txt ; full vitest output per run: raw/<label>-NN.log
+-- overlap signature: per-run wall seconds across all family loops:
+   n=196  min=1.00s  median=1.09s  max=4.56s
+
+=== 2. FAILING-LEG SET (base red runs) ===
+-- before-03: 5 red legs
+     × two activated results with distinct instance ids and child Sessions 
+     × two COMMITTED operations, two members, two distinct child Sessions 
+     × exactly two activations succeed 
+     × exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 
+     × the final durable state holds EXACTLY two members and two COMMITTED operations 
+-- before-06: 1 red legs
+     × five activated results, five COMMITTED operations, five members, five child Sessions 
+-- before-12: 2 red legs
+     × two activated results with distinct instance ids and child Sessions 
+     × two COMMITTED operations, two members, two distinct child Sessions 
+-- before-19: 2 red legs
+     × two activated results with distinct instance ids and child Sessions 
+     × two COMMITTED operations, two members, two distinct child Sessions 
+
+=== 3. DETERMINISTIC PIN (P5) at base and at tip ===
+pin-at-base-1:  Tests  2 failed | 10 passed (12)
+pin-at-base-2:  Tests  2 failed | 10 passed (12)
+pin-at-base-3:  Tests  4 failed | 8 passed (12)
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL"
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL"
+pin-after-fix-1: Tests  12 passed (12)
+pin-after-fix-2: Tests  12 passed (12)
+pin-after-fix-3: Tests  12 passed (12)
+
+=== 4. MUTATION TABLE ===
+-- M1 provider.ts step-7 quota gate bypassed:
+   ✓ two activated results with distinct instance ids and child Sessions 
+   ✓ two COMMITTED operations, two members, two distinct child Sessions 
+   ✓ five activated results, five COMMITTED operations, five members, five child Sessions 
+   × exactly two activations succeed 
+   × exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 
+   × the three refusals are QUOTA_MEMBER_MAX_INSTANCES identities and nothing else 
+   × the final durable state holds EXACTLY two members and two COMMITTED operations 
+   ✓ the five P2 instance ids are pairwise distinct 
+   ✓ the five P2 operation ids are pairwise distinct 
+   ✓ the five P2 child Sessions are pairwise distinct 
+   × every burst admits EXACTLY two of five, with no refusal outside the quota vocabulary 
+   × every burst ends with exactly two members, two COMMITTED operations, two child Sessions 
+   Tests  6 failed | 6 passed (12)
+-- M2 storage/provisioning/coordinator.ts durable over-create:
+   × two activated results with distinct instance ids and child Sessions 
+   × two COMMITTED operations, two members, two distinct child Sessions 
+   × five activated results, five COMMITTED operations, five members, five child Sessions 
+   × exactly two activations succeed 
+   × exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 
+   × the three refusals are QUOTA_MEMBER_MAX_INSTANCES identities and nothing else 
+   × the final durable state holds EXACTLY two members and two COMMITTED operations 
+   ✓ the five P2 instance ids are pairwise distinct 
+   ✓ the five P2 operation ids are pairwise distinct 
+   ✓ the five P2 child Sessions are pairwise distinct 
+   × every burst admits EXACTLY two of five, with no refusal outside the quota vocabulary 
+   × every burst ends with exactly two members, two COMMITTED operations, two child Sessions 
+   Tests  9 failed | 3 passed (12)
+-- restore verification:
+   M1: packages/runtime/activation/provider.ts: OK
+   M2: restored blob d4c6562adcdafd210c5c954e5e9d929bf2b64a77 == base blob d4c6562adcdafd210c5c954e5e9d929bf2b64a77
+-- green family run after restoring: raw/after-final-01.log -> Tests  12 passed (12)
+
+=== 5. DIAGNOSIS (mechanism evidence) ===
+-- 110 instrumented runs, chain-failure inventory (diag/diag2/diag3 loops):
+        33 DIAGCHAINFAIL reason=reprobe-failed cause=TeamDomainError/RECORD_DUPLICATE
+-- red-run / chain-event correlation (diag3, 40 runs with the provider logger):
+   runs carrying a chain-failure event: 14 of 40 ; red runs in that loop: 14
+-- the millisecond coincidence, two natural-clock traces:
+   GREEN DIAGREPL p24-1 BEGIN gen=1 at=2026-10-08T08:25:38.349Z
+   GREEN DIAGREPL p683-1 BEGIN gen=1 at=2026-10-08T08:25:38.349Z
+   GREEN DIAGREPL p24-1 AFTER-DELETE gen=1
+   GREEN DIAGREPL p683-1 AFTER-DELETE gen=1
+   RED   DIAGREPL p536-1 BEGIN gen=1 at=2026-10-08T08:25:39.370Z
+   RED   DIAGREPL p538-1 BEGIN gen=1 at=2026-10-08T08:25:39.371Z
+   RED   DIAGREPL p536-1 AFTER-DELETE gen=1
+   RED   DIAGREPL p538-1 AFTER-DELETE gen=1
+   RED   DIAGREPL p536-1 AFTER-PUT gen=1
+   RED   DIAGREPL p536-1 END gen=1
+-- discriminator (one real durable row, writers differ only in computedAt):
+   DISCRIMINATOR differentBytes(+1ms)=RECORD_DUPLICATE identicalBytes=no-error
+-- provider seam, distinct stamps: base vs tip:
+   base: REPRO2 inventory=[["throw:ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",6]]
+   tip : REPRO2 inventory=[["ok:activated",12]]
+-- ESCALATION: authority level, still racing at the tip:
+   tip : REPRO inventory=[["chainOk:OPEN",12],["chainFail:reprobe-failed",12]]
+
+=== 6. NINE-ROOT CENSUS (contracts domain legacy remote runtime storage testkit tools client) ===
+-- measured on this tip: 505 files / 6288 registered legs (scratch/census-tip.json)
+-- baseline (population-baseline/nine-root-2162f6a7.md, re-confirmed at 2f06bb44): 502 files / 6277 legs
+   [fail-set] baseline=22 current=22 NEW=0 FIXED=0
+-- collection-error files (unchanged set, no red resolved into one):
+   FILE packages/runtime/test/p8s3b-result-effects.test.ts::COLLECTION-OR-UNHANDLED
+   FILE packages/runtime/test/t12a-b2-child-identity.test.ts::COLLECTION-OR-UNHANDLED
+   FILE packages/runtime/test/t12a-glue-handoff-ports.test.ts::COLLECTION-OR-UNHANDLED
+
+=== 7. GATES ===
+-- a4p7-merge-gate (untouched by this lane): Tests  29 passed (29)
+-- p4t6 derived total (clean tree): filesScanned = 1039
+-- typecheck: 0 TS errors (rc 0)
+-- lint-identities: baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+-- eslint: ✖ 160 problems (128 errors, 32 warnings) (base state, unchanged; neither touched file appears)
+-- blueprint fence base->tip: IDENTICAL (rc 1 both sides, pre-existing dirty-or-unknown, no site in the touched file)
+-- expect( counts: p6t1-parallel.test.ts base=24 tip=30; sorted diff of expect(...) expressions is additions-only (6 added, 0 removed)
+-- artifacts: DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0
+-- git: 0 tracked modifications; untracked = evidence + .install.log

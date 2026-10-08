@@ -1,0 +1,28 @@
+# loop label=after-final n=20 file=packages/runtime/test/p6t1-parallel.test.ts
+# host=Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 node=v24.21.0 date=2026-10-08T08:47:26Z
+# head=de18a7bccd93f71b7be0adbf93474c82ee7ae9e9 dirty=2
+# one run = rm -rf packages/testkit/test/.tmp-fault && vitest run <file>, strictly sequential
+run    result   pass       fail      real_s  total_ms
+note                                         
+1      PASS     12         0         1.26    vitest_total_ms=823 rc=0
+2      PASS     12         0         1.25    vitest_total_ms=847 rc=0
+3      PASS     12         0         1.14    vitest_total_ms=756 rc=0
+4      PASS     12         0         1.12    vitest_total_ms=745 rc=0
+5      PASS     12         0         1.16    vitest_total_ms=783 rc=0
+6      PASS     12         0         1.21    vitest_total_ms=834 rc=0
+7      PASS     12         0         1.11    vitest_total_ms=745 rc=0
+8      PASS     12         0         1.12    vitest_total_ms=755 rc=0
+9      PASS     12         0         1.22    vitest_total_ms=847 rc=0
+10     PASS     12         0         1.21    vitest_total_ms=818 rc=0
+11     PASS     12         0         1.19    vitest_total_ms=789 rc=0
+12     PASS     12         0         1.20    vitest_total_ms=799 rc=0
+13     PASS     12         0         1.30    vitest_total_ms=915 rc=0
+14     PASS     12         0         1.17    vitest_total_ms=783 rc=0
+15     PASS     12         0         1.18    vitest_total_ms=811 rc=0
+16     PASS     12         0         1.19    vitest_total_ms=799 rc=0
+17     PASS     12         0         1.29    vitest_total_ms=901 rc=0
+18     PASS     12         0         1.40    vitest_total_ms=978 rc=0
+19     PASS     12         0         1.29    vitest_total_ms=869 rc=0
+20     PASS     12         0         1.25    vitest_total_ms=870 rc=0
+# RESULT after-final: failures/20 = 0/20
+# end=2026-10-08T08:47:51Z

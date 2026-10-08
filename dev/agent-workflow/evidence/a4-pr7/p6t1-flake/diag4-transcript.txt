@@ -1,0 +1,30 @@
+# loop label=diag4 n=22 file=packages/runtime/test/p6t1-parallel.test.ts
+# host=Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 node=v24.21.0 date=2026-10-08T08:25:37Z
+# head=ac54ffb8e37a862252a08ea1593554f738b0b114 dirty=4
+# one run = rm -rf packages/testkit/test/.tmp-fault && vitest run <file>, strictly sequential
+run    result   pass       fail      real_s  total_ms
+note                                         
+1      PASS     9          0         1.10    vitest_total_ms=691 rc=0
+2      FAIL     ?          0         1.02    vitest_total_ms=664 rc=1
+3      FAIL     ?          0         1.04    vitest_total_ms=684 rc=1
+4      FAIL     ?          0         1.02    vitest_total_ms=672 rc=1
+5      PASS     9          0         1.04    vitest_total_ms=680 rc=0
+6      FAIL     ?          0         1.03    vitest_total_ms=673 rc=1
+7      FAIL     ?          0         1.04    vitest_total_ms=687 rc=1
+8      FAIL     ?          0         1.01    vitest_total_ms=659 rc=1
+9      PASS     9          0         1.02    vitest_total_ms=672 rc=0
+10     PASS     9          0         1.00    vitest_total_ms=657 rc=0
+11     FAIL     ?          0         1.05    vitest_total_ms=693 rc=1
+12     FAIL     ?          0         1.02    vitest_total_ms=655 rc=1
+13     FAIL     ?          0         1.03    vitest_total_ms=681 rc=1
+14     PASS     9          0         1.01    vitest_total_ms=671 rc=0
+15     FAIL     ?          0         1.03    vitest_total_ms=677 rc=1
+16     FAIL     ?          0         1.03    vitest_total_ms=660 rc=1
+17     FAIL     ?          0         1.02    vitest_total_ms=672 rc=1
+18     FAIL     ?          0         1.01    vitest_total_ms=669 rc=1
+19     FAIL     ?          0         1.04    vitest_total_ms=688 rc=1
+20     PASS     9          0         1.06    vitest_total_ms=689 rc=0
+21     FAIL     ?          0         1.02    vitest_total_ms=666 rc=1
+22     FAIL     ?          0         1.02    vitest_total_ms=669 rc=1
+# RESULT diag4: failures/22 = 16/22
+# end=2026-10-08T08:26:00Z

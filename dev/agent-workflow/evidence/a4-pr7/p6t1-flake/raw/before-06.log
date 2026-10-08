@@ -1,0 +1,42 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 1 failed) 7ms
+     ✓ two activated results with distinct instance ids and child Sessions 1ms
+     ✓ two COMMITTED operations, two members, two distinct child Sessions 0ms
+     × five activated results, five COMMITTED operations, five members, five child Sessions 3ms
+     ✓ exactly two activations succeed 0ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) > five activated results, five COMMITTED operations, five members, five child Sessions
+AssertionError: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:206:31
+    204| describe('P6-T1 P2: N=5 same-template parallel activations all succeed…
+    205|   it('five activated results, five COMMITTED operations, five members,…
+    206|     expect(p2?.errors.length).toBe(0)
+       |                               ^
+    207|     expect(p2?.results.length).toBe(5)
+    208|     if (p2 === undefined) throw new Error('P2: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  16:18:59
+   Duration  674ms (transform 408ms, setup 0ms, import 580ms, tests 7ms, environment 0ms)
+

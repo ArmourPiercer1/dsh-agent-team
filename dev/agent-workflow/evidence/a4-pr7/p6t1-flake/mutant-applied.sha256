@@ -1,0 +1,4 @@
+1f8ad83a5067b360a2d422cfd7de77520e9f8a81260356a82018752fde9d1b95  packages/storage/provisioning/coordinator.ts
+c58fb60bf702b3303dc29a3191a0146bdd88c187eb972fb76135d407e6abbebd  packages/runtime/activation/provider.ts
+9ab056081d0af0004eeffc5cc33efc9792fa4cac7fce7c2755cb40cd979b8a7b  packages/runtime/member-residency/write-port.ts
+ef90a6e99f73a8838d2cda1333bfc9cf01a11ad5071aad9f5fd30d53ea1e65f6  packages/runtime/root-binding/write-port.ts

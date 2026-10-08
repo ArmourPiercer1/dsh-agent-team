@@ -1,0 +1,193 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p463-1 BEGIN gen=1 at=2026-10-08T08:25:52.869Z
+DIAGREPL p325-1 BEGIN gen=1 at=2026-10-08T08:25:52.870Z
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p463-1 AFTER-DELETE gen=1
+DIAGREPL p325-1 AFTER-DELETE gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p463-1 AFTER-PUT gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p463-1 END gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p1 outcomes: results=1 errors=1 committedOps=1 members=1 ops=[{"id":"qb90bm","phase":"COMMITTED"}] err=["ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)"]
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p794-1 BEGIN gen=1 at=2026-10-08T08:25:52.885Z
+DIAGREPL p784-1 BEGIN gen=1 at=2026-10-08T08:25:52.885Z
+DIAGREPL p931-1 BEGIN gen=1 at=2026-10-08T08:25:52.885Z
+DIAGREPL p448-1 BEGIN gen=1 at=2026-10-08T08:25:52.885Z
+DIAGREPL p12-1 BEGIN gen=1 at=2026-10-08T08:25:52.885Z
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p794-1 AFTER-DELETE gen=1
+DIAGREPL p784-1 AFTER-DELETE gen=1
+DIAGREPL p931-1 AFTER-DELETE gen=1
+DIAGREPL p448-1 AFTER-DELETE gen=1
+DIAGREPL p12-1 AFTER-DELETE gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p784-1 AFTER-PUT gen=1
+DIAGREPL p931-1 AFTER-PUT gen=1
+DIAGREPL p448-1 AFTER-PUT gen=1
+DIAGREPL p12-1 AFTER-PUT gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p794-1 AFTER-PUT gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p784-1 END gen=1
+DIAGREPL p931-1 END gen=1
+DIAGREPL p448-1 END gen=1
+DIAGREPL p12-1 END gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p794-1 END gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p2 outcomes: results=5 errors=0 committedOps=5 members=5 ops=[{"id":"ax202m","phase":"COMMITTED"},{"id":"xuj1hi","phase":"COMMITTED"},{"id":"6b60l1","phase":"COMMITTED"},{"id":"19d0jg","phase":"COMMITTED"},{"id":"6sv0pq","phase":"COMMITTED"}] err=[]
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p627-1 BEGIN gen=1 at=2026-10-08T08:25:52.904Z
+DIAGREPL p481-1 BEGIN gen=1 at=2026-10-08T08:25:52.905Z
+DIAGREPL p933-1 BEGIN gen=1 at=2026-10-08T08:25:52.905Z
+DIAGREPL p495-1 BEGIN gen=1 at=2026-10-08T08:25:52.905Z
+DIAGREPL p64-1 BEGIN gen=1 at=2026-10-08T08:25:52.905Z
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p627-1 AFTER-DELETE gen=1
+DIAGREPL p481-1 AFTER-DELETE gen=1
+DIAGREPL p933-1 AFTER-DELETE gen=1
+DIAGREPL p495-1 AFTER-DELETE gen=1
+DIAGREPL p64-1 AFTER-DELETE gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p627-1 AFTER-PUT gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAGREPL p627-1 END gen=1
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p3 outcomes: results=1 errors=4 committedOps=1 members=1 ops=[{"id":"y5i0vd","phase":"COMMITTED"}] err=["ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)","ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)","ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)","ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL: activation: compatibility could not be established (reprobe-failed) — admission fails closed (invariant 50)"]
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 5 failed) 9ms
+     × two activated results with distinct instance ids and child Sessions 4ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+     ✓ five activated results, five COMMITTED operations, five members, five child Sessions 0ms
+     × exactly two activations succeed 0ms
+     × exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     × the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:176:31
+    174| describe('P6-T1 P1: N=2 same-template parallel activations both succee…
+    175|   it('two activated results with distinct instance ids and child Sessi…
+    176|     expect(p1?.errors.length).toBe(0)
+       |                               ^
+    177|     expect(p1?.results.length).toBe(2)
+    178|     if (p1 === undefined) throw new Error('P1: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:189:30
+    187|
+    188|   it('two COMMITTED operations, two members, two distinct child Sessio…
+    189|     expect(p1?.committedOps).toBe(2)
+       |                              ^
+    190|     expect(p1?.memberCount).toBe(2)
+    191|     expect(p1?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly two activations succeed
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:246:32
+    244| describe('P6-T1 P3: the quota race — five parallel, two may admit (no …
+    245|   it('exactly two activations succeed', () => {
+    246|     expect(p3?.results.length).toBe(2)
+       |                                ^
+    247|   })
+    248|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota)
+AssertionError: expected 4 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 4
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:250:31
+    248|
+    249|   it('exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixtu…
+    250|     expect(p3?.errors.length).toBe(3)
+       |                               ^
+    251|     if (p3 === undefined) throw new Error('P3: missing snapshot')
+    252|     for (const error of p3.errors) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > the final durable state holds EXACTLY two members and two COMMITTED operations
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:258:29
+    256|
+    257|   it('the final durable state holds EXACTLY two members and two COMMIT…
+    258|     expect(p3?.memberCount).toBe(2)
+       |                             ^
+    259|     expect(p3?.committedOps).toBe(2)
+    260|     expect(p3?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 4 passed (9)
+   Start at  16:25:52
+   Duration  677ms (transform 410ms, setup 0ms, import 575ms, tests 9ms, environment 0ms)
+

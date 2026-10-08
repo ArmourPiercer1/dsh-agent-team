@@ -1,0 +1,118 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (9 tests | 5 failed) 32ms
+     × two activated results with distinct instance ids and child Sessions 20ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+     ✓ five activated results, five COMMITTED operations, five members, five child Sessions 6ms
+     × exactly two activations succeed 1ms
+     × exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     × the final durable state holds EXACTLY two members and two COMMITTED operations 1ms
+     ✓ the five P2 instance ids are pairwise distinct 1ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:167:31
+    165| describe('P6-T1 P1: N=2 same-template parallel activations both succee…
+    166|   it('two activated results with distinct instance ids and child Sessi…
+    167|     expect(p1?.errors.length).toBe(0)
+       |                               ^
+    168|     expect(p1?.results.length).toBe(2)
+    169|     if (p1 === undefined) throw new Error('P1: missing snapshot')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:180:30
+    178|
+    179|   it('two COMMITTED operations, two members, two distinct child Sessio…
+    180|     expect(p1?.committedOps).toBe(2)
+       |                              ^
+    181|     expect(p1?.memberCount).toBe(2)
+    182|     expect(p1?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly two activations succeed
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:237:32
+    235| describe('P6-T1 P3: the quota race — five parallel, two may admit (no …
+    236|   it('exactly two activations succeed', () => {
+    237|     expect(p3?.results.length).toBe(2)
+       |                                ^
+    238|   })
+    239|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota)
+AssertionError: expected 4 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 4
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:241:31
+    239|
+    240|   it('exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixtu…
+    241|     expect(p3?.errors.length).toBe(3)
+       |                               ^
+    242|     if (p3 === undefined) throw new Error('P3: missing snapshot')
+    243|     for (const error of p3.errors) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P3: the quota race — five parallel, two may admit (no over-create) > the final durable state holds EXACTLY two members and two COMMITTED operations
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:249:29
+    247|
+    248|   it('the final durable state holds EXACTLY two members and two COMMIT…
+    249|     expect(p3?.memberCount).toBe(2)
+       |                             ^
+    250|     expect(p3?.committedOps).toBe(2)
+    251|     expect(p3?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 4 passed (9)
+   Start at  16:48:48
+   Duration  1.62s (transform 848ms, setup 0ms, import 1.36s, tests 32ms, environment 0ms)
+

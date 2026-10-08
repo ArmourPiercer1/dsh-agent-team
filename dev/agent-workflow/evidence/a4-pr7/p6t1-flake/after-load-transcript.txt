@@ -1,0 +1,18 @@
+# loop label=after-load n=10 file=packages/runtime/test/p6t1-parallel.test.ts
+# host=Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 node=v24.21.0 date=2026-10-08T08:47:58Z
+# head=de18a7bccd93f71b7be0adbf93474c82ee7ae9e9 dirty=2
+# one run = rm -rf packages/testkit/test/.tmp-fault && vitest run <file>, strictly sequential
+run    result   pass       fail      real_s  total_ms
+note                                         
+1      PASS     12         0         4.56    vitest_total_ms=? rc=0
+2      PASS     12         0         3.46    vitest_total_ms=? rc=0
+3      PASS     12         0         4.41    vitest_total_ms=? rc=0
+4      PASS     12         0         3.71    vitest_total_ms=? rc=0
+5      PASS     12         0         3.51    vitest_total_ms=? rc=0
+6      PASS     12         0         2.86    vitest_total_ms=? rc=0
+7      PASS     12         0         3.03    vitest_total_ms=? rc=0
+8      PASS     12         0         3.06    vitest_total_ms=? rc=0
+9      PASS     12         0         3.40    vitest_total_ms=? rc=0
+10     PASS     12         0         3.30    vitest_total_ms=? rc=0
+# RESULT after-load: failures/10 = 0/10
+# end=2026-10-08T08:48:34Z

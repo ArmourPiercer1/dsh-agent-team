@@ -1,0 +1,20 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p1 outcomes: results=2 errors=0 committedOps=2 members=2 ops=[{"id":"qb90bm","phase":"COMMITTED"},{"id":"0ku1ez","phase":"COMMITTED"}] err=[]
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p2 outcomes: results=5 errors=0 committedOps=5 members=5 ops=[{"id":"ax202m","phase":"COMMITTED"},{"id":"xuj1hi","phase":"COMMITTED"},{"id":"6b60l1","phase":"COMMITTED"},{"id":"19d0jg","phase":"COMMITTED"},{"id":"6sv0pq","phase":"COMMITTED"}] err=[]
+
+stdout | packages/runtime/test/p6t1-parallel.test.ts
+DIAG p6t1x-p3 outcomes: results=2 errors=3 committedOps=2 members=2 ops=[{"id":"c980uf","phase":"COMMITTED"},{"id":"pr21fb","phase":"COMMITTED"}] err=["ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES: activation: member quota maxInstances=2 exhausted for template 'worker' (current+reserved=2, +1 requested)","ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES: activation: member quota maxInstances=2 exhausted for template 'worker' (current+reserved=2, +1 requested)","ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES: activation: member quota maxInstances=2 exhausted for template 'worker' (current+reserved=2, +1 requested)"]
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  16:22:06
+   Duration  715ms (transform 438ms, setup 0ms, import 625ms, tests 4ms, environment 0ms)
+
