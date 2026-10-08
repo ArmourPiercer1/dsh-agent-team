@@ -1,0 +1,122 @@
+# A4-PR7 `compat-atomic` — FINAL BATTERY
+
+Tip `04f8d776` (base `606a0be7`); every line below is copied from a
+log in `raw/`, not retyped from memory. Verdict-first summary in `FINDINGS.md`.
+
+```
+=== 0. tree identity
+04f8d7761c03b24dfa10605253ab427bffbb6f28
+porcelain lines: 107
+=== 1. nine-root census (identity sets, not counts)
+vitest census rc=1 ()
+[fail-set] captured 22 identities (19 failing tests, 3 collection-failing files) from 1 report(s)
+census-tip identities: 22 (base: 22)
+--- fail-set diff base->tip
+[fail-set] baseline=22 current=22 NEW=0 FIXED=0
+=== 2. determinism loops (20 sequential solo runs each)
+TOTAL final-p6t1parallel: 0 failed runs of 20
+TOTAL final-spec: 0 failed runs of 20
+=== 3. the frozen gate + the scan-count leg
+ Test Files  2 passed (2)
+      Tests  39 passed (39)
+=== 4. typecheck / lint / lint-identities
+typecheck rc=0 errorTS=0
+lint rc=1 ✖ 160 problems (128 errors, 32 warnings)
+lint-identities: baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+=== 5. committed build matches this commit
+check:artifacts:head rc=0 DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0
+=== 6. blueprint-version cleanliness (run from the toplevel, after git add)
+verify-blueprint rc=1 verdict=verdict: dirty-or-unknown offending=7
+this lane's files named there: 1
+=== 7. assertion-count discipline (base -> tip, no silent removals)
+expect( base=23052 in 518 files; tip=23106 in 519 files
+=== battery done
+```
+
+## Reading of each instrument
+
+| Instrument | Verdict | What it can and cannot prove |
+| --- | --- | --- |
+| nine-root identity census | `506 files / 6307 legs` at tip vs `505 / 6288` at base (`+1` file = this lane's spec, `+19` legs = its legs); **22 red identities both sides**, `fail-set diff` = **NEW 0 FIXED 0** | identity sets, not counts: a NEW red cannot hide behind a fixed total. Raw reports `scratch/census-{base,tip}.json.gz` |
+| renamed-leg disclosure | the census CANNOT see a renamed GREEN leg: `p8s5b-operation-fencing.test.ts` R5a "at least one NO_STATE_AFTER_REPROBE…" was renamed to "ZERO NO_STATE_AFTER_REPROBE …" | the one identity transition this lane introduces, declared in FINDINGS §8 and in the commit message — not hidden inside a `NEW 0` |
+| determinism loops | `p6t1-parallel` **0 failed runs of 20**; `a4-compat-atomic-state` **0 failed runs of 20** (`final-*-transcript.txt`, `raw/final-*.log`) | sequential solo runs, no `-P`; the acceptance bar is the deterministic legs, the loop only shows the schedule is not luck |
+| frozen gate + scan count | `a4p7-merge-gate` 29 + `p4t6-session-event-scan` 10 = **39 passed** | the merge gate is untouched; p4t6's total is derived as `983 + Σ named lists` by the leg itself, this lane contributes exactly one named path |
+| typecheck | `pnpm --no-bail -r run typecheck` rc=0, **0 `error TS`** | — |
+| lint | `160 problems (128 errors, 32 warnings)` = the standing number | the count alone is not a verdict, so it is paired with the identity diff below |
+| lint identities | baseline 76 distinct; **new 0, resolved 0** | no new lint identity appeared and none was silently silenced |
+| committed build | `DSH-ARTIFACT-VERDICT … verdict=ok compared=1508 drift=0` | the commit carries its own build; the first attempt at this commit printed `drift=3` (a `dist` built while a mutation was on disk) and was rebuilt + amended — see `raw/check-artifacts-head-commit2.log` for the failing first run |
+| blueprint-version cleanliness | `verdict: dirty-or-unknown`, OFFENDING set = the same **6** pre-existing files as at base, `unknown(0 files, 0 sites)`, refused 52/115, prose 5/5, adjudicated 16/24; script exit 1 is its own rule (`gating > 0 ? 1 : 0`, `scripts/verify-blueprint-version-clean.mjs:1500`) over those 6 | this lane's spec contains no blueprint-version literal at all (`grep -c documentVersion` = 0), so it cannot move the verdict; ran from the worktree toplevel with the lane's sources committed |
+| assertion discipline | `expect(` over `packages` + `tests`: **23052 → 23106 (+54)**, 518 → 519 files; per-file walk: exactly **two** files changed, both UP (`+53` the new spec, `+1` p8s5b), none down | proves "no silent removals" file by file rather than by trusting a total |
+
+## Mutation table (reachability probes)
+
+```
+# Mutation table — `packages/runtime/test/a4-compat-atomic-state.test.ts`
+
+Every mutation is a single production-line change reverted immediately after its run (logs in `raw/mutation-*.log`). A RED LEG IS THE REACHABILITY PROOF: the mutated line is on the path these legs drive, so the leg's green means the property holds, not that nothing was observed.
+
+## M1-cas-performs-the-old-delete-then-put
+
+- a conditioned write on a generation that moved on raises RECORD_DUPLICATE / stale-generation-compatibility-state
+- a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict
+- both consultations are served and the drift-bound generation advances exactly once
+- the loser writes NOTHING and the winner's row is untouched (a lost race is detectable, never destructive)
+- the product path performs NO delete on the compatibility store (the window is removed, not rescheduled)
+
+## M2-drop-the-generation-check
+
+- a conditioned write on a generation that moved on raises RECORD_DUPLICATE / stale-generation-compatibility-state
+- a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict
+- both consultations are served and the drift-bound generation advances exactly once
+- the loser writes NOTHING and the winner's row is untouched (a lost race is detectable, never destructive)
+
+## M3-no-convergence-always-fail-closed
+
+- NEITHER consultation is refused: the loser converges on the winner's row instead of failing work
+- both consultations are served and the drift-bound generation advances exactly once
+
+## M4-converge-ignoring-the-fingerprint
+
+- a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict
+
+## M5-cold-create-loses-its-branch
+
+- NEITHER consultation is refused: the loser converges on the winner's row instead of failing work
+- a conditioned write on a generation that moved on raises RECORD_DUPLICATE / stale-generation-compatibility-state
+- a consultation started while the winner is committed-but-unstamped sees a PRESENT row and does not probe
+- a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict
+- after a real reopen the state SURVIVES: same generation, same status, and the human acknowledgement intact
+- and that window costs a durable DELETE that the product path no longer performs
+- between the delete and the put the row reads as ABSENT to anyone who looks
+- both consultations are served and the drift-bound generation advances exactly once
+- exactly ONE transition is committed per round: one state write plus one stamp advance
+- recovery continues the generation line from the surviving row instead of restarting it
+- the cold shape of the same signal: a create over an occupied key raises the typed duplicate
+- the crash reaches the caller as a typed seam failure (identity flattened by normalizeSeamError)
+- the durable state survives the restart and the second process sees it as FRESH (no re-probe, zero writes)
+- the loser writes NOTHING and the winner's row is untouched (a lost race is detectable, never destructive)
+- the product path performs NO delete on the compatibility store (the window is removed, not rescheduled)
+- the row is never absent and never torn: one probe's complete record survives the race
+- the same consultation over a FRESH EMPTY store is a different shape (the leg above is not vacuous)
+
+## M6-drop-the-generation-stamp-advance
+
+- (run hung: the mutated path no longer performs the write this leg parks on)
+
+```
+
+Post-`git add` re-run of the blueprint verifier (`raw/blueprint-version-after-add.log`):
+`verdict: dirty-or-unknown`, OFFENDING = the same 6 pre-existing files, exit 1 by its
+own `gating > 0` rule — staging this lane and its evidence revealed nothing new.
+
+## Re-verification at the final tip (after this evidence commit)
+
+The battery above ran at `04f8d776`. After the evidence commit the affected files
+were re-run and the committed-build question re-asked at the new HEAD
+(`raw/final-tip-fourfiles.log`, `raw/check-artifacts-head-final-tip.log`):
+
+```
+ Test Files  4 passed (4)          a4-compat-atomic-state 19, p8s5b-operation-fencing 26,
+      Tests  87 passed (87)        p6t2-actions 30, p6t1-parallel 12
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0
+```

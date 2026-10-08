@@ -1,0 +1,61 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-compat-atomic-state
+
+ ❯ packages/runtime/test/p8s5b-operation-fencing.test.ts (26 tests | 1 failed) 17ms
+     ✓ the follow-up ALWAYS executes (both orders leave the worker work-accepting) 1ms
+     ✓ exactly ONE archive branch holds, and the final state matches that branch 0ms
+     ✓ exactly ONE work fact, no zombie work, no double settlement 0ms
+     ✓ the dispose ALWAYS executes and the worker ends DISPOSED (terminal) 0ms
+     ✓ exactly ONE follow-up branch holds (settled work, or rejected at the fresh view) 0ms
+     ✓ the restore ALWAYS executes and the worker ends SETTLED (never RUNNING via Restore) 0ms
+     ✓ exactly ONE follow-up branch holds (admitted from SETTLED, or rejected from ARCHIVED) 0ms
+     ✓ exactly TWO creations execute and exactly ONE is quota-rejected 0ms
+     ✓ the durable member set is EXACTLY at the quota (no oversubscription) 0ms
+     ✓ every consultation outcome stays in the safe set (never admit under FATAL drift) 2ms
+     × at least one NO_STATE_AFTER_REPROBE fail-closed across the (stagger, facts-delay) grid 4ms
+     ✓ two independent consultation sites interleave (both probe in some grid cell; at most one probe each) 2ms
+     ✓ the durable row stays well-formed after every grid cell (present, drift-bound) 1ms
+     ✓ ZERO NO_STATE_AFTER_REPROBE across the entire (stagger, facts-delay) grid 1ms
+     ✓ exactly one re-probe per iteration (the second consultation sees the fresh row) 2ms
+     ✓ deterministic generation: exactly one advance (final = initial + 1) every grid cell 1ms
+     ✓ both outcomes are fail-closed blocks (the FATAL environment is never admitted) 1ms
+     ✓ the first concurrent admit wins; the second is a deterministic generation conflict 0ms
+     ✓ the slot ends with exactly ONE generation-2 record (no lost update) 0ms
+     ✓ both admits pass the stale guard and BOTH are "admitted" at generation 2 0ms
+     ✓ the slot carries TWO same-generation records (one mutation is shadowed) 0ms
+     ✓ the step-0 baseline is the template deny with zero contributions 0ms
+     ✓ the concurrent mutation is recorded at the future boundary (effective from step 1) 0ms
+     ✓ the in-flight step-0 capture is UNCHANGED by the concurrent mutation (frozen value) 0ms
+     ✓ the step-1 capture resolves the model cell to the member overlay 0ms
+     ✓ release() settles the in-flight work (idempotent; the count returns to zero) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s5b-operation-fencing.test.ts > P8-S5B R5a: drift || new work WITHOUT the coordinator (the window is real) > at least one NO_STATE_AFTER_REPROBE fail-closed across the (stagger, facts-delay) grid
+AssertionError: expected Set{ 'block:-:-' } to deeply equal Set{ '__DUMP__' }
+
+- Expected
++ Received
+
+  Set {
+-   "__DUMP__",
++   "block:-:-",
+  }
+
+ ❯ packages/runtime/test/p8s5b-operation-fencing.test.ts:1013:134
+    1011|       }
+    1012|     }
+    1013|     expect(new Set(r5.halfA.flatMap((i) => [i.a, i.b].map((o) => `${o.…
+       |                                                                                                                                      ^
+    1014|   })
+    1015|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 passed (26)
+   Start at  21:20:19
+   Duration  1.44s (transform 590ms, setup 0ms, import 1.34s, tests 17ms, environment 0ms)
+

@@ -1,0 +1,53 @@
+# Mutation table — `packages/runtime/test/a4-compat-atomic-state.test.ts`
+
+Every mutation is a single production-line change reverted immediately after its run (logs in `raw/mutation-*.log`). A RED LEG IS THE REACHABILITY PROOF: the mutated line is on the path these legs drive, so the leg's green means the property holds, not that nothing was observed.
+
+## M1-cas-performs-the-old-delete-then-put
+
+- a conditioned write on a generation that moved on raises RECORD_DUPLICATE / stale-generation-compatibility-state
+- a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict
+- both consultations are served and the drift-bound generation advances exactly once
+- the loser writes NOTHING and the winner's row is untouched (a lost race is detectable, never destructive)
+- the product path performs NO delete on the compatibility store (the window is removed, not rescheduled)
+
+## M2-drop-the-generation-check
+
+- a conditioned write on a generation that moved on raises RECORD_DUPLICATE / stale-generation-compatibility-state
+- a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict
+- both consultations are served and the drift-bound generation advances exactly once
+- the loser writes NOTHING and the winner's row is untouched (a lost race is detectable, never destructive)
+
+## M3-no-convergence-always-fail-closed
+
+- NEITHER consultation is refused: the loser converges on the winner's row instead of failing work
+- both consultations are served and the drift-bound generation advances exactly once
+
+## M4-converge-ignoring-the-fingerprint
+
+- a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict
+
+## M5-cold-create-loses-its-branch
+
+- NEITHER consultation is refused: the loser converges on the winner's row instead of failing work
+- a conditioned write on a generation that moved on raises RECORD_DUPLICATE / stale-generation-compatibility-state
+- a consultation started while the winner is committed-but-unstamped sees a PRESENT row and does not probe
+- a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict
+- after a real reopen the state SURVIVES: same generation, same status, and the human acknowledgement intact
+- and that window costs a durable DELETE that the product path no longer performs
+- between the delete and the put the row reads as ABSENT to anyone who looks
+- both consultations are served and the drift-bound generation advances exactly once
+- exactly ONE transition is committed per round: one state write plus one stamp advance
+- recovery continues the generation line from the surviving row instead of restarting it
+- the cold shape of the same signal: a create over an occupied key raises the typed duplicate
+- the crash reaches the caller as a typed seam failure (identity flattened by normalizeSeamError)
+- the durable state survives the restart and the second process sees it as FRESH (no re-probe, zero writes)
+- the loser writes NOTHING and the winner's row is untouched (a lost race is detectable, never destructive)
+- the product path performs NO delete on the compatibility store (the window is removed, not rescheduled)
+- the row is never absent and never torn: one probe's complete record survives the race
+- the same consultation over a FRESH EMPTY store is a different shape (the leg above is not vacuous)
+
+## M6-drop-the-generation-stamp-advance
+
+- (run hung: the mutated path no longer performs the write this leg parks on)
+
+
