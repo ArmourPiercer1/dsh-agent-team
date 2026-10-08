@@ -8,9 +8,12 @@ instructed; the reachability pin is a test-only leg set and sits between them.
 ## 0. The four rules this document is written against
 
 1. **Repair at the seam, not at the assertion.** No assertion in any of the five files was
-   edited to match new output. `grep -c 'expect('` per file is unchanged in four of five; the
-   fifth's changed bodies are the three recorded re-scopes in §3, and their titles changed too
-   so the identity diff has to name them.
+   edited to match new output, and the check is mechanical: `grep -c 'expect('` per file is
+   **identical at `c1eeca40` and at the tip in all five** — `82 / 59 / 117 / 90 / 87`, delta 0
+   everywhere. Nothing was added to buy a green either. That count is not the whole test (three
+   bodies were rewritten by the recorded re-scopes in §3, and their assertions mean something
+   different than they did) which is why those three are named with their old and new titles
+   instead of hiding behind the number.
 2. **Re-authorise the seed the way production does**, and where that is impossible without
    exercising the law under test, split or re-scope and **record the decision per leg** (§2, §3).
 3. **Show the repaired legs bite** — seven classes, one mutation live at a time, each restored

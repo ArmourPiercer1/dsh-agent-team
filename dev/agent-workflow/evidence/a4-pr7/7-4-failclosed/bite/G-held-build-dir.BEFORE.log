@@ -1,0 +1,33 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-failclosed
+
+ ❯ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p3-governance-lane-hygiene.test.ts [ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts ]
+Error: ENOENT: no such file or directory, stat '/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-failclosed/packages/client/dist.held-by-7-6-gate/packages/client/src/plugin/ghost.d.ts'
+ ❯ visit packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:1159:18
+    1157|     for (const entry of readdirSync(dir)) {
+    1158|       const full = join(dir, entry)
+    1159|       const st = statSync(full)
+       |                  ^
+    1160|       if (st.isDirectory()) {
+    1161|         if (entry === 'node_modules' || entry === 'dist' || entry === …
+ ❯ visit packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:1162:9
+ ❯ visit packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:1162:9
+ ❯ visit packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:1162:9
+ ❯ visit packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:1162:9
+ ❯ visit packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:1162:9
+ ❯ productionSources packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:1176:5
+ ❯ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:1199:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  13:22:24
+   Duration  921ms (transform 653ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

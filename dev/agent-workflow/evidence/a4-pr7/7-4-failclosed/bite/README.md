@@ -44,3 +44,44 @@ a3p4-life a743fbe8d53ddc860048ebf292061359539ce70a
 a3p4-pr7  b2010ca6afd4faf0f19f942546d2c1dc422d16f7
 a3p4-pr4  594a08d192f89e8c6d7effb6bab5fd3485144748
 ```
+
+## Classes G and H — not §7.5 law: the two instabilities the identity diff surfaced
+
+Spending the bill means running the whole population, and a full run of 502 files in one pool
+produced two identities that were red at this tip and green at base, neither of which had an
+assertion or a product frame anywhere in its failure. Both are now fixed at the seam, both have a
+deterministic proof, and neither touches an assertion.
+
+| class | the thing broken | file | red / total | what it says |
+| --- | --- | --- | --- | --- |
+| **G** | the **§7.6 merge gate's held-aside build directory** (`dist` renamed to `dist.held-by-7-6-gate` mid-run, in another worker) meets a source walker that skips the literal name `dist` and nothing else | `a3p3-governance-lane-hygiene` | file-level death, `no tests` | `ENOENT … stat '…/packages/client/dist.held-by-7-6-gate/packages/client/src/plugin/ghost.d.ts'` — the walk descends into a tree whose files are being renamed out from under `statSync` |
+| **H** | a durable-world leg left on the runner's **5000 ms default timeout** | `a3p5-glue-permission-receipt` | 1 / 11 in **3 of 3** full runs | `Error: STACK_TRACE_ERROR` with durations **5032 / 5012 / 5022 ms**: the leg was killed AT the ceiling and never measured past it. `@vitest/runner` substitutes that placeholder for a timeout inside `withTimeout`, which is why the red carried no message |
+
+**G is reproducible on command** — which is the difference between a flake and a defect:
+
+    mkdir -p packages/client/dist.held-by-7-6-gate/x && ln -s /nope packages/client/dist.held-by-7-6-gate/x/ghost.d.ts
+    npx vitest run packages/runtime/test/a3p3-governance-lane-hygiene.test.ts
+
+With that plant in place and the fix stashed: `G-held-build-dir.BEFORE.log` — `Test Files 1
+failed`, `Tests no tests`, the ENOENT above. With the same plant and the fix applied:
+`G-held-build-dir.AFTER.log` — **21 passed (21)**. Plant removed: `G-held-build-dir.UNPLANTED.log`
+— **21 passed (21)**, i.e. the leaf law's verdict set is untouched; the walker just stops
+pretending that a build output has only one possible name. Four walks in that file shared the
+name-equality filter, so all five now share one `isHeldBuildOutput` predicate; the gate file is
+**not** modified (it is on `master`, and holding a build output aside is exactly how it proves the
+composition refuses).
+
+**H's proof is the durations**, not a plant: the leg is the file's slowest in isolation at
+**1659 ms** (`--reporter=json`), and it died at 5032 / 5012 / 5022 ms in three consecutive
+population runs. The fix is that leg's own third argument, `20_000` — ~12x its isolated worst
+case, so a genuine hang still fails. No other leg in 503 files carries an explicit timeout, and
+this is the only one that needed it; the global `testTimeout` was deliberately NOT raised, because
+that would hide every other knife edge in the corpus to fix one.
+
+Both classes are disclosed as **corpus defects, not §7.5 consequences**: G's two participants are
+both on `master` and had simply never been scheduled to overlap before this lane made the merge
+gate green enough to run its hold experiment inside a full run; H's leg is slow because it boots a
+durable world. What is NOT disclosed as innocent is the coincidence that both appeared only in
+runs of THIS branch — the honest statement is that a race needs two participants and a full run of
+502 files is what scheduled them, that both had a deterministic mechanism, and that both are gone
+in run #4 (`bill-check.txt`).

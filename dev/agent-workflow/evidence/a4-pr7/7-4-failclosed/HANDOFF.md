@@ -57,12 +57,17 @@ with its status:
 | 2 | the reader answers `undefined` for a **DECIDED pre-v3 (v1/v2)** binding | **STILL COMMITS**, untouched — A5-12's existential is the only answer allowed to skip, and this lane deliberately did not widen it into path 1 | N5 pins it standing; the pre-existing `a4p7-ceiling-no-context-refusal` leg 5 still owns it |
 | 3 | the reader answers a context whose document slot is `unavailable` (unreadable v3 / unresolvable hash) | **already refused** by the pre-A4-PR7 law, code `EFFECT_CONTEXT_UNAVAILABLE`; this lane changed neither the code nor the ordering | unchanged legs of `a4p7-ceiling-no-context-refusal`; W2 asserts the two context faults stay told apart on the wire |
 
-Path 2 is the one **open sub-question** this handoff passes upward rather than resolving:
-after the §7.3 flip a v1/v2 binding is only producible through the `migration-required` path
-in `blueprint-authority.ts`, so path 2 is plausibly unreachable in the shipped composition —
-but that is a ruling, not a measurement I may take silently. For the price of deciding it:
-refusing it too measures **59** new reds instead of 54, and the delta is exactly leg 5 plus
-the three load-flake legs (FINDINGS §5 F-4).
+Path 2 was the one open sub-question; **it is now measured, and the answer is no**.
+`facts.blueprintSchemaVersion` can only ever answer `3` or nothing, because its sole
+producer is the strong parse and `validateBlueprintDocument` throws `SCHEMA_VERSION_MISMATCH`
+for every version outside `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]`. A pre-v3 document is
+therefore not a fact the shipped composition can observe about a bound Team, only a fact it
+refuses, and an unresolvable binding already lands on the refusal. Pinned by legs **R1-R4**
+of `a4p7-ceiling-no-port-refusal.test.ts` (suite now 10 legs), which drive the real
+`createAuthorityCeilingReader` over the real facts at six reachable bindings and count
+**0** `undefined` answers; R4 holds the door open by hand so that re-opening the bridge
+reddens R2 rather than passing silently. The committing branch is untouched and the 59-red
+price is not owed. Measurement and table: `REPAIRS.md` §5.
 
 ### What the deletion lane inherits
 
@@ -73,11 +78,20 @@ the three load-flake legs (FINDINGS §5 F-4).
 * `leaderEnvelopeCoverage` (`permission-mutation.ts:1419`, called at `:1390`) is **untouched**
   by this lane. It becomes executable the moment this merges, and the corpus it will be tested
   against now has no path where a rise is answered by nobody.
-* Disclosed cost of the ruling, stated rather than hidden: **54 fixture legs** across five
-  files now refuse, and 51 of them refuse on a drive that was *seeding authority through the
-  open gate*. Their repair is per-file and mechanical-ish (declare the authority world the leg
-  assumed), with three legs needing a judgement; none of them is an assertion rewrite. That
-  bill is inventoried leg-by-leg in FINDINGS §3 and is **not** paid in this branch.
+* Disclosed cost of the ruling: **54 fixture legs** across five files, 51 of them refusing on
+  a drive that was *seeding authority through the open gate*. **Paid in `7f382ac7`**, at the
+  seam: five worlds each got one injection that declares the authority world the fixtures
+  assumed (three of the shapes are literally the production line `host.ts:2703`), and three
+  legs needed the recorded judgement because their state stopped being constructible. No
+  assertion was edited to match new output; the 54 identities, the three re-scopes with old
+  and new titles, the seven bite classes, and the final identity diff are in
+  **`REPAIRS.md`** / **`bite/README.md`** / **`bill-check.txt`**.
+* **What that gives the deletion lane, concretely:** a corpus where a rise cannot be answered
+  by nobody is now also a corpus that *passes*, so `leaderEnvelopeCoverage`'s deletion can be
+  tested without first re-authorising 54 fixtures. Two of its traps are pre-documented here:
+  a declared ceiling is a **cell set**, never `any` (FINDINGS F-8), and an approval-wired
+  fixture answers refusals through the durable **ask** path, which needs the team-root binding
+  row (FINDINGS F-10).
 
 ### Verifying this handoff in one screen
 
@@ -85,5 +99,15 @@ the three load-flake legs (FINDINGS §5 F-4).
     npx vitest run packages/runtime/test/a4p7-ceiling-no-port-refusal.test.ts \
                    packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts \
                    packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts \
-                   packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts   # 6+5+6+8 = 25 legs
+                   packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts   # 10+5+6+8 = 29 legs
     npx vitest run packages/testkit/test/a4p7-merge-gate.test.ts                    # 29 legs green
+    # the five repaired worlds, with this lane's instruments and the scan referee:
+    npx vitest run packages/runtime/test/a3p3-permission-mutation-authority.test.ts \
+                   packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts \
+                   packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts \
+                   packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts \
+                   packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts \
+                   packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts \
+                   packages/testkit/test/p4t6-session-event-scan.test.ts            # 10 files, 162 legs
+    node -e "import('./packages/testkit/fault-injection/session-event-scan.mjs') \
+      .then(m => console.log('referee =', m.scanSessionEventVocabulary({}).filesScanned))"   # 1036

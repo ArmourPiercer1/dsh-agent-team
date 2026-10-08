@@ -164,7 +164,18 @@ describe('a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings 
     expect(c.steers).toBe(0)
     expect(c.injects).toBe(0)
     world.binding.close()
-  })
+  },
+  // Own timeout, not a bent assertion. Isolated, this is the file's slowest leg at 1659 ms
+  // (`--reporter=json` durations). In a full-population run of all 502 files it crossed the
+  // runner's 5000 ms default three runs out of three — 5032 ms, 5012 ms, 5022 ms, i.e. it was
+  // killed AT the ceiling and never measured past it — and the runner reports a timeout as its
+  // placeholder `Error: STACK_TRACE_ERROR` (`@vitest/runner` substitutes it inside
+  // `withTimeout`), which is why the red carried no assertion and no product frame. A leg that
+  // boots a durable world and reads a receipt should not sit on the default knife edge while
+  // 500 other files compete for the same thread pool; 20 s is ~12x its isolated worst case, so
+  // a genuine hang still fails, just later.
+  20_000,
+)
 
   it('positive receive: a running non-derived seeded member receives exactly one inject through the real binding, never steer or followup', async () => {
     const customChild = 'session-CUSTOM-receive-42'
