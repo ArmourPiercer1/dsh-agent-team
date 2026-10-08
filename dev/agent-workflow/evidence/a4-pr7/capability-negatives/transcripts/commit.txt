@@ -1,0 +1,50 @@
+[fix-a4-capability-negatives c6efa4fb] A4-PR7(test/domain): a fixture emitter must be asserted against the parser it feeds
+ 47 files changed, 6340 insertions(+), 72 deletions(-)
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/FINAL-BATTERY.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/FINDINGS.md
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/mut-M1.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/mut-M2.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/mut-M3.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/mut-M4.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/mut-M5.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/mutation-table.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/probe-bp1.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/probe-fixtures.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/probe-p8s7r2.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/probe-t1-base.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/probe-t1-tip.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/tip-1.json
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/audit-base.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/audit-serializers-tiers.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/audit-serializers.mjs
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/audit-tip.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/base-t1-file.ts
+ create mode 100755 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/census.sh
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/commit-message.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/emitter-shape.mjs
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/expect-count.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/mutate.py
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/p4t6-total.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/probe-fixtures.py
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/rejection-identity-probe.test.ts.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/tip-1.ids.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/tip-files/SHA256SUMS
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/tip-files/t1-capability-schema.test.ts
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/artifacts.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/census-diff-vs-baseline.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/lint-identities.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/lint.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/mut-M1.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/mut-M2.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/mut-M3.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/mut-M4.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/mut-M5.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/mutation-table.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/probe-bp1.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/probe-p8s7r2.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/probe-t1-base.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/probe-t1-tip.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/tip-1.txt
+ create mode 100644 dev/agent-workflow/evidence/a4-pr7/capability-negatives/transcripts/typecheck.txt
+
+tip: c6efa4fb9c6c2684eaad08f25d1494252243e688 (unmerged, unpushed)

@@ -131,6 +131,9 @@ $ pnpm check:artifacts:head
   removed assertion lines are ONLY the 5 bare expect(() => parseBlueprint(source)).toThrow(), each replaced by a stronger identity assertion (see FINDINGS 2.3 and the git diff).
 
 == 11. hand-back ====================================================================
+  branch fix-a4-capability-negatives  tip c6efa4fb9c6c2684eaad08f25d1494252243e688  base 1d706917  commits ahead of origin/master: 1
+  verification and commit were ONE && chain: targeted vitest 20/20 && lint-identities new 0 && check:artifacts drift=0 && git add <only this lane's paths> && git commit
+  post-commit re-check on the NEW HEAD: check:artifacts-at-head verdict=ok rev=HEAD drift=0 ; lint-identities new 0, resolved 0 ; transcripts/commit.txt is the hook + commit output.
   branch fix-a4-capability-negatives: handed back UNMERGED, NOT pushed. The only tracked file this lane changed is
   packages/domain/test/t1-capability-schema.test.ts; product source is untouched (validate.ts and parse.ts are byte-identical
   to base — every product patch made for the probe/mutation harness was restored and sha256-verified).
