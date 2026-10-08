@@ -1,0 +1,11 @@
+# anchor re-derivation after merging 258d2b48 (measured in this worktree, 2026-10-08T04:23:12Z)
+recorded sha256-before (pre-mutation service.ts): 69ef298c116d1cf08cd3f364adc212dbaca2327147f7602b9b3aad25f74ccb7e  packages/runtime/governance/service.ts
+service.ts on the new base 258d2b48 (git blob -> sha256): 69ef298c116d1cf08cd3f364adc212dbaca2327147f7602b9b3aad25f74ccb7e
+service.ts blob on the new base: ea1df0656474ab37dda9186d0e6f082c3929e8dc
+service.ts blob on my parent 6174f1e5: ea1df0656474ab37dda9186d0e6f082c3929e8dc
+landed blob (this branch HEAD): 8c5cce2348d3b69fb40e4d6ef9aa1a35b0100a71
+worktree file blob right now: 8c5cce2348d3b69fb40e4d6ef9aa1a35b0100a71
+
+reading: the merge did NOT touch service.ts (identical blob on both base sides), so the
+pre-mutation anchor still the file in front of me; the landed mutant is 8c5cce23 (recorded
+in the commit message of 70266cc7) and the worktree file matches it byte for byte.

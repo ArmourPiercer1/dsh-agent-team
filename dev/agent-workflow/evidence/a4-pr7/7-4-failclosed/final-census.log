@@ -1,0 +1,17 @@
+{"files":502,"registeredLegs":6273,"reds":73,"collectionDeaths":3,"success":false}
+registered-leg census at 8fc831ad:
+files 502 legs 6273 suites-with-file-level-error 3
+titled reds: 73
+collection-error files: 3
+diff lines vs post-merge base side: 73
+     16 packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts
+     13 packages/runtime/test/a3p3-permission-mutation-authority.test.ts
+     12 packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts
+     11 packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts
+      9 packages/domain/test/t1-capability-schema.test.ts
+      5 packages/runtime/test/p6t3-mediation.test.ts
+      2 packages/runtime/test/p6t3-restart.test.ts
+      2 packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+      1 packages/tools/test/p6t6-actions.test.ts
+      1 packages/runtime/test/d3-member-identity-context.test.ts
+      1 packages/domain/test/t2-blueprint-hash.test.ts
