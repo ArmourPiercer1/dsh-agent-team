@@ -1,0 +1,21 @@
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.js
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/schema.js.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/types.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/types.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/provider.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/provider.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/activation/provider.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/requirement-gate.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/requirement-gate.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/admission/requirement-gate.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/compatibility/blueprint.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/compatibility/blueprint.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/compatibility/blueprint.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/requirements/creation-preflight.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/requirements/creation-preflight.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/requirements/creation-preflight.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/requirements/scope-requirements.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/requirements/scope-requirements.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/requirements/scope-requirements.js.map

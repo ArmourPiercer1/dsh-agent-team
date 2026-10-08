@@ -1,0 +1,24 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase
+
+lint-visibility: eslint read 1108 of 2428 OFFERED tracked lintable file(s); 1320 are hidden by an ignore pattern (dev/ 449, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1108 + 1320 = 2428 offered, + 0 skipped = 2428 tracked lintable path(s); nothing skipped
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (26 tests) 70037ms
+       ✓ is green, asserted by arm name and by absence of a skip — never by the exit code  1414ms
+       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees  502ms
+       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  402ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  1252ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  1352ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  859ms
+       ✓ reports every verdict class with its set by path when run at the toplevel  478ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  21233ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  21409ms
+       ✓ every workspace package that declares a typecheck script typechecks  11854ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  8175ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  506ms
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  11:06:26
+   Duration  70.35s (transform 138ms, setup 0ms, import 180ms, tests 70.04s, environment 0ms)
+

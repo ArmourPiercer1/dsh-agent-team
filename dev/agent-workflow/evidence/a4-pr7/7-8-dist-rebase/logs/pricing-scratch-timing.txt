@@ -1,0 +1,7 @@
+worktree_add exit=0 secs=.971472402
+install exit=0 secs=4.158275248
+pnpm_build exit=0 secs=7.378478575
+place_glue exit=0 secs=.069790581
+build_client_composition exit=0
+composition_secs=.236580060
+check_artifacts exit=0 secs=.127273727
