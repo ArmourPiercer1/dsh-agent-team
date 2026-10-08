@@ -1,0 +1,19 @@
+### F5 c/d re-measured with the sidecar on disk and clean source (five fixture files planted)
+--- c) only the ONE NAME '**/.tmp-fault/**' (the pre-fix narrow pattern):
+patched to narrow
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1105 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+--- restore class, then d) class pattern + one root scratch FILE:
+class pattern restored byte-identical
+lint-identities: 161 identity lines, 77 distinct (target .)
+lint-identities: universe: 1106 file(s) linted, 1 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): .tmp-resolve-probe.mjs
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 1, resolved 0
+  error no-undef .tmp-resolve-probe.mjs
+residue: probe=removed fixturedir=0
+ M eslint.config.mjs
+ M packages/testkit/test/a4p7-merge-gate.test.ts
+ M scripts/a4-artifact-provenance.d.mts
+ M scripts/a4-artifact-provenance.mjs
+ M scripts/lint-identities.mjs
+?? scripts/lint-identities.d.mts

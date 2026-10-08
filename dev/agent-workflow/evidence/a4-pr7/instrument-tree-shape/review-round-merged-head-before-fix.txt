@@ -1,0 +1,58 @@
+### The merged tree, BEFORE this round's fixes — the baseline the fix round was measured against.
+### Banked because F1's claim ('the composition leg was GREEN here even at the merged head, in a
+###  never-built tree') is only showable from a transcript taken before the fix existed.
+
+--- git:
+bfbd89a5 Merge remote-tracking branch 'origin/master' into fix/a4-instrument-tree-shape
+ M eslint.config.mjs
+ M packages/testkit/test/a4p7-merge-gate.test.ts
+ M scripts/a4-artifact-provenance.d.mts
+ M scripts/a4-artifact-provenance.mjs
+ M scripts/lint-identities.mjs
+
+--- pre-fix gate + classifier at merged head, healthy tree:
+### PRE-FIX at merged head bfbd89a5 (merge of 4d331349 + 14ea8717)
+stashed: 1 entry; dirty files now: 0
+packages/client/dist now: ABSENT  (moved to scratch, gitignored build output)
+--- instrument in this tree (exit measured without a pipe)
+exit=1
+PASS lines: 10  FAIL: 2  SKIP: 0  footer: Node.js v24.21.0
+--- FULL GATE, pre-fix code, never-built tree: this is the green-that-never-ran
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+--- classifier suite, pre-fix code, never-built tree
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD bfbd89a5, 0 tracked file(s) not matching HEAD; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+restored: yes files=400
+after pop, dirty files: 2  stash entries: 0
+
+--- pre-fix instrument in a never-built tree:
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/scripts/composition-smoke.mjs:201:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/scripts/composition-smoke.mjs:298:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+FAIL composition-smoke
+file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/scripts/composition-smoke.mjs:422
+  throw new Error(failed
+        ^
+
+Error: composition smoke failed
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape/scripts/composition-smoke.mjs:422:9
+
+Node.js v24.21.0

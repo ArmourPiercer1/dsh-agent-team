@@ -1,0 +1,29 @@
+### The four instrument-shape facts this round learned the hard way, each reproduced live.
+
+== 1. What an ignored file looks like in eslint's JSON. The F6 detector was written against a
+==    message object written from memory (`ruleId` absent) instead of the captured one
+==    (`ruleId: null`). Detector matched nothing; the leg reported "0 hidden" over 2417 tracked
+==    files while 1313 were unread. Reproduction (one tracked ignored file, explicit path):
+   filePath=src/plugin/host.js  entry.ignored=undefined  messages=[{"ruleId":null,"fatal":false,"severity":1,"message":"File ignored because of a matching ignore pattern. Use \"--no-ignore\" to disable file ignore settings or use \"--no-warn-ignored\" to suppress this warning.","nodeType":null}]
+==    note: entry.ignored is UNDEFINED and ruleId is NULL. The only marker is the message text
+==    plus a null ruleId; the F6 pin now carries this object verbatim.
+
+== 2. eslint de-duplicates repeated paths, so a report can be shorter than the argv that
+==    produced it (3 args, one repeated -> 2 entries). That is why the F6 census refuses when
+==    report count != candidate count, and why its candidates come from `git ls-files` (unique):
+   entries: 2 (3 paths given, 1 duplicate)
+
+== 3. `npx eslint <the 2417 tracked lintable paths>` does not run at all:
+   npx eslint with 2418 explicit paths exited 249
+   | Command exited with non-zero status 249
+   |    npx exit/status above; elapsed 0.24 s
+==    vs the same argv through the bin directly:
+   node node_modules/eslint/bin/eslint.js exited 2; JSON bytes: 0
+
+== 4. Importing scripts/lint-identities.mjs used to RUN the whole CLI (module-scope body).
+==    Measured by wrapping the CLI and timing the import, then by reading the pre-fix source:
+   pre-fix  const args = parseArgs(process.argv.slice(2))
+   pre-fix  const cwd = process.cwd()
+   pre-fix  const capture = captureIdentities(args.target, cwd)
+   pre-fix  if (!capture.ran) {
+   post-fix import: exports captureIdentities,describeStderr,lintUniverse,newIdentities in 1 ms, no scan, no output above this line

@@ -1,0 +1,127 @@
+### Battery at 992b416b (fix(a4-pr7): a green may only come from stdout — the revie…)
+### Tree: 1 modified tracked file(s) (evidence only), 8 untracked (evidence only), client dist 400 files
+
+== 1. fence, twice, byte-identity and scope count
+fence run 1 exit=1
+fence run 2 exit=1
+scanned-in-scope: 751 tracked files
+two runs byte-identical: 22626 bytes, sha256 0eb00e1aee85f44d
+  RESULT dirty(41 files, 96 sites)
+  RESULT unknown(0 files, 0 sites)
+  RESULT advisory(8 files, 10 sites)
+  RESULT refused(52 files, 115 sites)
+  RESULT prose(5 files, 5 sites)
+  RESULT adjudicated(16 files, 24 sites)
+  RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+
+== 2. lint identity diff against the named baseline
+exit=0
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1105 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+
+== 3. check:artifacts
+exit=0 :: [check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+
+== 4. node --check on the three touched scripts
+  node --check scripts/a4-artifact-provenance.mjs -> exit 0
+  node --check scripts/lint-identities.mjs -> exit 0
+  node --check eslint.config.mjs -> exit 0
+
+== 5. instrument in a healthy tree (exit without a pipe)
+exit=0
+  PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+  PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+  PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+  PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+  PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+  PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+  PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+  PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+  PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+  PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+  PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+  PASS composition-smoke
+  PASS lines: 12  FAIL lines: 0  SKIP lines: 0
+
+== 6. p4t6 + the fence/verify-zero-core wrapper (the 68-leg pair)
+ Test Files  2 passed (2)
+      Tests  68 passed (68)
+
+== 7. pnpm -r run typecheck
+exit=0  Done=8  error-TS-lines=0
+
+== 8. the battery in a NEVER-BUILT tree — F1's whole point
+instrument exit=1
+  PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+  FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)
+  PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+  PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+  PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+  PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+  PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+  PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+  PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+  PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+  PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+  FAIL composition-smoke
+  PASS lines: 10  FAIL lines: 2
+  tail -1 of the file (what a pipe-to-tail reader would see): Node.js v24.21.0
+  -- classifier suite in this tree:
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+  -- FULL GATE in this tree (the composition leg must be red):
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD 992b416b, 1 tracked file(s) changed vs HEAD, 8 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+lint-visibility: eslint read 1105 of 2418 tracked lintable file(s); 1313 are hidden by an ignore pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 580ms
+ Test Files  1 failed (1)
+      Tests  1 failed | 24 passed (25)
+  -- classifier's verdict in this tree:
+  verdict=refused  exists=false  outputRoot=packages/client/dist filesInRoot=0
+  handed back: entry present, 400 files
+
+== 9. TREE C (one entry removed, 399 siblings) — the asymmetry after F1
+  -- classifier's verdict in tree C:
+  verdict=failed  exists=false  outputRoot=packages/client/dist filesInRoot=399
+  -- FULL GATE in tree C:
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD 992b416b, 1 tracked file(s) changed vs HEAD, 8 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+lint-visibility: eslint read 1105 of 2418 tracked lintable file(s); 1313 are hidden by an ignore pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 611ms
+ Test Files  1 failed (1)
+      Tests  1 failed | 24 passed (25)
+  handed back: entry present, 400 files
+
+== 10. TREE E (whole output moved to the gitignored off-path root) — the hole the review named
+  -- classifier's verdict with the output at packages/client/out/dist:
+  verdict=refused  exists=false  outputRoot=packages/client/dist filesInRoot=0
+  -- check:artifacts in this tree: [check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+  -- FULL GATE in tree E:
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD 992b416b, 1 tracked file(s) changed vs HEAD, 8 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+lint-visibility: eslint read 1105 of 2418 tracked lintable file(s); 1313 are hidden by an ignore pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 550ms
+ Test Files  1 failed (1)
+      Tests  1 failed | 24 passed (25)
+  handed back: entry present, 400 files, out dir removed
+
+== 11. healthy tree again: the two suites and the instrument, for the record
+  -- gate:
+lint-visibility: eslint read 1105 of 2418 tracked lintable file(s); 1313 are hidden by an ignore pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+  -- classifier:
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+  -- instrument exit=0
+
+== HANDOVER
+tracked modifications: 1
+   M dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/FINDINGS.md
+  ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/reproduce-off-path-output.sh
+  ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/review-round-eslint-argv-invocation.txt
+  ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/review-round-eslint-instrument-shape.txt
+  ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/review-round-f1-gate-across-trees.txt
+  ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/review-round-f5-f6-first-measurements.txt
+  ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/review-round-f5-narrow-and-root-case.txt
+  ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/review-round-merged-head-before-fix.txt
+  ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/review-round-verdicts-battery-and-f5-ab.txt
+client dist files: 400  residue: packages/testkit/test/.tmp-fault (none expected)

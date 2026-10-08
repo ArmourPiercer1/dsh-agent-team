@@ -165,6 +165,17 @@ and must stay visible; `packages/testkit/test/.tmp-fault/` exists only while a t
 cannot be part of a baseline. See §6 for where that line is drawn and why it is not "ignored
 files are invisible".
 
+**Re-measured at the merged head `bfbd89a5`, review round** (`review-round-f5-narrow-and-root-case.txt`,
+case (d)): the same class of specimen — a root `.tmp-resolve-probe.mjs`, this one holding a single
+undefined call — moves the run from `160 identity lines, 76 distinct` over
+`universe: 1105 file(s) linted, 0 of them gitignored` to `161 / 77 distinct` over
+`universe: 1106 …, 1 of them gitignored …: .tmp-resolve-probe.mjs`, `new 1`, the new identity being
+`error no-undef .tmp-resolve-probe.mjs`. The line delta is +1 here and was +2 above because this
+round's specimen contains one error and the first round's contained two: same mechanism, and the
+number that carries the claim is the `new 1` that names the file. The clean-tree universe is `1105`
+at the merged head rather than the `1104` quoted below, because this round added a tracked lintable
+file (`scripts/lint-identities.d.mts`); §14 carries the merged-head battery.
+
 ## 6. eslint's exit 2: contention was excluded, the universe was not
 
 Reported against the root suite at `73ffd06c`: `a4p7-merge-gate` red with
@@ -218,13 +229,25 @@ same class as the crash source. It is gitignored, so nothing else notices. That 
 reason the exclusion belongs at the eslint layer rather than in a retry: the residue is normal,
 the crash is what is not.
 
-**Fix and its cost, measured before adopting it.** Added `'**/.tmp-fault/**'` to the ignores.
-Identity-neutral in a quiet tree: **62 identities** with the pattern, without it, and with
-fixtures present; `absent vs ignore-pattern identical: true`. It removes exactly one transient
-file (`only-with-fixtures-present: packages/testkit/test/.tmp-fault/probe/z.mjs`) and kills the
-`readAndVerifyFile` ENOENT class. It is not a blanket "ignored files are invisible" move: the
-root-level human scratch specimen stays in scope on purpose, and the excluded tree is fixture
-output whose copies of `scripts/**` are sha256-compared to the originals, which *are* linted.
+**Fix and its cost, measured before adopting it.** Added `'**/.tmp-fault/**'` to the ignores. It
+removes exactly one transient file (`only-with-fixtures-present:
+packages/testkit/test/.tmp-fault/probe/z.mjs`) and kills the `readAndVerifyFile` ENOENT class. It is
+not a blanket "ignored files are invisible" move: the root-level human scratch specimen stays in
+scope on purpose, and the excluded tree is fixture output whose copies of `scripts/**` are
+sha256-compared to the originals, which *are* linted.
+
+> **Correction, review round.** The sentence that stood here — "Identity-neutral in a quiet tree:
+> **62 identities** with the pattern, without it, and with fixtures present; `absent vs
+> ignore-pattern identical: true`" — **does not reproduce**. No run in this repository produces 62
+> identities against this baseline (the tree's standing number is 76 distinct, 160 lines), and the
+> review caught it as "a stale number in a load-bearing comment", which is exactly right: the
+> comment's whole function was to persuade the next reader that deleting the pattern costs nothing,
+> so an unreproducible number there was a false claim doing gate work, not a summary. The
+> measurement that replaces it is §13: the exclusion is *not* cost-free (deleting it adds five files
+> and ten identities from fixture scratch), the generalised class pattern is exactly as neutral as
+> the one name (identical 160 / 76 / 1105 / new 0), and the boundary in the other direction is
+> measured too. The numbers in `eslint.config.mjs`'s comment are now the four cases of §13, labelled
+> with the head they were taken at.
 
 ## 7. The disclosure doctrine this round settled
 
@@ -232,10 +255,12 @@ output whose copies of `scripts/**` are sha256-compared to the originals, which 
 `it.skipIf(noArtifacts)` appears anywhere. What task #2 added is that a leg must **name the tree
 it measured**, because the `why:` text of a non-green verdict is the only part anyone reads:
 
-- the composition refusal carries `Tree this leg measured: HEAD <short>, N tracked file(s) not
-  matching HEAD` plus the artifact path, `gitignored and untracked`, the install-surface list,
-  the manifest `main` disclosure, the command that would produce it, and the byte-identical
-  caveat;
+- the composition refusal carries `Tree this leg measured: HEAD <short>, N tracked file(s) changed
+  vs HEAD, M untracked entr(ies) …` plus the artifact path, `gitignored and untracked`, the
+  install-surface list, the manifest `main` disclosure, the command that would produce it, the
+  byte-identical caveat, and — added in the review round — the sentence naming what the verdict was
+  drawn from (`this verdict is drawn from packages/client/dist ALONE, nothing outside the declared
+  output root is examined`). §12 F2/F3 explain why both halves of that line were rewritten;
 - `scripts/lint-identities.mjs` now prints `lint-identities: universe: N file(s) linted, M of
   them gitignored (ESLint does not read .gitignore, so the identity set is a function of these
   files, not of git status): <paths>`, and the lint leg **refuses a run that reports a verdict
@@ -248,20 +273,59 @@ it measured**, because the `why:` text of a non-green verdict is the only part a
   that class of code — an arm nobody had ever seen fire;
 - the 7.5 suite's live leg writes its tree state to stderr even when it is green-adjacent, so a
   red transcript says which checkout it came from;
-- measured universe of a clean tree at this head: **`1104 file(s) linted, 0 of them
+- measured universe of a clean tree at `37d566c6`: **`1104 file(s) linted, 0 of them
   gitignored`** (`battery.txt` §6) — with no scratch anywhere, the lint universe and the tracked
   set coincide, and the identity diff is the standing `160 identity lines, 76 distinct;
   new 0, resolved 0`. Put the specimen in and the same run prints `1105 …, 1 of them gitignored
   …: .tmp-resolve-probe.mjs` (`tree-D-scratch-residue.txt`).
+  **Review-round restatement:** at the merged head with this round's files the clean-tree universe
+  is **`1105 file(s) linted, 0 of them gitignored`** and the specimen's universe is `1106` — the
+  +1 is `scripts/lint-identities.d.mts`, a new tracked lintable file. The identity diff stays
+  `160 / 76 / new 0 / resolved 0`. A universe count is a property of the tree, so it is quoted with
+  the head it was measured at, and the lint leg prints it on every run rather than relying on this
+  sentence.
 
 | leg | reads | prints about its universe |
 | --- | --- | --- |
-| fence (`verify-blueprint-version-clean.mjs`) | tracked-only (`git ls-files`, 6 uses, 0 disk reads) | `scanned-in-scope: 748 tracked files` — the same 748 with and without the scratch specimen, measured twice |
+| fence (`verify-blueprint-version-clean.mjs`) | tracked-only (`git ls-files`, 6 uses, 0 disk reads) | `scanned-in-scope: N tracked files` — see the correction below the table: `748` at the pre-merge bases, **`750`** at my head, identical across two consecutive runs |
 | lint (`lint-identities.mjs`) | filesystem as ESLint sees it | **new** `universe: N file(s) linted, M gitignored: …` |
 | composition (`composition-smoke.mjs`) | filesystem as-is | per-arm lines; refusal text adds the tree shape |
 | artifacts (`check-artifacts-committed.mjs`) | tracked surfaces **and** disk | `OK: N files` |
 
+**Which list moved, and which did not (review round).** The row above said `748 … measured twice`,
+and at the time that was true of the tree it was measured in — but it had been copied out of a
+transcript taken before this lane added its two `scripts/` files, so the number it carried into
+§7 was already stale. Recomputed with the fence's **own exported scope predicate**
+(`isScanScopePath`, imported rather than re-implemented, applied to `git ls-tree -r --name-only` per
+commit):
+
+| tree | in fence scope |
+| --- | --- |
+| `69f7fdad` (the base review measured against) | 748 |
+| `14ea8717` (`origin/master` at merge time) | 748 |
+| `4d331349` (this lane, pre-merge) | **750** |
+| `bfbd89a5` (merged head) | **750** |
+
+The two that entered are exactly `scripts/a4-artifact-provenance.mjs` and
+`scripts/a4-artifact-provenance.d.mts` — nothing moved on master's side (0 added, 0 removed in
+scope), so the fence's `dirty(41 files, 96 sites)` findings are unchanged by this lane and its two
+runs are byte-identical (`sha256 83d49163…`, 22 626 bytes each). The number goes to **751** once
+this round's `scripts/lint-identities.d.mts` is committed, for the same reason, and that is stated
+here rather than discovered by the next reader.
+
+The p4t6 scannable-file ledger total did **not** move (1029), and it is not an oversight: p4t6
+counts scannable files inside the nine `packages/**` package trees, and every file this lane added
+lives in `scripts/` or `dev/agent-workflow/evidence/` — outside its scope — while both edited spec
+files were already counted there. Two scanners, two scopes, two different answers to "did the
+number move": the fence reads `scripts/`, p4t6 does not.
+
 ## 8. The battery at the head (`37d566c6`, final code)
+
+> **Labelled by base, review round:** every count in this section is the **pre-merge** tree at
+> `37d566c6`/`4d331349` — 23 gate legs, universe 1104, tree shape in the old wording. The merged
+> tree with the review fixes is §14 (25 gate legs, universe 1105, and the composition leg red in a
+> never-built tree). Both are kept: the numbers differ because the tree and the gate changed, and a
+> receipt whose base is not named is not a receipt.
 
 `battery.txt`, exit codes measured without a pipe throughout:
 
@@ -326,3 +390,314 @@ the old classifier never looked at) and puts that tail into the refusal reason.
 | `eslint.config.mjs` | `**/.tmp-fault/**` ignored, with the measurements that justify it |
 | `packages/testkit/test/a4p7-merge-gate.test.ts` | classifier consults provenance; `expectation(arts)` derived by an independent route; new synthetic-provenance leg; the precondition-bearing mutation leg replaced by two legs (never-built → `refused`, partial output → `failed`); closure leg no longer hard-codes one word; the lint classifier extracted to module level and given a captured-output leg (verdict line, universe line, zero-file universe, stderr disclosure); `compositionTargets()` carries `rel`/`closureGate` |
 | `packages/testkit/test/a4p75-composition-smoke-classification.test.ts` | fourth fixture state `'absent'`; new leg pinning the instrument's words for it; live leg gained the third state and prints the measured tree shape; `COMMITTED_ARM` derived |
+
+## 12. The review round: MERGE-with-fixes, and what each finding actually measured
+
+Reviewer's closing line, logged verbatim because it is the finding: **"Category: sound and tested.
+Honesty of the green: not yet."** Coordinator's instruction: merge first, re-derive everything on
+the merged tree. The merge (`bfbd89a5`) brought `origin/master` `14ea8717` with zero overlap against
+these 29 files, so every number below is a merged-tree number and §8 is labelled as pre-merge.
+
+### F1 — the blocker: a leg that asserts an exit code asserts nothing about its arms
+
+**The claim.** Review measured the gate at base `69f7fdad` in a never-built tree as `3 failed |
+17 passed (20)` — the era before this file existed — and the same probe at this lane's head, in the
+merged tree, as **`23 passed (23)`**: a green machine gate over a gate that never ran its client arm.
+My own pre-fix transcript says the same thing two ways: the instrument in that tree exits 1 with one
+step `FAIL` and footer `FAIL composition-smoke`, while the gate that reads it prints 23/23. The spec
+writes nothing to stdout or stderr anywhere in itself, so nothing in the transcript distinguishes the
+green from a run whose arms executed.
+
+**The hole, measured before being fixed** (`review-round-merged-head-before-fix.txt` for the
+healthy/never-built rows, banked pre-fix on purpose since the claim is about the pre-fix tree; the
+two relocation rows are review's probe, reproduced post-fix in `review-round-f1-gate-across-trees.txt`
+and §14):
+
+| tree | instrument | pre-fix gate | what the pre-fix gate said |
+| --- | --- | --- | --- |
+| healthy (client dist 400 files) | exit 0, footer `PASS` | 23/23 | green, and earned |
+| never built | exit 1, `10 PASS`, 1 step `FAIL`, footer `FAIL composition-smoke` | **23/23** | **green, not earned** |
+| output moved to `packages/client/build` (not gitignored) | same | red — **only** via the lint leg (`new 6`, universe 1305) | the composition leg was green; the red that fired was a lint identity diff, i.e. an accident of the destination not being ignored |
+| output moved to `packages/client/out/dist` (gitignored) | same | **23/23** | **green while a complete plugin sat off the declared path**; `check:artifacts` still said `OK: 1508 files`, `new 0, resolved 0` |
+
+**The choice, and why the stronger option.** Two ways to close it: invent a predicate that
+recognises "output exists but not where it was declared", or make the leg's belief depend on the
+arm having **run**. The first was measured as unavailable: there is no build residue anywhere in
+this repository to reason from (no `*.tsbuildinfo` file tracked or untracked, no `incremental` or
+`composite` flag in any tsconfig), and the only other asymmetry between a clone and a worktree is
+`.git` being a directory versus a file — **a separator that distinguishes the harness, not build
+intent, so using it would be belief-manufacture**. So the leg now asserts `owed === 'passed'`, and
+the `refused` / `failed` distinction stays where it is earned: the synthetic-provenance leg and the
+two mutation legs, which are green precisely because they have never been green over a tree that
+entitled them to nothing. This is the same doctrine as `refused` itself: *earned by never being
+green*, not inferred from a cleverer guess.
+
+**After the fix** (`review-round-f1-gate-across-trees.txt`, `review-round-battery-at-992b416b.txt`
+§§8-10): the never-built tree gives `1 failed | 24 passed (25)`, tree C gives `1 failed | 24 passed
+(25)`, the off-path gitignored tree gives `1 failed | 24 passed (25)` — the gate is red in all three,
+and the leg that goes red writes its reason to stderr before it does it, so the transcript names the
+artifact, the command, and the tree. The off-path tree's other legs stay green exactly as the review
+predicted (`check:artifacts` `OK: 1508 files`, `new 0, resolved 0`, universe 1105): **the gate is red
+because of F1's structural change and nothing else**, which is the point of taking the stronger
+option rather than the one that leans on lint noticing by accident.
+
+**The tree-C asymmetry, restated after F1** (`review-round-verdicts-battery-and-f5-ab.txt` part 1 —
+one call to `absentArtifactVerdict`, four trees):
+
+| tree | verdict | what the sentence says |
+| --- | --- | --- |
+| entry present, 400 files | (out of contract — the caller checks `exists` first) | `absentArtifactVerdict` has no `passed` in its vocabulary, so even called wrongly it cannot manufacture a green |
+| A: never built, 0 files in the root | `refused` | no trace of it in `packages/client/dist`; run `pnpm build` |
+| C: entry gone, 399 siblings | **`failed`** | missing while the declared root carries 399 other file(s): a build ran and produced the wrong surface |
+| E: output moved off-path | `refused` | same sentence as A — which is F2's whole content: from inside the declared root these two are the same tree |
+
+A and C are both red now, and both name themselves; C is a regression and A is a precondition, and
+the words differ. E is red too, and is honest about being indistinguishable from A.
+
+### F2 — the refusal said more than it measured
+
+`the tree says this checkout has never produced it rather than that a build went wrong` is **false**
+in tree E, and the tree was in the transcript. Now:
+
+> `… is not on disk and there is no trace of it in packages/client/dist — … The limit of that
+> sentence, stated rather than left to the reader: this verdict is drawn from packages/client/dist
+> ALONE, nothing outside the declared output root is examined, and there is nothing outside it to
+> examine — so a build that ran and whose output was then moved elsewhere is indistinguishable,
+> here, from a build that never ran, and `pnpm build` would not fix that.`
+
+The sentence the reader acts on now carries its own bound. A leg cannot claim more than its
+instrument read, and if the bound makes the red look weaker, that is the bound being true.
+
+### F3 — a reason string that lied about what it counted
+
+`treeShape` counted `git status --porcelain` **lines**, untracked included, untracked directories
+collapsed, and printed `1 tracked file(s) not matching HEAD` for three files inside one new
+directory. Fixed by naming each population as what it is:
+
+`HEAD bfbd89a5, 4 tracked file(s) changed vs HEAD, 1 untracked entr(ies) [counted from git-status
+entries: an untracked directory counts as one]`
+
+and `working-tree state UNREADABLE (git status did not answer)` when git is silent, instead of the
+silence reading as clean. Visible in the tree transcripts: tree A/E say `1 untracked entr(ies)`
+(this round's sidecar), tree F says `2` (the sidecar plus the moved output) — the count is doing
+arithmetic a reader can check, not decoration.
+
+### F4 — a green may only come from stdout; a red may come from either
+
+The head classified over `stdout + stderr`, so a crashed run that printed its trio on stderr read
+`passed`. Split now, and pinned by three assertions: healthy stdout + healthy stderr ⇒ `passed`;
+**empty stdout + the whole healthy trio on stderr ⇒ `refused`**, with `ON STDOUT` and the identity
+count in the reason; red ⇒ stderr quoted into `why`. The stderr tail still reaches the reader —
+that was the eslint exit-2 fix, and the widening was needed for the *reason*, never for the verdict.
+
+### F5 — a stale number in a load-bearing comment, and a class the narrow name was hiding
+
+See §13 for the measurement. The comment's `62 identities` reproduced nowhere (§6 carries the
+correction), the pattern is generalised to `'**/.tmp-*/**'`, and the generalisation is measured free
+rather than asserted.
+
+### F6 — nothing anywhere asserted that tracked files are lint-visible
+
+`eslint .tmp-fault/probe/hides.mjs` exits **0** while printing `File ignored because of a matching
+ignore pattern…`, and the shipped config's `**/dist/**` plus `**/composition-shim/**` plus
+`dev/**`, `docs/**`, `tests/**` already hide **1313 tracked lintable files** — 54 % of the tracked
+lintable set — from every rule in the repository. All of it is ratified (`packages/runtime/dist` and
+`packages/client/composition-shim` are the two committed install surfaces; the other three are the
+documentation/evidence trees), and none of it was asserted. The new leg runs the census, ratifies by
+**prefix derived from `INSTALL_SURFACES`** rather than a hard-coded word, and prints its denominator:
+
+`lint-visibility: eslint read 1104 of 2417 tracked lintable file(s); 1313 are hidden by an ignore
+pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1
+tracked lintable path(s) are not a file on disk and were skipped: dev/…/upstream-resolver.mjs`
+
+After this round's sidecar is committed the same line reads `1105 of 2418`; the arithmetic holds in
+both trees (`hidden + read = candidates`). The leg also refuses rather than passing when the report
+count does not match its own candidate list, and its detector is pinned against the captured message
+object — see §15 for why that pin was the second-most-valuable line in this round.
+
+### The two nits, both taken
+
+- **`not captured (stdio was not a pipe)` was unreachable through `runLeg`, which always pipes.**
+  Rather than label it, `describeStderr` is exported and a leg calls it with all three inputs, so
+  the arm is executed; it stays honest for the callers that really can produce `undefined`
+  (stdio inherited), and the instrument's comment says which.
+- **`artifactProvenance` now refuses to answer from a subdirectory.** Called with `repoRoot` pointed
+  at `packages/client` it answered `outputRoot "packages"`, `manifestEntry.package
+  "../../../package.json"` and still `refused` — a confident verdict about a tree it was not standing
+  in. It throws instead (realpath-compared, so a symlinked toplevel still counts).
+
+## 13. The eslint exclusion, measured four ways (F5) and the visibility census (F6)
+
+Five planted `.mjs` files under `packages/testkit/test/.tmp-fault/repo/scripts/`, each holding one
+unused binding and one undefined call; the whole-repo identity diff run once per config; source tree
+otherwise clean; measured at `bfbd89a5` with this round's `scripts/lint-identities.d.mts` on disk
+(`review-round-verdicts-battery-and-f5-ab.txt` part 3 for (a)/(b), `review-round-f5-narrow-and-root-case.txt`
+for (c)/(d)):
+
+| config | identity lines | distinct | `universe:` | gitignored in universe | `new` |
+| --- | --- | --- | --- | --- | --- |
+| (a) `'**/.tmp-*/**'` — as shipped | 160 | 76 | 1105 | 0 | **0** |
+| (b) the line deleted | 170 | 86 | **1110** | 5, the planted files named | **10** |
+| (c) `'**/.tmp-fault/**'` — the one name it replaces | 160 | 76 | 1105 | **0** | **0** |
+| (d) (a) + one root scratch FILE `.tmp-resolve-probe.mjs` | 161 | 77 | **1106** | 1, named | **1** |
+
+Four things follow, and each is a different claim than the one the old comment made:
+
+- **The exclusion is load-bearing.** (b) is not "62 identities either way": five files that exist
+  only while a suite runs entered the lint universe and produced ten identities against a baseline
+  nobody edited. Against the 7.5 suite's own fixture trees review measured the same mechanism at a
+  phantom `new 60`. The ratio is the point — the phantom scales with the fixture tree, so it is
+  unbounded.
+- **Generalising from the one name to the class costs nothing.** (a) and (c) are the same four
+  numbers. The narrow name was not protecting anything; it was naming the suite that happened to
+  get bitten first. `git ls-files | grep -cE '(^|/)\.tmp-'` is **0**, so no tracked path can be
+  swallowed by the wider pattern, and F6 now asserts that property in code rather than in a grep
+  someone has to remember.
+- **The boundary still runs the other way.** (d) keeps a scratch FILE at the repository root visible
+  and red — both patterns match directories, so the human-scale case (§5) is untouched. What is
+  removed is a tree that exists only during a test run, whose `scripts/**` copies are digest-compared
+  against the originals that *are* linted.
+- **The `universe:` line is what made any of this measurable.** Without the count of files actually
+  read, (b) is indistinguishable from a real regression by anyone who is not standing in the tree.
+
+The first round's comment claimed "identity-NEUTRAL … measured 62 identities". It was not neutral
+(load-bearing, by ten identities) and 62 was not a measurement anyone can reproduce. Both halves of
+that sentence were doing work — they were the reason the pattern should survive the next
+refactor — and a comment that persuades with a number nobody took is worse than no comment, because
+it stops the next reader from taking one.
+
+**F6, the census in the same tree.** 2418 tracked lintable paths (`git ls-files`, the eight
+extensions the flat config declares rules for), 2417 of them a file on disk, 1313 answered by
+eslint as ignored, 0 of those under an unratified prefix:
+
+| prefix | hidden tracked lintable files | ratified because |
+| --- | --- | --- |
+| `packages/runtime/dist/` | 753 | `INSTALL_SURFACES[0]` — committed, ships on install |
+| `dev/` | 442 | the config's own `dev/**` (evidence and orchestration) |
+| `tests/` | 116 | the config's own `tests/**` (pristine upstream runtime) |
+| `packages/client/composition-shim/` | 2 | `INSTALL_SURFACES[1]` — committed, ships on install |
+
+Read: 1104 (2417 − 1313), which is the same population as the lint leg's `universe: 1105` plus the
+one file that was not tracked at the time of that particular census. The leg prints both halves and
+the skipped path, and refuses when they stop adding up.
+
+Two facts the census produced that belong to other lanes, not fixed here:
+
+- **A tracked symlink in merged evidence is dangling in this checkout.**
+  `dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs`
+  is mode `120000` whose absolute target lives under the gitignored sibling worktree
+  `.worktrees/a2c-1/…`. `git status` is clean, `git ls-files` lists it, and it is **not** a file:
+  eslint refuses an argv containing it (`exit 2`, `No files matching the pattern "…upstream-resolver.mjs"
+  were found`). Nothing in this lane deletes another lane's evidence, so the census filters to
+  existing paths and says so on its own output line. Whoever owns `alpha2-capability-completion`
+  should decide whether that symlink belongs in a tree other worktrees will check out.
+- The census must spawn `node node_modules/eslint/bin/eslint.js`, not `npx eslint …`: at this argv
+  size npm exits **249** in ~0.24 s without starting eslint at all (§15).
+
+## 14. The battery at the post-fix head (`992b416b`, merged tree, this round's code)
+
+`review-round-battery-at-992b416b.txt`, every exit code measured without a pipe:
+
+| item | result |
+| --- | --- |
+| fence ×2 | exit 1 / 1 (standing `verdict: dirty-or-unknown`), **byte-identical**, 22 626 bytes, `sha256 0eb00e1a…`; `scanned-in-scope: **751** tracked files`; `dirty(41 files, 96 sites)`, `unknown(0, 0)`, `adjudicated(16, 24)` — identical to the pre-merge findings, so this lane reddens nothing |
+| `lint-identities --diff …0237d487.txt` | exit 0, `160 identity lines, 76 distinct`, `new 0, resolved 0`, `universe: 1105 file(s) linted, 0 of them gitignored` |
+| `p4t6` + the fence/verify-zero-core wrapper | **`68 passed (68)`** (58 wrapper legs + 10 p4t6 legs), no ledger increment |
+| `pnpm -r run typecheck` | exit 0, 8 `Done`, **0 `error TS`** |
+| `node --check` × 3 (`a4-artifact-provenance.mjs`, `lint-identities.mjs`, `eslint.config.mjs`) | exit 0 each |
+| changed-file eslint (7 touched files) | exit 0 |
+| `check:artifacts` | exit 0, `OK: 1508 files` |
+| instrument, healthy tree | exit 0, footer `PASS composition-smoke`, 11 step lines all `PASS`, 0 `SKIP` |
+| **instrument, never-built tree** | **exit 1**, `10 PASS` + `1 FAIL` step + footer `FAIL composition-smoke`, 0 `SKIP`; the FAIL line is `client plugin (packages/client): built entry is missing — run \`pnpm build\` first (a missing artifact is a failure, never a skip)` |
+| classifier suite, never-built tree | `54 passed (54)`, live leg printing its tree state |
+| **gate suite, never-built tree** | **`1 failed \| 24 passed (25)`** — the composition leg, red by design, with the disclosure on stderr |
+| gate + classifier, tree C (entry removed) | `1 failed \| 24 passed (25)` / leg red; verdict `failed` over 399 siblings |
+| gate, tree E (output moved off-path, gitignored) | `1 failed \| 24 passed (25)`; `check:artifacts` still `OK: 1508 files` |
+| gate + classifier + instrument, healthy tree | `25 passed (25)` / `54 passed (54)` / exit 0 |
+
+**Two reconciliations, because two of these numbers moved or disagreed with the bar it was quoted
+against.**
+
+- **Fence: 750 → 751, and 748 → 751 overall.** The review's number (750) was right for the tree it
+  was taken in; this round added `scripts/lint-identities.d.mts`, which the fence's own
+  `isScanScopePath` accepts (`scripts/`, code extension), so the count moved again by exactly one.
+  §7 names all three files and shows the per-head counts; the p4t6 total stays **1029** in the same
+  breath because its scope is the nine `packages/**` trees and this lane added no test file.
+  The lint universe moved the same way for the same reason (`1104 → 1105`), and the F6 census now
+  reads `1105 of 2418` where §12 quotes `1104 of 2417` — one file, this round's sidecar, both
+  numbers true of the moment each was printed.
+- **"11 PASS + exactly 1 FAIL" vs the measured `10 PASS + 1 FAIL step + footer FAIL`.** There are
+  **11 steps** in a healthy tree (2 plugin-target arms + 9 `check:artifacts`-id composition steps),
+  and the footer is a twelfth `PASS`/`FAIL` line, not a step. A healthy tree therefore prints 12
+  `PASS` lines (11 steps + footer) and a never-built tree prints 10 `PASS` plus a step `FAIL` plus
+  the `FAIL` footer: reading the bar as "11 PASS plus a failure" counts the footer twice. What
+  matters — and what the bar was really reaching for — holds exactly: **exactly one
+  step fails, the footer is `FAIL composition-smoke`, nothing is skipped, and the gate leg is red in
+  the same tree.** Recorded here rather than smoothed over, because the count is the thing a reader
+  checks, and `grep -c '^PASS'` on a never-built run answers 10 whether or not anyone expects it.
+  For the same reason: `tail -1` of a `2>&1` capture of that run is `Node.js v24.21.0`, the throw
+  banner from `scripts/composition-smoke.mjs`, which is why nothing in this lane decides anything
+  from the last line of a transcript.
+- Residue at handover: `packages/testkit/test/.tmp-fault/` was left by a completed 7.5 run (normal,
+  gitignored, and the exact tree §13 excludes from lint); everything else is the evidence set below.
+
+## 15. Two instrument-shape discoveries, neither of which the review asked for
+
+Both are recorded because they are the class of bug this lane exists to catch, and in one case the
+victim was this round's own new code. Transcripts: `review-round-eslint-instrument-shape.txt`,
+`review-round-eslint-argv-invocation.txt`.
+
+1. **A detector test that invents its instrument's shape is worse than no test.** The F6 leg
+   counts files eslint reports as ignored. Written against a message object recalled from memory —
+   `ruleId` absent — it matched **nothing**: the real entry is `ruleId: null, fatal: false,
+   severity: 1, nodeType: null` with a message far longer than the folklore version, and
+   `entry.ignored` is `undefined` on these entries, so the text is the only marker. The first live
+   census therefore printed `1313 are hidden`… no: it printed **`0 are hidden`** over 2417 tracked
+   lintable files while 1313 were unread, and the leg went **green**, because an empty `unexpected`
+   list over an empty `hidden` list is a passing assertion. The synthetic pin did not catch it,
+   because the pin shared the fiction. Both halves now carry the captured object, and the pin's
+   comment says which transcript it was copied from. A green whose detector is blind is the exact
+   failure mode §7 was written to prevent, re-manufactured inside the fix for it.
+2. **A CLI that runs on import is not a library.** Reaching the unexecuted `describeStderr` arm
+   meant importing `scripts/lint-identities.mjs` — whose entire CLI body sat at module scope. An
+   import would have launched a repository-wide ESLint scan inside the vitest worker and inherited
+   `process.exit(2)`. The body is now `runCli()`, called behind `invokedDirectly` (`resolve(argv[1])
+   === fileURLToPath(import.meta.url)`), measured inert: importing takes 1 ms, exports four names,
+   prints nothing; `node scripts/lint-identities.mjs --diff …` still answers `new 0, resolved 0`.
+   Adjacent, and part of the same lesson: `npx eslint <2418 paths>` exits **249 in 240 ms having
+   written nothing** (npm never starts eslint at that argv size; the same list through the bin is
+   exit 1 in 9.3 s with 3 754 774 bytes of JSON), and eslint **de-duplicates** repeated paths, so a
+   report can legitimately be shorter than its argv — which is why the census refuses on a count
+   mismatch against its own candidate list rather than trusting any count it did not construct.
+
+## 16. What this round does not claim, and the files it touched
+
+Not claimed, still, after F1–F6:
+
+- An output built and then **moved outside its declared root** is still undetectable from inside
+  that root. Tree E is now red because the arm had to run, not because anything recognised the
+  move; the refusal says so in the sentence the reader acts on. If a future tree needs to detect
+  the move itself, it needs a build-residue signal this repository does not have (§12 F1), and
+  inventing one would be manufacturing belief.
+- A **consistent arm deletion** still stays green by design (the 7-6 accepted residual). Nothing
+  here reads `REQUIRED_CHECK_IDS` against a second source; the gate asserts that every arm the
+  instrument reports is understood, and that the closure-gated arm ran.
+- `check:artifacts` (`OK: 1508 files`) compares the two committed install surfaces and **cannot see
+  `packages/client/dist` at all** — tree E prints its green `OK` over a tree whose entire client
+  build has been relocated. That blindness is upstream of this change and unchanged by it; F1 had
+  to land in the gate for exactly that reason.
+- `pnpm run lint` is still exit 1 with `160 problems (128 errors, 32 warnings)` as a standing
+  repository condition. §7.6's measure is the identity **diff** against the named baseline
+  (`new 0, resolved 0`), which is what makes a tree-wide warning backlog compatible with a leg that
+  can actually go red.
+- No retry was added anywhere, in this round or the last one. The lint leg fails with a cause.
+
+| file | this round's change |
+| --- | --- |
+| `packages/testkit/test/a4p7-merge-gate.test.ts` | composition leg asserts `owed === 'passed'` (F1) and writes its reason to stderr; `expectation()` deleted; closure leg asserts `not.toBe('passed')`; classifier reads verdict + machine lines from **stdout only**, stderr into `why` (F4); `unexplained` lead-in and mixed-tree assertion follow F2's wording; new F6 census leg + `lintVisibilityCandidates()`/`classifyLintVisibility()` with a captured-object pin; `describeStderr` leg; `RATIFIED_INVISIBLE_PREFIXES` derived from `INSTALL_SURFACES`; the doc-comment-closes-itself trap recorded at `RATIFIED_INVISIBLE_PREFIXES` |
+| `scripts/a4-artifact-provenance.mjs` | refusal text bounded (F2); `treeShape` counts and names its populations, `UNREADABLE` when git is silent (F3); `assertRepoRootIsToplevel` guard (nit); header records the fifth case and why the clone/worktree asymmetry was rejected |
+| `scripts/a4-artifact-provenance.d.mts` | `@throws` on `artifactProvenance`; `treeShape` doc naming what it counts |
+| `scripts/lint-identities.mjs` | `describeStderr` extracted and exported; CLI body wrapped in `runCli()` behind an `invokedDirectly` guard |
+| `scripts/lint-identities.d.mts` | **new** typed sidecar so §7.6 can import the instrument instead of re-implementing its notion of an identity |
+| `eslint.config.mjs` | `'**/.tmp-fault/**'` → `'**/.tmp-*/**'`; the unreproducible `62 identities` paragraph replaced by the four measured cases and the correction that they supersede it |
+| `dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/` | §§5–8 corrected and labelled by base; §§12–16 added; transcripts `review-round-merged-head-before-fix`, `review-round-f1-gate-across-trees`, `review-round-verdicts-battery-and-f5-ab`, `review-round-f5-narrow-and-root-case`, `review-round-f5-f6-first-measurements`, `review-round-eslint-instrument-shape`, `review-round-eslint-argv-invocation`, `review-round-battery-at-992b416b`, `reproduce-off-path-output.sh` |
