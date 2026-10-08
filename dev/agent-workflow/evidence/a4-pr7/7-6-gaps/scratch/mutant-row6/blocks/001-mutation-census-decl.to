@@ -1,0 +1,4 @@
+  const undeterminable: { readonly detail: Record<string, unknown> }[] = []
+  const rising: PermissionRiseRegion[] = []
+  // MUTANT bind-then-current-descendants: the census of every reached cell.
+  const census: string[] = []

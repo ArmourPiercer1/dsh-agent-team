@@ -1,0 +1,98 @@
+# A4-PR7 §7.6 row 6 — COUNTERFACTUAL MUTANT 'bind-then-current-descendants'
+#
+# The forbidden implementation the spec names, installed in the product:
+#   spec §6.2 (alpha4-permission-governance-spec.md):
+#     "A subtree proposal does not bind to the then-current descendants."
+# The mutant makes riseDigestOf digest EVERY cell the mutation region reaches
+# (with its before/after answers) instead of only the approved rises, i.e. it
+# freezes the descendant census at approval time. Runner + block edits:
+#   dev/agent-workflow/evidence/a4-pr7/7-6-gaps/scratch/mutant-row6/runner.mjs
+#   (packages/runtime/governance/{permission-mutation,permission-approval,service}.ts)
+#
+# MUTATED hashes:
+845d6ca85c3a1add38aa2e621f4e668f9f0ca0e166391ee0de42ee21448405ac  packages/runtime/governance/permission-mutation.ts
+b336922872da7c4b56b741939482c511a98af55320ed335b661c4f6beb860f3a  packages/runtime/governance/permission-approval.ts
+64492081de0bc1ab8d2d12de046b8d0ed147f52c7f7cbba0fb6094d9cced98f3  packages/runtime/governance/service.ts
+# BASE/RESTORED hashes (verified after restore, see the tail of this file):
+e0d39b4d77b0463820ecbc13970b753b72c647f98a1f966c986e6b1203d94353  packages/runtime/governance/permission-mutation.ts
+ba7ec48b9eec1424ed07af1da8ca2a994a29a403e4b363afb589577ea92a65be  packages/runtime/governance/permission-approval.ts
+3857732d9615ebf4847dcdc6cbb7c2fdac4e44c3a14ed0e4c16d49c09ed894f8  packages/runtime/governance/service.ts
+#
+# Run: new leg + every neighbouring suite that drives the same commit boundary.
+# Expected and observed: EXACTLY the new Row-6 validity leg reddens (76 legs run).
+#
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-scenario-gaps
+
+ ❯ packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts (2 tests | 1 failed) 46ms
+     × a descendant the seam newly reaches that moves NO approved rise leaves the allowed proposal VALID: same case, byte-identical frozen fingerprint, one commit 33ms
+     ✓ the boundary: the SAME descendant arriving where it moves an approved rise answers mutation-stale with ZERO writes (one variable separates the halves) 12ms
+ ✓ packages/runtime/test/a4p5-self-mutation.test.ts (6 tests) 81ms
+ ✓ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts (12 tests) 94ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts (33 tests) 124ms
+ ✓ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts (23 tests) 179ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts > a4p7 §7.6 row 6 — same canonical subtree root, descendants changed (spec §6.3 / §21.3, ADR §8) > a descendant the seam newly reaches that moves NO approved rise leaves the allowed proposal VALID: same case, byte-identical frozen fingerprint, one commit
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts:345:33
+    343|       // moved either — the descendant set is not an input to it.
+    344|       const result = await w.mutate(GRANT_ROOT)
+    345|       expect(result['changed']).toBe(true)
+       |                                 ^
+    346|       const snapshot = result['snapshot'] as {
+    347|         state: { rules: PermissionOverlayRule[] }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 75 passed (76)
+   Start at  15:28:57
+   Duration  1.32s (transform 3.57s, setup 0ms, import 4.66s, tests 524ms, environment 0ms)
+
+#
+# RESTORE (hash-verified):
+e0d39b4d77b0463820ecbc13970b753b72c647f98a1f966c986e6b1203d94353  packages/runtime/governance/permission-mutation.ts
+ba7ec48b9eec1424ed07af1da8ca2a994a29a403e4b363afb589577ea92a65be  packages/runtime/governance/permission-approval.ts
+3857732d9615ebf4847dcdc6cbb7c2fdac4e44c3a14ed0e4c16d49c09ed894f8  packages/runtime/governance/service.ts
+# git status of the governance lane after restore (must be empty):
+[exit 0]
+
+##############################################################################
+# ADDENDUM — MUTANT RE-RUN AGAINST THE FINAL COMMITTED FILE
+# captured: 2026-10-08T08:03:15Z
+# The leg file changed after the run above (its lint fixes: three unused imports and
+# one unused destructure removed), so the counterfactual was re-run against the file
+# exactly as committed. Verdict unchanged: EXACTLY 1 of 76 legs reddens — this lane's
+# validity leg — and the three mutated files restored to the BASE hashes recorded at
+# the head of this file (printed again below, and `git status --porcelain
+# packages/runtime/governance/` came back EMPTY).
+
+--- reddened legs and totals ---
+ × test/a4p7-descendant-change-proposal-valid.test.ts > a4p7 §7.6 row 6 — same canonical subtree root, descendants changed (spec §6.3 / §21.3, ADR §8) > a descendant the seam newly reaches that moves NO approved rise leaves the allowed proposal VALID: same case, byte-identical frozen fingerprint, one commit 66ms
+
+--- runner output (apply / restore) ---
+applied 001-mutation-census-decl -> packages/runtime/governance/permission-mutation.ts
+applied 002-mutation-census-push -> packages/runtime/governance/permission-mutation.ts
+applied 003-mutation-census-return -> packages/runtime/governance/permission-mutation.ts
+applied 004-approval-digest-census -> packages/runtime/governance/permission-approval.ts
+applied 005-service-ask-classification -> packages/runtime/governance/service.ts
+applied 006-service-ask-census-take -> packages/runtime/governance/service.ts
+applied 007-service-ask-object -> packages/runtime/governance/service.ts
+applied 008-service-digest-ask-site -> packages/runtime/governance/service.ts
+applied 009-service-digest-commit-site -> packages/runtime/governance/service.ts
+845d6ca85c3a1add38aa2e621f4e668f9f0ca0e166391ee0de42ee21448405ac  packages/runtime/governance/permission-mutation.ts
+b336922872da7c4b56b741939482c511a98af55320ed335b661c4f6beb860f3a  packages/runtime/governance/permission-approval.ts
+64492081de0bc1ab8d2d12de046b8d0ed147f52c7f7cbba0fb6094d9cced98f3  packages/runtime/governance/service.ts
+e0d39b4d77b0463820ecbc13970b753b72c647f98a1f966c986e6b1203d94353  packages/runtime/governance/permission-mutation.ts
+ba7ec48b9eec1424ed07af1da8ca2a994a29a403e4b363afb589577ea92a65be  packages/runtime/governance/permission-approval.ts
+3857732d9615ebf4847dcdc6cbb7c2fdac4e44c3a14ed0e4c16d49c09ed894f8  packages/runtime/governance/service.ts

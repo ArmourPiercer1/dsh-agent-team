@@ -1,0 +1,109 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-scenario-gaps/packages/runtime
+
+ × test/a4p7-descendant-change-proposal-valid.test.ts > a4p7 §7.6 row 6 — same canonical subtree root, descendants changed (spec §6.3 / §21.3, ADR §8) > a descendant the seam newly reaches that moves NO approved rise leaves the allowed proposal VALID: same case, byte-identical frozen fingerprint, one commit 66ms
+   → expected false to be true // Object.is equality
+ ✓ test/a4p7-descendant-change-proposal-valid.test.ts > a4p7 §7.6 row 6 — same canonical subtree root, descendants changed (spec §6.3 / §21.3, ADR §8) > the boundary: the SAME descendant arriving where it moves an approved rise answers mutation-stale with ZERO writes (one variable separates the halves) 36ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices silent hard document at the SAME rung either way 4ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices a fingerprint rule (opaque, never widens) at the SAME rung either way 1ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices the width capped at ask at the SAME rung either way 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices the width denied outright at the SAME rung either way 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices the cell capped below the width at the SAME rung either way 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices an unrelated subtree denied at the SAME rung either way 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > and the shape the review needed is the one the algebra forbids 1ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > a rise is ASKED AT THE RUNG ITS WIDTH NEEDS, not at the rung its cell can pay for 70ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > documents tightened after the approval: ZERO append — never the refused width 29ms
+ ✓ test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > self-EXPANSION asks the rung above the LEADER (never a self-review rung), whatever the context labels 51ms
+ ✓ test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > a self-EXPANSION allowed by the Human User commits inline into the Leader overlay 25ms
+ ✓ test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > a self-TIGHTENING needs no proposal at all (no rise -> gate silent) 9ms
+ ✓ test/a4p5-self-mutation.test.ts > the revoke that reveals a lower allow is an expansion > proposes (deny -> revealed allow), then commits ONE rule-free snapshot on allow 29ms
+ ✓ test/a4p5-self-mutation.test.ts > the batch is all-or-nothing > ONE region the ladder cannot approve dooms the WHOLE batch: no rows, no commit 25ms
+ ✓ test/a4p5-self-mutation.test.ts > the batch is all-or-nothing > TWO approvable regions open ONE case with one proposal row per rule 26ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > an unreadable ceiling at retry time refuses as CONTEXT, and the approval buys nothing past it 46ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > a commit-time refusal consumes NOTHING: the case stays resolved(allow), the retry re-prices and commits once 36ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > an unchanged world still commits: the re-ask is a guard, not a veto over A4-PR5 37ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the PRODUCTION fingerprint anchor (rebase-round pin: a bound value, never silently skipped) > a production v3 context carries the REAL bound hash and the TARGET-DERIVED beneficiary 4ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the PRODUCTION fingerprint anchor (rebase-round pin: a bound value, never silently skipped) > a v3 binding resolving WITHOUT a content hash answers an unreadable ceiling — an anchorless proposal still cannot exist 1ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > is deterministic, id-shaped, and order-insensitive over the rule set 2ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the team — changing it changes the fingerprint 1ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the target — changing it changes the fingerprint 1ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the beneficiary — changing it changes the fingerprint 1ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the kind — changing it changes the fingerprint 1ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the requested effect — changing it changes the fingerprint 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the matcher kind (root identity class) — changing it changes the fingerprint 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the matcher root — changing it changes the fingerprint 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the operation class — changing it changes the fingerprint 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > binds the blueprint anchor — changing it changes the fingerprint 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the permission-mutation proposal fingerprint (spec 8.4, 24.5) > EXCLUDES provenance: mutationId / reason / base / actor are not identity (24.5) 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the base-pair correlation and the derived beneficiary > names only the base pair: same base = same correlation, new base = new one (A1-9) 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the base-pair correlation and the derived beneficiary > derives the leader position from the TARGET identity, and the signature admits NOTHING else (A5-1, review item 7b) 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the approval rung plan (spec 7.4 walk, reused not re-implemented) > names the first approval rung that reaches (hard silent -> leader for a member rise) 2ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the approval rung plan (spec 7.4 walk, reused not re-implemented) > the batch is the MAX rung over its rising regions (all-or-nothing) 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the approval rung plan (spec 7.4 walk, reused not re-implemented) > an undecided ceiling is UNDETERMINED, never a guessed rung 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the approval rung plan (spec 7.4 walk, reused not re-implemented) > a capped hard envelope pushes the ask above the ladder -> human-admin 0ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the frozen-outcome mirror > mirrors intervention TERMINAL_MUTATION_OUTCOMES without importing it 1ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > creates ONE case + one proposal row per rule, commits NOTHING, and says so 51ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a retry is idempotent: same case, one leg row, no second proposal set 31ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a different effect asked is a DIFFERENT fingerprint, a DIFFERENT case 20ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a denied fingerprint at the same base is NOT re-proposable (A1-9): denied is terminal 14ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a NEW base generation re-asks with a fresh case (A1-9 recovery) 31ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > the requester is the DERIVED principal the lane was given, never a host default 21ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > an operator rise with NO named approval caller behaves as the unwired lane (PR2 throw) 15ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > a Human User rise above the Team Hard cap terminates authority-unavailable: no rows, no pending, durable deny 19ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > member initiation refuses BEFORE any proposal machinery (zero rows, zero cases) 11ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > commits EXACTLY ONE snapshot with the planned rules 36ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > a risen second leg (escalation to Human User) carries the commit: the higher allow commits 22ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > an unrelated lower-layer change that moves NO approved rise still commits 20ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > base movement after approval -> the approved mutation never commits > the SAME mutation at a moved base is a FRESH ask (A1-9 recovery); the allowed-at-old-base case never commits 20ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > base movement after approval -> the approved mutation never commits > an explicit expectedGeneration pinned at the approved base conflicts typed with ZERO writes 14ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > an unreadable hard envelope REFUSES (never absent, never a proposal) 11ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > an undecided containment is UNDETERMINED — no rung is proposed for an undecided region 17ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > with the approval lane UNWIRED the PR2 refusal is byte-identical 15ms
+ ✓ test/a4p5-permission-mutation-proposal.test.ts > the identity the case is opened with > names the kind EXPLICITLY: a silent LEADER_APPROVAL default can never swallow a mutation case 18ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > lifecycle drift: an archived target answers mutation-stale (never a lifecycle throw, never a commit) 14ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > proposal creation on an archived target still refuses typed BEFORE any row 6ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > matcher ROOT drift (containment retarget under the same canonical key) -> stale 13ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > the ceiling NARROWS after approval (required now above approved) -> stale 25ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > denied is terminal: every later call says denied, no new case, no write 16ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > the rise that failed renders authority-unavailable — never "awaiting a successor" 11ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > desired state reached after approval -> plain no-change, the case untouched 9ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > the rise-summary parse law is PURE (probes only — the commit-boundary arm is the two tests below) 2ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > an UNPARSEABLE rise summary on the allowed leg fails the arm closed: stale, ZERO write, never a commit 12ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > a WELL-FORMED summary naming a DIFFERENT rise structure fails the same arm closed (A1-8 structural equality, not format) 10ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the s6 remote seam carries every proposal arm through the closed v7 projection > a pending proposal crosses HONESTLY: changed:false + the named reason, closed field set, nothing dropped 5ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the s6 remote seam carries every proposal arm through the closed v7 projection > terminal arms ride the same reason slot (denied passes through with changed:false) 2ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the s6 remote seam carries every proposal arm through the closed v7 projection > the DERIVED caller — never a wire claim — reaches the lane as approvalCaller 2ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the two approval doors never share a case (mutation lane vs operation lane) > a blocked mutation opens exactly ONE case, at the mutation door, carrying the mutation fingerprint only 10ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > the two approval doors never share a case (mutation lane vs operation lane) > the control law refuses a hybrid identity AND a fingerprint-less one — the doors cannot forge each other 8ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > a fault never wears a verdict, and the durable identity is VERIFIED at the commit boundary (A3-3, review items 6/7a) > a NON-LIFECYCLE fault thrown on the guard stack propagates as itself — never `mutation-stale` 11ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > a fault never wears a verdict, and the durable identity is VERIFIED at the commit boundary (A3-3, review items 6/7a) > a lifecycle refusal STILL reinterprets to mutation-stale (the narrowing kept the law it was for) 12ms
+ ✓ test/a4p5-permission-mutation-inline-commit.test.ts > a fault never wears a verdict, and the durable identity is VERIFIED at the commit boundary (A3-3, review items 6/7a) > an approval reader LYING about the durable identity is refused: stale, ZERO write, never a commit 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p7-descendant-change-proposal-valid.test.ts > a4p7 §7.6 row 6 — same canonical subtree root, descendants changed (spec §6.3 / §21.3, ADR §8) > a descendant the seam newly reaches that moves NO approved rise leaves the allowed proposal VALID: same case, byte-identical frozen fingerprint, one commit
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p7-descendant-change-proposal-valid.test.ts:343:33
+    341|       // moved either — the descendant set is not an input to it.
+    342|       const result = await w.mutate(GRANT_ROOT)
+    343|       expect(result['changed']).toBe(true)
+       |                                 ^
+    344|       const snapshot = result['snapshot'] as {
+    345|         state: { rules: PermissionOverlayRule[] }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 75 passed (76)
+   Start at  16:03:06
+   Duration  2.32s (transform 5.67s, setup 0ms, import 7.73s, tests 1.08s, environment 1ms)
+

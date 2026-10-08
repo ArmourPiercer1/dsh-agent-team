@@ -1,0 +1,5 @@
+        subtreeContains: lane.subtreeContains,
+      }) as { readonly rising: readonly PermissionRiseRegion[]; readonly census?: readonly string[] }
+      const rising = askClassification.rising
+      const census = askClassification.census ?? []
+      if (rising.length === 0) return undefined

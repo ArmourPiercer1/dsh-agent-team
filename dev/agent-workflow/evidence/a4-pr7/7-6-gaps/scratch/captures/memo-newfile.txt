@@ -1,0 +1,33 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-scenario-gaps/packages/runtime
+
+ ✓ test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the subtree granted before the resource exists covers the resource created after startup at the FIRST ask, while the MemberInstance created after the grants still inherits nothing 25ms
+ × test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the prohibition, in the form a leg CAN assert: zero containment work through Team startup, the relation computed per ask for the pair asked about at a cost that does not follow the descendant population, a durable row that never moves, and a verdict that follows the live canonical relation 14ms
+   → expected 'allow' to be 'deny' // Object.is equality
+ ✓ test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the mechanism: the shipped authority lane reaches no directory-listing primitive at all (the tool a startup enumeration would need) 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the prohibition, in the form a leg CAN assert: zero containment work through Team startup, the relation computed per ask for the pair asked about at a cost that does not follow the descendant population, a durable row that never moves, and a verdict that follows the live canonical relation
+AssertionError: expected 'allow' to be 'deny' // Object.is equality
+
+Expected: "deny"
+Received: "allow"
+
+ ❯ test/a4p7-live-descendant-authority.test.ts:530:31
+    528|       world.seamCalls.length = 0
+    529|       const after = await world.decide(WORKER_ID, through)
+    530|       expect(after['effect']).toBe('deny')
+       |                               ^
+    531|       expect(after['source']).toBe('default')
+    532|       // The pair was asked AGAIN, not replayed: the same (root, key) …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  15:39:41
+   Duration  1.36s (transform 974ms, setup 0ms, import 1.23s, tests 45ms, environment 0ms)
+

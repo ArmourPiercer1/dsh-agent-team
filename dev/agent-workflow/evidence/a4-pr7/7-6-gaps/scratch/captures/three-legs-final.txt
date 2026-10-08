@@ -1,0 +1,18 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-scenario-gaps/packages/runtime
+
+ ✓ test/a4p7-governance-warning-restart-reconstruction.test.ts > a4p7 §7.6 row 17 — the governance-warning family reconstructs after restart (spec §21.10, §16, §15.4/§15.5) > a warning observed and acknowledged on a real durable ledger is reproduced by a store opened over the same directory: same warning identity and fingerprint, same folded count/time, same acknowledgement — from rows that were never rewritten 23ms
+ ✓ test/a4p7-governance-warning-restart-reconstruction.test.ts > a4p7 §7.6 row 17 — the governance-warning family reconstructs after restart (spec §21.10, §16, §15.4/§15.5) > the reconstructed acknowledgement is bound to its fingerprint: after the restart, drift in the bound documents mints a NEW un-acknowledged warning that re-blocks 8ms
+ ✓ test/a4p7-governance-warning-restart-reconstruction.test.ts > a4p7 §7.6 row 17 — the governance-warning family reconstructs after restart (spec §21.10, §16, §15.4/§15.5) > the production projection reconstructs over a ledger that carries the warning family (the a4pr0a composition law applies to these fact types too) 9ms
+ ✓ test/a4p7-descendant-change-proposal-valid.test.ts > a4p7 §7.6 row 6 — same canonical subtree root, descendants changed (spec §6.3 / §21.3, ADR §8) > a descendant the seam newly reaches that moves NO approved rise leaves the allowed proposal VALID: same case, byte-identical frozen fingerprint, one commit 32ms
+ ✓ test/a4p7-descendant-change-proposal-valid.test.ts > a4p7 §7.6 row 6 — same canonical subtree root, descendants changed (spec §6.3 / §21.3, ADR §8) > the boundary: the SAME descendant arriving where it moves an approved rise answers mutation-stale with ZERO writes (one variable separates the halves) 12ms
+ ✓ test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the subtree granted before the resource exists covers the resource created after startup at the FIRST ask, while the MemberInstance created after the grants still inherits nothing 28ms
+ ✓ test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the prohibition, in the form a leg CAN assert: zero containment work through Team startup, the relation computed per ask for the pair asked about at a cost that does not follow the descendant population, a durable row that never moves, and a verdict that follows the live canonical relation 14ms
+ ✓ test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the mechanism: the shipped authority lane reaches no directory-listing primitive at all (the tool a startup enumeration would need) 6ms
+
+ Test Files  3 passed (3)
+      Tests  8 passed (8)
+   Start at  16:05:08
+   Duration  1.24s (transform 1.83s, setup 0ms, import 2.62s, tests 134ms, environment 0ms)
+

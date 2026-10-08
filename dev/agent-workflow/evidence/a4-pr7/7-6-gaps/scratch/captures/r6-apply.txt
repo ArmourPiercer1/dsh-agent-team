@@ -1,0 +1,12 @@
+applied 001-mutation-census-decl -> packages/runtime/governance/permission-mutation.ts
+applied 002-mutation-census-push -> packages/runtime/governance/permission-mutation.ts
+applied 003-mutation-census-return -> packages/runtime/governance/permission-mutation.ts
+applied 004-approval-digest-census -> packages/runtime/governance/permission-approval.ts
+applied 005-service-ask-classification -> packages/runtime/governance/service.ts
+applied 006-service-ask-census-take -> packages/runtime/governance/service.ts
+applied 007-service-ask-object -> packages/runtime/governance/service.ts
+applied 008-service-digest-ask-site -> packages/runtime/governance/service.ts
+applied 009-service-digest-commit-site -> packages/runtime/governance/service.ts
+845d6ca85c3a1add38aa2e621f4e668f9f0ca0e166391ee0de42ee21448405ac  packages/runtime/governance/permission-mutation.ts
+b336922872da7c4b56b741939482c511a98af55320ed335b661c4f6beb860f3a  packages/runtime/governance/permission-approval.ts
+64492081de0bc1ab8d2d12de046b8d0ed147f52c7f7cbba0fb6094d9cced98f3  packages/runtime/governance/service.ts

@@ -1,0 +1,23 @@
+  return { rising, undeterminable, census: [...census].sort() }
+}
+
+/** MUTANT helper: one cell as the descendant census sees it. */
+function cellCensusRow(
+  cell: { readonly operationClass: string; readonly parent: PermissionResourceMatcher },
+  latestRules: readonly PermissionOverlayRule[],
+  plannedRules: readonly PermissionOverlayRule[],
+  staticFacts: PermissionStaticLayerFacts | undefined,
+  subtreeContains: SubtreeContains | undefined,
+): string {
+  const before = permissionEffectiveAnswer({ overlayRules: latestRules, staticFacts, operationClass: cell.operationClass, region: cell.parent, subtreeContains })
+  const after = permissionEffectiveAnswer({ overlayRules: plannedRules, staticFacts, operationClass: cell.operationClass, region: cell.parent, subtreeContains })
+  return [
+    cell.operationClass,
+    cell.parent.kind,
+    cell.parent.resource,
+    before.status,
+    (before as { readonly effect?: string }).effect ?? 'none',
+    after.status,
+    (after as { readonly effect?: string }).effect ?? 'none',
+  ].join(' ')
+}

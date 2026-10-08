@@ -1,0 +1,8 @@
+/** MUTANT `acknowledgement-lives-in-the-heap` (throwaway; NEVER committed):
+ *  the warning ack is WRITTEN durably and READ from process memory. Every
+ *  pre-restart assertion in the PR6 family still passes; only a store opened
+ *  over the same directory can tell the difference — which is exactly what
+ *  spec §21.10 "warning acknowledgement reconstructs" forbids. */
+const IN_PROCESS_ACKS = new Map<string, GovernanceWarningAcknowledgement>()
+
+export function createGovernanceWarningService(deps: GovernanceWarningServiceDeps): GovernanceWarningService {

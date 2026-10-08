@@ -1,0 +1,1 @@
+summary: encodeRiseSummary(riseDigestOf(ask.rising as never, (ask as { readonly census?: readonly string[] }).census)),

@@ -1,0 +1,157 @@
+ROW 17 COUNTERFACTUAL TRANSCRIPT — A4-PR7 §7.6 gap lane (dsh-agent-team)
+captured: 2026-10-08T07:53:22Z  branch feat/a4-76-scenario-gaps  base 16022365
+(re-captured after the leg's typecheck fixes, so every line below matches the file as committed)
+
+THE LAW the leg asserts (quoted from the documents, never inferred from behaviour):
+  spec §21.10  spec:1006: - warning acknowledgement reconstructs;
+  spec §16    spec:724: Governance warnings use a separate durable source but reuse the fingerprinted-acknowledgement design pattern.
+  spec §15.5  spec:714: Acknowledgement affects reminder state only.
+
+THE FINDING this counterfactual demonstrates, from 7-6-closure/SCENARIOS.md row 17:
+  "§21.10's other entries have restart legs; the governance-warning family
+   has no restart leg."  — demonstrated below by construction, not asserted.
+
+TARGET: packages/runtime/governance-warning/service.ts
+  base sha256     63866dabb60f78fc7be110123a94c8c4b707550f748fe2f2e0d54d5eb8b6283d
+  mutated sha256  6368d8886c5b4bdbbce80f333ed0fc686d66222b5b4f9a82af096c63230aba77
+  restored sha256 63866dabb60f78fc7be110123a94c8c4b707550f748fe2f2e0d54d5eb8b6283d   <- equals base; and `git status --porcelain
+                   packages/runtime/governance-warning/` came back EMPTY.
+                   The mutant is throwaway and is NEVER committed.
+
+MUTANT "acknowledgement-lives-in-the-heap" — three literal blocks, the fold anchor
+  generated from the source itself by runner.mjs so the match is exact:
+    001  a module-level IN_PROCESS_ACKS Map next to the factory;
+    002  fold()'s ACKNOWLEDGED branch IGNORES the durable row and answers from
+         that Map instead — the ack is durable in the ledger and volatile in
+         behaviour, so nothing that stays inside one process can see it;
+    003  acknowledge() records into the Map and STILL appends the durable row
+         (every write-shape assertion in the family therefore stays green).
+RUNNER: dev/agent-workflow/evidence/a4-pr7/7-6-gaps/scratch/mutant-row17/runner.mjs
+        (apply | restore | hash; blocks in blocks-inmemory-ack/NNN.{file,from,to})
+
+VERDICT
+  * The new restart leg reddens 3/3. What a heap cannot hand to a second store
+    is exactly the reconstructed acknowledgement.
+  * The ENTIRE PR6 governance-warning family — 6 files, 144 legs — stays GREEN
+    under a mutant in which acknowledgement state does not survive a restart AT
+    ALL. That is row 17's finding demonstrated rather than asserted: the family
+    has no second store and no reopened handle (its one "re-opens" is the
+    in-memory ensureRootLive re-entry), so its green carries no evidence about
+    restart. See FINDINGS.md §1.
+
+  NOTE ON THIS LANE'S OWN DISCIPLINE: the mutant SURVIVED this leg's first
+  version. The restart had moved the store handle and the service wiring but not
+  the PROCESS, so the module-level Map still held the ack and the leg passed on
+  heap state. The leg was STRENGTHENED — the restart now also resets the module
+  registry and re-evaluates the service module, with
+  expect(fresh.createGovernanceWarningService).not.toBe(create...) so the step
+  cannot silently stop mattering — and only then did it catch the mutant. No
+  assertion was weakened at any point; the file's restart helper records this in
+  place, and FINDINGS.md §2 generalises the lesson to every restart leg.
+
+==============================================================================
+1) THE NEW LEG UNDER THE MUTANT (3/3 red)
+==============================================================================
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-scenario-gaps/packages/runtime
+
+ × test/a4p7-governance-warning-restart-reconstruction.test.ts > a4p7 §7.6 row 17 — the governance-warning family reconstructs after restart (spec §21.10, §16, §15.4/§15.5) > a warning observed and acknowledged on a real durable ledger is reproduced by a store opened over the same directory: same warning identity and fingerprint, same folded count/time, same acknowledgement — from rows that were never rewritten 26ms
+   → expected [ { …(10) } ] to deeply equal [ { …(13) } ]
+ × test/a4p7-governance-warning-restart-reconstruction.test.ts > a4p7 §7.6 row 17 — the governance-warning family reconstructs after restart (spec §21.10, §16, §15.4/§15.5) > the reconstructed acknowledgement is bound to its fingerprint: after the restart, drift in the bound documents mints a NEW un-acknowledged warning that re-blocks 8ms
+   → expected false to be true // Object.is equality
+ × test/a4p7-governance-warning-restart-reconstruction.test.ts > a4p7 §7.6 row 17 — the governance-warning family reconstructs after restart (spec §21.10, §16, §15.4/§15.5) > the production projection reconstructs over a ledger that carries the warning family (the a4pr0a composition law applies to these fact types too) 8ms
+   → expected false to be true // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p7-governance-warning-restart-reconstruction.test.ts > a4p7 §7.6 row 17 — the governance-warning family reconstructs after restart (spec §21.10, §16, §15.4/§15.5) > a warning observed and acknowledged on a real durable ledger is reproduced by a store opened over the same directory: same warning identity and fingerprint, same folded count/time, same acknowledgement — from rows that were never rewritten
+AssertionError: expected [ { …(10) } ] to deeply equal [ { …(13) } ]
+
+- Expected
++ Received
+
+@@ -1,11 +1,8 @@
+  [
+    {
+-     "acknowledged": true,
+-     "acknowledgedAt": "2026-10-09T10:00:02.000Z",
+-     "acknowledgedBy": "principal:a4p7-row17-operator",
+-     "acknowledgementNote": "reviewed the leader envelope against the hard envelope",
++     "acknowledged": false,
+      "fingerprint": "df83d9b37b9d1164bd4246742410698e74e156e7b85d017af8af65ab509aa2ae",
+      "firstObservedAt": "2026-10-09T10:00:00.000Z",
+      "interventionId": "int-warn-df83d9b37b9d1164bd4246742410698e",
+      "kind": "envelope-consistency",
+      "lastObservedAt": "2026-10-09T10:00:04.000Z",
+
+ ❯ test/a4p7-governance-warning-restart-reconstruction.test.ts:329:21
+    327|       store = await restartWarningStore(store, docs)
+    328|       const after = await store.service.listWarnings(P6T4_ROOT)
+    329|       expect(after).toEqual(before)
+       |                     ^
+    330|       // The acknowledgement itself, field by field, off the reconstru…
+    331|       // (spec §15.5: warning id / fingerprint, acknowledgedBy, acknow…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a4p7-governance-warning-restart-reconstruction.test.ts > a4p7 §7.6 row 17 — the governance-warning family reconstructs after restart (spec §21.10, §16, §15.4/§15.5) > the reconstructed acknowledgement is bound to its fingerprint: after the restart, drift in the bound documents mints a NEW un-acknowledged warning that re-blocks
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p7-governance-warning-restart-reconstruction.test.ts:412:32
+    410|       const old = warnings.find((entry) => entry.warningId === blocked…
+    411|       const fresh = warnings.find((entry) => entry.warningId === drift…
+    412|       expect(old.acknowledged).toBe(true)
+       |                                ^
+    413|       expect(fresh.acknowledged).toBe(false)
+    414|       expect(fresh.observationCount).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a4p7-governance-warning-restart-reconstruction.test.ts > a4p7 §7.6 row 17 — the governance-warning family reconstructs after restart (spec §21.10, §16, §15.4/§15.5) > the production projection reconstructs over a ledger that carries the warning family (the a4pr0a composition law applies to these fact types too)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p7-governance-warning-restart-reconstruction.test.ts:470:41
+    468|       const warnings = await store.service.listWarnings(P6T4_ROOT)
+    469|       expect(warnings).toHaveLength(1)
+    470|       expect(warnings[0]!.acknowledged).toBe(true)
+       |                                         ^
+    471|     } finally {
+    472|       await destroyP6T1World(store.world)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  15:52:53
+   Duration  899ms (transform 609ms, setup 0ms, import 770ms, tests 43ms, environment 0ms)
+
+==============================================================================
+2) THE PR6 GOVERNANCE-WARNING FAMILY UNDER THE SAME MUTANT
+   the same six files, the same reporter, taken while the mutant was applied
+==============================================================================
+   ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > ABSORPTION at the ASK: one `undetermined` candidate and one decided one is `authority-undetermined` 0ms
+   ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > ABSORPTION at the CONSUMPTION point: the same pair is `undetermined`, never the decided candidate alone 0ms
+   ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > NEVER WIDER: the meet is exactly the highest rung any candidate requires, over a matrix of documents 1ms
+   ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > DISCLOSURE: a declared shell narrowing below `allow` now bites, and the rung it demands has no Alpha.4 resolver 0ms
+  ... full verbose listing of all 144 legs: scratch/captures/r17-pr6-family-under-mutant.txt
+
+--- apply / restore verification (runner output) ---
+applied 001 -> packages/runtime/governance-warning/service.ts
+applied 002 -> packages/runtime/governance-warning/service.ts
+applied 003 -> packages/runtime/governance-warning/service.ts
+6368d8886c5b4bdbbce80f333ed0fc686d66222b5b4f9a82af096c63230aba77  packages/runtime/governance-warning/service.ts
+63866dabb60f78fc7be110123a94c8c4b707550f748fe2f2e0d54d5eb8b6283d  packages/runtime/governance-warning/service.ts

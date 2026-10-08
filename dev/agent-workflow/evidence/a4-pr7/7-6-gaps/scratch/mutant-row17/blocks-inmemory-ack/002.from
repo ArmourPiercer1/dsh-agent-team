@@ -1,0 +1,14 @@
+      } else if (row.factType === GOVERNANCE_WARNING_FACT_TYPES.ACKNOWLEDGED) {
+        const warning = byFingerprint.get(fingerprint)
+        if (warning === undefined) continue // an ack without a warning observes nothing
+        const acknowledgedBy = str(row.payload, 'acknowledgedBy')
+        if (acknowledgedBy === undefined) continue
+        // LAST ack wins (a re-ack with a new note is legal and honest).
+        warning.acknowledgement = {
+          warningId: warningIdForFingerprint(fingerprint),
+          fingerprint,
+          acknowledgedBy,
+          acknowledgedAt: row.createdAt,
+          ...(str(row.payload, 'note') !== undefined ? { note: str(row.payload, 'note') } : {}),
+        }
+      }

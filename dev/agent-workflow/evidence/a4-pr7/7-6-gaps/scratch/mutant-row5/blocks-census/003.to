@@ -1,0 +1,31 @@
+    views.push({
+      ruleIndex,
+      lane: rule.effect,
+      rule: canonicalOverlayRule({ matcher, tool, effect: rule.effect, verdict, operation }),
+    })
+  }
+  return views
+}
+
+/** MUTANT `startup-time-descendant-census` (throwaway; NEVER committed): the
+ *  construction ADR §7.3 forbids in the flesh — expand the matcher into the set
+ *  of descendants that CURRENTLY EXIST and use that list as authority. */
+const MATERIALIZED_DESCENDANTS = new Map<string, Set<string>>()
+
+function materializedDescendantAuthority(
+  root: string,
+  key: string,
+  containment: OverlaySubtreeContainment,
+  tool: string,
+): boolean | undefined {
+  let census = MATERIALIZED_DESCENDANTS.get(root)
+  if (census === undefined) {
+    if (!existsSync(root)) return containment(root, { tool, key })
+    census = new Set<string>()
+    for (const entry of readdirSync(root, { recursive: true })) {
+      census.add(resolve(root, String(entry)))
+    }
+    MATERIALIZED_DESCENDANTS.set(root, census)
+  }
+  return census.has(resolve(key))
+}

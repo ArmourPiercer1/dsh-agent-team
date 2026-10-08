@@ -1,0 +1,8 @@
+    views.push({
+      ruleIndex,
+      lane: rule.effect,
+      rule: canonicalOverlayRule({ matcher, tool, effect: rule.effect, verdict, operation }),
+    })
+  }
+  return views
+}

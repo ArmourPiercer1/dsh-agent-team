@@ -1,0 +1,3 @@
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1118 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
