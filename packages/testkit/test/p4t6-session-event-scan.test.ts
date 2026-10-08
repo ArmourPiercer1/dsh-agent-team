@@ -2063,6 +2063,28 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts',
       'packages/runtime/test/a4p7-governance-warning-restart-reconstruction.test.ts',
     ]
+    // a4-compat-atomic (A4-PR7 compat lane, `feat-a4-compat-atomic-state`): the
+    // instrument for the DURABILITY SHAPE of one compatibility state transition —
+    // two independent consultations racing one cold generation (exactly one write
+    // lands, the loser is refused with a NAMED typed conflict), the
+    // `delete`→`put` gap a concurrent consultation can read as an ABSENT row, a
+    // crash armed inside the transition and what a real reopened store can still
+    // reconstruct, and restart reconstruction through a fresh module evaluation.
+    // It is the family that characterizes the defect the p6t1-flake escalation
+    // (`dev/agent-workflow/evidence/a4-pr7/p6t1-flake/FINDINGS.md` §7) escalated.
+    // This lane's ONE new scannable file is this spec; every other path it writes
+    // is an EDIT to already-counted sources (`runtime/compatibility/probe.ts`,
+    // `authority.ts`, `activation/provider.ts`, `src/plugin/root.ts`,
+    // `coordination/index.ts`, `storage/repositories/compatibility.ts`) or evidence
+    // under `dev/agent-workflow/evidence/a4-pr7/compat-atomic/`, outside
+    // `packages/**`. An edit is not an increment. The total on this branch was
+    // re-derived by landing the file FIRST and watching this leg go RED
+    // (`expected 1040 to be 1039`,
+    // `dev/agent-workflow/evidence/a4-pr7/compat-atomic/raw/p4t6-pre-extend-RED.log`)
+    // and then naming it: 1039 -> 1040.
+    const SCANNED_PATHS_A4COMPATATOMIC: readonly string[] = [
+      'packages/runtime/test/a4-compat-atomic-state.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2081,7 +2103,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4P73GRAMMAR.length +
         SCANNED_PATHS_A4P76PIN.length +
         SCANNED_PATHS_A474FAILCLOSED.length +
-        SCANNED_PATHS_A476GAPS.length,
+        SCANNED_PATHS_A476GAPS.length +
+        SCANNED_PATHS_A4COMPATATOMIC.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2101,7 +2124,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4P73GRAMMAR.length +
         SCANNED_PATHS_A4P76PIN.length +
         SCANNED_PATHS_A474FAILCLOSED.length +
-        SCANNED_PATHS_A476GAPS.length,
+        SCANNED_PATHS_A476GAPS.length +
+        SCANNED_PATHS_A4COMPATATOMIC.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
