@@ -286,3 +286,30 @@ independently reports `filesScanned = 1033`, and evaluating the test's own array
 15 sets, Σ = 50, `983 + 50 = 1033` (the merged branch's `SCANNED_PATHS_A4P76PIN` = 1 element).
 The 1032 of the earlier round was correct for its tree; both figures are derived, neither is
 quoted.
+
+### 6b. One tree identity, everything re-run — `856014c9`
+
+`origin/master` moved again mid-round (`edf2feba`, PR #178: four files, records and a skill
+markdown, no source or test). Merged, and the whole battery re-run on the result so that every
+figure below belongs to one tree rather than to a stack of trees:
+
+```
+population   Test Files 8 failed | 409 passed (417)   Tests 18 failed | 5029 passed (5047)
+             identity diff vs the disclosed base: NEW 0, RESOLVED 0, collection set identical (3)
+battery      Test Files 15 passed (15)                Tests 269 passed (269)
+merge gate   Test Files 1 passed (1)                  Tests 29 passed (29), exit 0
+check:artifacts        verdict=ok compared=1508 glue=1, exit 0
+check:artifacts:head   verdict=ok compared=1508 drift=0, exit 0
+smoke:composition      exit 0            pnpm --no-bail -r run typecheck  exit 0, 0 × error TS, 8 Done
+fence (twice, byte-identical; sha256 b2a9433426d5efc4…)  scanned-in-scope: 758
+  dirty(6,15) unknown(0,0) advisory(6,8) refused(52,115) prose(5,5) adjudicated(16,24)
+lint-identities --diff universe: 1112 file(s) linted, 0 of them gitignored; baseline 76 distinct, new 0, resolved 0
+```
+
+The population run came back with **18 titled reds and NEW 0**, i.e. no `p6t1` identity fired at
+all. Across three runs of essentially this tree the titled-red set was 21 (3 `p6t1`), 20 (2, the
+parent's census) and now 18 (0) — always the same disclosed load-sensitive family, never a base
+identity disappearing. That spread is the reason this section reports identity sets and
+registered-leg totals and refuses to report a red count: the count moves under a load
+sensitivity that is already on the record, while the set tells you whether anything actually
+changed.
