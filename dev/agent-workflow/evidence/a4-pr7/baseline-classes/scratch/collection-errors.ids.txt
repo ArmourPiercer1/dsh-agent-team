@@ -1,0 +1,3 @@
+FILE packages/runtime/test/p8s3b-result-effects.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/t12a-b2-child-identity.test.ts::COLLECTION-OR-UNHANDLED
+FILE packages/runtime/test/t12a-glue-handoff-ports.test.ts::COLLECTION-OR-UNHANDLED

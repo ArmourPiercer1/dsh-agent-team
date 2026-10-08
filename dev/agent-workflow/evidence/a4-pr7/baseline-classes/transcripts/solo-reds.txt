@@ -1,0 +1,373 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-baseline-classes
+
+ ❯ packages/domain/test/t1-capability-schema.test.ts (17 tests | 9 failed) 29ms
+     × 1. Legacy fixture parses without capabilities field 9ms
+     × 2. Leader with full capabilities parses and validates 3ms
+     × 3. Members can have different capabilities 2ms
+     ✓ 4. Malformed allow entry rejects (missing items) 2ms
+     ✓ 4b. Malformed allow entry rejects (items not string[]) 3ms
+     ✓ 5. Malformed deny entry rejects (extra fields) 1ms
+     ✓ 6a. Unknown capability sub-field rejects 1ms
+     ✓ 6b. Unknown template field rejects 1ms
+     × 7. Changing capability fields changes the hash 1ms
+     × 8. Static source returns selective mode for Leader with capabilities 1ms
+     × 9. Static source returns selective mode for MemberTemplate with capabilities 1ms
+     × 10. Static source returns legacy mode when capabilities absent 0ms
+     × 11. Selective source maps to TemplatePolicy values correctly 1ms
+     × 11b. Selective source maps deny entries to values correctly 1ms
+     ✓ 11c. Legacy source returns undefined values 0ms
+     ✓ 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3) 1ms
+     ✓ 11e. Selective source with mixed allow([])/deny preserves all cells (P1) 0ms
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts (18 tests | 1 failed) 48ms
+     ✓ matches the NIST vector for "abc" 2ms
+     ✓ matches the NIST vector for the empty string 0ms
+     ✓ matches the NIST vector for the 448-bit message 0ms
+     ✓ hashes multi-byte UTF-8 deterministically 1ms
+     ✓ is independent of key order (canonical JSON binding) 1ms
+     ✓ changes when any value changes 0ms
+     ✓ returns a sha256-prefixed 64-hex string 0ms
+     ✓ is deterministic across parses 14ms
+     ✓ is independent of YAML key order 4ms
+     ✓ changes when semantic content changes 5ms
+     ✓ changes across revisions of the same id 1ms
+     ✓ changes across ids with identical content 2ms
+     ✓ binds exactly to the canonical hashable projection 3ms
+     × projects absent optional singles as explicit null 7ms
+     ✓ preserves present optional values (including nested quota nulls) 2ms
+     ✓ changes when only the leader modelPreference changes 2ms
+     ✓ absent vs present modelPreference hash differently 2ms
+     ✓ is deterministic for the same token 1ms
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 10ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 5ms
+     ✓ 2. the sender holds the peer-direct grant → DIRECT to the peer session 1ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 1ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 0ms
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 1ms
+     ✓ 6. the confirmation facts record the path actually taken for both modes 0ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 0ms
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed) 6ms
+     ✓ 1. the pending DIRECT intent is recovered exactly once, through the fresh port, with the ORIGINAL correlation 1ms
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 3ms
+     ✓ 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once) 0ms
+     ✓ 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4) 0ms
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 1ms
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed) 8ms
+     ✓ reads: list-members / list-templates / inspect-config execute with lossless effects 2ms
+     ✓ E1/E4: template-addressed creations admit DISTINCT new instances (member-activated) 1ms
+     ✓ E6: at-limit admitted; over the TEMPLATE limit rejected; over the TEAM limit rejected 0ms
+     ✓ E3: persistent follow-up keeps the SAME bound child session (durable read-back) 0ms
+     ✓ E2: label and template addressing on instance-addressed tools are live-rejected 0ms
+     × messaging: worker -> leader is delivered direct to the leader bound session 4ms
+     ✓ progress: per-subject sequences (1,2 on unit-a; the other subject restarts at 1) 0ms
+     ✓ the request-token contract: missing/empty/over-long -> BAD_ARGUMENTS 0ms
+     ✓ argument-shape rejections: missing/non-string root, non-object args -> BAD_ARGUMENTS 0ms
+     ✓ caller resolution: no agent / unknown session / throwing resolver -> CALLER_UNRESOLVED 0ms
+     ✓ delegate XOR: neither or both delegation fields -> BAD_ARGUMENTS 0ms
+     ✓ closed vocabularies: bad progress / kind / decision -> BAD_ARGUMENTS 0ms
+     ✓ a well-formed unknown instance id is blocked target-stale by the guard (SD-GUARD) 0ms
+     ✓ the stale-head retry: one ACTIVITY_SEQUENCE_STALE is retried with a fresh head 0ms
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts (5 tests | 1 failed) 9ms
+     ✓ D3-1 FRESH member create: the scoped persona carries the identity block (owning root + own instanceId + role=member) on the verbatim template persona 1ms
+     ✓ D3-2 COLD RESUME: the resumed member's scoped persona is byte-identical to the create-time one (shared install seam) 0ms
+     ✓ D3-3 CROSS-ROOT: the N member gets the owning root N — never the boot root — on fresh create AND cold resume; the N root keeps only the root block 0ms
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 5ms
+     ✓ D3-5 repeated setup converges: exactly ONE scoped deployment:persona section, unchanged text 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 19 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 1. Legacy fixture parses without capabilities field
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t1-capability-schema.test.ts:152:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/19]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 2. Leader with full capabilities parses and validates
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:163:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/19]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 3. Members can have different capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:181:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/19]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 7. Changing capability fields changes the hash
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:257:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/19]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 8. Static source returns selective mode for Leader with capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:313:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/19]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 9. Static source returns selective mode for MemberTemplate with capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:329:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/19]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 10. Static source returns legacy mode when capabilities absent
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t1-capability-schema.test.ts:349:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/19]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11. Selective source maps to TemplatePolicy values correctly
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:127:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:359:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/19]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11b. Selective source maps deny entries to values correctly
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t1-capability-schema.test.ts:376:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/19]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-hash.test.ts > t2 hash: hashable projection > projects absent optional singles as explicit null
+AssertionError: expected { templateId: 'leader', …(6) } to deeply equal { templateId: 'leader', …(5) }
+
+- Expected
++ Received
+
+@@ -1,6 +1,7 @@
+  {
++   "capabilities": null,
+    "contextPolicy": null,
+    "description": null,
+    "displayName": null,
+    "modelPreference": null,
+    "persona": "Lead.",
+
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts:116:29
+    114|     expect(hashable.quotas).toBe(null)
+    115|     expect(hashable.capabilityPolicy).toBe(null)
+    116|     expect(hashable.leader).toEqual({
+       |                             ^
+    117|       templateId: 'leader',
+    118|       displayName: null,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/19]⎯
+
+ FAIL  packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality
+
+Expected: "session-child-p6t2-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/tools/test/p6t6-actions.test.ts:893:46
+    891|       expect(delivered.deliveryMode).toBe('direct')
+    892|       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
+    893|       expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.le…
+       |                                              ^
+    894|     }
+    895|     const inputs = A.recordedInputs
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/19]⎯
+
+ FAIL  packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+AssertionError: expected 'agent-bindings: capability template u…' to contain 'fail closed'
+
+Expected: "fail closed"
+Received: "agent-bindings: capability template unresolved for 'session-child-p6t2-w1' (reason=template-id-missing instanceId=inst-p6t2seedw01) (code: capability-template-unresolved)"
+
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:451:50
+    449|     // no block with the foreign root is ever installed.
+    450|     expect(foreignSetupError instanceof Error).toBe(true)
+    451|     expect((foreignSetupError as Error).message).toContain('fail close…
+       |                                                  ^
+    452|     expect(foreignCtxPersonaEntries.length).toBe(0)
+    453|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/19]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality
+
+Expected: "session-child-p6t3-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+    332|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    333|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    334|     expect(o.deliveredToSessionId).toBe(leader.childSessionId)
+       |                                    ^
+    335|
+    336|     // (a) the coordination fact addresses the INTENDED recipient —
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/19]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+    397|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    398|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    399|     expect(md.perSender.input.sessionId).toBe(
+       |                               ^
+    400|       P6T3_SEEDS.leader.childSessionId,
+    401|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/19]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+    413|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    414|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+    415|     expect(md.revoked.input.sessionId).toBe(
+       |                             ^
+    416|       P6T3_SEEDS.leader.childSessionId,
+    417|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/19]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+AssertionError: expected 4 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+    427|     expect(md.envelopeBlocked.errorName).toBe('TeamRuntimeError')
+    428|     expect(md.envelopeBlocked.newWrites).toBe(0)
+    429|     expect(md.envelopeBlocked.inputCount).toBe(
+       |                                           ^
+    430|       md.leaderInputs + md.scoutInputs,
+    431|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/19]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+    469|     const scout = P6T3_SEEDS.scout
+    470|     const input = md.noGrant.input
+    471|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    472|     expect(input.attribution.fromInstanceId).toBe(
+    473|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/19]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-restart.test.ts:404:18
+    402|
+    403|     const input = rt.inputMed
+    404|     expect(input.sessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+       |                  ^
+    405|     expect(input.attribution).toEqual({
+    406|       kind: 'team-relay',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/19]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:373:11
+    371| ): { readonly code: string; readonly details?: Record<string, unknown>…
+    372|   if (!isMessagingError(error)) {
+    373|     throw new Error(
+       |           ^
+    374|       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    375|     )
+ ❯ packages/runtime/test/p6t3-restart.test.ts:451:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/19]⎯
+
+
+ Test Files  6 failed (6)
+      Tests  19 failed | 47 passed (66)
+   Start at  20:34:44
+   Duration  1.30s (transform 2.91s, setup 0ms, import 4.41s, tests 110ms, environment 0ms)
+
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-baseline-classes/dev/agent-workflow/evidence/a4-pr7/baseline-classes/raw/solo-reds.json
