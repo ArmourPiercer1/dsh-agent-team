@@ -147,12 +147,18 @@ describe('check:artifacts cannot report success over an empty produced set', () 
     expect(r.out).toMatch(/top-?level/i) // cwd not at the toplevel
     expect(r.out).toMatch(/ignor/i) // artifacts ignored away
     expect(r.out).toMatch(/emitt?ed? nothing|emits nothing|emitted nothing|emitting nothing|no output|nothing/i) // build emitted nothing
+    // And on the machine-readable channel the same refusal, not a prose-only one: the
+    // verdict token is what `a4p7-merge-gate` grades, so this world pins the token too.
+    expect(r.out).toMatch(/DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=refused reason=empty-produced-set/)
   })
 
   it('a produced set of one matching file still passes exactly as before', () => {
     const root = makeMatchingRepo('one-matching-file')
     const r = runChecker(root)
     expect(r.out, r.out).toContain(`OK: 1 file`)
+    expect(r.out, 'the OK a consumer reads is the token, and it names its subject').toContain(
+      'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1',
+    )
     expect(r.status, r.out).toBe(0)
   })
 
@@ -165,6 +171,13 @@ describe('check:artifacts cannot report success over an empty produced set', () 
     expect(r.status, r.out).toBe(1)
     expect(r.out).toMatch(/C content-drift \(git add\)/)
     expect(r.out).toContain(dist ?? '')
+    // `drift=1 sites=2`, and that is not a slip: this world's single file is BOTH `C
+    // content-drift` (its bytes differ from the index) and `D glue placement drift` (its
+    // mirror no longer equals its src). Distinct paths vs reported arm lines are different
+    // facts, so the token carries both. This expectation was written as `drift=1` from a
+    // guess and the instrument corrected it — the two-count split is what the correction
+    // produced, not a reconciliation of the failure.
+    expect(r.out).toMatch(/DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=stale compared=\d+ drift=1 sites=2/)
   })
 
   it('a missing install-surface directory keeps its existing ERROR (walk failure is not the new guard)', () => {
@@ -173,5 +186,6 @@ describe('check:artifacts cannot report success over an empty produced set', () 
     const r = runChecker(root)
     expect(r.status).not.toBe(0)
     expect(r.out).toMatch(/ERROR: .* missing .* build/)
+    expect(r.out).toMatch(/DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=refused reason=surface-missing/)
   })
 })

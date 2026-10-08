@@ -54,6 +54,29 @@ import { join, resolve } from 'node:path'
 
 const TAG = '[check-artifacts-at-head]'
 
+/**
+ * Machine-readable verdict channel, same grammar as `check-artifacts-committed.mjs`:
+ *
+ *   DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=<rev> verdict=<ok|stale|refused|not-run> [k=v…]
+ *
+ * `subject=commit` is the difference between the two instruments and is therefore part of
+ * the token, not of the prose. Both tokens can appear in this script's stdout — the inner
+ * instrument's token is relayed verbatim — so a consumer must select by `script=`. A
+ * consumer that greps for the first `verdict=` it finds would grade the inner run against
+ * the wrong subject, which is the mistake this instrument exists to stop.
+ */
+function verdict(fields) {
+  process.stdout.write(`DSH-ARTIFACT-VERDICT ${Object.entries(fields).map(([k, v]) => `${k}=${String(v)}`).join(' ')}\n`)
+}
+
+/** Pull one field out of a verdict line emitted by `script=<name>`. */
+function verdictField(text, script, field) {
+  const line = new RegExp(`DSH-ARTIFACT-VERDICT[^\\n]*script=${script}[^\\n]*`).exec(text ?? '')
+  if (line === null) return null
+  const kv = new RegExp(`\\b${field}=(\\S+)`).exec(line[0])
+  return kv === null ? null : kv[1]
+}
+
 function parseArgs(argv) {
   const opts = { rev: 'HEAD', storeDir: null, keep: false }
   for (let i = 0; i < argv.length; i += 1) {
@@ -75,16 +98,18 @@ function parseArgs(argv) {
  * per failed run, before this was rewritten).
  */
 class NotRun extends Error {
-  constructor(message) {
+  /** `reason` is the machine-readable half of the refusal (`verdict=not-run reason=…`). */
+  constructor(message, reason = 'unknown') {
     super(message)
     this.name = 'NotRun'
+    this.reason = reason
   }
 }
 
 function step(label, command, args, cwd) {
   const r = spawnSync(command, args, { cwd, encoding: 'utf8', env: process.env })
-  if (r.error) throw new NotRun(`${label} could not be spawned (${r.error.message}) — no verdict about freshness is available`)
-  if (r.signal) throw new NotRun(`${label} was killed by ${r.signal} — the instrument never reported`)
+  if (r.error) throw new NotRun(`${label} could not be spawned (${r.error.message}) — no verdict about freshness is available`, 'spawn-failed')
+  if (r.signal) throw new NotRun(`${label} was killed by ${r.signal} — the instrument never reported`, 'killed')
   return r
 }
 
@@ -134,7 +159,7 @@ function probe(dir, source) {
     process.stdout.write(`${TAG} installing the scratch from ${source}: ${dir}\n`)
     return dir
   } catch {
-    throw new NotRun(`the only discoverable pnpm store (${source}: ${dir}) is not writable, so the scratch cannot be installed. Pass --store-dir <writable path>; a refusal is not a verdict of "fresh".`)
+    throw new NotRun(`the only discoverable pnpm store (${source}: ${dir}) is not writable, so the scratch cannot be installed. Pass --store-dir <writable path>; a refusal is not a verdict of "fresh".`, 'store-not-writable')
   }
 }
 
@@ -168,46 +193,61 @@ function discoverStore() {
 function main() {
   const storeDir = discoverStore()
   const add = step('git worktree add', 'git', ['worktree', 'add', '--detach', SCRATCH, opts.rev], ROOT)
-  if (add.status !== 0) throw new NotRun(`\`git worktree add --detach <scratch> ${opts.rev}\` failed:\n${relaunch(add)}`)
+  if (add.status !== 0) throw new NotRun(`\`git worktree add --detach <scratch> ${opts.rev}\` failed:\n${relaunch(add)}`, 'worktree-add')
   process.stdout.write(`${TAG} materialised ${opts.rev} in a scratch worktree and is building it there\n`)
 
   const installArgs = ['install', '--frozen-lockfile']
   if (storeDir !== null) installArgs.push(`--store-dir=${storeDir}`)
   const install = step('pnpm install', 'pnpm', installArgs, SCRATCH)
   if (install.status !== 0) {
-    throw new NotRun(`the scratch could not be installed (exit ${String(install.status)}). A build that never installed has no opinion about freshness. Tail:\n${relaunch(install)}`)
+    throw new NotRun(`the scratch could not be installed (exit ${String(install.status)}). A build that never installed has no opinion about freshness. Tail:\n${relaunch(install)}`, 'install')
   }
 
   const build = step('pnpm build', 'pnpm', ['build'], SCRATCH)
   if (build.status !== 0) {
-    throw new NotRun(`\`pnpm build\` failed in the scratch (exit ${String(build.status)}); a failing build is not a stale artifact. Tail:\n${relaunch(build)}`)
+    throw new NotRun(`\`pnpm build\` failed in the scratch (exit ${String(build.status)}); a failing build is not a stale artifact. Tail:\n${relaunch(build)}`, 'build')
   }
 
   const glue = step('place-dist-glue', process.execPath, ['scripts/place-dist-glue.mjs'], SCRATCH)
-  if (glue.status !== 0) throw new NotRun(`glue placement failed (exit ${String(glue.status)}). Tail:\n${relaunch(glue)}`)
+  if (glue.status !== 0) throw new NotRun(`glue placement failed (exit ${String(glue.status)}). Tail:\n${relaunch(glue)}`, 'glue-placement')
   const comp = step('build-client-composition', process.execPath, ['scripts/build-client-composition.mjs', 'packages/client', 'packages/client/composition-shim'], SCRATCH)
-  if (comp.status !== 0) throw new NotRun(`the client composition build failed (exit ${String(comp.status)}). Tail:\n${relaunch(comp)}`)
+  if (comp.status !== 0) throw new NotRun(`the client composition build failed (exit ${String(comp.status)}). Tail:\n${relaunch(comp)}`, 'client-composition')
 
   // The reviewed instrument, run where "the tree" IS the commit. Its exit code is the
   // verdict and its text is the evidence; nothing here re-implements a comparison.
   const check = step('check-artifacts-committed', process.execPath, ['scripts/check-artifacts-committed.mjs'], SCRATCH)
   process.stdout.write(check.stdout ?? '')
   process.stderr.write(check.stderr ?? '')
-  if (check.status === 0) {
-    const n = /OK: (\d+) files/.exec(check.stdout ?? '')
-    const files = n ? Number(n[1]) : 0
-    if (files === 0) {
+
+  // The verdict is read from the inner instrument's TOKEN, never from its prose and never
+  // from its exit code alone. Absence of a token is a refusal: an instrument that finished
+  // without stating a verdict compared nothing this script can stand behind.
+  const inner = verdictField(check.stdout, 'check-artifacts-committed', 'verdict')
+  const compared = Number(verdictField(check.stdout, 'check-artifacts-committed', 'compared') ?? '0')
+  const drift = Number(verdictField(check.stderr, 'check-artifacts-committed', 'drift')
+    ?? verdictField(check.stdout, 'check-artifacts-committed', 'drift') ?? '0')
+  if (inner === null) {
+    process.stdout.write(`${TAG} NOT-RUN: the check exited ${String(check.status)} without emitting a ${'DSH-ARTIFACT-VERDICT'} line, so there is nothing to grade.\n`)
+    verdict({ script: 'check-artifacts-at-head', subject: 'commit', rev: opts.rev, verdict: 'not-run', reason: 'no-verdict-token', code: check.status })
+    return 3
+  }
+  if (inner === 'ok') {
+    if (compared === 0) {
       process.stdout.write(`${TAG} NOT-RUN: the check reported OK over zero files — that is a false green, not a verdict.\n`)
+      verdict({ script: 'check-artifacts-at-head', subject: 'commit', rev: opts.rev, verdict: 'not-run', reason: 'checker-ok-over-zero-files' })
       return 2
     }
-    process.stdout.write(`${TAG} ${opts.rev} carries its own build: the committed surface IS a fresh build of itself (${String(files)} compared file(s)).\n`)
+    verdict({ script: 'check-artifacts-at-head', subject: 'commit', rev: opts.rev, verdict: 'ok', compared, drift: 0 })
+    process.stdout.write(`${TAG} ${opts.rev} carries its own build: the committed surface IS a fresh build of itself (${String(compared)} compared file(s)).\n`)
     return 0
   }
-  if (check.status === 1) {
-    process.stdout.write(`${TAG} ${opts.rev} does NOT carry its own build — the ${String((check.stderr ?? '').split('\n').filter((l) => /content-drift|tracked-but-absent|produced-but-untracked|glue placement/.test(l)).length)} listed path(s) (relayed above on stderr) are what a build of this commit changes and this commit did not include.\n`)
+  if (inner === 'stale') {
+    verdict({ script: 'check-artifacts-at-head', subject: 'commit', rev: opts.rev, verdict: 'stale', compared, drift })
+    process.stdout.write(`${TAG} ${opts.rev} does NOT carry its own build — the ${String(drift)} listed path(s) (relayed above on stderr) are what a build of this commit changes and this commit did not include.\n`)
     return 1
   }
-  process.stdout.write(`${TAG} the check REFUSED (exit ${String(check.status)}) — nothing was compared, so there is no verdict.\n`)
+  process.stdout.write(`${TAG} the check REFUSED (exit ${String(check.status)}, reason=${verdictField(check.stdout, 'check-artifacts-committed', 'reason') ?? 'unstated'}) — nothing was compared, so there is no verdict.\n`)
+  verdict({ script: 'check-artifacts-at-head', subject: 'commit', rev: opts.rev, verdict: 'refused', reason: verdictField(check.stdout, 'check-artifacts-committed', 'reason') ?? 'checker-refused', code: check.status })
   return 2
 }
 
@@ -223,7 +263,12 @@ let code = 3
 try {
   code = main()
 } catch (e) {
-  if (e instanceof NotRun) process.stdout.write(`${TAG} NOT-RUN: ${e.message}\n`)
+  if (e instanceof NotRun) {
+    process.stdout.write(`${TAG} NOT-RUN: ${e.message}\n`)
+    // The runner case, pinned: a leg that could not run states `verdict=not-run` and exits
+    // 3. It never states `verdict=ok`, so a gate cannot be green because it never ran.
+    verdict({ script: 'check-artifacts-at-head', subject: 'commit', rev: opts.rev, verdict: 'not-run', reason: e.reason })
+  }
   else throw e
 } finally {
   cleanup()

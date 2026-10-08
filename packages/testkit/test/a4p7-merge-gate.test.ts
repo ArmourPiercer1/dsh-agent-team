@@ -778,50 +778,61 @@ function classifyLintVisibility(
   return { verdict: 'passed', why: censusLine }
 }
 
+/**
+ * The verdict channel both artifact instruments emit — one line, `key=value` pairs, always
+ * on stdout. See the headers of `scripts/check-artifacts-committed.mjs` and
+ * `scripts/check-artifacts-at-head.mjs`. A consumer selects by `script=`, because the commit
+ * instrument relays the other one's token through its own stdout: grepping for the first
+ * `verdict=` would grade the inner run against the wrong subject, which is the very
+ * confusion `check-artifacts-at-head.mjs` exists to remove.
+ */
+function verdictToken(text: string, script: string): Record<string, string> | null {
+  const line = new RegExp(`DSH-ARTIFACT-VERDICT[^\\n]*script=${script}[^\\n]*`).exec(text)
+  if (line === null) return null
+  const fields: Record<string, string> = {}
+  for (const m of line[0].matchAll(/\b([a-z][a-z-]*)=(\S+)/g)) fields[m[1] as string] = m[2] as string
+  return fields
+}
+
 function classifyArtifactsRun({ stdout, stderr, code }: {
   stdout: string
   stderr: string
   code: number | null
 }): { verdict: Verdict; why: string } {
-  // F4's precedence rule, applied to what THIS instrument does — which is not what
-  // `lint-identities.mjs` does, and that difference is measured, not assumed.
-  // `check-artifacts-committed.mjs` prints its OK on stdout (measured at this commit: exit 0,
-  // 130 bytes on stdout, 0 on stderr) and its ERROR lines on stderr (measured from
-  // `packages/testkit`: exit 1, stdout EMPTY, `ERROR: packages/runtime/dist missing — run
-  // \`pnpm build && pnpm build:composition\` first`). So "parse stdout only" would delete every
-  // refusal arm here. The rule that survives both instruments is directional and it is the one
-  // F4 is actually about: **a green may only come from stdout; a red may come from either.** An
-  // instrument that reports `OK` somewhere other than its verdict channel has not passed this
-  // gate — it has printed a sentence, and the two are not the same fact.
+  // VERDICT CHANNEL, NOT PROSE. Until a4-pr7/7.8 this arm asserted on `/OK: (\\d+) files/` —
+  // a substring of a sentence the script writes about itself, which made the test's truth a
+  // function of the script's phrasing. The same sentence was also false in a way no rewording
+  // can fix by itself: it claimed the artifacts "match the fresh build", a claim about a build
+  // `check-artifacts-committed.mjs` never runs (it compares the working tree to the INDEX, so
+  // a tree nobody built in prints success — measured at `f0485b15` over 20 stale files, with
+  // this gate 26/26 green). The script now says what it compares and both instruments state a
+  // token; this arm reads the token and treats prose as unparseable noise.
+  //
+  // The directional rule F4 established is unchanged and still measured: **a green may only
+  // come from stdout; a red may come from either stream** — the drift list legitimately goes
+  // to stderr, and an `OK` arriving on stderr is a sentence, not a verdict.
+  const token = verdictToken(stdout, 'check-artifacts-committed')
   const out = `${stdout}${stderr}`
-  const ok = /OK: (\d+) files/.exec(stdout)
-  if (ok !== null) {
-    return Number(ok[1] as string) > 0
-      ? { verdict: 'passed' as Verdict, why: ok[0] as string }
-      : { verdict: 'refused' as Verdict, why: 'check:artifacts compared zero files — nothing was checked' }
+  if (token?.verdict === 'ok') {
+    return Number(token.compared ?? '0') > 0
+      ? { verdict: 'passed' as Verdict, why: `verdict=ok subject=${token.subject ?? '?'} compared=${token.compared ?? '0'} glue=${token.glue ?? '0'}` }
+      : { verdict: 'refused' as Verdict, why: 'verdict=ok with compared=0 — an empty compared set is not a pass, it is the old false green' }
   }
-    if (/NOT-RUN: the produced set is empty/.test(out)) {
-      return {
-        verdict: 'refused' as Verdict,
-        why: `check:artifacts compared an empty produced set and refused to report OK (exit ${code}): ${out.split('\n').find((l) => l.includes('NOT-RUN')) ?? ''}`,
-      }
-    }
-    if (/missing — run `pnpm build/.test(out)) {
-      // Note what this branch cannot say: a run from a SUBDIRECTORY lands here too,
-      // because the script's ROOT is `process.cwd()`. Measured at this commit, cwd
-      // `packages/testkit` prints "packages/runtime/dist missing — run `pnpm build
-      // && pnpm build:composition` first" when the actual cause is the cwd. Refused
-      // either way (nothing was compared); the misdiagnosis is filed in FINDINGS §5.
-      return {
-        verdict: 'refused' as Verdict,
-        why: `the install surface is not there where this run was standing, so the freshness check compared nothing (exit ${code}) — either it was never built or the cwd is not the toplevel`,
-      }
-    }
-    if (/STALE install-surface artifacts/.test(out)) {
-      return { verdict: 'failed' as Verdict, why: `stale install-surface artifacts: ${tail(out)}` }
-    }
-    return { verdict: 'refused' as Verdict, why: `check:artifacts produced no verdict at all (exit ${code}); tail: ${tail(out)}` }
+  if (token?.verdict === 'stale') {
+    return { verdict: 'failed' as Verdict, why: `verdict=stale drift=${token.drift ?? '?'} — the tree owes its rebuild: ${tail(out)}` }
   }
+  if (token?.verdict === 'refused') {
+    if (token.reason === 'surface-missing') {
+      // What this arm still cannot say, and the token cannot either: the script's ROOT is
+      // `process.cwd()`, so a run from a SUBDIRECTORY reports a missing surface when the
+      // actual cause is where it was standing (measured from `packages/testkit`). Refused
+      // either way — nothing was compared. Misdiagnosis filed in FINDINGS §5.
+      return { verdict: 'refused' as Verdict, why: `verdict=refused reason=surface-missing (exit ${code}) — no install surface where this run was standing; either never built, or not run at the toplevel` }
+    }
+    return { verdict: 'refused' as Verdict, why: `verdict=refused reason=${token.reason ?? 'unstated'} (exit ${code}) — nothing was compared: ${tail(out)}` }
+  }
+  return { verdict: 'refused' as Verdict, why: `check:artifacts emitted no DSH-ARTIFACT-VERDICT line on stdout (exit ${code}) — prose is not a verdict, whatever it says; tail: ${tail(out)}` }
+}
 
 /**
  * The commit-level sibling of `classifyArtifactsRun` — two classifiers for one subject,
@@ -850,22 +861,26 @@ function classifyAtHeadRun({ stdout, stderr, code }: {
   stderr: string
   code: number | null
 }): { verdict: Verdict; why: string } {
+  // Its own token, selected by `script=`. The relayed inner token is in this stdout too, so
+  // an unqualified grep would grade the scratch's working-tree-vs-index comparison and call
+  // it a verdict about the commit — the conflation this instrument exists to separate.
+  const token = verdictToken(stdout, 'check-artifacts-at-head')
   const out = `${stdout}${stderr}`
-  // Green only from the verdict channel, same directional rule as its sibling: the scratch
-  // run's stderr carries the instrument's drift list, and a relayed stderr must not fake a pass.
-  if (/carries its own build/.test(stdout)) {
-    return { verdict: 'passed' as Verdict, why: stdout.trimEnd().split('\n').pop() ?? 'carries its own build' }
+  if (token?.verdict === 'ok') {
+    return Number(token.compared ?? '0') > 0
+      ? { verdict: 'passed' as Verdict, why: `verdict=ok subject=${token.subject ?? '?'} rev=${token.rev ?? '?'} compared=${token.compared ?? '0'}` }
+      : { verdict: 'refused' as Verdict, why: 'verdict=ok with compared=0 — the scratch compared nothing' }
   }
-  if (/does NOT carry its own build/.test(out)) {
-    return { verdict: 'failed' as Verdict, why: `the commit does not carry its own build; the rebuild it owes: ${tail(out)}` }
+  if (token?.verdict === 'stale') {
+    return { verdict: 'failed' as Verdict, why: `verdict=stale rev=${token.rev ?? '?'} drift=${token.drift ?? '?'} — the commit does not carry its own build; the rebuild it owes: ${tail(out)}` }
   }
-  if (/NOT-RUN:/.test(out)) {
-    return {
-      verdict: 'refused' as Verdict,
-      why: `check:artifacts:head never got to compare anything (exit ${code}): ${tail(out)}`,
-    }
+  if (token?.verdict === 'refused') {
+    return { verdict: 'refused' as Verdict, why: `verdict=refused reason=${token.reason ?? 'unstated'} (exit ${code}) — the instrument ran and declined to compare: ${tail(out)}` }
   }
-  return { verdict: 'refused' as Verdict, why: `check:artifacts:head produced no verdict at all (exit ${code}); tail: ${tail(out)}` }
+  if (token?.verdict === 'not-run') {
+    return { verdict: 'refused' as Verdict, why: `verdict=not-run reason=${token.reason ?? 'unstated'} (exit ${code}) — a leg that never ran has no opinion about freshness and is never a pass: ${tail(out)}` }
+  }
+  return { verdict: 'refused' as Verdict, why: `check:artifacts:head emitted no DSH-ARTIFACT-VERDICT line on stdout (exit ${code}); prose is not a verdict; tail: ${tail(out)}` }
 }
 
 describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => {
@@ -1439,20 +1454,33 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
         classify: classifyArtifactsRun,
       })
       expect(r.verdict, `check:artifacts did not pass. why: ${r.why}`).toBe('passed')
-      // The refused branches, pinned against the strings the script actually prints
-      // (checked against `scripts/check-artifacts-committed.mjs` at this commit) without
-      // wrecking the tree to produce them.
-      expect(classifyArtifactsRun({ stdout: '', stderr: '[check-artifacts-committed] ERROR: packages/runtime/dist missing — run `pnpm build && pnpm build:composition` first.', code: 1 }).verdict).toBe('refused')
-      expect(classifyArtifactsRun({ stdout: '', stderr: '[check-artifacts-committed] NOT-RUN: the produced set is empty (0 of 0 files on disk survived the ignore filter) — the gate compared nothing and must not report OK.', code: 2 }).verdict).toBe('refused')
-      expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))', stderr: '', code: 0 }).verdict).toBe('passed')
-      expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 0 files; committed install-surface artifacts match the fresh build (incl. 0 glue placement(s))', stderr: '', code: 0 }).verdict).toBe('refused')
+      // The states, pinned against the tokens the script actually prints (captured from it at
+      // this commit) without wrecking the tree to produce them.
+      // All four states, on the channel the scripts actually emit (captured from the
+      // scripts themselves at this commit; `pnpm check:artifacts` prints the first line
+      // verbatim on a clean tree). Note `subject=index` on every one of them: that is the
+      // scope of this instrument, and it is now part of the machine-readable answer rather
+      // than of a sentence about a build it did not run.
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=refused reason=surface-missing', stderr: '[check-artifacts-committed] ERROR: packages/runtime/dist missing — run `pnpm build && pnpm build:composition` first.', code: 1 }).verdict, 'a missing surface compared nothing, whatever the exit code says').toBe('refused')
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=refused reason=empty-produced-set on_disk=0', stderr: '[check-artifacts-committed] NOT-RUN: the produced set is empty (0 of 0 files on disk survived the ignore filter) — the gate compared nothing and must not report OK.', code: 2 }).verdict).toBe('refused')
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1', stderr: '', code: 0 }).verdict).toBe('passed')
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=0 glue=0', stderr: '', code: 0 }).verdict, 'verdict=ok over zero files is the old false green and is never a pass').toBe('refused')
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=stale compared=1508 drift=20 sites=20', stderr: '[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):', code: 1 }).verdict, 'a tree that owes its rebuild FAILS; it is not a refusal, and the two must never collapse').toBe('failed')
       // F4's direction of travel, pinned here as well: the same OK sentence arriving on STDERR is
       // not a pass. This instrument does not do that today (measured at this commit: `OK` on
       // stdout with stderr empty at exit 0, and it is the ERROR lines that go to stderr), which
       // is precisely why the arm is pinned against captured text rather than trusted to the
       // script's habits.
-      expect(classifyArtifactsRun({ stdout: '', stderr: '[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))', code: 0 }).verdict,
+      expect(classifyArtifactsRun({ stdout: '', stderr: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1', code: 0 }).verdict,
         'a verdict on the wrong stream is not a verdict — green comes from stdout, red may come from either').toBe('refused')
+      // The arm that makes this leg immune to prose: the old success sentence, in full, with
+      // no token alongside it. This is exactly what `f0485b15` printed over 20 stale files and
+      // what this leg believed. Prose alone can no longer produce a green at all.
+      expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))', stderr: '', code: 0 }).verdict,
+        'prose is not a verdict channel; a run that states no token compared nothing this gate can stand behind').toBe('refused')
+      // And the reworded sentence, likewise: it is the truth now, but the leg still refuses
+      // to read it as the answer.
+      expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 1508 files — working tree equals the git INDEX for both install surfaces (incl. 1 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.', stderr: '', code: 0 }).verdict).toBe('refused')
     })
 
     it('the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask', { timeout: 600_000 }, async () => {
@@ -1471,17 +1499,30 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       // The two red answers stay distinct, pinned against the text the script actually prints.
       // Collapsing them is how an unwritable store, or a build that died, becomes a green.
       expect(classifyAtHeadRun({
-        stdout: '[check-artifacts-at-head] f0485b15 does NOT carry its own build — the 20 listed path(s) (relayed above on stderr) are what a build of this commit changes and this commit did not include.',
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=f0485b15 verdict=stale compared=1508 drift=20',
         stderr: '[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):',
         code: 1,
       }).verdict, 'a commit that owes its own rebuild is a failure, not a refusal').toBe('failed')
       expect(classifyAtHeadRun({
-        stdout: '[check-artifacts-at-head] NOT-RUN: the scratch could not be installed (exit 1). A build that never installed has no opinion about freshness.',
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=not-run reason=install',
         stderr: '',
         code: 3,
-      }).verdict, 'a scratch that never installed never compared anything — refused, and the refusal must say why').toBe('refused')
+      }).verdict, 'a scratch that never installed never compared anything — refused, and the refusal says which step died').toBe('refused')
       expect(classifyAtHeadRun({
-        stdout: '[check-artifacts-at-head] 2683653a carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).',
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1\nDSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=2683653a verdict=ok compared=1508 drift=0',
+        stderr: '',
+        code: 0,
+      }).verdict, 'the relayed inner token must not be mistaken for the outer verdict — the outer one is what the leg grades').toBe('passed')
+      // …and the converse: an inner OK with no outer token is NOT a pass for this leg. That
+      // is the exact confusion `check-artifacts-at-head.mjs` exists to make impossible, and
+      // it is now asserted rather than argued.
+      expect(classifyAtHeadRun({
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1',
+        stderr: '',
+        code: 0,
+      }).verdict, 'an index-subject verdict is not a commit-subject verdict').toBe('refused')
+      expect(classifyAtHeadRun({
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=2683653a verdict=ok compared=1508 drift=0',
         stderr: '',
         code: 0,
       }).verdict).toBe('passed')
@@ -1490,7 +1531,7 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       // `carries its own build` cannot be believed as a pass.
       expect(classifyAtHeadRun({
         stdout: '',
-        stderr: '[check-artifacts-at-head] 2683653a carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).',
+        stderr: 'DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=2683653a verdict=ok compared=1508 drift=0',
         code: 0,
       }).verdict, 'a verdict on the wrong stream is not a verdict').toBe('refused')
       expect(classifyAtHeadRun({ stdout: '', stderr: '', code: 0 }).verdict, 'silence is not a verdict about freshness').toBe('refused')
