@@ -86,6 +86,12 @@ price is not owed. Measurement and table: `REPAIRS.md` §5.
   assertion was edited to match new output; the 54 identities, the three re-scopes with old
   and new titles, the seven bite classes, and the final identity diff are in
   **`REPAIRS.md`** / **`bite/README.md`** / **`bill-check.txt`**.
+* **Two corpus defects this lane surfaced and closed, because the deletion lane would otherwise
+  inherit them blind:** the §7.6 gate's `<output>.held-by-7-6-gate` hold-aside directory races any
+  source walker that skips only the literal name `dist` (FINDINGS F-11; plant-and-reproduce in
+  `bite/` class G), and an `Error: STACK_TRACE_ERROR` red in a full run is a 5000 ms timeout with
+  its message stripped (FINDINGS F-12 — read `assertionResults[].duration` before believing
+  anything else).
 * **What that gives the deletion lane, concretely:** a corpus where a rise cannot be answered
   by nobody is now also a corpus that *passes*, so `leaderEnvelopeCoverage`'s deletion can be
   tested without first re-authorising 54 fixtures. Two of its traps are pre-documented here:
@@ -111,3 +117,7 @@ price is not owed. Measurement and table: `REPAIRS.md` §5.
                    packages/testkit/test/p4t6-session-event-scan.test.ts            # 10 files, 162 legs
     node -e "import('./packages/testkit/fault-injection/session-event-scan.mjs') \
       .then(m => console.log('referee =', m.scanSessionEventVocabulary({}).filesScanned))"   # 1036
+    # the spendable bill, if you want it from a run rather than from me:
+    npx vitest run --reporter=json --outputFile=/tmp/tip.pop.json   # 502 files / 6277 legs /
+                                                                    # 19 titled reds = baseline,
+                                                                    # NEW 0 against the base side

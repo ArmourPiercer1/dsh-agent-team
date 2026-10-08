@@ -353,6 +353,26 @@ observation and I changed no product code for it — but the §7.5 deletion lane
 fixtures approval-wired, and it should expect refusals to arrive wearing the ask path's
 clothes, with the durable row as a prerequisite.
 
+**F-11 — a green gate can create a race: the §7.6 hold-aside directory and a source walker.**
+`a4p7-merge-gate` proves the composition refuses by MOVING a build output aside (`dist` and
+individual entries become `<name>.held-by-7-6-gate`) in another worker;
+`a3p3-governance-lane-hygiene` walks `packages/` skipping the literal name `dist` and nothing
+else. Both files are on `master` and had simply never been scheduled to overlap; once this lane's
+gate went green enough to run its hold experiment inside a full run, the walker descended into a
+tree being renamed out from under `statSync` — `ENOENT … dist.held-by-7-6-gate/…`, a collection
+error instead of a verdict. Planting the directory by hand reproduces it on command, so it is a
+defect and not a flake (`bite/README.md` class G). Corpus lesson for every lane that follows:
+**a test that renames a directory inside the repository is a synchronisation primitive whether it
+intends to be one or not.**
+
+**F-12 — `Error: STACK_TRACE_ERROR` is a timeout wearing a mask.** Three full runs killed the same
+leg with no assertion, no product frame, and a stack that is all runner internals. The string is
+`@vitest/runner`'s placeholder substituted *inside* `withTimeout` for a timeout, and the JSON
+reporter drops the human message, leaving only the placeholder. The durations gave it away: 5032 /
+5012 / 5022 ms against a 5000 ms default — killed AT the ceiling, never measured past it; isolated
+the leg takes 1659 ms. Read `assertionResults[].duration` before believing any
+`STACK_TRACE_ERROR`, and prefer the leg's own third argument to a global `testTimeout`: raising
+the default flattens every other knife edge in the corpus to hide one.
 ## 6. Instruments that lied to me this round
 
 1. **The §3 table `13 / 26 / 41 / 0`** — pre-flip, and it would have been a comfortable,
@@ -398,12 +418,18 @@ clothes, with the durable row as a prerequisite.
   bullet disclosed the bill instead of spending it (the brief at that point said land-and-stop);
   the stage gate bound afterwards is §7.6's — *Alpha.4 may remove baseline failures but adds
   none* — so 54 newly-red legs were a merge blocker however well disclosed. Every one of the 54
-  is repaired by declaring the authority world the fixture presupposed (five worlds, three
-  shapes, one injection each), none by bending an assertion; three legs (`X1`/`X2`/`X3`) needed a
-  recorded re-scope because their state stopped being constructible at all. Per-file and per-leg
-  record, the bite proofs, and the pre-v3 reachability measurement:
-  **[`REPAIRS.md`](./REPAIRS.md)** and **[`bite/README.md`](./bite/README.md)**. Final identity
-  diff against the post-merge base: `NEW 0` (`bill-check.txt`).
+  is repaired by declaring the authority world the fixture presupposed (five worlds, three shapes,
+  one injection each), none by bending an assertion; three legs (`X1`/`X2`/`X3`) needed a recorded
+  re-scope because their state stopped being constructible at all. Per-file and per-leg record,
+  the bite proofs, and the pre-v3 reachability measurement:
+  **[`REPAIRS.md`](./REPAIRS.md)** and **[`bite/README.md`](./bite/README.md)**.
+* **Final identity diff against the post-merge base: `NEW 0`.** Run #4 at `25e87870`: 502 files /
+  6277 legs / 19 titled reds, and the 19 are the baseline set verbatim; `RESOLVED` is 15, named
+  one by one with its base-side reason (**[`bill-check-final.txt`](./bill-check-final.txt)**).
+  Runs #1-#3 of that census had 3 / 1 / 2 tip-only reds and the record says so: two of them were
+  real corpus defects this lane surfaced and fixed (`25e87870`, classes G and H), the other the
+  pre-existing `p6t1-parallel` load flake. `bill-check.txt` is run #1, kept because it is what
+  found them.
 * **`leaderEnvelopeCoverage` is untouched**, per instruction: deleting it is the §7.5 deletion
   lane's bill (40 names / 39 legs), and this lane's job was to make that deletion testable.
   What this lane contributes to that testability: with the port-absent skip gone, a corpus

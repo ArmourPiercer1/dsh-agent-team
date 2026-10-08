@@ -218,11 +218,26 @@ skip and a commit still follow from it, and so makes R2's counter the guard. Re-
 bridge reddens R2 without anything in R4 being edited. Per the ruling the **committing branch is
 untouched** — no second refusal, no 59-red bill.
 
-## 6. The bill, after the repair
+## 6. The bill, spent
 
-See `final-census.log`, `bill-check.txt` and `final-reds.txt` in this directory: the identity
-diff against the post-merge base, with `NEW 0`, the `RESOLVED` list named one by one, the three
-renamed identities named, and the nine-root list attached to every count.
+Full-population identity diff against the post-merge base side, both sides nine-root:
+
+* **`NEW 0`** — `bill-check-final.txt`, run #4 at `25e87870`: 502 files / 6277 legs / **19** titled
+  reds, and the 19 are exactly the baseline failures (`t1-capability-schema` 9, `p6t3-mediation` 5,
+  `p6t3-restart` 2, `p6t6-actions` 1, `d3-member-identity-context` 1, `t2-blueprint-hash` 1) plus
+  the same 3 collection-error files. The raw `diff` has 15 `<` lines and **0** `>` lines.
+* **`RESOLVED 15`**, each named with the reason it was red on the base side: this lane's 8
+  instruments (N1/N3/N4, PIN-3 inverted, PIN-5 strengthened, W1/W2/W3), the 3 `a4p7-merge-gate`
+  legs (composition smoke / lint leg / artifacts leg — the base-side tree had no client build, no
+  committed artifacts, and a 77-identity lint set), the `p4t6` referee tie, and the 3
+  `p6t1-parallel` legs of the disclosed load-flake family (red at base, green at run #4 — named
+  rather than counted as a win).
+* **Leg identities added/renamed**: +7 (the 3 re-scoped `X` titles and the 4 `R1-R4` legs), −3 (the
+  old `X` titles) ⇒ legs 6273 → 6277. Nothing else moved.
+* **Four runs, and the three that were not clean are in the record**: run #1 had 3 tip-only reds,
+  run #2 one, run #3 two. Every one of them turned out to be a corpus instability with a
+  deterministic mechanism, both repaired in `25e87870` and proved in `bite/` classes **G** and **H**.
+  `bill-check.txt` is the superseded run-#1 computation, kept because it is what found them.
 
 ## 7. Two corrections to `FINDINGS.md` (both from the coordinator's review)
 
