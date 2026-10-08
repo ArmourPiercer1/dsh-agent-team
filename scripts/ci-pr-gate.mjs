@@ -24,8 +24,20 @@
  *
  * ── THE VERDICT CHANNEL ────────────────────────────────────────────────────────────────────
  *
- *   DSH-CI-LEG leg=<name> verdict=<pass|fail|skip> seconds=<n> detail=<one line>
+ *   DSH-CI-LEG leg=<name> verdict=<pass|fail|skip|refused> seconds=<n> detail=<one line>
  *   DSH-CI-VERDICT <pass|fail> pass=<n> fail=<n> skip=<n> skipped=<comma-list|none> legs=<n>
+ *                     refused=<n> refusedlegs=<comma-list|none>
+ *
+ * `skip` and `refused` say different things and the channel keeps them apart. A `skip` is a
+ * choice made before the run (`--skip`, or the census being opt-in by default). A `refused` is
+ * the instrument discovering that THIS checkout cannot be graded at all, and it must name the
+ * missing prerequisite. The word exists because of a measured harm: on a GitHub-hosted runner
+ * (run 37794562230) the census ran 57 legs that resolve the gitignored pristine host checkout,
+ * every one failed for want of it, and the gate reported 57 NEW REDS against a tree that was
+ * fine. A red that blames the product for the runner is worse than no red: it trains the reader
+ * to ignore reds. So the census now refuses before spawning vitest, and a refusal is legal only
+ * when the invocation declared it (`--allow-refused <leg>`) — the re-grader re-checks the token
+ * against the leg lines, so a refusal cannot be silent in either direction.
  *
  * Two rules, both load-bearing, both pinned by `--self-test` and demonstrated by a transcript:
  *
@@ -129,8 +141,28 @@ export function finalToken(verdict, counts) {
   return (
     `DSH-CI-VERDICT ${verdict} pass=${String(counts.pass)} fail=${String(counts.fail)} ` +
     `skip=${String(counts.skip)} skipped=${counts.skipped.length > 0 ? counts.skipped.join(',') : 'none'} ` +
-    `legs=${String(counts.legs)}`
+    `legs=${String(counts.legs)} ` +
+    `refused=${String(counts.refused ?? 0)} ` +
+    `refusedlegs=${(counts.refusedList ?? []).length > 0 ? counts.refusedList.join(',') : 'none'}`
   )
+}
+
+/**
+ * A leg may end `refused` only if the invocation declared that leg. Anything else becomes a
+ * fail that states how to make it legal, because an undeclared `cannot measure here` is
+ * indistinguishable at 3 a.m. from a silent skip. Pure by design: the policy is the part worth
+ * pinning, and it must be drivable without a checkout.
+ */
+export function applyRefusalPolicy(name, result, allowRefused) {
+  if (result.verdict !== 'refused') return result
+  if (Array.isArray(allowRefused) && allowRefused.includes(name)) return result
+  return {
+    ...result,
+    verdict: 'fail',
+    detail:
+      `(undeclared refusal — the instrument could not grade this checkout; if that is intended, ` +
+      `declare it: --allow-refused ${name}) ${String(result.detail)}`,
+  }
 }
 
 function runCommand(command, args, opts = {}) {
@@ -499,6 +531,30 @@ export function checkTranscript(text) {
       legs,
     }
   }
+  // Refusals must match in BOTH directions. A leg that refused without being declared is a
+  // hidden skip; a token declaring a refusal that never refused is a token that lies. A
+  // transcript from before this word existed carries neither field and is graded as before.
+  const refusedLegs = legs.filter((l) => l.verdict === 'refused').map((l) => l.leg)
+  const refusedClaim = /refusedlegs=(\S+)/.exec(finals[0][2] ?? '')
+  const declaredRefused = refusedClaim !== null && refusedClaim[1] !== 'none' ? refusedClaim[1].split(',') : []
+  const undeclared = refusedLegs.filter((l) => !declaredRefused.includes(l))
+  if (undeclared.length > 0) {
+    return {
+      verdict: 'fail',
+      klass: 'undeclared-refusal',
+      reason: `leg(s) ${undeclared.join(',')} report refused while the token declares refusedlegs=${declaredRefused.join(',') || 'none'} — a refusal has to be written into the invocation, not discovered afterwards`,
+      legs,
+    }
+  }
+  const phantom = declaredRefused.filter((l) => !refusedLegs.includes(l))
+  if (phantom.length > 0) {
+    return {
+      verdict: 'fail',
+      klass: 'token-legs-disagree',
+      reason: `the token declares refusedlegs=${declaredRefused.join(',')} but no leg line refused for ${phantom.join(',')} — a declared refusal that did not refuse is a token that lies`,
+      legs,
+    }
+  }
   const fails = legs.filter((l) => l.verdict === 'fail').map((l) => l.leg)
   const finalVerdict = finals[0][1]
   if (finalVerdict === 'fail' && fails.length === 0) {
@@ -660,6 +716,28 @@ const LEGS = {
   },
 
   census(ctx) {
+    // PREFLIGHT. The reason this exists is measured, not assumed: on a runner without the
+    // gitignored pristine host checkout the census produced 57 failures wearing the product's
+    // name — 38 file-level, whose error text is literally `no repo root with
+    // tests/deepseek-harness-test-use`, and 19 named-leg assertions I then reproduced LOCALLY,
+    // string for string, by hiding that one directory (same AssertionError in t2-blueprint-hash,
+    // same MessagingError in p6t3-restart). Those legs resolve that checkout to spawn a host, so
+    // on such a runner they are ungradeable, and running them anyway is not diligence — it is a
+    // false accusation. Re-grading a stored report needs no checkout, hence the guard.
+    if (ctx.censusJson === null && !existsSync(join(REPO_ROOT, 'tests', 'deepseek-harness-test-use'))) {
+      return {
+        verdict: 'refused',
+        refuseReason: 'missing-test-use-checkout',
+        detail:
+          'REFUSED before spawning vitest: tests/deepseek-harness-test-use (the pristine test host, ' +
+          'gitignored, pinned by tests/paths.mjs) is absent from this checkout, and census legs that ' +
+          'resolve it cannot be graded here. Measured consequence of running anyway: 38 file-level + 19 ' +
+          'named-leg failures, all reproducible by hiding that directory (evidence/a4-pr7/ci-gate/' +
+          'FINDINGS.md, hosted run 37794562230). Provision it per docs/TEST_METHODS.md §2 to make the ' +
+          'leg meaningful, or declare the refusal (--allow-refused census) so this checkout says out ' +
+          'loud that the population was not measured here.',
+      }
+    }
     const baseline = parsePopulationBaseline(readFileSync(resolve(REPO_ROOT, ctx.baselines.census), 'utf8'))
     const reports = []
     if (ctx.censusJson !== null) {
@@ -841,6 +919,10 @@ function parseArgs(argv) {
     // so a pass reads as "passed under a 20 s budget" instead of "passed".
     censusTestTimeout: null,
     resample: 3,
+    // Legs whose `refused` verdict this invocation accepts. Declaring a refusal in the command
+    // line is the whole design: the exemption is reviewable in the diff of the workflow, not
+    // inferred from a green run.
+    allowRefused: [],
     storeDir: process.env.DSH_CI_STORE_DIR ?? null,
     transcriptDir: null,
     baselines: { ...BASELINES },
@@ -858,6 +940,7 @@ function parseArgs(argv) {
     else if (a === '--census-json') opts.censusJson = argv[(i += 1)]
     else if (a === '--census-test-timeout') opts.censusTestTimeout = Number(argv[(i += 1)])
     else if (a === '--resample') opts.resample = Number(argv[(i += 1)])
+    else if (a === '--allow-refused') opts.allowRefused.push(...String(argv[(i += 1)]).split(',').map((x) => x.trim()).filter(Boolean))
     else if (a === '--only') opts.only = String(argv[(i += 1)]).split(',').map((s) => s.trim()).filter(Boolean)
     else if (a === '--skip') opts.skip.push(...String(argv[(i += 1)]).split(',').map((s) => s.trim()).filter(Boolean))
     else if (a === '--store-dir') opts.storeDir = argv[(i += 1)]
@@ -986,7 +1069,7 @@ function main(argv) {
   // output that this gate is defined to treat as a failure. That crash is reproduced on demand in
   // evidence/a4-pr7/ci-gate/transcripts/RED-CONTROL-E-tokenless-run.txt.
   // A verdict channel that can crash on its own bookkeeping is not a channel.
-  const counts = { pass: 0, fail: 0, skip: 0, legs: 0, skipped: [] }
+  const counts = { pass: 0, fail: 0, skip: 0, legs: 0, skipped: [], refused: 0, refusedList: [] }
   const started = Date.now()
   process.stdout.write(
     `DSH-CI-RUN head=${String(git(['rev-parse', '--short', 'HEAD']) ?? 'unknown')} mode=${opts.full ? 'full' : 'default'} ` +
@@ -1043,15 +1126,24 @@ function main(argv) {
           // A leg that abstains in a full run has abstained from the merge gate.
           result = { verdict: 'fail', detail: `(under --full a skip is a failure) ${result.detail}` }
         }
+        const outcome = applyRefusalPolicy(name, result, opts.allowRefused)
         const seconds = Number(((Date.now() - legStarted) / 1000).toFixed(1))
-        counts[result.verdict] += 1
+        counts[outcome.verdict] += 1
+        if (outcome.verdict === 'refused') {
+          counts.refusedList.push(name)
+          // A separate machine token: an operator who greps for refusals must not have to parse
+          // prose, and a dashboard that counts `verdict=pass` must not quietly absorb this leg.
+          process.stdout.write(
+            `DSH-CI-REFUSED leg=${name} declared=yes reason=${String(outcome.refuseReason ?? 'unspecified')}\n`,
+          )
+        }
         process.stdout.write(
-          `${legLine({ leg: name, verdict: result.verdict, seconds, detail: result.detail })}\n`,
+          `${legLine({ leg: name, verdict: outcome.verdict, seconds, detail: outcome.detail })}\n`,
         )
         // The token line stays greppable by truncating; the whole sentence goes on the next line,
         // because the census detail is the finding itself and a reviewer must be able to read it.
-        if (String(result.detail).length > 400) {
-          process.stdout.write(`  detail[${name}]: ${String(result.detail).replace(/\s+/g, ' ').trim()}\n`)
+        if (String(outcome.detail).length > 400) {
+          process.stdout.write(`  detail[${name}]: ${String(outcome.detail).replace(/\s+/g, ' ').trim()}\n`)
         }
       }
 
@@ -1214,6 +1306,57 @@ function selfTest() {
   ].join('\n'))
   ok(cleanFence.verdict === 'ran' && cleanFence.identities.length === 0, 'a clean fence at the toplevel is a run with an empty identity set')
   ok(cleanFence.scanned === 42 && cleanFence.dirty?.files === 0 && cleanFence.unknown?.files === 0, 'the clean case parses its universe and its counts (not just its verdict word)')
+
+  // Refusal vocabulary: declared, undeclared, and lying in either direction.
+  ok(
+    applyRefusalPolicy('census', { verdict: 'refused', detail: 'x' }, ['census']).verdict === 'refused',
+    'a refusal the invocation declared stays a refusal (and does not become a pass)',
+  )
+  const undeclaredRefusal = applyRefusalPolicy('census', { verdict: 'refused', detail: 'x' }, [])
+  ok(
+    undeclaredRefusal.verdict === 'fail' && undeclaredRefusal.detail.includes('--allow-refused census'),
+    'an undeclared refusal is a fail that names the way out',
+  )
+  const refusalToken = finalToken('pass', {
+    pass: 6,
+    fail: 0,
+    skip: 0,
+    legs: 7,
+    skipped: [],
+    refused: 1,
+    refusedList: ['census'],
+  })
+  ok(
+    refusalToken.includes('refused=1') && refusalToken.includes('refusedlegs=census'),
+    'the token states its refusals instead of hiding one inside pass=6 legs=7',
+  )
+  ok(
+    finalToken('pass', { pass: 7, fail: 0, skip: 0, legs: 7, skipped: [] }).includes('refused=0 refusedlegs=none'),
+    'a run with no refusal still states that field; absence is not a legacy transcript in disguise',
+  )
+  const trRefusedDeclared = checkTranscript(
+    'DSH-CI-LEG leg=a verdict=pass\nDSH-CI-LEG leg=census verdict=refused\n' +
+      'DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=2 refused=1 refusedlegs=census',
+  )
+  ok(
+    trRefusedDeclared.verdict === 'pass' && trRefusedDeclared.klass === 'ok',
+    'a declared refusal re-grades as a pass that says what it did not measure',
+  )
+  const trRefusedHidden = checkTranscript(
+    'DSH-CI-LEG leg=a verdict=pass\nDSH-CI-LEG leg=census verdict=refused\n' +
+      'DSH-CI-VERDICT pass pass=2 fail=0 skip=0 skipped=none legs=2 refused=0 refusedlegs=none',
+  )
+  ok(
+    trRefusedHidden.verdict === 'fail' && trRefusedHidden.klass === 'undeclared-refusal',
+    'a pass token carrying an undeclared refusal is refused by the re-grader — the same rule the run applies, from the outside',
+  )
+  const trRefusedPhantom = checkTranscript(
+    'DSH-CI-LEG leg=a verdict=pass\nDSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=1 refusedlegs=census',
+  )
+  ok(
+    trRefusedPhantom.verdict === 'fail' && trRefusedPhantom.klass === 'token-legs-disagree',
+    'a declared refusal with no refusing leg is a token that lies',
+  )
 
   for (const f of fails) process.stdout.write(`SELFTEST FAIL: ${f}\n`)
   process.stdout.write(
