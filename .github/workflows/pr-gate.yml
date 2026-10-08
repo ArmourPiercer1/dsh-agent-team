@@ -67,14 +67,25 @@ jobs:
     # that does not get required.
     name: pr-gate
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
+    # Raised from the lane's reasoned 45 the moment this file started building the tree as well as
+    # grading it. The number is still a guess being narrowed, and it is recorded as one: locally the
+    # nine-root census is ~100 s per capture on 32 cores, so two captures plus a build on a 2-core
+    # hosted runner is the untested part. The FIRST run that reaches a verdict is the measurement, and
+    # whichever way it comes out — a timeout at 90 is as informative as a pass.
     env:
       CI: 'true'
-      # The same XDG redirect the sandboxed local runs use. On a GitHub runner the default is
-      # already writable; it is pinned here so a runner and a workstation resolve caches the same
-      # way and a leg is not green on one and ENOENT on the other.
-      XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
-      DSH_CI_STORE_DIR: ${{ runner.temp }}/pnpm-store
+      # ONLY `CI` may live here. `runner` is not an available context in `jobs.<id>.env` (permitted:
+      # github, inputs, matrix, needs, secrets, strategy, vars), and GitHub's answer to a file that
+      # asks anyway is a FAILED RUN WITH NO JOBS, no log, and no annotation — measured 2026-10-08:
+      # four consecutive `conclusion: failure` runs whose entire trace was the UI line "This run
+      # likely failed because of a workflow file issue", and a check-suite with zero check-runs. Two
+      # of those runs were merges into `master`, so the repository had a red hosted gate and nobody
+      # could see why. The two cache paths that want `runner.temp` now live on the step that reads
+      # them, where the context is legal. Cost of learning this by reading the file instead of
+      # spending real runs: one `actionlint .github/workflows/pr-gate.yml`, which named both lines in
+      # under a second — do that before the next edit here, because a hosted YAML error is invisible
+      # from the API and indistinguishable from a broken check.
     steps:
       - name: Checkout
         # fetch-depth 0: `check:artifacts:head` materialises HEAD in a linked worktree and builds
@@ -94,6 +105,24 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 11.7.0
+
+      - name: Build (packages + composition) — the census leg REFUSES without this
+        # Not a convenience step: this is the mistake this repository's own coordinator made first.
+        # A fresh checkout has the committed package artifacts but NO composition build, and the
+        # composition-smoke arm inside `a4p7-merge-gate.test.ts` answers `refused` — "this checkout
+        # was never built", deliberately distinct from `failed` — which the census leg then reports
+        # as a NEW RED identity. The gate was right and the run was invalid; it cost 224 s and a
+        # wrong hypothesis to find out. So the workflow builds before it grades, and a runner cannot
+        # repeat that error. `check:artifacts:head` in the artifacts leg still asks whether HEAD
+        # carries its own build; this step does not launder that question.
+        shell: bash
+        run: |
+          pnpm install --frozen-lockfile --store-dir "$PNPM_STORE_DIR"
+          pnpm run build
+          pnpm build:composition
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
 
       - name: Ensure a YAML parser for the graph leg
         # The graph-parse leg shells to `python3 -c "import yaml"` — the SAME parser as
@@ -134,6 +163,10 @@ jobs:
       # walk the budget it needs, or narrow it); when that lands, take this flag off.
       - name: Gate — every leg, two captures, any skip is a failure
         shell: bash
+        env:
+          # The `runner` context is legal HERE (it is not in `jobs.<id>.env`; see the note up there).
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          DSH_CI_STORE_DIR: ${{ runner.temp }}/pnpm-store
         run: |
           set -o pipefail
           mkdir -p "$XDG_CACHE_HOME"
