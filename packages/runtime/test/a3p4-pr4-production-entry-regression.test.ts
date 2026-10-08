@@ -71,7 +71,12 @@ import type { PermissionOverlayRepositoryPort } from '../permission-governance/p
 import * as hostEntry from '../src/plugin/host.js'
 import { TEAM_PLUGIN_ERROR_CODES } from '../src/plugin/types.js'
 import { createTeamProductionRoot } from '../src/plugin/root.js'
-import { createPermissionAuthorityFacts, type CanonicalKeyContains, type TeamPermissionPlane } from '../src/plugin/permission-plane.js'
+import {
+  createAuthorityCeilingReader,
+  createPermissionAuthorityFacts,
+  type CanonicalKeyContains,
+  type TeamPermissionPlane,
+} from '../src/plugin/permission-plane.js'
 import { PERMISSION_MUTATION_ERROR_CODES } from '../governance/permission-mutation.js'
 import { PERMISSION_LIFECYCLE_ERROR_CODES } from '../permission-lifecycle/types.js'
 import { createS6RemotePorts, createS6RemoteDispatcher } from '../src/plugin/s6-remote.js'
@@ -267,6 +272,45 @@ async function openEntryWorld(): Promise<EntryWorld> {
           maximumEffect: 'allow',
         },
       ],
+    }),
+    // A4-PR7 §7.5 prerequisite 3 — THE CEILING THIS WORLD COULD NEVER READ. Production
+    // wires `host.ts:2703`'s `createAuthorityCeilingReader({ facts })`; this root call
+    // passed the carrier and the static layers but never the reader, so the lane had no
+    // ceiling gate at all and the Leader grant below committed with no Team ceiling
+    // consulted by anything. The reader is wired now, over the SAME two documents this
+    // world already hand-authors above and below (its own comment says the host would
+    // resolve them from the addressed team's bound snapshot; here they are hand-authored
+    // the same way) — so the meet of hard ceiling and carrier is the carrier, and the
+    // leg's `COMMITS` states that a declared ceiling reaches rather than that nobody
+    // asked. Nothing else gains authority: every other cell keeps `no-authority`.
+    permissionAuthorityCeiling: createAuthorityCeilingReader({
+      facts: {
+        blueprintSchemaVersion: () => parseBlueprint(config.blueprintSource).schemaVersion as number,
+        blueprintContentHash: () => `sha256:${'9'.repeat(64)}`,
+        teamHardEnvelope: async () =>
+          ({
+            status: 'declared',
+            document: {
+              rules: [
+                {
+                  operationClass: 'write',
+                  matcher: { kind: 'exact', resource: targetKey },
+                  maximumEffect: 'allow',
+                },
+              ],
+            },
+          }) as never,
+        permissionEnvelope: async () =>
+          ({
+            rules: [
+              {
+                operationClass: 'write',
+                matcher: { kind: 'exact', resource: targetKey },
+                maximumEffect: 'allow',
+              },
+            ],
+          }) as never,
+      },
     }),
     permissionStaticLayers: (_teamSessionId: string, memberInstanceId: string) =>
       memberInstanceId === E1_WORKER
@@ -1792,6 +1836,14 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
       permissionCanonicalize,
       permissionEnvelope: facts.permissionEnvelope,
       permissionStaticLayers: facts.staticLayers,
+      // A4-PR7 §7.5 prerequisite 3 — the ONE line that was missing, and it is the
+      // line production wires (`host.ts:2703`). This world already declared its hard
+      // ceiling in its own blueprint (`hardCarrier` below, covering `openKey`) and
+      // already built the production facts object; with no reader wired the
+      // blueprint's ceiling was never consulted and the grant below committed through
+      // an absent gate. Wiring the reader is what makes `grant commits` mean
+      // "the declared ceiling reaches", not "nobody was asked".
+      permissionAuthorityCeiling: createAuthorityCeilingReader({ facts }),
     })
     void root
     const tools = teamToolsRef.current?.tools as { name: string; execute(a: unknown, e: unknown): Promise<any> }[]

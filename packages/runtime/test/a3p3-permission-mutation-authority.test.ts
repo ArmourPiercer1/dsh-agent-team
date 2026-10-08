@@ -60,6 +60,12 @@ import {
   type GovernancePermissionMutationArgs,
   type PermissionResourceMatcher,
 } from '../governance/index.js'
+/** A4-PR7 §7.5: this suite's world now DECLARES a Team authority ceiling instead of
+ *  leaving the ceiling unaskable. Read the comment in that helper before changing
+ *  anything here — the short version is that the 13 legs this repaired all live on
+ *  the LEADER carrier and the ladder, which the declared ceiling deliberately does
+ *  not touch, and no assertion in this file was edited to accommodate it. */
+import { ceilingOverCells, declaredCeilingReader } from './a4p7-ceiling-world-helpers.js'
 import type { OverrideRecordView, OverrideStorePort, PolicyReader } from '../mutation/index.js'
 import type { PolicyStateTransitionRecord } from '../mutation/types.js'
 import type {
@@ -157,6 +163,39 @@ function keyContainment(root: string, child: string): boolean {
   return child === root || child.startsWith(`${root}/`)
 }
 
+/**
+ * THE AUTHORITY WORLD THIS SUITE'S LEGS PRESUPPOSED BUT NEVER DECLARED (§7.5
+ * prerequisite 3). Cells, not a wildcard — see `ceilingOverCells` for why the
+ * domain algebra has no document-level `any`. Two rules deliberately stay OUT:
+ *   * `OTHER_EXEC_FINGERPRINT` — "an exec expansion is covered ONLY by the
+ *     identical fingerprint (no subtree, no any)" is a refusal leg, and the whole
+ *     point of its refusal is that no document reaches the other fingerprint;
+ *   * `operationClass: 'pwsh'` — the only pwsh drives here are refusal/malformed
+ *     legs ("a DIFFERENT shell tool is a different authority identity", A2C-1), so
+ *     declaring pwsh authority would delete the leg's meaning to buy its green.
+ * The two `subtree` cells appear only in a world that WIRED the containment
+ * predicate, because a subtree-vs-exact question without one is undecidable and
+ * would make every exact cell of that class undetermined. Production always wires
+ * the predicate (`src/plugin/permission-plane.ts:234-251` over `fsContainsKeys`);
+ * the predicate-less worlds here are the fixtures' own choice, and the leg at
+ * :470 exists to pin what that choice means.
+ */
+function CEILING_CELLS(withContainment: boolean): PermissionMutationEnvelope {
+  const cells: { operationClass: string; matcher: PermissionResourceMatcher }[] = [
+    { operationClass: 'write', matcher: exact(FILE_KEY) },
+    { operationClass: 'write', matcher: exact(FILE_KEY_OUTSIDE) },
+    { operationClass: 'read', matcher: exact(FILE_KEY) },
+    { operationClass: 'bash', matcher: fingerprint(EXEC_FINGERPRINT) },
+  ]
+  if (withContainment) {
+    cells.push(
+      { operationClass: 'write', matcher: subtree(SUBTREE_ROOT) },
+      { operationClass: 'write', matcher: subtree(NESTED_SUBTREE_ROOT) },
+    )
+  }
+  return ceilingOverCells(cells)
+}
+
 interface World0 {
   readonly world: World
   readonly service: GovernanceMutationService
@@ -196,6 +235,19 @@ async function openServiceWorld(options: {
       // unknown, which types as EFFECT_CONTEXT_UNAVAILABLE and is pinned in
       // a3p3-revoke-reveal-semantics.test.ts instead).
       staticLayers: () => options.staticFacts ?? { layers: [] },
+      // A4-PR7 §7.5 prerequisite 3 — THE WORLD THIS SUITE NEVER DECLARED. Before
+      // that commit a lane with no `authorityCeiling` port skipped the ceiling gate
+      // entirely, so every seeding `grant` below (`mut-seed-ask`, `mut-seed-allow`,
+      // …) raised authority through an open gate: this suite was establishing its
+      // preconditions by BYPASSING the law, not by passing it. The declared world is
+      // the classes this suite drives, at `allow`, with the SAME carrier document the
+      // lane injects — so the v3 gate cannot say anything on the carrier axis that
+      // Alpha.3's coverage law above did not already say, `EMPTY envelope` legs still
+      // refuse in the Leader path, and the ladder still decides who may rise.
+      authorityCeiling: declaredCeilingReader({
+        hardCeiling: CEILING_CELLS(options.subtreeContains !== undefined),
+        ...(envelope === undefined ? {} : { carrier: () => envelope() }),
+      }),
     },
   }
   return {

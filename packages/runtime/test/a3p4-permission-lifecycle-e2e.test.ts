@@ -58,6 +58,10 @@ import { destroyDir, FileStorageSeam } from '../../testkit/fault-injection/file-
 import { openPermissionOverlayStore } from '../../storage/repositories/permission-overlays.js'
 import type { PermissionOverlaySnapshot } from '../../storage/schema/permission-overlay.js'
 import { createTeamOperationCoordinator } from '../coordination/index.js'
+/** A4-PR7 §7.5: this suite's lane now DECLARES the Team authority ceiling its
+ *  grant/revoke/archive/restore drives presuppose. See `a4p7-ceiling-world-helpers`
+ *  for why the declaration is a cell set, never an `any` wildcard. */
+import { ceilingOverCells, declaredCeilingReader } from './a4p7-ceiling-world-helpers.js'
 import {
   PERMISSION_MUTATION_ERROR_CODES,
   createGovernanceMutationService,
@@ -270,6 +274,35 @@ async function openLaneWorld(
       ...(options.envelope === undefined
         ? {}
         : { permissionEnvelope: () => options.envelope as PermissionMutationEnvelope }),
+      // A4-PR7 §7.5 prerequisite 3 — THE AUTHORITY WORLD THIS SUITE NEVER HAD. Every
+      // leg here opens by GRANTING authority (a write/read/exec allow) and then
+      // exercises a lifecycle law over it (revoke, archive, restore, inheritance);
+      // before that commit the grant sailed through a ceiling gate that had no reader
+      // to consult, so the lifecycle law was being tested on authority the fixture
+      // never established. The declared world covers this suite's own cells and stops
+      // there: no `subtree` cell for the shell class (the leg at :658 exists to pin
+      // that the kernel refuses one), and no `subtree` cells at all in a world whose
+      // predicate is absent or faulting, where a subtree-vs-exact question is
+      // undecidable and would un-decide every exact cell of the class.
+      authorityCeiling: declaredCeilingReader({
+        hardCeiling: ceilingOverCells([
+          { operationClass: 'write', matcher: { kind: 'exact', resource: KEY_A } },
+          { operationClass: 'write', matcher: { kind: 'exact', resource: KEY_B } },
+          { operationClass: 'write', matcher: { kind: 'exact', resource: KEY_OUTSIDE } },
+          { operationClass: 'read', matcher: { kind: 'exact', resource: KEY_A } },
+          { operationClass: 'bash', matcher: { kind: 'fingerprint', resource: FP_A } },
+          { operationClass: 'bash', matcher: { kind: 'fingerprint', resource: FP_B } },
+          ...(options.predicate === undefined || options.predicate === true
+            ? [
+                { operationClass: 'write', matcher: { kind: 'subtree' as const, resource: ROOT_DIR } },
+                { operationClass: 'read', matcher: { kind: 'subtree' as const, resource: ROOT_DIR } },
+              ]
+            : []),
+        ]),
+        ...(options.envelope === undefined
+          ? {}
+          : { carrier: () => options.envelope as PermissionMutationEnvelope }),
+      }),
       ...(options.predicate === 'throws'
         ? createPermissionGovernanceLane({
             overlay,

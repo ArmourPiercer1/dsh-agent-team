@@ -2040,6 +2040,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A474FAILCLOSED: readonly string[] = [
       'packages/runtime/test/a4p7-ceiling-no-port-refusal.test.ts',
       'packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts',
+      // The §7.5 repair seam the five Alpha.3 fixtures now import. It joins the
+      // list because a new scannable file must be NAMED by the lane that added it,
+      // never absorbed into a total that nobody re-derived: the total stays
+      // `983 + Σ named lists`, and the referee stays external to this file.
+      'packages/runtime/test/a4p7-ceiling-world-helpers.ts',
     ]
     expect(scanResult.filesScanned).toBe(
       983 +
