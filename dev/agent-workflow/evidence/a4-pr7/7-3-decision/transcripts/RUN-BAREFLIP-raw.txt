@@ -1,0 +1,1452 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision
+
+ ✓ packages/client/test/ledger-adapter.test.ts (32 tests) 9ms
+ ✓ packages/runtime/test/a4p6-governance-warning-service.test.ts (16 tests) 10ms
+ ✓ packages/client/test/pr56-control-subject-payload.test.ts (42 tests) 8ms
+ ✓ packages/runtime/test/shell-result-observer.test.ts (14 tests) 12ms
+ ✓ packages/runtime/test/artifact-read-digest-fact.test.ts (14 tests) 12ms
+ ✓ packages/contracts/test/leader-instance-record.test.ts (13 tests) 6ms
+ ✓ packages/runtime/test/artifact-read-authority.test.ts (34 tests) 17ms
+ ✓ packages/contracts/test/negative.test.ts (21 tests) 7ms
+ ✓ packages/legacy/test/p7t7-legacy-read.test.ts (28 tests) 12ms
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts (8 tests | 8 failed) 22ms
+     × is deterministic across parses 9ms
+     × is independent of YAML key order (canonical JSON sorts keys) 1ms
+     × binds exactly to the canonical hashable projection 1ms
+     × changes when a requirement subject changes 1ms
+     × changes when a requirement flips complete false -> true 5ms
+     × changes when a requirement is removed entirely 2ms
+     × a v1 document has no `teamRequirements` and no template `requirements` in its projection 1ms
+     × a v2 document with NO v2 fields projects identically to its v1 twin except `schemaVersion` 1ms
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts (4 tests | 4 failed) 15ms
+     × a v1 document (persona string + flat requirements) parses 10ms
+     × the v1 content hash is stable across parses (byte-identical resume) 1ms
+     × the v1 projection carries no v2 key (the v2 structured-requirement surface is absent on v1) 1ms
+     × a v2 `teamRequirements` field is still rejected on a v1 document (frozen closed field sets) 2ms
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts (22 tests | 11 failed) 36ms
+     × imports the valid fixture directory into a complete vNext TeamBlueprint 13ms
+     × re-importing identical entries yields the same contentHash (deterministic snapshot) 5ms
+     × duplicate legacy id: last file wins, with a warning 2ms
+     × multiple leaders: the last discovered leader survives, with a warning 1ms
+     × G1 model-only: a def with model and NO provider maps to the bare model (modelPreference "foo"), no extras provider 1ms
+     × G2 provider-only: a def with provider and NO model maps to NO modelPreference, and the provider stays in extras 1ms
+     ✓ rejects an invalid legacy role with MALFORMED_DTO (invalid-role) 0ms
+     ✓ rejects a directory with no leader role (no-leader) 0ms
+     ✓ rejects a file without a frontmatter delimiter (frontmatter-missing) 0ms
+     ✓ rejects unclosed frontmatter (frontmatter-unclosed) 0ms
+     ✓ rejects non-mapping frontmatter (frontmatter-not-mapping) 0ms
+     ✓ rejects invalid YAML (yaml-invalid) 1ms
+     ✓ rejects an unsupported schemaVersion (schema-version) 0ms
+     ✓ rejects an empty persona body (empty-persona, vNext hardening) 0ms
+     × rejects a legacy id that is not a vNext template slug (INVALID_TEMPLATE_ID) 1ms
+     ✓ rejects an empty entry list (no-entries) 0ms
+     × re-importing changed entries yields a new contentHash; the first snapshot is unchanged 3ms
+     × fs-level: mutating the directory after import leaves the snapshot intact 2ms
+     ✓ adapter sources carry no runtime authority vocabulary (source scan) 1ms
+     ✓ the shipped core exports only the one-time import function (surface scan) 0ms
+     × importing never observes or mutates existing team state 1ms
+     × the produced blueprint is plain, deeply-frozen data (no host references) 1ms
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts (16 tests | 16 failed) 28ms
+     × parses team + leader + member structured requirements 10ms
+     × normalizes an omitted `complete` to `false` (the ordinary ack-able case) 1ms
+     × accepts a persona requirement (the §E.3 required-persona carrier) 2ms
+     × rejects a persona requirement whose subject is outside the closed required-persona-kind set (additive v2 rule, §E.3) 2ms
+     × rejects an unknown persona subject slug (additive v2 rule, §E.3) 3ms
+     × accepts an explicitly empty teamRequirements list (declared, not omitted) 1ms
+     × leaves a v2 document WITHOUT v2 fields as `undefined` (omitted, not present-but-empty) 1ms
+     × rejects `teamRequirements` on a v1 document (unknown top-level field) 1ms
+     × rejects `requirements` on a v1 template (unknown template field) 1ms
+     × rejects a type outside the closed §27.1 six-set 1ms
+     × rejects a duplicate requirementId within the same level 1ms
+     × rejects empty `subjects` 1ms
+     × rejects a non-boolean `complete` 0ms
+     × rejects a missing `requirementId` 1ms
+     × rejects an unknown field on a v2 requirement 1ms
+     × the v2Source helper yields a parseable document 1ms
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts (20 tests | 4 failed) 12ms
+     × V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge) 6ms
+     ✓ V2 a v3 document carrying both authority documents parses 0ms
+     ✓ V3 the v3 document keeps the DECLARED AST shape: a file matcher carries `path`, never a canonical `resource` (ADR A2-3) 0ms
+     ✓ V4 v3 REQUIRES teamHardEnvelope — absence is a typed refusal, never an implicit wide grant (spec §3.2) 0ms
+     × V5 v3 REQUIRES permissionMutationEnvelope (ADR A1-19: a new hard requirement at v3 only) 1ms
+     ✓ V6 `rules: []` is a legal declaration in either document and survives validation (spec §3.4) 0ms
+     ✓ V7 file classes accept exact AND subtree; the shell class accepts fingerprint (spec §3.3) 0ms
+     ✓ V8 a shell-class rule with a file matcher is refused, never silently inert 0ms
+     ✓ V9 a file-class rule with a fingerprint matcher is refused (no `any`, no cross-class pairing) 0ms
+     ✓ V10 the parse entry has NO provider surface — arity 1, source in, document out (ADR A2-3) 0ms
+     ✓ V11 unknown rule field, out-of-vocabulary effect, and a duplicate pair all fail closed 0ms
+     ✓ V12 the v3 top-level closed set is EXACTLY the v2 set plus teamHardEnvelope 0ms
+     × V13 a v2 document must STILL reject `teamHardEnvelope` (the version→closed-set mapping is version-gated) 1ms
+     ✓ V14 a v1 document rejects it too (the v1 validator stays frozen) 0ms
+     × V15 v1/v2 still parse during the temporary bridge (ADR A2-4) 0ms
+     ✓ V16 GOLDEN: the v1 and v2 content hashes are BYTE-IDENTICAL to the pre-v3 literals (ADR A2-11) 0ms
+     ✓ V17 the v1/v2 hashable projections carry NO teamHardEnvelope key (key-omitted, not null) 0ms
+     ✓ V18 the v3 hash BINDS teamHardEnvelope: one bit of the hard envelope moves the hash 0ms
+     ✓ V19 the v3 projection carries teamHardEnvelope with the DECLARED AST shape (committed JSON) 0ms
+     ✓ V20 the v3 hash is still just deriveContentHash over the projection (no new hash mechanism) 0ms
+ ✓ packages/storage/test/p4-01-schema-meta.test.ts (11 tests) 7ms
+ ❯ packages/testkit/test/t6-9-negative-matrix.test.ts (0 test)
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts (0 test)
+ ✓ packages/runtime/test/p8s4b-model-consumption.test.ts (17 tests) 6ms
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (25 tests) 8ms
+ ✓ packages/runtime/test/restart-effective-policy.test.ts (2 tests) 3ms
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts (0 test)
+ ✓ packages/runtime/test/boundary-committed-applied.test.ts (3 tests) 5ms
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts (1 test | 1 failed) 22ms
+     × L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal 20ms
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts (5 tests | 5 failed) 40ms
+     × premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case) 17ms
+     × control: with the worker ENABLED the delegate is admitted (healthy world, empty worker) 7ms
+     × the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set 6ms
+     × the same disable BLOCKS the follow-up to the worker (same normalWork class, same scopeRefs) 5ms
+     × re-enabling resumes the delegate through the SAME checks (the block did not key on requirements) 4ms
+ ✓ packages/runtime/test/a2c3-inspect-operation-permission.test.ts (14 tests) 6ms
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts (7 tests | 7 failed) 47ms
+     × W2: the wiring resolves [team, template:leader] for the fixture blueprint 18ms
+     × W3: the refs exclude the (unrelated) worker template scope 6ms
+     × L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch 5ms
+     × L2: a Leader OPTIONAL requirement down does not block the normal turn (auto-degraded) 5ms
+     × L4: an unrelated Member (worker) required requirement down does not block the Leader 5ms
+     × L5: a Team-level REQUIRED requirement down blocks the Leader normal turn 4ms
+     × L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority) 3ms
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts (5 tests | 5 failed) 42ms
+     × premise: the leader template declares NO requirements (its scope has no verdict inputs) 19ms
+     × IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work) 5ms
+     × IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way 5ms
+     × IL3: with the leader disabled the legitimate control/recovery lanes still function 6ms
+     × IL4: re-enable RESUMES the initial work through the same checks (allowed again) 6ms
+ ✓ packages/runtime/test/model-inspect-config.test.ts (7 tests) 5ms
+ ❯ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (0 test)
+ ✓ packages/runtime/test/control-guard-leader.test.ts (13 tests) 4ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts (12 tests) 11ms
+ ✓ packages/runtime/test/p8s4b-cell-provenance.test.ts (10 tests) 5ms
+ ❯ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (0 test)
+ ❯ packages/runtime/test/a3p5-glue-permission-receipt.test.ts (11 tests | 10 failed) 1019ms
+     × positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived 1004ms
+     × positive receive: a running non-derived seeded member receives exactly one inject through the real binding, never steer or followup 2ms
+     × positive restored member: durable childSessionId different from any derivation receives; the receipt itself resumes nothing 1ms
+     × REAL v2 leader row (validator-gated, no child/lifecycle keys): the leader pair resolves the root handle at the team-session key 3ms
+     ✓ leader leg fail-closed: no durable TeamSession row, or a cold (never-booted) root handle, reads undefined with zero side effects 1ms
+     × ambiguous binding (real list order, alpha-first): BOTH claimants are refused outright — no first-match owner, zero side effects 1ms
+     × ambiguous binding (swapped order): refusal is order-independent — the swap changes nothing 1ms
+     × no over-refusal: the SAME rows with the collision removed resolve normally (exactly-one binding still delivers) 2ms
+     × stale handle leg: a re-pointed durable row reads undefined for the old live child and the new key stays cold (no adopt, no create) 1ms
+     × ghost leg: a pair with no durable row reads undefined with zero side effects 1ms
+     × regression: derived-id members of the ordinary runtime case resolve through the same durable law unchanged 1ms
+ ✓ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (12 tests) 66ms
+ ✓ packages/runtime/test/model-blueprint-initial-routing.test.ts (23 tests) 7ms
+ ❯ packages/runtime/test/multi-mcp-wiring.test.ts (0 test)
+ ✓ packages/runtime/test/f15-mcp-live-loss.test.ts (10 tests) 15ms
+ ❯ packages/runtime/test/t4a-capability-wiring.test.ts (0 test)
+ ✓ packages/runtime/test/prf-inspect-same-source.test.ts (8 tests) 4ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (32 tests) 9ms
+ ❯ packages/runtime/test/t12a-b3-external-deny.test.ts (0 test)
+ ✓ packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts (7 tests) 4ms
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts (0 test)
+stderr | packages/runtime/test/p8s6-pagination.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-principal.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] DEGRADED boot for row session-std-r3: the bootstrap Blueprint STD-3-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated (code BLUEPRINT_MIGRATION_REQUIRED, anchor STD-3-BP@1 is schema v2 and is LISTED in the catalog with migrationState=migration-required). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only).
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] DEGRADED boot for row session-spfc-fat1: the bootstrap Blueprint SPFC-1-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated (code BLUEPRINT_MIGRATION_REQUIRED, anchor SPFC-1-BP@1 is schema v2 and is LISTED in the catalog with migrationState=migration-required). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only).
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] DEGRADED boot for row session-scp-r5: the bootstrap Blueprint SCP-5-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated (code BLUEPRINT_MIGRATION_REQUIRED, anchor SCP-5-BP@1 is schema v2 and is LISTED in the catalog with migrationState=migration-required). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only).
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the bootstrap Blueprint STD-3-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated
+    at requireAnchor (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:946:13)
+    at boundSnapshot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:1155:44)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:4010:22)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the bootstrap Blueprint SCP-5-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated
+    at requireAnchor (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:946:13)
+    at boundSnapshot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:1155:44)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:4010:22)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the bootstrap Blueprint SPFC-1-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated
+    at requireAnchor (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:946:13)
+    at boundSnapshot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:1155:44)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:4010:22)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/host.ts:2934:5)
+
+ ❯ packages/runtime/test/startup-consent-production.test.ts (0 test)
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ❯ packages/runtime/test/startup-template-disable-production.test.ts (0 test)
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] DEGRADED boot for row session-spfc-fix1: the bootstrap Blueprint SPFC-2-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated (code BLUEPRINT_MIGRATION_REQUIRED, anchor SPFC-2-BP@1 is schema v2 and is LISTED in the catalog with migrationState=migration-required). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only).
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the bootstrap Blueprint SPFC-2-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated
+    at requireAnchor (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:946:13)
+    at boundSnapshot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:1155:44)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:4010:22)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/host.ts:2934:5)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] DEGRADED boot for row session-spfc-con1: the bootstrap Blueprint SPFC-4-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated (code BLUEPRINT_MIGRATION_REQUIRED, anchor SPFC-4-BP@1 is schema v2 and is LISTED in the catalog with migrationState=migration-required). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only).
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] DEGRADED boot for row session-sa-r6: the bootstrap Blueprint SA-6-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated (code BLUEPRINT_MIGRATION_REQUIRED, anchor SA-6-BP@1 is schema v2 and is LISTED in the catalog with migrationState=migration-required). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only).
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the bootstrap Blueprint SPFC-4-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated
+    at requireAnchor (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:946:13)
+    at boundSnapshot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:1155:44)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:4010:22)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/host.ts:2934:5)
+
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts (6 tests | 3 failed) 6ms
+     × the boot create rejects with the typed creation-preflight refusal (outcome fatal) 3ms
+     ✓ zero durable effect: no TeamSession record, no registry row, no fact row 1ms
+     × the boot create rejects typed with the blocked template scope + the down requirement 0ms
+     ✓ zero durable effect: the refused bind wrote nothing under the root 0ms
+     × the boot create rejects typed with the consent-required requirement id 0ms
+     ✓ zero durable effect: the refused bind wrote nothing under the root 0ms
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the bootstrap Blueprint SA-6-BP@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated
+    at requireAnchor (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:946:13)
+    at boundSnapshot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:1155:44)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:4010:22)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/host.ts:2934:5)
+
+ ❯ packages/runtime/test/startup-all-templates-real-authority.test.ts (0 test)
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts > p8s6-remote-commands teardown > the C4 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-remote-commands.test.ts (8 tests) 4ms
+stderr | packages/runtime/test/p8s6-pagination.test.ts > p8s6-pagination teardown > the C6 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-pagination.test.ts (9 tests) 7ms
+stderr | packages/runtime/test/p8s6-principal.test.ts > p8s6-principal teardown > the C3 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-principal.test.ts (20 tests) 4ms
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] DEGRADED boot for row session-mtm-a: the bootstrap Blueprint mtm.a@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated (code BLUEPRINT_MIGRATION_REQUIRED, anchor mtm.a@1 is schema v2 and is LISTED in the catalog with migrationState=migration-required). The host is up; every Team start or cold resume bound to this anchor is refused with that code, and NO acknowledgement clears it (governance acknowledgement gates the v3 envelope-consistency leg only).
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the bootstrap Blueprint mtm.a@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated
+    at requireAnchor (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:946:13)
+    at boundSnapshot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:1155:44)
+    at Object.boot (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/root.ts:4010:22)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/host.ts:2934:5)
+
+ ❯ packages/runtime/test/mcp-target-materialization.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 13 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/t6-9-negative-matrix.test.ts [ packages/testkit/test/t6-9-negative-matrix.test.ts ]
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/testkit/test/t6-9-negative-matrix.test.ts:92:45
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/87]⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts [ packages/runtime/test/consent-scope-hash-binding.test.ts ]
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:250:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/87]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts [ packages/runtime/test/mcp-target-materialization-unit.test.ts ]
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:151:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/87]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization.test.ts [ packages/runtime/test/mcp-target-materialization.test.ts ]
+TeamPluginError: the bootstrap Blueprint mtm.a@1 is a schema v2 document; this build runs [3]. The host boots and the catalog lists it with migrationState=migration-required; no Team bound to it can start until it is migrated
+ ❯ requireAnchor packages/runtime/src/plugin/root.ts:946:13
+    944|   const requireAnchor = (): TeamBlueprint => {
+    945|     if (anchorState.status === 'refused') {
+    946|       throw new TeamPluginError(anchorState.code, anchorState.headline…
+       |             ^
+    947|         rootSessionId: rootSid,
+    948|         reason: 'bootstrap-anchor-refused',
+ ❯ boundSnapshot packages/runtime/src/plugin/root.ts:1155:44
+ ❯ Object.boot packages/runtime/src/plugin/root.ts:4010:22
+ ❯ bootstrap packages/runtime/src/plugin/host.ts:2934:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/87]⎯
+
+ FAIL  packages/runtime/test/multi-mcp-wiring.test.ts [ packages/runtime/test/multi-mcp-wiring.test.ts ]
+ FAIL  packages/runtime/test/t12a-b3-external-deny.test.ts [ packages/runtime/test/t12a-b3-external-deny.test.ts ]
+ FAIL  packages/runtime/test/t12a-h1-nullable-mcp.test.ts [ packages/runtime/test/t12a-h1-nullable-mcp.test.ts ]
+ FAIL  packages/runtime/test/t4a-capability-wiring.test.ts [ packages/runtime/test/t4a-capability-wiring.test.ts ]
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/t12a-live-bridge.mjs:1454:18
+ ❯ getBoundBlueprint packages/runtime/src/plugin/live/agent-bindings.mjs:1807:19
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:1847:23
+ ❯ resolveConsumptionViews packages/runtime/src/plugin/live/agent-bindings.mjs:1210:27
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1992:76
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:998:20
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:870:60
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/87]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts [ packages/runtime/test/persona-kind-provider-preflight.test.ts ]
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:231:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/87]⎯
+
+ FAIL  packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts [ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts ]
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts:370:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/87]⎯
+
+ FAIL  packages/runtime/test/startup-all-templates-real-authority.test.ts [ packages/runtime/test/startup-all-templates-real-authority.test.ts ]
+AssertionError: expected TeamPluginError: the bootstrap Blueprint … { …(2) } to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-all-templates-real-authority.test.ts:274:17
+    272| /** The typed creation-preflight refusal (or throw the test). */
+    273| function preflightRefusal(error: unknown): Record<string, unknown> {
+    274|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    275|   const typed = error as TeamRuntimeError
+    276|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-all-templates-real-authority.test.ts:307:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/87]⎯
+
+ FAIL  packages/runtime/test/startup-consent-production.test.ts [ packages/runtime/test/startup-consent-production.test.ts ]
+AssertionError: expected TeamPluginError: the bootstrap Blueprint … { …(2) } to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-consent-production.test.ts:304:17
+    302| /** The typed creation-preflight refusal (or throw the test). */
+    303| function preflightRefusal(error: unknown): Record<string, unknown> {
+    304|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    305|   const typed = error as TeamRuntimeError
+    306|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-consent-production.test.ts:386:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/87]⎯
+
+ FAIL  packages/runtime/test/startup-template-disable-production.test.ts [ packages/runtime/test/startup-template-disable-production.test.ts ]
+AssertionError: expected TeamPluginError: the bootstrap Blueprint … { …(2) } to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-template-disable-production.test.ts:281:17
+    279| /** The typed creation-preflight refusal (or throw the test). */
+    280| function preflightRefusal(error: unknown): Record<string, unknown> {
+    281|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    282|   const typed = error as TeamRuntimeError
+    283|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-template-disable-production.test.ts:319:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/87]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 74 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge)
+AssertionError: expected [ 3 ] to deeply equal [ 1, 2, 3 ]
+
+- Expected
++ Received
+
+  [
+-   1,
+-   2,
+    3,
+  ]
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:271:56
+    269| describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 u…
+    270|   it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (AD…
+    271|     expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, …
+       |                                                        ^
+    272|     // The REFUSAL carries the set, DERIVED from this constant — which…
+    273|     // `testdata/fixtures.ts` means when it moves the witness to v4 an…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/87]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V5 v3 REQUIRES permissionMutationEnvelope (ADR A1-19: a new hard requirement at v3 only)
+AssertionError: unsupported blueprint schema version 2; this build supports [3]: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:326:34
+    324|     // And the requirement is v3-only: the identical v2 document (no a…
+    325|     // documents at all) is the pre-v3 shape and must still parse.
+    326|     expect(v2.ok, failureOf(v2)).toBe(true)
+       |                                  ^
+    327|   })
+    328|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/87]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V13 a v2 document must STILL reject `teamHardEnvelope` (the version→closed-set mapping is version-gated)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:403:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/87]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V15 v1/v2 still parse during the temporary bridge (ADR A2-4)
+AssertionError: unsupported blueprint schema version 1; this build supports [3]: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:414:34
+    412|
+    413|   it('V15 v1/v2 still parse during the temporary bridge (ADR A2-4)', (…
+    414|     expect(v1.ok, failureOf(v1)).toBe(true)
+       |                                  ^
+    415|     expect(v2.ok, failureOf(v2)).toBe(true)
+    416|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/87]⎯
+
+ FAIL  packages/domain/test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > a v1 document (persona string + flat requirements) parses
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts:69:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/87]⎯
+
+ FAIL  packages/domain/test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > the v1 content hash is stable across parses (byte-identical resume)
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts:77:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/87]⎯
+
+ FAIL  packages/domain/test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > the v1 projection carries no v2 key (the v2 structured-requirement surface is absent on v1)
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts:84:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/87]⎯
+
+ FAIL  packages/domain/test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > a v2 `teamRequirements` field is still rejected on a v1 document (frozen closed field sets)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts:110:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: determinism and canonical binding > is deterministic across parses
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:108:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: determinism and canonical binding > is independent of YAML key order (canonical JSON sorts keys)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:114:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: determinism and canonical binding > binds exactly to the canonical hashable projection
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:120:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the structured requirements participate > changes when a requirement subject changes
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:127:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the structured requirements participate > changes when a requirement flips complete false -> true
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:136:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the structured requirements participate > changes when a requirement is removed entirely
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:145:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability) > a v1 document has no `teamRequirements` and no template `requirements` in its projection
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:167:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability) > a v2 document with NO v2 fields projects identically to its v1 twin except `schemaVersion`
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:215:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > parses team + leader + member structured requirements
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:102:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > normalizes an omitted `complete` to `false` (the ordinary ack-able case)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:139:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > accepts a persona requirement (the §E.3 required-persona carrier)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:167:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > rejects a persona requirement whose subject is outside the closed required-persona-kind set (additive v2 rule, §E.3)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:206:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > rejects an unknown persona subject slug (additive v2 rule, §E.3)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:230:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > accepts an explicitly empty teamRequirements list (declared, not omitted)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:234:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > leaves a v2 document WITHOUT v2 fields as `undefined` (omitted, not present-but-empty)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:259:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1) > rejects `teamRequirements` on a v1 document (unknown top-level field)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:309:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1) > rejects `requirements` on a v1 template (unknown template field)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:335:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects a type outside the closed §27.1 six-set
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:368:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects a duplicate requirementId within the same level
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:379:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects empty `subjects`
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:397:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects a non-boolean `complete`
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:406:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects a missing `requirementId`
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:417:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects an unknown field on a v2 requirement
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:425:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/87]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: helper sanity > the v2Source helper yields a parseable document
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:445:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > imports the valid fixture directory into a complete vNext TeamBlueprint
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:132:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > re-importing identical entries yields the same contentHash (deterministic snapshot)
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:205:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > duplicate legacy id: last file wins, with a warning
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:212:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > multiple leaders: the last discovered leader survives, with a warning
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:232:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > G1 model-only: a def with model and NO provider maps to the bare model (modelPreference "foo"), no extras provider
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:257:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > G2 provider-only: a def with provider and NO model maps to NO modelPreference, and the provider stays in extras
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:284:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: invalid import > rejects a legacy id that is not a vNext template slug (INVALID_TEMPLATE_ID)
+Error: expected INVALID_TEMPLATE_ID but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/legacy/test/p7t6-teammates-adapter.test.ts:58:34
+     56|     throw new Error(`expected ${code} but got a non-contract error: ${…
+     57|   }
+     58|   if (threw.code !== code) throw new Error(`expected ${code} but got $…
+       |                                  ^
+     59|   return threw
+     60| }
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:409:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: source changes after snapshot > re-importing changed entries yields a new contentHash; the first snapshot is unchanged
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:435:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: source changes after snapshot > fs-level: mutating the directory after import leaves the snapshot intact
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:470:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: no runtime authority (negative) > importing never observes or mutates existing team state
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:554:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/87]⎯
+
+ FAIL  packages/legacy/test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: no runtime authority (negative) > the produced blueprint is plain, deeply-frozen data (no host references)
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ importLegacyTeammates packages/legacy/teammates-adapter.ts:552:16
+ ❯ packages/legacy/test/p7t6-teammates-adapter.test.ts:564:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/87]⎯
+
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > positive receive: a running non-derived seeded member receives exactly one inject through the real binding, never steer or followup
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > positive restored member: durable childSessionId different from any derivation receives; the receipt itself resumes nothing
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > REAL v2 leader row (validator-gated, no child/lifecycle keys): the leader pair resolves the root handle at the team-session key
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > ambiguous binding (real list order, alpha-first): BOTH claimants are refused outright — no first-match owner, zero side effects
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > ambiguous binding (swapped order): refusal is order-independent — the swap changes nothing
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > no over-refusal: the SAME rows with the collision removed resolve normally (exactly-one binding still delivers)
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > stale handle leg: a re-pointed durable row reads undefined for the old live child and the new key stays cold (no adopt, no create)
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > ghost leg: a pair with no durable row reads undefined with zero side effects
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > regression: derived-id members of the ordinary runtime case resolve through the same durable law unchanged
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/t12a-live-bridge.mjs:1454:18
+ ❯ getBoundBlueprint packages/runtime/src/plugin/live/agent-bindings.mjs:1807:19
+ ❯ locateTemplate packages/runtime/src/plugin/live/agent-bindings.mjs:1847:23
+ ❯ resolveConsumptionViews packages/runtime/src/plugin/live/agent-bindings.mjs:1210:27
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1992:76
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:998:20
+ ❯ makeHandle packages/runtime/test/t12a-live-bridge.mjs:870:60
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/87]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > premise: the leader template declares NO requirements (its scope has no verdict inputs)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:284:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[55/87]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:303:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[56/87]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:340:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[57/87]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL3: with the leader disabled the legitimate control/recovery lanes still function
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:375:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[58/87]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL4: re-enable RESUMES the initial work through the same checks (allowed again)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:423:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[59/87]⎯
+
+ FAIL  packages/runtime/test/leader-recovery-next-boundary-exit.test.ts > W3-C leader-recovery-next-boundary-exit: the F8 leader recovery exit > L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:216:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[60/87]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > W2: the wiring resolves [team, template:leader] for the fixture blueprint
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:259:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[61/87]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > W3: the refs exclude the (unrelated) worker template scope
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:265:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[62/87]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:275:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[63/87]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L2: a Leader OPTIONAL requirement down does not block the normal turn (auto-degraded)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:312:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[64/87]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L4: an unrelated Member (worker) required requirement down does not block the Leader
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:339:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[65/87]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L5: a Team-level REQUIRED requirement down blocks the Leader normal turn
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:366:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[66/87]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:400:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[67/87]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S1 — Team-level required down: the creation preflight refuses typed (guide §6.3.1) > the boot create rejects with the typed creation-preflight refusal (outcome fatal)
+AssertionError: expected TeamPluginError: the bootstrap Blueprint … { …(2) } to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-preflight-production-create.test.ts:307:17
+    305| /** The typed creation-preflight refusal (or throw the test). */
+    306| function preflightRefusal(error: unknown): { code: string; details: Re…
+    307|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    308|   const typed = error as TeamRuntimeError
+    309|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:400:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[68/87]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S2 — MemberTemplate required down (no instance): `fixOrDisable` (guide §6.3.2) > the boot create rejects typed with the blocked template scope + the down requirement
+AssertionError: expected TeamPluginError: the bootstrap Blueprint … { …(2) } to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-preflight-production-create.test.ts:307:17
+    305| /** The typed creation-preflight refusal (or throw the test). */
+    306| function preflightRefusal(error: unknown): { code: string; details: Re…
+    307|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    308|   const typed = error as TeamRuntimeError
+    309|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:416:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[69/87]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S4 — optional down without consent: `consentRequired` (guide §6.3.4) > the boot create rejects typed with the consent-required requirement id
+AssertionError: expected TeamPluginError: the bootstrap Blueprint … { …(2) } to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-preflight-production-create.test.ts:307:17
+    305| /** The typed creation-preflight refusal (or throw the test). */
+    306| function preflightRefusal(error: unknown): { code: string; details: Re…
+    307|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    308|   const typed = error as TeamRuntimeError
+    309|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:434:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[70/87]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:272:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[71/87]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > control: with the worker ENABLED the delegate is admitted (healthy world, empty worker)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:284:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[72/87]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:291:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[73/87]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > the same disable BLOCKS the follow-up to the worker (same normalWork class, same scopeRefs)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:318:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[74/87]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > re-enabling resumes the delegate through the SAME checks (the block did not key on requirements)
+TeamContractError: unsupported blueprint schema version 2; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:355:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[75/87]⎯
+
+
+ Test Files  24 failed | 28 passed (52)
+      Tests  74 failed | 488 passed (562)
+   Start at  08:25:43
+   Duration  2.78s (transform 36.04s, setup 0ms, import 41.56s, tests 1.56s, environment 5ms)
+
+vitest_exit=1

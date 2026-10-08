@@ -1,0 +1,74 @@
+G1 model-only: a def with model and NO provider maps to the bare model (modelPreference "foo"), no extras provider
+G2 provider-only: a def with provider and NO model maps to NO modelPreference, and the provider stays in extras
+IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work)
+IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way
+IL3: with the leader disabled the legitimate control/recovery lanes still function
+IL4: re-enable RESUMES the initial work through the same checks (allowed again)
+L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch
+L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority)
+L2: a Leader OPTIONAL requirement down does not block the normal turn (auto-degraded)
+L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal
+L4: an unrelated Member (worker) required requirement down does not block the Leader
+L5: a Team-level REQUIRED requirement down blocks the Leader normal turn
+REAL v2 leader row (validator-gated, no child/lifecycle keys): the leader pair resolves the root handle at the team-session key
+V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge)
+V13 a v2 document must STILL reject `teamHardEnvelope` (the version→closed-set mapping is version-gated)
+V15 v1/v2 still parse during the temporary bridge (ADR A2-4)
+V5 v3 REQUIRES permissionMutationEnvelope (ADR A1-19: a new hard requirement at v3 only)
+W2: the wiring resolves [team, template:leader] for the fixture blueprint
+W3: the refs exclude the (unrelated) worker template scope
+a v1 document (persona string + flat requirements) parses
+a v1 document has no `teamRequirements` and no template `requirements` in its projection
+a v2 `teamRequirements` field is still rejected on a v1 document (frozen closed field sets)
+a v2 document with NO v2 fields projects identically to its v1 twin except `schemaVersion`
+accepts a persona requirement (the §E.3 required-persona carrier)
+accepts an explicitly empty teamRequirements list (declared, not omitted)
+ambiguous binding (real list order, alpha-first): BOTH claimants are refused outright — no first-match owner, zero side effects
+ambiguous binding (swapped order): refusal is order-independent — the swap changes nothing
+binds exactly to the canonical hashable projection
+changes when a requirement flips complete false -> true
+changes when a requirement is removed entirely
+changes when a requirement subject changes
+control: with the worker ENABLED the delegate is admitted (healthy world, empty worker)
+duplicate legacy id: last file wins, with a warning
+fs-level: mutating the directory after import leaves the snapshot intact
+ghost leg: a pair with no durable row reads undefined with zero side effects
+importing never observes or mutates existing team state
+imports the valid fixture directory into a complete vNext TeamBlueprint
+is deterministic across parses
+is independent of YAML key order (canonical JSON sorts keys)
+leaves a v2 document WITHOUT v2 fields as `undefined` (omitted, not present-but-empty)
+multiple leaders: the last discovered leader survives, with a warning
+no over-refusal: the SAME rows with the collision removed resolve normally (exactly-one binding still delivers)
+normalizes an omitted `complete` to `false` (the ordinary ack-able case)
+parses team + leader + member structured requirements
+positive receive: a running non-derived seeded member receives exactly one inject through the real binding, never steer or followup
+positive restored member: durable childSessionId different from any derivation receives; the receipt itself resumes nothing
+positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived
+premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case)
+premise: the leader template declares NO requirements (its scope has no verdict inputs)
+re-enabling resumes the delegate through the SAME checks (the block did not key on requirements)
+re-importing changed entries yields a new contentHash; the first snapshot is unchanged
+re-importing identical entries yields the same contentHash (deterministic snapshot)
+regression: derived-id members of the ordinary runtime case resolve through the same durable law unchanged
+rejects `requirements` on a v1 template (unknown template field)
+rejects `teamRequirements` on a v1 document (unknown top-level field)
+rejects a duplicate requirementId within the same level
+rejects a legacy id that is not a vNext template slug (INVALID_TEMPLATE_ID)
+rejects a missing `requirementId`
+rejects a non-boolean `complete`
+rejects a persona requirement whose subject is outside the closed required-persona-kind set (additive v2 rule, §E.3)
+rejects a type outside the closed §27.1 six-set
+rejects an unknown field on a v2 requirement
+rejects an unknown persona subject slug (additive v2 rule, §E.3)
+rejects empty `subjects`
+stale handle leg: a re-pointed durable row reads undefined for the old live child and the new key stays cold (no adopt, no create)
+the boot create rejects typed with the blocked template scope + the down requirement
+the boot create rejects typed with the consent-required requirement id
+the boot create rejects with the typed creation-preflight refusal (outcome fatal)
+the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set
+the produced blueprint is plain, deeply-frozen data (no host references)
+the same disable BLOCKS the follow-up to the worker (same normalWork class, same scopeRefs)
+the v1 content hash is stable across parses (byte-identical resume)
+the v1 projection carries no v2 key (the v2 structured-requirement surface is absent on v1)
+the v2Source helper yields a parseable document

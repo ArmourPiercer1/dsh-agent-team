@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts [ packages/runtime/test/consent-scope-hash-binding.test.ts ]
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/consent-scope-hash-binding.test.ts:367:17
+    365| /** The typed creation-preflight refusal details (asserts the typed sh…
+    366| function preflightRefusal(error: unknown): Record<string, unknown> {
+    367|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    368|   const typed = error as TeamRuntimeError
+    369|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:455:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  08:28:33
+   Duration  1.38s (transform 936ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

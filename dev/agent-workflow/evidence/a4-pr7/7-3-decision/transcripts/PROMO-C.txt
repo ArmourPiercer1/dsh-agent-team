@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision
+
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts [ packages/runtime/test/consent-scope-hash-binding.test.ts ]
+TeamContractError: field $.teamRequirements is a schemaVersion 2 construct: the §E.2 structured requirement grammar is not part of v3; move it to the flat requirements list or keep the document at schemaVersion 2
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1338:15
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1549:16
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:251:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  08:29:50
+   Duration  1.34s (transform 990ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

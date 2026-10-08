@@ -1,0 +1,24 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision
+
+[[CENSUS]] {"key":"metadata","contentHash_identical":true,"frozenBlueprint_deepEqual":true,"projection_bytes_identical":true,"projection_elementSet_identical":true,"sourceKeySet_differs":false}
+[[CENSUS]] {"key":"requirements","contentHash_identical":true,"frozenBlueprint_deepEqual":true,"projection_bytes_identical":true,"projection_elementSet_identical":true,"sourceKeySet_differs":false}
+[[CENSUS]] {"key":"members","contentHash_identical":true,"frozenBlueprint_deepEqual":true,"projection_bytes_identical":true,"projection_elementSet_identical":true,"sourceKeySet_differs":false}
+[[CENSUS]] {"key":"memberEnvelopes","contentHash_identical":true,"frozenBlueprint_deepEqual":true,"projection_bytes_identical":true,"projection_elementSet_identical":true,"sourceKeySet_differs":false}
+[[CENSUS]] {"key":"policyStates","contentHash_identical":true,"frozenBlueprint_deepEqual":true,"projection_bytes_identical":true,"projection_elementSet_identical":true,"sourceKeySet_differs":false}
+[[CENSUS]] all-five contentHash_identical=true projection_identical=true
+[[CENSUS]] source keys lost=["memberEnvelopes","members","metadata","policyStates","requirements"] count=5
+[[CENSUS]] non-empty members drop is loud: true
+[[CENSUS]] LOUD? teamRequirements -> different requirementId: yes
+[[CENSUS]] LOUD? teamRequirements -> removed: yes
+[[CENSUS]] LOUD? teamHardEnvelope -> removed: refused (blueprint is missing required field 'teamHardEnvelope' at $)
+[[CENSUS]] LOUD? permissionMutationEnvelope -> removed: refused (blueprint is missing required field 'permissionMutationEnvel)
+[[CENSUS]] LOUD? revision -> changed: yes
+[[CENSUS]] LOUD? leader.templateId -> changed: yes
+ ✓ packages/domain/test/__probe-a473-silent.test.ts (10 tests) 22ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  08:32:31
+   Duration  304ms (transform 145ms, setup 0ms, import 200ms, tests 22ms, environment 0ms)
+

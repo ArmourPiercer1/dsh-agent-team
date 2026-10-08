@@ -1,0 +1,29 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision
+
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts [ packages/runtime/test/consent-scope-hash-binding.test.ts ]
+TeamContractError: TeamBlueprint has unknown fields: teamRequirements
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1218:3
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1540:16
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:251:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  08:30:26
+   Duration  1.30s (transform 967ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

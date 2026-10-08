@@ -1,0 +1,876 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision
+
+ ✓ packages/client/test/ledger-adapter.test.ts (32 tests) 8ms
+ ✓ packages/client/test/pr56-control-subject-payload.test.ts (42 tests) 8ms
+ ✓ packages/runtime/test/a4p6-governance-warning-service.test.ts (16 tests) 8ms
+ ✓ packages/runtime/test/shell-result-observer.test.ts (14 tests) 11ms
+ ✓ packages/runtime/test/artifact-read-authority.test.ts (34 tests) 14ms
+ ✓ packages/contracts/test/negative.test.ts (21 tests) 9ms
+ ✓ packages/legacy/test/p7t7-legacy-read.test.ts (28 tests) 7ms
+ ✓ packages/domain/test/t2-blueprint-v2-hash.test.ts (8 tests) 35ms
+ ✓ packages/domain/test/blueprint-v1-frozen-resume.test.ts (4 tests) 23ms
+ ✓ packages/domain/test/t2-blueprint-v2-requirements.test.ts (16 tests) 30ms
+ ✓ packages/legacy/test/p7t6-teammates-adapter.test.ts (22 tests) 39ms
+ ✓ packages/domain/test/a4p1-blueprint-v3-governance.test.ts (20 tests) 9ms
+ ✓ packages/contracts/test/leader-instance-record.test.ts (13 tests) 6ms
+ ✓ packages/runtime/test/artifact-read-digest-fact.test.ts (14 tests) 5ms
+ ✓ packages/storage/test/p4-01-schema-meta.test.ts (11 tests) 6ms
+ ✓ packages/testkit/test/t6-9-negative-matrix.test.ts (12 tests) 64ms
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts (14 tests | 12 failed) 22ms
+     × the team-scope preflight PASSES (pre-fix the kind subject was unknown ⇒ seed-less FATAL) 6ms
+     × evaluateCreationScopes agrees: the team verdict is PASS with the typed reason 4ms
+     × the team scope PASSES on the ROOT observation; the member template scope FATALs on the MEMBER observation 1ms
+     × the team scope FATALs with the typed conflict observation (no downgrade through the kind path) 1ms
+     × no seed ⇒ unknown ⇒ the fact is omitted ⇒ the preflight FATALs (fail-closed, NOT pending) 1ms
+     × WITH a bootstrap seed available:true the seed truth decides ⇒ proceed (the documented 2-state) 1ms
+     × WITH a bootstrap seed available:false the seed truth decides ⇒ FATAL (the 2-state is not a blanket OPEN) 0ms
+     ✓ a NON-kind subject keeps the legacy root/member preset-id matching (v1 frozen Blueprint cold resume) 1ms
+     × a kind subject resolves through the KIND path even when the mounted id equals a preset (no legacy shadowing) 1ms
+     ✓ a v2 blueprint with the persona teamRequirement `standard` + a mounted composable preset PASSES with no seed 1ms
+     × the SAME chain with a complete mounted preset FATALs end-to-end (no false OPEN) 1ms
+     × BL1: a HEALTHY leader template PASSES on the leader OWN (root) observation — the no-member-requirement world (pre-fix: judged by the MEMBER entry ⇒ spurious FATAL) 1ms
+     × BL2: a leader whose OWN observation is `complete` FATALs with the leader observation (pre-fix: FALSE PASS — the leader was judged by the member entry) 1ms
+     × BL3: in ONE world, the leader template is judged by the ROOT observation and the member template by the MEMBER observation (per-template role dispatch) 1ms
+ ✓ packages/runtime/test/p8s4b-model-consumption.test.ts (17 tests) 6ms
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (25 tests) 6ms
+ ✓ packages/runtime/test/p8s4b-cell-provenance.test.ts (10 tests) 5ms
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts (5 tests | 5 failed) 7ms
+     × U1 — the boundary scope reaches the memberMaterialization port verbatim (instance + root on the target read; root only on the template read) 3ms
+     × U2 — the failed target in the masked window: the feed fact is available:false and the gate BLOCKS the impact (typed FATAL-down) 2ms
+     × U3 — the healthy target passes while the scope verdict keeps the conservative worst case (dual evaluation: decision on the target boundary, bookkeeping on the scope) 0ms
+     × U4 — the masked in-flight target is NOT spurious-PENDING-blocked (liveness: the mount attempt is admissible — bootstrap; a same-passage failed mount is gated at the delivery gate, the next admission as failed) 0ms
+     × U5 — the guards: unreachable + healthy materialization still blocks; the cold member never blocks 0ms
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts (1 test | 1 failed) 22ms
+     × L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal 21ms
+ ✓ packages/runtime/test/a2c3-inspect-operation-permission.test.ts (14 tests) 5ms
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts (5 tests | 1 failed) 60ms
+     × premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case) 22ms
+     ✓ control: with the worker ENABLED the delegate is admitted (healthy world, empty worker) 9ms
+     ✓ the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set 10ms
+     ✓ the same disable BLOCKS the follow-up to the worker (same normalWork class, same scopeRefs) 9ms
+     ✓ re-enabling resumes the delegate through the SAME checks (the block did not key on requirements) 9ms
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts (7 tests | 3 failed) 66ms
+     ✓ W2: the wiring resolves [team, template:leader] for the fixture blueprint 18ms
+     ✓ W3: the refs exclude the (unrelated) worker template scope 6ms
+     × L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch 11ms
+     ✓ L2: a Leader OPTIONAL requirement down does not block the normal turn (auto-degraded) 8ms
+     ✓ L4: an unrelated Member (worker) required requirement down does not block the Leader 6ms
+     × L5: a Team-level REQUIRED requirement down blocks the Leader normal turn 7ms
+     × L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority) 9ms
+ ✓ packages/runtime/test/boundary-committed-applied.test.ts (3 tests) 4ms
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts (5 tests | 1 failed) 74ms
+     × premise: the leader template declares NO requirements (its scope has no verdict inputs) 24ms
+     ✓ IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work) 13ms
+     ✓ IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way 11ms
+     ✓ IL3: with the leader disabled the legitimate control/recovery lanes still function 14ms
+     ✓ IL4: re-enable RESUMES the initial work through the same checks (allowed again) 11ms
+ ✓ packages/runtime/test/prf-inspect-same-source.test.ts (8 tests) 4ms
+ ✓ packages/runtime/test/control-guard-leader.test.ts (13 tests) 4ms
+ ✓ packages/runtime/test/restart-effective-policy.test.ts (2 tests) 5ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts (12 tests) 9ms
+ ❯ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (42 tests | 4 failed) 13ms
+     ✓ A1 — a required live-unknown subject is PENDING (never a verdict) 1ms
+     ✓ A2 — a confirmed DOWN takes precedence (a sibling unknown is subsumed) 0ms
+     ✓ A3 — the COLD member exemption (materialization not-applicable is never blocked, E.11 #1) 0ms
+     ✓ A4 — an OPTIONAL required=false requirement never blocks 0ms
+     ✓ A5 — no observations (the legacy / factory world): the rule is off 0ms
+     ✓ B1 — the required live-unknown fact is DROPPED; the live-observed facts are kept 0ms
+     ✓ B2 — a live-reachable or live-unreachable observation never drops (real verdicts stand) 0ms
+     ✓ B3 — the PERSONA domain is NEVER touched (U5 FROZEN — the probe persona semantics stand) 0ms
+     ✓ B4 — no observations: nothing is dropped (the rule is off) 0ms
+     ✓ C1 — a required live-unknown (slot pending) blocks with the TYPED PENDING outcome 0ms
+     ✓ C2 — witness: the SAME world on the legacy wiring (no read port) is the seeded false OPEN 0ms
+     ✓ C3 — the block is RECHECKABLE: the slot observed at the next boundary clears it 0ms
+     ✓ C4 — the no-seed unknown is RECLASSIFIED to PENDING (the legacy wiring keeps the FATAL) 0ms
+     ✓ C5 — the DOWN precedence: a confirmed down + a sibling unknown keeps the actionable FATAL 0ms
+     ✓ C6 — the COLD member is never blocked (E.11 negative #1, unit level; the exemption is identical on both wirings) 0ms
+     × C7 — the RESUMING worker (slot pending) PENDING-blocks the first delegate (the kit B5 first half, unit level) 4ms
+     × C8 — the slot FAILED seconds later: the same delegate is the typed down-category FATAL (the kit B5 second half, unit level) 1ms
+     ✓ D1a — witness: the pre-fix boot-scoped wiring FATALs step 6 on a healthy world (the PF-1 signature at the provider) 0ms
+     ✓ D1b — the per-blueprint seam passes step 6 on the SAME healthy world (the activation completes) 0ms
+     ✓ D1c — the inverted durable aggregate stops: the all-up world probes OPEN and the REPROBE rewrites OPEN (never FATAL) 0ms
+     ✓ D1c witness — the pre-fix boot-scoped feed inverts the durable aggregate (the corrupted FATAL row) 0ms
+     ✓ D3a — the provider PENDING-blocks the seeded live-unknown (recovery dispatch unavailable) 0ms
+     ✓ D3b — the no-seed unknown is reclassified to PENDING at the provider (the FATAL category is not kept) 0ms
+     × D3c — the v2 resuming worker (slot pending) PENDING-blocks the admission (the engine PASS is voided) 0ms
+     ✓ D3d — the COLD worker (E.11 #1) is never PENDING-blocked: the first delegate activates 0ms
+     ✓ E1 — the seeded false OPEN at creation is the typed PENDING (never a proceed) 0ms
+     ✓ E2 — the no-seed FATAL is reclassified to PENDING (the blocked scope has no confirmed down) 0ms
+     ✓ E3 — the DOWN precedence: the confirmed down keeps the actionable FATAL 0ms
+     ✓ E4 — PENDING beats CONSENT-REQUIRED (the required pending is the stronger block) 0ms
+     ✓ E5 — the DISABLED template is resolved: its pending requirement never blocks 0ms
+     × E6 — the v2 template no-seed FATAL is reclassified to PENDING (the non-disabled blocked template) 1ms
+     ✓ F1 — the required live-unknown fact is dropped: BLOCKED_FATAL names exactly that server (predicts the gate PENDING) 0ms
+     ✓ F2 — the healthy world: the drop is a no-op (OPEN, two PASS) 0ms
+     ✓ F3 — witness: the SAME pending world on the legacy wiring is the seeded false OPEN (pre-D-3) 0ms
+     ✓ F4 — the PERSONA domain is untouched (U5 FROZEN): the drop filter is active on mcp, byte-identical on persona 0ms
+     ✓ X1 — NEVER-OBSERVED + the seed available:true: the creation preflight PROCEEDS (not PENDING) 0ms
+     ✓ X2 — NEVER-OBSERVED + the seed available:true: the probe is OPEN (probe == gate, INV-9.4 explicit) 0ms
+     ✓ X3 — NEVER-OBSERVED + the seed available:false / ABSENT: FATAL (the seed truth decides; the exemption is not a blanket OPEN) 0ms
+     ✓ X4 — IN-FLIGHT (a pending slot exists on a live session): PENDING at the preflight AND the gate (the B5 window is preserved) 0ms
+     ✓ X5 — the settled pins are unchanged: reachable → OPEN / proceed; unreachable → FATAL (the tri-state is silent on settled verdicts) 0ms
+     ✓ the C-section gate outcomes are typed (allowed outcome / typed error) 0ms
+     ✓ the PENDING_BLOCK typed-code family is the closed const (the single source) 0ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (7 tests) 3ms
+ ✓ packages/runtime/test/a3p5-glue-permission-receipt.test.ts (11 tests) 1044ms
+     ✓ positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived  1010ms
+ ✓ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (12 tests) 62ms
+ ✓ packages/runtime/test/model-blueprint-initial-routing.test.ts (23 tests) 7ms
+ ✓ packages/runtime/test/model-inspect-config.test.ts (7 tests) 4ms
+ ✓ packages/runtime/test/t4a-capability-wiring.test.ts (28 tests) 5ms
+ ✓ packages/runtime/test/f15-mcp-live-loss.test.ts (10 tests) 11ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (32 tests) 6ms
+ ✓ packages/runtime/test/multi-mcp-wiring.test.ts (49 tests) 9ms
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts (4 tests) 3ms
+ ✓ packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts (7 tests) 5ms
+stderr | packages/runtime/test/p8s6-pagination.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s6-principal.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ❯ packages/runtime/test/startup-template-disable-production.test.ts (0 test)
+ ❯ packages/runtime/test/startup-consent-production.test.ts (0 test)
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ❯ packages/runtime/test/startup-all-templates-real-authority.test.ts (0 test)
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts (0 test)
+stderr | packages/runtime/test/p8s6-pagination.test.ts > p8s6-pagination teardown > the C6 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-pagination.test.ts (9 tests) 6ms
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s6-remote-commands.test.ts > p8s6-remote-commands teardown > the C4 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-remote-commands.test.ts (8 tests) 4ms
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s6-principal.test.ts > p8s6-principal teardown > the C3 world is disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s6-principal.test.ts (20 tests) 4ms
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts (6 tests | 6 failed) 9ms
+     × the boot create rejects with the typed creation-preflight refusal (outcome fatal) 4ms
+     × zero durable effect: no TeamSession record, no registry row, no fact row 2ms
+     × the boot create rejects typed with the blocked template scope + the down requirement 0ms
+     × zero durable effect: the refused bind wrote nothing under the root 1ms
+     × the boot create rejects typed with the consent-required requirement id 0ms
+     × zero durable effect: the refused bind wrote nothing under the root 0ms
+ ❯ packages/runtime/test/mcp-target-materialization.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts [ packages/runtime/test/consent-scope-hash-binding.test.ts ]
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/consent-scope-hash-binding.test.ts:366:17
+    364| /** The typed creation-preflight refusal details (asserts the typed sh…
+    365| function preflightRefusal(error: unknown): Record<string, unknown> {
+    366|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    367|   const typed = error as TeamRuntimeError
+    368|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:454:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/38]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization.test.ts [ packages/runtime/test/mcp-target-materialization.test.ts ]
+Error: mtm T1 follow-up B: the action was ALLOWED — the target-specific block is missing (the Finding F false OPEN)
+ ❯ expectBlocked packages/runtime/test/mcp-target-materialization.test.ts:580:11
+    578|   }
+    579|   if (thrown === undefined) {
+    580|     throw new Error(`mtm ${label}: the action was ALLOWED — the target…
+       |           ^
+    581|   }
+    582|   expect(thrown).toBeInstanceOf(TeamRuntimeError)
+ ❯ packages/runtime/test/mcp-target-materialization.test.ts:867:18
+ ❯ packages/runtime/test/mcp-target-materialization.test.ts:824:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/38]⎯
+
+ FAIL  packages/runtime/test/startup-all-templates-real-authority.test.ts [ packages/runtime/test/startup-all-templates-real-authority.test.ts ]
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-all-templates-real-authority.test.ts:274:17
+    272| /** The typed creation-preflight refusal (or throw the test). */
+    273| function preflightRefusal(error: unknown): Record<string, unknown> {
+    274|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    275|   const typed = error as TeamRuntimeError
+    276|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-all-templates-real-authority.test.ts:307:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/38]⎯
+
+ FAIL  packages/runtime/test/startup-consent-production.test.ts [ packages/runtime/test/startup-consent-production.test.ts ]
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-consent-production.test.ts:304:17
+    302| /** The typed creation-preflight refusal (or throw the test). */
+    303| function preflightRefusal(error: unknown): Record<string, unknown> {
+    304|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    305|   const typed = error as TeamRuntimeError
+    306|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-consent-production.test.ts:386:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/38]⎯
+
+ FAIL  packages/runtime/test/startup-template-disable-production.test.ts [ packages/runtime/test/startup-template-disable-production.test.ts ]
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-template-disable-production.test.ts:281:17
+    279| /** The typed creation-preflight refusal (or throw the test). */
+    280| function preflightRefusal(error: unknown): Record<string, unknown> {
+    281|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    282|   const typed = error as TeamRuntimeError
+    283|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-template-disable-production.test.ts:319:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/38]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 33 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > premise: the leader template declares NO requirements (its scope has no verdict inputs)
+AssertionError: expected [] to deeply equal [ 'req-team-core' ]
+
+- Expected
++ Received
+
+- [
+-   "req-team-core",
+- ]
++ []
+
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:287:61
+    285|     const inputs = scopeRequirementInputsOf(world.blueprint)
+    286|     // The team scope carries the ONLY requirement (passing).
+    287|     expect(inputs.team.map((input) => input.requirementId)).toEqual(['…
+       |                                                             ^
+    288|     // The leader (and the worker) declare nothing: NO template requir…
+    289|     // inputs, NO template scope in the extraction (the empty case the
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/38]⎯
+
+ FAIL  packages/runtime/test/leader-recovery-next-boundary-exit.test.ts > W3-C leader-recovery-next-boundary-exit: the F8 leader recovery exit > L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal
+Error: expected the blocked normal turn to reject
+ ❯ blockedNormal packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:241:15
+    239|     const blockedNormal = await enforceRequirementGate(gateOptions, no…
+    240|       () => {
+    241|         throw new Error('expected the blocked normal turn to reject')
+       |               ^
+    242|       },
+    243|       (error: unknown) => error,
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:239:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/38]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch
+AssertionError: expected undefined to be defined
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:301:21
+    299|       blocked = error as { code?: string; details?: Record<string, unk…
+    300|     }
+    301|     expect(blocked).toBeDefined()
+       |                     ^
+    302|     expect(blocked?.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_…
+    303|     // The block names the LEADER template scope (the required pdf dow…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/38]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L5: a Team-level REQUIRED requirement down blocks the Leader normal turn
+AssertionError: expected undefined to be defined
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:392:21
+    390|       blocked = error as { code?: string; details?: Record<string, unk…
+    391|     }
+    392|     expect(blocked).toBeDefined()
+       |                     ^
+    393|     expect(blocked?.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_…
+    394|     expect(blocked?.details?.['recoveryDispatchAvailable']).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/38]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority)
+AssertionError: expected 'allowed' to be 'recoveryAllowed' // Object.is equality
+
+Expected: "recoveryAllowed"
+Received: "allowed"
+
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:420:28
+    418|       recoveryWorkImpact(refs),
+    419|     )
+    420|     expect(outcome.reason).toBe('recoveryAllowed')
+       |                            ^
+    421|   })
+    422| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/38]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U1 — the boundary scope reaches the memberMaterialization port verbatim (instance + root on the target read; root only on the template read)
+AssertionError: expected 0 to be greater than or equal to 1
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:447:33
+    445|     // the template-scope read with the action's target instance conte…
+    446|     const targetScopes = U6.u2.scopesSeen.filter((s) => s.templateId =…
+    447|     expect(targetScopes.length).toBeGreaterThanOrEqual(1)
+       |                                 ^
+    448|     const firstTargetScope = targetScopes[0]
+    449|     expect(firstTargetScope).toBeDefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/38]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U2 — the failed target in the masked window: the feed fact is available:false and the gate BLOCKS the impact (typed FATAL-down)
+AssertionError: expected 'allowed' to be 'blocked' // Object.is equality
+
+Expected: "blocked"
+Received: "allowed"
+
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:467:28
+    465|
+    466|   it('U2 — the failed target in the masked window: the feed fact is av…
+    467|     expect(U6.u2Gate.kind).toBe('blocked')
+       |                            ^
+    468|     if (U6.u2Gate.kind !== 'blocked') return
+    469|     expect(U6.u2Gate.status).toBe('BLOCKED_FATAL')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/38]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U3 — the healthy target passes while the scope verdict keeps the conservative worst case (dual evaluation: decision on the target boundary, bookkeeping on the scope)
+AssertionError: expected undefined to be defined
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:495:27
+    493|     // convergence, never on a healthy sibling's fresh verdict).
+    494|     const workerVerdict = U6.u3Gate.scopeVerdicts.find((v) => v.key ==…
+    495|     expect(workerVerdict).toBeDefined()
+       |                           ^
+    496|     expect(workerVerdict?.state).toBe(SCOPE_STATES.blocked)
+    497|     // The decision itself used the target boundary (A mounted → the
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/38]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U4 — the masked in-flight target is NOT spurious-PENDING-blocked (liveness: the mount attempt is admissible — bootstrap; a same-passage failed mount is gated at the delivery gate, the next admission as failed)
+AssertionError: expected undefined to be defined
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:525:17
+    523|     expect(U6.u4Read).toBeDefined()
+    524|     const obs = U6.u4Read?.observations.find((o) => o.subject === SERV…
+    525|     expect(obs).toBeDefined()
+       |                 ^
+    526|     expect(obs?.materialization).toBe('pending')
+    527|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/38]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U5 — the guards: unreachable + healthy materialization still blocks; the cold member never blocks
+AssertionError: expected 'allowed' to be 'blocked' // Object.is equality
+
+Expected: "blocked"
+Received: "allowed"
+
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:532:29
+    530|     // U5a — the server truth wins: a required capability observed DOWN
+    531|     // blocks even when the (other instance's) mount is healthy.
+    532|     expect(U6.u5aGate.kind).toBe('blocked')
+       |                             ^
+    533|     if (U6.u5aGate.kind === 'blocked') {
+    534|       expect(U6.u5aGate.status).toBe('BLOCKED_FATAL')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T1 — bespoke composable preset ids, v2 teamRequirement `standard`, no seed > the team-scope preflight PASSES (pre-fix the kind subject was unknown ⇒ seed-less FATAL)
+AssertionError: expected undefined to match object { type: 'persona', …(3) }
+
+- Expected:
+{
+  "readiness": "reachable",
+  "readinessSource": "substrate-resolver",
+  "subject": "standard",
+  "type": "persona",
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:365:40
+    363|     // (the subject is the required kind, not a preset id — neither mo…
+    364|     // id equals `standard`).
+    365|     expect(resolution.observations[0]).toMatchObject({
+       |                                        ^
+    366|       type: 'persona',
+    367|       subject: 'standard',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T1 — bespoke composable preset ids, v2 teamRequirement `standard`, no seed > evaluateCreationScopes agrees: the team verdict is PASS with the typed reason
+AssertionError: expected [] to deeply equal [ ObjectContaining{…} ]
+
+- Expected
++ Received
+
+- [
+-   ObjectContaining {
+-     "outcome": "pass",
+-     "requirementId": "req-persona-standard-team",
+-   },
+- ]
++ []
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:397:46
+    395|       environmentFactsRead: () => world.teamRead(PK_TEAM),
+    396|     })
+    397|     expect(evaluation.scopeVerdicts['team']).toEqual([
+       |                                              ^
+    398|       expect.objectContaining({ requirementId: TEAM_REQ_ID, outcome: R…
+    399|     ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T2 — root observes `standard`, member observes `complete` (R8 split) > the team scope PASSES on the ROOT observation; the member template scope FATALs on the MEMBER observation
+AssertionError: expected undefined to match object { subject: 'standard', …(1) }
+
+- Expected:
+{
+  "readiness": "reachable",
+  "subject": "standard",
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:417:44
+    415|     // Team scope: the ROOT entry observes `standard` → reachable.
+    416|     const teamResolution = await world.teamRead(PK_FULL)
+    417|     expect(teamResolution.observations[0]).toMatchObject({
+       |                                            ^
+    418|       subject: 'standard',
+    419|       readiness: PROBE_VERDICTS.reachable,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T3 — root observes `complete` (the §13.5 conflict) > the team scope FATALs with the typed conflict observation (no downgrade through the kind path)
+AssertionError: expected undefined to match object { subject: 'standard', …(1) }
+
+- Expected:
+{
+  "readiness": "unreachable",
+  "subject": "standard",
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:490:40
+    488|     })
+    489|     const resolution = await world.teamRead(PK_TEAM)
+    490|     expect(resolution.observations[0]).toMatchObject({
+       |                                        ^
+    491|       subject: 'standard',
+    492|       readiness: PROBE_VERDICTS.unreachable,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T4 — the observer fails typed (unresolved) > no seed ⇒ unknown ⇒ the fact is omitted ⇒ the preflight FATALs (fail-closed, NOT pending)
+AssertionError: expected undefined to match object { subject: 'standard', …(1) }
+
+- Expected:
+{
+  "readiness": "unknown",
+  "subject": "standard",
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:534:40
+    532|     })
+    533|     const resolution = await world.teamRead(PK_TEAM)
+    534|     expect(resolution.observations[0]).toMatchObject({
+       |                                        ^
+    535|       subject: 'standard',
+    536|       readiness: PROBE_VERDICTS.unknown,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T4 — the observer fails typed (unresolved) > WITH a bootstrap seed available:true the seed truth decides ⇒ proceed (the documented 2-state)
+TypeError: Cannot read properties of undefined (reading 'readiness')
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:564:40
+    562|     })
+    563|     const resolution = await world.teamRead(PK_TEAM)
+    564|     expect(resolution.observations[0]!.readiness).toBe(PROBE_VERDICTS.…
+       |                                        ^
+    565|     // The seed feeds ONLY the unknown live verdict (the marked bootst…
+    566|     // fact — never a live override).
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T4 — the observer fails typed (unresolved) > WITH a bootstrap seed available:false the seed truth decides ⇒ FATAL (the 2-state is not a blanket OPEN)
+TypeError: Cannot read properties of undefined (reading 'readiness')
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:591:40
+    589|     })
+    590|     const resolution = await world.teamRead(PK_TEAM)
+    591|     expect(resolution.observations[0]!.readiness).toBe(PROBE_VERDICTS.…
+       |                                        ^
+    592|     expect(resolution.environmentFacts).toEqual([
+    593|       {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T5 — the frozen v1 preset-ID convention (unchanged legacy path) > a kind subject resolves through the KIND path even when the mounted id equals a preset (no legacy shadowing)
+TypeError: Cannot read properties of undefined (reading 'readiness')
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:662:40
+    660|     })
+    661|     const resolution = await world.teamRead(PK_TEAM)
+    662|     expect(resolution.observations[0]!.readiness).toBe(PROBE_VERDICTS.…
+       |                                        ^
+    663|     expect(resolution.environmentFacts).toEqual([
+    664|       { domain: 'persona', subject: 'standard', available: true, gener…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > T6 — end-to-end through the creation preflight (root.ts port shape) > the SAME chain with a complete mounted preset FATALs end-to-end (no false OPEN)
+AssertionError: expected 'proceed' to be 'fatal' // Object.is equality
+
+Expected: "fatal"
+Received: "proceed"
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:728:28
+    726|     })
+    727|     const result = await world.preflight(PK_TEAM)
+    728|     expect(result.outcome).toBe(PREFLIGHT_OUTCOMES.fatal)
+       |                            ^
+    729|     expect(result.fatalRequirementIds).toEqual([TEAM_REQ_ID])
+    730|     expect(blockedScopeKeysOf(result)).toEqual(['team'])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > Blocker-1 — the template scope carries its role (leader ≠ member observation) > BL1: a HEALTHY leader template PASSES on the leader OWN (root) observation — the no-member-requirement world (pre-fix: judged by the MEMBER entry ⇒ spurious FATAL)
+AssertionError: expected undefined to match object { subject: 'standard', …(1) }
+
+- Expected:
+{
+  "readiness": "reachable",
+  "subject": "standard",
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:817:40
+    815|     })
+    816|     const resolution = await world.templateRead(PK_LEADER, 'leader')
+    817|     expect(resolution.observations[0]).toMatchObject({
+       |                                        ^
+    818|       subject: 'standard',
+    819|       readiness: PROBE_VERDICTS.reachable,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > Blocker-1 — the template scope carries its role (leader ≠ member observation) > BL2: a leader whose OWN observation is `complete` FATALs with the leader observation (pre-fix: FALSE PASS — the leader was judged by the member entry)
+AssertionError: expected undefined to match object { subject: 'standard', …(1) }
+
+- Expected:
+{
+  "readiness": "unreachable",
+  "subject": "standard",
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:849:40
+    847|     })
+    848|     const resolution = await world.templateRead(PK_LEADER, 'leader')
+    849|     expect(resolution.observations[0]).toMatchObject({
+       |                                        ^
+    850|       subject: 'standard',
+    851|       readiness: PROBE_VERDICTS.unreachable,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/38]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts > Blocker-1 — the template scope carries its role (leader ≠ member observation) > BL3: in ONE world, the leader template is judged by the ROOT observation and the member template by the MEMBER observation (per-template role dispatch)
+AssertionError: expected 'proceed' to be 'fixOrDisable' // Object.is equality
+
+Expected: "fixOrDisable"
+Received: "proceed"
+
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:894:28
+    892|     })
+    893|     const result = await world.preflight(PK_LEADER_AND_WORKER)
+    894|     expect(result.outcome).toBe(PREFLIGHT_OUTCOMES.fixOrDisable)
+       |                            ^
+    895|     expect(blockedScopeKeysOf(result)).toEqual([scopeKey({ level: 'tem…
+    896|     const leaderScope = result.scopes.find(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/38]⎯
+
+ FAIL  packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts > D-3 C — the requirement gate: the fail-closed PENDING at the next boundary > C7 — the RESUMING worker (slot pending) PENDING-blocks the first delegate (the kit B5 first half, unit level)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts:1345:25
+    1343|
+    1344|   it('C7 — the RESUMING worker (slot pending) PENDING-blocks the first…
+    1345|     expect(D.c7.thrown).toBe(true)
+       |                         ^
+    1346|     if (!D.c7.thrown) throw new Error('D guard: C7 expected to throw')
+    1347|     expectPendingDetails(detailsOf(D.c7.error), 'template:worker', WEB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/38]⎯
+
+ FAIL  packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts > D-3 C — the requirement gate: the fail-closed PENDING at the next boundary > C8 — the slot FAILED seconds later: the same delegate is the typed down-category FATAL (the kit B5 second half, unit level)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts:1351:25
+    1349|
+    1350|   it('C8 — the slot FAILED seconds later: the same delegate is the typ…
+    1351|     expect(D.c8.thrown).toBe(true)
+       |                         ^
+    1352|     if (!D.c8.thrown) throw new Error('D guard: C8 expected to throw')
+    1353|     const details = detailsOf(D.c8.error)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/38]⎯
+
+ FAIL  packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts > D-1/D-3 D — the activation provider: the per-blueprint seam + the PENDING > D3c — the v2 resuming worker (slot pending) PENDING-blocks the admission (the engine PASS is voided)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts:1415:26
+    1413|
+    1414|   it('D3c — the v2 resuming worker (slot pending) PENDING-blocks the a…
+    1415|     expect(D.d3c.thrown).toBe(true)
+       |                          ^
+    1416|     if (!D.d3c.thrown) throw new Error('D guard: D3c expected to throw…
+    1417|     expectPendingDetails(detailsOf(D.d3c.error), 'template:worker', WE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/38]⎯
+
+ FAIL  packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts > D-3 E — the creation preflight: the typed `pending` outcome > E6 — the v2 template no-seed FATAL is reclassified to PENDING (the non-disabled blocked template)
+AssertionError: expected 'proceed' to be 'pending' // Object.is equality
+
+Expected: "pending"
+Received: "proceed"
+
+ ❯ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts:1460:26
+    1458|
+    1459|   it('E6 — the v2 template no-seed FATAL is reclassified to PENDING (t…
+    1460|     expect(D.e6.outcome).toBe(PREFLIGHT_OUTCOMES.pending)
+       |                          ^
+    1461|     expect([...D.e6.pendingRequirementIds ?? []]).toEqual([WEB_ID])
+    1462|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/38]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S1 — Team-level required down: the creation preflight refuses typed (guide §6.3.1) > the boot create rejects with the typed creation-preflight refusal (outcome fatal)
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-preflight-production-create.test.ts:307:17
+    305| /** The typed creation-preflight refusal (or throw the test). */
+    306| function preflightRefusal(error: unknown): { code: string; details: Re…
+    307|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    308|   const typed = error as TeamRuntimeError
+    309|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:400:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/38]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S1 — Team-level required down: the creation preflight refuses typed (guide §6.3.1) > zero durable effect: no TeamSession record, no registry row, no fact row
+AssertionError: expected { schemaVersion: 1, …(5) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "blueprint": {
+    "blueprintId": "SPFC-1-BP",
+    "contentHash": "sha256:5e34ed9bed0dab091cbf874e376f3a2d5fb1cfb4d9f506dd39d3a12605e0cda2",
+    "revision": "1",
+  },
+  "createdAt": "2026-10-08T00:33:15.367Z",
+  "defaultWorkspace": "C:/agent-team/work/spfc",
+  "generation": 2,
+  "rootSessionId": "session-spfc-fat1",
+  "schemaVersion": 1,
+}
+
+ ❯ assertZeroDurableEffect packages/runtime/test/startup-preflight-production-create.test.ts:325:63
+    323|  */
+    324| function assertZeroDurableEffect(domain: TeamDomain, rootSessionId: st…
+    325|   expect(domain.repositories.teamSessions.get(rootSessionId)).toBeUnde…
+       |                                                               ^
+    326|   expect(domain.repositories.blueprintRegistry.list()).toEqual([])
+    327|   for (const entry of domain.repositories.ledger.list()) {
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:410:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/38]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S2 — MemberTemplate required down (no instance): `fixOrDisable` (guide §6.3.2) > the boot create rejects typed with the blocked template scope + the down requirement
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-preflight-production-create.test.ts:307:17
+    305| /** The typed creation-preflight refusal (or throw the test). */
+    306| function preflightRefusal(error: unknown): { code: string; details: Re…
+    307|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    308|   const typed = error as TeamRuntimeError
+    309|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:416:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/38]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S2 — MemberTemplate required down (no instance): `fixOrDisable` (guide §6.3.2) > zero durable effect: the refused bind wrote nothing under the root
+AssertionError: expected { schemaVersion: 1, …(5) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "blueprint": {
+    "blueprintId": "SPFC-2-BP",
+    "contentHash": "sha256:4aca2e024f47beed26ad53cc0c5bc97f8a80c82d949fa716a5f01d0d2f7cee73",
+    "revision": "1",
+  },
+  "createdAt": "2026-10-08T00:33:15.415Z",
+  "defaultWorkspace": "C:/agent-team/work/spfc",
+  "generation": 2,
+  "rootSessionId": "session-spfc-fix1",
+  "schemaVersion": 1,
+}
+
+ ❯ assertZeroDurableEffect packages/runtime/test/startup-preflight-production-create.test.ts:325:63
+    323|  */
+    324| function assertZeroDurableEffect(domain: TeamDomain, rootSessionId: st…
+    325|   expect(domain.repositories.teamSessions.get(rootSessionId)).toBeUnde…
+       |                                                               ^
+    326|   expect(domain.repositories.blueprintRegistry.list()).toEqual([])
+    327|   for (const entry of domain.repositories.ledger.list()) {
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:428:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/38]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S4 — optional down without consent: `consentRequired` (guide §6.3.4) > the boot create rejects typed with the consent-required requirement id
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-preflight-production-create.test.ts:307:17
+    305| /** The typed creation-preflight refusal (or throw the test). */
+    306| function preflightRefusal(error: unknown): { code: string; details: Re…
+    307|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    308|   const typed = error as TeamRuntimeError
+    309|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:434:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/38]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S4 — optional down without consent: `consentRequired` (guide §6.3.4) > zero durable effect: the refused bind wrote nothing under the root
+AssertionError: expected { schemaVersion: 1, …(5) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "blueprint": {
+    "blueprintId": "SPFC-4-BP",
+    "contentHash": "sha256:15943e6eadd67e7e8e015ec08fa8e86b55e44da858bb63270d7dc4dd757386ba",
+    "revision": "1",
+  },
+  "createdAt": "2026-10-08T00:33:15.441Z",
+  "defaultWorkspace": "C:/agent-team/work/spfc",
+  "generation": 2,
+  "rootSessionId": "session-spfc-con1",
+  "schemaVersion": 1,
+}
+
+ ❯ assertZeroDurableEffect packages/runtime/test/startup-preflight-production-create.test.ts:325:63
+    323|  */
+    324| function assertZeroDurableEffect(domain: TeamDomain, rootSessionId: st…
+    325|   expect(domain.repositories.teamSessions.get(rootSessionId)).toBeUnde…
+       |                                                               ^
+    326|   expect(domain.repositories.blueprintRegistry.list()).toEqual([])
+    327|   for (const entry of domain.repositories.ledger.list()) {
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:445:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/38]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case)
+AssertionError: expected [] to deeply equal [ 'team' ]
+
+- Expected
++ Received
+
+- [
+-   "team",
+- ]
++ []
+
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:280:59
+    278|     expect(Object.keys(inputs.templates).sort()).toEqual([])
+    279|     // The team scope alone is declared (the passing required skill).
+    280|     expect(inputs.scopes.map((scope) => scopeKey(scope))).toEqual(['te…
+       |                                                           ^
+    281|   })
+    282|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/38]⎯
+
+
+ Test Files  13 failed | 39 passed (52)
+      Tests  33 failed | 690 passed (723)
+   Start at  08:33:12
+   Duration  2.68s (transform 34.43s, setup 0ms, import 45.44s, tests 1.78s, environment 5ms)
+
