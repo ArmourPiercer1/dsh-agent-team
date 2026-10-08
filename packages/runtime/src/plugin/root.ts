@@ -4074,16 +4074,25 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // authority per consultation; each authority owns its prober, and each
     // prober owns its promise-chain lock (compatibility/probe.ts — the
     // "one durable writer per prober" pattern). Concurrent first-work
-    // consultations (E1) therefore run concurrent inline re-probes whose
-    // non-atomic delete + put state replacements interleave, and a
-    // post-probe re-read can land in another probe's delete -> put gap
-    // and observe no state, failing closed with no-state-after-reprobe
-    // (invariant 50). Establishing the initial state here, with the
-    // trigger whose frozen contract covers the first-ever evaluation
-    // (STALE_GENERATION_BEFORE_NEW_WORK, compatibility/types.ts), makes
-    // the first-work consultations find a fresh durable state and skip
-    // the inline re-probe entirely. Idempotent: an existing state row
-    // (the resume boots, same home) is left untouched.
+    // consultations (E1) therefore run concurrent inline re-probes — and THAT
+    // was where the corruption lived: until A4-PR7 `compat-atomic` each
+    // re-probe replaced the state with a NON-ATOMIC delete + put, so a
+    // post-probe re-read could land in another probe's delete -> put gap,
+    // observe no state at all, and fail closed with no-state-after-reprobe
+    // (invariant 50's fail-closed reading) — while the same gap could swallow
+    // the state permanently under a crash. That window is closed at the seam
+    // now: one state transition is ONE generation-checked write inside the
+    // domain write chain, no probe deletes, and a consultation whose probe
+    // loses the check converges on the winner's row (`compat-atomic/FINDINGS.md`).
+    // THIS BOOT PROBE STAYS, for the reason that still holds: it establishes
+    // the initial generation once, before any consultation races for it, so the
+    // first-work consultations find a fresh durable state and skip the inline
+    // re-probe entirely — one probe per team at boot instead of one per
+    // concurrent consultation whose surplus writes would then be discarded by
+    // convergence. It is no longer a workaround for a durability hole, and it
+    // never closes the race for callers that boot past it (the seam does that).
+    // Idempotent: an existing state row (the resume boots, same home) is left
+    // untouched.
     if ((await repos.compatibility.get(rootSid)) === undefined) {
       await prober().probe(PROBE_TRIGGERS.STALE_GENERATION_BEFORE_NEW_WORK)
     }

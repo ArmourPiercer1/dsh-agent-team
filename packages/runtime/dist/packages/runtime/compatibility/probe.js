@@ -30,13 +30,63 @@
  *   consults the current compatibility state (§28.2: compatibility
  *   drift 不自动取消正在执行的 model/tool operation).
  *
- * Durable-write discipline: the `compatibility` repository has no
- * upsert (a different state at the same key is RECORD_DUPLICATE), so a
- * state replace is a delete + put serialized behind the prober's
- * promise-chain lock (the P6-T1 provider pattern). The documented crash
- * window (delete landed, put lost) leaves the row ABSENT — the
- * new-work gate then treats the generation as stale and re-probes: the
- * fail-safe direction (a missing state can never be a stale GREEN).
+ * DURABLE-WRITE DISCIPLINE (corrected by A4-PR7 `compat-atomic`).
+ *
+ * The previous version of this block asserted that a state replace is "a
+ * delete + put serialized behind the prober's promise-chain lock … on the same
+ * team_domain write chain". That was FALSE and the code contradicted it: the
+ * promise-chain lock is PER PROBER INSTANCE, and `putRecord`/`deleteRow` go
+ * straight to `table.put`/`table.delete` — only `updateRaw` reaches the seam's
+ * per-domain write chain. Two independent consultations built over ONE
+ * repositories object (which is what every entry point does) therefore raced:
+ * one lost per round, deterministically, and its rejection surfaced as
+ * ACTIVATION_COMPATIBILITY_BLOCKED_FATAL — a false refusal of legitimate work
+ * (`dev/agent-workflow/evidence/a4-pr7/p6t1-flake/FINDINGS.md` SS7). A module
+ * comment asserting a property the code lacks is a defect that recruits the
+ * next reader; the property is stated below as it NOW holds, including the part
+ * that still does not hold.
+ *
+ * - ONE state transition = ONE durable write:
+ *   `compatibility.replaceIfGeneration(record, expectedGeneration)`, whose
+ *   generation check runs INSIDE the seam's atomic write-chain slot (the same
+ *   `update` read-modify-write `teamSessions.advanceGeneration` uses). A writer
+ *   conditioned on a generation that has moved on is rejected with
+ *   `RECORD_DUPLICATE` / problem `stale-generation-compatibility-state` and
+ *   writes NOTHING: a lost race is detectable, never silently destructive.
+ * - NO probe path deletes any more, so the row is never observable as ABSENT
+ *   between two writes, and a crash mid-write leaves the PREVIOUS row — human
+ *   acknowledgements included — intact. The "documented crash window (delete
+ *   landed, put lost)" this block used to describe, and the fail-safe re-probe
+ *   it supposedly forced, no longer exist: nothing is lost, so nothing has to
+ *   be re-established from nothing.
+ * - WHAT IS STILL NOT GUARANTEED, named so the next reader does not have to
+ *   rediscover it: the COLD transition (the caller read no row, so
+ *   `expectedGeneration: 0`) is a `put`, and the public seam has no conditional
+ *   create (`update` rejects a missing key with `missing-key`), so a create
+ *   whose occupied-key check reads BEFORE a concurrent create's write is not
+ *   detectable at this seam. Its blast radius is bounded: the two candidates
+ *   carry the same generation and the same environment fingerprint (both
+ *   probed the same live facts) and differ only in `computedAt`; the surviving
+ *   row is always ONE probe's complete, well-formed record — never absent,
+ *   never torn, never a state no probe computed — and every reader, the loser
+ *   included, re-reads the row. Closing this last window needs a conditional
+ *   create in the upstream storage seam: that is a host change (CORE_SEAM_BLOCKER
+ *   with a zero core-patch budget), so it is disclosed, not papered over.
+ * - `teamSessions.advanceGeneration` remains a SEPARATE durable write, ordered
+ *   strictly AFTER the state transition is durable (a failed state write
+ *   rejects before any advance). The compatibility row's own generation is what
+ *   the compare-and-set conditions on; the team-session stamp is the
+ *   state-durable-before-stamp lag marker of hooks A/B, unchanged.
+ * - CONVERGENCE, not repetition: two consultations that race one generation
+ *   still commit exactly ONE transition; the loser used to be refused, and a
+ *   refusal of work the durable state actually permits is itself a failure.
+ *   `isLostStateRace` identifies the typed signal, and the freshness paths
+ *   (`ensureFreshGeneration` here, step 3 of
+ *   `createCompatibilityAuthority().evaluate()`) treat a loser whose row now
+ *   carries the live fingerprint as the freshness establishment it was waiting
+ *   for. A loser whose row does NOT carry the live fingerprint still fails
+ *   closed exactly as before, and `probe()` itself keeps rejecting with the
+ *   typed conflict, so a version conflict always stays observable by name.
  *
  * In-flight boundary (documented): the in-flight work ledger is in
  * memory per prober instance (process lifetime). Durable crash-window
@@ -49,7 +99,7 @@
  */
 import { computeEnvironmentFingerprint, evaluateCompatibility, parseRequirements, } from '../../domain/compatibility/src/index.js';
 import { parseRootSessionId } from '../../contracts/src/index.js';
-import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../storage/schema/index.js';
+import { TEAM_DOMAIN_ERROR_CODES, TEAM_DOMAIN_SCHEMA_VERSION, isTeamDomainError } from '../../storage/schema/index.js';
 import { compatibilityRequirementsOf } from './blueprint.js';
 import { classifyDrift } from './drift.js';
 import { COMPATIBILITY_ERROR_CODES, CompatibilityError } from './errors.js';
@@ -125,6 +175,33 @@ function blockingRequirementIdsOf(record) {
     return ids;
 }
 /**
+ * Is `error` the typed signal that ANOTHER writer committed the compatibility
+ * state this writer was about to commit — a LOST COMPARE-AND-SET rather than a
+ * failing write path?
+ *
+ * Both shapes of that signal come from `CompatibilityRepository` and both are
+ * `RECORD_DUPLICATE` on the `compatibility` store, which is precisely what the
+ * closed v1 code means — "a different record already occupies the key"
+ * (`storage/schema/errors.ts`):
+ *
+ * - problem `stale-generation-compatibility-state`: the generation check inside
+ *   the seam's write-chain slot rejected this writer because the row moved on;
+ * - problem `duplicate-compatibility-state`: the cold create found the key
+ *   already occupied by another creator's row.
+ *
+ * The predicate never swallows anything on its own: its users converge ONLY when
+ * the durable row now carries the fingerprint they were trying to establish
+ * (`ensureFreshGeneration`, and step 3 of the authority's evaluation chain);
+ * otherwise the error propagates unchanged and the consultation fails closed
+ * exactly as before. `probe()` itself always rejects with it, so a version
+ * conflict stays observable BY NAME to any caller that asked for a probe.
+ */
+export function isLostStateRace(error) {
+    return (isTeamDomainError(error)
+        && error.code === TEAM_DOMAIN_ERROR_CODES.RECORD_DUPLICATE
+        && error.details?.['store'] === 'compatibility');
+}
+/**
  * Create one per-TeamSession compatibility prober (the P7-T1 public
  * constructor).
  *
@@ -171,21 +248,28 @@ export function createCompatibilityProber(deps) {
         });
     }
     /**
-     * Durably replace the compatibility state (delete + put: the
-     * repository has no upsert; see the module docs for the crash window).
+     * Durably replace the compatibility state with ONE conditioned write:
+     * `replaceIfGeneration(record, expectedGeneration)` commits only while the
+     * row still carries the generation the caller read (`0` = the caller read no
+     * row, and the transition is a single create). No delete is involved, so the
+     * row is never observable as ABSENT and a crash mid-write keeps the previous
+     * row — the module docs state exactly what that guarantees and what it does
+     * not.
      *
-     * S1-A hook B: the compatibility state is durable team state that
-     * never passes through a ledger fact, so this replaceState is the
-     * state's own stamp choke point. The generation advance happens only
-     * AFTER the put is durable (a failed put rejects before any advance;
-     * the delete alone never advances), serialized on the same
-     * `team_domain` write chain — the same state-durable-before-stamp
-     * order and v1 lag model as hook A. Warning-ACK writes take the same
-     * replaceState path and are covered here.
+     * S1-A hook B: the compatibility state is durable team state that never
+     * passes through a ledger fact, so this replaceState is the state's own stamp
+     * choke point. The generation advance happens only AFTER the state transition
+     * is durable (a rejected compare-and-set advances nothing), the same
+     * state-durable-before-stamp order and v1 lag model as hook A. Warning-ACK
+     * writes take the same replaceState path and are covered here.
+     *
+     * A lost compare-and-set REJECTS here with the typed `RECORD_DUPLICATE`
+     * (`isLostStateRace` classifies it) and this method keeps rejecting: a caller
+     * of `probe()` asked for THIS probe's verdict; the decision to converge on
+     * the winner's row belongs to the freshness paths, not to the prober.
      */
-    async function replaceState(record) {
-        await repositories.compatibility.delete(rootSessionId);
-        await repositories.compatibility.put(record);
+    async function replaceState(record, expectedGeneration) {
+        await repositories.compatibility.replaceIfGeneration(record, expectedGeneration);
         await repositories.teamSessions.advanceGeneration(rootSessionId);
     }
     function verdictOf(result, recordedAt, generation) {
@@ -205,7 +289,8 @@ export function createCompatibilityProber(deps) {
             const previous = await repositories.compatibility.get(rootSessionId);
             const result = await evaluateFresh(previous !== undefined ? previous.acknowledgements : []);
             const recordedAt = now();
-            const generation = (previous !== undefined ? previous.generation : 0) + 1;
+            const expectedGeneration = previous !== undefined ? previous.generation : 0;
+            const generation = expectedGeneration + 1;
             const record = {
                 schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,
                 rootSessionId: rootId,
@@ -216,7 +301,7 @@ export function createCompatibilityProber(deps) {
                 acknowledgements: previous !== undefined ? [...previous.acknowledgements] : [],
                 computedAt: recordedAt,
             };
-            await replaceState(record);
+            await replaceState(record, expectedGeneration);
             const verdict = verdictOf(result, recordedAt, generation);
             const outcome = { ...verdict, trigger };
             const drift = classifyDrift(previous, verdict);
@@ -278,7 +363,8 @@ export function createCompatibilityProber(deps) {
                 acknowledgements: [...previousAcks, ack],
             });
             const recordedAt = now();
-            const generation = (previous !== undefined ? previous.generation : 0) + 1;
+            const expectedGeneration = previous !== undefined ? previous.generation : 0;
+            const generation = expectedGeneration + 1;
             const record = {
                 schemaVersion: TEAM_DOMAIN_SCHEMA_VERSION,
                 rootSessionId: rootId,
@@ -289,9 +375,41 @@ export function createCompatibilityProber(deps) {
                 acknowledgements: [...previousAcks, ack],
                 computedAt: recordedAt,
             };
-            await replaceState(record);
+            await replaceState(record, expectedGeneration);
             return verdictOf(reResult, recordedAt, generation);
         });
+    }
+    /**
+     * Establish a durable generation carrying `liveFingerprint`, CONVERGING on a
+     * concurrent winner when this probe loses the compare-and-set.
+     *
+     * A loser of the conditioned write is not in a failed state: another writer
+     * just committed a state built from the same live facts. When that row
+     * carries the fingerprint this caller wanted, the freshness establishment it
+     * was waiting for HAS happened — durably, by the winner, with the winner's
+     * probe recorded behind the winner's `onProbe`. Repeating the probe would
+     * burn a generation on work the durable state already reflects, and refusing
+     * the consultation would refuse work the state permits (the false
+     * ACTIVATION_COMPATIBILITY_BLOCKED_FATAL the p6t1 escalation measured). So the
+     * loser returns, and the caller's own re-read of the row is what it acts on.
+     *
+     * Everything else still fails closed, unchanged: a non-race fault propagates,
+     * and a lost race whose row is absent or carries a DIFFERENT fingerprint (the
+     * winner probed a different environment) propagates too — converging there
+     * would trust a state that does not describe the live environment.
+     */
+    async function probeToEstablish(liveFingerprint) {
+        try {
+            await probe(PROBE_TRIGGERS.STALE_GENERATION_BEFORE_NEW_WORK);
+        }
+        catch (error) {
+            if (!isLostStateRace(error))
+                throw error;
+            const row = await repositories.compatibility.get(rootSessionId);
+            if (row === undefined || row.fingerprint !== liveFingerprint)
+                throw error;
+            // Converged on the winner's row; the caller re-reads it.
+        }
     }
     /**
      * The freshness gate (DevPlan §20.1 trigger 5): a missing or stale
@@ -307,7 +425,7 @@ export function createCompatibilityProber(deps) {
         const liveFingerprint = computeEnvironmentFingerprint(requirements(), liveFacts);
         const state = await repositories.compatibility.get(rootSessionId);
         if (state === undefined || state.fingerprint !== liveFingerprint) {
-            await probe(PROBE_TRIGGERS.STALE_GENERATION_BEFORE_NEW_WORK);
+            await probeToEstablish(liveFingerprint);
             const fresh = await repositories.compatibility.get(rootSessionId);
             if (fresh === undefined) {
                 throw new CompatibilityError(COMPATIBILITY_ERROR_CODES.NEW_WORK_BLOCKED, `compatibility: the re-probe did not establish a durable state for '${rootSessionId}' (fail closed, §28.1)`, { rootSessionId, problem: 'no-durable-state-after-probe' });

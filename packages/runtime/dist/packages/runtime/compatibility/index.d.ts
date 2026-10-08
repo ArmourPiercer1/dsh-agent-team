@@ -31,7 +31,7 @@
 export { COMPATIBILITY_ERROR_CODES, CompatibilityError, isCompatibilityError, } from './errors.js';
 export { BLUEPRINT_DOMAIN_TO_REQUIREMENT_TYPE, compatibilityRequirementsOf, } from './blueprint.js';
 export { classifyDrift } from './drift.js';
-export { createCompatibilityProber } from './probe.js';
+export { createCompatibilityProber, isLostStateRace } from './probe.js';
 export type { CompatibilityProberDeps } from './probe.js';
 export { createCompatibilityAuthority, REPROBE_REASONS, } from './authority.js';
 export type { BlockingRequirementSummary, CompatibilityAdmissionDecision, CompatibilityAdmit, CompatibilityAuthority, CompatibilityAuthorityAdmitOptions, CompatibilityAuthorityOptions, CompatibilityBlock, CompatibilityReprobe, ReprobeReason, } from './authority.js';

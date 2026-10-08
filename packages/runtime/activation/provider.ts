@@ -158,36 +158,50 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
   /**
    * Per-team promise chain for the step-6 compatibility consultation.
    *
-   * WHY THIS CHAIN EXISTS (A4-PR7 p6t1-flake; capture and measurement:
-   * `dev/agent-workflow/evidence/a4-pr7/p6t1-flake/FINDINGS.md`).
+   * WHY THIS CHAIN WAS ADDED, AND WHAT IT IS FOR NOW (added by A4-PR7
+   * p6t1-flake; the defect it worked around was then FIXED AT THE SEAM by A4-PR7
+   * `compat-atomic`; captures and measurements:
+   * `dev/agent-workflow/evidence/a4-pr7/p6t1-flake/FINDINGS.md` and
+   * `dev/agent-workflow/evidence/a4-pr7/compat-atomic/FINDINGS.md`).
    * The module block above promises: "All durable writes for one team are
-   * serialized behind a per-team promise chain." Step 6 did not honour it.
+   * serialized behind a per-team promise chain." Step 6 did not honour it, and
    * `authority.evaluate()` is not a read: when the durable compatibility
-   * generation is MISSING or STALE it re-probes INLINE
-   * (`compatibility/authority.ts` step 3) and that re-probe WRITES —
-   * `compatibility/probe.ts:replaceState()` is `compatibility.delete()` then
+   * generation was MISSING or STALE it re-probed INLINE
+   * (`compatibility/authority.ts` step 3) and that re-probe WROTE —
+   * `compatibility/probe.ts:replaceState()` was `compatibility.delete()` then
    * `compatibility.put()` then `teamSessions.advanceGeneration()`, serialized
-   * only by the PROBER's own chain, while this provider builds a fresh
-   * authority (hence a fresh prober) on every `activate()`. N parallel
-   * activations of one cold team therefore all delete, then all put: the first
-   * put wins and every later put hits `putRecord`, whose rule is "identical
-   * stored bytes are a no-op, different bytes are `RECORD_DUPLICATE`". The
-   * record's only time-varying field is `computedAt`, a millisecond-resolution
-   * wall-clock stamp, so whether the lost write was visible AT ALL came down to
-   * two probes landing in the same millisecond — measured at 4 reds in 20 solo
-   * runs of `p6t1-parallel.test.ts`, and 100% once the stamps are forced
-   * distinct. The loser rejects `RECORD_DUPLICATE`, the chain reports
-   * `reprobe-failed`, and step 6 fail-closes an admission that had nothing
-   * wrong with it — in the other interleaving silently losing the write.
+   * only by the PROBER's own chain, while this provider builds a fresh authority
+   * (hence a fresh prober) on every `activate()`. N parallel activations of one
+   * cold team therefore all deleted, then all put: the first put won and every
+   * later put hit `putRecord`, whose rule is "identical stored bytes are a
+   * no-op, different bytes are `RECORD_DUPLICATE`". The record's only
+   * time-varying field is `computedAt`, a millisecond-resolution wall-clock
+   * stamp, so whether the lost write was visible AT ALL came down to two probes
+   * landing in the same millisecond — measured at 4 reds in 20 solo runs of
+   * `p6t1-parallel.test.ts`, and 100% once the stamps are forced distinct. The
+   * loser rejected `RECORD_DUPLICATE`, the chain reported `reprobe-failed`, and
+   * step 6 fail-closed an admission that had nothing wrong with it.
    *
-   * This chain is SEPARATE from `teamLocks` because the consultation is awaited
-   * strictly BEFORE the activation lock is acquired (the pre-reservation abort
-   * region is documented as split at that acquisition); routing it through
-   * `teamLocks` would make every activation queue behind its own unfinished
-   * tail and self-deadlock. Serializing changes scheduling only: the first
-   * admission establishes the generation, every later admission OBSERVES it
-   * fresh, which is the reading step 3 was written to perform. No status,
-   * typed code, verdict or law changes.
+   * THAT IS NO LONGER THE SHAPE OF THE WRITE. One state transition is now ONE
+   * generation-checked write (`CompatibilityRepository.replaceIfGeneration`,
+   * whose comparison runs inside the domain write chain) and no probe deletes:
+   * a loser is REPORTED instead of silently overwriting, and step 3 CONVERGES on
+   * the winner's row when that row already carries the live fingerprint. The
+   * false refusal is closed at the seam, so every caller gets it — this
+   * provider, `admission/gate.ts`, `admission/requirement-gate.ts`, the memoized
+   * root authority — instead of one caller per hotfix.
+   *
+   * THE CHAIN STAYS, for a scheduling reason rather than a durability one:
+   * without it, N concurrent activations of one cold team still run N probes and
+   * N-1 of them do durable work they then discard by converging. Serializing
+   * step 6 per team means the first activation establishes the generation and
+   * the others OBSERVE it fresh — the reading step 3 was written to perform — at
+   * one probe per team instead of N. It is SEPARATE from `teamLocks` because the
+   * consultation is awaited strictly BEFORE the activation lock is acquired (the
+   * pre-reservation abort region is documented as split at that acquisition);
+   * routing it through `teamLocks` would make every activation queue behind its
+   * own unfinished tail and self-deadlock. No status, typed code, verdict or law
+   * changes here.
    */
   const compatibilityLocks = new Map<string, Promise<unknown>>()
 

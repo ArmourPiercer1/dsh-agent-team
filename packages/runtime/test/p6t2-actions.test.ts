@@ -1103,9 +1103,15 @@ describe('P6-T2 D3: a STALE durable compatibility state is re-probed, never trus
     // verdict (OPEN) admits the follow-up, and the row is replaced
     // (generation 2, the real environment fingerprint).
     expect(d3.followUp.kind).toBe('work-admitted')
-    // Re-probe over an EXISTING stale row = delete + put + advance
-    // (3 writes: two compatibility, one team_sessions stamp).
-    expect(d3.followUp.firstTables).toEqual(['compatibility', 'compatibility', 'team_sessions'])
+    // REVISED PIN — A4-PR7 `compat-atomic`, on the project owner's ruling on the
+    // p6t1-flake escalation. This line pinned the OLD shape of a re-probe over an
+    // EXISTING row: `delete` + `put` + advance (two `compatibility` writes). That
+    // sequence left the compatibility row readable as ABSENT between its two
+    // durable writes, which is how a concurrent consultation lost its state and
+    // how a crash lost it permanently. One re-probe is now ONE generation-checked
+    // write plus the generation stamp: `compatibility` then `team_sessions`; the
+    // third table in the window is the admission's own work fact (`ledger`).
+    expect(d3.followUp.firstTables).toEqual(['compatibility', 'team_sessions', 'ledger'])
     expect(d3.rowAfter.status).toBe('OPEN')
     expect(d3.rowAfter.generation).toBe(2)
     expect(d3.rowAfter.fingerprint === 'fp-p6t2-durable').toBe(false)

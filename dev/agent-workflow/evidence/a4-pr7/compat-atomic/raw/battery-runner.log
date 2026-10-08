@@ -1,0 +1,26 @@
+=== 0. tree identity
+04f8d7761c03b24dfa10605253ab427bffbb6f28
+porcelain lines: 107
+=== 1. nine-root census (identity sets, not counts)
+vitest census rc=1 ()
+census-tip identities: 22 (base: 22)
+--- fail-set diff base->tip
+[fail-set] baseline=22 current=22 NEW=0 FIXED=0
+=== 2. determinism loops (20 sequential solo runs each)
+TOTAL final-p6t1parallel: 0 failed runs of 20
+TOTAL final-spec: 0 failed runs of 20
+=== 3. the frozen gate + the scan-count leg
+ Test Files  2 passed (2)
+      Tests  39 passed (39)
+=== 4. typecheck / lint / lint-identities
+typecheck rc=0 errorTS=0
+lint rc=1 ✖ 160 problems (128 errors, 32 warnings)
+lint-identities: baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+=== 5. committed build matches this commit
+check:artifacts:head rc=0 DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0
+=== 6. blueprint-version cleanliness (run from the toplevel, after git add)
+verify-blueprint rc=1 verdict=verdict: dirty-or-unknown offending=7
+this lane's files named there: 1
+=== 7. assertion-count discipline (base -> tip, no silent removals)
+expect( base=23052 in 518 files; tip=23106 in 519 files
+=== battery done

@@ -1,0 +1,278 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-compat-atomic-state
+
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts (18 tests | 17 failed) 14ms
+     ✓ every one of 8 rounds produces the SAME outcome inventory (a property, not a coincidence) 1ms
+     × exactly ONE transition is committed per round: one state write plus one stamp advance 6ms
+     × NEITHER consultation is refused: the loser converges on the winner's row instead of failing work 1ms
+     × the row is never absent and never torn: one probe's complete record survives the race 1ms
+     × both consultations are served and the drift-bound generation advances exactly once 0ms
+     × a consultation started while the winner is committed-but-unstamped sees a PRESENT row and does not probe 0ms
+     × the product path performs NO delete on the compatibility store (the window is removed, not rescheduled) 0ms
+     × a conditioned write on a generation that moved on raises RECORD_DUPLICATE / stale-generation-compatibility-state 0ms
+     × the loser writes NOTHING and the winner's row is untouched (a lost race is detectable, never destructive) 0ms
+     × the cold shape of the same signal: a create over an occupied key raises the typed duplicate 0ms
+     × the crash reaches the caller as a typed seam failure (identity flattened by normalizeSeamError) 0ms
+     × after a real reopen the state SURVIVES: same generation, same status, and the human acknowledgement intact 0ms
+     × recovery continues the generation line from the surviving row instead of restarting it 0ms
+     × the durable state survives the restart and the second process sees it as FRESH (no re-probe, zero writes) 0ms
+     × the same consultation over a FRESH EMPTY store is a different shape (the leg above is not vacuous) 0ms
+     × a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict 0ms
+     × between the delete and the put the row reads as ABSENT to anyone who looks 0ms
+     × and that window costs a durable DELETE that the product path no longer performs 0ms
+
+ Test Files  1 failed (1)
+      Tests  17 failed | 1 passed (18)
+   Start at  21:44:16
+   Duration  791ms (transform 434ms, setup 0ms, import 667ms, tests 14ms, environment 0ms)
+
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A1: two independent consultations race one COLD generation > exactly ONE transition is committed per round: one state write plus one stamp advance
+AssertionError: expected [] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "op": "put",
+-     "table": "compatibility",
+-   },
+-   {
+-     "op": "update",
+-     "table": "team_sessions",
+-   },
+- ]
++ []
+
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:837:28
+    835|     const rounds = coldRoundList()
+    836|     for (const round of rounds) {
+    837|       expect(round.writes).toEqual([
+       |                            ^
+    838|         { table: 'compatibility', op: 'put' },
+    839|         { table: 'team_sessions', op: 'update' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A1: two independent consultations race one COLD generation > NEITHER consultation is refused: the loser converges on the winner's row instead of failing work
+AssertionError: expected 'reprobe' to be 'admit' // Object.is equality
+
+Expected: "admit"
+Received: "reprobe"
+
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:849:35
+    847|     for (const round of rounds) {
+    848|       for (const decision of round.decisions) {
+    849|         expect(decision.decision).toBe('admit')
+       |                                   ^
+    850|         expect(decision.reprobeReason).toBeUndefined()
+    851|         expect(decision.cause).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A1: two independent consultations race one COLD generation > the row is never absent and never torn: one probe's complete record survives the race
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:864:39
+    862|     const rounds = coldRoundList()
+    863|     for (const round of rounds) {
+    864|       expect(round.row !== undefined).toBe(true)
+       |                                       ^
+    865|       expect(round.row?.status).toBe('OPEN')
+    866|       expect(round.row?.acks).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A2: two independent consultations race one WARM (stale) generation > both consultations are served and the drift-bound generation advances exactly once
+Error: scenario A2 warm round 0 did not complete: Error: warm race: the warm-up did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ warmRoundList packages/runtime/test/a4-compat-atomic-state.test.ts:814:21
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:874:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A3: the hole cannot be entered > a consultation started while the winner is committed-but-unstamped sees a PRESENT row and does not probe
+Error: scenario A3 hole leg did not complete: Error: hole leg: the warm-up did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:891:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A3: the hole cannot be entered > the product path performs NO delete on the compatibility store (the window is removed, not rescheduled)
+Error: scenario A3 hole leg did not complete: Error: hole leg: the warm-up did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:900:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A4: the version conflict is raised by name and writes nothing > a conditioned write on a generation that moved on raises RECORD_DUPLICATE / stale-generation-compatibility-state
+Error: scenario A4 conflict leg did not complete: Error: conflict leg: the warm-up did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:907:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A4: the version conflict is raised by name and writes nothing > the loser writes NOTHING and the winner's row is untouched (a lost race is detectable, never destructive)
+Error: scenario A4 conflict leg did not complete: Error: conflict leg: the warm-up did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:917:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A4: the version conflict is raised by name and writes nothing > the cold shape of the same signal: a create over an occupied key raises the typed duplicate
+Error: scenario A4 conflict leg did not complete: Error: conflict leg: the warm-up did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:924:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A5: a crash inside the transition keeps the previous state > the crash reaches the caller as a typed seam failure (identity flattened by normalizeSeamError)
+Error: scenario A5 crash leg did not complete: Error: crash leg: warm-up expected a blocked warning, got reprobe
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:935:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A5: a crash inside the transition keeps the previous state > after a real reopen the state SURVIVES: same generation, same status, and the human acknowledgement intact
+Error: scenario A5 crash leg did not complete: Error: crash leg: warm-up expected a blocked warning, got reprobe
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:945:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A5: a crash inside the transition keeps the previous state > recovery continues the generation line from the surviving row instead of restarting it
+Error: scenario A5 crash leg did not complete: Error: crash leg: warm-up expected a blocked warning, got reprobe
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:952:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A6: restart reconstruction from a real reopened store > the durable state survives the restart and the second process sees it as FRESH (no re-probe, zero writes)
+Error: scenario A6 restart leg did not complete: Error: restart leg: the first consultation did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:961:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A6: restart reconstruction from a real reopened store > the same consultation over a FRESH EMPTY store is a different shape (the leg above is not vacuous)
+Error: scenario A6 restart leg did not complete: Error: restart leg: the first consultation did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:971:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A7: convergence has a boundary > a loser whose row describes a DIFFERENT environment still fails closed with the typed conflict
+Error: scenario A7 diverge leg did not complete: Error: diverge leg: the warm-up did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:979:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A8: the counterfactual — the delete -> put sequence at the repository seam > between the delete and the put the row reads as ABSENT to anyone who looks
+Error: scenario A8 sequence leg did not complete: Error: sequence leg: the first consultation did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:994:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/17]⎯
+
+ FAIL  packages/runtime/test/a4-compat-atomic-state.test.ts > A4 compat-atomic A8: the counterfactual — the delete -> put sequence at the repository seam > and that window costs a durable DELETE that the product path no longer performs
+Error: scenario A8 sequence leg did not complete: Error: sequence leg: the first consultation did not admit (reprobe)
+ ❯ must packages/runtime/test/a4-compat-atomic-state.test.ts:206:9
+    204|   if (captured.ok) return captured.value
+    205|   const error = captured.error as Error | undefined
+    206|   throw new Error(
+       |         ^
+    207|     `scenario ${captured.label} did not complete: ${error?.name ?? 'un…
+    208|   )
+ ❯ packages/runtime/test/a4-compat-atomic-state.test.ts:1000:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/17]⎯
+

@@ -54,7 +54,7 @@
  */
 import { computeEnvironmentFingerprint, evaluateCompatibility, parseRequirements, } from '../../domain/compatibility/src/index.js';
 import { compatibilityRequirementsOf } from './blueprint.js';
-import { createCompatibilityProber } from './probe.js';
+import { createCompatibilityProber, isLostStateRace } from './probe.js';
 import { PROBE_TRIGGERS } from './types.js';
 /** The closed re-probe failure reasons (the chain could not produce a verdict). */
 export const REPROBE_REASONS = {
@@ -72,9 +72,17 @@ export const REPROBE_REASONS = {
  * compatibility generation line.
  *
  * @param options - the injected repositories / blueprint / facts port.
- * @returns the authority (one per call; entry points build one per
- *   consultation and rely on the durable store + storage write chain for
- *   cross-instance consistency).
+ * @returns the authority. One per call, so NOTHING inside this object is shared
+ *   across consultations — cross-instance consistency is therefore not assumed,
+ *   it is ESTABLISHED at the seam by two mechanisms: the compatibility state
+ *   transition is a generation-checked write whose comparison runs inside the
+ *   domain's write chain (`CompatibilityRepository.replaceIfGeneration`), and a
+ *   consultation whose probe loses that check CONVERGES on the winner's row when
+ *   the row already carries the live fingerprint (step 3), and still fails
+ *   closed when it does not. Until A4-PR7 `compat-atomic` this paragraph promised
+ *   consistency from "the durable store + storage write chain" while the state
+ *   replace was an unsynchronized `delete` + `put` — a promise the code did not
+ *   keep, which is how a deterministic false refusal survived review.
  */
 export function createCompatibilityAuthority(options) {
     const rootSessionId = options.rootSessionId;
@@ -114,12 +122,32 @@ export function createCompatibilityAuthority(options) {
                 reprobed = true;
             }
             catch (error) {
-                return {
-                    chainOk: false,
-                    reprobeReason: REPROBE_REASONS.REPROBE_FAILED,
-                    fingerprint: liveFingerprint,
-                    cause: error instanceof Error ? error : undefined,
-                };
+                // CONVERGENCE (A4-PR7 `compat-atomic`, the owner ruling on the p6t1
+                // escalation): this chain's probe lost the conditioned write, which
+                // means ANOTHER writer durably committed a state in the same instant.
+                // If that row already carries the fingerprint this chain wanted, the
+                // establishment it was waiting for HAS happened, and refusing here is
+                // the false ACTIVATION_COMPATIBILITY_BLOCKED_FATAL that escalation
+                // measured (one consultation refused per race, deterministically).
+                // So the loser converges; a non-race fault, and a lost race whose row
+                // is absent or carries a DIFFERENT fingerprint, still fail closed
+                // exactly as before. `reprobed: true` below means "this consultation
+                // established the generation, by winning or by converging on the
+                // winner" — the two are told apart by the durable record (a converged
+                // consultation fired no `onProbe` of its own and did not author the
+                // row it reads), which is what the pins assert.
+                const row = isLostStateRace(error)
+                    ? options.repositories.compatibility.get(rootSessionId)
+                    : undefined;
+                if (row === undefined || row.fingerprint !== liveFingerprint) {
+                    return {
+                        chainOk: false,
+                        reprobeReason: REPROBE_REASONS.REPROBE_FAILED,
+                        fingerprint: liveFingerprint,
+                        cause: error instanceof Error ? error : undefined,
+                    };
+                }
+                reprobed = true;
             }
             state = options.repositories.compatibility.get(rootSessionId);
             if (state === undefined) {
