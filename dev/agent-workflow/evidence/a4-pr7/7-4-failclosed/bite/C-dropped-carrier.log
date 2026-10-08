@@ -1,0 +1,105 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-failclosed
+
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts (33 tests | 6 failed) 105ms
+     ✓ S1: revoke revealing a STATIC allow refuses under an empty envelope, with ZERO write 10ms
+     × S1b: the same revoke passes ONLY with allow-ceiling coverage of the WHOLE matcher 6ms
+     × S3: deny->ASK reveal is expansion VERBATIM (ADR §6): refused without ceiling, accepted at ceiling-ask 7ms
+     ✓ S2: deny revealing DENY (equal) is legal with no envelope 3ms
+     ✓ S4: DECLARED-NONE facts (declared deny fallback) is DECIDABLE — reveal-equal is legal… 2ms
+     ✓ S4b: …but UNKNOWN facts refuse EFFECT_CONTEXT_UNAVAILABLE even when the envelope would cover (unknown ≠ declared-none; the envelope cannot substitute for facts) 4ms
+     ✓ S5: revoking an ALLOW rule can never raise anything — legal WITHOUT any facts (provable case iii) 3ms
+     ✓ S7: lifting a shadowing subtree deny so a surviving child ALLOW answers needs allow-ceiling coverage — refused at empty envelope (reveal channel: the REMAINING overlay rule, under declared-none facts) 3ms
+     ✓ S7c: the SAME revoke under UNKNOWN facts refuses EFFECT_CONTEXT_UNAVAILABLE — the subtree RESIDUAL reveal is genuinely undecidable and is never assumed harmless 3ms
+     × S7b: the same revoke with envelope coverage of the removed matcher (ceiling allow) commits; the surviving allow now ANSWERS 3ms
+     ✓ B1 (BUG2): exact ask under an overlay-matching subtree allow is a TIGHTENING — accepted with no envelope and no facts, for EVERY fallback hypothesis 15ms
+     ✓ B2 (unknown): a first-ever overlay rule over UNKNOWN lower facts refuses CONTEXT — never a deny-masquerade EXPANSION label 2ms
+     ✓ B2c (declared deny): over DECLARED-NONE facts the same ask grant IS a real deny->ask expansion — envelope-coded refusal 2ms
+     ✓ B2b (known allow): over a STATIC allow layer the same ask grant is a KNOWN tightening — accepted 2ms
+     × S6: subtree-deny removal revealing a STATIC allow under its root is refused at empty envelope, needs subtree-ceiling-allow coverage 5ms
+     ✓ S6c: coverage of the matcher with a too-LOW ceiling refuses (the reveal rises to allow, the envelope says ask) 2ms
+     × S6d: fallback-ASK region (no rule below, declared ask fallback): subtree-deny removal rises deny->ask — needs ceiling-ask 4ms
+     ✓ (e) WIDTH-conservative: an envelope covering ONE child of a granted subtree does not pass the other rising regions 2ms
+     × (f) nested exception: a non-rising child region cannot rescue the rising residual — ceiling ask refuses, ceiling allow passes 4ms
+     ✓ all-or-nothing across mutation rules: one uncovered rising class refuses the WHOLE mutation, zero write 2ms
+     ✓ X1 CANONICAL (parent fixture): subtree(R)=allow on a lane with NO subtreeContains; DECLARED-NONE; EMPTY envelope; §7.5 — the unknown relation refuses the SUBTREE GRANT ITSELF, typed, zero write [re-scoped: the state is no longer constructible; the reveal law stays pinned by X1p] 2ms
+     ✓ X1p: the SAME revoke WITH the predicate is the decidable deny->allow reveal — EXPANSION-coded refusal (the gate changes nothing when the relation is known) 2ms
+     ✓ X2 EQUAL-SUBTREE REWRITE (parent addition): subtree(R)=deny with NO predicate; DECLARED-NONE; EMPTY envelope; §7.5 — the equal-subtree grant is refused TYPED before any state exists [re-scoped: the rewrite is no longer reachable; deny->ask VERBATIM stays pinned by X2p] 2ms
+     ✓ X2p: the SAME equal-subtree deny->ask WITH the predicate is refused EXPANSION-coded (ladder-strict: deny->ask VERBATIM needs ceiling-ask coverage) 2ms
+     ✓ X3 STATIC subtree allow exposed by a subtree mutation with NO predicate; §7.5 — the refusal is TYPED and the overlay stays EMPTY [re-scoped: the overlay deny can never be written; the static reveal stays pinned by X3p] 2ms
+     ✓ X3p: the SAME static-subtree reveal WITH the predicate is the decidable deny->allow expansion — EXPANSION-coded refusal 2ms
+     ✓ X4 GATE SPECIFICITY: EXACT-ONLY context with NO predicate flows NORMALLY — decidable tightening accepted, decidable expansion still EXPANSION-coded (the gate never over-refuses what contains no subtree matcher) 2ms
+     ✓ X5 ENVELOPE-side unknown coverage is CONTEXT, not a mislabeled EXPANSION: exact grant over declared-none with ONLY a subtree envelope matcher and NO predicate 3ms
+     ✓ a grant that raises ask->allow is ONE rise region carrying the risen effect and the mutation width 1ms
+     ✓ a tightening and an identity are NOT rises (the region partition reports nothing to gate) 1ms
+     ✓ a REVEAL (removal that lets a lower rule answer) is a rise the classifier reports, not a no-op 0ms
+     ✓ the extracted classifier and the Leader judgement never disagree about the same input 0ms
+     ✓ an undeterminable region still beats an uncovered one (the refusal order is data, not luck) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals are expansions (ladder-strict) — static reveal channel > S1b: the same revoke passes ONLY with allow-ceiling coverage of the WHOLE matcher
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals via the REMAINING overlay rule (S7) and same-layer specificity (B1/B2) > S7b: the same revoke with envelope coverage of the removed matcher (ceiling allow) commits; the surviving allow now ANSWERS
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > S6: subtree-deny removal revealing a STATIC allow under its root is refused at empty envelope, needs subtree-ceiling-allow coverage
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to allow at exact:file:/srv/worlds/a3p3/out.txt; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals are expansions (ladder-strict) — static reveal channel > S3: deny->ASK reveal is expansion VERBATIM (ADR §6): refused without ceiling, accepted at ceiling-ask
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to ask at exact:file:/srv/worlds/a3p3/out.txt; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > S6d: fallback-ASK region (no rule below, declared ask fallback): subtree-deny removal rises deny->ask — needs ceiling-ask
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to ask at subtree:file:/srv/worlds/a3p3; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > (f) nested exception: a non-rising child region cannot rescue the rising residual — ceiling ask refuses, ceiling allow passes
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to allow at subtree:file:/srv/worlds/a3p3; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 27 passed (33)
+   Start at  13:01:15
+   Duration  1.15s (transform 747ms, setup 0ms, import 940ms, tests 105ms, environment 0ms)
+

@@ -33,9 +33,22 @@ same file (the control recheck at `:2332`, the projection at `:3675`) fail close
 
 ## 2. The bill, re-measured on the flipped corpus
 
-Identity diffs (leg identities, not counts) over the whole population, run twice: once on
-the lane's pre-merge base and once after merging `258d2b48`. The post-merge pair is the one
-that must be spent, because the base moved under the lane (PR #179).
+Identity diffs (leg identities, not counts) over the population the repo's own vitest
+config defines — `include: ['packages/*/test/**/*.test.ts']`, i.e. NINE package roots:
+`runtime`(350 files at HEAD) `testkit`(29) `client`(28) `domain`(26) `storage`(23)
+`remote`(15) `contracts`(13) `tools`(12) `legacy`(7) — run twice: once on the lane's
+pre-merge base and once after merging `258d2b48`. The post-merge pair is the one that
+must be spent, because the base moved under the lane (PR #179).
+
+**Read the first column as five-root, and read it as a defect of mine.** That run recorded
+`417 files / 5047 legs` while covering exactly `contracts legacy domain storage runtime`;
+`git ls-tree` on the same commit counts **501** test files across all nine roots, so the row
+silently dropped `tools remote testkit client` — `29+28+15+12 = 84` files, including this
+gate's own suite. The **spent** pair is nine-root on both sides (`502` files, per-root counts
+in `bill-check.txt`), and all five files of the 54 live in `packages/runtime/test/`, so the
+bill itself loses nothing; the label "whole population" did not apply to the left column.
+Found by the coordinator's confession of the same blind spot, not by my own diff — recorded
+in `REPAIRS.md` §7.2.
 
 | | pre-merge base `6174f1e5` | post-merge base (branch @ `751394dc` with both production edits backed out) |
 | --- | --- | --- |
@@ -308,6 +321,37 @@ that inherits the §7.8 instrument.
 **F-7 — the population's denominator moved mid-lane.** Pre-merge 417 files / 5047 legs;
 post-merge 502 / 6273. A bill measured against the old denominator is not spendable, which is
 why §2 reports both pairs and cites the post-merge one as the bill.
+*F-7 is also the row where my own run was narrower than the config: see §2's
+five-root disclosure and `REPAIRS.md` §7.2.*
+
+**F-8 — there is no `any` ceiling.** The repair seam's first draft declared `maximumEffect:
+allow` over `{ kind: 'any' }` matchers and every leg died with `authority-ceiling-insufficient
+… reaches only no-authority`. `matcherCovers`
+(`packages/domain/authority-envelope/src/authority-envelope.ts:213-231`) branches on
+`fingerprint`, on `exact`, and by elimination on `subtree` — no `any` arm. A document-level
+`any` is read down the subtree branch with an `undefined` resource, which covers nothing or
+returns `undeterminable: true`, and `evaluateMatches` step 2 lets one undecidable same-class
+rule undetermine the whole scope. `any` is a static-layer / mutation-matcher kind only
+(`permission-mutation.ts:824`). Consequence for every lane that follows: **a declared ceiling
+is a cell set**. Full write-up `REPAIRS.md` §4.1.
+
+**F-9 — an empty context carrier is a SECOND, narrower ceiling.** Declaring only the hard
+ceiling left nine legs red on the *expansion* plane. A `leader` install is bound by
+`['teamHardEnvelope','permissionMutationEnvelope']` (`authority-ceiling.ts:290-310`) and the
+meet runs over bound documents, so a context whose carrier is `{ rules: [] }` caps every
+Leader drive — including the legs whose subject is what the carrier says. The repair mirrors
+the lane's own carrier into the context, which makes the v3 meet equal Alpha.3's coverage law
+instead of narrowing it.
+
+**F-10 — in an approval-wired lane, the ASK answers before the ceiling refusal does.** Zeroing
+a declared ceiling in a root-assembled world produced
+`TEAM_RUNTIME_CALLER_NOT_FOUND — root session … has no team-root binding` (bite class D in
+`bite/README.md`): a refused Leader rise with the port present and the proposal lane wired is
+escalated into a durable ask, and the ask resolves the caller through
+`admission/resolve.ts:246-266`. Production always has that binding, so this is a fixture
+observation and I changed no product code for it — but the §7.5 deletion lane turns more
+fixtures approval-wired, and it should expect refusals to arrive wearing the ask path's
+clothes, with the durable row as a prerequisite.
 
 ## 6. Instruments that lied to me this round
 
@@ -335,20 +379,31 @@ why §2 reports both pairs and cites the post-merge one as the bill.
    typecheck`) prints 0. Both forms are recorded in `typecheck-nobail.txt` and
    `typecheck-nobail-CORRECT-FORM.txt` so nobody has to re-discover which number means what.
 
-8. **`check-artifacts-committed.mjs`'s own sentence** (quoted in §7.8, reproduced here because
-   I hit it): `OK: 1508 files … committed install-surface artifacts match the fresh build`
-   over a surface no fresh build had produced, because worktree-vs-index cannot see staleness.
-   `check:artifacts:head` was the instrument that told the truth here, and it graded my
-   incomplete commit `refused`/`stale` by token, not by prose.
-
+8. **`check-artifacts-committed.mjs`'s own sentence — RETRACTED against current `master`, and
+   the tree I measured it on is named here.** I quoted
+   `OK: 1508 files … committed install-surface artifacts match the fresh build` as an `OK`
+   printed over a surface no fresh build had produced. That sentence is real **on `6174f1e5`,
+   this lane's pre-merge base**, where it sits at
+   `scripts/check-artifacts-committed.mjs:161`. It does not exist on current `master` or on
+   this tip (`git show master:scripts/check-artifacts-committed.mjs | grep -c 'match the fresh
+   build'` → `0`; same at `HEAD`), because the PR #179 this branch merged at `258d2b48` rewrote
+   the check into four drift classes and replaced the sentence with its own correction:
+   *"This script does not build, so this says the tree matches what is staged, NOT that a build
+   produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own
+   build."* The coordinator's grep caught me; the method survives the retraction — trust the
+   `DSH-ARTIFACT-VERDICT … verdict=ok|stale|refused` token, never the prose.
 ## 7. What this lane did NOT do (the disclosure)
 
-* **The 54-leg fixture bill is not repaired.** The brief's rule is explicit: land Tasks 1–3
-  plus a complete inventory and STOP, branch green-or-disclosed. The branch is disclosed:
-  `78` titled reds = `34` pre-existing at the merged base (including 3 in the merge gate's own
-  dependencies and the `p6t1-parallel` flake) + `54` fixture legs of this bill − `10`
-  accounted red→green. The merge gate itself is `29 passed (29)` on this tip. Each of the 54
-  has an identity, a source line, an attribution, and a repair class above.
+* **The 54-leg fixture bill is PAID, in `7f382ac7`, at the seam.** The earlier version of this
+  bullet disclosed the bill instead of spending it (the brief at that point said land-and-stop);
+  the stage gate bound afterwards is §7.6's — *Alpha.4 may remove baseline failures but adds
+  none* — so 54 newly-red legs were a merge blocker however well disclosed. Every one of the 54
+  is repaired by declaring the authority world the fixture presupposed (five worlds, three
+  shapes, one injection each), none by bending an assertion; three legs (`X1`/`X2`/`X3`) needed a
+  recorded re-scope because their state stopped being constructible at all. Per-file and per-leg
+  record, the bite proofs, and the pre-v3 reachability measurement:
+  **[`REPAIRS.md`](./REPAIRS.md)** and **[`bite/README.md`](./bite/README.md)**. Final identity
+  diff against the post-merge base: `NEW 0` (`bill-check.txt`).
 * **`leaderEnvelopeCoverage` is untouched**, per instruction: deleting it is the §7.5 deletion
   lane's bill (40 names / 39 legs), and this lane's job was to make that deletion testable.
   What this lane contributes to that testability: with the port-absent skip gone, a corpus
@@ -360,3 +415,9 @@ why §2 reports both pairs and cites the post-merge one as the bill.
   captured; (ii) PIN-5's strengthening, which adds assertions and names itself; (iii)
   `settleMutation` carrying the typed `problem` slot (additive, and the reason is stated in
   its comment); (iv) one unused-import removal in a file this lane created.
+  After the repair commit the same sentence still holds, extended: (v) the five fixture worlds
+  gained ceiling declarations and one line of production wiring; (vi) the three `X` legs gained
+  bodies that assert the refusal their world can now only produce, with their titles changed to
+  say so and their twins holding the old law (`REPAIRS.md` §3). Zero assertion edits means no
+  assertion was changed to match new output — not that no body was ever rewritten, and the three
+  rewrites are named with their old and new identities rather than being folded into "repaired".
