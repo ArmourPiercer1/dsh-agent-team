@@ -790,6 +790,9 @@ Three planes, and they must stay three:
 
 **Fix the lane-B RED wording, which currently inverts A1-20(c).** "Persisted Team bound to v1/v2 fails before Leader/Member activation" reads as *make construction throw*, which is precisely what A1-20(c) forbids. The required RED is: **successful construction + zero `records.creates` + a typed migration refusal from `boot()`**. Reuse the existing zero-creates mechanism: `createScriptedAgentsDouble` (`packages/runtime/test/p8s3b-result-effects.test.ts:293`) consumed as `records.creates.length === 0` (as at `packages/runtime/test/t4a-capability-wiring.test.ts:476`).
 
+
+> **勘误（2026-10-08，轮 42，协调者；原文保留以示轨迹）** —— 上面这条指令**按字面无法执行**，"零 creates" 机制本身是对的，指路写错了四处（由 `fix-a4-collection-errors-32` 车道实测，见 `dev/agent-workflow/evidence/a4-pr7/collection-errors/FINDINGS.md`）：**(a)** 当时 `createScriptedAgentsDouble` 是模块私有符号（现导出为 `p8s3b-result-effects.test.ts:301`）；**(b)** 它所在文件当时根本不收集；**(c)** `records.creates` 是 **bridge（`createLiveWorld`）** 的表面，该 double 直接暴露的是 `creates`；**(d)** 被引的 `t4a-capability-wiring.test.ts:476` 实为 `:488`，且那里的 `worldResume` 走的是 `createLiveWorld`，从未使用这个 helper。**合法消费路径 = `createLiveWorld(...).records.creates`（或把 double 提为非 spec 的 helper 模块）**。**新增禁止项（实测）**：为复用而 `import` 一个 `.test.ts` 会把该文件全部腿重新注册进导入方（探针实跑 18 条：自己 1 条 + 对方 17 条，外加约 20 个模块级 world）——**复用 helper 不得从 spec 文件里拿**。**证据纪律（由新 `M1` 腿执行确立）**：double 见证的语义是"拒绝发生在 `agents.create` **之前**"；拒绝若发生在 setup 内部，`creates` 仍会计数，因此 **`creates === 0` 只有在拒绝前置于 `agents.create` 时才是证据**。
+
 Placement is achievable and named: the resume path reads the row, the first durable write is `prober.probe`, and `live.boot()` follows — the refusal sits **between the row read and the first durable write**, and must add an explicit `resolveBoundBlueprint(rootSessionId)`, because `boundSnapshot` comes from the anchor rather than from the row.
 
 #### 7.3 — The v3-only cutover (only now)
