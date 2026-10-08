@@ -36,6 +36,7 @@
     "build:composition": "node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs",
     "setup": "pnpm build && pnpm build:composition",
     "check:artifacts": "node scripts/check-artifacts-committed.mjs",
+    "check:artifacts:head": "node scripts/check-artifacts-at-head.mjs",
     "typecheck": "pnpm -r run typecheck",
     "lint": "eslint .",
     "lint:identities": "node scripts/lint-identities.mjs",

@@ -1,0 +1,31 @@
+[check-artifacts-at-head] installing the scratch from store recorded in node_modules/.modules.yaml: /home/user/dsh-plugins/dsh-agent-team/.pnpm-store
+[check-artifacts-at-head] materialised HEAD in a scratch worktree and is building it there
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1
+[check-artifacts-committed] OK: 1508 files — working tree equals the git INDEX for both install surfaces (incl. 1 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0
+[check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).
+node:fs:1281
+  const opts = validateRmOptionsSync(path, options, false);
+               ^
+
+SystemError [ERR_FS_EISDIR]: Path is a directory: rm returned EISDIR (is a directory) /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase/.scratch/artifact-at-head
+    at rmSync (node:fs:1281:16)
+    at cleanup (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase/scripts/check-artifacts-at-head.mjs:204:3)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase/scripts/check-artifacts-at-head.mjs:303:3
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  code: 'ERR_FS_EISDIR',
+  info: {
+    code: 'EISDIR',
+    message: 'is a directory',
+    path: '/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase/.scratch/artifact-at-head',
+    syscall: 'rm',
+    errno: 21
+  },
+  errno: [Getter/Setter],
+  syscall: [Getter/Setter],
+  path: [Getter/Setter]
+}
+
+Node.js v24.21.0

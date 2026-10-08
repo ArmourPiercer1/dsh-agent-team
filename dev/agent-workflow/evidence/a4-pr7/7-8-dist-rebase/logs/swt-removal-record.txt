@@ -1,0 +1,11 @@
+=== BEFORE ===
+2:/home/user/dsh-plugins/dsh-agent-team/.swt                             2683653a (detached HEAD)
+HEAD inside .swt: 2683653a build(a4-pr7): re-base the committed install surface onto HEAD source
+porcelain lines inside .swt: 0
+size: 376M
+registrations total: 114
+=== AFTER ===
+no .swt registration
+dir exists: no
+registrations total: 113
+recreate with: git -C /home/user/dsh-plugins/dsh-agent-team worktree add --detach .swt 2683653a

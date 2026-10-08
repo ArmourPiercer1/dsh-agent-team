@@ -237,7 +237,10 @@ export async function evaluateAllScopes(repositories, blueprint, rootSessionId, 
     //    materialization) — a read failure is a chain failure (fail-closed,
     //    the same contract as the team-scope facts read); without it (factory
     //    worlds) the same team-scope facts array is used (legacy).
-    if (blueprint.schemaVersion === 2) {
+    // A4-PR7 §7.3 Option A (decision record: dev/agent-workflow/evidence/a4-pr7/7-3-decision/Dossier.md):
+    // the §E.2 grammar is a property of the blueprint SHAPE, not of its version digit — the scope list
+    // `inputs.templates` is the shape (empty for a document that declares nothing), so no version test.
+    {
         for (const [templateId, requirementInputs] of Object.entries(inputs.templates)) {
             let templateFacts;
             if (templateEnvironmentFacts === undefined) {

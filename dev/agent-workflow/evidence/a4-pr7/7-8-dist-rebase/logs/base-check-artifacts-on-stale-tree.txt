@@ -1,0 +1,2 @@
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+CHECK_ARTIFACTS_EXIT=0   <- run at f0485b15 with a clean porcelain and 20 stale files

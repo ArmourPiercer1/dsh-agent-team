@@ -1,0 +1,12 @@
+BASE  total_legs=5043 titled_red=18 collerr=3 failed_tests=18
+AFTER total_legs=5043 titled_red=19 collerr=3 failed_tests=19
+--- NEW (1) ---
+NEW  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) five activated results, five COMMITTED operations, five members, five child Sessions
+--- RESOLVED (0) ---
+--- collection-error file identities: base=3 after=3 ---
+base packages/runtime/test/p8s3b-result-effects.test.ts :: agent-bindings: sessionPersistence.exists public seam is unavailable
+base packages/runtime/test/t12a-b2-child-identity.test.ts :: agent-bindings: capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member) (code: capability-template-unresolved)
+base packages/runtime/test/t12a-glue-handoff-ports.test.ts :: blueprint document must start with a --- frontmatter delimiter line
+after packages/runtime/test/p8s3b-result-effects.test.ts :: agent-bindings: sessionPersistence.exists public seam is unavailable
+after packages/runtime/test/t12a-b2-child-identity.test.ts :: agent-bindings: capability template unresolved for 'session-team-child-0921004bd8be78e1e76cb9359d5805b4' (reason=template-id-missing instanceId=inst-t12ab2member) (code: capability-template-unresolved)
+after packages/runtime/test/t12a-glue-handoff-ports.test.ts :: blueprint document must start with a --- frontmatter delimiter line

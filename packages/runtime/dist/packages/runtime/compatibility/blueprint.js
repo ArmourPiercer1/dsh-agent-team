@@ -69,7 +69,9 @@ export function compatibilityRequirementsOf(blueprint) {
     // byte-identical to the pre-PR-E bridge. The structured requirements are
     // already in the engine's vocabulary (explicit requirementId / type /
     // subjects / complete) — a passthrough, no mapping fork.
-    if (blueprint.schemaVersion === 2 && blueprint.teamRequirements !== undefined) {
+    // A4-PR7 §7.3 Option A (decision record: dev/agent-workflow/evidence/a4-pr7/7-3-decision/Dossier.md):
+    // the §E.2 grammar is a property of the blueprint SHAPE, not of its version digit — presence decides.
+    if (blueprint.teamRequirements !== undefined) {
         for (const requirement of blueprint.teamRequirements) {
             inputs.push({
                 requirementId: requirement.requirementId,
