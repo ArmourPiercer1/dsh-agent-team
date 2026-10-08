@@ -1980,6 +1980,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/testkit/test/a4p7-merge-gate.test.ts',
     ]    // A4-PR2: the total is the base plus the derived PR2 list below, so the pin
     // moves exactly when the named files exist and cannot move for an unnamed one.
+    // A4-PR7 Task 7.3 Option A (`feat/a4-73-grammar-version-agnostic`): the two instruments
+    // the §7.3 decision record had to write by hand and ship as throwaway probes
+    // (`dev/agent-workflow/evidence/a4-pr7/7-3-decision/probes/`), landed as committed tests.
+    // TWO new scannable files — the identity twin in the package that owns the hash
+    // (`packages/domain/test/`) and the enforcement twin in the package that owns the gates
+    // (`packages/runtime/test/`). Every other write on this branch is an EDIT to a path this
+    // scan already counts (the five relaxed gates + the one widened test mirror), and an edit
+    // is not an increment; evidence `.md`/`.txt` under `dev/agent-workflow/evidence/` is
+    // outside this scan's `packages/**` scope. Same discipline as every list here: each path
+    // is asserted present BY PATH below and the length is tied to the movement of the total,
+    // which is derived — never written by hand.
+    const SCANNED_PATHS_A4P73GRAMMAR: readonly string[] = [
+      'packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts',
+      'packages/runtime/test/a4p7-v3-grammar-enforced.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -1993,7 +2008,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4SURFACE.length +
         SCANNED_PATHS_A4ARTIFACTS.length +
         SCANNED_PATHS_A4P7PRE.length +
-        SCANNED_PATHS_A4P76GATE.length,
+        SCANNED_PATHS_A4P76GATE.length +
+        SCANNED_PATHS_A4P73GRAMMAR.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2008,7 +2024,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4SURFACE.length +
         SCANNED_PATHS_A4ARTIFACTS.length +
         SCANNED_PATHS_A4P7PRE.length +
-        SCANNED_PATHS_A4P76GATE.length,
+        SCANNED_PATHS_A4P76GATE.length +
+        SCANNED_PATHS_A4P73GRAMMAR.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2049,6 +2066,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4ARTIFACTS,
       ...SCANNED_PATHS_A4P7PRE,
       ...SCANNED_PATHS_A4P76GATE,
+      ...SCANNED_PATHS_A4P73GRAMMAR,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2150,6 +2168,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // really just the last term. The derived sums above compute the merged total; this
     // comment does not write it.
     expect(SCANNED_PATHS_A4P76GATE.length).toBe(1029 - 1028)
+    // The A4-PR7 §7.3-Option-A tie, same form: the movement equals the two twin instruments
+    // this lane names, each asserted present by path in the loop above. Both endpoints were
+    // MEASURED on this branch, not inferred: the tree with the two twin files on disk but
+    // absent from this list read `expected 1031 to be 1029` (capture
+    // `dev/agent-workflow/evidence/a4-pr7/7-3-relax/p4t6-PRE-EXTEND-RED.txt`), and 1029 is
+    // the derived master total the line above ends on. The five relaxed gates and the one
+    // widened test mirror are EDITS to already-counted paths and contribute nothing to the
+    // movement — an edit is not an increment, which is exactly why a landed file without its
+    // path here turns this sum RED instead of moving it silently.
+    expect(SCANNED_PATHS_A4P73GRAMMAR.length).toBe(1031 - 1029)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
