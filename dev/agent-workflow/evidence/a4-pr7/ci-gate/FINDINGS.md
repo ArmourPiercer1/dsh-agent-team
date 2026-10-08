@@ -274,3 +274,36 @@ bash dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/red-control.sh A   # …
 
 `FINAL-BATTERY.txt` in this directory is the index of what was run, in what order, with the verdict
 line each produced.
+
+
+---
+
+## ERRATA 2026-10-08 (round 43, coordinator) — the hosted question is answered, and the answer is worse than the question
+
+This file left one claim open on purpose: *"'the pr-gate check reports' is an UNVERIFIED claim today,
+whatever this file looks like on the remote"*, and it asked whether GitHub resolves `on: pull_request`
+against the PR head or the default branch. Both are now measured, and the measurement says the file as
+shipped **never started a single job**.
+
+- **Four real runs, all `conclusion: failure`, ZERO jobs, no logs, no annotations** — 14:10:38 on
+  `ci-a4-pr-gate`, 14:10:58 and 14:22:57 on `master`, 14:35:21 on the branch behind PR #209. The commit's
+  check-suite reports `conclusion: failure` with `total_count: 0` check-runs, and `gh run view` prints only
+  *"This run likely failed because of a workflow file issue."* Two of those runs were merges into `master`,
+  so the repository has carried a red hosted gate since #207 with no way to see why from the API.
+- **Root cause: `XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache` in `jobs.<id>.env`.** The `runner` context is
+  not available in job-level `env` (permitted: `github`, `inputs`, `matrix`, `needs`, `secrets`, `strategy`,
+  `vars`), and GitHub's response is to refuse the **file**, which is indistinguishable through the API from
+  a failing check. `actionlint .github/workflows/pr-gate.yml` named both offending lines in under a second;
+  the repository's one proven workflow lints clean, and that asymmetry is what made it diagnosable. **A
+  hosted workflow file is an interface too — lint it offline before spending real runs on it.**
+- **Second defect: the workflow graded a checkout it had never built.** Exactly the mistake the census leg
+  caught me making locally: no composition build ⇒ the composition-smoke arm answers `refused` ⇒ the census
+  leg reports a NEW RED identity. The workflow now installs, `pnpm run build`, `pnpm build:composition`
+  before grading. `timeout-minutes` 45 → 90 because the file now also builds; recorded as a guess being
+  narrowed, with the first verdict as the measurement.
+- **The open question, answered by observation.** GitHub **does** run the workflow for `pull_request` when
+  the file exists on the PR head branch (PR #210 run `37794562230`, `event: pull_request`), and a PR whose
+  head branch lacks the file gets **no run at all** (#207/#208: `statusCheckRollup` empty; confirmed with
+  `git ls-tree <head> .github/workflows/`). So **a workflow cannot gate its own introduction** — and the
+  advice in this file, *watch one run report before you require it*, is the reason the repo was not locked
+  behind a check that had never once executed.
