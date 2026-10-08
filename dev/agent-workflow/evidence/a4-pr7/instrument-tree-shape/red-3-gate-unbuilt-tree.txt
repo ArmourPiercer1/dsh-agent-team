@@ -1,0 +1,98 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-tree-shape
+
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts (20 tests | 3 failed) 28191ms
+     ✓ runs where its instruments can see the tree, and refuses to run anywhere else 5ms
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 359ms
+       ✓ treats a step that did not run as a failure that says why, even at exit 0 0ms
+       × says so by name when the built client entry is gone, and does not skip past it 1ms
+       × refuses the leg, by name, when the host module closure cannot be traversed 361ms
+       ✓ reports every verdict class with its set by path when run at the toplevel 194ms
+       ✓ refuses a directory that is not a repository, and is never believed as clean 42ms
+       ✓ will not accept a run from below the toplevel as a whole-tree clean (measured false-clean) 53ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  9432ms
+       ✓ the committed install surface is fresh against the tree, and a missing surface is refused 97ms
+       ✓ a check:artifacts run from a subdirectory is refused, never an OK over nothing 37ms
+       ✓ every workspace package that declares a typecheck script typechecks  9510ms
+       ✓ no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here 1ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  7526ms
+       ✓ tolerates a green trio and refuses a vanished one — the two are different answers 0ms
+       ✓ a missing instrument is a refusal that names it, never a pass 59ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  504ms
+       ✓ a child killed by a signal is refused even when it printed a complete report 3ms
+       ✓ every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core 2ms
+       ✓ this spec itself is counted by the p4t6 scannable-file ledger 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > is green, asserted by arm name and by absence of a skip — never by the exit code
+AssertionError: composition-smoke did not pass. why: FAIL lines: FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)
+    output tail:
+    PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+    FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)
+    PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+    PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+    PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+    PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+    PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+    PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+    PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+    PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+    PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+    FAIL composition-smoke: expected 'failed' to be 'passed' // Object.is equality
+
+Expected: "passed"
+Received: "failed"
+
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:521:127
+    519|       const r = await run()
+    520|       const parsed = classifyCompositionSmoke({ stdout: r.stdout, code…
+    521|       expect(r.verdict, `composition-smoke did not pass. why: ${r.why}…
+       |                                                                                                                               ^
+    522|
+    523|       for (const target of compositionTargets()) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > says so by name when the built client entry is gone, and does not skip past it
+AssertionError: packages/client/dist must exist for this leg to mutate it — run `pnpm build` first: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:570:118
+    568|       const dist = join(REPO_ROOT, 'packages', 'client', 'dist')
+    569|       const held = `${dist}.held-by-7-6-gate`
+    570|       expect(existsSync(dist), 'packages/client/dist must exist for th…
+       |                                                                                                                      ^
+    571|       spawnSync('mv', [dist, held], { cwd: REPO_ROOT })
+    572|       try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > refuses the leg, by name, when the host module closure cannot be traversed
+AssertionError: a broken closure must read as refused (a step that did not run): FAIL lines: FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip): expected 'failed' to be 'refused' // Object.is equality
+
+Expected: "refused"
+Received: "failed"
+
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:603:104
+    601|           classify: classifyCompositionSmoke,
+    602|         })
+    603|         expect(r.verdict, `a broken closure must read as refused (a st…
+       |                                                                                                        ^
+    604|         expect(r.stdout).toMatch(/^SKIP client plugin \(packages\/clie…
+    605|       } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 17 passed (20)
+   Start at  06:07:57
+   Duration  28.34s (transform 51ms, setup 0ms, import 66ms, tests 28.19s, environment 0ms)
+

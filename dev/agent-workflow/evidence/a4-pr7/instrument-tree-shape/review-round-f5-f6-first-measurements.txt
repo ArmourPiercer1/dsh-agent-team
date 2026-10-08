@@ -1,0 +1,41 @@
+### F5/F6 measurements, first pass of this round. Superseded for the FINAL numbers by
+### review-round-verdicts-battery-and-f5-ab.txt and review-round-f5-narrow-and-root-case.txt,
+### which include this round's scripts/lint-identities.d.mts in the lint universe.
+
+===== a-committed-narrow =====
+lint-identities: 162 identity lines, 77 distinct (target .)
+lint-identities: universe: 1104 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 1, resolved 0
+NEW IDENTITIES (1):
+  error @typescript-eslint/no-unused-expressions packages/testkit/test/a4p7-merge-gate.test.ts
+
+===== b-no-exclusion =====
+lint-identities: 167 identity lines, 82 distinct (target .)
+lint-identities: universe: 1109 file(s) linted, 5 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h2.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h3.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h4.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h5.mjs
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 6, resolved 0
+NEW IDENTITIES (6):
+  error @typescript-eslint/no-unused-expressions packages/testkit/test/a4p7-merge-gate.test.ts
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h2.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h3.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h4.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h5.mjs
+
+===== c-class-pattern =====
+lint-identities: 162 identity lines, 77 distinct (target .)
+lint-identities: universe: 1104 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 1, resolved 0
+NEW IDENTITIES (1):
+  error @typescript-eslint/no-unused-expressions packages/testkit/test/a4p7-merge-gate.test.ts
+
+===== d-root-scratch-still-visible =====
+lint-identities: 163 identity lines, 78 distinct (target .)
+lint-identities: universe: 1105 file(s) linted, 1 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): .tmp-resolve-probe.mjs
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 2, resolved 0
+NEW IDENTITIES (2):
+  error @typescript-eslint/no-unused-expressions packages/testkit/test/a4p7-merge-gate.test.ts
+  error no-undef .tmp-resolve-probe.mjs
+
+===== e-census =====
+lint-identities: 162 identity lines, 77 distinct (target .)
+lint-identities: universe: 1104 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)

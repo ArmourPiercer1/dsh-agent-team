@@ -1,0 +1,5 @@
+### FULL 7.6 gate in TREE C (entry surgically removed, 399 siblings left), final code
+entry: PRESENT  siblings: 400
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+restored: yes  tracked: 7

@@ -1,0 +1,61 @@
+
+=== SETUP head=73ffd06c node_modules=yes ===
+
+=== E2 FLICKER (continuous): create/delete storm inside the lint universe for the whole scan ===
+attempt1 eslint_exit=1 json_bytes=3073606 stderr_bytes=162
+attempt2 eslint_exit=1 json_bytes=3070716 stderr_bytes=162
+attempt3 eslint_exit=1 json_bytes=3071005 stderr_bytes=162
+attempt4 eslint_exit=1 json_bytes=3070716 stderr_bytes=162
+
+=== E2b VANISHING SUBTREE: whole fixture directory removed mid-scan ===
+attempt1 eslint_exit=2 json_bytes=0 stderr_bytes=683
+Oops! Something went wrong! :(
+ESLint: 9.39.5
+Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/.worktrees/tmp-73-lintlab/packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs'
+    at async open (node:internal/fs/promises:1345:25)
+    at async Object.readFile (node:internal/fs/promises:1996:14)
+    at async readAndVerifyFile (/home/user/dsh-plugins/dsh-agent-team/.worktrees/tmp-73-lintlab/node_modules/.pnpm/eslint@9.39.5/node_modules/eslint/lib/eslint/eslint-helpers.js:1306:16)
+attempt2 eslint_exit=2 json_bytes=0 stderr_bytes=683
+Oops! Something went wrong! :(
+ESLint: 9.39.5
+Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/.worktrees/tmp-73-lintlab/packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs'
+    at async open (node:internal/fs/promises:1345:25)
+    at async Object.readFile (node:internal/fs/promises:1996:14)
+    at async readAndVerifyFile (/home/user/dsh-plugins/dsh-agent-team/.worktrees/tmp-73-lintlab/node_modules/.pnpm/eslint@9.39.5/node_modules/eslint/lib/eslint/eslint-helpers.js:1306:16)
+attempt3 eslint_exit=2 json_bytes=0 stderr_bytes=683
+Oops! Something went wrong! :(
+ESLint: 9.39.5
+Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/.worktrees/tmp-73-lintlab/packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs'
+    at async open (node:internal/fs/promises:1345:25)
+    at async Object.readFile (node:internal/fs/promises:1996:14)
+    at async readAndVerifyFile (/home/user/dsh-plugins/dsh-agent-team/.worktrees/tmp-73-lintlab/node_modules/.pnpm/eslint@9.39.5/node_modules/eslint/lib/eslint/eslint-helpers.js:1306:16)
+
+=== E3 CONTENTION: 4 concurrent root scans ===
+parallel1 exit=1 json_bytes=3063500 stderr_bytes=162 head=npm warn Unknown project config "auto-install-peers". This will stop working in the next major versi
+parallel2 exit=1 json_bytes=3063500 stderr_bytes=162 head=npm warn Unknown project config "auto-install-peers". This will stop working in the next major versi
+parallel3 exit=1 json_bytes=3063500 stderr_bytes=162 head=npm warn Unknown project config "auto-install-peers". This will stop working in the next major versi
+parallel4 exit=1 json_bytes=3063500 stderr_bytes=162 head=npm warn Unknown project config "auto-install-peers". This will stop working in the next major versi
+
+=== E3b CONTENTION: one scan while a heavy vitest file runs ===
+eslint exit=1 json_bytes=3063500
+vitest:       Tests  9 passed (9)
+
+=== E4 END-TO-END: the 7.5 suite (builds/removes .tmp-fault) concurrent with lint-identities ===
+attempt1 lintident_exit=2 vitest_failing_legs=1
+lint-identities: NOT RUN :: eslint produced no JSON (status 2, signal null, error none)
+attempt2 lintident_exit=0 vitest_failing_legs=1
+lint-identities: 160 identity lines, 76 distinct (target .)
+
+=== E6 FIX CANDIDATE: does excluding **/.tmp-fault/** change the identity set? ===
+files linted: fixtures-present=1103 fixtures-absent=1102 ignore-pattern-applied=1102
+only-with-fixtures-present: packages/testkit/test/.tmp-fault/probe/z.mjs
+identity counts present/absent/ignored: 62 62 62
+present vs absent identical: true
+absent vs ignore-pattern identical: true
+
+=== E5 UNIVERSE AUDIT (this worktree) ===
+linted files: 1102 | gitignored-but-linted: 0 | neither tracked nor ignored: 0
+ignored sample: (none)
+untracked sample: (none)
+
+=== DONE2 ===

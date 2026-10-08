@@ -1,0 +1,28 @@
+### How to run eslint over the tracked lintable set: four measurements in this tree.
+### Why the F6 census spawns the bin with an EXISTENCE-FILTERED list, and why it then
+### DISCLOSES the paths it skipped rather than dropping them silently.
+
+lintable tracked paths (`git ls-files`, code extensions): 2418; on disk: 2417;
+listed by git but not a file on disk: 1 -> dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+(mode 120000: a tracked symlink whose absolute target lives in the gitignored sibling
+ worktree `.worktrees/a2c-1/…`, so it dangles in this checkout while `git status` is clean.)
+
+| invocation | exit | elapsed | stdout bytes | parses as JSON |
+| --- | --- | --- | --- | --- |
+| `npx  , all 2418 tracked lintable paths` | 249 | 240 ms | 0 | no |
+
+    stderr (162 bytes): npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+| `npx  , existence-filtered 2417` | 249 | 189 ms | 0 | no |
+
+    stderr (162 bytes): npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+| `bin  , all 2418 tracked lintable paths` | 2 | 548 ms | 0 | no |
+
+    stderr (239 bytes): Oops! Something went wrong! :( | ESLint: 9.39.5 | No files matching the pattern "dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs" were found. | Please check for typing mistakes in the pattern.
+| `bin  , existence-filtered 2417` | 1 | 9328 ms | 3754774 | yes |
+
+So: `npx` never starts eslint on an argv of this size (exit 249, nothing written, ~0.2 s;
+the only thing it prints is the npm config warning), and the bin refuses the whole batch
+(exit 2, empty stdout) if ONE path in it is not a file — an error class that has nothing
+to do with the code under review and would surface as `NOT RUN`. Filtering to existing
+paths is what makes the census runnable; disclosing the one filtered path is what keeps
+the census honest about its own denominator.

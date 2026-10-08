@@ -30,6 +30,56 @@ export default tseslint.config(
       // read, so `pnpm lint` crashed with ENOENT (exit 2) instead of reporting.
       // `.tmp-*/**` is a pattern so a new scratch directory cannot re-break the gate.
       '.tmp-*/**',
+      // The `.tmp-*/**` pattern above is ROOT-ANCHORED, so it never reached the fixture
+      // scratch the suites build under their own packages: `packages/testkit/test/.tmp-fault/`
+      // was in the lint universe (measured: a file placed there is linted by `eslint .`, which
+      // reports 1103 files with a fixture present and 1102 without). That directory is created
+      // and `rmSync`ed by the suite that owns it, so during any root run the scan walks a tree
+      // that is being deleted underneath it — measured, 3 of 3 attempts: `eslint` exits 2 with
+      // `Error: ENOENT: no such file or directory, open '…/.tmp-fault/repo/scripts/h1.mjs'` at
+      // `eslint-helpers.js readAndVerifyFile`, printing no JSON, which reaches §7.6's lint leg
+      // as `NOT RUN` (the flake class reported against the root suite). Contention was measured
+      // and excluded: four concurrent full scans, and one running against a heavy vitest file,
+      // all exited 1 with complete JSON.
+      //
+      // The exclusion is LOAD-BEARING, and the CLASS is exactly as load-bearing as the one name it
+      // replaces. Measured at merged head `bfbd89a5` with five planted `.mjs` files under
+      // `packages/testkit/test/.tmp-fault/repo/scripts/` (each containing one unused binding and
+      // one undefined call), the whole-repo identity diff run once per config:
+      //
+      //   a) this line, as shipped         160 lines, 76 distinct, universe 1105, new 0
+      //   b) this line DELETED             170 lines, 86 distinct, universe 1110, new 10
+      //      (the five planted files then appear on the `universe:` line as gitignored-but-linted,
+      //       and each yields two identities: `no-undef` for the call, `no-unused-vars` for the binding)
+      //   c) the ONE NAME it replaces      160 lines, 76 distinct, universe 1105, new 0
+      //      (the same answer as (a): generalising the pattern cost nothing measurable)
+      //   d) this line + a root scratch    161 lines, 77 distinct, universe 1106, new 1
+      //      FILE `.tmp-resolve-probe.mjs`  (that file named on the `universe:` line and as
+      //       `error no-undef .tmp-resolve-probe.mjs`)
+      //
+      // The load-bearing part is the delta in (b), not the absolute counts, which move with every
+      // file this repository adds: five files that exist only while a test runs entered the lint
+      // universe and put ten phantom identities against a baseline nobody edited. Against the 7.5
+      // suite's own fixture trees review measured the same mechanism as a phantom `new 60`. The
+      // comment that used to sit here claimed "measured 62 identities with the pattern, without it,
+      // and with fixtures present" — no run reproduces that, and it is exactly the kind of number
+      // that gets a load-bearing exclusion deleted: a stale measurement in a comment is a false
+      // claim, not a summary. A leg that goes red because another suite happened to run first is
+      // not a lint signal at all.
+      //
+      // It is not an "ignored files are invisible" reflex, because case (d) is the same measurement
+      // in the other direction and the specimen stays visible: these patterns match DIRECTORIES, so
+      // a scratch FILE a human leaves at the root — the `.tmp-resolve-probe.mjs` that started this
+      // line of work — is linted, named on the `universe:` line, and reddens the diff on purpose.
+      // What is removed here is a tree that exists only while a test is running: an identity that
+      // appears and disappears with test execution cannot belong to a baseline, and those trees'
+      // copies of `scripts/**` are digest-compared to the originals, which ARE linted.
+      //
+      // And nothing tracked is collateral: no tracked path in this repository has a `.tmp-`
+      // component in it (`git ls-files | grep -c '(^|/)\.tmp-'` = 0), and §7.6 asserts that in
+      // code now — `no tracked file is invisible to lint except under a prefix this leg names` —
+      // instead of leaving it to a grep someone has to remember to run.
+      '**/.tmp-*/**',
       '.pnpm-store/**',
       '.pnpm-store-testuse/**',
       '.agents/**',

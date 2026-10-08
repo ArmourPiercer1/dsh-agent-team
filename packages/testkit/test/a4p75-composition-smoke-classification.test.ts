@@ -60,6 +60,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
+import { artifactProvenance, treeShape } from '../../../scripts/a4-artifact-provenance.mjs'
 import {
   classifyClosureStep,
   collectExportTargets,
@@ -1190,6 +1191,22 @@ function closureGatedArm(): CompositionSmokeTarget {
 
 const CLIENT_ARM: CompositionSmokeTarget = closureGatedArm()
 
+/**
+ * The other half: the arm whose entry is COMMITTED to git (`packages/runtime/dist/…`, one of
+ * the two install surfaces) rather than emitted by a build. It is the control that proves an
+ * unbuilt client half does not silence the rest of the gate — in a fixture and in the real
+ * repository, the run must still report the arm that could run.
+ */
+function committedArm(): CompositionSmokeTarget {
+  const found = PLUGIN_TARGETS.find((target) => target.closureGate !== true)
+  if (found === undefined) {
+    throw new Error('the arm list carries no non-closure-gated target, so there is no committed artifact to compare a missing built one against')
+  }
+  return found
+}
+
+const COMMITTED_ARM: CompositionSmokeTarget = committedArm()
+
 function sha256Of(file: string): string {
   return createHash('sha256').update(readFileSync(file)).digest('hex')
 }
@@ -1211,8 +1228,14 @@ function installGateScripts(root: string): void {
   }
 }
 
-/** The three states the top-level verdict is exercised across. */
-type GateCase = 'green' | 'skipped' | 'failed'
+/**
+ * The four states the top-level verdict is exercised across. `absent` is the fourth and was
+ * added by the clean-worktree report (task #2): `pnpm install` ran and no build did, which is
+ * the state of every fresh checkout of this repository — including the one a §7.6
+ * clean-worktree receipt is taken in. It is not the same state as `failed` (an own defect in
+ * an artifact that exists) and not the same as `skipped` (a step the gate declined to walk).
+ */
+type GateCase = 'green' | 'skipped' | 'failed' | 'absent'
 
 /**
  * A built entry, written from the arm's own description rather than from a
@@ -1285,7 +1308,14 @@ function buildGateRepo(entryCase: GateCase): string {
     version: '1.2.3',
     type: 'module',
   }, null, 2))
-  for (const target of PLUGIN_TARGETS) write(join(root, target.rel), gateEntrySource(target, entryCase))
+  for (const target of PLUGIN_TARGETS) {
+    // The `absent` case is a checkout where this arm's entry was never built, so nothing is
+    // written for it and no directory stands in: the point of the fixture is that the path
+    // the gate declares does not exist, which is the one state none of the other three cases
+    // can produce and the one a fresh worktree is actually in.
+    if (entryCase === 'absent' && target.closureGate === true) continue
+    write(join(root, target.rel), gateEntrySource(target, entryCase))
+  }
   if (entryCase === 'skipped') {
     write(join(root, 'node_modules/@a4p75/upstream/package.json'), JSON.stringify({
       name: '@a4p75/upstream',
@@ -1340,12 +1370,14 @@ describe('composition-smoke verdict: an unrun step is not a passing gate', () =>
   let green: ReturnType<typeof runGate>
   let skipped: ReturnType<typeof runGate>
   let failed: ReturnType<typeof runGate>
+  let absent: ReturnType<typeof runGate>
 
   beforeAll(() => {
     rmSync(GATE_ROOT, { recursive: true, force: true })
     green = runGate(buildGateRepo('green'))
     skipped = runGate(buildGateRepo('skipped'))
     failed = runGate(buildGateRepo('failed'))
+    absent = runGate(buildGateRepo('absent'))
   }, 120_000)
 
   afterAll(() => {
@@ -1385,6 +1417,36 @@ describe('composition-smoke verdict: an unrun step is not a passing gate', () =>
     expect(failed.failures.some((line) => line.includes('our own artifact threw while evaluating'))).toBe(true)
     // A failure that did not skip anything must not borrow the skip footer.
     expect(failed.footer).toBe('FAIL composition-smoke')
+  })
+
+  it('names a never-built artifact and the command that produces it, without skipping past it', () => {
+    // The fourth state, and the one every fresh checkout of this repository is in: the
+    // artifact this arm declares is gitignored build output that no install of the repository
+    // carries (`packages/client/dist` is in neither install surface and not in the root
+    // `files` whitelist), so in a tree where nobody ran `pnpm build` the honest report is a
+    // FAILURE THAT SAYS WHAT IS MISSING — not a SKIP (which would make the step optional),
+    // and not a message that leaves the reader diffing worktrees to work out whether the
+    // build regressed. The three-valued `passed | failed | refused` reading of this line lives
+    // in the merge gate (`a4p7-merge-gate.test.ts`); this leg pins the words it reads.
+    expect(absent.skips, 'a missing artifact must not be reported as a step that declined to run').toEqual([])
+    expect(absent.status).not.toBe(0)
+    expect(absent.footer).toBe('FAIL composition-smoke')
+    // `failures` counts the footer too (it starts with `FAIL `), so the STEP count is the one
+    // that answers "which arms failed" — asserted explicitly rather than by a number that
+    // would silently be off by one if the footer's wording ever changed.
+    const failedSteps = absent.steps.filter((line) => line.startsWith('FAIL '))
+    expect(failedSteps, `exactly one arm may fail when only the built artifact is missing; the fixture printed: ${absent.steps.join(' || ')}`).toHaveLength(1)
+    expect(failedSteps[0]).toContain(CLIENT_ARM.label)
+    expect(failedSteps[0]).toContain('built entry is missing')
+    expect(failedSteps[0]).toContain('pnpm build')
+    expect(absent.stdout).not.toContain('PASS composition-smoke')
+    // The arm whose artifact is committed to git still ran and still reported. An unbuilt half
+    // of the tree may not turn the rest of the gate quiet.
+    expect(absent.passes.some((line) => line.startsWith(`PASS ${COMMITTED_ARM.label}:`)), `the committed arm stopped reporting in a tree with no build output: ${absent.steps.join(' | ')}`).toBe(true)
+    expect(absent.steps).toHaveLength(EXPECTED_STEP_LINES)
+    // And the §7.6 clause form rejects this run rather than shrugging at it: `refused` may be
+    // the kinder word at the layer above, but nothing here may read as green.
+    expect(notGreenBecause(absent)).toEqual([`the closure-gated leg did not print PASS by name (${CLIENT_ARM.label})`])
   })
 
   it('owes exactly as many step lines as the two lists the gate iterates, by name', () => {
@@ -1436,13 +1498,37 @@ describe('composition-smoke verdict: an unrun step is not a passing gate', () =>
 
 describe('composition-smoke verdict against this repository', () => {
   it('never reports a passing gate over a step it did not run', () => {
-    // The real gate, the real artifact, this workspace's real install surface:
-    // whichever way the client closure falls out here, the verdict and the
-    // output have to agree. At the base of this change the output said
-    // `NOT RUN and NOT passed` while the exit code said 0.
+    // The real gate, the real artifact, this workspace's real install surface: whichever way
+    // the client closure falls out here, the verdict and the output have to agree. At the base
+    // of this change the output said `NOT RUN and NOT passed` while the exit code said 0.
+    //
+    // THREE states, because this tree has three and the leg used to admit two. Which one it is
+    // in is MEASURED from the artifact the gate declares, never assumed from the report being
+    // checked: an unbuilt checkout (the state a fresh worktree, and every clean-worktree
+    // receipt, is in) has no SKIP line and is not green either, and a leg that demanded
+    // `notGreenBecause(run) === []` outside the skip case was red there — which is how this
+    // leg reached B1 as "the client leg prints no PASS" instead of "this tree was never built".
     const run = runGate(REPO_ROOT)
+    const gated = PLUGIN_TARGETS.find((target) => target.closureGate === true)
+    const prov = gated === undefined ? null : artifactProvenance({ repoRoot: REPO_ROOT, rel: gated.rel, label: gated.label })
+    const shape = `${treeShape({ repoRoot: REPO_ROOT })}; ${gated?.rel ?? '(no closure-gated arm)'} ${
+      prov === null ? 'unmeasurable' : prov.exists ? 'present' : `absent (build output root ${prov.outputRoot ?? 'none'} carries ${String(prov.outputFileCount)} file(s))`}`
+    if (prov !== null && !prov.exists) {
+      // Say the tree state out of the leg's own mouth: the receipt this produces is read by
+      // someone deciding whether a red is a regression, and they should not have to diff a
+      // worktree to find out which tree they are looking at.
+      process.stderr.write(`composition-smoke live leg: this checkout has no built artifact for ${gated?.rel ?? '?'} — ${shape}\n`)
+      expect(run.status, `a gate that could not load its artifact must not exit 0 — ${shape}`).not.toBe(0)
+      expect(run.footer, `the absent-artifact state must not print the PASS footer — ${shape}`).toBe('FAIL composition-smoke')
+      expect(run.stdout).not.toContain('PASS composition-smoke')
+      const line = run.failures.find((l) => l.includes(gated?.label ?? '')) ?? '(no FAIL line naming the closure-gated arm)'
+      expect(line, `the run must say WHICH artifact is missing and how to produce it — ${shape}`).toContain('built entry is missing')
+      expect(line, `the run must name the command that produces the artifact — ${shape}`).toContain('pnpm build')
+      expect(run.skips, `a missing artifact is not a step that declined to run — ${shape}`).toEqual([])
+      return
+    }
     if (run.skips.length === 0) {
-      expect(notGreenBecause(run)).toEqual([])
+      expect(notGreenBecause(run), `the gate reported green and this tree entitles it: ${shape}`).toEqual([])
       expect(run.status).toBe(0)
       return
     }

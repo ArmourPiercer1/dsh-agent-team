@@ -1,0 +1,100 @@
+### Battery on the second merged tree
+### HEAD d6e786c7 = merge of f9741db9 + origin/master 4a11694a; dirty 1
+### client dist: 400 files
+
+== 1. (REQ 2, done separately and first) the fence — see m-fence-1.txt: exit 1, scanned-in-scope 751,
+==    dirty(7,51) unknown(0,0) refused(52,115) adjudicated(16,24), byte-identical. Re-confirmed here:
+   exit=1
+   scanned-in-scope: 751 tracked files
+   RESULT dirty(7 files, 51 sites)
+   RESULT unknown(0 files, 0 sites)
+   RESULT refused(52 files, 115 sites)
+   RESULT adjudicated(16 files, 24 sites)
+
+== 2. (REQ 1) lint identity diff against the pinned baseline
+   exit=0
+   lint-identities: 160 identity lines, 76 distinct (target .)
+   lint-identities: universe: 1105 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+   baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+   --- every NEW/RESOLVED identity, by name (nothing pinned away):
+   (no NEW lines above = the 33 migrated runtime specs minted nothing new)
+
+== 3. (REQ 4, healthy tree) machine gate + classifier
+lint-visibility: eslint read 1105 of 2421 tracked lintable file(s); 1316 are hidden by an ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+
+== 4. the 68-leg pair — upstream modified the wrapper, so the count is re-derived, not assumed
+    Test Files  2 passed (2)
+         Tests  70 passed (70)
+   leg counts per file:
+     p4t6:        Tests  10 passed (10)
+     wrapper:       Tests  60 passed (60)
+
+== 5. check:artifacts, typecheck, node --check, eslint on this lane's touched files
+   check:artifacts exit=0 :: [check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+   typecheck exit=0 Done=8 error-TS=0
+   node --check scripts/a4-artifact-provenance.mjs -> exit 0
+   node --check scripts/lint-identities.mjs -> exit 0
+   node --check eslint.config.mjs -> exit 0
+   node --check scripts/verify-blueprint-version-clean.mjs -> exit 0
+   eslint on this lane's 7 files exit=0
+
+== 6. instrument in a healthy tree
+   exit=0  PASS=12 FAIL=0 SKIP=0
+   PASS composition-smoke
+
+== 7. (REQ 4) the NEVER-BUILT tree: instrument must be exit 1 with exactly one step FAIL, and the gate must be RED
+   moved aside (was 400 files)
+   instrument exit=1  PASS=10 FAIL=2 SKIP=0
+     FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)
+     FAIL composition-smoke
+   gate in the never-built tree:
+     composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD d6e786c7, 0 tracked file(s) changed vs HEAD, 1 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+     lint-visibility: eslint read 1105 of 2421 tracked lintable file(s); 1316 are hidden by an ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+            × is green, asserted by arm name and by absence of a skip — never by the exit code 561ms
+      Test Files  1 failed (1)
+           Tests  1 failed | 24 passed (25)
+   classifier in the never-built tree:
+      Test Files  1 passed (1)
+           Tests  54 passed (54)
+   handed back: 400 files, entry present: YES
+
+== 8. (REQ 4 cont.) tree C — one artifact removed, siblings left: must still read failed, not refused
+   removed the entry; siblings remain: 399 files
+   instrument exit=1  PASS=10 FAIL=2
+     composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD d6e786c7, 0 tracked file(s) changed vs HEAD, 1 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+     lint-visibility: eslint read 1105 of 2421 tracked lintable file(s); 1316 are hidden by an ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+            × is green, asserted by arm name and by absence of a skip — never by the exit code 551ms
+      Test Files  1 failed (1)
+           Tests  1 failed | 24 passed (25)
+   entry restored: YES  dist files: 400
+
+== 9. (REQ 3) the F6 denominator on the merged tree, and the state of the tracked symlink
+   symlink tracked in HEAD? 120000; resolved on disk? NO; git status of that path: ''
+   tracked lintable paths: 2422  of which on disk: 2421
+   lint-visibility line from the gate run above, and from a fresh run:
+     lint-visibility: eslint read 1105 of 2421 tracked lintable file(s); 1316 are hidden by an ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+
+== 10. healthy-tree re-confirmation after every mutation: gate + classifier + instrument + fence
+lint-visibility: eslint read 1105 of 2421 tracked lintable file(s); 1316 are hidden by an ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+   instrument exit=0
+   fence exit=1
+   scanned-in-scope: 751 tracked files
+   RESULT dirty(7 files, 51 sites)
+   RESULT unknown(0 files, 0 sites)
+   RESULT refused(52 files, 115 sites)
+   RESULT adjudicated(16 files, 24 sites)
+   fence still byte-identical to run 1
+
+== HANDOVER
+   tracked modifications: 0  untracked: 1
+     ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/review-round-battery-at-d6e786c7.txt
+   client dist files: 400  entry: present
+   scratch: packages/testkit/test/.tmp-fault (7.5 suite residue, gitignored)

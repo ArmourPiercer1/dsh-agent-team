@@ -58,11 +58,15 @@
 
 import { describe, expect, it } from 'vitest'
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { REQUIRED_CHECK_IDS } from '../../../scripts/composition-smoke-bundle.mjs'
 import { PLUGIN_TARGETS } from '../../../scripts/composition-smoke-targets.mjs'
+import { INSTALL_SURFACES } from '../../../scripts/client-composition-surface.mjs'
+import { describeStderr } from '../../../scripts/lint-identities.mjs'
+import { absentArtifactVerdict, artifactProvenance, classifyAbsentArtifact, treeShape } from '../../../scripts/a4-artifact-provenance.mjs'
+import type { ArtifactProvenance } from '../../../scripts/a4-artifact-provenance.mjs'
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(TEST_DIR, '..', '..', '..')
@@ -293,10 +297,15 @@ function repoToplevel(): string | null {
  * non-emptiness guard below is what stopped the loop that consumes it from becoming a
  * gate with no plugin arms required at all. Import what the instrument imports.
  */
-function compositionTargets(): { label: string; expectedName: string }[] {
-  const out = (PLUGIN_TARGETS as readonly { label: string; expectedName: string }[]).map((t) => ({
+function compositionTargets(): { label: string; expectedName: string; rel: string; closureGate: boolean }[] {
+  const out = (PLUGIN_TARGETS as readonly { label: string; expectedName: string; rel: string; closureGate?: boolean }[]).map((t) => ({
     label: t.label,
     expectedName: t.expectedName,
+    // `rel` is the artifact the arm loads, and `closureGate` says which arm's load depends
+    // on the host module closure. Both are carried so the legs that mutate an artifact read
+    // the gate's own list instead of repeating a path this file would then have to keep true.
+    rel: t.rel,
+    closureGate: t.closureGate === true,
   }))
   // An empty derivation must not read as "no arms are required".
   if (out.length === 0) {
@@ -328,11 +337,46 @@ function bundleArms(): readonly string[] {
 }
 
 /**
+ * The plugin entries the composition gate loads, measured at the moment a run's report is
+ * classified. This is a THUNK passed into the classifier rather than a value, and the reason
+ * is ordering: the mutation legs move artifacts out of the way and put them back, so the
+ * tree that produced a report is the tree that must be measured — measuring before the run
+ * would describe a shape the run never saw.
+ */
+function compositionArtifacts(): { label: string; rel: string; prov: ReturnType<typeof artifactProvenance> }[] {
+  return compositionTargets().map((t) => ({
+    label: t.label,
+    rel: t.rel,
+    prov: artifactProvenance({ repoRoot: REPO_ROOT, rel: t.rel, label: t.label }),
+  }))
+}
+
+/**
  * Read the composition gate's own step lines. A SKIP is returned as its own category on
  * purpose: it is a step that did not run, and the historical defect this gate exists to
  * make impossible is the run that exited 0 while printing one.
+ *
+ * A missing artifact used to be folded into that same `failed` bucket by this classifier,
+ * and that was a lie of the opposite sign to the SKIP bug: `FAIL client plugin (packages/
+ * client): built entry is missing — run \`pnpm build\` first` is the GATE doing the right
+ * thing (a gate with two states must pick the strict one, and this instrument's header says
+ * so out loud), but a MERGE GATE LEG that reports it as `failed` asserts "the composition
+ * regressed" on evidence that only supports "this checkout was never built" — measured: 3 of
+ * this file's 20 legs go red in a worktree that has `pnpm install` and no build, which is
+ * what every clean checkout and every §7.6 clean-worktree receipt is.
+ *
+ * So a FAIL line naming a missing plugin entry is now asked WHERE it came from, via
+ * `scripts/a4-artifact-provenance.mjs`, and only a positive finding of "no build output for
+ * this target has ever existed in this tree" downgrades it to `refused`. A partial output
+ * root, a tracked artifact, an artifact inside a shipped surface, or a provenance git could
+ * not answer all stay `failed`. And `refused` is not a way to be green: every leg below
+ * asserts `verdict === 'passed'`, so a refusal blocks the merge exactly as a failure does —
+ * the vocabulary change buys the READER a cause, not the run a pass.
  */
-function classifyCompositionSmoke(run: { stdout: string; stderr?: string; code: number | null }): {
+function classifyCompositionSmoke(
+  run: { stdout: string; stderr?: string; code: number | null },
+  measureArtifacts?: () => { label: string; rel: string; prov: ReturnType<typeof artifactProvenance> }[],
+): {
   verdict: Verdict
   why: string
   steps: string[]
@@ -360,15 +404,49 @@ function classifyCompositionSmoke(run: { stdout: string; stderr?: string; code: 
   }
   const failed = steps.filter((l) => l.startsWith('FAIL '))
   const skipped = steps.filter((l) => l.startsWith('SKIP '))
-  if (failed.length > 0) {
-    return { verdict: 'failed', why: `FAIL lines: ${failed.join(' | ')}`, steps, skipped, failed, footer }
+  // Every FAIL line that names a plugin entry the tree says was never built becomes a
+  // REFUSAL CAUSE rather than a failure. Anything that is not fully explained that way stays
+  // a failure, and a run with one explained and one unexplained FAIL is a failure that also
+  // mentions the refusal — both truths, no laundering in either direction.
+  const refusals: string[] = []
+  const unexplained: string[] = []
+  for (const line of failed) {
+    const art = measureArtifacts?.().find((a) => line.startsWith(`FAIL ${a.label}:`) && /built entry is missing/.test(line))
+    if (art === undefined) {
+      unexplained.push(line)
+      continue
+    }
+    const verdict = absentArtifactVerdict({ ...art.prov, treeShape: treeShape({ repoRoot: REPO_ROOT }) })
+    if (verdict.verdict === 'refused') refusals.push(verdict.why)
+    else unexplained.push(`${line} — and the tree agrees: ${verdict.why}`)
+  }
+  if (unexplained.length > 0) {
+    return {
+      verdict: 'failed',
+      why: `FAIL lines: ${unexplained.join(' | ')}${refusals.length > 0 ? ` | a missing artifact with no trace in its declared output root also contributed: ${refusals.join(' | ')}` : ''}`,
+      steps,
+      skipped,
+      failed,
+      footer,
+    }
   }
   if (skipped.length > 0) {
     return {
       verdict: 'refused',
       why:
         `steps NOT RUN: ${skipped.join(' | ')} — the footer reads "${footer ?? '(no footer line)'}" and the exit code was ` +
-        `${String(run.code)}; neither is what this gate reads, because the step is the unit that did not run`,
+        `${String(run.code)}; neither is what this gate reads, because the step is the unit that did not run` +
+        (refusals.length > 0 ? ` | and one of the steps could not have run in any case: ${refusals.join(' | ')}` : ''),
+      steps,
+      skipped,
+      failed,
+      footer,
+    }
+  }
+  if (refusals.length > 0) {
+    return {
+      verdict: 'refused',
+      why: refusals.join(' | '),
       steps,
       skipped,
       failed,
@@ -462,18 +540,266 @@ function trackedFileCount(cwd: string): number {
   return spawned.stdout.split('\n').filter((l) => l.length > 0).length
 }
 
+/**
+ * The lint leg's classifier, at module level so its arms are testable against captured output
+ * the way the composition classifier is (`treats a step that did not run as a failure that says
+ * why, even at exit 0`). An arm that only the live tree can reach is an arm nobody has run:
+ * the two refusal arms below are reachable only when the instrument is broken, and the last
+ * round's review found exactly that class of code — a tolerance nobody had seen fire.
+ *
+ * Both streams are READ; only one is trusted. See the precedence rule inside.
+ */
+function classifyLintRun({ stdout, stderr, code }: {
+  stdout: string
+  stderr: string
+  code: number | null
+}): { verdict: Verdict; why: string } {
+  // F4, the precedence rule. The verdict line and the two machine lines it depends on
+  // (`identity lines`, `universe:`) are read from STDOUT, and from stdout alone; stderr is read
+  // for the reason text and for nothing else. The previous version classified over
+  // `stdout + stderr`. That is safe against a real red being drowned — stdout is scanned first,
+  // and a verdict printed there still wins — but it admits a shape nobody asked for: an empty or
+  // crashed stdout with a healthy trio printed on stderr reads `passed`. That shape is
+  // unreachable today only because `scripts/lint-identities.mjs` happens to write its machine
+  // lines to stdout and its NOT-RUN line to stderr, which is one script's habit rather than a
+  // property of the protocol. The widening was needed for the WHY (the eslint stderr naming a
+  // vanished file is the entire point of last round's fix), not for the verdict, so the two are
+  // split: stdout decides, stderr explains. A verdict this leg cannot see on stdout is a
+  // verdict this leg does not have.
+  const said = stderr.trim() === ''
+    ? `empty (${String(stderr.length)} bytes)`
+    : `${String(stderr.length)} bytes: ${tail(stderr)}`
+  const universe = /^lint-identities: universe: (.*)$/m.exec(stdout)?.[1] ?? null
+  const m = /new (\d+), resolved (\d+)/.exec(stdout)
+  if (m === null) {
+    return {
+      verdict: 'refused',
+      why:
+        `the identity diff produced no "new N, resolved N" verdict ON STDOUT (exit ${String(code)}), so nothing was compared. ` +
+        `stdout (${String(stdout.length)} bytes): ${tail(stdout)}\n    stderr: ${said}`,
+    }
+  }
+  if (!/identity lines/.test(stdout)) {
+    return { verdict: 'refused', why: 'the lint normaliser reported no identity lines — an empty scan is not a clean one' }
+  }
+  if (universe === null) {
+    return {
+      verdict: 'refused',
+      why:
+        'the lint normaliser reported a verdict without reporting the universe it computed it over. The identity set is a function of ' +
+        'the files ESLint read, and ESLint does not read .gitignore — without the `universe:` line this leg cannot tell a clean tree from ' +
+        'a tree carrying someone else\'s scratch file, which is the difference between a red that means something and a red that wastes a round.',
+    }
+  }
+  if (/universe provenance INCOMPLETE/.test(universe)) {
+    // The count is stated but the ignored/untracked breakdown is not, because git would not
+    // answer. A question git refused to answer never buys a belief — here or in
+    // `scripts/a4-artifact-provenance.mjs`.
+    return { verdict: 'refused', why: `the lint universe could not be established: ${universe}` }
+  }
+  const filesLinted = /^(\d+) file\(s\) linted/.exec(universe)?.[1] ?? null
+  if (filesLinted === '0') {
+    // The reason the universe is parsed rather than only echoed: `new 0, resolved 0` is what a
+    // scan that read NO files reports against any baseline. Without this arm, "the target
+    // matched nothing" and "the tree is clean" are the same line.
+    return { verdict: 'refused', why: `the lint scan read no files at all, so its "new 0" compares nothing: ${universe}` }
+  }
+  const last = stdout.trim().split('\n').slice(-1)[0] as string
+  const tail3 = stdout.trim().split('\n').slice(-3).join(' | ')
+  const saidIfAny = stderr.trim() === '' ? '' : ` | stderr: ${said}`
+  return Number(m[1] as string) === 0
+    ? { verdict: 'passed', why: `universe: ${universe} :: ${last}` }
+    : { verdict: 'failed', why: `new lint identities against the accepted baseline (universe: ${universe}): ${tail3}${saidIfAny}` }
+}
+
+/**
+ * F6's candidate filter: the extensions this repository's flat config declares rules for. A
+ * tracked file with any other extension is not lintable at all, which is a different fact from
+ * "lintable but refused" and is not this leg's claim.
+ */
+const LINT_LINTABLE_EXT = /\.(?:mjs|cjs|js|jsx|ts|tsx|mts|cts)$/
+
+// Invisibility this repository has RATIFIED, derived rather than hand-copied: the two committed
+// install surfaces from `client-composition-surface.mjs` — what the `dist` and `composition-shim`
+// ignore patterns exist for — plus the three documentation/evidence trees the config names in its
+// own `ignores` list (`dev/`, `docs/`, `tests/`). A tracked file hidden anywhere else is a file no
+// lint rule will ever read, which is what the leg is for.
+//
+// Written as line comments on purpose: the block-comment version of this paragraph contained the
+// glob `**/dist/**`, whose `*/` closed the comment mid-sentence and left the rest of the sentence
+// to be parsed as code — two `no-unused-expressions` errors from a doc comment. Globs and
+// block comments do not mix; `eslint.config.mjs` keeps its patterns in line comments for the
+// same reason.
+const RATIFIED_INVISIBLE_PREFIXES: readonly string[] = [...INSTALL_SURFACES.map((s) => `${s}/`), 'dev/', 'docs/', 'tests/']
+
+/**
+ * ESLint's own bin rather than `npx`, and that is a measurement
+ * (`review-round-eslint-argv-invocation.txt`): `npx eslint <the 2418 tracked lintable paths>` and
+ * `npx eslint <2417 filtered>` both exit **249 in ~0.24 s having written 0 bytes** — npm never
+ * starts eslint at an argv of that size, and the only thing it emits is an unrelated config
+ * warning. The same list through the bin is exit 1 in 9.3 s with 3 754 774 bytes of JSON.
+ *
+ * The candidate list is additionally FILTERED TO EXISTING PATHS, and that half is load-bearing for
+ * a reason worth knowing: one path that `git ls-files` lists but that is not a file on disk
+ * (measured here: a tracked mode-120000 symlink whose absolute target lives in a gitignored sibling
+ * worktree, so it dangles in this checkout while `git status` stays clean) makes the bin refuse the
+ * WHOLE batch — exit 2, empty stdout, `No files matching the pattern "…upstream-resolver.mjs" were
+ * found`. A leg that answers `refused` because of another lane's dead symlink is measuring the
+ * wrong thing, so the leg filters and then prints what it filtered: a census is not allowed to make
+ * its denominator smaller in silence.
+ */
+const ESLINT_BIN = join(REPO_ROOT, 'node_modules', 'eslint', 'bin', 'eslint.js')
+
+type EslintFileReport = { filePath?: unknown; messages?: unknown }
+
+/** Every tracked file ESLint could lint, as relative paths, plus the ones it could not. */
+function lintVisibilityCandidates(): { candidates: string[]; skipped: string[] } {
+  const spawned = spawnSync('git', ['ls-files'], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+  if (spawned.status !== 0) {
+    throw new Error(`the lint-visibility census cannot enumerate the tracked tree: git ls-files exited ${String(spawned.status)}`)
+  }
+  const candidates: string[] = []
+  const skipped: string[] = []
+  for (const rel of spawned.stdout.split('\n').filter((l) => l.length > 0)) {
+    if (!LINT_LINTABLE_EXT.test(rel)) continue
+    // A tracked path that is not a file on disk is not a candidate, and it is disclosed rather
+    // than dropped. Measured at `bfbd89a5`: one tracked SYMLINK under
+    // `dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/` points at an ABSOLUTE
+    // path inside a gitignored sibling worktree, so it dangles in every checkout but the one
+    // that wrote it, `git status` still reports the tree clean (a symlink blob matches), and
+    // handing the path to ESLint makes it exit 2 with `No files matching the pattern` — the
+    // `NOT RUN` symptom the lint leg took last round from a vanishing directory, arriving again
+    // from a completely different cause. Any census that trusts `git ls-files` as a file list
+    // inherits it.
+    if (!existsSync(join(REPO_ROOT, rel))) {
+      skipped.push(rel)
+      continue
+    }
+    candidates.push(rel)
+  }
+  return { candidates, skipped }
+}
+
+function classifyLintVisibility(
+  run: { stdout: string; stderr: string; code: number | null },
+  census: { candidates: string[]; skipped: string[] },
+  ratified: readonly string[],
+): { verdict: Verdict; why: string } {
+  const skippedNote = census.skipped.length === 0
+    ? ''
+    : ` — ${String(census.skipped.length)} tracked lintable path(s) are not a file on disk and were skipped: ${census.skipped.join(', ')}`
+  let reports: unknown
+  try {
+    reports = JSON.parse(run.stdout)
+  } catch {
+    return {
+      verdict: 'refused',
+      why:
+        `eslint produced no JSON for the lint-visibility census (exit ${String(run.code)}), so nothing was counted${skippedNote}. ` +
+        `stderr: ${tail(run.stderr)}`,
+    }
+  }
+  if (!Array.isArray(reports)) {
+    return { verdict: 'refused', why: `the lint-visibility census did not return a report array (exit ${String(run.code)})${skippedNote}` }
+  }
+  if (reports.length !== census.candidates.length) {
+    // Every candidate gets exactly one report, ignored or not. A shortfall means eslint stopped
+    // seeing part of the list mid-run — last round's vanishing-tree class — and a census with an
+    // unexplained gap does not get to report a clean zero.
+    return {
+      verdict: 'refused',
+      why:
+        `eslint answered ${String(reports.length)} of ${String(census.candidates.length)} tracked lintable candidates, so the census is ` +
+        `missing ${String(census.candidates.length - reports.length)} file(s)${skippedNote}. stderr: ${tail(run.stderr)}`,
+    }
+  }
+  const hidden: string[] = []
+  for (const entry of reports as EslintFileReport[]) {
+    const messages = Array.isArray(entry.messages) ? (entry.messages as { ruleId?: unknown; message?: unknown }[]) : []
+    // `ruleId` is NULL on these, not absent, and the message is longer than the folklore version of
+    // it. Captured line (`review-round-eslint-instrument-shape.txt`):
+    //   ruleId: null, fatal: false, severity: 1, nodeType: null,
+    //   message: File ignored because of a matching ignore pattern. Use "--no-ignore" to disable
+    //            file ignore settings or use "--no-warn-ignored" to suppress this warning.
+    // `entry.ignored` is undefined on these entries, so the message text is the only marker.
+    // A first version tested `ruleId === undefined`, matched nothing, and the leg reported "0
+    // hidden" over 2417 tracked files while 1313 of them were in fact unread. The synthetic pin
+    // below did not catch it, because that pin had been written from memory rather than copied from
+    // a transcript — so it carried `ruleId` absent and validated a blind detector. A test that
+    // invents its instrument's shape is worse than no test: it converts a detector nobody believes
+    // into a detector everybody believes. Both halves now carry the captured object.
+    const ignored = messages.some(
+      (m) => (m.ruleId === undefined || m.ruleId === null)
+        && typeof m.message === 'string'
+        && /File ignored because of a matching ignore pattern/.test(m.message),
+    )
+    if (!ignored) continue
+    const abs = typeof entry.filePath === 'string' ? entry.filePath : ''
+    hidden.push(relative(REPO_ROOT, abs).split('\\').join('/'))
+  }
+  const counts = new Map<string, number>()
+  const unexpected: string[] = []
+  for (const p of hidden) {
+    const hit = ratified.find((prefix) => p.startsWith(prefix))
+    if (hit === undefined) {
+      unexpected.push(p)
+      continue
+    }
+    counts.set(hit, (counts.get(hit) ?? 0) + 1)
+  }
+  const stated = [...counts.entries()].map(([prefix, n]) => `${prefix} ${String(n)}`).join(', ')
+  // The line has to be checkable off itself, and it has to name which population each number is
+  // from. The first version printed "eslint read 1105 of 2418 tracked lintable file(s)" at
+  // `992b416b` — where 2419 lintable paths were tracked — and "…of 2421…" at `d6e786c7`, where
+  // 2422 were: in both cases the second number is what was OFFERED to eslint (tracked ∩ on disk),
+  // and the gap was reconcilable only by reading the skipped note at the end of the line. Calling
+  // that number "tracked" is the F3 failure — a reason string that misstates what it counted — so
+  // `offered`, `tracked` and `skipped` are now three words for three sets, with the sum spelled out
+  // so a reader can check it without re-running anything.
+  const offered = reports.length
+  const skipped = census.skipped.length
+  const tracked = census.candidates.length + skipped
+  const censusLine =
+    `eslint read ${String(offered - hidden.length)} of ${String(offered)} OFFERED tracked lintable file(s); ` +
+    `${String(hidden.length)} are hidden by an ignore pattern${stated === '' ? '' : ` (${stated})`}; ` +
+    `${String(offered - hidden.length)} + ${String(hidden.length)} = ${String(offered)} offered, ` +
+    `+ ${String(skipped)} skipped = ${String(tracked)} tracked lintable path(s)` +
+    (skipped === 0 ? '; nothing skipped' : `; skipped: ${census.skipped.join(', ')}`)
+  if (unexpected.length > 0) {
+    return {
+      verdict: 'failed',
+      why:
+        `${String(unexpected.length)} tracked file(s) are invisible to lint and outside every ratified prefix — ${unexpected.slice(0, 10).join(', ')}` +
+        `${unexpected.length > 10 ? `, +${String(unexpected.length - 10)} more` : ''}. An entry in eslint.config.mjs's \`ignores\` swallows ` +
+        `product source; those files cannot produce a lint identity, so the baseline and the universe line both understate the tree. ` +
+        `Full census: ${censusLine}`,
+    }
+  }
+  return { verdict: 'passed', why: censusLine }
+}
+
 function classifyArtifactsRun({ stdout, stderr, code }: {
   stdout: string
   stderr: string
   code: number | null
 }): { verdict: Verdict; why: string } {
-    const out = `${stdout}${stderr}`
-    const ok = /OK: (\d+) files/.exec(out)
-    if (ok !== null) {
-      return Number(ok[1] as string) > 0
-        ? { verdict: 'passed' as Verdict, why: ok[0] as string }
-        : { verdict: 'refused' as Verdict, why: 'check:artifacts compared zero files — nothing was checked' }
-    }
+  // F4's precedence rule, applied to what THIS instrument does — which is not what
+  // `lint-identities.mjs` does, and that difference is measured, not assumed.
+  // `check-artifacts-committed.mjs` prints its OK on stdout (measured at this commit: exit 0,
+  // 130 bytes on stdout, 0 on stderr) and its ERROR lines on stderr (measured from
+  // `packages/testkit`: exit 1, stdout EMPTY, `ERROR: packages/runtime/dist missing — run
+  // \`pnpm build && pnpm build:composition\` first`). So "parse stdout only" would delete every
+  // refusal arm here. The rule that survives both instruments is directional and it is the one
+  // F4 is actually about: **a green may only come from stdout; a red may come from either.** An
+  // instrument that reports `OK` somewhere other than its verdict channel has not passed this
+  // gate — it has printed a sentence, and the two are not the same fact.
+  const out = `${stdout}${stderr}`
+  const ok = /OK: (\d+) files/.exec(stdout)
+  if (ok !== null) {
+    return Number(ok[1] as string) > 0
+      ? { verdict: 'passed' as Verdict, why: ok[0] as string }
+      : { verdict: 'refused' as Verdict, why: 'check:artifacts compared zero files — nothing was checked' }
+  }
     if (/NOT-RUN: the produced set is empty/.test(out)) {
       return {
         verdict: 'refused' as Verdict,
@@ -512,15 +838,48 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
         cwd: REPO_ROOT,
         timeoutMs: 300_000,
         label: 'pnpm smoke:composition',
-        classify: classifyCompositionSmoke,
+        classify: (x) => classifyCompositionSmoke(x, compositionArtifacts),
       })
 
     it('is green, asserted by arm name and by absence of a skip — never by the exit code', { timeout: 330000 }, async () => {
+      // F1, the review round. This leg admits exactly one word, `passed`, and it does not ask
+      // the tree what it would accept instead. The previous version derived an expectation from
+      // the artifact inventory and asserted THAT, which in a never-built checkout turned the
+      // composition leg green-by-refusal: the arm never loaded, the gate reported the miss
+      // honestly as `refused`, and the merge gate printed `23 passed (23)` with nothing on
+      // stdout or stderr saying the arm had not run — measured `3 failed / 17 passed (20)` on
+      // base `69f7fdad` for the same tree, so the green was the change, not the tree. A gate
+      // that can be green because it never ran is not a milder bug than a gate that passes a
+      // bad build; it is exactly as invisible, and the reviewer's line is the one to keep:
+      // "Category: sound and tested. Honesty of the green: not yet."
+      //
+      // Where the tree-shape story lives instead: the synthetic leg
+      // (`asks where a missing artifact came from…`) and the two mutation legs
+      // (`reads a never-built checkout as refused…`, `reads a partial build output as failed…`)
+      // own the `refused` / `failed` distinction and pin it against real runs and real trees.
+      // This leg's job is to refuse the merge, and to say why in terms the reader can act on.
       const r = await run()
-      const parsed = classifyCompositionSmoke({ stdout: r.stdout, code: r.code })
-      expect(r.verdict, `composition-smoke did not pass. why: ${r.why}\n    output tail:\n    ${tail(r.stdout || r.stderr)}`).toBe('passed')
+      const arts = compositionArtifacts()
+      const parsed = classifyCompositionSmoke({ stdout: r.stdout, code: r.code }, () => arts)
+      const absent = arts.filter((a) => !a.prov.exists)
+      if (absent.length > 0) {
+        // Say it out of the leg's own mouth, because this leg is RED in that tree on purpose
+        // and a transcript reader must be able to see the difference between "the build
+        // regressed" and "this checkout was never built" without opening this file.
+        process.stderr.write(
+          `composition-smoke leg: RED BY DESIGN — ${absent.map((a) => a.rel).join(', ')} ${absent.length === 1 ? 'is' : 'are'} not on ` +
+            `disk, so the ${absent.map((a) => a.label).join(', ')} ${absent.length === 1 ? 'arm did' : 'arms did'} not run. ` +
+            `Tree: ${treeShape({ repoRoot: REPO_ROOT })}. Run \`pnpm build\` and re-run this gate.\n`,
+        )
+      }
+      expect(
+        r.verdict,
+        `the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. ` +
+          `It read "${r.verdict}". why: ${r.why}\n    output tail:\n    ${tail(`${r.stdout}\n${r.stderr}`)}`,
+      ).toBe('passed')
 
       for (const target of compositionTargets()) {
+
         expect(
           parsed.steps.some((l) => l.startsWith(`PASS ${target.label}: `) && l.includes(`name="${target.expectedName}"`)),
           `the ${target.label} leg is not a PASS line naming plugin "${target.expectedName}": ${parsed.steps.filter((l) => l.includes(target.label)).join(' | ') || '(no line for this target at all)'}`,
@@ -556,7 +915,9 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       expect(historical.verdict).toBe('refused')
       expect(historical.why).toContain('17 unresolvable: clsx')
       expect(historical.why).toContain('exit code was 0')
-      // And the mirror-image mistake: a missing built artifact is a FAILURE, not a skip.
+      // And the mirror-image mistake: with no tree consulted, a missing built artifact is a
+      // FAILURE, not a skip — the classifier defaults to the strict answer and does not get
+      // to invent a provenance it was not given.
       const missingArtifact = classifyCompositionSmoke({
         stdout: 'FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)\n',
         code: 1,
@@ -564,25 +925,220 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       expect(missingArtifact.verdict).toBe('failed')
     })
 
-    it('says so by name when the built client entry is gone, and does not skip past it', { timeout: 330000 }, async () => {
-      const dist = join(REPO_ROOT, 'packages', 'client', 'dist')
-      const held = `${dist}.held-by-7-6-gate`
-      expect(existsSync(dist), 'packages/client/dist must exist for this leg to mutate it — run `pnpm build` first').toBe(true)
-      spawnSync('mv', [dist, held], { cwd: REPO_ROOT })
+    it('asks where a missing artifact came from before calling it a regression, on synthetic trees', () => {
+      // The refused/failed boundary, driven by invented trees rather than by whatever this
+      // worktree happens to contain — otherwise the branch is only ever exercised in one
+      // direction, which is how the leg above came to assert `failed` unexamined.
+      const MISSING_LINE = 'FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)\n'
+      const ENTRY = 'packages/client/dist/packages/client/src/plugin/client.js'
+      const prov = (over: Partial<ArtifactProvenance>): ArtifactProvenance => ({
+        label: 'client plugin (packages/client)',
+        rel: ENTRY,
+        exists: false,
+        tracked: false,
+        gitignored: true,
+        inInstallSurface: false,
+        outputRoot: 'packages/client/dist',
+        outputRootExists: false,
+        outputFileCount: 0,
+        manifestEntry: null,
+        unreadable: [],
+        treeShape: 'HEAD abc1234, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]',
+        ...over,
+      })
+      const withProv = (over: Record<string, unknown>) =>
+        classifyCompositionSmoke({ stdout: MISSING_LINE, code: 1 }, () => [{ label: 'client plugin (packages/client)', rel: ENTRY, prov: prov(over) }])
+
+      // Never built: no output root at all.
+      const neverBuilt = withProv({})
+      expect(neverBuilt.verdict).toBe('refused')
+      expect(neverBuilt.why).toContain(ENTRY)
+      expect(neverBuilt.why).toContain('pnpm build')
+      expect(neverBuilt.why).toContain('byte-identical') // the ambiguity is in the text, not in a footnote
+      // Built, then wrong: the root is there with 399 siblings and the entry is not.
+      expect(withProv({ outputRootExists: true, outputFileCount: 399 }).verdict).toBe('failed')
+      // An artifact that ships: its absence is a defect whatever the checkout looks like.
+      expect(withProv({ tracked: true, gitignored: false }).verdict).toBe('failed')
+      expect(withProv({ inInstallSurface: true }).verdict).toBe('failed')
+      // Provenance unknown is NOT provenance innocent.
+      expect(withProv({ unreadable: ['git could not classify x:boom'] }).verdict).toBe('failed')
+      // Empty-but-present output root is still "nothing was ever emitted".
+      expect(withProv({ outputRootExists: true, outputFileCount: 0 }).verdict).toBe('refused')
+      // And a second, unexplained FAIL is never swallowed by an explained one.
+      const mixed = classifyCompositionSmoke(
+        { stdout: `${MISSING_LINE}FAIL client bundle plugin-row-exports: the row lost its apply export\n`, code: 1 },
+        () => [{ label: 'client plugin (packages/client)', rel: ENTRY, prov: prov({}) }],
+      )
+      expect(mixed.verdict).toBe('failed')
+      expect(mixed.why).toContain('plugin-row-exports')
+      expect(mixed.why).toContain('no trace in its declared output root')
+      // F2, and the phrase is load-bearing rather than stylistic: the classifier may say what it
+      // measured, which is the declared output root, and never that the tree "never produced"
+      // something — an output built and then MOVED is indistinguishable from here.
+      expect(mixed.why).toContain('nothing outside the declared output root is examined')
+    })
+
+    it('refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact', () => {
+      // §17's finding, closed. The precondition "the artifact is absent" used to be prose in a doc
+      // comment, and prose is not a rule. Measured at `d6e786c7`, this helper was called twice
+      // inside an hour on a healthy tree and answered `failed` with
+      //   "…packages/client/dist/packages/client/src/plugin/client.js is missing while
+      //    packages/client/dist carries 400 other file(s): a build ran in this tree…"
+      // about a tree in which nothing was missing (`review-round-verdicts-at-d6e786c7.txt` keeps
+      // the out-of-contract call in its header). Every sentence that function can write is about an
+      // absence and it never reads file contents, so over a present file the only honest answer is
+      // a refusal that names the question. A helper that is correct only while callers remember a
+      // rule has no test for the rule — this leg is that test.
+      const ENTRY = 'packages/client/dist/packages/client/src/plugin/client.js'
+      const presentProv: ArtifactProvenance = {
+        label: 'client plugin (packages/client)',
+        rel: ENTRY,
+        exists: true,
+        tracked: false,
+        gitignored: true,
+        inInstallSurface: false,
+        outputRoot: 'packages/client/dist',
+        outputRootExists: true,
+        outputFileCount: 400,
+        manifestEntry: null,
+        unreadable: [],
+        treeShape: 'HEAD d6e786c7, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]',
+      }
+      const present = absentArtifactVerdict(presentProv)
+      expect(present.verdict, `a present artifact is not a verdict this helper may write: ${present.why}`).toBe('refused')
+      // The lie, pinned out of existence: the healthy-tree call used to assert absence, in words,
+      // and a reader who acted on it would have run a build over a tree that had already built.
+      expect(present.why).not.toContain('is missing')
+      expect(present.why).toContain('IS on disk')
+      expect(present.why).toContain('the wrong question')
+      expect(present.why).toContain('refused is not passed')
+      // Presence has to outrank the branches that used to be earlier in the function, or the guard
+      // is decoration: a tracked artifact and an unreadable one are still present artifacts, and
+      // the answer is still "wrong question", not the absence verdict they would otherwise write.
+      for (const over of [{ tracked: true, gitignored: false }, { inInstallSurface: true }, { unreadable: ['git could not classify x:boom'] }] as Partial<ArtifactProvenance>[]) {
+        const v = absentArtifactVerdict({ ...presentProv, ...over })
+        expect(v.verdict, `presence outranks every absence branch, including the ones that used to be first: ${v.why}`).toBe('refused')
+        expect(v.why).not.toContain('is missing')
+      }
+      // The live half, in whichever tree this run is in — asserted both ways so there is no tree
+      // shape in which this leg asserts nothing, and no branch that vacuously passes.
+      const gated = gatedEntry()
+      const live = classifyAbsentArtifact({ repoRoot: REPO_ROOT, rel: gated.rel, label: gated.label })
+      if (live.prov.exists) {
+        expect(live.verdict, `the real tree has ${gated.rel} on disk, so this call is the misuse itself: ${live.why}`).toBe('refused')
+        expect(live.why).toContain('IS on disk')
+        expect(live.why).not.toContain('is missing')
+      } else {
+        // And the guard must not swallow a genuine refusal: with the entry really absent, the
+        // answer comes from the absence branches and must not claim presence.
+        expect(live.why).not.toContain('IS on disk')
+        expect(['refused', 'failed'], `an absent artifact still gets an absence verdict, not a wrong-question refusal: ${live.why}`).toContain(live.verdict)
+      }
+    })
+
+    /**
+     * The closure-gated arm's entry and the build-output root that would contain it, both
+     * read off the gate's own target list — no path in these two legs is written by hand, so
+     * an arm added or moved in `composition-smoke-targets.mjs` moves the mutations with it.
+     */
+    function gatedEntry(): { label: string; rel: string; outputRoot: string } {
+      const target = compositionTargets().find((t) => t.closureGate === true)
+      if (target === undefined) {
+        throw new Error('the plugin target list carries no closure-gated arm, so there is no built entry this leg could mutate')
+      }
+      const prov = artifactProvenance({ repoRoot: REPO_ROOT, rel: target.rel, label: target.label })
+      if (prov.outputRoot === null) {
+        throw new Error(`${target.rel} is not inside a build-output root this module can identify, so "held away" cannot be constructed for it`)
+      }
+      return { label: target.label, rel: target.rel, outputRoot: prov.outputRoot }
+    }
+
+    it('reads a never-built checkout as refused, by name, and still refuses to call it green', { timeout: 330000 }, async () => {
+      // This is the case a fresh worktree is in: `pnpm install` and no build. Before this
+      // round the leg said `failed` — which put the reader on the trail of a composition
+      // regression that does not exist — and one leg of this file additionally demanded that
+      // the artifact exist before it would run at all, which is the same defect wearing a
+      // precondition.
+      const { label, rel, outputRoot } = gatedEntry()
+      const held = `${join(REPO_ROOT, outputRoot)}.held-by-7-6-gate`
+      const hadRoot = existsSync(join(REPO_ROOT, outputRoot))
+      if (hadRoot) spawnSync('mv', [join(REPO_ROOT, outputRoot), held], { cwd: REPO_ROOT })
       try {
+        expect(artifactProvenance({ repoRoot: REPO_ROOT, rel }).outputRoot, `holding ${outputRoot} away must leave the tree in the never-built shape this leg claims to test`).not.toBeNull()
         const r = await runLeg(process.execPath, ['scripts/composition-smoke.mjs'], {
           cwd: REPO_ROOT,
           timeoutMs: 300_000,
-          label: 'composition-smoke with the built client entry removed',
-          classify: classifyCompositionSmoke,
+          label: 'composition-smoke with no build output for the gated arm',
+          classify: (x) => classifyCompositionSmoke(x, compositionArtifacts),
         })
-        expect(r.verdict, `a missing artifact must read as failed, not refused/passed: ${r.why}`).toBe('failed')
-        expect(r.stdout).toMatch(/^FAIL client plugin \(packages\/client\): built entry is missing/m)
+        // The instrument's own words are checked before this file's opinion of them: the gate
+        // must still print its strict FAIL line. The classifier's job is to name the cause,
+        // not to quiet the report.
+        expect(r.stdout, `the gate must still print its missing-artifact line for ${label}`).toMatch(/^FAIL client plugin \(packages\/client\): built entry is missing/m)
         expect(r.stdout).not.toMatch(/^SKIP client plugin/m)
+        expect(r.verdict, `a checkout with no build output must read as refused, and refused must never be allowed to read as passed: ${r.why}`).toBe('refused')
+        expect(r.why).toContain(rel)
+        expect(r.why).toContain('pnpm build')
+        expect(r.why).toContain('HEAD ')
+        expect(r.stdout).not.toContain('PASS composition-smoke')
       } finally {
-        spawnSync('mv', [held, dist], { cwd: REPO_ROOT })
+        if (hadRoot) spawnSync('mv', [held, join(REPO_ROOT, outputRoot)], { cwd: REPO_ROOT })
       }
-      expect(existsSync(dist), 'the mutation was not restored — the worktree is left dirty').toBe(true)
+      expect(existsSync(join(REPO_ROOT, outputRoot)), `${outputRoot} was not restored — the worktree is left in a shape no later leg was measured in`).toBe(hadRoot)
+    })
+
+    it('reads a partial build output as failed, not refused: a build ran and produced the wrong surface', { timeout: 330000 }, async () => {
+      // THE case `refused` must not swallow. The output root exists with its siblings and the
+      // declared entry is not among them: that is a build that ran and got it wrong, and any
+      // predicate that calls this refused has traded a false red for a false green.
+      const { rel, outputRoot } = gatedEntry()
+      const entryAbs = join(REPO_ROOT, rel)
+      const rootAbs = join(REPO_ROOT, outputRoot)
+      const heldEntry = `${entryAbs}.held-by-7-6-gate`
+      // Three trees can hand this leg their door, and only two of them need it knocked: a
+      // healthy checkout (move the entry away and keep the siblings), a never-built one
+      // (create the shape, then remove every trace of it), and one already in the shape under
+      // test — the tree the clean-worktree report arrived in, where the entry had been removed
+      // and its siblings left. Mutating that third one and then "restoring" it would have this
+      // file wreck a worktree and claim to have repaired it, so it is measured, not moved.
+      const entryWasThere = existsSync(entryAbs)
+      const rootWasThere = existsSync(rootAbs)
+      let createdRoot = false
+      if (entryWasThere) {
+        expect(spawnSync('mv', [entryAbs, heldEntry], { cwd: REPO_ROOT }).status, `holding ${rel} aside must succeed or this leg tests the wrong tree`).toBe(0)
+      } else if (!rootWasThere) {
+        // Unbuilt tree: the same SHAPE has to be reachable here, or this leg only ever tests
+        // a built checkout. One file that is not the entry, in the output root, is that shape.
+        // It is removed in `finally` below and asserted gone — this leg creates no residue.
+        mkdirSync(rootAbs, { recursive: true })
+        createdRoot = true
+        writeFileSync(join(rootAbs, 'gate-7-6-synthetic-sibling.txt'), 'placeholder: proves the output root exists while the entry does not\n')
+      }
+      try {
+        const shape = artifactProvenance({ repoRoot: REPO_ROOT, rel })
+        expect(shape.exists, 'the entry must be absent for this leg to mean anything').toBe(false)
+        expect(shape.outputFileCount, `the output root must still carry siblings, or this leg has rebuilt the never-built shape it is meant to distinguish`).toBeGreaterThan(0)
+        const r = await runLeg(process.execPath, ['scripts/composition-smoke.mjs'], {
+          cwd: REPO_ROOT,
+          timeoutMs: 300_000,
+          label: 'composition-smoke with the gated entry removed and its siblings left in place',
+          classify: (x) => classifyCompositionSmoke(x, compositionArtifacts),
+        })
+        expect(r.verdict, `a partial build output must read as failed: ${r.why}`).toBe('failed')
+        expect(r.why).toContain('other file(s)')
+        expect(r.why).toContain('a build ran in this tree')
+        expect(r.stdout).toMatch(/^FAIL client plugin \(packages\/client\): built entry is missing/m)
+      } finally {
+        if (createdRoot) rmSync(rootAbs, { recursive: true, force: true })
+        else if (entryWasThere) spawnSync('mv', [heldEntry, entryAbs], { cwd: REPO_ROOT })
+      }
+      if (createdRoot) {
+        expect(existsSync(rootAbs), `${outputRoot} was created by this leg and not removed — the next run would now read the tree as built`).toBe(false)
+      } else if (entryWasThere) {
+        expect(existsSync(entryAbs), 'the entry was not restored — the worktree is left with a hole in the build output').toBe(true)
+      } else {
+        expect(artifactProvenance({ repoRoot: REPO_ROOT, rel }).outputFileCount, `${outputRoot} was found in the shape under test and must be handed back unchanged`).toBeGreaterThan(0)
+      }
     })
 
     it('refuses the leg, by name, when the host module closure cannot be traversed', { timeout: 330000 }, async () => {
@@ -598,10 +1154,25 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
           cwd: REPO_ROOT,
           timeoutMs: 300_000,
           label: 'composition-smoke with one hoisted package hidden',
-          classify: classifyCompositionSmoke,
+          classify: (x) => classifyCompositionSmoke(x, compositionArtifacts),
         })
-        expect(r.verdict, `a broken closure must read as refused (a step that did not run): ${r.why}`).toBe('refused')
-        expect(r.stdout).toMatch(/^SKIP client plugin \(packages\/client\): host module closure unavailable.*clsx/m)
+        // F1 applies here too, and what it removes is a derivation. Which of the two red words
+        // this run earns depends on the tree (with the built entry present the closure walk runs
+        // and the answer is `refused`; with a half-built output root the missing entry is a
+        // regression and the answer is `failed`), but THAT the answer is not `passed` depends on
+        // nothing. So this leg asserts the invariant it actually owns and does not pretend to
+        // predict the word: the word is pinned by the two mutation legs, which SET the tree shape
+        // themselves rather than inferring it.
+        expect(r.verdict, `hiding a package the client closure must traverse cannot leave this leg passed: ${r.why}`).not.toBe('passed')
+        // Which of its two excuses the gate gives depends on the tree: with the built entry
+        // present it walks the closure and prints SKIP; without it the entry check answers
+        // first. Both are "this step did not run", which is the claim this leg owns, so the
+        // leg requires the step to be NAMED by one of the two routes and forbids the arm from
+        // having passed — it does not require whichever line this checkout happens to warrant.
+        const namedTheStep = /^SKIP client plugin \(packages\/client\): host module closure unavailable/m.test(r.stdout) || /built entry is missing/.test(r.stdout)
+        expect(namedTheStep, `the run must name the step that could not run; it printed:\n${tail(r.stdout)}`).toBe(true)
+        expect(r.stdout).not.toContain('PASS client plugin (packages/client)')
+        expect(r.stdout).not.toContain('PASS composition-smoke')
       } finally {
         spawnSync('mv', [held, hoist], { cwd: REPO_ROOT })
       }
@@ -671,26 +1242,148 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
   })
 
   describe('the static legs', () => {
+    it('classifies a lint run by its verdict line and its universe line, on captured output', () => {
+      // Every string below is copied from a real run in this round's evidence (the healthy
+      // pair from `battery.txt`, the scratch-tree pair from `tree-D-scratch-residue.txt`, the
+      // crash from `lint-exit2-eslint-stderr-verbatim.txt` and
+      // `lint-exit2-end-to-end-refusal.txt`), so each arm has actually fired somewhere.
+      const healthy = 'lint-identities: 160 identity lines, 76 distinct (target .)\n'
+        + 'lint-identities: universe: 1104 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)\n'
+        + 'baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0\n'
+      const run = (stdout: string, stderr = '', code: number | null = 0) => classifyLintRun({ stdout, stderr, code })
+
+      const ok = run(healthy)
+      expect(ok.verdict).toBe('passed')
+      expect(ok.why, 'a passing lint leg still has to carry the universe it passed over').toContain('universe: 1104 file(s) linted')
+
+      const scratch = 'lint-identities: 162 identity lines, 77 distinct (target .)\n'
+        + 'lint-identities: universe: 1105 file(s) linted, 1 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): .tmp-resolve-probe.mjs\n'
+        + 'baseline …: 76 distinct; new 1, resolved 0\nNEW IDENTITIES (1):\n  error no-undef .tmp-resolve-probe.mjs\n'
+      const red = run(scratch, '', 1)
+      expect(red.verdict).toBe('failed')
+      expect(red.why).toContain('1 of them gitignored')
+      expect(red.why, 'the reader must be able to see the red was measured over a scratch tree').toContain('.tmp-resolve-probe.mjs')
+
+      const crashed = 'lint-identities: NOT RUN :: eslint produced no JSON (status 2, signal null, error none)\n'
+      const crashErr = '\nOops! Something went wrong! :(\n\nESLint: 9.39.5\n\nError: ENOENT: no such file or directory, '
+        + "'/repo/packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs'\n    at readAndVerifyFile (eslint/lib/eslint/eslint-helpers.js:1306:16)\n"
+      const refused = run(crashed, crashErr, 2)
+      expect(refused.verdict, 'no verdict line means nothing was compared, which is a refusal, not a pass').toBe('refused')
+      expect(refused.why, 'the refusal has to carry the captured stderr that names the vanished file').toContain('ENOENT')
+      expect(refused.why).toContain('stderr:')
+      const silent = run(crashed, '', 2)
+      expect(silent.why, '"no output" and "output not captured" are different facts').toContain('empty (0 bytes)')
+
+      // F4's precedence rule, and the exact shape it exists to refuse: the whole healthy trio
+      // printed on stderr, nothing on stdout. `scripts/lint-identities.mjs` does not do this —
+      // it writes its machine lines to stdout — but "one script's writing habit" is not a
+      // protocol, and the previous classifier believed it.
+      const stderrOnly = run('', 'lint-identities: 160 identity lines, 76 distinct (target .)\n'
+        + 'lint-identities: universe: 1104 file(s) linted, 0 of them gitignored (…)\n'
+        + 'baseline …: 76 distinct; new 0, resolved 0\n')
+      expect(stderrOnly.verdict, 'a verdict this leg cannot see on stdout is a verdict it does not have, however healthy it looks on stderr').toBe('refused')
+      expect(stderrOnly.why).toContain('ON STDOUT')
+      expect(stderrOnly.why, 'stderr is still quoted as evidence inside the refusal — bound the trust, do not delete the information').toContain('76 distinct')
+
+      // And the other direction, which is why the split is safe rather than merely stricter: a
+      // complete stdout verdict is not unmade by unrelated noise on stderr, so a real red
+      // printed on stdout can never be drowned by a loud stderr.
+      expect(run(healthy, 'Error: something on stderr that is not a verdict\n', 1).verdict,
+        'stdout decides: an unrelated stderr scream does not overturn a complete stdout verdict').toBe('passed')
+      expect(run(scratch, 'Error: something on stderr that is not a verdict\n', 1).why,
+        'a red carries the stderr tail too, so the reader sees both').toContain('stderr:')
+
+      expect(run('lint-identities: 160 identity lines, 76 distinct (target .)\nbaseline …: 76 distinct; new 0, resolved 0\n').verdict,
+        'a verdict with no stated universe is not believed').toBe('refused')
+      expect(run('lint-identities: 160 identity lines, 76 distinct (target .)\n'
+        + 'lint-identities: universe: 1104 file(s) linted, 0 of them gitignored (…); universe provenance INCOMPLETE: git check-ignore exited 128\n'
+        + 'baseline …: 76 distinct; new 0, resolved 0\n').verdict,
+      'a universe git could not fully classify is a refusal, not a clean').toBe('refused')
+      expect(run('lint-identities: 0 identity lines, 0 distinct (target .)\nlint-identities: universe: 0 file(s) linted, 0 of them gitignored (…)\nbaseline …: 0 distinct; new 0, resolved 0\n').verdict,
+        'a scan that read nothing reports new 0 — an empty scan must never read as clean').toBe('refused')
+    })
+
     it('lint closes as an identity diff against the named baseline, not against a count', { timeout: 930000 }, async () => {
       const r = await runLeg(process.execPath, ['scripts/lint-identities.mjs', '--diff', LINT_BASELINE], {
         cwd: REPO_ROOT,
         timeoutMs: 900_000,
         label: 'pnpm lint:identities --diff <baseline>',
-        classify: ({ stdout, code }) => {
-          const m = /new (\d+), resolved (\d+)/.exec(stdout)
-          if (m === null) {
-            return { verdict: 'refused' as Verdict, why: `the identity diff produced no "new N, resolved N" verdict (exit ${code}); output tail: ${tail(stdout || '')}` }
-          }
-          const reported = /identity lines/.test(stdout)
-          if (!reported) {
-            return { verdict: 'refused' as Verdict, why: 'the lint normaliser reported no identity lines — an empty scan is not a clean one' }
-          }
-          return Number(m[1] as string) === 0
-            ? { verdict: 'passed' as Verdict, why: stdout.trim().split('\n').slice(-1)[0] as string }
-            : { verdict: 'failed' as Verdict, why: `new lint identities against the accepted baseline: ${stdout.trim().split('\n').slice(-3).join(' | ')}` }
-        },
+        classify: classifyLintRun,
       })
-      expect(r.verdict, `lint leg did not close. why: ${r.why}\n    tail:\n    ${tail(r.stdout || r.stderr)}`).toBe('passed')
+      expect(r.verdict, `lint leg did not close. why: ${r.why}\n    tail:\n    ${tail(`${r.stdout}\n${r.stderr}`)}`).toBe('passed')
+    })
+
+    it('names the three states of a captured stderr, including the arm this gate cannot reach', () => {
+      // Review's nit, taken seriously: §7.6's `runLeg` always pipes, so the instrument's
+      // "not captured" branch was prose no test in the tree could execute — untested text inside
+      // a refusal vocabulary, which is the thing this file argues against everywhere else. The
+      // arm is not deleted (a caller that inherits stdio genuinely produces it, and the
+      // instrument's comment says so) and it is no longer unexecuted.
+      expect(describeStderr(undefined)).toContain('not captured')
+      expect(describeStderr(null)).toContain('not captured')
+      expect(describeStderr(''), '"no output" and "output not captured" are different facts').toBe('empty (0 bytes)')
+      const noisy = `${'noise\n'.repeat(20)}Error: ENOENT: no such file or directory, open 'x'\n`
+      const said = describeStderr(noisy)
+      expect(said).toContain('bytes, tail:')
+      expect(said).toContain('ENOENT')
+      const tailPart = said.slice(said.indexOf('tail: ') + 'tail: '.length)
+      expect(tailPart.split(' | '), 'the tail is the LAST eight lines on one line — a reason that runs twenty lines stops being a reason').toHaveLength(8)
+      expect(tailPart).toContain("open 'x'")
+    })
+
+    it('no tracked file is invisible to lint except under a prefix this leg names', { timeout: 330_000 }, async () => {
+      // F6. The property this phase kept stepping on and never stated, measured rather than
+      // eyeballed off the config: hand ESLint every tracked file it could lint and ask which
+      // ones it refused to read. Review's specimen was the reason to care — `eslint
+      // .tmp-fault/probe/hides.mjs` exits 0 printing "File ignored", so a file `git add -f`'d
+      // into an ignored directory is invisible to lint while `git status` stays clean and every
+      // count in the gate keeps treating it as covered.
+      const census = lintVisibilityCandidates()
+      const r = await runLeg(process.execPath, [ESLINT_BIN, ...census.candidates, '--format', 'json'], {
+        cwd: REPO_ROOT,
+        timeoutMs: 300_000,
+        label: 'eslint over every tracked lintable file (the lint-visibility census)',
+        classify: (x) => classifyLintVisibility(x, census, RATIFIED_INVISIBLE_PREFIXES),
+      })
+      // The census is printed, not just asserted: "0 unexpected" means nothing to a reader who
+      // cannot see the denominator it was divided by.
+      process.stderr.write(`lint-visibility: ${r.why}\n`)
+      expect(r.verdict, `the lint-visibility census did not close. why: ${r.why}\n    tail:\n    ${tail(`${r.stdout}\n${r.stderr}`)}`).toBe('passed')
+
+      // The detector itself, pinned against a message object copied VERBATIM out of a real
+      // `--format json` report — `ruleId: null`, not an absent `ruleId`, which is the difference
+      // between a detector and a decoration (see the comment on the classifier). Without this pin
+      // the leg's zero could be a matcher that stopped firing: the same silence that made the
+      // `universe:` line necessary last round, arriving one layer down.
+      const ignoredLine = {
+        ruleId: null,
+        fatal: false,
+        severity: 1,
+        message: 'File ignored because of a matching ignore pattern. Use "--no-ignore" to disable file ignore settings or use "--no-warn-ignored" to suppress this warning.',
+        nodeType: null,
+      }
+      const detector = classifyLintVisibility(
+        { stdout: JSON.stringify([{ filePath: join(REPO_ROOT, 'packages', 'x', 'src', 'hides.ts'), messages: [ignoredLine] }]), stderr: '', code: 0 },
+        { candidates: ['packages/x/src/hides.ts'], skipped: [] },
+        RATIFIED_INVISIBLE_PREFIXES,
+      )
+      expect(detector.verdict, 'a tracked file ESLint reports as ignored must be counted as hidden — the leg may not detect nothing and call that coverage').toBe('failed')
+      expect(detector.why).toContain('packages/x/src/hides.ts')
+      // And a ratified prefix ratifies, it does not silence: the same input under a named
+      // prefix passes, but still has to be counted out loud.
+      const ratified = classifyLintVisibility(
+        { stdout: JSON.stringify([{ filePath: join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'x', 'tool.mjs'), messages: [ignoredLine] }]), stderr: '', code: 0 },
+        { candidates: ['dev/agent-workflow/evidence/x/tool.mjs'], skipped: [] },
+        RATIFIED_INVISIBLE_PREFIXES,
+      )
+      expect(ratified.verdict).toBe('passed')
+      expect(ratified.why).toContain('dev/ 1')
+      // A census that lost track of part of its own list is not a census.
+      expect(classifyLintVisibility(
+        { stdout: JSON.stringify([{ filePath: join(REPO_ROOT, 'scripts', 'a.mjs'), messages: [] }]), stderr: '', code: 0 },
+        { candidates: ['scripts/a.mjs', 'scripts/b.mjs'], skipped: [] },
+        RATIFIED_INVISIBLE_PREFIXES,
+      ).verdict, 'a report short of its candidate list has an unexplained gap and buys no belief').toBe('refused')
     })
 
     it('the committed install surface is fresh against the tree, and a missing surface is refused', { timeout: 330000 }, async () => {
@@ -708,6 +1401,13 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       expect(classifyArtifactsRun({ stdout: '', stderr: '[check-artifacts-committed] NOT-RUN: the produced set is empty (0 of 0 files on disk survived the ignore filter) — the gate compared nothing and must not report OK.', code: 2 }).verdict).toBe('refused')
       expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))', stderr: '', code: 0 }).verdict).toBe('passed')
       expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 0 files; committed install-surface artifacts match the fresh build (incl. 0 glue placement(s))', stderr: '', code: 0 }).verdict).toBe('refused')
+      // F4's direction of travel, pinned here as well: the same OK sentence arriving on STDERR is
+      // not a pass. This instrument does not do that today (measured at this commit: `OK` on
+      // stdout with stderr empty at exit 0, and it is the ERROR lines that go to stderr), which
+      // is precisely why the arm is pinned against captured text rather than trusted to the
+      // script's habits.
+      expect(classifyArtifactsRun({ stdout: '', stderr: '[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))', code: 0 }).verdict,
+        'a verdict on the wrong stream is not a verdict — green comes from stdout, red may come from either').toBe('refused')
     })
 
     it('a check:artifacts run from a subdirectory is refused, never an OK over nothing', async () => {

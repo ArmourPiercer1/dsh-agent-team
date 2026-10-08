@@ -1,0 +1,32 @@
+### The three trees, re-measured on the second merged tree d6e786c7 (master 4a11694a)
+### API note: called as artifactProvenance({repoRoot, rel}) + classifyAbsentArtifact({repoRoot, rel, label}).
+### Two fictions by memory were corrected on the way to this transcript: the option is `rel` (not
+### `relPath` — the throw was ERR_INVALID_ARG_TYPE from join(repoRoot, undefined)) and the sibling
+### count field is `outputFileCount` (not `filesInRoot`, which printed undefined and was the line
+### the first version of this transcript carried). §15's lesson, applied to its own author, twice
+### in one hour. The three header lines that got command-substituted on the previous run are the
+### same hazard (backticks inside double quotes), and this file now uses single quotes for prose.
+
+== tree H (healthy, 400 files, entry present) — OUT OF CONTRACT on purpose: classifyAbsentArtifact
+==   is the absent-artifact helper, called here with exists=true to see what it says about a
+==   tree where nothing is absent. Read the why: it asserts the artifact is missing. See FINDINGS §17.
+    exists=true  outputRoot=packages/client/dist rootExists=true  outputFileCount= 400  verdict=failed
+    why: packages/client/dist/packages/client/src/plugin/client.js is missing while packages/client/dist carries 400 other file(s): a build ran in this tree and produced a surface that does not contain what the client plugin (packages/client) arm declares. That is a re
+
+== tree A (whole declared output root moved aside => never-built):
+    exists=false outputRoot=packages/client/dist rootExists=false outputFileCount=   0  verdict=refused
+    why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/client/src/plug
+   handed back: 400 files, entry present
+
+== tree C (one artifact removed, siblings left):
+    exists=false outputRoot=packages/client/dist rootExists=true  outputFileCount= 399  verdict=failed
+    why: packages/client/dist/packages/client/src/plugin/client.js is missing while packages/client/dist carries 399 other file(s): a build ran in this tree and produced a surface that does not contain what the client plugin (packages/client) arm declares. That is a re
+   handed back: 400 files, entry present
+
+== tree E (whole output relocated to a gitignored off-path root):
+   relocated to: packages/client/out-dist-verify
+    exists=false outputRoot=packages/client/dist rootExists=false outputFileCount=   0  verdict=refused
+    why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/client/src/plug
+   handed back: 400 files, entry present
+   git status after all relocations: ''
+   leftover off-path dirs: (none expected)

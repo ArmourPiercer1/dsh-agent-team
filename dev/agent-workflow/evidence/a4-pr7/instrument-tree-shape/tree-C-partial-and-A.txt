@@ -1,0 +1,26 @@
+############ TREE C — build output present, ONE artifact surgically removed, siblings left
+before: 6 tracked change(s)
+entry: REMOVED   siblings under packages/client/dist: 399
+measured provenance verdict: failed | siblings: 399
+.tmp-faultscratch/trees.sh: line 20: failed: command not found
+--- the 7.6 gate in this tree (the partial-output leg must be GREEN, which is only true if it read )
+       × reads a partial build output as failed, not refused: a build ran and produced the wrong surface 644ms
+       × refuses the leg, by name, when the host module closure cannot be traversed 476ms
+ Test Files  1 failed (1)
+      Tests  2 failed | 20 passed (22)
+--- the 7.5 classifier suite in this tree
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD 69f7fdad, 6 tracked file(s) not matching HEAD; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 399 file(s))
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+restored entry: yes   tracked changes after: 6
+
+############ TREE A-prime — no build output at all, after the closure-leg fix
+client dist: ABSENT
+--- the 7.6 gate
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+--- the 7.5 classifier suite
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD 69f7fdad, 6 tracked file(s) not matching HEAD; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+restored dist: yes   tracked changes after: 6

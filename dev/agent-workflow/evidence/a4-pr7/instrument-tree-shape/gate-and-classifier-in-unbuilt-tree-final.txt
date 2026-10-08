@@ -1,0 +1,8 @@
+### gate + classifier in the CHECKOUT-A-SHAPE tree (no client build), after the lint-classifier extraction
+client dist: ABSENT
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD b4379cae, 1 tracked file(s) not matching HEAD; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+restored: yes

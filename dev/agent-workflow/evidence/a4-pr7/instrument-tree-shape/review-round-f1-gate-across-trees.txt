@@ -1,0 +1,73 @@
+### trees at bfbd89a5 (merged), fix round applied
+### dist files at start: 400   entry: present
+
+==================== TREE A: never built (dist moved aside) ====================
+--- instrument (exit without a pipe)
+exit=1
+PASS=10  FAIL(steps)=1  footer=FAIL composition-smoke
+--- FULL GATE in tree A: the composition leg must be RED, and say why
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD bfbd89a5, 4 tracked file(s) changed vs HEAD, 1 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+lint-visibility: eslint read 1104 of 2417 tracked lintable file(s); 1313 are hidden by an ignore pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 582ms
+ Test Files  1 failed (1)
+      Tests  1 failed | 24 passed (25)
+--- classifier suite in tree A
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD bfbd89a5, 4 tracked file(s) changed vs HEAD, 1 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+handed back: entry-present  files=400
+
+==================== TREE C: entry removed, 399 siblings remain ====================
+entry: REMOVED   siblings: 399
+instrument exit=1
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD bfbd89a5, 4 tracked file(s) changed vs HEAD, 1 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+lint-visibility: eslint read 1104 of 2417 tracked lintable file(s); 1313 are hidden by an ignore pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 565ms
+ Test Files  1 failed (1)
+      Tests  1 failed | 24 passed (25)
+handed back: entry-present  files=400
+
+==================== TREE E: the reviewer's hole — whole build output moved OFF the declared path ====================
+declared root: ABSENT   moved root files: 400
+gitignored? YES   tracked? 0 file(s)   git status lines: 5
+--- check:artifacts is blind to it:
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+--- lint: does it see the moved tree? (expect the out/dist path ignored by **/dist/**)
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1105 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+--- FULL GATE in tree E: F1 must make it red even though every other leg is green
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD bfbd89a5, 4 tracked file(s) changed vs HEAD, 1 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+lint-visibility: eslint read 1104 of 2417 tracked lintable file(s); 1313 are hidden by an ignore pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 552ms
+ Test Files  1 failed (1)
+      Tests  1 failed | 24 passed (25)
+--- the refusal text itself (bounded claim, no 'never produced' overclaim):
+verdict: refused
+client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/client/src/plugin/client.js is gitignored and untracked, and it is in no install surface (the surfaces that ship are packages/runtime/dist, packages/client/composition-shim), so no install of this repository ever carries it; the owning manifest declares ./dist/index.js → packages/client/dist/index.js, which also has no file on disk. The limit of that sentence, stated rather than left to the reader: this verdict is drawn from packages/client/dist ALONE, nothing outside the declared output root is examined, and there is nothing outside it to examine — so a build that ran and whose output was then moved elsewhere is indistinguishable, here, from a build that never ran, and `pnpm build` would not fix that. The two states this check genuinely cannot separate are also byte-identical: an unbuilt tree and a build that ran and emitted NOTHING. Run `pnpm build` and re-run this leg. Tree this leg measured: HEAD bfbd89a5, 4 tracked file(s) changed vs HEAD, 1 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. refused is not passed — this leg blocks the merge exactly as a failure does, and no reading of this message makes it green.
+handed back: entry-present  files=400  out dir: removed
+
+==================== TREE F: the same move to a NON-gitignored path ====================
+declared root: ABSENT   moved files: 400
+gitignored? no — the moved files are in the lint universe
+lint exit=1
+lint-identities: 173 identity lines, 82 distinct (target .)
+lint-identities: universe: 1305 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 6, resolved 0
+NEW IDENTITIES (6):
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD bfbd89a5, 4 tracked file(s) changed vs HEAD, 2 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+lint-visibility: eslint read 1104 of 2417 tracked lintable file(s); 1313 are hidden by an ignore pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 554ms
+       × lint closes as an identity diff against the named baseline, not against a count 10095ms
+ Test Files  1 failed (1)
+      Tests  2 failed | 23 passed (25)
+handed back: entry-present  files=400
+
+==================== HANDOVER ====================
+git status lines: 5
+ M eslint.config.mjs
+ M packages/testkit/test/a4p7-merge-gate.test.ts
+ M scripts/a4-artifact-provenance.mjs
+ M scripts/lint-identities.mjs
+?? scripts/lint-identities.d.mts
+dist files: 400   residue dirs: (none expected)

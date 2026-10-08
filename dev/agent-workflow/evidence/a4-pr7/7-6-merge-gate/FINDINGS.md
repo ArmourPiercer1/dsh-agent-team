@@ -543,3 +543,54 @@ different question — it is the subject of the task queued behind this merge, a
 statement now is that at least two legs of this file (`check:artifacts`, and the composition
 arm that reads the built client entry) depend on that residue, so "green" above is green in a
 built tree and must not be quoted as green in a clean one.
+
+## Correction, 2026-10-08, measured in the clean-worktree round that followed this merge
+
+The paragraph above says "at least two legs of this file (`check:artifacts`, and the
+composition arm that reads the built client entry) depend on that residue". **Half of that is
+false and the half that is true is narrower than it reads.** Measured in a worktree with no
+build output at all, at this base (`a4-pr7/instrument-tree-shape/red-1-instrument.txt`):
+
+- `node scripts/check-artifacts-committed.mjs` → **exit 0**, `OK: 1508 files; committed
+  install-surface artifacts match the fresh build (incl. 1 glue placement(s))`. It does not
+  depend on build residue at all: both entries in `INSTALL_SURFACES`
+  (`packages/runtime/dist` 1505 files, `packages/client/composition-shim` 3 files) are
+  **tracked and committed**, so there is nothing for an unbuilt tree to be missing. It is green
+  in a clean worktree, and the "must not be quoted as green in a clean one" caveat does not
+  apply to it.
+- The composition leg is the one that is genuinely tree-dependent, and it fails **loudly and
+  correctly**: `FAIL client plugin (packages/client): built entry is missing — run `pnpm build`
+  first (a missing artifact is a failure, never a skip)`, footer `FAIL composition-smoke`,
+  exit 1. `packages/client/dist` is gitignored, untracked, in no install surface, and absent
+  from the root `package.json` `files` whitelist — no install of this repository carries it.
+  What was wrong was not the instrument but the two specs that read that red as a composition
+  regression; see `../instrument-tree-shape/FINDINGS.md`.
+
+So the honest statement of the closing paragraph is: **one** leg of this file is green only in a
+tree carrying build output, it is the composition leg, and its green is loud — the residue
+caveat belongs to it alone.
+
+---
+
+## Correction, review round of task #2 (merged tree `bfbd89a5` → code `992b416b`)
+
+Two numbers in this file are labelled here because a reader landing on them from the review would
+otherwise take them as current:
+
+- **`scanned-in-scope: 748 tracked files`** (§the static-leg table) was true of the tree it was
+  measured in. Recomputed with the fence's own exported `isScanScopePath` per head: **748** at
+  `69f7fdad` and at `origin/master` `14ea8717`, **750** at this lane's pre-merge head `4d331349`
+  (the two `scripts/a4-artifact-provenance.*` files entered scope — the fence scans `scripts/`), and
+  **751** at `992b416b` (this round's `scripts/lint-identities.d.mts`). Nothing moved on master's
+  side: 0 added, 0 removed in scope across the merge. Full table in
+  `../instrument-tree-shape/FINDINGS.md` §7; the p4t6 ledger total (1029) is unchanged throughout,
+  because its scope is the nine `packages/**` trees and this lane added no test file.
+- **The composition leg's green in a never-built tree.** This file's closing paragraph says the
+  composition leg is "green only in a tree carrying build output, and its green is loud". The
+  *leg-level* claim still holds and is now stronger: the leg asserts the arm ran
+  (`owed === 'passed'`) rather than checking an exit code, so in a never-built tree it is **red**
+  (`1 failed | 24 passed (25)` at `992b416b`) instead of green-with-a-warning. The *suite-level*
+  claim in this file — that the gate's green means the arms ran — was false before this fix and is
+  true after it: at `23` legs the whole suite printed `23 passed (23)` over a gate that had never
+  executed its client arm. That is finding F1 of
+  `../instrument-tree-shape/FINDINGS.md` §12, with the four trees it was measured across.

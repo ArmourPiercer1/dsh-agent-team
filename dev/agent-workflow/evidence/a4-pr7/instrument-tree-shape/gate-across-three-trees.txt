@@ -1,0 +1,16 @@
+### TREE B (healthy: build output complete) — the gate
+entry present: yes   files under packages/client/dist: 400
+       × refuses the leg, by name, when the host module closure cannot be traversed 479ms
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 passed (22)
+
+### TREE C (entry surgically removed, 399 siblings left) — the gate
+entry: REMOVED   siblings: 399
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+restored: yes
+
+### TREE A (no build output at all) — the gate
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+restored: yes   tracked changes: 7

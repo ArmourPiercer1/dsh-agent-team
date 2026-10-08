@@ -1,0 +1,78 @@
+### PART 1 — the classifier's own verdict per tree (same call, four trees)
+TREE healthy (400 files, entry present):
+  verdict=failed  outputRoot=packages/client/dist filesInRoot=400  exists=true
+  first clause: packages/client/dist/packages/client/src/plugin/client.js is missing while packages/client/dist carries 400 other file(s): a build ran in this tree an
+TREE A never built:
+  verdict=refused  outputRoot=packages/client/dist filesInRoot=0  exists=false
+  first clause: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/clie
+TREE C partial (entry gone, siblings remain):
+  verdict=failed  outputRoot=packages/client/dist filesInRoot=399  exists=false
+  first clause: packages/client/dist/packages/client/src/plugin/client.js is missing while packages/client/dist carries 399 other file(s): a build ran in this tree an
+TREE E off-path gitignored (packages/client/out/dist):
+  verdict=refused  outputRoot=packages/client/dist filesInRoot=0  exists=false
+  first clause: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/clie
+handed back: entry-present files=400
+
+### PART 2 — merged-head battery (clean tree)
+node --check scripts/a4-artifact-provenance.mjs exit=0
+node --check scripts/lint-identities.mjs exit=0
+node --check eslint.config.mjs exit=0
+check:artifacts exit=0 :: [check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+lint-identities exit=0
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1105 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+--- p4t6 + wrapper (this is the 68-leg pair):
+ Test Files  2 passed (2)
+      Tests  68 passed (68)
+--- typecheck:
+typecheck exit=0  Done=8  errorTS=0
+
+### PART 3 — F5 a/b/c/d re-measurement WITH scripts/lint-identities.d.mts on disk
+--- a) class pattern present (the shipped config):
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1105 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+--- b) class pattern DELETED (exclusion removed):
+lint-identities: 170 identity lines, 86 distinct (target .)
+lint-identities: universe: 1110 file(s) linted, 5 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h2.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h3.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h4.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h5.mjs
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 10, resolved 0
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h2.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h3.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h4.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h5.mjs
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+AssertionError
+--- c) only the ONE NAME (the pre-fix narrow pattern):
+lint-identities: 170 identity lines, 86 distinct (target .)
+lint-identities: universe: 1110 file(s) linted, 5 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h2.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h3.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h4.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h5.mjs
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 10, resolved 0
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h2.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h3.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h4.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h5.mjs
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+AssertionError
+--- d) class pattern + a root scratch FILE (must stay visible):
+lint-identities: 171 identity lines, 87 distinct (target .)
+lint-identities: universe: 1111 file(s) linted, 6 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): .tmp-resolve-probe.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h2.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h3.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h4.mjs, packages/testkit/test/.tmp-fault/repo/scripts/h5.mjs
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 11, resolved 0
+  error no-undef .tmp-resolve-probe.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h2.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h3.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h4.mjs
+  error no-undef packages/testkit/test/.tmp-fault/repo/scripts/h5.mjs
+config restored byte-identical
+residue: 0 entries in the fixture dir, .tmp-resolve-probe.mjs: removed
+git status lines: 6
+ M eslint.config.mjs
+ M packages/testkit/test/a4p7-merge-gate.test.ts
+ M scripts/a4-artifact-provenance.d.mts
+ M scripts/a4-artifact-provenance.mjs
+ M scripts/lint-identities.mjs
+?? scripts/lint-identities.d.mts

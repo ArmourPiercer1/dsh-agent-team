@@ -1,0 +1,10 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+Oops! Something went wrong! :(
+
+ESLint: 9.39.5
+
+Error: ENOENT: no such file or directory, open '/home/user/dsh-plugins/dsh-agent-team/.worktrees/tmp-73-lintlab/packages/testkit/test/.tmp-fault/repo/scripts/h1.mjs'
+    at async open (node:internal/fs/promises:1345:25)
+    at async Object.readFile (node:internal/fs/promises:1996:14)
+    at async readAndVerifyFile (/home/user/dsh-plugins/dsh-agent-team/.worktrees/tmp-73-lintlab/node_modules/.pnpm/eslint@9.39.5/node_modules/eslint/lib/eslint/eslint-helpers.js:1306:16)

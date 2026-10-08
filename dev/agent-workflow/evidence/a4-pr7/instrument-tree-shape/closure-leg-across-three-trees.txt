@@ -1,0 +1,8 @@
+### closure leg, after the owed-word fix, in each tree
+-- TREE B (complete build output, 400 files):
+      Tests  1 passed | 21 skipped (22)
+-- TREE C (entry removed, 399 siblings):
+      Tests  1 passed | 21 skipped (22)
+-- TREE A (no build output):
+      Tests  1 passed | 21 skipped (22)
+restored: yes
