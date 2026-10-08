@@ -268,9 +268,23 @@ jobs:
       # `refusedlegs=census` token are untouched; that job still means "static + build legs passed,
       # census not measured here", and THIS check is where the census actually ran.
       #
-      # `--census-captures 2` and `--census-test-timeout 20000` carry over for the reasons recorded
-      # in `pr-gate.yml` (two captures graded as their union; one disclosed walk leg needs more
-      # than vitest's 5000 ms default and the clock in force is printed on the leg line).
+      # `--census-captures 2` carries over for the reason recorded in `pr-gate.yml` (two captures
+      # graded as their union). The CLOCK deliberately does NOT: `pr-gate` runs where the tolerance
+      # set was measured, and this job runs on a 2-core runner, so it carries 90000 for the reason
+      # spelled out on the step below. The clock in force is printed on every leg line either way.
+      # THE CLOCK IS A MEASUREMENT, NOT A PREFERENCE, and the first hosted execution of this job is
+      # what set it: run 37814101108 on a 2-core runner took 358.9 s, captured 508f/6373l TWICE with
+      # IDENTICAL identity sets (so this was not noise), and came back with exactly one NEW red —
+      # `S13 file aliases, quoted values, and capture formats pass the standalone regressions`, which
+      # spawns a nested `node --test` and declares its OWN budget of 60_000 ms
+      # (packages/testkit/test/rc2-sanitize-evidence.test.ts:230). A clock of 20000 does not measure a
+      # leg that budgets 60000, it forfeits it: the census would have reported a red that was really
+      # this job's own timeout. So the override here must DOMINATE the largest per-leg budget in the
+      # corpus, with margin for a runner that has 2 cores where the published baseline was recorded on
+      # 32. That is 90000. What this does NOT do: it does not touch the tolerance list, and it is not
+      # `--allow-refused` — a forfeited leg still shows up as a NEW red if it fails for a real reason.
+      # The published 9-red set was recorded at 32 cores / 20000 ms; this job's clock is its own
+      # disclosed condition, printed on every leg line.
       - name: Census — nine roots, two captures, NO refusal permitted
         shell: bash
         env:
@@ -283,7 +297,7 @@ jobs:
           node scripts/ci-pr-gate.mjs --full \
             --only census \
             --census-captures 2 \
-            --census-test-timeout 20000 \
+            --census-test-timeout 90000 \
             --store-dir "$DSH_CI_STORE_DIR" \
             --transcript-dir "$RUNNER_TEMP/census-transcripts" \
             2>&1 | tee "$RUNNER_TEMP/census-run.txt"
