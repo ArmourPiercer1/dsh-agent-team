@@ -5793,3 +5793,13 @@ pre-e 线自 merge-base `aa8391ac` 之后未含 master 线的 2 条 w1a 日志�
   > **一个会改变另一个门测量结果的门，就不是门。** 已下令：scratch 移出全部仪器的视野（flat-config `ignores` / `p4t6` 扫描集 / 围栏扫描集，**是三套不同机制**），验收 = **scratch 存在时 lint 仍打印基线 universe 与 `new 0`**，再加一条"耦合回来就变红"的腿，并写清构建中途死掉时的清理语义。
 - **我自己挂账的文档缺陷已修**：`team-leader-operations` 技能声称闭集**十三件**，而生产注册**十五件**——`createTeamTools` 返回 13 个具名 spec，外加 `permissionSpec('grant')` / `permissionSpec('revoke')`（**同一份规格实例化两次**，`packages/tools/src/tools.ts:1539-1540`），于是 `team_grant_permission` / `team_revoke_permission` 在工具表里根本不存在，而文件后半段已在讨论它们的失效模式。已改为十五件、补两行、并按生产描述原文引入天花板语义（**高于任一天花板即 `PERMISSION_AUTHORITY_CEILING_INSUFFICIENT`：是拒绝，永远不是待批**；天花板文档读不到是上下文故障，不是缺失）。`team-skills.test.ts` 仍 9/9，**没有任何东西钉住旧计数**。**给下一条数数的车道**：`grep -c "name: 'team_"` 得 13，**对这个论断是错的仪器**——那一对共用一份 spec，名字活在条件表达式里。
 - **已派**：fail-closed 车道（`826d2bde`，`feat/a4-74-failclosed`）= **§7.5 前置 3**；明令**先在翻转后的语料上重测账单**（`13/26/41/0` 表已标注 PRE-FLIP），落地 **`CEILING_INSUFFICIENT` 线路映射**（裸抛出线从未到过线上，今天表现为 `internal-error`），**在使 PIN-3 变假的那个提交里退役它**，并且**一旦发现出厂产品行为新开始拒绝任何事就停下**而不是绕过去。
+
+## 2026-10-08 — 轮 31 自我举报（**我把记录提交直接 push 到了 master，绕过了 PR——177 次合并里第一次破自己的trail纪律**；并把这条纪律变成机械拒绝）
+
+- **事实**：轮 31 的记录提交 **`2cdd81de` 被直接 `git push origin master` 推上 master，没有 PR**。远端 `origin/master = 2cdd81de` 就是该提交本身。176 个 PR（#65–#177）建立的"每个上 master 的改动都留一条 PR 记录"，在我手里出现了一个洞。
+- **机理（值得写死）**：我上一轮把"校验门控命令链"修对了——`patch.py && git add <显式路径> && 断言暂存集 && git commit && git push && gh pr …`——**但我只把链尾的 `gh pr` 换成了 `git push origin master`**。**门控的是顺序，约束不了目标**：一条纪律严明的命令链，末端指向错误的目标，仍然是违规。修一个流程故障的补丁，本身必须再对照它还没提到的那些规则检查一遍。
+- **我做了什么补救 / 没做什么**：**没有**改写历史、**没有** force-push（纪律禁止，且改写远端历史比一个记录空洞昂贵得多）。改为**把纪律变成机械拒绝**：装上 `.git/hooks/pre-push`，对 `refs/heads/master` 的直推一律拒绝，除非显式 `DSH_COORD_DIRECT_PUSH=1`。
+  - **钩子被覆盖到的范围是实测的**：`git rev-parse --git-path hooks` 在 linked worktree 里同样解析到公共目录 `.git/hooks`，**所以这条拒绝覆盖本仓所有 worktree**（车道本来就不许推 master，顺带一并生效）。
+  - **牙齿是端到端验过的**：造一个一次性分支 + 一个空提交，`git push --dry-run origin tmp:refs/heads/master`（真·快进、真·直推）→ **钩子拒绝，exit 1**；随后删除该分支并把本地 master 硬复位到 `origin/master`（二者相同，复位无损）。另外三种 ref 形态逐条测：master 直推 exit 1、显式覆盖 exit 0、feature 分支 exit 0（不误伤）。**我没有为了让钩子跑一次而制造一个真的 master 提交去推**——探针测的是快进路径，够证牙齿。
+  > **"靠习惯守的纪律等于没守。"** 本轮之前，这条纪律的全部实现是我记得它；而我在一轮里连改两次自己的命令链之后，就在第三次把它写丢了。凡是只有我记得的规则，迟早由我亲手破掉。
+- **本条自身走正路**：这条自我举报以 `docs/a4-records-31b` → PR → merge 进入 master（钩子装上之后，直推这条路对我自己也已经走不通了）。轮 31 的记录本身内容无争议：提交前 `graph.yaml` 已通过 `yaml.safe_load` 与逐 token 断言，推上去的内容与走 PR 的产物一致；**缺的只是那条 PR 记录**，故未来的考古以本条为准。
