@@ -1,0 +1,166 @@
+# A4-PR7 §7.6 — the PR/push merge gate.
+#
+# WHY THIS FILE EXISTS. Before it, `.github/workflows/` held only `characterization.yml`, and that
+# one has triggered on `workflow_dispatch` only since 2026-09-17 — so this repository had NO
+# automatic CI, and every gate leg Alpha.4 built (typecheck, the lint identity diff, artifact
+# freshness, the blueprint fence, the nine-root census, the `graph.yaml` parse) ran only if the
+# coordinating agent remembered to run it. That dependency is measured, not theoretical: a test
+# branch with 27 TypeScript errors was ready to merge because build and vitest do not typecheck;
+# an unparsable `dev/agent-workflow/graph.yaml` reached `master` twice, the second time through a
+# merged PR (#195); and `dev/agent-workflow/hooks/pre-commit` enforces that parse only on machines
+# where someone copied it into `.git/hooks/`, which is no machines on the server.
+#
+# THIS FILE IS A SHELL, NOT A SECOND LIST OF CHECKS. The checks live in `scripts/ci-pr-gate.mjs`,
+# which is also the local entry point, so "what CI runs" and "what the coordinator runs before
+# merging" cannot drift apart. `--full` means: run every leg, and treat ANY skipped leg as a
+# failure — a run that is green because a check abstained is the shape `pnpm smoke:composition`
+# produced at §7.5 (exit 0 while its client leg printed a named SKIP), and the plan amendment
+# there forbids trusting that exit code.
+#
+# WHEN THIS STARTS RUNNING, STATED RATHER THAN ASSUMED. One part of this is measured and one part
+# is not, and the difference matters to anyone deciding whether to trust a green merge.
+#
+#   Measured: this repository ran 32 `pull_request` jobs (2026-09-11 → 2026-09-17) on hosted runners
+#   (`GitHub Actions 1000000264`, `ubuntu-latest`) using `.github/workflows/characterization.yml`, a
+#   file that was present on `master` throughout — so the runner precondition is demonstrable here,
+#   not assumed. And nothing of mine can produce a run for THIS file, because this lane has no push
+#   authority and hands back unmerged. So "the pr-gate check reports" is an UNVERIFIED claim today,
+#   whatever this file looks like on the remote.
+#
+#   Not verified from this sandbox: whether GitHub resolves `on: pull_request` against the PR's head
+#   branch — in which case this workflow runs on the very PR that introduces it — or only against
+#   the default branch, in which case its first run is the next PR after the merge. docs.github.com
+#   returns navigation stubs here and web search has no key configured, so the claim is left open
+#   rather than asserted. FINDINGS.md carries the same statement; nothing in the recommendation
+#   turns on it, because both answers say: watch one run report before you require it.
+#
+# WHY THIS DOES NOT UNDO THE 2026-09-17 DEMOTION OF `characterization.yml`. That job was demoted to
+# `workflow_dispatch` by a user-directed decision (61990035) for reasons specific to ITSELF: its
+# P2-era probes were characterized against DSH 0.1.2 and fail 107 checks on the 0.1.5-rc.2 pin, and
+# its own header says "Until then this job is archival/manual ... it is NOT a merge gate. The repo's
+# active gates remain the workspace test suite + the real-host smoke kit". This workflow is that
+# named active gate — the workspace suite and the §7.6 legs — put in front of a merge instead of
+# behind a human memory. `characterization.yml` is untouched and stays manual.
+name: pr-gate
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-gate-${{ github.ref }}
+  # NOT cancel-in-progress: a merge gate that can be cancelled by a later push leaves a check that
+  # reports `cancelled` — never green, never red. With required status checks that is a locked PR
+  # whose author sees no verdict, which is the failure mode this lane argues against elsewhere.
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    # THIS STRING IS THE REQUIRED-CHECK CONTEXT. If branch protection is ever turned on, the
+    # status check GitHub asks you to type is exactly this job name — so it is short, ASCII, and
+    # free of §/parentheses/spaces on purpose. A context you cannot type into the API is a context
+    # that does not get required.
+    name: pr-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+      # The same XDG redirect the sandboxed local runs use. On a GitHub runner the default is
+      # already writable; it is pinned here so a runner and a workstation resolve caches the same
+      # way and a leg is not green on one and ENOENT on the other.
+      XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+      DSH_CI_STORE_DIR: ${{ runner.temp }}/pnpm-store
+    steps:
+      - name: Checkout
+        # fetch-depth 0: `check:artifacts:head` materialises HEAD in a linked worktree and builds
+        # it there. That is the conservative history setting, not a need this file proved — the
+        # leg has never run on a runner (see FINDINGS), so the choice is the one that cannot fail
+        # for want of an object.
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - name: Ensure a YAML parser for the graph leg
+        # The graph-parse leg shells to `python3 -c "import yaml"` — the SAME parser as
+        # dev/agent-workflow/hooks/pre-commit, so the local guard and this gate cannot disagree
+        # about what "parses" means. That leg FAILS (never skips) if PyYAML is missing, which is
+        # correct but unhelpful on a runner image that happens not to ship it; install it first so
+        # a red graph leg means a broken graph.yaml.
+        run: |
+          python3 -c 'import yaml' 2>/dev/null && echo "PyYAML present" || python3 -m pip install --quiet pyyaml
+          python3 -c 'import yaml; print("PyYAML", yaml.__version__)'
+
+      # ONE command, the same one a reviewer runs locally, so "what CI runs" and "what the
+      # coordinator runs before merging" are not two lists that can drift.
+      #
+      # `set -o pipefail` is load-bearing, not hygiene: Actions runs a `run:` block under `bash -e`,
+      # and in `node … | tee …` the pipeline's status is TEE'S status. With the default settings a red
+      # gate would have printed its failures and then reported a GREEN job — the exact defect class
+      # this gate was written to close, arriving through the pipe that exists to make the output
+      # readable. See FINDINGS.md F2.
+      #
+      # `--census-captures 2`: two captures, graded as their UNION, because a red that appears once has
+      # appeared. Cost measured here: ~100 s per capture on a 32-core box at load ~19; a 2-core runner
+      # will be slower, and the 45-minute budget below has never been measured against a runner (see
+      # FINDINGS §"what cannot be verified from here").
+      #
+      # `--census-test-timeout 20000` is the one deliberate, disclosed deviation from the suite's own
+      # settings, and it is here because of a measurement rather than a preference. One leg of the
+      # census (`packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:767`, a full readdir walk of
+      # every shipped package) takes 4.1–5.3 s, and nothing in the repository sets `testTimeout`, so
+      # vitest's 5000 ms default applies: on a 32-core box that leg crossed the budget on 3 captures of
+      # 8, turning the census red with `Error: Test timed out in 5000ms`, while the identical tree at a
+      # 20 s budget produced exactly the published 22 identities (evidence/a4-pr7/ci-gate/transcripts/
+      # DIAGNOSTIC-G-timeout-not-assertion.txt). A hosted runner has 2 cores, so the coin flip is worse
+      # there — and a merge gate that is red at random is worse than no merge gate, because it trains
+      # everyone to re-run until green. The override is NOT a tolerance: it cannot excuse a red
+      # identity, it only moves the clock, and the value in force is printed on the census leg line so a
+      # pass states the clock it passed under. The right end of this is in the leg's own hands (give the
+      # walk the budget it needs, or narrow it); when that lands, take this flag off.
+      - name: Gate — every leg, two captures, any skip is a failure
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          node scripts/ci-pr-gate.mjs --full \
+            --census-captures 2 \
+            --census-test-timeout 20000 \
+            --store-dir "$DSH_CI_STORE_DIR" \
+            --transcript-dir "$RUNNER_TEMP/gate-transcripts" \
+            2>&1 | tee "$RUNNER_TEMP/gate-run.txt"
+
+      # Belt and braces, and the only step that exercises the rule the whole gate is built on: a
+      # transcript with no `DSH-CI-VERDICT` line is a FAIL even if the job's exit code somehow said
+      # otherwise, and a transcript that lost a leg line (a run killed mid-leg) fails too. It grades
+      # the transcript rather than trusting the previous step's status — the point of a verdict
+      # channel is that a second reader can check it.
+      - name: Gate — re-grade the transcript by the missing-token rule
+        shell: bash
+        if: always()
+        run: |
+          node scripts/ci-pr-gate.mjs --check-transcript "$RUNNER_TEMP/gate-run.txt"
+
+      - name: Upload gate transcripts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-transcripts-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/gate-run.txt
+            ${{ runner.temp }}/gate-transcripts/
+          if-no-files-found: warn

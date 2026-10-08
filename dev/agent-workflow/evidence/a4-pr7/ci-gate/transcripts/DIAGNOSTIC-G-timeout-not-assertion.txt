@@ -1,0 +1,28 @@
+=== DIAGNOSTIC G — timeout budget, not assertion set ===
+start 2026-10-08T12:57:05Z   load: 9.24 10.54 8.02   cores: 32
+head: 606a0be7
+
+--- the leg's measured wall clock, from the stored reports of earlier captures ---
+  4589 ms pass  (closure lane @9df5535f, a quieter box, before this lane existed)
+  4424 ms pass  4094 ms pass  (this lane, run 1, captures 1-2)
+  4444 ms pass  6938 ms TIMEOUT (this lane, run 2, captures 1-2)
+  ~7 s  TIMEOUT x2 (this lane, run 3, both captures, load average ~19)
+So the leg sits at 80-92% of its budget and one busy scheduler decides the verdict.
+
+$ rm -rf packages/testkit/test/.tmp-fault
+$ pnpm exec vitest run --reporter=json --outputFile.json=dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-raise-timeout.json --testTimeout=20000
+lint-visibility: eslint read 1118 of 2456 OFFERED tracked lintable file(s); 1338 are hidden by an ignore pattern (dev/ 467, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1118 + 1338 = 2456 offered, + 0 skipped = 2456 tracked lintable path(s); nothing skipped
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-raise-timeout.json
+[vitest exit 0 — 1 is EXPECTED: the census carries 22 disclosed reds]
+
+--- that leg's duration under the raised budget ---
+  status: passed  duration: 5270 ms
+  files failed: 9 of 505  tests: 19 failed / 6288
+
+$ node scripts/ci-pr-gate.mjs --only census --census-json dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-raise-timeout.json
+DSH-CI-RUN head=606a0be7 mode=default node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=default
+DSH-CI-LEG leg=census verdict=pass seconds=0.1 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6288l vs baseline-declared 505 / 6285; single capture — COUNTS MOVED, SET DID NOT — the counts differ from the baseline document's own figures and that is not a verdict; the identity set is — identity se
+  detail[census]: roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6288l vs baseline-declared 505 / 6285; single capture — COUNTS MOVED, SET DID NOT — the counts differ from the baseline document's own figures and that is not a verdict; the identity set is — identity set IDENTICAL to the published baseline
+DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 seconds=0.1
+[grade exit 0 — 0 means the 20 s capture's identity set IS the published 22]
+end 2026-10-08T13:00:24Z

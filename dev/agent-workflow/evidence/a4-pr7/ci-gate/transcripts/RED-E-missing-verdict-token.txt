@@ -1,0 +1,25 @@
+=== RED CONTROL E — the verdict channel: a missing DSH-CI-VERDICT is a failure, never "not run" ===
+start 2026-10-08T13:32:47Z
+head=606a0be7 porcelain=3
+E1 is a real transcript of a real run with one line deleted; E2 shows the same checker
+accepting a complete one, so E1's failure is not just an always-fail instrument.
+
+--- E2 first: a complete, honest, PASSING transcript (three cheap legs, run for real) ---
+  its token: DSH-CI-VERDICT pass pass=3 fail=0 skip=0 skipped=none legs=3 seconds=0.6
+DSH-CI-TRANSCRIPT-CHECK pass class=ok :: 3 leg(s), final token pass
+[E2 exit 0 — must be 0, class=ok]
+
+--- E1: the SAME kind of transcript with its DSH-CI-VERDICT line removed ---
+  leg lines surviving: 3
+DSH-CI-TRANSCRIPT-CHECK fail class=missing-token :: no DSH-CI-VERDICT token in the transcript (3 leg line(s) seen) — a missing verdict is a failure, never "not run"
+[E1 exit 1 — must be 1, class=missing-token]
+
+--- E3: a transcript that stopped mid-run (the run was killed after leg 2 of 3) ---
+  leg lines surviving: 2, token still claims 3
+DSH-CI-TRANSCRIPT-CHECK fail class=truncated :: the verdict claims 3 leg(s) but the transcript carries 2 — the run stopped mid-leg
+[E3 exit 1 — must be 1, class=truncated]
+
+--- E4: a real RED run's transcript, graded for what it is ---
+DSH-CI-TRANSCRIPT-CHECK fail class=red-run :: the gate ran and refused: census reported fail
+[E4 exit 1 — 1, because the gate said fail; class=red-run says the instrument worked]
+end 2026-10-08T13:32:48Z

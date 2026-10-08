@@ -1,0 +1,80 @@
+{
+  "head": "606a0be772b908f333ba0822ff93cb94df737065",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md",
+  "baselineIds": [
+    "FILE packages/runtime/test/p8s3b-result-effects.test.ts::COLLECTION-OR-UNHANDLED",
+    "FILE packages/runtime/test/t12a-b2-child-identity.test.ts::COLLECTION-OR-UNHANDLED",
+    "FILE packages/runtime/test/t12a-glue-handoff-ports.test.ts::COLLECTION-OR-UNHANDLED",
+    "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+    "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+    "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+    "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+    "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+    "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 3. Members can have different capabilities",
+    "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+    "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+    "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities",
+    "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+    "TEST packages/runtime/test/d3-member-identity-context.test.ts::D3 the member identity context block (Team D1-D6 repair v2, B2) D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+    "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+    "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+    "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session"
+  ],
+  "reports": [
+    {
+      "jsonPath": "/home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/root-census-after-1.json",
+      "files": 502,
+      "legs": 6277,
+      "ids": [
+        "FILE packages/runtime/test/p8s3b-result-effects.test.ts::COLLECTION-OR-UNHANDLED",
+        "FILE packages/runtime/test/t12a-b2-child-identity.test.ts::COLLECTION-OR-UNHANDLED",
+        "FILE packages/runtime/test/t12a-glue-handoff-ports.test.ts::COLLECTION-OR-UNHANDLED",
+        "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+        "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+        "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+        "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+        "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+        "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 3. Members can have different capabilities",
+        "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+        "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+        "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities",
+        "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+        "TEST packages/runtime/test/d3-member-identity-context.test.ts::D3 the member identity context block (Team D1-D6 repair v2, B2) D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+        "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+        "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+        "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "pass",
+    "setIdentical": true,
+    "countsMoved": true,
+    "added": [],
+    "newReds": [],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 502,
+      "legs": 6277,
+      "declared": {
+        "files": 505,
+        "legs": 6285
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "totalsNote": "captured 502 files / 6277 registered legs vs baseline-declared 505 / 6285"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+=== SERVER-SIDE ENFORCEMENT REALITY CHECK — captured 2026-10-08T12:35:09Z ===
+tool: gh 2.46.0  account ArmourPiercer1  scopes: gist, read:org, repo, workflow
+
+--- 1. token authority over the repo ---
+{"default_branch":"master","full_name":"ArmourPiercer1/dsh-agent-team","permissions":{"admin":true,"maintain":true,"pull":true,"push":true,"triage":true},"private":false}
+
+--- 2. is master protected? ---
+$ gh api repos/ArmourPiercer1/dsh-agent-team/branches/master/protection
+{"message":"Branch not protected","documentation_url":"https://docs.github.com/rest/branches/branch-protection#get-branch-protection","status":"404"}gh: Branch not protected (HTTP 404)
+[exit 1]
+
+--- 3. access restrictions ---
+{"message":"Branch not protected","documentation_url":"https://docs.github.com/rest/branches/branch-protection#get-access-restrictions","status":"404"}gh: Branch not protected (HTTP 404)
+[exit 1]
+
+--- 4. Actions enabled? ---
+{"enabled":true,"allowed_actions":"all","sha_pinning_required":false}
+--- 5. registered workflows ---
+{"name":"characterization","path":".github/workflows/characterization.yml","state":"active"}
+{"name":"Copilot","path":"dynamic/agents/copilot-pull-request-reviewer","state":"active"}
+
+--- 6. self-hosted runners registered ---
+{"runners":0}
