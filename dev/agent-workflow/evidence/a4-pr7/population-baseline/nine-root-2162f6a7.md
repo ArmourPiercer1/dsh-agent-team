@@ -40,3 +40,19 @@ packages/runtime/test/t12a-glue-handoff-ports.test.ts
 # RE-CONFIRMED at 2f06bb44 (PR #185 = the fail-closed law plus the 54 repaired fixture legs, nine-root on both sides):
 # 502 files / 6277 registered legs / 19 titled reds / 3 collection files -- and those 19 are the identities listed
 # below VERBATIM (NEW 0, RESOLVED 0). Totals move with the corpus; the identity SET is the baseline.
+
+## PUBLISHED CORRECTION (2026-10-08, round 38) — the p6t1-parallel note above was too comfortable
+
+Three lanes have read this file as "p6t1-parallel is a load flake, green solo 9/9". **Measured on `8dcfbe4f` at
+rest, solo, eight consecutive runs with `rm -rf packages/testkit/test/.tmp-fault` before each: 6 passed, 2 failed**
+(one run 3 red legs, one run 2 red legs; a nine-root census run showed 5 of 9 red; sample assertions
+`expected 1 to be +0` and `expected 1 to be 2`). **Solo failure rate ~2/8 — green solo is a SAMPLE, not a property.**
+
+Operational rule from now on, for every lane: a red inside this family is dismissed only by **at least three
+re-samples whose rate you publish**, never by one green re-run; and a census reported as `NEW 0` that contains a
+p6t1 red must state how many re-samples it took. Re-derivation is in flight on `fix-a4-p6t1-flake`
+(evidence `dev/agent-workflow/evidence/a4-pr7/p6t1-flake/`); until that lands, **quote the rate, not the label.**
+
+Totals also move with merges: at `ac54ffb8` (PR #191, three new §7.6 legs) the nine-root census is
+**505 files / 6285 legs / 19 titled reds by identity / 3 collection files**. The identity set listed above stays the
+baseline.
