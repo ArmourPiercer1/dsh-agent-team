@@ -1,0 +1,10 @@
+export function riseDigestOf(
+  regions: readonly PermissionRiseRegion[],
+  census: readonly string[] = [],
+): string {
+  const rows = regions
+    .map((region) => `${region.operationClass} ${region.region.kind} ${region.region.resource} ${region.risenEffect}`)
+    .sort()
+  // MUTANT bind-then-current-descendants: the reached-cell census is frozen too.
+  return sha256Hex(canonicalJsonStringify({ rows, census: [...census].sort() }))
+}

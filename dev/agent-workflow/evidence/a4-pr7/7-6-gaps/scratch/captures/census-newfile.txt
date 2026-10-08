@@ -1,0 +1,75 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-scenario-gaps/packages/runtime
+
+ × test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the subtree granted before the resource exists covers the resource created after startup at the FIRST ask, while the MemberInstance created after the grants still inherits nothing 31ms
+   → expected 'deny' to be 'allow' // Object.is equality
+ × test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the prohibition, in the form a leg CAN assert: zero containment work through Team startup, the relation computed per ask for the pair asked about at a cost that does not follow the descendant population, a durable row that never moves, and a verdict that follows the live canonical relation 9ms
+   → expected false to be true // Object.is equality
+ × test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the mechanism: the shipped authority lane reaches no directory-listing primitive at all (the tool a startup enumeration would need) 6ms
+   → the authority path reached a directory-listing API (readdir, readdirSync, opendir, glob, scandir, listFiles) across the walked roots packages/runtime/permission-lifecycle, packages/runtime/operation-permission, packages/runtime/effective-policy, packages/runtime/governance — authority would then be a resource census, which ADR §7.3 forbids: expected [ Array(1) ] to deeply equal []
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the subtree granted before the resource exists covers the resource created after startup at the FIRST ask, while the MemberInstance created after the grants still inherits nothing
+AssertionError: expected 'deny' to be 'allow' // Object.is equality
+
+Expected: "allow"
+Received: "deny"
+
+ ❯ test/a4p7-live-descendant-authority.test.ts:396:34
+    394|       const decision = await world.decide(WORKER_ID, lateFile)
+    395|       expect(decision['kind']).toBe('effective')
+    396|       expect(decision['effect']).toBe('allow')
+       |                                  ^
+    397|       expect(decision['source']).toBe('rule')
+    398|       expect(decision['winningLayer']).toBe('overlay')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the prohibition, in the form a leg CAN assert: zero containment work through Team startup, the relation computed per ask for the pair asked about at a cost that does not follow the descendant population, a durable row that never moves, and a verdict that follows the live canonical relation
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p7-live-descendant-authority.test.ts:460:9
+    458|       expect(
+    459|         firstAskCalls.some((call) => call.parentKey === world.grantedR…
+    460|       ).toBe(true)
+       |         ^
+    461|
+    462|       // The durable authority row, read BEFORE anything else happens,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the mechanism: the shipped authority lane reaches no directory-listing primitive at all (the tool a startup enumeration would need)
+AssertionError: the authority path reached a directory-listing API (readdir, readdirSync, opendir, glob, scandir, listFiles) across the walked roots packages/runtime/permission-lifecycle, packages/runtime/operation-permission, packages/runtime/effective-policy, packages/runtime/governance — authority would then be a resource census, which ADR §7.3 forbids: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "packages/runtime/permission-lifecycle/decision-lane.ts",
++ ]
+
+ ❯ test/a4p7-live-descendant-authority.test.ts:616:7
+    614|       offenders,
+    615|       `the authority path reached a directory-listing API (${listingAp…
+    616|     ).toEqual([])
+       |       ^
+    617|
+    618|     // And the seam the production mutation lane is built on is struct…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  15:39:24
+   Duration  1.34s (transform 960ms, setup 0ms, import 1.21s, tests 47ms, environment 0ms)
+

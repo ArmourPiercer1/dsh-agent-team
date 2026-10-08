@@ -1,0 +1,3 @@
+        subtreeContains: lane.subtreeContains,
+      }).rising
+      if (rising.length === 0) return undefined

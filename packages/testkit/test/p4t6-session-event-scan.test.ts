@@ -2046,6 +2046,23 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       // `983 + Σ named lists`, and the referee stays external to this file.
       'packages/runtime/test/a4p7-ceiling-world-helpers.ts',
     ]
+    // a4-76-scenario-gaps (A4-PR7 §7.6, `feat/a4-76-scenario-gaps`): the three
+    // instruments for the three rows `dev/agent-workflow/evidence/a4-pr7/7-6-closure/
+    // SCENARIOS.md` proved have NO leg anywhere in the nine roots — live descendant
+    // creation at the production decision plane plus the startup-enumeration
+    // prohibition (row 5), the complementary "same root, changed descendants,
+    // proposal stays valid" half of root identity drift (row 6), and the restart
+    // reconstruction of the PR6 governance-warning family (row 17). This lane writes
+    // NO production source (core patch budget for the phase is zero, and all three
+    // laws are already honoured), so its whole scannable footprint is these three
+    // specs; every other path it touched is evidence under
+    // `dev/agent-workflow/evidence/a4-pr7/7-6-gaps/`, outside `packages/**`. An edit
+    // is not an increment, and a landed file without its name here turns this RED.
+    const SCANNED_PATHS_A476GAPS: readonly string[] = [
+      'packages/runtime/test/a4p7-live-descendant-authority.test.ts',
+      'packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts',
+      'packages/runtime/test/a4p7-governance-warning-restart-reconstruction.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2063,7 +2080,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4P73FLIP.length +
         SCANNED_PATHS_A4P73GRAMMAR.length +
         SCANNED_PATHS_A4P76PIN.length +
-        SCANNED_PATHS_A474FAILCLOSED.length,
+        SCANNED_PATHS_A474FAILCLOSED.length +
+        SCANNED_PATHS_A476GAPS.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2082,7 +2100,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4P73FLIP.length +
         SCANNED_PATHS_A4P73GRAMMAR.length +
         SCANNED_PATHS_A4P76PIN.length +
-        SCANNED_PATHS_A474FAILCLOSED.length,
+        SCANNED_PATHS_A474FAILCLOSED.length +
+        SCANNED_PATHS_A476GAPS.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2127,6 +2146,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4P73GRAMMAR,
       ...SCANNED_PATHS_A4P76PIN,
       ...SCANNED_PATHS_A474FAILCLOSED,
+      ...SCANNED_PATHS_A476GAPS,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2270,6 +2290,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // V16/V17 work on this branch is an EDIT to an already-counted path and
     // contributes nothing; the V16/V17 RETIREMENT removes assertions, not files —
     // edits are not increments in either direction.
+    // The a4-76-scenario-gaps tie, same form: the movement equals the three
+    // instruments this lane names, each asserted present by path in the loop above.
+    // Both endpoints MEASURED on this branch, not inferred: with the three files on
+    // disk and this entry stripped the run reads `expected 1039 to be 1036` (capture
+    // `dev/agent-workflow/evidence/a4-pr7/7-6-gaps/scratch/captures/p4t6-pre-extend-red.txt`),
+    // 1036 is the derived base total the ceiling-pin tie above ends on, and 1039 is
+    // what the scanner counts with this lane's files present. Nothing else moved:
+    // this lane adds no production source, and its evidence lives outside
+    // `packages/**` — which is precisely why a sum derived from named lists, rather
+    // than a total typed from a log, is the referee here.
+    expect(SCANNED_PATHS_A476GAPS.length).toBe(1039 - 1036)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

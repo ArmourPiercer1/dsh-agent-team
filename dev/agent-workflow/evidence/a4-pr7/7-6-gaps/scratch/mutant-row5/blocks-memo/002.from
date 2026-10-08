@@ -1,0 +1,1 @@
+export function containmentFallback(verdict: boolean | undefined, effect: 'allow' | 'ask' | 'deny'): boolean {

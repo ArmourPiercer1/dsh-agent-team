@@ -1,0 +1,1 @@
+        ? materializedDescendantAuthority(matcher.resource, operation.resource.key, containment, operation.tool)

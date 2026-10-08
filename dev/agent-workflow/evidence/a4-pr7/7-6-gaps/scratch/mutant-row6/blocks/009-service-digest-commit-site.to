@@ -1,0 +1,1 @@
+approvedDigest !== riseDigestOf(fresh.rising as never, (fresh as { readonly census?: readonly string[] }).census)

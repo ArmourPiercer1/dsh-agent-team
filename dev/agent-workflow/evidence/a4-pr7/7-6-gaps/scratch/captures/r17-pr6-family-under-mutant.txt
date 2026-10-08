@@ -1,0 +1,154 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-scenario-gaps/packages/runtime
+
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A consistency diagnostic: consistent | mismatch | undetermined > consistent: leader envelope inside the hard envelope writes NOTHING durable 2ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A consistency diagnostic: consistent | mismatch | undetermined > mismatch: a leader effect the hard envelope forbids mints a durable warning and blocks start 1ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A consistency diagnostic: consistent | mismatch | undetermined > undetermined ABSORBS: an undecidable containment compares as undetermined, never consistent 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A consistency diagnostic: consistent | mismatch | undetermined > fingerprint dedup: a repeat observation folds count/time, never a second warning 1ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A consistency diagnostic: consistent | mismatch | undetermined > fingerprint drift (envelope edit) mints a NEW unacknowledged warning 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A acknowledgement plane > acknowledging binds the fingerprint and re-opens the SAME gate (ensureRootLive re-entry) 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A acknowledgement plane > a re-observation AFTER acknowledgement on the SAME fingerprint does not re-block (reminder-only) 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A acknowledgement plane > drift after acknowledgement produces an UNACKNOWLEDGED warning and blocks again 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A acknowledgement plane > acknowledging a warning-id that does not exist is a typed not-found, never a write 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A acknowledgement plane > the ack action vocabulary is the WARNING plane only 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A fail-closed arms + bridge window > corrupt authority document: blocked, NOT acknowledgeable 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A fail-closed arms + bridge window > unreadable authority document: blocked, NOT acknowledgeable 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A fail-closed arms + bridge window > migration-required is ack-IMMUNE: no acknowledgement clears it, ever 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A fail-closed arms + bridge window > BRIDGE (plan:603): v1/v2 bound documents keep today behaviour through PR6 — start stays open 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A a warning is not an approval case > a minted warning produces no ControlRequest row and no approval-case entry (the lane split) 0ms
+ ✓ test/a4p6-governance-warning-service.test.ts > 6.A a warning is not an approval case > the gate NEVER returns wait-for-response semantics (non-blocking stage) 0ms
+ ✓ test/a4p6-governance-warning.test.ts > A4-PR6 vocabulary freeze: three distinct action planes > the reviewer plane is exactly allow|deny|escalate and NEVER contains acknowledge 2ms
+ ✓ test/a4p6-governance-warning.test.ts > A4-PR6 vocabulary freeze: three distinct action planes > the decision plane values are the closed durable set and NEVER contain acknowledge 1ms
+ ✓ test/a4p6-governance-warning.test.ts > A4-PR6 vocabulary freeze: three distinct action planes > the warning plane is exactly {acknowledge} and is disjoint from the reviewer plane 0ms
+ ✓ test/a4p6-governance-warning.test.ts > A4-PR6 vocabulary freeze: three distinct action planes > the warning fact types are the frozen pair with the exact values (category pinned in 6.C) 0ms
+ ✓ test/a4p6-governance-warning.test.ts > A4-PR6 vocabulary freeze: three distinct action planes > the verdict/kind/start vocabularies are the frozen closed sets 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.A the gate on the wire (team.ensureRootLive re-entry path) > warning-required: typed block, the live ensure is NEVER reached (root stays not-live) 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.A the gate on the wire (team.ensureRootLive re-entry path) > open: the gate runs FIRST, then the live ensure proceeds unchanged 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.A the gate on the wire (team.ensureRootLive re-entry path) > corrupt: typed fail-closed, never acknowledgeable, live ensure never reached 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.A the gate on the wire (team.ensureRootLive re-entry path) > migration-required: typed refusal (the PR7 arm exists and is closed) 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.A the gate on the wire (team.ensureRootLive re-entry path) > a root without the governance port keeps today’s behavior (start ungated; disclosed) 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.A the gate sits at the three WIRE control points (source law) > BOTH team.create sites call the gate after the durable bind and BEFORE startRootAgent 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.A the gate sits at the three WIRE control points (source law) > the WRONG paths are guard-free: activation/checks and admission/requirement-gate reference neither the gate nor the warning lane 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.A the gate sits at the three WIRE control points (source law) > the ensureRootLive gate runs AFTER the bound-root preflight (a foreign root is refused before governance is consulted) 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the fact-hygiene triad registers the warning family identically > 'governance-warning-observed': host map pins it to 'policy' 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the fact-hygiene triad registers the warning family identically > 'governance-warning-observed': client category map mirrors 'policy' and the internal set hides it from generic rows 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the fact-hygiene triad registers the warning family identically > 'governance-warning-acknowledged': host map pins it to 'policy' 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the fact-hygiene triad registers the warning family identically > 'governance-warning-acknowledged': client category map mirrors 'policy' and the internal set hides it from generic rows 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the fact-hygiene triad registers the warning family identically > the triad is symmetric: every warning type registered client-side is registered host-side 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the triad registers proposal + escalation with structured owners > 'governance-proposal-recorded': host constant + host category row 'policy' 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the triad registers proposal + escalation with structured owners > 'governance-proposal-recorded': client category map mirrors 'policy' 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the triad registers proposal + escalation with structured owners > 'governance-proposal-recorded': owner 3 — the STRUCTURED family, union, kind label (never the unknown serializer) 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the triad registers proposal + escalation with structured owners > 'control-escalation-recorded': host constant + host category row 'control' 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the triad registers proposal + escalation with structured owners > 'control-escalation-recorded': client category map mirrors 'control' 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the triad registers proposal + escalation with structured owners > 'control-escalation-recorded': owner 3 — the STRUCTURED family, union, kind label (never the unknown serializer) 0ms
+ ✓ test/a4p6-governance-warning.test.ts > 6.C the triad registers proposal + escalation with structured owners > the proposal completeness mirror equals the host strict reader RECORD_FIELDS (root-side drift pin) 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 aggregation — one list, two planes, zero vocabulary bleed > control items come FIRST, the warning rides the same projection 1ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 aggregation — one list, two planes, zero vocabulary bleed > the warning item is informational forever and speaks ONLY {acknowledge} 1ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 aggregation — one list, two planes, zero vocabulary bleed > the reviewer item speaks the reviewer plane and NEVER {acknowledge} 1ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 aggregation — one list, two planes, zero vocabulary bleed > acknowledgement reshapes the warning arm only (status flips, actions empty; the control arm is untouched) 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 aggregation — one list, two planes, zero vocabulary bleed > plane isolation: a reader failure silences the CONTROL actions, never the WARNING plane 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 aggregation — one list, two planes, zero vocabulary bleed > warnings are TEAM-scoped: a subject-filtered projection still carries them 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > intervention.list serves BOTH planes through the closed wire shape, control first 1ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > intervention.get addresses one projected item; an absent id is the typed INTERVENTION_NOT_FOUND 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > act routes by the ITEM class: an approval action on a warning id is refused BEFORE any write 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > acknowledge is the warning arm ONLY: the closed receipt, then the item re-presents as acknowledged with zero actions 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > allow drives the EXISTING control entry with the DERIVED caller — never a client claim 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > escalate pushes the DURABLE leg (fresh routing), and the recused reviewer is refused SERVER-SIDE 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > a decided case LEAVES the open projection: the same interventionId afterwards is INTERVENTION_NOT_FOUND, not a stale decision 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > the administration read STRIPS to exactly the six closed wire cells; the extras never ride 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 §6.B the v8 plane on the production wire (real dispatcher, real planes) > an UNWIRED v8 surface refuses its four methods typed (internal-error / port-unwired) — never a partial success 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > 6.C a zombie open case stays visible and abandonable (PR5 leftover B) > the drifted identity opens a DIFFERENT case; both are open and BOTH are listed 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > 6.C a zombie open case stays visible and abandonable (PR5 leftover B) > the zombie still accepts the abandon verb; the terminal mark leaves only the drifted case open 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 review round 1 — the §11.5 named interaction: durable allow through the act entry, refusal at CONSUMPTION > before the allow, the effect is refused at the guard (`request-pending`) — narrowing denied it 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 review round 1 — the §11.5 named interaction: durable allow through the act entry, refusal at CONSUMPTION > intervention.act takes the DURABLE allow (real derivation, real plane) and answers the closed receipt 0ms
+ ✓ test/a4p6-intervention-aggregation.test.ts > A4-PR6 review round 1 — the §11.5 named interaction: durable allow through the act entry, refusal at CONSUMPTION > after the allow, the SAME guard allows EXACTLY ONCE, then blocks `allow-consumed` 0ms
+ ✓ test/a4p6-governance-warning-host-adapter.test.ts > A4-PR6 review round 1 (fix 2/6) — the docs adapter is three-state > a FAULTED leader read maps to `unreadable` (never a zero-claim v3 document) 1ms
+ ✓ test/a4p6-governance-warning-host-adapter.test.ts > A4-PR6 review round 1 (fix 2/6) — the docs adapter is three-state > the pre-existing fail-closed legs keep their exact arms 0ms
+ ✓ test/a4p6-governance-warning-host-adapter.test.ts > A4-PR6 review round 1 (fix 2/6) — the docs adapter is three-state > a DECLARED leader (including legally empty) still reads through as v3 0ms
+ ✓ test/a4p6-governance-warning-host-adapter.test.ts > A4-PR6 review round 1 (fix 2/6) — the docs adapter is three-state > composition: the fault world now CORRUPTS the gate (pre-fix it opened) and writes nothing mint-worthy 0ms
+ ✓ test/a4p6-governance-warning-host-adapter.test.ts > A4-PR6 review round 1 (fix 3/6) — production `contains` reaches `undefined` > absent seam, throwing seam, throwing provider, and non-boolean answers are ALL `undefined` 0ms
+ ✓ test/a4p6-governance-warning-host-adapter.test.ts > A4-PR6 review round 1 (fix 3/6) — production `contains` reaches `undefined` > only real boolean answers decide 0ms
+ ✓ test/a4p6-governance-warning-host-adapter.test.ts > A4-PR6 review round 1 (fix 3/6) — production `contains` reaches `undefined` > composition: an undeterminable containment world MINTS a warning and refuses with an intervention pointer (pre-fix: raw throw) 0ms
+ ✓ test/a4p6-start-gate-entrances.test.ts > A4-PR6 review round 1 (BLOCKER 1) — the handoff entrance is gated > W1: handoff.create under a governance refusal refuses typed and starts NOTHING 1ms
+ ✓ test/a4p6-start-gate-entrances.test.ts > A4-PR6 review round 1 (BLOCKER 1) — the handoff entrance is gated > W1: the refusal is NOT swallowed into the generic creation-failed state (re-drivable, still typed) 0ms
+ ✓ test/a4p6-start-gate-entrances.test.ts > A4-PR6 review round 1 (BLOCKER 1) — the handoff entrance is gated > W2: with the gate open the handoff completes exactly once (no breakage, single consultation per entrance) 0ms
+ ✓ test/a4p6-start-gate-entrances.test.ts > A4-PR6 review round 1 (BLOCKER 1) — the boot entrances are gated > W3: a warning-gated boot-create rejects typed leaving the minted row NOT LIVE and with NO live boot 0ms
+ ✓ test/a4p6-start-gate-entrances.test.ts > A4-PR6 review round 1 (BLOCKER 1) — the boot entrances are gated > W4: a warning-gated boot-resume refuses to re-start a durable Team (live boot never reached) 0ms
+ ✓ test/a4p6-start-gate-entrances.test.ts > A4-PR6 review round 1 (BLOCKER 1) — one mapper, every entrance > the three arms are built by ONE exported mapper and no entrance re-declares the wire codes 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges the version > an unidentifiable document on an unknown version is refused for its identity, not its version 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges the version > a document with no blueprintId is refused for the missing identity whatever its version 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges the version > a version nobody defined, with a good identity, is parse-rejected — never migration-required 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges the version > a non-integer version stays parse-rejected (no identity is owed to it) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges the version > bad YAML is parse-rejected: identity is not owed to an unreadable file 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges the version > an unreadable file is refused where it fails to decode, never on the version line 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 A: inspectBlueprintSource reads the identity before it judges the version > a well-formed identity on a version this build RUNS inspects ok, with its version carried 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 B: the retired set is derived, and the two refusal names stay distinct > the retired set is exactly DEFINED minus SUPPORTED (no threshold, no hand-declared list) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 B: the retired set is derived, and the two refusal names stay distinct > every version the product once defined is in the history set, so the flip makes a backlog and not a mystery 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 B: the retired set is derived, and the two refusal names stay distinct > the retired set is empty exactly while the bridge still runs v1 and v2 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 B: the retired set is derived, and the two refusal names stay distinct > the two refusal names are a closed pair and neither overloads an existing code 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > it is LISTED, with its identity and its version, under a build that runs v3 only 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > it is distinguishable from a parse-rejected file, which is still NOT listed 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > every listed arm carries a version and a migration STATE, the anchor included 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > resolve refuses it with BLUEPRINT_MIGRATION_REQUIRED — not not-found, not the parser 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > the refusal asks for no source read: a retired document is never parsed on the way to no 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > a revision-less resolve reaches the same refusal (the latest-revision walk keeps it visible) 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > the listed flag is what the refusal acts on, so the catalog can never contradict resolve 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > the live catalog facade lists it and refuses it with the same typed code 3ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > the refusal is per-document version state, not a world-level break: the neighbour in the same directory still resolves 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C2: a frozen row is classified by the version its document declares, and by nothing else > a row on a version nobody defined is NOT a migration: it is the unsupported-version refusal 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C2: a frozen row is classified by the version its document declares, and by nothing else > that refusal is not the registry-integrity refusal the row would otherwise produce 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C2: a frozen row is classified by the version its document declares, and by nothing else > the strong parser accepts a v1 document exactly while the bridge runs it 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D1 — the bright line: a version refusal degrades, a non-document still fails the constructor > a version this build never defined is a refusal, not a crash 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D1 — the bright line: a version refusal degrades, a non-document still fails the constructor > a version this build runs classifies as runnable (the ordinary host is unchanged) 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D1 — the bright line: a version refusal degrades, a non-document still fails the constructor > an anchor that is not a document at all still throws (fail-closed construction) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D2 — a host anchored on a version it does not run boots, and its Team does not start > the root constructed (the constructor survived the anchor) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D2 — a host anchored on a version it does not run boots, and its Team does not start > ZERO durable writes: no TeamSession row, no binding, no compatibility state 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D2 — a host anchored on a version it does not run boots, and its Team does not start > ZERO agent effect through the live glue 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D3 — the refusal is not an acknowledgement path > the code is the document code, never a governance warning code 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D3 — the refusal is not an acknowledgement path > the governance leg is never consulted for the refused create start 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D3 — the refusal is not an acknowledgement path > a re-drive gives the same refusal, not a second state 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D4 — the degraded anchor value refuses every read (it is never an empty document) > reading a field refuses typed 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D4 — the degraded anchor value refuses every read (it is never an empty document) > enumerating or serialising it refuses too (no empty-object leak) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D5 — the start ports refuse before the glue is reached > team.ensureRootLive on a refused bound document is refused 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D5 — the start ports refuse before the glue is reached > the stub glue ensure port was NEVER entered (the gate sits in front of it) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D5 — the start ports refuse before the glue is reached > the wire carries it in its OWN closed vocabulary, not the document code 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D5 — the start ports refuse before the glue is reached > the SAME entrance on the governance fourth arm answers with the typed wire name 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D5 — the start ports refuse before the glue is reached > handoff.create over a refused bound document creates NOTHING and never reaches the governance leg 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D5 — the start ports refuse before the glue is reached > the SAME team.create shape succeeds over an open bound document (the control) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D5 — the start ports refuse before the glue is reached > team.create over the same bound document is refused, leaving the row NOT LIVE 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D5 — the start ports refuse before the glue is reached > a CREATE mint over a refused bound document fails closed with ZERO agent effect 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D5 — the start ports refuse before the glue is reached > the refused mint made the chokepoint commit and NO compatibility/prober write 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D6 — the resume entrance is gated on its ROW, before its first durable write > the entrance asked the bound-document resolver for THIS root 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D6 — the resume entrance is gated on its ROW, before its first durable write > the refusal is typed and boot() never reached the live layer 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D6 — the resume entrance is gated on its ROW, before its first durable write > the refused resume wrote NOTHING before refusing 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D7 — the gate does not refuse a bound document this build runs > the resume completed (the new gate broke nothing it guards) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D7 — the gate does not refuse a bound document this build runs > the resumed root went live through the glue exactly once 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D7 — the gate does not refuse a bound document this build runs > its ensureRootLive entrance reached the glue (the gate is not blocking what it allows) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D7 — the gate does not refuse a bound document this build runs > the write counter is not a blind spot (a real start does record) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D8 — bound-blueprint case 2 refuses with the same name case 3 gets > a no-ref legacy row on a refused anchor refuses typed (not the domain parse error) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D8 — bound-blueprint case 2 refuses with the same name case 3 gets > and a runnable anchor still resolves by definition (the legacy binding is intact) 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D9 — the Blueprint authority degrades with its anchor, and fails closed on a non-document > the authority constructed on the refused anchor 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D9 — the Blueprint authority degrades with its anchor, and fails closed on a non-document > a version nobody defined is NOT listed (there is no migration to advertise) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > D9 — the Blueprint authority degrades with its anchor, and fails closed on a non-document > an anchor that is not a document still fails the authority construction 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP E - why a shell narrowing was invisible to the ASK: three laws, one gap (RULING 4; closed at the ASK by GROUP F, at consumption by the a1-14 S group) > a fingerprint rule against an exact target is a DECISIVE non-coverage, never undetermined 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP E - why a shell narrowing was invisible to the ASK: three laws, one gap (RULING 4; closed at the ASK by GROUP F, at consumption by the a1-14 S group) > the reverse shape pairing is decisive too (the gap is symmetric) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP E - why a shell narrowing was invisible to the ASK: three laws, one gap (RULING 4; closed at the ASK by GROUP F, at consumption by the a1-14 S group) > each shape does cover its own target (the controls that keep the two above honest) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > the CANDIDATE GATE: a shell scope that cannot name its command is refused, never answered from the tool key 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > the shell set is the tool key AND the fingerprint; the file set is the point alone 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > a point that already names the command does not gain a second shape (more candidates is not automatically more conservative) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > the two PRODUCTION sites derive the SAME set: same row, same documents, same answer 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > a refusal is TERMINAL at the consumption point: a shell row with no command is a named refusal, not the persisted point alone 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > a shell scope that DOES carry the fingerprint is not refused at the candidate gate (control) 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > THE MEET ANSWERS AT THE FINGERPRINT RUNG: one input goes leader -> human-admin 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > THE MEET IS LIVE AT CONSUMPTION: the same row and documents answer `stale`, not `still-covered` 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > ABSORPTION at the ASK: one `undetermined` candidate and one decided one is `authority-undetermined` 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > ABSORPTION at the CONSUMPTION point: the same pair is `undetermined`, never the decided candidate alone 0ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > NEVER WIDER: the meet is exactly the highest rung any candidate requires, over a matrix of documents 1ms
+ ✓ test/a4p7-v3-cutover-acceptance.test.ts > GROUP F - the candidate set the ceiling meets (RULING 4 closure) > DISCLOSURE: a declared shell narrowing below `allow` now bites, and the rung it demands has no Alpha.4 resolver 0ms
+
+ Test Files  6 passed (6)
+      Tests  144 passed (144)
+   Start at  15:52:58
+   Duration  1.28s (transform 3.61s, setup 0ms, import 5.25s, tests 56ms, environment 0ms)
+

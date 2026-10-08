@@ -1,0 +1,106 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-scenario-gaps/packages/runtime
+
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 prerequisite 3 — a lane with no authority-ceiling port refuses a rise (it does not commit it) > N1 a rising batch on a port-less lane REFUSES with the CONTEXT code and the port-absent problem, and appends NOTHING 3ms
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 prerequisite 3 — a lane with no authority-ceiling port refuses a rise (it does not commit it) > N2 the same port-less lane still COMMITS a tightening (the refusal is rise-scoped, not a lane-wide ban) 0ms
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 prerequisite 3 — a lane with no authority-ceiling port refuses a rise (it does not commit it) > N3 the refusal is not actor-scoped: a LEADER whose carrier covers the cell is refused too (wiring cannot widen) 0ms
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 prerequisite 3 — a lane with no authority-ceiling port refuses a rise (it does not commit it) > N4 when the classification itself cannot answer, ITS refusal propagates as itself — never relabelled as the port-absent fault 0ms
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 prerequisite 3 — a lane with no authority-ceiling port refuses a rise (it does not commit it) > N5 the ONLY answer that may still skip the gate is the reader existential NO for a pre-v3 binding, and it is untouched (A5-12) 0ms
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 prerequisite 3 — a lane with no authority-ceiling port refuses a rise (it does not commit it) > N6 the control that makes N1 mean something: the SAME rise on a fully wired lane commits, so the refusal is caused by the missing port 1ms
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 — the pre-v3 `undefined` skip has no route through the shipped composition (measurement, and the pin that reddens if one appears) > R1 the strong parse CANNOT hand the facts layer a pre-v3 document: the only line that makes it pre-v3 is the version line, and that line is refused 15ms
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 — the pre-v3 `undefined` skip has no route through the shipped composition (measurement, and the pin that reddens if one appears) > R2 MEASUREMENT — through the shipped reader over the shipped facts, NO reachable binding answers undefined; only v3 is a context, everything else is a refusal 14ms
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 — the pre-v3 `undefined` skip has no route through the shipped composition (measurement, and the pin that reddens if one appears) > R3 the consequence AT THE LANE: a Team bound to a pre-v3 document is REFUSED the rise with the CONTEXT code and the ceiling-document problem, and appends NOTHING 2ms
+ ✓ test/a4p7-ceiling-no-port-refusal.test.ts > A4-PR7 §7.5 — the pre-v3 `undefined` skip has no route through the shipped composition (measurement, and the pin that reddens if one appears) > R4 THE DOOR, HELD OPEN BY HAND: only a document the parser REFUSES to build still takes the skip, and what walks through it is a commit — which is why R2 is the guard 2ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices silent hard document at the SAME rung either way 2ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices a fingerprint rule (opaque, never widens) at the SAME rung either way 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices the width capped at ask at the SAME rung either way 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices the width denied outright at the SAME rung either way 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices the cell capped below the width at the SAME rung either way 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > prices an unrelated subtree denied at the SAME rung either way 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the approval rung is priced over the same point set the ceiling gate uses > and the shape the review needed is the one the algebra forbids 0ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > a rise is ASKED AT THE RUNG ITS WIDTH NEEDS, not at the rung its cell can pay for 35ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > documents tightened after the approval: ZERO append — never the refused width 11ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > an unreadable ceiling at retry time refuses as CONTEXT, and the approval buys nothing past it 10ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > a commit-time refusal consumes NOTHING: the case stays resolved(allow), the retry re-prices and commits once 13ms
+ ✓ test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > an unchanged world still commits: the re-ask is a guard, not a veto over A4-PR5 10ms
+ ✓ test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the subtree granted before the resource exists covers the resource created after startup at the FIRST ask, while the MemberInstance created after the grants still inherits nothing 24ms
+ × test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the prohibition, in the form a leg CAN assert: zero containment work through Team startup, the relation computed per ask for the pair asked about at a cost that does not follow the descendant population, a durable row that never moves, and a verdict that follows the live canonical relation 13ms
+   → expected 'allow' to be 'deny' // Object.is equality
+ ✓ test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the mechanism: the shipped authority lane reaches no directory-listing primitive at all (the tool a startup enumeration would need) 5ms
+ ✓ test/a3p4-production-permission-plane.test.ts > P1 — the production root wires the plane (and refuses without it) > the assembled root fills the shared reference; its write entry lands in the root store 22ms
+ ✓ test/a3p4-production-permission-plane.test.ts > P1 — the production root wires the plane (and refuses without it) > a root assembled WITHOUT the overlay port has no plane and refuses typed 7ms
+ ✓ test/a3p4-production-permission-plane.test.ts > P2 / P3 / P4 — the configured exact / subtree / exec paths are live > an exact grant answers allow and survives a reopen of the durable store 7ms
+ ✓ test/a3p4-production-permission-plane.test.ts > P2 / P3 / P4 — the configured exact / subtree / exec paths are live > a subtree grant is judged by the injected predicate: inside allow, outside still default 8ms
+ ✓ test/a3p4-production-permission-plane.test.ts > P2 / P3 / P4 — the configured exact / subtree / exec paths are live > an exec grant answers its exact fingerprint only (predicate-free) 6ms
+ ✓ test/a3p4-production-permission-plane.test.ts > P5 — the durable lifecycle state gates execution in production > ARCHIVED refuses (overlay retained), SETTLED executes, an unknown instance refuses 6ms
+ ✓ test/a3p4-production-permission-plane.test.ts > P6 — the EXISTING pre-execute pipeline consumes the plane > the overlay denies over a static allow and an archived instance never executes; unwired stays frozen 6ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > R2 — an overlay ASK over a static deny enters APPROVAL through the real adapter (BLOCK-2) > exact: the member install creates the durable approval row (leader-approval), waits, and a human allow executes 283ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > R2 — an overlay ASK over a static deny enters APPROVAL through the real adapter (BLOCK-2) > subtree: an overlay ASK subtree rule over the static default deny reaches approval (containment judged per decision) 19ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > R2 — an overlay ASK over a static deny enters APPROVAL through the real adapter (BLOCK-2) > exec: an overlay ASK on the EXACT canonical fingerprint of THIS command reaches approval on the member install (leader-approval) 17ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > R2 — an overlay ASK over a static deny enters APPROVAL through the real adapter (BLOCK-2) > exec (merged ask): the adapter routes a seam-answered EXEC ASK to approval — one durable row, never an outright deny 17ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > R3 — the artifact-grant floor keeps its frozen position under the merged answer (BLOCK-3) > POSITIVE: no overlay + template DEFAULT deny + valid spill grant ⇒ the read EXECUTES through the floor 6ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > R3 — the artifact-grant floor keeps its frozen position under the merged answer (BLOCK-3) > NEGATIVE: an EXPLICIT overlay RULE deny + a valid grant still blocks (a grant is a floor, never a ceiling override) 6ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > R3 — the artifact-grant floor keeps its frozen position under the merged answer (BLOCK-3) > NON-REGRESSION: an overlay ASK + valid grant authorizes the read WITHOUT any control row 6ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > M1 — the exec plane reports the winning layer honestly (MINOR-1) > a blueprint-lane exec answer reports winningLayer "blueprint" (never a hard-coded "template"), a template answer "template", the overlay "overlay", the default fallback null 6ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > I3 — the seam receives this decision's canonical rules verbatim (INFO-3) > the seam input.staticRules carries the canonicalized allow rule (same identity), never a fabricated empty declared-none 5ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > I3 — the seam receives this decision's canonical rules verbatim (INFO-3) > source pin: the removed `canonicalRules ?? { allow: [], ask: [], deny: [] }` fallback does not survive into the routing 1ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > RC — refused seam answers are typed hard denials for EVERY class, no static fallback (locked ruling) > lifecycle class: an ARCHIVED instance is hard-denied with the code preserved, although the static lane ALLOWS 7ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > RC — refused seam answers are typed hard denials for EVERY class, no static fallback (locked ruling) > authority-read class: a static ALLOW + a seam refusal (undecodable overlay) denies with the code and the loud observation row — no static fallback 4ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts > RC — refused seam answers are typed hard denials for EVERY class, no static fallback (locked ruling) > context/fact class: a seam STATIC_FACTS_UNKNOWN refusal hard-denies the static allow (UNKNOWN never degrades to the static answer) 4ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 RED probes (fail on the base tree; the file LOADS on the base tree) > R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap) 1ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 RED probes (fail on the base tree; the file LOADS on the base tree) > R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane) 1ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G14 — the Blueprint grammar (subtree accepted for file tools, schema-REJECTED for shell, exact path constraints) > a truly-unknown kind (glob) still rejects; exact and any are unchanged (any stays closed) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G13/A3 — the PURE resolver: the containment boolean is the whole matcher input (rootKey is provenance only) > containsOperation=true matches; false never matches; rootKey is NEVER consulted 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G13/A3 — the PURE resolver: the containment boolean is the whole matcher input (rootKey is provenance only) > the tool must match; file-class operations only; deny > ask > allow with RULE provenance 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G13/A3 — the PURE resolver: the containment boolean is the whole matcher input (rootKey is provenance only) > exact and any are unchanged at A3 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > the root itself matches (directory root and file root) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > a child and a deep descendant match (the subtree the exact lane could not express) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > a sibling is a NON-MATCH (the default outcome, zero interference) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G16 — cold resume (dispose + fresh install; no stale canonical-rule cache) > the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > the real backend section ran (the prebuilt pinned lib is present on this host) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze) 0ms
+ ✓ test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G1 (real) the root itself matches on the real backend (contains(self) = true) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p7-live-descendant-authority.test.ts > a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §21.3, §6.1; ADR §7.3, §8, §29.4) > the prohibition, in the form a leg CAN assert: zero containment work through Team startup, the relation computed per ask for the pair asked about at a cost that does not follow the descendant population, a durable row that never moves, and a verdict that follows the live canonical relation
+AssertionError: expected 'allow' to be 'deny' // Object.is equality
+
+Expected: "deny"
+Received: "allow"
+
+ ❯ test/a4p7-live-descendant-authority.test.ts:530:31
+    528|       world.seamCalls.length = 0
+    529|       const after = await world.decide(WORKER_ID, through)
+    530|       expect(after['effect']).toBe('deny')
+       |                               ^
+    531|       expect(after['source']).toBe('default')
+    532|       // The pair was asked AGAIN, not replayed: the same (root, key) …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 75 passed (76)
+   Start at  15:57:01
+   Duration  10.78s (transform 3.95s, setup 0ms, import 15.49s, tests 614ms, environment 0ms)
+

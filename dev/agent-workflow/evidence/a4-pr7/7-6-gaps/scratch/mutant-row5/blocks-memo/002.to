@@ -1,0 +1,20 @@
+/** MUTANT `materialized-covered-pairs-as-authority` (throwaway; NEVER
+ *  committed): the containment verdict for a (root, resource) pair is computed
+ *  ONCE and replayed forever — the materialized covered set that ADR §7.3 and
+ *  spec §6.1 forbid being used as authority. */
+const MATERIALIZED_COVERAGE = new Map<string, boolean>()
+
+async function materializedCoverage(
+  containment: OverlaySubtreeContainment,
+  root: string,
+  operation: CanonicalOperation,
+): Promise<boolean | undefined> {
+  const cell = `${root}\u0000${operation.resource.key}`
+  const recorded = MATERIALIZED_COVERAGE.get(cell)
+  if (recorded !== undefined) return recorded
+  const verdict = await containment(root, { tool: operation.tool, key: operation.resource.key })
+  if (typeof verdict === 'boolean') MATERIALIZED_COVERAGE.set(cell, verdict)
+  return verdict
+}
+
+export function containmentFallback(verdict: boolean | undefined, effect: 'allow' | 'ask' | 'deny'): boolean {

@@ -1,0 +1,182 @@
+==============================================================================
+FINAL BATTERY — A4-PR7 §7.6 gap lane (dsh-agent-team)
+captured: 2026-10-08T08:07:07Z   all timestamps UTC
+branch:   feat/a4-76-scenario-gaps            (HANDED BACK UNMERGED AND UNPUSHED)
+base:     master @ 16022365  "Merge pull request #189 from …/feat/a4-76-closure"
+worktree: .worktrees/a4-76-scenario-gaps      one task = one branch = one worktree = one writer
+
+The tip of this branch IS the commit that carries this file; a file cannot carry its own SHA, so
+the tip is read with `git log --oneline -1 feat/a4-76-scenario-gaps` rather than written here.
+Every command below was run in this worktree unless the line says otherwise; raw outputs are in
+scratch/captures/, and the file names in brackets point at them.
+==============================================================================
+
+§0  ENVIRONMENT
+- node v24.21.0   vitest 4.1.11   pnpm workspace (9 of 10 projects build)
+- export CI=true ; export XDG_CACHE_HOME=/home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/cache
+- rm -rf packages/runtime/test/.tmp-fault before each vitest invocation
+- No server was started; nothing touched port 3080 (the stable dev instance) or any DSH_HOME
+  world. The test hosts here are in-process vitest worlds only.
+- Captures are written INSIDE the workspace: this harness gives each shell call a private /tmp,
+  so an early capture written there was simply gone by the next call. Recorded so nobody repeats it.
+
+§1  FRESH-WORKTREE PREREQUISITE (closure finding F5) — before any census
+$ pnpm install --store-dir /home/user/dsh-plugins/dsh-agent-team/.pnpm-store     exit 0  [scratch/pnpm-install.log]
+$ pnpm setup                                                                      exit 0  [scratch/pnpm-setup.log]
+  `pnpm setup` runs `pnpm build && pnpm build:composition` (first lines of the setup log), which is
+  what materialises the gitignored `packages/client/dist`; without it the census silently measures
+  a smaller client root. Measured after: 400 files under packages/client/dist, composition entry
+  packages/client/dist/packages/client/src/plugin/client.js present.
+
+§2  THE THREE LEGS (the deliverable) — 8 legs, all green, on the committed tree
+  Test Files  3 passed (3)
+  Tests  8 passed (8)
+  describe/test identities, verbatim from the root census itself: ROOT-CENSUS.md §4.
+  Files and assertion counts (a text count, stated as such — the legs themselves are in §2/ROOT-CENSUS):
+    packages/runtime/test/a4p7-live-descendant-authority.test.ts            3 legs  42 expect()  +638 lines
+    packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts     2 legs  22 expect()  +419 lines
+    packages/runtime/test/a4p7-governance-warning-restart-reconstruction…   3 legs  47 expect()  +475 lines
+    packages/testkit/test/p4t6-session-event-scan.test.ts                  10 legs  40 -> 41 expect()  (+33/-2)
+  NO production source file was created or modified by this lane, and NO existing assertion was
+  removed: the only touched existing file is p4t6, whose `expect(` count moves 40 -> 41.
+
+§3  NON-VACUITY — one construction-level counterfactual per leg family, each restoring hash-verified
+  (a) row 5 · packages/runtime/permission-lifecycle/decision-lane.ts
+      base/mutated/restored sha256
+        base    bbb329baba0438660dd19dbb1524ea6d4a2fed0c69122ea97631226cd137bda3
+        census  592745870013b6e82ea509ffdee52497c5500c5555552514b5f4e54c63e0a4c6
+        memo    c6e460bcfc0b25b4e4974e5e1e1da5575815d387cb86ce8f99b699d08f907edc
+      "startup-census" (materialize readdirSync at first sight, answer by existence):
+        5 failed / 71 passed over the 6 suites that drive the boundary — the 3 new legs AND 2
+        pre-existing legs (identities verbatim in FINDINGS.md §3). NOT surgical, disclosed;
+        it is exactly why the second, surgical mutant exists.
+      "first-sight-verdict-memo" (cache the verdict per logical key, replay it forever):
+        Test Files  1 failed | 5 passed (6)
+        Tests  1 failed | 75 passed (76)
+        -> reddens EXACTLY the prohibition leg (arm (d), the retargeted descendant).
+      transcript: transcripts/mutant-row5-census-and-memo.txt (incl. the addendum re-run on the
+                  committed file).
+  (b) row 6 · packages/runtime/governance/{permission-mutation,permission-approval,service}.ts
+      the spec-named forbidden implementation: "bind the then-current descendants" (the approved-rise
+      digest becomes a digest of every cell the region reaches).
+        Test Files  1 failed | 4 passed (5)
+        Tests  1 failed | 75 passed (76)
+        -> reddens EXACTLY the validity leg, at a4p7-descendant-change-proposal-valid.test.ts:345.
+      restore returned the three base hashes (e0d39b4d… / ba7ec48b… / 3857732d…); porcelain empty.
+      transcript: transcripts/mutant-row6-descendant-census.txt (+ addendum).
+  (c) row 17 · packages/runtime/governance-warning/service.ts
+      base/mutated/restored sha256
+        base    63866dabb60f78fc7be110123a94c8c4b707550f748fe2f2e0d54d5eb8b6283d
+        mutated 6368d8886c5b4bdbbce80f333ed0fc686d66222b5b4f9a82af096c63230aba77
+        restored 63866dabb60f78fc7be110123a94c8c4b707550f748fe2f2e0d54d5eb8b6283d
+      "acknowledgement-lives-in-the-heap" (the ack is STILL appended durably; fold() reads it from
+      a module-level Map instead of from those rows):
+        Test Files  1 failed (1)
+        Tests  3 failed (3)
+        PR6 governance-warning family under the same mutant:
+        Test Files  6 passed (6)
+        Tests  144 passed (144)
+      -> the finding demonstrated: the whole 144-leg governance-warning family stays GREEN under a
+         product in which the acknowledgement does not survive a restart at all. FINDINGS.md §1.
+  Mutants were NEVER committed: they live only as block files + runners under scratch/, they restore
+  from a byte-exact backup taken at `apply` time, and `git status --porcelain` on each mutated path
+  came back empty after every run. No mutant was in the tree during any census capture.
+  The runners' runtime `backup*.json` files are deliberately NOT committed: each is a byte-copy of
+  product source that would go stale the moment that file legitimately moves, and a stale backup is a
+  revert waiting for someone to type `restore`. The base SHA-256 lines above, and the restored lines
+  that equal them, are the durable claim.
+
+§4  NINE-ROOT CENSUS, twice, strictly sequentially — identity-set diff
+  roots: contracts domain legacy remote runtime storage testkit tools client (root vitest.config.ts)
+  driver: scratch/final-census.sh     full write-up: ROOT-CENSUS.md
+  capture 1: 07:57:40Z -> 07:59:14Z   505 files / 6285 legs / 19 titled reds / 22 ids
+  capture 2: 07:59:14Z -> 08:00:47Z   505 files / 6285 legs / 21 titled reds / 24 ids
+  the two id sets differ ONLY by the p6t1-parallel family (the flake the baseline names; at rest:
+  9 passed / 9, scratch/captures/p6t1-parallel-at-rest.txt)
+  [fail-set] baseline=22 current=22 NEW=0 FIXED=0
+  [fail-set] baseline=22 current=24 NEW=2 FIXED=0
+  -> capture 1 is IDENTICAL to population-baseline/nine-root-2162f6a7.md: NEW 0, FIXED 0.
+     Corpus moved 502 -> 505 files (+3) and 6277 -> 6285 legs (+8): this lane, named.
+  escalation check: the 3 collection-error files are unchanged on both captures and match the
+     baseline three (p8s3b-result-effects, t12a-b2-child-identity, t12a-glue-handoff-ports);
+     no baseline titled red "resolved" into one, and no new red did either.
+
+§5  THE §7.6 CODE MERGE GATE (untouched file, real commands inside)
+  Test Files  1 passed (1)
+  Tests  29 passed (29)
+  -> 29/29, including the composition-smoke leg, the fence leg, the typecheck leg, the client lane
+     (which the root suite cannot see) and the lint identity-diff leg.
+  DISCLOSED, because it is the interesting part: the FIRST run of this gate read 27/29 and both red
+  legs were this lane's own files — 21 TypeScript errors (a union read without narrowing, a missing
+  required field, an import from the wrong helper) and 4 new lint identities, one of them a stale
+  eslint-disable two lines above its construct, which renders as "(parse-fatal)" because an unused
+  directive carries a null ruleId (scripts/lint-identities.mjs:107). All eight legs ran GREEN the
+  whole time: vitest does not type-check, and the census does not lint. Fixed in my files; the
+  accepted lint baseline and the merge gate were NOT touched. FINDINGS.md §5.
+
+§6  p4t6 SCANNABLE-FILE LEDGER — extended by a NAMED LIST, its own measured tie
+  new list: SCANNED_PATHS_A476GAPS (the three files above), added to both derived sums and to the
+  by-path presence loop; the lane's own tie is
+      expect(SCANNED_PATHS_A476GAPS.length).toBe(1039 - 1036)
+  both endpoints MEASURED, never copied. With the three files on disk and the entry stripped:
+      AssertionError: expected 1039 to be 1036 // Object.is equality   [p4t6-pre-extend-red.txt]
+  after the extension:
+      Test Files  1 passed (1)   [p4t6-post-extend-green.txt]
+      Tests  10 passed (10)   [p4t6-post-extend-green.txt]
+  The totals are `983 + Sum(named lists)`; no total was typed from a log, and a landed file without
+  its name in a list turns the sum RED rather than moving it silently.
+
+§7  LINT
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+  lint-identities: 160 identity lines, 76 distinct (target .)
+  lint-identities: universe: 1118 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+  baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+  -> new 0, resolved 0 against the named baseline; exit 0.
+$ pnpm run lint
+  ✖ 160 problems (128 errors, 32 warnings)   [lint-full.txt, exit 1]
+  -> 128 errors / 32 warnings, the disclosed base level for this tree: unchanged by this lane.
+     (pnpm run lint is red at base; the lane's obligation is the identity diff above, not a count.)
+
+§8  TYPECHECK, every package that declares the script
+$ pnpm --no-bail -r run typecheck     exit 0
+  all nine packages "typecheck: Done" [typecheck-all.txt]; plus, during the fix round,
+  `pnpm --filter @dsh-agent-team/runtime typecheck` exit 0.
+
+§9  ARTIFACT PROVENANCE
+  DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1
+  [check-artifacts-committed] OK: 1508 files — working tree equals the git INDEX for both install surfaces (incl. 1 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+  DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0
+  [check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).
+  -> verdict=ok, drift=0, exit 0. No production source changed, so no rebuild was required; the
+     instrument builds HEAD itself in a scratch worktree and compares 1508 files.
+
+§10  THE BLUEPRINT-VERSION FENCE (run after `git add`, per plan §7.6)
+  RESULT dirty(6 files, 15 sites)
+  RESULT unknown(0 files, 0 sites)
+  RESULT advisory(6 files, 8 sites)
+  RESULT refused(52 files, 115 sites)
+  RESULT prose(5 files, 5 sites)
+  RESULT adjudicated(16 files, 24 sites)
+  RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+$ diff scratch/captures/blueprint-fence-BASE.txt scratch/captures/blueprint-fence-TIP.txt
+  3c3   < scanned-in-scope: 761 tracked files          ---  > scanned-in-scope: 764 tracked files
+  5c5   the adjudication-ledger PATH only (different worktree root)
+  -> the ONLY differences are the file count (+3, this lane) and the ledger path. The fence is RED
+     AT THE BASE TOO, on the same 6 offending files / 15 sites, measured in a scratch worktree
+     checked out at 16022365 (scratch/captures/blueprint-fence-BASE.txt). This lane adds neither an
+     offending file nor an adjudication row; it reports the pre-existing state instead of silently
+     "fixing" a fence it was not asked to move.
+
+§11  WHAT THIS BATTERY DOES NOT PROVE
+- It does not prove the three laws are TRUE of the product in general: each leg is one construction,
+  and the counterfactuals prove the instruments are sensitive, not that the space is covered.
+- It does not make the PR6 governance-warning family able to see a restart. That suite is 144 legs of
+  in-process evidence (FINDINGS.md §1); changing its fixture is another lane's ownership.
+- Row 5 asserts the startup-enumeration prohibition as the behavioural signature such a set cannot
+  pass, plus a scoped structural absence. It cannot observe a representation that is never read
+  (FINDINGS.md §4).
+- The census is one machine, one load profile; its identity set is the claim, not its counts.
+- The tree is handed back UNMERGED. Nothing here claims a Gate passed for the phase; the lane
+  produces instruments and findings, and the merge decision belongs to the parent.
+==============================================================================
+END OF BATTERY

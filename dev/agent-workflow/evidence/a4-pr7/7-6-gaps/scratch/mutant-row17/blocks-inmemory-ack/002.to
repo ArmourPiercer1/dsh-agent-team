@@ -1,0 +1,9 @@
+      } else if (row.factType === GOVERNANCE_WARNING_FACT_TYPES.ACKNOWLEDGED) {
+        // MUTANT `acknowledgement-lives-in-the-heap`: the durable ack row is
+        // IGNORED on read. The fold answers from the in-process map, which
+        // only the process that took the acknowledgement ever holds — the ack
+        // is durable in the ledger and volatile in behaviour.
+        const remembered = IN_PROCESS_ACKS.get(`${teamSessionId}\u0000${fingerprint}`)
+        const target = byFingerprint.get(fingerprint)
+        if (remembered !== undefined && target !== undefined) target.acknowledgement = remembered
+      }
