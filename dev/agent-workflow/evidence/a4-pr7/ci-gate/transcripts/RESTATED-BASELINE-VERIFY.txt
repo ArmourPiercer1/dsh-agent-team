@@ -1,0 +1,20 @@
+### 1) FULL gate on the restated tree (expect pass=7 and NO 'COUNTS MOVED'):
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.2 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 49
+DSH-CI-LEG leg=install verdict=pass seconds=0.4 detail=pnpm install --frozen-lockfile ok
+DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=0.2 detail=no new offending path (dirty 6 files/15 sites, unknown 0 files, universe 767 tracked files, baseline 6 identities)
+DSH-CI-LEG leg=typecheck verdict=pass seconds=10.3 detail=pnpm typecheck clean (all packages, tests included — tsc is the only leg that sees a bad .test.ts)
+DSH-CI-LEG leg=lint-identities verdict=pass seconds=10.9 detail=identity diff clean (baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0) — exit code of `pnpm lint` is NOT the authority here; the identity set is
+DSH-CI-LEG leg=artifacts-at-head verdict=pass seconds=9 detail=HEAD carries its own build (DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0)
+DSH-CI-LEG leg=census verdict=pass seconds=106.6 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 10 titled reds + 0 collection files; captured 507f/6354l vs baseline-declared 507 / 6354; single capture — clock: the suite's own testTimeout (set nowhere, so vitest's 5000 ms default) — identity set IDENTICAL to the published baseline — comparison writt
+DSH-CI-VERDICT pass pass=7 fail=0 skip=0 skipped=none legs=7 seconds=137.5
+
+### 2) CONTROL D: resurrect a RETIRED identity, same path + same full name, now RED:
+   planted leg = T1: Blueprint Capability Schema 1. Legacy fixture parses wit…
+DSH-CI-LEG leg=census verdict=fail seconds=99.9 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 10 titled reds + 0 collection files; captured 507f/6355l vs baseline-declared 507 / 6354; single capture — clock: the suite's own testTimeout (set nowhere, so vitest's 5000 ms default) — COUNTS ALSO MOVED (507f/6355l vs the baseline document's own 507 / 
+  detail[census]: roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 10 titled reds + 0 collection files; captured 507f/6355l vs baseline-declared 507 / 6354; single capture — clock: the suite's own testTimeout (set nowhere, so vitest's 5000 ms default) — COUNTS ALSO MOVED (507f/6355l vs the baseline document's own 507 / 6354) — and the identity set moved too, so the set, not the counts, is what this verdict is drawn from — NEW RED(S) 1: TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field — comparison written to dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261008T143028Z-3431.json
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=100
+   reverted, porcelain=0
+
+### 3) same single-capture census after the revert (expect pass):
+DSH-CI-LEG leg=census verdict=pass seconds=99.4 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 10 titled reds + 0 collection files; captured 507f/6354l vs baseline-declared 507 / 6354; single capture — clock: the suite's own testTimeout (set nowhere, so vitest's 5000 ms default) — identity set IDENTICAL to the published baseline — comparison writt
+DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 seconds=99.4

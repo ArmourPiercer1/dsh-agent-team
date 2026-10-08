@@ -1,0 +1,57 @@
+{
+  "head": "02b53c7a39b451747c29fbe826babf2b237db5aa",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md",
+  "baselineIds": [
+    "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+    "TEST packages/runtime/test/d3-member-identity-context.test.ts::D3 the member identity context block (Team D1-D6 repair v2, B2) D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+    "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+    "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+    "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session"
+  ],
+  "reports": [
+    {
+      "jsonPath": "/home/user/dsh-plugins/dsh-agent-team/.worktrees/coord-baseline/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261008T143208Z-6419-1.json",
+      "files": 507,
+      "legs": 6354,
+      "ids": [
+        "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+        "TEST packages/runtime/test/d3-member-identity-context.test.ts::D3 the member identity context block (Team D1-D6 repair v2, B2) D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+        "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+        "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+        "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "pass",
+    "setIdentical": true,
+    "countsMoved": false,
+    "added": [],
+    "newReds": [],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 507,
+      "legs": 6354,
+      "declared": {
+        "files": 507,
+        "legs": 6354
+      },
+      "moved": false,
+      "capturesAgree": "single capture",
+      "captured": "507f/6354l",
+      "totalsNote": "captured 507f/6354l vs baseline-declared 507 / 6354"
+    }
+  }
+}
