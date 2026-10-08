@@ -1,0 +1,23 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+lint-visibility: eslint read 1118 of 2447 OFFERED tracked lintable file(s); 1329 are hidden by an ignore pattern (dev/ 458, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1118 + 1329 = 2447 offered, + 0 skipped = 2447 tracked lintable path(s); nothing skipped
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (29 tests) 83627ms
+       ✓ is green, asserted by arm name and by absence of a skip — never by the exit code  985ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  593ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  627ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  459ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  10864ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  9998ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  8988ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  31598ms
+       ✓ every workspace package that declares a typecheck script typechecks  9941ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  8095ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  506ms
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  16:45:10
+   Duration  83.83s (transform 80ms, setup 0ms, import 102ms, tests 83.63s, environment 0ms)
+

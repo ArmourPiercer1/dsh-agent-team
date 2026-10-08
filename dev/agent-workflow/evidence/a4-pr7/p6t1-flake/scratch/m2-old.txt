@@ -1,0 +1,5 @@
+      lifecycle: MEMBER_LIFECYCLE_STATES.CREATED,
+      createdAt: nowIso(),
+      activityVersion: 1,
+    })
+  }

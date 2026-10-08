@@ -1,0 +1,11 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (12 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  16:37:35
+   Duration  809ms (transform 462ms, setup 0ms, import 713ms, tests 6ms, environment 0ms)
+

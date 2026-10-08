@@ -1,0 +1,165 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts (12 tests | 4 failed) 18ms
+     × two activated results with distinct instance ids and child Sessions 6ms
+     × two COMMITTED operations, two members, two distinct child Sessions 1ms
+     ✓ five activated results, five COMMITTED operations, five members, five child Sessions 1ms
+     ✓ exactly two activations succeed 1ms
+     ✓ exactly three fail QUOTA_MEMBER_MAX_INSTANCES (the binding fixture quota) 0ms
+     ✓ the three refusals are QUOTA_MEMBER_MAX_INSTANCES identities and nothing else 0ms
+     ✓ the final durable state holds EXACTLY two members and two COMMITTED operations 0ms
+     ✓ the five P2 instance ids are pairwise distinct 0ms
+     ✓ the five P2 operation ids are pairwise distinct 0ms
+     ✓ the five P2 child Sessions are pairwise distinct 0ms
+     × every burst admits EXACTLY two of five, with no refusal outside the quota vocabulary 5ms
+     × every burst ends with exactly two members, two COMMITTED operations, two child Sessions 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two activated results with distinct instance ids and child Sessions
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:233:31
+    231| describe('P6-T1 P1: N=2 same-template parallel activations both succee…
+    232|   it('two activated results with distinct instance ids and child Sessi…
+    233|     expect(p1?.errors.length).toBe(0)
+       |                               ^
+    234|     expect(p1?.rejections).toEqual([])
+    235|     expect(p1?.results.length).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P1: N=2 same-template parallel activations both succeed > two COMMITTED operations, two members, two distinct child Sessions
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:247:30
+    245|
+    246|   it('two COMMITTED operations, two members, two distinct child Sessio…
+    247|     expect(p1?.committedOps).toBe(2)
+       |                              ^
+    248|     expect(p1?.memberCount).toBe(2)
+    249|     expect(p1?.distinctChildren).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P5: the same law under distinct re-probe stamps (A4-PR7 p6t1-flake pin) > every burst admits EXACTLY two of five, with no refusal outside the quota vocabulary
+AssertionError: expected [ { 'burst-0': [ …(4) ] }, …(2) ] to deeply equal [ { 'burst-0': [ …(3) ] }, …(2) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "burst-0": [
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
+      ],
+    },
+    {
+      "burst-1": [
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
+      ],
+    },
+    {
+      "burst-2": [
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
+-       "ActivationError/ACTIVATION_QUOTA_MEMBER_MAX_INSTANCES",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
++       "ActivationError/ACTIVATION_COMPATIBILITY_BLOCKED_FATAL",
+      ],
+    },
+  ]
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:426:22
+    424|   it('every burst admits EXACTLY two of five, with no refusal outside …
+    425|     const observed = p5.map((b) => ({ [b.label]: b.outcome.rejections …
+    426|     expect(observed).toEqual(
+       |                      ^
+    427|       p5.map((b) => ({
+    428|         [b.label]: [QUOTA_REFUSAL, QUOTA_REFUSAL, QUOTA_REFUSAL],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/p6t1-parallel.test.ts > P6-T1 P5: the same law under distinct re-probe stamps (A4-PR7 p6t1-flake pin) > every burst ends with exactly two members, two COMMITTED operations, two child Sessions
+AssertionError: expected [ { 'burst-0': { …(3) } }, …(2) ] to deeply equal [ { 'burst-0': { …(3) } }, …(2) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "burst-0": {
+-       "childSessions": 2,
+-       "committedOperations": 2,
+-       "members": 2,
++       "childSessions": 1,
++       "committedOperations": 1,
++       "members": 1,
+      },
+    },
+    {
+      "burst-1": {
+-       "childSessions": 2,
+-       "committedOperations": 2,
+-       "members": 2,
++       "childSessions": 1,
++       "committedOperations": 1,
++       "members": 1,
+      },
+    },
+    {
+      "burst-2": {
+-       "childSessions": 2,
+-       "committedOperations": 2,
+-       "members": 2,
++       "childSessions": 1,
++       "committedOperations": 1,
++       "members": 1,
+      },
+    },
+  ]
+
+ ❯ packages/runtime/test/p6t1-parallel.test.ts:444:21
+    442|       },
+    443|     }))
+    444|     expect(durable).toEqual(
+       |                     ^
+    445|       p5.map((b) => ({
+    446|         [b.label]: { members: 2, committedOperations: 2, childSessions…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 8 passed (12)
+   Start at  16:36:57
+   Duration  1.31s (transform 744ms, setup 0ms, import 1.11s, tests 18ms, environment 0ms)
+

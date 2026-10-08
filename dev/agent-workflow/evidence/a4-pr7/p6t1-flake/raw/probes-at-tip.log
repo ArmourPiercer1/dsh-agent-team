@@ -1,0 +1,22 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/fix-a4-p6t1-flake
+
+stdout | dev/agent-workflow/evidence/a4-pr7/p6t1-flake/probe/discriminator.probe.ts > D1/D2: the duplicate-vs-no-op split is the stored bytes, not the schedule
+DISCRIMINATOR differentBytes(+1ms)=RECORD_DUPLICATE identicalBytes=no-error
+
+ ✓ dev/agent-workflow/evidence/a4-pr7/p6t1-flake/probe/discriminator.probe.ts (1 test) 36ms
+stdout | dev/agent-workflow/evidence/a4-pr7/p6t1-flake/probe/repro.probe.ts > concurrent cold-generation re-probe: outcome inventory
+REPRO inventory=[["chainOk:OPEN",12],["chainFail:reprobe-failed",12]]
+
+ ✓ dev/agent-workflow/evidence/a4-pr7/p6t1-flake/probe/repro.probe.ts (1 test) 84ms
+stdout | dev/agent-workflow/evidence/a4-pr7/p6t1-flake/probe/repro2.probe.ts > provider seam: parallel activations of one cold team, distinct probe stamps
+REPRO2 inventory=[["ok:activated",12]]
+
+ ✓ dev/agent-workflow/evidence/a4-pr7/p6t1-flake/probe/repro2.probe.ts (1 test) 93ms
+
+ Test Files  3 passed (3)
+      Tests  3 passed (3)
+   Start at  16:50:37
+   Duration  693ms (transform 1.07s, setup 0ms, import 1.53s, tests 214ms, environment 0ms)
+
