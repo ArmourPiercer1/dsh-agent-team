@@ -37,3 +37,6 @@ packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions 
 packages/runtime/test/p8s3b-result-effects.test.ts
 packages/runtime/test/t12a-b2-child-identity.test.ts
 packages/runtime/test/t12a-glue-handoff-ports.test.ts
+# RE-CONFIRMED at 2f06bb44 (PR #185 = the fail-closed law plus the 54 repaired fixture legs, nine-root on both sides):
+# 502 files / 6277 registered legs / 19 titled reds / 3 collection files -- and those 19 are the identities listed
+# below VERBATIM (NEW 0, RESOLVED 0). Totals move with the corpus; the identity SET is the baseline.
