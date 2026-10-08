@@ -991,6 +991,12 @@ describe('P8-S5B R4: create-member x3 at the quota boundary (the fencing is suff
   })
 })
 
+// The describe TITLE is kept byte-identical on purpose: leg titles are test
+// identities in the nine-root census, and rewriting this one would rewrite the
+// identity of all four legs below it. What changed lives in their bodies: the
+// window this grid was built to demonstrate is real HISTORY — A4-PR7
+// `compat-atomic` closed it at the seam, so the second leg below now pins the
+// closure instead of the injury.
 describe('P8-S5B R5a: drift || new work WITHOUT the coordinator (the window is real)', () => {
   it('every consultation outcome stays in the safe set (never admit under FATAL drift)', () => {
     for (const iteration of r5.halfA) {
@@ -1001,16 +1007,38 @@ describe('P8-S5B R5a: drift || new work WITHOUT the coordinator (the window is r
     }
   })
 
-  it('at least one NO_STATE_AFTER_REPROBE fail-closed across the (stagger, facts-delay) grid', () => {
+  // RENAMED LEG (identity transition, disclosed in `compat-atomic/FINDINGS.md`):
+  // was "at least one NO_STATE_AFTER_REPROBE fail-closed across the (stagger,
+  // facts-delay) grid". The leg still exists, on the same grid, pinning the
+  // opposite property — the injury it demonstrated is gone, so keeping the old
+  // words would be the same sin this lane closes: a comment asserting a property
+  // the code no longer has.
+  it('ZERO NO_STATE_AFTER_REPROBE across the (stagger, facts-delay) grid — the seam closed the window, and every consultation is served its honest block', () => {
+    // REVISED PIN — A4-PR7 `compat-atomic`, on the project owner's ruling on the
+    // p6t1-flake escalation ("a version-checked atomic update first; convergence
+    // of concurrent probe results afterwards"). This leg used to pin `hits > 0`:
+    // the grid was the PROOF that the race window was real without the
+    // coordinator, and it was — 12 chainFail in 12 rounds of the deterministic
+    // reproducer (`evidence/a4-pr7/p6t1-flake/FINDINGS.md` SS7). The window was
+    // the delete->put gap inside `compatibility/probe.ts:replaceState()`; that
+    // replace is now ONE generation-checked durable write whose comparison runs
+    // inside the write chain (`CompatibilityRepository.replaceIfGeneration`) and a
+    // consultation whose probe loses CONVERGES on the winner's row. Nothing
+    // schedules the gap any more, so the honest expectation is the opposite one —
+    // and the grid yields ONLY `block`, the legitimate refusal under drift: no
+    // consultation is refused work because of another consultation's write.
     let hits = 0
+    const verdicts = new Set<string>()
     for (const iteration of r5.halfA) {
       for (const outcome of [iteration.a, iteration.b]) {
         if (outcome.reprobeReason === NO_STATE_AFTER_REPROBE) {
           hits += 1
         }
+        verdicts.add(outcome.decision)
       }
     }
-    expect(hits).toBeGreaterThan(0)
+    expect(hits).toBe(0)
+    expect([...verdicts]).toEqual(['block'])
   })
 
   it('two independent consultation sites interleave (both probe in some grid cell; at most one probe each)', () => {

@@ -218,9 +218,17 @@ export interface CompatibilityAuthority {
  * compatibility generation line.
  *
  * @param options - the injected repositories / blueprint / facts port.
- * @returns the authority (one per call; entry points build one per
- *   consultation and rely on the durable store + storage write chain for
- *   cross-instance consistency).
+ * @returns the authority. One per call, so NOTHING inside this object is shared
+ *   across consultations — cross-instance consistency is therefore not assumed,
+ *   it is ESTABLISHED at the seam by two mechanisms: the compatibility state
+ *   transition is a generation-checked write whose comparison runs inside the
+ *   domain's write chain (`CompatibilityRepository.replaceIfGeneration`), and a
+ *   consultation whose probe loses that check CONVERGES on the winner's row when
+ *   the row already carries the live fingerprint (step 3), and still fails
+ *   closed when it does not. Until A4-PR7 `compat-atomic` this paragraph promised
+ *   consistency from "the durable store + storage write chain" while the state
+ *   replace was an unsynchronized `delete` + `put` — a promise the code did not
+ *   keep, which is how a deterministic false refusal survived review.
  */
 export declare function createCompatibilityAuthority(options: CompatibilityAuthorityOptions): CompatibilityAuthority;
 //# sourceMappingURL=authority.d.ts.map

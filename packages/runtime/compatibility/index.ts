@@ -39,7 +39,7 @@ export {
   compatibilityRequirementsOf,
 } from './blueprint.js'
 export { classifyDrift } from './drift.js'
-export { createCompatibilityProber } from './probe.js'
+export { createCompatibilityProber, isLostStateRace } from './probe.js'
 export type { CompatibilityProberDeps } from './probe.js'
 export {
   createCompatibilityAuthority,
