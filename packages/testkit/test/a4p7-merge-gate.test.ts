@@ -65,7 +65,7 @@ import { REQUIRED_CHECK_IDS } from '../../../scripts/composition-smoke-bundle.mj
 import { PLUGIN_TARGETS } from '../../../scripts/composition-smoke-targets.mjs'
 import { INSTALL_SURFACES } from '../../../scripts/client-composition-surface.mjs'
 import { describeStderr } from '../../../scripts/lint-identities.mjs'
-import { absentArtifactVerdict, artifactProvenance, treeShape } from '../../../scripts/a4-artifact-provenance.mjs'
+import { absentArtifactVerdict, artifactProvenance, classifyAbsentArtifact, treeShape } from '../../../scripts/a4-artifact-provenance.mjs'
 import type { ArtifactProvenance } from '../../../scripts/a4-artifact-provenance.mjs'
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url))
@@ -748,9 +748,23 @@ function classifyLintVisibility(
     counts.set(hit, (counts.get(hit) ?? 0) + 1)
   }
   const stated = [...counts.entries()].map(([prefix, n]) => `${prefix} ${String(n)}`).join(', ')
+  // The line has to be checkable off itself, and it has to name which population each number is
+  // from. The first version printed "eslint read 1105 of 2418 tracked lintable file(s)" at
+  // `992b416b` — where 2419 lintable paths were tracked — and "…of 2421…" at `d6e786c7`, where
+  // 2422 were: in both cases the second number is what was OFFERED to eslint (tracked ∩ on disk),
+  // and the gap was reconcilable only by reading the skipped note at the end of the line. Calling
+  // that number "tracked" is the F3 failure — a reason string that misstates what it counted — so
+  // `offered`, `tracked` and `skipped` are now three words for three sets, with the sum spelled out
+  // so a reader can check it without re-running anything.
+  const offered = reports.length
+  const skipped = census.skipped.length
+  const tracked = census.candidates.length + skipped
   const censusLine =
-    `eslint read ${String(reports.length - hidden.length)} of ${String(reports.length)} tracked lintable file(s); ` +
-    `${String(hidden.length)} are hidden by an ignore pattern${stated === '' ? '' : ` (${stated})`}${skippedNote}`
+    `eslint read ${String(offered - hidden.length)} of ${String(offered)} OFFERED tracked lintable file(s); ` +
+    `${String(hidden.length)} are hidden by an ignore pattern${stated === '' ? '' : ` (${stated})`}; ` +
+    `${String(offered - hidden.length)} + ${String(hidden.length)} = ${String(offered)} offered, ` +
+    `+ ${String(skipped)} skipped = ${String(tracked)} tracked lintable path(s)` +
+    (skipped === 0 ? '; nothing skipped' : `; skipped: ${census.skipped.join(', ')}`)
   if (unexpected.length > 0) {
     return {
       verdict: 'failed',
@@ -962,6 +976,64 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       // measured, which is the declared output root, and never that the tree "never produced"
       // something — an output built and then MOVED is indistinguishable from here.
       expect(mixed.why).toContain('nothing outside the declared output root is examined')
+    })
+
+    it('refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact', () => {
+      // §17's finding, closed. The precondition "the artifact is absent" used to be prose in a doc
+      // comment, and prose is not a rule. Measured at `d6e786c7`, this helper was called twice
+      // inside an hour on a healthy tree and answered `failed` with
+      //   "…packages/client/dist/packages/client/src/plugin/client.js is missing while
+      //    packages/client/dist carries 400 other file(s): a build ran in this tree…"
+      // about a tree in which nothing was missing (`review-round-verdicts-at-d6e786c7.txt` keeps
+      // the out-of-contract call in its header). Every sentence that function can write is about an
+      // absence and it never reads file contents, so over a present file the only honest answer is
+      // a refusal that names the question. A helper that is correct only while callers remember a
+      // rule has no test for the rule — this leg is that test.
+      const ENTRY = 'packages/client/dist/packages/client/src/plugin/client.js'
+      const presentProv: ArtifactProvenance = {
+        label: 'client plugin (packages/client)',
+        rel: ENTRY,
+        exists: true,
+        tracked: false,
+        gitignored: true,
+        inInstallSurface: false,
+        outputRoot: 'packages/client/dist',
+        outputRootExists: true,
+        outputFileCount: 400,
+        manifestEntry: null,
+        unreadable: [],
+        treeShape: 'HEAD d6e786c7, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]',
+      }
+      const present = absentArtifactVerdict(presentProv)
+      expect(present.verdict, `a present artifact is not a verdict this helper may write: ${present.why}`).toBe('refused')
+      // The lie, pinned out of existence: the healthy-tree call used to assert absence, in words,
+      // and a reader who acted on it would have run a build over a tree that had already built.
+      expect(present.why).not.toContain('is missing')
+      expect(present.why).toContain('IS on disk')
+      expect(present.why).toContain('the wrong question')
+      expect(present.why).toContain('refused is not passed')
+      // Presence has to outrank the branches that used to be earlier in the function, or the guard
+      // is decoration: a tracked artifact and an unreadable one are still present artifacts, and
+      // the answer is still "wrong question", not the absence verdict they would otherwise write.
+      for (const over of [{ tracked: true, gitignored: false }, { inInstallSurface: true }, { unreadable: ['git could not classify x:boom'] }] as Partial<ArtifactProvenance>[]) {
+        const v = absentArtifactVerdict({ ...presentProv, ...over })
+        expect(v.verdict, `presence outranks every absence branch, including the ones that used to be first: ${v.why}`).toBe('refused')
+        expect(v.why).not.toContain('is missing')
+      }
+      // The live half, in whichever tree this run is in — asserted both ways so there is no tree
+      // shape in which this leg asserts nothing, and no branch that vacuously passes.
+      const gated = gatedEntry()
+      const live = classifyAbsentArtifact({ repoRoot: REPO_ROOT, rel: gated.rel, label: gated.label })
+      if (live.prov.exists) {
+        expect(live.verdict, `the real tree has ${gated.rel} on disk, so this call is the misuse itself: ${live.why}`).toBe('refused')
+        expect(live.why).toContain('IS on disk')
+        expect(live.why).not.toContain('is missing')
+      } else {
+        // And the guard must not swallow a genuine refusal: with the entry really absent, the
+        // answer comes from the absence branches and must not claim presence.
+        expect(live.why).not.toContain('IS on disk')
+        expect(['refused', 'failed'], `an absent artifact still gets an absence verdict, not a wrong-question refusal: ${live.why}`).toContain(live.verdict)
+      }
     })
 
     /**

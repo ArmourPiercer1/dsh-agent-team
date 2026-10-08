@@ -79,8 +79,22 @@ export function artifactProvenance(a: {
  */
 export function treeShape(a: { repoRoot: string }): string
 
+/**
+ * The verdict for an ABSENT artifact — and only that. The precondition is enforced rather than
+ * documented: `prov.exists === true` returns `refused` naming the wrong question, ahead of every
+ * absence branch, because this function never reads file contents and every sentence it can
+ * otherwise write asserts that the file is missing. Before the guard it answered a healthy tree with
+ * "…is missing while packages/client/dist carries 400 other file(s)" and a `failed` verdict —
+ * measured twice inside an hour at `d6e786c7`, which is the reachability proof — and §7.6 pins the
+ * behaviour in a leg that calls it that way on purpose.
+ */
 export function absentArtifactVerdict(prov: ArtifactProvenance, opts?: { command?: string }): AbsentVerdict
 
+/**
+ * `artifactProvenance` + `treeShape` + `absentArtifactVerdict` in one call, so a caller cannot
+ * produce a verdict without also producing the tree it was reached in. Same wrong-question refusal:
+ * `.prov.exists === true` ⇒ `verdict: 'refused'`.
+ */
 export function classifyAbsentArtifact(a: {
   repoRoot: string
   rel: string

@@ -256,11 +256,32 @@ export function treeShape({ repoRoot }) {
 }
 
 /**
- * The verdict for an ABSENT artifact. `exists` is the caller's problem: if the artifact is
- * there, its contents decide.
+ * The verdict for an ABSENT artifact. The precondition used to be prose ("`exists` is the caller's
+ * problem"), and prose is not a rule: measured at `d6e786c7`, this helper was called twice inside an
+ * hour on a tree where the artifact was PRESENT and it answered `failed` with "…is missing while
+ * packages/client/dist carries 400 other file(s)…" — a false statement about the tree, reported as a
+ * verdict, which is finding F2/F3 with a new author (`review-round-verdicts-at-d6e786c7.txt` keeps
+ * the out-of-contract call in its own header). So the precondition is enforced here instead of
+ * remembered out there, and §7.6 pins it with a leg that calls it on a healthy tree.
  */
 export function absentArtifactVerdict(prov, { command = 'pnpm build' } = {}) {
   const where = prov.outputRoot ?? 'its containing directory'
+  if (prov.exists) {
+    // Wrong question, answered as a refusal rather than a verdict: this helper's whole vocabulary
+    // is about absence, and it cannot read file contents. A caller standing in front of a present
+    // artifact has to judge the artifact, not ask this function what its absence means.
+    return {
+      verdict: 'refused',
+      why:
+        `${prov.label}: ${prov.rel} IS on disk, so there is no absence to classify — you asked the absent-artifact helper ` +
+        `the wrong question. This function never reads the artifact's contents; every sentence it can produce is about a ` +
+        `missing file, and returning one over a present file would state something false about the tree (which is what it ` +
+        `did before this guard existed). Judge the artifact itself, or route the present case elsewhere: ` +
+        `${where} currently holds ${String(prov.outputFileCount)} file(s) and the declared entry ${prov.manifestEntry === null ? 'is not consulted by this helper' : `resolves ${prov.manifestEntry.resolves ? 'on disk' : 'to nothing on disk'}`}. ` +
+        `Tree this leg measured: ${prov.treeShape ?? '(unstated)'}. refused is not passed — a leg that reaches this branch ` +
+        `has a caller bug to fix, and fixing it is not the same act as making the tree green.`,
+    }
+  }
   if (prov.unreadable.length > 0) {
     return {
       verdict: 'failed',
