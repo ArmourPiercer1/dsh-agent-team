@@ -1,0 +1,23 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f2-coldstart-interleave
+
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C0: the premise — two environment readings that differ in fingerprint and agree in status > FACTS_A and FACTS_B produce DIFFERENT fingerprints 1ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C0: the premise — two environment readings that differ in fingerprint and agree in status > and BOTH are status OPEN on their own, so no status check can tell them apart 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C1: two creators, one cold generation, both occupancy reads before either commit > the interleave is real: BOTH creators read the key as ABSENT and BOTH creates committed (F2.1) 1ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C1: two creators, one cold generation, both occupancy reads before either commit > the durable truth is still exactly ONE complete record: the winner's, at generation 1, never absent, never torn 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C1: two creators, one cold generation, both occupancy reads before either commit > every consultation that returns a verdict returns the row's generation (no false generation is ever reported) 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C1: two creators, one cold generation, both occupancy reads before either commit > THE LAW — a verdict carries the fingerprint of the consultation that reports it, never another environment's (F2.2) 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C1: two creators, one cold generation, both occupancy reads before either commit > a consultation whose re-probe left a row of a DIFFERENT environment fails closed (state-mismatch) 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C1: two creators, one cold generation, both occupancy reads before either commit > the refusal is transient: the next consultation of the same environment establishes its own generation 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C1: two creators, one cold generation, both occupancy reads before either commit > each creator stamped the team generation for its own create (two advances, one surviving state row) 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C2: the SAME schedule with IDENTICAL facts — the control that keeps C1 honest > both creators carry one fingerprint, so both consultations agree with the row and neither is refused 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C2: the SAME schedule with IDENTICAL facts — the control that keeps C1 honest > the two candidates are still distinct records and the row is one of them whole (no merge, no tear) 1ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C3: the RAW evaluation entry point cannot carry two fingerprints in one object > every chainOk evaluation reports ONE fingerprint: its own result's and the row's 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C3: the RAW evaluation entry point cannot carry two fingerprints in one object > and the chain that cannot honour that fails closed instead of returning a mixed verdict 0ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C4: the bounded residual — a create overwritten AFTER the loser re-read (CORE_SEAM_BLOCKER) > BOTH creates still commit unreported, and the caller that finished first reports a fingerprint the row no longer carries 0ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  00:43:38
+   Duration  806ms (transform 509ms, setup 0ms, import 709ms, tests 6ms, environment 0ms)
+

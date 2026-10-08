@@ -2097,6 +2097,26 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4COMPATATOMIC: readonly string[] = [
       'packages/runtime/test/a4-compat-atomic-state.test.ts',
     ]
+    // The a4-f2-coldstart-interleave entry (A4-PR7 reviewer-verification lane,
+    // branch `fix/a4-f2-coldstart-interleave`): ONE new scannable file — the spec
+    // that drives TWO independent compatibility authorities through a COLD create
+    // with both occupancy reads interleaved ahead of both commits, at the real
+    // product seam and with the commit timing of the pinned upstream baseline
+    // (commit inside the domain write chain, not at call time). It pins the
+    // consequence: with no compare-and-set available for a create, both first-time
+    // writers commit and neither is told, and a consultation must never report a
+    // fingerprint or status it did not read. The fix is an EDIT to an
+    // already-counted path (`runtime/compatibility/authority.ts`, the
+    // fingerprint-agreement gate after the freshness re-probe) and contributes
+    // nothing — an edit is not an increment. Evidence lives under
+    // `dev/agent-workflow/evidence/a4-pr7/f2-coldstart-interleave/`, outside
+    // `packages/**`. Both endpoints MEASURED on this branch: with this file on disk
+    // and this entry stripped the scanner reads `expected 1042 to be 1041` (capture
+    // `dev/agent-workflow/evidence/a4-pr7/f2-coldstart-interleave/p4t6-inventory-with-new-file.log`);
+    // 1041 is the derived merged-tip total the a4-compat-atomic entry above ends on.
+    const SCANNED_PATHS_A4F2COLDSTART: readonly string[] = [
+      'packages/runtime/test/a4-compat-coldstart-interleave.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2117,7 +2137,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A474FAILCLOSED.length +
         SCANNED_PATHS_A476GAPS.length +
         SCANNED_PATHS_A4CORRUPTLEG.length +
-        SCANNED_PATHS_A4COMPATATOMIC.length,
+        SCANNED_PATHS_A4COMPATATOMIC.length +
+        SCANNED_PATHS_A4F2COLDSTART.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2139,7 +2160,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A474FAILCLOSED.length +
         SCANNED_PATHS_A476GAPS.length +
         SCANNED_PATHS_A4CORRUPTLEG.length +
-        SCANNED_PATHS_A4COMPATATOMIC.length,
+        SCANNED_PATHS_A4COMPATATOMIC.length +
+        SCANNED_PATHS_A4F2COLDSTART.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2186,6 +2208,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A474FAILCLOSED,
       ...SCANNED_PATHS_A476GAPS,
       ...SCANNED_PATHS_A4CORRUPTLEG,
+      ...SCANNED_PATHS_A4COMPATATOMIC,
+      ...SCANNED_PATHS_A4F2COLDSTART,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2349,6 +2373,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (control/service.ts, control/types.ts) are EDITS to already-counted paths and
     // contribute nothing — edits are not increments in either direction.
     expect(SCANNED_PATHS_A4CORRUPTLEG.length).toBe(1040 - 1039)
+    // The a4-f2-coldstart-interleave tie, same form, both endpoints MEASURED: this
+    // lane names one instrument, asserted present by path in the loop above, and
+    // the scanner counts exactly one more file with it on disk (1041 -> 1042).
+    expect(SCANNED_PATHS_A4COMPATATOMIC.length).toBe(1041 - 1040)
+    expect(SCANNED_PATHS_A4F2COLDSTART.length).toBe(1042 - 1041)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

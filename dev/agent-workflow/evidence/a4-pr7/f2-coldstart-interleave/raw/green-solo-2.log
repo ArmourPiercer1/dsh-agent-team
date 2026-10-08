@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f2-coldstart-interleave
+
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts (14 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  00:43:02
+   Duration  786ms (transform 494ms, setup 0ms, import 689ms, tests 6ms, environment 0ms)
+

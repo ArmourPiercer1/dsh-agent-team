@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f2-coldstart-interleave
+
+ ✓ packages/runtime/test/t14h-probe-merge.test.ts (10 tests) 12ms
+ ✓ packages/runtime/test/p8s4a-chain.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/p7t1-inflight-drift.test.ts (14 tests) 8ms
+ ✓ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts (13 tests) 9ms
+ ✓ packages/runtime/test/p7t1-ack-fingerprint.test.ts (16 tests) 11ms
+ ✓ packages/runtime/test/p7t1-probe-generation.test.ts (19 tests) 9ms
+ ✓ packages/runtime/test/p7t1-cold-resume.test.ts (12 tests) 9ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts (14 tests) 10ms
+ ✓ packages/runtime/test/g8s1-generation-stamp.test.ts (5 tests) 6ms
+ ✓ packages/runtime/test/p8s4a-entrypoints.test.ts (11 tests) 7ms
+ ✓ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (42 tests) 13ms
+ ✓ packages/runtime/test/a4-compat-atomic-state.test.ts (19 tests) 14ms
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/team-compatibility-scope.test.ts (13 tests) 5ms
+ ✓ packages/runtime/test/p8s5b-operation-fencing.test.ts (26 tests) 18ms
+
+ Test Files  14 passed (14)
+      Tests  225 passed (225)
+   Start at  00:31:38
+   Duration  2.36s (transform 12.11s, setup 0ms, import 19.64s, tests 138ms, environment 1ms)
+

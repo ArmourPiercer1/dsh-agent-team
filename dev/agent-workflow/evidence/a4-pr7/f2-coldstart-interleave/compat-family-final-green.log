@@ -1,0 +1,64 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f2-coldstart-interleave
+
+ ✓ packages/storage/test/p4t4-adapter.test.ts (12 tests) 7ms
+ ✓ packages/storage/test/p4t2-journal.test.ts (12 tests) 8ms
+ ✓ packages/storage/test/p4-08-independence-negative.test.ts (6 tests) 6ms
+ ✓ packages/storage/test/p4t3-fork-reconciliation.test.ts (12 tests) 5ms
+ ✓ packages/storage/test/p4-03-member-instances.test.ts (9 tests) 8ms
+ ✓ packages/storage/test/p4-05-governance.test.ts (11 tests) 7ms
+ ✓ packages/storage/test/p4t3-binding-service.test.ts (17 tests) 6ms
+ ✓ packages/storage/test/p4-07-durability-crash.test.ts (6 tests) 3ms
+ ✓ packages/storage/test/bp1-blueprint-registry.test.ts (12 tests) 6ms
+ ✓ packages/storage/test/rmr-create-or-open.test.ts (5 tests) 5ms
+ ✓ packages/storage/test/p4-04-session-bindings.test.ts (8 tests) 8ms
+ ✓ packages/storage/test/p4t2-conflicts.test.ts (25 tests) 10ms
+ ✓ packages/storage/test/p4t2-crash-recovery.test.ts (19 tests) 9ms
+ ✓ packages/storage/test/p4-06-journal.test.ts (13 tests) 9ms
+ ✓ packages/storage/test/g8s1-stamp-advance.test.ts (10 tests) 6ms
+ ✓ packages/storage/test/p4-01-schema-meta.test.ts (11 tests) 11ms
+ ✓ packages/storage/test/p4t3-reconciler.test.ts (17 tests) 7ms
+ ✓ packages/storage/test/p4t4-orphan-detect.test.ts (21 tests) 6ms
+ ✓ packages/storage/test/p4t4-per-stage-retry.test.ts (20 tests) 15ms
+ ✓ packages/storage/test/p4t4-one-committed-invariant.test.ts (21 tests) 8ms
+ ✓ packages/storage/test/storage.test.ts (2 tests) 2ms
+ ✓ packages/storage/test/p4-02-team-sessions.test.ts (9 tests) 4ms
+ ✓ packages/storage/test/p8s3-member-cas.test.ts (9 tests) 5ms
+ ✓ packages/runtime/test/p8s4a-chain.test.ts (11 tests) 4ms
+ ✓ packages/runtime/test/p7t1-cold-resume.test.ts (12 tests) 6ms
+ ✓ packages/runtime/test/t14h-probe-merge.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/p7t1-ack-fingerprint.test.ts (16 tests) 8ms
+ ✓ packages/runtime/test/a4-compat-coldstart-interleave.test.ts (14 tests) 10ms
+ ✓ packages/runtime/test/p7t1-inflight-drift.test.ts (14 tests) 8ms
+ ✓ packages/runtime/test/p7t1-probe-generation.test.ts (19 tests) 14ms
+ ✓ packages/runtime/test/requirement-probe-blueprint-scoping.test.ts (13 tests) 4ms
+ ✓ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (42 tests) 10ms
+ ✓ packages/runtime/test/a4-compat-atomic-state.test.ts (19 tests) 10ms
+ ✓ packages/runtime/test/g8s1-generation-stamp.test.ts (5 tests) 4ms
+ ✓ packages/runtime/test/p8s4a-entrypoints.test.ts (11 tests) 4ms
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-compatibility-scope.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/team-compatibility-scope.test.ts (13 tests) 5ms
+ ✓ packages/runtime/test/p8s5b-operation-fencing.test.ts (26 tests) 16ms
+
+ Test Files  37 passed (37)
+      Tests  512 passed (512)
+   Start at  00:43:13
+   Duration  2.34s (transform 20.97s, setup 0ms, import 31.55s, tests 267ms, environment 4ms)
+

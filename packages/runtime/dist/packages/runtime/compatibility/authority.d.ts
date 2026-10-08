@@ -16,7 +16,12 @@
  *      `STALE_GENERATION_BEFORE_NEW_WORK` (DevPlan §20.1 trigger 5, which
  *      also covers the first-ever evaluation); a failed re-probe is a chain
  *      failure (fail-closed: new work is never admitted on an
- *      unverifiable generation);
+ *      unverifiable generation). After that re-probe the chain answers ONLY
+ *      for a row that carries ITS OWN live fingerprint: a row some other
+ *      environment wrote (the cold-create case — a create has no
+ *      compare-and-set to lose, so a concurrent creator can simply land on
+ *      top of this chain's committed row) is a chain failure too, never a
+ *      verdict reported under a fingerprint this chain never read.
  *   4. read the (now fresh) DURABLE state;
  *   5. VALIDATE ACKS: re-derive the engine result against the fresh facts
  *      carrying the durable acknowledgements plus any request-carried
@@ -126,7 +131,12 @@ export declare const REPROBE_REASONS: {
     readonly REPROBE_FAILED: "reprobe-failed";
     /** The re-probe completed but left no durable state (state anomaly). */
     readonly NO_STATE_AFTER_REPROBE: "no-state-after-reprobe";
-    /** The fresh durable state contradicts the engine re-derivation. */
+    /**
+     * The fresh durable state contradicts this chain: either it does not carry
+     * the fingerprint this chain read (its re-probe left a row ANOTHER
+     * environment produced — see the fingerprint-agreement gate in `evaluate`),
+     * or the engine re-derivation against the fresh facts disagrees with it.
+     */
     readonly STATE_MISMATCH: "state-mismatch";
 };
 /** One re-probe failure reason. */
@@ -220,13 +230,20 @@ export interface CompatibilityAuthority {
  * @param options - the injected repositories / blueprint / facts port.
  * @returns the authority. One per call, so NOTHING inside this object is shared
  *   across consultations — cross-instance consistency is therefore not assumed,
- *   it is ESTABLISHED at the seam by two mechanisms: the compatibility state
+ *   it is ESTABLISHED at the seam by three mechanisms: the compatibility state
  *   transition is a generation-checked write whose comparison runs inside the
- *   domain's write chain (`CompatibilityRepository.replaceIfGeneration`), and a
+ *   domain's write chain (`CompatibilityRepository.replaceIfGeneration`); a
  *   consultation whose probe loses that check CONVERGES on the winner's row when
  *   the row already carries the live fingerprint (step 3), and still fails
- *   closed when it does not. Until A4-PR7 `compat-atomic` this paragraph promised
- *   consistency from "the durable store + storage write chain" while the state
+ *   closed when it does not; and — because a COLD transition is a create with no
+ *   compare-and-set to lose (the seam offers none), so two first-time creators
+ *   can both commit and the earlier one's probe SUCCEEDS — step 3 additionally
+ *   requires FINGERPRINT AGREEMENT: a chain that re-probed answers only for the
+ *   row that carries the fingerprint IT read, and fails closed on a row another
+ *   environment wrote. Status equality is not that agreement: two writers holding
+ *   different facts can both reach `OPEN`. Pinned by
+ *   `a4-compat-coldstart-interleave.test.ts`. Until A4-PR7 `compat-atomic` this
+ *   paragraph promised consistency from "the durable store + storage write chain" while the state
  *   replace was an unsynchronized `delete` + `put` — a promise the code did not
  *   keep, which is how a deterministic false refusal survived review.
  */
