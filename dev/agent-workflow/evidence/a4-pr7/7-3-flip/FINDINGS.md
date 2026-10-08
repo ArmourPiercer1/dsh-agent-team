@@ -343,3 +343,15 @@ carried; the list is the deliverable.
 - **`grep -c` on `sha256:[0-9a-f]+` over the whole repo matched lint JSON and
   the DSH home tree**, and looked like evidence. Restricted to `git grep` over
   pathspecs, the census is 5 candidate files and 1 unrelated literal.
+
+---
+
+## Coordinator correction (round 29) — appended, not edited in place
+
+§9 cited `a4p7-carrier-width-under-ceiling.test.ts` as pinning that an **absent** ceiling slot and a **declared-empty** one both answer `CEILING_NO_AUTHORITY` on the expansion plane. A read-only measurement (`7706f066`, evidence in `../7-3-cordis-scope/FINDINGS.md`) checked the citation and it is **too generous**:
+
+- **That test does not pin it.** Every document in it is declared **with rules**; what it pins is a *declared* document's no-match → `no-authority` **at the claimed width**, the never-loosens direction, cell-first ordering, and a hard throw **only because its fixture leaves the approval lane unwired**.
+- **The actual pin is `packages/runtime/test/a4p2-ceiling-reachability.test.ts:103-119`** (`EMPTY × EMPTY` and `ABSENT × ABSENT` legs).
+- **And for the shipped v1 document the accurate statement isn't the algebraic equivalence at all** — `expansionCeiling` was **never consulted**, because the provider short-circuits `schemaVersion 1 | 2` to `undefined` (`permission-plane.ts:972`, identical at the pre-flip base `bcbbfaa9`). "The v1 document consulted no ceiling" is the fact; the absent-arm equivalence was pure algebra for a world that never executed it.
+
+The §9 **conclusion stands unchanged** — the empty hard envelope is the plan-correct shipped value and no widening is authorised — but a conclusion that survives a wrong citation is still a conclusion that was carried by the wrong citation, so the correction is recorded rather than absorbed. See round 29 in `graph.yaml` for the pricing of the declined widening.

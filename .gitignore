@@ -91,3 +91,4 @@ isolate-*.log
 spike-run*.log
 .tmp-resolve-probe.mjs
 agent-sandbox-hotfix-*.sh
+.swt/
