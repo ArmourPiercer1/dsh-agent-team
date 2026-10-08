@@ -78,7 +78,17 @@
  *      which reports the typed problem, and `findApprovalCaseByIdentity`, the
  *      only frozen route from a fingerprint back to a case id) keep answering as
  *      they did. They already cover the reporting half; neither is on the
- *      execution path, which is why the guard was still proceeding.
+ *      execution path, which is why the guard was still proceeding;
+ *  W11 THE IDENTITY MEMBER OF A ROW THAT DISCLOSES TWO. `parseRequestPayload`
+ *      refuses a leg whose explicit `subject` disagrees with its legacy
+ *      `targetInstanceId` — an ambiguous identity fails closed — so a row whose
+ *      TWO identity fields name two instances is not an exotic shape: it is the
+ *      mainstream member of `corruptLegs`. W11 drives ONE such row (with a
+ *      durable DENY under it) at each of the three instances the row can be read
+ *      as addressing: the one its `subject` names, the one its legacy projection
+ *      names, and one neither field names. The first two must refuse; the third
+ *      must proceed. Reading only the first field — which is what the code did —
+ *      ruled the row out for the second and answered `no-request`, i.e. proceed.
  *
  * SELF-CLEANLINESS: inside the P4-T6 whole-tree scanner's scope; no legacy Team
  * SessionEvent denylist token appears.
@@ -645,7 +655,237 @@ const w9 = await (async () => {
   }
 })()
 
+// ---------------------------------------------------------------------------
+// W11 — THE IDENTITY MEMBER OF A CORRUPT ROW DISCLOSES TWO INSTANCES.
+//
+// `parseRequestPayload` refuses a leg whose explicit `subject` disagrees with
+// its legacy `targetInstanceId` (`control/service.ts:712-719`, "an ambiguous
+// identity — fail closed, never a guess"), and a refused row that names a case
+// is filed in `corruptLegs`. So a row whose TWO identity fields name two
+// instances is not an exotic shape: it is the MAIN PATH into the bucket this
+// guard reads. And the guard read exactly ONE of the two fields:
+//
+//     if (payload['subject'] !== undefined) { …compare subject… }
+//     const legacyTarget = payload['targetInstanceId']   // only if subject ABSENT
+//
+// For a call targeting the instance named by `targetInstanceId`, the comparison
+// was made against the OTHER field, returned `false`, and a `false` is the one
+// answer that rules the row out — so the row's recorded constraint vanished for
+// that call exactly as it did before this file existed, and it vanished for the
+// reason the law most rejects: one damaged row was treated as positive evidence
+// that it governs a different call, when the row's own two members contradict
+// each other about which call that is.
+//
+// ONE ROW, THREE CALLS. Each leg below is its own durable world holding the
+// SAME hand-written row plus a durable DENY, and a call that differs only in
+// the instance it targets — so the only variable is which identity field the
+// call agrees with:
+//
+//   W11-a the instance named by `subject`        (agree + disagree  → candidate)
+//   W11-b the instance named by `targetInstanceId` (disagree + agree → candidate)
+//   W11-c an instance NEITHER field names          (disagree + disagree → ruled out)
+//
+// a and b must refuse: a self-contradictory identity member is evidence about
+// NOTHING, and evidence about nothing never rules a durable constraint out.
+// c must proceed: both disclosures positively disagree, which is the one
+// reading that says "this row governs some other call" — the direction that
+// keeps one damaged row from freezing the Team.
+// ---------------------------------------------------------------------------
+
+const W11_TOKEN = 'tok-a4cl-w11'
+/** Instance A: named by the row's explicit `subject`. */
+const W11_SUBJECT_INSTANCE = String(P6T2_SEEDS.worker.instanceId)
+/** Instance B: named by the row's legacy `targetInstanceId` projection. */
+const W11_LEGACY_INSTANCE = String(P6T2_SEEDS.worker2.instanceId)
+/** Instance C: named by neither field. */
+const W11_OTHER_INSTANCE = String(P6T2_SEEDS.scout.instanceId)
+
+/**
+ * THE ROW: one corrupt approval leg that asserts two identities at once.
+ *
+ * The contradiction IS the damage: every other member is what the strict reader
+ * wants, and the row names a case, so it is refused for ambiguity and filed in
+ * `corruptLegs`. It carries no operation fingerprint (the `tools.ts` guard-scope
+ * shape, as in W10), which is why the honest refusal name is the one that says
+ * "the governing leg could not be reconstructed".
+ */
+function w11ContradictoryRow(): Record<string, unknown> {
+  return {
+    requestId: 'req-a4cl-w11',
+    kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+    requester: { kind: 'instance', instanceId: W11_SUBJECT_INSTANCE, role: 'member' },
+    // Assertion 1 of 2: "this leg governs a call on instance A".
+    subject: { kind: 'instance', instanceId: W11_SUBJECT_INSTANCE },
+    // Assertion 2 of 2: "this leg governs a call on instance B". Nothing else
+    // on the row is damaged — this pair alone is what the reader refuses.
+    targetInstanceId: W11_LEGACY_INSTANCE,
+    actionName: 'follow-up',
+    toolName: 'team_follow_up',
+    correlation: W11_TOKEN,
+    executionCoupling: 'guarded',
+    approvalCaseId: CASE_ID,
+    legOrdinal: 1,
+    reviewAuthority: 'leader',
+    requiredAuthorityAtCreation: 'leader',
+    beneficiaryAuthority: 'member',
+    requestedEffect: 'allow',
+  }
+}
+
+/** The durable DENY the human recorded under that leg (a readable row: its OWN
+ *  identity is self-consistent, so the denial survives — only the leg is
+ *  damaged). It is what "the constraint vanished" is measured against. */
+function w11DenyRow(requestSequence: number): Record<string, unknown> {
+  return {
+    requestId: 'req-a4cl-w11',
+    decision: CONTROL_DECISION_VALUES.DENY,
+    decider: { kind: 'instance', instanceId: LEADER_ID, role: 'leader' },
+    requestSequence,
+    scope: {
+      rootSessionId: P6T2_ROOT,
+      subject: { kind: 'instance', instanceId: W11_SUBJECT_INSTANCE },
+      targetInstanceId: W11_SUBJECT_INSTANCE,
+      actionName: 'follow-up',
+      toolName: 'team_follow_up',
+      correlation: W11_TOKEN,
+    },
+  }
+}
+
+/**
+ * One W11 world, driven through the REAL entry point.
+ *
+ * @param basename - the scratch world name.
+ * @param targetInstanceId - the instance the call targets (A, B or C).
+ * @returns the guard-plane decision, the tool-plane result, whether the runtime
+ *   facade was reached, and whether the durable row really is a corrupt leg.
+ */
+async function w11Leg(
+  basename: string,
+  targetInstanceId: string,
+): Promise<{
+  readonly error: string
+  readonly reason: string
+  readonly requestId: string
+  readonly toolStatus: string
+  readonly toolReason: string
+  readonly facadeReached: number
+  readonly consumptions: number
+  readonly caseRead: string
+  readonly problem: string
+}> {
+  const env = await createP6T6World(basename, ['leader', 'worker', 'worker2', 'scout'])
+  try {
+    const performed: string[] = []
+    const runtimeSpy: TeamRuntime = {
+      ...env.runtime,
+      performAction: (request) => {
+        performed.push(String(request.action))
+        return env.runtime.performAction(request)
+      },
+    }
+    const { tools } = createTeamTools({
+      teamRuntime: runtimeSpy,
+      controlService: env.control,
+      messaging: env.messaging,
+      activity: env.activity,
+      resolveCaller: (sessionId: string): Promise<ResolvedTeamToolCaller> => {
+        const caller = env.callerMap.bySession.get(sessionId)
+        if (caller === undefined) {
+          return Promise.reject(new Error(`a4cl-w11: no caller for '${sessionId}'`))
+        }
+        return Promise.resolve({ caller, rootSessionId: P6T2_ROOT })
+      },
+    })
+    const followUp = tools.find((tool) => tool.name === 'team_follow_up')
+    if (followUp === undefined) throw new Error('a4cl-w11: team_follow_up is not registered')
+    const ledger = env.world.domain.repositories.ledger
+    const sequence = await ledger.allocateSequence()
+    await ledger.put({
+      schemaVersion: 2,
+      sequence,
+      rootSessionId: P6T2_ROOT,
+      factType: 'control-request-recorded',
+      payload: w11ContradictoryRow(),
+      createdAt: P6T2_NOW,
+    })
+    await ledger.put({
+      schemaVersion: 2,
+      sequence: await ledger.allocateSequence(),
+      rootSessionId: P6T2_ROOT,
+      factType: 'control-decision-recorded',
+      payload: w11DenyRow(sequence),
+      createdAt: P6T2_NOW,
+    })
+    // The premise, measured in the same world: the strict reader refused the
+    // row and the reporting route files it as a corrupt leg. Without this the
+    // refusal below could be attributed to a readable row instead.
+    const caseRead = await env.control.readApprovalCaseState({
+      rootSessionId: P6T2_ROOT,
+      approvalCaseId: CASE_ID,
+    })
+    const guardScope = {
+      rootSessionId: P6T2_ROOT,
+      targetInstanceId,
+      actionName: 'follow-up',
+      toolName: 'team_follow_up',
+      correlation: W11_TOKEN,
+    } as const
+    // PLANE 1 — the producer's own verdict. `no-request` exists ONLY here; it is
+    // the one reason the tool plane proceeds on, which is the whole hazard this
+    // file exists for.
+    const verdict = await env.control.guardOperation(guardScope)
+    // PLANE 2 — the real tool entry: `executeGuarded` calls the REAL
+    // `consultGuard` with this scope, and on proceed it calls the runtime
+    // facade (the spy below is what "proceeded" MEANS, not a status string).
+    const result = await followUp.execute(
+      {
+        rootSessionId: P6T2_ROOT,
+        targetInstanceId,
+        requestToken: W11_TOKEN,
+        prompt: 'a4cl-w11 prompt',
+        taskSummary: 'a4cl-w11 scenario',
+      },
+      execFor(P6T2_ROOT),
+    )
+    const reasonField = (result as { readonly reason?: unknown }).reason
+    return {
+      error: 'none',
+      reason: verdict.allowed ? 'ALLOWED' : verdict.reason,
+      // The refusal must point at the row the operator has to read — and it may
+      // only ever name an identity the damaged payload actually disclosed.
+      requestId:
+        !verdict.allowed && verdict.requestId !== undefined ? verdict.requestId : 'none',
+      toolStatus: String(result.status),
+      toolReason: typeof reasonField === 'string' ? reasonField : 'none',
+      facadeReached: performed.filter((action) => action === 'follow-up').length,
+      consumptions: (await env.control.listControlState(P6T2_ROOT)).consumptions.length,
+      caseRead: caseRead.kind,
+      problem: caseRead.kind === 'problem' ? caseRead.problem : 'none',
+    }
+  } catch (error: unknown) {
+    return {
+      error: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+      reason: 'threw',
+      requestId: 'threw',
+      toolStatus: 'threw',
+      toolReason: 'threw',
+      facadeReached: 0,
+      consumptions: 0,
+      caseRead: 'threw',
+      problem: 'threw',
+    }
+  } finally {
+    await destroyP6T1World(env.world)
+  }
+}
+
+const w11SubjectTarget = await w11Leg('a4cl-w11-target-subject', W11_SUBJECT_INSTANCE)
+const w11LegacyTarget = await w11Leg('a4cl-w11-target-legacy', W11_LEGACY_INSTANCE)
+const w11OtherTarget = await w11Leg('a4cl-w11-target-other', W11_OTHER_INSTANCE)
+
 describe('A4 corrupt control leg — the guard must never see LESS than the ledger holds', () => {
+
   it('W1: a leg whose authority point is present-but-malformed is refused by name, never as no-request', () => {
     expect(w1.error).toBe('none')
     expect(w1.consult).toEqual({
@@ -773,5 +1013,90 @@ describe('A4 corrupt control leg — the guard must never see LESS than the ledg
     expect(w10.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED)
     expect(w10.facadeReached).toBe(0)
     expect(w10.consumptions).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// W11 — the assertions.
+// ---------------------------------------------------------------------------
+
+/** Everything one W11 leg observed, in ONE object: the producer's verdict, the
+ *  row it named, and what the tool plane actually did with the call. Asserted
+ *  as a unit so a failure shows the whole consequence (vanishing constraint →
+ *  facade reached), not just the first field that moved. */
+function w11Observed(leg: Awaited<ReturnType<typeof w11Leg>>) {
+  return {
+    verdict: leg.reason,
+    namesRow: leg.requestId,
+    toolStatus: leg.toolStatus,
+    facadeReached: leg.facadeReached,
+    allowConsumptions: leg.consumptions,
+  }
+}
+
+describe('W11 a corrupt leg that names TWO instances rules out NEITHER of them', () => {
+  // The premise, shared by all three legs and measured in the world that
+  // answers: the row is a CORRUPT LEG (the reader refused it and the reporting
+  // route files it), and the human's DENY under it is durable and readable. If
+  // any of these were false, the refusals below would be about something
+  // other than the identity contradiction.
+  it('W11-premise: the row is refused by the reader, filed as a corrupt leg, and its DENY survives', () => {
+    expect(w11SubjectTarget.error).toBe('none')
+    expect(w11LegacyTarget.error, 'the same row at instance B').toBe('none')
+    expect(w11OtherTarget.error, 'the same row at instance C').toBe('none')
+    // `found` would mean the STRICT READER accepted the row — then this file
+    // would be testing the readable-row path, not the corrupt-leg guard.
+    expect(w11SubjectTarget.caseRead, 'the ambiguous-identity row must not read as a case').toBe(
+      'problem',
+    )
+    expect(w11SubjectTarget.problem).not.toBe('none')
+  })
+
+  it('W11-a: a call on the instance named by `subject` is refused by name, not ruled out', () => {
+    // Green before the fix and after it: this is the one identity field the old
+    // code read. The leg stays so the fix's two-sidedness is visible — the law
+    // cannot be satisfied by making the row govern NOTHING.
+    expect(w11Observed(w11SubjectTarget), `the tool said: ${w11SubjectTarget.toolReason}`).toEqual(
+      {
+        verdict: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+        namesRow: 'req-a4cl-w11',
+        toolStatus: 'blocked',
+        facadeReached: 0,
+        allowConsumptions: 0,
+      },
+    )
+  })
+
+  it('W11-b: a call on the instance named by the legacy `targetInstanceId` is refused TOO (the counterexample)', () => {
+    // THE REPRODUCTION. On the pre-fix code this call is GREEN-LIT: the only
+    // identity read was `subject` (= A), which disagrees with this call (B),
+    // and a disagreement is the answer that RULES THE ROW OUT — so the producer
+    // answered `no-request`, `consultGuard` mapped that to "proceed", the
+    // runtime facade ran, and the recorded DENY vanished for exactly the other
+    // call its own row names.
+    expect(w11Observed(w11LegacyTarget), `the tool said: ${w11LegacyTarget.toolReason}`).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+      namesRow: 'req-a4cl-w11',
+      toolStatus: 'blocked',
+      facadeReached: 0,
+      allowConsumptions: 0,
+    })
+  })
+
+  it('W11-c: a call on an instance NEITHER field names proceeds (the anti-freeze half)', () => {
+    // Both disclosures DISAGREE, and that is positive evidence the row governs
+    // some OTHER call. A fix that refuses here has not narrowed anything: it
+    // has let one damaged row freeze the Team, which is the failure mode this
+    // guard's own law rules out. This leg is green BEFORE the fix and must be
+    // green after it — it is the leg that proves which direction moved.
+    expect(w11Observed(w11OtherTarget), `the tool said: ${w11OtherTarget.toolReason}`).toEqual({
+      // `no-request` is the producer's honest answer here, and the ONE reason
+      // the tool plane proceeds on: this row is ruled out, nothing else exists.
+      verdict: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
+      namesRow: 'none',
+      toolStatus: 'executed',
+      facadeReached: 1,
+      allowConsumptions: 0,
+    })
   })
 })

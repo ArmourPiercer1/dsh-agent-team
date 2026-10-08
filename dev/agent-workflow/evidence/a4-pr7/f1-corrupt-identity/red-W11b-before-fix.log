@@ -1,0 +1,56 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f1-corrupt-identity
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts (15 tests | 1 failed) 10ms
+     ✓ W1: a leg whose authority point is present-but-malformed is refused by name, never as no-request 2ms
+     ✓ W2: a durable DENY survives the corruption of the leg it refuses (zero side effects) 0ms
+     ✓ W3: an allow over an unreadable point cannot be spent and is not burned 0ms
+     ✓ W4: a leg broken in some OTHER member, with NO authority point to read, is refused by the same name 0ms
+     ✓ W4b: a leg broken elsewhere whose authority point IS readable is refused as undetermined 0ms
+     ✓ W5: the PRODUCER never answers no-request for a leg it could not read, and still does for an empty ledger 0ms
+     ✓ W6: a genuinely un-requested call in a clean Team proceeds, exactly as before 0ms
+     ✓ W7: a corrupt leg at a DIFFERENT scope does not freeze the Team 0ms
+     ✓ W8 (disclosed boundary): a corrupt row that names no case keeps today's no-request 0ms
+     ✓ W9: the reporting routes still name the corrupt leg, and neither one gates execution 0ms
+     ✓ W10: the TOOL-plane claim, named — a corrupt leg plus a durable DENY never reaches the facade 0ms
+     ✓ W11-premise: the row is refused by the reader, filed as a corrupt leg, and its DENY survives 0ms
+     ✓ W11-a: a call on the instance named by `subject` is refused by name, not ruled out 0ms
+     × W11-b: a call on the instance named by the legacy `targetInstanceId` is refused TOO (the counterexample) 5ms
+     ✓ W11-c: a call on an instance NEITHER field names proceeds (the anti-freeze half) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > W11 a corrupt leg that names TWO instances rules out NEITHER of them > W11-b: a call on the instance named by the legacy `targetInstanceId` is refused TOO (the counterexample)
+AssertionError: the tool said: none: expected { verdict: 'no-request', …(4) } to deeply equal { …(5) }
+
+- Expected
++ Received
+
+  {
+    "allowConsumptions": 0,
+-   "facadeReached": 0,
+-   "namesRow": "req-a4cl-w11",
+-   "toolStatus": "blocked",
+-   "verdict": "authority-undetermined",
++   "facadeReached": 1,
++   "namesRow": "none",
++   "toolStatus": "executed",
++   "verdict": "no-request",
+  }
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:1077:90
+    1075|     // runtime facade ran, and the recorded DENY vanished for exactly …
+    1076|     // call its own row names.
+    1077|     expect(w11Observed(w11LegacyTarget), `the tool said: ${w11LegacyTa…
+       |                                                                                          ^
+    1078|       verdict: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+    1079|       namesRow: 'req-a4cl-w11',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 passed (15)
+   Start at  00:24:25
+   Duration  1.38s (transform 873ms, setup 0ms, import 1.27s, tests 10ms, environment 0ms)
+

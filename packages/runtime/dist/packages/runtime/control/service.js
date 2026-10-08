@@ -809,6 +809,25 @@ function isActionCaller(caller) {
  * what cannot be recomputed, which is why this compares members instead of
  * hashing them.
  *
+ * ONE MEMBER, TWO DISCLOSURES — and a contradiction is the third cell, not a
+ * verdict. The identity member is the only member a row can state twice: the
+ * explicit `subject` and the legacy `targetInstanceId` projection. It AGREES
+ * only when EVERY disclosure agrees, DISAGREES only when EVERY disclosure
+ * disagrees, and says NOTHING when the disclosures contradict each other. That
+ * third cell is the mainstream shape of this bucket, not an exotic one:
+ * `parseRequestPayload` refuses a row whose explicit subject disagrees with its
+ * legacy projection ("an ambiguous identity — fail closed, never a guess"), and
+ * a refused row naming a case is exactly what lands here. So when one durable
+ * row asserts two contradictory identities, NEITHER assertion may be read as
+ * "this row does not govern this call": the row claims the call at A as loudly
+ * as the call at B, and the disagreement is the damage, not evidence about a
+ * different call. Reading one field and treating the other as absent disqualified
+ * the row for exactly the calls it also claimed — a stored DENY vanished,
+ * `no-request` answered, and the tool plane proceeded (W11-b). What keeps a Team
+ * from freezing stays the SAME rule: a member that positively DISAGREES — every
+ * disclosure of it disagreeing — is what rules a leg out, and an instance no
+ * disclosure names is genuinely ungoverned by it (W11-c).
+ *
  * @param payload - the raw payload of one `corruptLegs` entry (never defaulted).
  * @param scope - the validated guard scope of the call.
  * @param subjectIdentity - the canonical subject identity the call resolved to.
@@ -826,17 +845,58 @@ function corruptLegCouldGovern(payload, scope, subjectIdentity) {
         return raw === expected;
     };
     const subjectAgrees = () => {
+        // THE IDENTITY MEMBER, which ONE row may state more than once. A row
+        // discloses the call it governs through `subject` and/or the legacy
+        // `targetInstanceId` projection, so collect EVERY identity it discloses and
+        // read them together:
+        //
+        // - every disclosure AGREES  -> the member agrees;
+        // - every disclosure DISAGREES -> the member disagrees: that is the positive
+        //   evidence that this row governs some OTHER call, and the only thing that
+        //   ever rules a corrupt row out (see above: without it one damaged row
+        //   freezes the Team);
+        // - the disclosures CONTRADICT each other -> the member says NOTHING.
+        //
+        // The third cell is not a corner: `parseRequestPayload` REFUSES a row whose
+        // explicit subject disagrees with its legacy projection (its own words: "an
+        // ambiguous identity — fail closed, never a guess"), and a refused row that
+        // names a case is filed in `corruptLegs`. A self-contradictory identity
+        // member is therefore the MAIN PATH into the bucket this function reads, and
+        // it is evidence about nothing: the row asserts just as strongly that it
+        // governs the call at A as the call at B, so neither assertion can be read
+        // as "not THIS call". Reading only one of the two fields manufactured an
+        // alibi out of the damage itself — the guard found the row disqualified for
+        // exactly the calls the row also claimed to govern, answered `no-request`,
+        // and the tool plane read that as a green light (W11-b,
+        // `packages/tools/test/a4-corrupt-leg-guard.test.ts`).
+        const disclosures = [];
         if (payload['subject'] !== undefined) {
             const parsed = parseSubject(payload['subject']);
-            return parsed === undefined ? undefined : subjectIdentityOf(parsed) === subjectIdentity;
+            // Present-and-unreadable discloses no identity: it can neither agree nor
+            // disagree, so it enters the set as `undefined` rather than being skipped.
+            disclosures.push(parsed === undefined ? undefined : subjectIdentityOf(parsed));
         }
-        // The legacy projection `parseSubject`-derived rows carry: a present
-        // `targetInstanceId` IS the instance subject, read the same way here.
+        // The legacy projection a well-formed row carries alongside `subject`: a
+        // present `targetInstanceId` IS an instance subject. It is read HERE TOO —
+        // never INSTEAD OF `subject`, which is exactly what disqualified the row.
         const legacyTarget = payload['targetInstanceId'];
-        if (typeof legacyTarget !== 'string')
+        if (legacyTarget !== undefined) {
+            disclosures.push(typeof legacyTarget === 'string' && legacyTarget.length > 0
+                ? subjectIdentityOf({
+                    kind: CONTROL_SUBJECT_KINDS.INSTANCE,
+                    instanceId: legacyTarget,
+                })
+                : undefined);
+        }
+        if (disclosures.length === 0)
             return undefined;
-        return (subjectIdentityOf({ kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: legacyTarget }) ===
-            subjectIdentity);
+        const agreed = disclosures.filter((id) => id !== undefined && id === subjectIdentity).length;
+        if (agreed === disclosures.length)
+            return true;
+        return disclosures.filter((id) => id !== undefined && id !== subjectIdentity).length ===
+            disclosures.length
+            ? false
+            : undefined;
     };
     const verdicts = [
         subjectAgrees(),

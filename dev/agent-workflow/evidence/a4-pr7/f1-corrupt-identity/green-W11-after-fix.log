@@ -1,0 +1,24 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f1-corrupt-identity
+
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W1: a leg whose authority point is present-but-malformed is refused by name, never as no-request 1ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W2: a durable DENY survives the corruption of the leg it refuses (zero side effects) 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W3: an allow over an unreadable point cannot be spent and is not burned 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W4: a leg broken in some OTHER member, with NO authority point to read, is refused by the same name 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W4b: a leg broken elsewhere whose authority point IS readable is refused as undetermined 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W5: the PRODUCER never answers no-request for a leg it could not read, and still does for an empty ledger 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W6: a genuinely un-requested call in a clean Team proceeds, exactly as before 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W7: a corrupt leg at a DIFFERENT scope does not freeze the Team 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W8 (disclosed boundary): a corrupt row that names no case keeps today's no-request 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W9: the reporting routes still name the corrupt leg, and neither one gates execution 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W10: the TOOL-plane claim, named — a corrupt leg plus a durable DENY never reaches the facade 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > W11 a corrupt leg that names TWO instances rules out NEITHER of them > W11-premise: the row is refused by the reader, filed as a corrupt leg, and its DENY survives 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > W11 a corrupt leg that names TWO instances rules out NEITHER of them > W11-a: a call on the instance named by `subject` is refused by name, not ruled out 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > W11 a corrupt leg that names TWO instances rules out NEITHER of them > W11-b: a call on the instance named by the legacy `targetInstanceId` is refused TOO (the counterexample) 0ms
+ ✓ packages/tools/test/a4-corrupt-leg-guard.test.ts > W11 a corrupt leg that names TWO instances rules out NEITHER of them > W11-c: a call on an instance NEITHER field names proceeds (the anti-freeze half) 0ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  00:35:16
+   Duration  1.28s (transform 829ms, setup 0ms, import 1.18s, tests 5ms, environment 0ms)
+
