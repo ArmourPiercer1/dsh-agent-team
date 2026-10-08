@@ -1,0 +1,11 @@
+$ node scripts/check-artifacts-at-head.mjs
+[check-artifacts-at-head] installing the scratch from store recorded in node_modules/.modules.yaml: /home/user/dsh-plugins/dsh-agent-team/.pnpm-store
+[check-artifacts-at-head] materialised HEAD in a scratch worktree and is building it there
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=stale compared=1508 drift=3 sites=3
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/runtime/compatibility/probe.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/compatibility/probe.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/compatibility/probe.js.map
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=stale compared=1508 drift=3
+[check-artifacts-at-head] HEAD does NOT carry its own build — the 3 listed path(s) (relayed above on stderr) are what a build of this commit changes and this commit did not include.
+[ELIFECYCLE] Command failed with exit code 1.

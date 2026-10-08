@@ -67,6 +67,131 @@ export class CompatibilityRepository extends BaseRepository {
   }
 
   /**
+   * Atomically REPLACE one compatibility state, CONDITIONED on the generation
+   * the caller read (A4-PR7 `compat-atomic`; the owner ruling on the
+   * p6t1-flake escalation).
+   *
+   * THE LAW — what this guarantees, and what it does not:
+   *
+   * - **One state transition, one durable write, no absent window.** The row
+   *   goes from the record the caller read to the record the caller writes.
+   *   This method never deletes, so the `delete`-then-`put` sequence has no
+   *   moment at which the row is observable as ABSENT — neither by another
+   *   consultation, nor by a crash landing between the two writes (a crashed
+   *   write leaves the PREVIOUS row on disk: the seam writes tmp, renames, and
+   *   does not advance memory when the write dies).
+   * - **The generation check runs inside the write-chain slot.** The
+   *   comparison against `expectedGeneration` happens in the `fn` of the
+   *   seam's atomic `update` (`KvTable.update`: "atomic read-modify-write on
+   *   the domain's write chain: `fn` sees the value current at its queue
+   *   slot"), the same established pattern as
+   *   `TeamSessionsRepository.advanceGeneration`. Two writers conditioned on
+   *   the same generation therefore CANNOT both commit: the loser's `fn`
+   *   throws before any write, so the loser is REPORTED
+   *   (`RECORD_DUPLICATE`, problem `stale-generation-compatibility-state`,
+   *   both generations and both fingerprints in `details`) and the winner's
+   *   row survives untouched. A lost race is detectable, never silently
+   *   destructive.
+   * - **The cold transition is a create, not a compare-and-set.** A caller
+   *   that read NO row passes `expectedGeneration: 0`; the transition is the
+   *   single durable write of `put`, whose occupied-key rule reports a
+   *   concurrent creator as `RECORD_DUPLICATE` (problem
+   *   `duplicate-compatibility-state`). DISCLOSED RESIDUAL, stated exactly:
+   *   that occupied-key check reads the row OUTSIDE the write-chain slot, and
+   *   the public seam offers no conditional create (`update` rejects a missing
+   *   key with `missing-key`), so a create whose gate read lands BEFORE a
+   *   concurrent create's write is not detectable at this seam. Its outcome is
+   *   bounded: two cold candidates carry the same generation and the same
+   *   fingerprint (both probed the same live facts) and differ only in
+   *   `computedAt`, so the surviving row is always ONE probe's complete,
+   *   well-formed record — never absent, never torn, never a state no probe
+   *   computed — and every reader, including the loser's own consultation,
+   *   re-reads the row, so no reader can observe bytes no writer committed.
+   *   Closing that last window needs a conditional create in the seam, i.e. an
+   *   upstream (`CORE_SEAM_BLOCKER`) change: out of this lane's budget, named
+   *   rather than hidden.
+   *
+   * `put`'s documented semantics are NOT changed: "identical bytes are a
+   * no-op, different bytes are `RECORD_DUPLICATE`" still holds for `put` and
+   * for its other users. This method adds a conditioned transition beside it.
+   *
+   * @param state - the unknown input, parsed via `parseCompatibilityState`.
+   * @param expectedGeneration - the generation the caller read; `0` means the
+   *   caller read no row at all (the cold transition is a create).
+   * @returns the frozen record as stored after this transition.
+   * @throws `RECORD_DUPLICATE` when the row moved on (problem
+   *   `stale-generation-compatibility-state`) or was occupied by another
+   *   creator (problem `duplicate-compatibility-state`); `RECORD_INVALID` for
+   *   a malformed input, a malformed stored candidate, or a non-integer
+   *   expected generation; a warm transition whose row is no longer there
+   *   rejects as `SEAM_FAILURE` with `details.seamCode` = `missing-key`, the
+   *   public read-modify-write contract of the seam — the same identity
+   *   `teamSessions.advanceGeneration` rejects with over a missing team row
+   *   (`g8s1-stamp-advance.test.ts`), and this repository adds nothing to it.
+   */
+  async replaceIfGeneration(
+    state: unknown,
+    expectedGeneration: number,
+  ): Promise<CompatibilityStateRecord> {
+    let record: CompatibilityStateRecord
+    try {
+      record = parseCompatibilityState(state)
+    } catch (error) {
+      throw normalizeValidationError(error, this.storeName)
+    }
+    if (!Number.isInteger(expectedGeneration) || expectedGeneration < 0) {
+      throw teamDomainError(
+        'RECORD_INVALID',
+        `replaceIfGeneration expects a non-negative integer expectedGeneration, got ${JSON.stringify(expectedGeneration)}`,
+        { store: this.storeName, key: String(record.rootSessionId), problem: 'invalid-expected-generation' },
+      )
+    }
+    const key = String(record.rootSessionId)
+    if (expectedGeneration === 0) {
+      // The cold transition: one durable create; an occupied key is the typed
+      // report of a concurrent creator (see the disclosed residual above).
+      return this.put(record)
+    }
+    const next = serializeCompatibilityState(record)
+    const stored = await this.updateRaw(key, (current) => {
+      if (typeof current !== 'string') {
+        throw teamDomainError(
+          'RECORD_INVALID',
+          `row '${key}' of store '${this.storeName}' is not a string (TeamDomain rows are canonical JSON strings)`,
+          { store: this.storeName, key, problem: 'row-not-a-string' },
+        )
+      }
+      let existing: CompatibilityStateRecord
+      try {
+        existing = deserializeCompatibilityState(current)
+      } catch (error) {
+        throw normalizeValidationError(error, this.storeName, key)
+      }
+      if (existing.generation !== expectedGeneration) {
+        throw teamDomainError(
+          'RECORD_DUPLICATE',
+          `a compatibility state for root session '${record.rootSessionId}' moved from generation ${expectedGeneration} to ${existing.generation}`,
+          {
+            store: this.storeName,
+            key,
+            problem: 'stale-generation-compatibility-state',
+            expectedGeneration,
+            observedGeneration: existing.generation,
+            expectedFingerprint: record.fingerprint,
+            observedFingerprint: existing.fingerprint,
+          },
+        )
+      }
+      return next
+    })
+    try {
+      return deserializeCompatibilityState(String(stored))
+    } catch (error) {
+      throw normalizeValidationError(error, this.storeName, key)
+    }
+  }
+
+  /**
    * Read one compatibility state by root session id.
    * @returns the frozen record, or `undefined` when absent.
    * @throws `RECORD_INVALID` (contracts code preserved) for a malformed

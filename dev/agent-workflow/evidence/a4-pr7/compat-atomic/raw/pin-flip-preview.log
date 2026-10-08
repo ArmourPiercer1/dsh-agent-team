@@ -1,0 +1,106 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-compat-atomic-state
+
+ ❯ packages/runtime/test/p6t2-actions.test.ts (30 tests | 1 failed) 8ms
+     ✓ follow-up on a SETTLED worker resumes it to RUNNING (commit port, durable fact team-work-admitted) 1ms
+     ✓ a second follow-up on the RUNNING worker admits work WITHOUT re-transitioning 0ms
+     ✓ follow-up on a CREATED scout resumes it to RUNNING (commit port) 0ms
+     ✓ list-members (by a member caller) lists every instance by instanceId 0ms
+     ✓ list-templates lists leader + member templates with display names + context policies 0ms
+     ✓ inspect-config resolves the effective policy: every closed capability appears once (F.4: minus the generic `permissions` cell) 1ms
+     ✓ report-progress (self) records a coordination fact with the closed progress value 0ms
+     ✓ send-message records a coordination fact addressed BY INSTANCE ID 0ms
+     ✓ resolve-control records a coordination fact with the closed decision value 0ms
+     ✓ request-control (self, scout) records a coordination fact 0ms
+     ✓ delegate is blocked after the inline re-probe (source requirement-gate), probe writes only 0ms
+     ✓ follow-up is blocked by the FRESH durable state, zero writes 0ms
+     ✓ reads stay open while NEW WORK is blocked 0ms
+     × the stale synthetic BLOCKED_FATAL row is replaced by an inline re-probe under the current (OPEN) facts 4ms
+     ✓ reads stay open 0ms
+     ✓ archive: SETTLED -> ARCHIVED (commit port called once, durable record re-put, fact recorded) 0ms
+     ✓ restore: ARCHIVED -> SETTLED (no agent resume — the router never touches the child session) 0ms
+     ✓ archive of a RUNNING member is rejected (SETTLE-then-ARCHIVE is the only path), zero writes, port never called 0ms
+     ✓ the leader dispose is out of envelope (the P6-T2 teamEnvelope lacks dispose-member), zero writes 0ms
+     ✓ the human dispose executes: SETTLED -> DISPOSED 0ms
+     ✓ follow-up on a DISPOSED member is rejected (terminal), probe writes only 0ms
+     ✓ archiving a DISPOSED member is rejected (terminal lifecycle), zero writes 0ms
+     ✓ a lifecycle action with no commit port fails closed (LIFECYCLE_COMMIT_UNAVAILABLE), zero writes 0ms
+     ✓ delegate by instanceId CONTINUES the existing instance (same child session, no new instance, no child factory call) 0ms
+     ✓ delegate by templateId CREATES a fresh instance (fresh_per_delegation: new instance + new child session + child factory call) 0ms
+     ✓ delegate to a nonexistent instanceId is rejected (DELEGATION_TARGET_UNRESOLVED), zero writes 0ms
+     ✓ a human create-member activates a new member through the provider 0ms
+     ✓ a leader create-member activates at the exact team limit (seeded 2 + 2 created = 4 = team maxInstances) 0ms
+     ✓ a member create-member is a closed-role-set denial, zero writes 0ms
+     ✓ a same-token replay converges: member-activated + replayed, same instance, zero writes 0ms
+ ❯ packages/runtime/test/p8s5b-operation-fencing.test.ts (26 tests | 1 failed) 15ms
+     ✓ the follow-up ALWAYS executes (both orders leave the worker work-accepting) 1ms
+     ✓ exactly ONE archive branch holds, and the final state matches that branch 0ms
+     ✓ exactly ONE work fact, no zombie work, no double settlement 0ms
+     ✓ the dispose ALWAYS executes and the worker ends DISPOSED (terminal) 0ms
+     ✓ exactly ONE follow-up branch holds (settled work, or rejected at the fresh view) 0ms
+     ✓ the restore ALWAYS executes and the worker ends SETTLED (never RUNNING via Restore) 0ms
+     ✓ exactly ONE follow-up branch holds (admitted from SETTLED, or rejected from ARCHIVED) 0ms
+     ✓ exactly TWO creations execute and exactly ONE is quota-rejected 0ms
+     ✓ the durable member set is EXACTLY at the quota (no oversubscription) 0ms
+     ✓ every consultation outcome stays in the safe set (never admit under FATAL drift) 2ms
+     × at least one NO_STATE_AFTER_REPROBE fail-closed across the (stagger, facts-delay) grid 3ms
+     ✓ two independent consultation sites interleave (both probe in some grid cell; at most one probe each) 2ms
+     ✓ the durable row stays well-formed after every grid cell (present, drift-bound) 1ms
+     ✓ ZERO NO_STATE_AFTER_REPROBE across the entire (stagger, facts-delay) grid 1ms
+     ✓ exactly one re-probe per iteration (the second consultation sees the fresh row) 1ms
+     ✓ deterministic generation: exactly one advance (final = initial + 1) every grid cell 1ms
+     ✓ both outcomes are fail-closed blocks (the FATAL environment is never admitted) 1ms
+     ✓ the first concurrent admit wins; the second is a deterministic generation conflict 0ms
+     ✓ the slot ends with exactly ONE generation-2 record (no lost update) 0ms
+     ✓ both admits pass the stale guard and BOTH are "admitted" at generation 2 0ms
+     ✓ the slot carries TWO same-generation records (one mutation is shadowed) 0ms
+     ✓ the step-0 baseline is the template deny with zero contributions 0ms
+     ✓ the concurrent mutation is recorded at the future boundary (effective from step 1) 0ms
+     ✓ the in-flight step-0 capture is UNCHANGED by the concurrent mutation (frozen value) 0ms
+     ✓ the step-1 capture resolves the model cell to the member overlay 0ms
+     ✓ release() settles the in-flight work (idempotent; the count returns to zero) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t2-actions.test.ts > P6-T2 D3: a STALE durable compatibility state is re-probed, never trusted (P8-S4A) > the stale synthetic BLOCKED_FATAL row is replaced by an inline re-probe under the current (OPEN) facts
+AssertionError: expected [ 'compatibility', …(2) ] to deeply equal [ 'compatibility', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "compatibility",
+-   "compatibility",
+    "team_sessions",
++   "ledger",
+  ]
+
+ ❯ packages/runtime/test/p6t2-actions.test.ts:1108:37
+    1106|     // Re-probe over an EXISTING stale row = delete + put + advance
+    1107|     // (3 writes: two compatibility, one team_sessions stamp).
+    1108|     expect(d3.followUp.firstTables).toEqual(['compatibility', 'compati…
+       |                                     ^
+    1109|     expect(d3.rowAfter.status).toBe('OPEN')
+    1110|     expect(d3.rowAfter.generation).toBe(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/p8s5b-operation-fencing.test.ts > P8-S5B R5a: drift || new work WITHOUT the coordinator (the window is real) > at least one NO_STATE_AFTER_REPROBE fail-closed across the (stagger, facts-delay) grid
+AssertionError: expected 0 to be greater than 0
+ ❯ packages/runtime/test/p8s5b-operation-fencing.test.ts:1013:18
+    1011|       }
+    1012|     }
+    1013|     expect(hits).toBeGreaterThan(0)
+       |                  ^
+    1014|   })
+    1015|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 54 passed (56)
+   Start at  21:19:40
+   Duration  1.47s (transform 1.15s, setup 0ms, import 2.17s, tests 23ms, environment 0ms)
+

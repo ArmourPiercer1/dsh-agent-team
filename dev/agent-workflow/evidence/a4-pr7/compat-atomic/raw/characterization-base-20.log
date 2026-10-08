@@ -1,0 +1,11 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-compat-atomic-state
+
+ ✓ packages/runtime/test/a4-compat-atomic-state.test.ts (12 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  20:53:49
+   Duration  970ms (transform 583ms, setup 0ms, import 866ms, tests 6ms, environment 0ms)
+

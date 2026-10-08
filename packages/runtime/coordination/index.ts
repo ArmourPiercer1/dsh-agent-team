@@ -7,13 +7,25 @@
  * the activity ledger's guarded commit, the P7-T3 lifecycle service) plus
  * the prober's own serialization. Each map is sound WITHIN its module, but
  * team-mutating operations that cross module boundaries can still interleave
- * (the R5 race window: two concurrent new-work consultations each re-probe
- * inline, and one consultation's post-probe re-read can land inside the
- * other probe's non-atomic replaceState delete→put gap, producing a
- * spurious NO_STATE_AFTER_REPROBE fail-closed). The fix is ONE shared
- * chain per team: every team-MUTATING operation the production root wires
- * serializes through this single map, so cross-module interleavings within
- * one team are impossible by construction.
+ * (the R5 race window: two concurrent new-work consultations each re-probed
+ * inline, and one consultation's post-probe re-read could land inside the
+ * other probe's then-non-atomic `replaceState` delete→put gap, producing a
+ * spurious NO_STATE_AFTER_REPROBE fail-closed). That specific window is CLOSED
+ * where it lived — at the seam — by A4-PR7 `compat-atomic`: one state
+ * transition is now ONE generation-checked write, no probe deletes any more, and
+ * a consultation whose probe loses the check converges on the winner's row
+ * instead of refusing. R5a of `p8s5b-operation-fencing.test.ts` pins both halves
+ * (the grid cell that used to reach NO_STATE_AFTER_REPROBE cannot any more, and a
+ * losing consultation is refused nothing — it converges).
+ *
+ * THIS MODULE IS STILL REQUIRED, and not by that window: cross-module
+ * interleaving of team-mutating operations is a SCHEDULING property. A
+ * storage-level compare-and-set makes such interleavings DETECTABLE and
+ * CONVERGIBLE; it does not remove them, and it cannot order writes that belong
+ * to different stores. The fix for that remains ONE shared chain per team: every
+ * team-MUTATING operation the production root wires serializes through this
+ * single map, so cross-module interleavings within one team are impossible by
+ * construction.
  *
  * Shape — the P6-T1 promise-chain pattern (reused, not re-invented):
  * one promise chain per root session id; `run` appends `work` behind the
