@@ -85,12 +85,20 @@ pnpm build:composition  # ① 放置 runtime glue ② 生成 packages/client/com
 等价写法：`pnpm install` 之后一条 `pnpm setup`（= `pnpm build && pnpm
 build:composition`）。
 
-> **产物提交纪律**：`build:composition` 第 ③ 步是安装面产物新鲜度闸
-> （`scripts/check-artifacts-committed.mjs`，亦即 `pnpm check:artifacts`）——
-> 提交的预构建产物（`packages/runtime/dist/` + `packages/client/composition-shim/`）
-> 必须与全新构建逐字节一致，否则构建失败。**任何影响安装面产物的源码变更，
-> 必须与重建后的产物同 commit 提交**（本仓 quick-install 直接安装提交产物、
-> 不在安装时构建，见 §2）。
+> **产物提交纪律（两个脚本，各自只证明它能证明的那一半）**：
+> - `pnpm check:artifacts`（`scripts/check-artifacts-committed.mjs`）比较的是**工作树 vs git 暂存区**，
+>   它**不构建** —— 所以它只能说"树里的产物与你暂存的东西一致"，**不能说某个 commit 自带它的构建**。
+>   把它的成功语读成新鲜度证明，曾经是本仓安装面漂移（#161）得以合入的原因。
+> - `pnpm check:artifacts:head`（`scripts/check-artifacts-at-head.mjs`）才是新鲜度闸：它把 **HEAD 物化到一个
+>   一次性 scratch worktree** 里在那儿重新构建再逐字节比较，因此**不受你工作树脏污影响**，也**不会把 scratch
+>   写进工作树**（scratch 路径 `<checkout>/.scratch/artifact-at-head/<pid>-<stamp>`，由**受跟踪**的
+>   `.gitignore` 与 `eslint.config.mjs` 的 `**/.scratch/**` 双重免疫，两处规则互相引用）。
+> - 两者都打印机器可读裁决行 `DSH-ARTIFACT-VERDICT script=… subject=… verdict=ok|stale|refused|not-run …`。
+>   **缺 token = `refused`**，`not-run` **永不**算通过；门（`packages/testkit/test/a4p7-merge-gate.test.ts`）读的是
+>   token，不是脚本的成功语——**断言不该是"脚本描述自己"那句话的子串**。
+> - 纪律本身不变：**任何影响安装面产物的源码变更，必须与重建后的产物同 commit 提交**
+>   （`pnpm build && pnpm build:composition`，本仓 quick-install 直接安装提交产物、不在安装时构建，见 §2）；
+>   变的只是**由谁来验**：合入前请跑 `pnpm check:artifacts:head`。
 
 `build:composition` 两步（均为仓库内 canonical 脚本）：
 
