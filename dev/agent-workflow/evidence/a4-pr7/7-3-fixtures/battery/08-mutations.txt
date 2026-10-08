@@ -1,0 +1,52 @@
+# 08 mutation table, with the green baseline re-established after each restore
+Restore verification rule used throughout: compare sha256 of the restored file to the sha256
+taken BEFORE the mutation, and confirm the mutated line by grep. Never an exit code.
+fixtures.ts sha256 in all three restores: ea60c04d913af674da8bbb27d9179780585f0b179d53ffe435d08716235076a1
+wrapper     sha256 before/after restore: identical (RESTORE VERIFIED)
+
+## (a) delete one 'metadata: {}' from NEG_QUOTA_NOT_POSITIVE (a PROMOTED fixture)
+  census flags it:
+    multiset  exit 1  LOST {'metadata: {}}': 1}
+    R1-R6     exit 1  removal that is not a version element: ['metadata: {}']
+  does any test notice?  six consumers of that fixture, 132 legs:
+  -> NO test noticed. The single failure is the base debt 'projects absent optional singles
+     as explicit null', present at base with the identical assertion.
+  This is the family the census exists for: validate.ts defaults metadata with ?? {}, so the
+  frozen blueprint, the type and the contentHash are all byte-identical without it.
+
+## (b) revert the minimal factory digit 3 -> 1, leaving the authority documents in place
+  31 legs red AND 5 importer files registered ZERO legs:
+    t2-blueprint-catalog (15), t2-blueprint-revision (8), a4p7-v3-cutover-acceptance (70),
+    bp1-blueprint-authority (29), t6-9-negative-matrix (12)  = 134 legs
+  236 registered + 134 never-run = 370 = the base total. The arithmetic is the check.
+  Why: a v1 document carrying teamHardEnvelope is an unknown-field refusal
+  (BLUEPRINT_TOP_LEVEL_FIELDS does not contain it at v1), so MINIMAL_BLUEPRINT_SOURCE throws
+  at MODULE SCOPE and the file cannot even be collected.
+  Named reds (first 14):
+    legacy blueprint parses with no capabilities at all
+    accepts the minimal valid document and extracts the identity
+    normalizes BOM + CRLF exactly like the strong parser (same identity)
+    the strong parser is UNTOUCHED: a document both accept is byte-identical in id
+    changes across revisions of the same id / changes across ids with identical content
+    projects absent optional singles as explicit null
+    the snapshot ref is deep-frozen and mutation throws / the catalog object and its id list
+    are frozen / catalog-listed revisions are frozen arrays
+    parses the minimal closed document at the version this build declares
+    derives a sha256-prefixed 64-hex content hash
+    normalizes BOM + CRLF sources to the same content hash
+    returns the raw frontmatter text and an empty body
+  Also proves the promoted digit and its pair are ONE load-bearing unit: reverting the digit
+  alone, not the pair, is enough to make the document unparseable.
+
+## (c) re-add the removed fixtures.ts DEFERRALS row (added check, not requested)
+  wrapper exit 1 on the leg named
+    x every deferred path is still dirty (a migrated path must leave the list)
+    AssertionError: expected [ Array(1) ] to deeply equal []
+  => the row's deletion is a CHECKED deletion. If anyone restores it, the wrapper says which
+     row by name; it cannot rot back in quietly.
+
+## GREEN BASELINE AFTER ALL MUTATIONS (final battery, committed tree)
+  importers  TOTALROWS 370 {"passed":369,"failed":1}
+  fence      dirty(6 files, 17 sites) unknown(0,0) advisory(8,10) refused(52,115) prose(5,5) adjudicated(16,24)
+  wrapper/p4t6/classifier/twins  145 passed (145), exit 0
+  typecheck serial exit 0 / 0 x error TS; --no-bail exit 0 / 0 x error TS

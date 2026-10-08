@@ -1,0 +1,11 @@
+# 04 p4t6-session-event-scan (10 legs, derived total 1031 = 983 + sum SCANNED_PATHS_*)
+BASE : 
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+AFTER: 
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+NOT extended by derivation, and the reason: the scanner universe is packages/** (the suite's
+own comments state dev/agent-workflow is outside it). This change adds files ONLY under
+dev/agent-workflow/evidence/a4-pr7/7-3-fixtures/**, so no scanned file was added or removed,
+so the derived total is unmoved. Verified by running the suite, not by reasoning.

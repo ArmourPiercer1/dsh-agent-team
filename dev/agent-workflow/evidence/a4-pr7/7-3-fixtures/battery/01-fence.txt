@@ -1,0 +1,52 @@
+# 01 fence, run A and run B on the committed tree, then cmp
+$ node scripts/verify-blueprint-version-clean.mjs  (x2, exit 1 both)
+OFFENDING cordis.patch.yml :: L60=v1
+OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: L118=v1, L248=v1, L275=v1, L380=v2, L398=v1, L416=v1, L458=v1, L460=v1, L462=v1
+OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: L118=v1, L491=v1, L843=v1, L1128=v1
+OFFENDING packages/runtime/test/t12a-live-bridge.mjs :: L1347=v1
+OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
+OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
+RESULT dirty(6 files, 17 sites)
+RESULT unknown(0 files, 0 sites)
+RESULT advisory(8 files, 10 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT adjudicated(16 files, 24 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+
+$ cmp final-fence-A final-fence-B -> byte-identical; both sha256 41ab8a15e2188d70...
+
+### BASE fence (41ba59f4, clean tree) for the delta claim:
+RESULT dirty(7 files, 51 sites)
+RESULT unknown(0 files, 0 sites)
+RESULT advisory(8 files, 10 sites)
+RESULT refused(52 files, 115 sites)
+RESULT prose(5 files, 5 sites)
+RESULT adjudicated(16 files, 24 sites)
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+### OFFENDING-set difference base -> migrated (base-only lines, then new-only lines):
+BASE-ONLY OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: L26=v1, L72=v1, L242=v1, L264=v1, L286=v1, L323=v4, L344=v1, L362=v1, L383=v1, L403=v1, L424=v1, L445=v1, L466=v1, L487=v1, L512=v1, L535=v1, L560=v1, L586=v1, L612=v1, L635=v1, L659=v1, L682=v1, L707=v1, L732=v1, L756=v1, L779=v1, L801=v1, L823=v1, L854=v1, L1241=v1, L1264=v1, L1287=v1, L1299=v1, L1313=v1
+(NEW-ONLY printed nothing above = no new site introduced)
+
+## DISCLOSURE: one site the fence used to see is now invisible TO THE FENCE.
+
+Of the 34 base-only sites, 33 are promotions (the document genuinely declares v3 now, and the
+fence correctly stops flagging a v3 document). The 34th is `L323=v4`, the
+NEG_SCHEMA_VERSION_MISMATCH witness. It was a YAML literal `schemaVersion: 4`; it is now
+`schemaVersion: ${SCHEMA_VERSION_NEVER_DEFINED}` with `const SCHEMA_VERSION_NEVER_DEFINED = 4`.
+The fence's digit pattern does not match an interpolation, so this path no longer appears in its
+dirty set — the emitted BYTES are unchanged (multiset census: `LOST {'schemaVersion: 4': 1}`,
+`GAINED {'schemaVersion: ${SCHEMA_VERSION_NEVER_DEFINED}': 1}`, byte-identical output).
+
+That is a real reduction in what the TEXT SCAN can see, so the witness had to move somewhere with
+teeth, and it moved into the type system: at the §7.3 flip `TeamBlueprint['schemaVersion']` narrows
+to `3`, and `SCHEMA_VERSION_NEVER_DEFINED = 4` becomes a compile error at the use site naming this
+file — which is the whole point of the carrier idiom and why it was preferred over deleting the
+digit or re-pointing the expectation. House precedent, same shape, already on master:
+`NEVER_DEFINED_VERSION = 99` in `bp1-blueprint-inspector.test.ts:45`. So: fewer dirty sites, no
+weaker claim, and the guard is now one the compiler enforces instead of a grep.
+
+Sanity check that the digit really is inert-but-present, from the test that owns it:
+22: *     position `SCHEMA_VERSION_NEVER_DEFINED` and emits the same bytes.
+392:const SCHEMA_VERSION_NEVER_DEFINED = 4
+415:    `schemaVersion: ${SCHEMA_VERSION_NEVER_DEFINED}`,

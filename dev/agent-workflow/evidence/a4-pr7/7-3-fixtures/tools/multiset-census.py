@@ -20,9 +20,15 @@ It reuses the census's own element extractor, so it cannot disagree with it abou
 element is.
 """
 import collections
-import importlib.util
 import os
 import sys
+
+# NO BYTECODE CACHE. The 7-4-b2a evidence directory tracks a __pycache__/*.pyc, so importing a
+# census module writes into a tracked path and dirties whichever tree ran the tool -- measured:
+# the main workspace came back modified after one census run, and the merge gate then reported
+# "1 untracked entr(ies)" for its own tree-state field. Evidence tools must not write anywhere.
+sys.dont_write_bytecode = True
+import importlib.util
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 _spec = importlib.util.spec_from_file_location(
