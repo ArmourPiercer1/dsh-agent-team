@@ -98,7 +98,12 @@ each could do while looking healthy.
     `dist`, no `composition-shim` and no spawn at all — a rebuilt artifact cannot reach it
     structurally. On the final committed tree it was back to 0 red without intervention.
     The final capture's `NEW 0 / RESOLVED 0` is the claim; the 2-and-5 runs are in
-    `BATTERY.md` so the claim is not presented as effortless.
+    `BATTERY.md` so the claim is not presented as effortless. And the last re-run on the
+    committed evidence tree added **one more identity that the disclosed set does not
+    contain** — a `P2: N=5 … (raised quotas)` leg — which is why `BATTERY.md` §1 now says
+    `p6t1-parallel` has *at least four* load-sensitive identities and cites §6's "three" as
+    an undercount. Had I matched deltas against the disclosed list instead of against the
+    base identities, that fourth flake would have been read as a new regression.
 15. **`d3-member-identity-context > D3-4` was watched for a disappearance, not just for a
     red.** It is red at base, and the instruction to ask whether it *died* rather than passed
     is the right one: a leg that stops registering is invisible to a diff that only lists new

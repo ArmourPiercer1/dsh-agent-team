@@ -19,6 +19,7 @@ Command (both states, identical):
 | AFTER rebuild, run 1 (`2683653a`) | 5043 | 9 | 20 | 3 |
 | AFTER rebuild, run 2 | 5043 | 9 | 23 | 3 |
 | FINAL `e75e1821` | **5043** | 8 | 18 | 3 |
+| FINAL2 `b3d9edd6` (evidence commit) | 5043 | 9 | 19 | 3 |
 
 **FINAL vs BASE: NEW 0, RESOLVED 0, legs 5043 → 5043, collection-error identities byte-equal**
 (`logs/diff-base-vs-final.txt`). The base set reproduced the disclosed debt exactly —
@@ -36,26 +37,46 @@ file can move pass→red→pass while `RESOLVED` stays empty).
 
 Per-file red counts across the four captures:
 
-| file | base | after-1 | after-2 | final |
-| --- | --- | --- | --- | --- |
-| `domain/test/t1-capability-schema` | 9 | 9 | 9 | 9 |
-| `domain/test/t2-blueprint-hash` | 1 | 1 | 1 | 1 |
-| `runtime/test/d3-member-identity-context` | 1 | 1 | 1 | 1 |
-| `runtime/test/p6t3-mediation` | 5 | 5 | 5 | 5 |
-| `runtime/test/p6t3-restart` | 2 | 2 | 2 | 2 |
-| `runtime/test/p6t1-parallel` | 0 | **2** | **5** | 0 |
+| file | base | after-1 | after-2 | final | final2 |
+| --- | --- | --- | --- | --- | --- |
+| `domain/test/t1-capability-schema` | 9 | 9 | 9 | 9 | 9 |
+| `domain/test/t2-blueprint-hash` | 1 | 1 | 1 | 1 | 1 |
+| `runtime/test/d3-member-identity-context` | 1 | 1 | 1 | 1 | 1 |
+| `runtime/test/p6t3-mediation` | 5 | 5 | 5 | 5 | 5 |
+| `runtime/test/p6t3-restart` | 2 | 2 | 2 | 2 | 2 |
+| `runtime/test/p6t1-parallel` | 0 | **2** | **5** | 0 | **1** |
 | `p8s3b-result-effects`, `t12a-b2-child-identity`, `t12a-glue-handoff-ports` | collection error | same | same | same |
 
-Every delta in either direction is inside `p6t1-parallel.test.ts`, and the five identities
-are the disclosed group: `7-6-merge-gate/FINDINGS.md` §6 records "`p6t1-parallel` has three
-load-sensitive identities … `P1: N=2 same-template parallel activations both succeed …` ×2
-and `P3: the quota race — five parallel, two may admit (no over-create) …`, which passes 9/9
-when run alone", moving in both directions. Two independent confirmations here:
+Every delta in either direction is inside `p6t1-parallel.test.ts`, and no delta is a
+rebuild effect — but reading them is worth the trouble, because **one of them is not in the
+disclosed group**. Per-identity, per-capture:
 
-* solo runs of the file alone on the AFTER tree: `9/9`, `9/9`, **`2 failed | 7 passed`** —
-  the flake fires even with the machine to itself, so it is not load-only and not tree-related;
+| capture | red identities inside `p6t1-parallel.test.ts` |
+| --- | --- |
+| BASE | none |
+| AFTER run 1 | `P1: N=2 … both succeed` ×2 |
+| AFTER run 2 | `P1: N=2 …` ×2 + `P3: the quota race — five parallel, two may admit` ×3 |
+| FINAL `e75e1821` | none |
+| FINAL2 `b3d9edd6` | **`P2: N=5 same-template parallel activations all succeed (raised quotas)` ×1** |
+
+`7-6-merge-gate/FINDINGS.md` §6 discloses *three* load-sensitive identities — "`P1: N=2
+same-template parallel activations both succeed …` ×2 and `P3: the quota race — five
+parallel, two may admit (no over-create) …`, which passes 9/9 when run alone" — and the
+first four rows above are exactly that group, appearing and disappearing on identical trees.
+**The fifth movement is a fourth identity that §6 does not list.** Disclosure in that
+document is therefore an undercount, not a lie: the file has at least four load-sensitive
+identities, `P2` included. Reported rather than smoothed over, because "matches the
+disclosed flake set" is only a discriminator if the disclosed set is complete.
+
+Three independent confirmations that none of it is the rebuild:
+
+* solo runs of the file alone: `9/9`, `9/9`, **`2 failed | 7 passed`** on the AFTER tree and
+  `9/9`, `9/9` on the FINAL tree (`logs/p6t1-solo-run*.txt`) — it flakes with the machine to
+  itself, so "green alone" was never a sound discriminator and load is not the whole story;
 * `grep` of the file shows no `dist`, no `composition-shim`, no spawn: it builds an in-memory
-  world over `src`. A rebuilt `dist` cannot reach it structurally.
+  world over `src`. A rebuilt `dist` cannot reach it structurally;
+* `RESOLVED 0` in every capture and 5043 registered legs in every capture — a rebuild that
+  changed behaviour would have had to move a leg count or retire a base failure.
 
 **No suite flipped because of the rebuild. Nothing was "fixed", no suite was edited.**
 Per §STALENESS §4 the stronger statement is that *nothing could have*: no test in the
@@ -130,6 +151,13 @@ GATE_EXIT=0
 ```
 
 ## 4. Script-level legs, literal (both states)
+
+All rows re-measured on the final committed tree `b3d9edd6` where the instrument can be
+re-run cheaply: `pnpm run check:artifacts` → `OK: 1508 files … (incl. 1 glue placement(s))`,
+exit **0** (now a true sentence); `pnpm smoke:composition` → exit **0**, 12 `^PASS` lines,
+**0 `^SKIP` lines**; `pnpm check:artifacts:head` → exit **0**, `HEAD carries its own build:
+the committed surface IS a fresh build of itself (1508 compared file(s))`; the merge gate →
+**27 passed (27)**, exit **0**.
 
 | instrument | BASE | FINAL |
 | --- | --- | --- |

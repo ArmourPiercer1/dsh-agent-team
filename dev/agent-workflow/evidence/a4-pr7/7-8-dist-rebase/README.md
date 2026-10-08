@@ -7,7 +7,9 @@ Branch `feat/a4-dist-rebase`, worktree `.worktrees/a4-dist-rebase`. **Not pushed
 | --- | --- |
 | `2683653a` | `build(a4-pr7)`: re-base the committed install surface onto HEAD source — 20 tracked `packages/runtime/dist` files, 34 insertions / 20 deletions, **zero source change** |
 | `e75e1821` | `feat(a4-pr7/7.8)`: `scripts/check-artifacts-at-head.mjs` + `pnpm check:artifacts:head` + the 27th merge-gate leg |
-| (this commit) | this evidence directory |
+| `b3d9edd6` | `docs(a4-pr7/7.8)`: this evidence directory |
+| (this commit) | the fourth `p6t1-parallel` load identity, and the `check:artifacts` /
+`smoke:composition` / `check:artifacts:head` / merge-gate captures re-taken on the final tree |
 
 | document | the one question it answers |
 | --- | --- |
@@ -16,7 +18,7 @@ Branch `feat/a4-dist-rebase`, worktree `.worktrees/a4-dist-rebase`. **Not pushed
 | [`MECHANISM.md`](MECHANISM.md) | how freshness stops rotting — four candidate shapes priced in wall time and in what each can still miss, one implemented, plus the end-to-end teeth proof |
 | [`FINDINGS.md`](FINDINGS.md) | every instrument that lied, including this lane's own five errors, and how each was caught |
 
-`logs/` holds the raw captures behind those claims: four population runs
+`logs/` holds the raw captures behind those claims: five population runs
 (`pop-BASE-f0485b15.log` … `pop-FINAL-e75e1821.log`) and their identity diffs, three merge-gate
 runs plus the drifted-unstaged single-leg refusal, the pre/post batteries, the fence output
 after each `git add`, the lint identity diffs, `smoke:composition`, both typecheck flavours,
