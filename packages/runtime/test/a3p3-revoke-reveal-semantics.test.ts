@@ -45,6 +45,11 @@ import {
 // it for a symbol nothing outside the lane calls.
 import { authorizeLeaderPermissionMutation, classifyPermissionRise, PERMISSION_EFFECT_PRECEDENCE } from '../governance/permission-mutation.js'
 import { assembleEffectivePermission } from '../effective-policy/index.js'
+/** A4-PR7 §7.5: this suite's world now DECLARES the Team authority ceiling its
+ *  reveal/revoke drives need. See the helper for why the declaration is a cell set
+ *  and never an `any` wildcard, and why the two `subtree` cells appear only in a
+ *  world that wired the containment predicate. */
+import { ceilingOverCells, declaredCeilingReader } from './a4p7-ceiling-world-helpers.js'
 import type {
   EffectivePermissionAssemblyInput,
   EffectivePermissionOverlayLayer,
@@ -119,6 +124,35 @@ async function world(options: {
         ? {}
         // Untrusted pass-through: the SERVICE validates (typed refusal).
         : { permissionEnvelope: () => ({ rules: envelopeRulesRaw }) as unknown as PermissionMutationEnvelope }),
+      // A4-PR7 §7.5 prerequisite 3 — THE WORLD THIS SUITE NEVER DECLARED. Its seeds
+      // (`seed-s6a`, `seed-s7-shadow`, `seed-x3-deny`, …) grant a SUBTREE DENY, and
+      // revoking it is what reveals the static allow underneath: the reveal IS a
+      // rise, and before that commit the rise was never ceiling-checked at all. The
+      // declared world grants `write` over this suite's own cells so the reveal law,
+      // the envelope law and the unknown-relation law keep deciding — never the
+      // wiring. Subtree cells only where the predicate exists, because without one a
+      // subtree-vs-exact question is undecidable and would un-decide every exact cell
+      // of the class (`evaluateMatches` step 2).
+      authorityCeiling: declaredCeilingReader({
+        hardCeiling: ceilingOverCells([
+          { operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY } },
+          { operationClass: 'write', matcher: { kind: 'exact', resource: OTHER_KEY } },
+          ...(options.containment === 'no'
+            ? []
+            : [{ operationClass: 'write', matcher: { kind: 'subtree' as const, resource: SUBTREE_ROOT } }]),
+        ]),
+        // The SAME carrier document the lane injects, mirrored into the context. A
+        // Leader is capped by BOTH documents (`BOUND_AUTHORITY_DOCUMENTS`), so an
+        // empty context carrier would silently become a SECOND, narrower envelope
+        // over the one each leg deliberately chose — and `S1b`/`S3`/`S6`/`S7b` are
+        // precisely the legs that vary that document to ask whether the ceiling
+        // reaches. Mirroring makes the v3 meet equal to the Alpha.3 law, never below
+        // it; where a leg injects no carrier the context says `{ rules: [] }`, which
+        // Alpha.3's Leader path already refuses before the gate is reached.
+        ...(envelopeRulesRaw === undefined
+          ? {}
+          : { carrier: () => ({ rules: envelopeRulesRaw }) as unknown as PermissionMutationEnvelope }),
+      }),
       ...(factsState === undefined || factsState.kind === 'absent'
         ? {}
         : factsState.kind === 'abstain'
@@ -752,24 +786,28 @@ const FACTS_SUBTREE_ALLOW: FactsState = {
 }
 
 describe('unknown subtree relation refuses typed — never a silent non-match (round 2)', () => {
-  it('X1 CANONICAL (parent fixture): subtree(R)=allow + exact(R/file)=deny; DECLARED-NONE; EMPTY envelope; revoke the exact deny with NO subtreeContains ⇒ truth deny->allow reveal must REFUSE (pre-fix build ACCEPTS)', async () => {
+  it('X1 CANONICAL (parent fixture): subtree(R)=allow on a lane with NO subtreeContains; DECLARED-NONE; EMPTY envelope; §7.5 — the unknown relation refuses the SUBTREE GRANT ITSELF, typed, zero write [re-scoped: the state is no longer constructible; the reveal law stays pinned by X1p]', async () => {
     const { w, service } = await world({ envelopeRules: [], facts: DECLARED_NONE, containment: 'no' })
     try {
-      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'allow' }], 'seed-x1-allow'))
-      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'deny' }], 'seed-x1-deny'))
-      const generationBefore = (await latest(w))?.metadata.generation
+      // [§7.5 RE-SCOPE, recorded per leg] The scenario this leg used to set up —
+      // a subtree-bearing state ESTABLISHED on a lane with no containment predicate,
+      // then mutated — is no longer constructible, and that is the law, not a
+      // fixture limitation: `classifyPermissionRise` refuses whenever a subtree
+      // matcher participates in an affected class and no predicate is injected
+      // (`subtree-relation-unknown`), and since §7.5 prerequisite 3 a lane with no
+      // authority-ceiling port reaches that classification instead of skipping every
+      // authority check. The state therefore cannot be SEEN, let alone revoked. What
+      // this leg pins now is the same law met at the earliest point it can be met:
+      // the first subtree-bearing mutation refuses TYPED with zero write. The
+      // deny->allow / deny->ask reveal arithmetic it also used to pin is pinned,
+      // unchanged, by its predicate-bearing twin in this same describe block.
+      // THE ORIGINAL ASSERTION, MET ONE STATEMENT EARLIER: the same typed
+      // CONTEXT refusal, the same zero write.
       await expectRefusedWith(
-        () =>
-          service.mutatePermission(
-            leaderMutation({
-              kind: 'revoke_permission',
-              mutationId: 'x1-revoke',
-              rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'deny' }],
-            }),
-          ),
+        () => service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'allow' }], 'seed-x1-allow')),
         PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
       )
-      expect((await latest(w))?.metadata.generation).toBe(generationBefore)
+      expect(await latest(w)).toBeUndefined()
     } finally {
       await w.store.close()
       w.destroy()
@@ -798,23 +836,28 @@ describe('unknown subtree relation refuses typed — never a silent non-match (r
     }
   })
 
-  it('X2 EQUAL-SUBTREE REWRITE (parent addition): subtree(R)=deny updated to ask with NO predicate; DECLARED-NONE; EMPTY envelope ⇒ truth deny->ask VERBATIM expansion must REFUSE (pre-fix drops the rule BOTH sides => false deny/deny identity, ACCEPTS)', async () => {
+  it('X2 EQUAL-SUBTREE REWRITE (parent addition): subtree(R)=deny with NO predicate; DECLARED-NONE; EMPTY envelope; §7.5 — the equal-subtree grant is refused TYPED before any state exists [re-scoped: the rewrite is no longer reachable; deny->ask VERBATIM stays pinned by X2p]', async () => {
     const { w, service } = await world({ envelopeRules: [], facts: DECLARED_NONE, containment: 'no' })
     try {
-      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }], 'seed-x2-deny'))
-      const generationBefore = (await latest(w))?.metadata.generation
+      // [§7.5 RE-SCOPE, recorded per leg] The scenario this leg used to set up —
+      // a subtree-bearing state ESTABLISHED on a lane with no containment predicate,
+      // then mutated — is no longer constructible, and that is the law, not a
+      // fixture limitation: `classifyPermissionRise` refuses whenever a subtree
+      // matcher participates in an affected class and no predicate is injected
+      // (`subtree-relation-unknown`), and since §7.5 prerequisite 3 a lane with no
+      // authority-ceiling port reaches that classification instead of skipping every
+      // authority check. The state therefore cannot be SEEN, let alone revoked. What
+      // this leg pins now is the same law met at the earliest point it can be met:
+      // the first subtree-bearing mutation refuses TYPED with zero write. The
+      // deny->allow / deny->ask reveal arithmetic it also used to pin is pinned,
+      // unchanged, by its predicate-bearing twin in this same describe block.
+      // THE ORIGINAL ASSERTION, MET ONE STATEMENT EARLIER: the same typed
+      // CONTEXT refusal, the same zero write.
       await expectRefusedWith(
-        () =>
-          service.mutatePermission(
-            leaderMutation({
-              kind: 'update_permission',
-              mutationId: 'x2-rewrite',
-              rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'ask' }],
-            }),
-          ),
+        () => service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }], 'seed-x2-deny')),
         PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
       )
-      expect((await latest(w))?.metadata.generation).toBe(generationBefore)
+      expect(await latest(w)).toBeUndefined()
     } finally {
       await w.store.close()
       w.destroy()
@@ -842,23 +885,28 @@ describe('unknown subtree relation refuses typed — never a silent non-match (r
     }
   })
 
-  it('X3 STATIC subtree allow exposed by revoking the overlay subtree deny, NO predicate ⇒ typed refusal (pre-fix drops BOTH the overlay deny and the static allow => declared-none deny/deny identity, ACCEPTS)', async () => {
+  it('X3 STATIC subtree allow exposed by a subtree mutation with NO predicate; §7.5 — the refusal is TYPED and the overlay stays EMPTY [re-scoped: the overlay deny can never be written; the static reveal stays pinned by X3p]', async () => {
     const { w, service } = await world({ envelopeRules: [], facts: FACTS_SUBTREE_ALLOW, containment: 'no' })
     try {
-      await service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }], 'seed-x3-deny'))
-      const generationBefore = (await latest(w))?.metadata.generation
+      // [§7.5 RE-SCOPE, recorded per leg] The scenario this leg used to set up —
+      // a subtree-bearing state ESTABLISHED on a lane with no containment predicate,
+      // then mutated — is no longer constructible, and that is the law, not a
+      // fixture limitation: `classifyPermissionRise` refuses whenever a subtree
+      // matcher participates in an affected class and no predicate is injected
+      // (`subtree-relation-unknown`), and since §7.5 prerequisite 3 a lane with no
+      // authority-ceiling port reaches that classification instead of skipping every
+      // authority check. The state therefore cannot be SEEN, let alone revoked. What
+      // this leg pins now is the same law met at the earliest point it can be met:
+      // the first subtree-bearing mutation refuses TYPED with zero write. The
+      // deny->allow / deny->ask reveal arithmetic it also used to pin is pinned,
+      // unchanged, by its predicate-bearing twin in this same describe block.
+      // THE ORIGINAL ASSERTION, MET ONE STATEMENT EARLIER: the same typed
+      // CONTEXT refusal, the same zero write.
       await expectRefusedWith(
-        () =>
-          service.mutatePermission(
-            leaderMutation({
-              kind: 'revoke_permission',
-              mutationId: 'x3-revoke',
-              rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }],
-            }),
-          ),
+        () => service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }], 'seed-x3-deny')),
         PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
       )
-      expect((await latest(w))?.metadata.generation).toBe(generationBefore)
+      expect(await latest(w)).toBeUndefined()
     } finally {
       await w.store.close()
       w.destroy()

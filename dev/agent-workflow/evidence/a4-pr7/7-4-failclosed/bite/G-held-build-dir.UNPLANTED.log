@@ -1,0 +1,12 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-failclosed
+
+ ✓ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (21 tests) 1427ms
+     ✓ the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name  1314ms
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  13:22:32
+   Duration  2.38s (transform 679ms, setup 0ms, import 866ms, tests 1.43s, environment 0ms)
+

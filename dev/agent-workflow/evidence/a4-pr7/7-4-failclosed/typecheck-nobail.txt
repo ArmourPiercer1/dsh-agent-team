@@ -1,0 +1,21 @@
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json --no-bail
+packages/domain typecheck$ tsc -p tsconfig.json --no-bail
+packages/remote typecheck$ tsc -p tsconfig.json --no-bail
+packages/runtime typecheck$ tsc -p tsconfig.json --no-bail
+packages/domain typecheck: error TS5023: Unknown compiler option '--no-bail'.
+packages/contracts typecheck: error TS5023: Unknown compiler option '--no-bail'.
+packages/remote typecheck: error TS5023: Unknown compiler option '--no-bail'.
+packages/domain typecheck: Failed
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-failclosed/packages/domain:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/domain@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json --no-bail`
+Exit status 1
+packages/storage typecheck$ tsc -p tsconfig.json --no-bail
+packages/runtime typecheck: error TS5023: Unknown compiler option '--no-bail'.
+packages/remote typecheck: Failed
+packages/contracts typecheck: Failed
+[WARN]  Local package.json exists, but node_modules missing, did you mean to install?
+packages/testkit typecheck$ tsc -p tsconfig.json --no-bail
+[WARN]  Local package.json exists, but node_modules missing, did you mean to install?
+packages/tools typecheck$ tsc -p tsconfig.json --no-bail
+packages/runtime typecheck: Failed

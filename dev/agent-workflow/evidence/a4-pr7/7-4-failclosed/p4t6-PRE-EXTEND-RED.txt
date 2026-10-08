@@ -1,0 +1,13 @@
+PRE-EXTEND RED capture — packages/testkit/test/p4t6-session-event-scan.test.ts
+measured on feat/a4-74-failclosed at HEAD 751394dc (merge of 258d2b48 into the branch),
+with this lane's two new scannable files ON DISK but ABSENT from the named-path lists:
+
+  AssertionError: expected 1035 to be 1033 // Object.is equality
+    × coverage: all nine package dirs discovered, ... (the coverage leg, the counted total)
+
+Reading: 1033 is the derived total of the named lists on the merged base (the referee
+`node -e "import('./packages/testkit/fault-injection/session-event-scan.mjs').then(m=>console.log(m.scanSessionEventVocabulary({}).filesScanned))"`
+prints 1033 at 258d2b48); 1035 is what the scanner counts once this lane's two
+instruments are on disk. This capture is the RED half of the p4t6 tie; the extension
+below ties the movement (1033 -> 1035) to the two named paths, each asserted present
+BY PATH. The total is derived from 983 + the named lists, never written by hand.

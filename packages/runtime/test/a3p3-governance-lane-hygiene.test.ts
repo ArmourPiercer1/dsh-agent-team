@@ -56,6 +56,23 @@ import type { OverrideStorePort, OverrideRecordView } from '../mutation/override
 import type { PermissionOverlayRepositoryPort } from '../permission-governance/port.js'
 import type { GovernanceMutationServiceDeps } from '../governance/types.js'
 
+/** A build output is not source, whatever it is called right now, and the skip has to be
+ *  by FAMILY rather than the one name `'dist'`: the §7.6 merge gate
+ *  (`packages/testkit/test/a4p7-merge-gate.test.ts`) proves the composition refuses by MOVING a
+ *  build output aside — `dist` and individual entries become `<name>.held-by-7-6-gate` — in the
+ *  same full-population run, in another worker. A walk that only skips the literal name
+ *  `dist` descends into the held-aside tree while its files are being renamed out from under
+ *  `statSync`, and whichever suite loses the race dies as a collection error (`ENOENT … stat
+ *  …/dist.held-by-7-6-gate/…`) instead of returning a verdict about the leaf law. Held-aside
+ *  build output is not source under any name, so the family test is both the fix and the
+ *  truth, and every walk in this file now shares it.
+ *  Deterministic reproducer, and the reason this is a seam fix and not a loosened assertion:
+ *  `mkdir -p packages/client/dist.held-by-7-6-gate/x && ln -s /nope
+ *  packages/client/dist.held-by-7-6-gate/x/ghost.d.ts` reddens this file without the family
+ *  skip (before) and stays green with it (after), with the plant untouched. */
+const isHeldBuildOutput = (entry: string): boolean =>
+  entry === 'dist' || entry.startsWith('dist.') || entry.endsWith('.held-by-7-6-gate')
+
 const HERE = dirname(fileURLToPath(import.meta.url))
 const RUNTIME_ROOT = join(HERE, '..')
 const MUTATION_SOURCE = readFileSync(join(HERE, '../governance/permission-mutation.ts'), 'utf8')
@@ -137,7 +154,8 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
         const full = join(dir, entry)
         const st = statSync(full)
         if (st.isDirectory()) {
-          if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+          if (entry === 'node_modules' || entry === 'test') continue
+          if (isHeldBuildOutput(entry)) continue // build output by family: see the note at the top
           visit(full)
           continue
         }
@@ -244,7 +262,8 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
         const full = join(dir, entry)
         const st = statSync(full)
         if (st.isDirectory()) {
-          if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+          if (entry === 'node_modules' || entry === 'test') continue
+          if (isHeldBuildOutput(entry)) continue // build output by family: see the note at the top
           visit(full)
           continue
         }
@@ -333,7 +352,8 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
         const full = join(dir, entry)
         const st = statSync(full)
         if (st.isDirectory()) {
-          if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+          if (entry === 'node_modules' || entry === 'test') continue
+          if (isHeldBuildOutput(entry)) continue // build output by family: see the note at the top
           visit(full)
           continue
         }
@@ -630,13 +650,29 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
   const codeOnly = (source: string): string =>
     source.replace(/^\s*\/\/.*$/gm, ' ').replace(/^\s*\/\*[\s\S]*?\*\//gm, ' ')
 
-  /** Walk a directory tree, skipping only what is not source. */
+  /** Walk a directory tree, skipping only what is not source.
+   *
+   *  The build-output skip is by FAMILY, not by one exact name, and the reason is a
+   *  race this file lost in a full-population run: the §7.6 merge gate
+   *  (`packages/testkit/test/a4p7-merge-gate.test.ts`) proves the composition refuses by
+   *  MOVING a build output aside — `dist` and individual entries become
+   *  `<name>.held-by-7-6-gate`, in the same run, in another worker. A name-equality test on
+   *  'dist' does not see `dist.held-by-7-6-gate`, so this walk descends into a tree whose
+   *  files are being renamed out from under `statSync`: `ENOENT … stat
+   *  …/dist.held-by-7-6-gate/…` in whichever suite loses, and the file dies as a
+   *  collection error rather than a verdict. Held-aside build output is not source under
+   *  any name, so skipping the family is both the fix and the truth; the leaf law being
+   *  asserted is unchanged, and now independent of when the gate happens to run.
+   *  Reproducer: `mkdir -p packages/client/dist.held-by-7-6-gate/x && ln -s /nope
+   *  packages/client/dist.held-by-7-6-gate/x/ghost.d.ts` reddens this file before the
+   *  family skip and stays green with it. */
   const walkTs = (dir: string, into: string[]): string[] => {
     for (const entry of readdirSync(dir)) {
       const full = join(dir, entry)
       const st = statSync(full)
       if (st.isDirectory()) {
-        if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+        if (entry === 'node_modules' || entry === 'test') continue
+        if (entry === 'dist' || entry.startsWith('dist.') || entry.endsWith('.held-by-7-6-gate')) continue
         walkTs(full, into)
         continue
       }
@@ -1158,7 +1194,8 @@ function productionSources(): Map<string, string> {
       const full = join(dir, entry)
       const st = statSync(full)
       if (st.isDirectory()) {
-        if (entry === 'node_modules' || entry === 'dist' || entry === 'test') continue
+        if (entry === 'node_modules' || entry === 'test') continue
+        if (isHeldBuildOutput(entry)) continue // build output by family: see the note at the top
         visit(full)
         continue
       }

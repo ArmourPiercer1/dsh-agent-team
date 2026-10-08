@@ -1,0 +1,70 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-failclosed
+
+ ❯ packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts (5 tests | 3 failed) 28ms
+     × W1 the DECIDED-insufficient ceiling refusal crosses as PERMISSION_AUTHORITY_CEILING_INSUFFICIENT — never internal-error, never untyped-error 19ms
+     × W2 the two ceiling answers stay TOLD APART on the wire: authorization-insufficient, context-unavailable-by-unread-document, context-unavailable-by-absent-port 4ms
+     × W3 the fail-closed refusal is a member of the closed vocabulary WITHOUT any new code (it rode the context code that was already mapped) 1ms
+     ✓ W4 the covering ceiling still COMMITS across the same wire (the join is a mapping, not a new refusal) 2ms
+     ✓ W5 the join did NOT smuggle the approval-pending outcome onto the wire as a code (it still rides the closed projection) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts > A4-PR7 §7.4 — every ceiling refusal of the v3 gate reaches the remote wire as itself > W1 the DECIDED-insufficient ceiling refusal crosses as PERMISSION_AUTHORITY_CEILING_INSUFFICIENT — never internal-error, never untyped-error
+AssertionError: {"code":"internal-error","message":"internal error in remote handler","details":{"method":"override.mutatePermission","endpoint":"override.mutatePermission","contractVersion":7,"requestToken":null,"reason":"untyped-error"}}: expected 'internal-error' to be 'PERMISSION_AUTHORITY_CEILING_INSUFFIC…' // Object.is equality
+
+Expected: "PERMISSION_AUTHORITY_CEILING_INSUFFICIENT"
+Received: "internal-error"
+
+ ❯ packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts:275:52
+    273|       const response = await w.dispatch(riseParams('a474-w1-insufficie…
+    274|       const error = errorOf(response)
+    275|       expect(error['code'], JSON.stringify(error)).toBe(
+       |                                                    ^
+    276|         PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
+    277|       )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts > A4-PR7 §7.4 — every ceiling refusal of the v3 gate reaches the remote wire as itself > W2 the two ceiling answers stay TOLD APART on the wire: authorization-insufficient, context-unavailable-by-unread-document, context-unavailable-by-absent-port
+AssertionError: expected 'internal-error' to be 'PERMISSION_AUTHORITY_CEILING_INSUFFIC…' // Object.is equality
+
+Expected: "PERMISSION_AUTHORITY_CEILING_INSUFFICIENT"
+Received: "internal-error"
+
+ ❯ packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts:296:36
+    294|       // Different codes: A3-3's law (an unread ceiling never wears an
+    295|       // authorization label) survives the transport.
+    296|       expect(insufficient['code']).toBe(PERMISSION_MUTATION_ERROR_CODE…
+       |                                    ^
+    297|       expect(refusedByAbsentPort['code']).toBe(PERMISSION_MUTATION_ERR…
+    298|       expect(refusedByAbsentPort['code']).not.toBe(insufficient['code'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts > A4-PR7 §7.4 — every ceiling refusal of the v3 gate reaches the remote wire as itself > W3 the fail-closed refusal is a member of the closed vocabulary WITHOUT any new code (it rode the context code that was already mapped)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts:314:111
+    312|     // "just add a new ceiling code" change trips here and re-argues t…
+    313|     expect(REMOTE_BACKING_ERROR_CODE_SET.has(PERMISSION_MUTATION_ERROR…
+    314|     expect(REMOTE_BACKING_ERROR_CODE_SET.has(PERMISSION_MUTATION_ERROR…
+       |                                                                                                               ^
+    315|   })
+    316|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+   Start at  12:22:46
+   Duration  1.11s (transform 780ms, setup 0ms, import 993ms, tests 28ms, environment 0ms)
+

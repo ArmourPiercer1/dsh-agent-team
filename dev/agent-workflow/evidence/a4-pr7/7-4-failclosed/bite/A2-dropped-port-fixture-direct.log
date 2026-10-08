@@ -1,0 +1,100 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-failclosed
+
+ ❯ packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts (26 tests | 16 failed) 78ms
+     × grant_instance appends generation 1 through the ONE authority and `latest` reads it back durably 10ms
+     × the effective answer is `allow` from the overlay layer, and a different key is untouched 3ms
+     × the overlay layer overrides a static DENY of the same pair (layer precedence, never flattening) 4ms
+     × a subtree grant answers for a DESCENDANT key through the per-decision verdict 3ms
+     ✓ a subtree ENVELOPE with no injected containment refuses the Leader mutation TYPED, zero write (the merged PR3 gate this lane inherits) 3ms
+     × the SAME Leader mutation commits once the lane supplies the containment predicate (production MUST supply it) 3ms
+     ✓ a FAULTING containment predicate is UNKNOWN coverage, not a negative verdict: typed refusal, zero write 2ms
+     × an UNJUDGED subtree rule keeps the frozen lane asymmetry (a deny is never dropped, an allow never invented) 2ms
+     × an exec grant answers its OWN fingerprint and no other (design §6 isolation) 3ms
+     ✓ the kernel refuses a subtree matcher on a shell class (design §5: no subtree, no any) 2ms
+     × revoke appends generation 2, leaves generation 1 byte-identical, and the decision recomputes 2ms
+     × renewing the same desired state is a NO-OP (no snapshot, no generation bump) 2ms
+     × ARCHIVED: execution is refused, the overlay stays the retained authority 2ms
+     × DISPOSED: execution is refused, and a mutation against a terminal instance is refused typed (zero write) 2ms
+     ✓ an instance with no durable row is its OWN state (never RUNNING, never ARCHIVED) 2ms
+     × revoked during ARCHIVE stays revoked after restore (no replay, no resurrection) 3ms
+     × a GENUINE rule change at restore time is one ordinary mutation through the authority 3ms
+     × restore performs NO permission write even when a grant was already standing (the no-op rule) 2ms
+     × a MemberInstance created AFTER the grants has zero permissions 3ms
+     ✓ restore of a NOT-ARCHIVED instance is the typed LIFECYCLE_ILLEGAL_STATE, before any write 3ms
+     ✓ dispose of a TERMINAL instance is the typed LIFECYCLE_ILLEGAL_STATE (the FSM, not this lane) 3ms
+     ✓ restore without a wired lifecycle path refuses typed (never a substitute transition) 2ms
+     × no static facts from the decision site = UNKNOWN, typed, no decision 2ms
+     ✓ an overlay carrier the grammar cannot read refuses typed (a rule is never silently dropped) 3ms
+     ✓ the exec plane refuses typed when the kernel algebra is not injected 3ms
+     ✓ the carrier round-trip the lane relies on is the kernel grammar (rendered by PR3, decoded by PR3) 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg A/B — an exact grant produces a NEW snapshot and the effective decision honors it > grant_instance appends generation 1 through the ONE authority and `latest` reads it back durably
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg A/B — an exact grant produces a NEW snapshot and the effective decision honors it > the effective answer is `allow` from the overlay layer, and a different key is untouched
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg A/B — an exact grant produces a NEW snapshot and the effective decision honors it > the overlay layer overrides a static DENY of the same pair (layer precedence, never flattening)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg C — the subtree grant rides the injected containment predicate > the SAME Leader mutation commits once the lane supplies the containment predicate (production MUST supply it)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg E — revoke creates a snapshot; history keeps the old authority; the effect drops > revoke appends generation 2, leaves generation 1 byte-identical, and the decision recomputes
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg E — revoke creates a snapshot; history keeps the old authority; the effect drops > renewing the same desired state is a NO-OP (no snapshot, no generation bump)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs F/G — ARCHIVED and DISPOSED never execute > ARCHIVED: execution is refused, the overlay stays the retained authority
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs F/G — ARCHIVED and DISPOSED never execute > DISPOSED: execution is refused, and a mutation against a terminal instance is refused typed (zero write)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs H/I — restore: the SAME instance, the CURRENT latest overlay, zero permission write > revoked during ARCHIVE stays revoked after restore (no replay, no resurrection)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs H/I — restore: the SAME instance, the CURRENT latest overlay, zero permission write > a GENUINE rule change at restore time is one ordinary mutation through the authority
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs H/I — restore: the SAME instance, the CURRENT latest overlay, zero permission write > restore performs NO permission write even when a grant was already standing (the no-op rule)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg L — the read plane refuses instead of guessing > no static facts from the decision site = UNKNOWN, typed, no decision
+PermissionMutationError: the mutation rises the EFFECTIVE effect at exact:vol-root/src/a.ts, but this governance lane wired no authority-ceiling reader to consult: an unread ceiling is never guessed and never treated as absent (zero write)
+ ❯ packages/runtime/governance/service.ts:1256:17
+    1254|         }).rising
+    1255|         if (unassessedRising.length > 0) {
+    1256|           throw new PermissionMutationError(
+       |                 ^
+    1257|             PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+    1258|             `the mutation rises the EFFECTIVE effect at ${unassessedRi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg C — the subtree grant rides the injected containment predicate > a subtree grant answers for a DESCENDANT key through the per-decision verdict
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg C — the subtree grant rides the injected containment predicate > an UNJUDGED subtree rule keeps the frozen lane asymmetry (a deny is never dropped, an allow never invented)
+PermissionMutationError: the mutation rises the EFFECTIVE effect at subtree:vol-root/src, but this governance lane wired no authority-ceiling reader to consult: an unread ceiling is never guessed and never treated as absent (zero write)
+ ❯ packages/runtime/governance/service.ts:1256:17
+    1254|         }).rising
+    1255|         if (unassessedRising.length > 0) {
+    1256|           throw new PermissionMutationError(
+       |                 ^
+    1257|             PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+    1258|             `the mutation rises the EFFECTIVE effect at ${unassessedRi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg D — exec is EXACT canonical fingerprint only > an exec grant answers its OWN fingerprint and no other (design §6 isolation)
+PermissionMutationError: the mutation rises the EFFECTIVE effect at fingerprint:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, but this governance lane wired no authority-ceiling reader to consult: an unread ceiling is never guessed and never treated as absent (zero write)
+ ❯ packages/runtime/governance/service.ts:1256:17
+    1254|         }).rising
+    1255|         if (unassessedRising.length > 0) {
+    1256|           throw new PermissionMutationError(
+       |                 ^
+    1257|             PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+    1258|             `the mutation rises the EFFECTIVE effect at ${unassessedRi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg J — no inheritance > a MemberInstance created AFTER the grants has zero permissions
+PermissionMutationError: the mutation rises the EFFECTIVE effect at exact:vol-root/src/a.ts, subtree:vol-root/src, but this governance lane wired no authority-ceiling reader to consult: an unread ceiling is never guessed and never treated as absent (zero write)
+ ❯ packages/runtime/governance/service.ts:1256:17
+    1254|         }).rising
+    1255|         if (unassessedRising.length > 0) {
+    1256|           throw new PermissionMutationError(
+       |                 ^
+    1257|             PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+    1258|             `the mutation rises the EFFECTIVE effect at ${unassessedRi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  16 failed | 10 passed (26)
+   Start at  13:01:13
+   Duration  1.09s (transform 725ms, setup 0ms, import 921ms, tests 78ms, environment 0ms)
+

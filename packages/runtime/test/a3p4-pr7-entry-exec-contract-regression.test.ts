@@ -56,6 +56,7 @@ import { destroyDir, FileStorageSeam, scratchDir } from '../../testkit/fault-inj
 import { createPermissionOverlayRepositoryPort } from '../permission-governance/index.js'
 import { createTeamProductionRoot } from '../src/plugin/root.js'
 import {
+  createAuthorityCeilingReader,
   createPermissionAuthorityFacts,
   type CanonicalKeyContains,
   type TeamPermissionPlane,
@@ -172,7 +173,36 @@ function r7BlueprintSource(opts: {
     `        fingerprint: "${opts.execFingerprint}"`,
     '      maximumEffect: allow',
     'teamHardEnvelope:',
-    '  rules: []',
+    '  # A4-PR7 §7.5 prerequisite 3 — this ceiling is READ now, so the fixture',
+    '  # declares it. This suite\'s law is the ENTRY/EXEC contract (which canonical',
+    '  # identity an exec grant addresses, what the entry echoes back); the Team',
+    '  # ceiling must never be what decides it. `{ rules: [] }` was a default written',
+    '  # while nothing in the lane could read this field — with the reader wired it',
+    '  # means "this Team may expand NOTHING", which contradicts every leg here. The',
+    '  # declaration is over the SAME four cells the carrier above already covers, so',
+    '  # the meet of the two documents equals the carrier: no leg gains authority it',
+    '  # did not already claim, and no refusal a leg relied on disappears.',
+    '  rules:',
+    '    - operationClass: write',
+    '      matcher:',
+    '        kind: exact',
+    `        path: "${opts.openKey}"`,
+    '      maximumEffect: allow',
+    '    - operationClass: write',
+    '      matcher:',
+    '        kind: exact',
+    `        path: "${opts.secondKey}"`,
+    '      maximumEffect: allow',
+    '    - operationClass: write',
+    '      matcher:',
+    '        kind: exact',
+    `        path: "${opts.bKey}"`,
+    '      maximumEffect: allow',
+    '    - operationClass: bash',
+    '      matcher:',
+    '        kind: fingerprint',
+    `        fingerprint: "${opts.execFingerprint}"`,
+    '      maximumEffect: allow',
     'teamEnvelope:',
     '  allow: [send-message, report-progress, request-control, resolve-control, archive-member, restore-member]',
     '  deny: []',
@@ -346,7 +376,14 @@ async function openR7World(): Promise<R7World> {
     permissionPlaneRef,
     permissionCanonicalize: plainCanonicalize,
     permissionEnvelope: facts.permissionEnvelope,
-    permissionStaticLayers: facts.staticLayers,
+    permissionStaticLayers: facts.staticLayers,    // A4-PR7 §7.5 prerequisite 3 — THE LINE THIS SUITE WAS MISSING, and it is the line
+    // production wires: host.ts:2703 passes exactly
+    // createAuthorityCeilingReader({ facts: permissionFacts }). This world already
+    // built createPermissionAuthorityFacts and handed the root two of its readers;
+    // the ceiling reader was the one left out, so the root's conditional spread at
+    // src/plugin/root.ts:2899 produced a lane with NO ceiling gate at all and the
+    // blueprint's own teamHardEnvelope was consulted by nothing.
+    permissionAuthorityCeiling: createAuthorityCeilingReader({ facts }),
   })
   const plane = permissionPlaneRef.current
   if (plane === undefined) throw new Error('the a3p4r7 root did not fill the plane reference')

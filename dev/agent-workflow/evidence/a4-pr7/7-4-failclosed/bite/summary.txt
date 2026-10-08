@@ -1,0 +1,44 @@
+=== BITE PROOFS v3  2026-10-08T05:01:11Z  HEAD=7f382ac7  (one mutation live at a time) ===
+A-zeroed-declared-ceiling :: Tests  29 failed | 20 passed (49)
+    reason-census:       6 authority-ceiling-insufficient
+    red-leg:      × an ask->allow expansion covered by maximumEffect=allow commits a new snapshot 19ms
+    red-leg:      × a from-absence GRANT is an expansion measured from the DECLARED-NONE deny fallback (known fact, not a masquerade) 3ms
+    red-leg:      × TIGHTENINGS need NO expansion authority: all three, with an EMPTY envelope 3ms
+  RESTORED-BY-BLOB after A: packages/runtime/test/a4p7-ceiling-world-helpers.ts
+A2-dropped-port-fixture-direct :: Tests  16 failed | 10 passed (26)
+    red-leg:      × grant_instance appends generation 1 through the ONE authority and `latest` reads it back durably 10ms
+    red-leg:      × the effective answer is `allow` from the overlay layer, and a different key is untouched 3ms
+    red-leg:      × the overlay layer overrides a static DENY of the same pair (layer precedence, never flattening) 4ms
+  RESTORED-BY-BLOB after A2: packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts
+C-dropped-carrier :: Tests  6 failed | 27 passed (33)
+    reason-census:       4 authority-ceiling-insufficient
+    red-leg:      × S1b: the same revoke passes ONLY with allow-ceiling coverage of the WHOLE matcher 6ms
+    red-leg:      × S3: deny->ASK reveal is expansion VERBATIM (ADR §6): refused without ceiling, accepted at ceiling-ask 7ms
+    red-leg:      × S7b: the same revoke with envelope coverage of the removed matcher (ceiling allow) commits; the surviving allow now ANSWERS 3ms
+  RESTORED-BY-BLOB after C: packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts
+B-dropped-port :: Tests  11 failed | 6 passed (17)
+    reason-census:      14 PERMISSION_EFFECT_CONTEXT_UNAVAILABLE
+    reason-census:       5 "problem":"authority-ceiling-port-absent"
+    red-leg:      × exec intent → server canonicalization → durable exact-fingerprint row → pre-execute ALLOW for the identical call; deny for another command; revoke → deny 58ms
+    red-leg:      × file class through the real tool: grant → REAL pre-execute ALLOW on write; revoke → DENY 24ms
+    red-leg:      × operator exec-intent grant through the real router → pre-execute ALLOW; router revoke → DENY 12ms
+  RESTORED-BY-BLOB after B: packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts
+D-zeroed-blueprint-ceiling :: Tests  11 failed | 6 passed (17)
+    red-leg:      × exec intent → server canonicalization → durable exact-fingerprint row → pre-execute ALLOW for the identical call; deny for another command; revoke → deny 93ms
+    red-leg:      × file class through the real tool: grant → REAL pre-execute ALLOW on write; revoke → DENY 44ms
+    red-leg:      × operator exec-intent grant through the real router → pre-execute ALLOW; router revoke → DENY 33ms
+  RESTORED-BY-BLOB after D: packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts
+E-dropped-port-root-assembled :: Tests  2 failed | 18 passed (20)
+    reason-census:       1 PERMISSION_EFFECT_CONTEXT_UNAVAILABLE
+    red-leg:      × a LEADER exact grant inside the injected envelope COMMITS at the assembled root and the plane answers the overlay allow (BLOCK-1) 10ms
+    red-leg:      × R5-tool — the REAL team_grant_permission/team_revoke_permission surface: grant commits → decision ALLOW; revoke → decision DENY again (Leader gate + server-side canonicalization) 10ms
+  RESTORED-BY-BLOB after E: packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+F-subtree-cells-withdrawn :: Tests  3 failed | 23 passed (26)
+    reason-census:       1 authority-ceiling-insufficient
+    red-leg:      × a subtree grant answers for a DESCENDANT key through the per-decision verdict 6ms
+    red-leg:      × an UNJUDGED subtree rule keeps the frozen lane asymmetry (a deny is never dropped, an allow never invented) 3ms
+    red-leg:      × a MemberInstance created AFTER the grants has zero permissions 3ms
+  RESTORED-BY-BLOB after F: packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts
+
+final git status --porcelain packages: 0 line(s) — 0 means every bite reverted
+7f382ac7deab928abed1284df38a81115c8fb092

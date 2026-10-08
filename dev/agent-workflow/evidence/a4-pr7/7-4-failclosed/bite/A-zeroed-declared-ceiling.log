@@ -1,0 +1,171 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-failclosed
+
+ ❯ packages/runtime/test/a3p3-permission-mutation-authority.test.ts (23 tests | 13 failed) 69ms
+     ✓ deny->ask, deny->allow, ask->allow are EXPANSIONS; the reverse are TIGHTENINGS 1ms
+     ✓ the unified mutation model carries exactly the three kinds (design §3.4) 0ms
+     × an ask->allow expansion covered by maximumEffect=allow commits a new snapshot 19ms
+     × a from-absence GRANT is an expansion measured from the DECLARED-NONE deny fallback (known fact, not a masquerade) 3ms
+     × TIGHTENINGS need NO expansion authority: all three, with an EMPTY envelope 3ms
+     ✓ an expansion the envelope does not cover is refused and writes NOTHING 5ms
+     × a maxEffect ceiling is a CEILING: ask covers deny->ask but never ask->allow 3ms
+     × exact envelope rules do not cover wider matchers; subtree roots cover what they contain 5ms
+     ✓ a subtree envelope matcher with NO injected containment refuses typed fail-closed (round 2: unknown coverage is CONTEXT, never a label on coverage nobody can judge) 3ms
+     × a MALFORMED envelope refuses a change-mutation that rises NOTHING (parse precedes classification — fail-closed has no decidable escape hatch) 3ms
+     × may exceed the Leader envelope and records Human provenance 2ms
+     × creates NO permanent priority: the Leader recovers by tightening without any envelope, and still cannot expand beyond it 2ms
+     × a stale expectedGeneration is a typed conflict with NO partial write 2ms
+     × every state-changing mutation appends exactly ONE FULL snapshot; the no-op writes none 2ms
+     × revoke_permission produces the unified snapshot WITHOUT the addressed pairs and needs no expansion authority 2ms
+     ✓ exec rules carry EXACT canonical fingerprints ONLY: subtree and any matchers are malformed 2ms
+     × an exec expansion is covered ONLY by the identical fingerprint (no subtree, no any) 2ms
+     ✓ an envelope rule that MISPAIRS matcher kind and operation class is malformed (never silently inert) 0ms
+     ✓ a member authority on the permission lane is UNAUTHORIZED with zero write 3ms
+     ✓ without permissionLane deps the method fails typed NOT_CONFIGURED and the legacy methods still work 0ms
+     × a nested-subtree grant is covered only by a subtree envelope root the containment accepts 2ms
+     ✓ the kernel names ARE the domain vocabulary, not a compatible re-declaration 0ms
+     ✓ this parser refuses the DECLARED AST shape it is not allowed to read 1ms
+ ❯ packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts (26 tests | 16 failed) 95ms
+     × grant_instance appends generation 1 through the ONE authority and `latest` reads it back durably 12ms
+     × the effective answer is `allow` from the overlay layer, and a different key is untouched 4ms
+     × the overlay layer overrides a static DENY of the same pair (layer precedence, never flattening) 5ms
+     × a subtree grant answers for a DESCENDANT key through the per-decision verdict 4ms
+     ✓ a subtree ENVELOPE with no injected containment refuses the Leader mutation TYPED, zero write (the merged PR3 gate this lane inherits) 3ms
+     × the SAME Leader mutation commits once the lane supplies the containment predicate (production MUST supply it) 3ms
+     ✓ a FAULTING containment predicate is UNKNOWN coverage, not a negative verdict: typed refusal, zero write 4ms
+     × an UNJUDGED subtree rule keeps the frozen lane asymmetry (a deny is never dropped, an allow never invented) 3ms
+     × an exec grant answers its OWN fingerprint and no other (design §6 isolation) 3ms
+     ✓ the kernel refuses a subtree matcher on a shell class (design §5: no subtree, no any) 3ms
+     × revoke appends generation 2, leaves generation 1 byte-identical, and the decision recomputes 3ms
+     × renewing the same desired state is a NO-OP (no snapshot, no generation bump) 4ms
+     × ARCHIVED: execution is refused, the overlay stays the retained authority 3ms
+     × DISPOSED: execution is refused, and a mutation against a terminal instance is refused typed (zero write) 3ms
+     ✓ an instance with no durable row is its OWN state (never RUNNING, never ARCHIVED) 3ms
+     × revoked during ARCHIVE stays revoked after restore (no replay, no resurrection) 3ms
+     × a GENUINE rule change at restore time is one ordinary mutation through the authority 5ms
+     × restore performs NO permission write even when a grant was already standing (the no-op rule) 3ms
+     × a MemberInstance created AFTER the grants has zero permissions 2ms
+     ✓ restore of a NOT-ARCHIVED instance is the typed LIFECYCLE_ILLEGAL_STATE, before any write 3ms
+     ✓ dispose of a TERMINAL instance is the typed LIFECYCLE_ILLEGAL_STATE (the FSM, not this lane) 3ms
+     ✓ restore without a wired lifecycle path refuses typed (never a substitute transition) 3ms
+     × no static facts from the decision site = UNKNOWN, typed, no decision 3ms
+     ✓ an overlay carrier the grammar cannot read refuses typed (a rule is never silently dropped) 4ms
+     ✓ the exec plane refuses typed when the kernel algebra is not injected 3ms
+     ✓ the carrier round-trip the lane relies on is the kernel grammar (rendered by PR3, decoded by PR3) 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 29 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > an ask->allow expansion covered by maximumEffect=allow commits a new snapshot
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > a maxEffect ceiling is a CEILING: ask covers deny->ask but never ask->allow
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to ask at exact:file:/srv/worlds/a3p3/out.txt; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/29]⎯
+
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > a from-absence GRANT is an expansion measured from the DECLARED-NONE deny fallback (known fact, not a masquerade)
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > TIGHTENINGS need NO expansion authority: all three, with an EMPTY envelope
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > exact envelope rules do not cover wider matchers; subtree roots cover what they contain
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > a MALFORMED envelope refuses a change-mutation that rises NOTHING (parse precedes classification — fail-closed has no decidable escape hatch)
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Human mutation (ADR §7) > may exceed the Leader envelope and records Human provenance
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Human mutation (ADR §7) > creates NO permanent priority: the Leader recovers by tightening without any envelope, and still cannot expand beyond it
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > CAS conflict (plan PR3) > a stale expectedGeneration is a typed conflict with NO partial write
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > snapshot-per-mutation through the persistence-only port (ADR §1/§5) > every state-changing mutation appends exactly ONE FULL snapshot; the no-op writes none
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > snapshot-per-mutation through the persistence-only port (ADR §1/§5) > revoke_permission produces the unified snapshot WITHOUT the addressed pairs and needs no expansion authority
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to allow at exact:file:/srv/worlds/a3p3/out.txt; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/29]⎯
+
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > exec exactness (design §5) > an exec expansion is covered ONLY by the identical fingerprint (no subtree, no any)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg D — exec is EXACT canonical fingerprint only > an exec grant answers its OWN fingerprint and no other (design §6 isolation)
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to allow at fingerprint:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/29]⎯
+
+ FAIL  packages/runtime/test/a3p3-permission-mutation-authority.test.ts > authority and configuration boundaries > a nested-subtree grant is covered only by a subtree envelope root the containment accepts
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to allow at subtree:file:/srv/worlds/a3p3/sub; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/29]⎯
+
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg A/B — an exact grant produces a NEW snapshot and the effective decision honors it > grant_instance appends generation 1 through the ONE authority and `latest` reads it back durably
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg A/B — an exact grant produces a NEW snapshot and the effective decision honors it > the effective answer is `allow` from the overlay layer, and a different key is untouched
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg A/B — an exact grant produces a NEW snapshot and the effective decision honors it > the overlay layer overrides a static DENY of the same pair (layer precedence, never flattening)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg C — the subtree grant rides the injected containment predicate > the SAME Leader mutation commits once the lane supplies the containment predicate (production MUST supply it)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg E — revoke creates a snapshot; history keeps the old authority; the effect drops > revoke appends generation 2, leaves generation 1 byte-identical, and the decision recomputes
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg E — revoke creates a snapshot; history keeps the old authority; the effect drops > renewing the same desired state is a NO-OP (no snapshot, no generation bump)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs F/G — ARCHIVED and DISPOSED never execute > ARCHIVED: execution is refused, the overlay stays the retained authority
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs F/G — ARCHIVED and DISPOSED never execute > DISPOSED: execution is refused, and a mutation against a terminal instance is refused typed (zero write)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs H/I — restore: the SAME instance, the CURRENT latest overlay, zero permission write > revoked during ARCHIVE stays revoked after restore (no replay, no resurrection)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs H/I — restore: the SAME instance, the CURRENT latest overlay, zero permission write > a GENUINE rule change at restore time is one ordinary mutation through the authority
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 legs H/I — restore: the SAME instance, the CURRENT latest overlay, zero permission write > restore performs NO permission write even when a grant was already standing (the no-op rule)
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg J — no inheritance > a MemberInstance created AFTER the grants has zero permissions
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg L — the read plane refuses instead of guessing > no static facts from the decision site = UNKNOWN, typed, no decision
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to allow at exact:vol-root/src/a.ts; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/29]⎯
+
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg C — the subtree grant rides the injected containment predicate > a subtree grant answers for a DESCENDANT key through the per-decision verdict
+ FAIL  packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg C — the subtree grant rides the injected containment predicate > an UNJUDGED subtree rule keeps the frozen lane asymmetry (a deny is never dropped, an allow never invented)
+PermissionMutationError: a v3 mutation raises the EFFECTIVE effect to allow at subtree:vol-root/src; the expansion authority ceiling reaches only no-authority — higher authority is required, which is a REFUSAL until the escalation path lands (zero write) (problem: authority-ceiling-insufficient)
+ ❯ refuse packages/runtime/governance/permission-mutation.ts:234:9
+    232|   details: Record<string, unknown> = {},
+    233| ): never {
+    234|   throw new PermissionMutationError(code, `${message} (problem: ${prob…
+       |         ^
+    235|     problem,
+    236|     ...(toRemoteSafeDetail(details) as Record<string, unknown>),
+ ❯ authorizeCeilingBoundedPermissionRise packages/runtime/governance/permission-mutation.ts:1618:5
+ ❯ packages/runtime/governance/service.ts:1295:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/29]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  29 failed | 20 passed (49)
+   Start at  13:01:11
+   Duration  1.34s (transform 1.67s, setup 0ms, import 2.15s, tests 163ms, environment 0ms)
+

@@ -1,0 +1,41 @@
+FINAL BATTERY at 25e87870 — every instrument, run after the LAST CODE EDIT of this branch, logs
+in this directory. Everything after 25e87870 on this branch is docs/evidence only (the land order
+requires evidence last), so no instrument needed re-running for it; the tip you merge is the last
+commit of `git log` below.
+
+  full population (run #4 of 4)   502 files / 6277 legs / 19 titled reds / 3 collection-error files
+                                  the 19 = the baseline set verbatim:
+                                    t1-capability-schema 9, p6t3-mediation 5, p6t3-restart 2,
+                                    p6t6-actions 1, d3-member-identity-context 1, t2-blueprint-hash 1
+                                  NEW 0, RESOLVED 15 (bill-check-final.txt, each named + why)
+                                  final-vs-base.diff: 15 '<', 0 '>', 3 separators
+  merge gate                      packages/testkit/test/a4p7-merge-gate.test.ts   29 passed (29)
+                                  (includes the composition smoke arm and `check:artifacts:head`,
+                                  so the artifacts verdict at this HEAD is inside this number)
+  named suites (14 files)         214 passed (214) — this lane's 6 ceiling instruments
+                                  (no-port-refusal 10 = N1-N6 + R1-R4, refusal-wire 5,
+                                   port-assembly-pin 6, no-context-refusal 12,
+                                   carrier-width-under-ceiling 8, approved-retry 12),
+                                  the 5 repaired worlds (23 / 33 / 26 / 17 / 20),
+                                  the 2 instability fixes (governance-lane-hygiene 21,
+                                   glue-permission-receipt 11), p4t6 10
+  p4-t6 referee                   scanSessionEventVocabulary({}).filesScanned = 1036
+                                  (983 + the named per-path lists; a4p7-ceiling-world-helpers.ts is
+                                  NAMED in SCANNED_PATHS_A474FAILCLOSED, the total stays derived)
+  typecheck                       `pnpm -r run typecheck` exit 0, 0 `error TS`
+                                  `pnpm --no-bail -r run typecheck` exit 0, 0 `error TS`, 8 Done
+  lint identities                 --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+                                  universe 1115 files, 76 distinct, new 0, resolved 0
+  blueprint-version fence         node scripts/verify-blueprint-version-clean.mjs, run after `git add`:
+                                  dirty(6 files, 15 sites) unknown(0 files, 0 sites)
+                                  advisory(6 files, 8 sites) refused(52 files, 115 sites)
+                                  prose(5 files, 5 sites) adjudicated(16 files, 24 sites)
+                                  verdict: dirty-or-unknown  — byte-identical to the run before the
+                                  last two test edits and to the shape recorded on master
+  artifacts instruments           not re-run for 25e87870: the last commits are test-and-docs only,
+                                  no build input changed, and the merge gate's own artifacts leg
+                                  (`check:artifacts:head`, verdict ok at HEAD) is inside the 29 above.
+
+  tree                            `git status --porcelain` empty; land order law (70266cc7, 95182ee5)
+                                  -> repairs (7f382ac7, 679ac362) -> evidence (c6cb407a) ->
+                                  instability repairs (25e87870); nothing pushed, nothing merged.
