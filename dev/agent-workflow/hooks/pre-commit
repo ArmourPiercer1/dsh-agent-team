@@ -1,0 +1,24 @@
+#!/bin/sh
+# Repo guard (installed by copy into .git/hooks/pre-commit; tracked source lives here).
+#
+# WHY: a coordinator patch script wrote an unparsable dev/agent-workflow/graph.yaml and the
+# commit still landed, because the verification step ran in a different shell statement from
+# the commit and the shell does not carry a failure across a newline. graph.yaml is the single
+# source of orchestration truth, so an unparsable one is not a cosmetic defect -- it makes the
+# authority unreadable to every reader including the next session.
+#
+# What it checks is the INDEX, not the working tree: the bytes that are about to be committed,
+# not the bytes someone happened to leave on disk ("run the fence after git add", generalised).
+set -u
+
+if git diff --cached --name-only | grep -qx 'dev/agent-workflow/graph.yaml'; then
+  if ! git show :dev/agent-workflow/graph.yaml | python3 -c 'import sys, yaml; yaml.safe_load(sys.stdin)' 2>/dev/null; then
+    printf '%s\n' 'pre-commit REFUSED: dev/agent-workflow/graph.yaml in the index does not parse.' >&2
+    printf '%s\n' 'Fix the YAML (indentation of sequence items under a mapping key is the usual' >&2
+    printf '%s\n' 'cause) and re-stage. Unparsable authority state must never reach a commit.' >&2
+    exit 1
+  fi
+  printf '%s\n' 'pre-commit: graph.yaml parses in the index.'
+fi
+
+exit 0
