@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives
+
+ ❯ packages/domain/test/t1-capability-schema.test.ts (20 tests | 1 failed) 46ms
+     ✓ 0a. fixture emitter emits YAML the real parser reads back as the same document 14ms
+     ✓ 0b. fixture emitter quotes values YAML would otherwise reinterpret 1ms
+     ✓ 0c. fixture emitter refuses a shape it cannot prove instead of emitting it 0ms
+     ✓ 1. Legacy fixture parses without capabilities field 3ms
+     ✓ 2. Leader with full capabilities parses and validates 6ms
+     ✓ 3. Members can have different capabilities 2ms
+     ✓ 4. Malformed allow entry rejects (missing items) 1ms
+     ✓ 4b. Malformed allow entry rejects (items not string[]) 1ms
+     ✓ 5. Malformed deny entry rejects (extra fields) 1ms
+     ✓ 6a. Unknown capability sub-field rejects 1ms
+     ✓ 6b. Unknown template field rejects 1ms
+     × 7. Changing capability fields changes the hash 9ms
+     ✓ 8. Static source returns selective mode for Leader with capabilities 1ms
+     ✓ 9. Static source returns selective mode for MemberTemplate with capabilities 2ms
+     ✓ 10. Static source returns legacy mode when capabilities absent 1ms
+     ✓ 11. Selective source maps to TemplatePolicy values correctly 1ms
+     ✓ 11b. Selective source maps deny entries to values correctly 1ms
+     ✓ 11c. Legacy source returns undefined values 0ms
+     ✓ 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3) 0ms
+     ✓ 11e. Selective source with mixed allow([])/deny preserves all cells (P1) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 7. Changing capability fields changes the hash
+AssertionError: expected 'sha256:1b1e954c0fbcb9fa1d0c4f7f4b3198…' not to be 'sha256:1b1e954c0fbcb9fa1d0c4f7f4b3198…' // Object.is equality
+ ❯ packages/domain/test/t1-capability-schema.test.ts:627:33
+    625|     // exists to catch — so the mutated field is named at each site an…
+    626|     // mutations are also distinguished from one another, not only fro…
+    627|     expect(bp1.contentHash).not.toBe(bp2.contentHash) // teamTools ite…
+       |                                 ^
+    628|     expect(bp1.contentHash).not.toBe(bp3.contentHash) // builtinToolDe…
+    629|     expect(bp1.contentHash).not.toBe(bp4.contentHash) // skills kind
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  21:23:47
+   Duration  345ms (transform 163ms, setup 0ms, import 213ms, tests 46ms, environment 0ms)
+
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/mut-M5.json

@@ -1,0 +1,467 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives
+
+ ❯ packages/domain/test/t1-capability-schema.test.ts (20 tests | 10 failed) 28ms
+     × 0a. fixture emitter emits YAML the real parser reads back as the same document 7ms
+     ✓ 0b. fixture emitter quotes values YAML would otherwise reinterpret 1ms
+     ✓ 0c. fixture emitter refuses a shape it cannot prove instead of emitting it 0ms
+     ✓ 1. Legacy fixture parses without capabilities field 3ms
+     × 2. Leader with full capabilities parses and validates 3ms
+     × 3. Members can have different capabilities 3ms
+     × 4. Malformed allow entry rejects (missing items) 1ms
+     × 4b. Malformed allow entry rejects (items not string[]) 1ms
+     ✓ 5. Malformed deny entry rejects (extra fields) 2ms
+     ✓ 6a. Unknown capability sub-field rejects 1ms
+     × 6b. Unknown template field rejects 1ms
+     × 7. Changing capability fields changes the hash 1ms
+     × 8. Static source returns selective mode for Leader with capabilities 1ms
+     × 9. Static source returns selective mode for MemberTemplate with capabilities 1ms
+     ✓ 10. Static source returns legacy mode when capabilities absent 1ms
+     × 11. Selective source maps to TemplatePolicy values correctly 1ms
+     ✓ 11b. Selective source maps deny entries to values correctly 2ms
+     ✓ 11c. Legacy source returns undefined values 0ms
+     ✓ 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3) 0ms
+     ✓ 11e. Selective source with mixed allow([])/deny preserves all cells (P1) 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 0a. fixture emitter emits YAML the real parser reads back as the same document
+YAMLParseError: Unexpected block-seq-ind on same line with key at line 10, column 22:
+
+      items:         - read
+                     ^
+
+ ❯ Composer.onError node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/composer.js:70:34
+ ❯ composeNode node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/compose-node.js:48:13
+ ❯ Object.resolveBlockMap node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/resolve-block-map.js:85:19
+ ❯ resolveCollection node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/compose-collection.js:13:27
+ ❯ Object.composeCollection node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/compose-collection.js:59:16
+ ❯ composeNode node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/compose-node.js:34:42
+ ❯ Object.resolveBlockMap node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/resolve-block-map.js:85:19
+ ❯ resolveCollection node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/compose-collection.js:13:27
+ ❯ Object.composeCollection node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/compose-collection.js:59:16
+ ❯ composeNode node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/dist/compose/compose-node.js:34:42
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 2. Leader with full capabilities parses and validates
+Error: fixture is not valid YAML, so this leg never reached the validator (the emitted text is the defect, not the law under test): blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+--- fixture ---
+---
+schemaVersion: 3
+blueprintId: test-blueprint
+revision: v1
+leader:
+  templateId: leader
+  persona: I am the team leader.
+  capabilities:
+    teamTools:
+      kind: allow
+      items:         - read
+        - write
+    builtinToolDeny:       - fs.write
+    skills:
+      kind: allow
+      items:         - skill-a
+        - skill-b
+    mcp:
+      kind: allow
+      items:         - mcp-server-1
+members: []
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+---
+ ❯ expectFixtureIsLegalYaml packages/domain/test/t1-capability-schema.test.ts:232:11
+    230|   if (threw !== undefined) {
+    231|     const message = threw instanceof Error ? threw.message : String(th…
+    232|     throw new Error(
+       |           ^
+    233|       'fixture is not valid YAML, so this leg never reached the valida…
+    234|         `not the law under test): ${message}\n--- fixture ---\n${sourc…
+ ❯ packages/domain/test/t1-capability-schema.test.ts:444:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 3. Members can have different capabilities
+Error: fixture is not valid YAML, so this leg never reached the validator (the emitted text is the defect, not the law under test): blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+--- fixture ---
+---
+schemaVersion: 3
+blueprintId: test-blueprint
+revision: v1
+leader:
+  templateId: leader
+  persona: I am the team leader.
+members:   - templateId: member-a
+    persona: I am member A.
+    capabilities:
+      teamTools:
+        kind: allow
+        items:           - read
+          - write
+      builtinToolDeny:         - fs.write
+      skills:
+        kind: allow
+        items:           - skill-a
+          - skill-b
+      mcp:
+        kind: allow
+        items:           - mcp-server-1
+  - templateId: member-b
+    persona: I am member B.
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny: []
+      skills:
+        kind: deny
+      mcp:
+        kind: deny
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+---
+ ❯ expectFixtureIsLegalYaml packages/domain/test/t1-capability-schema.test.ts:232:11
+    230|   if (threw !== undefined) {
+    231|     const message = threw instanceof Error ? threw.message : String(th…
+    232|     throw new Error(
+       |           ^
+    233|       'fixture is not valid YAML, so this leg never reached the valida…
+    234|         `not the law under test): ${message}\n--- fixture ---\n${sourc…
+ ❯ packages/domain/test/t1-capability-schema.test.ts:463:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 4. Malformed allow entry rejects (missing items)
+Error: fixture is not valid YAML, so this leg never reached the validator (the emitted text is the defect, not the law under test): blueprint frontmatter is not valid YAML (line 13): Unexpected block-seq-ind on same line with key at line 13, column 22:
+--- fixture ---
+---
+schemaVersion: 3
+blueprintId: test-blueprint
+revision: v1
+leader:
+  templateId: leader
+  persona: I am the team leader.
+  capabilities:
+    teamTools:
+      kind: allow
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items:         - skill-a
+    mcp:
+      kind: allow
+      items: []
+members: []
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+---
+ ❯ expectFixtureIsLegalYaml packages/domain/test/t1-capability-schema.test.ts:232:11
+    230|   if (threw !== undefined) {
+    231|     const message = threw instanceof Error ? threw.message : String(th…
+    232|     throw new Error(
+       |           ^
+    233|       'fixture is not valid YAML, so this leg never reached the valida…
+    234|         `not the law under test): ${message}\n--- fixture ---\n${sourc…
+ ❯ packages/domain/test/t1-capability-schema.test.ts:491:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 4b. Malformed allow entry rejects (items not string[])
+Error: fixture is not valid YAML, so this leg never reached the validator (the emitted text is the defect, not the law under test): blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+--- fixture ---
+---
+schemaVersion: 3
+blueprintId: test-blueprint
+revision: v1
+leader:
+  templateId: leader
+  persona: I am the team leader.
+  capabilities:
+    teamTools:
+      kind: allow
+      items:         - 123
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+members: []
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+---
+ ❯ expectFixtureIsLegalYaml packages/domain/test/t1-capability-schema.test.ts:232:11
+    230|   if (threw !== undefined) {
+    231|     const message = threw instanceof Error ? threw.message : String(th…
+    232|     throw new Error(
+       |           ^
+    233|       'fixture is not valid YAML, so this leg never reached the valida…
+    234|         `not the law under test): ${message}\n--- fixture ---\n${sourc…
+ ❯ packages/domain/test/t1-capability-schema.test.ts:508:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 6b. Unknown template field rejects
+Error: fixture is not valid YAML, so this leg never reached the validator (the emitted text is the defect, not the law under test): blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+--- fixture ---
+---
+schemaVersion: 3
+blueprintId: test-blueprint
+revision: v1
+leader:
+  templateId: leader
+  persona: I am the team leader.
+  capabilities:
+    teamTools:
+      kind: allow
+      items:         - read
+        - write
+    builtinToolDeny:       - fs.write
+    skills:
+      kind: allow
+      items:         - skill-a
+        - skill-b
+    mcp:
+      kind: allow
+      items:         - mcp-server-1
+  unknownField: bad
+members: []
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+---
+ ❯ expectFixtureIsLegalYaml packages/domain/test/t1-capability-schema.test.ts:232:11
+    230|   if (threw !== undefined) {
+    231|     const message = threw instanceof Error ? threw.message : String(th…
+    232|     throw new Error(
+       |           ^
+    233|       'fixture is not valid YAML, so this leg never reached the valida…
+    234|         `not the law under test): ${message}\n--- fixture ---\n${sourc…
+ ❯ packages/domain/test/t1-capability-schema.test.ts:568:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 7. Changing capability fields changes the hash
+Error: fixture is not valid YAML, so this leg never reached the validator (the emitted text is the defect, not the law under test): blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+--- fixture ---
+---
+schemaVersion: 3
+blueprintId: test-blueprint
+revision: v1
+leader:
+  templateId: leader
+  persona: I am the team leader.
+  capabilities:
+    teamTools:
+      kind: allow
+      items:         - read
+        - write
+    builtinToolDeny:       - fs.write
+    skills:
+      kind: allow
+      items:         - skill-a
+        - skill-b
+    mcp:
+      kind: allow
+      items:         - mcp-server-1
+members: []
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+---
+ ❯ expectFixtureIsLegalYaml packages/domain/test/t1-capability-schema.test.ts:232:11
+    230|   if (threw !== undefined) {
+    231|     const message = threw instanceof Error ? threw.message : String(th…
+    232|     throw new Error(
+       |           ^
+    233|       'fixture is not valid YAML, so this leg never reached the valida…
+    234|         `not the law under test): ${message}\n--- fixture ---\n${sourc…
+ ❯ packages/domain/test/t1-capability-schema.test.ts:613:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 8. Static source returns selective mode for Leader with capabilities
+Error: fixture is not valid YAML, so this leg never reached the validator (the emitted text is the defect, not the law under test): blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+--- fixture ---
+---
+schemaVersion: 3
+blueprintId: test-blueprint
+revision: v1
+leader:
+  templateId: leader
+  persona: I am the team leader.
+  capabilities:
+    teamTools:
+      kind: allow
+      items:         - read
+        - write
+    builtinToolDeny:       - fs.write
+    skills:
+      kind: allow
+      items:         - skill-a
+        - skill-b
+    mcp:
+      kind: allow
+      items:         - mcp-server-1
+members: []
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+---
+ ❯ expectFixtureIsLegalYaml packages/domain/test/t1-capability-schema.test.ts:232:11
+    230|   if (threw !== undefined) {
+    231|     const message = threw instanceof Error ? threw.message : String(th…
+    232|     throw new Error(
+       |           ^
+    233|       'fixture is not valid YAML, so this leg never reached the valida…
+    234|         `not the law under test): ${message}\n--- fixture ---\n${sourc…
+ ❯ packages/domain/test/t1-capability-schema.test.ts:654:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 9. Static source returns selective mode for MemberTemplate with capabilities
+Error: fixture is not valid YAML, so this leg never reached the validator (the emitted text is the defect, not the law under test): blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+--- fixture ---
+---
+schemaVersion: 3
+blueprintId: test-blueprint
+revision: v1
+leader:
+  templateId: leader
+  persona: I am the team leader.
+members:   - templateId: member-a
+    persona: I am member A.
+    capabilities:
+      teamTools:
+        kind: allow
+        items:           - read
+          - write
+      builtinToolDeny:         - fs.write
+      skills:
+        kind: allow
+        items:           - skill-a
+          - skill-b
+      mcp:
+        kind: allow
+        items:           - mcp-server-1
+  - templateId: member-b
+    persona: I am member B.
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny: []
+      skills:
+        kind: deny
+      mcp:
+        kind: deny
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+---
+ ❯ expectFixtureIsLegalYaml packages/domain/test/t1-capability-schema.test.ts:232:11
+    230|   if (threw !== undefined) {
+    231|     const message = threw instanceof Error ? threw.message : String(th…
+    232|     throw new Error(
+       |           ^
+    233|       'fixture is not valid YAML, so this leg never reached the valida…
+    234|         `not the law under test): ${message}\n--- fixture ---\n${sourc…
+ ❯ packages/domain/test/t1-capability-schema.test.ts:672:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11. Selective source maps to TemplatePolicy values correctly
+Error: fixture is not valid YAML, so this leg never reached the validator (the emitted text is the defect, not the law under test): blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+--- fixture ---
+---
+schemaVersion: 3
+blueprintId: test-blueprint
+revision: v1
+leader:
+  templateId: leader
+  persona: I am the team leader.
+  capabilities:
+    teamTools:
+      kind: allow
+      items:         - read
+        - write
+    builtinToolDeny:       - fs.write
+    skills:
+      kind: allow
+      items:         - skill-a
+        - skill-b
+    mcp:
+      kind: allow
+      items:         - mcp-server-1
+members: []
+requirements: []
+memberEnvelopes: []
+policyStates: []
+metadata: {}
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+---
+ ❯ expectFixtureIsLegalYaml packages/domain/test/t1-capability-schema.test.ts:232:11
+    230|   if (threw !== undefined) {
+    231|     const message = threw instanceof Error ? threw.message : String(th…
+    232|     throw new Error(
+       |           ^
+    233|       'fixture is not valid YAML, so this leg never reached the valida…
+    234|         `not the law under test): ${message}\n--- fixture ---\n${sourc…
+ ❯ packages/domain/test/t1-capability-schema.test.ts:704:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 10 passed (20)
+   Start at  21:23:46
+   Duration  284ms (transform 133ms, setup 0ms, import 172ms, tests 28ms, environment 0ms)
+
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/mut-M4.json

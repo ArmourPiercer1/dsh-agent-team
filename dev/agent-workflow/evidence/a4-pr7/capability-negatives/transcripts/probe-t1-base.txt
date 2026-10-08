@@ -1,0 +1,193 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives
+
+stderr | packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 2. Leader with full capabilities parses and validates
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:163:23
+
+stderr | packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 3. Members can have different capabilities
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:181:23
+
+stderr | packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 4. Malformed allow entry rejects (missing items)
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:201:18
+
+stderr | packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 4b. Malformed allow entry rejects (items not string[])
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:211:18
+
+stderr | packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 6b. Unknown template field rejects
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:250:18
+
+stderr | packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 7. Changing capability fields changes the hash
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:257:17
+
+stderr | packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 8. Static source returns selective mode for Leader with capabilities
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:313:23
+
+stderr | packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 9. Static source returns selective mode for MemberTemplate with capabilities
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:329:23
+
+stderr | packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11. Selective source maps to TemplatePolicy values correctly
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:359:23
+
+ ❯ packages/domain/test/t1-capability-schema.test.ts (17 tests | 9 failed) 25ms
+     × 1. Legacy fixture parses without capabilities field 8ms
+     × 2. Leader with full capabilities parses and validates 2ms
+     × 3. Members can have different capabilities 2ms
+     ✓ 4. Malformed allow entry rejects (missing items) 3ms
+     ✓ 4b. Malformed allow entry rejects (items not string[]) 1ms
+     ✓ 5. Malformed deny entry rejects (extra fields) 1ms
+     ✓ 6a. Unknown capability sub-field rejects 1ms
+     ✓ 6b. Unknown template field rejects 1ms
+     × 7. Changing capability fields changes the hash 1ms
+     × 8. Static source returns selective mode for Leader with capabilities 1ms
+     × 9. Static source returns selective mode for MemberTemplate with capabilities 1ms
+     × 10. Static source returns legacy mode when capabilities absent 0ms
+     × 11. Selective source maps to TemplatePolicy values correctly 1ms
+     × 11b. Selective source maps deny entries to values correctly 0ms
+     ✓ 11c. Legacy source returns undefined values 0ms
+     ✓ 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3) 1ms
+     ✓ 11e. Selective source with mixed allow([])/deny preserves all cells (P1) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 1. Legacy fixture parses without capabilities field
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t1-capability-schema.test.ts:152:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 2. Leader with full capabilities parses and validates
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:132:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:163:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 3. Members can have different capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:132:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:181:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 7. Changing capability fields changes the hash
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:132:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:257:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 8. Static source returns selective mode for Leader with capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:132:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:313:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 9. Static source returns selective mode for MemberTemplate with capabilities
+TeamContractError: blueprint frontmatter is not valid YAML (line 7): Unexpected block-seq-ind on same line with key at line 7, column 12:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:132:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:329:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 10. Static source returns legacy mode when capabilities absent
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t1-capability-schema.test.ts:349:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11. Selective source maps to TemplatePolicy values correctly
+TeamContractError: blueprint frontmatter is not valid YAML (line 10): Unexpected block-seq-ind on same line with key at line 10, column 22:
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ decodeYamlFrontmatter packages/domain/blueprint/src/parse.ts:132:13
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1537:15
+ ❯ packages/domain/test/t1-capability-schema.test.ts:359:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema > 11b. Selective source maps deny entries to values correctly
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t1-capability-schema.test.ts:376:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 8 passed (17)
+   Start at  21:30:46
+   Duration  292ms (transform 135ms, setup 0ms, import 176ms, tests 25ms, environment 0ms)
+
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/probe-t1-capability-schema.test.ts.json

@@ -1,0 +1,15 @@
+test files (*.test.ts) in the nine roots: 506
+files under packages/*/test building blueprint frontmatter text: 102
+  of which interpolate a value that can carry a MULTI-LINE block (join/map/JSON.stringify): 12
+   * packages/domain/test/t1-capability-schema.test.ts
+   * packages/legacy/test/p7t6-teammates-adapter.test.ts
+   * packages/runtime/test/a2c7-subtree-matcher.test.ts
+   * packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+   * packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts
+   * packages/runtime/test/a4f1-row-version-not-document-version.test.ts
+   * packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+   * packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+   * packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
+   * packages/runtime/test/p6t4-helpers.ts
+   * packages/runtime/test/p8s6-pagination.test.ts
+   * packages/runtime/test/rmr-remote-mount-race.test.ts

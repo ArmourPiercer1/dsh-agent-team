@@ -1,0 +1,14 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives
+
+stderr | packages/domain/test/bp1-blueprint-inspector.test.ts > bp1 inspector: the structural stage (splitFrontmatter / decodeYaml) > rejects invalid YAML (yaml-invalid, the parser message preserved)
+[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/bp1-blueprint-inspector.test.ts:121:20
+
+ ✓ packages/domain/test/bp1-blueprint-inspector.test.ts (19 tests) 20ms
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  21:20:12
+   Duration  276ms (transform 131ms, setup 0ms, import 175ms, tests 20ms, environment 0ms)
+
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/probe-bp1-blueprint-inspector.test.ts.json

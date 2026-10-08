@@ -1,0 +1,139 @@
+A4-PR7 lane capability-negatives — FINAL VERIFICATION BATTERY
+generated: 2026-10-08T13:31:50Z   branch: fix-a4-capability-negatives   base: 1d706917   tree-dirty-tracked: 1  (this lane's file only)
+env: CI=true XDG_CACHE_HOME=/home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/cache ; rm -rf packages/testkit/test/.tmp-fault before every vitest run; captures strictly one at a time; port :3080 never touched.
+prereq on a fresh worktree: pnpm install --store-dir /home/user/dsh-plugins/dsh-agent-team/.pnpm-store (un-piped) ; pnpm setup   [both exit 0 here]
+
+== 1. targeted file run ===========================================================
+$ pnpm exec vitest run packages/domain/test/t1-capability-schema.test.ts
+   Test Files  1 passed (1)
+        Tests  20 passed (20)
+
+== 2. package (domain) run =========================================================
+$ pnpm exec vitest run packages/domain/test
+   FAIL  packages/domain/test/t2-blueprint-hash.test.ts > t2 hash: hashable projection > projects absent optional singles as explicit null
+   Test Files  1 failed | 25 passed (26)
+        Tests  1 failed | 525 passed (526)
+  (the single failure is the published baseline red t2-blueprint-hash.test.ts::projects absent optional singles as explicit null)
+
+== 3. a4p7-merge-gate (OFF-LIMITS to edit; run only) ================================
+   Test Files  1 passed (1)
+        Tests  29 passed (29)
+
+== 4. p4t6 session-event scan + derived scannable total =============================
+   Test Files  1 passed (1)
+        Tests  10 passed (10)
+  base=983  SCANNED_PATHS_A4PR2=4  SCANNED_PATHS_A4PR3=8  SCANNED_PATHS_A4PR4=4  SCANNED_PATHS_A4PR5=4  SCANNED_PATHS_A4PR6=13  SCANNED_PATHS_A4PR7=5  SCANNED_PATHS_A4ESCALATE=1  SCANNED_PATHS_A4F1=1  SCANNED_PATHS_A4SURFACE=1  SCANNED_PATHS_A4ARTIFACTS=1  SCANNED_PATHS_A4P7PRE=3  SCANNED_PATHS_A4P76GATE=1  SCANNED_PATHS_A4P73FLIP=1  SCANNED_PATHS_A4P73GRAMMAR=2  SCANNED_PATHS_A4P76PIN=1  SCANNED_PATHS_A474FAILCLOSED=3  SCANNED_PATHS_A476GAPS=3
+  DERIVED filesScanned = 1039
+  note: this lane is an edit to an already-counted file; no scannable file added, so the pinned total is unchanged and the named list is NOT extended (an edit is not an increment).
+
+
+== 5. mutation table (reachability; every green paired with the red it caused) ======
+$ python3 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/mutate.py
+  M1 [ALIVE] restored-hash-verified=True red=3 green=17 expected-red=['4.', '4b.', '5.'] not-turned-red=[]
+  M2 [ALIVE] restored-hash-verified=True red=1 green=19 expected-red=['6a.'] not-turned-red=[]
+  M3 [ALIVE] restored-hash-verified=True red=1 green=19 expected-red=['6b.'] not-turned-red=[]
+  M4 [ALIVE] restored-hash-verified=True red=10 green=10 expected-red=['0a.', '2.', '3.', '4.', '4b.', '6b.', '7.', '8.', '9.', '11.'] not-turned-red=[]
+  M5 [ALIVE] restored-hash-verified=True red=1 green=19 expected-red=['7.'] not-turned-red=[]
+  mutants: M1 neuter validateAllowDenyEntry (validate.ts:817, early return preserving the projection); M2 void BLUEPRINT_CAPABILITIES_FIELDS; M3 void templateFields; M4 re-introduce the base inline-array emitter defect in THIS test file; M5 capabilities:null in the hashable projection (validate.ts:1624-1625).
+  all 5 ALIVE; every restore sha256-verified (restored-hash-verified=True). A dead mutant would show not-turned-red=[...] — all empty.
+
+== 6. fixture-parse probe (decodeYamlFrontmatter instrumented, restore hash-verified) =
+$ python3 dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/probe-fixtures.py <file>
+  t1-base    decode-refusals=9
+  t1-tip     decode-refusals=0
+  bp1        decode-refusals=1
+  p8s7r2     decode-refusals=0
+  base-t1 attributions (line -> enclosing leg):
+    :163  2. Leader with full capabilities parses and validates', ()
+    :181  3. Members can have different capabilities', () => {
+    :201  4. Malformed allow entry rejects (missing items)', () => {
+    :211  4b. Malformed allow entry rejects (items not string[])', (
+    :250  6b. Unknown template field rejects', () => {
+    :257  7. Changing capability fields changes the hash', () => {
+    :313  8. Static source returns selective mode for Leader with ca
+    :329  9. Static source returns selective mode for MemberTemplate
+    :359  11. Selective source maps to TemplatePolicy values correct
+  legs 4/4b/6b were GREEN on those refusals (bare .toThrow()); legs 2/3/7/8/9/11 were red inside the emitter;
+  legs 5/6a produced no event (their fixtures hold only empty arrays) so they reached the validator but asserted no identity;
+  legs 1/10/11b produced no event and were red at the v1 version fence.
+  bp1's single event is inside its own leg 'rejects invalid YAML (yaml-invalid, the parser message preserved)'; its two bare-toThrow legs (:223,:256) produce none => not false greens.
+  p8s7r2: 0 events (its 10 bare toThrow sites never feed a parse entry).
+
+== 7. serializer-class audit (repo-wide) ===========================================
+$ node dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/audit-serializers.mjs <repo-root>
+  --- base 1d706917 (main checkout, see FINDINGS 8 re: the one extra tracked file) ---
+  {
+   "testFilesTestTsInNineRoots": 507,
+   "filesScannedAllExtensions": 570,
+   "A_filesBuildingBlueprintFrontmatter": 102,
+   "A1_withLocalYamlSerializer": 1,
+   "B_withMultiLineDynamicInterpolation": 11,
+   "filesWithAnyBareToThrow": 18,
+   "bareToThrowTotal": 54,
+   "C_bareToThrowOnParseEntryFiles": 2,
+   "C_bareToThrowOnParseEntryLegs": 7,
+   "D_suspects": 2
+  }
+  --- this tip ---
+  {
+   "testFilesTestTsInNineRoots": 506,
+   "filesScannedAllExtensions": 569,
+   "A_filesBuildingBlueprintFrontmatter": 102,
+   "A1_withLocalYamlSerializer": 1,
+   "B_withMultiLineDynamicInterpolation": 12,
+   "filesWithAnyBareToThrow": 17,
+   "bareToThrowTotal": 49,
+   "C_bareToThrowOnParseEntryFiles": 1,
+   "C_bareToThrowOnParseEntryLegs": 2,
+   "D_suspects": 1
+  }
+
+== 8. nine-root census (taken ONCE at hand-back) ===================================
+$ ./scratch/census.sh tip 1        # one root `vitest run` per capture, SEQUENTIAL; never two at once
+  capture tip-1 start 2026-10-08T13:28:12Z  HEAD=1d706917  dirty=1 (this lane's file)  vitest processes at start = 0
+  capture tip-1 exit 1  end 2026-10-08T13:29:57Z   (exit 1 = the 13 disclosed reds)
+   Test Files  8 failed | 497 passed (505)
+        Tests  10 failed | 6281 passed (6291)
+   Duration  103.98s
+  [fail-set] captured 13 identities (10 failing tests, 3 collection-failing files) from 1 report(s)
+  files 505 (baseline 505) | legs 6291 (baseline 6288 = +3 new legs 0a/0b/0c) | red identities 13 (baseline 22)
+  per-root red breakdown: see raw/tip-1.json (identity grammar scripts/fail-set.mjs; .worktrees/<task>/ prefix stripped)
+$ node scripts/fail-set.mjs diff dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/baseline-2162f6a7.ids.txt dev/agent-workflow/evidence/a4-pr7/capability-negatives/scratch/tip-1.ids.txt
+  [fail-set] baseline=22 current=13 NEW=0 FIXED=9
+  RETIRED(9, all t1):
+    - T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field
+    - T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent
+    - T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly
+    - T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly
+    - T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates
+    - T1: Blueprint Capability Schema 3. Members can have different capabilities
+    - T1: Blueprint Capability Schema 7. Changing capability fields changes the hash
+    - T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities
+    - T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities
+  UNCHANGED(13) = the 22-id baseline minus those 9; NEW(0); no titled red became a collection error (the 3 FILE ids are identical); 6288 + 3 new legs = 6291 => no leg left the registry.
+  p6t1-parallel as a RATE: 12 legs, 0 red in this capture; published series 0 red in 13 runs / 156 leg-runs (BASELINE-CLASSES 1.1) => now 0 red in 14 runs / 168 leg-runs.
+
+== 9. static gates ================================================================
+$ pnpm --no-bail -r run typecheck
+  packages/client typecheck: Done
+  exit=0 (see transcripts/typecheck.txt)
+$ pnpm run lint
+  ✖ 160 problems (128 errors, 32 warnings)
+  standing baseline: 128 errors unmoved; exit=1 as at base. The one lint error in t1 ('TeamBlueprint' unused) is inherited verbatim from base line 21.
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+  baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+$ pnpm check:artifacts:head
+  DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0
+
+== 10. assertion-count integrity ===================================================
+  t1 expect( base=54 tip=63 delta=9
+  method: grep -c 'expect(' over packages/*/test/*.ts
+  removed assertion lines are ONLY the 5 bare expect(() => parseBlueprint(source)).toThrow(), each replaced by a stronger identity assertion (see FINDINGS 2.3 and the git diff).
+
+== 11. hand-back ====================================================================
+  branch fix-a4-capability-negatives  tip c6efa4fb9c6c2684eaad08f25d1494252243e688  base 1d706917  commits ahead of origin/master: 1
+  verification and commit were ONE && chain: targeted vitest 20/20 && lint-identities new 0 && check:artifacts drift=0 && git add <only this lane's paths> && git commit
+  post-commit re-check on the NEW HEAD: check:artifacts-at-head verdict=ok rev=HEAD drift=0 ; lint-identities new 0, resolved 0 ; transcripts/commit.txt is the hook + commit output.
+  branch fix-a4-capability-negatives: handed back UNMERGED, NOT pushed. The only tracked file this lane changed is
+  packages/domain/test/t1-capability-schema.test.ts; product source is untouched (validate.ts and parse.ts are byte-identical
+  to base — every product patch made for the probe/mutation harness was restored and sha256-verified).

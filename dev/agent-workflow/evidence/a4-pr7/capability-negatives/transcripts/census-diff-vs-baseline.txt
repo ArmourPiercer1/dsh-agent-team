@@ -1,0 +1,10 @@
+FIXED TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field
+FIXED TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent
+FIXED TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly
+FIXED TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly
+FIXED TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates
+FIXED TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 3. Members can have different capabilities
+FIXED TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 7. Changing capability fields changes the hash
+FIXED TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities
+FIXED TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities
+[fail-set] baseline=22 current=13 NEW=0 FIXED=9

@@ -1,0 +1,36 @@
+{
+ "testFilesTestTsInNineRoots": 506,
+ "filesScannedAllExtensions": 569,
+ "A_filesBuildingBlueprintFrontmatter": 102,
+ "A1_withLocalYamlSerializer": 1,
+ "B_withMultiLineDynamicInterpolation": 12,
+ "filesWithAnyBareToThrow": 17,
+ "bareToThrowTotal": 49,
+ "C_bareToThrowOnParseEntryFiles": 1,
+ "C_bareToThrowOnParseEntryLegs": 2,
+ "D_suspects": 1
+}
+
+--- local YAML serializers (the t1 class) ---
+  packages/domain/test/t1-capability-schema.test.ts
+
+--- B: frontmatter text with multi-line dynamic interpolation ---
+  packages/domain/test/t1-capability-schema.test.ts
+  packages/legacy/test/p7t6-teammates-adapter.test.ts
+  packages/runtime/test/a2c7-subtree-matcher.test.ts
+  packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+  packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts
+  packages/runtime/test/a4f1-row-version-not-document-version.test.ts
+  packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+  packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+  packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
+  packages/runtime/test/p6t4-helpers.ts
+  packages/runtime/test/p8s6-pagination.test.ts
+  packages/runtime/test/rmr-remote-mount-race.test.ts
+
+--- C: bare .toThrow() whose throwing expression calls a parse/validate entry ---
+  packages/domain/test/bp1-blueprint-inspector.test.ts  line(s) 223,256  buildsFrontmatter=true
+
+--- files that build frontmatter AND have some bare .toThrow() (probe targets) ---
+  packages/domain/test/bp1-blueprint-inspector.test.ts  bare=2
+  packages/runtime/test/p8s7r2-model-state.test.ts  bare=10
