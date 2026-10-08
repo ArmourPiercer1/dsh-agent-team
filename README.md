@@ -177,7 +177,8 @@ gitignored) — this section is a pointer summary, not the authority:
 | `pnpm install` | Install the workspace (public npm registry only). |
 | `pnpm build` | Build every package (`tsc` → `packages/*/dist`). |
 | `pnpm setup` | Fresh-clone build chain: every package (`tsc`) + glue placement + client composition + install-surface artifact freshness check. |
-| `pnpm check:artifacts` | Verify the committed install-surface artifacts match a fresh build (source changes affecting them must ship rebuilt artifacts in the same commit). |
+| `pnpm check:artifacts` | Verify the working tree equals the **git index** for both install surfaces (`packages/runtime/dist`, `packages/client/composition-shim`); source changes affecting them must ship rebuilt artifacts in the same commit. It runs no build, so it cannot say a build produced those bytes — that question is the next row. |
+| `pnpm check:artifacts:head` | Verify the **commit** carries its own build: materialises `HEAD` (or `--rev <r>`) in a throwaway worktree under `.scratch/`, installs and builds it there, and runs `check:artifacts` inside it. Four answers, never collapsed — exit 0 `verdict=ok`, 1 `verdict=stale`, 2 `verdict=refused`, 3 `verdict=not-run` — each also printed as one machine-readable line (`DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=… verdict=…`) that §7.6's merge-gate leg grades instead of prose. **A run that could not build its scratch says so and exits 3, never green**: on a runner whose discoverable pnpm store is unwritable, the leg's own output is `verdict=not-run reason=store-not-writable (exit 3) — a leg that never ran has no opinion about freshness and is never a pass` (captured, `dev/agent-workflow/evidence/a4-pr7/7-8-dist-rebase/`). |
 | `pnpm typecheck` | Type-check every package (no emit). |
 | `pnpm lint` | ESLint (flat config, minimal rule set) over the workspace. |
 | `pnpm test` | Run all package unit tests (Vitest, workspace aggregation). |

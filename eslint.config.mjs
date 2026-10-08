@@ -80,6 +80,20 @@ export default tseslint.config(
       // code now — `no tracked file is invisible to lint except under a prefix this leg names` —
       // instead of leaving it to a grep someone has to remember to run.
       '**/.tmp-*/**',
+      // The scratch `scripts/check-artifacts-at-head.mjs` materialises the commit under test
+      // into (`<checkout root>/.scratch/artifact-at-head/<pid>-<stamp>`), for the same reason
+      // and by the same mechanism as the line above: it is a full checkout with `node_modules`
+      // that exists only while one instrument is running. Measured with a nested clone of this
+      // repository left in the working tree at `.swt/`: `scripts/lint-identities.mjs --diff`
+      // reported `universe: 2782 file(s) linted, 1673 of them gitignored … new 750, resolved 0`
+      // where the same command on a clean tree reports `universe: 1109 … new 0, resolved 0`,
+      // and 751 output lines named `.swt/`. Ignoring it in `.gitignore` alone cannot help,
+      // because ESLint does not read `.gitignore` — which is the sentence at the top of this
+      // file's own comment, re-earned the hard way. `**/` rather than root-anchored so a
+      // scratch inside a task worktree is covered from whichever root the scan starts at; no
+      // tracked path has a `.scratch` component (`git ls-files | grep -c '(^|/)\.scratch'` = 0),
+      // and the merge-gate leg that enumerates these prefixes asserts it.
+      '**/.scratch/**',
       '.pnpm-store/**',
       '.pnpm-store-testuse/**',
       '.agents/**',

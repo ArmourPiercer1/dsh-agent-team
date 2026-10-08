@@ -92,3 +92,12 @@ spike-run*.log
 .tmp-resolve-probe.mjs
 agent-sandbox-hotfix-*.sh
 .swt/
+
+# Scratch checkout that `pnpm check:artifacts:head` (scripts/check-artifacts-at-head.mjs)
+# materialises to build the commit under test. TRACKED on purpose: the equivalent `.tmp-*`
+# entry lived only in `.git/info/exclude`, which is not versioned, so on any other clone the
+# scratch was 376 MB of untracked duplicate source and every `git status --porcelain`
+# assertion in this repository read it as uncommitted work. The lint half of the immunity is
+# a separate mechanism (`**/.scratch/**` in eslint.config.mjs) and both are asserted by
+# §7.8's merge-gate leg, because ESLint does not read this file.
+.scratch/

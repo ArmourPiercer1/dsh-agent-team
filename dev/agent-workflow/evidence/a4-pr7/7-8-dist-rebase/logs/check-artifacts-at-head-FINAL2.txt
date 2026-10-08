@@ -1,0 +1,5 @@
+$ node scripts/check-artifacts-at-head.mjs
+[check-artifacts-at-head] installing the scratch from store recorded in node_modules/.modules.yaml: /home/user/dsh-plugins/dsh-agent-team/.pnpm-store
+[check-artifacts-at-head] materialised HEAD in a scratch worktree and is building it there
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+[check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).

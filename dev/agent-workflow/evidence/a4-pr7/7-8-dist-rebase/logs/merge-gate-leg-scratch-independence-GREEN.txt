@@ -1,0 +1,12 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase
+
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (28 tests | 27 skipped) 59095ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  59093ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 27 skipped (28)
+   Start at  11:57:34
+   Duration  59.42s (transform 147ms, setup 0ms, import 189ms, tests 59.10s, environment 0ms)
+

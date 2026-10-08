@@ -1,0 +1,27 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase
+
+lint-visibility: eslint read 1112 of 2433 OFFERED tracked lintable file(s); 1321 are hidden by an ignore pattern (dev/ 450, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1112 + 1321 = 2433 offered, + 0 skipped = 2433 tracked lintable path(s); nothing skipped
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (29 tests) 160360ms
+       ✓ is green, asserted by arm name and by absence of a skip — never by the exit code  1708ms
+       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees  426ms
+       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  328ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  1114ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  1113ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  762ms
+       ✓ reports every verdict class with its set by path when run at the toplevel  456ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  20439ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  20147ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  19092ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  60051ms
+       ✓ every workspace package that declares a typecheck script typechecks  19737ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  13427ms
+       ✓ a missing instrument is a refusal that names it, never a pass  516ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  517ms
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  12:14:30
+   Duration  160.64s (transform 136ms, setup 0ms, import 167ms, tests 160.36s, environment 0ms)
+

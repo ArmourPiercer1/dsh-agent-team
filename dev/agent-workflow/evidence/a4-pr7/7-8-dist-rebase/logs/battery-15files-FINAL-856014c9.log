@@ -1,0 +1,73 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase
+
+ ✓ packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts (9 tests) 25ms
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] bundled team skill "bad-name" skipped: the frontmatter name "Bad_Name" is not a valid kebab-case skill name
+[dsh-agent-team] bundled team skill "missing-description" skipped: SKILL.md frontmatter must carry a kebab-case "name" and a non-empty "description"
+
+stdout | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/team-skills.test.ts
+[dsh-agent-team] no bundled skills directory is resolvable from the host entry location — the bundled team skills are NOT registered (install-surface anomaly); the team core proceeds
+
+ ✓ packages/runtime/test/team-skills.test.ts (9 tests) 17ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 9ms
+ ✓ packages/testkit/test/a4-artifacts-nonempty.test.ts (4 tests) 584ms
+ ✓ packages/runtime/test/a3p5-permission-notification-lane-hygiene.test.ts (9 tests) 94ms
+ ✓ packages/runtime/test/a4p7-shipped-composition-blueprint.test.ts (3 tests) 114ms
+ ✓ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts (13 tests) 140ms
+ ✓ packages/runtime/test/a4p7-v3-grammar-enforced.test.ts (8 tests) 11ms
+ ✓ packages/runtime/test/persona-kind-shipped-dist-smoke.test.ts (2 tests) 6ms
+ ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (60 tests) 2188ms
+     ✓ invoking the script by name is a real gate: non-zero exit while dirty sites exist  486ms
+     ✓ dropping ONE row sends THAT site back to UNKNOWN — a second literal on a ledgered line costs its own row (G2)  334ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  775ms
+ ✓ packages/runtime/test/pbf-default-artifact-urls.test.ts (9 tests) 9ms
+ ✓ packages/runtime/test/p8s5a-host-loadability.test.ts (3 tests) 10ms
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts (70 tests) 43ms
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the permission authority facts warm-up FAULTED (a provider read abstained for at least one warm target) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE / zero envelope authority) until an addressed read rebuilds the facts (bounded recovery); decisions and execution are unaffected
+
+ ✓ packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts (6 tests) 11ms
+ ✓ packages/testkit/test/a4p75-composition-smoke-classification.test.ts (54 tests) 7265ms
+     ✓ requires by id every arm this repository actually reports  3507ms
+     ✓ never reports a passing gate over a step it did not run  1948ms
+
+ Test Files  15 passed (15)
+      Tests  269 passed (269)
+   Start at  12:14:20
+   Duration  8.19s (transform 19.86s, setup 0ms, import 26.43s, tests 10.53s, environment 2ms)
+

@@ -58,12 +58,13 @@
 
 import { describe, expect, it } from 'vitest'
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { REQUIRED_CHECK_IDS } from '../../../scripts/composition-smoke-bundle.mjs'
 import { PLUGIN_TARGETS } from '../../../scripts/composition-smoke-targets.mjs'
 import { INSTALL_SURFACES } from '../../../scripts/client-composition-surface.mjs'
+import { resolveScratchPath, sweepStaleScratches } from '../../../scripts/artifact-check-scratch.mjs'
 import { describeStderr } from '../../../scripts/lint-identities.mjs'
 import { absentArtifactVerdict, artifactProvenance, classifyAbsentArtifact, treeShape } from '../../../scripts/a4-artifact-provenance.mjs'
 import type { ArtifactProvenance } from '../../../scripts/a4-artifact-provenance.mjs'
@@ -778,50 +779,110 @@ function classifyLintVisibility(
   return { verdict: 'passed', why: censusLine }
 }
 
+/**
+ * The verdict channel both artifact instruments emit — one line, `key=value` pairs, always
+ * on stdout. See the headers of `scripts/check-artifacts-committed.mjs` and
+ * `scripts/check-artifacts-at-head.mjs`. A consumer selects by `script=`, because the commit
+ * instrument relays the other one's token through its own stdout: grepping for the first
+ * `verdict=` would grade the inner run against the wrong subject, which is the very
+ * confusion `check-artifacts-at-head.mjs` exists to remove.
+ */
+function verdictToken(text: string, script: string): Record<string, string> | null {
+  const line = new RegExp(`DSH-ARTIFACT-VERDICT[^\\n]*script=${script}[^\\n]*`).exec(text)
+  if (line === null) return null
+  const fields: Record<string, string> = {}
+  for (const m of line[0].matchAll(/\b([a-z][a-z-]*)=(\S+)/g)) fields[m[1] as string] = m[2] as string
+  return fields
+}
+
 function classifyArtifactsRun({ stdout, stderr, code }: {
   stdout: string
   stderr: string
   code: number | null
 }): { verdict: Verdict; why: string } {
-  // F4's precedence rule, applied to what THIS instrument does — which is not what
-  // `lint-identities.mjs` does, and that difference is measured, not assumed.
-  // `check-artifacts-committed.mjs` prints its OK on stdout (measured at this commit: exit 0,
-  // 130 bytes on stdout, 0 on stderr) and its ERROR lines on stderr (measured from
-  // `packages/testkit`: exit 1, stdout EMPTY, `ERROR: packages/runtime/dist missing — run
-  // \`pnpm build && pnpm build:composition\` first`). So "parse stdout only" would delete every
-  // refusal arm here. The rule that survives both instruments is directional and it is the one
-  // F4 is actually about: **a green may only come from stdout; a red may come from either.** An
-  // instrument that reports `OK` somewhere other than its verdict channel has not passed this
-  // gate — it has printed a sentence, and the two are not the same fact.
+  // VERDICT CHANNEL, NOT PROSE. Until a4-pr7/7.8 this arm asserted on `/OK: (\\d+) files/` —
+  // a substring of a sentence the script writes about itself, which made the test's truth a
+  // function of the script's phrasing. The same sentence was also false in a way no rewording
+  // can fix by itself: it claimed the artifacts "match the fresh build", a claim about a build
+  // `check-artifacts-committed.mjs` never runs (it compares the working tree to the INDEX, so
+  // a tree nobody built in prints success — measured at `f0485b15` over 20 stale files, with
+  // this gate 26/26 green). The script now says what it compares and both instruments state a
+  // token; this arm reads the token and treats prose as unparseable noise.
+  //
+  // The directional rule F4 established is unchanged and still measured: **a green may only
+  // come from stdout; a red may come from either stream** — the drift list legitimately goes
+  // to stderr, and an `OK` arriving on stderr is a sentence, not a verdict.
+  const token = verdictToken(stdout, 'check-artifacts-committed')
   const out = `${stdout}${stderr}`
-  const ok = /OK: (\d+) files/.exec(stdout)
-  if (ok !== null) {
-    return Number(ok[1] as string) > 0
-      ? { verdict: 'passed' as Verdict, why: ok[0] as string }
-      : { verdict: 'refused' as Verdict, why: 'check:artifacts compared zero files — nothing was checked' }
+  if (token?.verdict === 'ok') {
+    return Number(token.compared ?? '0') > 0
+      ? { verdict: 'passed' as Verdict, why: `verdict=ok subject=${token.subject ?? '?'} compared=${token.compared ?? '0'} glue=${token.glue ?? '0'}` }
+      : { verdict: 'refused' as Verdict, why: 'verdict=ok with compared=0 — an empty compared set is not a pass, it is the old false green' }
   }
-    if (/NOT-RUN: the produced set is empty/.test(out)) {
-      return {
-        verdict: 'refused' as Verdict,
-        why: `check:artifacts compared an empty produced set and refused to report OK (exit ${code}): ${out.split('\n').find((l) => l.includes('NOT-RUN')) ?? ''}`,
-      }
-    }
-    if (/missing — run `pnpm build/.test(out)) {
-      // Note what this branch cannot say: a run from a SUBDIRECTORY lands here too,
-      // because the script's ROOT is `process.cwd()`. Measured at this commit, cwd
-      // `packages/testkit` prints "packages/runtime/dist missing — run `pnpm build
-      // && pnpm build:composition` first" when the actual cause is the cwd. Refused
-      // either way (nothing was compared); the misdiagnosis is filed in FINDINGS §5.
-      return {
-        verdict: 'refused' as Verdict,
-        why: `the install surface is not there where this run was standing, so the freshness check compared nothing (exit ${code}) — either it was never built or the cwd is not the toplevel`,
-      }
-    }
-    if (/STALE install-surface artifacts/.test(out)) {
-      return { verdict: 'failed' as Verdict, why: `stale install-surface artifacts: ${tail(out)}` }
-    }
-    return { verdict: 'refused' as Verdict, why: `check:artifacts produced no verdict at all (exit ${code}); tail: ${tail(out)}` }
+  if (token?.verdict === 'stale') {
+    return { verdict: 'failed' as Verdict, why: `verdict=stale drift=${token.drift ?? '?'} — the tree owes its rebuild: ${tail(out)}` }
   }
+  if (token?.verdict === 'refused') {
+    if (token.reason === 'surface-missing') {
+      // What this arm still cannot say, and the token cannot either: the script's ROOT is
+      // `process.cwd()`, so a run from a SUBDIRECTORY reports a missing surface when the
+      // actual cause is where it was standing (measured from `packages/testkit`). Refused
+      // either way — nothing was compared. Misdiagnosis filed in FINDINGS §5.
+      return { verdict: 'refused' as Verdict, why: `verdict=refused reason=surface-missing (exit ${code}) — no install surface where this run was standing; either never built, or not run at the toplevel` }
+    }
+    return { verdict: 'refused' as Verdict, why: `verdict=refused reason=${token.reason ?? 'unstated'} (exit ${code}) — nothing was compared: ${tail(out)}` }
+  }
+  return { verdict: 'refused' as Verdict, why: `check:artifacts emitted no DSH-ARTIFACT-VERDICT line on stdout (exit ${code}) — prose is not a verdict, whatever it says; tail: ${tail(out)}` }
+}
+
+/**
+ * The commit-level sibling of `classifyArtifactsRun` — two classifiers for one subject,
+ * because the subject has two different questions and the tree can only answer one of them.
+ *
+ * `check:artifacts` compares the WORKING TREE to the git INDEX. That answers "you just
+ * built — did you `git add` the build?" and it is structurally blind to the merge question:
+ * a checkout whose `dist` was never rebuilt has working == index, so it prints
+ * `OK: 1508 files; committed install-surface artifacts match the fresh build` over a surface
+ * no build produced. Measured at `f0485b15`: that sentence, exit 0, with 20 tracked files one
+ * to two merged commits behind the source that emits them — the shipped `schema.js` still
+ * advertising `[1, 2, 3]` after the tree narrowed it to `[3]`, and five shipped modules still
+ * gating the §E.2 requirements grammar on `blueprint.schemaVersion === 2`, a version that
+ * build no longer admits. This file passed 26/26 on that tree, its install-surface leg
+ * reporting exactly that `OK` line.
+ *
+ * `check-artifacts-at-head.mjs` asks the other question — does THIS COMMIT carry its own
+ * build — by materialising the commit in a scratch worktree, building it there, and running
+ * the reviewed instrument inside it. Working tree and index are then the same commit, so the
+ * only way to print OK is for the commit to contain its own output. No comparison semantics
+ * are re-implemented here or there. Evidence:
+ * `dev/agent-workflow/evidence/a4-pr7/7-8-dist-rebase/STALENESS.md`.
+ */
+function classifyAtHeadRun({ stdout, stderr, code }: {
+  stdout: string
+  stderr: string
+  code: number | null
+}): { verdict: Verdict; why: string } {
+  // Its own token, selected by `script=`. The relayed inner token is in this stdout too, so
+  // an unqualified grep would grade the scratch's working-tree-vs-index comparison and call
+  // it a verdict about the commit — the conflation this instrument exists to separate.
+  const token = verdictToken(stdout, 'check-artifacts-at-head')
+  const out = `${stdout}${stderr}`
+  if (token?.verdict === 'ok') {
+    return Number(token.compared ?? '0') > 0
+      ? { verdict: 'passed' as Verdict, why: `verdict=ok subject=${token.subject ?? '?'} rev=${token.rev ?? '?'} compared=${token.compared ?? '0'}` }
+      : { verdict: 'refused' as Verdict, why: 'verdict=ok with compared=0 — the scratch compared nothing' }
+  }
+  if (token?.verdict === 'stale') {
+    return { verdict: 'failed' as Verdict, why: `verdict=stale rev=${token.rev ?? '?'} drift=${token.drift ?? '?'} — the commit does not carry its own build; the rebuild it owes: ${tail(out)}` }
+  }
+  if (token?.verdict === 'refused') {
+    return { verdict: 'refused' as Verdict, why: `verdict=refused reason=${token.reason ?? 'unstated'} (exit ${code}) — the instrument ran and declined to compare: ${tail(out)}` }
+  }
+  if (token?.verdict === 'not-run') {
+    return { verdict: 'refused' as Verdict, why: `verdict=not-run reason=${token.reason ?? 'unstated'} (exit ${code}) — a leg that never ran has no opinion about freshness and is never a pass: ${tail(out)}` }
+  }
+  return { verdict: 'refused' as Verdict, why: `check:artifacts:head emitted no DSH-ARTIFACT-VERDICT line on stdout (exit ${code}); prose is not a verdict; tail: ${tail(out)}` }
+}
 
 describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => {
   it('runs where its instruments can see the tree, and refuses to run anywhere else', () => {
@@ -1394,20 +1455,87 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
         classify: classifyArtifactsRun,
       })
       expect(r.verdict, `check:artifacts did not pass. why: ${r.why}`).toBe('passed')
-      // The refused branches, pinned against the strings the script actually prints
-      // (checked against `scripts/check-artifacts-committed.mjs` at this commit) without
-      // wrecking the tree to produce them.
-      expect(classifyArtifactsRun({ stdout: '', stderr: '[check-artifacts-committed] ERROR: packages/runtime/dist missing — run `pnpm build && pnpm build:composition` first.', code: 1 }).verdict).toBe('refused')
-      expect(classifyArtifactsRun({ stdout: '', stderr: '[check-artifacts-committed] NOT-RUN: the produced set is empty (0 of 0 files on disk survived the ignore filter) — the gate compared nothing and must not report OK.', code: 2 }).verdict).toBe('refused')
-      expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))', stderr: '', code: 0 }).verdict).toBe('passed')
-      expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 0 files; committed install-surface artifacts match the fresh build (incl. 0 glue placement(s))', stderr: '', code: 0 }).verdict).toBe('refused')
+      // The states, pinned against the tokens the script actually prints (captured from it at
+      // this commit) without wrecking the tree to produce them.
+      // All four states, on the channel the scripts actually emit (captured from the
+      // scripts themselves at this commit; `pnpm check:artifacts` prints the first line
+      // verbatim on a clean tree). Note `subject=index` on every one of them: that is the
+      // scope of this instrument, and it is now part of the machine-readable answer rather
+      // than of a sentence about a build it did not run.
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=refused reason=surface-missing', stderr: '[check-artifacts-committed] ERROR: packages/runtime/dist missing — run `pnpm build && pnpm build:composition` first.', code: 1 }).verdict, 'a missing surface compared nothing, whatever the exit code says').toBe('refused')
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=refused reason=empty-produced-set on_disk=0', stderr: '[check-artifacts-committed] NOT-RUN: the produced set is empty (0 of 0 files on disk survived the ignore filter) — the gate compared nothing and must not report OK.', code: 2 }).verdict).toBe('refused')
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1', stderr: '', code: 0 }).verdict).toBe('passed')
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=0 glue=0', stderr: '', code: 0 }).verdict, 'verdict=ok over zero files is the old false green and is never a pass').toBe('refused')
+      expect(classifyArtifactsRun({ stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=stale compared=1508 drift=20 sites=20', stderr: '[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):', code: 1 }).verdict, 'a tree that owes its rebuild FAILS; it is not a refusal, and the two must never collapse').toBe('failed')
       // F4's direction of travel, pinned here as well: the same OK sentence arriving on STDERR is
       // not a pass. This instrument does not do that today (measured at this commit: `OK` on
       // stdout with stderr empty at exit 0, and it is the ERROR lines that go to stderr), which
       // is precisely why the arm is pinned against captured text rather than trusted to the
       // script's habits.
-      expect(classifyArtifactsRun({ stdout: '', stderr: '[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))', code: 0 }).verdict,
+      expect(classifyArtifactsRun({ stdout: '', stderr: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1', code: 0 }).verdict,
         'a verdict on the wrong stream is not a verdict — green comes from stdout, red may come from either').toBe('refused')
+      // The arm that makes this leg immune to prose: the old success sentence, in full, with
+      // no token alongside it. This is exactly what `f0485b15` printed over 20 stale files and
+      // what this leg believed. Prose alone can no longer produce a green at all.
+      expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))', stderr: '', code: 0 }).verdict,
+        'prose is not a verdict channel; a run that states no token compared nothing this gate can stand behind').toBe('refused')
+      // And the reworded sentence, likewise: it is the truth now, but the leg still refuses
+      // to read it as the answer.
+      expect(classifyArtifactsRun({ stdout: '[check-artifacts-committed] OK: 1508 files — working tree equals the git INDEX for both install surfaces (incl. 1 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.', stderr: '', code: 0 }).verdict).toBe('refused')
+    })
+
+    it('the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask', { timeout: 600_000 }, async () => {
+      // The leg this lane exists for. The leg above is not weak and was not broken: it asks
+      // a different question, and the answer to THAT question stayed green over a surface 20
+      // files stale. A merge gate whose install-surface leg only fires for whoever happens to
+      // build is a gate that fires on memory, so this leg builds — in a throwaway worktree at
+      // the commit under review, never in the tree it is reviewing.
+      const r = await runLeg(process.execPath, ['scripts/check-artifacts-at-head.mjs'], {
+        cwd: REPO_ROOT,
+        timeoutMs: 540_000,
+        label: 'pnpm check:artifacts:head',
+        classify: classifyAtHeadRun,
+      })
+      expect(r.verdict, `check:artifacts:head did not pass. why: ${r.why}`).toBe('passed')
+      // The two red answers stay distinct, pinned against the text the script actually prints.
+      // Collapsing them is how an unwritable store, or a build that died, becomes a green.
+      expect(classifyAtHeadRun({
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=f0485b15 verdict=stale compared=1508 drift=20',
+        stderr: '[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):',
+        code: 1,
+      }).verdict, 'a commit that owes its own rebuild is a failure, not a refusal').toBe('failed')
+      expect(classifyAtHeadRun({
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=not-run reason=install',
+        stderr: '',
+        code: 3,
+      }).verdict, 'a scratch that never installed never compared anything — refused, and the refusal says which step died').toBe('refused')
+      expect(classifyAtHeadRun({
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1\nDSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=2683653a verdict=ok compared=1508 drift=0',
+        stderr: '',
+        code: 0,
+      }).verdict, 'the relayed inner token must not be mistaken for the outer verdict — the outer one is what the leg grades').toBe('passed')
+      // …and the converse: an inner OK with no outer token is NOT a pass for this leg. That
+      // is the exact confusion `check-artifacts-at-head.mjs` exists to make impossible, and
+      // it is now asserted rather than argued.
+      expect(classifyAtHeadRun({
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1',
+        stderr: '',
+        code: 0,
+      }).verdict, 'an index-subject verdict is not a commit-subject verdict').toBe('refused')
+      expect(classifyAtHeadRun({
+        stdout: 'DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=2683653a verdict=ok compared=1508 drift=0',
+        stderr: '',
+        code: 0,
+      }).verdict).toBe('passed')
+      // Same directional doctrine as its sibling: a green only counts on stdout. The scratch
+      // run legitimately relays the instrument's drift list on stderr, so a stderr-only
+      // `carries its own build` cannot be believed as a pass.
+      expect(classifyAtHeadRun({
+        stdout: '',
+        stderr: 'DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=2683653a verdict=ok compared=1508 drift=0',
+        code: 0,
+      }).verdict, 'a verdict on the wrong stream is not a verdict').toBe('refused')
+      expect(classifyAtHeadRun({ stdout: '', stderr: '', code: 0 }).verdict, 'silence is not a verdict about freshness').toBe('refused')
     })
 
     it('a check:artifacts run from a subdirectory is refused, never an OK over nothing', async () => {
@@ -1425,6 +1553,152 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       })
       expect(r.verdict, `a subtree check:artifacts run must never be believed: ${r.why}`).toBe('refused')
       expect(`${r.stdout}${r.stderr}`).not.toContain('OK:')
+    })
+
+    it('the scratch the commit-level instrument builds cannot change another instrument\'s measurement', { timeout: 900_000 }, async () => {
+      // WHY THIS LEG EXISTS, measured rather than argued. The instrument materialises the
+      // commit under test as a full checkout (`.git`, `node_modules`, 1508 artifact files) and
+      // the first version put it inside the working tree at a `.tmp-` path whose git-ignore
+      // lived only in `.git/info/exclude` — an UNTRACKED file. The lint half of the immunity
+      // was real, the git half was true only on the machine that wrote it. The same shape of
+      // accident, measured on a nested clone left in the main working tree at `.swt/`:
+      //
+      //   clean tree           universe: 1109 file(s) linted … new 0, resolved 0
+      //   clone present        universe: 2782 file(s) linted, 1673 of them gitignored … new 750
+      //                        — 751 output lines naming `.swt/`
+      //
+      // So the scratch's LOCATION is a property of the instrument, and this leg asserts it in
+      // both mechanisms that can be poisoned, with the control that makes the assertion
+      // non-vacuous. It does not assert "ignores are good": it asserts that THIS path, resolved
+      // by the same function the instrument calls, is invisible to the lint universe and to
+      // `git status`, and that a file in a non-ignored path is visible to both.
+      const scratch = resolveScratchPath(REPO_ROOT, `${String(process.pid)}-fixture`)
+      // One unused binding and one undefined call per probe: if a probe is linted it yields
+      // two identities, so a leak cannot hide inside a rounded count.
+      const probe = 'export const plantedUnusedBinding = 1\nplantedUndefinedCall()\n'
+      const universeRe = /^lint-identities: universe: (\d+) file\(s\) linted, (\d+) of them gitignored/m
+      async function universe(label: string) {
+        const r = await runLeg(process.execPath, [join(REPO_ROOT, 'scripts', 'lint-identities.mjs')], {
+          cwd: REPO_ROOT,
+          timeoutMs: 300_000,
+          label,
+          classify: ({ stdout, stderr, code }) => {
+            const m = universeRe.exec(stdout)
+            if (m === null) {
+              return { verdict: 'refused' as Verdict, why: `${label}: printed no universe line (exit ${String(code)}); tail: ${tail(`${stdout}${stderr}`)}` }
+            }
+            return { verdict: 'passed' as Verdict, why: `${label}: universe ${m[1]}` }
+          },
+        })
+        const m = universeRe.exec(r.stdout)
+        return { r, files: m === null ? -1 : Number(m[1]) }
+      }
+      // Same shape as the scratch probes, one file each, so the control moves the universe by
+      // the same number of files the scratch would have.
+      const controlDir = join(REPO_ROOT, 'packages', 'testkit', 'test')
+      const controls = [join(controlDir, 'lint-scratch-control-a.mts'), join(controlDir, 'lint-scratch-control-b.mts')]
+      try {
+        const before = await universe('lint universe, scratch absent')
+        expect(before.r.verdict, before.r.why).toBe('passed')
+        expect(before.files, 'a universe of zero files means the instrument measured nothing').toBeGreaterThan(0)
+
+        mkdirSync(join(scratch, 'packages', 'runtime', 'src'), { recursive: true })
+        writeFileSync(join(scratch, 'packages', 'runtime', 'src', 'planted-a.mts'), probe, 'utf8')
+        writeFileSync(join(scratch, 'packages', 'runtime', 'src', 'planted-b.mts'), probe, 'utf8')
+
+        const withScratch = await universe('lint universe, scratch materialised')
+        expect(withScratch.r.verdict, withScratch.r.why).toBe('passed')
+        expect(withScratch.r.stdout, 'the scratch must not even appear as a gitignored-but-linted file: ESLint does not read `.gitignore`, so appearing here means the flat-config glob is gone').not.toContain('.scratch/')
+        expect(
+          withScratch.files,
+          `materialising the scratch moved the lint universe from ${String(before.files)} to ${String(withScratch.files)} — the scratch is being linted, so every identity diff in this repository now reports a regression nobody made`,
+        ).toBe(before.files)
+
+        // The git mechanism, separately: ignored — and ignored BY THE TRACKED FILE. Matching on
+        // `.git/info/exclude` would be exactly the bug this leg was written for: invisible on
+        // one machine, 376 MB of untracked duplicate source on every other clone.
+        const ignored = await runLeg('git', ['check-ignore', '-v', '--no-index', join(scratch, 'packages', 'runtime', 'src', 'planted-a.mts')], {
+          cwd: REPO_ROOT,
+          timeoutMs: 60_000,
+          label: 'git check-ignore on the scratch',
+          classify: ({ stdout, code }) => (code === 0 && stdout.startsWith('.gitignore:')
+            ? { verdict: 'passed' as Verdict, why: `ignored by the tracked .gitignore (${stdout.split('\n')[0] ?? ''})` }
+            : { verdict: 'failed' as Verdict, why: `the scratch is not ignored by the TRACKED .gitignore; check-ignore said (exit ${String(code)}): ${stdout.trim() || '<no match>'}` }),
+        })
+        expect(ignored.verdict, ignored.why).toBe('passed')
+        // And invisible to the porcelain assertions every lane ends its report with — scoped to
+        // the scratch so a legitimately dirty working tree cannot redden this leg.
+        const porcelain = await runLeg('git', ['status', '--porcelain', '--', join(relative(REPO_ROOT, scratch) || '.', '**')], {
+          cwd: REPO_ROOT,
+          timeoutMs: 60_000,
+          label: 'git status under the scratch',
+          classify: ({ stdout }) => (stdout.trim() === ''
+            ? { verdict: 'passed' as Verdict, why: 'nothing reported' }
+            : { verdict: 'failed' as Verdict, why: `git status reports the scratch as work: ${stdout.split('\n').slice(0, 3).join(' | ')}` }),
+        })
+        expect(porcelain.verdict, porcelain.why).toBe('passed')
+
+        // The control: two identical probes in a path that is NOT under an ignored prefix. If
+        // this does not move the universe, the equality above proved nothing. Measured here:
+        // the universe grows by exactly the two files planted.
+        for (const c of controls) writeFileSync(c, probe, 'utf8')
+        const withControl = await universe('lint universe, control probes planted')
+        expect(withControl.r.verdict, withControl.r.why).toBe('passed')
+        expect(
+          withControl.files,
+          `the planted control files did not enter the lint universe (expected ${String(before.files + controls.length)}, got ${String(withControl.files)}) — an instrument that cannot see a planted file cannot see the scratch either, and this leg would be measuring nothing. Written as a count rather than a guessed literal: the first version of this assertion planted ONE control file and expected two, and the universe corrected it.)`,
+        ).toBe(before.files + controls.length)
+      } finally {
+        rmSync(scratch, { recursive: true, force: true })
+        for (const c of controls) rmSync(c, { force: true })
+      }
+    })
+
+    it('a crashed run\'s scratch is swept, and a live one is not', { timeout: 120_000 }, async () => {
+      // The README answer to "what removes the scratch, and what happens if the process dies
+      // mid-materialisation" has to be a rule, not a promise, so the rule is asserted here.
+      // Run in a fixture root, never in the real tree: `sweepStaleScratches` deletes.
+      const root = join(REPO_ROOT, 'packages', 'testkit', 'test', '.tmp-scratch-sweep-fixture')
+      const parentDir = join(root, '.scratch', 'artifact-at-head')
+      const HOUR = 3_600_000
+      // Liveness is supplied, not assumed, and that is a finding rather than a convenience:
+      // `process.kill(3, 0)` said "alive" in one process in this working tree and `ESRCH` in the
+      // vitest worker, and the first version of this leg wrote the fixture around the first
+      // answer. It passed in one runner and swept an entry it had just declared protected in
+      // another (captured: `expected [ '3-1', '3-2', '999999-1' ] to deeply equal [ '3-1',
+      // '999999-1' ]`). The rule is about pid-aliveness; the test says so directly.
+      const LIVE = process.pid
+      const DEAD = 4_194_303 // above the usual `kernel.pid_max`: nothing can hold this pid
+      const alive = (pid: number) => pid === LIVE
+      const mk = (name: string, ageMs: number) => {
+        const dir = join(parentDir, name)
+        mkdirSync(dir, { recursive: true })
+        // A Date, not a raw number: `utimesSync` takes seconds-or-Date, and the first version
+        // of this leg passed millisecond timestamps, which set the mtimes to the year 55,000
+        // and made every entry read as infinitely young. The sweep then removed nothing and the
+        // leg still looked plausible — an aged-fixture assertion that cannot age is the same
+        // defect as a timeout that cannot fire.
+        const t = new Date(Date.now() - ageMs)
+        utimesSync(dir, t, t)
+      }
+      try {
+        rmSync(parentDir, { recursive: true, force: true })
+        mk(`${String(DEAD)}-1`, 10 * 60_000) // pid gone, older than the concurrency grace -> residue
+        mk(`${String(LIVE)}-1`, 2 * HOUR) // pid alive, older than maxAge -> residue anyway
+        mk(`${String(LIVE)}-2`, 10 * 60_000) // pid alive, young enough -> someone's run, leave it
+        mk(`${String(DEAD)}-2`, 60_000) // pid gone, but inside recentMs -> could be a concurrent build
+        const removed = sweepStaleScratches(root, { isLivePid: alive }).map((x) => x.split('/').pop())
+        expect(removed.sort()).toEqual([`${String(DEAD)}-1`, `${String(LIVE)}-1`].sort())
+        expect(existsSync(join(parentDir, `${String(LIVE)}-2`)), 'a sweep that deletes a concurrent run\'s scratch turns its honest NOT-RUN into a false verdict about the tree').toBe(true)
+        expect(existsSync(join(parentDir, `${String(DEAD)}-2`)), 'nothing younger than the concurrency grace may be touched').toBe(true)
+        // And the shipped default, once, with nothing injected: an entry whose pid the OS itself
+        // reports as gone is residue at 10 minutes. This is the path the instrument actually
+        // takes; the injected matrix above must not be the only thing anyone ever exercises.
+        mk(`${String(DEAD)}-3`, 10 * 60_000)
+        expect(sweepStaleScratches(root, {}).map((x) => x.split('/').pop())).toEqual([`${String(DEAD)}-3`])
+      } finally {
+        rmSync(root, { recursive: true, force: true })
+      }
     })
 
     it('every workspace package that declares a typecheck script typechecks', { timeout: 1830000 }, async () => {
@@ -1593,6 +1867,7 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       const instruments: { file: string; rootScript: string | null }[] = [
         { file: 'composition-smoke.mjs', rootScript: 'smoke:composition' },
         { file: 'check-artifacts-committed.mjs', rootScript: 'check:artifacts' },
+        { file: 'check-artifacts-at-head.mjs', rootScript: 'check:artifacts:head' },
         { file: 'lint-identities.mjs', rootScript: 'lint:identities' },
         { file: 'verify-blueprint-version-clean.mjs', rootScript: null },
       ]
