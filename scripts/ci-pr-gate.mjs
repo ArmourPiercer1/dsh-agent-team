@@ -112,6 +112,7 @@ const GRAPH_YAML = 'dev/agent-workflow/graph.yaml'
  */
 const LEG_ORDER = [
   'graph-parse',
+  'state-freshness',
   'install',
   'blueprint-fence',
   'typecheck',
@@ -160,6 +161,77 @@ export function finalToken(verdict, counts) {
  * so the run LOOKS like it passed those flags; measured on run 37801019804, which cost a hosted run
  * and the transcripts nobody could download. Returns 1-based line numbers of offending comments.
  */
+/**
+ * The recovery pointer, graded instead of trusted. Round 44's review found `current_phase` asserting
+ * `master = 606a0be7 (PR #65-#196 all merged)` four rounds after that stopped being true, with nothing
+ * failing — because a revision embedded in prose has no grammar to violate. This is that grammar. It
+ * reads the fields by a stated shape rather than a YAML library on purpose, and FAILS CLOSED when a
+ * field is absent, so reformatting the document cannot quietly turn the check vacuous.
+ *
+ * Round records may be written as `s7_roundNN_records` or, when one record covers two rounds, as
+ * `s7_roundNN_MM_records` (the file really contains `s7_round19_20_records`). Both spellings fill the
+ * rounds they name; a hole in the result is a dropped record, which looks exactly like a skipped one.
+ *
+ * @param graphText - raw dev/agent-workflow/graph.yaml.
+ * @param logText - raw dev/agent-workflow/SESSION_ROUTER_LOG.md.
+ * @param isAncestor - (sha) => boolean, whether that revision is reachable from HEAD.
+ */
+export function checkStatePointers({ graphText, logText, isAncestor }) {
+  const findings = []
+  const info = {}
+  const g = String(graphText)
+  const phase = /^current_phase:\s*(.*)$/m.exec(g)
+  if (!phase) findings.push('current_phase is absent; recovery state cannot be missing and green')
+  else {
+    // The rule that keeps this fix from rotting: the field naming the phase may not name a revision.
+    // Anything mutable belongs in state_pointers, where it is graded.
+    if (/\bmaster\s*=\s*[0-9a-f]{7,40}/i.test(phase[1])) {
+      findings.push('current_phase embeds a master revision; that claim goes stale silently — move it to state_pointers.master_sha')
+    }
+    if (/\bPR\s+#\d+/.test(phase[1])) {
+      findings.push('current_phase enumerates PR numbers; a PR census in prose is stale the moment a PR merges — state_pointers only')
+    }
+  }
+  const hasSp = /^state_pointers:\s*$/m.test(g)
+  if (!hasSp) findings.push('state_pointers block is absent (added round 44); recovery would be reading prose again')
+  const roundM = hasSp ? /^ {2}round:\s*(\d+)\s*$/m.exec(g) : null
+  const shaM = hasSp ? /^ {2}master_sha:\s*([0-9a-f]{7,40})\s*$/m.exec(g) : null
+  if (!roundM) findings.push('state_pointers.round missing or not an integer at the pinned indentation')
+  if (!shaM) findings.push('state_pointers.master_sha missing or not a 7-40 hex revision at the pinned indentation')
+
+  const rounds = new Set()
+  for (const m of g.matchAll(/s7_round(\d+)(?:_(\d+))?_records/g)) {
+    const a = Number(m[1])
+    const b = m[2] === undefined ? a : Number(m[2])
+    for (let r = Math.min(a, b); r <= Math.max(a, b); r += 1) rounds.add(r)
+  }
+  const uniq = [...rounds].sort((x, y) => x - y)
+  if (uniq.length === 0) findings.push('no s7_roundNN_records node found; the graph holds no round records')
+  const newest = uniq.length > 0 ? uniq[uniq.length - 1] : -1
+  const gaps = []
+  for (let k = 1; k < uniq.length; k += 1) for (let r = uniq[k - 1] + 1; r < uniq[k]; r += 1) gaps.push(r)
+  if (gaps.length > 0) findings.push(`round records have gaps at ${gaps.join(',')}; a missing number is a dropped record, not a skipped one`)
+
+  const logRounds = [...String(logText).matchAll(/^## \d{4}-\d{2}-\d{2} round (\d+)/gm)].map((m) => Number(m[1]))
+  const lastLog = logRounds.length > 0 ? logRounds[logRounds.length - 1] : -1
+  info.graph_newest_round = newest
+  info.log_last_round = lastLog
+  if (roundM) {
+    const declared = Number(roundM[1])
+    info.declared_round = declared
+    if (newest >= 0 && declared !== newest) findings.push(`state_pointers.round ${declared} disagrees with newest round record (s7_round${newest}_records)`)
+    if (lastLog >= 0 && declared !== lastLog) {
+      findings.push(`state_pointers.round ${declared} disagrees with last SESSION_ROUTER_LOG heading "round ${lastLog}" (log and graph were not updated in the same round)`)
+    }
+  } else if (newest >= 0) findings.push(`cannot check the pointer: newest record is s7_round${newest}_records and round is unparseable`)
+  if (shaM) {
+    const sha = shaM[1]
+    info.declared_sha = sha
+    if (!isAncestor(sha)) findings.push(`state_pointers.master_sha ${sha} is not reachable from HEAD: the pointer names a revision this tree cannot produce`)
+  }
+  return { findings, info }
+}
+
 export function findContinuationComments(script) {
   const lines = String(script).split('\n')
   const bad = []
@@ -658,6 +730,28 @@ const LEGS = {
     return { verdict: 'fail', detail: `${GRAPH_YAML} leg could not run (exit ${String(r.code)}, signal ${String(r.signal)}): ${tail(out, 3)}` }
   },
 
+  'state-freshness'() {
+    const gp = resolve(REPO_ROOT, GRAPH_YAML)
+    const lp = resolve(REPO_ROOT, 'dev/agent-workflow/SESSION_ROUTER_LOG.md')
+    for (const [what, abs] of [['graph', gp], ['log', lp]]) {
+      if (!existsSync(abs)) return { verdict: 'fail', detail: `${what} state file is absent (${abs}); recovery state cannot be missing and green` }
+    }
+    const head = runCommand('git', ['rev-parse', 'HEAD'], { cwd: REPO_ROOT })
+    if (head.code !== 0) {
+      return { verdict: 'refused', refuseReason: 'git-unavailable', detail: 'REFUSED: state freshness is graded against git and git did not run' }
+    }
+    const isAncestor = (sha) => runCommand('git', ['merge-base', '--is-ancestor', sha, 'HEAD'], { cwd: REPO_ROOT }).code === 0
+    const { findings, info } = checkStatePointers({ graphText: readFileSync(gp, 'utf8'), logText: readFileSync(lp, 'utf8'), isAncestor })
+    if (findings.length > 0) return { verdict: 'fail', detail: findings.join(' ; ') }
+    const lagM = runCommand('git', ['rev-list', '--count', `${String(info.declared_sha)}..HEAD`], { cwd: REPO_ROOT })
+    const lag = lagM.code === 0 ? `lag ${lagM.stdout.trim()} commits` : 'lag unknown'
+    return {
+      verdict: 'pass',
+      detail: `pointer agrees both ways (round ${String(info.declared_round)} = newest record = last log heading), records contiguous, ` +
+        `${String(info.declared_sha)} reachable (${lag}); code truth stays in git, orchestration state here, recovery read starts in the log`,
+    }
+  },
+
   install(ctx) {
     const args = ['install', '--frozen-lockfile']
     if (ctx.storeDir !== null) args.push(`--store-dir=${ctx.storeDir}`)
@@ -978,7 +1072,14 @@ function parseArgs(argv) {
     else if (a === '--census-test-timeout') opts.censusTestTimeout = Number(argv[(i += 1)])
     else if (a === '--resample') opts.resample = Number(argv[(i += 1)])
     else if (a === '--allow-refused') opts.allowRefused.push(...String(argv[(i += 1)]).split(',').map((x) => x.trim()).filter(Boolean))
-    else if (a === '--only') opts.only = String(argv[(i += 1)]).split(',').map((s) => s.trim()).filter(Boolean)
+    else if (a === '--only') {
+      // Repeated --only ACCUMULATES, like --skip beside it. It used to overwrite, so
+      // `--only graph-parse --only state-freshness` silently ran ONE leg and printed legs=1 — a
+      // verification that looks like it covered two things and covered one. Measured the hard way
+      // while adding the state-freshness leg, which is why the fix is here and not a comment.
+      const names = String(argv[(i += 1)]).split(',').map((s) => s.trim()).filter(Boolean)
+      opts.only = [...(opts.only ?? []), ...names]
+    }
     else if (a === '--skip') opts.skip.push(...String(argv[(i += 1)]).split(',').map((s) => s.trim()).filter(Boolean))
     else if (a === '--store-dir') opts.storeDir = argv[(i += 1)]
     else if (a === '--transcript-dir') opts.transcriptDir = argv[(i += 1)]
@@ -1453,6 +1554,40 @@ function selfTest() {
     'a comment above the command is not an offence — the detector must not push comments into scripts',
   )
   ok(findContinuationComments('set -o pipefail\nmkdir -p x\nnode a.mjs --b\n').length === 0, 'a plain multi-line script reports nothing')
+
+  const spGood = {
+    graphText: 'current_phase: "PHASE — EXECUTION"\nstate_pointers:\n  round: 7\n  master_sha: abc1234\ns7_round6_records: x\ns7_round7_records: y',
+    logText: '## 2026-10-07 round 6\nbody\n## 2026-10-08 round 7\nbody',
+    isAncestor: () => true,
+  }
+  ok(checkStatePointers(spGood).findings.length === 0, 'a coherent pointer passes: round = newest record = last log heading, sha reachable')
+  ok(
+    checkStatePointers({ ...spGood, logText: '## 2026-10-08 round 6\nbody' }).findings.some((f) => f.includes('last SESSION_ROUTER_LOG heading')),
+    'a graph updated without the log (or the reverse) fails — the recovery pair must move together',
+  )
+  ok(
+    checkStatePointers({
+      ...spGood,
+      graphText: spGood.graphText.replace('current_phase: "PHASE — EXECUTION"', 'current_phase: "EXECUTION master = abc1234 (PR #65-#196 merged)"'),
+    }).findings.some((f) => f.includes('embeds a master revision')),
+    'the exact stale string this check was written for is illegal in current_phase, so the fix cannot rot back',
+  )
+  ok(
+    checkStatePointers({ ...spGood, graphText: spGood.graphText.replace('  master_sha: abc1234\n', '') }).findings.some((f) => f.includes('master_sha missing')),
+    'an absent graded field FAILS rather than passes — reformatting must not make the check vacuous',
+  )
+  ok(
+    checkStatePointers({ ...spGood, isAncestor: () => false }).findings.some((f) => f.includes('not reachable from HEAD')),
+    'a pointer naming an unreachable revision fails: it may lag, it may not invent',
+  )
+  ok(
+    checkStatePointers({ ...spGood, graphText: spGood.graphText.replace('s7_round6_records: x', 's7_round5_records: x') }).findings.some((f) => f.includes('gaps at 6')),
+    'a hole in the round numbering is reported, because a dropped record looks exactly like a skipped one',
+  )
+  ok(
+    checkStatePointers({ ...spGood, graphText: spGood.graphText.replace('s7_round6_records: x\n', '').replace('s7_round7_records: y', 's7_round6_7_records: y') }).findings.length === 0,
+    'one combined record node covering two rounds fills both — the real s7_round19_20_records node, which the first version of this leg wrongly called a gap',
+  )
 
   for (const f of fails) process.stdout.write(`SELFTEST FAIL: ${f}\n`)
   process.stdout.write(
