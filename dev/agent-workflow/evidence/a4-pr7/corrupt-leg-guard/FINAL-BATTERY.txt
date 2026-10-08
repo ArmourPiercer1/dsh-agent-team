@@ -1,0 +1,150 @@
+FINAL BATTERY — A4 corrupt control-leg guard
+lane: B-runtime-semantics / fix-a4-corrupt-leg-guard   tip `70075deb`   base `606a0be7`
+env:  node v24.21.0, pnpm 11.7.0, CI=true, XDG_CACHE_HOME=<workspace>/.tmp-xdg/cache,
+      `rm -rf packages/testkit/test/.tmp-fault` before every vitest invocation, port :3080 never touched.
+captured: 2026-10-08T13:06Z
+
+────────────────────────────────────────────────────────────────────────────────
+1. VERDICT SUMMARY
+  finding ................ CONFIRMED behaviourally at base (7 RED / 4 GREEN through the real consultGuard)
+  fix .................... landed, class-wide, fires only where the guard would PROCEED
+  both directions ........ corrupt ⇒ refused (W1-W4b, W10) ; genuinely-no-request ⇒ unchanged (W6, W7, W8, C4)
+  counterfactual ......... 3 mutants, every one reddened named legs (0 green mutants), file sha256-verified back
+  nine-root census ....... 506 files / 6299 legs / RESOLVED 0 ; the two identities NEW at tip are
+                           load-sensitive and reproduce on a base-control run WITHOUT this fix (see §4)
+  merge gate ............. 29/29 (run alone, 149s)
+  artifacts .............. HEAD carries its own build, compared=1508 drift=0
+  handback ............... UNMERGED
+
+2. FRESH-WORKTREE PREREQUISITE (a dirty build dir reads as fake reds)
+  pnpm install --store-dir <workspace>/.pnpm-store        exit 0 (log kept off-tree)
+  pnpm setup (build + build:composition)                  exit 0
+    DSH-ARTIFACT-VERDICT script=check-artifacts-committed verdict=ok compared=1508 glue=1
+  Without it the gitignored packages/client/dist makes a nine-root census read 20 red where the
+  population baseline records 19 — i.e. a census taken before the build is a census of the tree's
+  staleness, not of its tests.
+
+3. TARGETED SUITES (the six that can see this change), 100/100 at tip
+  packages/tools/test/a4-corrupt-leg-guard.test.ts .................... 11 passed  (NEW FILE)
+  packages/runtime/test/a4p3-approval-case.test.ts .................... 28 passed  (1 leg re-pinned, §7)
+  packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts ... 14 passed  (untouched)
+  packages/runtime/test/a4a-control-exact-scope.test.ts ............... 28 passed  (untouched, W8's pin)
+  packages/tools/test/p6t6-guard.test.ts ..............................  9 passed  (untouched, no-request pass-through)
+  packages/testkit/test/p4t6-session-event-scan.test.ts ............... 10 passed  (SCANNED_PATHS extended, §5)
+  evidence instrument (client lane, outside packages/**) .............. 2 passed
+    npx vitest run --config dev/agent-workflow/evidence/a4-pr7/corrupt-leg-guard/evidence-runner.config.mts
+
+4. NINE-ROOT IDENTITY CENSUS — roots named, IDENTITY SETS compared, never totals
+  roots: contracts domain legacy remote runtime storage testkit tools client
+  baseline: dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md
+            (as corrected there: 505 files / 6288 legs / 19 titled reds by identity / 3 collection-error files)
+  this branch adds exactly one scannable file and eleven legs ⇒ 506 files / 6299 legs.
+  full four-run table: dev/agent-workflow/evidence/a4-pr7/corrupt-leg-guard/CENSUS.txt
+
+  run A (tip, CONCURRENT with my own mutation sweep) .... 21 reds, RESOLVED 0, NEW 2
+     both NEW were merge-gate legs (typecheck + lint identity) and were SELF-INFLICTED: the sweep was
+     editing packages/runtime/control/service.ts under the census, and an untracked
+     scratch/vitest.evidence.config.ts was sitting inside the ESLint universe (ESLint does not read
+     .gitignore, so an untracked scratch file is a lint subject). Both causes were real defects in my
+     own work at that moment — a TS2322 in my new spec and a stray scratch .ts — and both are gone.
+     Disclosed rather than quietly re-run until green.
+  run B (tip, exclusive) ................................ 20 reds, RESOLVED 0, NEW 1
+     + packages/runtime/test/a3p3-governance-lane-hygiene.test.ts > … the ceiling adapter and the PR2
+       evaluator each have ONE audited consumer set per name
+  run C (tip, exclusive) ................................ 21 reds, RESOLVED 0, NEW 2
+     + the same a3p3 hygiene leg
+     + packages/testkit/test/rc2-sanitize-evidence.test.ts > … S13 file aliases, quoted values, and
+       capture formats pass the standalone regressions
+  BASE CONTROL (production reverted to `606a0be7`, my spec removed from packages/**, same nine roots)
+     25 reds — and it contains BOTH of run B's and run C's NEW identities (a3p3 hygiene, rc2-sanitize
+     S13), plus rc2-kit-preset-seam and the a4p7-blueprint-version-clean dirty-set leg.
+     It also contains, as it must, the two control artifacts that prove the control worked: a4p3's
+     re-pinned A2-9 leg (production reverted ⇒ the old `no-request` answer comes back, so the re-pinned
+     assertion goes red exactly as designed) and p4t6's sum leg (the named file had been moved out of
+     the scan universe). Neither is a defect; both are the control reading true. After it, service.ts /
+     types.ts / the new spec were restored and sha256-verified against the pre-control hashes, and
+     `git status` showed nothing but the new evidence docs.
+     ⇒ those identities are load/order-sensitive legs of the existing corpus, NOT deltas of this branch.
+       They cannot be attributed to a change that is absent from the run that reproduces them.
+  re-sample discipline (the baseline's published correction demands a RATE, not a label):
+     a3p3 hygiene + rc2-sanitize S13, run solo, three consecutive samples: 34 passed / 34 passed /
+     34 passed ⇒ 3/3 green solo, red only inside the nine-root load. No p6t1-family red appeared in any
+     run on this branch, so the 2/8 solo rate published for that family was not exercised here.
+  collection-error files: exactly the three the baseline names (p8s3b-result-effects,
+     t12a-b2-child-identity, t12a-glue-handoff-ports). No red resolved INTO a collection error, so
+     there is no escalation of that kind. RESOLVED is 0 in every run: no existing red was silenced.
+
+5. p4t6 SESSION-EVENT SCAN — derived, not typed
+  node -e "import('./packages/testkit/fault-injection/session-event-scan.mjs').then(m=>console.log(
+      m.scanSessionEventVocabulary({}).filesScanned))"        ⇒ 1040 on this tree (1039 at base)
+  new named list SCANNED_PATHS_A4CORRUPTLEG = ['packages/tools/test/a4-corrupt-leg-guard.test.ts'],
+  pinned as `expect(SCANNED_PATHS_A4CORRUPTLEG.length).toBe(1040 - 1039)` and added to BOTH sums
+  (filesScanned and files.length) and to the by-path presence loop. Nothing renumbered; no total
+  hand-written. Both endpoints MEASURED: with the file on disk and the entry stripped the run reads
+  `expected 1040 to be 1039` (p4t6-pre-extend-red.txt), i.e. a landed file without its name here goes
+  RED rather than passing on a stale total. The production change is an EDIT to already-counted paths
+  and contributes 0 — edits are not increments in either direction.
+
+6. COUNTERFACTUAL (proof the fix bites) + REACHABILITY — COUNTERFACTUAL.txt
+  M1 neuter-veto (the new refusal can never fire) ........ 8 reddened / 31 green ⇒ reachable
+     W1 W2 W3 W4 W4b W5 W10 + a4p3's re-pinned A2-9 leg
+  M2 veto-everything (leg-identity test removed) ......... 2 reddened / 37 green ⇒ reachable
+     W7 (a corrupt leg at a DIFFERENT scope must not freeze the Team) + a4p3's leg
+  M3 reason-collapse (`authority-scope-unbound` never named) 5 reddened / 34 green ⇒ reachable
+     W1 W2 W3 W4 + a4p3's leg
+  GREEN MUTANTS: NONE. Every mutant in the set was caught by at least one named leg, so no green
+  mutation table here can be read as a dead mutant. NOTE W6 is NOT an over-refusal probe (an empty
+  ledger has no corrupt legs to over-refuse); W7 is, and M2 proves it is load-bearing.
+  service.ts restored to its pre-mutation bytes after each mutation, reproducible from the commit
+  alone (`git show 606a0be7:packages/runtime/control/service.ts`); sha256 -c OK every time.
+
+7. RE-PINNED ACCEPTANCE ASSERTION (Alpha.4 A2-9 territory, on coordinator ruling)
+  packages/runtime/test/a4p3-approval-case.test.ts, leg "refuses to authorize on a row the case read
+  refuses, even with a durable allow (A2-9)": base asserted `expect(verdict.reason).toBe('no-request')`
+  with the comment "…the guard does not see the row at all…" — a FALSE GREEN at the seam that mattered,
+  because `no-request` is exactly what `packages/tools/src/guard.ts` proceeds on. Re-pinned to
+  `CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_SCOPE_UNBOUND` (constant, not string) + the damaged row's
+  requestId; `allowed:false` and `consumptionsOfUnusable === 0` kept. Ruling quoted in FINDINGS.md §7,
+  including the coordinator's own check that no spec/plan/ADR pins `no-request` for corrupt legs
+  (`grep -rn "no-request" docs/plans/active/alpha4-permission-governance/*.md` → 0 hits; re-verified).
+
+8. `expect(` COUNTS, base → tip (no silent removals anywhere)
+  packages/runtime/test/a4p3-approval-case.test.ts ......... 84 → 86   (+2, both on the re-pinned leg)
+  packages/testkit/test/p4t6-session-event-scan.test.ts .... 41 → 42   (+1, the new tie)
+  packages/runtime/control/service.ts ......................  0 →  0   (production)
+  packages/runtime/control/types.ts ........................  0 →  0   (production, doc-only)
+  packages/tools/test/a4-corrupt-leg-guard.test.ts ......... NEW, 42 expect calls over 11 legs
+
+9. GATES
+  pnpm run build + pnpm build:composition ................ run in the same commit as the source change
+  pnpm check:artifacts:head .............................. verdict=ok compared=1508 glue=1 /
+                                                          check-artifacts-at-head rev=HEAD verdict=ok drift=0
+                                                          ("HEAD carries its own build: the committed
+                                                          surface IS a fresh build of itself")
+  node scripts/verify-blueprint-version-clean.mjs (post `git add`)
+     dirty(6 files, 15 sites) / unknown(0) / advisory(6, 8) / refused(52, 115) / prose(5, 5) /
+     adjudicated(16, 24) ⇒ verdict `dirty-or-unknown`. IDENTICAL COUNTS on the base tree (414a49d7),
+     i.e. unchanged by this branch; no file this lane touched appears in the fence's output (the single
+     grep hit is the unrelated adjudication-ledger path), and the only `version` strings my diff adds
+     are `"version":3` sourcemap headers in packages/runtime/dist. NOT presented as clean: it is a
+     pre-existing dirty fence, same before and after. RE-RUN after this lane's evidence documents
+     landed: the OFFENDING path set is byte-identical (diff empty), and
+     `npx vitest run packages/testkit/test/a4p7-blueprint-version-clean.test.ts` ⇒ 60 passed, i.e. the
+     evidence documents added no path to the recorded Task 7.4 deferral set.
+  node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+     ⇒ 160 identity lines, 76 distinct, universe 1121 files linted / 0 gitignored; baseline 76 distinct;
+       new 0, resolved 0.
+  pnpm run lint .......................................... 128 errors / 32 warnings — red at base and
+     red here with the SAME count (the repo's disclosed baseline; no new error class introduced).
+  pnpm --no-bail -r run typecheck ........................ every package Done, 0 errors
+     (one real error WAS found and fixed here: TS2322 in my own new spec — see run A in §4).
+  packages/testkit/test/a4p7-merge-gate.test.ts .......... 29/29 passed, run ALONE (149s), never edited.
+     A lane does not get to edit its own referee: the only testkit file this branch touches is p4t6.
+
+10. WHAT IS DELIBERATELY NOT CLAIMED
+  no privilege-escalation claim (see FINDINGS.md §5 for the machine-supported absence proof);
+  no "the operation completed on a booted host" claim — W10 measured the durable-world runtime FACADE
+  (`executed` / `work-admitted`) and says so; no client-lane edit (the client finding is measured by an
+  evidence instrument outside packages/** and reported for backlog 14); no new wire-visible reason
+  code; `dev/agent-workflow/graph.yaml` and `SESSION_ROUTER_LOG.md` untouched (coordinator-owned);
+  `scratch/` untracked and never staged (the merge gate's scratch-sweep leg passes).

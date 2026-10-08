@@ -2,7 +2,10 @@ COUNTERFACTUAL — does the fix bite, and is every mutant reachable?
 Base of comparison: the landed fix at HEAD of fix-a4-corrupt-leg-guard.
 Method: one line mutated in packages/runtime/control/service.ts, both affected suites
 re-run (packages/tools/test/a4-corrupt-leg-guard.test.ts + packages/runtime/test/a4p3-approval-case.test.ts),
-file restored from scratch/service.mutbase and sha256-verified after every mutation.
+file restored to the pre-mutation bytes and sha256-verified after every mutation. The un-mutated
+bytes are reproducible from the commit alone: `git show 606a0be7:packages/runtime/control/service.ts`
+for the pre-fix base, `git show HEAD:packages/runtime/control/service.ts` for the fix under test
+(the working copies were kept off-tree in an untracked scratch directory, never staged).
 
 === M1-neuter-veto
   reddened 8 / stayed green 31  → reachable: YES
