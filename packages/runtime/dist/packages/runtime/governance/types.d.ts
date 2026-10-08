@@ -204,13 +204,20 @@ export interface GovernancePermissionLaneDeps {
      * and what do the two ceiling documents say", and the kernel refuses the batch if
      * the risen effect is above either ceiling.
      *
-     * ABSENT means the deployment wired no ceiling reader — the lane keeps behaving
-     * exactly as Alpha.3 shipped it. That is a WIRING fact and is deliberately NOT
-     * the v3 signal: v3 selection is `schemaVersion === 3` on the bound blueprint,
-     * nothing else (never reader presence, never `rules.length`, never "the hard
-     * ceiling is empty so this must be a pre-v3 team"). A v3 Team whose document is
-     * `{ rules: [] }` has ZERO expansion authority, which is an answer; a Team whose
-     * document cannot be read refuses.
+     * ABSENT means the deployment wired no ceiling reader, and since A4-PR7 §7.5
+     * prerequisite 3 that is NO LONGER a licence to commit an unassessed rise: a
+     * batch that RISES on such a lane is refused with
+     * `PERMISSION_EFFECT_CONTEXT_UNAVAILABLE` and problem
+     * `authority-ceiling-port-absent` (zero write) — an unread ceiling is never
+     * guessed and never treated as absent. A batch that does not rise (a tightening)
+     * still commits, because refusing it would trade one unsound default for
+     * another. Absence is a fact about WIRING and is deliberately NOT the v3
+     * existential signal: the only answer that may skip the ceiling gate is the
+     * reader answering `undefined` for a pre-v3 (v1/v2) binding — nothing else
+     * (never reader presence, never `rules.length`, never "the hard ceiling is
+     * empty so this must be a pre-v3 team"). A v3 Team whose document is
+     * `{ rules: [] }` has ZERO expansion authority, which is an answer; a Team
+     * whose document cannot be read refuses, and a lane that never asked refuses.
      */
     readonly authorityCeiling?: (teamSessionId: string, memberInstanceId: string, 
     /** The acting surface, already normalized by the service from the closed
