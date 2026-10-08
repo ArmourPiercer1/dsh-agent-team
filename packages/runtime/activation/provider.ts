@@ -155,6 +155,41 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
   const coordinators = new Map<string, ProvisioningCoordinator>()
   /** Per-team promise chain (the activation lock). */
   const teamLocks = new Map<string, Promise<unknown>>()
+  /**
+   * Per-team promise chain for the step-6 compatibility consultation.
+   *
+   * WHY THIS CHAIN EXISTS (A4-PR7 p6t1-flake; capture and measurement:
+   * `dev/agent-workflow/evidence/a4-pr7/p6t1-flake/FINDINGS.md`).
+   * The module block above promises: "All durable writes for one team are
+   * serialized behind a per-team promise chain." Step 6 did not honour it.
+   * `authority.evaluate()` is not a read: when the durable compatibility
+   * generation is MISSING or STALE it re-probes INLINE
+   * (`compatibility/authority.ts` step 3) and that re-probe WRITES —
+   * `compatibility/probe.ts:replaceState()` is `compatibility.delete()` then
+   * `compatibility.put()` then `teamSessions.advanceGeneration()`, serialized
+   * only by the PROBER's own chain, while this provider builds a fresh
+   * authority (hence a fresh prober) on every `activate()`. N parallel
+   * activations of one cold team therefore all delete, then all put: the first
+   * put wins and every later put hits `putRecord`, whose rule is "identical
+   * stored bytes are a no-op, different bytes are `RECORD_DUPLICATE`". The
+   * record's only time-varying field is `computedAt`, a millisecond-resolution
+   * wall-clock stamp, so whether the lost write was visible AT ALL came down to
+   * two probes landing in the same millisecond — measured at 4 reds in 20 solo
+   * runs of `p6t1-parallel.test.ts`, and 100% once the stamps are forced
+   * distinct. The loser rejects `RECORD_DUPLICATE`, the chain reports
+   * `reprobe-failed`, and step 6 fail-closes an admission that had nothing
+   * wrong with it — in the other interleaving silently losing the write.
+   *
+   * This chain is SEPARATE from `teamLocks` because the consultation is awaited
+   * strictly BEFORE the activation lock is acquired (the pre-reservation abort
+   * region is documented as split at that acquisition); routing it through
+   * `teamLocks` would make every activation queue behind its own unfinished
+   * tail and self-deadlock. Serializing changes scheduling only: the first
+   * admission establishes the generation, every later admission OBSERVES it
+   * fresh, which is the reading step 3 was written to perform. No status,
+   * typed code, verdict or law changes.
+   */
+  const compatibilityLocks = new Map<string, Promise<unknown>>()
 
   function getCoordinator(rootSessionId: string): ProvisioningCoordinator {
     let coordinator = coordinators.get(rootSessionId)
@@ -177,6 +212,22 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
       () => undefined,
     )
     teamLocks.set(rootSessionId, tail)
+    return run
+  }
+
+  /**
+   * Serialize one team's step-6 compatibility consultation (see the
+   * `compatibilityLocks` declaration for why this is its own chain).
+   */
+  function withCompatibilityLock<T>(rootSessionId: string, work: () => Promise<T>): Promise<T> {
+    const previous =
+      compatibilityLocks.get(rootSessionId) ?? Promise.resolve(undefined as unknown)
+    const run = previous.then(work)
+    const tail: Promise<unknown> = run.then(
+      () => undefined,
+      () => undefined,
+    )
+    compatibilityLocks.set(rootSessionId, tail)
     return run
   }
 
@@ -779,11 +830,18 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
 
     let compatibilityStatus: CompatibilityStatus
     try {
-      const admission = await authority.evaluate({
-        ...(request.acknowledgements !== undefined
-          ? { acknowledgements: request.acknowledgements }
-          : {}),
-      })
+      // Step 6 runs on its own per-team chain: the consultation may durably
+      // re-probe the compatibility generation, and two concurrent activations
+      // of one team must not interleave that read-modify-write (see the
+      // `compatibilityLocks` declaration). Scheduling only — the consultation,
+      // its fail-closed mapping and every typed code below are unchanged.
+      const admission = await withCompatibilityLock(rootSessionId, () =>
+        authority.evaluate({
+          ...(request.acknowledgements !== undefined
+            ? { acknowledgements: request.acknowledgements }
+            : {}),
+        }),
+      )
       // Boundary check point 1: after the compatibility-authority await
       // (step 6).
       if (request.signal !== undefined && request.signal.aborted === true) {
