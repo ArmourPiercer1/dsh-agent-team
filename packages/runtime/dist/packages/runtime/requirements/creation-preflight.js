@@ -115,7 +115,10 @@ export async function evaluateCreationScopes(options) {
     // 2. Template scopes — each on ITS OWN fresh feed (v2 only; the feeds
     //    may not be unioned — (domain, subject) pairs may collide across
     //    scopes, W3-A). A read failure is a chain failure (fail-closed).
-    if (blueprint.schemaVersion === 2) {
+    // A4-PR7 §7.3 Option A (decision record: dev/agent-workflow/evidence/a4-pr7/7-3-decision/Dossier.md):
+    // the §E.2 grammar is a property of the blueprint SHAPE, not of its version digit — the scope list
+    // `inputs.templates` is the shape (empty for a document that declares nothing), so no version test.
+    {
         for (const [templateId, requirementInputs] of Object.entries(inputs.templates)) {
             let templateFacts;
             if (options.templateEnvironmentFactsRead !== undefined) {

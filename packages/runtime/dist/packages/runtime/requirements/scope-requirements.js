@@ -74,7 +74,10 @@ export function scopeRequirementInputsOf(blueprint) {
     const scopes = [];
     if (team.length > 0)
         scopes.push(teamScope());
-    if (blueprint.schemaVersion === 2) {
+    // A4-PR7 §7.3 Option A (decision record: dev/agent-workflow/evidence/a4-pr7/7-3-decision/Dossier.md):
+    // the §E.2 grammar is a property of the blueprint SHAPE, not of its version digit — the per-template
+    // presence check below decides; a v1 document declares no template requirements, so it stays inert.
+    {
         const templateEntries = [
             { templateId: blueprint.leader.templateId, requirements: blueprint.leader.requirements },
             ...blueprint.members.map((member) => ({

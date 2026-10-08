@@ -70,7 +70,7 @@ export const BLUEPRINT_DOCUMENT_SCHEMA_VERSION = 1;
  * The v3-only switch itself lives in PR2's single adapter, selected by
  * `schemaVersion` (ADR A5-12).
  */
-export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [1, 2, 3];
+export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3];
 /**
  * Every Blueprint DOCUMENT VERSION this product has ever defined and shipped:
  * `1` (the frozen Alpha.1/2 document), `2` (Alpha.3's requirements document),
