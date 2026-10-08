@@ -1179,15 +1179,17 @@ export function createGovernanceMutationService(
               )
         const factsRaw = await lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId)
         const staticFacts = factsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(factsRaw)
-        // ROUND 5 (parent final review): the round-4 leader-facts ceiling
-        // fold is REMOVED — it was a second policy gate ADR §6 does not
-        // carry. The envelope document + the target's lower-layer facts
-        // above are the WHOLE injected context.
-        // ONE pure authorization step: effective rises inside the mutation's
-        // closed regions need whole-matcher envelope coverage with the risen
-        // effect ceiling (all-or-nothing, ladder-strict, ADR §6); a region
-        // whose verdict depends on unknown lower facts refuses typed
-        // (EFFECT_CONTEXT_UNAVAILABLE) — never a guessed deny.
+        // A4-PR7 §7.5 (SUPERSEDES ROUND 5's "the envelope document + lower-layer
+        // facts are the WHOLE injected context"): the carrier parse above stays as
+        // fail-closed INPUT validation — a malformed document refuses
+        // `MALFORMED_ENVELOPE` before anything is evaluated — but it authorizes
+        // nothing here anymore. This step is pure classification: a region whose
+        // verdict depends on unknown lower facts refuses typed
+        // (EFFECT_CONTEXT_UNAVAILABLE) — never a guessed deny — and every DECIDED
+        // rise is priced by the v3 ceiling gate below, against BOTH bound
+        // documents (hard envelope ∧ carrier) at every claim point. The
+        // one-judging-rule-here reading ("a covering carrier rule IS the
+        // authorization") died with `leaderEnvelopeCoverage`.
         authorizeLeaderPermissionMutation({
           latestRules: latest === undefined ? [] : latest.state.rules,
           plannedRules: plan.rules,
@@ -1284,9 +1286,10 @@ export function createGovernanceMutationService(
             latestRules: latest === undefined ? [] : latest.state.rules,
             plannedRules: plan.rules,
             mutationRules: mutation.rules,
-            // The Leader's own envelope is NOT a ceiling: it is the document the
-            // Leader owns, judged above by Alpha.3's coverage law. It is required by
-            // the input type and never read without a coverage judge.
+            // The Leader's carrier is NOT read here: it reaches this judgement as
+            // a BOUND DOCUMENT through `ceilingContext`, never through the
+            // classification input. The field is required by the (post-§7.5
+            // unread) input type, so the branch passes the honest declared zero.
             envelope: parsePermissionMutationEnvelope({ rules: [] }),
             staticFacts: ceilingFacts,
             subtreeContains: lane.subtreeContains,
@@ -1516,13 +1519,15 @@ function judgeCeilingPoint(
  * a refusal.
  *
  * WHY THE WIDTH BELONGS HERE AT ALL: `leaderEnvelopeCoverage` — Alpha.3's
- * whole-matcher coverage law, judged inside `authorizeLeaderPermissionMutation` — is
- * the only current owner of that width, and 7.3 deletes it. The deletion is NOT part
- * of this change and stays gated on the prerequisites in
- * `dev/agent-workflow/evidence/a4-pr7/7-3-prereq/FINDINGS.md`; what lands here is the
- * surviving law being able to say NO on the same rise. Pinned by
- * `test/a4p7-carrier-width-under-ceiling.test.ts` (legs 1-2 = the law being deleted,
- * legs 3-5 = this law, leg 5 = the direction a swap gets wrong).
+ * whole-matcher coverage law, judged inside `authorizeLeaderPermissionMutation` —
+ * used to be the only owner of that width, and A4-PR7 §7.5 DELETED it. The
+ * deletion shipped only after the prerequisite law above could say NO on the same
+ * rise and after the §7.5 mutation re-measurement confirmed nothing newly commits
+ * (`dev/agent-workflow/evidence/a4-pr7/7-5-delete/FINDINGS.md`; the gating
+ * prerequisite record is `dev/agent-workflow/evidence/a4-pr7/7-3-prereq/FINDINGS.md`).
+ * Pinned by `test/a4p7-carrier-width-under-ceiling.test.ts` (legs 1-2 = the width
+ * refusal, now owned by THIS law; legs 3-5 = the meet's shape, leg 5 = the
+ * direction a swap gets wrong).
  */
 export function createPermissionAuthorityCeilingJudge(deps: {
   readonly subtreeContains?: SubtreeContains

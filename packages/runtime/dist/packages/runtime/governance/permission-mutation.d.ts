@@ -138,7 +138,13 @@ export declare const PERMISSION_MUTATION_ERROR_CODES: Readonly<{
     readonly MALFORMED_ENVELOPE: "PERMISSION_ENVELOPE_MALFORMED";
     /** The authority kind may not act on the permission lane (member/others). */
     readonly UNAUTHORIZED_ACTOR: "PERMISSION_MUTATION_UNAUTHORIZED_ACTOR";
-    /** A Leader expansion no envelope rule covers (ADR §6) — zero write. */
+    /** A Leader expansion no envelope rule covers (ADR §6) — zero write.
+     *  PRODUCER-LESS SINCE A4-PR7 §7.5: the aggregate that issued it
+     *  (`leaderEnvelopeCoverage`) is deleted, and surviving refusals ride
+     *  `AUTHORITY_CEILING_INSUFFICIENT` / `EFFECT_CONTEXT_UNAVAILABLE`. The
+     *  code STAYS a member of this closed surface because the frozen wire
+     *  vocabulary still lists it (`packages/remote/src/handlers/dispatch.ts`)
+     *  — a retired producer is not a retired protocol member. */
     readonly EXPANSION_OUTSIDE_ENVELOPE: "PERMISSION_ENVELOPE_EXPANSION_DENIED";
     /** The effective before/after of a region depends on lower-layer facts the
      *  service was not given (`staticLayers` not injected) and the outcome is
@@ -319,9 +325,10 @@ export type CoverageVerdict = CoverageVerdictDocument;
  * ORDER below is precisely the part that must not: identity is answered BEFORE
  * the containment seam is consulted, so a missing predicate can never turn a
  * provable identity into a non-match (the external round-2 correction that the
- * consumption sites still depend on — `EXPANSION_OUTSIDE_ENVELOPE` and
- * `EFFECT_CONTEXT_UNAVAILABLE` are different answers and the fold that
- * separates them reads this verdict).
+ * consumption sites still depend on — after A4-PR7 §7.5 the consuming fold is
+ * `authority-ceiling.ts:effectiveAuthorityCeiling`, which turns an
+ * `undeterminable` coverage verdict into CONTEXT (`authority-ceiling-undetermined`),
+ * never a `no-authority` INSUFFICIENT: different answers, different remedies).
  *
  * The doc-comment that used to live on this declaration travels with the
  * implementation to `authority-envelope.ts:matcherCovers`, where the rules are
@@ -404,8 +411,15 @@ export interface LeaderMutationAuthorizationInput {
      *  sequential classification (parent req 4). */
     readonly plannedRules: readonly PermissionOverlayRule[];
     /** The mutation's parsed rules — their matchers are the affected closed
-     *  regions (the mutation's claimed scope doubles as the coverage width). */
+     *  regions; the claimed scope is also the WIDTH the v3 ceiling prices at
+     *  every claim point ({@link permissionRiseClaimedPoints}) — since §7.5 it
+     *  is no longer measured against an envelope here. */
     readonly mutationRules: readonly PermissionMutationRule[];
+    /** The caller's parse-validated carrier document. Since A4-PR7 §7.5 the
+     *  classification reads NO policy from it — the caller-side parse is the
+     *  fail-closed input validation (`MALFORMED_ENVELOPE` before any commit),
+     *  and the SAME document is judged by the v3 ceiling through the bound
+     *  documents context, at the claim points, never here. */
     readonly envelope: PermissionMutationEnvelope;
     /** `undefined` = UNKNOWN lower facts (typed refusal wherever observable);
      *  `{ layers: [] }` = declared-none (decidable deny fallback). Never
@@ -517,17 +531,17 @@ export interface PermissionRiseRegion {
  * today's arithmetic, is how this lane could one day sign a width it never priced.
  */
 export declare function permissionRiseClaimedPoints(region: PermissionRiseRegion): readonly PermissionResourceMatcher[];
-/** The actor-specific verdict on one rise, injected into the classification. */
-export type PermissionRiseCoverage = 'covered' | 'unmet' | 'coverage-unknown';
-/** The classification of a whole batch. `unmet` stays EMPTY when no coverage judge
- *  was injected — emptiness there means "not asked", never "authorized", which is
- *  why a caller that wants an authorization has to ask for one. */
+/** The classification of a whole batch: the rises the closed-region partition
+ *  FOUND and the regions whose verdict needs context that was not injected.
+ *  It judges nothing. Before A4-PR7 §7.5 a third array (`unmet`) carried the
+ *  Leader envelope's whole-matcher coverage verdict; it is DELETED, and
+ *  authorizing a rise is the v3 ceiling's question alone — the meet over every
+ *  covering rule of both bound documents at every point the rise claims
+ *  (`governance/service.ts:createPermissionAuthorityCeilingJudge`,
+ *  {@link permissionRiseClaimedPoints}). */
 export interface PermissionRiseClassification {
     readonly rising: readonly PermissionRiseRegion[];
     readonly undeterminable: readonly {
-        readonly detail: Record<string, unknown>;
-    }[];
-    readonly unmet: readonly {
         readonly detail: Record<string, unknown>;
     }[];
 }
@@ -535,25 +549,41 @@ export interface PermissionRiseClassification {
  * CLASSIFY, DO NOT AUTHORIZE (A4-PR2 lane B). The closed-region partition, the
  * complete-state before/after comparison, the provable-independence rules for
  * unknown lower facts, and the pre-classification context gate — all of it here, in
- * the order Alpha.3 established, with no actor-specific judgement unless a
- * `coverage` judge is handed in.
+ * the order Alpha.3 established, judging nothing. The actor-specific coverage
+ * judge that A4-PR2 lane B let callers inject here was DELETED by A4-PR7 §7.5;
+ * no other actor-specific judgement has ever lived in this function.
  *
  * THE ORDER IS THE CONTRACT (ADR X7-R5). The pre-classification context gate runs
  * before any cell is classified, and the caller that turns these arrays into
- * refusals reports `undeterminable` before `unmet`. Moving the v3 ceiling check
+ * refusals reports `undeterminable` before anything else. Moving the v3 ceiling check
  * ahead of either would relabel a context fault as a ceiling refusal — the
  * deny-masquerade class this file's §7.4 gate exists to kill — which is why the
  * ceiling gate is DOWNSTREAM of this function and not inside it.
  */
-export declare function classifyPermissionRise(input: LeaderMutationAuthorizationInput, coverage?: (region: PermissionRiseRegion) => PermissionRiseCoverage): PermissionRiseClassification;
+export declare function classifyPermissionRise(input: LeaderMutationAuthorizationInput): PermissionRiseClassification;
 /**
- * THE ACTOR-SPECIFIC FINAL AUTHORIZATION (Alpha.3 §6, behaviour unchanged):
- * classify the batch, then refuse. What remains here is the coverage judge for
- * THIS actor's envelope and the two typed refusals, in the order that has always
- * been enforced — an unevaluable batch refuses as `EFFECT_CONTEXT_UNAVAILABLE`
- * BEFORE a partial rise can be reported as `EXPANSION_OUTSIDE_ENVELOPE`, because
- * "we cannot evaluate this" and "this exceeds your envelope" are different facts
- * with different remedies, and the first must never be dressed as the second.
+ * THE ACTOR-SPECIFIC CONTEXT REFUSAL (Alpha.3 §6, narrowed by A4-PR7 §7.5):
+ * classify the batch, then refuse what cannot be EVALUATED. This is the one
+ * refusal this file still issues: `EFFECT_CONTEXT_UNAVAILABLE` — "we cannot
+ * evaluate this" must never be dressed as an authorization verdict OR as an
+ * authority verdict.
+ *
+ * The coverage judge that used to sit here — `leaderEnvelopeCoverage`, the
+ * existential "ONE envelope rule reaches the risen effect AND covers the WHOLE
+ * mutation matcher" law — is DELETED, and with it the `EXPANSION_OUTSIDE_ENVELOPE`
+ * refusal it produced. Its whole-matcher width question is now asked by the v3
+ * ceiling at every point the rise claims (`permissionRiseClaimedPoints` — the
+ * cell FIRST, then the claimed width), against the meet of EVERY covering rule
+ * of BOTH bound documents, absence being zero authority on the expansion plane:
+ * universally-strict where the aggregate was existentially-lenient, so a rise
+ * the ceiling passes could never have failed the deleted judge. The deletion
+ * was MEASURED, not asserted — the `evidence/a4-ceiling-coverage` mutation
+ * experiment re-run at this base found no drive that newly committed
+ * (`dev/agent-workflow/evidence/a4-pr7/7-5-delete/FINDINGS.md`).
+ * `EXPANSION_OUTSIDE_ENVELOPE` has no producer left; the code member STAYS in
+ * this closed surface because the frozen wire vocabulary still lists it
+ * (`packages/remote/src/handlers/dispatch.ts`) — retiring a producer is not
+ * retiring a protocol member.
  */
 export declare function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void;
 /** The plan of one mutation against the current authority snapshot.

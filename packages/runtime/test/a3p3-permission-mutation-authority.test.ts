@@ -7,6 +7,9 @@
  *
  *   - Leader inside envelope;            (expansion WITH coverage commits)
  *   - Leader outside envelope;           (expansion WITHOUT coverage refuses, zero write)
+ *     (since A4-PR7 §7.5 "coverage" is the v3 ceiling's question — the meet over
+ *     both bound documents at every claim point — and the refusal identity is
+ *     `AUTHORITY_CEILING_INSUFFICIENT`; the plan's words describe the same law)
  *   - Human exceeding envelope;          (ADR §7: may exceed; Human provenance; no
  *                                         permanent priority — the refusal never
  *                                         consults actor beyond the authority check)
@@ -241,9 +244,10 @@ async function openServiceWorld(options: {
       // …) raised authority through an open gate: this suite was establishing its
       // preconditions by BYPASSING the law, not by passing it. The declared world is
       // the classes this suite drives, at `allow`, with the SAME carrier document the
-      // lane injects — so the v3 gate cannot say anything on the carrier axis that
-      // Alpha.3's coverage law above did not already say, `EMPTY envelope` legs still
-      // refuse in the Leader path, and the ladder still decides who may rise.
+      // lane injects — so the v3 gate is the ONE law on the carrier axis (A4-PR7 §7.5
+      // deleted the Leader coverage law this comment used to keep in sync with),
+      // the `EMPTY envelope` legs refuse AT THE GATE as `no-authority`, and the
+      // ladder still decides who may rise.
       authorityCeiling: declaredCeilingReader({
         hardCeiling: CEILING_CELLS(options.subtreeContains !== undefined),
         ...(envelope === undefined ? {} : { carrier: () => envelope() }),
@@ -360,7 +364,7 @@ describe('Leader mutation inside the envelope (plan PR3)', () => {
         )
         .catch((error: unknown) => error)
       expect(isPermissionMutationError(denied)).toBe(true)
-      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
     } finally {
       await w.close()
     }
@@ -398,7 +402,7 @@ describe('Leader mutation inside the envelope (plan PR3)', () => {
           }),
         )
         .catch((error: unknown) => error)
-      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
     } finally {
       await w.close()
     }
@@ -419,7 +423,7 @@ describe('Leader mutation OUTSIDE the envelope (plan PR3)', () => {
         )
         .catch((error: unknown) => error)
       expect(isPermissionMutationError(denied)).toBe(true)
-      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
       // ZERO WRITE: the durable chain is untouched.
       const latest = await w.world.port.latest({
         teamSessionId: FIXTURE_TEAM_SESSION_ID,
@@ -454,7 +458,7 @@ describe('Leader mutation OUTSIDE the envelope (plan PR3)', () => {
           }),
         )
         .catch((error: unknown) => error)
-      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
     } finally {
       await w.close()
     }
@@ -471,7 +475,7 @@ describe('Leader mutation OUTSIDE the envelope (plan PR3)', () => {
           }),
         )
         .catch((error: unknown) => error)
-      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
     } finally {
       await w1.close()
     }
@@ -494,7 +498,7 @@ describe('Leader mutation OUTSIDE the envelope (plan PR3)', () => {
           }),
         )
         .catch((error: unknown) => error)
-      expect((outside as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((outside as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
     } finally {
       await w2.close()
     }
@@ -605,7 +609,7 @@ describe('Human mutation (ADR §7)', () => {
           }),
         )
         .catch((error: unknown) => error)
-      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((denied as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
     } finally {
       await w.close()
     }
@@ -800,7 +804,7 @@ describe('exec exactness (design §5)', () => {
           }),
         )
         .catch((error: unknown) => error)
-      expect((other as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((other as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
       // A DIFFERENT shell tool is a different authority identity (A2C-1).
       const pwsh = await w.service
         .mutatePermission(
@@ -809,7 +813,7 @@ describe('exec exactness (design §5)', () => {
           }),
         )
         .catch((error: unknown) => error)
-      expect((pwsh as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+      expect((pwsh as { code: string }).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
     } finally {
       await w.close()
     }

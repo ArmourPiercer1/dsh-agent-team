@@ -1,0 +1,3 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+lint-visibility: eslint read 1115 of 2437 OFFERED tracked lintable file(s); 1322 are hidden by an ignore pattern (dev/ 451, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1115 + 1322 = 2437 offered, + 0 skipped = 2437 tracked lintable path(s); nothing skipped
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-delete/dev/agent-workflow/evidence/a4-pr7/7-5-delete/scratch/census-final.json

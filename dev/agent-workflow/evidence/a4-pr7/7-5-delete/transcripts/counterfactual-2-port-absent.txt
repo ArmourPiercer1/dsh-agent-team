@@ -1,0 +1,89 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-delete
+
+ ✓ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (12 tests) 49ms
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the permission authority facts warm-up FAULTED (a provider read abstained for at least one warm target) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE / zero envelope authority) until an addressed read rebuilds the facts (bounded recovery); decisions and execution are unaffected
+
+ ❯ packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts (6 tests | 2 failed) 8ms
+     ✓ PIN-1 TRIPWIRE: through the REAL host entry, a carrier-covered rise against a zero hard ceiling does NOT commit (delete the host injection line and this leg reddens — the rise commits instead) 1ms
+     ✓ PIN-1b: the non-commit is the CEILING speaking, not an unrelated earlier refusal — measured shipped truth: the fully-wired host converts a DECIDED-insufficient ceiling rise into the durable PROPOSAL (service.ts approvalWired, which itself requires the ceiling port) 0ms
+     ✓ PIN-2 counter-control: the IDENTICAL drive against a covering hard ceiling commits (the non-commit in PIN-1 is the hard document, not a fixture that refuses everything) 0ms
+     × PIN-3 (RETIRED BY ITS OWN PREDICTION, INVERTED — not deleted): the SAME root-direct lane assembled WITHOUT the port now REFUSES the zero-ceiling rise with the context code and the port-absent problem; the fail-open it used to pin is closed at the root seam 4ms
+     × PIN-5 attribution: zero-authority-by-absent-fs and zero-authority-by-ceiling are TOLD APART at the verdict — the absent `fs` public service zeroes authority through the UNREADABLE-DOCUMENT law (typed CONTEXT throw, problem authority-ceiling-document-unavailable), never through the ceiling's proposal shape (world D = world B minus exactly the fs double, same COVERING ceiling that commits in PIN-2) 1ms
+     ✓ PIN-4 (WEAK, labelled census): the production tree contains exactly one producer of the ceiling reader 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts > a4-76 — the shipped composition consults the authority ceiling; the wiring line is load-bearing for a verdict > PIN-3 (RETIRED BY ITS OWN PREDICTION, INVERTED — not deleted): the SAME root-direct lane assembled WITHOUT the port now REFUSES the zero-ceiling rise with the context code and the port-absent problem; the fail-open it used to pin is closed at the root seam
+AssertionError: a port-less lane must not commit a rise: {"changed":true,"snapshot":{"schemaVersion":2,"snapshotId":"session-a476pinroot#inst-a476pinwork1#1","identity":{"teamSessionId":"session-a476pinroot","memberInstanceId":"inst-a476pinwork1"},"state":{"rules":[{"operation":"write","resource":"exact:/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-delete/packages/testkit/test/.tmp-fault/a4-76-ceiling-pin-root-direct/workspace/ledger-out.tsv","effect":"allow"}]},"metadata":{"generation":1,"previousSnapshotId":null},"provenance":{"actor":"leader","mutationId":"mut-a476-pin-root-direct","timestamp":"2026-10-08T00:00:00.000Z","reason":"a476 pin: leader rise whose carrier covers and whose hard ceiling differs per world"}}}: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts:580:88
+    578|     // directory as `pin3-before.json`, was `{changed:true}`.
+    579|     const v = measured.rootDirectVerdict
+    580|     expect(v.changed, `a port-less lane must not commit a rise: ${JSON…
+       |                                                                                        ^
+    581|     // The CONTEXT label, never the authorization label (A3-3): nobody…
+    582|     // ceiling, so nobody may claim the ceiling said no.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts > a4-76 — the shipped composition consults the authority ceiling; the wiring line is load-bearing for a verdict > PIN-5 attribution: zero-authority-by-absent-fs and zero-authority-by-ceiling are TOLD APART at the verdict — the absent `fs` public service zeroes authority through the UNREADABLE-DOCUMENT law (typed CONTEXT throw, problem authority-ceiling-document-unavailable), never through the ceiling's proposal shape (world D = world B minus exactly the fs double, same COVERING ceiling that commits in PIN-2)
+AssertionError: a zero-authority world must refuse, never commit: {"changed":true,"snapshot":{"schemaVersion":2,"snapshotId":"session-a476pinroot#inst-a476pinwork1#1","identity":{"teamSessionId":"session-a476pinroot","memberInstanceId":"inst-a476pinwork1"},"state":{"rules":[{"operation":"write","resource":"exact:/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-delete/packages/testkit/test/.tmp-fault/a4-76-ceiling-pin-root-direct/workspace/ledger-out.tsv","effect":"allow"}]},"metadata":{"generation":1,"previousSnapshotId":null},"provenance":{"actor":"leader","mutationId":"mut-a476-pin-root-direct","timestamp":"2026-10-08T00:00:00.000Z","reason":"a476 pin: leader rise whose carrier covers and whose hard ceiling differs per world"}}}: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts:633:99
+    631|     const trio = [measured.emptyVerdict, measured.noFsVerdict, measure…
+    632|     for (const v of trio) {
+    633|       expect(v.changed, `a zero-authority world must refuse, never com…
+       |                                                                                                   ^
+    634|       expect(String(v.code ?? v.reason)).not.toBe('internal-error')
+    635|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 16 passed (18)
+   Start at  14:12:52
+   Duration  1.58s (transform 1.68s, setup 0ms, import 2.43s, tests 58ms, environment 0ms)
+

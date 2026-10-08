@@ -34,15 +34,18 @@
  * `region.mutationMatcher` (the claim) is strictly broader than its `region.region`
  * (the cell). Two laws can own that width:
  *
- *  - THE ALPHA.3 COVERAGE LAW (`leaderEnvelopeCoverage`, judged inside
- *    `authorizeLeaderPermissionMutation`): the Leader's carrier must cover the WHOLE
- *    claimed matcher. Legs 1 and 2 own it. It is the law 7.3 deletes, which is why
- *    leg 1 is the deletion tripwire.
- *  - THE v3 CEILING LAW (`createPermissionAuthorityCeilingJudge`): every plane must
- *    reach the risen effect. Legs 3-5 own it, and after prerequisite (1) it asks the
- *    ceiling at BOTH the cell and the claimed width, refusing at either.
+ *  - THE ALPHA.3 COVERAGE LAW (`leaderEnvelopeCoverage`) — DELETED by A4-PR7 §7.5.
+ *    It demanded the Leader's carrier cover the WHOLE claimed matcher, and leg 1
+ *    was written as its deletion tripwire: the identity it asserts is exactly
+ *    where the two laws meet. The deletion landed only after the re-measurement
+ *    proved the successor refuses every drive the deleted law refused
+ *    (`dev/agent-workflow/evidence/a4-pr7/7-5-delete/FINDINGS.md`).
+ *  - THE v3 CEILING LAW (`createPermissionAuthorityCeilingJudge`) — the SOLE
+ *    width owner now. It asks the ceiling at BOTH the rising cell and the claimed
+ *    width, refusing at either: a meet over every covering rule of both documents,
+ *    where the deleted law accepted ONE covering rule. Legs 1-5 own it.
  *
- * The surviving law must not be WIDER than the one being deleted — a cleanup that
+ * The surviving law must not be WIDER than the one deleted — a cleanup that
  * widens an authority limit is a defect — hence leg 5, which pins the direction that a
  * naive "swap `region.region` for `region.mutationMatcher`" would loosen.
  *
@@ -237,7 +240,7 @@ function documentsCoveringOnlyTheFile(): AuthorityEnvelopeDocuments {
   }
 }
 
-describe('the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deletion guard)', () => {
+describe('the carrier width law, pinned on the v3 ceiling wiring (sole owner since the §7.5 deletion)', () => {
   it('a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write', async () => {
     const w = await openV3World(oneRule(exact(FILE), 'allow'), oneRule(exact(FILE), 'allow'))
     try {
@@ -245,12 +248,20 @@ describe('the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deleti
         () => undefined,
         (raised: unknown) => raised,
       )
-      // Today: the width law refuses. This identity is the one that goes RED the
-      // moment `leaderEnvelopeCoverage` is deleted — legs 3-5 are why the
-      // surviving ceiling gate CAN then take the law over.
-      expect((error as { code?: string } | undefined)?.code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
-      expect((error as { details?: Record<string, unknown> } | undefined)?.details?.problem).toBe('expansion-region-uncovered')
-      expect((error as { details?: Record<string, unknown> } | undefined)?.details?.mutationMatcher).toBe(`subtree:${SUB}`)
+      // The refusal is the CEILING's: the documents cover the cell and say nothing
+      // about the rest of SUB, and on the expansion plane absence is no-authority.
+      // This is the identity that `leaderEnvelopeCoverage` used to issue as
+      // `PERMISSION_ENVELOPE_EXPANSION_DENIED`; §7.5 deleted that owner and this
+      // leg — the tripwire — flipped to the successor law it was guarding.
+      expect((error as { code?: string } | undefined)?.code).toBe('PERMISSION_AUTHORITY_CEILING_INSUFFICIENT')
+      expect((error as { details?: Record<string, unknown> } | undefined)?.details?.problem).toBe('authority-ceiling-insufficient')
+      expect((error as { details?: Record<string, unknown> } | undefined)?.details).toMatchObject({
+        plane: 'expansion',
+        ceiling: 'no-authority',
+        // The refusal names the CELL the rise happened in — the width changed what
+        // was asked, never which region the caller is told about.
+        region: `exact:${FILE}`,
+      })
       // ZERO WRITE: the refusal is not cosmetic.
       expect(await w.listRules()).toBeUndefined()
     } finally {
@@ -299,9 +310,9 @@ describe('the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deleti
     //
     // under the title "THE GAP: the ceiling gate ALONE is sufficient on that very
     // rise, so it is not the width law's owner". Its own note said "Flip this leg
-    // when the surviving ceiling law owns width." This lane is that flip; the
-    // deletion of `leaderEnvelopeCoverage` is NOT part of it and is still gated on
-    // it.
+    // when the surviving ceiling law owns width." This file is that flip, and the
+    // deletion of `leaderEnvelopeCoverage` landed on top of it
+    // (`dev/agent-workflow/evidence/a4-pr7/7-5-delete/FINDINGS.md`).
     expect(judge(context, region)).toEqual({
       status: 'insufficient',
       plane: 'expansion',

@@ -1,0 +1,85 @@
+FINAL BATTERY — A4-PR7 §7.5 bullet 2 (deletion of leaderEnvelopeCoverage)
+Tree: worktree .worktrees/a4-75-delete, branch feat/a4-75-delete, base master 2f06bb44.
+Main commit: d2a0d12f (all legs below were run on the FINAL committed tree unless
+a step says otherwise; the two mutant runs are throwaway probes restored before it).
+Environment: node v24.21.0, CI=true, XDG_CACHE_HOME=<workspace>/.tmp-xdg/cache,
+`rm -rf packages/testkit/test/.tmp-fault` before every vitest invocation.
+
+1) MUTANT CENSUS (task 1, pre-deletion; round-23 experiment RE-RUN at this base)
+   mutant patch scratch/mutant-on-current-base.patch → blob ddf28274… (verified
+   by git hash-object; base b2e42ce1…).
+   node scripts/fail-set.mjs diff scratch/base2.ids.txt scratch/mutant.ids.txt
+   → NEW = 36, FIXED = 0  (transcripts/mutant-vs-base2-redo.diff = the
+   authoritative name list; round 23: NEW 38 at 991348e0).
+   Hard stop (a) [refused-before → commits-after]: DID NOT FIRE. All 7
+   entry-level reds construction-measured on the mutant
+   (transcripts/entry-measure-mutant.txt): every drive zero-overlay-write,
+   zero-commit; shapes = typed throw | pending-proposal durable ask |
+   TEAM_RUNTIME_CALLER_NOT_FOUND mint fault at admission (pre-row).
+   Hard stop (b) [newly refusing shipped behaviour]: 0.
+   Restore: git checkout; git diff (worktree vs index) = 0 lines.
+
+2) TARGETED GREEN on the final tree (vitest runs):
+   transcripts/targeted-1.txt  6 files  99/99  (revoke-reveal, mutation-authority,
+     carrier-width, no-context, port-assembly-pin, r4-authority-binding)
+   transcripts/targeted-2.txt  4 files  68/68  (pr4, pr7, refusal-wire, lifecycle-e2e)
+   transcripts/targeted-3.txt  4 files  80/80  (dual-envelope-mutation, a4p1,
+     lane-hygiene [per-name consumer census], approved-retry-ceiling)
+
+3) COUNTERFACTUAL BITES (rule 2; each mutant throwaway + hash-verified restore)
+   transcripts/counterfactual-1-width-only.txt — permissionRiseClaimedPoints →
+     cell-only: reds = a4p7-carrier-width leg1 ("a carrier that covers the rising
+     cell but NOT the whole mutation matcher…"), leg3 ("the ceiling is asked at
+     the WIDTH…"), leg4 ("at the real entry… the width refusal commits nothing");
+     50 others green.
+   transcripts/counterfactual-2-port-absent.txt — service.ts:1216 branch neutered:
+     reds = port-assembly-pin PIN-3 + PIN-5; 16 others green.
+
+4) FULL NINE-ROOT CENSUS (final tree, single root vitest, 9 roots =
+   contracts domain legacy remote runtime storage testkit tools client,
+   6277 legs / 502 files — transcripts/final-census-run.txt):
+   node scripts/fail-set.mjs capture scratch/census-final.json --out scratch/final.ids.txt
+     → 22 identities (19 failing tests + 3 collection files)
+   diff vs population baseline scratch/baseline-2162f6a7.ids.txt
+     (transcripts/final-vs-baseline.diff): **NEW 0 / FIXED 0** — red set identical
+     to the authoritative baseline 2162f6a7.
+   diff vs this base's own census scratch/base2.ids.txt
+     (transcripts/final-vs-base2.diff): NEW 0 / FIXED 2 — the two p6t1-parallel
+     legs that were RED in the base2 census (documented census-load flake family,
+     3/3 green solo) came up GREEN in the final run. No NEW anywhere; nothing to
+     solo-run. DISCLOSED, not fixed: the p6t1 load flake predates this commit
+     (red in census-base2.json at the untouched base).
+
+5) TYPECHECK: pnpm --no-bail -r run typecheck → exit 0, 0 errors
+   (transcripts/typecheck-all.txt).
+
+6) LINT: node scripts/lint-identities.mjs --diff
+   dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+   → 160 identity lines / 76 distinct; **new 0, resolved 0** (transcripts/lint-diff.txt).
+
+7) BLUEPRINT-VERSION FENCE: node scripts/verify-blueprint-version-clean.mjs
+   (transcripts/fence-final.txt) →
+   RESULT dirty(6 files, 15 sites) unknown(0,0) advisory(6,8) refused(52,115)
+   prose(5,5) adjudicated(16,24) — IDENTICAL to the base shape (rule 5). The two
+   v1 sites in a3p4-r4-authority-binding.test.ts are the pre-existing frozen
+   re-stamp leg shifted by +44 lines; dirty membership unchanged.
+
+8) ARTIFACTS: pnpm build (exit 0, transcripts/build.txt); pnpm build:composition
+   (transcripts/build-composition.txt) flagged 11 content-drift sites = exactly
+   the dist of the 3 edited sources; they are committed WITH the source in
+   d2a0d12f (grep confirms no leaderEnvelopeCoverage code in dist — only the two
+   history-note comment mentions). Post-commit:
+   pnpm check:artifacts:head →
+   DSH-ARTIFACT-VERDICT script=check-artifacts-committed verdict=ok compared=1508
+   DSH-ARTIFACT-VERDICT script=check-artifacts-at-head rev=HEAD verdict=ok
+   compared=1508 **drift=0** (transcripts/check-artifacts-head.txt) — same commit.
+
+9) p4t6 LEDGER: the p4t6 scan-file pins ran GREEN inside the full census
+   (census-final.json): this commit adds ZERO scannable-path files (all new
+   files live under dev/agent-workflow/evidence — excluded), so the total stays
+   1021 as recorded after 7.5; no SCANNED_PATHS_A4PR7 re-ink needed. Derived,
+   and the pin legs' green is the proof.
+
+GATE SUMMARY: census NEW 0 (vs baseline) ✓ | typecheck ✓ | lint new 0 ✓ |
+fence shape = base ✓ | artifacts drift=0 same-commit ✓ | hard stops silent ✓ |
+counterfactual bites named ✓.

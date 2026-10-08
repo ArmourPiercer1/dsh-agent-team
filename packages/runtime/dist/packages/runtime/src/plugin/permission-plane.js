@@ -496,10 +496,11 @@ export function createPermissionAuthorityFacts(deps) {
  * RISES, for a Team whose bound Blueprint cannot be resolved, COMMITTED on the operator
  * surface (where Alpha.3's Leader block never runs), and it COMMITTED for a Leader too
  * whenever the carrier COVERS the claimed cell — because `leaderEnvelopeCoverage` only
- * ever speaks where the carrier FAILS to cover (leg 9 of
+ * ever spoke where the carrier FAILED to cover (leg 9 of
  * `a4p7-ceiling-no-context-refusal.test.ts` pins that case, legs 1 and 8 pin the two
- * that committed). So the aggregate 7.3 deletes was never the guard here, and deleting
- * it would have widened the hole from "some Leaders" to every branch
+ * that committed). So the aggregate §7.5 has since DELETED was never the guard here,
+ * and deleting it would have widened the hole from "some Leaders" to every branch
+ * — the refusal this branch now answers is what made the deletion neutral
  * (`evidence/a4-ceiling-coverage/FINDINGS.md` cases (f)/(h) recorded the operator half).
  *
  * IT INVENTS NOTHING. The two positions are functions of inputs the caller already

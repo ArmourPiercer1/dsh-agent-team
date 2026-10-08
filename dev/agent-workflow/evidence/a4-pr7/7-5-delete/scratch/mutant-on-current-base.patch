@@ -1,0 +1,28 @@
+diff --git a/packages/runtime/governance/permission-mutation.ts b/packages/runtime/governance/permission-mutation.ts
+index b2e42ce1..ddf28274 100644
+--- a/packages/runtime/governance/permission-mutation.ts
++++ b/packages/runtime/governance/permission-mutation.ts
+@@ -1386,8 +1386,22 @@ export function classifyPermissionRise(
+  * "we cannot evaluate this" and "this exceeds your envelope" are different facts
+  * with different remedies, and the first must never be dressed as the second.
+  */
++/** PROBE MUTANT gate (throwaway, lane a4-75-delete): read at CALL time through
++ *  `process.env`, so no minifier can constant-fold the mutant off and report a
++ *  green that was really the baseline. */
++function probeNeuterLeaderCoverage(): boolean {
++  const host = globalThis as { process?: { env?: Record<string, string | undefined> } }
++  return host.process?.env?.['DSH_PROBE_NEUTER_LEADER_COVERAGE'] === '1'
++}
++
+ export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void {
+-  const classification = classifyPermissionRise(input, leaderEnvelopeCoverage(input.envelope, input.subtreeContains))
++  // PROBE MUTANT (throwaway experiment — NOT for merge). `DSH_PROBE_NEUTER_LEADER_COVERAGE=1`
++  // replaces the Leader coverage judge with one that always answers `covered`,
++  // which is behaviourally EXACTLY the deletion the Alpha.4 plan §7.5 sanctions.
++  const coverage: (region: PermissionRiseRegion) => PermissionRiseCoverage = probeNeuterLeaderCoverage()
++    ? () => 'covered'
++    : leaderEnvelopeCoverage(input.envelope, input.subtreeContains)
++  const classification = classifyPermissionRise(input, coverage)
+   const firstUndeterminable = classification.undeterminable[0]
+   if (firstUndeterminable !== undefined) {
+     refuse(

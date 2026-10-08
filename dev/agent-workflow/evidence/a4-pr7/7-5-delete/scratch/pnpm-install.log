@@ -1,0 +1,22 @@
+Scope: all 10 workspace projects
+? Verifying lockfile against supply-chain policies (908 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +815
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 815, reused 815, downloaded 0, added 815, done
+✓ Lockfile passes supply-chain policies (908 entries in 2.9s)
+
+dependencies:
++ @deepseek-ai/dsh 0.2.0-rc.2
+
+devDependencies:
++ @eslint/js 9.39.5
++ eslint 9.39.5
++ globals 16.5.0
++ typescript 6.0.3
++ typescript-eslint 8.68.0
++ vitest 4.1.11
+
+Done in 3.4s using pnpm v11.7.0
+exit=0
