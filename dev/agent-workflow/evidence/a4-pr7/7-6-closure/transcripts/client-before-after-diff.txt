@@ -1,0 +1,82 @@
+client lane — BEFORE/AFTER test-name SET comparison
+generated 2026-10-08T06:48:27Z by scratch/client-names.mjs + scratch/client-diff.mjs
+inputs : scratch/client-before.json (pre-change capture) / scratch/client-after.json (final tree)
+command for both captures:
+  pnpm --filter @dsh-agent-team/client exec vitest run --reporter=default --reporter=json \ 
+    --outputFile.json=../../dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/client-<before|after>.json
+  (the package script 'test' is 'vitest run'; the JSON reporter must be passed on the vitest argv —
+   'pnpm run test -- --reporter=json' forwards a literal '--' and writes no JSON: see transcripts/client-before.txt)
+
+before: 880 legs in 55 files | after: 880 legs in 55 files
+name set identical: true
+failed BEFORE: 3 | failed AFTER: 3
+NEW reds : 0
+FIXED reds: 0
+other status transitions (non-red): 0
+files only before: (none)
+files only after : (none)
+[client-diff exit 0]
+
+the three reds are EXACTLY the named client baseline trio in packages/testkit/test/a4p7-merge-gate.test.ts (CLIENT_BASELINE_FAILURES):
+const CLIENT_BASELINE_FAILURES: readonly string[] = [
+  'test/team-creation-panel.client.spec.tsx > TeamCreationPanel > selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)',
+  'test/team-creation-panel.client.spec.tsx > TeamCreationPanel > switching the runtime preset re-runs the probe with the new persona fact (UI §7.3)',
+  'test/team-governance.client.spec.tsx > TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success',
+]
+
+files loaded by the CLIENT lane (55 = 28 .test.ts incl. s3 spike + 23 .client.spec.tsx + 4 .client.spec.ts):
+  test/a4p6-interventions.client.spec.tsx
+  test/a4p6-permission-administration.client.spec.tsx
+  test/client-architecture-negatives.test.ts
+  test/client-plugin-mount.test.ts
+  test/client.test.ts
+  test/d1-team-remote-v3.test.ts
+  test/d2-open-team-mode.test.ts
+  test/d2-team-mode-entry.client.spec.tsx
+  test/d3-open-ordinary-mode.test.ts
+  test/d3-ordinary-mode-entry.client.spec.tsx
+  test/f9-remote-client-v4.test.ts
+  test/f9-resolve-control-ui.client.spec.tsx
+  test/f9u-control-panel.client.spec.tsx
+  test/f9u-control-surface-model.test.ts
+  test/f9u-control-surface-probe.client.spec.tsx
+  test/ledger-adapter.test.ts
+  test/new-team-entry.client.spec.tsx
+  test/pr56-control-panel-payload.client.spec.tsx
+  test/pr56-control-subject-payload.test.ts
+  test/projection-adapter.test.ts
+  test/s3-client-generation-spike.test.ts
+  test/team-activity.client.spec.tsx
+  test/team-command-flow.test.ts
+  test/team-create-flow.test.ts
+  test/team-creation-handoff.client.spec.tsx
+  test/team-creation-panel-refresh.client.spec.tsx
+  test/team-creation-panel.client.spec.tsx
+  test/team-d4-a1-ui-pull.client.spec.tsx
+  test/team-dock-model.client.spec.ts
+  test/team-dock.client.spec.tsx
+  test/team-governance.client.spec.tsx
+  test/team-governance.test.ts
+  test/team-handoff.test.ts
+  test/team-intent-model.test.ts
+  test/team-ledger-model.client.spec.ts
+  test/team-ledger-store.test.ts
+  test/team-ledger.client.spec.tsx
+  test/team-legacy.client.spec.tsx
+  test/team-legacy.test.ts
+  test/team-member-commands.test.ts
+  test/team-members-actions.client.spec.tsx
+  test/team-members-model.client.spec.ts
+  test/team-members-model.test.ts
+  test/team-members.client.spec.tsx
+  test/team-projection-store-v6.test.ts
+  test/team-projection-store.test.ts
+  test/team-read-state.test.ts
+  test/team-refresh-coordinator.test.ts
+  test/team-remote-categories.test.ts
+  test/team-remote-client.test.ts
+  test/team-roots-zero-state.client.spec.tsx
+  test/team-session-resolution.test.ts
+  test/team-timeline-model.client.spec.ts
+  test/team-timeline.client.spec.tsx
+  test/team-view.client.spec.tsx

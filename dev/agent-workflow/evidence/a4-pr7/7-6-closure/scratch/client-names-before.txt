@@ -1,0 +1,880 @@
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.C the governance rows never render as generic JSON Events > an INCOMPLETE proposal record set renders corrupt/incomplete — never an awaiting proposal (PR5 leftover A)::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.C the governance rows never render as generic JSON Events > control-escalation-recorded renders structured from the frozen A3-12(ii) leaves::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.C the governance rows never render as generic JSON Events > governance-proposal-recorded renders a STRUCTURED row, never a serialized payload::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.C the governance rows never render as generic JSON Events > the completeness mirror equals the HOST strict reader closed set (drift pin)::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.C the governance rows never render as generic JSON Events > the warning family never becomes an Events row at all (its surface is TeamInterventions)::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.D the intervention panel renders the server-given plane > a row with EMPTY legalActions is terminal: no affordance, the evidence stands (the client derives NOTHING)::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.D the intervention panel renders the server-given plane > a typed list refusal renders verbatim, never a silent empty plane::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.D the intervention panel renders the server-given plane > an A1-12 TERMINAL authority-unavailable row (spec 11.6, told by feat/a4-surface-authority-unavailable): the frozen status renders verbatim, the row is terminal, NO affordance exists, and the typed authority cells stand::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.D the intervention panel renders the server-given plane > an act dispatch rides the closed body and the panel RE-PULLS (no optimistic mutation)::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.D the intervention panel renders the server-given plane > rows carry the closed columns; warnings render structured, never generic JSON::passed
+test/a4p6-interventions.client.spec.tsx::A4-PR6 §6.D the intervention panel renders the server-given plane > the model and the component import NO authority kernel (source law: legality is server-derived)::passed
+test/a4p6-permission-administration.client.spec.tsx::A4-PR6 §6.D the administration view renders the effective set AS RULES > a typed administration refusal renders VERBATIM, not an empty default view::passed
+test/a4p6-permission-administration.client.spec.tsx::A4-PR6 §6.D the administration view renders the effective set AS RULES > generation:null displays the frozen blueprint-default state, never generation 0::passed
+test/a4p6-permission-administration.client.spec.tsx::A4-PR6 §6.D the administration view renders the effective set AS RULES > rules are FLAT rows; a subtree matcher is TEXT, never an expanded tree::passed
+test/a4p6-permission-administration.client.spec.tsx::A4-PR6 §6.D the administration view renders the effective set AS RULES > the model is fail-safe: a malformed administration value yields NO view (never a half-authority display)::passed
+test/client-architecture-negatives.test.ts::P9-T10 (P9-S7) negative architecture — client src plane > no @dsh-agent-team/domain imports (the TeamDomain is host-owned)::passed
+test/client-architecture-negatives.test.ts::P9-T10 (P9-S7) negative architecture — client src plane > no @dsh-agent-team/storage imports (persistence is host-owned)::passed
+test/client-architecture-negatives.test.ts::P9-T10 (P9-S7) negative architecture — client src plane > no ctx.sessions.teams mirror dependency (the sessions seam is open/create only)::passed
+test/client-architecture-negatives.test.ts::P9-T10 (P9-S7) negative architecture — client src plane > no document.querySelector tab navigation (activation rides the frozen seam face)::passed
+test/client-architecture-negatives.test.ts::P9-T10 (P9-S7) negative architecture — client src plane > no pageMessagesBefore/messagesBefore Team history path (history is the team ledger)::passed
+test/client-architecture-negatives.test.ts::P9-T10 (P9-S7) negative architecture — client src plane > no synthetic Chat/Trajectory event generation (zero legacy synthetic-event identifiers)::passed
+test/client-architecture-negatives.test.ts::P9-T10 (P9-S7) negative architecture — client src plane > no team-marker conversation node registration (the marker is dropped, never registered)::passed
+test/client-architecture-negatives.test.ts::P9-T10 (P9-S7) negative architecture — client src plane > the detector is live: the control sample is flagged for every pattern::passed
+test/client-architecture-negatives.test.ts::P9-T10 (P9-S7) negative architecture — client src plane > the scan covers the complete source plane (a meaningful, non-empty walk)::passed
+test/client-plugin-mount.test.ts::D4-A1 client mount — post-mutation pull wiring (scenario E) > a typed pull failure settles in the store and never rejects::passed
+test/client-plugin-mount.test.ts::D4-A1 client mount — post-mutation pull wiring (scenario E) > concurrent cold reads still single-flight (no double-pull race regression)::passed
+test/client-plugin-mount.test.ts::D4-A1 client mount — post-mutation pull wiring (scenario E) > the entry pull round-trips the same endpoint for the named team::passed
+test/client-plugin-mount.test.ts::D4-A1 client mount — post-mutation pull wiring (scenario E) > the sidebar entry inject face carries the D4-A1 pullProjection::passed
+test/client-plugin-mount.test.ts::D4-A1 client mount — post-mutation pull wiring (scenario E) > the view inject face carries the D4-A1 pullProjection::passed
+test/client-plugin-mount.test.ts::D4-A1 client mount — post-mutation pull wiring (scenario E) > the view pull round-trips the frozen projection endpoint for the named team::passed
+test/client-plugin-mount.test.ts::F2 preset roster policy (0.1.7 modeSelectionEnabled) > T1 — chooser enabled: every usable preset is exposed (behavior unchanged, chooser stays)::passed
+test/client-plugin-mount.test.ts::F2 preset roster policy (0.1.7 modeSelectionEnabled) > T2 — chooser disabled: only the usable default is exposed (no chooser roster; deliberately not an empty roster)::passed
+test/client-plugin-mount.test.ts::F2 preset roster policy (0.1.7 modeSelectionEnabled) > T3 — chooser disabled + the default row broken: fail-visible (NO fallback to the other usable preset)::passed
+test/client-plugin-mount.test.ts::F2 preset roster policy (0.1.7 modeSelectionEnabled) > T4 — chooser disabled + no default row at all: fail-visible (no silent first-usable fallback)::passed
+test/client-plugin-mount.test.ts::F3 main-view retention (open-mode reset, 0.1.7 retainInfo-first) > R1 — catalog gap on the current row while its mainView retain is live: current is kept, the Team mark survives, no subscription churn::passed
+test/client-plugin-mount.test.ts::F3 main-view retention (open-mode reset, 0.1.7 retainInfo-first) > R2 — the mainView retain truly released: current clears and the stale mark is removed::passed
+test/client-plugin-mount.test.ts::F3 main-view retention (open-mode reset, 0.1.7 retainInfo-first) > R3 — A→B switch: the A mark clears, B becomes current, the A watcher is disposed (no residue)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > a creation-path open that survives the re-pull rejects verbatim (D-3)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > an ordinary session cold read is the authoritative NONE probe — NO projection request (frozen §1.2 / E2)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > concurrent cold reads single-flight on the session (the mount-level D-T9-5 dedupe — NO second round at all)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > injects exactly the four expected slot keys, in order::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > refreshTeamLedger re-requests the team ledger page::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > registers the conversation.input.dock entry (id team, order 15, inject, no label)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > registers the conversation.view entry (id team, order 20, view label + inject)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > registers the settings.section entry (id team, order 50, nav label, no inject)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > registers the sidebar.footer.action entry (id team-new, order 10, entry label + inject — R118)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > registers the team locale dictionaries once under the team namespace::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > the applied frame lands in the published projection mirror::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > the catalog list rides the frozen channel endpoint with empty params::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > the cold read probes the read-state FIRST and pulls the frozen projection endpoint for the owning root (frozen §1.2)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > the creation-path open re-pulls the host list once for a lagging host-created root (D-3)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > the dock inject face shares the view projection mirror source (D-T9-4 no-op jump)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > the first frame auto-opens the team ledger store (typed failure settles)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > the legacyInspect face binds the dshHome closure (D-T9-1)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > the preset face filters the broken rows (0.1.7: no trust lane in the roster)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > the view inject face carries the full P9-S6 face set (legacyInspect bound)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — base mount (scenario A) > tracks exactly five fiber effects, in mount order (D2 adds the open-mode reset on session switch; team-view-sync-complete adds the refresh visibility gate)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — dshHome variants (scenario D) > absent config omits the legacyInspect face (the T8 degraded zero state)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — dshHome variants (scenario D) > blank config omits the legacyInspect face::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — dshHome variants (scenario D) > the registration shape is unchanged without the legacyInspect face::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — generation rebaseline (scenario B) > loss then restore fires exactly one rebaseline PULL through the coordinator lane (the store retry is cancelled, no store-owned pull — P1-5)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — generation rebaseline (scenario B) > the generation advance re-pulls the ledger page (ledger liveness)::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — generation rebaseline (scenario B) > the restore pull applies the newer generation to the mirror::passed
+test/client-plugin-mount.test.ts::P9-T9 (P9-S6) client mount — teardown (scenario C) > teardown unsubscribes the generation seam and resets the stores::passed
+test/client-plugin-mount.test.ts::repair 20260927 client mount — the projection states in the view hooks (scenario F) > a no-frame typed failure PUBLISHES the error state (frame null, the verbatim lastError, the rpc-error assessment)::passed
+test/client-plugin-mount.test.ts::repair 20260927 client mount — the projection states in the view hooks (scenario F) > the EXPLICIT refresh after the cold pull is a REAL re-read (one more page call)::passed
+test/client-plugin-mount.test.ts::repair 20260927 client mount — the projection states in the view hooks (scenario F) > the cold success APPLIES the frame (the assessment says apply) and opens the ledger store (the catch-up page call fires)::passed
+test/client-plugin-mount.test.ts::repair 20260927 client mount — the projection states in the view hooks (scenario F) > the hook source is BOUND: a listener subscribed before the publish is notified::passed
+test/client-plugin-mount.test.ts::repair 20260927 client mount — the projection states in the view hooks (scenario F) > the hooks.projectionStates source starts EMPTY (no team pulled yet)::passed
+test/client-plugin-mount.test.ts::repair 20260927 client mount — the projection states in the view hooks (scenario F) > the ledger refresh before the first frame is a SILENT no-op (no page call, never a success)::passed
+test/client-plugin-mount.test.ts::repair 20260927 client mount — the projection states in the view hooks (scenario F) > the pull ASSESSMENT is not lost: the resolved Promise carries the closed verdict (status + typed code)::passed
+test/client.test.ts::@dsh-agent-team/client (P9-T9 mount) > exposes the stable client identity marker::passed
+test/client.test.ts::dsh-agent-team client plugin (P9-T9 mount core) > has the public Cordis composition plugin shape::passed
+test/d1-team-remote-v3.test.ts::D1 (client transport): ensureRootLive > stamps the closed { teamSessionId } param set with contract version 3 on the frozen channel::passed
+test/d1-team-remote-v3.test.ts::D1 (client transport): ensureRootLive > the D1 reserved TEAM_REMOTE_TEAM_ROOT_LIVE_NOT_IMPLEMENTED typed error resolves intact (the method is inert until D2 — no client-side error)::passed
+test/d1-team-remote-v3.test.ts::D1 (client transport): ensureRootLive > the closed success shape { rootSessionId, mode: team, live: true } resolves intact::passed
+test/d1-team-remote-v3.test.ts::D1 (client transport): listRoots > stamps the closed EMPTY param set with contract version 3 on the frozen channel::passed
+test/d1-team-remote-v3.test.ts::D1 (client transport): listRoots > the fail-closed TEAM_REMOTE_TEAM_ROOTS_UNAVAILABLE typed error resolves intact (never exception-ified)::passed
+test/d1-team-remote-v3.test.ts::D1 (client transport): listRoots > the success envelope resolves intact (the { roots: [...] } data + provenance contractVersion 3)::passed
+test/d1-team-remote-v3.test.ts::D1 (client transport): the rejection kind is unchanged > a carrier rejection still maps to the frozen PushTransportLossError (the v3 wrappers add no new rejection kind)::passed
+test/d1-team-remote-v3.test.ts::D1 (client transport): the version stamping discipline is unchanged > each wrapper stamps exactly its own contract version (v1 generic, v2 create/admit, v3 the two D1 methods)::passed
+test/d2-open-team-mode.test.ts::D2 (client mount): openTeamMode two-phase sequence (A3 Q1 live-first) > SUCCESS: the session is opened exactly once with the root id and the mode state reads team::passed
+test/d2-open-team-mode.test.ts::D2 (client mount): openTeamMode two-phase sequence (A3 Q1 live-first) > the v3 ensureRootLive is AWAITED before the native open (the ordering is pinned in the sequence)::passed
+test/d2-open-team-mode.test.ts::D2 (client mount): openTeamMode two-phase sequence (A3 Q1 live-first) > the v3-stamped envelope rides the frozen channel (version 3, the closed { teamSessionId } param set)::passed
+test/d2-open-team-mode.test.ts::D2 (client mount): the ensure-failure gate (never a silent open) > a typed ensure failure: the session is NOT opened, the error is surfaced, the mode state reads null::passed
+test/d2-open-team-mode.test.ts::D2 (client mount): the per-root client-local open-mode state > a session switch away from the root resets the team mark::passed
+test/d2-open-team-mode.test.ts::D2 (client mount): the per-root client-local open-mode state > after a completed openTeamMode the root reads team; an unopened root reads null::passed
+test/d2-team-mode-entry.client.spec.tsx::TeamView: the D2 open-in-Team-mode entry (the members section leader row) > WITHOUT the openTeamMode face the leader row stays the D1 surface (no entry, no badge)::passed
+test/d2-team-mode-entry.client.spec.tsx::TeamView: the D2 open-in-Team-mode entry (the members section leader row) > renders NO badge when teamOpenMode reads null (the root was not opened in Team mode here)::passed
+test/d2-team-mode-entry.client.spec.tsx::TeamView: the D2 open-in-Team-mode entry (the members section leader row) > renders the current open-mode badge (team) for the leader row when teamOpenMode reads team::passed
+test/d2-team-mode-entry.client.spec.tsx::TeamView: the D2 open-in-Team-mode entry (the members section leader row) > renders the entry on the root/leader row and triggers openTeamMode with the team session id::passed
+test/d2-team-mode-entry.client.spec.tsx::TeamView: the D2 open-in-Team-mode entry (zero-state picker rows) > WITHOUT the openTeamMode face the picker rows stay the D1 read-only surface (no entry)::passed
+test/d2-team-mode-entry.client.spec.tsx::TeamView: the D2 open-in-Team-mode entry (zero-state picker rows) > a typed openTeamMode failure renders ONE verbatim error note on that row::passed
+test/d2-team-mode-entry.client.spec.tsx::TeamView: the D2 open-in-Team-mode entry (zero-state picker rows) > renders the explicit entry on each persisted-roots row and triggers openTeamMode with the row root id::passed
+test/d3-open-ordinary-mode.test.ts::C1 (client mount): the ordinary entry is the awaited two-phase sequence (guide §10.2) > EXACTLY ONE team.* call rides the entry: the v5-stamped team.prepareOrdinaryOpen { teamSessionId } (the permit is a Team control-plane RPC)::passed
+test/d3-open-ordinary-mode.test.ts::C1 (client mount): the ordinary entry is the awaited two-phase sequence (guide §10.2) > the ordering is pinned: the v5 permit settles BEFORE the native open (prepare → open)::passed
+test/d3-open-ordinary-mode.test.ts::C1 (client mount): the ordinary entry is the awaited two-phase sequence (guide §10.2) > the per-root open-mode state reads ordinary (the D2 state map gains the value)::passed
+test/d3-open-ordinary-mode.test.ts::C1 (client mount): the ordinary entry is the awaited two-phase sequence (guide §10.2) > the root session is opened exactly once with the root id (openSession verbatim)::passed
+test/d3-open-ordinary-mode.test.ts::C1/C4 (client mount): the idempotent ordinary repeat > the same entry twice: two permits + two opens (the prepare → open ordering twice), no error, the mode stays ordinary::passed
+test/d3-open-ordinary-mode.test.ts::C2 (client mount): a typed permit rejection (the async error lane, never swallowed) > EXACTLY the two permit calls ride the wire (the rejection settles the phase; no open, no revoke, no refresh)::passed
+test/d3-open-ordinary-mode.test.ts::C2 (client mount): a typed permit rejection (the async error lane, never swallowed) > the rejection throws the `${code}: ${message}` error verbatim::passed
+test/d3-open-ordinary-mode.test.ts::C2 (client mount): a typed permit rejection (the async error lane, never swallowed) > the session is NOT opened (no second open) and NO mark is set — a STALE ordinary mark from a prior attempt is cleared::passed
+test/d3-open-ordinary-mode.test.ts::C3 (client mount): a failed native open (open first, mark after — a failed switch is no switch) > NO mark is set for the failed root (and none for the root)::passed
+test/d3-open-ordinary-mode.test.ts::C3 (client mount): a failed native open (open first, mark after — a failed switch is no switch) > the carrier log carries EXACTLY the one permit call — there is NO revoke RPC (the armed permit lapses by TTL)::passed
+test/d3-open-ordinary-mode.test.ts::C3 (client mount): a failed native open (open first, mark after — a failed switch is no switch) > the seam throw propagates (the typed message rides the async error lane)::passed
+test/d3-open-ordinary-mode.test.ts::C4 (client mount): zero-ensure / zero-side-effect semantics > ZERO team.ensureRootLive calls ride the ordinary entry (the ONLY team.* call is the v5 permit — not "zero team.* calls", but zero Team ensure)::passed
+test/d3-open-ordinary-mode.test.ts::C4 (client mount): zero-ensure / zero-side-effect semantics > no list refresh rides the ordinary open (no reconcile, no reload — the ordinary path is the native open)::passed
+test/d3-open-ordinary-mode.test.ts::C4 (client mount): zero-ensure / zero-side-effect semantics > the ordinary entry never issues a create / mutation / admit endpoint (zero Team Agent side effects)::passed
+test/d3-open-ordinary-mode.test.ts::C5 (client mount): the team → ordinary → team switch > gate-5: exactly ONE sessions.refresh per settled team entry (two team entries → two refreshes; the ordinary step refreshes nothing)::passed
+test/d3-open-ordinary-mode.test.ts::C5 (client mount): the team → ordinary → team switch > the mode badge fact follows the ENTRY used: team → ordinary → team::passed
+test/d3-open-ordinary-mode.test.ts::C5 (client mount): the team → ordinary → team switch > the ordering is pinned: ensure → open → refresh for each team entry (gate-5), prepare → open for the ordinary step::passed
+test/d3-open-ordinary-mode.test.ts::C5 (client mount): the team → ordinary → team switch > the root session is opened once per entry (three entries, three opens) and each settled team entry returns { ok: true }::passed
+test/d3-open-ordinary-mode.test.ts::C5 (client mount): the team → ordinary → team switch > the team entries issue EXACTLY their two v3 team.ensureRootLive calls (ZERO team.prepareOrdinaryOpen from the team entries) and the ordinary entry issues its one v5 permit::passed
+test/d3-open-ordinary-mode.test.ts::D3 (client mount): the session-switch reset (the D2 reset effect covers the ordinary mark too) > after an ordinary open the root reads ordinary; a switch away drops the ordinary mark::passed
+test/d3-open-ordinary-mode.test.ts::gate-5 (client mount): the post-takeover session-state reconcile > a successful Team-mode takeover records openSession + sessions.refresh IN ORDER (the composer reconciles WITHOUT a reload)::passed
+test/d3-open-ordinary-mode.test.ts::gate-5 (client mount): the post-takeover session-state reconcile > a typed ensure failure opens nothing, refreshes nothing, and returns the typed { ok: false, code, message } (no error swallowing)::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 face-absence worlds (the D2 surface stays unchanged) > WITHOUT either open face there is no entry and no badge (the D1 surface)::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 face-absence worlds (the D2 surface stays unchanged) > WITHOUT the openOrdinaryMode face the leader row stays the D2 surface (no ordinary entry, no badge)::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 face-absence worlds (the D2 surface stays unchanged) > WITHOUT the openOrdinaryMode face the picker rows carry ONLY the D2 Team-mode entry::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 ordinary-mode entry (the members section leader row) > renders NO badge when teamOpenMode reads null (the root was not explicitly opened here)::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 ordinary-mode entry (the members section leader row) > renders the mode badge for the D2 team entry (regression): team → Team 模式::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 ordinary-mode entry (the members section leader row) > renders the mode badge for the entry USED (zh): ordinary → 普通模式::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 ordinary-mode entry (the members section leader row) > renders the ordinary entry on the root/leader row (zh) and triggers openOrdinaryMode with the team session id::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 ordinary-mode entry (zero-state picker rows) > a settled rejection renders the async error note (the typed code + message verbatim — never swallowed)::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 ordinary-mode entry (zero-state picker rows) > renders the explicit ordinary entry on each persisted-roots row (zh) and triggers openOrdinaryMode with the row root id::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 ordinary-mode entry (zero-state picker rows) > the ordinary entry copy carries the semantic promise (zh) and claims NO tool removal::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 ordinary-mode entry copy (en) > renders the en entry copy on the picker row + leader row and the en badge for the ordinary entry::passed
+test/d3-ordinary-mode-entry.client.spec.tsx::TeamView: the D3 ordinary-mode entry copy (en) > renders the en picker-row entry with the en semantic promise (the en zero state carries the picker list)::passed
+test/f9-remote-client-v4.test.ts::F9 — resolveControl (the v4-only human control surface) > carrier rejection rejects with the frozen PushTransportLossError (the endpoint named)::passed
+test/f9-remote-client-v4.test.ts::F9 — resolveControl (the v4-only human control surface) > returns a success envelope intact (data.decision + provenance.contractVersion 4)::passed
+test/f9-remote-client-v4.test.ts::F9 — resolveControl (the v4-only human control surface) > returns a typed control error intact — resolves, never rejects (invariant 4b)::passed
+test/f9-remote-client-v4.test.ts::F9 — resolveControl (the v4-only human control surface) > spreads the closed v4 params verbatim — an omitted note stays absent (no caller / role / actor field ever)::passed
+test/f9-remote-client-v4.test.ts::F9 — resolveControl (the v4-only human control surface) > stamps contract version 4 on team.resolveControl over the frozen channel (allow + note verbatim)::passed
+test/f9-resolve-control-ui.client.spec.tsx::F9 (UI command surface): the pending-request Allow / Deny bar > Allow calls the face with the EXACT (teamSessionId, requestId, decision) and disables both buttons while the flight is open::passed
+test/f9-resolve-control-ui.client.spec.tsx::F9 (UI command surface): the pending-request Allow / Deny bar > Deny calls the face with decision "deny" and the same flight discipline::passed
+test/f9-resolve-control-ui.client.spec.tsx::F9 (UI command surface): the pending-request Allow / Deny bar > isolates the per-request state by requestId (two pending rows: one flight never disables the other bar)::passed
+test/f9-resolve-control-ui.client.spec.tsx::F9 (UI command surface): the pending-request Allow / Deny bar > keeps the en dictionary pairing for the command surface::passed
+test/f9-resolve-control-ui.client.spec.tsx::F9 (UI command surface): the pending-request Allow / Deny bar > renders NO bar for a non-pending control request and for a request without a durable id::passed
+test/f9-resolve-control-ui.client.spec.tsx::F9 (UI command surface): the pending-request Allow / Deny bar > renders the TYPED error note with data-resolve-error-code + the message title, and triggers the catch-up re-pull::passed
+test/f9-resolve-control-ui.client.spec.tsx::F9 (UI command surface): the pending-request Allow / Deny bar > renders the bar ONLY on the pending control-request row with a requestId (sibling of the row button, never nested)::passed
+test/f9-resolve-control-ui.client.spec.tsx::F9 (UI command surface): the pending-request Allow / Deny bar > renders the transport-loss note (the ONLY rejection kind) and keeps the row pending::passed
+test/f9-resolve-control-ui.client.spec.tsx::F9 (UI command surface): the pending-request Allow / Deny bar > stays INERT without the face: no commands render (the legacy surface is unchanged)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 1 (UI §26.2) — the control-request detail fields > OMITS every field whose durable leaf is absent (fail-safe — never invented; time + status always stay)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 1 (UI §26.2) — the control-request detail fields > falls back to the RAW id for a requester instance the snapshot does not name (never blank)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 1 (UI §26.2) — the control-request detail fields > renders every §26.2 field from the durable facts (the paired chain)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 1 (UI §26.2) — the control-request detail fields > renders the requester as the fixed human label for a human ref (and the closed role pair for leader-approval)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 2 (UI §26.4) — the external hard policy display > keeps the plain decision label for an ORDINARY deny (a different reason; no §26.4 block)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 2 (UI §26.4) — the external hard policy display > renders the FROZEN en strings verbatim (UI §26.4)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 2 (UI §26.4) — the external hard policy display > renders the frozen two-line display (zh) — never the plain denied label::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 3 — the kind-aware affordance (the closed human resolver-role map) > HIDES the commands for a kind ABSENT from the closed map (fail-closed: the panel stays, the affordance does not)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 3 — the kind-aware affordance (the closed human resolver-role map) > HIDES the commands when the chain carries NO kind at all (absent kind fails closed too)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 3 — the kind-aware affordance (the closed human resolver-role map) > renders the commands for every CLOSED kind (the role set includes human)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 4 — the served-version gate (v3 read-only / v4 enabled) > FAILS CLOSED in the absent / unresolved mode (no v4 proof yet: panel yes, commands no, no note)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 4 — the served-version gate (v3 read-only / v4 enabled) > enables the commands in the "enabled" mode (the probe proved the served host serves v4)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 4 — the served-version gate (v3 read-only / v4 enabled) > gates the commands in the EN dictionary too (the read-only note is localized, the frozen §26.4 strings untouched)::passed
+test/f9u-control-panel.client.spec.tsx::F9U supplement 4 — the served-version gate (v3 read-only / v4 enabled) > keeps the detail panel but HIDES the commands in the "read-only" mode (the pre-v4 served build)::passed
+test/f9u-control-panel.client.spec.tsx::F9U — the legacy invariants stay (no face → no panel at all) > renders NO panel without the onResolveControl face (the legacy surface is unchanged)::passed
+test/f9u-control-surface-model.test.ts::F9U — the closed human resolver-role map (supplement 3) > FAILS CLOSED for unknown / future / absent kinds (the panel shows, the command does not)::passed
+test/f9u-control-surface-model.test.ts::F9U — the closed human resolver-role map (supplement 3) > grants the human for every closed kind (the role set includes human)::passed
+test/f9u-control-surface-model.test.ts::F9U — the closed human resolver-role map (supplement 3) > mirrors the FROZEN closed role set exactly (the three closed kinds, no more, no less)::passed
+test/f9u-control-surface-model.test.ts::F9U — the closed human resolver-role map (supplement 3) > reads the requested authority as the closed role set (and ABSENT for unknown kinds)::passed
+test/f9u-control-surface-model.test.ts::F9U — the served-version probe (supplement 4) > classifies ANY typed control-vocabulary error as 'enabled' (the v4 method was reached)::passed
+test/f9u-control-surface-model.test.ts::F9U — the served-version probe (supplement 4) > classifies a PRE-V4 build as 'read-only' (the v4-only method is unknown to its closed catalog)::passed
+test/f9u-control-surface-model.test.ts::F9U — the served-version probe (supplement 4) > classifies a V4-served build as 'enabled' (the probe's typed malformed-params reached the v4 method)::passed
+test/f9u-control-surface-model.test.ts::F9U — the served-version probe (supplement 4) > classifies a method unavailable at the request's version as 'read-only' (method-version-unsupported)::passed
+test/f9u-control-surface-model.test.ts::F9U — the served-version probe (supplement 4) > classifies a success as 'enabled' (defensive: a v4 host that answered the probe)::passed
+test/f9u-control-surface-model.test.ts::F9U — the served-version probe (supplement 4) > classifies an envelope the build does not serve as 'read-only' (contract-version-unsupported)::passed
+test/f9u-control-surface-model.test.ts::F9U — the served-version probe (supplement 4) > probes with the closed empty requestId (the first value outside the 1..255 token rule)::passed
+test/f9u-control-surface-probe.client.spec.tsx::F9U supplement 4 — the TeamView served-version probe > FAILS CLOSED on a transport rejection (unresolved mode: panel yes, commands no) and RE-PROBES on the next publish::passed
+test/f9u-control-surface-probe.client.spec.tsx::F9U supplement 4 — the TeamView served-version probe > keeps the panel but HIDES the commands + shows the read-only note when the served build is pre-v4 (unknown-method)::passed
+test/f9u-control-surface-probe.client.spec.tsx::F9U supplement 4 — the TeamView served-version probe > probes NOTHING when no pending control is loaded (the probe rides the pending state)::passed
+test/f9u-control-surface-probe.client.spec.tsx::F9U supplement 4 — the TeamView served-version probe > probes NOTHING without the control face (the legacy surface is unchanged)::passed
+test/f9u-control-surface-probe.client.spec.tsx::F9U supplement 4 — the TeamView served-version probe > probes the served host with the CLOSED side-effect-free params and enables the commands when v4 serves::passed
+test/f9u-control-surface-probe.client.spec.tsx::F9U supplement 4 — the TeamView served-version probe > re-probes for the NEW team on a team switch (the mode is per-team, never cross-applied)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — activity intervals > a close without a loaded open is skipped (no invented interval)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — activity intervals > an open without correlation or instance is skipped::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — activity intervals > pairs the close onto its open by correlation (first close stands)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — control chains > a duplicate request keeps the first draft (requestSequence = first entry)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — control chains > a request with broken identity leaves is skipped from the chains (rows keep it)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — control chains > an orphan decision is emitted only from the writer scope (no invented values)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — control chains > an orphan decision without a full writer scope is skipped (nothing invented)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — control chains > chains sort by requestSequence (requests first, then orphans by their sequence)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — control chains > pairs the decision onto its request by requestId (pending flips, decision block set)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — entry rows > A4-PR3: a full escalation reads as closed leg 1, one plain row, pending leg 2::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — entry rows > A4-PR3: an escalation row maps to `control` — the VALUE, not just the key (ADR X8-R3)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — entry rows > TCM-M3: the Root initial work pair maps to the existing `team` category (no new category)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — entry rows > a non-integer sequence or non-string factType skips the row (fail-safe)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — entry rows > a null payload passes through as an empty record::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — entry rows > an unknown fact type omits the category (never guessed)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — entry rows > keeps the frozen wire values and attaches the category from the 12-fact mirror::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — entry rows > the input is re-sorted by sequence defensively and never mutated::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — messages > a coordination message is emitted only for the send-message action (from = caller)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — messages > a delivered message carries the recipient pair and NO from (the fact names no sender)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — messages > a delivered message without subject or recipient is skipped::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — messages > the delivered fallback is deliveredToInstanceId when recipientInstanceId is absent::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — strict-read grant facts (repair 20260927, S1-C1) > a grant creates NO control chain and adds NO pending count::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — strict-read grant facts (repair 20260927, S1-C1) > a grant is classified `control` and its raw payload is preserved::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — strict-read grant facts (repair 20260927, S1-C1) > mixed with one real pending request: ONLY that request is counted::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — §7.4 completeness gate > under complete: pendingControlByInstance counts only the unpaired requests, per target instance::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — §7.4 completeness gate > under complete: progress rows are emitted (broken facts skipped)::passed
+test/ledger-adapter.test.ts::adaptTeamLedger — §7.4 completeness gate > under partial: progress is [] and pendingControlByInstance is {} even with real facts::passed
+test/ledger-adapter.test.ts::adaptTeamUi — the combined output > under complete: member rows get the per-instance badge (clean instance = known zero)::passed
+test/ledger-adapter.test.ts::adaptTeamUi — the combined output > under partial: the badges stay null (unknown, never a guess)::passed
+test/ledger-adapter.test.ts::ledgerModelFromStoreState — F11 count-based completeness (INV-9.2) > F11-T4: 50 of 68 loaded (frontier 118) is partial — no pending badges; 68 of 68 is complete — the tail request badges::passed
+test/ledger-adapter.test.ts::ledgerModelFromStoreState — F11 count-based completeness (INV-9.2) > F11-T4: the §7.3 gate flips exactly at full load (67/68 stays partial despite the loaded request)::passed
+test/ledger-adapter.test.ts::ledgerModelFromStoreState — F11 count-based completeness (INV-9.2) > F11-T6 case 9: total known vs null — a null total never claims complete (no early completion), a known total counts loaded entries, not the frontier::passed
+test/new-team-entry.client.spec.tsx::NewTeamEntry (sidebar.footer.action) > a second-stage (admit) failure keeps the overlay on the opened Root with the work lane + retry; the retry re-sends ONLY the admit and the success closes (plan §7; never a New Session)::passed
+test/new-team-entry.client.spec.tsx::NewTeamEntry (sidebar.footer.action) > a successful create-only (no initial work) closes the overlay once the creation-path open lands on the minted root (UI §4.3 order; TCM M4 two-stage v2)::passed
+test/new-team-entry.client.spec.tsx::NewTeamEntry (sidebar.footer.action) > a successful two-stage create (with initial work) keeps the overlay open until the DEFERRED admit settles (plan §7 minimum UI constraint)::passed
+test/new-team-entry.client.spec.tsx::NewTeamEntry (sidebar.footer.action) > closes the overlay on the cancel button and on a backdrop click (the dialog stop propagates)::passed
+test/new-team-entry.client.spec.tsx::NewTeamEntry (sidebar.footer.action) > keeps the Default workspace (empty select value) when no session is selected (R121 no-prefill)::passed
+test/new-team-entry.client.spec.tsx::NewTeamEntry (sidebar.footer.action) > opens the Team-owned overlay on click: the T7 surface, no handoff block, loud unselected placeholder, create closed (UI §3.1/§4.1)::passed
+test/new-team-entry.client.spec.tsx::NewTeamEntry (sidebar.footer.action) > prefills the fresh draft with the current session's workspace (R121: no Default-workspace orphaning)::passed
+test/new-team-entry.client.spec.tsx::NewTeamEntry (sidebar.footer.action) > renders the visible label wide and the icon-only rail with the accessible name (UI §3.1)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 batch#1 render — null/scalar/array payloads are SAFE TEXT end-to-end, Allow unaffected > reviewPayload ARRAY renders losslessly as JSON text (round-trips through JSON.parse)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 batch#1 render — null/scalar/array payloads are SAFE TEXT end-to-end, Allow unaffected > reviewPayload NULL renders the inert text "null" — panel survives, standard-family mode, no banner, Allow ENABLED::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 batch#1 render — null/scalar/array payloads are SAFE TEXT end-to-end, Allow unaffected > reviewPayload boolean renders as inert JSON text (true), never classified v1, Allow ENABLED::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 batch#1 render — null/scalar/array payloads are SAFE TEXT end-to-end, Allow unaffected > reviewPayload number renders as inert JSON text (42), never classified v1, Allow ENABLED::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 batch#1 render — null/scalar/array payloads are SAFE TEXT end-to-end, Allow unaffected > reviewPayload string renders as inert JSON text ("plain text"), never classified v1, Allow ENABLED::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 batch#2 render — contradictory subjects are non-decidable end-to-end > team subject + legacy targetInstanceId leaf → unsupported-subject panel + Allow DISABLED::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 batch#2 render — contradictory subjects are non-decidable end-to-end > template subject + EXTRA instanceId leaf → unsupported-subject panel + Allow DISABLED + Deny enabled::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 batch#3 — the full digest beats the ellipsis: (0,1,2) stylesheet override + class application > the digest dd carries controlDigestValue through the real pipeline::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 batch#3 — the full digest beats the ellipsis: (0,1,2) stylesheet override + class application > the stylesheet defines .controlField dd.controlDigestValue (0,1,2) beating the .controlField dd ellipsis (0,1,1) — STATIC specificity assertion (jsdom does not apply the CSS-module cascade)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — compat modes > CRITICAL NEGATIVE (render): NO durable abandon entry → panel stays rendered with Allow ENABLED (a narrated wait-cancel with no durable fact flips nothing)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — compat modes > RULED UNIFORM: a terminal abandon fact closes the S9 template chain too (no resolve bar)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — compat modes > RULED UNIFORM: a terminal abandon fact leaves no resolve bar and no Allow for ANY subject (instance case, the stock-master defect)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — compat modes > a DEFINED template subject without any payload requirement renders the standard mode::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — compat modes > a LEGACY no-payload instance fact keeps the legacy panel + the labeled compat mode::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — compat modes > a decided non-instance fact leaves no resolve bar (no orphaned pending)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — compat modes > an UNKNOWN subject stays visible in the unsupported mode with Allow disabled (Deny stays)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — recovery-dispatch/v1 integrity gate (Allow disabled, deny stays safe) > ACCEPTED LIMITATION — USER OPTION A (pinned): MISSING reviewPayload (recovery correlation) → standard mode, NO banner, payload omitted, Allow ENABLED::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — recovery-dispatch/v1 integrity gate (Allow disabled, deny stays safe) > DEFENSE-IN-DEPTH: digest present + payload absent (non-v1 legacy line) → banner + Allow disabled (classification stays neutral, no v1 claim)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — recovery-dispatch/v1 integrity gate (Allow disabled, deny stays safe) > the cannot-fully-review banner text renders (en dictionary)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — recovery-dispatch/v1 integrity gate (Allow disabled, deny stays safe) > v1 with NO digest → explicit cannot-fully-review banner + Allow disabled, Deny enabled::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — recovery-dispatch/v1 integrity gate (Allow disabled, deny stays safe) > v1 with a CORRUPTED (non-lossless) reviewPayload → omitted + banner + Allow disabled::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — the S9 template-subject panel materializes (today: no panel at all) > displays the requestToken VERBATIM (governance correlation token — no name-based masking)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — the S9 template-subject panel materializes (today: no panel at all) > renders HTML-shaped payload content as INERT TEXT (no element injection)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — the S9 template-subject panel materializes (today: no panel at all) > renders the FULL reviewPayload as inert text that parses back to the exact reviewed value::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — the S9 template-subject panel materializes (today: no panel at all) > renders the FULL wire digest verbatim, labeled wire-sourced::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — the S9 template-subject panel materializes (today: no panel at all) > shows the recovery-dispatch/v1 rendering mode and keeps BOTH commands live for a reviewable request::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 render — the S9 template-subject panel materializes (today: no panel at all) > the pending template request renders the detail panel with subject + VISIBLE requestId::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ① .resolveBar wraps (the flex:none command buttons may take their own line)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ② .controlDetail carries the min(100%, 20rem) flex-basis floor (full bar width at 380, right-beside buttons at 1440)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ③ .controlField wraps (dt + dd share a line ONLY while both bases fit; the value then gets the full dl width on its own line)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ④ .row wraps (fixed flex:none siblings drop to their own line instead of clipping under .rows)::passed
+test/pr56-control-panel-payload.client.spec.tsx::PR56 run5 geometry fix — STATIC width-budget rules (wrap + flex-basis floor; jsdom performs no layout) > ⑤ .controlField dt is capped + breakable (long CJK labels wrap instead of clipping; short labels inline-unchanged)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (1) — template subject (the real S9 shape, NO targetInstanceId) > carries the reviewPayload + the FULL wire digest verbatim::passed
+test/pr56-control-subject-payload.test.ts::PR56 (1) — template subject (the real S9 shape, NO targetInstanceId) > identifies the recovery-dispatch/v1 request as fully reviewable::passed
+test/pr56-control-subject-payload.test.ts::PR56 (1) — template subject (the real S9 shape, NO targetInstanceId) > the template-subject request becomes a pending chain (today: silently dropped)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (2) — team subject > a team-subject request becomes a chain over rootSessionId::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — instance facts byte-stable > LEGACY wire shape (targetInstanceId only, no subject leaf) keeps today chain shape::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — instance facts byte-stable > PR-D wire shape (subject instance + targetInstanceId) stays byte-identical + labeled standard::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — instance facts byte-stable > a subject/target CONTRADICTION fails closed to unsupported (never a trusted pick)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — instance facts byte-stable > the broken-identity skips stay (no requestId / no actionName → no chain)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > ACCEPTED LIMITATION — USER OPTION A (pinned): payload-absent recovery-correlation row → standard mode, NO integrity gate, Allow unchanged (never classified recovery-v1)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > DEFENSE-IN-DEPTH: digest present + payload ABSENT on a NON-v1 line → incomplete (cannot fully review; current backend cannot produce this shape — write path rejects service.ts L1369-1374, read path drops L654-656 — classification stays neutral)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > NON-recovery correlation + NO schema leaf is NEVER classified v1 (no false Allow-disable)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > NON-recovery defined requests keep compatibility (no integrity gate applies)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > SHIPPED CLASSIFIER (positive ID only): an UNKNOWN subject does not block the v1 classification when the schema id is present::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > a CORRUPTED (non-lossless) reviewPayload is OMITTED + the request is incomplete::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > a legacy no-payload fact renders in the labeled compat mode (no integrity gate)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > v1 by payload.schema + valid digest → reviewable::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > v1 with a MALFORMED digest → incomplete::passed
+test/pr56-control-subject-payload.test.ts::PR56 (3) — recovery-dispatch/v1 integrity (display side) > v1 with an ABSENT digest → incomplete::passed
+test/pr56-control-subject-payload.test.ts::PR56 (5) — unknown / malformed subject stays visible, non-decidable > a MISSING subject (no targetInstanceId either) is unsupported too (visible, nothing invented)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (5) — unknown / malformed subject stays visible, non-decidable > a template subject with the wrong id leaf fails closed to unsupported::passed
+test/pr56-control-subject-payload.test.ts::PR56 (5) — unknown / malformed subject stays visible, non-decidable > an unknown subject.kind becomes an unsupported-subject chain (never dropped)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (7) — decision/abandon facts on non-instance subjects > CRITICAL NEGATIVE: NO durable abandon entry → the request stays pending + Allowable (a narrated wait-cancel with NO durable fact changes NOTHING; the projection reacts ONLY to durable factType entries)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (7) — decision/abandon facts on non-instance subjects > RULED UNIFORM: an abandon fact closes a TEAM-subject chain too::passed
+test/pr56-control-subject-payload.test.ts::PR56 (7) — decision/abandon facts on non-instance subjects > RULED UNIFORM: an abandon fact closes an INSTANCE-subject chain too (historical defect: stock master keeps it pending)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (7) — decision/abandon facts on non-instance subjects > TERMINAL PRECEDENCE (types.ts L433-440): abandon-then-decision → still abandoned (order of durable facts does not flip the terminal mark)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (7) — decision/abandon facts on non-instance subjects > TERMINAL PRECEDENCE (types.ts L433-440): decision-then-abandon → abandoned wins (both facts are legitimate durable data, never flagged)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (7) — decision/abandon facts on non-instance subjects > a decision pairs onto the template request by requestId (pending false)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (7) — decision/abandon facts on non-instance subjects > an ORPHAN decision over a template subject scope becomes a resolved chain (no invented instance)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (7) — decision/abandon facts on non-instance subjects > an abandon fact closes a NON-instance pending chain (no orphaned pending)::passed
+test/pr56-control-subject-payload.test.ts::PR56 (view-model) — the S9 control row reaches the Events section > deriveTeamLedgerSection shows the template-subject control-request row, pending, with its requestId::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#1 — legal null/scalar/array reviewPayload: NO crash, no v1 classification, no gate > reviewPayload NULL (legal RemoteSafeJsonValue — the crash shape) → row survives, standard mode, no gate, no v1 claim::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#1 — legal null/scalar/array reviewPayload: NO crash, no v1 classification, no gate > reviewPayload array → verbatim carry, standard/legacy mode, never recovery-v1, no gate::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#1 — legal null/scalar/array reviewPayload: NO crash, no v1 classification, no gate > reviewPayload boolean → verbatim carry, standard/legacy mode, never recovery-v1, no gate::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#1 — legal null/scalar/array reviewPayload: NO crash, no v1 classification, no gate > reviewPayload number → verbatim carry, standard/legacy mode, never recovery-v1, no gate::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#1 — legal null/scalar/array reviewPayload: NO crash, no v1 classification, no gate > reviewPayload string → verbatim carry, standard/legacy mode, never recovery-v1, no gate::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > ORPHAN decision with an EXPLICIT malformed scope.subject → unsupported chain, NO legacy targetInstanceId fallback::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > REGRESSION GUARD (byte-stable): orphan with ABSENT scope.subject + targetInstanceId → the legacy compat chain stays::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > REGRESSION GUARD (byte-stable): team subject WITHOUT the targetInstanceId leaf stays defined/standard::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > instance subject with an EXTRA rootSessionId leaf → unsupported::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > team subject carrying the legacy targetInstanceId leaf → unsupported (backend rejects: service.ts L610-616)::passed
+test/pr56-control-subject-payload.test.ts::PR56 batch#2 — strict subject leaves: contradictory input fails CLOSED to unsupported > template subject with an EXTRA instanceId leaf → unsupported (parseSubject-mirror: exactly one id leaf)::passed
+test/pr56-control-subject-payload.test.ts::PR56 — golden pairing (test-only, against the shared contracts canonicalizer) > sha256(canonicalJsonStringify(S9 payload)) === the displayed wire digest::passed
+test/projection-adapter.test.ts::adaptTeamProjection — G3 roster rules > groupId is an opaque passthrough: present verbatim only when set (invariant 20)::passed
+test/projection-adapter.test.ts::adaptTeamProjection — G3 roster rules > identity is the instanceId: duplicate labels never collide::passed
+test/projection-adapter.test.ts::adaptTeamProjection — G3 roster rules > merges the disposed history into members AND retains it verbatim::passed
+test/projection-adapter.test.ts::adaptTeamProjection — G3 roster rules > multiple instances of one template stay separate rows (no template-keyed collapse)::passed
+test/projection-adapter.test.ts::adaptTeamProjection — G3 roster rules > templates map through with the optional leaves present only when set::passed
+test/projection-adapter.test.ts::adaptTeamProjection — G3 roster rules > the perspective is passed through by reference::passed
+test/projection-adapter.test.ts::adaptTeamProjection — §7.2 display mapping > currentAction falls back to the durable last action when no live action exists::passed
+test/projection-adapter.test.ts::adaptTeamProjection — §7.2 display mapping > currentAction prefers the live activity action over the durable last action::passed
+test/projection-adapter.test.ts::adaptTeamProjection — §7.2 display mapping > currentAction stays ABSENT when neither source has an action (never inferred)::passed
+test/projection-adapter.test.ts::adaptTeamProjection — §7.2 display mapping > maps every RAW lifecycle to its display status and keeps the RAW value::passed
+test/projection-adapter.test.ts::adaptTeamProjection — §7.2 display mapping > the leader (absent childSessionId) gets null — the nav target is the root session::passed
+test/projection-adapter.test.ts::adaptTeamProjection — §7.3 badges and §7.4 current work > emits a current-work row only when at least one work fact exists (no invented rows)::passed
+test/projection-adapter.test.ts::adaptTeamProjection — §7.3 badges and §7.4 current work > pendingControlCount is null for every live and history row at the projection level::passed
+test/projection-adapter.test.ts::adaptTeamProjection — §7.3 badges and §7.4 current work > the current-work row carries the live fields only when present::passed
+test/projection-adapter.test.ts::projectionFromWire — the single documented boundary > mirrors the 9-field D-4 value shape (ids, generation, blueprint)::passed
+test/projection-adapter.test.ts::projectionFromWire — the single documented boundary > never mutates the wire input (pure)::passed
+test/s3-client-generation-spike.test.ts::S3 same-page generation characterization (evidence only, no product workaround) > traces the same-SID reopen, the failed-generation lifetime, and the public seams::passed
+test/team-activity.client.spec.tsx::TeamActivity > keeps the en dictionary pairing::passed
+test/team-activity.client.spec.tsx::TeamActivity > keeps the rows non-interactive (no buttons, no navigation)::passed
+test/team-activity.client.spec.tsx::TeamActivity > omits the summary node when the row carries no summary::passed
+test/team-activity.client.spec.tsx::TeamActivity > renders the instance label as-is (the resolution lives in the adapter)::passed
+test/team-activity.client.spec.tsx::TeamActivity > renders the one-line empty state::passed
+test/team-activity.client.spec.tsx::TeamActivity > renders the row anatomy: dot, subject, status label, member, summary::passed
+test/team-activity.client.spec.tsx::TeamActivity > renders the three frozen status labels and the absent-status arm::passed
+test/team-command-flow.test.ts::P9-T10 (P9-S7) command flows — member.send: pending → remote → projection > resolving the send does not touch the projection (reference stable after the response lands)::passed
+test/team-command-flow.test.ts::P9-T10 (P9-S7) command flows — member.send: pending → remote → projection > the change arrives only via the frame: the follow-up pull applies generation 2::passed
+test/team-command-flow.test.ts::P9-T10 (P9-S7) command flows — member.send: pending → remote → projection > the gen-1 frame is applied before the command (the flow starts at generation 1)::passed
+test/team-command-flow.test.ts::P9-T10 (P9-S7) command flows — member.send: pending → remote → projection > the request token is carried verbatim in the wire params::passed
+test/team-command-flow.test.ts::P9-T10 (P9-S7) command flows — member.send: pending → remote → projection > the typed outcome is preserved verbatim (a success is exactly { ok: true })::passed
+test/team-command-flow.test.ts::P9-T10 (P9-S7) command flows — member.send: pending → remote → projection > while member.send is pending, the snapshot reference is stable (no optimistic state)::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > a create rejection (channel loss) maps onto the local native-error marker::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > a failed creation-path open stops BEFORE the admit (stage open, the real root stays real)::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > a stage-`work` retry resumes ONLY the admit — the SAME token + prompt, no re-create, no re-open (the real Root stays open)::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > a typed create failure is preserved verbatim (stage create) — no open, no admit::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > a typed work failure is preserved verbatim (stage work) after create + open::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > a work rejection (channel loss) maps onto the local native-error marker (stage work)::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > empty initial work performs create + open ONLY (no admit RPC at all)::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > omits the optional v2 fields (workspace / revision) when the attempt carries none::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > runs create → open → admit in order with the workspace PATH (never the id) and NO initialWork in the v2 create request::passed
+test/team-create-flow.test.ts::runTeamCreateFlow > the admit reuses the SAME root + stable token + prompt as the frozen attempt (open BEFORE admit)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > Cancel discards the attempt client-locally (NO remote call) and is terminal: later creates run the standard path (plan §10.5)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > Continue without handoff is the client-local explicit decision: the standard two-stage v2 create path (create-only: the draft carries no initial work), no handoff re-drive (UI §32.4; TCM M4)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > a completed-without-handoff state opens the Root as well (invariant 9: same id)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > a creation-failed state renders RETRY only and the Retry re-invokes with the SAME token (plan §10.5)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > a handoff.create transport loss (the only rejection kind) records the local native-error marker, no optimistic state::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > a prepare typed failure renders verbatim and NEVER blocks the create (UI §32.3/§32.4)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > a typed handoff.create response failure (ok:false, no stored state) renders the full triad with a fresh-token Retry::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > an awaiting-decision state narrowed by the host renders only the host options::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > an awaiting-decision state renders the full triad (host options absent) and Retry re-invokes with a FRESH token (plan §10.5)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > does not prefill when the feed lacks the workspace or the draft already picked one (UI §32.2)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > enabling the handoff runs the one-shot prepare read and shows the summary preview (UI §32.3)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > prefills the default workspace from the source session workspace when the feed carries it (UI §32.2)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > renders the handoff block only when both the face and the source are present, enabled by default (UI §32.2)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > the handoff create runs the frozen face with a fresh token and NO native root (G5: no optimistic patch, no cold root)::passed
+test/team-creation-handoff.client.spec.tsx::TeamCreationPanel (handoff, S5-D) > unchecking cancels the pending preview and re-checking re-runs the one-shot read (UI §32.3)::passed
+test/team-creation-panel-refresh.client.spec.tsx::TeamCreationPanel (RED-3: the manual catalog refresh, plan §13) > survives a first catalog failure with a MANUAL refresh that re-runs the load (no polling, no subscription)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > a BLOCKED_WARNING verdict lists the warnings and gates Create behind the explicit ack (UI §9.2)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > a changed draft cannot alter a started create: the admit uses the SNAPSHOT prompt (plan §7 必须测试)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > a complete-persona preset FATAL disables Create with the §7.4 remedy and no Continue-anyway::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > a failed creation-path open surfaces the native-error marker (stage open) with the retained root (D-3)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > a loud unknown probe verdict disables Create (never a silent ready)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > a new probe verdict resets the local ack (the frozen engine drift semantics, UI §9.2)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > a typed second-stage (admit) failure keeps the REAL ROOT open: the work lane + retry re-send ONLY the admit with the SAME stable token + prompt (plan §7; never a re-create, never a New Session)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > a typed v2 team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > an OPEN verdict enables Create with the work-aware label (UI §9)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > an unknown selected workspace sends NO RPC (a local typed refusal, no retry lane for a never-started attempt)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > create happy path (TCM M4 two-stage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > create-cancel: closing the panel mutates nothing (no team.create, draft intact)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > empty initial work performs ONLY the v2 create + open (no admit RPC at all; onCreated after the open)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)::failed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > shows the verbatim catalog failure note and keeps the picker disabled (loud, never silent)::passed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > switching the runtime preset re-runs the probe with the new persona fact (UI §7.3)::failed
+test/team-creation-panel.client.spec.tsx::TeamCreationPanel > the workspace picker renders only when the native feed has rows (UI §8)::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — handoff.create (UI-initiated mutation) > a stored `awaiting-decision` state does NOT pull (no team exists yet)::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — handoff.create (UI-initiated mutation) > a stored `completed-without-handoff` state pulls exactly once::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — handoff.create (UI-initiated mutation) > a stored `completed` state pulls the NEW team projection exactly once::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — handoff.create (UI-initiated mutation) > a stored `creation-failed` state does NOT pull::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — handoff.create (UI-initiated mutation) > a typed handoff.create response failure does NOT pull::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — representative already-covered paths > a governance policy commit success pulls exactly once::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — representative already-covered paths > a governance policy commit typed failure does NOT pull::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — representative already-covered paths > a member lifecycle command success pulls exactly once (archive)::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — representative already-covered paths > a member lifecycle command typed failure does NOT pull (dispose)::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — standard create flow (UI-initiated mutation) > a typed create-stage failure does NOT pull::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — standard create flow (UI-initiated mutation) > a typed work-stage (admit) failure does NOT pull (the Root stays open, the lane retries)::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — standard create flow (UI-initiated mutation) > terminal success (create-only, no initial work) pulls exactly once::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — standard create flow (UI-initiated mutation) > terminal success (with initial work) pulls the NEW team projection exactly once::passed
+test/team-d4-a1-ui-pull.client.spec.tsx::D4-A1 — standard create flow (UI-initiated mutation) > without the pullProjection prop the success flow still settles (back-compat)::passed
+test/team-dock-model.client.spec.ts::deriveTeamDockContent > falls back for the activity row text: subject, else summary, else the live current action::passed
+test/team-dock-model.client.spec.ts::deriveTeamDockContent > keeps a distinct key per row for a multi-instance member::passed
+test/team-dock-model.client.spec.ts::deriveTeamDockContent > keeps a sessionless instance in the member list::passed
+test/team-dock-model.client.spec.ts::deriveTeamDockContent > lists the current-roster instances in snapshot order, the leader instance included, and skips history-only rows::passed
+test/team-dock-model.client.spec.ts::deriveTeamDockContent > reads the current-work activity rows straight through in snapshot order::passed
+test/team-dock-model.client.spec.ts::deriveTeamDockCounts > counts a multi-instance member once per running instance::passed
+test/team-dock-model.client.spec.ts::deriveTeamDockCounts > never counts history-only instances and reads M as the frozen summary value, not a per-row sum::passed
+test/team-dock-model.client.spec.ts::deriveTeamDockCounts > reads N as the running instances, the leader instance included, and M from the ledger summary::passed
+test/team-dock-model.client.spec.ts::deriveTeamDockCounts > reads zero from a fully idle team::passed
+test/team-dock.client.spec.tsx::TeamDock > appears when the cold pull lands and stops pulling once the mirror gains the session::passed
+test/team-dock.client.spec.tsx::TeamDock > renders nothing for a non-team session and cold-pulls the projection-mirror gap once per mount::passed
+test/team-dock.client.spec.tsx::TeamDock > renders the panel for the member session resolved through the binding (no cold pull)::passed
+test/team-dock.client.spec.tsx::TeamDock > threads the jump callback through the adapter to the jump entry (D13)::passed
+test/team-dock.client.spec.tsx::TeamDockPanel > activates the team tab when the jump entry is clicked, without toggling the expansion (D13)::passed
+test/team-dock.client.spec.tsx::TeamDockPanel > covers the remaining dot states: an archived member and a blocked activity::passed
+test/team-dock.client.spec.tsx::TeamDockPanel > lists the member status rows (name + dot) and the activity rows when expanded::passed
+test/team-dock.client.spec.tsx::TeamDockPanel > omits the zero-count readout segments and keeps a bare title when both are zero::passed
+test/team-dock.client.spec.tsx::TeamDockPanel > renders the English dictionary pairing::passed
+test/team-dock.client.spec.tsx::TeamDockPanel > renders the collapsed D23 readout with both counts on one line::passed
+test/team-dock.client.spec.tsx::TeamDockPanel > shows the one-line empty notes while the team carries no member status or activity::passed
+test/team-dock.client.spec.tsx::TeamDockPanel > toggles the expanded body on the chevron and flips aria-expanded::passed
+test/team-governance.client.spec.tsx::TeamGovernance A4-PR6 §6.D — the intervention mount > an older face (no v8 slice) keeps the section absent — the pre-v8 rendering is byte-identical::passed
+test/team-governance.client.spec.tsx::TeamGovernance A4-PR6 §6.D — the intervention mount > renders the interventions section when the face carries the v8 slice::passed
+test/team-governance.client.spec.tsx::TeamGovernance > a Recheck transport loss (the only rejection kind) records the local transport-loss note::passed
+test/team-governance.client.spec.tsx::TeamGovernance > a Recheck typed failure renders verbatim (code + message + token echo) and never pulls::passed
+test/team-governance.client.spec.tsx::TeamGovernance > a SUCCESSFUL command whose pull is a VALID round trip (apply / duplicate / stale) shows NO pull-error lane (S1-C2)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > a SUCCESSFUL recheck whose pull fails shows the split result on its own lane and never re-fires the mutation (S1-C2)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > a SUCCESSFUL recheck whose pull returns a typed rpc-error shows the split result with the typed code (S1-C2)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > a compat review is a read: it never pulls the projection::passed
+test/team-governance.client.spec.tsx::TeamGovernance > a policy commit sends a PARTIAL cell map on the projection state id (never invented) and pulls once::passed
+test/team-governance.client.spec.tsx::TeamGovernance > a policy commit typed failure renders verbatim and never pulls::passed
+test/team-governance.client.spec.tsx::TeamGovernance > a policy review loads the cell view (a read: no projection pull)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success::failed
+test/team-governance.client.spec.tsx::TeamGovernance > an override set targets the member instance (scope instance) and pulls once on success::passed
+test/team-governance.client.spec.tsx::TeamGovernance > an override set typed failure renders verbatim and never pulls::passed
+test/team-governance.client.spec.tsx::TeamGovernance > an override show is a read (no projection pull) and renders the recorded override verbatim::passed
+test/team-governance.client.spec.tsx::TeamGovernance > an override show renders the no-override note when the record is null (a read)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > keeps the ack control disabled with the explicit wire-gap reason (UI §38)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > keeps the override set inert until an allow cell has items (no empty allow commit)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > keeps the policy commit inert (no command, no preview) when the only draft is an allow with no items::passed
+test/team-governance.client.spec.tsx::TeamGovernance > pairs the zh and en dictionaries for the governance surface::passed
+test/team-governance.client.spec.tsx::TeamGovernance > renders a compat review typed failure verbatim as a local note (no projection pull)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > renders an unknown future compatibility status verbatim (loud, never silent)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > renders the Projection-driven compatibility badge (the §10.2 four admission states)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > renders the aggregate counts and generation from the Projection::passed
+test/team-governance.client.spec.tsx::TeamGovernance > renders the compat review fresh-read detail on success (labeled, not authority)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > renders the effective-config lanes (model/workspace/permissions-sorted/autonomy) with the §18.3 state words::passed
+test/team-governance.client.spec.tsx::TeamGovernance > renders the §19 hard-policy display for a denied lane (never pretend an override wins)::passed
+test/team-governance.client.spec.tsx::TeamGovernance > shows the effective-config empty note when no member carries a config DTO::passed
+test/team-governance.client.spec.tsx::TeamGovernance > the human Recheck re-probes with the closed CAPABILITY_GENERATION_CHANGE trigger and pulls once on success::passed
+test/team-governance.client.spec.tsx::TeamGovernance > the pull-error lane is cleared by the NEXT dispatch on the same command key (the note is per-invocation, not sticky) (S1-C2)::passed
+test/team-governance.test.ts::compatibility param builders > ack: the note is omitted when undefined and trimmed-present when given::passed
+test/team-governance.test.ts::compatibility param builders > get: the teamSessionId only::passed
+test/team-governance.test.ts::compatibilityBadge (UI §10.2) > covers all four states with no unmarked entries::passed
+test/team-governance.test.ts::compatibilityBadge (UI §10.2) > maps the four frozen AdmissionStates to their marks::passed
+test/team-governance.test.ts::compatibilityBadge (UI §10.2) > returns null for a status outside the frozen vocabulary::passed
+test/team-governance.test.ts::effectiveConfigLanes (UI §18) > carries the v2 additive flags when present (suppressed/unavailable/deniedBy/effectiveFrom/locked)::passed
+test/team-governance.test.ts::effectiveConfigLanes (UI §18) > flattens the four lanes with sorted permissions and the §18.3 distinct state words::passed
+test/team-governance.test.ts::effectiveConfigLanes (UI §18) > renders pending-next-boundary with its full word::passed
+test/team-governance.test.ts::hardPolicyDisplay (UI §19) > a denied lane without deniedBy gets no display (no invented reason)::passed
+test/team-governance.test.ts::hardPolicyDisplay (UI §19) > denied + deniedBy → the Requested/Effective/Reason display::passed
+test/team-governance.test.ts::hardPolicyDisplay (UI §19) > non-denied lanes never show the hard-policy display::passed
+test/team-governance.test.ts::override param builders > get: a scope without a target drops the target (target present iff scope is instance)::passed
+test/team-governance.test.ts::override param builders > get: instance scope carries the target instance::passed
+test/team-governance.test.ts::override param builders > get: no scope omits scope AND targetInstanceId::passed
+test/team-governance.test.ts::override param builders > reset: the human actor, same scope/target pairing::passed
+test/team-governance.test.ts::override param builders > set: deny entries carry no items key::passed
+test/team-governance.test.ts::override param builders > set: the human actor + the value are preserved verbatim::passed
+test/team-governance.test.ts::parseCompatibilityStateValue (the aggregate get shape) > parses the frozen durable-state wire value::passed
+test/team-governance.test.ts::parseCompatibilityStateValue (the aggregate get shape) > throws on a non-integer generation::passed
+test/team-governance.test.ts::parseCompatibilityStateValue (the aggregate get shape) > throws the stable malformed prefix when the counts block is absent::passed
+test/team-governance.test.ts::parseCompatibilityStateValue (the aggregate get shape) > throws when the top-level value is not an object::passed
+test/team-governance.test.ts::parseCompatibilityVerdictValue (the flat re-derived shape) > parses the ack verdict (no trigger → null, not absent)::passed
+test/team-governance.test.ts::parseCompatibilityVerdictValue (the flat re-derived shape) > parses the reprobe verdict (flat counters + the producing trigger)::passed
+test/team-governance.test.ts::parseCompatibilityVerdictValue (the flat re-derived shape) > throws on a non-integer flat counter::passed
+test/team-governance.test.ts::parseCompatibilityVerdictValue (the flat re-derived shape) > throws when the top-level value is not an object::passed
+test/team-governance.test.ts::parseOverrideValue > an array override is malformed::passed
+test/team-governance.test.ts::parseOverrideValue > an override record passes through untouched (never re-shaped)::passed
+test/team-governance.test.ts::parseOverrideValue > null override → no override recorded::passed
+test/team-governance.test.ts::parseOverrideValue > throws when the top-level value is not an object::passed
+test/team-governance.test.ts::parsePolicyStateValue > absent cells → an empty cell list (the state id alone is a valid view)::passed
+test/team-governance.test.ts::parsePolicyStateValue > parses the view with cells sorted by capability (allow items / deny / locked / no value)::passed
+test/team-governance.test.ts::parsePolicyStateValue > rejects a cell entry with an unknown kind::passed
+test/team-governance.test.ts::parsePolicyStateValue > throws when the top-level value is not an object::passed
+test/team-governance.test.ts::policyState param builders > get: the teamSessionId only::passed
+test/team-governance.test.ts::policyState param builders > set: a partial cell map is wire-legal (the frozen schema validates provided keys only)::passed
+test/team-governance.test.ts::policyState param builders > set: omitted cells stay absent from the target (no invented cells)::passed
+test/team-governance.test.ts::policyState param builders > set: target carries the current stateId (from the projection) + cells, human actor::passed
+test/team-governance.test.ts::policyStateLabel (the §21 display mapping) > shows the state id verbatim (open blueprint-defined vocabulary)::passed
+test/team-governance.test.ts::re-probe trigger closed set > accepts every frozen trigger and rejects everything else::passed
+test/team-governance.test.ts::re-probe trigger closed set > builds the reprobe params verbatim for a frozen trigger::passed
+test/team-governance.test.ts::re-probe trigger closed set > exposes exactly the five frozen DevPlan §20.1 triggers::passed
+test/team-governance.test.ts::re-probe trigger closed set > maps the human Recheck (§10.4) to CAPABILITY_GENERATION_CHANGE::passed
+test/team-governance.test.ts::re-probe trigger closed set > rejects a non-frozen trigger in the params builder (no wire round-trip spent)::passed
+test/team-handoff.test.ts::handoffDecisionActions (the §32.4 triad mapping) > awaiting-decision with an empty/absent options array → the full frozen triad::passed
+test/team-handoff.test.ts::handoffDecisionActions (the §32.4 triad mapping) > awaiting-decision → the host-surfaced options::passed
+test/team-handoff.test.ts::handoffDecisionActions (the §32.4 triad mapping) > creation-failed → RETRY only (host re-drives creation; no wire decision channel)::passed
+test/team-handoff.test.ts::handoffDecisionActions (the §32.4 triad mapping) > terminal states and unknown → no actions::passed
+test/team-handoff.test.ts::handoffDecisionOptions closed set > accepts the triad and rejects everything else::passed
+test/team-handoff.test.ts::handoffDecisionOptions closed set > exposes the frozen triad in canonical order::passed
+test/team-handoff.test.ts::handoffRetryPlan (plan §10.5 idempotency rule) > awaiting-decision → FRESH token (a same-token re-invocation would only replay the stored failure)::passed
+test/team-handoff.test.ts::handoffRetryPlan (plan §10.5 idempotency rule) > creation-failed → SAME token (host re-drives creation idempotently)::passed
+test/team-handoff.test.ts::handoffRetryPlan (plan §10.5 idempotency rule) > no retry plan for terminal states::passed
+test/team-handoff.test.ts::parseHandoffCreateState (the HandoffOperationState wire mirror) > a future kind lands in the fail-safe unknown arm (never a crash)::passed
+test/team-handoff.test.ts::parseHandoffCreateState (the HandoffOperationState wire mirror) > narrowed kind: awaiting-decision (failure verbatim + host options filtered to the closed set)::passed
+test/team-handoff.test.ts::parseHandoffCreateState (the HandoffOperationState wire mirror) > narrowed kind: canceled (no team)::passed
+test/team-handoff.test.ts::parseHandoffCreateState (the HandoffOperationState wire mirror) > narrowed kind: completed (team identity extracted)::passed
+test/team-handoff.test.ts::parseHandoffCreateState (the HandoffOperationState wire mirror) > narrowed kind: completed-without-handoff (replayed)::passed
+test/team-handoff.test.ts::parseHandoffCreateState (the HandoffOperationState wire mirror) > narrowed kind: creation-failed (failure verbatim)::passed
+test/team-handoff.test.ts::parseHandoffCreateState (the HandoffOperationState wire mirror) > throws the stable malformed prefix when the state is absent::passed
+test/team-handoff.test.ts::parseHandoffCreateState (the HandoffOperationState wire mirror) > throws when the team identity is missing on a completed state::passed
+test/team-handoff.test.ts::parseHandoffCreateState (the HandoffOperationState wire mirror) > throws when the top-level value is not an object::passed
+test/team-handoff.test.ts::parseHandoffPrepareValue > empty bullets are valid (a title-only summary)::passed
+test/team-handoff.test.ts::parseHandoffPrepareValue > parses the one-shot summary (title + compressed bullets)::passed
+test/team-handoff.test.ts::parseHandoffPrepareValue > throws on non-string bullets::passed
+test/team-handoff.test.ts::parseHandoffPrepareValue > throws the stable malformed prefix for a missing title::passed
+test/team-handoff.test.ts::parseHandoffPrepareValue > throws when the top-level value is not an object::passed
+test/team-intent-model.test.ts::emptyTeamIntentDraft > is the fully blank page-run draft (no preselects, no acknowledgement, no work token yet)::passed
+test/team-intent-model.test.ts::intentCreateGate > enables "Create" for a ready (OPEN) verdict without initial work, and "Create & Send" with it::passed
+test/team-intent-model.test.ts::intentCreateGate > gates BLOCKED_WARNING behind the explicit acknowledgement and admits DEGRADED_ACKNOWLEDGED::passed
+test/team-intent-model.test.ts::intentCreateGate > keeps Create disabled while checking, on an unknown verdict, and on FATAL::passed
+test/team-intent-model.test.ts::intentEnvironmentFacts > carries no facts for a blank selection or a selection the seam does not attest::passed
+test/team-intent-model.test.ts::intentEnvironmentFacts > carries the selected preset as the single persona fact when a seam row attests it::passed
+test/team-intent-model.test.ts::intentEnvironmentFacts > pre-alpha3 PR-E §E.3: the subject is the OBSERVED KIND via the static roster (pass-through for unknown ids)::passed
+test/team-intent-model.test.ts::isPersonaPresetFatal > is true for the BLOCKED_FATAL verdict carrying EITHER honest persona code (pre-alpha3 PR-E §E.3 dual lane)::passed
+test/team-intent-model.test.ts::mintRootWorkRequestToken > mints a fresh opaque token per call (the `team-work-<uuid>` shape)::passed
+test/team-intent-model.test.ts::parseBlueprintDetail > parses the display name, description, source, and template count::passed
+test/team-intent-model.test.ts::parseBlueprintDetail > returns undefined for a malformed envelope (the panel falls back to the id label)::passed
+test/team-intent-model.test.ts::parseCatalogList > fails loud on a malformed envelope (the panel shows its catalog error state)::passed
+test/team-intent-model.test.ts::parseCatalogList > parses the blueprint rows with the latest revision and drops malformed rows::passed
+test/team-intent-model.test.ts::parseCompatibilityResult > fails loud on an unknown status or an unknown requirement outcome (never a silent "ready")::passed
+test/team-intent-model.test.ts::parseCompatibilityResult > parses an OPEN verdict with PASS rows only as ready (no warning/fatal rows)::passed
+test/team-intent-model.test.ts::parseCompatibilityResult > separates the WARNING and FATAL rows with their owner, subjects, and remedy data::passed
+test/team-intent-model.test.ts::personaFatalLane > returns the closed lane per verdict (conflict > incompatible; null otherwise)::passed
+test/team-intent-model.test.ts::planTeamCreateAttempt > keeps the draft-owned token stable across plans for the same draft (retry identity)::passed
+test/team-intent-model.test.ts::planTeamCreateAttempt > refuses loudly (NO RPC) when the selected workspace id is no longer in the feed::passed
+test/team-intent-model.test.ts::planTeamCreateAttempt > resolves the selected workspace to its OPTION PATH (never the id) and freezes the draft fields::passed
+test/team-intent-model.test.ts::planTeamCreateAttempt > selects the host default workspace (no path) and no initial work (empty prompt) when the draft is blank::passed
+test/team-intent-model.test.ts::selectDefaultPresetId > prefers the `team` row, then the flagged default, then no preselect::passed
+test/team-intent-model.test.ts::teamWorkspaceOptions > maps the native workspace views onto the picker options (id/title/path)::passed
+test/team-intent-model.test.ts::teamWorkspaceOptions > yields no options while the workspace feed has not landed (undefined)::passed
+test/team-ledger-model.client.spec.ts::A4-PR6 review round 1 (fix 4/6) — the abandonment close never reaches the `unknown` family > control-request-abandoned renders NOTHING in Events (the skip), never an `unknown` JSON row::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > F11-T5: total 68 with 50 loaded entries (frontier 118) → not complete, 18 remaining (count domain)::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > caps the window at the most recent 200 filtered rows, oldest first::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > clamps the depth to the filtered total::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > deepens from a smaller depth over the loaded set (the depth axis)::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > excludes actor-less rows under an active instance filter::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > filters by category and skips rows without the category::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > filters by instance id on the row actor::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > filters by template id through the actor template::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > joins control requests to their pending state from the loaded chains::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > joins interval closes to the paired interval instance without guessing::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > keeps the frozen depth constants from the legacy feed model::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > orders rows by the durable sequence, never by the timestamp::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > reads the frozen message from/to leaves per fact type::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > renders control decisions with the value, the reason, and the scope actor::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > renders progress rows with the frozen progress value::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > renders unknown fact types as the safe generic row without throwing::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > reports the partial-ledger remainder as server total minus loaded entries (count domain, INV-9.2)::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > resolves actor labels from the snapshot and falls back to the raw id::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > resolves navigation to the member child session and the team root::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > shows the whole loaded stream when it fits the window::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection > uses the stable ledger key and the empty model::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection — internal authority facts (PR #26 P2) > a grant CARRYING the control category (the adapter output) is hidden under the `all` AND the `control` Events filters::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection — internal authority facts (PR #26 P2) > filters artifact-read-granted OUT of the Events rows while keeping it in the raw model::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection — internal authority facts (PR #26 P2) > keeps the INV-9.2 remainder math on the LOADED entry count (filtered grants do not change it)::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection — internal authority facts (PR #26 P2) > leaks no grant internals (locator / targetKeyDigest / versionDigest) into ANY rendered row::passed
+test/team-ledger-model.client.spec.ts::deriveTeamLedgerSection — internal authority facts (PR #26 P2) > the hide does not touch the raw entry count or the pagination completeness (a control-category grant included)::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T1: a shifted base (69–136, total 68, limit 50) pages to the real tail — exactly 2 calls, 68 loaded::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T2: a small shifted base (7–11, total 5, limit 2) pages 7-8 | 9-10 | 11 — all 5 loaded::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T6 nine-case matrix (the store paging axis) > case 1 — base 1 (frontier ≡ count): pages to the tail, count-complete::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T6 nine-case matrix (the store paging axis) > case 2 — base 69: no early completion (frontier 70 >= total 4 must not stop the catch-up)::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T6 nine-case matrix (the store paging axis) > case 3 — base 10000: the same count rule at a large base::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T6 nine-case matrix (the store paging axis) > case 4 — total < first sequence (3 < 5): no early completion; the tail ends the episode, the loaded count outruns the (stale) total::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T6 nine-case matrix (the store paging axis) > case 5 — multi-page (5 pages to the tail): every page gated, 9/9 loaded::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T6 nine-case matrix (the store paging axis) > case 6 — overlapping page replay (stable re-read at the anchor): dedupe absorbs, no double count::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T6 nine-case matrix (the store paging axis) > case 7 — duplicate-sequence append on refresh (total grows 5→6): the unique count is the map size::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T6 nine-case matrix (the store paging axis) > case 8 — cursor-null tail: the clean tail completes (50/50); the lying tail (3 loaded of total 7) stays partial::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — F11 count-based completeness (INV-9.2) > F11-T6 nine-case matrix (the store paging axis) > case 9 — total known vs null: the unbound store carries a null total and no completeness claim (the verdict-rule half is in ledger-adapter.test.ts)::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — catch-up episode > a lying total (terminal page outruns the frontier) ends the episode — never a fetch loop::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — catch-up episode > pages forward from afterSequence 0 to the tail (tracker-gated, limit honored)::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — catch-up episode > the page size defaults to the frozen 50::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — refresh (append without reorder) > re-reads at the tracker anchor and appends new entries at the end of the window::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — reset and observability > reset drops the binding and every entry; refresh on an unbound store is a no-op::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — reset and observability > the snapshot reference is stable between changes and per-change notifications stop at dispose::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — team switch mid-flight (G2 stale/foreign drop) > a same-team re-open while in flight is queued and re-reads the stable tail::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — team switch mid-flight (G2 stale/foreign drop) > drops the stale-team response and runs the new team episode::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — tracker rejections (G2 page gates) > a page total regression is stored as the typed reject; the page never merges::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — tracker rejections (G2 page gates) > an over-limit page is stored as the typed reject; the page never merges::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — typed failures (G2 RPC errors remain typed) > a stale-team transport rejection never touches the new team state::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — typed failures (G2 RPC errors remain typed) > a transport-level rejection is stored as the closed transport-loss reason::passed
+test/team-ledger-store.test.ts::createTeamLedgerStore — typed failures (G2 RPC errors remain typed) > a typed RPC error is stored intact (never exception-ified)::passed
+test/team-ledger.client.spec.tsx::TeamLedger > F11 (companion): the error state renders in the zero-rows branch — a typed failure is never swallowed by the empty note (NOTES L208 OBS(1))::passed
+test/team-ledger.client.spec.tsx::TeamLedger > caps the window at 200 rows and offers load earlier::passed
+test/team-ledger.client.spec.tsx::TeamLedger > carries the full detail in the title affordance::passed
+test/team-ledger.client.spec.tsx::TeamLedger > deepens the window on load-earlier clicks (local axis only)::passed
+test/team-ledger.client.spec.tsx::TeamLedger > filters by instance id and by template id through the instance select::passed
+test/team-ledger.client.spec.tsx::TeamLedger > filters by the client-local category select::passed
+test/team-ledger.client.spec.tsx::TeamLedger > keeps the en dictionary pairing for the section chrome::passed
+test/team-ledger.client.spec.tsx::TeamLedger > renders an unknown fact type as the safe generic row without throwing::passed
+test/team-ledger.client.spec.tsx::TeamLedger > renders the decision reason in the state badge::passed
+test/team-ledger.client.spec.tsx::TeamLedger > renders the empty and the loading states::passed
+test/team-ledger.client.spec.tsx::TeamLedger > renders the progress label on progress rows::passed
+test/team-ledger.client.spec.tsx::TeamLedger > renders the row families with the frozen category markers::passed
+test/team-ledger.client.spec.tsx::TeamLedger > renders the three frozen decision labels plus the raw-value fallback::passed
+test/team-ledger.client.spec.tsx::TeamLedger > resets the window and the filters on a NEW team only::passed
+test/team-ledger.client.spec.tsx::TeamLedger > shows the closed transport-loss reason from a page reject::passed
+test/team-ledger.client.spec.tsx::TeamLedger > shows the loud RPC error note and retries through the injected callback::passed
+test/team-ledger.client.spec.tsx::TeamLedger > shows the partial-ledger remainder note and hides it once complete::passed
+test/team-ledger.client.spec.tsx::TeamLedger > shows the section empty state from the en dictionary::passed
+test/team-ledger.client.spec.tsx::TeamLedger > shows the waiting badge (amber dot) on an unpaired control request::passed
+test/team-ledger.client.spec.tsx::TeamLedger > switches sessions on row click (D9) and stays inert without a resolved session::passed
+test/team-legacy.client.spec.tsx::TeamView legacy zero state > hides the team-id and leader-session rows for a roster-only legacy team (best-effort decode)::passed
+test/team-legacy.client.spec.tsx::TeamView legacy zero state > keeps the ordinary zero state for a native-fallback inspection (the session is not a legacy team)::passed
+test/team-legacy.client.spec.tsx::TeamView legacy zero state > keeps the ordinary zero state plus ONE verbatim note for a typed inspection failure (UI §38)::passed
+test/team-legacy.client.spec.tsx::TeamView legacy zero state > keeps the ordinary zero state plus a local native-error note when the inspection channel is lost::passed
+test/team-legacy.client.spec.tsx::TeamView legacy zero state > keeps the ordinary zero state plus a verbatim note for an unrecognized future status (never silently dropped)::passed
+test/team-legacy.client.spec.tsx::TeamView legacy zero state > leaves the T7 zero state unchanged when the legacyInspect seam is absent (no legacy surface at all)::passed
+test/team-legacy.client.spec.tsx::TeamView legacy zero state > renders the verbatim Chinese banner copy (UI §34.1)::passed
+test/team-legacy.client.spec.tsx::TeamView legacy zero state > replaces the zero state with the read-only legacy banner when the inspection reports a legacy team (UI §34.1)::passed
+test/team-legacy.test.ts::parseLegacyInspection — legacy-team view > decodes the full view verbatim: identity, roster rows, warnings, sessions, member children::passed
+test/team-legacy.test.ts::parseLegacyInspection — legacy-team view > degrades absent roster fields to null/empty instead of throwing::passed
+test/team-legacy.test.ts::parseLegacyInspection — legacy-team view > skips non-object roster rows and degrades non-array collections::passed
+test/team-legacy.test.ts::parseLegacyInspection — legacy-team view > treats a missing or malformed team object as an empty legacy-team view::passed
+test/team-legacy.test.ts::parseLegacyInspection — native-fallback view > degrades a missing/non-array native list to zero sessions::passed
+test/team-legacy.test.ts::parseLegacyInspection — native-fallback view > fixes reason/degradedTo and counts the native session evidence::passed
+test/team-legacy.test.ts::parseLegacyInspection — unknown arm and wire violations > keeps a future status tag verbatim in the fail-safe arm (never dropped)::passed
+test/team-legacy.test.ts::parseLegacyInspection — unknown arm and wire violations > throws LEGACY_MALFORMED when inspection is a bare string::passed
+test/team-legacy.test.ts::parseLegacyInspection — unknown arm and wire violations > throws LEGACY_MALFORMED when inspection is absent::passed
+test/team-legacy.test.ts::parseLegacyInspection — unknown arm and wire violations > throws LEGACY_MALFORMED when inspection is an array::passed
+test/team-legacy.test.ts::parseLegacyInspection — unknown arm and wire violations > throws LEGACY_MALFORMED when inspection is null::passed
+test/team-legacy.test.ts::parseLegacyInspection — unknown arm and wire violations > throws LEGACY_MALFORMED when the top-level value is not an object::passed
+test/team-member-commands.test.ts::buildMemberCreateParams > carries the template delegation, the token, and the host-consumed payload (label always; group/workspace when given)::passed
+test/team-member-commands.test.ts::buildMemberCreateParams > omits the optional payload fields when the dialog leaves them blank::passed
+test/team-member-commands.test.ts::buildMemberFollowupParams > rides the prompt on payload.prompt (the host-admission channel) with the target instance and token::passed
+test/team-member-commands.test.ts::buildMemberLifecycleParams > is the frozen lifecycle pair (no token, no payload)::passed
+test/team-member-commands.test.ts::buildMemberSendParams > carries the body to the member Chat and includes the subject only when given::passed
+test/team-member-commands.test.ts::createRequestTokenGenerator > yields fresh `prefix-n` tokens per call, independent per generator::passed
+test/team-member-commands.test.ts::humanCaller > is the human caller with the TeamSession id as humanId (invariant 9: the root DSH session id)::passed
+test/team-member-commands.test.ts::memberActionLabel > labels the per-lifecycle row actions (Send work / Message; Follow-up / Resume)::passed
+test/team-member-commands.test.ts::memberActionsForLifecycle > implements the UI §40 matrix: the live states take the work/message/lifecycle commands, ARCHIVED only restore/dispose, DISPOSED none::passed
+test/team-member-commands.test.ts::parseMemberCommandOutcome > maps a success to the plain ok outcome (no optimistic state — the projection pull follows)::passed
+test/team-member-commands.test.ts::parseMemberCommandOutcome > preserves the remote typed error verbatim, including the host-stamped token echo::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > a create failure notes on the template key and re-enables the "+" entry::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > a transport loss (the only rejection kind) records the transport-loss note::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > a typed failure renders the verbatim note with the token echo and pulls no projection (G5)::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > archive confirms (with the RUNNING drain warning); cancel issues nothing::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > dispose confirms with the §23.5 copy (never a delete framing)::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > exposes the §40 ARCHIVED cluster: restore + dispose only::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > exposes the §40 CREATED cluster: send work / follow-up / archive / dispose::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > exposes the §40 RUNNING cluster: the send action reads as a message::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > exposes the §40 SETTLED cluster with the Resume… follow-up label::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > member command dialogs are real modals: portaled above the section, aria-modal, Escape closes without running the command::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > renders NO action cluster for DISPOSED rows and keeps the leader lane display-only::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > restore is a direct click — no confirmation dialog (§23.4)::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > send-work settles through member.followup: frozen params, pending badge, projection pull, no local patch (G5)::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > stays display-only without the command face (no cluster, no "+" entry)::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > the create dialog submits member.create with the template delegation and the trimmed payload::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > the group "+" opens the §17 create dialog (template row, fresh notice, hidden workspace field without a feed)::passed
+test/team-members-actions.client.spec.tsx::TeamMembers S5-B command flows > the message dialog submits member.send with the subject present only when given::passed
+test/team-members-actions.client.spec.tsx::member action cluster and dialog form CSS contract > keeps .actions shrinkable (never a non-shrinkable fixed basis)::passed
+test/team-members-actions.client.spec.tsx::member action cluster and dialog form CSS contract > keeps dialog form controls inside the modal content box::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > builds the leading leader row from the leader-kind instance and keeps it out of the groups::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > folds a second leader-kind instance into the leading group (multi-instance interface)::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > keeps a created instance in its group (the unbound vocabulary is abolished)::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > keeps a created leader instance out of the running tally::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > keeps the groups in members order with a mid-list leader-kind instance::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > leaves the pending badge unknown under a partial ledger and zero when none are pending::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > passes the instance fields through untouched (lifecycle, status, action, pending count, child session)::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > synthesizes an empty leader group for a snapshot with no member instances at all::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > synthesizes the leading row from the team session when the instances carry no leader kind::passed
+test/team-members-model.client.spec.ts::deriveTeamMembers > tallies the container row per running instance, including a multi-instance member::passed
+test/team-members-model.test.ts::deriveTeamMembers — UI §16.1 fixed template rows (bug #5) > emits a fixed group row for a zero-instance template (the §17 "+" first-instance entry)::passed
+test/team-members-model.test.ts::deriveTeamMembers — UI §16.1 fixed template rows (bug #5) > keeps the instance-folded groups in `members` order and appends the zero-instance templates in `templates` order::passed
+test/team-members-model.test.ts::deriveTeamMembers — UI §16.1 fixed template rows (bug #5) > never duplicates a template that already folded instances::passed
+test/team-members-model.test.ts::deriveTeamMembers — UI §16.1 fixed template rows (bug #5) > renders an empty group list for a leader-only roster::passed
+test/team-members-model.test.ts::deriveTeamMembers — UI §16.1 fixed template rows (bug #5) > skips the leader template in the fixed backfill (the leading row is synthesized separately)::passed
+test/team-members.client.spec.tsx::TeamMembers > badges the waiting instances with the pending control-request count, completeness-aware (plan §7.3)::passed
+test/team-members.client.spec.tsx::TeamMembers > highlights the current session's group and instance rows only (D7)::passed
+test/team-members.client.spec.tsx::TeamMembers > keeps the leading row when the instances lack a leader-kind row (roster-absent fallback)::passed
+test/team-members.client.spec.tsx::TeamMembers > keeps the non-leader container rows non-interactive::passed
+test/team-members.client.spec.tsx::TeamMembers > lists a created instance as a real row in its group (the unbound vocabulary is abolished)::passed
+test/team-members.client.spec.tsx::TeamMembers > renders a session-less instance row as a disabled, inert row::passed
+test/team-members.client.spec.tsx::TeamMembers > renders one group per member with the container row label, leader first::passed
+test/team-members.client.spec.tsx::TeamMembers > renders the English dictionary pairing (with the synthesized leader note)::passed
+test/team-members.client.spec.tsx::TeamMembers > shows the current action and falls back to the action placeholder::passed
+test/team-members.client.spec.tsx::TeamMembers > shows the five-state instance labels and the state dots::passed
+test/team-members.client.spec.tsx::TeamMembers > switches back to the team session when the leading row is clicked (D10)::passed
+test/team-members.client.spec.tsx::TeamMembers > switches to the instance session on click, per instance for a multi-instance member (D9)::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S10: the v1 default store stays byte-identical — a response without the v6 cells applies; the token stays null::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S1: the first v6 frame applies and establishes the applied pair::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S2: a durable advance applies and advances appliedGeneration::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S3: a live-token-only change applies WITHOUT advancing the durable generation (frozen decision 4)::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S4: both cells equal is a duplicate — no state write (stable frame reference)::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S5: an older durable generation is stale — the applied pair is untouched::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S6: a foreign team is foreign — no overwrite::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S7: a typed RPC error resolves (never rejects), is stored intact, and never writes the frame::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S8: an internally inconsistent v6 frame (missing live token) is inconsistent — no write::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > S9: reset clears the pair (both cells null, idle)::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > T1: a LATE same-generation live-only frame of a SUPERSEDED request must not roll back the newer token (the guard drops the no-advance apply)::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > T2: a LATE same-generation frame of a SUPERSEDED request must not clear the newer error or touch the applied frame::passed
+test/team-projection-store-v6.test.ts::team-view-sync-complete — the projection store in contract v6 mode (the freshness PAIR) > T3: a LATE frame of a genuinely NEWER durable generation STILL APPLIES (durable authority outranks request order)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — defaults > the default backoff is the documented CLIENT_LOCAL transport policy::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — generation verdicts (G2) > duplicate: idempotent no-op — the same frame reference stays applied::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — generation verdicts (G2) > first frame: idle → ready with the applied generation::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — generation verdicts (G2) > foreign TeamSession: never overwrites, the source anomaly surfaces as error::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — generation verdicts (G2) > generation +1: the newer frame replaces the applied state::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — generation verdicts (G2) > provenance generation mismatch: inconsistent, the frame is never touched::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — generation verdicts (G2) > stale: never overwrites the newer applied frame::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — generation verdicts (G2) > typed RPC error: resolves (never rejects), the error is stored intact::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — loss staleness by round-trip evidence (repair 20260927, S1-C3) > an earlier request fails LATE after a later request succeeded: ignored, no overwrite, no extra retry::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — loss staleness by round-trip evidence (repair 20260927, S1-C3) > in-order success → the NEXT real transport loss is fresh: reconnecting + one retry (not dismissed)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — loss staleness by round-trip evidence (repair 20260927, S1-C3) > reset while a pull is in flight: the late success and the late loss are both dead (no state, no timer resurrection)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — loss staleness by round-trip evidence (repair 20260927, S1-C3) > restored-connection pull that fails: the loss is fresh — one retry is scheduled (the incident shape)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — loss staleness by round-trip evidence (repair 20260927, S1-C3) > typed error → recovery: the successful round trip (new generation) ends the error state::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — loss staleness by round-trip evidence (repair 20260927, S1-C3) > typed error → same-generation normal response: the duplicate success still ends the error state::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — observable source contract > snapshot reference stable between changes; listeners notified once per change; disposed listeners stop::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — reconnect policy (Seam 5 / G2) > a loss report after a later success is stale and ignored::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — reconnect policy (Seam 5 / G2) > a stale response late after reconnect never overwrites the new frame::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — reconnect policy (Seam 5 / G2) > markConnectionRestored: restarts the episode and fires the invalidation pull::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — reconnect policy (Seam 5 / G2) > noteConnectionRestored (PR #35 follow-up, P1-5): clears the loss episode WITHOUT a pull; the in-flight pull late-loss opens a FRESH episode; the fresh episode recovers::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — reconnect policy (Seam 5 / G2) > reset: back to idle, the pending retry is cancelled::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — reconnect policy (Seam 5 / G2) > transport loss: reconnecting with the frozen backoff (500 ms, then 1000 ms)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — request-order liveness authority (PR #34 review follow-up, F1) > a late response of an earlier request carrying a genuinely newer generation still applies: the generation verdict wins (F1-T5)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — request-order liveness authority (PR #34 review follow-up, F1) > an earlier request settles LATE with a duplicate after a later typed error: the newer error is not cleared (F1-T3)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — request-order liveness authority (PR #34 review follow-up, F1) > an earlier request settles LATE with a foreign frame after a later success: the newer success is not downgraded (F1-T2)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — request-order liveness authority (PR #34 review follow-up, F1) > an earlier request settles LATE with a provenance-mismatched frame after a later success: the newer success is not downgraded (F1-T2)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — request-order liveness authority (PR #34 review follow-up, F1) > an earlier request settles LATE with a stale frame after a later typed error: the newer error is not cleared (F1-T4)::passed
+test/team-projection-store.test.ts::createTeamProjectionStore — request-order liveness authority (PR #34 review follow-up, F1) > an earlier request settles LATE with a typed error after a later success: the newer success is not downgraded (F1-T1)::passed
+test/team-read-state.test.ts::team-view-sync-complete — resolveTeamReadState (the transport edge, never rejects) > an UNEXPECTED rejection kind is still classified as transport-loss (never a degraded none)::passed
+test/team-read-state.test.ts::team-view-sync-complete — resolveTeamReadState (the transport edge, never rejects) > the ok path resolves the relation through the seam::passed
+test/team-read-state.test.ts::team-view-sync-complete — resolveTeamReadState (the transport edge, never rejects) > the seam transport loss (PushTransportLossError) → transport-loss with its message::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a missing relation cell::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a non-vocabulary relation::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a none with a non-null durableGeneration::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a none with a non-null liveToken::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a none with a non-null teamSessionId::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a none with disposed true::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team relation with a null durableGeneration::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team relation with a null teamSessionId::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team relation with a zero durableGeneration::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team-member with a non-boolean disposed::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team-member with a null liveToken::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team-member with a null memberInstanceId::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team-root with a missing liveToken::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team-root with a non-lt-v1 liveToken::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team-root with a non-null memberInstanceId::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team-root with a null liveToken::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): a team-root with disposed true::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > MALFORMED → typed (never a degraded none): data not an object::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > a typed host error is stored INTACT (never exception-ified, never re-interpreted)::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > parses the confirmed-none relation (every cell null)::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > parses the team-member relation (the member perspective identity + disposed + the pair)::passed
+test/team-read-state.test.ts::team-view-sync-complete — the client read-state parser (strict, fail closed) > parses the team-root relation (the root perspective identity + the pair)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the cold-bootstrap session scope (PR #35 third follow-up P1, guide §11) > COLD-E1: attach REUSES the cold transient entry — the second trigger is dirty-coalesced (no second probe), the follow-up runs exactly once, one timer armed, no overlapping rounds::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the cold-bootstrap session scope (PR #35 third follow-up P1, guide §11) > COLD-E2: detach → reattach invalidates the OLD cold scope — the late cold round publishes NO authority, makes NO conditional pull; the new scope records its own probe and its timer stays intact::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the cold-bootstrap session scope (PR #35 third follow-up P1, guide §11) > COLD-E3: a permanent detach after the cold trigger — the late cold settlement publishes nothing, pulls nothing, and the session is no longer attached::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the cold-bootstrap session scope (PR #35 third follow-up P1, guide §11) > COLD-E4: trigger → attach → tick stay in the SAME SessionEntry (closeout guide §3/§10) — the attach starts no second refresh lane, the in-flight tick coalesces, and the cold round still PUBLISHES on settle (reuse, not replace)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the per-session refresh coordinator (client-owned polling) > S1: attach arms ONE 3s tick per session; the tick fires a round (probe + pull)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the per-session refresh coordinator (client-owned polling) > S1b: attach is idempotent (one tick even for repeat attaches)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the per-session refresh coordinator (client-owned polling) > S2: detach disarms the tick (no further rounds)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the per-session refresh coordinator (client-owned polling) > S3: single-flight + dirty coalescing — two coalesced triggers + a tick yield exactly ONE follow-up; the coalesced callers get the FOLLOW-UP result::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the per-session refresh coordinator (client-owned polling) > S4: an unattached cold trigger runs in a transient entry (real scope, no naked round) — the round runs fully, with NO attach side effect::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the per-session refresh coordinator (client-owned polling) > S5: pause stops the ticks; forced triggers still run; resume fires the immediate trigger per session, re-arms the ticks (incl. a session attached while paused), and is a no-op when running::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the per-session refresh coordinator (client-owned polling) > S6: a detach during an in-flight round supersedes its scope (P1-B) — nothing hangs: both callers settle with the superseded round result (no conditional pull, no authority publication)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the per-session refresh coordinator (client-owned polling) > S7: a failing probe is a resolved outcome; the owed follow-up still runs (and pulls — its probe succeeds); the cadence continues::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the per-session refresh coordinator (client-owned polling) > S8: the connection-restored forced trigger runs a full round::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator round flow (PR #35 follow-up, frozen §1.2) > R1: probe team-root + no applied frame → the full pull for the root (the round result carries both)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator round flow (PR #35 follow-up, frozen §1.2) > R2: probe team-root + applied identity UNCHANGED → the round is a no-op (NO projection request)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator round flow (PR #35 follow-up, frozen §1.2) > R3: probe team-member + changed pair → the full pull for the OWNING ROOT (not the session id)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator round flow (PR #35 follow-up, frozen §1.2) > R4: probe team-root + applied identity of a DIFFERENT team → the full pull (the identity mismatch is a change)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator round flow (PR #35 follow-up, frozen §1.2) > R5: probe none → the authoritative no-team result; NO projection request::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator round flow (PR #35 follow-up, frozen §1.2) > R6: probe remote-error → fail closed (no pull; never a degraded none)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator round flow (PR #35 follow-up, frozen §1.2) > R7: probe malformed → fail closed (the typed malformed rides the result; no pull; never a degraded none)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator round flow (PR #35 follow-up, frozen §1.2) > R8: probe transport-loss → fail closed (no pull)::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator round flow (PR #35 follow-up, frozen §1.2) > R9: the onReadState recorder sees the probe outcome of the round::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator scope epoch (PR #35 second follow-up P1-B) > E1: detach then reattach supersedes the old scope — the late old round publishes NO authority, makes NO conditional pull; the new scope records its own probe and the new entry timer stays intact::passed
+test/team-refresh-coordinator.test.ts::team-view-sync-complete — the refresh coordinator scope epoch (PR #35 second follow-up P1-B) > E2: a permanent detach with the probe in flight — the late settlement publishes NO read-state authority and makes NO projection pull::passed
+test/team-remote-categories.test.ts::P9-T10 (P9-S7) command flows — override / policyState / compatibility > a transport rejection rejects with the frozen PushTransportLossError (the only rejection kind)::passed
+test/team-remote-categories.test.ts::P9-T10 (P9-S7) command flows — override / policyState / compatibility > compatibility.reprobe: the typed error resolves intact (backing codes pass through)::passed
+test/team-remote-categories.test.ts::P9-T10 (P9-S7) command flows — override / policyState / compatibility > override.get: the success value + provenance pass through intact (no re-wrap)::passed
+test/team-remote-categories.test.ts::P9-T10 (P9-S7) command flows — override / policyState / compatibility > override.set: the typed error resolves intact (code + message verbatim, never rejects)::passed
+test/team-remote-categories.test.ts::P9-T10 (P9-S7) command flows — override / policyState / compatibility > policyState.set: the typed error resolves intact (the frozen block is preserved)::passed
+test/team-remote-categories.test.ts::intervention category (A4-PR6 v8) — the shared outcome discipline holds > the backing INTERVENTION_NOT_FOUND refusal resolves with the closed block verbatim::passed
+test/team-remote-categories.test.ts::intervention category (A4-PR6 v8) — the shared outcome discipline holds > the list success passes through intact (items cell, no re-wrap)::passed
+test/team-remote-categories.test.ts::intervention category (A4-PR6 v8) — the shared outcome discipline holds > transport loss on the act surface rejects with the frozen PushTransportLossError::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — envelope assembly (S2-A) > assembles the frozen envelope { version, params } on the frozen channel::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — envelope assembly (S2-A) > catalogList sends the empty closed param object::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — envelope assembly (S2-A) > every wrapper maps to its frozen catalog method name::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — envelope assembly (S2-A) > getLedgerPage applies the frozen wire defaults (afterSequence 0, limit 50)::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — envelope assembly (S2-A) > getProjectionLegacy wraps the catalog method with the closed param object::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — envelope assembly (S2-A) > memberSend spreads the frozen param object verbatim::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — outcome discipline (S2-A / G2) > a carrier result with a malformed error block rejects as channel loss::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — outcome discipline (S2-A / G2) > a malformed carrier result (not a RemoteResponse) rejects as channel loss::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — outcome discipline (S2-A / G2) > carrier rejection rejects with the frozen PushTransportLossError::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — outcome discipline (S2-A / G2) > returns a success envelope intact (value + provenance, no re-wrap)::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — outcome discipline (S2-A / G2) > returns a typed RPC error intact — resolves, never rejects (G2)::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — the v8 wrappers stamp contract version 8 (A4-PR6) > every v8 call carries version 8 on the frozen envelope::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — the v8 wrappers stamp contract version 8 (A4-PR6) > intervention.act rides EXACTLY the closed body; an omitted note is ABSENT, never undefined::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — the v8 wrappers stamp contract version 8 (A4-PR6) > the v8 READ wrappers carry only their closed read fields::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — v2 version routing (TCM vNext §15.3) > a typed error served to a v2 wrapper resolves intact (never exception-ified)::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — v2 version routing (TCM vNext §15.3) > teamAdmitInitialWork stamps version 2 on the v2-only endpoint with the token intact::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — v2 version routing (TCM vNext §15.3) > teamCreate stamps version 2 on team.create and spreads the v2 closed fields verbatim::passed
+test/team-remote-client.test.ts::createTeamRemoteClient — v2 version routing (TCM vNext §15.3) > the v1 teamCreateEmbeddedWork wrapper stays on version 1 (frozen wire behavior, initialWork intact)::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > a failed manual refresh KEEPS the last successful rows (the old list is never cleared to show an error)::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > a late stale roots response never overwrites a newer read (epoch guard)::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > a malformed success payload renders the malformed-response note lane (defensive parse, never a throw)::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > a typed failure renders the ONE verbatim note (code: message) and no list::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > an empty roots list renders nothing (no list, no note)::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > renders NO open action in D1: no buttons in the rows and ensureRootLive is never called (inert until D2)::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > renders the durable root rows read-only (blueprint@revision, workspace, member count, created) and reads exactly once::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > the manual refresh reads roots even while the creation panel is open (the auto-read guard does not apply to the manual call)::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > the read is gated to the zero state: a team session never triggers the roots read::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > the read is skipped while the creation panel is open and re-fires on return to the entry (zero state, S5-A coexistence)::passed
+test/team-roots-zero-state.client.spec.tsx::TeamView zero state: the D1 persisted-roots share (remote contract v3) > without the roots face the zero state is the pre-D1 surface (no list, no note)::passed
+test/team-session-resolution.test.ts::resolveTeamProjection — disposed history > a live member claiming the same child session beats the history row::passed
+test/team-session-resolution.test.ts::resolveTeamProjection — disposed history > resolves a disposed child session through the history row::passed
+test/team-session-resolution.test.ts::resolveTeamProjection — member child > resolves a bound member child to the member-child perspective::passed
+test/team-session-resolution.test.ts::resolveTeamProjection — outsiders and order > a session matching no frame and no member resolves undefined::passed
+test/team-session-resolution.test.ts::resolveTeamProjection — outsiders and order > an empty mirror resolves undefined::passed
+test/team-session-resolution.test.ts::resolveTeamProjection — outsiders and order > an outsider session resolves undefined::passed
+test/team-session-resolution.test.ts::resolveTeamProjection — outsiders and order > the member scan is deterministic in Object.keys order (first match wins)::passed
+test/team-session-resolution.test.ts::resolveTeamProjection — own key > resolves the frame under its own key with the team-root perspective::passed
+test/team-session-resolution.test.ts::resolveTeamProjection — own key > the own-key hit beats the member scan of another frame::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > cycles the color slot by lane position past the ramp length::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > draws one lane per member instance in members order and skips the leader-kind instance::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > extends an open interval to the caller clock and never beyond a known closure::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > keeps a sessionless teammate instance on the matrix with an empty child session::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > keeps same-timestamp spans in interval order::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > lets a progress fact after the last closure extend the right edge::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > never extends the domain from progress facts over a partial ledger::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > never reads the clock for a fully closed view::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > renders a not-rostered instance id as a fallback lane after the roster::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > returns null without activity intervals, even with members and progress::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > sorts an instance’s spans by open time with unique stable keys::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > spans the linear domain from the earliest known activity time to the last closure::passed
+test/team-timeline-model.client.spec.ts::deriveTeamTimeline > widens a zero-width domain to 1 ms::passed
+test/team-timeline-model.client.spec.ts::formatTeamClock > prints fixed 24-hour HH:MM:SS::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats -5 as 0毫秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 0 as 0毫秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 10000 as 10秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 188000 as 3分08秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 3599999 as 59分59秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 3600000 as 1小时00分::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 3661000 as 1小时01分::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 500 as 500毫秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 59500 as 60秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 61000 as 1分01秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 8400 as 8.4秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 999 as 999毫秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats 9990 as 10秒::passed
+test/team-timeline-model.client.spec.ts::formatTeamDuration > formats NaN as 0毫秒::passed
+test/team-timeline-model.client.spec.ts::teamTimelineTicks > degenerates gracefully on equal, inverted, or non-finite bounds::passed
+test/team-timeline-model.client.spec.ts::teamTimelineTicks > keeps ticks inside an offset domain and ascending::passed
+test/team-timeline-model.client.spec.ts::teamTimelineTicks > picks a 1/2/5 step that keeps the visible density near the target::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > advances the running span as the local clock ticks, and stays static when settled::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > draws one labeled lane per member instance in members order, never the leader::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > drops the gesture on pointer cancel::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > highlights the current session’s member lane::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > ignores middle-button presses::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > ignores moves from another pointer and a sub-threshold jiggle::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > keeps a sessionless instance on the matrix with a non-interactive bar::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > lays a member’s multiple spans along the axis without overlap::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > marks the running bar and extends it to the local clock::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > pans a zoomed viewport with a left-button drag without selecting::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > pans and zooms by keyboard and resets with 0 or Escape::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > pans with the right button and suppresses the context menu::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > renders axis tick labels inside the visible domain::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > shows the one-line cold state without a lane matrix::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > switches to the child session on a bar click::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > tooltips a bar with the member name, range, duration, and running marker::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > treats a bar press that moves as a pan, not a click::passed
+test/team-timeline.client.spec.tsx::TeamTimeline > zooms with the wheel at the pointer, resets with double click, and caps at the full domain::passed
+test/team-view.client.spec.tsx::TeamView > R119: the handoffSource identity is stable across panel re-renders — initial-work keystrokes never re-fire the one-shot handoff.prepare (the trial flicker/jump)::passed
+test/team-view.client.spec.tsx::TeamView > clears the failed-refresh banner when the store state recovers (same generation included) (S1-C1)::passed
+test/team-view.client.spec.tsx::TeamView > keeps the content and shows "更新失败，当前显示上次成功的数据" when a with-frame refresh fails (S1-C1)::passed
+test/team-view.client.spec.tsx::TeamView > keeps the plain zero state without the creation face (S5-A: entry hidden, T6 view unchanged)::passed
+test/team-view.client.spec.tsx::TeamView > manual refresh through the COORDINATOR face: the probe confirms the team → the explicit ledger retry fires; the authoritative NONE probe → no ledger (PR #35 follow-up, P1-4)::passed
+test/team-view.client.spec.tsx::TeamView > offers the New Team entry in the zero state when the creation face is present (S5-A, UI §3)::passed
+test/team-view.client.spec.tsx::TeamView > opens the New Team panel from the entry and returns to the entry on cancel (S5-A, UI §3/§5.3)::passed
+test/team-view.client.spec.tsx::TeamView > persists the intent draft in view state across panel close/reopen (S5-A, UI §5.3)::passed
+test/team-view.client.spec.tsx::TeamView > refreshes from BOTH views — the pull targets the resolved team id, the manual refresh FORCES ONE explicit ledger retry when the team is confirmed (P1-4), and the double-click is guarded (S1-C2 + team-view-sync-complete decision 4 + PR #35 follow-up)::passed
+test/team-view.client.spec.tsx::TeamView > renders all four UI §12.1 sections live from one input for a leader session::passed
+test/team-view.client.spec.tsx::TeamView > renders the activity section from the snapshot current-work face::passed
+test/team-view.client.spec.tsx::TeamView > renders the ledger section from the per-team ledger store::passed
+test/team-view.client.spec.tsx::TeamView > renders the no-frame FOREIGN_TEAM state with NEUTRAL wording and keeps the creation entry (S1-C1)::passed
+test/team-view.client.spec.tsx::TeamView > renders the no-frame RPC error as "加载失败" + code/message + retry — NEVER "未加入团队" (S1-C1)::passed
+test/team-view.client.spec.tsx::TeamView > renders the no-frame transport loss (reconnecting) as "尚未成功加载" (S1-C1)::passed
+test/team-view.client.spec.tsx::TeamView > renders the ownership-loading zero state for a non-team session with no settled probe and cold-pulls the projection once (PR #35 second follow-up P1-A: the no-probe-yet face announces the ownership read; it still NEVER asserts a definitive "no team")::passed
+test/team-view.client.spec.tsx::TeamView > session switch invalidates the in-flight manual refresh: no old ledger continuation, the new session's button is not left pending (F2-T1)::passed
+test/team-view.client.spec.tsx::TeamView > stops cold-pulling once the projection mirror gains the session (landing frames win)::passed
+test/team-view.client.spec.tsx::TeamView > switches back to the leader session when the leading leader row is clicked (D10)::passed
+test/team-view.client.spec.tsx::TeamView > switches to the actor session when a ledger row is clicked (D9)::passed
+test/team-view.client.spec.tsx::TeamView > switches to the member session when a member instance row is clicked (D9)::passed
+test/team-view.client.spec.tsx::TeamView > unmount invalidates the in-flight manual refresh: no ledger continuation, no unhandled rejection (F2-T2)::passed
+test/team-view.client.spec.tsx::TeamView — the authoritative read-state view mode (PR #35 second follow-up P1-A) > UI-T1: readState = ok/none, empty mirror → the DEFINITIVE ordinary zero state (NEVER "正在加载团队信息…")::passed
+test/team-view.client.spec.tsx::TeamView — the authoritative read-state view mode (PR #35 second follow-up P1-A) > UI-T2: readState = remote-error, empty mirror → the code/message line (NOT ordinary/no-team, NOT a permanent loading)::passed
+test/team-view.client.spec.tsx::TeamView — the authoritative read-state view mode (PR #35 second follow-up P1-A) > UI-T3: readState = malformed, empty mirror → the malformed reason line::passed
+test/team-view.client.spec.tsx::TeamView — the authoritative read-state view mode (PR #35 second follow-up P1-A) > UI-T4: readState = transport-loss, empty mirror → the reconnect/read-failure line::passed
+test/team-view.client.spec.tsx::TeamView — the authoritative read-state view mode (PR #35 second follow-up P1-A) > UI-T5: stale mirror has Team A, readState = ok/none → the ordinary zero state WINS (the stale Team A body never renders)::passed
+test/team-view.client.spec.tsx::TeamView — the authoritative read-state view mode (PR #35 second follow-up P1-A) > UI-T6: stale mirror has Team A, readState = error → the Team A body is KEPT + the ownership stale/error banner::passed
+test/team-view.client.spec.tsx::TeamView.module.css host-width column geometry contract > pins .body to the border-box column capped at W + 48px::passed
+test/team-view.client.spec.tsx::TeamView.module.css host-width column geometry contract > pins .zero to the same column geometry::passed
