@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives
+
+ ✓ packages/domain/test/t1-capability-schema.test.ts (20 tests) 40ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  21:22:57
+   Duration  336ms (transform 165ms, setup 0ms, import 213ms, tests 40ms, environment 0ms)
+
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/dev/agent-workflow/evidence/a4-pr7/capability-negatives/raw/probe-t1-capability-schema.test.ts.json

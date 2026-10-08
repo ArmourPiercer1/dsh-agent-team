@@ -1,0 +1,157 @@
+/* TEMPORARY PROBE — deleted before commit. Not part of the suite. */
+import { describe, it } from 'vitest'
+
+import { parseBlueprint } from '../blueprint/src/validate.js'
+import { decodeYamlFrontmatter } from '../blueprint/src/parse.js'
+
+function needsQuoting(s: string): boolean {
+  return (
+    s.length === 0 ||
+    /[:#\n"']/.test(s) ||
+    /^\s|\s$/.test(s) ||
+    ['-', '?', '*', '&', '%', '@', '`', '!', '|', '>', '[', '{', ','].includes(s[0]) ||
+    ['true', 'false', 'null', '~', 'yes', 'no', 'on', 'off', 'nan', 'inf', '-inf', '.inf'].includes(s.toLowerCase()) ||
+    !Number.isNaN(Number(s))
+  )
+}
+function scalar(v: unknown): string {
+  if (v === null) return 'null'
+  if (typeof v === 'boolean') return String(v)
+  if (typeof v === 'number') return String(v)
+  const s = String(v)
+  return needsQuoting(s) ? JSON.stringify(s) : s
+}
+function toYamlFrontmatter(obj: unknown, indent = 0): string {
+  const pad = '  '.repeat(indent)
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) return `${pad}[]`
+    return obj
+      .map((item) => {
+        if (Array.isArray(item)) throw new Error('probe: nested sequences unsupported')
+        if (item === null || typeof item !== 'object') return `${pad}- ${scalar(item)}`
+        const lines = toYamlFrontmatter(item, indent + 1).split('\n')
+        return [`${pad}- ${lines[0]!.slice('  '.repeat(indent + 1).length)}`, ...lines.slice(1)].join('\n')
+      })
+      .join('\n')
+  }
+  if (obj === null || typeof obj !== 'object') return `${pad}${scalar(obj)}`
+  const entries = Object.entries(obj as Record<string, unknown>).filter(([, v]) => v !== undefined)
+  if (entries.length === 0) return `${pad}{}`
+  return entries
+    .map(([key, value]) => {
+      if (value === null || typeof value !== 'object') return `${pad}${key}: ${scalar(value)}`
+      if (!Array.isArray(value) && Object.keys(value).length === 0) return `${pad}${key}: {}`
+      if (Array.isArray(value) && value.length === 0) return `${pad}${key}: []`
+      return `${pad}${key}:\n${toYamlFrontmatter(value, indent + 1)}`
+    })
+    .join('\n')
+}
+
+const ENVELOPES = {
+  permissionMutationEnvelope: { rules: [] },
+  teamHardEnvelope: { rules: [] },
+}
+
+function doc(overrides: Record<string, unknown>): string {
+  return `---\n${toYamlFrontmatter({
+    schemaVersion: 3,
+    blueprintId: 'test-blueprint',
+    revision: 'v1',
+    leader: { templateId: 'leader', persona: 'I am the team leader.' },
+    members: [],
+    requirements: [],
+    memberEnvelopes: [],
+    policyStates: [],
+    metadata: {},
+    ...ENVELOPES,
+    ...overrides,
+  })}\n---`
+}
+
+function withCaps(capabilities: Record<string, unknown>): string {
+  return doc({
+    leader: { templateId: 'leader', persona: 'I am the team leader.', capabilities },
+  })
+}
+
+function report(label: string, source: string): void {
+  let decodeOk = true
+  try {
+    const inner = source.split('\n').slice(1, -1).join('\n')
+    decodeYamlFrontmatter(inner)
+  } catch (e) {
+    decodeOk = false
+    void e
+  }
+  try {
+    parseBlueprint(source)
+    console.log(`${label}: PARSED-OK fixtureDecodes=${decodeOk}`)
+  } catch (e) {
+    const err = e as { code?: string; message?: string; details?: unknown; name?: string }
+    console.log(
+      `${label}: THREW name=${err.name} code=${err.code} decodeOk=${decodeOk} details=${JSON.stringify(err.details)} msg=${String(err.message).slice(0, 150)}`,
+    )
+  }
+}
+
+describe('probe', () => {
+  it('identities', () => {
+    report('happy-full-caps', withCaps({
+      teamTools: { kind: 'allow', items: ['read', 'write'] },
+      builtinToolDeny: ['fs.write'],
+      skills: { kind: 'allow', items: ['skill-a', 'skill-b'] },
+      mcp: { kind: 'allow', items: ['mcp-server-1'] },
+    }))
+    report('neg4-missing-items', withCaps({
+      teamTools: { kind: 'allow' },
+      builtinToolDeny: [],
+      skills: { kind: 'allow', items: ['skill-a'] },
+      mcp: { kind: 'allow', items: [] },
+    }))
+    report('neg4b-non-string-item', withCaps({
+      teamTools: { kind: 'allow', items: [123] },
+      builtinToolDeny: [],
+      skills: { kind: 'allow', items: [] },
+      mcp: { kind: 'allow', items: [] },
+    }))
+    report('neg5-deny-with-items', withCaps({
+      teamTools: { kind: 'deny', items: [] },
+      builtinToolDeny: [],
+      skills: { kind: 'allow', items: [] },
+      mcp: { kind: 'allow', items: [] },
+    }))
+    report('neg6a-unknown-caps-field', withCaps({
+      teamTools: { kind: 'allow', items: [] },
+      builtinToolDeny: [],
+      skills: { kind: 'allow', items: [] },
+      mcp: { kind: 'allow', items: [] },
+      unknownField: 'bad',
+    }))
+    report('neg6b-unknown-template-field', doc({
+      leader: {
+        templateId: 'leader',
+        persona: 'I am the team leader.',
+        capabilities: {
+          teamTools: { kind: 'allow', items: ['read', 'write'] },
+          builtinToolDeny: ['fs.write'],
+          skills: { kind: 'allow', items: ['skill-a', 'skill-b'] },
+          mcp: { kind: 'allow', items: ['mcp-server-1'] },
+        },
+        unknownField: 'bad',
+      },
+    }))
+    report('neg-kind-bogus', withCaps({
+      teamTools: { kind: 'maybe', items: ['read'] },
+      builtinToolDeny: [],
+      skills: { kind: 'allow', items: [] },
+      mcp: { kind: 'allow', items: [] },
+    }))
+    report('v1-doc', `---\nschemaVersion: 1\nblueprintId: b\n---`)
+    report('empty-array-vs-absent', withCaps({
+      teamTools: { kind: 'allow', items: [] },
+      builtinToolDeny: [],
+      skills: { kind: 'allow', items: [] },
+      mcp: { kind: 'allow', items: [] },
+    }))
+  })
+})

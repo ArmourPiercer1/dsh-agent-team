@@ -1,0 +1,38 @@
+[
+ {
+  "target": "packages/domain/test/t1-capability-schema.test.ts",
+  "probe_hits": 9,
+  "hits": [
+   "[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:163:23",
+   "[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:181:23",
+   "[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:201:18",
+   "[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:211:18",
+   "[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:250:18",
+   "[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:257:17",
+   "[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:313:23",
+   "[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:329:23",
+   "[YAMLPROBE] decode-refused |     at /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-capability-negatives/packages/domain/test/t1-capability-schema.test.ts:359:23"
+  ],
+  "red": [
+   "T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+   "T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+   "T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+   "T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+   "T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+   "T1: Blueprint Capability Schema 3. Members can have different capabilities",
+   "T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+   "T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+   "T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities"
+  ],
+  "green": [
+   "T1: Blueprint Capability Schema 11c. Legacy source returns undefined values",
+   "T1: Blueprint Capability Schema 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3)",
+   "T1: Blueprint Capability Schema 11e. Selective source with mixed allow([])/deny preserves all cells (P1)",
+   "T1: Blueprint Capability Schema 4. Malformed allow entry rejects (missing items)",
+   "T1: Blueprint Capability Schema 4b. Malformed allow entry rejects (items not string[])",
+   "T1: Blueprint Capability Schema 5. Malformed deny entry rejects (extra fields)",
+   "T1: Blueprint Capability Schema 6a. Unknown capability sub-field rejects",
+   "T1: Blueprint Capability Schema 6b. Unknown template field rejects"
+  ]
+ }
+]

@@ -1,0 +1,188 @@
+[
+ {
+  "id": "M1",
+  "why": "neuter validateAllowDenyEntry: no closed-vocabulary refusal at all, value projection kept",
+  "expect": [
+   "4.",
+   "4b.",
+   "5."
+  ],
+  "red": [
+   "T1: Blueprint Capability Schema 4. Malformed allow entry rejects (missing items)",
+   "T1: Blueprint Capability Schema 4b. Malformed allow entry rejects (items not string[])",
+   "T1: Blueprint Capability Schema 5. Malformed deny entry rejects (extra fields)"
+  ],
+  "green": [
+   "T1: Blueprint Capability Schema 0a. fixture emitter emits YAML the real parser reads back as the same document",
+   "T1: Blueprint Capability Schema 0b. fixture emitter quotes values YAML would otherwise reinterpret",
+   "T1: Blueprint Capability Schema 0c. fixture emitter refuses a shape it cannot prove instead of emitting it",
+   "T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+   "T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+   "T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+   "T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+   "T1: Blueprint Capability Schema 11c. Legacy source returns undefined values",
+   "T1: Blueprint Capability Schema 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3)",
+   "T1: Blueprint Capability Schema 11e. Selective source with mixed allow([])/deny preserves all cells (P1)",
+   "T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+   "T1: Blueprint Capability Schema 3. Members can have different capabilities",
+   "T1: Blueprint Capability Schema 6a. Unknown capability sub-field rejects",
+   "T1: Blueprint Capability Schema 6b. Unknown template field rejects",
+   "T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+   "T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+   "T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities"
+  ],
+  "restored": true,
+  "sha": "a6d6939e0ed4d53f2b0f411672d30d8169f3f705bc70577fc897a64ab5a176ec",
+  "status": "ALIVE",
+  "missed": []
+ },
+ {
+  "id": "M2",
+  "why": "neuter the capabilities closed field set (assertNoUnknownFields over BLUEPRINT_CAPABILITIES_FIELDS)",
+  "expect": [
+   "6a."
+  ],
+  "red": [
+   "T1: Blueprint Capability Schema 6a. Unknown capability sub-field rejects"
+  ],
+  "green": [
+   "T1: Blueprint Capability Schema 0a. fixture emitter emits YAML the real parser reads back as the same document",
+   "T1: Blueprint Capability Schema 0b. fixture emitter quotes values YAML would otherwise reinterpret",
+   "T1: Blueprint Capability Schema 0c. fixture emitter refuses a shape it cannot prove instead of emitting it",
+   "T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+   "T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+   "T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+   "T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+   "T1: Blueprint Capability Schema 11c. Legacy source returns undefined values",
+   "T1: Blueprint Capability Schema 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3)",
+   "T1: Blueprint Capability Schema 11e. Selective source with mixed allow([])/deny preserves all cells (P1)",
+   "T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+   "T1: Blueprint Capability Schema 3. Members can have different capabilities",
+   "T1: Blueprint Capability Schema 4. Malformed allow entry rejects (missing items)",
+   "T1: Blueprint Capability Schema 4b. Malformed allow entry rejects (items not string[])",
+   "T1: Blueprint Capability Schema 5. Malformed deny entry rejects (extra fields)",
+   "T1: Blueprint Capability Schema 6b. Unknown template field rejects",
+   "T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+   "T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+   "T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities"
+  ],
+  "restored": true,
+  "sha": "a6d6939e0ed4d53f2b0f411672d30d8169f3f705bc70577fc897a64ab5a176ec",
+  "status": "ALIVE",
+  "missed": []
+ },
+ {
+  "id": "M3",
+  "why": "neuter the TEMPLATE closed field set (assertNoUnknownFields over templateFields)",
+  "expect": [
+   "6b."
+  ],
+  "red": [
+   "T1: Blueprint Capability Schema 6b. Unknown template field rejects"
+  ],
+  "green": [
+   "T1: Blueprint Capability Schema 0a. fixture emitter emits YAML the real parser reads back as the same document",
+   "T1: Blueprint Capability Schema 0b. fixture emitter quotes values YAML would otherwise reinterpret",
+   "T1: Blueprint Capability Schema 0c. fixture emitter refuses a shape it cannot prove instead of emitting it",
+   "T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+   "T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+   "T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+   "T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+   "T1: Blueprint Capability Schema 11c. Legacy source returns undefined values",
+   "T1: Blueprint Capability Schema 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3)",
+   "T1: Blueprint Capability Schema 11e. Selective source with mixed allow([])/deny preserves all cells (P1)",
+   "T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+   "T1: Blueprint Capability Schema 3. Members can have different capabilities",
+   "T1: Blueprint Capability Schema 4. Malformed allow entry rejects (missing items)",
+   "T1: Blueprint Capability Schema 4b. Malformed allow entry rejects (items not string[])",
+   "T1: Blueprint Capability Schema 5. Malformed deny entry rejects (extra fields)",
+   "T1: Blueprint Capability Schema 6a. Unknown capability sub-field rejects",
+   "T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+   "T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+   "T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities"
+  ],
+  "restored": true,
+  "sha": "a6d6939e0ed4d53f2b0f411672d30d8169f3f705bc70577fc897a64ab5a176ec",
+  "status": "ALIVE",
+  "missed": []
+ },
+ {
+  "id": "M4",
+  "why": "re-introduce the BASE emitter defect: a non-empty array emitted inline after its key",
+  "expect": [
+   "0a.",
+   "2.",
+   "3.",
+   "4.",
+   "4b.",
+   "6b.",
+   "7.",
+   "8.",
+   "9.",
+   "11."
+  ],
+  "red": [
+   "T1: Blueprint Capability Schema 0a. fixture emitter emits YAML the real parser reads back as the same document",
+   "T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+   "T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+   "T1: Blueprint Capability Schema 3. Members can have different capabilities",
+   "T1: Blueprint Capability Schema 4. Malformed allow entry rejects (missing items)",
+   "T1: Blueprint Capability Schema 4b. Malformed allow entry rejects (items not string[])",
+   "T1: Blueprint Capability Schema 6b. Unknown template field rejects",
+   "T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+   "T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+   "T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities"
+  ],
+  "green": [
+   "T1: Blueprint Capability Schema 0b. fixture emitter quotes values YAML would otherwise reinterpret",
+   "T1: Blueprint Capability Schema 0c. fixture emitter refuses a shape it cannot prove instead of emitting it",
+   "T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+   "T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+   "T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+   "T1: Blueprint Capability Schema 11c. Legacy source returns undefined values",
+   "T1: Blueprint Capability Schema 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3)",
+   "T1: Blueprint Capability Schema 11e. Selective source with mixed allow([])/deny preserves all cells (P1)",
+   "T1: Blueprint Capability Schema 5. Malformed deny entry rejects (extra fields)",
+   "T1: Blueprint Capability Schema 6a. Unknown capability sub-field rejects"
+  ],
+  "restored": true,
+  "sha": "c46ee03468692d2efbb2b373700d65cdaa988c4650c765ff241a6c79ee67acc7",
+  "status": "ALIVE",
+  "missed": []
+ },
+ {
+  "id": "M5",
+  "why": "drop capabilities from the hashable projection (the regression BASELINE-CLASSES row 4 says the suite cannot see today)",
+  "expect": [
+   "7."
+  ],
+  "red": [
+   "T1: Blueprint Capability Schema 7. Changing capability fields changes the hash"
+  ],
+  "green": [
+   "T1: Blueprint Capability Schema 0a. fixture emitter emits YAML the real parser reads back as the same document",
+   "T1: Blueprint Capability Schema 0b. fixture emitter quotes values YAML would otherwise reinterpret",
+   "T1: Blueprint Capability Schema 0c. fixture emitter refuses a shape it cannot prove instead of emitting it",
+   "T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+   "T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+   "T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+   "T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+   "T1: Blueprint Capability Schema 11c. Legacy source returns undefined values",
+   "T1: Blueprint Capability Schema 11d. Selective source preserves explicit allow([]) entries (P1 E1-E3)",
+   "T1: Blueprint Capability Schema 11e. Selective source with mixed allow([])/deny preserves all cells (P1)",
+   "T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+   "T1: Blueprint Capability Schema 3. Members can have different capabilities",
+   "T1: Blueprint Capability Schema 4. Malformed allow entry rejects (missing items)",
+   "T1: Blueprint Capability Schema 4b. Malformed allow entry rejects (items not string[])",
+   "T1: Blueprint Capability Schema 5. Malformed deny entry rejects (extra fields)",
+   "T1: Blueprint Capability Schema 6a. Unknown capability sub-field rejects",
+   "T1: Blueprint Capability Schema 6b. Unknown template field rejects",
+   "T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+   "T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities"
+  ],
+  "restored": true,
+  "sha": "a6d6939e0ed4d53f2b0f411672d30d8169f3f705bc70577fc897a64ab5a176ec",
+  "status": "ALIVE",
+  "missed": []
+ }
+]

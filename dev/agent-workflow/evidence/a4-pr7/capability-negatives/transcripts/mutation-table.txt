@@ -1,0 +1,26 @@
+M1 [ALIVE] restored-hash-verified=True red=3 green=17 expected-red=['4.', '4b.', '5.'] not-turned-red=[]
+    RED  T1: Blueprint Capability Schema 4. Malformed allow entry rejects (missing items)
+    RED  T1: Blueprint Capability Schema 4b. Malformed allow entry rejects (items not string[])
+    RED  T1: Blueprint Capability Schema 5. Malformed deny entry rejects (extra fields)
+
+M2 [ALIVE] restored-hash-verified=True red=1 green=19 expected-red=['6a.'] not-turned-red=[]
+    RED  T1: Blueprint Capability Schema 6a. Unknown capability sub-field rejects
+
+M3 [ALIVE] restored-hash-verified=True red=1 green=19 expected-red=['6b.'] not-turned-red=[]
+    RED  T1: Blueprint Capability Schema 6b. Unknown template field rejects
+
+M4 [ALIVE] restored-hash-verified=True red=10 green=10 expected-red=['0a.', '2.', '3.', '4.', '4b.', '6b.', '7.', '8.', '9.', '11.'] not-turned-red=[]
+    RED  T1: Blueprint Capability Schema 0a. fixture emitter emits YAML the real parser reads back as the same document
+    RED  T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly
+    RED  T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates
+    RED  T1: Blueprint Capability Schema 3. Members can have different capabilities
+    RED  T1: Blueprint Capability Schema 4. Malformed allow entry rejects (missing items)
+    RED  T1: Blueprint Capability Schema 4b. Malformed allow entry rejects (items not string[])
+    RED  T1: Blueprint Capability Schema 6b. Unknown template field rejects
+    RED  T1: Blueprint Capability Schema 7. Changing capability fields changes the hash
+    RED  T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities
+    RED  T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities
+
+M5 [ALIVE] restored-hash-verified=True red=1 green=19 expected-red=['7.'] not-turned-red=[]
+    RED  T1: Blueprint Capability Schema 7. Changing capability fields changes the hash
+

@@ -1,0 +1,74 @@
+A4-PR7(test/domain): a fixture emitter must be asserted against the parser it feeds
+
+`t1-capability-schema.test.ts` built its blueprint fixtures with a test-local YAML
+serializer that emitted a non-empty array inline after its key (`items:         -
+read`) — text this repository's own parser refuses with `Unexpected block-seq-ind on
+same line with key`. YAML decode runs BEFORE `validateBlueprintDocument`
+(`validate.ts:1535-1538`), so every fixture carrying a non-empty capability list died
+in the decoder. Measured by instrumenting `decodeYamlFrontmatter`'s failure path and
+running the base file: **9 decode refusals** (0 on the fixed file) — legs 4/4b/6b were
+GREEN on that syntax error under `expect(...).toThrow()`, legs 5/6a reached the
+validator but asserted only "something threw", legs 2/3/7/8/9/11 were red inside the
+emitter, and legs 1/10/11b were red at the v1 version fence (`unsupported blueprint
+schema version 1; this build supports [3]`).
+
+This is a correction to `BASELINE-CLASSES` §6.1, which counted 5 green legs passing on
+a syntax error: instrumented per leg it is 3. Legs 5 and 6a emit only `[]`, which the
+broken branch never touched — their hole was the unnamed assertion, same class,
+shorter fuse. Both counts are in the stored probe files; the correction is reported,
+not harmonised.
+
+The repair is test-only (no product change, `check:artifacts:head` drift=0):
+
+- emitter rewritten (sequences on their own line, deeper indent; sequence-of-objects
+  first field on the `- ` line; `[]`/`{}` for empties; quoting of `:`/`#`/quotes/
+  `true`/`false`/leading indicators/numeric-looking scalars), and PINNED by three new
+  legs: `0a` asserts the emitted text round-trips value-for-value through the real
+  `yaml` parser AND the product's own decoder, `0b` pins the quoting traps while
+  asserting plain scalars stay unquoted, `0c` pins that an unprovable shape is refused
+  instead of guessed. An emitter with no proof silently un-asserts every leg downstream
+  of it, which is exactly what happened here.
+- every negative leg asserts the REJECTION IDENTITY, not "something threw": code +
+  the `details` its own validator branch attaches (`details.path` / `extraFields` /
+  `unknownFields`) + the refusal message, and each additionally asserts
+  `details.reason !== 'yaml-invalid'` — `MALFORMED_DTO` alone is not an identity,
+  because the fixture's own syntax error carries the same code.
+- every fixture-consuming leg first asserts its fixture decodes, so a leg that cannot
+  reach the validator fails saying "this leg never reached the validator" instead of
+  reporting on the law it never touched.
+- carrier moved v1 -> v3 with the strictest legal authority declaration
+  (`permissionMutationEnvelope.rules: []` / `teamHardEnvelope.rules: []` = NO expansion
+  authority, never a permissive filler): the assertions are unchanged. The v1 refusal
+  stays owned, green, by `test/blueprint-v1-frozen-resume.test.ts`.
+
+Reachability measured, not claimed (harness restores and sha256-verifies every patch;
+a green mutation table can mean a dead mutant, so each green is paired with its red):
+neutering `validateAllowDenyEntry` (`validate.ts:817`) turns exactly 4/4b/5 red;
+voiding `BLUEPRINT_CAPABILITIES_FIELDS` turns 6a red; voiding `templateFields` turns 6b
+red; re-introducing the base emitter defect turns 10 legs red including `0a`; dropping
+`capabilities` from the hashable projection turns 7 red. 5/5 mutants alive.
+
+Nine-root census, taken ONCE: files 505, legs 6288 -> 6291 (+3 new legs, none left the
+registry), red identities 22 -> 13 = NEW 0 / FIXED 9, and no titled red resolved into a
+collection error (the 3 FILE ids are byte-identical). `p6t1-parallel` quoted as a rate:
+12 legs, 0 red in this capture.
+
+Gates: file 20/20; domain 525/1 (the published baseline red); `a4p7-merge-gate` 29/29
+(off-limits, run only); `p4t6` 10/10 with the derived scannable total unchanged at 1039
+(an edit to an already-counted file is not an increment, so no named-list extension and
+no new scannable file); typecheck exit 0; lint `160 problems (128 errors, 32 warnings)`
+= standing 128 unmoved; `lint-identities --diff` new 0, resolved 0; `expect(` sites in
+the changed file 54 -> 63 with the only removed assertion lines being the five bare
+`.toThrow()` calls, each replaced by a stronger identity assertion.
+
+Class measurement (this is now repo doctrine, so the class is measured): 102 test files
+build blueprint frontmatter, exactly 1 had a hand-written serializer (this one); 18
+files / 54 bare `.toThrow()` sites, of which 2 files / 7 legs sat on a parse entry.
+After this commit 1 file / 2 legs remain, and the survivor `bp1-blueprint-inspector` is
+measured to REACH the validator (its only decode refusal is inside its own
+"rejects invalid YAML" leg), so zero other files' green negative legs are syntax-error
+passes — reported as evidence with a re-runnable scanner rather than installed as an
+unowned red leg.
+
+Evidence: dev/agent-workflow/evidence/a4-pr7/capability-negatives/FINDINGS.md
+(+ FINAL-BATTERY.txt, transcripts/, raw/, scratch/ re-run commands).
