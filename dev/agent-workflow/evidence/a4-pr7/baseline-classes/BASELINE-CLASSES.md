@@ -338,3 +338,30 @@ node scripts/fail-set.mjs diff \
 
 One capture at a time; compare identities, never counts; a red that becomes a collection error, or a leg that
 disappears from the registry, is a finding — not an improvement.
+
+
+---
+
+## Dated errata and outcomes — 2026-10-08 (round 42, coordinator)
+
+Three corrections to this document, all of them supplied by lanes rather than by me, and one of them about my own
+artifact. They are appended rather than edited in place because a classification that silently rewrites itself is not
+a classification.
+
+1. **§6.1 said five green legs passed on a YAML syntax error. Measured per leg, it is three** (`4` at `:201`, `4b` at
+   `:211`, `6b` at `:250`). Legs `5` and `6a` emit only `[]`, so the broken serializer branch never touched them: they
+   reached the validator, got a **real** refusal, and asserted bare `toThrow()` — no identity. **Two different ways of
+   learning nothing from the same fixture, and the distinction matters for the repair**: the first needs the fixture
+   fixed, the second needs the assertion fixed. Instrumented proof: 9 decode refusals at base, 0 at tip.
+2. **Row 22 prescribed an UNWRITABLE repair.** It told the lane to build a legal v3 document whose leader declares no
+   persona — there is no such document, `persona` is required (`domain/blueprint/src/validate.ts:350`). The lawful
+   carrier is `presetSubstrate.personaKind: 'absent'` (precedent `t12a-m2-persona.test.ts:187`). **A prescription that
+   cannot be executed is a defect in the prescription**, and the lane said so instead of silently inventing a
+   substitute. Rows 20 and 21 were right and are discharged.
+3. **The ledger moved: exemptions 22 → 10, `MUST-NOT-STAY-EXEMPT` 13 → 1.** The one survivor is row 11 (`D3-4`), whose
+   only check never executes (`:452`) — the same leg my §7.6 traceability map had disclosed too generously, corrected
+   in PR #201. The 9 `REGISTERED-DEBT` rows are unchanged and each still names its green pin.
+4. **0 reds on the un-masked 32 was proven, not celebrated** (six transient product mutations, each reverted and
+   porcelain-verified). That is also how the new gap was found: mutation A red-lines `G2` while `E4` stays green, and
+   mutation E red-lines `E3/E4/E6/E7` while `G2` stays green ⇒ **no leg covers the mapping→carrier composition**
+   (backlog 17). A visibility lane that had reported only "0 new reds" would have hidden it.

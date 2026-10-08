@@ -1,4 +1,12 @@
 # POPULATION BASELINE — NINE-ROOT SCOPE (authoritative from 2026-10-08)
+# ┌─ READ THIS FIRST ─────────────────────────────────────────────────────────────────────────────┐
+# │ A NEWER CAPTURE SUPERSEDES THE COUNTS BELOW. Skip to SUPERSEDED-BY-94da4a69 at the end of     │
+# │ this file: tip 94da4a69 = 506 files / 6335 registered legs / 10 titled reds / 0               │
+# │ collection-error files, machine-readable set in nine-root-94da4a69.ids.txt. The numbers in    │
+# │ the header are the 2162f6a7 capture and are kept as history — but a referee that reads only   │
+# │ the header will treat a RESOLVED collection error as expected, which is how 32 legs stayed    │
+# │ invisible for a whole stage. Read the end of the file, not just its top.                     │
+# └───────────────────────────────────────────────────────────────────────────────────────────────┘
 # tree: 2162f6a7 (master, porcelain 0)   captured: vitest --reporter=json, all nine packages/*/test roots
 # roots: contracts domain legacy remote runtime storage testkit tools client
 # files 500 | registered legs 6262 | titled reds 19 | collection-error files 3
@@ -56,3 +64,64 @@ p6t1 red must state how many re-samples it took. Re-derivation is in flight on `
 Totals also move with merges: at `ac54ffb8` (PR #191, three new §7.6 legs) the nine-root census is
 **505 files / 6285 legs / 19 titled reds by identity / 3 collection files**. The identity set listed above stays the
 baseline.
+
+
+---
+
+## SUPERSEDED-BY-94da4a69 — dated correction, 2026-10-08 (coordinator, round 42)
+
+**New authoritative baseline tip: `94da4a69`** (master, porcelain 0). One capture, sequential, `CI=true`, private
+`XDG_CACHE_HOME`, `.tmp-fault` cleared, **nine roots named**: contracts domain legacy remote runtime storage testkit
+tools client.
+
+| | 2162f6a7 (original) | **94da4a69 (this correction)** |
+| --- | --- | --- |
+| files | 500 → re-confirmed 505 | **506** |
+| registered legs | 6262 → 6288 | **6335** |
+| titled reds | 19 | **10** |
+| collection-error files | 3 | **0** |
+
+**Provenance of the capture, stated exactly:** it ran on a coordinator test-merge commit whose **tree OID equals
+`94da4a69`'s tree OID byte for byte** (`885632a36ae34c4b…`), so the census is a census of this master, and the equality
+— not a re-run — is what transfers it. Re-run it if you doubt the transfer; it costs four minutes and a quiet machine.
+
+**Machine-readable identity set: `nine-root-94da4a69.ids.txt` in this directory (10 lines).** It is published as a
+first-class artifact on purpose: until now the list a referee actually diffs against lived in
+`dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/`, so the *document* was reproducible but the *comparison*
+was not. The authoritative reference must not be a scratch file (backlog 20).
+
+**6335 is derived three independent ways that agree**, which is the only reason the number is trusted:
+`6288 + 11 (#202 guard spec) + 3 (#204 emitter pins) + 33 (#205 unmasked + M1)`;
+`6291 + 33 + 11`; `6321 + 11 + 3`.
+
+**12 identities retired since 2162f6a7 — and the load discipline still holds.** The titled-red COUNT moves with load;
+compare IDENTITY SETS, never totals.
+
+- 3 collection-error files (`p8s3b-result-effects`, `t12a-b2-child-identity`, `t12a-glue-handoff-ports`): repaired,
+  **32 legs register and run**. Leaving "3 collection files" published teaches every future referee to read a resolved
+  collection error as expected — that sentence is the collection lane's and it is correct.
+- 9 `t1-capability-schema` legs: repaired. **Note what this retires**: 5 of them had been *green* on a fixture YAML
+  syntax error, so retiring them is not "9 reds fixed", it is **9 obligations that had no working assertion becoming
+  9 obligations with one** (5 rewritten as identity assertions, 4 made reachable). An identity moving from red to
+  green can hide a truth nobody wanted to say out loud.
+
+**The surviving 10 are EXACTLY the classified ledger minus the retired rows** — 9 `REGISTERED-DEBT`
+(1 × `t2-blueprint-hash` explicit null, 5 × `p6t3-mediation`, 2 × `p6t3-restart`, 1 × `p6t6-actions` worker→leader)
+plus 1 `MUST-NOT-STAY-EXEMPT` (`D3-4`, whose only check is unreachable at `:452`). The classification and the
+measurement now agree without manual reconciliation, which is the point of keeping both.
+
+**Reproduce:**
+
+```bash
+export CI=true XDG_CACHE_HOME=<workspace>/.tmp-xdg/cache
+rm -rf packages/testkit/test/.tmp-fault        # stale fault state inflates counts
+npx vitest run --reporter=json --outputFile.json=/tmp/c.json   # ONE capture, nine roots, nothing else running
+node scripts/fail-set.mjs capture /tmp/c.json --out /tmp/c.ids.txt
+node scripts/fail-set.mjs diff \
+  dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-94da4a69.ids.txt /tmp/c.ids.txt
+```
+
+**Open observation attached to this baseline (not an exemption):** `t12a-b2-child-identity` failed at FILE level with
+0 legs registered once in 7 coordinator attempts on this tree; 6/6 quiet re-samples and 1/1 under 28 CPU burners were
+green. Mechanism unidentified, not labelled a flake, not exempted — see backlog 20. A capture that shows it as a
+collection error is a NEW red under this baseline, by design.
