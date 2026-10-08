@@ -31,6 +31,7 @@ import {
   CONTROL_DECISION_VALUES,
   CONTROL_EXECUTION_COUPLINGS,
   CONTROL_ERROR_CODES,
+  CONTROL_GUARD_BLOCK_REASONS,
   CONTROL_REQUEST_KINDS,
 } from '../control/index.js'
 import type { ApprovalCaseIdentityInput } from '../control/index.js'
@@ -681,8 +682,8 @@ describe('the corrupt durable shapes are reported, never defaulted (A2-9)', () =
 
   it('refuses to authorize on a row the case read refuses, even with a durable allow (A2-9)', () => {
     // The row is corrupt (no ordinal), the case names that corruption, and the
-    // guard does not see the row at all: no allow, and — decisively — no
-    // consumption fact, so nothing is burned on a row nobody can read.
+    // guard draws NO authorization from a row nobody can read — and decisively
+    // writes no consumption fact, so nothing is burned.
     if (corrupt.unusable.kind !== 'problem') {
       throw new Error(`the unusable leg must be a problem, got ${corrupt.unusable.kind}`)
     }
@@ -690,7 +691,17 @@ describe('the corrupt durable shapes are reported, never defaulted (A2-9)', () =
     const verdict = corrupt.guardOfUnusable
     expect(verdict.allowed).toBe(false)
     if (verdict.allowed === true) return
-    expect(verdict.reason).toBe('no-request')
+    // RE-PINNED for the A4 corrupt-leg fix (base `606a0be7` asserted
+    // `expect(verdict.reason).toBe('no-request')`, with the comment "the guard
+    // does not see the row at all"). That was a FALSE GREEN at the seam that
+    // matters: `no-request` is the ONE reason `packages/tools/src/guard.ts` maps
+    // to "proceed", so the leg was pinning the defect — an unreadable governing
+    // leg plus a durable allow, answered as "nothing to guard", which the tool
+    // plane reads as a green light. The stated law ("refuses to authorize on a
+    // row the case read refuses") is unchanged and is now actually asserted: the
+    // refusal names why, and names the damaged row.
+    expect(verdict.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_SCOPE_UNBOUND)
+    expect(verdict.requestId).toBe('req-raw-unusable-ordinal')
     expect(corrupt.consumptionsOfUnusable).toBe(0)
   })
 

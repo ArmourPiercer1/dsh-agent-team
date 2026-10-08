@@ -523,7 +523,17 @@ export const CONTROL_AUTHORITY_RECHECK_KIND_VALUES = Object.values(CONTROL_AUTHO
  * input or an ambiguous durable state).
  */
 export const CONTROL_GUARD_BLOCK_REASONS = {
-    /** No durable control request exists for the scope (no-request). */
+    /** No durable control request exists for the scope (no-request).
+     *
+     *  WHO OWNS THE POLARITY (A4 corrupt-leg guard). This is the ONE reason
+     *  `packages/tools/src/guard.ts` maps to "proceed", because the absence of a
+     *  gate is the leader-autonomy path (SD-GUARD's documented deviation) — so
+     *  this member means "THERE IS NOTHING TO GUARD", and never "I could not read
+     *  what guards this call". A control leg that exists but cannot be parsed is
+     *  NOT this verdict: `guardOperation` refuses it (`authority-scope-unbound` /
+     *  `authority-undetermined`), because on a damaged ledger the two readings are
+     *  indistinguishable and only one of them is safe. A producer that cannot tell
+     *  them apart must not emit this code. */
     NO_REQUEST: 'no-request',
     /** The request exists but carries no decision yet. */
     REQUEST_PENDING: 'request-pending',

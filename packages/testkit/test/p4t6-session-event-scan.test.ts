@@ -2063,6 +2063,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts',
       'packages/runtime/test/a4p7-governance-warning-restart-reconstruction.test.ts',
     ]
+    // The A4 corrupt-leg-guard lane (the A1-14 consumption-revalidation
+    // follow-up): ONE instrument, and it writes production source too — an edit
+    // to `control/service.ts` + `control/types.ts`, neither of which is a new
+    // path — so its scannable footprint is exactly this spec. Same rule as above:
+    // the evidence lives under `dev/agent-workflow/evidence/a4-pr7/corrupt-leg-guard/`,
+    // outside `packages/**`, and a landed file without its name here turns this RED.
+    const SCANNED_PATHS_A4CORRUPTLEG: readonly string[] = [
+      'packages/tools/test/a4-corrupt-leg-guard.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2081,7 +2090,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4P73GRAMMAR.length +
         SCANNED_PATHS_A4P76PIN.length +
         SCANNED_PATHS_A474FAILCLOSED.length +
-        SCANNED_PATHS_A476GAPS.length,
+        SCANNED_PATHS_A476GAPS.length +
+        SCANNED_PATHS_A4CORRUPTLEG.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2101,7 +2111,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4P73GRAMMAR.length +
         SCANNED_PATHS_A4P76PIN.length +
         SCANNED_PATHS_A474FAILCLOSED.length +
-        SCANNED_PATHS_A476GAPS.length,
+        SCANNED_PATHS_A476GAPS.length +
+        SCANNED_PATHS_A4CORRUPTLEG.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2147,6 +2158,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4P76PIN,
       ...SCANNED_PATHS_A474FAILCLOSED,
       ...SCANNED_PATHS_A476GAPS,
+      ...SCANNED_PATHS_A4CORRUPTLEG,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2301,6 +2313,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `packages/**` — which is precisely why a sum derived from named lists, rather
     // than a total typed from a log, is the referee here.
     expect(SCANNED_PATHS_A476GAPS.length).toBe(1039 - 1036)
+    // The corrupt-leg-guard tie, same form, both endpoints MEASURED on this
+    // branch: with `packages/tools/test/a4-corrupt-leg-guard.test.ts` on disk and
+    // this entry stripped, the scanner reads `expected 1040 to be 1039` (capture
+    // `dev/agent-workflow/evidence/a4-pr7/corrupt-leg-guard/p4t6-pre-extend-red.txt`);
+    // 1039 is the derived merged-tip total the gaps tie above ends on, and 1040 is
+    // what the scanner counts with this lane's file present. The production edits
+    // (control/service.ts, control/types.ts) are EDITS to already-counted paths and
+    // contribute nothing — edits are not increments in either direction.
+    expect(SCANNED_PATHS_A4CORRUPTLEG.length).toBe(1040 - 1039)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
