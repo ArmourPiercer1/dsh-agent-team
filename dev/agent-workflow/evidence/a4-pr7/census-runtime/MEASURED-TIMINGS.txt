@@ -1,0 +1,60 @@
+MEASURED TIMINGS behind .github/workflows/census-runtime.yml
+============================================================
+Machine: the 32-core box the census population baseline was recorded on. Node v24.21.0, pnpm 11.7.0.
+All figures are wall-clock seconds measured in this sandbox on 2026-10-08 (UTC). NONE is a hosted
+number: `ubuntu-latest` has 2 cores, and the one hosted fact available says it is several times
+slower per leg (§ "the hosted factor"). Every figure here is a FLOOR.
+
+THE WHOLE JOB, AS ONE SEQUENCE  —  E2E-PROVISION-THEN-CENSUS.txt
+----------------------------------------------------------------
+The steps run in order, in a throwaway directory, each with the `env:` the runner would give it,
+against a host fetched from github.com in that moment. Nothing shared, nothing pre-warmed.
+
+  resolve the pin from tests/paths.mjs                          0 s
+  fetch the pinned SHA (--depth 1) + detach + assert            8 s   193 MB, porcelain 0
+  build the host (install --ignore-scripts + pnpm run build)  218 s   exit 0, bin.js present,
+                                                                      pin re-asserted, porcelain 0
+  census, 2 captures, --testTimeout=20000                     254.8 s verdict=pass
+  re-grade the transcript                                       0 s
+  TOTAL                                                       481 s ≈ 8 min
+
+Component numbers, from an independent provisioning probe in the same session (they bracket the
+E2E figures and say the E2E was not flattered by a warm store):
+  host `pnpm install --ignore-scripts`, COLD store over network  62 s  (1390 packages)
+  host `pnpm run build` from that fresh install                 162 s  (exit 0, tree stays clean)
+  provisioned host on disk                                    ~2.3 GB
+  this repo `pnpm install --frozen-lockfile`, node_modules removed, warm store  17 s
+  this repo `pnpm run build` + `pnpm build:composition`           7 s  (its artifacts are committed)
+  census leg against the shared pristine host, 2 captures      233.7 s (load average ~8)
+  `scripts/ci-pr-gate.mjs --self-test`                          <1 s   51 assertions pass
+
+Add the Actions harness this sandbox cannot run at all — checkout, setup-node, setup-pnpm, artifact
+upload, and a cold pnpm download of BOTH trees — and the local floor for the hosted job is
+"8 minutes plus", with the pnpm downloads the least predictable part.
+
+THE HOSTED FACTOR (the only measured one)
+-----------------------------------------
+`pr-gate`'s hosted 7-leg run (37794562230, evidence/a4-pr7/ci-gate/FINDINGS.md): 475.3 s on
+`ubuntu-latest` against 222.4 s locally for the SAME legs — and the hosted one did strictly LESS
+work, because its census refused instantly. A conservative per-leg factor is therefore 2–4x, and
+the census is the part that scales with cores (each capture spawns real DSH hosts, and the published
+baseline itself declares a load family). 4x the local floor is ~32 min; the job asks for 60 and
+explains why in its own comment. NARROW IT from the first hosted run's per-step timings.
+
+ALSO MEASURED, NOT TIMINGS
+--------------------------
+* GitHub answers `git fetch --depth 1 origin <sha>` for the pinned object (verified against
+  github.com from this sandbox twice, and again inside the E2E): the pin cannot be silently
+  replaced by a moved branch tip, and the drift control proves the assertion bites.
+* `git ls-remote … stable-3-0.2.0-rc.2` == `TEST_USE_BASELINE_SHA` in tests/paths.mjs
+  (639ed015397290b3745d163aafe02ffee4aa3f84), re-confirmed 2026-10-08 (UTC).
+* The host's `package.json` version at that SHA is `0.2.0-rc.2` == `DSH_BASELINE_VERSION`, so the
+  provision step's third assertion is satisfiable, not aspirational.
+* A host `pnpm run build` leaves the pinned tree porcelain-clean (0 lines), both in the probe and in
+  the E2E — which is what makes the post-build pin re-assertion safe to run.
+* With `CI=true` — which this job sets, and which makes pnpm default to `--frozen-lockfile` — the
+  pinned host's `pnpm install --ignore-scripts` exits 0 ("Already up to date"): the TEST_METHODS §2
+  chain survives the CI default, so the job need not weaken the host install to make it work.
+* Census shape seen twice, on two different hosts (shared pristine checkout; freshly fetched+built
+  one): 507 files / 6354 legs, both captures identical, identity set identical to the published
+  baseline `nine-root-2162f6a7.md` (10 titled reds, 0 collection files).

@@ -1,0 +1,30 @@
+E2E local simulation of census-runtime.yml  (2026-10-08T16:48:23Z)
+repo=/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime  node=v24.21.0  pnpm=11.7.0
+Every step: the YAML's own text + the YAML's own env + Actions' $GITHUB_ENV plumbing.
+
+=== STEP 'Resolve the pinned pristine host from tests/paths.mjs' ===
+pinned pristine host: 639ed015397290b3745d163aafe02ffee4aa3f84 = 0.2.0-rc.2 (client commit 639ed01539)
+[exit 0]  cumulative=0s
+published onward: TEST_USE_SHA=639ed015397290b3745d163aafe02ffee4aa3f84 TEST_USE_VERSION=0.2.0-rc.2
+
+=== STEP 'Provision the pinned pristine test host' (fresh dir, real network) ===
+provisioned pristine host 639ed015397290b3745d163aafe02ffee4aa3f84 version=0.2.0-rc.2 (porcelain clean)
+[exit 0 seconds=8]
+
+=== STEP 'Build the pristine host (TEST_METHODS §2 chain)' ===
+[exit 0 seconds=218 — full log: .tmp-verify/e2e/host-build.log]
+host build ok: tests/deepseek-harness-test-use/apps/cli/lib/bin.js present at 639ed015397290b3745d163aafe02ffee4aa3f84
+host tree after build: porcelain=0 line(s), HEAD=639ed01, version=0.2.0-rc.2, size=2.3G
+
+=== point the worktree at the FRESHLY BUILT host and run the census leg ===
+tests/deepseek-harness-test-use -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/e2e/host/tests/deepseek-harness-test-use
+[gate exit 0]
+DSH-CI-RUN head=a187d7b0 mode=full node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime store-dir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.pnpm-store allow-refused=none
+DSH-CI-LEG leg=census verdict=pass seconds=254.8 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 10 titled reds + 0 collection files; captured 507f/6354l, 507f/6354l vs baseline-declared 507 / 6354; 2 captures, identical identity sets — clock: --testTimeout=20000 ms, an operator override above the 5000 ms default — identity set IDENTICAL to the publ
+DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=254.8
+[census seconds=255]
+
+=== the re-grade step over that transcript (verbatim) ===
+DSH-CI-TRANSCRIPT-CHECK pass class=ok :: 1 leg(s), final token pass
+[exit 0]
+TOTAL cumulative=481s

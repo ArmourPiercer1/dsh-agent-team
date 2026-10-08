@@ -1,0 +1,13 @@
+# The deliverable in one block. pr-gate is green with refusedlegs=census because it DECLARES
+# the exemption. This job withholds it, so the same missing host must come back fail.
+# If this block ever prints pass, the second green is a lie.
+$ node scripts/ci-pr-gate.mjs --full --only census --census-captures 2 --census-test-timeout 20000 … (NO --allow-refused)
+[gate exit 1 — expected 1]
+DSH-CI-RUN head=a187d7b0 mode=full node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime store-dir=/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.pnpm-store allow-refused=none
+DSH-CI-LEG leg=census verdict=fail seconds=0 detail=(undeclared refusal — the instrument could not grade this checkout; if that is intended, declare it: --allow-refused census) REFUSED before spawning vitest: tests/deepseek-harness-test-use (the pristine test host, gitignored, pinned by tests/paths.mjs) is absent from this checkout, and census legs that resolve it cannot be graded here. Measured consequence of runn
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=0
+
+## and the re-grade step over that transcript
+DSH-CI-TRANSCRIPT-CHECK fail class=red-run :: the gate ran and refused: census reported fail
+[exit 1 — expected 1]
+restored: link -> /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/e2e/tests/deepseek-harness-test-use

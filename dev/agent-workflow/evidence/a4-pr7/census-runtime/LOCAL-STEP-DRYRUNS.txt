@@ -1,0 +1,39 @@
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/s0.sh (20 lines) + /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/s0.env (1 vars)
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/s1.sh (34 lines) + /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/s1.env (4 vars)
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/s2.sh (27 lines) + /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/s2.env (4 vars)
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/s5.sh (2 lines) + /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/s5.env (1 vars)
+# Every block here was extracted from the YAML BY PARSING IT (extract-step.py, which also
+# emits the step's env:), then executed. Nothing below is retyped.
+
+## STEP 1 'Resolve the pinned pristine host from tests/paths.mjs'
+pinned pristine host: 639ed015397290b3745d163aafe02ffee4aa3f84 = 0.2.0-rc.2 (client commit 639ed01539)
+[exit 0 — expected 0]
+--- what it appended to $GITHUB_ENV (the contract every later step reads) ---
+TEST_USE_SHA=639ed015397290b3745d163aafe02ffee4aa3f84
+TEST_USE_VERSION=0.2.0-rc.2
+TEST_USE_CLIENT_HASH=639ed01539
+
+## CONTROL: the same step against a paths.mjs whose pin is not 40 hex must REFUSE.
+::error::tests/paths.mjs gave no 40-hex TEST_USE_BASELINE_SHA (got '639ed015397290b3') — refusing to provision an unpinned host
+[control exit 1 — expected 1]
+
+## What the runner does BETWEEN steps: publishes $GITHUB_ENV into the next step's
+## environment. Mirrored here, because a step's own shell variables do not cross over —
+## the first draft of step 3 echoed $HEAD_SHA for exactly that reason and printed nothing.
+## STEP 2 'Provision the pinned pristine test host' (fresh directory, real network)
+provisioned pristine host 639ed015397290b3745d163aafe02ffee4aa3f84 version=0.2.0-rc.2 (porcelain clean)
+639ed015397290b3745d163aafe02ffee4aa3f84
+porcelain=0 shallow=true size=193M
+[exit 0 — expected 0]
+
+## CONTROL: a pin the fetched object does not satisfy must FAIL with the drift message,
+## even though the branch-tip fallback found a perfectly good host. This is the control
+## that makes 'we test a PINNED host' a claim and not a wish.
+fatal: remote error: upload-pack: not our ref 0000000000000000000000000000000000000000
+::warning::exact-SHA fetch was refused; falling back to branch tip — the assertion below will fail the job if the tip is not the pin
+::error::PRISTINE HOST DRIFT: checked out 639ed015397290b3745d163aafe02ffee4aa3f84 but tests/paths.mjs pins 0000000000000000000000000000000000000000 — this job tests a PINNED host, so a different one is a failure, not a variation
+[control exit 1 — expected 1]
+
+## STEP 3 'Build the pristine host' is NOT run here: it costs ~4 minutes and
+## e2e-provision-run.sh runs it in sequence against the directory STEP 2 just made, which
+## is the only place its own \`cd\` and its bin.js assertion can be tested honestly.

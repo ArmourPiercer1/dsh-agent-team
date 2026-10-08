@@ -167,6 +167,10 @@ jobs:
         # product for 57 legs it cannot grade (run 37794562230). The census is therefore NOT enforced
         # on hosted PR runs yet; the token says refusedlegs=census out loud, and the re-grade step
         # fails if that declaration ever stops matching reality.
+        # WHERE THE CENSUS ACTUALLY RUNS, for a reader of this green: `.github/workflows/
+        # census-runtime.yml` checks out the same commit, provisions the PINNED pristine host, and runs
+        # the same leg with no `--allow-refused` — so that check alone means "the nine roots were
+        # measured", and this one means "the static + build legs passed and the census was not".
         #
         # PLACEMENT IS PART OF THE FIX. These words used to sit BETWEEN backslash-continued command
         # lines below. bash joins the escaped newline first, so that # opened a comment that ate the

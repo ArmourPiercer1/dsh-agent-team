@@ -1,0 +1,36 @@
+$ 1.7.7 -no-color .github/workflows/census-runtime.yml .github/workflows/pr-gate.yml
+[actionlint exit 0 — expected 0; zero findings on BOTH files]
+# (`command -v actionlint` here: nothing on PATH)
+$ python3 offline-lint-workflow.py <worktree> .github/workflows/census-runtime.yml .github/workflows/pr-gate.yml
+=== .github/workflows/census-runtime.yml
+  [1] YAML parse (pyyaml): ok
+  [2] expression-context scope: ok (no `runner`-class context in any job-level env)
+  [3] bash -n on 6 run: block(s): all clean
+  [4] findContinuationComments (exported from scripts/ci-pr-gate.mjs): all clean
+=== .github/workflows/pr-gate.yml
+  [1] YAML parse (pyyaml): ok
+  [2] expression-context scope: ok (no `runner`-class context in any job-level env)
+  [3] bash -n on 4 run: block(s): all clean
+  [4] findContinuationComments (exported from scripts/ci-pr-gate.mjs): all clean
+OFFLINE-LINT PASS
+[fallback lint exit 0]
+
+## CONTROL on the linters: one fixture carrying all three known incident classes —
+## \`runner\` in jobs.<id>.env (the four job-less runs), a # inside a backslash
+## continuation (run 37801019804), and a shell syntax error. Both linters must reject it.
+=== /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/negctl/bad.yml
+  [1] YAML parse (pyyaml): ok
+  [2] expression-context scope: FAIL
+      jobs.bad.env: XDG_CACHE_HOME uses context `runner`; permitted: github, inputs, matrix, needs, secrets, strategy, vars
+  [3] bash -n on 2 run: block(s): FAIL
+      doc.jobs.bad.steps[1]: /tmp/tmp4nec2_ym.sh: line 2: syntax error: unexpected end of file from `if' command on line 1
+  [4] findContinuationComments (exported from scripts/ci-pr-gate.mjs): FAIL
+      doc.jobs.bad.steps[0]: comment inside a backslash continuation at line(s) ['2']
+OFFLINE-LINT FAIL
+[fallback-lint control exit 1 — expected 1]
+$ /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/bin/actionlint -no-color /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/negctl/bad.yml
+.tmp-verify/negctl/bad.yml:7:27: context "runner" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy", "vars". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+  |
+7 |       XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+  |                           ^~~~~~~~~~~
+[actionlint control exit 1 — expected 1]

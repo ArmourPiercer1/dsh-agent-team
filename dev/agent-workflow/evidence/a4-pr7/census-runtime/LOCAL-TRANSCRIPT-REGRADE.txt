@@ -1,0 +1,25 @@
+# The SECOND reader, verbatim from the YAML, over a real transcript and a doctored one.
+DSH-CI-TRANSCRIPT-CHECK pass class=ok :: 1 leg(s), final token pass
+[exit 0 — expected 0]
+
+## the same transcript with its DSH-CI-VERDICT line removed (a run killed before its token)
+DSH-CI-TRANSCRIPT-CHECK fail class=missing-token :: no DSH-CI-VERDICT token in the transcript (1 leg line(s) seen) — a missing verdict is a failure, never "not run"
+[exit 1 — expected 1]
+
+## and a refusal that was NEVER declared: the shape of 'the host vanished and nobody
+## noticed'. checkTranscript refuses it in both directions, so a token that hides a
+## refusal and a token that lies about one are both failures.
+DSH-CI-TRANSCRIPT-CHECK fail class=undeclared-refusal :: leg(s) census report refused while the token declares refusedlegs=none — a refusal has to be written into the invocation, not discovered afterwards
+[exit 1 — expected 1: undeclared refusal]
+DSH-CI-TRANSCRIPT-CHECK fail class=token-legs-disagree :: the token declares refusedlegs=census but no leg line refused for census — a declared refusal that did not refuse is a token that lies
+[exit 1 — expected 1: a declared refusal that never refused]
+
+## WHAT THE RE-GRADER DOES NOT DO, stated because the first draft of this control got it
+## wrong: a transcript whose leg refused AND whose token declares refusedlegs=census is
+## INTERNALLY CONSISTENT and passes checkTranscript — grading consistency is that step's
+## whole job. A declared refusal can only be produced by passing --allow-refused, and this
+## job never passes it: the exemption stays reviewable in the diff of the workflow, which
+## is the design pr-gate states for itself. So the guarantee here is 'no undeclared
+## refusal, and no exemption unless someone edits this file', not 'no refusal at any cost'.
+DSH-CI-TRANSCRIPT-CHECK fail class=undeclared-refusal :: leg(s) census report refused while the token declares refusedlegs=none — a refusal has to be written into the invocation, not discovered afterwards
+[exit 1 — expected 1: the verdict this job actually emits on a missing host is fail, and fail is fail]

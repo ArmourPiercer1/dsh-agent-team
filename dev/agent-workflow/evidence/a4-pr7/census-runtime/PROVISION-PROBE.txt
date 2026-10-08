@@ -1,0 +1,10 @@
+# The claim: the pinned pristine host is provisionable from a runner with NO secret.
+$ git ls-remote https://github.com/ArmourPiercer1/deepseek-harness stable-3-0.2.0-rc.2
+639ed015397290b3745d163aafe02ffee4aa3f84	refs/heads/stable-3-0.2.0-rc.2
+[exit 0]
+$ node -e "import('./tests/paths.mjs')…"   # the pin this job must fetch
+639ed015397290b3745d163aafe02ffee4aa3f84 0.2.0-rc.2 639ed01539
+
+# GitHub answers a shallow fetch of the PINNED OBJECT, not merely of a branch, which is why
+# the pin cannot be quietly replaced by a moved tip. Executed end to end in
+# LOCAL-STEP-DRYRUNS.txt (STEP 2) and again inside E2E-PROVISION-THEN-CENSUS.txt.

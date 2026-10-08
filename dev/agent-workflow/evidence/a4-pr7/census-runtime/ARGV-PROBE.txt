@@ -1,0 +1,32 @@
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/census.sh (9 lines) + /home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/steps/census.env (3 vars)
+# printf-introspection: the census run: block with the gate command replaced by
+# \`printf \"<%s>\"\`, executed for real. This is how run 37801019804 — a # comment between
+# backslash-continued lines that ate four flags while the log echoed them — is checked for
+# BEFORE a runner ever sees the file.
+--- the block under test, after the substitution ---
+set -euo pipefail
+mkdir -p "$XDG_CACHE_HOME"
+printf "<%s>\n" scripts/ci-pr-gate.mjs --full \
+  --only census \
+  --census-captures 2 \
+  --census-test-timeout 20000 \
+  --store-dir "$DSH_CI_STORE_DIR" \
+  --transcript-dir "$RUNNER_TEMP/census-transcripts" \
+  2>&1 | tee "$RUNNER_TEMP/census-run.txt"
+--- argv as the step will actually hand it to node ---
+<scripts/ci-pr-gate.mjs>
+<--full>
+<--only>
+<census>
+<--census-captures>
+<2>
+<--census-test-timeout>
+<20000>
+<--store-dir>
+</home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/runner-temp/pnpm-store>
+<--transcript-dir>
+</home/user/dsh-plugins/dsh-agent-team/.worktrees/census-runtime/.tmp-verify/runner-temp/census-transcripts>
+[probe exit 0 — expected 0, i.e. the whole block parsed and ran, not just the printf]
+# count the flags: --full --only census --census-captures 2 --census-test-timeout 20000
+# --store-dir <runner store> --transcript-dir <runner temp>/census-transcripts = 12 argv
+# entries, and NO --allow-refused anywhere.
