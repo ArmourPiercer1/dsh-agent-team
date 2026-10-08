@@ -223,14 +223,18 @@ export function parsePopulationBaseline(md) {
   const titled = []
   const collection = []
   let section = null
+  let sawTitledHeader = false
+  let sawCollectionHeader = false
   for (const raw of lines) {
     const line = raw.trim()
     if (/^##\s+titled reds/.test(line)) {
       section = 'titled'
+      sawTitledHeader = true
       continue
     }
     if (/^##\s+collection-error files/.test(line)) {
       section = 'collection'
+      sawCollectionHeader = true
       continue
     }
     // Any OTHER level-2 heading closes the identity sections. Without this the baseline's own
@@ -263,11 +267,27 @@ export function parsePopulationBaseline(md) {
       collection.push(`FILE ${line}::COLLECTION-OR-UNHANDLED`)
     }
   }
-  if (titled.length === 0 || collection.length === 0) {
+  // Emptiness is the ABSENCE OF IDENTITY SECTIONS, or of every identity -- it is NOT "one of the
+  // two kinds happens to be empty". This read `titled.length === 0 || collection.length === 0`, so a
+  // tree that had REPAIRED every collection-error file could not be expressed: reality moved past the
+  // guard's state space and the guard fired on good news (measured 2026-10-08, right after PR #205
+  // closed the last three, when the restated baseline parsed 10 titled / 0 collection and REFUSED).
+  // A guard that cannot say "there is nothing of kind B left" is no safer than no guard at all -- it
+  // only trains people to distrust a RED. The hazard this guard was written against (a renamed
+  // section heading silently reading as an empty debt list) is refused explicitly below.
+  if (!sawTitledHeader || !sawCollectionHeader) {
     throw new Error(
-      `population baseline: parsed ${String(titled.length)} titled reds and ` +
-        `${String(collection.length)} collection files — a baseline that parses to nothing is ` +
-        `a changed document shape, not an empty debt list, and this leg refuses rather than pass`,
+      `population baseline: identity sections not found (titled-reds header ` +
+        `${sawTitledHeader ? 'seen' : 'MISSING'}, collection-error header ` +
+        `${sawCollectionHeader ? 'seen' : 'MISSING'}) — a renamed heading would otherwise be read as ` +
+        `an empty debt list and merged`,
+    )
+  }
+  if (titled.length === 0 && collection.length === 0) {
+    throw new Error(
+      `population baseline: parsed 0 titled reds and 0 collection files — a baseline with no ` +
+        `identity at all is a changed document shape, not an empty debt list, and this leg refuses ` +
+        `rather than pass`,
     )
   }
   return {
@@ -1115,6 +1135,24 @@ function selfTest() {
   ok(parseLoadFamilies(readFileSync(resolve(REPO_ROOT, BASELINES.census), 'utf8')).includes('p6t1-parallel'),
     `the family in force today is read from the committed baseline (${BASELINES.census}), not from a constant here`)
 
+  // The LIVE reference, asserted against the LIVE document (the fixtures above prove grammar only).
+  // The census leg grades against this file, so retargeting it has to break an assertion here — that
+  // is the whole point of pinning it: nobody can widen or narrow what the gate excuses in prose.
+  // loadFamilies is pinned too, because every word of that document outside its identity sections is
+  // mined for family names, so a sentence added for the reader's benefit can silently grant an
+  // exemption to a whole file. Re-derive all of these by running the capture command recorded in the
+  // baseline document itself; never by editing this line to match what the last run printed.
+  {
+    const live = parsePopulationBaseline(readFileSync(resolve(REPO_ROOT, BASELINES.census), 'utf8'))
+    ok(
+      live.declaredTotals !== null
+        && live.declaredTotals.files === 507 && live.declaredTotals.legs === 6354
+        && live.ids.length === 10 && live.titledCount === 10 && live.collectionCount === 0
+        && live.loadFamilies.length === 2,
+      'the COMMITTED baseline parses to the corpus and tolerance it declares: 507/6354, 10 tolerated ids, 0 collection files, 2 disclosed load families (restated at 02b53c7a, round 43)',
+    )
+  }
+
   let threw = false
   try {
     parsePopulationBaseline('# nothing here\n')
@@ -1123,6 +1161,31 @@ function selfTest() {
     threw = true
   }
   ok(threw, 'a baseline that parses to nothing REFUSES instead of passing')
+
+  // Zero of a KIND is a legal state; zero of EVERYTHING is a changed document. Both are pinned,
+  // because the first one is the case the old guard got wrong and the second is the case it got right.
+  const zeroCollection = parsePopulationBaseline([
+    '## titled reds (file > full name), sorted:',
+    'packages/a/test/x.test.ts > Suite the one that fails',
+    '## collection-error files (a red that resolves into one of these is an ESCALATION, not a fix):',
+    '# NONE — every collection error in this corpus has been repaired.',
+  ].join('\n'))
+  ok(
+    zeroCollection.ids.length === 1 && zeroCollection.collectionCount === 0,
+    'ZERO collection files parses — repairing every collection error is expressible, not a refusal',
+  )
+
+  let threwRenamed = false
+  try {
+    parsePopulationBaseline('## titled red (renamed by mistake)\npackages/a/test/x.test.ts > S a red\n')
+  }
+  catch {
+    threwRenamed = true
+  }
+  ok(
+    threwRenamed,
+    'a renamed identity-section header still REFUSES — the hazard the emptiness guard exists for',
+  )
 
   // 1. counts moved, set identical → pass, and the move is stated.
   const moved = compareCensus(base.ids, [...base.ids].reverse(), { files: 999, legs: 12345, moved: true })
@@ -1140,6 +1203,11 @@ function selfTest() {
     '## PUBLISHED CORRECTION (2026-10-08, round 38)',
     'Totals also move with merges: **505 files / 6285 legs / 19 titled reds by identity**.',
   ].join('\n'))
+  // Left at 505/6285 ON PURPOSE: this is a GRAMMAR fixture, its numbers are its own, and what it
+  // proves is that the newest occurrence wins across both spellings. On 2026-10-08, in the first
+  // minute of retargeting the reference, this coordinator edited these numbers to the live corpus's
+  // 507/6354 because a leg printed a different pair -- which does not update a pin, it deletes a
+  // test. The live corpus is asserted against the live document further down, where it belongs.
   ok(
     withTotals.declaredTotals !== null && withTotals.declaredTotals.files === 505 && withTotals.declaredTotals.legs === 6285,
     'the NEWEST declared totals win across both spellings (505/6285, not the 500/6262 header)',
