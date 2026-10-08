@@ -225,6 +225,21 @@ surface degrades to `internal-error` (R8's measured fate).
    `internal error in remote handler` (untyped-error invariant 5). An instrument that
    only watched the service layer would have called that "works". Caught by running
    WHOLE files, not the gate in isolation.
+ 10. **Git's auto-merge is an instrument too, and it lied silently.** a4p1 merged
+     with NO conflict markers yet produced a self-contradicting file (flip-V15
+     asserts `v1.ok === false`; the a4-76 V16 asserts `v1.ok === true`). A clean
+     auto-merge is not a semantically-clean merge. Caught by running the file the
+     moment after the merge (V16/V17 RED) — §8.1. After a merge, RUN the affected
+     files; do not trust "no conflicts".
+ 11. **A stale sed pattern is a silent lie.** The first golden-tamper capture passed
+     20/20 looking exactly like the vacuous result it was meant to prove — the
+     pattern did not match the actual constant form and nothing was tampered.
+     Caught by grepping the constant back before believing the run; the second
+     attempt (matching the `sha256:` prefix) is the one in the raw.
+ 12. **A merge ages a tie's prose without breaking its arithmetic.** Both p4t6 tie
+     lines read `toBe(1032 - 1031)` after auto-merge — each trivially true (1==1),
+     each claiming a DIFFERENT predecessor total. The test file cannot see its own
+     staleness; only the mandated re-derivation caught it. See §8.2.
 
 ## §5 — Restore ledger (hashes are the record; exit codes never were)
 
@@ -236,7 +251,7 @@ surface degrades to `internal-error` (R8's measured fate).
 | `blueprint/src/validate.ts` | `a6d6939e…ab5a176ec` | equal | `e27a8c3e…26ccc89` |
 | `domain/test/a4p1-…governance.test.ts` | repaired-state sha in `a4p1-REPAIRED.sha256` | `sha256sum -c` OK | n/a (lane write) |
 
-## §6 — Battery ledger
+## §6 — Battery ledger (PRE-FLIP tree — numbers in this table describe the pre-#172 tree; the merged-tree ledger is §8.5)
 
 Every number below is copied from a saved raw IN THIS DIRECTORY (the raws are the
 record; every suite was re-run on the COMMITTED tree — commit `b27efe12`, base
@@ -282,3 +297,127 @@ happened twice, both corrections are the current text).
    `a4p7-ceiling-port-assembly-pin` PIN-3 turns RED (root-direct fail-open dies). That
    red is this lane's designed gift to the ruling PR — retire PIN-3 in the commit that
    makes it red, and let §3's 13+41 set be the re-wiring checklist for that PR.
+
+---
+
+## §8 — Post-merge re-verification against the flipped master (`8ab22407`, #172 landed §7.3)
+
+The coordinator's ruling: re-verify on merged master; merge, never rebase a cited
+head. `origin/master 8ab22407` merged in as `b098be1c`. The headline: the flip
+touched NONE of `host.ts / root.ts / permission-plane.ts / governance/service.ts /
+validate.ts` (empty `git diff`), so this lane's core-file anchors survive byte-
+identical; what the flip DID do is (i) retire v1/v2 at the parser, closing §0's
+fail-open way (i) (the reader's version-abstention branch is now unreachable),
+(ii) invert V1/V5/V13/V14/V15 of this lane's a4p1 file, and (iii) extend p4t6.
+
+### 8.1 a4p1 — resolved by measurement, resolved to RETIREMENT
+
+Git auto-merged the file with no markers — producing a self-contradicting file
+(flip-V15 asserts `v1.ok === false`; this lane's repaired V16 asserts
+`v1.ok === true`). The flip's in-file NOTE recorded the coordinator ruling:
+"the vacuous-guard finding goes to the pin lane … deliberately not repaired
+here." This lane is that pin lane, and both surviving shapes were MEASURED
+before choosing:
+
+- with the repair in place, post-flip the pair goes RED naming itself —
+  "V16 precondition: the v1 bridge fixture must parse — unsupported blueprint
+  schema version 1; this build supports [3]" (`a4p1-POSTFLIP-REPAIR-RED.log`,
+  `a4p1-POSTFLIP-RED-MESSAGES.txt`);
+- with the flip's guard-return shape, the file passes **20/20 with
+  V1_GOLDEN_HASH tampered to all-f** — green over a corrupted golden, zero
+  assertions (`a4p1-COUNTERFACTUAL-GOLDEN-TAMPERED.log`; the first attempt of
+  that capture passed the same 20/20 with an UNtampered sed — no-match sed is
+  itself an instrument-that-lied, caught by grepping the constant back).
+
+Neither shape is a leg that can survive the flip: the pair's subjects (v1/v2
+golden byte-identity, key-omission over v1/v2 projections) have no reachable
+input — a retired stamp yields no blueprint to hash. So the repair is DROPPED,
+the redundancy DEMONSTRATED as above, and the legs are RETIRED in the merge
+commit — the commit that had to answer the red, which was the repair's entire
+point. The goldens stand as record in the file's comment block; the bridge-state
+truth is owned by V1/V13/V14/V15; the hash-binding truth by V18–V20. File now
+**18 legs**, no surviving leg renamed or renumbered (identity sets diff-clean).
+
+### 8.2 p4t6 — total re-derived from scratch with BOTH lane sets
+
+The merged sums carry `SCANNED_PATHS_A4P73FLIP` + `SCANNED_PATHS_A4P73GRAMMAR` +
+`SCANNED_PATHS_A4P76PIN` (resolution kept both intents; the two hunks were the
+same list-add on different lanes' sides). The total was NOT assumed: with the
+pin file tracked on disk and this lane's entry stripped, the merged run reads
+`expected 1033 to be 1032` (`p4t6-PRE-EXTEND-RED-MERGED.txt`) — 1032 is the
+derived merged-master total the FLIP's tie ends on (its own capture says
+1031 → 1032 on ITS base, kept unrewritten, same house rule the 7.6-GATE tie
+documents), and 1033 is what the scanner counts with this lane's file. This
+lane's tie now asserts `1033 - 1032`.
+
+**New entry for §4's list (instrument-that-lied #10, merge-grade):** after the
+auto-merge, BOTH tie lines read `toBe(1032 - 1031)` — each trivially true as
+arithmetic (1 == 1), each green, and each claiming a DIFFERENT predecessor
+total. A tie's numbers are the leg's PROSE; merges age prose without breaking
+its arithmetic. Only the mandated re-derivation exposed it; the test file could
+not. Nothing hand-edited: the endpoints come from the capture, never from the
+neighbouring line.
+
+### 8.3 instrument, leg by leg, post-flip
+
+`pins-5leg-POSTFLIP-pristine.log` (before adding PIN-5) and
+`pin-5-POSTFLIP-GREEN.log` (six legs):
+
+- PIN-1 / PIN-1b — GREEN: the expected shape HOLDS post-flip, re-measured not
+  inherited: the zero-ceiling rise becomes the durable
+  `mutation-proposal-pending` / `requiredAuthority:'leader'` / `approvalCaseId`
+  proposal, no snapshot. This matches the coordinator's round-29 prediction for
+  a rising grant against a declared-empty ceiling.
+- PIN-2 — GREEN: the covering hard document still commits the same drive.
+- PIN-3 — **GREEN: the fail-open lever SURVIVED the flip.** The root-direct,
+  port-less lane still commits the zero-ceiling rise. The flip closed the OTHER
+  way (v1/v2 abstention — unreachable behind a parser that refuses v1/v2); the
+  port-absent way runs on v3 documents and `root.ts:2899`'s conditional spread
+  is byte-untouched (#172's diff does not contain root.ts). The calculus for
+  the fail-closed lane is therefore UNCHANGED by the flip, and PIN-3 stands
+  ready as that lane's hand-off seam.
+- PIN-4 — GREEN: exactly one production producer, `host.ts:2703`, unchanged.
+- PIN-5 — NEW (coordinator's fifth task, added here): world D = world B minus
+  exactly the `fs` public-service double, COVERING ceiling intact (the world
+  where the drive COMMITS). Measured (`pin5-worldD-measurement.log`): the drive
+  does NOT commit — `{changed:false, code:'PERMISSION_ENVELOPE_EXPANSION_DENIED',
+  problem expansion-region-uncovered}`. The two silences ARE distinguishable
+  today: absent-fs speaks through the CARRIER law as a typed throw; the
+  ceiling's zero is the durable-proposal shape. The leg pins the separation and
+  names the drift that would erase it (the separation holds only because the
+  coverage law consults the same abstaining envelope reader and runs BEFORE the
+  ceiling gate — if envelope reading detaches from `fs` canonicalization, an
+  fs-less world could drift toward committing with nobody consulted). Nothing
+  was fixed; the hazard is recorded, as instructed.
+
+### 8.4 what survives of §0 and §3 on the flipped tree
+
+§0 census RE-COUNTED post-flip and holds: Family A = 17 call sites (1
+production `host.ts:2675→2703`, 16 test), zero test-side port injections (the
+three `permissionAuthorityCeiling:` grep hits in tests are the two spelling
+regexes — a4p2's and this file's — plus one census string, zero object
+literals), Family D = one production producer.
+
+§3's verdict-change table (13 flipped / 26 unchanged / 41 collateral / 0
+shipped) is **explicitly a PRE-FLIP measurement** and must not be consumed as
+post-flip: §7.3 re-decided the 39 by inverting the carrier law's inputs, so the
+populations moved. The STRUCTURE survives — a no-port refusal would still touch
+zero shipped host worlds (production still injects the port; that is exactly
+what PIN-1/PIN-4 pin) — but the fail-closed lane must re-run the PRE/POST
+method (throwaway service.ts patch + identity diff, §3) against the flipped
+fixture corpus before spending any count from this table. The wire-mapping
+finding (a bare `AUTHORITY_CEILING_INSUFFICIENT` throw has never existed on the
+tool router → `internal-error`) is unaffected by the flip: it lives in
+`s6-remote.ts`'s untyped-error invariant, which #172 did not touch.
+
+### 8.5 merged-tree battery ledger (commit `b098be1c`; base controls from the SAME worktree detached at `8ab22407`)
+
+| instrument | result | raw |
+| --- | --- | --- |
+| fence ×2, committed merged tree | byte-identical; tuple = post-flip base tuple verbatim: `dirty(6,15) unknown(0,0) advisory(6,8) refused(52,115) prose(5,5) adjudicated(16,24)`, exit 1 (six dirty files = the coordinator's list; base tuple captured detached: identical) | `fence-MERGED-run1.log`, `fence-MERGED-run2.log`, `fence-BASE-8ab22407.log` |
+| fast suites | p4t6 **10**, a4p1 **18**, version-clean **60**, instrument **6**, classifier **54** — 148/148 | `suites-MERGED-fast.log` |
+| §7.6 merge-gate | 26 legs, exactly the 1 disclosed no-build refusal; diagnostic **byte-identical** to the post-flip base capture minus the tree-state clause | `merge-gate-MERGED.log`, `merge-gate-BASE-8ab22407.log` |
+| permission/ceiling battery (18 files incl. the flip's shipped-composition spec) | **286 passed** | `permission-ceiling-MERGED.log` |
+| typecheck `-r` / `-r --no-bail` (separate runs) | both exit 0, `0 × error TS` | `typecheck-MERGED-parallel.log`, `typecheck-MERGED-nobail.log` |
+| lint-identities vs baseline (re-recorded by the records lane in the flip round, aaf5decd) | **new 0 / resolved 0**, exit 0; universe 1109 files | `lint-identities-MERGED.txt` |
+| population `packages/{runtime,domain,legacy,storage,contracts}/test` | base (detached) **5043** registered legs — exactly the stated post-flip figure — 19 titled reds (18 + the declared p6t1 flake) + 3 collection files (`p8s3b-result-effects`, `t12a-b2-child-identity`, `t12a-glue-handoff-ports`); merged tree **5047** = 5043 + 6 (instrument legs) − 2 (retirements), derived-and-measured, files 416→417; red-set diff **NEW 0**, RESOLVED only the declared `p6t1` flake (green this run); collection set UNCHANGED | `base2-pop-identities-reds.txt`, `base2-pop-collectionfails.txt`, `mine2-pop-reds.txt`, `mine2-pop-collectionfails.txt` |
