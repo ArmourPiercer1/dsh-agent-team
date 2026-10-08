@@ -5,6 +5,14 @@ Base: `origin/master` = `e80a00da60765ae8533f417b6c4e667299c6d90b` (fetched this
 worktree**, not read from the dispatch message. Evidence lines are quoted as
 `file:line` of the tree at that SHA.
 
+**`origin/master` moved during this session** to `340e30e3` (PR #162 = the round-22
+records, a coordinator doc commit). The branch was rebased onto it and every battery leg
+was re-taken there (BATTERY.md §6); the rebase moved only `graph.yaml` and
+`SESSION_ROUTER_LOG.md`, and the fence output is byte-identical across both bases. The
+moved commit independently confirms the deferral this lane depends on: *"FLIP STILL
+DEFERRED with `cordis.patch.yml:60` v1 + `fixtures.ts` … both coordinator-owned, Phase 2,
+parse-level census mandatory. STILL OPEN: §7.5 (in flight)"*.
+
 ## The five §7.5 bullets, measured
 
 | # | §7.5 bullet (plan `:845-863`) | State | Evidence line I read it from |
