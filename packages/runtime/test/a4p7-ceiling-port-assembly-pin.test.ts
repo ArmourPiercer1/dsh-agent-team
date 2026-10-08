@@ -333,12 +333,21 @@ async function makePinWorld(dirName: string): Promise<PinWorld> {
  *  into a durable PROPOSAL result (A4-PR5). Normalize both into one verdict,
  *  keeping the resolved object whole — the proposal identity fields are part
  *  of what PIN-1b asserts. */
-async function settleMutation(run: Promise<unknown>): Promise<Record<string, unknown> & { changed?: boolean; code?: string; reason?: string }> {
+async function settleMutation(run: Promise<unknown>): Promise<Record<string, unknown> & { changed?: boolean; code?: string; reason?: string; problem?: string }> {
   try {
     return (await run) as Record<string, unknown> & { changed?: boolean }
   } catch (error) {
-    const e = error as { code?: string; message?: string }
-    return { changed: false, code: String(e.code ?? ''), reason: String(e.message ?? '') }
+    // §7.5 prerequisite 3 added a third verdict identity to this pin, and the
+    // two CONTEXT-shaped refusals (unread document vs absent port) are told
+    // apart by the typed `problem` slot — so the normalization carries it.
+    // Additive: every pre-existing leg asserted `code`/`reason` only.
+    const e = error as { code?: string; message?: string; details?: { problem?: unknown } }
+    return {
+      changed: false,
+      code: String(e.code ?? ''),
+      reason: String(e.message ?? ''),
+      ...(typeof e.details?.problem === 'string' ? { problem: e.details.problem } : {}),
+    }
   }
 }
 
@@ -554,13 +563,30 @@ describe('a4-76 — the shipped composition consults the authority ceiling; the 
     ).toBe(true)
   })
 
-  it('PIN-3 the pinned hazard: the SAME root factory assembled WITHOUT the port commits the zero-ceiling rise (fail-open today at the root seam; this leg turns red the day the fail-closed ruling lands — read dev/agent-workflow/evidence/a4-pr7/7-6-ceiling-pin/FINDINGS.md before changing it)', () => {
-    expect(
-      measured.rootDirectVerdict.changed,
-      `root-direct rise no longer commits: the root seam stopped failing open ` +
-        `(verdict: ${JSON.stringify(measured.rootDirectVerdict)}) — if this is the fail-closed ruling ` +
-        `landing, this leg must be RETITLED to the new law, not deleted`,
-    ).toBe(true)
+  it('PIN-3 (RETIRED BY ITS OWN PREDICTION, INVERTED — not deleted): the SAME root-direct lane assembled WITHOUT the port now REFUSES the zero-ceiling rise with the context code and the port-absent problem; the fail-open it used to pin is closed at the root seam', () => {
+    // What this leg asserted from a4-76 until the §7.5 prerequisite-3 ruling
+    // landed: `rootDirectVerdict.changed === true`, i.e. the root factory
+    // assembled without `authorityCeiling` COMMITTED a rise no ceiling stood
+    // over. Its own instruction was that the day the fail-closed ruling lands,
+    // it must be RETITLED to the new law rather than deleted — that day is this
+    // commit, and the retirement was demanded by the very change that made it
+    // false (dev/agent-workflow/evidence/a4-pr7/7-4-failclosed/FINDINGS.md,
+    // §"PIN-3"). The measured pre-ruling verdict, kept in the evidence
+    // directory as `pin3-before.json`, was `{changed:true}`.
+    const v = measured.rootDirectVerdict
+    expect(v.changed, `a port-less lane must not commit a rise: ${JSON.stringify(v)}`).toBe(false)
+    // The CONTEXT label, never the authorization label (A3-3): nobody read a
+    // ceiling, so nobody may claim the ceiling said no.
+    expect(String(v.code)).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE)
+    expect(String(v.code)).not.toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
+    // Told apart from the sibling context fault (an UNREADABLE document) by the
+    // problem slot, and from the ceiling's own zero (world A) by the code: three
+    // distinct identities, none of them internal-error.
+    expect(v.problem).toBe('authority-ceiling-port-absent')
+    expect(v.reason).toContain('no authority-ceiling reader')
+    // Zero write, at the identity the drive addressed.
+    expect(v.snapshot).toBeUndefined()
+    expect(v.approvalCaseId, `an unread ceiling must mint no proposal: ${JSON.stringify(v)}`).toBeUndefined()
   })
 
   it('PIN-5 attribution: zero-authority-by-absent-fs and zero-authority-by-ceiling are TOLD APART at the verdict — the absent `fs` public service zeroes authority through the CARRIER law (typed EXPANSION_DENIED throw), never through the ceiling\'s proposal shape (world D = world B minus exactly the fs double, same COVERING ceiling that commits in PIN-2)', () => {
@@ -592,6 +618,30 @@ describe('a4-76 — the shipped composition consults the authority ceiling; the 
     // …and the ceiling's own zero, from world A, keeps its OWN signature.
     expect(measured.emptyVerdict.reason).toBe('mutation-proposal-pending')
     expect(measured.emptyVerdict.code ?? '').not.toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+    // STRENGTHENED by this commit (the change names itself): before the §7.5
+    // prerequisite-3 ruling this leg compared TWO refusals and one COMMIT — the
+    // port-less root-direct world was the commit, so the "told apart" claim had a
+    // silent member. It now compares three REFUSALS, and the leg can say the
+    // thing it could not say before: every way a lane can come up with no
+    // authority is a TYPED refusal with its own identity, and none of them is
+    // `internal-error` and none of them is a commit. If the root-direct world
+    // ever goes back to committing, this leg reddens — which is the hazard the
+    // original comment called drift, now pinned instead of narrated.
+    const trio = [measured.emptyVerdict, measured.noFsVerdict, measured.rootDirectVerdict]
+    for (const v of trio) {
+      expect(v.changed, `a zero-authority world must refuse, never commit: ${JSON.stringify(v)}`).toBe(false)
+      expect(String(v.code ?? v.reason)).not.toBe('internal-error')
+    }
+    // (a) the ceiling's zero: proposal-shaped, no code.
+    expect(measured.emptyVerdict.code ?? '').toBe('')
+    // (b) the carrier's zero (fs absent): expansion-shaped code, no proposal.
+    expect(String(measured.noFsVerdict.code)).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+    // (c) the wiring's zero (no port): context-shaped code with its own problem.
+    expect(String(measured.rootDirectVerdict.code)).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE)
+    expect(measured.rootDirectVerdict.problem).toBe('authority-ceiling-port-absent')
+    // The three are pairwise distinct at code level, not just in prose.
+    expect(measured.rootDirectVerdict.code).not.toBe(measured.noFsVerdict.code)
+    expect(measured.rootDirectVerdict.reason).not.toBe(measured.emptyVerdict.reason)
   })
 
   it('PIN-4 (WEAK, labelled census): the production tree contains exactly one producer of the ceiling reader', () => {

@@ -1211,12 +1211,72 @@ export function createGovernanceMutationService(
       const authorityCeilingJudge = createPermissionAuthorityCeilingJudge({
         ...(lane.subtreeContains === undefined ? {} : { subtreeContains: lane.subtreeContains }),
       })
+      if (lane.authorityCeiling === undefined) {
+        // A4-PR7 §7.5 prerequisite 3 — A CEILING THAT WAS NEVER READ IS NOT A CEILING.
+        // This branch used to be the gate's OWN absence: a lane assembled without an
+        // `authorityCeiling` port skipped the whole v3 law and went straight to the
+        // append, so a mutation that RAISED the effective effect committed with no
+        // ceiling standing on it at all (the A4-PR7 §7.6 census measured 16 such
+        // call sites against 1 production producer — every one of them a test world,
+        // and the fail-open survived the §7.3 flip precisely because nothing refused
+        // it). Absence of the reader is not the fact "this Team is not governed by
+        // the v3 ceiling" — that fact has exactly one honest witness, the reader's
+        // own existential answer for a DECIDED pre-v3 binding, which is untouched
+        // below and still the only answer allowed to skip this gate (A5-12). Absence
+        // of the reader is a fact about the WIRING, and wiring cannot widen
+        // authority. So the batch is classified here (the same pure classification
+        // the port-present branch runs, byte-identical inputs) and a batch with a
+        // rising region REFUSES with zero write.
+        //
+        // The code is `EFFECT_CONTEXT_UNAVAILABLE`, never
+        // `AUTHORITY_CEILING_INSUFFICIENT`: A3-3's law is that an unread ceiling
+        // wears a CONTEXT label, because the remedy is "wire/fix the ceiling", not
+        // "ask a higher rung" — and because the A4-PR5 proposal catch below fires
+        // only on the insufficient code, minting nothing from a ceiling nobody read
+        // (ADR A1-7). It is RISE-scoped: a batch that removes authority still
+        // commits (the inverted-incentive law `a4p7-ceiling-no-context-refusal` leg 4
+        // pins for the sibling branch), and the classification's OWN refusal (an
+        // undecidable subtree relation with no predicate injected) propagates as
+        // itself — the lane cannot establish that it is not rising, which is the same
+        // truth the gate below would have had to reach.
+        const unassessedFactsRaw = await lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId)
+        const unassessedFacts =
+          unassessedFactsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(unassessedFactsRaw)
+        const unassessedRising = classifyPermissionRise({
+          latestRules: latest === undefined ? [] : latest.state.rules,
+          plannedRules: plan.rules,
+          mutationRules: mutation.rules,
+          // Same law as the port-present branch: the Leader's carrier is NOT a
+          // ceiling, so it is passed as the required-but-unread empty document.
+          envelope: parsePermissionMutationEnvelope({ rules: [] }),
+          staticFacts: unassessedFacts,
+          subtreeContains: lane.subtreeContains,
+        }).rising
+        if (unassessedRising.length > 0) {
+          throw new PermissionMutationError(
+            PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+            `the mutation rises the EFFECTIVE effect at ${unassessedRising
+              .map((region) => region.regionText)
+              .join(', ')}, but this governance lane wired no authority-ceiling reader to consult: ` +
+              `an unread ceiling is never guessed and never treated as absent (zero write)`,
+            {
+              problem: 'authority-ceiling-port-absent',
+              cause: 'no authorityCeiling port on the governance lane',
+              risingCount: unassessedRising.length,
+              risingRegions: unassessedRising.map((region) => region.regionText),
+            },
+          )
+        }
+      }
       if (lane.authorityCeiling !== undefined) {
         const ceilingContext = await lane.authorityCeiling(mutation.teamSessionId, mutation.memberInstanceId, actor)
         // `undefined` = no v3 ceiling context for this target (the reader is the
         // only place `schemaVersion === 3` is decided). NOT "the documents are
         // empty": an empty document is a decided zero-authority answer and reaches
-        // the gate below as one.
+        // the gate below as one. It is also the ONLY answer that may skip this gate,
+        // and it is produced only by a DECIDED pre-v3 binding
+        // (`src/plugin/permission-plane.ts`, the existential branch) — never by an
+        // absent port, which is refused above.
         if (ceilingContext !== undefined) {
           const ceilingFactsRaw = await lane.staticLayers?.(mutation.teamSessionId, mutation.memberInstanceId)
           const ceilingFacts = ceilingFactsRaw === undefined ? undefined : parsePermissionStaticLayerFacts(ceilingFactsRaw)
