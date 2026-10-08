@@ -1,0 +1,8 @@
+base elements 34  work elements 38  (comments removed, document order)
+  LOST ok 'schemaVersion: 1' x1
+  GAINED ok '  rules: []' x2
+  GAINED ok 'permissionMutationEnvelope:' x1
+  GAINED ok 'schemaVersion: 3' x1
+  GAINED ok 'teamHardEnvelope:' x1
+------------------------------------------------------------------------
+anomalies 0

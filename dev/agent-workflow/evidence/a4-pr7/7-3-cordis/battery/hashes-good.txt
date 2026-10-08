@@ -1,0 +1,2 @@
+6eaf46a9ddcfe427bd1345c1d4cb82931262b3de67858ec4eeadcef079ec89bc  cordis.patch.yml
+4d5cad6e758c6664c127c4bae2cf2e79717cd826adad50cc30e5be359a4ca3fe  packages/testkit/test/a4p7-blueprint-version-clean.test.ts

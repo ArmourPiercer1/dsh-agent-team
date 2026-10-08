@@ -214,6 +214,21 @@ function expectSingle(f: Fixture, want: SiteClass | 'none'): Classification {
  *     membership. Measured: the dirty set fell 7 files / 51 sites to 6 / 17, and
  *     every one of the 34 sites that left was this file's. Evidence:
  *     dev/agent-workflow/evidence/a4-pr7/7-3-fixtures/.
+ *   - `cordis.patch.yml` — the shipped composition manifest's embedded Team
+ *     design, promoted to v3 by the coordinator-authorized §7.3 prerequisite
+ *     lane (flip step 2 of 3). The row existed because the file was a live v1
+ *     emitter OUTSIDE every §7.4 lane ("raised to coordinator"); the promotion
+ *     is what that escalation commissioned: digit moved to v3 and the two
+ *     REQUIRED authority documents added at `rules: []` (never a permissive
+ *     filler), behaviour-preserving on today's accepted set [1, 2, 3] and the
+ *     only form the step-3 flip will keep. No control moved: f20 is a SYNTHETIC
+ *     fixture of this file's SHAPE (fixture('f20'), never the file), and the
+ *     scope leg pins `isScanScopePath('cordis.patch.yml') === true`, which stays
+ *     true for a CLEAN cordis.patch.yml — scope membership was never what the
+ *     row carried. Measured: the dirty set fell 6 files / 17 sites to 5 / 16,
+ *     the single leaving site is this file's L60, and all five non-gating
+ *     classes are byte-identical. Evidence:
+ *     dev/agent-workflow/evidence/a4-pr7/7-3-cordis/.
  */
 const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 1 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
@@ -221,7 +236,6 @@ const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/t12a-live-bridge.mjs', 'B-runtime-semantics-B STOP (measured 2026-10-08): this path is the wrapper\'s own packages/*/test by-path positive control (the leg "packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path"), so cleaning it is a coupled wrapper edit. COORDINATOR RULING 2026-10-08 (reviewer recommendation adopted): this path stays DIRTY BY DESIGN -- it is the only .mjs emitter in the scan class and its 38 importers make it the most-shared fixture in the runtime tree, so retargeting the pin would retire the sole witness of that class to accommodate a migration that is neutral for every consumer. Cited by leg title, never by line number: line numbers in a persistent row go stale on contact. The default document is LIVE (a probe digit no build runs reddens t12a-m2-persona, t12a-h1-nullable-mcp and t4a-capability-wiring); promoting it to v3 with both documents declared rules: [] keeps 5/5 measurable consumers green. Evidence + the retarget options: dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md'],
   ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — C-testkit STOPPED, file byte-identical: this is the legacy .md teammate-file format\'s OWN version axis, not a TeamBlueprint document (L380 is a NEGATIVE test of which legacy versions the adapter rejects); migrating would delete the adapter\'s acceptance proof. Awaiting the fence\'s dirty-class adjudication row — disposition recorded in dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 3 (legitimate non-Blueprint version axis pending adjudication; owner: fence owner + §7.3 emitter). Carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
-  ['cordis.patch.yml', 'SCOPE ADDITION (measured 2026-10-08: the root composition patch\'s blueprintSource block is a live v1 document emitter, cordis.patch.yml:58-62) — NO §7.4 lane row — raised to coordinator'],
 ])
 
 /**

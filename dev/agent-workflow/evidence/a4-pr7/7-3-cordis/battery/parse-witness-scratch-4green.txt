@@ -1,0 +1,15 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-cordis
+
+stdout | packages/domain/test/zz-a473-cordis-scratch.test.ts > a473 cordis.patch.yml promoted document > parses today under SUPPORTED [1,2,3] and carries v3 identity + zero envelopes
+SCRATCH-PARSE schemaVersion=3 blueprintId=my-team-bp-1 revision=1 contentHash=sha256:9ee498574d6651ab131a87b50fd435993fc7647252466da1608f7d542384152f
+SCRATCH-ENVELOPES pme={"rules":[]} the={"rules":[]}
+SCRATCH-FIELDS blueprintId,contentHash,leader,memberEnvelopes,members,metadata,permissionMutationEnvelope,policyStates,quotas,requirements,revision,schemaVersion,teamEnvelope,teamHardEnvelope
+
+ ✓ packages/domain/test/zz-a473-cordis-scratch.test.ts (4 tests) 11ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  09:50:20
+   Duration  285ms (transform 138ms, setup 0ms, import 195ms, tests 11ms, environment 0ms)
+

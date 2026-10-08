@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-cordis
+
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD 60b30bc0, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ ✓ packages/testkit/test/a4p75-composition-smoke-classification.test.ts (54 tests) 2404ms
+     ✓ requires by id every arm this repository actually reports  1256ms
+     ✓ never reports a passing gate over a step it did not run  406ms
+
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+   Start at  09:48:06
+   Duration  2.56s (transform 1.04s, setup 0ms, import 79ms, tests 2.40s, environment 0ms)
+
