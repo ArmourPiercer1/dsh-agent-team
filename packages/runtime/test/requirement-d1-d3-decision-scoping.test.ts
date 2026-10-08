@@ -309,11 +309,11 @@ const B1P_SOURCE = [
  * file, where plan §7.3's delete-or-retarget is decided — not silently here.
  * Emitted YAML bytes are unchanged.
  */
-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
 
 const V2_SOURCE = [
   '---',
-  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
   'blueprintId: d-v2',
   'revision: "1"',
   'leader:',
@@ -358,6 +358,13 @@ const V2_SOURCE = [
   '  members:',
   '    maxInstances: 2',
   '    maxConcurrent: 2',
+  // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
+  // zero `rules: []` -- the same honest zero the flat-requirement fixtures above
+  // already declare. No test in this file mutates permissions.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'metadata: {}',
   '---',
   '',

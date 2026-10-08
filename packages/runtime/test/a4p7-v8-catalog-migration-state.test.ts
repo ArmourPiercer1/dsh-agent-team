@@ -73,6 +73,7 @@ import { fileURLToPath } from 'url'
 
 import {
   BLUEPRINT_VERSION_REFUSAL_CODES,
+  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
   SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
 } from '../../domain/blueprint/src/index.js'
 import { createTeamDomain } from '../../storage/repositories/index.js'
@@ -156,12 +157,17 @@ class MemRegistry implements BlueprintRegistryPort {
 // module-level witnesses stamp them at mint time.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const V_RUNNABLE_V1 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
-const V_RUNNABLE_V3 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(3) ? 3 : V_RUNNABLE_V1
+const V_RUNNABLE = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
+const V_RUNNABLE_V3 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(3) ? 3 : V_RUNNABLE
 const V_UNDEFINED = 99
+/** §7.3 v3-only: the bridge is closed, so a RETIRED version is now a real thing
+ *  to stamp rather than something only a simulated index can produce. Derived
+ *  from the domain set exactly like `V_RUNNABLE` is — no remembered digit. */
+const V_RETIRED = RETIRED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
 
 /**
- * The file-owned witness body: the minimal CLOSED v1 document, byte-owned by
+ * The file-owned witness body: the minimal CLOSED document AT THE RUNNABLE
+ * VERSION (v3 since the §7.3 cutover; it was v1 when this file was written), byte-owned by
  * this file (7.4-B1 phase 1). The shared factory's base version is a claim of
  * the factory — the factory's own migration must not restamp this file's
  * witnesses — so nothing here flows through `testdata/fixtures`. The base
@@ -172,7 +178,7 @@ const V_UNDEFINED = 99
 function witnessBody(blueprintId: string, revision: string, persona: string): string {
   return [
     '---',
-    `schemaVersion: ${String(V_RUNNABLE_V1)}`,
+    `schemaVersion: ${String(V_RUNNABLE)}`,
     `blueprintId: ${blueprintId}`,
     `revision: "${revision}"`,
     'leader:',
@@ -182,6 +188,15 @@ function witnessBody(blueprintId: string, revision: string, persona: string): st
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    // §7.3 v3-only: this body is the RUNNABLE witness — `V_RUNNABLE` is read off
+    // `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0]`, which is now `3`, and a v3
+    // document that omits either authority document does not parse at all, so
+    // the whole file used to fail to collect. `rules: []` is honest here: these
+    // witnesses are LISTED and RESOLVED, never granted against.
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -195,7 +210,7 @@ function witnessBody(blueprintId: string, revision: string, persona: string): st
  * hand `worldC` a "retired" source that is actually runnable, and every leg
  * reading a state off it would then report on the wrong document. No version
  * digit is spelled out at a call site — every version the fixtures drive is
- * the CALLER'S number (`V_RUNNABLE_V1` / `V_UNDEFINED`, derived from the
+ * the CALLER'S number (`V_RUNNABLE` / `V_UNDEFINED`, derived from the
  * domain's own sets) minted onto the file-owned body above.
  */
 function withDeclaredVersion(source: string, version: number): string {
@@ -273,14 +288,14 @@ function cutoverIndex(
 
 /**
  * The world anchor: a CURRENTLY-RUNNABLE document this file mints at the
- * derived constant `V_RUNNABLE_V1` (the version this build runs, read off the
+ * derived constant `V_RUNNABLE` (the version this build runs, read off the
  * domain's own set — never the factory's era, 7.4-B1 phase 1). The root
  * strong-parses it, which is exactly what a source on a simulated future
  * version could not be.
  */
 const ANCHOR = withDeclaredVersion(
   witnessBody('a4p7.catalog.anchor', '1', 'Catalog anchor lead.'),
-  V_RUNNABLE_V1,
+  V_RUNNABLE,
 )
 const ROOT_SID = 'session-a4p7-catalog-root'
 const NOW = '2026-10-20T00:00:00.000Z'
@@ -484,10 +499,13 @@ function onlyState(rows: readonly Record<string, unknown>[], blueprintId: string
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WORLD R — nothing simulated: what the listing says AT THIS COMMIT.
-// A v1 and a v3 saved source are BOTH runnable while the bridge stands; a frozen
-// row on version 99 is runnable to nobody and owed no migration to anybody. That
-// third one is the whole ruling: under the deleted boolean it answered `false`,
-// the same answer as the two runnable documents beside it.
+// §7.3 v3-only: the bridge is gone, so BOTH saved sources here carry the one
+// runnable version (they used to be a v1 and a v3 pair, both runnable while the
+// bridge stood). A frozen row on version 99 is runnable to nobody and owed no
+// migration to anybody. That third one is the whole ruling: under the deleted
+// boolean it answered `false`, the same answer as the runnable documents beside
+// it. The migration-required arm is no longer reachable here — WORLD C drives it
+// on a genuinely retired version (see V_RETIRED).
 // (The V_* versions it drives are declared at the top of this file, next to the
 // witness body they are minted onto.)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -495,7 +513,7 @@ function onlyState(rows: readonly Record<string, unknown>[], blueprintId: string
 const worldR = await catalogWorld({
   name: 'r-real',
   saved: {
-    'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE_V1),
+    'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE),
     'runnable-b.yaml': sourceOnVersion('a4p7.catalog.runnableB', '2', V_RUNNABLE_V3),
   },
   rows: [rowOnVersion('a4p7.catalog.unknown', '7', V_UNDEFINED)],
@@ -513,7 +531,7 @@ const rowsRv1 = await worldR.list(1)
 const worldC = await catalogWorld({
   name: 'c-cutover',
   saved: {
-    'retired.yaml': sourceOnVersion('a4p7.catalog.retired', '4', V_RUNNABLE_V1),
+    'retired.yaml': sourceOnVersion('a4p7.catalog.retired', '4', V_RETIRED),
     'runnable.yaml': sourceOnVersion('a4p7.catalog.stillOk', '1', V_RUNNABLE_V3),
   },
   simulateSupported: [3],
@@ -540,7 +558,7 @@ const rowsF = await worldF.list(1)
 const worldN = await catalogWorld({
   name: 'n-no-authority-wired',
   saved: {
-    'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE_V1),
+    'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE),
     'runnable-b.yaml': sourceOnVersion('a4p7.catalog.runnableB', '2', V_RUNNABLE_V3),
   },
   withoutAuthorityWiring: true,
@@ -549,7 +567,7 @@ const rowsN = await worldN.list(8)
 
 const worldL = await catalogWorld({
   name: 'l-bogus-state',
-  saved: { 'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE_V1) },
+  saved: { 'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE) },
   bogusStateFor: 'a4p7.catalog.runnableA',
 })
 const rowsL = await worldL.list(8)
@@ -569,15 +587,25 @@ describe('a4p7 R1 A: the version state is derived from the domain sets, never fr
   })
 
   it('a retired version is migration-required exactly when the domain set says so', () => {
-    // The set is empty while the bridge runs, so this leg asserts the
-    // DERIVATION, not a snapshot: whatever is in the retired set must answer
-    // `migration-required` and nothing else may.
+    // §7.3 v3-only. While the bridge stood the retired set was EMPTY, so this leg
+    // could only ever produce two of the three states and its comment said so.
+    // Post-cutover the derivation is exercised for real: 1 and 2 fall out of the
+    // SUPPORTED set into the DERIVED RETIRED set and must answer
+    // `migration-required`, 3 answers `current`, and only a version this product
+    // never defined stays `unreadable`. Asserted as a derivation over both sets,
+    // never as a snapshot of either.
     for (const version of [1, 2, 3, 4, 99]) {
       const expected: BlueprintVersionState = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(version)
         ? 'current'
-        : 'unreadable'
+        : RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.includes(version)
+          ? 'migration-required'
+          : 'unreadable'
       expect(blueprintVersionStateOf(version)).toBe(expected)
     }
+    // The three arms must all be REACHED by that loop, or the derivation above is
+    // vacuous: a retired set that had quietly come back empty would otherwise
+    // leave this leg green while testing one arm fewer than it claims.
+    expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.length).toBeGreaterThan(0)
   })
 })
 
@@ -588,7 +616,7 @@ describe('a4p7 R1 B: the identity carrier is three-valued, and the boolean is go
       .listIdentities()
       .find((i) => i.blueprintId === 'a4p7.catalog.runnableA')
     expect(identity?.migrationState).toBe('current')
-    expect(identity?.schemaVersion).toBe(V_RUNNABLE_V1)
+    expect(identity?.schemaVersion).toBe(V_RUNNABLE)
   })
 
   it('a frozen row on a version nobody defined is UNREADABLE, not current', () => {
@@ -610,7 +638,7 @@ describe('a4p7 R1 B: the identity carrier is three-valued, and the boolean is go
       .listIdentities()
       .find((i) => i.blueprintId === 'a4p7.catalog.retired')
     expect(identity?.migrationState).toBe('migration-required')
-    expect(identity?.schemaVersion).toBe(V_RUNNABLE_V1)
+    expect(identity?.schemaVersion).toBe(V_RETIRED)
   })
 
   it('no listed identity carries the deleted boolean (one carrier, not two)', () => {
@@ -651,7 +679,7 @@ describe('a4p7 R1 C: catalog.list carries the state beside the revisions (real r
   it('runnable revisions are current, side by side with the unreadable one', () => {
     expect(onlyState(rowsR, 'a4p7.catalog.runnableA')).toEqual({
       revision: 1,
-      schemaVersion: V_RUNNABLE_V1,
+      schemaVersion: V_RUNNABLE,
       migrationState: 'current',
     })
     expect(onlyState(rowsR, 'a4p7.catalog.runnableB').migrationState).toBe('current')
@@ -660,7 +688,7 @@ describe('a4p7 R1 C: catalog.list carries the state beside the revisions (real r
   it('a retired and a runnable revision carry different states in one listing', () => {
     expect(onlyState(rowsC, 'a4p7.catalog.retired')).toEqual({
       revision: 4,
-      schemaVersion: V_RUNNABLE_V1,
+      schemaVersion: V_RETIRED,
       migrationState: 'migration-required',
     })
     expect(onlyState(rowsC, 'a4p7.catalog.stillOk').migrationState).toBe('current')
@@ -687,7 +715,7 @@ describe('a4p7 R1 C: catalog.list carries the state beside the revisions (real r
   it('the factory root derives its anchor state instead of omitting it', () => {
     const anchorState = onlyState(rowsF, 'a4p7.catalog.anchor')
     expect(anchorState.migrationState).toBe('current')
-    expect(anchorState.schemaVersion).toBe(V_RUNNABLE_V1)
+    expect(anchorState.schemaVersion).toBe(V_RUNNABLE)
   })
 
   it('a host that wires the catalog but NOT the authority gets a LOUD catalog', () => {

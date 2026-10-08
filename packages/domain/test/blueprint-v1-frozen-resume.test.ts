@@ -24,28 +24,37 @@ import {
   parseBlueprint,
   toHashableBlueprint,
 } from '../blueprint/src/index.js'
-import { expectCode } from './t2-helpers.js'
-import type { TeamBlueprint } from '../blueprint/src/index.js'
+// §7.3: the `TeamBlueprint` type import this file used is gone with the
+// migrated legs — an unused import is a NEW lint identity, and the identity
+// lint gates on new identities, so it goes rather than being baselined.
 
 /**
- * §7.4 carrier migration (pre-flip half): the subject of THIS suite is the
- * v1 document contract — "a v1 document created before PR-E resumes
- * byte-identically" is only true of a document that IS v1. Promoting these
- * fixtures to v3 would delete the proof, and invert-to-refusal is a post-
- * flip move (v1 is still SUPPORTED today: the bridge is [1,2,3]). So the
- * DOCUMENT stays v1 and the CARRIER moves: the digit lives at a typed code
- * position, and the YAML line interpolates from it byte-identically.
- * `TeamBlueprint['schemaVersion']` is exactly the type §7.3's cutover
- * narrows to `3` — at the flip this line becomes a COMPILE ERROR pointing
- * at this file, where the companion move is this suite's planned
- * delete-or-invert (plan §7.3), decided by the flip PR, not silently here.
+ * §7.3 v3-only: what "frozen" means now.
+ *
+ * This suite's subject has always been the v1 DOCUMENT contract, and the flip
+ * did not soften it — it moved the refusal earlier. §7.4 deliberately left the
+ * digit at 1 on a typed code position so the cutover would arrive here as a
+ * compile error naming this file rather than as a silent parse refusal; that
+ * compile error is this commit, and the companion move is the invert-to-refusal
+ * plan §7.3 called for.
+ *
+ * So `V1_SOURCE` below is no longer a fixture the product runs. It is FROZEN
+ * INPUT BYTES — a document some world still holds — and every leg is stated
+ * about those bytes: refused, refused deterministically, refused for the
+ * VERSION rather than for a field, and migratable. No leg asserts less than it
+ * did; the legs that asserted a v1 document PARSES described a claim that is
+ * simply no longer true of any document.
  */
-const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
+
+/** The retired stamp, as a plain number. It can no longer be typed as
+ *  `TeamBlueprint['schemaVersion']`: that type IS the accepted set, and a stamp
+ *  that cannot be typed is exactly what a retired version now is. */
+const RETIRED_V1_DOCUMENT_VERSION = 1
 
 /** A v1 document with a persona string + a flat capability requirement. */
 const V1_SOURCE: readonly string[] = [
   '---',
-  `schemaVersion: ${V1_DOCUMENT_VERSION}`,
+  `schemaVersion: ${RETIRED_V1_DOCUMENT_VERSION}`,
   'blueprintId: team.v1.frozen',
   'revision: "1"',
   'leader:',
@@ -64,32 +73,47 @@ const V1_SOURCE: readonly string[] = [
   '',
 ]
 
-describe('E.11 blueprint-v1-frozen-resume: the v1 schema is frozen', () => {
-  it('a v1 document (persona string + flat requirements) parses', () => {
-    const bp = parseBlueprint(V1_SOURCE.join('\n'))
-    expect(bp.schemaVersion).toBe(1)
-    expect(bp.leader.persona).toBe('Lead.')
-    expect(bp.members).toHaveLength(1)
-    expect(bp.members[0]?.persona).toBe('Worker.')
+describe('E.11 blueprint-v1-frozen-resume (§7.3): the v1 document is refused, deterministically, for its version — and it is migratable', () => {
+  it('a v1 document (persona string + flat requirements) is refused at the version gate', () => {
+    expect(() => parseBlueprint(V1_SOURCE.join('\n'))).toThrowError(
+      expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
+    )
   })
 
-  it('the v1 content hash is stable across parses (byte-identical resume)', () => {
-    const a = parseBlueprint(V1_SOURCE.join('\n'))
-    const b = parseBlueprint(V1_SOURCE.join('\n'))
-    expect(a.contentHash).toBe(b.contentHash)
-    expect(a.contentHash).toBe(deriveContentHash(toHashableBlueprint(a)))
+  // The old leg here asserted the v1 content hash is stable across parses, i.e.
+  // "a v1 document resumes byte-identically". Nothing resumes any more, so the
+  // leg states the property that replaced it: the REFUSAL is the stable,
+  // identity-preserving answer, and no half-built blueprint escapes to be
+  // hashed. A refusal that varied between parses would be the resume bug wearing
+  // a different coat.
+  it('the refusal is deterministic across parses and yields no partial blueprint to hash', () => {
+    // One explicit return type: the two branches otherwise union to a shape
+    // whose `err` is `{}`, and `err?.code` does not typecheck (tsc: TS2339).
+    const attempts = [0, 1].map(
+      (): { bp: unknown; err: { code?: string; message?: string } | undefined } => {
+      try {
+        return { bp: parseBlueprint(V1_SOURCE.join('\n')) as unknown, err: undefined }
+      } catch (error) {
+        return { bp: undefined, err: error as { code?: string; message?: string } }
+      }
+      },
+    )
+    for (const a of attempts) {
+      expect(a.bp, 'a refused v1 document must not produce a blueprint').toBeUndefined()
+      expect(a.err?.code).toBe('SCHEMA_VERSION_MISMATCH')
+    }
+    expect(attempts[0]?.err?.message).toBe(attempts[1]?.err?.message)
+    expect(String(attempts[0]?.err?.message)).toContain('[3]')
   })
 
-  it('the v1 projection carries no v2 key (the v2 structured-requirement surface is absent on v1)', () => {
-    const bp = parseBlueprint(V1_SOURCE.join('\n'))
-    const hashable = toHashableBlueprint(bp) as Record<string, unknown>
-    expect(Object.hasOwn(hashable, 'teamRequirements')).toBe(false)
-  })
-
-  it('a v2 `teamRequirements` field is still rejected on a v1 document (frozen closed field sets)', () => {
+  // The old leg read the v1 projection to show it carried no `teamRequirements`
+  // key. There is no v1 projection to read; the surface that survives is the
+  // closed field set, and it is now unreachable through a document at all —
+  // recorded here rather than left as a silent dead branch.
+  it('the frozen v1 field set is no longer REACHED: the same bytes carrying a v2 field refuse for the version, not the field', () => {
     const src = [
       '---',
-      `schemaVersion: ${V1_DOCUMENT_VERSION}`,
+      `schemaVersion: ${RETIRED_V1_DOCUMENT_VERSION}`,
       'blueprintId: team.v1.v2-field',
       'revision: "1"',
       'teamRequirements:',
@@ -107,6 +131,41 @@ describe('E.11 blueprint-v1-frozen-resume: the v1 schema is frozen', () => {
       '---',
       '',
     ].join('\n')
-    expectCode(() => parseBlueprint(src), 'MALFORMED_DTO')
+    let code: string | undefined
+    let details: unknown
+    try {
+      parseBlueprint(src)
+    } catch (error) {
+      const e = error as { code?: string; details?: unknown }
+      code = e.code
+      details = e.details
+    }
+    // Was `MALFORMED_DTO` naming the unknown field; now the version gate fires
+    // first, so the field set is never consulted. Stronger, and different.
+    expect(code).toBe('SCHEMA_VERSION_MISMATCH')
+    expect(JSON.stringify(details ?? {})).not.toContain('teamRequirements')
+  })
+
+  // The counter-control that keeps the three legs above honest: the bytes are
+  // refused for the STAMP, not for their content. Promote the same document to
+  // the one accepted version, add the two authority documents v3 requires, and
+  // it parses and hashes normally. Without this leg the suite would pass even if
+  // the cutover had broken v1 CONTENT, which is not what it did.
+  it('the same content stamped v3 with the required authority documents parses, hashes, and binds to its projection', () => {
+    const promoted = V1_SOURCE.join('\n')
+      .replace('schemaVersion: 1', 'schemaVersion: 3')
+      .replace('metadata: {}', ['permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', 'metadata: {}'].join('\n'))
+    expect(promoted, 'the promotion must actually have applied').toContain('schemaVersion: 3')
+    expect(promoted).toContain('permissionMutationEnvelope:')
+    const bp = parseBlueprint(promoted)
+    expect(bp.schemaVersion).toBe(3)
+    expect(bp.leader.persona).toBe('Lead.')
+    expect(bp.members).toHaveLength(1)
+    expect(bp.members[0]?.persona).toBe('Worker.')
+    expect(bp.teamRequirements).toBeUndefined()
+    const hashable = toHashableBlueprint(bp) as Record<string, unknown>
+    expect(Object.hasOwn(hashable, 'teamRequirements')).toBe(false)
+    expect(bp.contentHash).toBe(deriveContentHash(hashable))
+    expect(bp.contentHash).toBe(parseBlueprint(promoted).contentHash)
   })
 })

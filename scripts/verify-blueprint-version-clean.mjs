@@ -26,8 +26,13 @@
  *   packages/<pkg>/test/ · any `testdata/` directory under packages/ ·
  *   tests/mock/scripts/ · cordis.patch.yml. The last two are MEASURED
  *   additions recorded by the 7.4-scope task:
- *   tests/mock/scripts/boot.mjs:248 and cordis.patch.yml:60
+ *   tests/mock/scripts/boot.mjs:248 and cordis.patch.yml:68
  *   both emit YAML Blueprint documents and sat outside every prior scan.
+ *   (The cordis digit moved from L60 to L68 when §7.3 step 2 promoted the
+ *   shipped composition's embedded Team design to v3 — that promotion added
+ *   the envelope comment block above it. Re-cited from
+ *   `grep -n schemaVersion cordis.patch.yml` at the §7.3 flip, not copied
+ *   from the earlier record.)
  *   Excluded with the reason recorded: dev/agent-workflow/ (orchestration
  *   records are prose), any `dist/` (build output), and non-code extensions
  *   (prose documents — the retracted 217-inventory counted 8 Markdown files

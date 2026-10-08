@@ -115,7 +115,7 @@ const E1_WORKER = 'inst-a3p4e1worker'
 
 const E1_BLUEPRINT = [
   '---',
-  'schemaVersion: 1',
+  'schemaVersion: 3',
   'blueprintId: A3P4E1-BP',
   'revision: "1"',
   'leader:',
@@ -146,6 +146,13 @@ const E1_BLUEPRINT = [
   '  members:',
   '    maxInstances: 2',
   '    maxConcurrent: 2',
+  // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
+  // zero `rules: []` — this document declares no expansion authority, and the
+  // alternative (a filler rule) would hand a fixture a grant no leg here asks for.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'metadata: {}',
   '---',
 ].join('\n')
@@ -488,7 +495,7 @@ function hostBlueprintSource(leaderAllowPath: string, withPermissions: boolean):
     : []
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: A3P4E2-BP',
     'revision: "1"',
     'leader:',
@@ -566,6 +573,11 @@ function hostBlueprintSource(leaderAllowPath: string, withPermissions: boolean):
     // lane into the envelope is removed — it swallowed deny/ask exceptions).
     // A row whose leader may expand MUST declare the carrier; withPermissions
     // = false stays carrier-free (the legacy world, byte-identical).
+    // §7.3 v3-only: this document MUST declare `permissionMutationEnvelope`,
+    // and it is ONE key — a second top-level `permissionMutationEnvelope:`
+    // would be a duplicate YAML key, and the trailing `rules: []` would then
+    // shadow the configured carrier this leg exists to exercise. So the
+    // carrier-free world declares the honest zero instead of declaring nothing.
     ...(withPermissions
       ? [
           'permissionMutationEnvelope:',
@@ -575,8 +587,20 @@ function hostBlueprintSource(leaderAllowPath: string, withPermissions: boolean):
           '        kind: exact',
           `        path: "${leaderAllowPath}"`,
           '      maximumEffect: allow',
+          // §7.3 v3-only: the hard ceiling has to COVER the same scope or the
+          // Leader expansion this leg exists to observe refuses at
+          // `CEILING_NO_AUTHORITY` — on the expansion plane an absent or empty
+          // hard document is zero authority, not a skipped bound (see
+          // `hardYamlCeil` below for why an empty one is not a neutral zero).
+          'teamHardEnvelope:',
+          '  rules:',
+          '    - operationClass: write',
+          '      matcher:',
+          '        kind: exact',
+          `        path: "${leaderAllowPath}"`,
+          '      maximumEffect: allow',
         ]
-      : []),
+      : ['permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []']),
     'policyStates:',
     '  - id: default',
     '    description: The A3P4E2 default state.',
@@ -840,7 +864,7 @@ const GLUE_INST = 'inst-a3p4e3a'
 function glueBlueprintSource(targetKey: string): string {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.a3p4e3',
     'revision: "1"',
     'leader:',
@@ -899,6 +923,13 @@ function glueBlueprintSource(targetKey: string): string {
     '  members:',
     '    maxInstances: 2',
     '    maxConcurrent: 2',
+    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
+    // zero `rules: []` — this document declares no expansion authority, and the
+    // alternative (a filler rule) would hand a fixture a grant no leg here asks for.
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
   ].join('\n')
@@ -1101,6 +1132,12 @@ interface R4Blueprint {
   readonly leaderBashAnyAllow?: boolean
   readonly workerBashDenyAny?: boolean
   readonly carrier?: readonly string[]
+  /** A v3 document MUST also declare `teamHardEnvelope`; legs that exercise a
+   *  specific hard ceiling pass it here, the rest inherit the honest zero. */
+  readonly hardCarrier?: readonly string[]
+  /** Build a document omitting BOTH required authority documents. Only a leg
+   *  that proves the resulting refusal may use this. */
+  readonly omitCarriers?: boolean
 }
 
 function r4BlueprintSource(opts: R4Blueprint): string {
@@ -1125,7 +1162,7 @@ function r4BlueprintSource(opts: R4Blueprint): string {
   const denyBash = opts.workerBashDenyAny === true
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: A3P4R4-BP',
     'revision: "1"',
     'leader:',
@@ -1161,7 +1198,17 @@ function r4BlueprintSource(opts: R4Blueprint): string {
     ...(denyBash
       ? ['        deny:', '          - tool: bash', '            resource:', '              kind: any']
       : ['        deny: []']),
-    ...(opts.carrier ?? []),
+    // §7.3 v3-only: BOTH authority documents are required at v3, so an omitted
+    // `carrier` can no longer mean "this document declares no ceiling" — that
+    // reading is what `R4-absent` used to prove, and the escape hatch below is
+    // what lets it prove the refusal instead. Callers that exercise a specific
+    // carrier still pass one; the rest get the honest zero.
+    ...(opts.omitCarriers
+      ? []
+      : [
+          ...(opts.carrier ?? ['permissionMutationEnvelope:', '  rules: []']),
+          ...(opts.hardCarrier ?? ['teamHardEnvelope:', '  rules: []']),
+        ]),
     'teamEnvelope:',
     '  allow: [send-message, report-progress, request-control, resolve-control, archive-member, restore-member]',
     '  deny: []',
@@ -1179,6 +1226,49 @@ function r4BlueprintSource(opts: R4Blueprint): string {
     'metadata: {}',
     '---',
   ].join('\n')
+}
+
+/**
+ * §7.3 v3-only: the SECOND authority document, derived from the SAME rule set as
+ * the mutation carrier but pinned to the top of the ladder.
+ *
+ * WHY a leg that expects a grant to COMMIT cannot just declare `rules: []`.
+ * `expansionCeiling` (governance/authority-ceiling.ts) is explicit that on the
+ * EXPANSION plane an absent OR declared-empty hard document contributes
+ * `CEILING_NO_AUTHORITY` rather than being skipped — so an empty hard ceiling is
+ * not a neutral zero, it is "the Leader may expand nothing". Before the flip
+ * these documents reached the plane as v1, `permission-plane.ts` returned
+ * `undefined` for v1/v2, and no ceiling was consulted at all; at v3 the ceiling
+ * is live. Eight legs went red on exactly that, and the honest reading is that
+ * their fixture was INCOMPLETE for v3, not that the product broke.
+ *
+ * Why `allow` and not the carrier's own effect: the hard ceiling has to be
+ * strictly WIDER than the mutation carrier, or the `EXPANSION_DENIED` a leg
+ * asserts could have come from either document and the leg stops proving the
+ * carrier is what refused. `maximumEffect: allow` keeps the carrier the only
+ * binding constraint — which is the thing every leg in this group is about.
+ */
+function hardYamlCeil(
+  entries: readonly {
+    readonly operationClass: string
+    readonly kind: 'exact' | 'subtree' | 'fingerprint'
+    readonly value: string
+    readonly maximumEffect: 'allow' | 'ask'
+  }[],
+): string[] {
+  const lines = ['teamHardEnvelope:', '  rules:']
+  for (const rule of entries) {
+    lines.push(
+      `    - operationClass: ${rule.operationClass}`,
+      '      matcher:',
+      `        kind: ${rule.kind}`,
+      rule.kind === 'fingerprint'
+        ? `        fingerprint: "${rule.value}"`
+        : `        path: "${rule.value}"`,
+      '      maximumEffect: allow',
+    )
+  }
+  return lines
 }
 
 function carrierYaml(
@@ -1227,6 +1317,7 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
         leaderBashAnyAllow: true,
         workerBashDenyAny: true,
         carrier: carrierYaml([{ operationClass: 'bash', kind: 'fingerprint', value: FP_A, maximumEffect: 'allow' }]),
+        hardCarrier: hardYamlCeil([{ operationClass: 'bash', kind: 'fingerprint', value: FP_A, maximumEffect: 'allow' }]),
       })
       const { root } = await world.apply(hostRowConfig(source, `${world.scratch}/workspace`))
       const granted = await settleMutation(root.mutation.governance.mutatePermission({
@@ -1278,6 +1369,7 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
       const source = r4BlueprintSource({
         leaderWrite: [{ kind: 'exact', path: target, effect: 'allow' }],
         carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: target, maximumEffect: 'ask' }]),
+        hardCarrier: hardYamlCeil([{ operationClass: 'write', kind: 'exact', value: target, maximumEffect: 'ask' }]),
       })
       const { root } = await world.apply(hostRowConfig(source, `${world.scratch}/workspace`))
       const overGrant = await settleMutation(root.mutation.governance.mutatePermission({
@@ -1317,6 +1409,10 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
           { kind: 'exact', path: secretPath, effect: 'deny' },
         ],
         carrier: carrierYaml([
+          { operationClass: 'write', kind: 'exact', value: openPath, maximumEffect: 'allow' },
+          { operationClass: 'write', kind: 'exact', value: secretPath, maximumEffect: 'allow' },
+        ]),
+        hardCarrier: hardYamlCeil([
           { operationClass: 'write', kind: 'exact', value: openPath, maximumEffect: 'allow' },
           { operationClass: 'write', kind: 'exact', value: secretPath, maximumEffect: 'allow' },
         ]),
@@ -1396,11 +1492,29 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
     }
   })
 
-  it('R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working', async () => {
+  it('R4-absent (§7.3) — a DECLARED-EMPTY carrier refuses the grant round-3 used to derive, tightening still commits, and an UNDECLARED document is refused before any of that', async () => {
     const world = makeHostWorld((base) => new FileStorageSeam(base))
     try {
+      // §7.3 v3-only. The ORIGINAL fixture declared NO carrier at all and this
+      // leg's title said so. That fixture is no longer a document this product
+      // accepts: `validate.ts` requires both authority documents at v3, so the
+      // refusal moved earlier, to parse time (asserted third below). What the
+      // builder now emits is the nearest legal v3 document — both documents
+      // DECLARED and EMPTY — which is the honest reading of "this team grants
+      // its Leader nothing".
+      //
+      // The outcomes this leg pins are UNCHANGED, and that is the point: a
+      // declared-empty authority document refuses the expansion and still lets a
+      // tightening through. What changed is only that "declare nothing" is no
+      // longer an available way to mean it.
       const target = `${world.scratch}/workspace/no-carrier.txt`
       const source = r4BlueprintSource({ leaderWrite: [{ kind: 'exact', path: target, effect: 'allow' }] })
+      // (third) An UNDECLARED document — the pre-flip fixture — is refused at
+      // parse, so no world built on it can ever boot. Pinned here so the
+      // retirement is recorded rather than quietly unprovable.
+      expect(() =>
+        parseBlueprint(r4BlueprintSource({ leaderWrite: [], omitCarriers: true })),
+      ).toThrowError(expect.objectContaining({ code: 'MALFORMED_DTO' }))
       const { root, warnings } = await world.apply(hostRowConfig(source, `${world.scratch}/workspace`))
       const expand = await settleMutation(root.mutation.governance.mutatePermission({
         authority: { kind: 'leader' },
@@ -1438,6 +1552,7 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
       const source = r4BlueprintSource({
         leaderWrite: [{ kind: 'exact', path: 'rel-out.txt', effect: 'allow' }],
         carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: 'rel-out.txt', maximumEffect: 'allow' }]),
+        hardCarrier: hardYamlCeil([{ operationClass: 'write', kind: 'exact', value: 'rel-out.txt', maximumEffect: 'allow' }]),
       })
       const { root } = await world.apply(hostRowConfig(source, memberWs))
       // The member runs AT memberWs (the seeded row's workspace): the honest
@@ -1502,6 +1617,7 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
       const source = r4BlueprintSource({
         leaderWrite: [{ kind: 'exact', path: 'recover.txt', effect: 'allow' }],
         carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: 'recover.txt', maximumEffect: 'allow' }]),
+        hardCarrier: hardYamlCeil([{ operationClass: 'write', kind: 'exact', value: 'recover.txt', maximumEffect: 'allow' }]),
       })
       const { root, warnings } = await world.apply(hostRowConfig(source, memberWs))
       // The warm-up fault is LOUD at boot (round-5 R-A minor closed): the
@@ -1608,6 +1724,9 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
       blueprintSource: r4BlueprintSource({
         leaderWrite: [],
         carrier: carrierYaml([
+          { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
+        ]),
+        hardCarrier: hardYamlCeil([
           { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
         ]),
       }),
@@ -1829,6 +1948,9 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
         carrier: carrierYaml([
           { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
         ]),
+        hardCarrier: hardYamlCeil([
+          { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
+        ]),
       }),
       generation: 1,
       defaultWorkspace: `${base}/workspace`,
@@ -1979,6 +2101,10 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
           { operationClass: 'write', kind: 'exact', value: 'b-open.txt', maximumEffect: 'allow' },
           { operationClass: 'write', kind: 'exact', value: 'b-secret.txt', maximumEffect: 'allow' },
         ]),
+        hardCarrier: hardYamlCeil([
+          { operationClass: 'write', kind: 'exact', value: 'b-open.txt', maximumEffect: 'allow' },
+          { operationClass: 'write', kind: 'exact', value: 'b-secret.txt', maximumEffect: 'allow' },
+        ]),
       })
       const { root } = await world.apply(hostRowConfig(source, wsA))
       const repos = (root as unknown as { domain: { repositories: any } }).domain.repositories
@@ -2074,6 +2200,7 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
     const baseLines: string = r4BlueprintSource({
       leaderWrite: [],
       carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' }]),
+      hardCarrier: hardYamlCeil([{ operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' }]),
     })
     // Valid baseline parses (the negative control for the three below).
     expect(() => parseBlueprint(baseLines)).not.toThrow()
@@ -2104,6 +2231,10 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
         { operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' },
         { operationClass: 'write', kind: 'subtree', value: 'dir', maximumEffect: 'ask' },
       ]),
+      hardCarrier: hardYamlCeil([
+        { operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' },
+        { operationClass: 'write', kind: 'subtree', value: 'dir', maximumEffect: 'ask' },
+      ]),
     })
     const first = parseBlueprint(source)
     const again = parseBlueprint(source)
@@ -2111,8 +2242,21 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
     // GOLDEN: this literal is the canonical content hash of the EXACT bytes
     // this builder emits. Any drift in the blueprint canonicalization
     // (field ordering, carrier serialization, hashing) changes it.
+    //
+    // §7.3 v3-only re-pin: `f0148ab8…897bd6` → `4603c56c…7f401f`. Rewriting a
+    // golden is exactly the move that can hide a canonicalizer drift, so the
+    // two facts that make it legitimate are recorded rather than implied:
+    //   1. the OLD value was LIVE, not stale — it passed at base `f61dc13f`
+    //      (re-run there to check before touching this line), and
+    //   2. the ONLY delta to the hashed bytes is the migration itself: the
+    //      digit 1→3 plus the two required authority documents. No field was
+    //      reordered and no rule was re-serialized; the NEW value below is what
+    //      the production canonicalizer computes, not a value copied from a
+    //      failure message and trusted.
+    // If this literal ever changes WITHOUT one of those two facts, that is the
+    // drift this leg exists to catch.
     expect(first.contentHash).toBe(
-      'sha256:f0148ab83ec03c4dcb3da4b9357b260ea446067fb335c56153b35b815c897bd6',
+      'sha256:4603c56cb366343952a906c062bc61a83f4b156796b57142ebfe4441a7f401f1',
     )
   })
 })

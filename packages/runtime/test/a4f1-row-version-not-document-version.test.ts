@@ -65,6 +65,8 @@ import { fileURLToPath } from 'url'
 
 import {
   BLUEPRINT_VERSION_REFUSAL_CODES,
+  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
+  SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
   declaredBlueprintSchemaVersion,
   parseBlueprint,
   toBlueprintSnapshotRef,
@@ -132,22 +134,34 @@ afterAll(() => {
  * declaredV2Source), not a shared source of truth — the anti-vacuity guard
  * below re-measures the divergence on every other row.
  */
-const WITNESS_V1 = 1
+/** §7.3 v3-only: the version this build RUNS, read off the domain's own set.
+ *  It used to be 1, which is why this constant was called `WITNESS_V1`; the
+ *  witness base body is now a document the product actually parses, and the
+ *  retired stamps below are what a listing has to cope with. */
+const WITNESS_RUNNABLE = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 3
+/** A version this product DEFINED and retired. Derived, never remembered. */
+const WITNESS_RETIRED = RETIRED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
 const WITNESS_V2 = 2
 const WITNESS_V3 = 3
 
 /**
- * A v1 document — the version the acceptance world's frozen rows carry inside.
- * This file owns the bytes (7.4-B1 phase 1): an era witness must not be minted
- * from a factory whose base version is a claim about the factory's era. The
- * shape is the minimal CLOSED v1 document — every field belongs to the v1
- * closed set, so it strong-parses while the bridge runs v1, exactly what the
- * rows and anchors below need.
+ * The witness body: the minimal CLOSED document **at the version this build
+ * runs**. This file owns the bytes (7.4-B1 phase 1): an era witness must not be
+ * minted from a factory whose base version is a claim about the factory's era.
+ *
+ * §7.3 v3-only renamed this from `v1Source` and moved its stamp onto the derived
+ * runnable version, for one hard reason: `ANCHOR` and `FREEZE_SOURCE` below are
+ * STRONG-PARSED (`parseBlueprint`, and the authority's `bootstrapSource`), and a
+ * v1 body stopped being parseable at the cutover — the file used to die at
+ * module scope before a single leg registered. The retired stamps this file
+ * still needs (the listing has to cope with a source it will not run) are now
+ * applied ON PURPOSE by `withDeclaredVersion`, which is what that helper was
+ * always for.
  */
-function v1Source(blueprintId: string, revision: string, persona = 'Lead.'): string {
+function witnessSource(blueprintId: string, revision: string, persona = 'Lead.'): string {
   return [
     '---',
-    `schemaVersion: ${String(WITNESS_V1)}`,
+    `schemaVersion: ${String(WITNESS_RUNNABLE)}`,
     `blueprintId: ${blueprintId}`,
     `revision: "${revision}"`,
     'leader:',
@@ -157,6 +171,12 @@ function v1Source(blueprintId: string, revision: string, persona = 'Lead.'): str
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    // §7.3 v3-only: both authority documents, required at v3, at the honest zero.
+    // The witnesses are listed and frozen, never granted against.
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -189,7 +209,7 @@ function withDeclaredVersion(source: string, version: number): string {
  * v3 document under a row stamped `2`.
  */
 function declaredV3Source(blueprintId: string, revision: string): string {
-  return withDeclaredVersion(v1Source(blueprintId, revision, 'Three.'), WITNESS_V3)
+  return withDeclaredVersion(witnessSource(blueprintId, revision, 'Three.'), WITNESS_V3)
 }
 
 /**
@@ -199,7 +219,7 @@ function declaredV3Source(blueprintId: string, revision: string): string {
  * that is what its frontmatter says.
  */
 function declaredV2Source(blueprintId: string, revision: string): string {
-  return withDeclaredVersion(v1Source(blueprintId, revision, 'Two.'), WITNESS_V2)
+  return withDeclaredVersion(witnessSource(blueprintId, revision, 'Two.'), WITNESS_V2)
 }
 
 /** A stored source that is not a readable document at all (a corrupt row). */
@@ -274,9 +294,12 @@ class StorageShapedRegistry implements BlueprintRegistryPort {
 // ever answer one number for all three.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const ANCHOR = v1Source('a4f1.anchor', '1', 'Anchor lead.')
+const ANCHOR = witnessSource('a4f1.anchor', '1', 'Anchor lead.')
 const ROW_V3 = frozenRow('a4f1.frozen-v3', '1', declaredV3Source('a4f1.frozen-v3', '1'))
-const ROW_V1 = frozenRow('a4f1.frozen-v1', '2', v1Source('a4f1.frozen-v1', '2', 'One lead.'))
+// §7.3: explicitly restamped to a RETIRED version. The base body can no longer
+// carry it (a retired body is not parseable, and this file's anchor is), so the
+// retired stamp is applied where it is the POINT of the fixture.
+const ROW_V1 = frozenRow('a4f1.frozen-v1', '2', withDeclaredVersion(witnessSource('a4f1.frozen-v1', '2', 'One lead.'), WITNESS_RETIRED))
 const ROW_CORRUPT = frozenRow('a4f1.frozen-corrupt', '1', UNREADABLE_SOURCE)
 const ROW_V2 = frozenRow('a4f1.frozen-plain', '1', declaredV2Source('a4f1.frozen-plain', '1'))
 
@@ -546,7 +569,7 @@ describe('a4f1 B: the wire payload reports the document version, and unknown whe
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const freezeDir = makeDir('c-freeze')
-const FREEZE_SOURCE = v1Source('a4f1.freeze', '1', 'Freeze lead.')
+const FREEZE_SOURCE = witnessSource('a4f1.freeze', '1', 'Freeze lead.')
 writeSource(freezeDir, 'to-freeze.yaml', FREEZE_SOURCE)
 const freezeRegistry = new StorageShapedRegistry()
 const freezeAuthority = createBlueprintAuthority({
@@ -570,7 +593,7 @@ describe('a4f1 C: crossing the freeze boundary does not change the reported vers
     // that is not a document version.
     expect(frozenByFreeze).not.toBe(undefined)
     expect(frozenByFreeze?.schemaVersion).toBe(TEAM_DOMAIN_SCHEMA_VERSION)
-    expect(declaredBlueprintSchemaVersion(frozenByFreeze?.source ?? '')).toBe(1)
+    expect(declaredBlueprintSchemaVersion(frozenByFreeze?.source ?? '')).toBe(WITNESS_RUNNABLE)
     expect(frozenByFreeze?.schemaVersion).not.toBe(declaredBlueprintSchemaVersion(FREEZE_SOURCE))
   })
 
@@ -579,7 +602,7 @@ describe('a4f1 C: crossing the freeze boundary does not change the reported vers
     // 2 once `team.create` froze it, because the registry row SHADOWS the saved
     // source (registry-wins) and the row arm answered from its stamp. One document,
     // one version, across the boundary.
-    expect(versionBeforeFreeze).toBe(1)
+    expect(versionBeforeFreeze).toBe(WITNESS_RUNNABLE)
     expect(versionAfterFreeze).toBe(versionBeforeFreeze)
     expect(versionAfterFreeze).not.toBe(TEAM_DOMAIN_SCHEMA_VERSION)
   })

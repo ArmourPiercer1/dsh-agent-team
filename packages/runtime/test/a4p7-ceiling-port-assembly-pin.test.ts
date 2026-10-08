@@ -24,7 +24,8 @@
  * uses — and drives an authority-widening mutation through it.
  *
  * ---------------------------------------------------------------------------
- * THE MEASUREMENT (two worlds, one difference)
+ * THE MEASUREMENT (one drive, four worlds — A/B/D through the host entry, C
+ * root-direct; each pair differs in exactly one collaborator)
  * ---------------------------------------------------------------------------
  * Both worlds boot through the real host entry with a v3 blueprint whose
  * `permissionMutationEnvelope` (the Leader's carrier) FULLY COVERS the claimed
@@ -56,6 +57,26 @@
  * Leg 4 (labelled weak, kept as a census witness, not as the instrument): the
  * production tree contains exactly ONE producer of the reader. It is a
  * source-text leg; leg 1 is what makes the wiring semantical.
+ *
+ * Leg 5 is the ATTRIBUTION leg (added post-§7.3 on the coordinator's request):
+ * a fourth world — world B stripped of exactly the `fs` public-service double,
+ * COVERING ceiling intact — measures whether zero-authority-by-absent-fs can
+ * be told from zero-authority-by-ceiling. Measured answer: yes, at identity
+ * level (fs-less dies at the carrier law as a typed EXPANSION_DENIED throw;
+ * the ceiling's zero is the durable proposal shape) — the leg pins the
+ * separation and names the drift that would erase it.
+ *
+ * ---------------------------------------------------------------------------
+ * STATUS after the §7.3 version flip landed (merged master 8ab22407)
+ * ---------------------------------------------------------------------------
+ * All six legs re-run green on the merged tree; the flip touched NONE of
+ * host.ts / root.ts / permission-plane.ts / governance/service.ts (empty
+ * diff), so the port's three root.ts consumers are byte-identical to the
+ * state this file was written against. §7.3 closed the OTHER fail-open way —
+ * v1/v2 documents now refuse at the parser, so the reader's version-abstention
+ * branch is unreachable — and leg 3 measures that the PORT-ABSENT way, which
+ * runs on v3 documents, survived the narrowing intact: the fail-open lever at
+ * the root seam still exists post-flip.
  *
  * @module @dsh-agent-team/runtime/test/a4p7-ceiling-port-assembly-pin
  */
@@ -356,6 +377,10 @@ interface Measured {
   readonly openVerdict: Verdict
   /** Verdict of the SAME rise on the root-direct lane WITHOUT the port. */
   readonly rootDirectVerdict: Verdict
+  /** Verdict of the SAME rise in the CEILING-OPEN shipped world with the `fs`
+   *  public service ABSENT from the provided bundle (world D): the ceiling
+   *  would allow, the canonicalization partner is missing. */
+  readonly noFsVerdict: Verdict
 }
 
 const measured: Measured = await (async () => {
@@ -390,7 +415,25 @@ const measured: Measured = await (async () => {
   // No host entry involvement at all: this is the hazard, isolated.
   const rootDirectVerdict = await settleRootDirectRise()
 
-  return { emptyVerdict, openVerdict, rootDirectVerdict }
+  // World D — world B stripped of ONE collaborator: the `fs` public service.
+  // Same shipped host entry, same COVERING hard ceiling (the world where the
+  // drive COMMITS), only the canonicalization partner absent from the bundle.
+  // If a rise can die here too, its death must name a DIFFERENT law than the
+  // ceiling's — else "no authority" carries no attribution (a4-76 PIN-5).
+  const worldD = await makePinWorld(`${SCRATCH_BASE}-nofs`)
+  let noFsVerdict: Measured['noFsVerdict']
+  try {
+    const targetD = `${worldD.scratch}/workspace/ledger-out.tsv`
+    delete (worldD.provided as Record<string, unknown>).fs
+    const rootD = await worldD.apply(pinBlueprintSource(targetD, HARD_OPEN_YAML(targetD)))
+    noFsVerdict = await settleMutation(
+      rootD.mutation.governance.mutatePermission(riseDrive('mut-a476-pin-nofs', targetD)),
+    )
+  } finally {
+    await worldD.dispose()
+  }
+
+  return { emptyVerdict, openVerdict, rootDirectVerdict, noFsVerdict }
 })()
 
 /** Build the permission-lane world through the production root factory with
@@ -518,6 +561,37 @@ describe('a4-76 — the shipped composition consults the authority ceiling; the 
         `(verdict: ${JSON.stringify(measured.rootDirectVerdict)}) — if this is the fail-closed ruling ` +
         `landing, this leg must be RETITLED to the new law, not deleted`,
     ).toBe(true)
+  })
+
+  it('PIN-5 attribution: zero-authority-by-absent-fs and zero-authority-by-ceiling are TOLD APART at the verdict — the absent `fs` public service zeroes authority through the CARRIER law (typed EXPANSION_DENIED throw), never through the ceiling\'s proposal shape (world D = world B minus exactly the fs double, same COVERING ceiling that commits in PIN-2)', () => {
+    // The disclosure this leg repays: the E2-pattern world doubles hide that
+    // the permission fact readers canonicalize through the `fs` PUBLIC SERVICE;
+    // without it every canonicalized fact abstains and the envelope reads as
+    // UNKNOWN — a collaborator-absence that FAILS CLOSED, but by the same
+    // "gate satisfied by an absent thing" shape as the missing ceiling port.
+    // Measured (raw pin-5-POSTFLIP-GREEN.log): world D does NOT commit — but
+    // its refusal is NOT ceiling-shaped:
+    //   world A (ceiling zero, fs present): {changed:false, reason:
+    //     'mutation-proposal-pending', requiredAuthority:'leader', approvalCaseId}
+    //   world D (ceiling OPEN, fs absent):  {changed:false, code:
+    //     'PERMISSION_ENVELOPE_EXPANSION_DENIED', problem expansion-region-uncovered}
+    // so the two zeros are distinguishable at identity level TODAY. What this
+    // leg does NOT claim: that the distinction is structural. It holds because
+    // Alpha.3's coverage law consults the same abstaining envelope reader and
+    // runs BEFORE the ceiling gate — if envelope reading ever detaches from fs
+    // canonicalization, world D's verdict would move toward the ceiling's
+    // shape, and a fs-less root-direct world would commit with nobody
+    // consulted. That drift is the hazard; this leg is the tripwire.
+    const d = measured.noFsVerdict
+    expect(d.changed, `fs-less world must NOT commit: ${JSON.stringify(d)}`).toBe(false)
+    expect(String(d.code)).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+    expect(String(d.reason)).toContain('expansion-region-uncovered')
+    expect(d.reason).not.toBe('mutation-proposal-pending')
+    expect(d.approvalCaseId).toBeUndefined()
+    expect(d.requiredAuthority).toBeUndefined()
+    // …and the ceiling's own zero, from world A, keeps its OWN signature.
+    expect(measured.emptyVerdict.reason).toBe('mutation-proposal-pending')
+    expect(measured.emptyVerdict.code ?? '').not.toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
   })
 
   it('PIN-4 (WEAK, labelled census): the production tree contains exactly one producer of the ceiling reader', () => {

@@ -46,6 +46,7 @@ import { describe, expect, it } from 'vitest'
 import {
   BLUEPRINT_TOP_LEVEL_FIELDS,
   BLUEPRINT_TOP_LEVEL_FIELDS_V2,
+  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
   SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
   deriveContentHash,
   parseBlueprint,
@@ -257,18 +258,26 @@ const v3HardVariant = attempt([
 ])
 
 // ---------------------------------------------------------------------------
-// GOLDEN literals — measured on the PRE-v3 tree (HEAD 3c310342, before any
-// lane-A source change), never re-derived here.
+// GOLDEN literals — RETIRED with the §7.3 flip (see the retirement note in
+// the suite below). Kept as the A2-11 historical record: both measured on
+// the PRE-v3 tree (HEAD 3c310342, before any lane-A source change), never
+// re-derived here. Post-flip nothing asserts them — the honest state,
+// because v1/v2 documents no longer parse and no content hash of theirs is
+// observable.
+//   v1: sha256:d25ea1cfb50079083fb0dbc0c6dc39fbc8d7f735aa1e5ae2226b8d054df972bc
+//   v2: sha256:d6368916c88577e290fe0a929a48415d9f70d8f512db0c7895f7a6b12ead92d8
 // ---------------------------------------------------------------------------
 
-/** A v1 document's content hash, frozen since before Alpha.4 exists. */
-const V1_GOLDEN_HASH = 'sha256:d25ea1cfb50079083fb0dbc0c6dc39fbc8d7f735aa1e5ae2226b8d054df972bc'
-/** A v2 document's content hash, frozen since plan §E.2. */
-const V2_GOLDEN_HASH = 'sha256:d6368916c88577e290fe0a929a48415d9f70d8f512db0c7895f7a6b12ead92d8'
-
 describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched)', () => {
-  it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge)', () => {
-    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, 3])
+  it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is [3]: the temporary bridge is closed (§7.3, ADR A2-11)', () => {
+    // ADR A2-11 widened the set to 1|2|3 FOR the PR1-PR6 bridge and named PR7's
+    // collapse to `[3]` as its own end condition. This is that collapse, so the
+    // leg is inverted rather than deleted: the widening was always temporary and
+    // the retirement is now the asserted contract. `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`
+    // is DEFINED minus SUPPORTED, so it moved to [1, 2] on its own — pinned here
+    // so a future edit cannot narrow one set without noticing the other.
+    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3])
+    expect([...RETIRED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2])
     // The REFUSAL carries the set, DERIVED from this constant — which is what
     // `testdata/fixtures.ts` means when it moves the witness to v4 and declines
     // to pin the `supported` detail there. The derivation is pinned at the
@@ -321,9 +330,12 @@ describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched
     expect(String(err.message)).toContain('permissionMutationEnvelope')
     // A v3 with neither names the mutation envelope first and still refuses.
     expect(v3NoEnvelopes.ok).toBe(false)
-    // And the requirement is v3-only: the identical v2 document (no authority
-    // documents at all) is the pre-v3 shape and must still parse.
-    expect(v2.ok, failureOf(v2)).toBe(true)
+    // §7.3: this leg used to close by showing the IDENTICAL document parses when
+    // stamped v2, proving the requirement was v3-only. That comparison is gone
+    // because the v2 stamp is refused outright (V15), so the requirement is now
+    // simply universal: there is no version at which a document may omit the
+    // mutation envelope.
+    expect(v2.ok, 'v2 is retired; it must NOT parse').toBe(false)
   })
 
   it('V6 `rules: []` is a legal declaration in either document and survives validation (spec §3.4)', () => {
@@ -399,64 +411,69 @@ describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched
     expect(v3UnknownTopLevel.ok).toBe(false)
   })
 
-  it('V13 a v2 document must STILL reject `teamHardEnvelope` (the version→closed-set mapping is version-gated)', () => {
-    const err = expectCode(() => {
-      if (!v2WithHard.ok) throw v2WithHard.error
-    }, 'MALFORMED_DTO')
-    expect(String(err.message)).toContain('teamHardEnvelope')
+  // §7.3 INVERSION of V13/V14. Both asserted that a PRE-v3 document naming
+  // `teamHardEnvelope` was refused for the UNKNOWN FIELD, pinning the
+  // version→closed-set mapping. Post-cutover those bytes are refused for their
+  // VERSION, before any closed set is consulted — so the field-level mapping is
+  // no longer reachable, and "rejects it too" would describe a code path nothing
+  // exercises. Asserted instead as the refusal that actually happens, plus the
+  // explicit negative that keeps the leg honest: the refusal must NOT name the
+  // field, or the version gate has regressed behind the closed set.
+  it('V13 a v2 document naming `teamHardEnvelope` is refused for its version, not for the field (the closed-set gate is unreachable)', () => {
+    // Narrowed, not cast: `ParseOutcome` is a discriminated union and a
+    // `expect(...).toBe(false)` assertion does not narrow it (tsc: TS2339).
+    if (v2WithHard.ok) throw new Error('v2WithHard must be refused post-§7.3')
+    const err = v2WithHard.error as { code?: string; message?: string }
+    expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')
+    expect(String(err.message)).not.toContain('teamHardEnvelope')
   })
 
-  it('V14 a v1 document rejects it too (the v1 validator stays frozen)', () => {
-    expect(v1WithHard.ok).toBe(false)
+  it('V14 a v1 document naming it is refused for its version too (the frozen v1 validator is no longer reached)', () => {
+    // Narrowed, not cast: `ParseOutcome` is a discriminated union and a
+    // `expect(...).toBe(false)` assertion does not narrow it (tsc: TS2339).
+    if (v1WithHard.ok) throw new Error('v1WithHard must be refused post-§7.3')
+    const err = v1WithHard.error as { code?: string; message?: string }
+    expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')
+    expect(String(err.message)).not.toContain('teamHardEnvelope')
   })
 
-  it('V15 v1/v2 still parse during the temporary bridge (ADR A2-4)', () => {
-    expect(v1.ok, failureOf(v1)).toBe(true)
-    expect(v2.ok, failureOf(v2)).toBe(true)
+  // §7.3: ADR A2-4's "v1/v2 behaviour identical" was the BRIDGE guarantee, and
+  // A2-11 said the bridge ends at PR7. This is that end. Inverted, not deleted:
+  // the identities both retired stamps now produce are exactly what the plugin
+  // boundary lists as `migration-required`, so the operator-facing half of A2-4
+  // survives even though the parse half does not.
+  it('V15 v1 and v2 no longer parse; both retired stamps refuse with the version identity (§7.3)', () => {
+    expect(v1.ok, 'v1 must be retired').toBe(false)
+    expect(v2.ok, 'v2 must be retired').toBe(false)
+    for (const outcome of [v1, v2, v1Again, v2Again]) {
+      if (outcome.ok) throw new Error('a retired stamp must not parse')
+      const err = outcome.error as { code?: string; message?: string }
+      expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')
+      expect(String(err.message)).toContain('[3]')
+    }
+    expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(1)
+    expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(2)
   })
 
-  it('V16 GOLDEN: the v1 and v2 content hashes are BYTE-IDENTICAL to the pre-v3 literals (ADR A2-11)', () => {
-    // Literal goldens measured on the PRE-v3 tree. The repo's other hash
-    // specs re-parse and self-compare, or compare against
-    // deriveContentHash(toHashableBlueprint(x)) — which re-derives from the
-    // projection under test. Neither can see a projection that changed shape
-    // while staying deterministic. These two literals can.
-    //
-    // a4-76 (7-6 lane): the precondition here used to be
-    // `if (!v1.ok || !v2.ok || …) return` — an early RETURN PAST every
-    // assertion. It made this leg green with ZERO assertions the moment a
-    // bridge fixture stopped parsing, which is precisely the §7.3 flip state:
-    // the leg would have been silently vacuous at the exact moment its golden
-    // mattered most. The precondition is now ASSERTED (the V18/V19 house
-    // idiom): a fixture that stops parsing turns this leg RED and names
-    // itself, and the day the cutover retires the bridge, this leg is retired
-    // by a commit that had to answer the red — never by a guard that had to
-    // answer nothing.
-    expect(v1.ok, `V16 precondition: the v1 bridge fixture must parse — ${failureOf(v1)}`).toBe(true)
-    expect(v2.ok, `V16 precondition: the v2 bridge fixture must parse — ${failureOf(v2)}`).toBe(true)
-    expect(v1Again.ok, `V16 precondition: the v1 re-parse must parse — ${failureOf(v1Again)}`).toBe(true)
-    expect(v2Again.ok, `V16 precondition: the v2 re-parse must parse — ${failureOf(v2Again)}`).toBe(true)
-    if (!v1.ok || !v2.ok || !v1Again.ok || !v2Again.ok) return // narrowing only; the expects above already refused
-    expect(v1.bp.contentHash).toBe(V1_GOLDEN_HASH)
-    expect(v1Again.bp.contentHash).toBe(V1_GOLDEN_HASH)
-    expect(v2.bp.contentHash).toBe(V2_GOLDEN_HASH)
-    expect(v2Again.bp.contentHash).toBe(V2_GOLDEN_HASH)
-    // A third, structure-level backstop that does not depend on hashing at
-    // all: the committed JSON of the v2 projection carries no v3 key.
-    expect(JSON.stringify(toHashableBlueprint(v2.bp))).not.toContain('teamHardEnvelope')
-  })
-
-  it('V17 the v1/v2 hashable projections carry NO teamHardEnvelope key (key-omitted, not null)', () => {
-    // a4-76 (7-6 lane): same repair as V16 — the precondition is ASSERTED,
-    // never returned past (see the V16 note for why the guard was the bug).
-    expect(v1.ok, `V17 precondition: the v1 bridge fixture must parse — ${failureOf(v1)}`).toBe(true)
-    expect(v2.ok, `V17 precondition: the v2 bridge fixture must parse — ${failureOf(v2)}`).toBe(true)
-    if (!v1.ok || !v2.ok) return // narrowing only; the expects above already refused
-    expect(Object.hasOwn(toHashableBlueprint(v1.bp) as Record<string, unknown>, 'teamHardEnvelope')).toBe(false)
-    expect(Object.hasOwn(toHashableBlueprint(v2.bp) as Record<string, unknown>, 'teamHardEnvelope')).toBe(false)
-    // …and neither carries a v3-derived null either.
-    expect(JSON.stringify(toHashableBlueprint(v1.bp))).not.toContain('teamHardEnvelope')
-  })
+  // V16/V17 RETIRED by the §7.3 flip landing — in the commit that had to
+  // answer the red, which is what the a4-76 repair demanded of this pair and
+  // what their original guard-return was designed never to require. Post-flip
+  // V15 asserts `v1.ok === false` and `v2.ok === false`: the pair's
+  // preconditions are FALSE BY DESIGN and their subjects (v1/v2 golden
+  // byte-identity, key-omission over retired projections) have no reachable
+  // input — a retired stamp yields no blueprint to hash. Both surviving
+  // shapes were MEASURED, not argued: with the repair in place the pair goes
+  // RED naming itself ("V16 precondition: the v1 bridge fixture must parse —
+  // unsupported blueprint schema version 1; this build supports [3]",
+  // dev/agent-workflow/evidence/a4-pr7/7-6-ceiling-pin/a4p1-POSTFLIP-REPAIR-RED.log);
+  // with the flip's guard-return shape the file passes 20/20 with
+  // V1_GOLDEN_HASH tampered to all-f (same evidence dir,
+  // a4p1-COUNTERFACTUAL-GOLDEN-TAMPERED.log) — green with zero assertions
+  // over a corrupted golden, the vacuity its §7.3 NOTE disclosed and the
+  // coordinator ruled "tracked for the pin lane; deliberately not repaired
+  // here". This lane is that pin lane; retirement is the repair. The
+  // bridge-state truth is owned by V1/V13/V14/V15; the hash-binding truth by
+  // V18–V20; the frozen literals stand as record above the describe block.
 
   it('V18 the v3 hash BINDS teamHardEnvelope: one bit of the hard envelope moves the hash', () => {
     expect(v3.ok, failureOf(v3)).toBe(true)

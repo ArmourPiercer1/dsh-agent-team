@@ -1338,13 +1338,24 @@ export async function createLiveWorld(options = {}) {
   const config = {
     bootPhase: 'create',
     rootSessionId,
-    // T12-M2: a VALID closed-v1 blueprint document (the persona glue parses
-    // it lazily — the previous malformed 'team: {}' default broke the
-    // parse). The default carries distinct leader/member personas so the
-    // persona assertions have stable text to expect.
+    // T12-M2: a VALID blueprint document (the persona glue parses it lazily —
+    // the previous malformed 'team: {}' default broke the parse). The default
+    // carries distinct leader/member personas so the persona assertions have
+    // stable text to expect.
+    //
+    // §7.3 v3-only, and this one is NOT optional: this default is LIVE. It is
+    // not a text carrier some fence counts — 38 importers load this module and
+    // the ones that do not override blueprintSource parse THESE bytes, so at
+    // schemaVersion 1 the cutover took the whole cluster down at module scope
+    // with `unsupported blueprint schema version 1; this build supports [3]`
+    // (measured at the flip: 28 runtime files, see
+    // dev/agent-workflow/evidence/a4-pr7/7-3-flip/SCOPE.md §4.1). The two
+    // authority documents v3 requires are at the honest zero `rules: []` — no
+    // t12a lane mutates permissions, so a filler rule here would be a wide
+    // grant written into the most-shared fixture in the runtime tree.
     blueprintSource: [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: team.t12a',
       'revision: "1"',
       'leader:',
@@ -1358,6 +1369,10 @@ export async function createLiveWorld(options = {}) {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       'metadata: {}',
       '---',
       '',

@@ -454,6 +454,20 @@ const W1_SAVED = witnessV1Source('a4p7.unmigrated', '1', 'Unmigrated lead.')
 writeSource(W1, 'unmigrated.yaml', W1_SAVED)
 writeSource(W1, 'broken.yaml', NEG_INVALID_YAML.source)
 
+// §7.3: the control document for "the refusal is per-document, not a world-level
+// break". It lives in its OWN directory because adding a file to W1 would change
+// the listings every other leg in this group counts. It is built by the shared
+// fixtures factory, which is v3 since §7.3 step 1, so it is a document THIS build
+// runs — the only kind of control the cutover leaves available.
+const W1_LIVE = makeDir('w1-live-sibling')
+const W1_LIVE_SOURCE = revisionSource('a4p7.livesibling', '1', 'Live sibling lead.')
+writeSource(W1_LIVE, 'live.yaml', W1_LIVE_SOURCE)
+const w1LiveAuthority = createBlueprintAuthority({
+  bootstrapSource: W1_LIVE_SOURCE,
+  sourceIndex: createBlueprintSourceIndex({ blueprintDir: W1_LIVE }),
+  registry: new MemRegistry(),
+})
+
 const w1Index = createBlueprintSourceIndex({ blueprintDir: W1 })
 const w1Cutover = cutoverIndex(w1Index)
 const w1Authority = createBlueprintAuthority({
@@ -577,15 +591,40 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
     )
   })
 
-  it('under the bridge the same file resolves normally, so the refusal is version-state and not a blanket break', () => {
-    const blueprint = w1BridgeAuthority.resolve('a4p7.unmigrated', '1')
-    expect(blueprint.blueprintId).toBe('a4p7.unmigrated')
-    expect(blueprint.schemaVersion).toBe(1)
-    expect(w1BridgeUnmigrated).toMatchObject({ schemaVersion: 1, migrationState: 'current' })
-    // …and the bridge's listing carries the SAME identity, differing only in the
-    // two new facts. That is the whole of the migration surface: an entry does not
-    // appear and vanish across the cutover, its STATUS changes.
-    expect({ ...w1BridgeUnmigrated, migrationState: 'migration-required' }).toEqual({ ...w1Unmigrated })
+  // §7.3 v3-only INVERSION. This leg was written BEFORE the flip as the control
+  // for the cutover: read the same directory with a build that still ran v1, see
+  // the file resolve, and conclude the refusal is a per-document VERSION STATE
+  // rather than a world-level break. The flip removed the second build. Keeping
+  // the leg by pointing it at a simulated set would have made it a tautology
+  // (a shim that widens acceptance proving acceptance is wide), so the control is
+  // re-anchored on something real and stronger: WITHIN one world, on one build,
+  // the retired document is refused while its neighbour resolves. That is the
+  // same claim, now observable without a second build.
+  it('the refusal is per-document version state, not a world-level break: the neighbour in the same directory still resolves', () => {
+    // (1) The retired bridge authority and the cutover authority are now the
+    // SAME authority, so the same bytes answer the same way through both. The
+    // pre-flip asymmetry that this leg used to assert is gone by design.
+    const throughBridge = captureError(() => w1BridgeAuthority.resolve('a4p7.unmigrated', '1'))
+    expect(pluginCodeOf(throughBridge)).toBe(
+      BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
+    )
+    expect(w1BridgeUnmigrated).toMatchObject({ schemaVersion: 1, migrationState: 'migration-required' })
+    expect({ ...w1BridgeUnmigrated }).toEqual({ ...w1Unmigrated })
+
+    // (2) The control that replaces it: another document in the SAME directory,
+    // read by the SAME authority, resolves normally. Nothing about the world
+    // broke; one document's version did.
+    const live = w1LiveAuthority.resolve('a4p7.livesibling', '1')
+    expect(live.blueprintId).toBe('a4p7.livesibling')
+    expect(SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(live.schemaVersion)
+    const liveIdentity = w1LiveAuthority
+      .listIdentities()
+      .find((identity) => identity.blueprintId === 'a4p7.livesibling')
+    expect(liveIdentity?.migrationState).toBe('current')
+    // The W1 anchor is itself a witness on a retired stamp, so it refuses too —
+    // recorded rather than glossed, because a reader who assumed "anchor = runs"
+    // would misread every other leg in this group.
+    expect(w1Listed.find((i) => i.blueprintId === 'a4p7.anchor')?.migrationState).toBe('migration-required')
   })
 })
 

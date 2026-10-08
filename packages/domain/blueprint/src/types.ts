@@ -413,7 +413,7 @@ export interface TeamBlueprint {
    * (ADR A1-19). `3` is admitted for the PR1-PR6 bridge only (ADR A2-11); the
    * Alpha.4 contract is v3-only and the PR7 cutover narrows the accepted set.
    */
-  readonly schemaVersion: 1 | 2 | 3
+  readonly schemaVersion: 3
   /** Stable logical identity (not a path, not a display name). */
   readonly blueprintId: BlueprintId
   /** Human-readable revision. */
