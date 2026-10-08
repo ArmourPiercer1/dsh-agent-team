@@ -1,0 +1,6 @@
+citations checked: 95 full-path + 12 shorthand
+resolved: 107 (full-path 95, shorthand 12)
+resolved full-path legs that are NOT passing at this base: 1
+  NOT-PASSED [failed] L361: packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+
+Every cited identity resolves to a registered leg.

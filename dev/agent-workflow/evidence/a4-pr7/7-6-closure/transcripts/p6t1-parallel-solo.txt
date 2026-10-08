@@ -1,0 +1,14 @@
+solo re-run of the p6t1-parallel family (A1.2.4 named flake allowance, group-scoped), isolated after the built census reported its P2 leg red:
+start 2026-10-08T06:37:44Z
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure
+
+ ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  14:37:45
+   Duration  812ms (transform 489ms, setup 0ms, import 711ms, tests 6ms, environment 0ms)
+
+EXIT=0
+end 2026-10-08T06:37:45Z

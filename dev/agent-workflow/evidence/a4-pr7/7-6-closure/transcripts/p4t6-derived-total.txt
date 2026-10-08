@@ -1,0 +1,49 @@
+p4t6 scanned-file total — DERIVED, never quoted from a note
+generated 2026-10-08T06:50:03Z  HEAD=9df5535f  worktree=.worktrees/a4-76-closure
+
+$ node -e "import('./packages/testkit/fault-injection/session-event-scan.mjs').then(m=>console.log('filesScanned =', m.scanSessionEventVocabulary({}).filesScanned)))"
+filesScanned = 1036
+
+Cross-check in the same tree: the p4t6 leg is GREEN in every root census of this lane
+(packages/testkit/test/p4t6-session-event-scan.test.ts > p4t6 frozen Team SessionEvent
+ denylist scan > coverage: all nine package dirs discovered, …), and that leg asserts the total
+as a DERIVED SUM — packages/testkit/test/p4t6-session-event-scan.test.ts:2049:
+    expect(scanResult.filesScanned).toBe(983 + SCANNED_PATHS_A4PR2.length + … )
+so the number above and the leg cannot disagree without the leg going red.
+
+DISCLOSURE 1: the leg TITLE still reads '979 files scanned'. That is a frozen identity string
+  (the registry key), not the measured total; the total moves with every named increment.
+DISCLOSURE 2: no p4t6 figure was recorded earlier in this lane's evidence, so nothing is
+  repeated from any note here. The number printed above is this tree, this command, this moment.
+
+================================================================================
+WHY THIS TOTAL IS TIMED, AND WHICH READING IS CANONICAL (measured on this lane)
+================================================================================
+The same command, on this tree, at three moments:
+
+  06:45:0x Z  1136   taken after two root censuses + `pnpm build` + `pnpm build:composition`
+                     — i.e. while earlier runs' on-disk state was still present
+  06:50:03 Z  1036   mid final-census capture 1
+  06:50:3x Z  1038   mid final-census capture 2 (scratch/scan-list-during-census.txt: 1037 paths,
+                     the replica counting the scanner's own file, which the real scanner excludes
+                     via SCANNER_SELF_BASENAME)
+  06:52:46 Z  1036   QUIET tree: no vitest alive, `rm -rf packages/testkit/test/.tmp-fault` first
+
+`filesScanned` walks packages/** at call time, so it is a property of the DISK, not of the commit.
+Quoting it without its moment is worthless — the first reading above is 100 files high and would
+have been a false total had it been written down as "the" number.
+
+CANONICAL READING: **1036**, because it is the value the tree carries when nothing is running, and
+it is the value the p4t6 leg itself is green against at this moment:
+
+  $ pnpm exec vitest run packages/testkit/test/p4t6-session-event-scan.test.ts \
+      packages/runtime/test/p6t1-parallel.test.ts
+   ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests)
+   ✓ packages/runtime/test/p6t1-parallel.test.ts (9 tests)
+   Test Files  2 passed (2)      Tests  19 passed (19)
+
+That same solo run also re-confirms the p6t1-parallel group green outside a full-census load
+(the A1.2-named load flake; see FINAL-BATTERY.txt "capture 2").
+
+Reproduce: scratch/record-p4t6.sh (total), scratch/scan-list.mjs <out> (the selected paths, for
+diffing two moments against each other).
