@@ -164,8 +164,8 @@ captures, raws `fc-PRE.json`/`fc-POST.json`, table `failclosed-VERDICT-TABLE.txt
 | class | count | direction |
 | --- | --- | --- |
 | of the 39, FLIPPED pass→red | **13** | 12 × "commit/accepted expectation → typed ceiling refusal" (the legs' PASS halves — inside-carrier expansions and ceiling-allow passes — were riding the fail-open); 1 × R8-principal — the refusal reaches the tool router and surfaces as `internal-error`, because a bare `AUTHORITY_CEILING_INSUFFICIENT` throw has NEVER existed on the shipped wire (host worlds always divert it to a proposal) — **the wire mapper for a no-port refusal is new work the proposal must include** |
-| of the 39, UNCHANGED | **26** | typed-refusal legs whose drive still refuses at the SAME identity (Alpha.3's coverage law runs first at `service.ts:1163-1201`): 17 a3p3 refusal legs + 2 lifecycle-e2e CONTEXT legs + the 7 a3p4-pr4 host-world legs (ports present) + 2 a3p4-r4-authority-binding legs (pure-judge, no service at all) + carrier-width and no-context legs (ports present) |
-| collateral currently-green legs newly refusing (NOT among the 39) | **41** | concentrated in the no-port fixture worlds: lifecycle-e2e 16, mutation-authority 7, revoke-reveal 6, a3p4-pr7 11, a3p4-pr4 root-direct 2 (R5-tool, R4-grant-commit). The blast is file-wide wherever fixtures SET UP by granting — a grant IS a rise — so fail-closed prices at ~54 legs of fixture re-wiring (wire a ceiling reader in, and per the flip's warning re-derive, not just re-green, each re-wired leg) |
+| of the 39, UNCHANGED | **26** | typed-refusal legs whose drive still refuses at the SAME identity (Alpha.3's coverage law runs first at `service.ts:1163-1201`): 11 revoke-reveal + 2 mutation-authority refusal legs + 2 lifecycle-e2e CONTEXT legs + the 7 a3p4-pr4 host-world legs (ports present) + 2 a3p4-r4-authority-binding legs (pure-judge, no service at all) + carrier-width and no-context legs (ports present) (per-file: 13 = 6+6+1 flips; 26 = 39−13, cross-checked against the raws) |
+| collateral currently-green legs newly refusing (NOT among the 39) | **41** | concentrated in the no-port fixture worlds (per-file reds minus that file's flips): lifecycle-e2e 16, mutation-authority 7, revoke-reveal 6, a3p4-pr7 10, a3p4-pr4 root-direct 2 (R5-tool, R4-grant-commit). The blast is file-wide wherever fixtures SET UP by granting — a grant IS a rise — so fail-closed prices at 54 legs (13 + 41) of fixture re-wiring (wire a ceiling reader in, and per the flip's warning re-derive, not just re-green, each re-wired leg) |
 | shipped product behaviour newly refusing | **0** | every host-world leg (E1/E2/R4/R5-ws, all a4p7 ceiling suites, all a4p5 suites — 120 green separately) stayed green under the patch: production injects the port, so fail-closed is invisible to it |
 
 **A root-level variant (refuse at CONSTRUCTION in root.ts when overlay is injected and
@@ -238,8 +238,32 @@ surface degrades to `internal-error` (R8's measured fate).
 
 ## §6 — Battery ledger
 
-(Filled by the committed-tree runs; every number below is copied from a saved raw in
-this directory, and the raws are the record — see `git log` for this lane.)
+Every number below is copied from a saved raw IN THIS DIRECTORY (the raws are the
+record; every suite was re-run on the COMMITTED tree — commit `b27efe12`, base
+`18c2b7c3`). The base controls (base full-suite identities, base merge-gate capture)
+were taken in the SAME worktree via `git switch --detach 18c2b7c3` + re-attach, so
+node_modules, toolchain and scratch world are byte-identical between the compared runs.
+
+| instrument | result | raw |
+| --- | --- | --- |
+| fence `verify-blueprint-version-clean.mjs`, twice, after `git add` (and again on the committed tree) | byte-identical runs; tuple UNMOVED from base: `dirty(5 files, 16 sites) unknown(0,0) advisory(8,10) refused(52,115) prose(5,5) adjudicated(16,24)`, exit 1 at base and here (the dirty verdict is base debt, disclosed) | `fence-COMMITTED-run1.log`, `fence-COMMITTED-run2.log` (+ `cmp` outputs byte-equal) |
+| `a4p7-blueprint-version-clean.test.ts` | **60 passed** | `suites-COMMITTED-fast.log` |
+| `p4t6-session-event-scan.test.ts` | **10 passed**; total now 1032 = 983 + Σ SCANNED_PATHS_* (this lane's entry `SCANNED_PATHS_A4P76PIN` = 1 file, tied `1032 - 1031` — both endpoints measured, RED kept, never hand-written) | `p4t6-RED-scan-increment.log` (the `expected 1032 to be 1031` pre-extend RED), `suites-COMMITTED-fast.log` |
+| a4p1 governance, before | 20/20 green at base (guards latent, NOT vacuous here — §2) | `mine-full-identities.txt` filter / base capture |
+| a4p1 governance, after repair | 20/20 green; **leg identity set BYTE-IDENTICAL to base** (no leg renamed, retired or added) | `suites-COMMITTED-fast.log` + the diff of both identity files |
+| ceiling-pin instrument | **5/5 green**; both mutants' REDs kept (§1.1, §1.4) | `pin-BASE-GREEN.log`, `pin-MUTANT-*.log` |
+| §7.6 merge-gate | **26 legs, exactly 1 red: the no-build refusal**; its diagnostic is BYTE-IDENTICAL to the same leg's base capture except the self-described tree-state clause (`base-merge-gate.log` vs `merge-gate-COMMITTED.log`) | `merge-gate-COMMITTED.log`, `base-merge-gate.log` |
+| composition-smoke classifier | **54 passed** | `suites-COMMITTED-fast.log` |
+| permission/ceiling battery (a4p2 dual-envelope, 3× a4p7 ceiling suites, 3× a4p5, a3p3×3, a3p4 plane + lifecycle-e2e, a3p5×2, a4pr0-generation, bound-blueprint, a4f1 — 17 files) | **283 passed** | `permission-ceiling-COMMITTED.log` |
+| `pnpm -r run typecheck` | exit 0, `0 × error TS` | `typecheck-COMMITTED-parallel.log` |
+| `pnpm -r --no-bail run typecheck` | exit 0, `0 × error TS` (run SEPARATELY, per dispatch) | `typecheck-COMMITTED-nobail.log` |
+| `lint-identities.mjs --diff …0237d487.txt` | **new 0 / resolved 0**, exit 0 (160 lines / 76 distinct == baseline's 76) | `lint-identities-COMMITTED.txt` |
+| full root suite (498 base files vs 499 mine), registered legs | **6252 → 6257 (+5, exactly this lane's instrument file)** | `base-full-identities.txt`, `mine-full-identities.txt` |
+| full-suite RED SET vs base | base 21 reds; mine 22: red-set diff = **NEW 1 / RESOLVED 0**, the 1 = `p6t1-parallel` quota-race leg — declared-load-flake family (merge-gate lane's `7-6-merge-gate/p6t1-parallel-load-flake.txt` records the same suite flickering 3 identities between identical full-suite runs at identical HEAD); attribution control: the file ALONE on this tree is 9/9 green, and the failure message is an activation-order signature (`ACTIVATION_COMPATIBILITY_BLOCKED_FATAL` where a QUOTA code was expected), which nothing this lane wrote can touch. Every base-debt identity (t1×9, t2, p6t3-restart×2, p6t3-mediation×5, p6t6-actions, p6t1×1, d3-member-identity-context, merge-gate no-build) reproduced verbatim | `mine-full-reds.txt`, `base-full-reds.txt`, `mine-full-suite.log` |
+
+Numbers-in-prose audit: §0–§3 were re-checked against these raws at authoring time;
+where a §3 per-file count and a raw disagreed, the raw won and the prose moved (this
+happened twice, both corrections are the current text).
 
 ## §7 — Requests (things this lane wants but does not own)
 
