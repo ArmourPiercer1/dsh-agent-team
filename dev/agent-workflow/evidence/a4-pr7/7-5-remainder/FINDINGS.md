@@ -184,3 +184,25 @@ exist yet. The honest order is flip → delete → retitle, which is exactly `pl
    names three guard tests where the measured answer is 40 named tests in 9 files, with
    one named file unaffected. This is the third round the phase has re-learned that a
    count in a document is context, never a work list.
+8. **Two numbers described one event and looked like a contradiction.** The five
+   hand-picked suites reported `21 failed`, the two-package sweep reported `49 failed`,
+   and a table built from either alone would have been wrong: 21 is the subset inside
+   five files, 40 is the NEW identity count over `packages/runtime/test` +
+   `packages/testkit/test` (49 minus the 9 base-red identities, which stayed red). The
+   per-file breakdown in §2 is the reconciliation, and it came from the sweep, not from
+   the hand-picked set — which is the reason the sweep was worth a minute.
+9. **The `write` tool refused my second probe** (`file no longer exists`) because I had
+   deleted the first probe with `rm` after taking its transcript. Had I re-used the first
+   probe's transcript as the "before" side, the table would have compared two different
+   instruments: probe v1 asserted one population, probe v2 printed two and asserted
+   nothing. The before/after table cites only `10`/`11`/`12` (probe v2, all three runs),
+   and `02`/`03` (probe v1) are kept but are not load-bearing.
+10. **A commit message almost shipped a wrong file count.** It said 18 evidence files;
+    `git diff --cached --name-only | wc -l` said 22, because four transcripts were added
+    after the draft. Fixed before committing — the standing rule about numbers in commit
+    messages exists because this is the error, not a rarer one.
+11. **`grep -c` and `ls` return exit 1 on a real answer**, and in a `&&`-free chain that
+    reads as failure. Three separate places in this lane (the `authorityCeiling` counts
+    that produced §2's classification, the a4p2 zero-reds claim, and the
+    `git show --name-only | grep -vc` check in BATTERY §6.5) depended on a *zero* being
+    the result. I read the value each time; the exit codes were noise.

@@ -1,0 +1,91 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 5ms
+ ✓ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts (13 tests) 39ms
+ ✓ packages/runtime/test/a4p7-v3-grammar-enforced.test.ts (8 tests) 4ms
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD 7fc15449, 0 tracked file(s) changed vs HEAD, 6 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+ ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (60 tests) 1123ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  427ms
+ ✓ packages/runtime/test/a4p2-dual-envelope-mutation.test.ts (26 tests) 24ms
+ ✓ packages/runtime/test/a3p4-r4-authority-binding.test.ts (17 tests) 98ms
+ ✓ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (8 tests) 47ms
+ ✓ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (12 tests) 78ms
+ ✓ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts (33 tests) 173ms
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD 7fc15449, 0 tracked file(s) changed vs HEAD, 6 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ ✓ packages/testkit/test/a4p75-composition-smoke-classification.test.ts (54 tests) 3973ms
+     ✓ requires by id every arm this repository actually reports  2560ms
+     ✓ never reports a passing gate over a step it did not run  499ms
+lint-visibility: eslint read 1107 of 2427 OFFERED tracked lintable file(s); 1320 are hidden by an ignore pattern (dev/ 449, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1107 + 1320 = 2427 offered, + 0 skipped = 2427 tracked lintable path(s); nothing skipped
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts (26 tests | 1 failed) 40038ms
+     ✓ runs where its instruments can see the tree, and refuses to run anywhere else 9ms
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 953ms
+       ✓ treats a step that did not run as a failure that says why, even at exit 0 0ms
+       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees 268ms
+       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  303ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  837ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  807ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  550ms
+       ✓ reports every verdict class with its set by path when run at the toplevel 223ms
+       ✓ refuses a directory that is not a repository, and is never believed as clean 60ms
+       ✓ will not accept a run from below the toplevel as a whole-tree clean (measured false-clean) 64ms
+       ✓ classifies a lint run by its verdict line and its universe line, on captured output 1ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  9319ms
+       ✓ names the three states of a captured stderr, including the arm this gate cannot reach 0ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  9263ms
+       ✓ the committed install surface is fresh against the tree, and a missing surface is refused 93ms
+       ✓ a check:artifacts run from a subdirectory is refused, never an OK over nothing 40ms
+       ✓ every workspace package that declares a typecheck script typechecks  9189ms
+       ✓ no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here 1ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  7470ms
+       ✓ tolerates a green trio and refuses a vanished one — the two are different answers 0ms
+       ✓ a missing instrument is a refusal that names it, never a pass 64ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  509ms
+       ✓ a child killed by a signal is refused even when it printed a complete report 9ms
+       ✓ every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core 2ms
+       ✓ this spec itself is counted by the p4t6 scannable-file ledger 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > is green, asserted by arm name and by absence of a skip — never by the exit code
+AssertionError: the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. It read "refused". why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/client/src/plugin/client.js is gitignored and untracked, and it is in no install surface (the surfaces that ship are packages/runtime/dist, packages/client/composition-shim), so no install of this repository ever carries it; the owning manifest declares ./dist/index.js → packages/client/dist/index.js, which also has no file on disk. The limit of that sentence, stated rather than left to the reader: this verdict is drawn from packages/client/dist ALONE, nothing outside the declared output root is examined, and there is nothing outside it to examine — so a build that ran and whose output was then moved elsewhere is indistinguishable, here, from a build that never ran, and `pnpm build` would not fix that. The two states this check genuinely cannot separate are also byte-identical: an unbuilt tree and a build that ran and emitted NOTHING. Run `pnpm build` and re-run this leg. Tree this leg measured: HEAD 7fc15449, 0 tracked file(s) changed vs HEAD, 6 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. refused is not passed — this leg blocks the merge exactly as a failure does, and no reading of this message makes it green.
+    output tail:
+        at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+        at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+        at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+        at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+        at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder/scripts/composition-smoke.mjs:201:24)
+        at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder/scripts/composition-smoke.mjs:298:13
+    file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder/scripts/composition-smoke.mjs:422
+      throw new Error(failed
+            ^
+    Error: composition smoke failed
+        at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder/scripts/composition-smoke.mjs:422:9
+    Node.js v24.21.0: expected 'refused' to be 'passed' // Object.is equality
+
+Expected: "passed"
+Received: "refused"
+
+ ❯ fail packages/runtime/src/plugin/host.ts:603:10
+ ❯ validateTeamPluginConfig packages/runtime/src/plugin/host.ts:609:63
+ ❯ bootstrap packages/runtime/src/plugin/host.ts:1641:28
+ ❯ Module.apply packages/runtime/src/plugin/host.ts:2988:45
+ ❯ checkPluginContract scripts/composition-smoke.mjs:201:24
+ ❯ scripts/composition-smoke.mjs:298:13
+ ❯ scripts/composition-smoke.mjs:422:9
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:879:9
+    877|         `the composition arms have to RUN for this gate to be green; a…
+    878|           `It read "${r.verdict}". why: ${r.why}\n    output tail:\n  …
+    879|       ).toBe('passed')
+       |         ^
+    880|
+    881|       for (const target of compositionTargets()) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  1 failed | 266 passed (267)
+   Start at  09:05:28
+   Duration  40.41s (transform 10.34s, setup 0ms, import 11.59s, tests 45.60s, environment 1ms)
+
