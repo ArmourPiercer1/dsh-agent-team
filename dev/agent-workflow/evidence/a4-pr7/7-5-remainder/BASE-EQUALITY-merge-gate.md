@@ -23,14 +23,14 @@ surfaces that do not carry it.
 
 | run | transcript | HEAD | tracked changed vs HEAD | untracked entries |
 |---|---|---|---:|---:|
-
 | base (zero changes) | `08-runtime-testkit-green-baseline.txt` | `e80a00da` | 0 | 1 |
+| this lane, pre-rebase | `16-merge-gate-alone-after-stage.txt` | `e80a00da` | 17 | 4 |
+| this lane, on the rebased tree (final battery) | `29-final-battery-named-suites-rebased.txt` | `ceecacc2` | 1 | 4 |
 
-| this lane (17 evidence files staged) | `16-merge-gate-alone-after-stage.txt` | `e80a00da` | 17 | 4 |
-
-
-So the state that produces the refusal is `HEAD e80a00da` **with zero tracked files
-changed** — the base commit of this lane, before anything I added existed. Nothing this
+The base row is the load-bearing one: the refusal already exists at `HEAD e80a00da`
+**with zero tracked files changed**, i.e. before this lane existed at all. The later
+rows only add evidence files, and the diagnostic they print is byte-identical to the
+base one. Nothing this
 lane adds touches the client build surface: `packages/client/dist` does not exist in a
 fresh worktree (the leg's own words: `packages/client/dist does not exist (0 file(s) in
 it)`, `gitignored and untracked`, `it is in no install surface`), and the lane changed

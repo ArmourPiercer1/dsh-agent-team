@@ -201,6 +201,27 @@ exist yet. The honest order is flip → delete → retitle, which is exactly `pl
     `git diff --cached --name-only | wc -l` said 22, because four transcripts were added
     after the draft. Fixed before committing — the standing rule about numbers in commit
     messages exists because this is the error, not a rarer one.
+12. **`git diff origin/master..HEAD` accused this lane of deleting the coordinator's
+    files.** After the second commit it reported `-13` lines in
+    `SESSION_ROUTER_LOG.md` and `-1` in `graph.yaml` — files the instruction forbids me
+    to touch, and files my commits never touched (`git log origin/master..HEAD --
+    <those paths>` printed **nothing**). The cause: `origin/master` moved mid-session
+    from `e80a00da` to `340e30e3` (PR #162, the round-22 records), and a two-dot diff
+    against a moving ref reads a rebase-needed-behind as an edit. Caught by comparing
+    `git merge-base HEAD origin/master` (= `e80a00da`) with `git rev-parse
+    origin/master` (= `340e30e3`). Fixed by rebasing onto the moved master and switching
+    every count to the three-dot form. The coordinator had already written this rule in
+    the very commit I was missing (round 22: *"git diff origin/master inverts into
+    accusing a lane of editing the coordinator's own files once master moves; diff
+    against the merge-base"*) — I read it only after reproducing the misfire, which is
+    the part worth recording: **an unread rule is not a held rule.** The moved commit
+    also independently confirms this lane's verdict (`FLIP STILL DEFERRED …
+    cordis.patch.yml:60 v1 + fixtures.ts … coordinator-owned, Phase 2`), so the
+    dependency I name is the coordinator's own live state, not my inference.
+13. **The same commit invalidated a number I had already written.** My first BATTERY
+    draft said "22 added" from `git show --name-only HEAD` of one commit; the branch
+    total is **33**, and after the rebase only the three-dot count is stable. Both the
+    message and the document now carry the three-dot number.
 11. **`grep -c` and `ls` return exit 1 on a real answer**, and in a `&&`-free chain that
     reads as failure. Three separate places in this lane (the `authorityCeiling` counts
     that produced §2's classification, the a4p2 zero-reds claim, and the

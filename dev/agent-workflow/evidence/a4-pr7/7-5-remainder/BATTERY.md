@@ -1,14 +1,20 @@
 
 ---
 
-## 6. THE BATTERY, on this lane's committed tree (base `origin/master e80a00da`)
+## 6. THE BATTERY, on this lane's committed tree
+
+Branch `feat/a4-75-remainder` was created from `origin/master = e80a00da` (verified by
+`git rev-parse origin/master` after `git fetch`). Master then **moved mid-session** to
+`340e30e3` (PR #162, round-22 records — coordinator-owned docs only), and this branch
+was rebased onto it, so everything in this section was re-taken on the rebased tree.
 
 Zero tracked files of the repository are modified by this lane; "the merged tree" is
 `origin/master` plus added evidence files, which is what every number below was taken on.
 
 ### 6.1 `node scripts/verify-blueprint-version-clean.mjs`, twice, byte-identical, **after `git add`**
 
-Every pair was taken **after `git add`** — post-`git add` (`13`,`14`), post-commit
+Every pair was taken **after `git add`**, and the pair is repeated on the rebased
+tree (`27`), where it is still byte-identical to all of them — post-`git add` (`13`,`14`), post-commit
 (`17`,`18`), post-final-stage (`23`,`24`, and a last pair `25`,`26` after the transcripts
 themselves were staged). All of them are byte-identical to one another (`cmp` in each
 transcript's name-pair), exit **1**:
@@ -45,6 +51,10 @@ dirty-or-unknown` is §7.4's declined-and-deferred 7 remaining files.
 | `packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts` | 13 | **13 passed** | `22` |
 | `packages/runtime/test/a4p7-v3-grammar-enforced.test.ts` | 8 | **8 passed** | `22` |
 | the five ceiling/guard suites (`a4p2` 26, `a3p3-revoke` 33, `a3p4-r4` 17, `a4p7-carrier-width` 8, `a4p7-no-context` 12) | — | **96 passed** | `01`, `06`, `22` |
+
+Run `29` repeats the whole table on the **rebased** tree (onto the moved
+`origin/master 340e30e3`): `Test Files 1 failed | 10 passed (11)`,
+`Tests 1 failed | 266 passed (267)`, every per-file count unchanged.
 
 Aggregate of run `22`: `Test Files 1 failed | 10 passed (11)`,
 `Tests 1 failed | 266 passed (267)`.
@@ -85,10 +95,11 @@ decision was not needed (transcript `21`).
 git status --porcelain | wc -l  -> 0
 ```
 
-Files this lane changed: **22 added, all under
-`dev/agent-workflow/evidence/a4-pr7/7-5-remainder/`; 0 modified; 0 deleted** (`git
-show --name-only HEAD | grep -vc '^dev/agent-workflow/evidence/a4-pr7/7-5-remainder/'`
-→ `0`). Not pushed. `pnpm install` was a real offline install from
+Files this branch changes: **33 added, 0 modified, 0 deleted, all under
+`dev/agent-workflow/evidence/a4-pr7/7-5-remainder/`** — measured with the three-dot diff
+(`git diff --name-status origin/master...HEAD`, merge-base) rather than two-dot, which
+after the mid-session move reported that this lane had deleted 13 lines of
+`SESSION_ROUTER_LOG.md` and one of `graph.yaml`. See FINDINGS §5 item 12. Not pushed. `pnpm install` was a real offline install from
 `/home/user/dsh-plugins/dsh-agent-team/.pnpm-store`; no `cp -al node_modules` anywhere.
 Before every vitest invocation in this lane ran
 `rm -rf packages/testkit/test/.tmp-fault`.
