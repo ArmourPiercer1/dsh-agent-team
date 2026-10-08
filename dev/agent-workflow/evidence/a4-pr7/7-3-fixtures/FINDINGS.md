@@ -275,7 +275,29 @@ script still refuses on any `NEG_*` it has not classified and on any unexpected 
 A migration script whose assertions can fire is the instrument that saves you from yourself; the
 final tally was `promoted 30 of 47 (P=27 D=3; shared-factory=16; carry=1)`.
 
-**12. Smaller, but they cost a cycle each.** Piping the positive control through `| tail -5` read
+**12. A census run AFTER the commit compares the tree to itself and reports a clean bill of health
+for nothing.** The tool's first argument is a base rev, and `HEAD` is the natural thing to pass while
+the work is uncommitted. Once `79152fb5` existed, `HEAD packages/domain/.../fixtures.ts` printed
+`LOST: NONE / GAINED: NONE / exit 0` on all four files with head and work counts equal — because both
+sides were the migrated file. Finish in this order, believe those zeros, and the entire silent-drop
+guarantee of this report is vacuous. **Caught it** because `head 821 work 821` disagreed with the
+`head 701 work 821` I had already written down an hour earlier: a number already in my notes was the
+instrument that caught the later instrument. Every census figure here now passes `41ba59f4`
+explicitly, and `battery/07-census.txt` leads with that warning, because whoever re-runs it will reach
+for the same convenience.
+
+**13. A gate that describes the working tree cannot be byte-compared while you are writing evidence
+into it.** Twice the merge gate's self-reported tree state said `1 untracked entr(ies)` where base
+said `0`, and both times the untracked entry was the very evidence file I was assembling in order to
+make the comparison. The instrument was accurate; the observer was the disturbance. **Caught it** by
+refusing to wave off "the only difference is the tree-state field" — that field *is* part of the
+diagnostic — moving the file out of the tree, and only accepting the comparison once
+`git status --porcelain` was genuinely empty. Its cheaper cousin: the second refusal sentence is
+printed by the *classifier* suite, not the merge gate, so a single-suite run diffed against a
+four-suite base log "loses" a line that was never the merge gate's. Same lesson in another costume:
+compare like with like, including which process printed which line.
+
+**14. Smaller, but they cost a cycle each.** Piping the positive control through `| tail -5` read
 `exit=0` from the *pipeline*, not the tool; un-piped the real exit was **1**. Never pipe a command
 whose exit code is the claim. `pnpm exec vite-node` does not exist in this checkout, and
 `console.log` from a scratch vitest file is swallowed by the reporter — I forced a probe value out
