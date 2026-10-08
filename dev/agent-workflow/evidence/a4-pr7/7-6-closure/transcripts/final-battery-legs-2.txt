@@ -1,0 +1,66 @@
+=== typecheck
+$ pnpm run typecheck
+start 2026-10-08T07:01:45Z
+$ pnpm -r run typecheck
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+[exit 0] end 2026-10-08T07:02:06Z
+
+=== check-artifacts
+$ pnpm run check:artifacts
+start 2026-10-08T07:02:06Z
+$ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1
+[check-artifacts-committed] OK: 1508 files — working tree equals the git INDEX for both install surfaces (incl. 1 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+[exit 0] end 2026-10-08T07:02:07Z
+
+=== smoke-composition
+$ pnpm run smoke:composition
+start 2026-10-08T07:02:07Z
+$ node scripts/composition-smoke.mjs
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/dist/packages/runtime/src/plugin/host.js:197:15)
+    at validateTeamPluginConfig (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/dist/packages/runtime/src/plugin/host.js:201:9)
+    at bootstrap (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/dist/packages/runtime/src/plugin/host.js:1077:33)
+    at Module.apply (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/dist/packages/runtime/src/plugin/host.js:2279:19)
+    at checkPluginContract (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/scripts/composition-smoke.mjs:201:24)
+    at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/scripts/composition-smoke.mjs:298:13
+PASS host plugin (packages/runtime): name="dsh-agent-team", apply fails loud on degenerate context (ready code=TEAM_PLUGIN_CONFIG_INVALID)
+PASS client plugin (packages/client): name="dsh-agent-team-client", apply fails loud on degenerate context
+PASS client bundle composition-output-present (packages/client/composition-shim): packages/client/composition-shim/ carries client-bundle.js, index.js, package.json
+PASS client bundle composition-bundle-is-install-surface (packages/client/composition-shim): all 5 path(s) the built shim manifest advertises land inside an install surface check:artifacts compares (packages/runtime/dist, packages/client/composition-shim)
+PASS client bundle manifest-targets-resolve (packages/client/composition-shim): every root and shim manifest target resolves on disk
+PASS client bundle shim-recorded-values (packages/client/composition-shim): shim manifest records name/version/dsh.client.platform/files as the builder writes them (v0.1.1-alpha.2)
+PASS client bundle plugin-row-registrations (packages/client/composition-shim): registers both client row ids: dsh-agent-team, @dsh-agent-team/client
+PASS client bundle bundle-module-graph-evaluates (packages/client/composition-shim): module graph evaluated with 4 inert module-table namespace(s) and no browser host
+PASS client bundle plugin-row-exports (packages/client/composition-shim): name="dsh-agent-team-client", apply is a function, inject lists 7 seam service(s)
+PASS client bundle external-specifier-set (packages/client/composition-shim): requires exactly the host module table: @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives, react, react/jsx-runtime
+PASS client bundle derived-urls-resolve (packages/client/composition-shim): 3 runtime-derived URL(s) resolve on disk (glue + seam candidates)
+PASS composition-smoke
+[exit 0] end 2026-10-08T07:02:08Z
+
+=== lint-identities-diff
+$ node scripts/lint-identities.mjs --out dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/lint-identities-final.txt --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+start 2026-10-08T07:02:08Z
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1115 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+[exit 0] end 2026-10-08T07:02:19Z
+
+DONE-2

@@ -1,0 +1,90 @@
+A4-PR7 §7.6 CLOSURE LANE — FINAL BATTERY
+=========================================
+lane      : evidence task "§7.6 closure" (Alpha.4, A4-PR7, plan §7.6 code-merge gate)
+branch    : feat/a4-76-closure        worktree: .worktrees/a4-76-closure
+base      : master @ 0e7004b6         tip     : (this commit; see `git log` — all commits are evidence-only)
+host      : node v24.21.0, 32 cores, CI=true, XDG_CACHE_HOME=/home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/cache
+discipline: NO production source, NO package.json, NO packages/testkit/test/a4p7-merge-gate.test.ts was
+            modified. `git diff --name-only 0e7004b6 HEAD` returns ONLY paths under
+            dev/agent-workflow/evidence/a4-pr7/7-6-closure/. A red this lane caused is reported, not fixed.
+
+DELIVERABLES
+------------
+1. SCENARIOS.md            §7.6 scenario -> registered `describe > test` traceability map
+                           19 rows (plan sentence = 18 semicolon items; 19 obligations) —
+                           16 COVERED / 3 PARTIAL / 0 ABSENT, each PARTIAL naming its missing leg.
+                           Machine-verified: scratch/check-scenarios.mjs -> 107 citations, all resolve
+                           against the 6277-leg registry; the single NOT-PASSED citation is the
+                           disclosed d3 D1-D6/D3-4 red, cited as debt, not coverage. Transcript:
+                           transcripts/check-scenarios.txt.
+2. Client lane             captured BEFORE and AFTER on this tree, compared as TEST-NAME SETS
+   (transcripts/           (scripts/fail-set.mjs has no client mode — see FINDINGS.md F7):
+    client-before-after-diff.txt)
+                           before: 55 files / 880 legs / 3 red   after: 55 files / 880 legs / 3 red
+                           name set identical: true; NEW reds 0; FIXED reds 0; other transitions 0.
+                           The 3 reds are EXACTLY the CLIENT_BASELINE_FAILURES trio pinned in
+                           packages/testkit/test/a4p7-merge-gate.test.ts:
+                             test/team-creation-panel.client.spec.tsx > TeamCreationPanel > selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)
+                             test/team-creation-panel.client.spec.tsx > TeamCreationPanel > switching the runtime preset re-runs the probe with the new persona fact (UI §7.3)
+                             test/team-governance.client.spec.tsx  > TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success
+                           Loaded files are enumerated in that transcript (28 .test.ts incl. the s3
+                           spike, which LOADED AND PASSED at worktree location + 23 .client.spec.tsx
+                           + 4 .client.spec.ts). The root command loads only 27 client .test.ts files,
+                           so the root suite sees 0 of the 880 client-lane legs.
+3. ROOT-CENSUS.md          nine-root census on the final tree in the published form + the
+                           root-command equivalence note. Identity SETS, never counts:
+                             capture 1  502 files / 6277 legs / 19 titled reds / 3 collection files -> 22 ids
+                             capture 2  same shape + the A1.2-named p6t1-parallel load flake        -> 23 ids
+                           diff vs dev/agent-workflow/evidence/a4-pr7/population-baseline/
+                           nine-root-2162f6a7.ids (scratch/baseline-2162f6a7.ids.txt): IDENTICAL,
+                           NEW 0 / FIXED 0 / ESCALATED 0 (no red moved into a collection error and
+                           none left either category).
+
+BATTERY LEGS (all on the final tree, HEAD 9df5535f unless noted)
+----------------------------------------------------------------
+[  ok ] root census x2 (sequential, one vitest at a time)      transcripts/root-census-after-{1,2}.txt
+          ids: scratch/root-ids-after-{1,2}.txt   driver: scratch/final-census.sh
+[  ok ] client lane before/after (name-set diff)               transcripts/client-before-after-diff.txt
+[  ok ] p4t6 derived scanned-file total = 1036 (quiet tree)    transcripts/p4t6-derived-total.txt
+          DERIVED by the documented one-liner, never quoted from a note. Disclosed: the same command
+          read 1136 at 06:45Z while earlier runs' on-disk state was present — the total is a property
+          of the disk, so only the quiet-tree reading, cross-checked against the green p4t6 leg in the
+          same census, is quotable. The leg TITLE still says "979 files scanned" (frozen identity).
+[  ok ] solo re-runs clearing the load flake                   19/19 green in 749ms
+          packages/runtime/test/p6t1-parallel.test.ts 9/9 green at base (transcripts/p6t1-parallel-solo.txt)
+          and again on the final tree — the only extra identity in capture 2 is this A1.2-named group.
+[FAIL*] pnpm run lint                                  transcripts/final-battery-legs.txt
+          exit 1: 160 problems (128 errors, 32 warnings) AT BASE 0e7004b6, unchanged by this lane.
+          *Red at base; the gate-comparable artifact is the identity diff below, not the exit code.
+[  ok ] node scripts/lint-identities.mjs --diff <published reference>
+          transcripts/final-battery-legs-2.txt: 160 identity lines / 76 distinct;
+          baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt:
+          76 distinct; NEW 0, RESOLVED 0. Capture: scratch/lint-identities-final.txt.
+          Universe note: 1115 files linted, 0 gitignored.
+[  ok ] pnpm run typecheck (pnpm -r, 9 projects)                transcripts/final-battery-legs-2.txt
+[  ok ] pnpm run check:artifacts
+          DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok
+          compared=1508 glue=1
+[  ok ] pnpm run smoke:composition                             composition-smoke PASS (host + client
+          plugin rows, bundle graph evaluates, external specifier set exact)
+
+STATE DEPENDENCES DISCLOSED (full text in FINDINGS.md)
+------------------------------------------------------
+F5  the §7.6 merge-gate composition smoke leg needs `pnpm setup`: `packages/client/dist` is
+    gitignored (0 tracked files; `packages/runtime/dist` has 1505 committed files), so in a fresh
+    worktree that leg refuses with `refused` and the census reports 20 titled reds. After
+    `pnpm build && pnpm build:composition` (both exit 0, tree porcelain-clean) it is green and the
+    census shows the 19-red baseline shape. Build state, not an Alpha.4 regression.
+F6  `ps` cannot see other processes in this sandbox (per-call `bwrap --unshare-pid`), and a `cmd &`
+    started from a tool call dies with that call. One capture was overlapped and quarantined
+    (transcripts/root-census-attempt-overlapped-DISCARD.txt) before this was understood; both census
+    pairs and both client captures were otherwise taken strictly one run at a time.
+ROOT-CENSUS.md §5  the client config resolves `tests/deepseek-harness-test-use` by walking up, so this
+    worktree used the main workspace's pristine checkout (0.2.0-rc.2 @ 639ed01539, porcelain clean).
+
+WHAT THIS LANE IS NOT
+---------------------
+No product code, no test code, no manifest was written; nothing was pushed; no branch was merged.
+The three PARTIAL rows in SCENARIOS.md are the lane's substantive finding — they name legs that do
+not exist, with the searches that failed to find them. They are not fixed here: adding them is
+implementation work outside an evidence lane's scope.

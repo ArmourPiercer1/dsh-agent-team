@@ -1,0 +1,76 @@
+final battery, HEAD=9df5535f
+=== lint
+$ pnpm run lint
+start 2026-10-08T06:53:36Z
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/test/startup-all-templates-real-authority.test.ts
+  227:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  229:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  253:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/test/startup-consent-production.test.ts
+  257:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  259:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  283:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  353:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  355:24  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  359:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/test/startup-preflight-production-create.test.ts
+  263:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  265:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  296:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/test/startup-template-disable-production.test.ts
+  234:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  236:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  260:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/test/t12a-live-bridge.mjs
+  398:13  error  Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/test/team-compatibility-scope.test.ts
+  297:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  301:19  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  437:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  439:11  error    'registrationResult' is assigned a value but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  443:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  599:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  603:24  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  605:24  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  612:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  845:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  850:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  894:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  899:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  916:11  error    'deletedStale' is assigned a value but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/test/team-session-durability.test.ts
+  47:16  error  'captureReject' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/runtime/test/team-session-startup-fence.test.ts
+  420:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  472:7  error    'apply3' is assigned a value but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/tools/harness/g5-member-e2e.mjs
+  640:16  error  'apiPage' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-closure/packages/tools/harness/plugin.mjs
+  140:7  error  'now' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 160 problems (128 errors, 32 warnings)
+  4 errors and 32 warnings potentially fixable with the `--fix` option.
+
+[ELIFECYCLE] Command failed with exit code 1.
+[exit 1] end 2026-10-08T06:53:46Z
+
+=== lint-identities
+$ node scripts/lint-identities.mjs
+start 2026-10-08T06:53:46Z
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1115 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+[exit 0] end 2026-10-08T06:53:56Z
+
+=== typecheck
+$ pnpm run typecheck
+start 2026-10-08T06:53:56Z
