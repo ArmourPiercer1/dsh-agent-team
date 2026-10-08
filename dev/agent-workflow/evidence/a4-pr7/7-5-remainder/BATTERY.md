@@ -67,8 +67,8 @@ changed** the leg prints the same 604-byte diagnostic it prints in this lane
 ### 6.3 Typecheck, both invocations, reported separately
 
 ```
-pnpm -r run typecheck              -> exit 0, 0 × error TS        (transcript 19)
-pnpm -r --no-bail run typecheck    -> exit 0, 0 × error TS        (transcript 20)
+pnpm -r run typecheck              -> exit 0, 0 × error TS   (transcripts 19, 30-rebased)
+pnpm -r --no-bail run typecheck    -> exit 0, 0 × error TS   (transcripts 20, 31-rebased)
 ```
 
 The bailing invocation is green here, but green from an incomplete sweep is what the
@@ -95,11 +95,22 @@ decision was not needed (transcript `21`).
 git status --porcelain | wc -l  -> 0
 ```
 
-Files this branch changes: **33 added, 0 modified, 0 deleted, all under
-`dev/agent-workflow/evidence/a4-pr7/7-5-remainder/`** — measured with the three-dot diff
-(`git diff --name-status origin/master...HEAD`, merge-base) rather than two-dot, which
-after the mid-session move reported that this lane had deleted 13 lines of
-`SESSION_ROUTER_LOG.md` and one of `graph.yaml`. See FINDINGS §5 item 12. Not pushed. `pnpm install` was a real offline install from
+Files this branch changes: **additions only, all under
+`dev/agent-workflow/evidence/a4-pr7/7-5-remainder/`, zero modified, zero deleted**. The
+claim worth keeping is the *shape*, and it is one command:
+
+```
+git diff --name-status origin/master...HEAD | awk '{print $1}' | sort | uniq -c
+  <n> A
+```
+
+The only status letter is `A`: zero `M`, zero `D`. The count is deliberately not quoted
+here — it grows while transcripts are still landing, and a count in a document is the
+kind of number this phase keeps having to re-derive. If a number is needed, run the
+command. Measured with the **three-dot** diff (merge-base), not
+two-dot: after the mid-session move of `origin/master`, a two-dot diff reported that this
+lane had deleted 13 lines of `SESSION_ROUTER_LOG.md` and one of `graph.yaml` — see FINDINGS
+§5 item 12. Not pushed; no host boot, no port 3180/3080, no build, no push. `pnpm install` was a real offline install from
 `/home/user/dsh-plugins/dsh-agent-team/.pnpm-store`; no `cp -al node_modules` anywhere.
 Before every vitest invocation in this lane ran
 `rm -rf packages/testkit/test/.tmp-fault`.
