@@ -21,3 +21,4 @@ DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=stal
   C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js
   C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js.map
 [ELIFECYCLE] Command failed with exit code 1.
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1508 glue=1
