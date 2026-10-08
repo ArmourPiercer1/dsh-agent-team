@@ -1995,6 +1995,18 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts',
       'packages/runtime/test/a4p7-v3-grammar-enforced.test.ts',
     ]
+    // A4-PR7 Task 7.6 ceiling-pin (`feat/a4-76-ceiling-pin`): the construction-level
+    // assembly pin for the authority-ceiling wiring — ONE new scannable file, the
+    // in-process host-entry instrument (`packages/runtime/test/a4p7-ceiling-port-
+    // assembly-pin.test.ts`: boot the REAL shipped composition, drive a rise, assert the
+    // ceiling decides; its mutation proof is a deleted host injection line). The lane's
+    // other writes are edits to already-counted paths (the V16/V17 repair, this pin) and
+    // evidence files under `dev/agent-workflow/evidence/` outside the `packages/**`
+    // scope — an edit is not an increment. Same discipline: present BY PATH below,
+    // length tied to the movement, total never written by hand.
+    const SCANNED_PATHS_A4P76PIN: readonly string[] = [
+      'packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2009,7 +2021,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4ARTIFACTS.length +
         SCANNED_PATHS_A4P7PRE.length +
         SCANNED_PATHS_A4P76GATE.length +
-        SCANNED_PATHS_A4P73GRAMMAR.length,
+        SCANNED_PATHS_A4P73GRAMMAR.length +
+        SCANNED_PATHS_A4P76PIN.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2025,7 +2038,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4ARTIFACTS.length +
         SCANNED_PATHS_A4P7PRE.length +
         SCANNED_PATHS_A4P76GATE.length +
-        SCANNED_PATHS_A4P73GRAMMAR.length,
+        SCANNED_PATHS_A4P73GRAMMAR.length +
+        SCANNED_PATHS_A4P76PIN.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2067,6 +2081,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4P7PRE,
       ...SCANNED_PATHS_A4P76GATE,
       ...SCANNED_PATHS_A4P73GRAMMAR,
+      ...SCANNED_PATHS_A4P76PIN,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2178,6 +2193,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // movement — an edit is not an increment, which is exactly why a landed file without its
     // path here turns this sum RED instead of moving it silently.
     expect(SCANNED_PATHS_A4P73GRAMMAR.length).toBe(1031 - 1029)
+    // The A4-PR7 Task 7.6 ceiling-pin tie, same form: the movement equals the one
+    // instrument this lane names, asserted present by path in the loop above. Both
+    // endpoints were MEASURED on this branch, not inferred: the tree with the pin file
+    // on disk but absent from this list read `expected 1032 to be 1031` (capture
+    // `dev/agent-workflow/evidence/a4-pr7/7-6-ceiling-pin/p4t6-RED-scan-increment.log`),
+    // and 1031 is the derived total the line above ends on. The V16/V17 repair on this
+    // branch is an EDIT to an already-counted path and contributes nothing.
+    expect(SCANNED_PATHS_A4P76PIN.length).toBe(1032 - 1031)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

@@ -1,0 +1,5 @@
+lint-identities: 162 identity lines, 77 distinct (target .)
+lint-identities: universe: 1108 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 1, resolved 0
+NEW IDENTITIES (1):
+  warning (parse-fatal) packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
