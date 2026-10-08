@@ -1,0 +1,1098 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision
+
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts (8 tests | 8 failed) 22ms
+     × is deterministic across parses 12ms
+     × is independent of YAML key order (canonical JSON sorts keys) 3ms
+     × binds exactly to the canonical hashable projection 1ms
+     × changes when a requirement subject changes 1ms
+     × changes when a requirement flips complete false -> true 1ms
+     × changes when a requirement is removed entirely 1ms
+     × a v1 document has no `teamRequirements` and no template `requirements` in its projection 1ms
+     × a v2 document with NO v2 fields projects identically to its v1 twin except `schemaVersion` 1ms
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts (4 tests | 4 failed) 14ms
+     × a v1 document (persona string + flat requirements) parses 10ms
+     × the v1 content hash is stable across parses (byte-identical resume) 1ms
+     × the v1 projection carries no v2 key (the v2 structured-requirement surface is absent on v1) 1ms
+     × a v2 `teamRequirements` field is still rejected on a v1 document (frozen closed field sets) 1ms
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts (16 tests | 8 failed) 26ms
+     × parses team + leader + member structured requirements 12ms
+     × normalizes an omitted `complete` to `false` (the ordinary ack-able case) 1ms
+     × accepts a persona requirement (the §E.3 required-persona carrier) 1ms
+     ✓ rejects a persona requirement whose subject is outside the closed required-persona-kind set (additive v2 rule, §E.3) 1ms
+     ✓ rejects an unknown persona subject slug (additive v2 rule, §E.3) 1ms
+     × accepts an explicitly empty teamRequirements list (declared, not omitted) 1ms
+     × leaves a v2 document WITHOUT v2 fields as `undefined` (omitted, not present-but-empty) 1ms
+     × rejects `teamRequirements` on a v1 document (unknown top-level field) 1ms
+     × rejects `requirements` on a v1 template (unknown template field) 1ms
+     ✓ rejects a type outside the closed §27.1 six-set 3ms
+     ✓ rejects a duplicate requirementId within the same level 1ms
+     ✓ rejects empty `subjects` 1ms
+     ✓ rejects a non-boolean `complete` 1ms
+     ✓ rejects a missing `requirementId` 1ms
+     ✓ rejects an unknown field on a v2 requirement 1ms
+     × the v2Source helper yields a parseable document 1ms
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts (0 test)
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts (0 test)
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts (1 test | 1 failed) 24ms
+     × L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal 23ms
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts (5 tests | 5 failed) 40ms
+     × premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case) 22ms
+     × control: with the worker ENABLED the delegate is admitted (healthy world, empty worker) 4ms
+     × the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set 5ms
+     × the same disable BLOCKS the follow-up to the worker (same normalWork class, same scopeRefs) 5ms
+     × re-enabling resumes the delegate through the SAME checks (the block did not key on requirements) 4ms
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts (7 tests | 7 failed) 47ms
+     × W2: the wiring resolves [team, template:leader] for the fixture blueprint 24ms
+     × W3: the refs exclude the (unrelated) worker template scope 4ms
+     × L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch 4ms
+     × L2: a Leader OPTIONAL requirement down does not block the normal turn (auto-degraded) 5ms
+     × L4: an unrelated Member (worker) required requirement down does not block the Leader 3ms
+     × L5: a Team-level REQUIRED requirement down blocks the Leader normal turn 3ms
+     × L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority) 3ms
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts (5 tests | 5 failed) 31ms
+     × premise: the leader template declares NO requirements (its scope has no verdict inputs) 16ms
+     × IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work) 4ms
+     × IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way 3ms
+     × IL3: with the leader disabled the legitimate control/recovery lanes still function 3ms
+     × IL4: re-enable RESUMES the initial work through the same checks (allowed again) 4ms
+ ❯ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts (0 test)
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/consent-scope-hash-binding.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-template-disable-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-consent-production.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts (0 test)
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ❯ packages/runtime/test/startup-consent-production.test.ts (0 test)
+ ❯ packages/runtime/test/startup-template-disable-production.test.ts (0 test)
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ❯ packages/runtime/test/startup-all-templates-real-authority.test.ts (0 test)
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/startup-preflight-production-create.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts (6 tests | 6 failed) 8ms
+     × the boot create rejects with the typed creation-preflight refusal (outcome fatal) 3ms
+     × zero durable effect: no TeamSession record, no registry row, no fact row 2ms
+     × the boot create rejects typed with the blocked template scope + the down requirement 0ms
+     × zero durable effect: the refused bind wrote nothing under the root 1ms
+     × the boot create rejects typed with the consent-required requirement id 0ms
+     × zero durable effect: the refused bind wrote nothing under the root 1ms
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+    at teamContractError (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/contracts/src/errors.ts:112:10)
+    at requireField (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/domain/blueprint/src/validate.ts:159:11)
+    at validateBlueprintDocument (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/domain/blueprint/src/validate.ts:1335:5)
+    at parseBlueprint (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/domain/blueprint/src/validate.ts:1538:16)
+    at parseNamedSourceOrThrow (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/blueprint-authority.ts:366:10)
+    at classifyBlueprintAnchor (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/blueprint-authority.ts:361:43)
+    at createBlueprintAuthority (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/blueprint-authority.ts:540:18)
+    at bootstrap (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision/packages/runtime/src/plugin/host.ts:1860:30)
+
+ ❯ packages/runtime/test/mcp-target-materialization.test.ts (0 test)
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts (74 tests | 1 failed) 4137ms
+     ✓ C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work 86ms
+     ✓ C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness) 10ms
+     ✓ C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter) 23ms
+     ✓ C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes 42ms
+     ✓ C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands 24ms
+     ✓ C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator 21ms
+     ✓ C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work 21ms
+     ✓ C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work 83ms
+     ✓ c9-1: delegate × decision-settle × no-mark 18ms
+     ✓ c9-2: delegate × decision-settle × already-abandoned 17ms
+     ✓ c9-3: delegate × terminal-snapshot × no-mark 20ms
+     ✓ c9-4: delegate × terminal-snapshot × already-abandoned 19ms
+     ✓ c9-5: delegate × outer-queue × no-mark 18ms
+     ✓ c9-6: delegate × outer-queue × already-abandoned 19ms
+     ✓ c9-7: delegate × gate-success × no-mark 18ms
+     ✓ c9-8: delegate × gate-success × already-abandoned 17ms
+     ✓ c9-9: delegate × gate-reject × no-mark 16ms
+     ✓ c9-10: delegate × gate-reject × already-abandoned 16ms
+     ✓ c9-11: delegate × control-queue × no-mark 78ms
+     ✓ c9-12: delegate × control-queue × already-abandoned 78ms
+     ✓ c9-13: delegate × pre-flight-authority × no-mark 18ms
+     ✓ c9-14: delegate × pre-flight-authority × already-abandoned 17ms
+     ✓ c9-15: delegate × pre-flight-provider-lock × no-mark 40ms
+     ✓ c9-16: delegate × pre-flight-provider-lock × already-abandoned 38ms
+     ✓ c9-17: delegate × pre-flight-external-facts × no-mark 18ms
+     ✓ c9-18: delegate × pre-flight-external-facts × already-abandoned 20ms
+     ✓ c9-19: delegate × post-commit × no-mark 20ms
+     ✓ c9-20: follow-up × decision-settle × no-mark 15ms
+     ✓ c9-21: follow-up × decision-settle × already-abandoned 14ms
+     ✓ c9-22: follow-up × terminal-snapshot × no-mark 15ms
+     ✓ c9-23: follow-up × terminal-snapshot × already-abandoned 15ms
+     ✓ c9-24: follow-up × outer-queue × no-mark (the external named repro) 15ms
+     ✓ c9-25: follow-up × outer-queue × already-abandoned 17ms
+     ✓ c9-26: follow-up × gate-success × no-mark 15ms
+     ✓ c9-27: follow-up × gate-success × already-abandoned 16ms
+     ✓ c9-28: follow-up × gate-reject × no-mark 15ms
+     ✓ c9-29: follow-up × gate-reject × already-abandoned 18ms
+     ✓ c9-30: follow-up × control-queue × no-mark 79ms
+     ✓ c9-31: follow-up × control-queue × already-abandoned 78ms
+     ✓ c9-32: follow-up × post-commit × no-mark 18ms
+     ✓ c9-33: follow-up × fault-admission × no-mark 77ms
+     ✓ c9-34: send-message × decision-settle × no-mark 14ms
+     ✓ c9-35: send-message × decision-settle × already-abandoned 14ms
+     ✓ c9-36: send-message × terminal-snapshot × no-mark 17ms
+     ✓ c9-37: send-message × terminal-snapshot × already-abandoned 15ms
+     ✓ c9-38: send-message × outer-queue × no-mark 15ms
+     ✓ c9-39: send-message × outer-queue × already-abandoned 16ms
+     ✓ c9-40: send-message × control-queue × no-mark 78ms
+     ✓ c9-41: send-message × control-queue × already-abandoned 79ms
+     ✓ c9-42: create-member × decision-settle × no-mark 15ms
+     ✓ c9-43: create-member × decision-settle × already-abandoned 15ms
+     ✓ c9-44: create-member × terminal-snapshot × no-mark 15ms
+     ✓ c9-45: create-member × terminal-snapshot × already-abandoned 15ms
+     ✓ c9-46: create-member × outer-queue × no-mark 15ms
+     ✓ c9-47: create-member × outer-queue × already-abandoned 16ms
+     ✓ c9-48: create-member × gate-success × no-mark 16ms
+     ✓ c9-49: create-member × gate-success × already-abandoned 16ms
+     ✓ c9-50: create-member × gate-reject × no-mark 15ms
+     ✓ c9-51: create-member × gate-reject × already-abandoned 15ms
+     ✓ c9-52: create-member × control-queue × no-mark 77ms
+     ✓ c9-53: create-member × control-queue × already-abandoned 76ms
+     ✓ c9-54: create-member × pre-flight-authority × no-mark 16ms
+     ✓ c9-55: create-member × pre-flight-authority × already-abandoned 14ms
+     ✓ c9-56: create-member × pre-flight-provider-lock × no-mark 37ms
+     ✓ c9-57: create-member × pre-flight-provider-lock × already-abandoned 38ms
+     ✓ c9-58: create-member × pre-flight-external-facts × no-mark 17ms
+     ✓ c9-59: create-member × pre-flight-external-facts × already-abandoned 18ms
+     ✓ c9-60: create-member × fault-preflight × no-mark 16ms
+     ✓ c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end)  2004ms
+     × c9-r3-1: v2 templateFeed — park at B's templateFacts feed await (ENTERED proven), abort, the feed REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal) 8ms
+     ✓ c9-r3-2: legacy externalFacts — park at B's step-8 probe (ENTERED proven), abort, the probe REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal) 16ms
+     ✓ c9-r3-3: one-shot close-failure on the reject path — the FIRST close fault propagates UNCHANGED (typed DURABLE_WRITE_FAILED carrying the injected error), zero effects, zero marks, EXACTLY ONE abandon put attempt (never re-attempted — a second attempt would succeed and mask the fault) 16ms
+     ✓ c9-pcb-1: GATED branch (follow-up reentry) — the unit C-2 abort-close faults ONCE before the commitEffect callback enters: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged (not masked by a typed-abandoned terminal), the close attempted EXACTLY ONCE, zero effects, zero marks 78ms
+     ✓ c9-pcb-2: FALLBACK branch (send-message reentry) — same one-shot pre-callback close fault on the fallback D2 settle path: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged, the close attempted EXACTLY ONCE, zero effects, zero marks 78ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/consent-scope-hash-binding.test.ts [ packages/runtime/test/consent-scope-hash-binding.test.ts ]
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/consent-scope-hash-binding.test.ts:367:17
+    365| /** The typed creation-preflight refusal details (asserts the typed sh…
+    366| function preflightRefusal(error: unknown): Record<string, unknown> {
+    367|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    368|   const typed = error as TeamRuntimeError
+    369|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/consent-scope-hash-binding.test.ts:455:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/53]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts [ packages/runtime/test/mcp-target-materialization-unit.test.ts ]
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:151:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/53]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization.test.ts [ packages/runtime/test/mcp-target-materialization.test.ts ]
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ parseNamedSourceOrThrow packages/runtime/src/plugin/blueprint-authority.ts:366:10
+ ❯ classifyBlueprintAnchor packages/runtime/src/plugin/blueprint-authority.ts:361:43
+ ❯ createBlueprintAuthority packages/runtime/src/plugin/blueprint-authority.ts:540:18
+ ❯ bootstrap packages/runtime/src/plugin/host.ts:1860:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/53]⎯
+
+ FAIL  packages/runtime/test/persona-kind-provider-preflight.test.ts [ packages/runtime/test/persona-kind-provider-preflight.test.ts ]
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/persona-kind-provider-preflight.test.ts:231:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/53]⎯
+
+ FAIL  packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts [ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts ]
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts:370:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/53]⎯
+
+ FAIL  packages/runtime/test/startup-all-templates-real-authority.test.ts [ packages/runtime/test/startup-all-templates-real-authority.test.ts ]
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-all-templates-real-authority.test.ts:275:17
+    273| /** The typed creation-preflight refusal (or throw the test). */
+    274| function preflightRefusal(error: unknown): Record<string, unknown> {
+    275|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    276|   const typed = error as TeamRuntimeError
+    277|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-all-templates-real-authority.test.ts:308:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/53]⎯
+
+ FAIL  packages/runtime/test/startup-consent-production.test.ts [ packages/runtime/test/startup-consent-production.test.ts ]
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-consent-production.test.ts:305:17
+    303| /** The typed creation-preflight refusal (or throw the test). */
+    304| function preflightRefusal(error: unknown): Record<string, unknown> {
+    305|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    306|   const typed = error as TeamRuntimeError
+    307|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-consent-production.test.ts:387:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/53]⎯
+
+ FAIL  packages/runtime/test/startup-template-disable-production.test.ts [ packages/runtime/test/startup-template-disable-production.test.ts ]
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-template-disable-production.test.ts:282:17
+    280| /** The typed creation-preflight refusal (or throw the test). */
+    281| function preflightRefusal(error: unknown): Record<string, unknown> {
+    282|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    283|   const typed = error as TeamRuntimeError
+    284|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-template-disable-production.test.ts:320:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/53]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 45 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > a v1 document (persona string + flat requirements) parses
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts:69:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/53]⎯
+
+ FAIL  packages/domain/test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > the v1 content hash is stable across parses (byte-identical resume)
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts:77:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/53]⎯
+
+ FAIL  packages/domain/test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > the v1 projection carries no v2 key (the v2 structured-requirement surface is absent on v1)
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts:84:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/53]⎯
+
+ FAIL  packages/domain/test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > a v2 `teamRequirements` field is still rejected on a v1 document (frozen closed field sets)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ packages/domain/test/blueprint-v1-frozen-resume.test.ts:110:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: determinism and canonical binding > is deterministic across parses
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:108:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: determinism and canonical binding > is independent of YAML key order (canonical JSON sorts keys)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:114:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: determinism and canonical binding > binds exactly to the canonical hashable projection
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:120:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the structured requirements participate > changes when a requirement subject changes
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:127:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the structured requirements participate > changes when a requirement flips complete false -> true
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:136:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the structured requirements participate > changes when a requirement is removed entirely
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:145:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability) > a v1 document has no `teamRequirements` and no template `requirements` in its projection
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:167:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability) > a v2 document with NO v2 fields projects identically to its v1 twin except `schemaVersion`
+TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-hash.test.ts:215:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > parses team + leader + member structured requirements
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:102:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > normalizes an omitted `complete` to `false` (the ordinary ack-able case)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:139:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > accepts a persona requirement (the §E.3 required-persona carrier)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:167:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > accepts an explicitly empty teamRequirements list (declared, not omitted)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:234:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > leaves a v2 document WITHOUT v2 fields as `undefined` (omitted, not present-but-empty)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:259:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1) > rejects `teamRequirements` on a v1 document (unknown top-level field)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:309:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1) > rejects `requirements` on a v1 template (unknown template field)
+Error: expected MALFORMED_DTO but got SCHEMA_VERSION_MISMATCH
+ ❯ expectCode packages/domain/test/t2-helpers.ts:47:11
+     45|   }
+     46|   if (threw.code !== code) {
+     47|     throw new Error(`expected ${code} but got ${threw.code}`)
+       |           ^
+     48|   }
+     49|   return threw
+ ❯ expectErrorDetails packages/domain/test/t2-helpers.ts:80:17
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:335:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/53]⎯
+
+ FAIL  packages/domain/test/t2-blueprint-v2-requirements.test.ts > E.2 v2: helper sanity > the v2Source helper yields a parseable document
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ packages/domain/test/t2-blueprint-v2-requirements.test.ts:445:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/53]⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 residual-3: the pre-reservation REJECT region > c9-r3-1: v2 templateFeed — park at B's templateFacts feed await (ENTERED proven), abort, the feed REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ createAuthzWorld packages/runtime/test/fix-control-authz-helpers.ts:118:9
+ ❯ c9R3TemplateFeedReject packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2337:13
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2395:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/53]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > premise: the leader template declares NO requirements (its scope has no verdict inputs)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:284:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/53]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:303:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/53]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:340:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/53]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL3: with the leader disabled the legitimate control/recovery lanes still function
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:375:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/53]⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL4: re-enable RESUMES the initial work through the same checks (allowed again)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:423:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/53]⎯
+
+ FAIL  packages/runtime/test/leader-recovery-next-boundary-exit.test.ts > W3-C leader-recovery-next-boundary-exit: the F8 leader recovery exit > L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:216:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/53]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > W2: the wiring resolves [team, template:leader] for the fixture blueprint
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:259:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/53]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > W3: the refs exclude the (unrelated) worker template scope
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:265:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/53]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:275:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/53]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L2: a Leader OPTIONAL requirement down does not block the normal turn (auto-degraded)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:312:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/53]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L4: an unrelated Member (worker) required requirement down does not block the Leader
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:339:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/53]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L5: a Team-level REQUIRED requirement down blocks the Leader normal turn
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:366:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/53]⎯
+
+ FAIL  packages/runtime/test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/leader-template-required-boundary.test.ts:400:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/53]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S1 — Team-level required down: the creation preflight refuses typed (guide §6.3.1) > the boot create rejects with the typed creation-preflight refusal (outcome fatal)
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-preflight-production-create.test.ts:308:17
+    306| /** The typed creation-preflight refusal (or throw the test). */
+    307| function preflightRefusal(error: unknown): { code: string; details: Re…
+    308|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    309|   const typed = error as TeamRuntimeError
+    310|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:401:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/53]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S1 — Team-level required down: the creation preflight refuses typed (guide §6.3.1) > zero durable effect: no TeamSession record, no registry row, no fact row
+AssertionError: expected { schemaVersion: 1, …(5) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "blueprint": {
+    "blueprintId": "SPFC-1-BP",
+    "contentHash": "sha256:d76e3a2fd4cefb2a69d0d6a12ce9809078fc87f4c91f0e1cf3c1c9026258f0eb",
+    "revision": "1",
+  },
+  "createdAt": "2026-10-08T00:31:28.922Z",
+  "defaultWorkspace": "C:/agent-team/work/spfc",
+  "generation": 2,
+  "rootSessionId": "session-spfc-fat1",
+  "schemaVersion": 1,
+}
+
+ ❯ assertZeroDurableEffect packages/runtime/test/startup-preflight-production-create.test.ts:326:63
+    324|  */
+    325| function assertZeroDurableEffect(domain: TeamDomain, rootSessionId: st…
+    326|   expect(domain.repositories.teamSessions.get(rootSessionId)).toBeUnde…
+       |                                                               ^
+    327|   expect(domain.repositories.blueprintRegistry.list()).toEqual([])
+    328|   for (const entry of domain.repositories.ledger.list()) {
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:411:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/53]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S2 — MemberTemplate required down (no instance): `fixOrDisable` (guide §6.3.2) > the boot create rejects typed with the blocked template scope + the down requirement
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-preflight-production-create.test.ts:308:17
+    306| /** The typed creation-preflight refusal (or throw the test). */
+    307| function preflightRefusal(error: unknown): { code: string; details: Re…
+    308|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    309|   const typed = error as TeamRuntimeError
+    310|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:417:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/53]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S2 — MemberTemplate required down (no instance): `fixOrDisable` (guide §6.3.2) > zero durable effect: the refused bind wrote nothing under the root
+AssertionError: expected { schemaVersion: 1, …(5) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "blueprint": {
+    "blueprintId": "SPFC-2-BP",
+    "contentHash": "sha256:8a0112073389586d58a52b9dd183a7250cd2c7d65b86eca6047698e69fd3cadb",
+    "revision": "1",
+  },
+  "createdAt": "2026-10-08T00:31:28.986Z",
+  "defaultWorkspace": "C:/agent-team/work/spfc",
+  "generation": 2,
+  "rootSessionId": "session-spfc-fix1",
+  "schemaVersion": 1,
+}
+
+ ❯ assertZeroDurableEffect packages/runtime/test/startup-preflight-production-create.test.ts:326:63
+    324|  */
+    325| function assertZeroDurableEffect(domain: TeamDomain, rootSessionId: st…
+    326|   expect(domain.repositories.teamSessions.get(rootSessionId)).toBeUnde…
+       |                                                               ^
+    327|   expect(domain.repositories.blueprintRegistry.list()).toEqual([])
+    328|   for (const entry of domain.repositories.ledger.list()) {
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:429:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/53]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S4 — optional down without consent: `consentRequired` (guide §6.3.4) > the boot create rejects typed with the consent-required requirement id
+AssertionError: expected null to be an instance of TeamRuntimeError
+ ❯ preflightRefusal packages/runtime/test/startup-preflight-production-create.test.ts:308:17
+    306| /** The typed creation-preflight refusal (or throw the test). */
+    307| function preflightRefusal(error: unknown): { code: string; details: Re…
+    308|   expect(error).toBeInstanceOf(TeamRuntimeError)
+       |                 ^
+    309|   const typed = error as TeamRuntimeError
+    310|   expect(typed.code).toBe(TEAM_RUNTIME_ERROR_CODES.COMPATIBILITY_BLOCK…
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:435:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/53]⎯
+
+ FAIL  packages/runtime/test/startup-preflight-production-create.test.ts > W3-B S4 — optional down without consent: `consentRequired` (guide §6.3.4) > zero durable effect: the refused bind wrote nothing under the root
+AssertionError: expected { schemaVersion: 1, …(5) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "blueprint": {
+    "blueprintId": "SPFC-4-BP",
+    "contentHash": "sha256:0706a41c122c0269b2da0811e48336dc0423c3ed599af37b751ed19e4b13c564",
+    "revision": "1",
+  },
+  "createdAt": "2026-10-08T00:31:29.011Z",
+  "defaultWorkspace": "C:/agent-team/work/spfc",
+  "generation": 2,
+  "rootSessionId": "session-spfc-con1",
+  "schemaVersion": 1,
+}
+
+ ❯ assertZeroDurableEffect packages/runtime/test/startup-preflight-production-create.test.ts:326:63
+    324|  */
+    325| function assertZeroDurableEffect(domain: TeamDomain, rootSessionId: st…
+    326|   expect(domain.repositories.teamSessions.get(rootSessionId)).toBeUnde…
+       |                                                               ^
+    327|   expect(domain.repositories.blueprintRegistry.list()).toEqual([])
+    328|   for (const entry of domain.repositories.ledger.list()) {
+ ❯ packages/runtime/test/startup-preflight-production-create.test.ts:446:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/53]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:272:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/53]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > control: with the worker ENABLED the delegate is admitted (healthy world, empty worker)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:284:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/53]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:291:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/53]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > the same disable BLOCKS the follow-up to the worker (same normalWork class, same scopeRefs)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:318:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/53]⎯
+
+ FAIL  packages/runtime/test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > re-enabling resumes the delegate through the SAME checks (the block did not key on requirements)
+TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ requireField packages/domain/blueprint/src/validate.ts:159:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1335:5
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:375:9
+ ❯ packages/runtime/test/template-disable-no-requirements-gate.test.ts:355:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/53]⎯
+
+
+ Test Files  17 failed (17)
+      Tests  45 failed | 81 passed (126)
+   Start at  08:31:27
+   Duration  5.52s (transform 13.45s, setup 0ms, import 8.94s, tests 4.35s, environment 1ms)
+

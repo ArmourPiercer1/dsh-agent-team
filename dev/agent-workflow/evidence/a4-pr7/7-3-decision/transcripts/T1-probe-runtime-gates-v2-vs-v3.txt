@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision
+
+ ✓ packages/runtime/test/__probe-a473-gates.test.ts (4 tests) 7ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  08:19:55
+   Duration  409ms (transform 228ms, setup 0ms, import 307ms, tests 7ms, environment 0ms)
+

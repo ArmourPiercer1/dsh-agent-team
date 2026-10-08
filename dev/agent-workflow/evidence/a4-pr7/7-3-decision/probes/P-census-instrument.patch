@@ -1,0 +1,24 @@
+diff --git a/packages/domain/blueprint/src/validate.ts b/packages/domain/blueprint/src/validate.ts
+index e27a8c3e..c267ecbc 100644
+--- a/packages/domain/blueprint/src/validate.ts
++++ b/packages/domain/blueprint/src/validate.ts
+@@ -1537,6 +1537,19 @@ export function parseBlueprint(source: string): TeamBlueprint {
+   const raw = decodeYamlFrontmatter(doc.frontmatterText)
+   const core = validateBlueprintDocument(raw)
+   const contentHash = deriveContentHash(toHashableBlueprint(core))
++  // PROBE INSTRUMENT (a4-73-decision): parse-level census, removed on revert.
++  try {
++    const flat = (core.requirements?.length ?? 0) > 0
++    const team = core.teamRequirements !== undefined
++    const perTemplate =
++      (core.leader?.requirements?.length ?? 0) > 0 ||
++      (core.members ?? []).some((m) => (m.requirements?.length ?? 0) > 0)
++    process.stdout.write(
++      `\n[[CENSUS]] v=${core.schemaVersion} flat=${flat ? 1 : 0} teamReq=${team ? 1 : 0} templateReq=${perTemplate ? 1 : 0} id=${core.blueprintId}\n`,
++    )
++  } catch {
++    /* instrument must never change behaviour */
++  }
+   return deepFreeze({ ...core, contentHash })
+ }
+ 

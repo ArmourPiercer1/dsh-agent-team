@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-decision
+
+ ✓ packages/domain/test/__probe-a473-semantics.test.ts (19 tests) 28ms
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  08:19:22
+   Duration  330ms (transform 165ms, setup 0ms, import 220ms, tests 28ms, environment 0ms)
+

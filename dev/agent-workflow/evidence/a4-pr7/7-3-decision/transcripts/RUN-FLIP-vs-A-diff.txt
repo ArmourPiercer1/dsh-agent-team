@@ -1,0 +1,2 @@
+# diff transcripts/RUN-BAREFLIP-failing.txt transcripts/RUN-OPTION_A-failing.txt
+# (empty above = the two failing sets are identical: the flip's red is fixture-version refusal, the grammar disposition contributes nothing until a document is migrated to v3)

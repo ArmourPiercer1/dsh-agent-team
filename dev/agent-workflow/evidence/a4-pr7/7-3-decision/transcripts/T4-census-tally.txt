@@ -1,0 +1,9 @@
+   1084 v=3 flat=1 teamReq=0 templateReq=0
+    357 v=3 flat=0 teamReq=0 templateReq=0
+    347 v=2 flat=0 teamReq=1 templateReq=1
+    338 v=1 flat=0 teamReq=0 templateReq=0
+    117 v=2 flat=0 teamReq=1 templateReq=0
+     27 v=1 flat=1 teamReq=0 templateReq=0
+      3 v=2 flat=0 teamReq=0 templateReq=0
+      2 v=2 flat=0 teamReq=0 templateReq=1
+      1 v=2 flat=1 teamReq=0 templateReq=1

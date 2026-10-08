@@ -1,0 +1,43 @@
+From 43661f3efa93a848c682a505a5b299f49c7a2fa9 Mon Sep 17 00:00:00 2001
+From: probe <probe@local>
+Date: Thu, 8 Oct 2026 08:23:16 +0800
+Subject: [PATCH] =?UTF-8?q?PROBE=20FLIP=20(throwaway):=20SUPPORTED=3D[3]?=
+ =?UTF-8?q?=20+=20schemaVersion:3=20=E2=80=94=20revert=20before=20merge?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ packages/domain/blueprint/src/schema.ts | 2 +-
+ packages/domain/blueprint/src/types.ts  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/domain/blueprint/src/schema.ts b/packages/domain/blueprint/src/schema.ts
+index 73d057b1..e3c3ddd6 100644
+--- a/packages/domain/blueprint/src/schema.ts
++++ b/packages/domain/blueprint/src/schema.ts
+@@ -72,7 +72,7 @@ export const BLUEPRINT_DOCUMENT_SCHEMA_VERSION = 1 as const
+  * The v3-only switch itself lives in PR2's single adapter, selected by
+  * `schemaVersion` (ADR A5-12).
+  */
+-export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [1, 2, 3]
++export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [3]
+ 
+ /**
+  * Every Blueprint DOCUMENT VERSION this product has ever defined and shipped:
+diff --git a/packages/domain/blueprint/src/types.ts b/packages/domain/blueprint/src/types.ts
+index 87f1942d..e7e6902b 100644
+--- a/packages/domain/blueprint/src/types.ts
++++ b/packages/domain/blueprint/src/types.ts
+@@ -413,7 +413,7 @@ export interface TeamBlueprint {
+    * (ADR A1-19). `3` is admitted for the PR1-PR6 bridge only (ADR A2-11); the
+    * Alpha.4 contract is v3-only and the PR7 cutover narrows the accepted set.
+    */
+-  readonly schemaVersion: 1 | 2 | 3
++  readonly schemaVersion: 3
+   /** Stable logical identity (not a path, not a display name). */
+   readonly blueprintId: BlueprintId
+   /** Human-readable revision. */
+-- 
+2.53.0
+

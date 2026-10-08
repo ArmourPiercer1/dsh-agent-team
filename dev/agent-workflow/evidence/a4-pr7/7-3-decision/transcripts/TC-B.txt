@@ -1,0 +1,49 @@
+domain test/blueprint-v1-frozen-resume.test.ts(43,7): error TS2322: Type '1' is not assignable to type '3'.
+domain test/t2-blueprint-v2-hash.test.ts(33,7): error TS2322: Type '2' is not assignable to type '3'.
+domain test/t2-blueprint-v2-hash.test.ts(34,7): error TS2322: Type '1' is not assignable to type '3'.
+domain test/t2-blueprint-v2-requirements.test.ts(37,7): error TS2322: Type '2' is not assignable to type '3'.
+domain test/t2-blueprint-v2-requirements.test.ts(38,7): error TS2322: Type '1' is not assignable to type '3'.
+tools ../runtime/admission/requirement-gate.ts(467,33): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+tools ../runtime/admission/requirement-gate.ts(477,47): error TS18046: 'error' is of type 'unknown'.
+tools ../runtime/compatibility/blueprint.ts(82,31): error TS18048: 'blueprint.teamRequirements' is possibly 'undefined'.
+tools ../runtime/requirements/creation-preflight.ts(223,36): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+tools ../runtime/requirements/creation-preflight.ts(223,36): error TS18048: 'options.templateEnvironmentFactsRead' is possibly 'undefined'.
+tools ../runtime/requirements/creation-preflight.ts(234,47): error TS18046: 'error' is of type 'unknown'.
+tools ../runtime/requirements/creation-preflight.ts(242,33): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+tools ../runtime/requirements/creation-preflight.ts(251,47): error TS18046: 'error' is of type 'unknown'.
+tools ../runtime/requirements/scope-requirements.ts(117,47): error TS18048: 'entry.requirements' is possibly 'undefined'.
+tools ../runtime/requirements/scope-requirements.ts(118,37): error TS18048: 'entry.requirements' is possibly 'undefined'.
+runtime admission/requirement-gate.ts(467,33): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+runtime admission/requirement-gate.ts(477,47): error TS18046: 'error' is of type 'unknown'.
+runtime compatibility/blueprint.ts(82,31): error TS18048: 'blueprint.teamRequirements' is possibly 'undefined'.
+runtime requirements/creation-preflight.ts(223,36): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+runtime requirements/creation-preflight.ts(223,36): error TS18048: 'options.templateEnvironmentFactsRead' is possibly 'undefined'.
+runtime requirements/creation-preflight.ts(234,47): error TS18046: 'error' is of type 'unknown'.
+runtime requirements/creation-preflight.ts(242,33): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+runtime requirements/creation-preflight.ts(251,47): error TS18046: 'error' is of type 'unknown'.
+runtime requirements/scope-requirements.ts(117,47): error TS18048: 'entry.requirements' is possibly 'undefined'.
+runtime requirements/scope-requirements.ts(118,37): error TS18048: 'entry.requirements' is possibly 'undefined'.
+runtime test/__probe-a473-postflip.test.ts(74,13): error TS2339: Property 'stdout' does not exist on type '{ cwd(): string; }'.
+runtime test/__probe-a473-postflip.test.ts(75,13): error TS2339: Property 'stdout' does not exist on type '{ cwd(): string; }'.
+runtime test/__probe-a473-postflip.test.ts(81,15): error TS2339: Property 'stdout' does not exist on type '{ cwd(): string; }'.
+runtime test/__probe-a473-postflip.test.ts(85,15): error TS2339: Property 'stdout' does not exist on type '{ cwd(): string; }'.
+runtime test/__probe-a473-postflip.test.ts(90,13): error TS2339: Property 'stdout' does not exist on type '{ cwd(): string; }'.
+runtime test/__probe-a473-postflip.test.ts(91,13): error TS2339: Property 'stdout' does not exist on type '{ cwd(): string; }'.
+runtime test/__probe-a473-postflip.test.ts(93,13): error TS2339: Property 'stdout' does not exist on type '{ cwd(): string; }'.
+runtime test/__probe-a473-postflip.test.ts(95,13): error TS2339: Property 'stdout' does not exist on type '{ cwd(): string; }'.
+runtime test/consent-scope-hash-binding.test.ts(133,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/fix-control-authz-c-abandon-terminal.test.ts(2121,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/leader-disable-no-requirements-initial-work.test.ts(124,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/leader-recovery-next-boundary-exit.test.ts(66,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/leader-template-required-boundary.test.ts(85,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/mcp-target-materialization-unit.test.ts(103,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/mcp-target-materialization.test.ts(149,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/p5t5-helpers.ts(80,3): error TS2322: Type '1' is not assignable to type '3'.
+runtime test/persona-kind-provider-preflight.test.ts(170,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/requirement-d1-d3-decision-scoping.test.ts(312,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/requirement-d1-d3-decision-scoping.test.ts(890,53): error TS2367: This comparison appears to be unintentional because the types '3' and '2' have no overlap.
+runtime test/startup-all-templates-real-authority.test.ts(92,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/startup-consent-production.test.ts(105,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/startup-preflight-production-create.test.ts(117,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/startup-template-disable-production.test.ts(105,7): error TS2322: Type '2' is not assignable to type '3'.
+runtime test/template-disable-no-requirements-gate.test.ts(82,7): error TS2322: Type '2' is not assignable to type '3'.

@@ -1,0 +1,13 @@
+     × 1. Legacy fixture parses without capabilities field 9ms
+     × 2. Leader with full capabilities parses and validates 2ms
+     × 3. Members can have different capabilities 2ms
+     × 7. Changing capability fields changes the hash 1ms
+     × 8. Static source returns selective mode for Leader with capabilities 1ms
+     × 9. Static source returns selective mode for MemberTemplate with capabilities 1ms
+     × 10. Static source returns legacy mode when capabilities absent 0ms
+     × 11. Selective source maps to TemplatePolicy values correctly 1ms
+     × 11b. Selective source maps deny entries to values correctly 1ms
+     × projects absent optional singles as explicit null 5ms
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 2ms
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 1ms
+     × D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block 4ms
