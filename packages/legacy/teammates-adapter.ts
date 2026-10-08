@@ -53,6 +53,7 @@
 
 import { teamContractError } from '../contracts/src/index.js'
 import {
+  SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
   decodeYamlFrontmatter,
   deriveContentHash,
   toHashableBlueprint,
@@ -538,12 +539,27 @@ export function importLegacyTeammates(
     metadata['legacy.extras'] = JSON.stringify(extrasByTemplate)
   }
 
+  // §7.3 (v3-only cutover). This was the ONLY site in the repo still EMITTING a
+  // blueprint document, and it emitted v1 — so the cutover did not merely
+  // re-stamp it: it made the whole legacy import path unable to produce a
+  // blueprint at all, because `validateBlueprintDocument` now refuses every
+  // retired version. The digit is read off the domain's own supported set rather
+  // than remembered, so this file cannot strand a stale literal at the next flip.
+  //
+  // Both authority documents became required at v3 (ADR A1-19) and both carry
+  // `rules: []`, which is not a convenience: a legacy directory import grants no
+  // operation expansion, and on the expansion plane a declared-empty ceiling
+  // contributes NO authority (`authority-ceiling.ts`, `CEILING_NO_AUTHORITY`) —
+  // so the honest zero is also the correct value. An imported legacy team starts
+  // with exactly the authority it had before v3 existed, which was none.
   const draft: Record<string, unknown> = {
-    schemaVersion: 1,
+    schemaVersion: SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0],
     blueprintId: options.blueprintId,
     revision: options.revision,
     leader: toTemplate(leader),
     members: memberDefs.map(toTemplate),
+    permissionMutationEnvelope: { rules: [] },
+    teamHardEnvelope: { rules: [] },
     metadata,
   }
   if (options.displayName !== undefined) draft.displayName = options.displayName
