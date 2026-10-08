@@ -197,3 +197,149 @@ Production is not this lane's to edit, so these are findings:
   (`unsupported blueprint schema version 1; this build supports [3]`); v3 missing a required
   envelope → `MALFORMED_DTO` naming the field (`validate.ts:157`); the plugin-boundary names
   `BLUEPRINT_VERSION_REFUSAL_CODES.*` stay distinct (A1-21).
+
+## 8. Why the bundle was split: measured risk DIRECTION, not convenience
+
+This PR is patch items (1) + (2). **Item (3) — deleting `leaderEnvelopeCoverage`
+from the mutation gate — is deliberately NOT in it**, and it is not in it for a
+reason that has a number attached.
+
+`leaderEnvelopeCoverage` is a judge argument at
+`packages/runtime/governance/permission-mutation.ts:1390`. Deleting it stops the
+gate asking "does the leader's own carrier cover this region?" and therefore
+moves refusals **outward, onto the ceiling** or, when the ceiling says nothing,
+**away entirely**. Measured on the 5040-leg population (raws:
+`s75-baseline-reds.txt`, `s75-post-deletion-reds.txt`, delta
+`s75-deletion-delta.txt`, per-file `s75-delta-by-file.txt`):
+
+| quantity | value |
+| --- | --- |
+| legs that changed state | **+41 legs across 9 files** |
+| of which real | 39 (2 are the `p6t1-parallel` flakes) |
+| legs that moved to a *different* refusal identity, healthily | 1 (`PERMISSION_AUTHORITY_CEILING_INSUFFICIENT`) |
+| legs that stopped refusing at all ("expected function to throw an error, but it didn't") | ~23 |
+
+So the direction of item (3) is **LOOSENING**: 39 refusal assertions become
+commits, and the majority of them do not turn into a *different* refusal — they
+turn into a silent success. That is the one direction this cutover must not
+bundle: the version narrowing's whole safety claim is that a build can no longer
+accept a document whose authority documents it cannot reason about, and a
+change that deletes a check in the same commit makes "which refusal did the
+narrowing cause, and which did the deleted check cause" unanswerable after the
+fact.
+
+Keeping `leaderEnvelopeCoverage` while the narrowing lands is the **strict**
+direction: the product may over-refuse, never over-grant, and every refusal
+identity in the corpus keeps its original cause. The flip therefore lands
+without item (3); the patch that would have done it is preserved, unapplied, at
+`73-flip-item3-permission-mutation-DELETED.patch` so the measurement travels
+with the proposal rather than being re-derived by whoever picks it up.
+
+The same rule decided the two smaller cuts. The `a4p1` V16/V17 legs were left
+untouched apart from a NOTE above V16 (they are green with **zero assertions**
+— a pre-existing condition, and "fixing" them here would have made a
+pre-existing leg flip pass→red inside a narrowing PR, which the identity diff
+cannot see). And `packages/runtime/src/plugin/host.ts` / `root.ts` were not
+touched at all, although `host.ts:2703` is the only production site that makes
+the ceiling port non-absent and nothing in the corpus pins it.
+
+## 9. Question (i): does the shipped composition's team ever reach the ceiling, and is the empty hard envelope a silent capability downgrade?
+
+What the shipped document is (measured, now pinned by
+`packages/runtime/test/a4p7-shipped-composition-blueprint.test.ts`): the repo-root
+`cordis.patch.yml` embeds a `blueprintSource:` block; parsed through the real
+`parseBlueprint` it is a v3 document, `contentHash`
+`sha256:9ee498574d6651ab131a87b50fd435993fc7647252466da1608f7d542384152f`,
+declaring `permissionMutationEnvelope: { rules: [] }` **and**
+`teamHardEnvelope: { rules: [] }`. Before this PR **no test in the repo parsed
+it** — the fence classifies its text, never its meaning.
+
+Whether the team "reaches the ceiling" is the question with the consequence:
+
+- On the expansion plane, an **absent** and a **declared-empty**
+  `teamHardEnvelope` answer the same way — `CEILING_NO_AUTHORITY` — while a v1
+  document consulted **no ceiling at all**. That equivalence is pinned by the
+  merged, green `a4p7-carrier-width-under-ceiling.test.ts` (a hard document
+  silent about a scope answers `{ status: 'insufficient', plane: 'expansion',
+  ceiling: 'no-authority' }`).
+- So for the shipped row: with both documents empty, no member can be authorised
+  above the static lanes, by design. The shipped file says exactly this in its
+  own comment block ("This zero is inert in exactly one world..."), and the
+  world it names is one where the team never asks to expand.
+- **The downgrade risk is therefore real but conditional**: it bites only if the
+  plan intends the shipped team to expand *within its own scope*. If it does,
+  the honest migration for the shipped row is a hard ceiling that **covers that
+  scope at `maximumEffect: allow`** — strictly wider than the carrier, not equal
+  to it — because the carrier staying `[]` while the ceiling covers the scope is
+  what lets the leader authorise without widening itself.
+
+What this lane did **not** do: pin today's answer in a test. The instrument
+asserts the document's identity and its refusal behaviour under a retired stamp;
+the "is zero intended or not" verdict belongs to the owner of the shipped
+design, and a test frozen now would convert an open product question into a
+regression. Flagged for the pin lane: `packages/runtime/src/plugin/host.ts:2703`
+is the only thing making the ceiling port non-absent in production, and the
+corpus contains no leg that would notice it disappearing.
+
+## 10. Question (ii): the legs whose `EXPANSION_DENIED` had two possible document causes
+
+Two distinct identities matched a naive grep, and conflating them would have
+produced a wrong list. Exact counts in `packages/**/test`:
+
+- `PERMISSION_ENVELOPE_EXPANSION_DENIED` — the **carrier-width law** (a mutation
+  wider than the leader's carrier). 6 legs: `a3p3-revoke-reveal-semantics` ×2,
+  `a3p4-pr4-production-entry-regression` ×1, `a3p4-pr7-entry-exec-contract-regression` ×1,
+  `a4p7-carrier-width-under-ceiling` ×1, `a4p7-ceiling-no-context-refusal` ×2.
+  These are not the ceiling and are not shape-ambiguous: they are answered by the
+  carrier, and the fixtures declare the carrier explicitly.
+- bare **`EXPANSION_DENIED`** — the authority-ceiling plane. **All 8 legs are in
+  one file**, and all 8 are named:
+
+  1. `a3p4-pr4-production-entry-regression.test.ts:399` — NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing
+  2. `:1246` — a persisted overlay DENY beats the template ALLOW through the real glue pipeline
+  3. `:1348` — R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot
+  4. `:1385` — R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant
+  5. `:1529` — R4-absent (§7.3) — a DECLARED-EMPTY carrier refuses the grant round-3 used to derive
+  6. `:1592` — R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants
+  7. `:1653` — R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile
+  8. `:2165` — R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B canonicalizes at its own default
+
+Why those 8 were the ambiguous ones: pre-flip their fixture document carried no
+`teamHardEnvelope` (the file is one of the three this PR's patch migrated, and
+one of the two `DEFERRALS` rows deleted). Pre-flip the ceiling could reach them
+through `permission-plane.ts`'s `document === undefined → 'absent'` branch, which
+produces the *same* `CEILING_NO_AUTHORITY` identity as a declared-empty
+envelope — so a green `EXPANSION_DENIED` there did not tell the reader which
+document shape caused it. Post-flip the ambiguity is gone for two independent
+reasons: a v3 document must declare the envelope (no implicit default), and the
+`'absent'` branch is now unreachable dead code (`permission-plane.ts:738`,
+reported in §4). Nothing was fixed here beyond the migration this PR already
+carried; the list is the deliverable.
+
+## 11. Instruments that lied, round 2 (all on the landing tree)
+
+- **A `DEFERRALS` row carrying a retired stamp made the fence's own author
+  dirty.** I wrote the new rows with `toContain('schemaVersion: 1')` in their
+  prose; the fence scanned `packages/testkit/**` like any other path and the
+  wrapper's own no-self-exemption leg went red (`the fence needs no exemption
+  for its own author`). The instrument was right and my text was wrong: the fix
+  is the file, never the list. The leg now *composes* its fixture stamp from
+  parts for the same reason, and says so in a comment.
+- **`classifyText` silence is not "clean".** Four different shapes I tried
+  returned all-empty verdicts before one returned `dirty@1`. The cause was not
+  the shape and not the extension: the classifier returns nothing at all unless
+  the text contains a document-shaped key pair. An assertion written as "expect
+  0 verdicts" would have passed against a classifier that never read the file.
+- **An apostrophe is a syntax error in a single-quoted TS string, twice.**
+  `§7.3's migration` inside a `DEFERRALS` row, and "the shipped composition's
+  embedded blueprint" inside the p4t6 leg **title** — both produced a
+  whole-file `PARSE_ERROR` with a byte offset and `Tests no tests`, i.e. a
+  collection death masquerading as an empty suite. Same class as the earlier
+  backtick-interpolation trap.
+- **A stale re-pin is a silent narrowing of the claim.** The advisory pin at
+  `a4p7-v3-cutover-acceptance:584` pointed at the very leg §7.3 inverted; after
+  the inversion the site was at `:611`. Deleting the pin would have been the
+  quiet option; it is re-pinned with the reason written next to it.
+- **`grep -c` on `sha256:[0-9a-f]+` over the whole repo matched lint JSON and
+  the DSH home tree**, and looked like evidence. Restricted to `git grep` over
+  pathspecs, the census is 5 candidate files and 1 unrelated literal.

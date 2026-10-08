@@ -1,0 +1,3024 @@
+diff --git a/.agents/skills/team-blueprint-authoring/SKILL.md b/.agents/skills/team-blueprint-authoring/SKILL.md
+index 6532a154..c25503df 100644
+--- a/.agents/skills/team-blueprint-authoring/SKILL.md
++++ b/.agents/skills/team-blueprint-authoring/SKILL.md
+@@ -43,7 +43,7 @@ Saved-source directory rules:
+ 
+ ```yaml
+ ---
+-schemaVersion: 1
++schemaVersion: 3
+ blueprintId: my-team-bp-1
+ revision: "1"
+ displayName: "My Team"
+@@ -77,6 +77,18 @@ quotas:
+     maxInstances: 4
+     maxConcurrent: 4
+ metadata: {}
++# Version 3 makes these two authority documents REQUIRED, with no default: a
++# defaulted ceiling would be the implicit wide grant ADR §5.1 forbids. Author
++# them at the honest zero below and never with a permissive filler rule; the
++# two planes read `rules: []` differently and both readings are pinned in
++# production — on the EXPANSION plane an unmatched scope is no authority (this
++# Leader may expand nothing), on the APPROVAL plane an absent rule imposes no
++# narrowing (a Human User is impeded only by host-side law). This zero is
++# inert only for a Team that never asks to expand anything.
++permissionMutationEnvelope:
++  rules: []
++teamHardEnvelope:
++  rules: []
+ ---
+ ```
+ 
+diff --git a/dev/agent-workflow/evidence/a4-pr7/7-3-flip/SCOPE.md b/dev/agent-workflow/evidence/a4-pr7/7-3-flip/SCOPE.md
+index 8e89372e..eef4a4ab 100644
+--- a/dev/agent-workflow/evidence/a4-pr7/7-3-flip/SCOPE.md
++++ b/dev/agent-workflow/evidence/a4-pr7/7-3-flip/SCOPE.md
+@@ -84,7 +84,7 @@ Six of them (`t2-blueprint-v2-hash`, `t2-blueprint-v2-requirements`,
+ `blueprint-v1-frozen-resume`, plus their runtime counterparts) have a **v1/v2 document as their
+ own subject** and take the `invert-to-refusal` disposition, not a digit edit.
+ 
+-## 3. Tests — 132 new red identities in 46 files, and 29 of them register nothing
++## 3. Tests — 132 new red identities in 46 files, and 28 of them register nothing
+ 
+ Same population, same command, same worktree shape, run twice (base worktree at `f61dc13f`,
+ flip worktree at `f61dc13f`+2 lines). Population = `packages/{domain,runtime,storage,remote,
+@@ -99,7 +99,7 @@ tools,testkit,legacy}/test`, run per package (root-wide `pnpm test` not used).
+ 
+ **Identity diff: NEW = 132 named/collecting identities in 46 files, RESOLVED = 3.**
+ 
+-The **−331 registered legs** is the point of comparing totals and not red counts: 29 files went
++The **−331 registered legs** is the point of comparing totals and not red counts: 28 files went
+ from "collected, N legs" to "module-scope throw, 0 legs". A report of "123 red tests" would
+ have under-stated the damage by roughly a quarter, and `RESOLVED = 3` is *itself* partly an
+ artifact of it — see §5.
+@@ -120,7 +120,8 @@ Per-file NEW (`transcripts/flip-new-identities.txt` is the verbatim list,
+ | `leader-disable-no-requirements-initial-work` | 5 | | `a4p7-merge-gate` | 1 |
+ | `startup-all-templates-real-authority` † | 1 | | `startup-consent-production` † | 1 |
+ 
+-† plus **29 collection-error files** (each 1 NEW, each registering 0 legs):
++† plus **28 collection-error files** (each 1 NEW, each registering 0 legs; 32 files are
++collection errors post-flip in total, 4 of which already were at base):
+ `t12a-m1-effective-cwd`, `t12a-m2-persona`, `t12a-m3-recursive-drain`, `t12a-h1-nullable-mcp`,
+ `t12a-b3-external-deny`, `t12a-team-tools-registration`, `t4a-capability-wiring`,
+ `tcm-d4-root-context`, `tcm-m3-root-work-glue`, `team-session-activation-glue`,
+@@ -143,7 +144,8 @@ bailing invocation reports. That instrument works; it needs no change.
+ The dispatch says "`t12a-live-bridge.mjs` staying dirty is correct", and the fence's `DEFERRALS`
+ row records a coordinator ruling that it "stays DIRTY BY DESIGN" as the wrapper's `packages/*/test`
+ by-path positive control. **Measured, it cannot stay v1.** Its default `blueprintSource` is a
+-live document: 29 files die at module scope under the flip with
++live document: **28 files newly die at module scope** under the flip (32 in total post-flip,
++4 of them already collection errors at base) with
+ 
+ ```
+ TeamContractError: unsupported blueprint schema version 1; this build supports [3]
+diff --git a/dev/agent-workflow/evidence/a4-pr7/7-4-b2a/tools/element-set-census.py b/dev/agent-workflow/evidence/a4-pr7/7-4-b2a/tools/element-set-census.py
+index c482fe3c..6e9dbd35 100644
+--- a/dev/agent-workflow/evidence/a4-pr7/7-4-b2a/tools/element-set-census.py
++++ b/dev/agent-workflow/evidence/a4-pr7/7-4-b2a/tools/element-set-census.py
+@@ -43,7 +43,13 @@ PAIR = ["permissionMutationEnvelope:", "  rules: []", "teamHardEnvelope:", "  ru
+ # version at all — `1.5` appears in a cutover fixture) or an INTERPOLATION, which in this repo
+ # is a bare witness constant (DECLARED_DOCUMENT_VERSION, V2_DOCUMENT_VERSION) or an expression
+ # (`${String(version)}`). A narrower pattern read another lane's witnesses as lost documents.
+-VERSION = re.compile(r"^schemaVersion:\s*(?:\$\{[^{}]+\}|[0-9]+(?:\.[0-9]+)?)$")
++# QUOTED-FORM FIX (a4-73-fixtures lane): NEG_SCHEMA_VERSION_UNSUPPORTED writes the version
++# as a QUOTED string on purpose — the type is the claim — and the upstream VERSION pattern
++# accepts only a bare digit or an interpolation, so that one element read as a lost document
++# and its R4 "nearest preceding version element" search walked back into the PREVIOUS
++# fixture, reporting a correctly-placed pair as being outside its document. Four flags,
++# one cause. Everything else in this file is byte-identical to 7-4-b2a/tools/.
++VERSION = re.compile(r"^schemaVersion:\s*(?:\$\{[^{}]+\}|'[0-9]+'|\"[0-9]+\"|[0-9]+(?:\.[0-9]+)?)$")
+ KEY = re.compile(r"^[A-Za-z_][A-Za-z0-9_.]*:")
+ YAMLISH = re.compile(r"^(?:---|-\s.*|[A-Za-z_][A-Za-z0-9_.]*:.*|\s+-\s.*)$")
+ 
+diff --git a/packages/domain/blueprint/src/schema.ts b/packages/domain/blueprint/src/schema.ts
+index 73d057b1..e3c3ddd6 100644
+--- a/packages/domain/blueprint/src/schema.ts
++++ b/packages/domain/blueprint/src/schema.ts
+@@ -72,7 +72,7 @@ export const BLUEPRINT_DOCUMENT_SCHEMA_VERSION = 1 as const
+  * The v3-only switch itself lives in PR2's single adapter, selected by
+  * `schemaVersion` (ADR A5-12).
+  */
+-export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [1, 2, 3]
++export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [3]
+ 
+ /**
+  * Every Blueprint DOCUMENT VERSION this product has ever defined and shipped:
+diff --git a/packages/domain/blueprint/src/types.ts b/packages/domain/blueprint/src/types.ts
+index 87f1942d..e7e6902b 100644
+--- a/packages/domain/blueprint/src/types.ts
++++ b/packages/domain/blueprint/src/types.ts
+@@ -413,7 +413,7 @@ export interface TeamBlueprint {
+    * (ADR A1-19). `3` is admitted for the PR1-PR6 bridge only (ADR A2-11); the
+    * Alpha.4 contract is v3-only and the PR7 cutover narrows the accepted set.
+    */
+-  readonly schemaVersion: 1 | 2 | 3
++  readonly schemaVersion: 3
+   /** Stable logical identity (not a path, not a display name). */
+   readonly blueprintId: BlueprintId
+   /** Human-readable revision. */
+diff --git a/packages/domain/test/a4p1-blueprint-v3-governance.test.ts b/packages/domain/test/a4p1-blueprint-v3-governance.test.ts
+index e5c5d7d8..32fe43a1 100644
+--- a/packages/domain/test/a4p1-blueprint-v3-governance.test.ts
++++ b/packages/domain/test/a4p1-blueprint-v3-governance.test.ts
+@@ -46,6 +46,7 @@ import { describe, expect, it } from 'vitest'
+ import {
+   BLUEPRINT_TOP_LEVEL_FIELDS,
+   BLUEPRINT_TOP_LEVEL_FIELDS_V2,
++  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
+   SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
+   deriveContentHash,
+   parseBlueprint,
+@@ -267,8 +268,15 @@ const V1_GOLDEN_HASH = 'sha256:d25ea1cfb50079083fb0dbc0c6dc39fbc8d7f735aa1e5ae22
+ const V2_GOLDEN_HASH = 'sha256:d6368916c88577e290fe0a929a48415d9f70d8f512db0c7895f7a6b12ead92d8'
+ 
+ describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched)', () => {
+-  it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge)', () => {
+-    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, 3])
++  it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is [3]: the temporary bridge is closed (§7.3, ADR A2-11)', () => {
++    // ADR A2-11 widened the set to 1|2|3 FOR the PR1-PR6 bridge and named PR7's
++    // collapse to `[3]` as its own end condition. This is that collapse, so the
++    // leg is inverted rather than deleted: the widening was always temporary and
++    // the retirement is now the asserted contract. `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`
++    // is DEFINED minus SUPPORTED, so it moved to [1, 2] on its own — pinned here
++    // so a future edit cannot narrow one set without noticing the other.
++    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3])
++    expect([...RETIRED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2])
+     // The REFUSAL carries the set, DERIVED from this constant — which is what
+     // `testdata/fixtures.ts` means when it moves the witness to v4 and declines
+     // to pin the `supported` detail there. The derivation is pinned at the
+@@ -321,9 +329,13 @@ describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched
+     expect(String(err.message)).toContain('permissionMutationEnvelope')
+     // A v3 with neither names the mutation envelope first and still refuses.
+     expect(v3NoEnvelopes.ok).toBe(false)
+-    // And the requirement is v3-only: the identical v2 document (no authority
+-    // documents at all) is the pre-v3 shape and must still parse.
+-    expect(v2.ok, failureOf(v2)).toBe(true)
++    // §7.3: this leg used to close by showing the IDENTICAL document parses when
++    // stamped v2, proving the requirement was v3-only. That comparison is gone
++    // because the v2 stamp is refused outright (V15), so the requirement is now
++    // simply universal: there is no version at which a document may omit the
++    // mutation envelope. Asserted that way rather than left as a passing tail
++    // that no longer says anything.
++    expect(v2.ok, 'v2 is retired; it must NOT parse').toBe(false)
+   })
+ 
+   it('V6 `rules: []` is a legal declaration in either document and survives validation (spec §3.4)', () => {
+@@ -399,44 +411,91 @@ describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched
+     expect(v3UnknownTopLevel.ok).toBe(false)
+   })
+ 
+-  it('V13 a v2 document must STILL reject `teamHardEnvelope` (the version→closed-set mapping is version-gated)', () => {
+-    const err = expectCode(() => {
+-      if (!v2WithHard.ok) throw v2WithHard.error
+-    }, 'MALFORMED_DTO')
+-    expect(String(err.message)).toContain('teamHardEnvelope')
++  // §7.3 INVERSION of V13/V14. Both legs asserted that a PRE-v3 document naming
++  // `teamHardEnvelope` was refused for the UNKNOWN FIELD, which pinned the
++  // version→closed-set mapping. Post-cutover those bytes are refused for their
++  // VERSION, before any closed set is consulted — so the field-level mapping is
++  // no longer reachable, and saying "rejects it too" would be a claim about a
++  // code path nothing exercises. What is asserted instead is the refusal that
++  // actually happens, plus the explicit negative that keeps the leg honest: the
++  // refusal must NOT name the field, because if it did, the version gate had
++  // regressed behind the closed set.
++  it('V13 a v2 document naming `teamHardEnvelope` is refused for its version, not for the field (the closed-set gate is unreachable)', () => {
++    expect(v2WithHard.ok).toBe(false)
++    const err = v2WithHard.error as { code?: string; message?: string }
++    expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')
++    expect(String(err.message)).not.toContain('teamHardEnvelope')
+   })
+ 
+-  it('V14 a v1 document rejects it too (the v1 validator stays frozen)', () => {
++  it('V14 a v1 document naming it is refused for its version too (the frozen v1 validator is no longer reached)', () => {
+     expect(v1WithHard.ok).toBe(false)
++    const err = v1WithHard.error as { code?: string; message?: string }
++    expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')
++    expect(String(err.message)).not.toContain('teamHardEnvelope')
+   })
+ 
+-  it('V15 v1/v2 still parse during the temporary bridge (ADR A2-4)', () => {
+-    expect(v1.ok, failureOf(v1)).toBe(true)
+-    expect(v2.ok, failureOf(v2)).toBe(true)
++  // §7.3: ADR A2-4's "v1/v2 behaviour identical" was the BRIDGE guarantee, and
++  // A2-11 said the bridge ends at PR7. This is that end. Inverted, not deleted:
++  // the identities both retired stamps now produce are exactly what the plugin
++  // boundary lists as `migration-required`, so the operator-facing half of A2-4
++  // survives even though the parse half does not.
++  it('V15 v1 and v2 no longer parse; both retired stamps refuse with the version identity (§7.3)', () => {
++    expect(v1.ok, 'v1 must be retired').toBe(false)
++    expect(v2.ok, 'v2 must be retired').toBe(false)
++    for (const attempt of [v1, v2, v1Again, v2Again]) {
++      const err = attempt.error as { code?: string; message?: string }
++      expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')
++      expect(String(err.message)).toContain('[3]')
++    }
++    // And they are retired, not unknown: the retired set is where an operator
++    // is told to migrate, and it is derived, so this line is the cutover's own
++    // bookkeeping.
++    expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(1)
++    expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(2)
+   })
+ 
+-  it('V16 GOLDEN: the v1 and v2 content hashes are BYTE-IDENTICAL to the pre-v3 literals (ADR A2-11)', () => {
+-    // Literal goldens measured on the PRE-v3 tree. The repo's other hash
+-    // specs re-parse and self-compare, or compare against
+-    // deriveContentHash(toHashableBlueprint(x)) — which re-derives from the
+-    // projection under test. Neither can see a projection that changed shape
+-    // while staying deterministic. These two literals can.
+-    if (!v1.ok || !v2.ok || !v1Again.ok || !v2Again.ok) return
+-    expect(v1.bp.contentHash).toBe(V1_GOLDEN_HASH)
+-    expect(v1Again.bp.contentHash).toBe(V1_GOLDEN_HASH)
+-    expect(v2.bp.contentHash).toBe(V2_GOLDEN_HASH)
+-    expect(v2Again.bp.contentHash).toBe(V2_GOLDEN_HASH)
+-    // A third, structure-level backstop that does not depend on hashing at
+-    // all: the committed JSON of the v2 projection carries no v3 key.
+-    expect(JSON.stringify(toHashableBlueprint(v2.bp))).not.toContain('teamHardEnvelope')
++  // §7.3: this leg was ALREADY lying before the flip touched it. Its first line
++  // was `if (!v1.ok || !v2.ok || !v1Again.ok || !v2Again.ok) return` — a guard
++  // that makes the leg GREEN WITH ZERO ASSERTIONS the moment a fixture stops
++  // parsing. On the flip tree it had been passing vacuously for exactly that
++  // reason, which is why it never appeared as red. The guard is removed here and
++  // the leg now states the truth it can still reach.
++  //
++  // The goldens themselves are RETIRED, not adjusted: no v1 or v2 document can
++  // be produced by this build any more, so a hash of one is not measurable. They
++  // are kept as literals below (V1_GOLDEN_HASH / V2_GOLDEN_HASH) for archaeology,
++  // and the leg pins that the documents they hashed are refused. What the leg was
++  // FOR — "the projection did not silently change shape" — moves to the version
++  // that still has a projection (V18/V19).
++  it('V16 the retired v1/v2 documents are refused, so their frozen goldens are unreachable by construction (measured, not guarded)', () => {
++    for (const [label, attempt, golden] of [
++      ['v1', v1, V1_GOLDEN_HASH],
++      ['v2', v2, V2_GOLDEN_HASH],
++    ] as const) {
++      expect(attempt.ok, `${label} must not parse post-cutover`).toBe(false)
++      const err = attempt.error as { code?: string }
++      expect(err.code, `${label} must refuse for its version`).toBe('SCHEMA_VERSION_MISMATCH')
++      // The golden survives as a RECORD; it is simply no longer computable.
++      expect(golden).toMatch(/^sha256:[0-9a-f]{64}$/)
++    }
+   })
+ 
+-  it('V17 the v1/v2 hashable projections carry NO teamHardEnvelope key (key-omitted, not null)', () => {
+-    if (!v1.ok || !v2.ok) return
+-    expect(Object.hasOwn(toHashableBlueprint(v1.bp) as Record<string, unknown>, 'teamHardEnvelope')).toBe(false)
+-    expect(Object.hasOwn(toHashableBlueprint(v2.bp) as Record<string, unknown>, 'teamHardEnvelope')).toBe(false)
+-    // …and neither carries a v3-derived null either.
+-    expect(JSON.stringify(toHashableBlueprint(v1.bp))).not.toContain('teamHardEnvelope')
++  // §7.3 INVERSION. Same vacuous-guard problem as V16 (`if (!v1.ok || !v2.ok)
++  // return`), and the same fix: the retired halves are asserted as refusals, and
++  // the oracle that actually mattered — a projection must spell an absent
++  // document by OMITTING the key, never by writing `null` — is kept alive on the
++  // only version that still has a projection.
++  it('V17 an absent authority document is spelled by OMISSION, never as null (retired stamps produce no projection at all)', () => {
++    expect(v1.ok).toBe(false)
++    expect(v2.ok).toBe(false)
++    expect(v3.ok, failureOf(v3)).toBe(true)
++    if (!v3.ok) return
++    const projection = JSON.stringify(toHashableBlueprint(v3.bp))
++    // The anti-null oracle, stated where it is still observable: the key is
++    // either a real document or not in the JSON at all.
++    expect(projection).not.toContain('"teamHardEnvelope":null')
++    expect(projection).not.toContain('"permissionMutationEnvelope":null')
++    expect(projection).toContain('teamHardEnvelope')
+   })
+ 
+   it('V18 the v3 hash BINDS teamHardEnvelope: one bit of the hard envelope moves the hash', () => {
+diff --git a/packages/domain/test/blueprint-v1-frozen-resume.test.ts b/packages/domain/test/blueprint-v1-frozen-resume.test.ts
+index bf90b055..a8fdd896 100644
+--- a/packages/domain/test/blueprint-v1-frozen-resume.test.ts
++++ b/packages/domain/test/blueprint-v1-frozen-resume.test.ts
+@@ -24,28 +24,35 @@ import {
+   parseBlueprint,
+   toHashableBlueprint,
+ } from '../blueprint/src/index.js'
+-import { expectCode } from './t2-helpers.js'
+ import type { TeamBlueprint } from '../blueprint/src/index.js'
+ 
+ /**
+- * §7.4 carrier migration (pre-flip half): the subject of THIS suite is the
+- * v1 document contract — "a v1 document created before PR-E resumes
+- * byte-identically" is only true of a document that IS v1. Promoting these
+- * fixtures to v3 would delete the proof, and invert-to-refusal is a post-
+- * flip move (v1 is still SUPPORTED today: the bridge is [1,2,3]). So the
+- * DOCUMENT stays v1 and the CARRIER moves: the digit lives at a typed code
+- * position, and the YAML line interpolates from it byte-identically.
+- * `TeamBlueprint['schemaVersion']` is exactly the type §7.3's cutover
+- * narrows to `3` — at the flip this line becomes a COMPILE ERROR pointing
+- * at this file, where the companion move is this suite's planned
+- * delete-or-invert (plan §7.3), decided by the flip PR, not silently here.
++ * §7.3 v3-only: what "frozen" means now.
++ *
++ * This suite's subject has always been the v1 DOCUMENT contract, and the flip
++ * did not soften it — it moved the refusal earlier. §7.4 deliberately left the
++ * digit at 1 on a typed code position so the cutover would arrive here as a
++ * compile error naming this file rather than as a silent parse refusal; that
++ * compile error is this commit, and the companion move is the invert-to-refusal
++ * plan §7.3 called for.
++ *
++ * So `V1_SOURCE` below is no longer a fixture the product runs. It is FROZEN
++ * INPUT BYTES — a document some world still holds — and every leg is stated
++ * about those bytes: refused, refused deterministically, refused for the
++ * VERSION rather than for a field, and migratable. No leg asserts less than it
++ * did; the legs that asserted a v1 document PARSES described a claim that is
++ * simply no longer true of any document.
+  */
+-const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
++
++/** The retired stamp, as a plain number. It can no longer be typed as
++ *  `TeamBlueprint['schemaVersion']`: that type IS the accepted set, and a stamp
++ *  that cannot be typed is exactly what a retired version now is. */
++const RETIRED_V1_DOCUMENT_VERSION = 1
+ 
+ /** A v1 document with a persona string + a flat capability requirement. */
+ const V1_SOURCE: readonly string[] = [
+   '---',
+-  `schemaVersion: ${V1_DOCUMENT_VERSION}`,
++  `schemaVersion: ${RETIRED_V1_DOCUMENT_VERSION}`,
+   'blueprintId: team.v1.frozen',
+   'revision: "1"',
+   'leader:',
+@@ -64,32 +71,43 @@ const V1_SOURCE: readonly string[] = [
+   '',
+ ]
+ 
+-describe('E.11 blueprint-v1-frozen-resume: the v1 schema is frozen', () => {
+-  it('a v1 document (persona string + flat requirements) parses', () => {
+-    const bp = parseBlueprint(V1_SOURCE.join('\n'))
+-    expect(bp.schemaVersion).toBe(1)
+-    expect(bp.leader.persona).toBe('Lead.')
+-    expect(bp.members).toHaveLength(1)
+-    expect(bp.members[0]?.persona).toBe('Worker.')
++describe('E.11 blueprint-v1-frozen-resume (§7.3): the v1 document is refused, deterministically, for its version — and it is migratable', () => {
++  it('a v1 document (persona string + flat requirements) is refused at the version gate', () => {
++    expect(() => parseBlueprint(V1_SOURCE.join('\n'))).toThrowError(
++      expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
++    )
+   })
+ 
+-  it('the v1 content hash is stable across parses (byte-identical resume)', () => {
+-    const a = parseBlueprint(V1_SOURCE.join('\n'))
+-    const b = parseBlueprint(V1_SOURCE.join('\n'))
+-    expect(a.contentHash).toBe(b.contentHash)
+-    expect(a.contentHash).toBe(deriveContentHash(toHashableBlueprint(a)))
++  // The old leg here asserted the v1 content hash is stable across parses, i.e.
++  // "a v1 document resumes byte-identically". Nothing resumes any more, so the
++  // leg states the property that replaced it: the REFUSAL is the stable,
++  // identity-preserving answer, and no half-built blueprint escapes to be
++  // hashed. A refusal that varied between parses would be the resume bug wearing
++  // a different coat.
++  it('the refusal is deterministic across parses and yields no partial blueprint to hash', () => {
++    const attempts = [0, 1].map(() => {
++      try {
++        return { bp: parseBlueprint(V1_SOURCE.join('\n')) as unknown, err: undefined as unknown }
++      } catch (error) {
++        return { bp: undefined as unknown, err: error as { code?: string; message?: string } }
++      }
++    })
++    for (const a of attempts) {
++      expect(a.bp, 'a refused v1 document must not produce a blueprint').toBeUndefined()
++      expect(a.err?.code).toBe('SCHEMA_VERSION_MISMATCH')
++    }
++    expect(attempts[0]?.err?.message).toBe(attempts[1]?.err?.message)
++    expect(String(attempts[0]?.err?.message)).toContain('[3]')
+   })
+ 
+-  it('the v1 projection carries no v2 key (the v2 structured-requirement surface is absent on v1)', () => {
+-    const bp = parseBlueprint(V1_SOURCE.join('\n'))
+-    const hashable = toHashableBlueprint(bp) as Record<string, unknown>
+-    expect(Object.hasOwn(hashable, 'teamRequirements')).toBe(false)
+-  })
+-
+-  it('a v2 `teamRequirements` field is still rejected on a v1 document (frozen closed field sets)', () => {
++  // The old leg read the v1 projection to show it carried no `teamRequirements`
++  // key. There is no v1 projection to read; the surface that survives is the
++  // closed field set, and it is now unreachable through a document at all —
++  // recorded here rather than left as a silent dead branch.
++  it('the frozen v1 field set is no longer REACHED: the same bytes carrying a v2 field refuse for the version, not the field', () => {
+     const src = [
+       '---',
+-      `schemaVersion: ${V1_DOCUMENT_VERSION}`,
++      `schemaVersion: ${RETIRED_V1_DOCUMENT_VERSION}`,
+       'blueprintId: team.v1.v2-field',
+       'revision: "1"',
+       'teamRequirements:',
+@@ -107,6 +125,41 @@ describe('E.11 blueprint-v1-frozen-resume: the v1 schema is frozen', () => {
+       '---',
+       '',
+     ].join('\n')
+-    expectCode(() => parseBlueprint(src), 'MALFORMED_DTO')
++    let code: string | undefined
++    let details: unknown
++    try {
++      parseBlueprint(src)
++    } catch (error) {
++      const e = error as { code?: string; details?: unknown }
++      code = e.code
++      details = e.details
++    }
++    // Was `MALFORMED_DTO` naming the unknown field; now the version gate fires
++    // first, so the field set is never consulted. Stronger, and different.
++    expect(code).toBe('SCHEMA_VERSION_MISMATCH')
++    expect(JSON.stringify(details ?? {})).not.toContain('teamRequirements')
++  })
++
++  // The counter-control that keeps the three legs above honest: the bytes are
++  // refused for the STAMP, not for their content. Promote the same document to
++  // the one accepted version, add the two authority documents v3 requires, and
++  // it parses and hashes normally. Without this leg the suite would pass even if
++  // the cutover had broken v1 CONTENT, which is not what it did.
++  it('the same content stamped v3 with the required authority documents parses, hashes, and binds to its projection', () => {
++    const promoted = V1_SOURCE.join('\n')
++      .replace('schemaVersion: 1', 'schemaVersion: 3')
++      .replace('metadata: {}', ['permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', 'metadata: {}'].join('\n'))
++    expect(promoted, 'the promotion must actually have applied').toContain('schemaVersion: 3')
++    expect(promoted).toContain('permissionMutationEnvelope:')
++    const bp = parseBlueprint(promoted)
++    expect(bp.schemaVersion).toBe(3)
++    expect(bp.leader.persona).toBe('Lead.')
++    expect(bp.members).toHaveLength(1)
++    expect(bp.members[0]?.persona).toBe('Worker.')
++    expect(bp.teamRequirements).toBeUndefined()
++    const hashable = toHashableBlueprint(bp) as Record<string, unknown>
++    expect(Object.hasOwn(hashable, 'teamRequirements')).toBe(false)
++    expect(bp.contentHash).toBe(deriveContentHash(hashable))
++    expect(bp.contentHash).toBe(parseBlueprint(promoted).contentHash)
+   })
+ })
+diff --git a/packages/domain/test/t2-blueprint-immutability.test.ts b/packages/domain/test/t2-blueprint-immutability.test.ts
+index f821caa7..c085de9b 100644
+--- a/packages/domain/test/t2-blueprint-immutability.test.ts
++++ b/packages/domain/test/t2-blueprint-immutability.test.ts
+@@ -66,7 +66,12 @@ describe('t2 immutability: parsed blueprint', () => {
+ 
+   it('the validated core is not frozen (the freeze happens in parseBlueprint)', () => {
+     const core = validateBlueprintDocument({
+-      schemaVersion: 1,
++      // §7.3 v3-only. The digit is incidental to this leg (it pins that the
++      // validated core comes back UNFROZEN, which is a mutability claim, not a
++      // version claim), so it moves with the accepted set. v3 additionally
++      // requires both authority documents; `rules: []` is what this minimal
++      // document means — it grants nothing, and the leg never reads them.
++      schemaVersion: 3,
+       blueprintId: 'team.min',
+       revision: '1',
+       leader: { templateId: 'leader', persona: 'Lead.' },
+@@ -74,6 +79,8 @@ describe('t2 immutability: parsed blueprint', () => {
+       requirements: [],
+       memberEnvelopes: [],
+       policyStates: [],
++      permissionMutationEnvelope: { rules: [] },
++      teamHardEnvelope: { rules: [] },
+       metadata: {},
+     })
+     expect(Object.isFrozen(core)).toBe(false)
+diff --git a/packages/domain/test/t2-blueprint-v2-hash.test.ts b/packages/domain/test/t2-blueprint-v2-hash.test.ts
+index 3e66d710..9d7a961b 100644
+--- a/packages/domain/test/t2-blueprint-v2-hash.test.ts
++++ b/packages/domain/test/t2-blueprint-v2-hash.test.ts
+@@ -30,8 +30,7 @@ import type { TeamBlueprint } from '../blueprint/src/index.js'
+  * ERRORS pointing at this proof file, where the planned delete-or-invert
+  * (plan §7.3) happens loudly in review, not as a silent clean.
+  */
+-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+-const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ 
+ // ---------------------------------------------------------------------------
+ // a v2 document with structured requirements (deterministic content)
+@@ -39,7 +38,7 @@ const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
+ 
+ const V2_SOURCE: readonly string[] = [
+   '---',
+-  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+   'blueprintId: team.v2.hash',
+   'revision: "1"',
+   'teamRequirements:',
+@@ -64,6 +63,13 @@ const V2_SOURCE: readonly string[] = [
+   'requirements: []',
+   'memberEnvelopes: []',
+   'policyStates: []',
++  // §7.3 v3-only: both authority documents version 3 REQUIRES, at the honest
++  // zero `rules: []`. Nothing here is an expansion fixture — this suite hashes
++  // documents and never grants — so the zero is exactly what these documents mean.
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'metadata: {}',
+   '---',
+   '',
+@@ -91,6 +97,14 @@ const V2_SOURCE_SHUFFLED: readonly string[] = [
+   '    - requirementId: lead.model',
+   '      type: modelRoute',
+   '      subjects: [qwen3.8-27b]',
++  // §7.3 v3-only: the same two REQUIRED documents as V2_SOURCE, placed at a
++  // DIFFERENT position on purpose — this block exists to prove the hash ignores
++  // YAML key order, so re-adding them in source order would test less than the
++  // original did.
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'teamRequirements:',
+   '  - requirementId: team.mcp.repo',
+   '    type: mcpServer',
+@@ -98,7 +112,7 @@ const V2_SOURCE_SHUFFLED: readonly string[] = [
+   '    complete: true',
+   'revision: "1"',
+   'blueprintId: team.v2.hash',
+-  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+   '---',
+   '',
+ ]
+@@ -162,12 +176,18 @@ describe('E.2 v2 hash: the structured requirements participate', () => {
+   })
+ })
+ 
+-describe('E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability)', () => {
+-  it('a v1 document has no `teamRequirements` and no template `requirements` in its projection', () => {
+-    const bp = parseBlueprint(
++describe('E.2 hash (§7.3): a document that omits the v2 fields projects none of them; the retired stamps are refused', () => {
++  // §7.3 v3-only INVERSION. This leg fed the parser a v1 document and read its
++  // hashable projection. At v3-only those bytes never reach a projection: the
++  // version gate fires first. The projection claim survives intact at v3 (a
++  // document that omits the §E.2 fields projects no such key), so the leg keeps
++  // it and ADDS the gate that retired the v1 route to it — strictly more is
++  // asserted than before, and nothing is asserted less.
++  it('a document that omits the §E.2 fields projects none of them, and the same bytes stamped v1 are refused before any projection exists', () => {
++    const withoutV2Fields = (version: number): string =>
+       [
+         '---',
+-        `schemaVersion: ${V1_DOCUMENT_VERSION}`,
++        `schemaVersion: ${version}`,
+         'blueprintId: team.v1.frozen',
+         'revision: "1"',
+         'leader:',
+@@ -180,21 +200,35 @@ describe('E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability)', (
+         '    optional: false',
+         'memberEnvelopes: []',
+         'policyStates: []',
++        'permissionMutationEnvelope:',
++        '  rules: []',
++        'teamHardEnvelope:',
++        '  rules: []',
+         'metadata: {}',
+         '---',
+         '',
+-      ].join('\n'),
+-    )
+-    expect(bp.schemaVersion).toBe(1)
++      ].join('\n')
++    const bp = parseBlueprint(withoutV2Fields(3))
++    expect(bp.schemaVersion).toBe(3)
+     const hashable = toHashableBlueprint(bp) as Record<string, unknown>
+     expect(Object.hasOwn(hashable, 'teamRequirements')).toBe(false)
+     const leader = hashable['leader'] as Record<string, unknown>
+     expect(Object.hasOwn(leader, 'requirements')).toBe(false)
+     // the projection binds to the hash (no hidden keys)
+     expect(bp.contentHash).toBe(deriveContentHash(hashable))
++    // …and the retired stamp this leg used to carry is refused, not normalized.
++    expect(() => parseBlueprint(withoutV2Fields(1))).toThrowError(
++      expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
++    )
+   })
+ 
+-  it('a v2 document with NO v2 fields projects identically to its v1 twin except `schemaVersion`', () => {
++  // §7.3 v3-only INVERSION of the twin leg. It compared a v1 twin against a v2
++  // twin to prove the ONLY projection difference was the stamped version. With
++  // one accepted version there are no twins any more, so the leg asserts the two
++  // halves that were actually load-bearing: a v3 document with no §E.2 fields
++  // projects none of them, and both retired stamps are refused rather than
++  // silently accepted-and-normalized.
++  it('a v3 document with NO v2 fields projects none of them, and the retired v1 and v2 stamps are both refused', () => {
+     const lines = (version: number): string =>
+       [
+         '---',
+@@ -208,21 +242,24 @@ describe('E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability)', (
+         'requirements: []',
+         'memberEnvelopes: []',
+         'policyStates: []',
++        'permissionMutationEnvelope:',
++        '  rules: []',
++        'teamHardEnvelope:',
++        '  rules: []',
+         'metadata: {}',
+         '---',
+         '',
+       ].join('\n')
+-    const v1 = parseBlueprint(lines(1))
+-    const v2 = parseBlueprint(lines(2))
+-    const h1 = toHashableBlueprint(v1) as Record<string, unknown>
+-    const h2 = toHashableBlueprint(v2) as Record<string, unknown>
+-    // neither projection has a v2 key
+-    expect(Object.hasOwn(h1, 'teamRequirements')).toBe(false)
+-    expect(Object.hasOwn(h2, 'teamRequirements')).toBe(false)
+-    // the ONLY difference is the stamped schemaVersion
+-    expect(h2['schemaVersion']).toBe(2)
+-    expect(h1['schemaVersion']).toBe(1)
+-    expect(h1).not.toEqual(h2)
+-    expect(v1.contentHash).not.toBe(v2.contentHash)
++    const v3 = parseBlueprint(lines(3))
++    const h3 = toHashableBlueprint(v3) as Record<string, unknown>
++    expect(Object.hasOwn(h3, 'teamRequirements')).toBe(false)
++    expect(h3['schemaVersion']).toBe(3)
++    // The two stamps that used to be the twins are now refused outright. This is
++    // the cutover's whole contract, stated at the hashing surface.
++    for (const retired of [1, 2]) {
++      expect(() => parseBlueprint(lines(retired)), `schemaVersion ${retired} must not parse`).toThrowError(
++        expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
++      )
++    }
+   })
+ })
+diff --git a/packages/domain/test/t2-blueprint-v2-requirements.test.ts b/packages/domain/test/t2-blueprint-v2-requirements.test.ts
+index a8843bda..e76547d3 100644
+--- a/packages/domain/test/t2-blueprint-v2-requirements.test.ts
++++ b/packages/domain/test/t2-blueprint-v2-requirements.test.ts
+@@ -34,8 +34,7 @@ import { expectCode, expectErrorDetails } from './t2-helpers.js'
+  * ERRORS naming this proof file, where delete-or-invert (plan §7.3) is
+  * decided in review, not silently here.
+  */
+-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+-const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ 
+ // ---------------------------------------------------------------------------
+ // helpers: build v2 documents as raw YAML source
+@@ -45,7 +44,7 @@ const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
+ function v2Source(body: string): string {
+   return [
+     '---',
+-    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++    `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+     'blueprintId: team.v2',
+     'revision: "1"',
+     'leader:',
+@@ -56,6 +55,13 @@ function v2Source(body: string): string {
+     'requirements: []',
+     'memberEnvelopes: []',
+     'policyStates: []',
++    // §7.3 v3-only: both authority documents version 3 REQUIRES, at the honest zero
++    // `rules: []`. This suite parses and validates requirement grammars; it never
++    // grants, so an empty authority document is exactly what these fixtures mean.
++    'permissionMutationEnvelope:',
++    '  rules: []',
++    'teamHardEnvelope:',
++    '  rules: []',
+     'metadata: {}',
+     '---',
+     '',
+@@ -70,7 +76,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+   it('parses team + leader + member structured requirements', () => {
+     const src = [
+       '---',
+-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+       'blueprintId: team.v2.full',
+       'revision: "1"',
+       'teamRequirements:',
+@@ -95,12 +101,19 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+       'requirements: []',
+       'memberEnvelopes: []',
+       'policyStates: []',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
++      // honest zero `rules: []` — this fixture parses or hashes a document, it
++      // never grants, so an empty authority document is exactly what it means.
++      'permissionMutationEnvelope:',
++      '  rules: []',
++      'teamHardEnvelope:',
++      '  rules: []',
+       'metadata: {}',
+       '---',
+       '',
+     ].join('\n')
+     const bp = parseBlueprint(src)
+-    expect(bp.schemaVersion).toBe(2)
++    expect(bp.schemaVersion).toBe(3)
+     expect(bp.teamRequirements).toEqual([
+       { requirementId: 'team.mcp.repo', type: 'mcpServer', subjects: ['repo'], complete: true },
+     ])
+@@ -118,7 +131,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+   it('normalizes an omitted `complete` to `false` (the ordinary ack-able case)', () => {
+     const src = [
+       '---',
+-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+       'blueprintId: team.v2.def',
+       'revision: "1"',
+       'teamRequirements:',
+@@ -132,6 +145,13 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+       'requirements: []',
+       'memberEnvelopes: []',
+       'policyStates: []',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
++      // honest zero `rules: []` — this fixture parses or hashes a document, it
++      // never grants, so an empty authority document is exactly what it means.
++      'permissionMutationEnvelope:',
++      '  rules: []',
++      'teamHardEnvelope:',
++      '  rules: []',
+       'metadata: {}',
+       '---',
+       '',
+@@ -145,7 +165,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+   it('accepts a persona requirement (the §E.3 required-persona carrier)', () => {
+     const src = [
+       '---',
+-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+       'blueprintId: team.v2.persona',
+       'revision: "1"',
+       'leader:',
+@@ -160,6 +180,13 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+       'requirements: []',
+       'memberEnvelopes: []',
+       'policyStates: []',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
++      // honest zero `rules: []` — this fixture parses or hashes a document, it
++      // never grants, so an empty authority document is exactly what it means.
++      'permissionMutationEnvelope:',
++      '  rules: []',
++      'teamHardEnvelope:',
++      '  rules: []',
+       'metadata: {}',
+       '---',
+       '',
+@@ -184,7 +211,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+     // REQUIRED one) fails loud MALFORMED_DTO, never a silent false-OPEN.
+     const src = [
+       '---',
+-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+       'blueprintId: team.v2.persona-bad',
+       'revision: "1"',
+       'leader:',
+@@ -199,6 +226,13 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+       'requirements: []',
+       'memberEnvelopes: []',
+       'policyStates: []',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
++      // honest zero `rules: []` — this fixture parses or hashes a document, it
++      // never grants, so an empty authority document is exactly what it means.
++      'permissionMutationEnvelope:',
++      '  rules: []',
++      'teamHardEnvelope:',
++      '  rules: []',
+       'metadata: {}',
+       '---',
+       '',
+@@ -209,7 +243,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+   it('rejects an unknown persona subject slug (additive v2 rule, §E.3)', () => {
+     const src = [
+       '---',
+-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+       'blueprintId: team.v2.persona-unknown',
+       'revision: "1"',
+       'leader:',
+@@ -223,6 +257,13 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+       'requirements: []',
+       'memberEnvelopes: []',
+       'policyStates: []',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
++      // honest zero `rules: []` — this fixture parses or hashes a document, it
++      // never grants, so an empty authority document is exactly what it means.
++      'permissionMutationEnvelope:',
++      '  rules: []',
++      'teamHardEnvelope:',
++      '  rules: []',
+       'metadata: {}',
+       '---',
+       '',
+@@ -234,7 +275,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+     const bp = parseBlueprint(
+       [
+         '---',
+-        `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++        `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+         'blueprintId: team.v2.empty',
+         'revision: "1"',
+         'teamRequirements: []',
+@@ -245,12 +286,19 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+         'requirements: []',
+         'memberEnvelopes: []',
+         'policyStates: []',
++        // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
++        // honest zero `rules: []` — this fixture parses or hashes a document, it
++        // never grants, so an empty authority document is exactly what it means.
++        'permissionMutationEnvelope:',
++        '  rules: []',
++        'teamHardEnvelope:',
++        '  rules: []',
+         'metadata: {}',
+         '---',
+         '',
+       ].join('\n'),
+     )
+-    expect(bp.schemaVersion).toBe(2)
++    expect(bp.schemaVersion).toBe(3)
+     // declared-but-empty is a concrete `[]`, distinct from an absent key
+     expect(bp.teamRequirements).toEqual([])
+   })
+@@ -259,7 +307,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+     const bp = parseBlueprint(
+       [
+         '---',
+-        `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++        `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+         'blueprintId: team.v2.bare',
+         'revision: "1"',
+         'leader:',
+@@ -269,12 +317,19 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+         'requirements: []',
+         'memberEnvelopes: []',
+         'policyStates: []',
++        // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
++        // honest zero `rules: []` — this fixture parses or hashes a document, it
++        // never grants, so an empty authority document is exactly what it means.
++        'permissionMutationEnvelope:',
++        '  rules: []',
++        'teamHardEnvelope:',
++        '  rules: []',
+         'metadata: {}',
+         '---',
+         '',
+       ].join('\n'),
+     )
+-    expect(bp.schemaVersion).toBe(2)
++    expect(bp.schemaVersion).toBe(3)
+     expect(bp.teamRequirements).toBeUndefined()
+     expect(bp.leader.requirements).toBeUndefined()
+   })
+@@ -284,11 +339,21 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
+ // the v1 validator is FROZEN: v2 fields are unknown on v1 documents
+ // ---------------------------------------------------------------------------
+ 
+-describe('E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1)', () => {
+-  it('rejects `teamRequirements` on a v1 document (unknown top-level field)', () => {
++// §7.3 v3-only INVERSION of the frozen-v1 group. Both legs fed the parser a v1
++// document carrying a §E.2 field and asserted the refusal named THAT FIELD as
++// unknown (`unknownFields: ['teamRequirements']` / `['requirements']`) — the
++// frozen closed v1 field set. Post-cutover the version gate fires first, so the
++// field set is never consulted: the refusal the legs can still observe is the
++// version one, and it is the STRONGER fact (no v1 document parses at all, with
++// or without a v2 field). The two assertions below say exactly that, and each
++// still distinguishes its own bytes: the refusal is checked to be the version
++// refusal and NOT an unknown-field refusal, which is what would silently "pass"
++// if the field set were consulted first and the cutover later regressed.
++describe('E.2 (§7.3): the v1 route is closed at the version gate before the frozen v1 field set is reached', () => {
++  it('a v1 document naming `teamRequirements` is refused for its VERSION, not for the unknown field', () => {
+     const src = [
+       '---',
+-      `schemaVersion: ${V1_DOCUMENT_VERSION}`,
++      'schemaVersion: 1',
+       'blueprintId: team.v1.with-v2',
+       'revision: "1"',
+       'teamRequirements:',
+@@ -306,35 +371,54 @@ describe('E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1)', ()
+       '---',
+       '',
+     ].join('\n')
+-    expectErrorDetails(() => parseBlueprint(src), 'MALFORMED_DTO', {
+-      unknownFields: ['teamRequirements'],
+-    })
++    const thrown = (() => {
++      try {
++        parseBlueprint(src)
++        return undefined
++      } catch (error) {
++        return error as { code?: string; details?: Record<string, unknown> }
++      }
++    })()
++    expect(thrown?.code).toBe('SCHEMA_VERSION_MISMATCH')
++    // Not an unknown-field refusal: the v1 closed set is no longer reached.
++    expect(JSON.stringify(thrown?.details ?? {})).not.toContain('teamRequirements')
+   })
+ 
+-  it('rejects `requirements` on a v1 template (unknown template field)', () => {
+-    const src = [
+-      '---',
+-      `schemaVersion: ${V1_DOCUMENT_VERSION}`,
+-      'blueprintId: team.v1.tpl-v2',
+-      'revision: "1"',
+-      'leader:',
+-      '  templateId: leader',
+-      '  persona: "Lead."',
+-      '  requirements:',
+-      '    - requirementId: x',
+-      '      type: tool',
+-      '      subjects: [x]',
+-      'members: []',
+-      'requirements: []',
+-      'memberEnvelopes: []',
+-      'policyStates: []',
+-      'metadata: {}',
+-      '---',
+-      '',
+-    ].join('\n')
+-    expectErrorDetails(() => parseBlueprint(src), 'MALFORMED_DTO', {
+-      unknownFields: ['requirements'],
+-    })
++  it('a v1 template naming `requirements` is refused for its VERSION, and the SAME bytes stamped v3 parse the field', () => {
++    const body = (version: string): string =>
++      [
++        '---',
++        `schemaVersion: ${version}`,
++        'blueprintId: team.v1.tpl-v2',
++        'revision: "1"',
++        'leader:',
++        '  templateId: leader',
++        '  persona: "Lead."',
++        '  requirements:',
++        '    - requirementId: x',
++        '      type: tool',
++        '      subjects: [x]',
++        'members: []',
++        'requirements: []',
++        'memberEnvelopes: []',
++        'policyStates: []',
++        'permissionMutationEnvelope:',
++        '  rules: []',
++        'teamHardEnvelope:',
++        '  rules: []',
++        'metadata: {}',
++        '---',
++        '',
++      ].join('\n')
++    expect(() => parseBlueprint(body('1'))).toThrowError(
++      expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
++    )
++    // …and the field itself is not what the product rejects any more: on the one
++    // accepted version the per-template `requirements` field parses. This is the
++    // half that keeps the group honest — it proves the refusal above is about
++    // the version, not about the field being disallowed.
++    const at3 = parseBlueprint(body('3'))
++    expect(at3.leader.requirements?.map((r) => r.requirementId)).toEqual(['x'])
+   })
+ })
+ 
+@@ -346,7 +430,7 @@ describe('E.2 v2: malformed requirements fail loud', () => {
+   function v2ReqSource(requirementLines: string[]): string {
+     return [
+       '---',
+-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+       'blueprintId: team.v2.neg',
+       'revision: "1"',
+       'teamRequirements:',
+@@ -358,6 +442,13 @@ describe('E.2 v2: malformed requirements fail loud', () => {
+       'requirements: []',
+       'memberEnvelopes: []',
+       'policyStates: []',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
++      // honest zero `rules: []` — this fixture parses or hashes a document, it
++      // never grants, so an empty authority document is exactly what it means.
++      'permissionMutationEnvelope:',
++      '  rules: []',
++      'teamHardEnvelope:',
++      '  rules: []',
+       'metadata: {}',
+       '---',
+       '',
+@@ -443,7 +534,7 @@ describe('E.2 v2: malformed requirements fail loud', () => {
+ describe('E.2 v2: helper sanity', () => {
+   it('the v2Source helper yields a parseable document', () => {
+     const bp: TeamBlueprint = parseBlueprint(v2Source('[]'))
+-    expect(bp.schemaVersion).toBe(2)
++    expect(bp.schemaVersion).toBe(3)
+     expect(bp.members).toEqual([])
+   })
+ })
+diff --git a/packages/legacy/teammates-adapter.ts b/packages/legacy/teammates-adapter.ts
+index f238aac3..668b8685 100644
+--- a/packages/legacy/teammates-adapter.ts
++++ b/packages/legacy/teammates-adapter.ts
+@@ -53,6 +53,7 @@
+ 
+ import { teamContractError } from '../contracts/src/index.js'
+ import {
++  SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
+   decodeYamlFrontmatter,
+   deriveContentHash,
+   toHashableBlueprint,
+@@ -538,12 +539,27 @@ export function importLegacyTeammates(
+     metadata['legacy.extras'] = JSON.stringify(extrasByTemplate)
+   }
+ 
++  // §7.3 (v3-only cutover). This was the ONLY site in the repo still EMITTING a
++  // blueprint document, and it emitted v1 — so the cutover did not merely
++  // re-stamp it: it made the whole legacy import path unable to produce a
++  // blueprint at all, because `validateBlueprintDocument` now refuses every
++  // retired version. The digit is read off the domain's own supported set rather
++  // than remembered, so this file cannot strand a stale literal at the next flip.
++  //
++  // Both authority documents became required at v3 (ADR A1-19) and both carry
++  // `rules: []`, which is not a convenience: a legacy directory import grants no
++  // operation expansion, and on the expansion plane a declared-empty ceiling
++  // contributes NO authority (`authority-ceiling.ts`, `CEILING_NO_AUTHORITY`) —
++  // so the honest zero is also the correct value. An imported legacy team starts
++  // with exactly the authority it had before v3 existed, which was none.
+   const draft: Record<string, unknown> = {
+-    schemaVersion: 1,
++    schemaVersion: SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0],
+     blueprintId: options.blueprintId,
+     revision: options.revision,
+     leader: toTemplate(leader),
+     members: memberDefs.map(toTemplate),
++    permissionMutationEnvelope: { rules: [] },
++    teamHardEnvelope: { rules: [] },
+     metadata,
+   }
+   if (options.displayName !== undefined) draft.displayName = options.displayName
+diff --git a/packages/legacy/test/p7t6-teammates-adapter.test.ts b/packages/legacy/test/p7t6-teammates-adapter.test.ts
+index b62074f9..c08ac0da 100644
+--- a/packages/legacy/test/p7t6-teammates-adapter.test.ts
++++ b/packages/legacy/test/p7t6-teammates-adapter.test.ts
+@@ -17,6 +17,7 @@
+ import { describe, expect, it } from 'vitest'
+ import { isTeamContractError } from '../../contracts/src/index.js'
+ import type { TeamContractError } from '../../contracts/src/index.js'
++import { SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS } from '../../domain/blueprint/src/index.js'
+ import { importLegacyTeammates } from '../teammates-adapter.js'
+ import type { LegacyTeammateEntry, LegacyTeammateOptions } from '../teammates-adapter.js'
+ import {
+@@ -134,7 +135,16 @@ describe('p7t6 legacy teammates adapter: valid import', () => {
+     expect(isDeepFrozen(blueprint)).toBe(true)
+ 
+     // vNext identity comes from the importer, not from the legacy files.
+-    expect(blueprint.schemaVersion).toBe(1)
++    // §7.3 v3-only: the adapter now emits the version the build SUPPORTS (read
++    // off the domain's own set), and this asserts it from that same set instead
++    // of a remembered digit — the leg's claim is "the adapter produced a
++    // document this build runs", which is exactly what the set answers. The
++    // adapter's own output must carry BOTH v3-mandatory authority documents,
++    // and they must be the honest zero: a legacy directory import is not an
++    // expansion grant, and a declared-empty ceiling carries no authority.
++    expect(blueprint.schemaVersion).toBe(SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0])
++    expect(blueprint.permissionMutationEnvelope).toEqual({ rules: [] })
++    expect(blueprint.teamHardEnvelope).toEqual({ rules: [] })
+     expect(blueprint.blueprintId).toBe('team.p7t6-import')
+     expect(blueprint.revision).toBe('1')
+     expect(blueprint.displayName).toBe('P7-T6 Legacy Import')
+diff --git a/packages/runtime/governance/permission-mutation.ts b/packages/runtime/governance/permission-mutation.ts
+index b2e42ce1..47d349d1 100644
+--- a/packages/runtime/governance/permission-mutation.ts
++++ b/packages/runtime/governance/permission-mutation.ts
+@@ -1387,7 +1387,20 @@ export function classifyPermissionRise(
+  * with different remedies, and the first must never be dressed as the second.
+  */
+ export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void {
+-  const classification = classifyPermissionRise(input, leaderEnvelopeCoverage(input.envelope, input.subtreeContains))
++  // §7.5 bullet 2 — THE COVERAGE LAW NOW HAS ONE OWNER. This call used to pass
++  // `leaderEnvelopeCoverage(input.envelope, input.subtreeContains)`, which made
++  // Alpha.3's Leader envelope decide whether a rise was covered. Since §7.3 there
++  // is exactly one document version this build accepts, so every Team reaching
++  // here carries BOTH authority documents, and `service.ts` runs the ceiling gate
++  // over the SAME rising regions immediately after this call
++  // (`authorizeCeilingBoundedPermissionRise`, service.ts:1235). Two owners of one
++  // law meant two refusals for one fact.
++  //
++  // What this step still owns — and still refuses for — is a rise whose verdict
++  // depends on facts this lane cannot read: the `undeterminable` arm below. That
++  // stays FIRST, deliberately, so an unavailable read can never wear an
++  // authorization label (the defect A3-3 closed). Ordering is unchanged.
++  const classification = classifyPermissionRise(input)
+   const firstUndeterminable = classification.undeterminable[0]
+   if (firstUndeterminable !== undefined) {
+     refuse(
+@@ -1399,6 +1412,11 @@ export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthoriza
+   }
+   const firstUnmet = classification.unmet[0]
+   if (firstUnmet !== undefined) {
++    // UNREACHABLE since §7.5: `unmet` is populated only by a coverage judge and
++    // this call supplies none. Kept as a live refusal rather than deleted, so the
++    // law comes back if a judge is ever passed again instead of vanishing quietly.
++    // Its unreachability is pinned by mutation, not by reading (§7.5 mutation
++    // table, row M3).
+     refuse(
+       PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+       'expansion-region-uncovered',
+@@ -1408,38 +1426,26 @@ export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthoriza
+   }
+ }
+ 
+-/**
+- * The Leader's coverage judge: an envelope rule authorizes a rise only if it
+- * speaks this operation class, its `maximumEffect` reaches the risen effect
+- * (ladder-strict), and it covers the WHOLE mutation matcher — the
+- * width-conservative rule that stops a narrow envelope rule from authorizing a
+- * broader mutation. Moved out of the classification loop verbatim so the
+- * judgement has exactly one implementation and one place to be wrong.
+- */
+-function leaderEnvelopeCoverage(
+-  envelope: PermissionMutationEnvelope,
+-  subtreeContains: SubtreeContains | undefined,
+-): (region: PermissionRiseRegion) => PermissionRiseCoverage {
+-  return (region) => {
+-    let covered = false
+-    let coverageUnknown = false
+-    for (const rule of envelope.rules) {
+-      if (rule.operationClass !== region.operationClass) continue
+-      if (PERMISSION_EFFECT_PRECEDENCE[region.risenEffect] > PERMISSION_EFFECT_PRECEDENCE[rule.maximumEffect]) continue
+-      const verdict = matcherCovers(rule.matcher, region.mutationMatcher, subtreeContains)
+-      if (verdict.undeterminable) {
+-        coverageUnknown = true
+-        continue
+-      }
+-      if (verdict.covers) {
+-        covered = true
+-        break
+-      }
+-    }
+-    if (covered) return 'covered'
+-    return coverageUnknown ? 'coverage-unknown' : 'unmet'
+-  }
+-}
++// §7.5 bullet 2 — `leaderEnvelopeCoverage` USED to live here. It was the
++// Leader-envelope coverage judge: for each rising region it walked the Leader's
++// own `permissionMutationEnvelope`, required the operation class to match, the
++// rule's `maximumEffect` to reach the risen effect (ladder-strict), and the rule
++// matcher to cover the WHOLE mutation matcher (the width-conservative rule that
++// stops a narrow envelope rule from authorizing a broader mutation), returning
++// `covered` / `coverage-unknown` / `unmet`.
++//
++// It is deleted because the law it enforced is now enforced once, by the v3
++// authority ceiling, over the SAME regions, in `authorizeCeilingBoundedPermissionRise`
++// (service.ts:1235) — the gate the width legs in
++// `packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts` were written
++// to hand the law to. Keeping both meant one fact producing two different
++// refusal codes depending on which judge saw it first.
++//
++// What `matcherCovers` and `PERMISSION_EFFECT_PRECEDENCE` are still used FOR in
++// this file (the effective-effect resolution at :885 and the ladder comparisons
++// at :266) is untouched; the judge was their only caller in the AUTHORIZATION
++// direction, and `grep -n leaderEnvelopeCoverage` returns nothing outside the
++// evidence tree after this deletion.
+ // ---------------------------------------------------------------------------
+ // The pure planning step: (authority snapshot, mutation) -> next snapshot
+ // ---------------------------------------------------------------------------
+diff --git a/packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts b/packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+index fac875c6..14db569e 100644
+--- a/packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
++++ b/packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+@@ -115,7 +115,7 @@ const E1_WORKER = 'inst-a3p4e1worker'
+ 
+ const E1_BLUEPRINT = [
+   '---',
+-  'schemaVersion: 1',
++  'schemaVersion: 3',
+   'blueprintId: A3P4E1-BP',
+   'revision: "1"',
+   'leader:',
+@@ -146,6 +146,13 @@ const E1_BLUEPRINT = [
+   '  members:',
+   '    maxInstances: 2',
+   '    maxConcurrent: 2',
++  // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++  // zero `rules: []` — this document declares no expansion authority, and the
++  // alternative (a filler rule) would hand a fixture a grant no leg here asks for.
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'metadata: {}',
+   '---',
+ ].join('\n')
+@@ -488,7 +495,7 @@ function hostBlueprintSource(leaderAllowPath: string, withPermissions: boolean):
+     : []
+   return [
+     '---',
+-    'schemaVersion: 1',
++    'schemaVersion: 3',
+     'blueprintId: A3P4E2-BP',
+     'revision: "1"',
+     'leader:',
+@@ -566,6 +573,11 @@ function hostBlueprintSource(leaderAllowPath: string, withPermissions: boolean):
+     // lane into the envelope is removed — it swallowed deny/ask exceptions).
+     // A row whose leader may expand MUST declare the carrier; withPermissions
+     // = false stays carrier-free (the legacy world, byte-identical).
++    // §7.3 v3-only: this document MUST declare `permissionMutationEnvelope`,
++    // and it is ONE key — a second top-level `permissionMutationEnvelope:`
++    // would be a duplicate YAML key, and the trailing `rules: []` would then
++    // shadow the configured carrier this leg exists to exercise. So the
++    // carrier-free world declares the honest zero instead of declaring nothing.
+     ...(withPermissions
+       ? [
+           'permissionMutationEnvelope:',
+@@ -575,8 +587,20 @@ function hostBlueprintSource(leaderAllowPath: string, withPermissions: boolean):
+           '        kind: exact',
+           `        path: "${leaderAllowPath}"`,
+           '      maximumEffect: allow',
++          // §7.3 v3-only: the hard ceiling has to COVER the same scope or the
++          // Leader expansion this leg exists to observe refuses at
++          // `CEILING_NO_AUTHORITY` — on the expansion plane an absent or empty
++          // hard document is zero authority, not a skipped bound (see
++          // `hardYamlCeil` below for why an empty one is not a neutral zero).
++          'teamHardEnvelope:',
++          '  rules:',
++          '    - operationClass: write',
++          '      matcher:',
++          '        kind: exact',
++          `        path: "${leaderAllowPath}"`,
++          '      maximumEffect: allow',
+         ]
+-      : []),
++      : ['permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []']),
+     'policyStates:',
+     '  - id: default',
+     '    description: The A3P4E2 default state.',
+@@ -840,7 +864,7 @@ const GLUE_INST = 'inst-a3p4e3a'
+ function glueBlueprintSource(targetKey: string): string {
+   return [
+     '---',
+-    'schemaVersion: 1',
++    'schemaVersion: 3',
+     'blueprintId: team.a3p4e3',
+     'revision: "1"',
+     'leader:',
+@@ -899,6 +923,13 @@ function glueBlueprintSource(targetKey: string): string {
+     '  members:',
+     '    maxInstances: 2',
+     '    maxConcurrent: 2',
++    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []` — this document declares no expansion authority, and the
++    // alternative (a filler rule) would hand a fixture a grant no leg here asks for.
++    'permissionMutationEnvelope:',
++    '  rules: []',
++    'teamHardEnvelope:',
++    '  rules: []',
+     'metadata: {}',
+     '---',
+   ].join('\n')
+@@ -1101,6 +1132,12 @@ interface R4Blueprint {
+   readonly leaderBashAnyAllow?: boolean
+   readonly workerBashDenyAny?: boolean
+   readonly carrier?: readonly string[]
++  /** A v3 document MUST also declare `teamHardEnvelope`; legs that exercise a
++   *  specific hard ceiling pass it here, the rest inherit the honest zero. */
++  readonly hardCarrier?: readonly string[]
++  /** Build a document omitting BOTH required authority documents. Only a leg
++   *  that proves the resulting refusal may use this. */
++  readonly omitCarriers?: boolean
+ }
+ 
+ function r4BlueprintSource(opts: R4Blueprint): string {
+@@ -1125,7 +1162,7 @@ function r4BlueprintSource(opts: R4Blueprint): string {
+   const denyBash = opts.workerBashDenyAny === true
+   return [
+     '---',
+-    'schemaVersion: 1',
++    'schemaVersion: 3',
+     'blueprintId: A3P4R4-BP',
+     'revision: "1"',
+     'leader:',
+@@ -1161,7 +1198,17 @@ function r4BlueprintSource(opts: R4Blueprint): string {
+     ...(denyBash
+       ? ['        deny:', '          - tool: bash', '            resource:', '              kind: any']
+       : ['        deny: []']),
+-    ...(opts.carrier ?? []),
++    // §7.3 v3-only: BOTH authority documents are required at v3, so an omitted
++    // `carrier` can no longer mean "this document declares no ceiling" — that
++    // reading is what `R4-absent` used to prove, and the escape hatch below is
++    // what lets it prove the refusal instead. Callers that exercise a specific
++    // carrier still pass one; the rest get the honest zero.
++    ...(opts.omitCarriers
++      ? []
++      : [
++          ...(opts.carrier ?? ['permissionMutationEnvelope:', '  rules: []']),
++          ...(opts.hardCarrier ?? ['teamHardEnvelope:', '  rules: []']),
++        ]),
+     'teamEnvelope:',
+     '  allow: [send-message, report-progress, request-control, resolve-control, archive-member, restore-member]',
+     '  deny: []',
+@@ -1181,6 +1228,49 @@ function r4BlueprintSource(opts: R4Blueprint): string {
+   ].join('\n')
+ }
+ 
++/**
++ * §7.3 v3-only: the SECOND authority document, derived from the SAME rule set as
++ * the mutation carrier but pinned to the top of the ladder.
++ *
++ * WHY a leg that expects a grant to COMMIT cannot just declare `rules: []`.
++ * `expansionCeiling` (governance/authority-ceiling.ts) is explicit that on the
++ * EXPANSION plane an absent OR declared-empty hard document contributes
++ * `CEILING_NO_AUTHORITY` rather than being skipped — so an empty hard ceiling is
++ * not a neutral zero, it is "the Leader may expand nothing". Before the flip
++ * these documents reached the plane as v1, `permission-plane.ts` returned
++ * `undefined` for v1/v2, and no ceiling was consulted at all; at v3 the ceiling
++ * is live. Eight legs went red on exactly that, and the honest reading is that
++ * their fixture was INCOMPLETE for v3, not that the product broke.
++ *
++ * Why `allow` and not the carrier's own effect: the hard ceiling has to be
++ * strictly WIDER than the mutation carrier, or the `EXPANSION_DENIED` a leg
++ * asserts could have come from either document and the leg stops proving the
++ * carrier is what refused. `maximumEffect: allow` keeps the carrier the only
++ * binding constraint — which is the thing every leg in this group is about.
++ */
++function hardYamlCeil(
++  entries: readonly {
++    readonly operationClass: string
++    readonly kind: 'exact' | 'subtree' | 'fingerprint'
++    readonly value: string
++    readonly maximumEffect: 'allow' | 'ask'
++  }[],
++): string[] {
++  const lines = ['teamHardEnvelope:', '  rules:']
++  for (const rule of entries) {
++    lines.push(
++      `    - operationClass: ${rule.operationClass}`,
++      '      matcher:',
++      `        kind: ${rule.kind}`,
++      rule.kind === 'fingerprint'
++        ? `        fingerprint: "${rule.value}"`
++        : `        path: "${rule.value}"`,
++      '      maximumEffect: allow',
++    )
++  }
++  return lines
++}
++
+ function carrierYaml(
+   entries: readonly {
+     readonly operationClass: string
+@@ -1227,6 +1317,7 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
+         leaderBashAnyAllow: true,
+         workerBashDenyAny: true,
+         carrier: carrierYaml([{ operationClass: 'bash', kind: 'fingerprint', value: FP_A, maximumEffect: 'allow' }]),
++        hardCarrier: hardYamlCeil([{ operationClass: 'bash', kind: 'fingerprint', value: FP_A, maximumEffect: 'allow' }]),
+       })
+       const { root } = await world.apply(hostRowConfig(source, `${world.scratch}/workspace`))
+       const granted = await settleMutation(root.mutation.governance.mutatePermission({
+@@ -1278,6 +1369,7 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
+       const source = r4BlueprintSource({
+         leaderWrite: [{ kind: 'exact', path: target, effect: 'allow' }],
+         carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: target, maximumEffect: 'ask' }]),
++        hardCarrier: hardYamlCeil([{ operationClass: 'write', kind: 'exact', value: target, maximumEffect: 'ask' }]),
+       })
+       const { root } = await world.apply(hostRowConfig(source, `${world.scratch}/workspace`))
+       const overGrant = await settleMutation(root.mutation.governance.mutatePermission({
+@@ -1320,6 +1412,10 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
+           { operationClass: 'write', kind: 'exact', value: openPath, maximumEffect: 'allow' },
+           { operationClass: 'write', kind: 'exact', value: secretPath, maximumEffect: 'allow' },
+         ]),
++        hardCarrier: hardYamlCeil([
++          { operationClass: 'write', kind: 'exact', value: openPath, maximumEffect: 'allow' },
++          { operationClass: 'write', kind: 'exact', value: secretPath, maximumEffect: 'allow' },
++        ]),
+       })
+       const { root } = await world.apply(hostRowConfig(source, `${world.scratch}/workspace`))
+       // The Ruled positive regression (parent FIX-1 + R-A discriminator at
+@@ -1396,11 +1492,29 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
+     }
+   })
+ 
+-  it('R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working', async () => {
++  it('R4-absent (§7.3) — a DECLARED-EMPTY carrier refuses the grant round-3 used to derive, tightening still commits, and an UNDECLARED document is refused before any of that', async () => {
+     const world = makeHostWorld((base) => new FileStorageSeam(base))
+     try {
++      // §7.3 v3-only. The ORIGINAL fixture declared NO carrier at all and this
++      // leg's title said so. That fixture is no longer a document this product
++      // accepts: `validate.ts` requires both authority documents at v3, so the
++      // refusal moved earlier, to parse time (asserted third below). What the
++      // builder now emits is the nearest legal v3 document — both documents
++      // DECLARED and EMPTY — which is the honest reading of "this team grants
++      // its Leader nothing".
++      //
++      // The outcomes this leg pins are UNCHANGED, and that is the point: a
++      // declared-empty authority document refuses the expansion and still lets a
++      // tightening through. What changed is only that "declare nothing" is no
++      // longer an available way to mean it.
+       const target = `${world.scratch}/workspace/no-carrier.txt`
+       const source = r4BlueprintSource({ leaderWrite: [{ kind: 'exact', path: target, effect: 'allow' }] })
++      // (third) An UNDECLARED document — the pre-flip fixture — is refused at
++      // parse, so no world built on it can ever boot. Pinned here so the
++      // retirement is recorded rather than quietly unprovable.
++      expect(() =>
++        parseBlueprint(r4BlueprintSource({ leaderWrite: [], omitCarriers: true })),
++      ).toThrowError(expect.objectContaining({ code: 'MALFORMED_DTO' }))
+       const { root, warnings } = await world.apply(hostRowConfig(source, `${world.scratch}/workspace`))
+       const expand = await settleMutation(root.mutation.governance.mutatePermission({
+         authority: { kind: 'leader' },
+@@ -1438,6 +1552,7 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
+       const source = r4BlueprintSource({
+         leaderWrite: [{ kind: 'exact', path: 'rel-out.txt', effect: 'allow' }],
+         carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: 'rel-out.txt', maximumEffect: 'allow' }]),
++        hardCarrier: hardYamlCeil([{ operationClass: 'write', kind: 'exact', value: 'rel-out.txt', maximumEffect: 'allow' }]),
+       })
+       const { root } = await world.apply(hostRowConfig(source, memberWs))
+       // The member runs AT memberWs (the seeded row's workspace): the honest
+@@ -1502,6 +1617,7 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
+       const source = r4BlueprintSource({
+         leaderWrite: [{ kind: 'exact', path: 'recover.txt', effect: 'allow' }],
+         carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: 'recover.txt', maximumEffect: 'allow' }]),
++        hardCarrier: hardYamlCeil([{ operationClass: 'write', kind: 'exact', value: 'recover.txt', maximumEffect: 'allow' }]),
+       })
+       const { root, warnings } = await world.apply(hostRowConfig(source, memberWs))
+       // The warm-up fault is LOUD at boot (round-5 R-A minor closed): the
+@@ -1610,6 +1726,9 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
+         carrier: carrierYaml([
+           { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
+         ]),
++        hardCarrier: hardYamlCeil([
++          { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
++        ]),
+       }),
+       generation: 1,
+       defaultWorkspace: `${base}/workspace`,
+@@ -1829,6 +1948,9 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
+         carrier: carrierYaml([
+           { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
+         ]),
++        hardCarrier: hardYamlCeil([
++          { operationClass: 'write', kind: 'exact', value: openKey, maximumEffect: 'allow' },
++        ]),
+       }),
+       generation: 1,
+       defaultWorkspace: `${base}/workspace`,
+@@ -1979,6 +2101,10 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
+           { operationClass: 'write', kind: 'exact', value: 'b-open.txt', maximumEffect: 'allow' },
+           { operationClass: 'write', kind: 'exact', value: 'b-secret.txt', maximumEffect: 'allow' },
+         ]),
++        hardCarrier: hardYamlCeil([
++          { operationClass: 'write', kind: 'exact', value: 'b-open.txt', maximumEffect: 'allow' },
++          { operationClass: 'write', kind: 'exact', value: 'b-secret.txt', maximumEffect: 'allow' },
++        ]),
+       })
+       const { root } = await world.apply(hostRowConfig(source, wsA))
+       const repos = (root as unknown as { domain: { repositories: any } }).domain.repositories
+@@ -2074,6 +2200,7 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
+     const baseLines: string = r4BlueprintSource({
+       leaderWrite: [],
+       carrier: carrierYaml([{ operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' }]),
++      hardCarrier: hardYamlCeil([{ operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' }]),
+     })
+     // Valid baseline parses (the negative control for the three below).
+     expect(() => parseBlueprint(baseLines)).not.toThrow()
+@@ -2104,6 +2231,10 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
+         { operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' },
+         { operationClass: 'write', kind: 'subtree', value: 'dir', maximumEffect: 'ask' },
+       ]),
++      hardCarrier: hardYamlCeil([
++        { operationClass: 'write', kind: 'exact', value: 'open.txt', maximumEffect: 'allow' },
++        { operationClass: 'write', kind: 'subtree', value: 'dir', maximumEffect: 'ask' },
++      ]),
+     })
+     const first = parseBlueprint(source)
+     const again = parseBlueprint(source)
+@@ -2111,8 +2242,21 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
+     // GOLDEN: this literal is the canonical content hash of the EXACT bytes
+     // this builder emits. Any drift in the blueprint canonicalization
+     // (field ordering, carrier serialization, hashing) changes it.
++    //
++    // §7.3 v3-only re-pin: `f0148ab8…897bd6` → `4603c56c…7f401f`. Rewriting a
++    // golden is exactly the move that can hide a canonicalizer drift, so the
++    // two facts that make it legitimate are recorded rather than implied:
++    //   1. the OLD value was LIVE, not stale — it passed at base `f61dc13f`
++    //      (re-run there to check before touching this line), and
++    //   2. the ONLY delta to the hashed bytes is the migration itself: the
++    //      digit 1→3 plus the two required authority documents. No field was
++    //      reordered and no rule was re-serialized; the NEW value below is what
++    //      the production canonicalizer computes, not a value copied from a
++    //      failure message and trusted.
++    // If this literal ever changes WITHOUT one of those two facts, that is the
++    // drift this leg exists to catch.
+     expect(first.contentHash).toBe(
+-      'sha256:f0148ab83ec03c4dcb3da4b9357b260ea446067fb335c56153b35b815c897bd6',
++      'sha256:4603c56cb366343952a906c062bc61a83f4b156796b57142ebfe4441a7f401f1',
+     )
+   })
+ })
+diff --git a/packages/runtime/test/a3p4-r4-authority-binding.test.ts b/packages/runtime/test/a3p4-r4-authority-binding.test.ts
+index c90257c0..f1c03e24 100644
+--- a/packages/runtime/test/a3p4-r4-authority-binding.test.ts
++++ b/packages/runtime/test/a3p4-r4-authority-binding.test.ts
+@@ -64,9 +64,16 @@ interface FileRule {
+ }
+ 
+ interface BpOpts {
+-  /** A4-PR1: the carrier under test is v3-only, so the fixture states the
+-   *  document version explicitly instead of hard-coding 1 at line 109. */
+-  readonly schemaVersion?: 1 | 2 | 3
++  /** §7.3 v3-only: `3` is the ONLY document version this build parses, so the
++   *  option is the literal `3` — a caller can no longer ask for a v1 or v2
++   *  fixture by accident, and the two legs whose subject WAS a v1 document say
++   *  so by building their bytes directly instead of reaching for a digit that
++   *  no longer exists. */
++  readonly schemaVersion?: 3
++  /** Build a document that OMITS both required authority documents. Only a
++   *  leg that proves the refusal may use this: at v3 the pair is required, so
++   *  omitting it is an invalid document, not a legal absence. */
++  readonly omitCarriers?: boolean
+   /** The v3 `teamHardEnvelope` carrier lines (a SECOND document, never a
+    *  rename of the first — spec §3.2/§7.4). */
+   readonly hardCarrier?: readonly string[]
+@@ -112,7 +119,7 @@ function permsBlock(rules: readonly FileRule[], bash: 'allow' | 'deny' | undefin
+ function bpSource(opts: BpOpts): string {
+   return [
+     '---',
+-    `schemaVersion: ${String(opts.schemaVersion ?? 1)}`,
++    `schemaVersion: ${String(opts.schemaVersion ?? 3)}`,
+     'blueprintId: team.a3p4r4',
+     `revision: "${opts.revision ?? '1'}"`,
+     'leader:',
+@@ -146,8 +153,19 @@ function bpSource(opts: BpOpts): string {
+     '        kind: allow',
+     '        items: []',
+     ...(opts.workerWrite === undefined ? [] : permsBlock(opts.workerWrite, undefined, 6)),
+-    ...(opts.carrier ?? []),
+-    ...(opts.hardCarrier ?? []),
++    // §7.3 v3-only: a v3 document MUST declare both authority documents
++    // (`validate.ts` requires them before any canonicalization exists), so an
++    // omitted carrier is no longer a representable document shape. Callers that
++    // exercise a SPECIFIC carrier still pass it; the rest get the honest zero
++    // `rules: []` — no authority, which is exactly what "no carrier" used to
++    // mean for every read in this file. `omitCarriers` is the one escape hatch,
++    // and it exists only so a leg can prove the refusal.
++    ...(opts.omitCarriers
++      ? []
++      : [
++          ...(opts.carrier ?? ['permissionMutationEnvelope:', '  rules: []']),
++          ...(opts.hardCarrier ?? ['teamHardEnvelope:', '  rules: []']),
++        ]),
+     'teamEnvelope:',
+     '  allow: [send-message]',
+     '  deny: []',
+@@ -592,6 +610,13 @@ describe('authorizeLeaderPermissionMutation envelope-only algebra (round 5): the
+ // and on the APPROVAL plane the first two mean "narrows nothing" while the
+ // third must mean "no answer" — an approval ceiling is the one place where
+ // handing out the identity is the UNSAFE direction (ADR A1-4/A1-7/A2-4).
++//
++// §7.3 v3-only changes the FIRST of those three, not the ban on synthesizing
++// it: `absent` was reached by "a v1/v2 team", and there are no v1/v2 documents
++// any more (both authority documents are required fields at v3). So `absent`
++// has no reachable document trigger — see C1, which records the branch this
++// leaves dead in `permission-plane.ts` / `authority-ceiling.ts`. `declared` and
++// `unavailable` are unchanged, and C1/C3/C4 keep the three answers apart.
+ // ──────────────────────────────────────────────────────────────────────────
+ 
+ /** The v3 hard-ceiling carrier: same grammar as the mutation carrier, because
+@@ -624,22 +649,66 @@ describe('createPermissionAuthorityFacts (A4-PR1): the v3 hard-ceiling reader is
+       ...(faults === undefined ? {} : { faults }),
+     })
+ 
+-  it('C1 — a v1 Blueprint reads `absent`, and the reader NEVER synthesizes { rules: [] }', async () => {
+-    const h = harness({
+-      blueprints: { [TEAM_A]: bpSource({ revision: '1', carrier: fileCarrier('write', 'subtree', '/work/lead', 'allow') }) },
+-      templates: { [`${TEAM_A}|${WORKER}`]: 'worker' },
+-      workspaces: { [`${TEAM_A}|${WORKER}`]: '/work/m1' },
+-    })
+-    const read = await h.facts.teamHardEnvelope(TEAM_A, WORKER)
+-    expect(read).toEqual({ status: 'absent' })
+-    // The shape is the whole point: `{ rules: [] }` is a DECLARED ceiling that
+-    // means "no runtime expansion authority at all", and a v1 team never
+-    // declared it. Synthesizing one here would be a production authority change
+-    // for every team that exists today (ADR A2-4: v1/v2 behavior identical),
+-    // visible only months later as approvals that cannot be granted.
+-    expect(JSON.stringify(read)).not.toContain('rules')
+-    // …and the v1 read costs the fs provider NOTHING (no document, no work).
+-    expect(h.calls()).toBe(0)
++  // §7.3 DELETE-SUBJECT half: the ORIGINAL C1 read a v1 document through the
++  // hard-ceiling reader and asserted `{ status: 'absent' }`. That scenario is no
++  // longer reachable: `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` is `[3]`, so
++  // `parseBlueprint` refuses the bytes before any reader exists, and at v3 BOTH
++  // authority documents are required fields — which means
++  // `permission-plane.ts` `readHardCeiling`'s `document === undefined` branch
++  // has NO reachable trigger any more (its companion comment in
++  // `authority-ceiling.ts` still says "a v1/v2 Team states `{ status: 'absent' }`";
++  // that sentence, and that branch, are what this cutover makes stale — recorded
++  // here and in 7-3-flip/FINDINGS.md rather than quietly left in place, because
++  // retiring a production branch is not part of the version flip).
++  //
++  // What this leg KEEPS is the half that was never about v1: the three answers
++  // a hard ceiling can give stay three distinct answers, and the reader still
++  // never hands out a synthesized `{ rules: [] }`. The two reachable outcomes
++  // are pinned by C3 (declared-empty) and C4 (unavailable); this leg pins the
++  // two ways a document can now be REFUSED instead of read.
++  it('C1 (§7.3 migration-required contract) — a retired-version document and a v3 document missing a required authority document are both refused before any read exists', async () => {
++    // (1) The exact bytes the original C1 fed the reader: a v1 document, now
++    // carrying both authority documents so that the VERSION is the only thing
++    // wrong with it (an omitted carrier would refuse for a different reason and
++    // this assertion would pass for the wrong cause).
++    const v1Source = bpSource({
++      revision: '1',
++      carrier: fileCarrier('write', 'subtree', '/work/lead', 'allow'),
++      hardCarrier: hardCarrierLines([hardRule('write', ['        kind: subtree', '        path: "/work/m1/src"'], 'allow')]),
++    }).replace('schemaVersion: 3', 'schemaVersion: 1')
++    // The re-stamp must actually have applied. A fixture that quietly stayed v3
++    // would make this pass while proving nothing — the §7.4 census caught that
++    // exact failure mode in `askFixtureVariant`.
++    expect(v1Source, 'the version re-stamp must have applied').toContain('schemaVersion: 1')
++    // The code is the DOMAIN one. Deliberately NOT
++    // `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`: A1-21 keeps those refusals apart
++    // because they ask the operator for different actions. At the plugin
++    // boundary these same bytes answer `BLUEPRINT_MIGRATION_REQUIRED`, because
++    // v1/v2 land in the DERIVED `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS` — that
++    // routing moved with the accepted set on its own, which is the payoff of
++    // deriving it instead of hard-coding 1 and 2.
++    expect(() => parseBlueprint(v1Source)).toThrowError(
++      expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
++    )
++
++    // (2) A v3 document that declares NO authority documents is an INVALID
++    // document, not a legal absence: `validate.ts` `requireField` fires for
++    // `permissionMutationEnvelope` first, before any canonicalization or
++    // authority read exists, and it names the field it wanted.
++    expect(() =>
++      parseBlueprint(bpSource({ revision: '1', carrier: fileCarrier('write', 'subtree', '/work/lead', 'allow'), omitCarriers: true })),
++    ).toThrowError(
++      expect.objectContaining({
++        code: 'MALFORMED_DTO',
++        message: expect.stringContaining("missing required field 'permissionMutationEnvelope'"),
++      }),
++    )
++
++    // (3) And the ban the original leg was really about survives verbatim: the
++    // declared-empty outcome belongs to a document that SAYS so, and nothing
++    // above this line produced one.
++    const declaredEmpty = parseBlueprint(bpSource({ revision: '1' }))
++    expect(declaredEmpty.teamHardEnvelope).toEqual({ rules: [] })
+   })
+ 
+   it('C2 — a v3 hard ceiling resolves file matchers at the TARGET WORKSPACE and carries a fingerprint verbatim', async () => {
+diff --git a/packages/runtime/test/a4f1-row-version-not-document-version.test.ts b/packages/runtime/test/a4f1-row-version-not-document-version.test.ts
+index 75346ea5..7454ff02 100644
+--- a/packages/runtime/test/a4f1-row-version-not-document-version.test.ts
++++ b/packages/runtime/test/a4f1-row-version-not-document-version.test.ts
+@@ -65,6 +65,8 @@ import { fileURLToPath } from 'url'
+ 
+ import {
+   BLUEPRINT_VERSION_REFUSAL_CODES,
++  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
++  SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
+   declaredBlueprintSchemaVersion,
+   parseBlueprint,
+   toBlueprintSnapshotRef,
+@@ -132,22 +134,34 @@ afterAll(() => {
+  * declaredV2Source), not a shared source of truth — the anti-vacuity guard
+  * below re-measures the divergence on every other row.
+  */
+-const WITNESS_V1 = 1
++/** §7.3 v3-only: the version this build RUNS, read off the domain's own set.
++ *  It used to be 1, which is why this constant was called `WITNESS_V1`; the
++ *  witness base body is now a document the product actually parses, and the
++ *  retired stamps below are what a listing has to cope with. */
++const WITNESS_RUNNABLE = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 3
++/** A version this product DEFINED and retired. Derived, never remembered. */
++const WITNESS_RETIRED = RETIRED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
+ const WITNESS_V2 = 2
+ const WITNESS_V3 = 3
+ 
+ /**
+- * A v1 document — the version the acceptance world's frozen rows carry inside.
+- * This file owns the bytes (7.4-B1 phase 1): an era witness must not be minted
+- * from a factory whose base version is a claim about the factory's era. The
+- * shape is the minimal CLOSED v1 document — every field belongs to the v1
+- * closed set, so it strong-parses while the bridge runs v1, exactly what the
+- * rows and anchors below need.
++ * The witness body: the minimal CLOSED document **at the version this build
++ * runs**. This file owns the bytes (7.4-B1 phase 1): an era witness must not be
++ * minted from a factory whose base version is a claim about the factory's era.
++ *
++ * §7.3 v3-only renamed this from `v1Source` and moved its stamp onto the derived
++ * runnable version, for one hard reason: `ANCHOR` and `FREEZE_SOURCE` below are
++ * STRONG-PARSED (`parseBlueprint`, and the authority's `bootstrapSource`), and a
++ * v1 body stopped being parseable at the cutover — the file used to die at
++ * module scope before a single leg registered. The retired stamps this file
++ * still needs (the listing has to cope with a source it will not run) are now
++ * applied ON PURPOSE by `withDeclaredVersion`, which is what that helper was
++ * always for.
+  */
+-function v1Source(blueprintId: string, revision: string, persona = 'Lead.'): string {
++function witnessSource(blueprintId: string, revision: string, persona = 'Lead.'): string {
+   return [
+     '---',
+-    `schemaVersion: ${String(WITNESS_V1)}`,
++    `schemaVersion: ${String(WITNESS_RUNNABLE)}`,
+     `blueprintId: ${blueprintId}`,
+     `revision: "${revision}"`,
+     'leader:',
+@@ -157,6 +171,12 @@ function v1Source(blueprintId: string, revision: string, persona = 'Lead.'): str
+     'requirements: []',
+     'memberEnvelopes: []',
+     'policyStates: []',
++    // §7.3 v3-only: both authority documents, required at v3, at the honest zero.
++    // The witnesses are listed and frozen, never granted against.
++    'permissionMutationEnvelope:',
++    '  rules: []',
++    'teamHardEnvelope:',
++    '  rules: []',
+     'metadata: {}',
+     '---',
+     '',
+@@ -189,7 +209,7 @@ function withDeclaredVersion(source: string, version: number): string {
+  * v3 document under a row stamped `2`.
+  */
+ function declaredV3Source(blueprintId: string, revision: string): string {
+-  return withDeclaredVersion(v1Source(blueprintId, revision, 'Three.'), WITNESS_V3)
++  return withDeclaredVersion(witnessSource(blueprintId, revision, 'Three.'), WITNESS_V3)
+ }
+ 
+ /**
+@@ -199,7 +219,7 @@ function declaredV3Source(blueprintId: string, revision: string): string {
+  * that is what its frontmatter says.
+  */
+ function declaredV2Source(blueprintId: string, revision: string): string {
+-  return withDeclaredVersion(v1Source(blueprintId, revision, 'Two.'), WITNESS_V2)
++  return withDeclaredVersion(witnessSource(blueprintId, revision, 'Two.'), WITNESS_V2)
+ }
+ 
+ /** A stored source that is not a readable document at all (a corrupt row). */
+@@ -274,9 +294,12 @@ class StorageShapedRegistry implements BlueprintRegistryPort {
+ // ever answer one number for all three.
+ // ═══════════════════════════════════════════════════════════════════════════════
+ 
+-const ANCHOR = v1Source('a4f1.anchor', '1', 'Anchor lead.')
++const ANCHOR = witnessSource('a4f1.anchor', '1', 'Anchor lead.')
+ const ROW_V3 = frozenRow('a4f1.frozen-v3', '1', declaredV3Source('a4f1.frozen-v3', '1'))
+-const ROW_V1 = frozenRow('a4f1.frozen-v1', '2', v1Source('a4f1.frozen-v1', '2', 'One lead.'))
++// §7.3: explicitly restamped to a RETIRED version. The base body can no longer
++// carry it (a retired body is not parseable, and this file's anchor is), so the
++// retired stamp is applied where it is the POINT of the fixture.
++const ROW_V1 = frozenRow('a4f1.frozen-v1', '2', withDeclaredVersion(witnessSource('a4f1.frozen-v1', '2', 'One lead.'), WITNESS_RETIRED))
+ const ROW_CORRUPT = frozenRow('a4f1.frozen-corrupt', '1', UNREADABLE_SOURCE)
+ const ROW_V2 = frozenRow('a4f1.frozen-plain', '1', declaredV2Source('a4f1.frozen-plain', '1'))
+ 
+@@ -546,7 +569,7 @@ describe('a4f1 B: the wire payload reports the document version, and unknown whe
+ // ═══════════════════════════════════════════════════════════════════════════════
+ 
+ const freezeDir = makeDir('c-freeze')
+-const FREEZE_SOURCE = v1Source('a4f1.freeze', '1', 'Freeze lead.')
++const FREEZE_SOURCE = witnessSource('a4f1.freeze', '1', 'Freeze lead.')
+ writeSource(freezeDir, 'to-freeze.yaml', FREEZE_SOURCE)
+ const freezeRegistry = new StorageShapedRegistry()
+ const freezeAuthority = createBlueprintAuthority({
+@@ -570,7 +593,7 @@ describe('a4f1 C: crossing the freeze boundary does not change the reported vers
+     // that is not a document version.
+     expect(frozenByFreeze).not.toBe(undefined)
+     expect(frozenByFreeze?.schemaVersion).toBe(TEAM_DOMAIN_SCHEMA_VERSION)
+-    expect(declaredBlueprintSchemaVersion(frozenByFreeze?.source ?? '')).toBe(1)
++    expect(declaredBlueprintSchemaVersion(frozenByFreeze?.source ?? '')).toBe(WITNESS_RUNNABLE)
+     expect(frozenByFreeze?.schemaVersion).not.toBe(declaredBlueprintSchemaVersion(FREEZE_SOURCE))
+   })
+ 
+@@ -579,7 +602,7 @@ describe('a4f1 C: crossing the freeze boundary does not change the reported vers
+     // 2 once `team.create` froze it, because the registry row SHADOWS the saved
+     // source (registry-wins) and the row arm answered from its stamp. One document,
+     // one version, across the boundary.
+-    expect(versionBeforeFreeze).toBe(1)
++    expect(versionBeforeFreeze).toBe(WITNESS_RUNNABLE)
+     expect(versionAfterFreeze).toBe(versionBeforeFreeze)
+     expect(versionAfterFreeze).not.toBe(TEAM_DOMAIN_SCHEMA_VERSION)
+   })
+diff --git a/packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts b/packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+index d2d0b67c..e6b41b5a 100644
+--- a/packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
++++ b/packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+@@ -454,6 +454,20 @@ const W1_SAVED = witnessV1Source('a4p7.unmigrated', '1', 'Unmigrated lead.')
+ writeSource(W1, 'unmigrated.yaml', W1_SAVED)
+ writeSource(W1, 'broken.yaml', NEG_INVALID_YAML.source)
+ 
++// §7.3: the control document for "the refusal is per-document, not a world-level
++// break". It lives in its OWN directory because adding a file to W1 would change
++// the listings every other leg in this group counts. It is built by the shared
++// fixtures factory, which is v3 since §7.3 step 1, so it is a document THIS build
++// runs — the only kind of control the cutover leaves available.
++const W1_LIVE = makeDir('w1-live-sibling')
++const W1_LIVE_SOURCE = revisionSource('a4p7.livesibling', '1', 'Live sibling lead.')
++writeSource(W1_LIVE, 'live.yaml', W1_LIVE_SOURCE)
++const w1LiveAuthority = createBlueprintAuthority({
++  bootstrapSource: W1_LIVE_SOURCE,
++  sourceIndex: createBlueprintSourceIndex({ blueprintDir: W1_LIVE }),
++  registry: new MemRegistry(),
++})
++
+ const w1Index = createBlueprintSourceIndex({ blueprintDir: W1 })
+ const w1Cutover = cutoverIndex(w1Index)
+ const w1Authority = createBlueprintAuthority({
+@@ -577,15 +591,40 @@ describe('a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and
+     )
+   })
+ 
+-  it('under the bridge the same file resolves normally, so the refusal is version-state and not a blanket break', () => {
+-    const blueprint = w1BridgeAuthority.resolve('a4p7.unmigrated', '1')
+-    expect(blueprint.blueprintId).toBe('a4p7.unmigrated')
+-    expect(blueprint.schemaVersion).toBe(1)
+-    expect(w1BridgeUnmigrated).toMatchObject({ schemaVersion: 1, migrationState: 'current' })
+-    // …and the bridge's listing carries the SAME identity, differing only in the
+-    // two new facts. That is the whole of the migration surface: an entry does not
+-    // appear and vanish across the cutover, its STATUS changes.
+-    expect({ ...w1BridgeUnmigrated, migrationState: 'migration-required' }).toEqual({ ...w1Unmigrated })
++  // §7.3 v3-only INVERSION. This leg was written BEFORE the flip as the control
++  // for the cutover: read the same directory with a build that still ran v1, see
++  // the file resolve, and conclude the refusal is a per-document VERSION STATE
++  // rather than a world-level break. The flip removed the second build. Keeping
++  // the leg by pointing it at a simulated set would have made it a tautology
++  // (a shim that widens acceptance proving acceptance is wide), so the control is
++  // re-anchored on something real and stronger: WITHIN one world, on one build,
++  // the retired document is refused while its neighbour resolves. That is the
++  // same claim, now observable without a second build.
++  it('the refusal is per-document version state, not a world-level break: the neighbour in the same directory still resolves', () => {
++    // (1) The retired bridge authority and the cutover authority are now the
++    // SAME authority, so the same bytes answer the same way through both. The
++    // pre-flip asymmetry that this leg used to assert is gone by design.
++    const throughBridge = captureError(() => w1BridgeAuthority.resolve('a4p7.unmigrated', '1'))
++    expect(pluginCodeOf(throughBridge)).toBe(
++      BLUEPRINT_VERSION_REFUSAL_CODES.MIGRATION_REQUIRED,
++    )
++    expect(w1BridgeUnmigrated).toMatchObject({ schemaVersion: 1, migrationState: 'migration-required' })
++    expect({ ...w1BridgeUnmigrated }).toEqual({ ...w1Unmigrated })
++
++    // (2) The control that replaces it: another document in the SAME directory,
++    // read by the SAME authority, resolves normally. Nothing about the world
++    // broke; one document's version did.
++    const live = w1LiveAuthority.resolve('a4p7.livesibling', '1')
++    expect(live.blueprintId).toBe('a4p7.livesibling')
++    expect(SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(live.schemaVersion)
++    const liveIdentity = w1LiveAuthority
++      .listIdentities()
++      .find((identity) => identity.blueprintId === 'a4p7.livesibling')
++    expect(liveIdentity?.migrationState).toBe('current')
++    // The W1 anchor is itself a witness on a retired stamp, so it refuses too —
++    // recorded rather than glossed, because a reader who assumed "anchor = runs"
++    // would misread every other leg in this group.
++    expect(w1Listed.find((i) => i.blueprintId === 'a4p7.anchor')?.migrationState).toBe('migration-required')
+   })
+ })
+ 
+diff --git a/packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts b/packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
+index 720e3539..bd8c0182 100644
+--- a/packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
++++ b/packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
+@@ -73,6 +73,7 @@ import { fileURLToPath } from 'url'
+ 
+ import {
+   BLUEPRINT_VERSION_REFUSAL_CODES,
++  RETIRED_BLUEPRINT_DOCUMENT_VERSIONS,
+   SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
+ } from '../../domain/blueprint/src/index.js'
+ import { createTeamDomain } from '../../storage/repositories/index.js'
+@@ -156,12 +157,17 @@ class MemRegistry implements BlueprintRegistryPort {
+ // module-level witnesses stamp them at mint time.
+ // ═══════════════════════════════════════════════════════════════════════════════
+ 
+-const V_RUNNABLE_V1 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
+-const V_RUNNABLE_V3 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(3) ? 3 : V_RUNNABLE_V1
++const V_RUNNABLE = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
++const V_RUNNABLE_V3 = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(3) ? 3 : V_RUNNABLE
+ const V_UNDEFINED = 99
++/** §7.3 v3-only: the bridge is closed, so a RETIRED version is now a real thing
++ *  to stamp rather than something only a simulated index can produce. Derived
++ *  from the domain set exactly like `V_RUNNABLE` is — no remembered digit. */
++const V_RETIRED = RETIRED_BLUEPRINT_DOCUMENT_VERSIONS[0] ?? 1
+ 
+ /**
+- * The file-owned witness body: the minimal CLOSED v1 document, byte-owned by
++ * The file-owned witness body: the minimal CLOSED document AT THE RUNNABLE
++ * VERSION (v3 since the §7.3 cutover; it was v1 when this file was written), byte-owned by
+  * this file (7.4-B1 phase 1). The shared factory's base version is a claim of
+  * the factory — the factory's own migration must not restamp this file's
+  * witnesses — so nothing here flows through `testdata/fixtures`. The base
+@@ -172,7 +178,7 @@ const V_UNDEFINED = 99
+ function witnessBody(blueprintId: string, revision: string, persona: string): string {
+   return [
+     '---',
+-    `schemaVersion: ${String(V_RUNNABLE_V1)}`,
++    `schemaVersion: ${String(V_RUNNABLE)}`,
+     `blueprintId: ${blueprintId}`,
+     `revision: "${revision}"`,
+     'leader:',
+@@ -182,6 +188,15 @@ function witnessBody(blueprintId: string, revision: string, persona: string): st
+     'requirements: []',
+     'memberEnvelopes: []',
+     'policyStates: []',
++    // §7.3 v3-only: this body is the RUNNABLE witness — `V_RUNNABLE` is read off
++    // `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0]`, which is now `3`, and a v3
++    // document that omits either authority document does not parse at all, so
++    // the whole file used to fail to collect. `rules: []` is honest here: these
++    // witnesses are LISTED and RESOLVED, never granted against.
++    'permissionMutationEnvelope:',
++    '  rules: []',
++    'teamHardEnvelope:',
++    '  rules: []',
+     'metadata: {}',
+     '---',
+     '',
+@@ -195,7 +210,7 @@ function witnessBody(blueprintId: string, revision: string, persona: string): st
+  * hand `worldC` a "retired" source that is actually runnable, and every leg
+  * reading a state off it would then report on the wrong document. No version
+  * digit is spelled out at a call site — every version the fixtures drive is
+- * the CALLER'S number (`V_RUNNABLE_V1` / `V_UNDEFINED`, derived from the
++ * the CALLER'S number (`V_RUNNABLE` / `V_UNDEFINED`, derived from the
+  * domain's own sets) minted onto the file-owned body above.
+  */
+ function withDeclaredVersion(source: string, version: number): string {
+@@ -273,14 +288,14 @@ function cutoverIndex(
+ 
+ /**
+  * The world anchor: a CURRENTLY-RUNNABLE document this file mints at the
+- * derived constant `V_RUNNABLE_V1` (the version this build runs, read off the
++ * derived constant `V_RUNNABLE` (the version this build runs, read off the
+  * domain's own set — never the factory's era, 7.4-B1 phase 1). The root
+  * strong-parses it, which is exactly what a source on a simulated future
+  * version could not be.
+  */
+ const ANCHOR = withDeclaredVersion(
+   witnessBody('a4p7.catalog.anchor', '1', 'Catalog anchor lead.'),
+-  V_RUNNABLE_V1,
++  V_RUNNABLE,
+ )
+ const ROOT_SID = 'session-a4p7-catalog-root'
+ const NOW = '2026-10-20T00:00:00.000Z'
+@@ -484,10 +499,13 @@ function onlyState(rows: readonly Record<string, unknown>[], blueprintId: string
+ 
+ // ═══════════════════════════════════════════════════════════════════════════════
+ // WORLD R — nothing simulated: what the listing says AT THIS COMMIT.
+-// A v1 and a v3 saved source are BOTH runnable while the bridge stands; a frozen
+-// row on version 99 is runnable to nobody and owed no migration to anybody. That
+-// third one is the whole ruling: under the deleted boolean it answered `false`,
+-// the same answer as the two runnable documents beside it.
++// §7.3 v3-only: the bridge is gone, so BOTH saved sources here carry the one
++// runnable version (they used to be a v1 and a v3 pair, both runnable while the
++// bridge stood). A frozen row on version 99 is runnable to nobody and owed no
++// migration to anybody. That third one is the whole ruling: under the deleted
++// boolean it answered `false`, the same answer as the runnable documents beside
++// it. The migration-required arm is no longer reachable here — WORLD C drives it
++// on a genuinely retired version (see V_RETIRED).
+ // (The V_* versions it drives are declared at the top of this file, next to the
+ // witness body they are minted onto.)
+ // ═══════════════════════════════════════════════════════════════════════════════
+@@ -495,7 +513,7 @@ function onlyState(rows: readonly Record<string, unknown>[], blueprintId: string
+ const worldR = await catalogWorld({
+   name: 'r-real',
+   saved: {
+-    'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE_V1),
++    'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE),
+     'runnable-b.yaml': sourceOnVersion('a4p7.catalog.runnableB', '2', V_RUNNABLE_V3),
+   },
+   rows: [rowOnVersion('a4p7.catalog.unknown', '7', V_UNDEFINED)],
+@@ -513,7 +531,7 @@ const rowsRv1 = await worldR.list(1)
+ const worldC = await catalogWorld({
+   name: 'c-cutover',
+   saved: {
+-    'retired.yaml': sourceOnVersion('a4p7.catalog.retired', '4', V_RUNNABLE_V1),
++    'retired.yaml': sourceOnVersion('a4p7.catalog.retired', '4', V_RETIRED),
+     'runnable.yaml': sourceOnVersion('a4p7.catalog.stillOk', '1', V_RUNNABLE_V3),
+   },
+   simulateSupported: [3],
+@@ -540,7 +558,7 @@ const rowsF = await worldF.list(1)
+ const worldN = await catalogWorld({
+   name: 'n-no-authority-wired',
+   saved: {
+-    'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE_V1),
++    'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE),
+     'runnable-b.yaml': sourceOnVersion('a4p7.catalog.runnableB', '2', V_RUNNABLE_V3),
+   },
+   withoutAuthorityWiring: true,
+@@ -549,7 +567,7 @@ const rowsN = await worldN.list(8)
+ 
+ const worldL = await catalogWorld({
+   name: 'l-bogus-state',
+-  saved: { 'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE_V1) },
++  saved: { 'runnable-a.yaml': sourceOnVersion('a4p7.catalog.runnableA', '1', V_RUNNABLE) },
+   bogusStateFor: 'a4p7.catalog.runnableA',
+ })
+ const rowsL = await worldL.list(8)
+@@ -569,15 +587,25 @@ describe('a4p7 R1 A: the version state is derived from the domain sets, never fr
+   })
+ 
+   it('a retired version is migration-required exactly when the domain set says so', () => {
+-    // The set is empty while the bridge runs, so this leg asserts the
+-    // DERIVATION, not a snapshot: whatever is in the retired set must answer
+-    // `migration-required` and nothing else may.
++    // §7.3 v3-only. While the bridge stood the retired set was EMPTY, so this leg
++    // could only ever produce two of the three states and its comment said so.
++    // Post-cutover the derivation is exercised for real: 1 and 2 fall out of the
++    // SUPPORTED set into the DERIVED RETIRED set and must answer
++    // `migration-required`, 3 answers `current`, and only a version this product
++    // never defined stays `unreadable`. Asserted as a derivation over both sets,
++    // never as a snapshot of either.
+     for (const version of [1, 2, 3, 4, 99]) {
+       const expected: BlueprintVersionState = SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(version)
+         ? 'current'
+-        : 'unreadable'
++        : RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.includes(version)
++          ? 'migration-required'
++          : 'unreadable'
+       expect(blueprintVersionStateOf(version)).toBe(expected)
+     }
++    // The three arms must all be REACHED by that loop, or the derivation above is
++    // vacuous: a retired set that had quietly come back empty would otherwise
++    // leave this leg green while testing one arm fewer than it claims.
++    expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS.length).toBeGreaterThan(0)
+   })
+ })
+ 
+@@ -588,7 +616,7 @@ describe('a4p7 R1 B: the identity carrier is three-valued, and the boolean is go
+       .listIdentities()
+       .find((i) => i.blueprintId === 'a4p7.catalog.runnableA')
+     expect(identity?.migrationState).toBe('current')
+-    expect(identity?.schemaVersion).toBe(V_RUNNABLE_V1)
++    expect(identity?.schemaVersion).toBe(V_RUNNABLE)
+   })
+ 
+   it('a frozen row on a version nobody defined is UNREADABLE, not current', () => {
+@@ -610,7 +638,7 @@ describe('a4p7 R1 B: the identity carrier is three-valued, and the boolean is go
+       .listIdentities()
+       .find((i) => i.blueprintId === 'a4p7.catalog.retired')
+     expect(identity?.migrationState).toBe('migration-required')
+-    expect(identity?.schemaVersion).toBe(V_RUNNABLE_V1)
++    expect(identity?.schemaVersion).toBe(V_RETIRED)
+   })
+ 
+   it('no listed identity carries the deleted boolean (one carrier, not two)', () => {
+@@ -651,7 +679,7 @@ describe('a4p7 R1 C: catalog.list carries the state beside the revisions (real r
+   it('runnable revisions are current, side by side with the unreadable one', () => {
+     expect(onlyState(rowsR, 'a4p7.catalog.runnableA')).toEqual({
+       revision: 1,
+-      schemaVersion: V_RUNNABLE_V1,
++      schemaVersion: V_RUNNABLE,
+       migrationState: 'current',
+     })
+     expect(onlyState(rowsR, 'a4p7.catalog.runnableB').migrationState).toBe('current')
+@@ -660,7 +688,7 @@ describe('a4p7 R1 C: catalog.list carries the state beside the revisions (real r
+   it('a retired and a runnable revision carry different states in one listing', () => {
+     expect(onlyState(rowsC, 'a4p7.catalog.retired')).toEqual({
+       revision: 4,
+-      schemaVersion: V_RUNNABLE_V1,
++      schemaVersion: V_RETIRED,
+       migrationState: 'migration-required',
+     })
+     expect(onlyState(rowsC, 'a4p7.catalog.stillOk').migrationState).toBe('current')
+@@ -687,7 +715,7 @@ describe('a4p7 R1 C: catalog.list carries the state beside the revisions (real r
+   it('the factory root derives its anchor state instead of omitting it', () => {
+     const anchorState = onlyState(rowsF, 'a4p7.catalog.anchor')
+     expect(anchorState.migrationState).toBe('current')
+-    expect(anchorState.schemaVersion).toBe(V_RUNNABLE_V1)
++    expect(anchorState.schemaVersion).toBe(V_RUNNABLE)
+   })
+ 
+   it('a host that wires the catalog but NOT the authority gets a LOUD catalog', () => {
+diff --git a/packages/runtime/test/consent-scope-hash-binding.test.ts b/packages/runtime/test/consent-scope-hash-binding.test.ts
+index fd3115f6..b10b04ee 100644
+--- a/packages/runtime/test/consent-scope-hash-binding.test.ts
++++ b/packages/runtime/test/consent-scope-hash-binding.test.ts
+@@ -130,7 +130,7 @@ function requirementLines(
+  * loud failure §7.4 exists to arrange, in place of a document that would
+  * otherwise become a silent parse refusal.
+  */
+-const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ function v2Doc(
+   blueprintId: string,
+   revision: string,
+@@ -199,6 +199,15 @@ function v2Doc(
+     '    members:',
+     '      maxInstances: 4',
+     '      maxConcurrent: 4',
++    // §7.3 v3-only: the two authority documents this version REQUIRES, at the
++    // honest zero. `rules: []` is the honest position here because no test in
++    // this file mutates permissions -- it binds consent scopes and hashes --
++    // so nothing in it asks to expand. A filler rule would be a wide grant
++    // written into a fixture that no test would notice (ADR §5.1).
++    'permissionMutationEnvelope:',
++    '  rules: []',
++    'teamHardEnvelope:',
++    '  rules: []',
+     'metadata: {}',
+     '---',
+   )
+diff --git a/packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts b/packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts
+index 608c81ca..59cf34f8 100644
+--- a/packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts
++++ b/packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts
+@@ -2102,23 +2102,26 @@ async function c9FaultPreflight(
+ // =====================================================================
+ 
+ /**
+- * The version this fixture's document declares is the SUBJECT of the file, not
+- * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+- * a home here instead of in the fence's sight: production compiles the
+- * requirement scopes this document declares only when the document declares
+- * version 2 — five sites compare the declared version against 2
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+- * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddened exactly the row that declares its subject — c9-r3-1, the v2 template-facts feed row — while the other 73 tests of the file stayed green. 
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+- * emits are byte-for-byte what they were; only the carrier moved. And the
+- * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+- * surviving version this line stops compiling and names THIS FILE — which is the
+- * loud failure §7.4 exists to arrange, in place of a document that would
+- * otherwise become a silent parse refusal.
++ * The document version this fixture declares, and why it is 3 now.
++ *
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ /** The v2 variant of the P6-T2 fixture blueprint (residual-3 row
+  *  c9-r3-1): the SAME world at schemaVersion 2 with the worker
+  *  template's structured requirement (`complete: true` — structurally
+@@ -2194,6 +2197,14 @@ const P6T2_V2_BLUEPRINT_SOURCE = [
+   '  members:',
+   '    maxInstances: 2',
+   '    maxConcurrent: 2',
++    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'metadata: {}',
+   '---',
+ ].join('\n')
+diff --git a/packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts b/packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts
+index f038fb16..1a6a719e 100644
+--- a/packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts
++++ b/packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts
+@@ -105,23 +105,26 @@ import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+ // --- the fixture (schema v2: NO template requirements — the empty case) ------------
+ 
+ /**
+- * The version this fixture's document declares is the SUBJECT of the file, not
+- * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+- * a home here instead of in the fence's sight: production compiles the
+- * requirement scopes this document declares only when the document declares
+- * version 2 — five sites compare the declared version against 2
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+- * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddened the file's premise test (1 of 5, all green at base): the leader scope had no verdict inputs left to read. 
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+- * emits are byte-for-byte what they were; only the carrier moved. And the
+- * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+- * surviving version this line stops compiling and names THIS FILE — which is the
+- * loud failure §7.4 exists to arrange, in place of a document that would
+- * otherwise become a silent parse refusal.
++ * The document version this fixture declares, and why it is 3 now.
++ *
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ /**
+  * The finding-I-residual fixture: a REQUIRED team-level `skill/base`
+  * (passing — the Team scope stays healthy) + a LEADER template and a
+@@ -178,6 +181,14 @@ const FNLI_BLUEPRINT_SOURCE = [
+   '    members:',
+   '      maxInstances: 2',
+   '      maxConcurrent: 2',
++    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'metadata: {}',
+   '---',
+ ].join('\n')
+diff --git a/packages/runtime/test/leader-recovery-next-boundary-exit.test.ts b/packages/runtime/test/leader-recovery-next-boundary-exit.test.ts
+index d436e2f4..d5e74e1b 100644
+--- a/packages/runtime/test/leader-recovery-next-boundary-exit.test.ts
++++ b/packages/runtime/test/leader-recovery-next-boundary-exit.test.ts
+@@ -47,23 +47,26 @@ import { leaderTemplateScopeRefs } from '../action-router/root-initial-work.js'
+ import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+ 
+ /**
+- * The version this fixture's document declares is the SUBJECT of the file, not
+- * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+- * a home here instead of in the fence's sight: production compiles the
+- * requirement scopes this document declares only when the document declares
+- * version 2 — five sites compare the declared version against 2
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+- * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddened the file's only test (1 of 1, green at base). 
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+- * emits are byte-for-byte what they were; only the carrier moved. And the
+- * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+- * surviving version this line stops compiling and names THIS FILE — which is the
+- * loud failure §7.4 exists to arrange, in place of a document that would
+- * otherwise become a silent parse refusal.
++ * The document version this fixture declares, and why it is 3 now.
++ *
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ /** The W3-C fixture blueprint (identical to the boundary test — v2 leader). */
+ const W3C_BLUEPRINT_SOURCE = [
+   '---',
+@@ -125,6 +128,14 @@ const W3C_BLUEPRINT_SOURCE = [
+   '  members:',
+   '    maxInstances: 2',
+   '    maxConcurrent: 2',
++    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'metadata: {}',
+   '---',
+ ].join('\n')
+diff --git a/packages/runtime/test/leader-template-required-boundary.test.ts b/packages/runtime/test/leader-template-required-boundary.test.ts
+index bca160d0..342d170d 100644
+--- a/packages/runtime/test/leader-template-required-boundary.test.ts
++++ b/packages/runtime/test/leader-template-required-boundary.test.ts
+@@ -66,23 +66,26 @@ import { leaderTemplateScopeRefs } from '../action-router/root-initial-work.js'
+ import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+ 
+ /**
+- * The version this fixture's document declares is the SUBJECT of the file, not
+- * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+- * a home here instead of in the fence's sight: production compiles the
+- * requirement scopes this document declares only when the document declares
+- * version 2 — five sites compare the declared version against 2
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+- * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddened 3 of its 7 tests (all 7 green at base) — the ones that observe the leader template's requirement scope. 
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+- * emits are byte-for-byte what they were; only the carrier moved. And the
+- * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+- * surviving version this line stops compiling and names THIS FILE — which is the
+- * loud failure §7.4 exists to arrange, in place of a document that would
+- * otherwise become a silent parse refusal.
++ * The document version this fixture declares, and why it is 3 now.
++ *
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ /**
+  * The W3-C fixture blueprint (schema v2): a LEADER template with a REQUIRED
+  * `tool/pdf` + an OPTIONAL `tool/web` requirement; a WORKER template with a
+@@ -151,6 +154,14 @@ const W3C_BLUEPRINT_SOURCE = [
+   '  members:',
+   '    maxInstances: 2',
+   '    maxConcurrent: 2',
++    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'metadata: {}',
+   '---',
+ ].join('\n')
+diff --git a/packages/runtime/test/mcp-target-materialization-unit.test.ts b/packages/runtime/test/mcp-target-materialization-unit.test.ts
+index 180a4640..1dacf082 100644
+--- a/packages/runtime/test/mcp-target-materialization-unit.test.ts
++++ b/packages/runtime/test/mcp-target-materialization-unit.test.ts
+@@ -84,23 +84,26 @@ const INST_B = 'inst-mtm-u6-b'
+ // --- the v2 blueprint (the `worker` template scope requires the server) --------
+ 
+ /**
+- * The version this fixture's document declares is the SUBJECT of the file, not
+- * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+- * a home here instead of in the fence's sight: production compiles the
+- * requirement scopes this document declares only when the document declares
+- * version 2 — five sites compare the declared version against 2
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+- * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddened 5 of 5 (all green at base): the template scope the unit reads was no longer compiled. 
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+- * emits are byte-for-byte what they were; only the carrier moved. And the
+- * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+- * surviving version this line stops compiling and names THIS FILE — which is the
+- * loud failure §7.4 exists to arrange, in place of a document that would
+- * otherwise become a silent parse refusal.
++ * The document version this fixture declares, and why it is 3 now.
++ *
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ const V2_SOURCE = [
+   '---',
+   `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+@@ -143,6 +146,14 @@ const V2_SOURCE = [
+   '  members:',
+   '    maxInstances: 4',
+   '    maxConcurrent: 4',
++    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'metadata: {}',
+   '---',
+   '',
+diff --git a/packages/runtime/test/mcp-target-materialization.test.ts b/packages/runtime/test/mcp-target-materialization.test.ts
+index 635240bd..f5f89526 100644
+--- a/packages/runtime/test/mcp-target-materialization.test.ts
++++ b/packages/runtime/test/mcp-target-materialization.test.ts
+@@ -130,23 +130,26 @@ const L7_SERVER = 'mtm_srv_l7'
+ // --- the v2 blueprints (template-level required mcpServer) ----------------------
+ 
+ /**
+- * The version this fixture's document declares is the SUBJECT of the file, not
+- * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+- * a home here instead of in the fence's sight: production compiles the
+- * requirement scopes this document declares only when the document declares
+- * version 2 — five sites compare the declared version against 2
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+- * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version took the file down at module scope: the target-specific block these tests assert (16 of them, green at base) disappeared and the Finding F false OPEN returned. 
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+- * emits are byte-for-byte what they were; only the carrier moved. And the
+- * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+- * surviving version this line stops compiling and names THIS FILE — which is the
+- * loud failure §7.4 exists to arrange, in place of a document that would
+- * otherwise become a silent parse refusal.
++ * The document version this fixture declares, and why it is 3 now.
++ *
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ /**
+  * One v2 blueprint: the `worker` member template carries the REQUIRED
+  * mcpServer subject (the materialization axis under test); `leaderCaps`
+@@ -261,7 +264,15 @@ function mtmBlueprint(
+     '  members:',
+     '    maxInstances: 4',
+     '    maxConcurrent: 4',
+-    'metadata: {}',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
++  'metadata: {}',
+     '---',
+     '',
+   ]
+diff --git a/packages/runtime/test/p5t5-helpers.ts b/packages/runtime/test/p5t5-helpers.ts
+index 432572f7..b33e3b5d 100644
+--- a/packages/runtime/test/p5t5-helpers.ts
++++ b/packages/runtime/test/p5t5-helpers.ts
+@@ -77,7 +77,14 @@ export const P5T5_FIXTURE = {
+  * construction. Test-world arrangement, not a production claim.
+  */
+ export const P5T5_BLUEPRINT: TeamBlueprint = {
+-  schemaVersion: 1,
++  // §7.3 v3-only cutover. This fixture is a LITERAL, not a parsed source (see
++  // the note above), so nothing would have refused it at v1 -- the type was the
++  // only thing standing between this document and a version the product no
++  // longer runs, which is precisely why the narrowing names it. Both authority
++  // documents v3 requires are declared at the honest zero `rules: []`: no P5-T5
++  // test mutates permissions, so a filler rule would be a wide grant no test
++  // would ever notice.
++  schemaVersion: 3,
+   blueprintId: parseBlueprintId('P5T5-BP'),
+   revision: parseBlueprintRevision('1'),
+   contentHash: parseBlueprintContentHash('sha256-11111111111111111111111111111111'),
+@@ -94,6 +101,8 @@ export const P5T5_BLUEPRINT: TeamBlueprint = {
+   requirements: [],
+   memberEnvelopes: [],
+   policyStates: [],
++  permissionMutationEnvelope: { rules: [] },
++  teamHardEnvelope: { rules: [] },
+   metadata: {},
+ }
+ 
+diff --git a/packages/runtime/test/persona-kind-provider-preflight.test.ts b/packages/runtime/test/persona-kind-provider-preflight.test.ts
+index fee1e8fb..2e0dacf8 100644
+--- a/packages/runtime/test/persona-kind-provider-preflight.test.ts
++++ b/packages/runtime/test/persona-kind-provider-preflight.test.ts
+@@ -148,26 +148,37 @@ const BOILERPLATE = [
+   '    maxInstances: 2',
+   '    maxConcurrent: 2',
+   'metadata: {}',
++    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+ ]
+ 
+ /**
+- * §7.4 carrier migration (pre-flip half): this builder assembles the closed
+- * §E.2 **v2** structured-requirement document, and that version IS the subject:
+- * production reads `teamRequirements` and the per-template `requirements` only
+- * behind a `blueprint.schemaVersion === 2` comparison
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Promoting the digit would not migrate this file's
+- * claim, it would delete it — measured: with the document saying 3 every
+- * requirement-scoping leg here goes red (the boot create stops refusing). See
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md.
++ * The document version this fixture declares, and why it is 3 now.
+  *
+- * The digit therefore stays 2 and moves onto a typed code position: §7.3's
+- * narrowing of `TeamBlueprint['schemaVersion']` turns THIS line into a compile
+- * error naming this file, which is where plan §7.3's delete-or-retarget is
+- * decided in review — never silently. Emitted YAML bytes are unchanged.
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ 
+ /**
+  * T1/T3/T4/T6 shape — the TEAM scope alone requires the `standard` kind
+@@ -175,7 +186,7 @@ const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+  */
+ const PK_TEAM_SOURCE = [
+   '---',
+-  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+   'blueprintId: pk-team',
+   'revision: "1"',
+   ...BOILERPLATE,
+@@ -197,7 +208,7 @@ const PK_TEAM_SOURCE = [
+  */
+ const PK_FULL_SOURCE = [
+   '---',
+-  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+   'blueprintId: pk-full',
+   'revision: "1"',
+   ...BOILERPLATE,
+diff --git a/packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts b/packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts
+index aefbf56c..c90e9bec 100644
+--- a/packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts
++++ b/packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts
+@@ -309,11 +309,11 @@ const B1P_SOURCE = [
+  * file, where plan §7.3's delete-or-retarget is decided — not silently here.
+  * Emitted YAML bytes are unchanged.
+  */
+-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ 
+ const V2_SOURCE = [
+   '---',
+-  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+   'blueprintId: d-v2',
+   'revision: "1"',
+   'leader:',
+@@ -358,6 +358,13 @@ const V2_SOURCE = [
+   '  members:',
+   '    maxInstances: 2',
+   '    maxConcurrent: 2',
++  // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++  // zero `rules: []` -- the same honest zero the flat-requirement fixtures above
++  // already declare. No test in this file mutates permissions.
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'metadata: {}',
+   '---',
+   '',
+diff --git a/packages/runtime/test/startup-all-templates-real-authority.test.ts b/packages/runtime/test/startup-all-templates-real-authority.test.ts
+index 7372d268..90537033 100644
+--- a/packages/runtime/test/startup-all-templates-real-authority.test.ts
++++ b/packages/runtime/test/startup-all-templates-real-authority.test.ts
+@@ -73,23 +73,26 @@ function requirementLines(
+ }
+ 
+ /**
+- * §7.4 carrier migration (pre-flip half): this builder assembles the closed
+- * §E.2 **v2** structured-requirement document, and that version IS the subject:
+- * production reads `teamRequirements` and the per-template `requirements` only
+- * behind a `blueprint.schemaVersion === 2` comparison
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Promoting the digit would not migrate this file's
+- * claim, it would delete it — measured: with the document saying 3 every
+- * requirement-scoping leg here goes red (the boot create stops refusing). See
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md.
++ * The document version this fixture declares, and why it is 3 now.
+  *
+- * The digit therefore stays 2 and moves onto a typed code position: §7.3's
+- * narrowing of `TeamBlueprint['schemaVersion']` turns THIS line into a compile
+- * error naming this file, which is where plan §7.3's delete-or-retarget is
+- * decided in review — never silently. Emitted YAML bytes are unchanged.
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ 
+ function v2Doc(
+   blueprintId: string,
+@@ -103,7 +106,7 @@ function v2Doc(
+ ): string {
+   const lines: string[] = [
+     '---',
+-    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++    `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+     `blueprintId: ${blueprintId}`,
+     `revision: "${revision}"`,
+     'leader:',
+@@ -154,7 +157,15 @@ function v2Doc(
+     '    members:',
+     '      maxInstances: 4',
+     '      maxConcurrent: 4',
+-    'metadata: {}',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
++  'metadata: {}',
+     '---',
+   )
+   return lines.join('\n')
+diff --git a/packages/runtime/test/startup-consent-production.test.ts b/packages/runtime/test/startup-consent-production.test.ts
+index 6b777993..c47fa09f 100644
+--- a/packages/runtime/test/startup-consent-production.test.ts
++++ b/packages/runtime/test/startup-consent-production.test.ts
+@@ -86,23 +86,26 @@ function requirementLines(
+ }
+ 
+ /**
+- * §7.4 carrier migration (pre-flip half): this builder assembles the closed
+- * §E.2 **v2** structured-requirement document, and that version IS the subject:
+- * production reads `teamRequirements` and the per-template `requirements` only
+- * behind a `blueprint.schemaVersion === 2` comparison
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Promoting the digit would not migrate this file's
+- * claim, it would delete it — measured: with the document saying 3 every
+- * requirement-scoping leg here goes red (the boot create stops refusing). See
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md.
++ * The document version this fixture declares, and why it is 3 now.
+  *
+- * The digit therefore stays 2 and moves onto a typed code position: §7.3's
+- * narrowing of `TeamBlueprint['schemaVersion']` turns THIS line into a compile
+- * error naming this file, which is where plan §7.3's delete-or-retarget is
+- * decided in review — never silently. Emitted YAML bytes are unchanged.
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ 
+ function v2Doc(
+   blueprintId: string,
+@@ -114,7 +117,7 @@ function v2Doc(
+ ): string {
+   const lines: string[] = [
+     '---',
+-    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++    `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+     `blueprintId: ${blueprintId}`,
+     `revision: "${revision}"`,
+     `description: ${description}`,
+@@ -162,7 +165,15 @@ function v2Doc(
+     '    members:',
+     '      maxInstances: 4',
+     '      maxConcurrent: 4',
+-    'metadata: {}',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
++  'metadata: {}',
+     '---',
+   )
+   return lines.join('\n')
+diff --git a/packages/runtime/test/startup-preflight-production-create.test.ts b/packages/runtime/test/startup-preflight-production-create.test.ts
+index fdb19578..4198103f 100644
+--- a/packages/runtime/test/startup-preflight-production-create.test.ts
++++ b/packages/runtime/test/startup-preflight-production-create.test.ts
+@@ -98,23 +98,26 @@ function requirementLines(
+ }
+ 
+ /**
+- * §7.4 carrier migration (pre-flip half): this builder assembles the closed
+- * §E.2 **v2** structured-requirement document, and that version IS the subject:
+- * production reads `teamRequirements` and the per-template `requirements` only
+- * behind a `blueprint.schemaVersion === 2` comparison
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Promoting the digit would not migrate this file's
+- * claim, it would delete it — measured: with the document saying 3 every
+- * requirement-scoping leg here goes red (the boot create stops refusing). See
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md.
++ * The document version this fixture declares, and why it is 3 now.
+  *
+- * The digit therefore stays 2 and moves onto a typed code position: §7.3's
+- * narrowing of `TeamBlueprint['schemaVersion']` turns THIS line into a compile
+- * error naming this file, which is where plan §7.3's delete-or-retarget is
+- * decided in review — never silently. Emitted YAML bytes are unchanged.
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ 
+ /**
+  * Assemble one closed schema-v2 blueprint document. The v1 flat
+@@ -130,7 +133,7 @@ function v2Doc(
+ ): string {
+   const lines: string[] = [
+     '---',
+-    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++    `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+     `blueprintId: ${blueprintId}`,
+     `revision: "${revision}"`,
+     'leader:',
+@@ -181,7 +184,15 @@ function v2Doc(
+     '    members:',
+     '      maxInstances: 4',
+     '      maxConcurrent: 4',
+-    'metadata: {}',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
++  'metadata: {}',
+     '---',
+   )
+   return lines.join('\n')
+diff --git a/packages/runtime/test/startup-template-disable-production.test.ts b/packages/runtime/test/startup-template-disable-production.test.ts
+index b63ee744..ec0412ce 100644
+--- a/packages/runtime/test/startup-template-disable-production.test.ts
++++ b/packages/runtime/test/startup-template-disable-production.test.ts
+@@ -86,23 +86,26 @@ function requirementLines(
+ }
+ 
+ /**
+- * §7.4 carrier migration (pre-flip half): this builder assembles the closed
+- * §E.2 **v2** structured-requirement document, and that version IS the subject:
+- * production reads `teamRequirements` and the per-template `requirements` only
+- * behind a `blueprint.schemaVersion === 2` comparison
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Promoting the digit would not migrate this file's
+- * claim, it would delete it — measured: with the document saying 3 every
+- * requirement-scoping leg here goes red (the boot create stops refusing). See
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md.
++ * The document version this fixture declares, and why it is 3 now.
+  *
+- * The digit therefore stays 2 and moves onto a typed code position: §7.3's
+- * narrowing of `TeamBlueprint['schemaVersion']` turns THIS line into a compile
+- * error naming this file, which is where plan §7.3's delete-or-retarget is
+- * decided in review — never silently. Emitted YAML bytes are unchanged.
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ 
+ function v2Doc(
+   blueprintId: string,
+@@ -116,7 +119,7 @@ function v2Doc(
+ ): string {
+   const lines: string[] = [
+     '---',
+-    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++    `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+     `blueprintId: ${blueprintId}`,
+     `revision: "${revision}"`,
+     'leader:',
+@@ -167,7 +170,15 @@ function v2Doc(
+     '    members:',
+     '      maxInstances: 4',
+     '      maxConcurrent: 4',
+-    'metadata: {}',
++      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
++  'metadata: {}',
+     '---',
+   )
+   return lines.join('\n')
+diff --git a/packages/runtime/test/t12a-live-bridge.mjs b/packages/runtime/test/t12a-live-bridge.mjs
+index d37b06b4..b3ffdf50 100644
+--- a/packages/runtime/test/t12a-live-bridge.mjs
++++ b/packages/runtime/test/t12a-live-bridge.mjs
+@@ -1338,13 +1338,24 @@ export async function createLiveWorld(options = {}) {
+   const config = {
+     bootPhase: 'create',
+     rootSessionId,
+-    // T12-M2: a VALID closed-v1 blueprint document (the persona glue parses
+-    // it lazily — the previous malformed 'team: {}' default broke the
+-    // parse). The default carries distinct leader/member personas so the
+-    // persona assertions have stable text to expect.
++    // T12-M2: a VALID blueprint document (the persona glue parses it lazily —
++    // the previous malformed 'team: {}' default broke the parse). The default
++    // carries distinct leader/member personas so the persona assertions have
++    // stable text to expect.
++    //
++    // §7.3 v3-only, and this one is NOT optional: this default is LIVE. It is
++    // not a text carrier some fence counts — 38 importers load this module and
++    // the ones that do not override blueprintSource parse THESE bytes, so at
++    // schemaVersion 1 the cutover took the whole cluster down at module scope
++    // with `unsupported blueprint schema version 1; this build supports [3]`
++    // (measured at the flip: 28 runtime files, see
++    // dev/agent-workflow/evidence/a4-pr7/7-3-flip/SCOPE.md §4.1). The two
++    // authority documents v3 requires are at the honest zero `rules: []` — no
++    // t12a lane mutates permissions, so a filler rule here would be a wide
++    // grant written into the most-shared fixture in the runtime tree.
+     blueprintSource: [
+       '---',
+-      'schemaVersion: 1',
++      'schemaVersion: 3',
+       'blueprintId: team.t12a',
+       'revision: "1"',
+       'leader:',
+@@ -1358,6 +1369,10 @@ export async function createLiveWorld(options = {}) {
+       'requirements: []',
+       'memberEnvelopes: []',
+       'policyStates: []',
++      'permissionMutationEnvelope:',
++      '  rules: []',
++      'teamHardEnvelope:',
++      '  rules: []',
+       'metadata: {}',
+       '---',
+       '',
+diff --git a/packages/runtime/test/template-disable-no-requirements-gate.test.ts b/packages/runtime/test/template-disable-no-requirements-gate.test.ts
+index a8446609..b82c66fd 100644
+--- a/packages/runtime/test/template-disable-no-requirements-gate.test.ts
++++ b/packages/runtime/test/template-disable-no-requirements-gate.test.ts
+@@ -63,23 +63,26 @@ import { createP6T2World, P6T2_NOW, P6T2_ROOT } from './p6t2-helpers.js'
+ import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
+ 
+ /**
+- * §7.4 carrier migration (pre-flip half): this builder assembles the closed
+- * §E.2 **v2** structured-requirement document, and that version IS the subject:
+- * production reads `teamRequirements` and the per-template `requirements` only
+- * behind a `blueprint.schemaVersion === 2` comparison
+- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+- * activation/provider.ts:821). Promoting the digit would not migrate this file's
+- * claim, it would delete it — measured: with the document saying 3 every
+- * requirement-scoping leg here goes red (the boot create stops refusing). See
+- * dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md.
++ * The document version this fixture declares, and why it is 3 now.
+  *
+- * The digit therefore stays 2 and moves onto a typed code position: §7.3's
+- * narrowing of `TeamBlueprint['schemaVersion']` turns THIS line into a compile
+- * error naming this file, which is where plan §7.3's delete-or-retarget is
+- * decided in review — never silently. Emitted YAML bytes are unchanged.
++ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
++ * it on a typed code position, because at that SHA the §E.2 structured-
++ * requirement grammar was read by production only behind
++ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
++ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
++ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
++ * "promoting the digit reddens N of this file's tests" — was a true measurement
++ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
++ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
++ * not of its version digit.
++ *
++ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
++ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
++ * requires (below), this file is fully green — the same legs, asserting the same
++ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
++ * digit to move in the same commit as the cutover instead of drifting.
+  */
+-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
++const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
+ 
+ /**
+  * The finding-I fixture (schema v2): a REQUIRED team-level `skill/base`
+@@ -90,7 +93,7 @@ const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+  */
+ const FINDING_I_BLUEPRINT_SOURCE = [
+   '---',
+-  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
++  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
+   'blueprintId: FNDI-BP',
+   'revision: "1"',
+   'leader:',
+@@ -135,6 +138,14 @@ const FINDING_I_BLUEPRINT_SOURCE = [
+   '  members:',
+   '    maxInstances: 2',
+   '    maxConcurrent: 2',
++    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
++    // zero `rules: []`. No test in this file mutates permissions, so nothing here
++    // asks to expand; a filler rule would write a wide grant into a fixture that no
++    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
++  'permissionMutationEnvelope:',
++  '  rules: []',
++  'teamHardEnvelope:',
++  '  rules: []',
+   'metadata: {}',
+   '---',
+ ].join('\n')
+diff --git a/scripts/verify-blueprint-version-clean.mjs b/scripts/verify-blueprint-version-clean.mjs
+index f2c53560..4b4bc6f0 100644
+--- a/scripts/verify-blueprint-version-clean.mjs
++++ b/scripts/verify-blueprint-version-clean.mjs
+@@ -26,8 +26,13 @@
+  *   packages/<pkg>/test/ · any `testdata/` directory under packages/ ·
+  *   tests/mock/scripts/ · cordis.patch.yml. The last two are MEASURED
+  *   additions recorded by the 7.4-scope task:
+- *   tests/mock/scripts/boot.mjs:248 and cordis.patch.yml:60
++ *   tests/mock/scripts/boot.mjs:248 and cordis.patch.yml:68
+  *   both emit YAML Blueprint documents and sat outside every prior scan.
++ *   (The cordis digit moved from L60 to L68 when §7.3 step 2 promoted the
++ *   shipped composition's embedded Team design to v3 — that promotion added
++ *   the envelope comment block above it. Re-cited from
++ *   `grep -n schemaVersion cordis.patch.yml` at the §7.3 flip, not copied
++ *   from the earlier record.)
+  *   Excluded with the reason recorded: dev/agent-workflow/ (orchestration
+  *   records are prose), any `dist/` (build output), and non-code extensions
+  *   (prose documents — the retracted 217-inventory counted 8 Markdown files

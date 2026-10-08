@@ -66,23 +66,26 @@ import { leaderTemplateScopeRefs } from '../action-router/root-initial-work.js'
 import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 
 /**
- * The version this fixture's document declares is the SUBJECT of the file, not
- * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
- * a home here instead of in the fence's sight: production compiles the
- * requirement scopes this document declares only when the document declares
- * version 2 — five sites compare the declared version against 2
- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
- * activation/provider.ts:821). Raising the digit therefore does not upgrade the
- * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddened 3 of its 7 tests (all 7 green at base) — the ones that observe the leader template's requirement scope. 
- * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
- * emits are byte-for-byte what they were; only the carrier moved. And the
- * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
- * surviving version this line stops compiling and names THIS FILE — which is the
- * loud failure §7.4 exists to arrange, in place of a document that would
- * otherwise become a silent parse refusal.
+ * The document version this fixture declares, and why it is 3 now.
+ *
+ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
+ * it on a typed code position, because at that SHA the §E.2 structured-
+ * requirement grammar was read by production only behind
+ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
+ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
+ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
+ * "promoting the digit reddens N of this file's tests" — was a true measurement
+ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
+ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
+ * not of its version digit.
+ *
+ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
+ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
+ * requires (below), this file is fully green — the same legs, asserting the same
+ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
+ * digit to move in the same commit as the cutover instead of drifting.
  */
-const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
 /**
  * The W3-C fixture blueprint (schema v2): a LEADER template with a REQUIRED
  * `tool/pdf` + an OPTIONAL `tool/web` requirement; a WORKER template with a
@@ -151,6 +154,14 @@ const W3C_BLUEPRINT_SOURCE = [
   '  members:',
   '    maxInstances: 2',
   '    maxConcurrent: 2',
+    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
+    // zero `rules: []`. No test in this file mutates permissions, so nothing here
+    // asks to expand; a filler rule would write a wide grant into a fixture that no
+    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'metadata: {}',
   '---',
 ].join('\n')

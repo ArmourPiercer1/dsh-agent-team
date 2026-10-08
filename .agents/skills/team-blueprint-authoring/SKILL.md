@@ -43,7 +43,7 @@ Saved-source directory rules:
 
 ```yaml
 ---
-schemaVersion: 1
+schemaVersion: 3
 blueprintId: my-team-bp-1
 revision: "1"
 displayName: "My Team"
@@ -77,6 +77,18 @@ quotas:
     maxInstances: 4
     maxConcurrent: 4
 metadata: {}
+# Version 3 makes these two authority documents REQUIRED, with no default: a
+# defaulted ceiling would be the implicit wide grant ADR §5.1 forbids. Author
+# them at the honest zero below and never with a permissive filler rule; the
+# two planes read `rules: []` differently and both readings are pinned in
+# production — on the EXPANSION plane an unmatched scope is no authority (this
+# Leader may expand nothing), on the APPROVAL plane an absent rule imposes no
+# narrowing (a Human User is impeded only by host-side law). This zero is
+# inert only for a Team that never asks to expand anything.
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
 ---
 ```
 
@@ -86,9 +98,11 @@ Structural rules (all fail loudly with a classified reason):
   delimiters; a markdown body is rejected (`markdown-body-not-allowed`);
 - BOM is stripped, CRLF normalized, the YAML must decode cleanly;
 - identity fields:
-  - `schemaVersion` — positive integer; supported: **1** (the flat v1
-    document) and **2** (v1 shape + structured `teamRequirements` +
-    per-template `requirements` — §4.2);
+  - `schemaVersion` — positive integer; supported: **3** only (§7.3 cutover;
+    v3 = v2 shape + the two REQUIRED authority documents, and a document that
+    omits either does not parse). **1** and **2** remain DEFINED but are RETIRED:
+    this build refuses them with `SCHEMA_VERSION_MISMATCH` and the catalog lists
+    them `migration-required`;
   - `blueprintId` — non-empty, ≤128 chars, no whitespace/control characters,
     no `@` (reserved for the `blueprintId@revision` form);
   - `revision` — a positive integer (the shipped convention writes it

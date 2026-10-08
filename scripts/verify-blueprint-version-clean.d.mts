@@ -32,6 +32,20 @@ export interface BlueprintVersionScanResult {
 /** Scan the tracked tree (never the filesystem, never `rg`) for retired-version sites. */
 export function scanBlueprintVersionSites(): BlueprintVersionScanResult
 
+/** Whether a repo-relative path is inside the scan scope at all. Exported for
+ *  §7.3: a synthetic witness must be able to prove that a `.mjs` test-tree path
+ *  is in scope WITHOUT a file existing on disk at that path (a real `.mjs`
+ *  emitter in scope is gone as of §7.3, so the class had no live carrier left). */
+export function isScanScopePath(relativePath: string): boolean
+
+/** The verdict for one file's TEXT under the same rules the scan applies.
+ *  Exported for §7.3 for the same reason: the class must stay exercised on bytes
+ *  the tree no longer contains. */
+export function classifyText(
+  relativePath: string,
+  text: string,
+): Pick<BlueprintVersionScanResult, 'dirty' | 'advisory' | 'unknown' | 'refused' | 'prose'>
+
 /** The pure half of the predicate, exported so it can be tested on samples. */
 export function versionSitesInText(text: string): ReadonlyArray<{ line: number; version: number }>
 

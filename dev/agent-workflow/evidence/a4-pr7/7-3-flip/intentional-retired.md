@@ -83,3 +83,45 @@ Same shape, same derivation, same disposition, same verification. Filed by `C-te
 The §7.3 flip PR may not close with an unhandled row here, and this file may not be
 deleted by weakening a criterion. **Empty means every row above has had its
 `flip-verification` executed and its outcome recorded — not re-planned.**
+
+## Flip-round verification (the §7.3 flip PR — every row's `flip-verification` EXECUTED)
+
+The rows above were written before the narrowing existed; each carries a
+`flip-verification` that had to be run, not restated. Executed 2026-10-08 on the
+landing tree (`SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]`):
+
+| Row | Check executed | Outcome |
+| --- | --- | --- |
+| 1 — `tests/kits/pr-e-requirement-recovery-smoke` | does the narrowing change this kit's V1 anchor? the kit builds a **frozen historical document** as its own fixture, and the kit's assertions are about its own byte anchor | **UNCHANGED.** Still dirty-class in the fence (1 site), still outside `packages/**`. The kit does not call `parseBlueprint`; it compares recorded bytes. Row stands. |
+| 2 — `tests/kits/pr-f-closure-smoke` | same question | **UNCHANGED.** Same disposition, same single site. Row stands. |
+| 3 — `packages/legacy/test/p7t6-teammates-adapter.test.ts` | after §7.3 item (2) (the adapter now emits a v3 draft), does this file still carry version literals — i.e. does its `DEFERRALS` row still describe reality? | **STILL DIRTY, 9 sites, row stands** (`L119, 258, 285, 390, 408, 426, 468, 470, 472` re-measured, all still present). The literals are the **legacy `.md` teammate-file format's own** version axis, not a `TeamBlueprint` document, so the adapter change does not touch them. Independent confirmation the requirement asks for: no site in the file is a Blueprint document (the only `schemaVersion` inside a document-shaped object is the legacy fixture's own header). Because it stays dirty, the wrapper keeps its row AND the archetype leg now points at this file's line set by equality. |
+
+## The residual this leaves, priced out loud (the `.mjs` scan class)
+
+§7.3 removed the only real `.mjs` emitter the fence had ever classified
+(`packages/runtime/test/t12a-live-bridge.mjs`, whose row was therefore deleted
+from `DEFERRALS` — the deletion is checked: re-adding it reddens
+`every deferred path is still dirty (a migrated path must leave the list)` by
+name). What replaces it is a **synthetic** leg: `isScanScopePath` on a
+non-existent `packages/runtime/test/witness-version-carrier.mjs` plus
+`classifyText` on bytes that file would carry.
+
+The gap is precise and should not be read as "the `.mjs` class is covered":
+
+- The synthetic leg proves the **class** (scope + verdict + line number) with no
+  file on disk. It cannot prove that a **real** `.mjs` under `packages/*/test`
+  that is *not* a default artifact gets scanned, because no such file exists to
+  check, and the synthetic path is by construction not a default artifact.
+- Priced: if a future `.mjs` fixture carries a document stamp in a shape the
+  fence does not read, the fence stays silent and the leg stays green. The
+  backstop is not the fence — it is `parseBlueprint` refusing the document at
+  runtime with `SCHEMA_VERSION_MISMATCH`, which is the direction that fails
+  safe (an unread file cannot smuggle an *accepted* v1/v2 document, only a
+  refused one).
+- The measurement that found this: `classifyText` returns **all-empty** for any
+  text that lacks a document-shaped key pair. A `.mjs` carrying
+  `schemaVersion: 1` alone — with no `blueprintId` in the same text — is
+  classified as nothing at all, in `.mjs` **and** in `.ts`. That is the fence's
+  `BLUEPRINT_KEY` both-halves guard, and the synthetic leg now carries
+  `blueprintId` explicitly so the leg tests the classifier rather than the
+  guard.

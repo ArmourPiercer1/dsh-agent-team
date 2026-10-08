@@ -64,9 +64,16 @@ interface FileRule {
 }
 
 interface BpOpts {
-  /** A4-PR1: the carrier under test is v3-only, so the fixture states the
-   *  document version explicitly instead of hard-coding 1 at line 109. */
-  readonly schemaVersion?: 1 | 2 | 3
+  /** §7.3 v3-only: `3` is the ONLY document version this build parses, so the
+   *  option is the literal `3` — a caller can no longer ask for a v1 or v2
+   *  fixture by accident, and the two legs whose subject WAS a v1 document say
+   *  so by building their bytes directly instead of reaching for a digit that
+   *  no longer exists. */
+  readonly schemaVersion?: 3
+  /** Build a document that OMITS both required authority documents. Only a
+   *  leg that proves the refusal may use this: at v3 the pair is required, so
+   *  omitting it is an invalid document, not a legal absence. */
+  readonly omitCarriers?: boolean
   /** The v3 `teamHardEnvelope` carrier lines (a SECOND document, never a
    *  rename of the first — spec §3.2/§7.4). */
   readonly hardCarrier?: readonly string[]
@@ -112,7 +119,7 @@ function permsBlock(rules: readonly FileRule[], bash: 'allow' | 'deny' | undefin
 function bpSource(opts: BpOpts): string {
   return [
     '---',
-    `schemaVersion: ${String(opts.schemaVersion ?? 1)}`,
+    `schemaVersion: ${String(opts.schemaVersion ?? 3)}`,
     'blueprintId: team.a3p4r4',
     `revision: "${opts.revision ?? '1'}"`,
     'leader:',
@@ -146,8 +153,19 @@ function bpSource(opts: BpOpts): string {
     '        kind: allow',
     '        items: []',
     ...(opts.workerWrite === undefined ? [] : permsBlock(opts.workerWrite, undefined, 6)),
-    ...(opts.carrier ?? []),
-    ...(opts.hardCarrier ?? []),
+    // §7.3 v3-only: a v3 document MUST declare both authority documents
+    // (`validate.ts` requires them before any canonicalization exists), so an
+    // omitted carrier is no longer a representable document shape. Callers that
+    // exercise a SPECIFIC carrier still pass it; the rest get the honest zero
+    // `rules: []` — no authority, which is exactly what "no carrier" used to
+    // mean for every read in this file. `omitCarriers` is the one escape hatch,
+    // and it exists only so a leg can prove the refusal.
+    ...(opts.omitCarriers
+      ? []
+      : [
+          ...(opts.carrier ?? ['permissionMutationEnvelope:', '  rules: []']),
+          ...(opts.hardCarrier ?? ['teamHardEnvelope:', '  rules: []']),
+        ]),
     'teamEnvelope:',
     '  allow: [send-message]',
     '  deny: []',
@@ -592,6 +610,13 @@ describe('authorizeLeaderPermissionMutation envelope-only algebra (round 5): the
 // and on the APPROVAL plane the first two mean "narrows nothing" while the
 // third must mean "no answer" — an approval ceiling is the one place where
 // handing out the identity is the UNSAFE direction (ADR A1-4/A1-7/A2-4).
+//
+// §7.3 v3-only changes the FIRST of those three, not the ban on synthesizing
+// it: `absent` was reached by "a v1/v2 team", and there are no v1/v2 documents
+// any more (both authority documents are required fields at v3). So `absent`
+// has no reachable document trigger — see C1, which records the branch this
+// leaves dead in `permission-plane.ts` / `authority-ceiling.ts`. `declared` and
+// `unavailable` are unchanged, and C1/C3/C4 keep the three answers apart.
 // ──────────────────────────────────────────────────────────────────────────
 
 /** The v3 hard-ceiling carrier: same grammar as the mutation carrier, because
@@ -624,22 +649,66 @@ describe('createPermissionAuthorityFacts (A4-PR1): the v3 hard-ceiling reader is
       ...(faults === undefined ? {} : { faults }),
     })
 
-  it('C1 — a v1 Blueprint reads `absent`, and the reader NEVER synthesizes { rules: [] }', async () => {
-    const h = harness({
-      blueprints: { [TEAM_A]: bpSource({ revision: '1', carrier: fileCarrier('write', 'subtree', '/work/lead', 'allow') }) },
-      templates: { [`${TEAM_A}|${WORKER}`]: 'worker' },
-      workspaces: { [`${TEAM_A}|${WORKER}`]: '/work/m1' },
-    })
-    const read = await h.facts.teamHardEnvelope(TEAM_A, WORKER)
-    expect(read).toEqual({ status: 'absent' })
-    // The shape is the whole point: `{ rules: [] }` is a DECLARED ceiling that
-    // means "no runtime expansion authority at all", and a v1 team never
-    // declared it. Synthesizing one here would be a production authority change
-    // for every team that exists today (ADR A2-4: v1/v2 behavior identical),
-    // visible only months later as approvals that cannot be granted.
-    expect(JSON.stringify(read)).not.toContain('rules')
-    // …and the v1 read costs the fs provider NOTHING (no document, no work).
-    expect(h.calls()).toBe(0)
+  // §7.3 DELETE-SUBJECT half: the ORIGINAL C1 read a v1 document through the
+  // hard-ceiling reader and asserted `{ status: 'absent' }`. That scenario is no
+  // longer reachable: `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` is `[3]`, so
+  // `parseBlueprint` refuses the bytes before any reader exists, and at v3 BOTH
+  // authority documents are required fields — which means
+  // `permission-plane.ts` `readHardCeiling`'s `document === undefined` branch
+  // has NO reachable trigger any more (its companion comment in
+  // `authority-ceiling.ts` still says "a v1/v2 Team states `{ status: 'absent' }`";
+  // that sentence, and that branch, are what this cutover makes stale — recorded
+  // here and in 7-3-flip/FINDINGS.md rather than quietly left in place, because
+  // retiring a production branch is not part of the version flip).
+  //
+  // What this leg KEEPS is the half that was never about v1: the three answers
+  // a hard ceiling can give stay three distinct answers, and the reader still
+  // never hands out a synthesized `{ rules: [] }`. The two reachable outcomes
+  // are pinned by C3 (declared-empty) and C4 (unavailable); this leg pins the
+  // two ways a document can now be REFUSED instead of read.
+  it('C1 (§7.3 migration-required contract) — a retired-version document and a v3 document missing a required authority document are both refused before any read exists', async () => {
+    // (1) The exact bytes the original C1 fed the reader: a v1 document, now
+    // carrying both authority documents so that the VERSION is the only thing
+    // wrong with it (an omitted carrier would refuse for a different reason and
+    // this assertion would pass for the wrong cause).
+    const v1Source = bpSource({
+      revision: '1',
+      carrier: fileCarrier('write', 'subtree', '/work/lead', 'allow'),
+      hardCarrier: hardCarrierLines([hardRule('write', ['        kind: subtree', '        path: "/work/m1/src"'], 'allow')]),
+    }).replace('schemaVersion: 3', 'schemaVersion: 1')
+    // The re-stamp must actually have applied. A fixture that quietly stayed v3
+    // would make this pass while proving nothing — the §7.4 census caught that
+    // exact failure mode in `askFixtureVariant`.
+    expect(v1Source, 'the version re-stamp must have applied').toContain('schemaVersion: 1')
+    // The code is the DOMAIN one. Deliberately NOT
+    // `BLUEPRINT_SCHEMA_VERSION_UNSUPPORTED`: A1-21 keeps those refusals apart
+    // because they ask the operator for different actions. At the plugin
+    // boundary these same bytes answer `BLUEPRINT_MIGRATION_REQUIRED`, because
+    // v1/v2 land in the DERIVED `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS` — that
+    // routing moved with the accepted set on its own, which is the payoff of
+    // deriving it instead of hard-coding 1 and 2.
+    expect(() => parseBlueprint(v1Source)).toThrowError(
+      expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
+    )
+
+    // (2) A v3 document that declares NO authority documents is an INVALID
+    // document, not a legal absence: `validate.ts` `requireField` fires for
+    // `permissionMutationEnvelope` first, before any canonicalization or
+    // authority read exists, and it names the field it wanted.
+    expect(() =>
+      parseBlueprint(bpSource({ revision: '1', carrier: fileCarrier('write', 'subtree', '/work/lead', 'allow'), omitCarriers: true })),
+    ).toThrowError(
+      expect.objectContaining({
+        code: 'MALFORMED_DTO',
+        message: expect.stringContaining("missing required field 'permissionMutationEnvelope'"),
+      }),
+    )
+
+    // (3) And the ban the original leg was really about survives verbatim: the
+    // declared-empty outcome belongs to a document that SAYS so, and nothing
+    // above this line produced one.
+    const declaredEmpty = parseBlueprint(bpSource({ revision: '1' }))
+    expect(declaredEmpty.teamHardEnvelope).toEqual({ rules: [] })
   })
 
   it('C2 — a v3 hard ceiling resolves file matchers at the TARGET WORKSPACE and carries a fingerprint verbatim', async () => {

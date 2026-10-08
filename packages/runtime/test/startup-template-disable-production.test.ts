@@ -86,23 +86,26 @@ function requirementLines(
 }
 
 /**
- * §7.4 carrier migration (pre-flip half): this builder assembles the closed
- * §E.2 **v2** structured-requirement document, and that version IS the subject:
- * production reads `teamRequirements` and the per-template `requirements` only
- * behind a `blueprint.schemaVersion === 2` comparison
- * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
- * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
- * activation/provider.ts:821). Promoting the digit would not migrate this file's
- * claim, it would delete it — measured: with the document saying 3 every
- * requirement-scoping leg here goes red (the boot create stops refusing). See
- * dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md.
+ * The document version this fixture declares, and why it is 3 now.
  *
- * The digit therefore stays 2 and moves onto a typed code position: §7.3's
- * narrowing of `TeamBlueprint['schemaVersion']` turns THIS line into a compile
- * error naming this file, which is where plan §7.3's delete-or-retarget is
- * decided in review — never silently. Emitted YAML bytes are unchanged.
+ * §7.4 (lane B-runtime-semantics-A) deliberately LEFT this digit at 2 and put
+ * it on a typed code position, because at that SHA the §E.2 structured-
+ * requirement grammar was read by production only behind
+ * `blueprint.schemaVersion === 2` (requirements/scope-requirements.ts,
+ * requirements/creation-preflight.ts, admission/requirement-gate.ts,
+ * compatibility/blueprint.ts, activation/provider.ts). Their recorded trial —
+ * "promoting the digit reddens N of this file's tests" — was a true measurement
+ * of that tree, and §7.3 option A (3b253775, PR #161) consumed it: the five
+ * comparisons are gone and the grammar is now a property of the blueprint SHAPE,
+ * not of its version digit.
+ *
+ * So the flip is a no-op for this file's CLAIM, and that was re-measured here
+ * rather than assumed: at schemaVersion 3 plus the two authority documents v3
+ * requires (below), this file is fully green — the same legs, asserting the same
+ * facts. §7.3's narrowing of `TeamBlueprint['schemaVersion']` is what forces the
+ * digit to move in the same commit as the cutover instead of drifting.
  */
-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
 
 function v2Doc(
   blueprintId: string,
@@ -116,7 +119,7 @@ function v2Doc(
 ): string {
   const lines: string[] = [
     '---',
-    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+    `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
     `blueprintId: ${blueprintId}`,
     `revision: "${revision}"`,
     'leader:',
@@ -167,7 +170,15 @@ function v2Doc(
     '    members:',
     '      maxInstances: 4',
     '      maxConcurrent: 4',
-    'metadata: {}',
+      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
+    // zero `rules: []`. No test in this file mutates permissions, so nothing here
+    // asks to expand; a filler rule would write a wide grant into a fixture that no
+    // test would notice (ADR §5.1 forbids the implicit ceiling just as much).
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
+  'metadata: {}',
     '---',
   )
   return lines.join('\n')

@@ -66,7 +66,12 @@ describe('t2 immutability: parsed blueprint', () => {
 
   it('the validated core is not frozen (the freeze happens in parseBlueprint)', () => {
     const core = validateBlueprintDocument({
-      schemaVersion: 1,
+      // §7.3 v3-only. The digit is incidental to this leg (it pins that the
+      // validated core comes back UNFROZEN, which is a mutability claim, not a
+      // version claim), so it moves with the accepted set. v3 additionally
+      // requires both authority documents; `rules: []` is what this minimal
+      // document means — it grants nothing, and the leg never reads them.
+      schemaVersion: 3,
       blueprintId: 'team.min',
       revision: '1',
       leader: { templateId: 'leader', persona: 'Lead.' },
@@ -74,6 +79,8 @@ describe('t2 immutability: parsed blueprint', () => {
       requirements: [],
       memberEnvelopes: [],
       policyStates: [],
+      permissionMutationEnvelope: { rules: [] },
+      teamHardEnvelope: { rules: [] },
       metadata: {},
     })
     expect(Object.isFrozen(core)).toBe(false)

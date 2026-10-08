@@ -77,7 +77,14 @@ export const P5T5_FIXTURE = {
  * construction. Test-world arrangement, not a production claim.
  */
 export const P5T5_BLUEPRINT: TeamBlueprint = {
-  schemaVersion: 1,
+  // §7.3 v3-only cutover. This fixture is a LITERAL, not a parsed source (see
+  // the note above), so nothing would have refused it at v1 -- the type was the
+  // only thing standing between this document and a version the product no
+  // longer runs, which is precisely why the narrowing names it. Both authority
+  // documents v3 requires are declared at the honest zero `rules: []`: no P5-T5
+  // test mutates permissions, so a filler rule would be a wide grant no test
+  // would ever notice.
+  schemaVersion: 3,
   blueprintId: parseBlueprintId('P5T5-BP'),
   revision: parseBlueprintRevision('1'),
   contentHash: parseBlueprintContentHash('sha256-11111111111111111111111111111111'),
@@ -94,6 +101,8 @@ export const P5T5_BLUEPRINT: TeamBlueprint = {
   requirements: [],
   memberEnvelopes: [],
   policyStates: [],
+  permissionMutationEnvelope: { rules: [] },
+  teamHardEnvelope: { rules: [] },
   metadata: {},
 }
 

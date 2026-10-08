@@ -34,8 +34,7 @@ import { expectCode, expectErrorDetails } from './t2-helpers.js'
  * ERRORS naming this proof file, where delete-or-invert (plan §7.3) is
  * decided in review, not silently here.
  */
-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
-const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
 
 // ---------------------------------------------------------------------------
 // helpers: build v2 documents as raw YAML source
@@ -45,7 +44,7 @@ const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
 function v2Source(body: string): string {
   return [
     '---',
-    `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+    `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
     'blueprintId: team.v2',
     'revision: "1"',
     'leader:',
@@ -56,6 +55,13 @@ function v2Source(body: string): string {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    // §7.3 v3-only: both authority documents version 3 REQUIRES, at the honest zero
+    // `rules: []`. This suite parses and validates requirement grammars; it never
+    // grants, so an empty authority document is exactly what these fixtures mean.
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -70,7 +76,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
   it('parses team + leader + member structured requirements', () => {
     const src = [
       '---',
-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.full',
       'revision: "1"',
       'teamRequirements:',
@@ -95,12 +101,19 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
+      // honest zero `rules: []` — this fixture parses or hashes a document, it
+      // never grants, so an empty authority document is exactly what it means.
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       'metadata: {}',
       '---',
       '',
     ].join('\n')
     const bp = parseBlueprint(src)
-    expect(bp.schemaVersion).toBe(2)
+    expect(bp.schemaVersion).toBe(3)
     expect(bp.teamRequirements).toEqual([
       { requirementId: 'team.mcp.repo', type: 'mcpServer', subjects: ['repo'], complete: true },
     ])
@@ -118,7 +131,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
   it('normalizes an omitted `complete` to `false` (the ordinary ack-able case)', () => {
     const src = [
       '---',
-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.def',
       'revision: "1"',
       'teamRequirements:',
@@ -132,6 +145,13 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
+      // honest zero `rules: []` — this fixture parses or hashes a document, it
+      // never grants, so an empty authority document is exactly what it means.
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -145,7 +165,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
   it('accepts a persona requirement (the §E.3 required-persona carrier)', () => {
     const src = [
       '---',
-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.persona',
       'revision: "1"',
       'leader:',
@@ -160,6 +180,13 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
+      // honest zero `rules: []` — this fixture parses or hashes a document, it
+      // never grants, so an empty authority document is exactly what it means.
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -184,7 +211,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
     // REQUIRED one) fails loud MALFORMED_DTO, never a silent false-OPEN.
     const src = [
       '---',
-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.persona-bad',
       'revision: "1"',
       'leader:',
@@ -199,6 +226,13 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
+      // honest zero `rules: []` — this fixture parses or hashes a document, it
+      // never grants, so an empty authority document is exactly what it means.
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -209,7 +243,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
   it('rejects an unknown persona subject slug (additive v2 rule, §E.3)', () => {
     const src = [
       '---',
-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.persona-unknown',
       'revision: "1"',
       'leader:',
@@ -223,6 +257,13 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
+      // honest zero `rules: []` — this fixture parses or hashes a document, it
+      // never grants, so an empty authority document is exactly what it means.
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -234,7 +275,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
     const bp = parseBlueprint(
       [
         '---',
-        `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+        `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
         'blueprintId: team.v2.empty',
         'revision: "1"',
         'teamRequirements: []',
@@ -245,12 +286,19 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
         'requirements: []',
         'memberEnvelopes: []',
         'policyStates: []',
+        // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
+        // honest zero `rules: []` — this fixture parses or hashes a document, it
+        // never grants, so an empty authority document is exactly what it means.
+        'permissionMutationEnvelope:',
+        '  rules: []',
+        'teamHardEnvelope:',
+        '  rules: []',
         'metadata: {}',
         '---',
         '',
       ].join('\n'),
     )
-    expect(bp.schemaVersion).toBe(2)
+    expect(bp.schemaVersion).toBe(3)
     // declared-but-empty is a concrete `[]`, distinct from an absent key
     expect(bp.teamRequirements).toEqual([])
   })
@@ -259,7 +307,7 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
     const bp = parseBlueprint(
       [
         '---',
-        `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+        `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
         'blueprintId: team.v2.bare',
         'revision: "1"',
         'leader:',
@@ -269,12 +317,19 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
         'requirements: []',
         'memberEnvelopes: []',
         'policyStates: []',
+        // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
+        // honest zero `rules: []` — this fixture parses or hashes a document, it
+        // never grants, so an empty authority document is exactly what it means.
+        'permissionMutationEnvelope:',
+        '  rules: []',
+        'teamHardEnvelope:',
+        '  rules: []',
         'metadata: {}',
         '---',
         '',
       ].join('\n'),
     )
-    expect(bp.schemaVersion).toBe(2)
+    expect(bp.schemaVersion).toBe(3)
     expect(bp.teamRequirements).toBeUndefined()
     expect(bp.leader.requirements).toBeUndefined()
   })
@@ -284,11 +339,21 @@ describe('E.2 v2: requirement levels parse and normalize', () => {
 // the v1 validator is FROZEN: v2 fields are unknown on v1 documents
 // ---------------------------------------------------------------------------
 
-describe('E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1)', () => {
-  it('rejects `teamRequirements` on a v1 document (unknown top-level field)', () => {
+// §7.3 v3-only INVERSION of the frozen-v1 group. Both legs fed the parser a v1
+// document carrying a §E.2 field and asserted the refusal named THAT FIELD as
+// unknown (`unknownFields: ['teamRequirements']` / `['requirements']`) — the
+// frozen closed v1 field set. Post-cutover the version gate fires first, so the
+// field set is never consulted: the refusal the legs can still observe is the
+// version one, and it is the STRONGER fact (no v1 document parses at all, with
+// or without a v2 field). The two assertions below say exactly that, and each
+// still distinguishes its own bytes: the refusal is checked to be the version
+// refusal and NOT an unknown-field refusal, which is what would silently "pass"
+// if the field set were consulted first and the cutover later regressed.
+describe('E.2 (§7.3): the v1 route is closed at the version gate before the frozen v1 field set is reached', () => {
+  it('a v1 document naming `teamRequirements` is refused for its VERSION, not for the unknown field', () => {
     const src = [
       '---',
-      `schemaVersion: ${V1_DOCUMENT_VERSION}`,
+      'schemaVersion: 1',
       'blueprintId: team.v1.with-v2',
       'revision: "1"',
       'teamRequirements:',
@@ -306,35 +371,54 @@ describe('E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1)', () 
       '---',
       '',
     ].join('\n')
-    expectErrorDetails(() => parseBlueprint(src), 'MALFORMED_DTO', {
-      unknownFields: ['teamRequirements'],
-    })
+    const thrown = (() => {
+      try {
+        parseBlueprint(src)
+        return undefined
+      } catch (error) {
+        return error as { code?: string; details?: Record<string, unknown> }
+      }
+    })()
+    expect(thrown?.code).toBe('SCHEMA_VERSION_MISMATCH')
+    // Not an unknown-field refusal: the v1 closed set is no longer reached.
+    expect(JSON.stringify(thrown?.details ?? {})).not.toContain('teamRequirements')
   })
 
-  it('rejects `requirements` on a v1 template (unknown template field)', () => {
-    const src = [
-      '---',
-      `schemaVersion: ${V1_DOCUMENT_VERSION}`,
-      'blueprintId: team.v1.tpl-v2',
-      'revision: "1"',
-      'leader:',
-      '  templateId: leader',
-      '  persona: "Lead."',
-      '  requirements:',
-      '    - requirementId: x',
-      '      type: tool',
-      '      subjects: [x]',
-      'members: []',
-      'requirements: []',
-      'memberEnvelopes: []',
-      'policyStates: []',
-      'metadata: {}',
-      '---',
-      '',
-    ].join('\n')
-    expectErrorDetails(() => parseBlueprint(src), 'MALFORMED_DTO', {
-      unknownFields: ['requirements'],
-    })
+  it('a v1 template naming `requirements` is refused for its VERSION, and the SAME bytes stamped v3 parse the field', () => {
+    const body = (version: string): string =>
+      [
+        '---',
+        `schemaVersion: ${version}`,
+        'blueprintId: team.v1.tpl-v2',
+        'revision: "1"',
+        'leader:',
+        '  templateId: leader',
+        '  persona: "Lead."',
+        '  requirements:',
+        '    - requirementId: x',
+        '      type: tool',
+        '      subjects: [x]',
+        'members: []',
+        'requirements: []',
+        'memberEnvelopes: []',
+        'policyStates: []',
+        'permissionMutationEnvelope:',
+        '  rules: []',
+        'teamHardEnvelope:',
+        '  rules: []',
+        'metadata: {}',
+        '---',
+        '',
+      ].join('\n')
+    expect(() => parseBlueprint(body('1'))).toThrowError(
+      expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
+    )
+    // …and the field itself is not what the product rejects any more: on the one
+    // accepted version the per-template `requirements` field parses. This is the
+    // half that keeps the group honest — it proves the refusal above is about
+    // the version, not about the field being disallowed.
+    const at3 = parseBlueprint(body('3'))
+    expect(at3.leader.requirements?.map((r) => r.requirementId)).toEqual(['x'])
   })
 })
 
@@ -346,7 +430,7 @@ describe('E.2 v2: malformed requirements fail loud', () => {
   function v2ReqSource(requirementLines: string[]): string {
     return [
       '---',
-      `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+      `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
       'blueprintId: team.v2.neg',
       'revision: "1"',
       'teamRequirements:',
@@ -358,6 +442,13 @@ describe('E.2 v2: malformed requirements fail loud', () => {
       'requirements: []',
       'memberEnvelopes: []',
       'policyStates: []',
+      // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the
+      // honest zero `rules: []` — this fixture parses or hashes a document, it
+      // never grants, so an empty authority document is exactly what it means.
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       'metadata: {}',
       '---',
       '',
@@ -443,7 +534,7 @@ describe('E.2 v2: malformed requirements fail loud', () => {
 describe('E.2 v2: helper sanity', () => {
   it('the v2Source helper yields a parseable document', () => {
     const bp: TeamBlueprint = parseBlueprint(v2Source('[]'))
-    expect(bp.schemaVersion).toBe(2)
+    expect(bp.schemaVersion).toBe(3)
     expect(bp.members).toEqual([])
   })
 })
