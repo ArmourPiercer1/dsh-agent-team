@@ -817,8 +817,10 @@ export function createActivationProvider(ports: ActivationPorts): ActivationProv
       // engine result reuses the authority chain's fresh facts read, the
       // same logical moment).
       const scopeInputs = scopeRequirementInputsOf(blueprint)
-      const targetTemplateInputs =
-        blueprint.schemaVersion === 2 ? scopeInputs.templates[createTemplateId] : undefined
+      // A4-PR7 §7.3 Option A (decision record: dev/agent-workflow/evidence/a4-pr7/7-3-decision/Dossier.md):
+      // the §E.2 grammar is a property of the blueprint SHAPE, not of its version digit — the scope map
+      // is the shape (`undefined` for a template that declares nothing), so no version test.
+      const targetTemplateInputs = scopeInputs.templates[createTemplateId]
       const templateScopeKey = `template:${createTemplateId}`
       // D-1 + D-3 (2026-09-30) — the v2 target-template scope feed, in the
       // SAME precedence order as the team scope: the D-3 full resolution

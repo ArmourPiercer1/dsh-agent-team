@@ -1,0 +1,4 @@
+a declared teamRequirements puts the key into the v3 projection
+the hash changes when a requirement flips complete true -> false
+the hash changes when a requirement id changes
+the hash changes when a requirement subject changes

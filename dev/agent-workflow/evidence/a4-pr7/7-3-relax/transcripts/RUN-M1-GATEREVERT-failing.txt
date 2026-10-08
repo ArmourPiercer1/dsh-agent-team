@@ -1,0 +1,2 @@
+the template scopes EXIST at v3 only for templates that declare requirements
+the template-scope inputs carry the declared requirement ids
