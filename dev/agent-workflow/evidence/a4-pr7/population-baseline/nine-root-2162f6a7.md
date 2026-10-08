@@ -1,7 +1,7 @@
 # POPULATION BASELINE — NINE-ROOT SCOPE (authoritative from 2026-10-08)
 # ┌─ READ THIS FIRST ─────────────────────────────────────────────────────────────────────────────┐
 # │ THIS BASELINE WAS RE-MEASURED AT b9cc0a2d (branch fix/a4-d3-4-rejection-test). ITS FIGURES ARE │
-# │ IN "CURRENT CORPUS" AT THE END OF THIS FILE: 507 files / 6355 registered legs / 9 titled reds  │
+# │ IN "CURRENT CORPUS" AT THE END OF THIS FILE: 508 files / 6373 registered legs / 9 titled reds  │
 # │ / 0 collection-error files. The tolerated identity set IS the "titled reds" section below;     │
 # │ machine-readable copies in nine-root-post-d3-4-split.ids.txt (its 10-line predecessor:         │
 # │ nine-root-94da4a69.ids.txt). The numbers in the header below are the 2162f6a7 capture, kept as │
@@ -200,7 +200,20 @@ node scripts/fail-set.mjs diff \
 
 ## CURRENT CORPUS (the sentence scripts/ci-pr-gate.mjs reads for its totals)
 
-At `b9cc0a2d`: 507 files / 6355 registered legs, 9 titled reds, 0 collection-error files, nine roots
+
+**Retaken at `adec09f5` (round 45), because the sentence above is a claim and it had gone false.** Two
+merged legs moved the corpus after the `b9cc0a2d` capture above: `fix/a4-f1-corrupt-identity` added 4 legs
+(the W11 group) and `fix/a4-f2-coldstart-interleave` added 1 new file holding 14 legs. ONE sequential
+capture, `CI=true`, private `XDG_CACHE_HOME`, `.tmp-fault` cleared, pristine host at the pinned SHA, nine
+roots named: **508 files / 6373 registered legs / 9 titled reds / 0 collection-error files**, census leg
+`verdict=pass` in 278.7 s. The failing-identity SET is unchanged (`nine-root-post-d3-4-split.ids.txt`, 9
+lines, NEW=0 FIXED=0 against it), which is what the verdict turns on; the totals are context for a human
+reader, and a stale context is still a stale document, so the numbers were measured again rather than
+re-narrated. The `b9cc0a2d` paragraph above and the `At b9cc0a2d` figures in the D3-4 section are DATED
+MEASUREMENTS and stay exactly as written.
+
+
+At `adec09f5`: 508 files / 6373 registered legs, 9 titled reds, 0 collection-error files, nine roots
 named (contracts domain legacy remote runtime storage testkit tools client).
 
 Why the figures are written in this grammar and not in a table: `lastDeclaredTotals()` matches
