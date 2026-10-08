@@ -30,8 +30,7 @@ import type { TeamBlueprint } from '../blueprint/src/index.js'
  * ERRORS pointing at this proof file, where the planned delete-or-invert
  * (plan §7.3) happens loudly in review, not as a silent clean.
  */
-const V2_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
-const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
 
 // ---------------------------------------------------------------------------
 // a v2 document with structured requirements (deterministic content)
@@ -39,7 +38,7 @@ const V1_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 1
 
 const V2_SOURCE: readonly string[] = [
   '---',
-  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
   'blueprintId: team.v2.hash',
   'revision: "1"',
   'teamRequirements:',
@@ -64,6 +63,13 @@ const V2_SOURCE: readonly string[] = [
   'requirements: []',
   'memberEnvelopes: []',
   'policyStates: []',
+  // §7.3 v3-only: both authority documents version 3 REQUIRES, at the honest
+  // zero `rules: []`. Nothing here is an expansion fixture — this suite hashes
+  // documents and never grants — so the zero is exactly what these documents mean.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'metadata: {}',
   '---',
   '',
@@ -91,6 +97,14 @@ const V2_SOURCE_SHUFFLED: readonly string[] = [
   '    - requirementId: lead.model',
   '      type: modelRoute',
   '      subjects: [qwen3.8-27b]',
+  // §7.3 v3-only: the same two REQUIRED documents as V2_SOURCE, placed at a
+  // DIFFERENT position on purpose — this block exists to prove the hash ignores
+  // YAML key order, so re-adding them in source order would test less than the
+  // original did.
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
   'teamRequirements:',
   '  - requirementId: team.mcp.repo',
   '    type: mcpServer',
@@ -98,7 +112,7 @@ const V2_SOURCE_SHUFFLED: readonly string[] = [
   '    complete: true',
   'revision: "1"',
   'blueprintId: team.v2.hash',
-  `schemaVersion: ${V2_DOCUMENT_VERSION}`,
+  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
   '---',
   '',
 ]
@@ -162,12 +176,18 @@ describe('E.2 v2 hash: the structured requirements participate', () => {
   })
 })
 
-describe('E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability)', () => {
-  it('a v1 document has no `teamRequirements` and no template `requirements` in its projection', () => {
-    const bp = parseBlueprint(
+describe('E.2 hash (§7.3): a document that omits the v2 fields projects none of them; the retired stamps are refused', () => {
+  // §7.3 v3-only INVERSION. This leg fed the parser a v1 document and read its
+  // hashable projection. At v3-only those bytes never reach a projection: the
+  // version gate fires first. The projection claim survives intact at v3 (a
+  // document that omits the §E.2 fields projects no such key), so the leg keeps
+  // it and ADDS the gate that retired the v1 route to it — strictly more is
+  // asserted than before, and nothing is asserted less.
+  it('a document that omits the §E.2 fields projects none of them, and the same bytes stamped v1 are refused before any projection exists', () => {
+    const withoutV2Fields = (version: number): string =>
       [
         '---',
-        `schemaVersion: ${V1_DOCUMENT_VERSION}`,
+        `schemaVersion: ${version}`,
         'blueprintId: team.v1.frozen',
         'revision: "1"',
         'leader:',
@@ -180,21 +200,35 @@ describe('E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability)', (
         '    optional: false',
         'memberEnvelopes: []',
         'policyStates: []',
+        'permissionMutationEnvelope:',
+        '  rules: []',
+        'teamHardEnvelope:',
+        '  rules: []',
         'metadata: {}',
         '---',
         '',
-      ].join('\n'),
-    )
-    expect(bp.schemaVersion).toBe(1)
+      ].join('\n')
+    const bp = parseBlueprint(withoutV2Fields(3))
+    expect(bp.schemaVersion).toBe(3)
     const hashable = toHashableBlueprint(bp) as Record<string, unknown>
     expect(Object.hasOwn(hashable, 'teamRequirements')).toBe(false)
     const leader = hashable['leader'] as Record<string, unknown>
     expect(Object.hasOwn(leader, 'requirements')).toBe(false)
     // the projection binds to the hash (no hidden keys)
     expect(bp.contentHash).toBe(deriveContentHash(hashable))
+    // …and the retired stamp this leg used to carry is refused, not normalized.
+    expect(() => parseBlueprint(withoutV2Fields(1))).toThrowError(
+      expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
+    )
   })
 
-  it('a v2 document with NO v2 fields projects identically to its v1 twin except `schemaVersion`', () => {
+  // §7.3 v3-only INVERSION of the twin leg. It compared a v1 twin against a v2
+  // twin to prove the ONLY projection difference was the stamped version. With
+  // one accepted version there are no twins any more, so the leg asserts the two
+  // halves that were actually load-bearing: a v3 document with no §E.2 fields
+  // projects none of them, and both retired stamps are refused rather than
+  // silently accepted-and-normalized.
+  it('a v3 document with NO v2 fields projects none of them, and the retired v1 and v2 stamps are both refused', () => {
     const lines = (version: number): string =>
       [
         '---',
@@ -208,21 +242,24 @@ describe('E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability)', (
         'requirements: []',
         'memberEnvelopes: []',
         'policyStates: []',
+        'permissionMutationEnvelope:',
+        '  rules: []',
+        'teamHardEnvelope:',
+        '  rules: []',
         'metadata: {}',
         '---',
         '',
       ].join('\n')
-    const v1 = parseBlueprint(lines(1))
-    const v2 = parseBlueprint(lines(2))
-    const h1 = toHashableBlueprint(v1) as Record<string, unknown>
-    const h2 = toHashableBlueprint(v2) as Record<string, unknown>
-    // neither projection has a v2 key
-    expect(Object.hasOwn(h1, 'teamRequirements')).toBe(false)
-    expect(Object.hasOwn(h2, 'teamRequirements')).toBe(false)
-    // the ONLY difference is the stamped schemaVersion
-    expect(h2['schemaVersion']).toBe(2)
-    expect(h1['schemaVersion']).toBe(1)
-    expect(h1).not.toEqual(h2)
-    expect(v1.contentHash).not.toBe(v2.contentHash)
+    const v3 = parseBlueprint(lines(3))
+    const h3 = toHashableBlueprint(v3) as Record<string, unknown>
+    expect(Object.hasOwn(h3, 'teamRequirements')).toBe(false)
+    expect(h3['schemaVersion']).toBe(3)
+    // The two stamps that used to be the twins are now refused outright. This is
+    // the cutover's whole contract, stated at the hashing surface.
+    for (const retired of [1, 2]) {
+      expect(() => parseBlueprint(lines(retired)), `schemaVersion ${retired} must not parse`).toThrowError(
+        expect.objectContaining({ code: 'SCHEMA_VERSION_MISMATCH' }),
+      )
+    }
   })
 })

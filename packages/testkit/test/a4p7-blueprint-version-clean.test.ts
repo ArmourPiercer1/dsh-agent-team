@@ -231,11 +231,12 @@ function expectSingle(f: Fixture, want: SiteClass | 'none'): Classification {
  *     dev/agent-workflow/evidence/a4-pr7/7-3-cordis/.
  */
 const DEFERRALS: ReadonlyMap<string, string> = new Map([
+  ['packages/domain/test/blueprint-v1-frozen-resume.test.ts', 'A-domain (\u00a77.3 inversion, NOT a deferral of a migration — the migration happened here): the file\'s subject is a RETIRED v1 document, so it must keep v1 bytes to have a subject at all. Post-flip the file was rewritten so the literal is used ONLY to prove refusal (`SCHEMA_VERSION_MISMATCH`) plus a counter-control leg promoting the SAME bytes to v3, so the literal cannot be a laundered live fixture. Deleting this row reddens `dirty set is EXACTLY the deferral set`: correct, because the file is dirty BY SUBJECT. If the retired-version subject is ever dropped from this file, the row goes with it.'],
+  ['packages/domain/test/t2-blueprint-v2-requirements.test.ts', 'A-domain (\u00a77.3 inversion): same class as blueprint-v1-frozen-resume — a retired-version field-set probe that can only probe by carrying retired bytes. The leg now asserts the refusal is VERSION-shaped and explicitly that it does NOT name the field, so a regression behind the version gate cannot hide behind this literal.'],
+  ['packages/runtime/test/a3p4-r4-authority-binding.test.ts', 'B-runtime-semantics (\u00a77.3 inversion): the file owns the migration-required CONTRACT, so it stamps retired bytes on purpose (C1 re-stamps v1 onto v3-shaped bytes and asserts SCHEMA_VERSION_MISMATCH, with a guard that the re-stamp really landed in the emitted bytes against the builder silently re-stamping). Its escape hatch is `omitCarriers?: boolean`, which is how the missing-document refusal is still reachable at v3.'],
   ['tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 1 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
   ['tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 2 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
-  ['packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
-  ['packages/runtime/test/t12a-live-bridge.mjs', 'B-runtime-semantics-B STOP (measured 2026-10-08): this path is the wrapper\'s own packages/*/test by-path positive control (the leg "packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path"), so cleaning it is a coupled wrapper edit. COORDINATOR RULING 2026-10-08 (reviewer recommendation adopted): this path stays DIRTY BY DESIGN -- it is the only .mjs emitter in the scan class and its 38 importers make it the most-shared fixture in the runtime tree, so retargeting the pin would retire the sole witness of that class to accommodate a migration that is neutral for every consumer. Cited by leg title, never by line number: line numbers in a persistent row go stale on contact. The default document is LIVE (a probe digit no build runs reddens t12a-m2-persona, t12a-h1-nullable-mcp and t4a-capability-wiring); promoting it to v3 with both documents declared rules: [] keeps 5/5 measurable consumers green. Evidence + the retarget options: dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md'],
-  ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — C-testkit STOPPED, file byte-identical: this is the legacy .md teammate-file format\'s OWN version axis, not a TeamBlueprint document (L380 is a NEGATIVE test of which legacy versions the adapter rejects); migrating would delete the adapter\'s acceptance proof. Awaiting the fence\'s dirty-class adjudication row — disposition recorded in dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 3 (legitimate non-Blueprint version axis pending adjudication; owner: fence owner + §7.3 emitter). Carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
+  ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — C-testkit STOPPED, file byte-identical: this is the legacy .md teammate-file format\'s OWN version axis, not a TeamBlueprint document (L380 is a NEGATIVE test of which legacy versions the adapter rejects); migrating would delete the adapter\'s acceptance proof. Awaiting the fence\'s dirty-class adjudication row — disposition recorded in dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 3 (legitimate non-Blueprint version axis pending adjudication; owner: fence owner + §7.3 emitter). Carriers: 9 sites, all string-carrier-in-typed-file. NO line numbers here on purpose \u2014 the §7.3 migration shifted them all by one within the same commit, which is exactly the rot the rule above predicts; the by-equality pin in the archetype leg is the live carrier of this set, and it reddens if the set changes.'],
 ])
 
 /**
@@ -436,8 +437,9 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // by-path control's own path or the two controls collapse into one. This is a
     // YAML string-carrier factory in a packages/*/test .ts file, i.e. the same class
     // the archetype leg below pins.
+    // §7.3: the named file moved with the archetype (same reason, same commit).
     expect(report).toContain(
-      'OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: ',
+      'OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: ',
     )
     expect(report).toMatch(/OFFENDING \S+ :: L\d+=v[12]/)
     expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)} files, ${String(run.dirty.length)} sites)`)
@@ -457,24 +459,80 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
     // red-on-success shape the leg above was rewritten to escape. What the leg
     // claims is unchanged: SOME YAML-string-fragment factory in the scan class
     // is reached by path AND by exact line. It now names
-    // `a3p4-pr4-production-entry-regression.test.ts`, whose blueprint documents
-    // are `.ts` array literals of YAML fragments (four of them, at the lines
-    // pinned below) and whose lane deferral keeps it dirty for its own reasons.
-    // The set is asserted by EQUALITY, not membership, so the archetype cannot
-    // quietly accumulate or lose a site without this leg reddening.
+    // §7.3 MOVED THE ARCHETYPE A SECOND TIME, and the move is the point: the file
+    // this leg used to name (`a3p4-pr4-production-entry-regression.test.ts`) was
+    // MIGRATED by §7.3, so pinning it kept the leg green only by pinning a set
+    // that no longer exists — a control that goes red on success, which the file's
+    // own header calls out as the shape to avoid. It now names
+    // `packages/legacy/test/p7t6-teammates-adapter.test.ts`: a `.ts` test file
+    // carrying NINE YAML-shaped frontmatter fragments as string literals, the
+    // same class, and one that stays dirty on purpose (its digits are the legacy
+    // `.md` teammate-file axis — see the DEFERRALS row and intentional-retired.md
+    // row 3). The set is asserted by EQUALITY, not membership, so the archetype
+    // cannot quietly accumulate or lose a site without this leg reddening.
     const archetype =
-      'packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts'
+      'packages/legacy/test/p7t6-teammates-adapter.test.ts'
     const lines = run.dirty.filter((s) => s.path === archetype).map((s) => s.line).sort((a, b) => a - b)
-    expect(lines, `${archetype}: the YAML string-carrier sites the fence must name`).toEqual([118, 491, 843, 1128])
+    expect(lines, `${archetype}: the YAML string-carrier sites the fence must name`).toEqual([119, 258, 285, 390, 408, 426, 468, 470, 472])
     expect(report).toContain(`OFFENDING ${archetype} :: `)
   })
 
-  it('packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path', () => {
-    // The coordinator's 139-file co-occurrence count lives under
-    // packages/*/test; the fence must now name paths from that class, not
-    // just count it. t12a-live-bridge.mjs:1347 is the unambiguous member
-    // (a .mjs test-tree emitter, dirty in any classification).
-    expect(dirtyPaths).toContain('packages/runtime/test/t12a-live-bridge.mjs')
+  it('packages/*/test is in scope: a SYNTHETIC .mjs test-tree emitter is in scope AND its version literal is classified', () => {
+    // §7.3 retired the witness this leg used to name: `t12a-live-bridge.mjs` was
+    // the only `.mjs` emitter in the scan class and it is now a v3 document, so
+    // `dirtyPaths` no longer contains it. Leaving the assertion pointing at it
+    // would have made the leg red on success; pointing it at another permanently
+    // dirty file would have traded one coupling for another.
+    //
+    // So the leg no longer asks "is some dirty .mjs in the set" (a question about
+    // the tree's current state) and asks the question it was always meant to ask
+    // about the SCANNER: does a `.mjs` path under `packages/*/test` enter the scan
+    // at all, and if it carried a version literal would the fence classify it?
+    // Both halves are needed. Scope without classification is a scanner that
+    // reads the file and says nothing; classification without scope is a rule
+    // that can never be reached. A synthetic path is used precisely so the leg
+    // never needs a dirty file to stay true — the residual this leaves (a real
+    // non-default `.mjs` fixture that nothing parses) is priced out loud in
+    // dev/agent-workflow/evidence/a4-pr7/7-3-flip/FINDINGS.md.
+    const synthetic = 'packages/runtime/test/witness-version-carrier.mjs'
+    // The file's own cast pattern (the fence is an untyped `.mjs`; these two
+    // exports are asserted present below rather than assumed).
+    if (classifyText === undefined || isScanScopePath === undefined) {
+      throw new Error('the fence must export classifyText + isScanScopePath')
+    }
+    expect(isScanScopePath(synthetic), '.mjs under packages/*/test must be IN scope').toBe(true)
+    // Half two: feed the classifier the bytes such a file would carry, at the
+    // path it would carry them at, and demand a verdict rather than silence.
+    // The stamp is COMPOSED, not written: this file is itself inside the fence's
+    // scope, and a literal retired stamp in it makes the fence's own author dirty
+    // (measured: the leg "the fence needs no exemption for its own author" went
+    // red on exactly this while the row text below was being written). The fix is
+    // this file, never an exemption.
+    const retiredDigit = 1
+    const stamp = ['schema', 'Version'].join('') + ': ' + String(retiredDigit)
+    // Both halves of the fence's key guard, deliberately present: without a
+    // document-shaped pair (`schemaVersion` AND `blueprintId` in one text)
+    // classifyText returns SILENCE for any path, and silence would let this leg
+    // pass while testing nothing.
+    const text = 'const doc = { ' + stamp + ", blueprintId: 'x' }\n"
+    const verdicts = (path: string): number => {
+      const v = classifyText(path, text)
+      const seen = [...v.dirty, ...v.advisory, ...v.unknown, ...v.refused, ...v.prose]
+      // A verdict must name the line it came from, or the fence "saw" the file
+      // without reading it.
+      expect(seen.map((x) => x.line), `${path}: verdict without a line`).toContain(1)
+      return seen.length
+    }
+    expect(
+      verdicts(synthetic),
+      'a document stamp in a scoped .mjs must produce a verdict, not silence',
+    ).toBeGreaterThan(0)
+    // The extension rule, pinned while we are here: the SAME bytes in a `.ts`
+    // file are an ADVISORY typed position (a `.ts` can carry a typed
+    // TeamBlueprint, so the narrowing's typecheck is the backstop) while in a
+    // `.mjs` they are DIRTY (nothing checks them). Two classes, one fact, and the
+    // leg proves the fence still tells them apart.
+    expect(classifyText('packages/runtime/test/witness-version-carrier.ts', text).advisory.length).toBe(1)
   })
 
   it('the named namespace traps are never reported as Blueprint sites', () => {
@@ -575,14 +633,27 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
       named('packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts', 101),
       'the very literal the probe caught lying must SAY so',
     ).toContain('as-unknown-as')
-    expect(named('packages/runtime/test/p5t5-helpers.ts', 80)).toContain('annotated TeamBlueprint')
+    // §7.3: `p5t5-helpers.ts:80` was pinned here as the surviving typed
+    // `annotated TeamBlueprint` site. §7.3 MIGRATED that file (its
+    // `P5T5_BLUEPRINT` literal is now v3 with both authority documents), so the
+    // site is gone and the pin moved to a measured survivor of the same flip —
+    // a typed position the narrowing deliberately does not touch.
+    expect(named('packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts', 785)).toContain(
+      'typed-code-position',
+    )
     // B1's cutover-acceptance migration retired the two `schemaVersion: 99`
     // toMatchObject advisories (the probes now read a derived constant, so no
     // digit sits in a code position any more); the surviving named laundering in
     // that file is the v1 bridge assertion below. (Witness ownership, phase 1:
     // the file grew its byte-owned v1 witness builder — the bridge line shifted
     // 547 -> 584; its class and count are unchanged.)
-    expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 584)).toContain('toMatchObject')
+    // §7.3: this pin sat on the "under the bridge the same file resolves
+    // normally" leg. §7.3 INVERTED that leg (the bridge build no longer exists),
+    // which moved the same typed toMatchObject position onto a retired stamp
+    // position to L611. Re-pinned, not deleted: the claim — that a retired stamp
+    // survives in a typed assertion the narrowing cannot catch — is still true
+    // and still needs a name.
+    expect(named('packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts', 611)).toContain('toMatchObject')
     // Re-anchor safety (coordinator ruling, authorized addition): the pin above is a
     // re-anchor, not a shift — the laundering it first named (a v99 `schemaVersion`
     // literal in a toMatchObject argument) was RETIRED by B1's migration, and a pin

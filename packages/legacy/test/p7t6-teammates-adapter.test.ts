@@ -17,6 +17,7 @@
 import { describe, expect, it } from 'vitest'
 import { isTeamContractError } from '../../contracts/src/index.js'
 import type { TeamContractError } from '../../contracts/src/index.js'
+import { SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS } from '../../domain/blueprint/src/index.js'
 import { importLegacyTeammates } from '../teammates-adapter.js'
 import type { LegacyTeammateEntry, LegacyTeammateOptions } from '../teammates-adapter.js'
 import {
@@ -134,7 +135,16 @@ describe('p7t6 legacy teammates adapter: valid import', () => {
     expect(isDeepFrozen(blueprint)).toBe(true)
 
     // vNext identity comes from the importer, not from the legacy files.
-    expect(blueprint.schemaVersion).toBe(1)
+    // §7.3 v3-only: the adapter now emits the version the build SUPPORTS (read
+    // off the domain's own set), and this asserts it from that same set instead
+    // of a remembered digit — the leg's claim is "the adapter produced a
+    // document this build runs", which is exactly what the set answers. The
+    // adapter's own output must carry BOTH v3-mandatory authority documents,
+    // and they must be the honest zero: a legacy directory import is not an
+    // expansion grant, and a declared-empty ceiling carries no authority.
+    expect(blueprint.schemaVersion).toBe(SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS[0])
+    expect(blueprint.permissionMutationEnvelope).toEqual({ rules: [] })
+    expect(blueprint.teamHardEnvelope).toEqual({ rules: [] })
     expect(blueprint.blueprintId).toBe('team.p7t6-import')
     expect(blueprint.revision).toBe('1')
     expect(blueprint.displayName).toBe('P7-T6 Legacy Import')

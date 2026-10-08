@@ -130,7 +130,7 @@ function requirementLines(
  * loud failure §7.4 exists to arrange, in place of a document that would
  * otherwise become a silent parse refusal.
  */
-const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 3
 function v2Doc(
   blueprintId: string,
   revision: string,
@@ -199,6 +199,15 @@ function v2Doc(
     '    members:',
     '      maxInstances: 4',
     '      maxConcurrent: 4',
+    // §7.3 v3-only: the two authority documents this version REQUIRES, at the
+    // honest zero. `rules: []` is the honest position here because no test in
+    // this file mutates permissions -- it binds consent scopes and hashes --
+    // so nothing in it asks to expand. A filler rule would be a wide grant
+    // written into a fixture that no test would notice (ADR §5.1).
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
   )

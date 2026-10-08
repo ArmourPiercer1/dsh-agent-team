@@ -1,0 +1,132 @@
+runtime::test/a4f1-row-version-not-document-version.test.ts::COLLECTION
+runtime::test/a4p7-v8-catalog-migration-state.test.ts::COLLECTION
+runtime::test/bp1-red-glue-probe.test.ts::COLLECTION
+runtime::test/c1-leader-notification-glue.test.ts::COLLECTION
+runtime::test/c1-production-wiring.test.ts::COLLECTION
+runtime::test/consent-scope-hash-binding.test.ts::COLLECTION
+runtime::test/d1-member-base-tools.test.ts::COLLECTION
+runtime::test/d3-member-identity-context.test.ts::COLLECTION
+runtime::test/mcp-target-materialization-unit.test.ts::COLLECTION
+runtime::test/mcp-target-materialization.test.ts::COLLECTION
+runtime::test/multi-mcp-wiring.test.ts::COLLECTION
+runtime::test/persona-kind-provider-preflight.test.ts::COLLECTION
+runtime::test/requirement-d1-d3-decision-scoping.test.ts::COLLECTION
+runtime::test/send-message-liveness.test.ts::COLLECTION
+runtime::test/startup-all-templates-real-authority.test.ts::COLLECTION
+runtime::test/startup-consent-production.test.ts::COLLECTION
+runtime::test/startup-template-disable-production.test.ts::COLLECTION
+runtime::test/t12a-b3-external-deny.test.ts::COLLECTION
+runtime::test/t12a-h1-nullable-mcp.test.ts::COLLECTION
+runtime::test/t12a-m1-effective-cwd.test.ts::COLLECTION
+runtime::test/t12a-m2-persona.test.ts::COLLECTION
+runtime::test/t12a-m3-recursive-drain.test.ts::COLLECTION
+runtime::test/t12a-team-tools-registration.test.ts::COLLECTION
+runtime::test/t4a-capability-wiring.test.ts::COLLECTION
+runtime::test/tcm-d4-root-context.test.ts::COLLECTION
+runtime::test/tcm-m3-root-work-glue.test.ts::COLLECTION
+runtime::test/team-session-activation-glue.test.ts::COLLECTION
+runtime::test/work-completion-notification-glue.test.ts::COLLECTION
+test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry resolves the addressed facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > NEGATIVE CONTROL: a healthy no-permissions world gains ZERO new startup failures and no permission warning
+test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry resolves the addressed facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+test/a3p4-pr4-production-entry-regression.test.ts > E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK-5 decision side, t12a blind spot) > a persisted overlay DENY beats the template ALLOW through the real glue pipeline
+test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working
+test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-grammar — the carrier grammar refuses malformed carriers typed (R-B debt: MALFORMED rejection strings existed nowhere)
+test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-hash — golden content-hash pin: the carrier-bearing blueprint hashes BYTE-IDENTICALLY (canonicalizer drift trips this leg)
+test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-rpc — the REAL remote method override.mutatePermission (v7-only): operator grant → decision ALLOW; revoke → DENY; member-caller authority refuses typed
+test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-tool — the REAL team_grant_permission/team_revoke_permission surface: grant commits → decision ALLOW; revoke → decision DENY again (Leader gate + server-side canonicalization)
+test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (A4-PR1): the v3 hard-ceiling reader is additive, and absence is not a fault > C1 — a v1 Blueprint reads `absent`, and the reader NEVER synthesizes { rules: [] }
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A1 — each addressed team reads its OWN bound Blueprint (identical template ids, row-wide constant dead)
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A2 — relative matchers canonicalize at the TARGET member workspace, never a shared anchor
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A3 — exec fingerprints carry VERBATIM with ZERO provider calls (BLOCK-1 grammar reachability)
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A4 — an absent carrier is a LEGAL typed absence (zero authority, zero fs calls), never a read failure
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A5 — unknown bindings abstain fail-closed (typed downstream), never hard-fail reads
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A6 — a provider fault abstains WITHOUT caching (bounded recovery: the next read rebuilds)
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A7 — drift ACROSS the canonicalization await discards the mixed-identity document (never cached, never served)
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A8 (round 5 rewrite) — NO cross-call authority cache: every read canonicalizes FRESH; a rebind lands on the next read
+test/a3p4-r4-authority-binding.test.ts > createPermissionAuthorityFacts (round 4): addressed-team binding + carrier envelope + target-workspace anchor > A9 (round 5 rewrite) — the LEADER POSITION reads its own template through the SAME addressed staticLayers reader
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > REAL v2 leader row (validator-gated, no child/lifecycle keys): the leader pair resolves the root handle at the team-session key
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > ambiguous binding (real list order, alpha-first): BOTH claimants are refused outright — no first-match owner, zero side effects
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > ambiguous binding (swapped order): refusal is order-independent — the swap changes nothing
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > ghost leg: a pair with no durable row reads undefined with zero side effects
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > no over-refusal: the SAME rows with the collision removed resolve normally (exactly-one binding still delivers)
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > positive receive: a running non-derived seeded member receives exactly one inject through the real binding, never steer or followup
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > positive restored member: durable childSessionId different from any derivation receives; the receipt itself resumes nothing
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > regression: derived-id members of the ordinary runtime case resolve through the same durable law unchanged
+test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > stale handle leg: a re-pointed durable row reads undefined for the old live child and the new key stays cold (no adopt, no create)
+test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge)
+test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V13 a v2 document must STILL reject `teamHardEnvelope` (the version→closed-set mapping is version-gated)
+test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V15 v1/v2 still parse during the temporary bridge (ADR A2-4)
+test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V5 v3 REQUIRES permissionMutationEnvelope (ADR A1-19: a new hard requirement at v3 only)
+test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > every workspace package that declares a typecheck script typechecks
+test/a4p7-v3-cutover-acceptance.test.ts > a4p7 7.1 C: an unmigrated Blueprint stays on the discovery surface and is refused typed > under the bridge the same file resolves normally, so the refusal is version-state and not a blanket break
+test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > a v1 document (persona string + flat requirements) parses
+test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > a v2 `teamRequirements` field is still rejected on a v1 document (frozen closed field sets)
+test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > the v1 content hash is stable across parses (byte-identical resume)
+test/blueprint-v1-frozen-resume.test.ts > E.11 blueprint-v1-frozen-resume: the v1 schema is frozen > the v1 projection carries no v2 key (the v2 structured-requirement surface is absent on v1)
+test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 residual-3: the pre-reservation REJECT region > c9-r3-1: v2 templateFeed — park at B's templateFacts feed await (ENTERED proven), abort, the feed REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal)
+test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work)
+test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way
+test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL3: with the leader disabled the legitimate control/recovery lanes still function
+test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > IL4: re-enable RESUMES the initial work through the same checks (allowed again)
+test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > premise: the leader template declares NO requirements (its scope has no verdict inputs)
+test/leader-recovery-next-boundary-exit.test.ts > W3-C leader-recovery-next-boundary-exit: the F8 leader recovery exit > L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal
+test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1: a Leader REQUIRED requirement down blocks the normal turn and offers the recovery dispatch
+test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L1r: with the Leader required scope blocked, RECOVERY work is allowed (reduced authority)
+test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L2: a Leader OPTIONAL requirement down does not block the normal turn (auto-degraded)
+test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L4: an unrelated Member (worker) required requirement down does not block the Leader
+test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > L5: a Team-level REQUIRED requirement down blocks the Leader normal turn
+test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > W2: the wiring resolves [team, template:leader] for the fixture blueprint
+test/leader-template-required-boundary.test.ts > W3-C leader-template-required-boundary: the F8 leader boundary gate > W3: the refs exclude the (unrelated) worker template scope
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: invalid import > rejects a legacy id that is not a vNext template slug (INVALID_TEMPLATE_ID)
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: no runtime authority (negative) > importing never observes or mutates existing team state
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: no runtime authority (negative) > the produced blueprint is plain, deeply-frozen data (no host references)
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: source changes after snapshot > fs-level: mutating the directory after import leaves the snapshot intact
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: source changes after snapshot > re-importing changed entries yields a new contentHash; the first snapshot is unchanged
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > G1 model-only: a def with model and NO provider maps to the bare model (modelPreference "foo"), no extras provider
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > G2 provider-only: a def with provider and NO model maps to NO modelPreference, and the provider stays in extras
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > duplicate legacy id: last file wins, with a warning
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > imports the valid fixture directory into a complete vNext TeamBlueprint
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > multiple leaders: the last discovered leader survives, with a warning
+test/p7t6-teammates-adapter.test.ts > p7t6 legacy teammates adapter: valid import > re-importing identical entries yields the same contentHash (deterministic snapshot)
+test/startup-preflight-production-create.test.ts > W3-B S1 — Team-level required down: the creation preflight refuses typed (guide §6.3.1) > the boot create rejects with the typed creation-preflight refusal (outcome fatal)
+test/startup-preflight-production-create.test.ts > W3-B S2 — MemberTemplate required down (no instance): `fixOrDisable` (guide §6.3.2) > the boot create rejects typed with the blocked template scope + the down requirement
+test/startup-preflight-production-create.test.ts > W3-B S4 — optional down without consent: `consentRequired` (guide §6.3.4) > the boot create rejects typed with the consent-required requirement id
+test/t2-blueprint-immutability.test.ts > t2 immutability: parsed blueprint > the validated core is not frozen (the freeze happens in parseBlueprint)
+test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: determinism and canonical binding > binds exactly to the canonical hashable projection
+test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: determinism and canonical binding > is deterministic across parses
+test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: determinism and canonical binding > is independent of YAML key order (canonical JSON sorts keys)
+test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the structured requirements participate > changes when a requirement flips complete false -> true
+test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the structured requirements participate > changes when a requirement is removed entirely
+test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the structured requirements participate > changes when a requirement subject changes
+test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability) > a v1 document has no `teamRequirements` and no template `requirements` in its projection
+test/t2-blueprint-v2-hash.test.ts > E.2 v2 hash: the v1 projection carries NO v2 keys (byte-stability) > a v2 document with NO v2 fields projects identically to its v1 twin except `schemaVersion`
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: helper sanity > the v2Source helper yields a parseable document
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects a duplicate requirementId within the same level
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects a missing `requirementId`
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects a non-boolean `complete`
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects a type outside the closed §27.1 six-set
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects an unknown field on a v2 requirement
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: malformed requirements fail loud > rejects empty `subjects`
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > accepts a persona requirement (the §E.3 required-persona carrier)
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > accepts an explicitly empty teamRequirements list (declared, not omitted)
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > leaves a v2 document WITHOUT v2 fields as `undefined` (omitted, not present-but-empty)
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > normalizes an omitted `complete` to `false` (the ordinary ack-able case)
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > parses team + leader + member structured requirements
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > rejects a persona requirement whose subject is outside the closed required-persona-kind set (additive v2 rule, §E.3)
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: requirement levels parse and normalize > rejects an unknown persona subject slug (additive v2 rule, §E.3)
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1) > rejects `requirements` on a v1 template (unknown template field)
+test/t2-blueprint-v2-requirements.test.ts > E.2 v2: the v1 validator is frozen (v2 fields are unknown on v1) > rejects `teamRequirements` on a v1 document (unknown top-level field)
+test/team-session-durability.test.ts > C1 (guide §13.2): the durability seam (sessionPersistence.exists) > D1 DSH_HOME completely unset + exists() = true: ensureLiveAgent RESUMES (no env-var false)
+test/team-session-durability.test.ts > C1 (guide §13.2): the durability seam (sessionPersistence.exists) > D2 no filesystem tree at all + exists = true: the resume SUCCEEDS (the layout is invisible)
+test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > control: with the worker ENABLED the delegate is admitted (healthy world, empty worker)
+test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > premise: the fixture worker template produces NO requirement inputs / verdicts (the empty case)
+test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > re-enabling resumes the delegate through the SAME checks (the block did not key on requirements)
+test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > the durable disable BLOCKS the delegate to the worker — regardless of its (empty) requirement set
+test/template-disable-no-requirements-gate.test.ts > finding I: a disabled template with NO requirements blocks its work (real chain) > the same disable BLOCKS the follow-up to the worker (same normalWork class, same scopeRefs)
