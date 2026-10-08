@@ -1,0 +1,4 @@
+     × V16 GOLDEN: the v1 and v2 content hashes are BYTE-IDENTICAL to the pre-v3 literals (ADR A2-11) 13ms
+     × V17 the v1/v2 hashable projections carry NO teamHardEnvelope key (key-omitted, not null) 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  2 failed | 18 passed (20)

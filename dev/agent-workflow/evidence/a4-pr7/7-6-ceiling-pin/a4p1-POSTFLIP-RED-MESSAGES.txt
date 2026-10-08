@@ -1,0 +1,8 @@
+AssertionError: V16 precondition: the v1 bridge fixture must parse — unsupported blueprint schema version 1; this build supports [3]: expected false to be true // Object.is equality
+
+- Expected
++ Received
+--
+    481|     expect(v1.ok, `V16 precondition: the v1 bridge fixture must parse …
+       |                                                                                            ^
+    482|     expect(v2.ok, `V16 precondition: the v2 bridge fixture must parse …

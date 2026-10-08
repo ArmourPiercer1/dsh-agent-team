@@ -1,0 +1,69 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-76-ceiling-pin
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts (20 tests | 2 failed) 10ms
+     ✓ V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is widened to 1|2|3 (ADR A2-11, temporary PR1-PR6 bridge) 1ms
+     ✓ V2 a v3 document carrying both authority documents parses 0ms
+     ✓ V3 the v3 document keeps the DECLARED AST shape: a file matcher carries `path`, never a canonical `resource` (ADR A2-3) 0ms
+     ✓ V4 v3 REQUIRES teamHardEnvelope — absence is a typed refusal, never an implicit wide grant (spec §3.2) 0ms
+     ✓ V5 v3 REQUIRES permissionMutationEnvelope (ADR A1-19: a new hard requirement at v3 only) 0ms
+     ✓ V6 `rules: []` is a legal declaration in either document and survives validation (spec §3.4) 0ms
+     ✓ V7 file classes accept exact AND subtree; the shell class accepts fingerprint (spec §3.3) 0ms
+     ✓ V8 a shell-class rule with a file matcher is refused, never silently inert 0ms
+     ✓ V9 a file-class rule with a fingerprint matcher is refused (no `any`, no cross-class pairing) 0ms
+     ✓ V10 the parse entry has NO provider surface — arity 1, source in, document out (ADR A2-3) 0ms
+     ✓ V11 unknown rule field, out-of-vocabulary effect, and a duplicate pair all fail closed 0ms
+     ✓ V12 the v3 top-level closed set is EXACTLY the v2 set plus teamHardEnvelope 0ms
+     ✓ V13 a v2 document must STILL reject `teamHardEnvelope` (the version→closed-set mapping is version-gated) 0ms
+     ✓ V14 a v1 document rejects it too (the v1 validator stays frozen) 0ms
+     ✓ V15 v1/v2 still parse during the temporary bridge (ADR A2-4) 0ms
+     × V16 GOLDEN: the v1 and v2 content hashes are BYTE-IDENTICAL to the pre-v3 literals (ADR A2-11) 4ms
+     × V17 the v1/v2 hashable projections carry NO teamHardEnvelope key (key-omitted, not null) 1ms
+     ✓ V18 the v3 hash BINDS teamHardEnvelope: one bit of the hard envelope moves the hash 0ms
+     ✓ V19 the v3 projection carries teamHardEnvelope with the DECLARED AST shape (committed JSON) 0ms
+     ✓ V20 the v3 hash is still just deriveContentHash over the projection (no new hash mechanism) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V16 GOLDEN: the v1 and v2 content hashes are BYTE-IDENTICAL to the pre-v3 literals (ADR A2-11)
+AssertionError: expected 'sha256:86896222f6bf022df99e37ed816057…' to be 'sha256:d25ea1cfb50079083fb0dbc0c6dc39…' // Object.is equality
+
+Expected: "sha256:d25ea1cfb50079083fb0dbc0c6dc39fbc8d7f735aa1e5ae2226b8d054df972bc"
+Received: "sha256:86896222f6bf022df99e37ed8160579f55f49a5ae7d2ac4688e4e8c9d174516e"
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:440:31
+    438|     expect(v2Again.ok, `V16 precondition: the v2 re-parse must parse —…
+    439|     if (!v1.ok || !v2.ok || !v1Again.ok || !v2Again.ok) return // narr…
+    440|     expect(v1.bp.contentHash).toBe(V1_GOLDEN_HASH)
+       |                               ^
+    441|     expect(v1Again.bp.contentHash).toBe(V1_GOLDEN_HASH)
+    442|     expect(v2.bp.contentHash).toBe(V2_GOLDEN_HASH)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/domain/test/a4p1-blueprint-v3-governance.test.ts > A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched) > V17 the v1/v2 hashable projections carry NO teamHardEnvelope key (key-omitted, not null)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/domain/test/a4p1-blueprint-v3-governance.test.ts:455:102
+    453|     expect(v2.ok, `V17 precondition: the v2 bridge fixture must parse …
+    454|     if (!v1.ok || !v2.ok) return // narrowing only; the expects above …
+    455|     expect(Object.hasOwn(toHashableBlueprint(v1.bp) as Record<string, …
+       |                                                                                                      ^
+    456|     expect(Object.hasOwn(toHashableBlueprint(v2.bp) as Record<string, …
+    457|     // …and neither carries a v3-derived null either.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 18 passed (20)
+   Start at  10:48:01
+   Duration  349ms (transform 178ms, setup 0ms, import 248ms, tests 10ms, environment 0ms)
+
