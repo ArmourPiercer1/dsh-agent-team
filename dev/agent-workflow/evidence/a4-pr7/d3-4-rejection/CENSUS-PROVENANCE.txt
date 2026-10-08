@@ -1,0 +1,10 @@
+census provenance
+head commit (graded):            827428a6addabbdafba5deba03b39a0b96d20378
+packages/ tree OID at that commit: fef63f0651b71b62db92f717202392c1d7aeca00
+whole-tree OID:                    bfdc783ab5f5c6efa62ca5801586610a674b445d
+packages/ worktree dirty at capture: []
+baseline tip (origin/master):      39ebe9a06ecd8b4c3823b0f32fcba9759f587a3c
+master packages/ tree OID:         6c652989e35d70da286f87f6e36276b4d20760b8
+differing files master..HEAD in packages/: 1
+report: dev/agent-workflow/evidence/a4-pr7/d3-4-rejection/scratch/census-20261008T162525Z.json
+ids:    dev/agent-workflow/evidence/a4-pr7/d3-4-rejection/scratch/census-20261008T162525Z.ids.txt

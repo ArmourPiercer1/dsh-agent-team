@@ -1357,10 +1357,10 @@ function selfTest() {
     const live = parsePopulationBaseline(readFileSync(resolve(REPO_ROOT, BASELINES.census), 'utf8'))
     ok(
       live.declaredTotals !== null
-        && live.declaredTotals.files === 507 && live.declaredTotals.legs === 6354
-        && live.ids.length === 10 && live.titledCount === 10 && live.collectionCount === 0
+        && live.declaredTotals.files === 507 && live.declaredTotals.legs === 6355
+        && live.ids.length === 9 && live.titledCount === 9 && live.collectionCount === 0
         && live.loadFamilies.length === 2,
-      'the COMMITTED baseline parses to the corpus and tolerance it declares: 507/6354, 10 tolerated ids, 0 collection files, 2 disclosed load families (restated at 02b53c7a, round 43)',
+      'the COMMITTED baseline parses to the corpus and tolerance it declares: 507/6355, 9 tolerated ids, 0 collection files, 2 disclosed load families (restated at b9cc0a2d: the D3-4 must-not-stay-exempt was repaired and its line removed, and the +1 leg is GREEN so it is not a tolerance)',
     )
   }
 

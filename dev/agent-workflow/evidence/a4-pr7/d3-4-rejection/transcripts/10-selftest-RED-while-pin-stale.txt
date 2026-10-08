@@ -1,0 +1,2 @@
+SELFTEST FAIL: the COMMITTED baseline parses to the corpus and tolerance it declares: 507/6354, 10 tolerated ids, 0 collection files, 2 disclosed load families (restated at 02b53c7a, round 43)
+DSH-CI-SELFTEST fail 1 of 58
