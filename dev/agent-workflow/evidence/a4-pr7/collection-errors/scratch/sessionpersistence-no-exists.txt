@@ -1,0 +1,24 @@
+# lexical lead, not a defect claim (2026-10-08T13:33:08Z)
+# files under packages/*/test that mention sessionPersistence and contain no 'exists' member.
+# The nine-root census reports ZERO zero-leg files at this tip, so none of these currently fails at
+# collection: most never drive agent-bindings.mjs durableSessionExists. Anyone touching the C1 seam should
+# expect the p8s3b shape if they start driving it: a module-scope refusal and ONE FILE identity for a whole
+# file of legs. Subsets marked DRIVES-GLUE call createAgentBindings/createLiveWorld in the same file.
+packages/runtime/test/bp1-dual-team-gate.test.ts  DRIVES-GLUE=yes
+packages/runtime/test/bp1-freeze-barrier.test.ts  DRIVES-GLUE=no
+packages/runtime/test/bp1-red-probe.test.ts  DRIVES-GLUE=no
+packages/runtime/test/p8s5a-host-loadability.test.ts  DRIVES-GLUE=no
+packages/runtime/test/p8s5a-stub-glue.mjs  DRIVES-GLUE=yes
+packages/runtime/test/p8s6-pagination.test.ts  DRIVES-GLUE=no
+packages/runtime/test/p8s6-projection.test.ts  DRIVES-GLUE=no
+packages/runtime/test/p8s6-remote-commands.test.ts  DRIVES-GLUE=no
+packages/runtime/test/p8s7r2-effective-config.test.ts  DRIVES-GLUE=no
+packages/runtime/test/p8s7r2-model-state.test.ts  DRIVES-GLUE=no
+packages/runtime/test/p8s7r2-policy-state-durable.test.ts  DRIVES-GLUE=no
+packages/runtime/test/p8s7r4-fork-describe.test.ts  DRIVES-GLUE=no
+packages/runtime/test/p8s7r4-handoff-wiring.test.ts  DRIVES-GLUE=no
+packages/runtime/test/rmr-remote-mount-race.test.ts  DRIVES-GLUE=no
+packages/runtime/test/runtime.test.ts  DRIVES-GLUE=no
+packages/runtime/test/t12m4-remote-mount.test.ts  DRIVES-GLUE=no
+packages/runtime/test/tcm-m2-workspace-attach.test.ts  DRIVES-GLUE=no
+packages/runtime/test/team-session-startup-fence.test.ts  DRIVES-GLUE=no

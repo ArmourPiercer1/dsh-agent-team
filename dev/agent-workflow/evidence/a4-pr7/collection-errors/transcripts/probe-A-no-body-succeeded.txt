@@ -1,0 +1,56 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G1: a completed turn with a readable non-empty body -> succeeded + the business body 2ms
+ × packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G2: completed-without-body maps to unavailable (WORK_NO_ASSISTANT_BODY), NEVER succeeded 7ms
+   → expected { requestToken: 'tok-p8s3b-g2a', …(2) } to deeply equal { requestToken: 'tok-p8s3b-g2a', …(2) }
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G3: turn reason error -> failed, code from the carried LlmFailure (WORK_TURN_ERROR when none) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G4/G5/G6: aborted / max-tokens / blocked -> failed with the stable codes 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G7: the result correlates to THIS delivery via the token prefix (a multi-turn log does not leak) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G8: an unreadable/attributable turn -> unavailable with a stable code (never succeeded, never a throw) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G9: the fail-closed throw contract is unchanged (a whenIdle rejection / pre-aborted signal rejects; no result) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G10: the delivered text is unchanged (token prefix + attached-context block — the correlation point) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G11: a session without the log-read seam -> explicit unavailable (never a throw, never succeeded) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E1: delegate success — the Leader-facing member-activated effect carries status=succeeded + the member business body 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E2: follow-up success — the work-admitted effect carries the succeeded result 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E3: delivery failure — status=failed rides the effect with the stable code (no body) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E4: unavailable — completed-without-body maps to unavailable on the effect, NOT succeeded 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E5: requestToken echo — the effect memberResult echoes the request token verbatim 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E6: replay — an already-settled token yields the SAME synthesized unavailable result, no double delivery 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E7: settled separation — the control-plane settled flag never by itself produces succeeded 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G2: completed-without-body maps to unavailable (WORK_NO_ASSISTANT_BODY), NEVER succeeded
+AssertionError: expected { requestToken: 'tok-p8s3b-g2a', …(2) } to deeply equal { requestToken: 'tok-p8s3b-g2a', …(2) }
+
+- Expected
++ Received
+
+  {
+-   "error": {
+-     "code": "WORK_NO_ASSISTANT_BODY",
+-     "message": "the delivered turn completed but carries no non-empty assistant text",
+-   },
++   "body": "",
+    "requestToken": "tok-p8s3b-g2a",
+-   "status": "unavailable",
++   "status": "succeeded",
+  }
+
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:1165:26
+    1163|
+    1164|   it('G2: completed-without-body maps to unavailable (WORK_NO_ASSISTAN…
+    1165|     expect(g2.noMessage).toEqual({
+       |                          ^
+    1166|       requestToken: 'tok-p8s3b-g2a',
+    1167|       status: 'unavailable',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  21:15:37
+   Duration  3.55s (transform 2.34s, setup 0ms, import 3.24s, tests 14ms, environment 0ms)
+

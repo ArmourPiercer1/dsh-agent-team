@@ -1,0 +1,44 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-1 a freshly-minted handoff root starts through agents.create (the boot path factory) 3ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-2 the created root cwd is the durable row defaultWorkspace (never the config, never DSH_HOME) 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-3 the setup installs the leader persona under the target root identity 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-4 the scoped persona shadows the global deployment:persona (exactly one entry) 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-5 createRootAgent is create-or-ensure: a second start for the live root is a no-op 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-6 deliverRootContext puts the exact token-leading text in as a real user turn 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-7 the delivered turn is materialized through the persistence seam before the port settles 1ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-8 no dedupe in the glue: the same contextToken goes out again (at-least-once, B6 dedupes) 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-9 a missing contextToken rejects loud before any agent interaction 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-10 a rejected delivery propagates: the turn was submitted, the post-turn materialization never ran 0ms
+ × packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-11 no effective persona starts clean; a dead target (neither live nor durable) rejects 5ms
+   → expected false to be true // Object.is equality
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-12 a durable root (the restart window) re-attaches through agents.resume with the same setup 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-11 no effective persona starts clean; a dead target (neither live nor durable) rejects
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/t12a-glue-handoff-ports.test.ts:336:36
+    334|   it('GLUE-11 no effective persona starts clean; a dead target (neithe…
+    335|     expect(cCreates).toBe(1)
+    336|     expect(cPersona === undefined).toBe(true)
+       |                                    ^
+    337|     expect(cDeadError instanceof Error).toBe(true)
+    338|     expect((cDeadError as Error).message.includes('neither live nor du…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  21:16:35
+   Duration  2.35s (transform 1.53s, setup 0ms, import 2.14s, tests 12ms, environment 0ms)
+

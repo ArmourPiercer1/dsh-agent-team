@@ -1,0 +1,115 @@
+FINAL BATTERY — lane fix-a4-collection-errors-32   2026-10-08T13:33:12Z
+base=1d706917  branch=fix-a4-collection-errors-32  worktree=/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+production-source dirty check:
+  0 file(s) under packages/*/src dirty (must be 0)
+
+### vitest — the three repaired files (expect 3 files / 33 legs / 0 failing)
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts (4 tests) 2ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts (12 tests) 4ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts (17 tests) 5ms
+ Test Files  3 passed (3)
+      Tests  33 passed (33)
+   Start at  21:33:12
+   Duration  998ms (transform 1.63s, setup 0ms, import 2.60s, tests 11ms, environment 0ms)
+    -> ASSERTION OK: output contains [Tests  33 passed (33)]
+    -> exit=0 (lint is expected to exit 1: 128 standing errors)
+
+### vitest — repaired files + their t12a/p8s3 neighbourhood (11 files)
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts (4 tests) 3ms
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts (4 tests) 3ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (7 tests) 3ms
+ ✓ packages/runtime/test/t12a-m3-recursive-drain.test.ts (5 tests) 4ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts (12 tests) 4ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts (8 tests) 5ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts (17 tests) 4ms
+ ✓ packages/runtime/test/t12a-team-tools-registration.test.ts (3 tests) 2ms
+ Test Files  11 passed (11)
+      Tests  82 passed (82)
+   Start at  21:33:15
+   Duration  1.14s (transform 5.72s, setup 0ms, import 10.03s, tests 37ms, environment 1ms)
+    -> ASSERTION OK: output contains [Tests  82 passed (82)]
+    -> exit=0 (lint is expected to exit 1: 128 standing errors)
+
+### vitest — packages/testkit/test/a4p7-merge-gate.test.ts (off-limits; expect 29/29)
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  367ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  9192ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  9017ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  7944ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  27141ms
+       ✓ every workspace package that declares a typecheck script typechecks  8499ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  7133ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  507ms
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  21:33:17
+   Duration  72.63s (transform 68ms, setup 0ms, import 86ms, tests 72.47s, environment 0ms)
+    -> ASSERTION OK: output contains [Tests  29 passed (29)]
+    -> exit=0 (lint is expected to exit 1: 128 standing errors)
+
+### pnpm --no-bail -r run typecheck
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+    -> ASSERTION OK: output contains [typecheck: Done]
+    -> exit=0 (lint is expected to exit 1: 128 standing errors)
+
+### pnpm run lint (standing 128 errors / 32 warnings)
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32/packages/runtime/test/team-session-durability.test.ts
+  47:16  error  'captureReject' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32/packages/runtime/test/team-session-startup-fence.test.ts
+  420:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  472:7  error    'apply3' is assigned a value but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32/packages/tools/harness/g5-member-e2e.mjs
+  640:16  error  'apiPage' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32/packages/tools/harness/plugin.mjs
+  140:7  error  'now' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+✖ 160 problems (128 errors, 32 warnings)
+  4 errors and 32 warnings potentially fixable with the `--fix` option.
+[ELIFECYCLE] Command failed with exit code 1.
+    -> ASSERTION OK: output contains [128 errors]
+    -> exit=1 (lint is expected to exit 1: 128 standing errors)
+
+### node scripts/lint-identities.mjs --diff (expect new 0)
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1118 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+    -> ASSERTION OK: output contains [new 0]
+    -> exit=0 (lint is expected to exit 1: 128 standing errors)
+
+### derived p4t6 (scanSessionEventVocabulary filesScanned), measured on this tree
+    filesScanned=1039
+
+### grep -c 'expect(' base(1d706917) -> tip
+  packages/runtime/test/p8s3b-result-effects.test.ts base=57 tip=67 delta=10
+  packages/runtime/test/t12a-b2-child-identity.test.ts base=17 tip=17 delta=0
+  packages/runtime/test/t12a-glue-handoff-ports.test.ts base=47 tip=47 delta=0
+  (removal scan recorded in scratch/expect-count.txt: no base assertion is absent at tip)
+
+### the single nine-root census (captured once; this section only re-reads it)
+  capturedAt=2026-10-08T13:29:00.190Z  files=505
+  root contracts: files=13 legs=150 zeroLegFiles=0
+  root domain: files=26 legs=523 zeroLegFiles=0
+  root legacy: files=7 legs=100 zeroLegFiles=0
+  root remote: files=15 legs=232 zeroLegFiles=0
+  root runtime: files=353 legs=4046 zeroLegFiles=0
+  root storage: files=23 legs=287 zeroLegFiles=0
+  root testkit: files=29 legs=372 zeroLegFiles=0
+  root tools: files=12 legs=129 zeroLegFiles=0
+  root client: files=27 legs=482 zeroLegFiles=0
+FIXED FILE packages/runtime/test/p8s3b-result-effects.test.ts::COLLECTION-OR-UNHANDLED
+FIXED FILE packages/runtime/test/t12a-b2-child-identity.test.ts::COLLECTION-OR-UNHANDLED
+FIXED FILE packages/runtime/test/t12a-glue-handoff-ports.test.ts::COLLECTION-OR-UNHANDLED
+
+==============================================================
+BATTERY RESULT: ALL GATES OK — safe to commit
+==============================================================

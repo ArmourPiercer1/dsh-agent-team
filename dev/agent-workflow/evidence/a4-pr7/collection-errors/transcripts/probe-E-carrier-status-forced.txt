@@ -1,0 +1,100 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G1: a completed turn with a readable non-empty body -> succeeded + the business body 1ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G2: completed-without-body maps to unavailable (WORK_NO_ASSISTANT_BODY), NEVER succeeded 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G3: turn reason error -> failed, code from the carried LlmFailure (WORK_TURN_ERROR when none) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G4/G5/G6: aborted / max-tokens / blocked -> failed with the stable codes 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G7: the result correlates to THIS delivery via the token prefix (a multi-turn log does not leak) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G8: an unreadable/attributable turn -> unavailable with a stable code (never succeeded, never a throw) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G9: the fail-closed throw contract is unchanged (a whenIdle rejection / pre-aborted signal rejects; no result) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G10: the delivered text is unchanged (token prefix + attached-context block — the correlation point) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G11: a session without the log-read seam -> explicit unavailable (never a throw, never succeeded) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E1: delegate success — the Leader-facing member-activated effect carries status=succeeded + the member business body 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E2: follow-up success — the work-admitted effect carries the succeeded result 0ms
+ × packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E3: delivery failure — status=failed rides the effect with the stable code (no body) 3ms
+   → expected 'succeeded' to be 'failed' // Object.is equality
+ × packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E4: unavailable — completed-without-body maps to unavailable on the effect, NOT succeeded 1ms
+   → expected 'succeeded' to be 'unavailable' // Object.is equality
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E5: requestToken echo — the effect memberResult echoes the request token verbatim 0ms
+ × packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E6: replay — an already-settled token yields the SAME synthesized unavailable result, no double delivery 0ms
+   → expected 'succeeded' to be 'unavailable' // Object.is equality
+ × packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E7: settled separation — the control-plane settled flag never by itself produces succeeded 1ms
+   → expected false to be true // Object.is equality
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the zero-creates mechanism plan §7.2 names > M1: the exported double IS the §7.2 zero-creates witness — truthful about the CALL, silent about survival 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E3: delivery failure — status=failed rides the effect with the stable code (no body)
+AssertionError: expected 'succeeded' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "succeeded"
+
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:1313:30
+    1311|
+    1312|   it('E3: delivery failure — status=failed rides the effect with the s…
+    1313|     expect(e34.failedStatus).toBe('failed')
+       |                              ^
+    1314|     expect(e34.failedCode).toBe('WORK_TURN_ERROR')
+    1315|     expect(e34.failedMessage).toBe('llm call failed (contained in the …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E4: unavailable — completed-without-body maps to unavailable on the effect, NOT succeeded
+AssertionError: expected 'succeeded' to be 'unavailable' // Object.is equality
+
+Expected: "unavailable"
+Received: "succeeded"
+
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:1321:35
+    1319|
+    1320|   it('E4: unavailable — completed-without-body maps to unavailable on …
+    1321|     expect(e34.unavailableStatus).toBe('unavailable')
+       |                                   ^
+    1322|     expect(e34.unavailableCode).toBe('WORK_NO_ASSISTANT_BODY')
+    1323|     expect(e34.unavailableBody).toBe(undefined)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E6: replay — an already-settled token yields the SAME synthesized unavailable result, no double delivery
+AssertionError: expected 'succeeded' to be 'unavailable' // Object.is equality
+
+Expected: "unavailable"
+Received: "succeeded"
+
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:1341:29
+    1339|     expect(e6.secondReplayed).toBe(true)
+    1340|     expect(e6.secondSettled).toBe(true)
+    1341|     expect(e6.secondStatus).toBe('unavailable')
+       |                             ^
+    1342|     expect(e6.secondResult).toEqual(frozenReplayResult('tok-p8s3b-e6'))
+    1343|     expect(e6.secondEqualsFrozen).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E7: settled separation — the control-plane settled flag never by itself produces succeeded
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts:1350:67
+    1348|
+    1349|   it('E7: settled separation — the control-plane settled flag never by…
+    1350|     expect(e34.failedSettled && e34.failedStatus !== 'succeeded').toBe…
+       |                                                                   ^
+    1351|     expect(e34.unavailableSettled && e34.unavailableStatus !== 'succee…
+    1352|     expect(e6.secondSettled && e6.secondStatus !== 'succeeded').toBe(t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 13 passed (17)
+   Start at  21:30:34
+   Duration  1.21s (transform 769ms, setup 0ms, import 1.12s, tests 9ms, environment 0ms)
+

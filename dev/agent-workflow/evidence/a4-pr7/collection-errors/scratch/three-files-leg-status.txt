@@ -1,0 +1,33 @@
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result E1: delegate success — the Leader-facing member-activated effect carries status=succeeded + the member business body
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result E2: follow-up success — the work-admitted effect carries the succeeded result
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result E3: delivery failure — status=failed rides the effect with the stable code (no body)
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result E4: unavailable — completed-without-body maps to unavailable on the effect, NOT succeeded
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result E5: requestToken echo — the effect memberResult echoes the request token verbatim
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result E6: replay — an already-settled token yields the SAME synthesized unavailable result, no double delivery
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result E7: settled separation — the control-plane settled flag never by itself produces succeeded
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the glue delivered-turn read G10: the delivered text is unchanged (token prefix + attached-context block — the correlation point)
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the glue delivered-turn read G11: a session without the log-read seam -> explicit unavailable (never a throw, never succeeded)
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the glue delivered-turn read G1: a completed turn with a readable non-empty body -> succeeded + the business body
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the glue delivered-turn read G2: completed-without-body maps to unavailable (WORK_NO_ASSISTANT_BODY), NEVER succeeded
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the glue delivered-turn read G3: turn reason error -> failed, code from the carried LlmFailure (WORK_TURN_ERROR when none)
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the glue delivered-turn read G4/G5/G6: aborted / max-tokens / blocked -> failed with the stable codes
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the glue delivered-turn read G7: the result correlates to THIS delivery via the token prefix (a multi-turn log does not leak)
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the glue delivered-turn read G8: an unreadable/attributable turn -> unavailable with a stable code (never succeeded, never a throw)
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the glue delivered-turn read G9: the fail-closed throw contract is unchanged (a whenIdle rejection / pre-aborted signal rejects; no result)
+passed | p8s3b-result-effects.test.ts | P8-S3b (v2 D2, task C2): the zero-creates mechanism plan §7.2 names M1: the exported double IS the §7.2 zero-creates witness — truthful about the CALL, silent about survival
+passed | t12a-b2-child-identity.test.ts | T12-B2 root-aware child session identity B2-1 the same (root, instance) pair derives the same child id (fixed-length, no UUID)
+passed | t12a-b2-child-identity.test.ts | T12-B2 root-aware child session identity B2-2 the same instance under a different root derives a different child id
+passed | t12a-b2-child-identity.test.ts | T12-B2 root-aware child session identity B2-3 a restart re-derives the same child id and resumes it (never a second create)
+passed | t12a-b2-child-identity.test.ts | T12-B2 root-aware child session identity B2-4 the factory returns the derived id; the request root drives it; a re-drive is idempotent
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-1 a freshly-minted handoff root starts through agents.create (the boot path factory)
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-10 a rejected delivery propagates: the turn was submitted, the post-turn materialization never ran
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-11 no effective persona starts clean; a dead target (neither live nor durable) rejects
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-12 a durable root (the restart window) re-attaches through agents.resume with the same setup
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-2 the created root cwd is the durable row defaultWorkspace (never the config, never DSH_HOME)
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-3 the setup installs the leader persona under the target root identity
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-4 the scoped persona shadows the global deployment:persona (exactly one entry)
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-5 createRootAgent is create-or-ensure: a second start for the live root is a no-op
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-6 deliverRootContext puts the exact token-leading text in as a real user turn
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-7 the delivered turn is materialized through the persistence seam before the port settles
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-8 no dedupe in the glue: the same contextToken goes out again (at-least-once, B6 dedupes)
+passed | t12a-glue-handoff-ports.test.ts | T12-GLUE the production live glue for the handoff ports GLUE-9 a missing contextToken rejects loud before any agent interaction

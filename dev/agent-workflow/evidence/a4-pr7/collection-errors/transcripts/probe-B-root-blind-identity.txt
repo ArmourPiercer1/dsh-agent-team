@@ -1,0 +1,29 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-1 the same (root, instance) pair derives the same child id (fixed-length, no UUID) 1ms
+ × packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-2 the same instance under a different root derives a different child id 4ms
+   → expected 'session-team-child-404601835f1535b04b…' not to be 'session-team-child-404601835f1535b04b…' // Object.is equality
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-3 a restart re-derives the same child id and resumes it (never a second create) 0ms
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-4 the factory returns the derived id; the request root drives it; a re-drive is idempotent 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-2 the same instance under a different root derives a different child id
+AssertionError: expected 'session-team-child-404601835f1535b04b…' not to be 'session-team-child-404601835f1535b04b…' // Object.is equality
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts:126:21
+    124|   it('B2-2 the same instance under a different root derives a differen…
+    125|     expect(worldA.rootSessionId).not.toBe(worldB.rootSessionId)
+    126|     expect(idA).not.toBe(idB)
+       |                     ^
+    127|   })
+    128|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  21:15:52
+   Duration  2.43s (transform 1.62s, setup 0ms, import 2.24s, tests 9ms, environment 0ms)
+

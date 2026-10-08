@@ -1,0 +1,36 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-1 the same (root, instance) pair derives the same child id (fixed-length, no UUID) 1ms
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-2 the same instance under a different root derives a different child id 0ms
+ × packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-3 a restart re-derives the same child id and resumes it (never a second create) 4ms
+   → expected 1 to be +0 // Object.is equality
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-4 the factory returns the derived id; the request root drives it; a re-drive is idempotent 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-3 a restart re-derives the same child id and resumes it (never a second create)
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/t12a-b2-child-identity.test.ts:132:44
+    130|     expect(idA2).toBe(idA)
+    131|     expect(resumedOnRestart.childSessionId).toBe(idA)
+    132|     expect(worldA2.records.creates.length).toBe(0)
+       |                                            ^
+    133|     expect(worldA2.records.resumes.length).toBe(1)
+    134|     expect(worldA2.records.resumes[0]!.sessionId).toBe(idA)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  21:16:14
+   Duration  1.46s (transform 984ms, setup 0ms, import 1.35s, tests 6ms, environment 0ms)
+
