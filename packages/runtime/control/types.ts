@@ -1214,6 +1214,45 @@ export interface ControlAbandonmentRecord {
   readonly abandonmentSequence: number
 }
 
+/**
+ * One `control-request-recorded` row the STRICT request reader refused, as the
+ * read plane reports it (RULING 5-A, external review W8).
+ *
+ * A refused row is a GOVERNANCE FAULT, not an absence: the ledger holds a
+ * control leg and this service cannot reconstruct it. Every one of them is
+ * counted here — whether or not it still names an approval case, which is the
+ * filing rule this ruling replaced. Filing used to require a readable
+ * `approvalCaseId`: a field the guard's own candidacy test refuses to trust, so
+ * a refused row that named its scope but not its case was invisible to the read
+ * plane AND to the guard, and the guard answered `no-request` — the one verdict
+ * that means "proceed" — for the very call its own row governs.
+ *
+ * WHAT THIS IS NOT: a gate. Like the two case-keyed corrupt-leg routes
+ * (`readApprovalCaseState`, `findApprovalCaseByIdentity`), this list reports and
+ * executes nothing (`a4-corrupt-leg-guard.test.ts` W9 / W12-d). The guard's
+ * candidacy decision is a separate question, decided member by member.
+ */
+export interface ControlCorruptLegRecord {
+  /** The ledger sequence of the refused row (durable identity; the list is
+   *  ordered by it). */
+  readonly sequence: number
+  /** Echoed ONLY when the damaged row still discloses one — a report never
+   *  invents an identity it did not read. */
+  readonly requestId?: string
+  /** Echoed under the same law; its ABSENCE is itself the finding for the rows
+   *  this ruling newly files. */
+  readonly approvalCaseId?: string
+  /**
+   * `false` = the row discloses NONE of the five members the guard's candidacy
+   * test compares (every one of them absent-or-unreadable), so no reading can
+   * attribute it to any call. Such a row is COUNTED HERE AND DOES NOT BLOCK:
+   * blocking on it is RULING 5-B, a human safety-vs-availability decision this
+   * lane does not own. `a4-corrupt-leg-guard.test.ts` W8-b / W12-c pin that
+   * execution effect and name it as the disclosed boundary it is.
+   */
+  readonly disclosesMember: boolean
+}
+
 // --- guard verdicts -------------------------------------------------------------------
 
 /**
@@ -1584,6 +1623,12 @@ export interface ControlService {
   /**
    * Read the team's durable control state (fresh ledger read; the
    * in-process holds NO cached authority — invariant 45).
+   *
+   * The result is what the ledger HOLDS, not what it permits: alongside the
+   * readable rows it reports every control leg row the strict reader refused
+   * (`corruptLegs`, RULING 5-A). That list is a governance fault count, and it
+   * gates nothing — the route exists so a refused row is never indistinguishable
+   * from an absent one.
    * @param rootSessionId - the team (root) session id.
    */
   listControlState(rootSessionId: string): Promise<{
@@ -1593,6 +1638,10 @@ export interface ControlService {
     /** The durable abandonments (pre-alpha3 PR-D, D.4; the additive
      *  `control-request-abandoned` facts). */
     readonly abandonments: readonly ControlAbandonmentRecord[]
+    /** The rows the strict request reader refused, in durable sequence order
+     *  (RULING 5-A; see {@link ControlCorruptLegRecord}). Reported, never
+     *  defaulted (ADR A2-9), and never a gate. */
+    readonly corruptLegs: readonly ControlCorruptLegRecord[]
   }>
   /**
    * The TOOL PIPELINE LAST-MILE GUARD (the public seam P6-T6 wires into

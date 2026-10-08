@@ -326,8 +326,9 @@ const C2 = await (async () => {
 
     // (c) CORRUPTED durable fingerprints are fail-closed ABSENT: a
     // present-but-empty and a non-string fingerprint make the row
-    // unparseable, so it can never match (guard → no-request) — and a
-    // retried request under that correlation starts fresh.
+    // unparseable, so it can never match a request — and (RULING 5-A, see the
+    // leg below) it is filed as a CORRUPT LEG, so the guard refuses the scope it
+    // names instead of answering `no-request`.
     await writeRawControlFact(
       world,
       'control-request-recorded',
@@ -1014,11 +1015,31 @@ describe('A4a (C2): a scope without the fingerprint is exactly the old behavior'
     expect('operationFingerprint' in rawRecord).toBe(false)
   })
 
-  it('a CORRUPTED durable fingerprint (present-but-empty / non-string) is fail-closed ABSENT: the row can never grant an allow (no-request)', () => {
+  it('a CORRUPTED durable fingerprint (present-but-empty / non-string) is fail-closed ABSENT: the row can never grant an allow, and since RULING 5-A it is refused BY NAME, not as no-request', () => {
+    // BEHAVIOUR CHANGE, same ruling as `a4-corrupt-leg-guard.test.ts` W8-a/W12-a
+    // (external review W8), corrected here rather than quietly left red. These
+    // two rows are refused by the strict reader and carry no `approvalCaseId`,
+    // which under the old filing rule meant they were filed NOWHERE: the guard
+    // could not see them, answered `no-request`, and `packages/tools/guard.ts`
+    // reads that single reason as "proceed". RULING 5-A files every refused row
+    // whose payload is an inspectable plain object, so the same rows are now
+    // corrupt legs, they name this scope's members, and the refusal is the one
+    // that says the governing leg could not be reconstructed.
+    // The leg's own claim is UNCHANGED and now better served: a corrupted
+    // fingerprint is fail-closed ABSENT and the row can never grant an allow —
+    // it cannot even be mistaken for the absence of a constraint.
     expect(C2.guardEmptyFpRow.allowed).toBe(false)
-    expect(blockReason(C2.guardEmptyFpRow)).toBe(CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST)
+    expect(blockReason(C2.guardEmptyFpRow)).toBe(
+      CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+    )
     expect(C2.guardNonStringFpRow.allowed).toBe(false)
-    expect(blockReason(C2.guardNonStringFpRow)).toBe(CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST)
+    expect(blockReason(C2.guardNonStringFpRow)).toBe(
+      CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+    )
+    // And a refusal that cannot name its row would be a dead end for the
+    // operator: both rows still disclose their requestId, so both are named.
+    expect(C2.guardEmptyFpRow.requestId).toBe('ctrl-raw-a4-c2-empty')
+    expect(C2.guardNonStringFpRow.requestId).toBe('ctrl-raw-a4-c2-nonstr')
   })
 })
 

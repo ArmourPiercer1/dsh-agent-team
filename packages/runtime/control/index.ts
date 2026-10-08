@@ -14,8 +14,8 @@
  *   couplings guarded | inline, decision values/reasons, guard block
  *   reasons, the control-service error codes) and the record types
  *   (ControlRequestRecord / ControlDecisionRecord / ControlConsumption-
- *   Record / ControlAbandonmentRecord / ControlGuardVerdict /
- *   ControlOperationScope).
+ *   Record / ControlAbandonmentRecord / ControlCorruptLegRecord /
+ *   ControlGuardVerdict / ControlOperationScope).
  *
  * What this module IS (and deliberately is NOT):
  *

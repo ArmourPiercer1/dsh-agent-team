@@ -262,6 +262,7 @@ import type {
   ControlCaseClosure,
   ControlCallerRef,
   ControlConsumptionRecord,
+  ControlCorruptLegRecord,
   ControlDecisionRecord,
   ControlDecisionReason,
   ControlEscalationOutcome,
@@ -477,11 +478,21 @@ type InlineAbortCascadeOutcome =
  */
 interface ControlState {
   readonly requests: readonly StoredFact<RequestPayload>[]
-  /** A leg row whose payload the strict parser refused (Alpha.4 A4-PR3).
-   *  It is a row that BELONGS to a case — it carries an `approvalCaseId` —
-   *  but is too damaged to reconstruct. Reported, NEVER defaulted (ADR A2-9):
-   *  a corrupt leg turns the case read into a typed problem instead of a
-   *  silently shorter `legs` list. */
+  /** A `control-request-recorded` row whose payload the strict parser refused
+   *  (Alpha.4 A4-PR3). Reported, NEVER defaulted (ADR A2-9): a corrupt leg turns
+   *  the case read into a typed problem instead of a silently shorter `legs`
+   *  list, and it is a candidate for the guard unless a member it discloses
+   *  positively disagrees (see `corruptLegCouldGovern`).
+   *
+   *  RULING 5-A (external review W8): the bucket holds EVERY refused row whose
+   *  payload is an inspectable plain object. It used to hold only the ones that
+   *  still named their `approvalCaseId`, which filed a row on the strength of a
+   *  field the candidacy test refuses to trust — so a refused row that named its
+   *  scope but not its case was invisible to the read plane AND to the guard,
+   *  and the guard answered `no-request` (the one verdict that means "proceed")
+   *  for the very call its row governs. Rows that disclose no comparable member
+   *  are in the bucket too, and are classified `disclosesMember: false` on the
+   *  read plane: governance faults, counted, and not blocking (RULING 5-B). */
   readonly corruptLegs: readonly StoredFact<Record<string, unknown>>[]
   readonly decisions: readonly StoredFact<DecisionPayload>[]
   readonly consumptions: readonly StoredFact<ConsumptionPayload>[]
@@ -1049,6 +1060,54 @@ function isActionCaller(caller: unknown): caller is ActionCaller {
  *  absent) recompute the SAME key they always had for their own
  *  retries, so old durable rows stay idempotent under the extended key. */
 /**
+ * THE ROW-LEVEL PRECONDITION of the candidacy test below: does this refused row
+ * disclose even ONE member the candidacy algebra can compare?
+ *
+ * RULING 5-A named the third outcome, and this function is the one home where it
+ * is decided. A refused row is either
+ *   - ATTRIBUTABLE — it states at least one member in a form the algebra reads
+ *     (a string in `actionName` / `toolName` / `correlation` /
+ *     `operationFingerprint`, a parseable `subject`, or a non-empty legacy
+ *     `targetInstanceId`). Its candidacy is then decided by the algebra exactly
+ *     as before: ruled out only by a positive disagreement, otherwise a
+ *     candidate that fails closed; or
+ *   - UNATTRIBUTABLE — every member is absent-or-unreadable, so the row can be
+ *     tied to no call by anyone. RULING 5-A keeps the execution effect this
+ *     class has always had — it does NOT block — because blocking on it is a
+ *     safety-vs-availability decision that RULING 5-B reserves to a human. What
+ *     the ruling does require is that the case is recognised rather than
+ *     accidental, so the class is decided here, by name, and reported on the read
+ *     plane (`ControlService.listControlState` → `corruptLegs`).
+ *
+ * The disclosed relaxation, stated plainly: an unattributable row that happens
+ * to name a case blocked before this arm existed (the all-`undefined` verdict
+ * vector made it a candidate). RULING 5-A's "it must still not block" is
+ * unconditional and case-id-independent, so that one cell is the ONLY place this
+ * change is less strict than its predecessor, and it is the cell RULING 5-B
+ * exists to settle. `disclosesMember: false` on the read plane is its marker.
+ *
+ * A present-and-EMPTY string IS a disclosure: `memberAgrees` compares it as a
+ * value (a legacy row's empty fingerprint agrees with a fingerprint-less call),
+ * so treating it as silence would invent a disagreement the algebra does not see.
+ */
+function corruptLegDisclosesMember(payload: Record<string, unknown>): boolean {
+  const statesMember = (key: string): boolean => typeof payload[key] === 'string'
+  if (
+    statesMember('actionName') ||
+    statesMember('toolName') ||
+    statesMember('correlation') ||
+    statesMember('operationFingerprint')
+  ) {
+    return true
+  }
+  if (payload['subject'] !== undefined && parseSubject(payload['subject']) !== undefined) {
+    return true
+  }
+  const legacyTarget = payload['targetInstanceId']
+  return typeof legacyTarget === 'string' && legacyTarget.length > 0
+}
+
+/**
  * A4 corrupt-leg guard (ADR A2-9 + A1-14): does a leg row the STRICT reader
  * refused still have a claim on THIS call?
  *
@@ -1079,6 +1138,15 @@ function isActionCaller(caller: unknown): caller is ActionCaller {
  * what cannot be recomputed, which is why this compares members instead of
  * hashing them.
  *
+ * ONE CELL THE ABOVE SENTENCE DOES NOT REACH, and RULING 5-A refuses to pretend
+ * otherwise: a row in which EVERY member is evidence about nothing has no member
+ * left to disagree, so "the conservative reading" and "the anti-freeze rule"
+ * contradict each other, and the row would govern every call in the Team at once.
+ * That row is UNATTRIBUTABLE, it is decided before the algebra by
+ * `corruptLegDisclosesMember`, and it does not block — the disclosed boundary
+ * RULING 5-B reserves to a human. The algebra itself is unchanged in every other
+ * cell: RULING 5-A moved FILING, not candidacy.
+ *
  * ONE MEMBER, TWO DISCLOSURES — and a contradiction is the third cell, not a
  * verdict. The identity member is the only member a row can state twice: the
  * explicit `subject` and the legacy `targetInstanceId` projection. It AGREES
@@ -1108,6 +1176,16 @@ function corruptLegCouldGovern(
   scope: ControlOperationScope,
   subjectIdentity: string,
 ): boolean {
+  // THE ROW-LEVEL PRECONDITION (RULING 5-A): a row that discloses no comparable
+  // member cannot be attributed to THIS call, or to any other, and it is NOT a
+  // candidate. Every member below would answer NOTHING, and "nothing to rule it
+  // out" is not " ruled in": read that way one unreadable row would govern every
+  // call in the Team at once. The class is decided here, by name, and reported
+  // (`ControlService.listControlState` → `corruptLegs`); keeping its execution
+  // effect non-blocking is RULING 5-B's decision, not this function's. For every
+  // row that discloses something, the algebra below is the whole test — RULING
+  // 5-A moved FILING, not candidacy.
+  if (!corruptLegDisclosesMember(payload)) return false
   // Every member answers AGREES / DISAGREES / NOTHING (`undefined`); the row
   // stays a candidate unless some member positively says "not this call".
   const memberAgrees = (key: string, expected: string): boolean | undefined => {
@@ -1512,12 +1590,25 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         const payload = parseRequestPayload(entry.payload)
         if (payload !== undefined) {
           requests.push({ entry, payload })
-        } else if (
-          isPlainObject(entry.payload) &&
-          typeof entry.payload['approvalCaseId'] === 'string'
-        ) {
+        } else if (isPlainObject(entry.payload)) {
           // A leg row the strict parse refused: reported, never defaulted (see
           // `ControlState.corruptLegs`).
+          //
+          // FILING DEPENDS ON THE DAMAGE ALONE (RULING 5-A, external review W8).
+          // This branch used to add `&& typeof payload['approvalCaseId'] ===
+          // 'string'`, so a refused row was filed only if the damaged payload
+          // still named its approval case. That made the guard's state space
+          // narrower than reality's, one level above W11: candidacy
+          // (`corruptLegCouldGovern`) refuses to trust `approvalCaseId` and
+          // compares the MEMBERS a row discloses, so a refused row that named
+          // its scope but not its case was in neither `requests` (the reader
+          // refused it) nor `corruptLegs` (the filing rule refused it). It was
+          // nowhere. The call its own durable leg governs was answered
+          // `no-request` — the one verdict `packages/tools/src/guard.ts` maps to
+          // "proceed" — and an approval requirement on disk became invisible
+          // exactly for the call it was written against. A field the candidate
+          // test will not trust cannot be the gate that decides whether the test
+          // ever runs.
           corruptLegs.push({ entry, payload: entry.payload })
         }
       } else if (entry.factType === FACT_DECISION) {
@@ -1673,6 +1764,26 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       decisionSequence: payload.decisionSequence,
       scope: payload.scope,
       consumedAt: payload.consumedAt,
+    }
+  }
+
+  /** Report one row the strict reader refused (RULING 5-A). The payload is
+   *  carried RAW and read field by field: a report of damaged data may not run it
+   *  through the parser that just refused it, and it echoes only the identities
+   *  the row still discloses (`corruptLegVerdictOf`'s law). */
+  function toCorruptLegRecord(
+    entry: LedgerEntry,
+    payload: Record<string, unknown>,
+  ): ControlCorruptLegRecord {
+    const requestId = payload['requestId']
+    const approvalCaseId = payload['approvalCaseId']
+    return {
+      sequence: entry.sequence,
+      ...(typeof requestId === 'string' && requestId.length > 0 ? { requestId } : {}),
+      ...(typeof approvalCaseId === 'string' && approvalCaseId.length > 0
+        ? { approvalCaseId }
+        : {}),
+      disclosesMember: corruptLegDisclosesMember(payload),
     }
   }
 
@@ -2580,6 +2691,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly decisions: readonly ControlDecisionRecord[]
     readonly consumptions: readonly ControlConsumptionRecord[]
     readonly abandonments: readonly ControlAbandonmentRecord[]
+    readonly corruptLegs: readonly ControlCorruptLegRecord[]
   }> {
     const root = parseRoot(rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'list')
     return withTeamLock(teamLocks, root, async () => {
@@ -2596,6 +2708,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         decisions: state.decisions.map((d) => toDecisionRecord(d.entry, d.payload)),
         consumptions: state.consumptions.map((c) => toConsumptionRecord(c.entry, c.payload)),
         abandonments: state.abandonments.map((a) => toAbandonmentRecord(a.entry, a.payload)),
+        // RULING 5-A: the refused rows are part of what the durable control
+        // state IS, so the route that reads that state reports them. Ordered by
+        // durable sequence like every other list here; a report, never a gate.
+        corruptLegs: state.corruptLegs.map((c) => toCorruptLegRecord(c.entry, c.payload)),
       }
     })
   }
