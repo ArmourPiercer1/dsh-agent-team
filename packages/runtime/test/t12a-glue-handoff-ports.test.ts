@@ -37,9 +37,10 @@
  *   GLUE-10 a rejected delivery (whenIdle) PROPAGATES to the caller (B6
  *         maps the rejection to creation-failed and retries): the turn was
  *         submitted, the post-turn materialization never ran;
- *   GLUE-11 a root with no effective persona (empty blueprint) starts
- *         clean (no scoped section); delivering to a session that is
- *         neither live nor durable rejects (no agent to run on);
+ *   GLUE-11 a root with no effective persona (the preset substrate reports
+ *         `personaKind: 'absent'`) starts clean (no scoped section);
+ *         delivering to a session that is neither live nor durable rejects
+ *         (no agent to run on);
  *   GLUE-12 a root whose session artifact IS durable (the restart window
  *         between a failed start and the B6 retry) re-attaches through
  *         agents.resume with the same setup — the leader persona present.
@@ -193,6 +194,27 @@ const bFollowups = worldB.records.followups.length
 const bMaterialized = worldB.records.materialized.length
 
 // ── world C: no effective persona + a dead delivery target ────────────────
+// A4-PR7 §7.6 collection repair (lane `fix-a4-collection-errors-32`, 2026-10-09):
+// this world used to be built with `configOverrides: { blueprintSource: '' }`, an
+// empty document standing in for "no effective persona". That proxy died twice over:
+// `parseBlueprint('')` is a hard refusal (`blueprint document must start with a ---
+// frontmatter delimiter line`, domain/blueprint/src/parse.ts:77), and even a null
+// blueprint is no longer a legacy world — P0-1 fails an unavailable blueprint closed
+// as `capability-template-unresolved (reason=blueprint-unavailable)`, so "empty
+// document" now means "refused", never "no persona". The throw ran in MODULE scope
+// (:206), so the file failed at collection and none of its 12 legs registered — and
+// because world D is built after world C, GLUE-12 vanished with it.
+// The subject of GLUE-11 is "no EFFECTIVE persona", and the product states that fact
+// honestly: the preset substrate's `personaKind: 'absent'` makes the persona step
+// install NO scoped identity and raise nothing (agent-setup/persona/adapter.ts
+// `apply`, the `absent` arm) — exactly what this leg asserts. Same instrument the
+// green worlds already use (t12a-m2-persona.test.ts world F,
+// p5t2-persona-no-persona.test.ts). A v3 Blueprint CANNOT declare "no persona":
+// `persona` is `required: true` on every template (domain/blueprint/src/validate.ts:350),
+// so the old carrier is not expressible on any legal document.
+// MUTATION WITNESS (evidence/a4-pr7/collection-errors/transcripts/probe-C-standard-substrate.txt):
+// changing only `personaKind` to `standard` turns GLUE-11 RED — the leg discriminates,
+// it is not green because its assertion cannot fail.
 const worldC = await createLiveWorld({
   rootSessionId: BOOT_C,
   teamSession: {
@@ -201,7 +223,9 @@ const worldC = await createLiveWorld({
     blueprintId: 'team.t12a',
     generation: 1,
   },
-  configOverrides: { blueprintSource: '' },
+  configOverrides: {
+    presetSubstrate: { presetId: 't12a-absent-preset', personaKind: 'absent' },
+  },
 })
 await worldC.binding.createRootAgent(HANDOFF_C)
 const cCreates = worldC.records.creates.length

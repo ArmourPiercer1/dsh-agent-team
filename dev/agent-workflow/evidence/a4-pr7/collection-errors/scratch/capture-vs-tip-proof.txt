@@ -1,0 +1,6 @@
+sha256(reconstructed capture blob) = 66844ae848fff6f3ef9fd116b86a3a4bdb4330fc19e85b45c3120cad68495bea
+sha256 recorded while the census was running = 66844ae848fff6f3ef9fd116b86a3a4bdb4330fc19e85b45c3120cad68495bea
+MATCH: True
+sha256(tip file) = 609608467932916e959e32e9e11cc10b0e3a757fee1213befee1cd241c055009
+code-line sets identical between capture blob and tip (comment-only delta): True  (1376 lines both)
+code-line delta base -> tip: base 1262 lines, tip 1376 lines

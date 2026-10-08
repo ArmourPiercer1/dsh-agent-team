@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > runs where its instruments can see the tree, and refuses to run anywhere else 4ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > is green, asserted by arm name and by absence of a skip — never by the exit code 825ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > treats a step that did not run as a failure that says why, even at exit 0 0ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > asks where a missing artifact came from before calling it a regression, on synthetic trees 189ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact 140ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > reads a never-built checkout as refused, by name, and still refuses to call it green 553ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > reads a partial build output as failed, not refused: a build ran and produced the wrong surface 576ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > refuses the leg, by name, when the host module closure cannot be traversed 393ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the fence leg (plan 7.6: the wrapper must be green; this leg owns the cwd doctrine) > reports every verdict class with its set by path when run at the toplevel 191ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the fence leg (plan 7.6: the wrapper must be green; this leg owns the cwd doctrine) > refuses a directory that is not a repository, and is never believed as clean 41ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the fence leg (plan 7.6: the wrapper must be green; this leg owns the cwd doctrine) > will not accept a run from below the toplevel as a whole-tree clean (measured false-clean) 50ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > classifies a lint run by its verdict line and its universe line, on captured output 1ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > lint closes as an identity diff against the named baseline, not against a count 9067ms
+lint-visibility: eslint read 1118 of 2459 OFFERED tracked lintable file(s); 1341 are hidden by an ignore pattern (dev/ 470, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1118 + 1341 = 2459 offered, + 0 skipped = 2459 tracked lintable path(s); nothing skipped
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > names the three states of a captured stderr, including the arm this gate cannot reach 1ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > no tracked file is invisible to lint except under a prefix this leg names 8504ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > the committed install surface is fresh against the tree, and a missing surface is refused 87ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask 7842ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > a check:artifacts run from a subdirectory is refused, never an OK over nothing 30ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > the scratch the commit-level instrument builds cannot change another instrument's measurement 26516ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > a crashed run's scratch is swept, and a live one is not 17ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > every workspace package that declares a typecheck script typechecks 8478ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the client lane (the root suite cannot see it, and this gate says why) > no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here 0ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the client lane (the root suite cannot see it, and this gate says why) > the client lane runs, and no failure appears outside the disclosed baseline 7134ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the client lane (the root suite cannot see it, and this gate says why) > tolerates a green trio and refuses a vanished one — the two are different answers 0ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the runner itself refuses what never ran > a missing instrument is a refusal that names it, never a pass 56ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the runner itself refuses what never ran > an instrument that is killed before reporting is a refusal that says so 505ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the runner itself refuses what never ran > a child killed by a signal is refused even when it printed a complete report 3ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the gate is wired, not remembered > every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core 2ms
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the gate is wired, not remembered > this spec itself is counted by the p4t6 scannable-file ledger 0ms
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  21:22:05
+   Duration  71.38s (transform 77ms, setup 0ms, import 95ms, tests 71.21s, environment 0ms)
+

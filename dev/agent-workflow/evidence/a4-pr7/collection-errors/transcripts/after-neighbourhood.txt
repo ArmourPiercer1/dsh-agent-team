@@ -1,0 +1,91 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+
+ ✓ packages/runtime/test/p8s3-work-request.test.ts > p8s3-work-request R2 payload contract > a follow-up without payload.prompt is REQUEST_MALFORMED, zero writes 1ms
+ ✓ packages/runtime/test/p8s3-work-request.test.ts > p8s3-work-request R2 payload contract > a follow-up with an empty prompt is REQUEST_MALFORMED, zero writes 0ms
+ ✓ packages/runtime/test/p8s3-work-request.test.ts > p8s3-work-request R2 payload contract > a delegate without payload.prompt is REQUEST_MALFORMED, zero writes 0ms
+ ✓ packages/runtime/test/p8s3-work-request.test.ts > p8s3-work-request R2 payload contract > an empty attachedContext (when present) is REQUEST_MALFORMED, zero writes 0ms
+ ✓ packages/runtime/test/p8s3-work-request.test.ts > p8s3-work-request R2 payload contract > a conforming follow-up on a RUNNING target executes (explicit prompt + attachedContext) 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > R3: work admission fails closed without the lifecycle commit port (zero writes) 1ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > partial install (commit port only) never runs the chain — the P6-T2 evidence path stands 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > W4: a failed delivery settles fail-closed — no fake RUNNING, a delivery-failed settlement fact 1ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > W6: the work unit opens and closes its activity interval (subject work-unit, correlation = token) 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > W9: a same-token retry is a durable REPLAY — no re-delivery, no duplicate member/session; a new token still executes 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > resume: a pre-seeded admission fact redelivers exactly once and converges to SETTLED without re-admitting 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > R1 (package-level vertical): a delegate-create runs the full chain on the NEW instance and leaves it durably SETTLED 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > R2: the delivered prompt is the explicit request prompt (no default inheritance), with attachedContext when provided 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: full mode carries the port result — succeeded with the business body, requestToken verbatim 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: failed/unavailable are carried verbatim, and settled=true never maps to succeeded 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: a replay of an already-settled token synthesizes the SAME unavailable result — no re-delivery, no re-report 0ms
+ ✓ packages/runtime/test/p8s3-work-chain.test.ts > P8-S3 work execution chain (R1–R6, package level) > C1: resume mode carries the fresh this-attempt result (at-least-once, visible dedup) 0ms
+ ✓ packages/runtime/test/t12a-m1-effective-cwd.test.ts > T12-M1 effective workspace as the actual Agent cwd > M1-1 the root agent cwd is the team effective default workspace 1ms
+ ✓ packages/runtime/test/t12a-m1-effective-cwd.test.ts > T12-M1 effective workspace as the actual Agent cwd > M1-2 the seeded member cwd is the team effective default workspace 0ms
+ ✓ packages/runtime/test/t12a-m1-effective-cwd.test.ts > T12-M1 effective workspace as the actual Agent cwd > M1-3 a factory child with an explicit request workspace gets exactly that cwd 0ms
+ ✓ packages/runtime/test/t12a-m1-effective-cwd.test.ts > T12-M1 effective workspace as the actual Agent cwd > M1-4 a factory child without a request workspace falls back to the team default 0ms
+ ✓ packages/runtime/test/t12a-m1-effective-cwd.test.ts > T12-M1 effective workspace as the actual Agent cwd > M1-5 every create cwd is one of the effective workspaces (never DSH_HOME) 0ms
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts > T12-B3 external hard facts at the consumption boundary > B3-1 external hard DENY + override ALLOW for the same capability -> no selection in the consumption view 2ms
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts > T12-B3 external hard facts at the consumption boundary > B3-2 the ACTUAL agent boundary installs the denied selection (not the allowed model, not the baseline) 1ms
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts > T12-B3 external hard facts at the consumption boundary > B3-3 control: with empty external facts the same override ALLOWs the model (the override is genuinely in force) 1ms
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts > T12-B3 external hard facts at the consumption boundary > B3-4 the external hard deny is capability-scoped: the model-only deny never denies the mcp facet by external 0ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts > the zero-MCP contract (multi-MCP migration of T12-H1) > legacy spelling: mcpServer: null (the original T12-H1 case) > H1-1 boot + member setup must not throw (both agents settle live) 1ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts > the zero-MCP contract (multi-MCP migration of T12-H1) > legacy spelling: mcpServer: null (the original T12-H1 case) > H1-2 the consumption view stays valid with no per-server MCP state (mcpViews = {}) 0ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts > the zero-MCP contract (multi-MCP migration of T12-H1) > legacy spelling: mcpServer: null (the original T12-H1 case) > H1-3 no reconcile/create attempt: no MCP plugin fiber mounted on any agent 0ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts > the zero-MCP contract (multi-MCP migration of T12-H1) > canonical spelling: mcpServers: [] (the policy side still allows A) > H1-1 boot + member setup must not throw (both agents settle live) 0ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts > the zero-MCP contract (multi-MCP migration of T12-H1) > canonical spelling: mcpServers: [] (the policy side still allows A) > H1-2 the consumption view stays valid with no per-server MCP state (mcpViews = {}) 0ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts > the zero-MCP contract (multi-MCP migration of T12-H1) > canonical spelling: mcpServers: [] (the policy side still allows A) > H1-3 configured ∩ allowed = ∅: the template AND the durable allow name A, yet zero fibers 0ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts > the zero-MCP contract (multi-MCP migration of T12-H1) > H1-4 control: with a configured server the per-server view EXISTS (the zero state is config-specific) 0ms
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-1 the same (root, instance) pair derives the same child id (fixed-length, no UUID) 1ms
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-2 the same instance under a different root derives a different child id 0ms
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-3 a restart re-derives the same child id and resumes it (never a second create) 0ms
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts > T12-B2 root-aware child session identity > B2-4 the factory returns the derived id; the request root drives it; a re-drive is idempotent 0ms
+ ✓ packages/runtime/test/t12a-m3-recursive-drain.test.ts > T12-M3 the real recursive descendant drain > M3-1 a real descendant tree drains to the actual count (quiescent: true) 1ms
+ ✓ packages/runtime/test/t12a-m3-recursive-drain.test.ts > T12-M3 the real recursive descendant drain > M3-2 a drain rejection reports the best-effort count with quiescent: false (never true) 0ms
+ ✓ packages/runtime/test/t12a-m3-recursive-drain.test.ts > T12-M3 the real recursive descendant drain > M3-3 the absent subagents service fails closed with the typed recursive-drain-unavailable error 0ms
+ ✓ packages/runtime/test/t12a-m3-recursive-drain.test.ts > T12-M3 the real recursive descendant drain > M3-4 no live agent for the session fails closed with the same typed error 0ms
+ ✓ packages/runtime/test/t12a-m3-recursive-drain.test.ts > T12-M3 the real recursive descendant drain > M3-5 a whenIdle rejection propagates as a fault before any drain call 0ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts > T12-M2 the blueprint persona installed into the real DSH Agent prompt > M2-1 setup installs the blueprint persona (root + member) before any work 1ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts > T12-M2 the blueprint persona installed into the real DSH Agent prompt > M2-2 the scoped section shadows the global deployment:persona (exactly one entry) 0ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts > T12-M2 the blueprint persona installed into the real DSH Agent prompt > M2-3 the request boundary (attributed input) leaves the persona in place 0ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts > T12-M2 the blueprint persona installed into the real DSH Agent prompt > M2-4 restore disposes exactly the scoped entry (global falls back, root unaffected) 1ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts > T12-M2 the blueprint persona installed into the real DSH Agent prompt > M2-5 a second restore for the same session is a no-op (idempotent) 0ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts > T12-M2 the blueprint persona installed into the real DSH Agent prompt > M2-6 a complete preset is FATAL: boot rejects with the frozen conflict code, before any install 0ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts > T12-M2 the blueprint persona installed into the real DSH Agent prompt > M2-7 the resume phase (cold root) installs the leader persona on the resumed agent 0ms
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts > T12-M2 the blueprint persona installed into the real DSH Agent prompt > M2-8 a pre-boot installScopedPersona (the pending window) flushes at setup, before any work 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-1 a freshly-minted handoff root starts through agents.create (the boot path factory) 1ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-2 the created root cwd is the durable row defaultWorkspace (never the config, never DSH_HOME) 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-3 the setup installs the leader persona under the target root identity 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-4 the scoped persona shadows the global deployment:persona (exactly one entry) 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-5 createRootAgent is create-or-ensure: a second start for the live root is a no-op 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-6 deliverRootContext puts the exact token-leading text in as a real user turn 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-7 the delivered turn is materialized through the persistence seam before the port settles 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-8 no dedupe in the glue: the same contextToken goes out again (at-least-once, B6 dedupes) 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-9 a missing contextToken rejects loud before any agent interaction 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-10 a rejected delivery propagates: the turn was submitted, the post-turn materialization never ran 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-11 no effective persona starts clean; a dead target (neither live nor durable) rejects 0ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts > T12-GLUE the production live glue for the handoff ports > GLUE-12 a durable root (the restart window) re-attaches through agents.resume with the same setup 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G1: a completed turn with a readable non-empty body -> succeeded + the business body 1ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G2: completed-without-body maps to unavailable (WORK_NO_ASSISTANT_BODY), NEVER succeeded 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G3: turn reason error -> failed, code from the carried LlmFailure (WORK_TURN_ERROR when none) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G4/G5/G6: aborted / max-tokens / blocked -> failed with the stable codes 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G7: the result correlates to THIS delivery via the token prefix (a multi-turn log does not leak) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G8: an unreadable/attributable turn -> unavailable with a stable code (never succeeded, never a throw) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G9: the fail-closed throw contract is unchanged (a whenIdle rejection / pre-aborted signal rejects; no result) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G10: the delivered text is unchanged (token prefix + attached-context block — the correlation point) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the glue delivered-turn read > G11: a session without the log-read seam -> explicit unavailable (never a throw, never succeeded) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E1: delegate success — the Leader-facing member-activated effect carries status=succeeded + the member business body 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E2: follow-up success — the work-admitted effect carries the succeeded result 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E3: delivery failure — status=failed rides the effect with the stable code (no body) 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E4: unavailable — completed-without-body maps to unavailable on the effect, NOT succeeded 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E5: requestToken echo — the effect memberResult echoes the request token verbatim 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E6: replay — an already-settled token yields the SAME synthesized unavailable result, no double delivery 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the effect carriers of the frozen member result > E7: settled separation — the control-plane settled flag never by itself produces succeeded 0ms
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts > P8-S3b (v2 D2, task C2): the zero-creates mechanism plan §7.2 names > M1: the exported double IS the §7.2 zero-creates witness — truthful about the CALL, silent about survival 0ms
+ ✓ packages/runtime/test/t12a-team-tools-registration.test.ts > D-2 the team tools registered on the leader (and member) agent ctx > D2-1 create phase: root + seeded member receive exactly the fifteen real team tools (same objects, stack order; C1 adds the pending-list tool; the archive-member round adds team_archive_member; PR4 round 5 adds team_grant_permission + team_revoke_permission) 1ms
+ ✓ packages/runtime/test/t12a-team-tools-registration.test.ts > D-2 the team tools registered on the leader (and member) agent ctx > D2-2 resume phase: a cold-root restart re-registers the fifteen tools on the resumed leader 0ms
+ ✓ packages/runtime/test/t12a-team-tools-registration.test.ts > D-2 the team tools registered on the leader (and member) agent ctx > D2-3 close: every registration is disposed (root + member, both worlds) 0ms
+
+ Test Files  11 passed (11)
+      Tests  82 passed (82)
+   Start at  21:23:31
+   Duration  1.15s (transform 5.57s, setup 0ms, import 9.80s, tests 37ms, environment 1ms)
+

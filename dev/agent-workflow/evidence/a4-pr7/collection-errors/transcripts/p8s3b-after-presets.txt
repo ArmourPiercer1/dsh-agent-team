@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+
+ ✓ packages/runtime/test/p8s3b-result-effects.test.ts (16 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  21:12:04
+   Duration  3.25s (transform 2.28s, setup 0ms, import 3.11s, tests 5ms, environment 0ms)
+

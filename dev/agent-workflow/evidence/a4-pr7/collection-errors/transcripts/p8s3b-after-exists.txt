@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-collection-errors-32
+
+ ❯ packages/runtime/test/p8s3b-result-effects.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p8s3b-result-effects.test.ts [ packages/runtime/test/p8s3b-result-effects.test.ts ]
+Error: agent-bindings: root base tools unavailable for 'session-p8s3b-g1': the agentPresets service is absent from the glue deps (or lacks a callable mount) — the leader (root) must never run without its ordinary base tools (code: root-base-tools-unavailable)
+ ❯ rootBaseToolsUnavailable packages/runtime/src/plugin/live/agent-bindings.mjs:4278:19
+    4276|   // setup (the root), before any member is created.
+    4277|   function rootBaseToolsUnavailable(sessionId, reason) {
+    4278|     const error = new Error(`agent-bindings: root base tools unavailab…
+       |                   ^
+    4279|     error.code = 'root-base-tools-unavailable'
+    4280|     observations.push(`p6t6: root-base-tools-unavailable for ${session…
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:2142:15
+ ❯ Object.setup packages/runtime/src/plugin/live/agent-bindings.mjs:998:20
+ ❯ Object.create packages/runtime/test/p8s3b-result-effects.test.ts:347:46
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1057:14
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:1025:20
+ ❯ packages/runtime/src/plugin/live/agent-bindings.mjs:814:20
+ ❯ singleFlightTeamActivation packages/runtime/src/plugin/live/agent-bindings.mjs:815:7
+ ❯ runOwnedActivation packages/runtime/src/plugin/live/agent-bindings.mjs:1021:18
+ ❯ createTeamAgent packages/runtime/src/plugin/live/agent-bindings.mjs:1056:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  21:11:27
+   Duration  6.87s (transform 5.05s, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

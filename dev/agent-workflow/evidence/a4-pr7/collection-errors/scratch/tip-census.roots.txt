@@ -1,0 +1,12 @@
+capturedAt=2026-10-08T13:29:00.190Z
+vitestDurationMs=
+files=505 registeredLegIdentities=6321 zeroLegFiles=0
+root contracts: files=13 legs=150 zeroLegFiles=0
+root domain: files=26 legs=523 zeroLegFiles=0
+root legacy: files=7 legs=100 zeroLegFiles=0
+root remote: files=15 legs=232 zeroLegFiles=0
+root runtime: files=353 legs=4046 zeroLegFiles=0
+root storage: files=23 legs=287 zeroLegFiles=0
+root testkit: files=29 legs=372 zeroLegFiles=0
+root tools: files=12 legs=129 zeroLegFiles=0
+root client: files=27 legs=482 zeroLegFiles=0

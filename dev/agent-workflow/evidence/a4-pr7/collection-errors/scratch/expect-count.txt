@@ -1,0 +1,9 @@
+# grep -c 'expect(' base(1d706917) -> tip(working tree), per touched file  (2026-10-08T13:23:41Z)
+packages/runtime/test/p8s3b-result-effects.test.ts  base=57  now=67  delta=10
+packages/runtime/test/t12a-b2-child-identity.test.ts  base=17  now=17  delta=0
+packages/runtime/test/t12a-glue-handoff-ports.test.ts  base=47  now=47  delta=0
+
+# assertion-removal scan (any base expect line not present now):
+--- packages/runtime/test/p8s3b-result-effects.test.ts
+--- packages/runtime/test/t12a-b2-child-identity.test.ts
+--- packages/runtime/test/t12a-glue-handoff-ports.test.ts

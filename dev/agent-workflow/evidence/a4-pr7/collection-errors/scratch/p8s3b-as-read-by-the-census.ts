@@ -454,24 +454,16 @@ async function createGlueWorld(params: {
     // schemaVersion 1 -> 3, and the two envelopes undefined -> { rules: [] }.
     // RE-RUN DUTY — DISCHARGED 2026-10-09 (lane fix-a4-collection-errors-32): the
     // seam is now served by this file's own double (see `exists` in
-    // createGlueWorld) AND the second gap behind it is served too — with `exists`
-    // answered, the setup reached `rootBaseToolsUnavailable` and refused with
-    // `root-base-tools-unavailable` until the file passed an `agentPresets`
-    // service (D1: a v3 root bind REQUIRES the preset mount). Both fixes are the
-    // file's own doubles; nothing in `src/` moved. The file COLLECTS and its 17
-    // legs (G1..G11, E1..E7, M1) pass solo:
-    // evidence/a4-pr7/collection-errors/transcripts/p8s3b-after-presets.txt
-    // (16 passed, the pre-M1 capture) and
-    // evidence/a4-pr7/collection-errors/raw/three-files-solo-final.json
-    // (3 files / 33 legs / 0 failing, the hand-back capture). What the end-to-end
-    // run now establishes that the parse witness could not: the glue parses THIS
-    // document at bind time (no
+    // createGlueWorld), the file COLLECTS, and all 16 legs pass solo
+    // (evidence/a4-pr7/collection-errors/transcripts/p8s3b-after-exists.txt,
+    // 16 passed). What the end-to-end run now establishes that the parse witness
+    // could not: the glue parses THIS document at bind time (no
     // `resolveBoundBlueprint` is injected here, so `getBoundBlueprint` takes the
     // row-global `parseBlueprint(config.blueprintSource)` arm), locates the leader
     // template under it for the root's setup, and every delivered-turn result the
-    // 16 G/E legs assert is produced under the v3 document with both envelopes
-    // present. The witness's three-key delta is unchanged and still the record of
-    // what §7.4 altered.
+    // 16 legs assert is produced under the v3 document with both envelopes present.
+    // The witness's three-key delta is unchanged and still the record of what §7.4
+    // altered.
     blueprintSource: [
       '---',
       'schemaVersion: 3',

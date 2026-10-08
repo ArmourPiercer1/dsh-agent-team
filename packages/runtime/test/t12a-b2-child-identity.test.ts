@@ -83,7 +83,23 @@ const createdBFallback = await worldB.binding.childFactory.createChildSession({
 // under a fake DSH_HOME), so the factory takes the RESUME branch and
 // returns that same id instead of creating a second child.
 const restartHome = `${WORKTREE_ROOT}/.tmp-t12a-b2-home`
-const worldA2 = await createLiveWorld({ rootSessionId: ROOT_A, agentPresets: createAgentPresetsDouble() })
+// A4-PR7 §7.6 collection repair (lane `fix-a4-collection-errors-32`, 2026-10-09):
+// the restart world was built with the SESSION artifact only and no durable
+// MemberInstance row, and the cold-resume identity law P0-1 (hardening §3.4) fails
+// closed on exactly that: a `cold-member` bind resolves its template through the
+// row, and the fresh-create `templateIdHint` is deliberately NOT an authorization
+// fallback for a resume (agent-bindings.mjs `locateTemplate` →
+// `capability-template-unresolved … reason=template-id-missing`). That throw happened
+// in MODULE scope, so the file failed at collection and none of its 4 legs
+// registered. The repair carries the row a real restart has — the member world A
+// committed before it died, on the same derived child id (the same fixture shape the
+// green t12a worlds use, e.g. t12a-m2-persona.test.ts:105). Nothing here relaxes the
+// guard: delete this row again and B2-3 refuses exactly as before.
+const worldA2 = await createLiveWorld({
+  rootSessionId: ROOT_A,
+  agentPresets: createAgentPresetsDouble(),
+  members: [{ childSessionId: idA, instanceId: INSTANCE, templateId: 'tpl-t12a' }],
+})
 const idA2 = worldA2.binding.childSessionIdFor(ROOT_A, INSTANCE)
 const resumedOnRestart = await withDshHome(restartHome, async () => {
   writeDurableFixture(restartHome, idA2)
