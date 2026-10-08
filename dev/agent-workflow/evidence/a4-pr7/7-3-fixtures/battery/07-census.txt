@@ -55,7 +55,8 @@ explicitly. If you re-run this evidence, pass 41ba59f4, never HEAD.
   python3: can't open file '/home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-pr7/7-3-fixtures/tools/multiset-census.py': [Errno 2] No such file or directory
   exit=0
 
-## POSITIVE CONTROLS, run from .worktrees/a4-73-pc at 5cdb4e50, exit taken WITHOUT a pipe
+## POSITIVE CONTROLS, exit taken WITHOUT a pipe
+## reproduce: git worktree add --detach .worktrees/pc 5cdb4e50   (removed after this run)
 (the first draft of this file piped the control through sed and printed sed's exit code, 0,
 for a tool that exits 1 -- Instruments item 6, caught by my own instrument a second time)
   multiset control exit=1

@@ -64,7 +64,7 @@ positive control, then my files. All exit codes taken un-piped.
 | Run | Exit | Result |
 | --- | --- | --- |
 | shared tool `--self-test` | 0 | 6 PASS / 0 FAIL |
-| shared tool, positive control `5cdb4e50^` `a2c7-subtree-matcher.test.ts` (from `.worktrees/a4-73-pc`) | **1** | 2 × `removal that is not a version element: ['metadata: {}']` — the historical defect still fires |
+| shared tool, positive control `5cdb4e50^` `a2c7-subtree-matcher.test.ts` (in a throwaway worktree at that commit) | **1** | 2 × `removal that is not a version element: ['metadata: {}']` — the historical defect still fires |
 | shared tool, my `fixtures.ts` | 1 | **4 anomalies** — all four root-caused in §Instruments, item 3 |
 | `tools/element-set-census-quotedfix.py --self-test` | 0 | 6 PASS / 0 FAIL |
 | same, positive control | **1** | same 2 anomalies — the fix did not blunt it |
