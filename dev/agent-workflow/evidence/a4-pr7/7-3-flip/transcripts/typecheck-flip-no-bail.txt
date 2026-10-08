@@ -1,0 +1,49 @@
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: test/blueprint-v1-frozen-resume.test.ts(43,7): error TS2322: Type '1' is not assignable to type '3'.
+packages/domain typecheck: test/t2-blueprint-v2-hash.test.ts(33,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/domain typecheck: test/t2-blueprint-v2-hash.test.ts(34,7): error TS2322: Type '1' is not assignable to type '3'.
+packages/domain typecheck: test/t2-blueprint-v2-requirements.test.ts(37,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/domain typecheck: test/t2-blueprint-v2-requirements.test.ts(38,7): error TS2322: Type '1' is not assignable to type '3'.
+packages/domain typecheck: Failed
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: test/consent-scope-hash-binding.test.ts(133,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/fix-control-authz-c-abandon-terminal.test.ts(2121,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/leader-disable-no-requirements-initial-work.test.ts(124,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/leader-recovery-next-boundary-exit.test.ts(66,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/leader-template-required-boundary.test.ts(85,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/mcp-target-materialization-unit.test.ts(103,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/mcp-target-materialization.test.ts(149,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/p5t5-helpers.ts(80,3): error TS2322: Type '1' is not assignable to type '3'.
+packages/runtime typecheck: test/persona-kind-provider-preflight.test.ts(170,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/requirement-d1-d3-decision-scoping.test.ts(312,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/startup-all-templates-real-authority.test.ts(92,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/startup-consent-production.test.ts(105,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/startup-preflight-production-create.test.ts(117,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/startup-template-disable-production.test.ts(105,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: test/template-disable-no-requirements-gate.test.ts(82,7): error TS2322: Type '2' is not assignable to type '3'.
+packages/runtime typecheck: Failed
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+[ERR_PNPM_RECURSIVE_FAIL] 
+
+
+Summary: 2 fails, 6 passes
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-flip/packages/domain:
+[ERROR] @dsh-agent-team/domain@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-flip/packages/runtime:
+[ERROR] @dsh-agent-team/runtime@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2

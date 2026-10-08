@@ -1,0 +1,23 @@
+# per-package summary, worktree sweep-base (vitest default reporter, exit codes un-piped)
+--- domain ---
+ Test Files  2 failed | 24 passed (26)
+      Tests  10 failed | 515 passed (525)
+--- runtime ---
+ Test Files  8 failed | 338 passed (346)
+      Tests  10 failed | 3959 passed (3969)
+--- storage ---
+ Test Files  23 passed (23)
+      Tests  287 passed (287)
+--- remote ---
+ Test Files  15 passed (15)
+      Tests  232 passed (232)
+--- tools ---
+ Test Files  1 failed | 11 passed (12)
+      Tests  1 failed | 128 passed (129)
+--- testkit ---
+ Test Files  1 failed | 28 passed (29)
+      Tests  1 failed | 368 passed (369)
+--- legacy ---
+ Test Files  7 passed (7)
+      Tests  100 passed (100)
+exit codes: domain=1 runtime=1 storage=0 remote=0 tools=1 testkit=1 legacy=0 (testkit re-run from repo toplevel; see SCOPE.md §7.2)
