@@ -153,6 +153,23 @@ export function finalToken(verdict, counts) {
  * indistinguishable at 3 a.m. from a silent skip. Pure by design: the policy is the part worth
  * pinning, and it must be drivable without a checkout.
  */
+/**
+ * A `#` line between two backslash-continued command lines is not a comment: bash joins the escaped
+ * newline first, so the `#` opens a comment that eats the rest of the logical line — every flag
+ * after it and usually the rest of the pipeline. The runner still echoes the whole script in its log,
+ * so the run LOOKS like it passed those flags; measured on run 37801019804, which cost a hosted run
+ * and the transcripts nobody could download. Returns 1-based line numbers of offending comments.
+ */
+export function findContinuationComments(script) {
+  const lines = String(script).split('\n')
+  const bad = []
+  for (let i = 1; i < lines.length; i += 1) {
+    if (!/\\\s*$/.test(lines[i - 1] ?? '')) continue
+    if (/^\s*#/.test(lines[i])) bad.push(i + 1)
+  }
+  return bad
+}
+
 export function applyRefusalPolicy(name, result, allowRefused) {
   if (result.verdict !== 'refused') return result
   if (Array.isArray(allowRefused) && allowRefused.includes(name)) return result
@@ -1073,7 +1090,8 @@ function main(argv) {
   const started = Date.now()
   process.stdout.write(
     `DSH-CI-RUN head=${String(git(['rev-parse', '--short', 'HEAD']) ?? 'unknown')} mode=${opts.full ? 'full' : 'default'} ` +
-      `node=${process.version} cwd=${REPO_ROOT} store-dir=${String(ctx.storeDir ?? 'default')}\n`,
+      `node=${process.version} cwd=${REPO_ROOT} store-dir=${String(ctx.storeDir ?? 'default')} ` +
+     `allow-refused=${(opts.allowRefused ?? []).length > 0 ? opts.allowRefused.join(',') : 'none'}\n`,
   )
 
   // The token is printed from a `finally` and guarded by a flag: a throw anywhere in the loop —
@@ -1357,6 +1375,16 @@ function selfTest() {
     trRefusedPhantom.verdict === 'fail' && trRefusedPhantom.klass === 'token-legs-disagree',
     'a declared refusal with no refusing leg is a token that lies',
   )
+
+  ok(
+    findContinuationComments('node gate.mjs --full \\\n  --a 1 \\\n  # why\n  --b 2 \\\n  | tee log').join(',') === '3',
+    'a comment inside a backslash continuation is found, because it silently deletes every flag after it',
+  )
+  ok(
+    findContinuationComments('# why\nnode gate.mjs --full \\\n  --a 1 \\\n  --b 2\n').length === 0,
+    'a comment above the command is not an offence — the detector must not push comments into scripts',
+  )
+  ok(findContinuationComments('set -o pipefail\nmkdir -p x\nnode a.mjs --b\n').length === 0, 'a plain multi-line script reports nothing')
 
   for (const f of fails) process.stdout.write(`SELFTEST FAIL: ${f}\n`)
   process.stdout.write(

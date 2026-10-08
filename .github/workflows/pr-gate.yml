@@ -162,6 +162,18 @@ jobs:
       # pass states the clock it passed under. The right end of this is in the leg's own hands (give the
       # walk the budget it needs, or narrow it); when that lands, take this flag off.
       - name: Gate — every leg, two captures, any skip is a failure
+        # DECLARED, not silent: a hosted runner has no tests/deepseek-harness-test-use (gitignored
+        # pristine host, TEST_METHODS sec 2), so the census leg REFUSES rather than reporting the
+        # product for 57 legs it cannot grade (run 37794562230). The census is therefore NOT enforced
+        # on hosted PR runs yet; the token says refusedlegs=census out loud, and the re-grade step
+        # fails if that declaration ever stops matching reality.
+        #
+        # PLACEMENT IS PART OF THE FIX. These words used to sit BETWEEN backslash-continued command
+        # lines below. bash joins the escaped newline first, so that # opened a comment that ate the
+        # rest of the logical line: --allow-refused, --census-test-timeout, --store-dir and
+        # --transcript-dir never reached argv, while the runner log echoed the script as if they had
+        # (run 37801019804). The gate now echoes the flags it actually received on its DSH-CI-RUN
+        # line, and findContinuationComments() makes the class detectable instead of remembered.
         shell: bash
         env:
           # The `runner` context is legal HERE (it is not in `jobs.<id>.env`; see the note up there).
@@ -172,11 +184,6 @@ jobs:
           mkdir -p "$XDG_CACHE_HOME"
           node scripts/ci-pr-gate.mjs --full \
             --census-captures 2 \
-            # DECLARED, not silent: a hosted runner has no tests/deepseek-harness-test-use
-            # (gitignored pristine host, TEST_METHODS §2), so the census leg REFUSES rather than
-            # reporting the product for 57 legs it cannot grade (run 37794562230). The census is
-            # therefore NOT enforced on hosted PR runs yet — the token says refusedlegs=census
-            # out loud, and the re-grade step fails if that declaration ever stops matching reality.
             --allow-refused census \
             --census-test-timeout 20000 \
             --store-dir "$DSH_CI_STORE_DIR" \
