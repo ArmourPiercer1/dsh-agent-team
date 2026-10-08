@@ -594,3 +594,22 @@ otherwise take them as current:
   true after it: at `23` legs the whole suite printed `23 passed (23)` over a gate that had never
   executed its client arm. That is finding F1 of
   `../instrument-tree-shape/FINDINGS.md` §12, with the four trees it was measured across.
+
+## Correction, 2026-10-08 (coordinator, on behalf of the install-surface re-baseline lane)
+
+**§6 disclosed three load-sensitive identities in `p6t1-parallel.test.ts`. The honest count is at least four.** The
+re-baseline run added a fourth signature — `P2: N=5 … (raised quotas)` — which passed 9/9 twice when the file was run
+solo on the same tree, so it is load sensitivity and not a new defect.
+
+Three things worth keeping from the correction itself:
+
+1. **"Three" was a snapshot of one run, not a property of the file.** A disclosed flake list is a measurement, and a
+   measurement quoted forward without re-measuring becomes a claim. The lane that found the fourth identity found it
+   incidentally, while measuring something else entirely.
+2. **A flake list is load-bearing for the merge gate.** The gate treats disclosed load-sensitive identities as
+   admissible red; an undercount therefore shows up later as an unexplained new red, which is the most expensive kind
+   of red to triage because everyone assumes it is a regression.
+3. **This round the same file moved the other way too**: on the merged ceiling-pin tree the population census printed
+   **20** titled reds — the 18 baseline identities **plus two** `p6t1` ones — while the lane that ran minutes earlier
+   had seen 19. Red *count* is not a stable quantity on this file; **red *identity* is**, which is why the census
+   diffs identities and reports `NEW` / `RESOLVED` rather than totals.

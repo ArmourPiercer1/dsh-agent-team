@@ -1,13 +1,13 @@
 ---
 name: team-leader-operations
-description: Operate a DSH Agent Team as the Leader using the closed set of thirteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control, list pending approvals, archive member — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, manage approval requests, or move a member out of the active work set.
+description: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control, list pending approvals, archive member, grant/revoke permission rules — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, manage approval requests, move a member out of the active work set, or change a member's durable permission overlay.
 ---
 
 # Team Leader Operations
 
 Operate a DSH Agent Team from the Leader session. The Leader is the only agent
 role that can create members, delegate work, and resolve leader-level
-approvals. Everything below is the production behavior of the closed thirteen
+approvals. Everything below is the production behavior of the closed fifteen
 `team_*` tools — there are no other team tools, and no hidden side channels.
 
 ## 1. Preconditions
@@ -30,7 +30,7 @@ approvals. Everything below is the production behavior of the closed thirteen
   (e.g. `inst-...`). Labels and template ids are rejected by live resolution —
   always resolve ids from `team_list_members` first.
 
-## 2. The thirteen tools
+## 2. The fifteen tools
 
 | Tool | What it does | Required args (besides the two common ones) |
 | --- | --- | --- |
@@ -47,6 +47,14 @@ approvals. Everything below is the production behavior of the closed thirteen
 | `team_resolve_control` | Record an allow/deny decision on a pending control request | `requestId`, `decision` |
 | `team_list_pending_control` | List the team's unresolved `leader-approval` requests with their exact `requestId`s (read-only, Leader-only) | — |
 | `team_archive_member` | Archive ONE member instance — move it out of the active work set (durable, Leader-only) | `targetInstanceId` |
+| `team_grant_permission` | Grant durable permission-overlay rules to ONE member instance (Leader-only; the ONE governance mutation authority). Tightenings apply immediately; an EXPANSION needs explicit carrier coverage on the bound Blueprint and, on a schemaVersion-3 Blueprint, must also stay inside BOTH authority ceilings (`teamHardEnvelope` and the Leader's own carrier, evaluated separately, never merged). A rise above either refuses typed as `PERMISSION_AUTHORITY_CEILING_INSUFFICIENT` — **needing higher authority is a refusal, never a pending request** — and an unreadable ceiling document refuses as a context fault rather than being treated as absent. A rule-set-equal replay commits nothing. Does NOT change the Leader's own permissions. | `targetInstanceId`, `rules` (1..n closed `{operationClass, matcher, effect}`) |
+| `team_revoke_permission` | Remove previously granted overlay rules from ONE member instance; the next pre-execute decision falls back to the lower layers. **A removal can itself be an EXPANSION** — where a revoke lets a looser remaining rule ANSWER (a reveal), it is gated exactly like a grant (carrier coverage, and on v3 both ceilings). A rule-set-equal replay commits nothing. | `targetInstanceId`, `rules` (1..n closed `{operationClass, matcher, effect}`) |
+
+The grant/revoke pair is one specification materialised twice (`permissionSpec('grant')` /
+`permissionSpec('revoke')`), so their argument grammar is identical by construction — that is
+why this table shows them with the same required args. See the section at the end of this file
+on why narrowing a shell-class rule below `allow` is the one mutation you should think twice
+about before issuing.
 
 Optional args worth knowing:
 
