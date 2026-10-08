@@ -1,0 +1,3 @@
+$ node scripts/lint-identities.mjs
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1121 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)

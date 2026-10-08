@@ -1,0 +1,42 @@
+diff --git a/packages/runtime/src/plugin/live/agent-bindings.mjs b/packages/runtime/src/plugin/live/agent-bindings.mjs
+index 158e2fe6..a62ebbe0 100644
+--- a/packages/runtime/src/plugin/live/agent-bindings.mjs
++++ b/packages/runtime/src/plugin/live/agent-bindings.mjs
+@@ -1885,6 +1885,18 @@ export function createAgentBindings(deps) {
+       const byId = members.find((member) => String(member.instanceId) === instanceId)
+       if (byId !== undefined) templateId = String(byId.templateId)
+     }
++    if (templateId === undefined) {
++      // MUTATION-CONTROL-DELETE-ME (temporary, lane d3-4-rejection only): make
++      // the product FAIL OPEN by letting the boot root's rows stand in for the
++      // foreign root's missing row. Restored by git checkout immediately after
++      // the red transcript is captured; never committed.
++      {
++        const bootRows = domain.repositories.memberInstances.list(rootSid)
++        const viaBoot = bootRows.find((member) => String(member.childSessionId) === sessionId)
++          ?? (instanceId !== undefined ? bootRows.find((member) => String(member.instanceId) === instanceId) : undefined)
++        if (viaBoot !== undefined) templateId = String(viaBoot.templateId)
++      }
++    }
+     if (templateId === undefined) {
+       throw capabilityTemplateUnresolved(sessionId, {
+         reason: 'template-id-missing',
+@@ -3056,7 +3068,17 @@ export function createAgentBindings(deps) {
+         target = { kind: 'member', sessionId, rootSessionId: membersRoot, instanceId }
+         record = { childSessionId: sessionId, instanceId, templateId: templateIdHint }
+       } else {
+-        throw new Error(`agent-bindings: persona install for member '${sessionId}': no committed MemberInstance row and no templateId hint (fail closed — no silent persona-less member)`)
++        // MUTATION-CONTROL-DELETE-ME (temporary, lane d3-4-rejection only):
++        // the second half of the same fail-open defect — let the boot root's
++        // row stand in, and install the block UNDER THE FORWARDED-TO ROOT.
++        // This is exactly the hazard the D3-4b leg claims is refused.
++        const bootRow = domain.repositories.memberInstances.list(rootSid)
++          .find((member) => String(member.childSessionId) === sessionId)
++        if (bootRow !== undefined) {
++          target = { kind: 'member', sessionId, rootSessionId: membersRoot, instanceId: String(bootRow.instanceId) }
++          record = bootRow
++        }
++        else { throw new Error(`agent-bindings: persona install for member '${sessionId}': no committed MemberInstance row and no templateId hint (fail closed — no silent persona-less member)`) }
+       }
+     }
+     slot.apply({ target, record, path: bindPath })

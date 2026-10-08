@@ -1,0 +1,208 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/d3-4-rejection
+
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts (6 tests | 1 failed | 5 skipped) 11ms
+     ↓ D3-1 FRESH member create: the scoped persona carries the identity block (owning root + own instanceId + role=member) on the verbatim template persona
+     ↓ D3-2 COLD RESUME: the resumed member's scoped persona is byte-identical to the create-time one (shared install seam)
+     ↓ D3-3 CROSS-ROOT: the N member gets the owning root N — never the boot root — on fresh create AND cold resume; the N root keeps only the root block
+     ↓ D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer (never status executed)
+     × D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool 10ms
+     ↓ D3-5 repeated setup converges: exactly ONE scoped deployment:persona section, unchanged text
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/tmp-d34-mutation-control.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts:523:53
+    521|     // note above records for the tool layer. The contract is the TYPE…
+    522|     // a message substring was never it.
+    523|     expect.soft(foreignSetupError instanceof Error).toBe(true)
+       |                                                     ^
+    524|     expect.soft(foreignSetupShape).toMatchObject({
+    525|       code: 'capability-template-unresolved',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  packages/runtime/test/tmp-d34-mutation-control.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool
+AssertionError: expected { code: undefined, …(3) } to match object { …(3) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "code": "capability-template-unresolved",
+-   "instanceId": "inst-p6t2seedw01",
+-   "reason": "template-id-missing",
++   "code": undefined,
++   "instanceId": undefined,
++   "reason": undefined,
+  }
+
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts:524:36
+    522|     // a message substring was never it.
+    523|     expect.soft(foreignSetupError instanceof Error).toBe(true)
+    524|     expect.soft(foreignSetupShape).toMatchObject({
+       |                                    ^
+    525|       code: 'capability-template-unresolved',
+    526|       reason: 'template-id-missing',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  packages/runtime/test/tmp-d34-mutation-control.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts:531:58
+    529|     // The rejection names the session it refused (it is this bind's r…
+    530|     // not an unrelated fault surfacing on the probe's ctx).
+    531|     expect.soft(foreignSetupShape.message !== undefined).toBe(true)
+       |                                                          ^
+    532|     expect.soft((foreignSetupShape.message ?? '').includes(WORKER.chil…
+    533|     // THE MASKED CLAIM, now binding: nothing was installed. Not a per…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  packages/runtime/test/tmp-d34-mutation-control.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts:532:84
+    530|     // not an unrelated fault surfacing on the probe's ctx).
+    531|     expect.soft(foreignSetupShape.message !== undefined).toBe(true)
+    532|     expect.soft((foreignSetupShape.message ?? '').includes(WORKER.chil…
+       |                                                                                    ^
+    533|     // THE MASKED CLAIM, now binding: nothing was installed. Not a per…
+    534|     // section (so no block carrying the foreign root exists anywhere …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  packages/runtime/test/tmp-d34-mutation-control.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts:537:50
+    535|     // ctx), not a scoped section of any kind, not one registered tool…
+    536|     // refused bind leaves no half-installed agent behind.
+    537|     expect.soft(foreignCtxPersonaEntries.length).toBe(0)
+       |                                                  ^
+    538|     expect.soft(foreignProbeScopedSectionNames).toEqual([])
+    539|     expect.soft(foreignProbeToolNames).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  packages/runtime/test/tmp-d34-mutation-control.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool
+AssertionError: expected [ 'deployment:persona' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "deployment:persona",
++ ]
+
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts:538:49
+    536|     // refused bind leaves no half-installed agent behind.
+    537|     expect.soft(foreignCtxPersonaEntries.length).toBe(0)
+    538|     expect.soft(foreignProbeScopedSectionNames).toEqual([])
+       |                                                 ^
+    539|     expect.soft(foreignProbeToolNames).toEqual([])
+    540|     // POSITIVE CONTROL, so the three zero-reads above cannot be satis…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  packages/runtime/test/tmp-d34-mutation-control.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool
+AssertionError: expected [ 'team_list_members', …(14) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "team_list_members",
++   "team_list_templates",
++   "team_inspect_config",
++   "team_create_member",
++   "team_delegate",
++   "team_follow_up",
++   "team_collect",
++   "team_send_message",
++   "team_report_progress",
++   "team_request_control",
++   "team_resolve_control",
++   "team_list_pending_control",
++   "team_archive_member",
++   "team_grant_permission",
++   "team_revoke_permission",
++ ]
+
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts:539:40
+    537|     expect.soft(foreignCtxPersonaEntries.length).toBe(0)
+    538|     expect.soft(foreignProbeScopedSectionNames).toEqual([])
+    539|     expect.soft(foreignProbeToolNames).toEqual([])
+       |                                        ^
+    540|     // POSITIVE CONTROL, so the three zero-reads above cannot be satis…
+    541|     // a ctx nobody ever set up: the world's CROSS member ran the SAME…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  packages/runtime/test/tmp-d34-mutation-control.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts:550:63
+    548|     // installed: the boot member's own block still names its own root…
+    549|     // the foreign root never appears in it.
+    550|     expect.soft(workerPersonaAfterForeignProbe !== undefined).toBe(tru…
+       |                                                               ^
+    551|     expect.soft(workerPersonaAfterForeignProbe!.text.includes(memberCo…
+    552|     expect.soft(workerPersonaAfterForeignProbe!.text.includes(N)).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  packages/runtime/test/tmp-d34-mutation-control.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool
+TypeError: Cannot read properties of undefined (reading 'text')
+ ❯ packages/runtime/test/tmp-d34-mutation-control.test.ts:551:49
+    549|     // the foreign root never appears in it.
+    550|     expect.soft(workerPersonaAfterForeignProbe !== undefined).toBe(tru…
+    551|     expect.soft(workerPersonaAfterForeignProbe!.text.includes(memberCo…
+       |                                                 ^
+    552|     expect.soft(workerPersonaAfterForeignProbe!.text.includes(N)).toBe…
+    553|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  00:23:16
+   Duration  1.37s (transform 909ms, setup 0ms, import 1.25s, tests 11ms, environment 0ms)
+

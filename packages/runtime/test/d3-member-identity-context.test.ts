@@ -38,14 +38,25 @@
  *        fresh create and the cold resume (teamRootOfSession resolves the
  *        owning root); the N root agent itself keeps the ROOT block only
  *        (no member-block leak into the root branch);
- *   D3-4 FAIL CLOSED: a member team_* call with an unknown rootSessionId
- *        is rejected TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND, with a root the
- *        member does not belong to rejected TEAM_RUNTIME_CALLER_NOT_FOUND,
- *        with a missing rootSessionId rejected TEAM_TOOL_BAD_ARGUMENTS —
- *        the block never bypasses the closed layer (status is never
- *        'executed'); a committed member whose setup is attempted under a
- *        foreign root (no row there, no hint) has the setup REJECT — no
- *        block with the foreign root is ever installed;
+ *   D3-4 FAIL CLOSED (tool layer, leg D3-4): a member team_* call claiming
+ *        a root it does not own — unknown, or another root of this row — is
+ *        rejected at the tool-layer caller-root gate with the typed
+ *        TEAM_TOOL_CALLER_ROOT_MISMATCH (P0 caller-root binding, PR #20: one
+ *        step before the runtime, so the earlier
+ *        TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND / TEAM_RUNTIME_CALLER_NOT_FOUND
+ *        codes are what the pre-PR-#20 boundary returned), and a MISSING
+ *        rootSessionId with TEAM_TOOL_BAD_ARGUMENTS — the block never
+ *        bypasses the closed layer (status is never 'executed');
+ *   D3-4 FAIL CLOSED (setup layer, leg D3-4b — split out of D3-4 on
+ *        A4-PR7 external review item D3-4 so its own assertions execute): a
+ *        committed member whose setup is attempted under a foreign root (no
+ *        row there, no hint on the cold path) has the setup REJECT with the
+ *        typed capability-template-unresolved error (reason
+ *        template-id-missing — the P0-1 cold-resume identity law refuses the
+ *        bind before the persona layer, so this is a refusal, never a block
+ *        carrying the foreign root), and it installs NOTHING: no scoped
+ *        persona section, no registered tool, and the member's own installed
+ *        block untouched;
  *   D3-5 repeated setup for the same agent converges to exactly ONE
  *        scoped deployment:persona section with unchanged text (the
  *        re-install disposes the previous entry first).
@@ -307,6 +318,41 @@ const foreignSetupError = await (async () => {
 })()
 const foreignCtxPersonaEntries = scopedPersonaEntries(foreignCtx)
 
+// D3-4b (the half of D3-4 split OUT so its own assertions can execute — see
+// the leg below; evidence dev/agent-workflow/evidence/a4-pr7/d3-4-rejection/):
+// the original leg read the rejection through a MESSAGE-SUBSTRING proxy
+// (`toContain('fail closed')`, the persona layer's wording) that has been
+// failing ever since the P0-1 cold-resume identity law moved the refusal one
+// step EARLIER, into the capability locate. That red line sat two assertions
+// in front of the side-effect reads, so the claim this probe exists for — a
+// foreign-root bind installs NOTHING — had no executing check while the leg
+// held an exemption line. Read the TYPED shape plus every surface a setup
+// writes (persona sections AND registered tools), and take a positive control
+// from a setup that DID succeed (the N member's ctx: one setup, under its
+// OWNING root) so a zero read below is a refusal and not an un-instrumented ctx.
+const foreignSetupShape = {
+  code: (foreignSetupError as { code?: unknown } | undefined)?.code,
+  reason: (foreignSetupError as { reason?: unknown } | undefined)?.reason,
+  instanceId: (foreignSetupError as { instanceId?: unknown } | undefined)?.instanceId,
+  message: foreignSetupError instanceof Error ? foreignSetupError.message : undefined,
+}
+const foreignProbeToolNames = foreignCtx.registeredTools.map(
+  (def) => String((def as { name?: unknown } | undefined)?.name ?? ''),
+)
+const foreignProbeScopedSectionNames = foreignCtx.systemPrompt
+  .assemble()
+  .filter((section) => section.scope === 'scoped')
+  .map((section) => section.name)
+// A refusal must also leave the identity that WAS installed untouched: the
+// boot member's own block, read AFTER the failed foreign-root bind.
+const workerPersonaAfterForeignProbe = scopedPersona(workerCtx)
+// The positive control — the world's CROSS member: exactly one successful
+// member setup, run under its OWNING root (no re-install on this ctx).
+const controlPersonaEntries = scopedPersonaEntries(crossCtx)
+const controlToolNames = crossCtx.registeredTools.map(
+  (def) => String((def as { name?: unknown } | undefined)?.name ?? ''),
+)
+
 // D3-2 / D3-3: the COLD RESUME window (host restart): the resident handles
 // are dropped, the durable sessions are on disk, the FIRST INPUT
 // cold-resumes each member through agents.resume under its OWNING root
@@ -420,7 +466,7 @@ describe('D3 the member identity context block (Team D1-D6 repair v2, B2)', () =
     expect(nPersonaBefore!.text.includes('[team-member-context')).toBe(false)
   })
 
-  it('D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block', () => {
+  it('D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer (never status executed)', () => {
     // The block tells the model what to include; the closed layer stays
     // closed either way — no status 'executed' for any wrong claim.
     // P0 (caller-root binding, PR #20 closure): a wrong root claim by a
@@ -444,12 +490,66 @@ describe('D3 the member identity context block (Team D1-D6 repair v2, B2)', () =
     expect(listUnknownRoot.status === 'executed').toBe(false)
     expect(listForeignRoot.status === 'executed').toBe(false)
     expect(listMissingRoot.status === 'executed').toBe(false)
-    // The setup-level fail-closed: the committed boot member attempted
-    // under the foreign root N (no row there, no hint) rejects the setup —
-    // no block with the foreign root is ever installed.
+    // The SETUP-level half of this claim — the foreign-root bind and the
+    // block it must never install — now lives in its own leg (D3-4b below),
+    // where its assertions actually run. It used to sit here behind a
+    // message-substring assertion that had been red for a whole stage, which
+    // silently disarmed every read after it. No coverage was dropped by the
+    // move: the probe is the same call on the same world, and the file header
+    // contract (D3-4) is unchanged.
+  })
+
+  it('D3-4b FAIL CLOSED (the setup-level half of D3-4, split out to execute): a committed member bound under a FOREIGN root rejects with the typed capability-template-unresolved error and installs no block, registers no tool', () => {
+    // WHY A LEG OF ITS OWN. As D3-4 this identity was exempted red, and the
+    // recorded failure was the MESSAGE probe: `expected 'agent-bindings:
+    // capability template u…' to contain 'fail closed'`. A leg that dies in
+    // front of its real claim proves nothing while it occupies an exemption
+    // line — and the two reads it killed (`foreignCtxPersonaEntries.length`,
+    // the no-block claim this probe was written for) were exactly the part
+    // that matters. Here they run.
+    //
+    // WHY THE PROSE PROBE WAS WRONG, NOT JUST STALE. The probe is the real
+    // cold-member bind — `agentSetup(child, undefined, undefined,
+    // 'cold-member', root)`, the exact argument shape the production cold
+    // path uses, run through the glue's exported agentSetup over the live
+    // world (no internal shortcut). Under the foreign root N there is no
+    // MemberInstance row for the boot member's child session, and the
+    // fresh-create templateIdHint is deliberately NOT an authorization
+    // fallback for a cold bind (P0-1 hardening §3.4). So the refusal comes
+    // from the capability locate, BEFORE the persona layer whose sentence the
+    // old assertion quoted — the same kind of boundary move the caller-root
+    // note above records for the tool layer. The contract is the TYPED error;
+    // a message substring was never it.
     expect(foreignSetupError instanceof Error).toBe(true)
-    expect((foreignSetupError as Error).message).toContain('fail closed')
+    expect(foreignSetupShape).toMatchObject({
+      code: 'capability-template-unresolved',
+      reason: 'template-id-missing',
+      instanceId: WORKER.instanceId,
+    })
+    // The rejection names the session it refused (it is this bind's refusal,
+    // not an unrelated fault surfacing on the probe's ctx).
+    expect(foreignSetupShape.message !== undefined).toBe(true)
+    expect(foreignSetupShape.message!.includes(WORKER.childSessionId)).toBe(true)
+    // THE MASKED CLAIM, now binding: nothing was installed. Not a persona
+    // section (so no block carrying the foreign root exists anywhere on this
+    // ctx), not a scoped section of any kind, not one registered tool — the
+    // refused bind leaves no half-installed agent behind.
     expect(foreignCtxPersonaEntries.length).toBe(0)
+    expect(foreignProbeScopedSectionNames).toEqual([])
+    expect(foreignProbeToolNames).toEqual([])
+    // POSITIVE CONTROL, so the three zero-reads above cannot be satisfied by
+    // a ctx nobody ever set up: the world's CROSS member ran the SAME setup
+    // under its OWNING root and got exactly one scoped persona block plus the
+    // team tool registration.
+    expect(controlPersonaEntries.length).toBe(1)
+    expect(controlPersonaEntries[0]!.text).toBe(`${MEMBER_PERSONA}\n\n${memberContext(N, CROSS.instanceId)}`)
+    expect(controlToolNames.includes('team_list_members')).toBe(true)
+    // And the refusal did not disturb the identity that WAS legitimately
+    // installed: the boot member's own block still names its own root, and
+    // the foreign root never appears in it.
+    expect(workerPersonaAfterForeignProbe !== undefined).toBe(true)
+    expect(workerPersonaAfterForeignProbe!.text.includes(memberContext(BOOT, WORKER.instanceId))).toBe(true)
+    expect(workerPersonaAfterForeignProbe!.text.includes(N)).toBe(false)
   })
 
   it('D3-5 repeated setup converges: exactly ONE scoped deployment:persona section, unchanged text', () => {

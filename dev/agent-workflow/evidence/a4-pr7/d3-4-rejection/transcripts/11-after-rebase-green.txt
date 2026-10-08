@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/d3-4-rejection
+
+ ✓ packages/runtime/test/d3-member-identity-context.test.ts (6 tests) 7ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  00:33:01
+   Duration  2.99s (transform 2.13s, setup 0ms, import 2.82s, tests 7ms, environment 0ms)
+
