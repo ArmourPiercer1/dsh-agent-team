@@ -278,9 +278,36 @@ counts only as a derived reading.
    leg that drives the real glue behind the real `workDelivery` port for a body-less turn, asserting
    `unavailable` on the **effect** (not on the armed port), then re-run probes A and E — under a correct
    implementation both planes must go red together.
-4. **Latent class, lead not defect: 17 runtime test files reference `sessionPersistence` and contain no `exists`
-   method** (`scratch/sessionpersistence-no-exists.txt`). None fails today — the census reports zero zero-leg
-   files — because most of them never drive `durableSessionExists`. Anyone touching that seam should expect the
-   `p8s3b` pattern: a refusal at module scope, and one `FILE` identity for a whole file of legs.
+4. **Latent class, lead not defect: 17 runtime test files (plus one shared helper module,
+   `p8s5a-stub-glue.mjs`) reference `sessionPersistence` and contain no `exists` method**
+   (`scratch/sessionpersistence-no-exists.txt`, which also marks the two that drive the glue directly). None
+   fails today — the census reports zero zero-leg files — because most of them never reach
+   `durableSessionExists`. Anyone touching that seam should expect the `p8s3b` pattern if they start driving
+   it: a refusal at module scope, and one `FILE` identity for a whole file of legs.
 5. **`BASELINE-CLASSES.md` §7 row 22 prescribed an unwritable repair** (§2.3). Rows 20/21's prescriptions were
    correct and are now discharged.
+
+---
+
+## 8. Hand-back manifest
+
+Branch `fix-a4-collection-errors-32`, **unmerged, never pushed**. Code commit `91087636` (three test files +
+this evidence dir); the FINDINGS wording fix lands in the commit after it.
+
+| artifact | what it is |
+|---|---|
+| `FINDINGS.md` | this file — verdict first, cause per file, the 32 accounted for, the red classification, the baseline correction, the `createScriptedAgentsDouble` verdict |
+| `BASELINE-CORRECTION.md` | the dated-correction block for the coordinator to append to `population-baseline/nine-root-2162f6a7.md` (22 → 19 identity set), plus the two mechanical edits it implies. **Not applied here.** |
+| `FINAL-BATTERY.txt` | every gate run against the committed content, with its assertion (`BATTERY RESULT: ALL GATES OK`) |
+| `raw/base-collection-errors.json` + `transcripts/base-collection-errors.txt` | the reproduction: `Tests no tests`, three files, zero `assertionResults` |
+| `raw/tip-census.json`, `scratch/tip-census.{ids,legs,roots}.txt` | the ONE nine-root census: 505 files / 6321 legs / 19 reds / 0 zero-leg files |
+| `scratch/leg-set.mjs` | the registered-universe extractor (identity grammar of `scripts/fail-set.mjs`, applied to ALL legs, plus the zero-leg-file list) — worth keeping: `fail-set.mjs` alone cannot answer "did legs disappear?" |
+| `transcripts/probe-{A,A2,B,B2,C,E}-*.txt` | the six mutation witnesses of §3 (each mutation reverted; porcelain verified clean) |
+| `transcripts/probe-D-cross-file-import.txt` | the §5 reuse hazard, measured: 18 tests in a file that imported the helper |
+| `scratch/capture-vs-tip-proof.txt`, `scratch/p8s3b-as-read-by-the-census.ts` | proof that the single census measured the committed identity set, not a stale one |
+| `scratch/{census,final-battery}.sh` | the reproduction drivers, in the form the previous lane's evidence used |
+
+Not done, on purpose: no assertion rewritten, no leg deleted, no product file touched, no baseline file
+edited, no `it.skip` introduced, no push. The two things this lane deliberately left for the coordinator are
+§7.1 (apply the correction) and §7.2 (fix plan §7.2 line 791); §7.3 is the one genuinely new lane-sized task
+this work found.
