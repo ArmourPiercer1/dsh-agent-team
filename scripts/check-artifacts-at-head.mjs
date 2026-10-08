@@ -26,11 +26,28 @@
  *
  * WHY A WORKTREE AND NOT `/tmp`: tsc bakes the outDir→rootDir relationship into every
  * `.js.map` / `.d.ts.map` it emits. Built at a different relative path the maps differ
- * byte-wise from the committed ones, so a scratch build elsewhere would report 20 drifts
- * that are the harness's own artefact. Under the repo root at a `.tmp-` path the layout
- * is identical to the real one, the tree is git- and lint-ignored, and the comparison is
- * a byte comparison. Measured here: two independent builds produced byte-identical
- * output, so bytes are a sound verdict channel.
+ * byte-wise from the committed ones, so a scratch build elsewhere would report drifts that
+ * are the harness's own artefact. Measured here: two independent builds at the same
+ * relative layout produced byte-identical output, so bytes are a sound verdict channel.
+ *
+ * WHERE THE SCRATCH GOES IS PART OF THIS INSTRUMENT, not an implementation detail. The
+ * first version wrote `<root>/.tmp-artifact-at-head-<pid>-<ts>` and this header claimed the
+ * path was "git- and lint-ignored". The lint half was true (a root-anchored `.tmp-` glob is
+ * in the tracked flat config); the git half was false — `.tmp-*` was ignored only by
+ * `.git/info/exclude`, which is NOT tracked, so on a fresh clone the scratch is 376 MB of
+ * untracked duplicate source and every `git status --porcelain` assertion in the repository
+ * reads it as uncommitted work. The same shape of accident was measured on another lane's
+ * nested clone in the same working tree: `lint-identities --diff` went from `universe: 1109
+ * … new 0, resolved 0` to `universe: 2782 file(s) linted, 1673 of them gitignored … new 750,
+ * resolved 0`, 751 of those lines naming the clone. A gate that changes another gate's
+ * measurement is not a gate, and ESLint does not read `.gitignore`, so the immunity has to
+ * exist in each mechanism separately. The scratch is therefore a DIRECT CHILD of the running
+ * checkout at `.scratch/artifact-at-head/<pid>-<stamp>`, ignored by the tracked `.gitignore`
+ * and by a root-anchored `.scratch` glob in the tracked flat config, and the fence is immune
+ * by construction because it enumerates `git ls-files`. All of that, including why the path
+ * must be a direct child rather than nested under `.worktrees/`, is written down in
+ * `scripts/artifact-check-scratch.mjs`, which exports the path so the guard leg and this
+ * instrument cannot disagree about where it is.
  *
  * WHAT IT CANNOT SEE, stated rather than implied:
  *   - uncommitted work — by design, the subject is a commit;
@@ -49,8 +66,10 @@
  *     never ran has no opinion about freshness, and this script never reports one.
  */
 import { spawnSync } from 'node:child_process'
-import { accessSync, constants, existsSync, readFileSync, readdirSync, rmSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { accessSync, constants, existsSync, mkdirSync, readFileSync, rmdirSync, rmSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+
+import { resolveScratchPath, sweepStaleScratches } from './artifact-check-scratch.mjs'
 
 const TAG = '[check-artifacts-at-head]'
 
@@ -164,16 +183,35 @@ function probe(dir, source) {
 }
 
 const stamp = `${process.pid}-${Date.now()}`
-const SCRATCH = join(ROOT, `.tmp-artifact-at-head-${stamp}`)
+const SCRATCH = resolveScratchPath(ROOT, stamp)
+const SCRATCH_PARENT_DIR = dirname(SCRATCH)
 
 function cleanup() {
   if (opts.keep) {
     process.stdout.write(`${TAG} --keep: scratch left at ${SCRATCH} (remove it with \`git worktree remove --force ${SCRATCH}\`).\n`)
     return
   }
+  // Both removals, in this order: `git worktree remove` takes the registration with it, and
+  // the rm covers the case where the directory exists but was never registered (a `worktree
+  // add` that died partway). `prune` then clears any registration whose directory the OS
+  // already reclaimed, which is what a SIGKILL mid-build tends to leave.
   spawnSync('git', ['worktree', 'remove', '--force', SCRATCH], { cwd: ROOT, encoding: 'utf8' })
   if (existsSync(SCRATCH)) rmSync(SCRATCH, { recursive: true, force: true })
   spawnSync('git', ['worktree', 'prune'], { cwd: ROOT, encoding: 'utf8' })
+  // The parent directories exist only to hold this run's scratch; leaving them empty means
+  // every later reader of the tree has to explain a directory with no content in it.
+  // `rmdirSync` and NOT `rmSync({ recursive: false })`: the latter raises ERR_FS_EISDIR on a
+  // directory, and an exception thrown from this `finally` replaced a computed `verdict=ok`
+  // with exit 1 on the first run at this path — the instrument had already graded the commit
+  // correctly, printed `verdict=ok compared=1508`, and then reported failure because it could
+  // not tidy up. Tidy-up failure is not a verdict, and it must never become one. An
+  // empty-only rmdir also cannot touch a concurrent run's scratch: it simply fails.
+  try {
+    rmdirSync(SCRATCH_PARENT_DIR)
+    rmdirSync(dirname(SCRATCH_PARENT_DIR))
+  } catch {
+    // Not empty (another run is materialising) or already gone. Neither is a verdict.
+  }
 }
 
 function discoverStore() {
@@ -192,6 +230,7 @@ function discoverStore() {
 
 function main() {
   const storeDir = discoverStore()
+  mkdirSync(SCRATCH_PARENT_DIR, { recursive: true })
   const add = step('git worktree add', 'git', ['worktree', 'add', '--detach', SCRATCH, opts.rev], ROOT)
   if (add.status !== 0) throw new NotRun(`\`git worktree add --detach <scratch> ${opts.rev}\` failed:\n${relaunch(add)}`, 'worktree-add')
   process.stdout.write(`${TAG} materialised ${opts.rev} in a scratch worktree and is building it there\n`)
@@ -251,13 +290,13 @@ function main() {
   return 2
 }
 
-// Sweep scratch trees a killed run could not remove (SIGKILL is not catchable, and a
-// stale registration in `git worktree list` is a side effect on every later lane).
-for (const entry of readdirSync(ROOT)) {
-  if (!entry.startsWith('.tmp-artifact-at-head-')) continue
-  spawnSync('git', ['worktree', 'remove', '--force', join(ROOT, entry)], { cwd: ROOT, encoding: 'utf8' })
-  if (existsSync(join(ROOT, entry))) rmSync(join(ROOT, entry), { recursive: true, force: true })
-}
+// Sweep scratch trees a killed run could not remove (SIGKILL is not catchable, and a stale
+// registration in `git worktree list` is a side effect on every later lane). The sweep only
+// touches entries whose pid is gone, so a concurrent run's scratch is never deleted, and it
+// includes the pre-`.scratch/` location so the move does not abandon residue. This runs
+// BEFORE the build, not in the `finally`: a sweep that only runs on success leaves the residue
+// of the very crash it is meant to clean until some later run happens to succeed.
+sweepStaleScratches(ROOT, { legacyPrefixes: ['.tmp-artifact-at-head-'] })
 
 let code = 3
 try {

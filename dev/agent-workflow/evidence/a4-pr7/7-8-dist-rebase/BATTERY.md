@@ -203,3 +203,86 @@ The 15 dirty sites are the 6 disclosed paths (`blueprint-v1-frozen-resume.test.t
 scope — 0 mentions of `packages/runtime/dist` anywhere in its output, before or after. The
 `754 → 755` line is this lane's one new tracked `scripts/` file entering scan scope; it
 carries no `schemaVersion:`-digit literal, which is why no class moved with it.
+
+## 6. Restated on merged master — nothing inherited from §1–§5
+
+`origin/master` moved twice under this branch while the work was in flight. Both were
+**merged**, not rebased, because §1's attribution table cites commits by SHA and the parent's
+instruction was to merge rather than assume: `0fb4f7df` brought `e829380a`, `5973b423` brought
+`6174f1e5` (PR #177, the ceiling-pin instrument). Every figure below was re-run on the merged
+tree; the §1–§5 numbers are kept as the pre-merge record they are.
+
+### Population, on `5973b423` (`pop-MERGED-6174f1e5.log`, `mg-pop/`)
+
+```
+Test Files  9 failed | 408 passed (417)
+     Tests  21 failed | 5026 passed (5047)
+```
+
+**417 files, 5047 registered legs.** Red is reported as identities, never as a count:
+21 titled red identities + the same 3 collection-error file identities as the base set, byte-
+identical messages (`p8s3b-result-effects` seam unavailable, `t12a-b2-child-identity`
+capability-template-unresolved, `t12a-glue-handoff-ports` frontmatter delimiter).
+
+Against the disclosed base (18 titled + 3 collection): **RESOLVED 0** — no base identity
+stopped being red, so nothing died — and **NEW 3**, all in `p6t1-parallel`:
+
+```
+NEW  P6-T1 P1: N=2 … two COMMITTED operations, two members, two distinct child Sessions
+NEW  P6-T1 P1: N=2 … two activated results with distinct instance ids and child Sessions
+NEW  P6-T1 P2: N=5 same-template parallel activations all succeed (raised quotas) …
+```
+
+That is the disclosed load-sensitive family, and it is the *fourth* identity of it: §6 of
+`7-6-merge-gate/FINDINGS.md` lists three (`P1 ×2`, `P3`), so that disclosure is short by one
+and this lane reports the set rather than a number. Solo on the final tree the file is
+`9/9`, twice. The parent's parallel census of the same commit counted 20 titled reds (18 + 2
+`p6t1`); this run saw 3 `p6t1` identities. The identity sets differ by exactly that
+load-sensitive one, and both runs agree the base set is intact — which is the only thing the
+diff can prove.
+
+### Where 5047 comes from — derived, not asserted
+
+`5043` (base) **+ 6 − 2 = 5047**, and both terms come out of the two runs rather than out of a
+commit message: `a4p7-ceiling-port-assembly-pin.test.ts` contributes 6 legs in 1 file, present
+only in the merged tree; `a4p1-blueprint-v3-governance.test.ts` contributes 18 legs where the
+base run recorded 20. Files 416 → 417, one new file.
+
+### Named instruments on the merged tree
+
+**15 files / 269 legs passed** (`battery-15files-on-merged-master.log`) — the 14 files and 263
+legs of §2 plus the merged ceiling-pin instrument (6 legs). The list is not inherited either:
+the pin instrument is a shipped-surface-adjacent guard, so it joined the named set here.
+
+### Gate, scripts, fence, lint, typechecks
+
+```
+merge gate:  Tests 29 passed (29), 172.9 s, exit 0     (merge-gate-29-legs-on-merged-master.log)
+             27 → 29: the scratch-independence leg (58.2 s) and the sweep-rule leg
+check:artifacts          verdict=ok compared=1508 glue=1, exit 0
+check:artifacts:head     verdict=ok compared=1508 drift=0, exit 0, 12.2 s
+smoke:composition        exit 0, PASS composition-smoke
+pnpm --no-bail -r run typecheck   exit 0, 0 × error TS, 8 packages reported typecheck: Done
+lint-identities --diff   universe: 1112 file(s) linted, 0 of them gitignored
+                         baseline …: 76 distinct; new 0, resolved 0
+fence (twice, byte-identical, after `git add`; sha256 b2a9433426d5efc4…)
+  scanned-in-scope: 758 tracked files
+  dirty(6 files, 15 sites)  unknown(0 files, 0 sites)  advisory(6 files, 8 sites)
+  refused(52 files, 115 sites)  prose(5 files, 5 sites)  adjudicated(16 files, 24 sites)
+```
+
+The six tuples are the same six as every earlier pair; `scanned-in-scope` rose 755 → 758 and
+the +3 is attributable: +1 from `6174f1e5`'s new pin test (`packages/*/test/` is fence scope)
+and +2 from this lane's `scripts/artifact-check-scratch.mjs` + its `.d.mts` — measured by
+diffing the index against `HEAD` under the fence's own scope prefixes, not inferred.
+
+The typecheck line states its invocation because a wrong one is not harmless:
+`pnpm -r run typecheck --no-bail` puts the flag in front of `tsc` and produces four plausible
+`error TS5023: Unknown compiler option '--no-bail'` lines. `pnpm --no-bail -r run typecheck`
+is the form that reaches pnpm, and it is the one quoted above.
+
+`p4t6` on the merged tree: 10/10 green, derived total **1033** — the referee scanner
+independently reports `filesScanned = 1033`, and evaluating the test's own array literals gives
+15 sets, Σ = 50, `983 + 50 = 1033` (the merged branch's `SCANNED_PATHS_A4P76PIN` = 1 element).
+The 1032 of the earlier round was correct for its tree; both figures are derived, neither is
+quoted.

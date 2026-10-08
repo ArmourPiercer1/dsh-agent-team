@@ -144,3 +144,32 @@ Running both install-surface legs against it:
 
 The pre-existing leg passed on the very commit the new leg refused — the two questions,
 distinguished in one run, on the same tree. Full capture: `logs/teeth-probe.txt`.
+
+## 5. The mechanism's own side effect, priced and closed (`SCRATCH-COUPLING.md`)
+
+Shape 1 was shipped with a location, and the location was a second instrument: the scratch is a
+full checkout with `node_modules`, written into the working tree, and the first version's header
+claimed it was "git- and lint-ignored" on the strength of one ignore that turned out to live in
+`.git/info/exclude` — an untracked file. Measured elsewhere in the same tree, the same shape of
+accident moved the lint gate from `universe: 1109 … new 0, resolved 0` to
+`universe: 2782 … new 750, resolved 0`. The fix, its acceptance numbers, the two new legs and
+their teeth are in [`SCRATCH-COUPLING.md`](SCRATCH-COUPLING.md); what belongs in this document is
+the revised price.
+
+| step | wall time, measured | what it can still miss |
+| --- | --- | --- |
+| `check:artifacts` alone | < 1 s | anything about the commit; anything about a build |
+| `check:artifacts:head` clean tree | 12.2 s (21.8 s cold) | the four gaps in the script's header: uncommitted work, a `dist` file a build no longer emits, a divergent tarball, the eight packages that do not ship |
+| merge-gate leg for it | 19.7 s | — (the leg is the instrument, plus classification) |
+| **new**: scratch-independence leg | **58.2 s** | only the mechanisms it names: ESLint's flat-config `ignores`, `git check-ignore`'s source file, `git status`. A *new* file-tree instrument added later needs its own assertion — which is why the leg resolves the path through the instrument's own function instead of restating it |
+| **new**: sweep-rule leg | ~0.03 s | the environment's pid semantics, deliberately: liveness is injected, because `process.kill(3, 0)` answered differently in two processes in one working tree |
+
+The gate went from 60 s to 172.9 s across these two legs. The 58 s is three full
+`lint-identities` scans, and it is what it costs to measure a universe instead of asserting a
+constant about it: the alternative was the sentence this lane exists to delete.
+
+What shape 1 still cannot promise, restated now that it has a location: the scratch is a
+*materialisation* of a commit, not the commit — if the build is non-deterministic in a way that
+survives byte comparison at one path and not another, the same-relative-path rule that keeps the
+source maps comparable is also what ties the verdict to this layout. It is recorded here because
+it survived review untested rather than because it failed.

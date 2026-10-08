@@ -58,12 +58,13 @@
 
 import { describe, expect, it } from 'vitest'
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { REQUIRED_CHECK_IDS } from '../../../scripts/composition-smoke-bundle.mjs'
 import { PLUGIN_TARGETS } from '../../../scripts/composition-smoke-targets.mjs'
 import { INSTALL_SURFACES } from '../../../scripts/client-composition-surface.mjs'
+import { resolveScratchPath, sweepStaleScratches } from '../../../scripts/artifact-check-scratch.mjs'
 import { describeStderr } from '../../../scripts/lint-identities.mjs'
 import { absentArtifactVerdict, artifactProvenance, classifyAbsentArtifact, treeShape } from '../../../scripts/a4-artifact-provenance.mjs'
 import type { ArtifactProvenance } from '../../../scripts/a4-artifact-provenance.mjs'
@@ -1552,6 +1553,152 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       })
       expect(r.verdict, `a subtree check:artifacts run must never be believed: ${r.why}`).toBe('refused')
       expect(`${r.stdout}${r.stderr}`).not.toContain('OK:')
+    })
+
+    it('the scratch the commit-level instrument builds cannot change another instrument\'s measurement', { timeout: 900_000 }, async () => {
+      // WHY THIS LEG EXISTS, measured rather than argued. The instrument materialises the
+      // commit under test as a full checkout (`.git`, `node_modules`, 1508 artifact files) and
+      // the first version put it inside the working tree at a `.tmp-` path whose git-ignore
+      // lived only in `.git/info/exclude` — an UNTRACKED file. The lint half of the immunity
+      // was real, the git half was true only on the machine that wrote it. The same shape of
+      // accident, measured on a nested clone left in the main working tree at `.swt/`:
+      //
+      //   clean tree           universe: 1109 file(s) linted … new 0, resolved 0
+      //   clone present        universe: 2782 file(s) linted, 1673 of them gitignored … new 750
+      //                        — 751 output lines naming `.swt/`
+      //
+      // So the scratch's LOCATION is a property of the instrument, and this leg asserts it in
+      // both mechanisms that can be poisoned, with the control that makes the assertion
+      // non-vacuous. It does not assert "ignores are good": it asserts that THIS path, resolved
+      // by the same function the instrument calls, is invisible to the lint universe and to
+      // `git status`, and that a file in a non-ignored path is visible to both.
+      const scratch = resolveScratchPath(REPO_ROOT, `${String(process.pid)}-fixture`)
+      // One unused binding and one undefined call per probe: if a probe is linted it yields
+      // two identities, so a leak cannot hide inside a rounded count.
+      const probe = 'export const plantedUnusedBinding = 1\nplantedUndefinedCall()\n'
+      const universeRe = /^lint-identities: universe: (\d+) file\(s\) linted, (\d+) of them gitignored/m
+      async function universe(label: string) {
+        const r = await runLeg(process.execPath, [join(REPO_ROOT, 'scripts', 'lint-identities.mjs')], {
+          cwd: REPO_ROOT,
+          timeoutMs: 300_000,
+          label,
+          classify: ({ stdout, stderr, code }) => {
+            const m = universeRe.exec(stdout)
+            if (m === null) {
+              return { verdict: 'refused' as Verdict, why: `${label}: printed no universe line (exit ${String(code)}); tail: ${tail(`${stdout}${stderr}`)}` }
+            }
+            return { verdict: 'passed' as Verdict, why: `${label}: universe ${m[1]}` }
+          },
+        })
+        const m = universeRe.exec(r.stdout)
+        return { r, files: m === null ? -1 : Number(m[1]) }
+      }
+      // Same shape as the scratch probes, one file each, so the control moves the universe by
+      // the same number of files the scratch would have.
+      const controlDir = join(REPO_ROOT, 'packages', 'testkit', 'test')
+      const controls = [join(controlDir, 'lint-scratch-control-a.mts'), join(controlDir, 'lint-scratch-control-b.mts')]
+      try {
+        const before = await universe('lint universe, scratch absent')
+        expect(before.r.verdict, before.r.why).toBe('passed')
+        expect(before.files, 'a universe of zero files means the instrument measured nothing').toBeGreaterThan(0)
+
+        mkdirSync(join(scratch, 'packages', 'runtime', 'src'), { recursive: true })
+        writeFileSync(join(scratch, 'packages', 'runtime', 'src', 'planted-a.mts'), probe, 'utf8')
+        writeFileSync(join(scratch, 'packages', 'runtime', 'src', 'planted-b.mts'), probe, 'utf8')
+
+        const withScratch = await universe('lint universe, scratch materialised')
+        expect(withScratch.r.verdict, withScratch.r.why).toBe('passed')
+        expect(withScratch.r.stdout, 'the scratch must not even appear as a gitignored-but-linted file: ESLint does not read `.gitignore`, so appearing here means the flat-config glob is gone').not.toContain('.scratch/')
+        expect(
+          withScratch.files,
+          `materialising the scratch moved the lint universe from ${String(before.files)} to ${String(withScratch.files)} — the scratch is being linted, so every identity diff in this repository now reports a regression nobody made`,
+        ).toBe(before.files)
+
+        // The git mechanism, separately: ignored — and ignored BY THE TRACKED FILE. Matching on
+        // `.git/info/exclude` would be exactly the bug this leg was written for: invisible on
+        // one machine, 376 MB of untracked duplicate source on every other clone.
+        const ignored = await runLeg('git', ['check-ignore', '-v', '--no-index', join(scratch, 'packages', 'runtime', 'src', 'planted-a.mts')], {
+          cwd: REPO_ROOT,
+          timeoutMs: 60_000,
+          label: 'git check-ignore on the scratch',
+          classify: ({ stdout, code }) => (code === 0 && stdout.startsWith('.gitignore:')
+            ? { verdict: 'passed' as Verdict, why: `ignored by the tracked .gitignore (${stdout.split('\n')[0] ?? ''})` }
+            : { verdict: 'failed' as Verdict, why: `the scratch is not ignored by the TRACKED .gitignore; check-ignore said (exit ${String(code)}): ${stdout.trim() || '<no match>'}` }),
+        })
+        expect(ignored.verdict, ignored.why).toBe('passed')
+        // And invisible to the porcelain assertions every lane ends its report with — scoped to
+        // the scratch so a legitimately dirty working tree cannot redden this leg.
+        const porcelain = await runLeg('git', ['status', '--porcelain', '--', join(relative(REPO_ROOT, scratch) || '.', '**')], {
+          cwd: REPO_ROOT,
+          timeoutMs: 60_000,
+          label: 'git status under the scratch',
+          classify: ({ stdout }) => (stdout.trim() === ''
+            ? { verdict: 'passed' as Verdict, why: 'nothing reported' }
+            : { verdict: 'failed' as Verdict, why: `git status reports the scratch as work: ${stdout.split('\n').slice(0, 3).join(' | ')}` }),
+        })
+        expect(porcelain.verdict, porcelain.why).toBe('passed')
+
+        // The control: two identical probes in a path that is NOT under an ignored prefix. If
+        // this does not move the universe, the equality above proved nothing. Measured here:
+        // the universe grows by exactly the two files planted.
+        for (const c of controls) writeFileSync(c, probe, 'utf8')
+        const withControl = await universe('lint universe, control probes planted')
+        expect(withControl.r.verdict, withControl.r.why).toBe('passed')
+        expect(
+          withControl.files,
+          `the planted control files did not enter the lint universe (expected ${String(before.files + controls.length)}, got ${String(withControl.files)}) — an instrument that cannot see a planted file cannot see the scratch either, and this leg would be measuring nothing. Written as a count rather than a guessed literal: the first version of this assertion planted ONE control file and expected two, and the universe corrected it.)`,
+        ).toBe(before.files + controls.length)
+      } finally {
+        rmSync(scratch, { recursive: true, force: true })
+        for (const c of controls) rmSync(c, { force: true })
+      }
+    })
+
+    it('a crashed run\'s scratch is swept, and a live one is not', { timeout: 120_000 }, async () => {
+      // The README answer to "what removes the scratch, and what happens if the process dies
+      // mid-materialisation" has to be a rule, not a promise, so the rule is asserted here.
+      // Run in a fixture root, never in the real tree: `sweepStaleScratches` deletes.
+      const root = join(REPO_ROOT, 'packages', 'testkit', 'test', '.tmp-scratch-sweep-fixture')
+      const parentDir = join(root, '.scratch', 'artifact-at-head')
+      const HOUR = 3_600_000
+      // Liveness is supplied, not assumed, and that is a finding rather than a convenience:
+      // `process.kill(3, 0)` said "alive" in one process in this working tree and `ESRCH` in the
+      // vitest worker, and the first version of this leg wrote the fixture around the first
+      // answer. It passed in one runner and swept an entry it had just declared protected in
+      // another (captured: `expected [ '3-1', '3-2', '999999-1' ] to deeply equal [ '3-1',
+      // '999999-1' ]`). The rule is about pid-aliveness; the test says so directly.
+      const LIVE = process.pid
+      const DEAD = 4_194_303 // above the usual `kernel.pid_max`: nothing can hold this pid
+      const alive = (pid: number) => pid === LIVE
+      const mk = (name: string, ageMs: number) => {
+        const dir = join(parentDir, name)
+        mkdirSync(dir, { recursive: true })
+        // A Date, not a raw number: `utimesSync` takes seconds-or-Date, and the first version
+        // of this leg passed millisecond timestamps, which set the mtimes to the year 55,000
+        // and made every entry read as infinitely young. The sweep then removed nothing and the
+        // leg still looked plausible — an aged-fixture assertion that cannot age is the same
+        // defect as a timeout that cannot fire.
+        const t = new Date(Date.now() - ageMs)
+        utimesSync(dir, t, t)
+      }
+      try {
+        rmSync(parentDir, { recursive: true, force: true })
+        mk(`${String(DEAD)}-1`, 10 * 60_000) // pid gone, older than the concurrency grace -> residue
+        mk(`${String(LIVE)}-1`, 2 * HOUR) // pid alive, older than maxAge -> residue anyway
+        mk(`${String(LIVE)}-2`, 10 * 60_000) // pid alive, young enough -> someone's run, leave it
+        mk(`${String(DEAD)}-2`, 60_000) // pid gone, but inside recentMs -> could be a concurrent build
+        const removed = sweepStaleScratches(root, { isLivePid: alive }).map((x) => x.split('/').pop())
+        expect(removed.sort()).toEqual([`${String(DEAD)}-1`, `${String(LIVE)}-1`].sort())
+        expect(existsSync(join(parentDir, `${String(LIVE)}-2`)), 'a sweep that deletes a concurrent run\'s scratch turns its honest NOT-RUN into a false verdict about the tree').toBe(true)
+        expect(existsSync(join(parentDir, `${String(DEAD)}-2`)), 'nothing younger than the concurrency grace may be touched').toBe(true)
+        // And the shipped default, once, with nothing injected: an entry whose pid the OS itself
+        // reports as gone is residue at 10 minutes. This is the path the instrument actually
+        // takes; the injected matrix above must not be the only thing anyone ever exercises.
+        mk(`${String(DEAD)}-3`, 10 * 60_000)
+        expect(sweepStaleScratches(root, {}).map((x) => x.split('/').pop())).toEqual([`${String(DEAD)}-3`])
+      } finally {
+        rmSync(root, { recursive: true, force: true })
+      }
     })
 
     it('every workspace package that declares a typecheck script typechecks', { timeout: 1830000 }, async () => {

@@ -109,3 +109,33 @@ each could do while looking healthy.
     is the right one: a leg that stops registering is invisible to a diff that only lists new
     failures. It is present as exactly 1 red in all four captures, and the registered-leg
     total (5043 in every capture) is what makes "nothing died" checkable at all.
+
+## E. Second round: the instruments that lied while this lane was fixing instruments
+
+Full text, with the captured lines, in [`SCRATCH-COUPLING.md`](SCRATCH-COUPLING.md). Listed here
+in the same register as §C — this lane's own errors, each caught by something other than reading.
+
+- **A header sentence that generalised from one machine.** `check-artifacts-at-head.mjs` claimed
+  its scratch path was "git- and lint-ignored". The lint half was true; the git half rested on
+  `.git/info/exclude`, which is not versioned. Caught by the parent measuring a *different*
+  scratch in the same tree (`.swt/`: `universe: 2782 … new 750`, 751 lines naming it) — the
+  first time this round that someone else's number exposed my assumption.
+- **A computed `verdict=ok` that exited 1.** `rmSync(dir, { recursive: false, force: true })`
+  raises `ERR_FS_EISDIR`; thrown from `finally`, after the verdict line had printed, it replaced
+  exit 0 with exit 1. The mirror image of the bug this branch exists to kill, from the same root
+  cause: treating the exit code as the verdict.
+- **`isLive(pid)` is not a fact about an entry.** `process.kill(3, 0)` said alive in a shell
+  `node` process (the scratch was literally named `3-…`) and `ESRCH` in the vitest worker — and
+  the sweep leg changed behaviour between the two. The sweep now keys on age first and takes the
+  liveness probe as an argument.
+- **A control that proved nothing, caught by its own number.** The independence leg planted one
+  probe file and asserted the universe would grow by 2; it grew by 1. Guessing at a number an
+  instrument is about to print is the error this whole stage is about, one level down.
+- **A fixture that could not age.** `utimesSync(dir, ms, ms)` takes seconds-or-`Date`; passing
+  milliseconds put every "aged" scratch entry in the year 55,000, the sweep removed nothing, and
+  the ages printed as `-220682556.9` minutes. Caught by printing the ages instead of trusting
+  the setup.
+- **The universe count moved under me and I had to explain it, not absorb it.** 1109 → 1111 →
+  1112 across the round: each step traced to files this lane added, verified by diffing the
+  index against `HEAD` under the fence's own scope prefixes rather than by assuming the fence
+  and the lint agree (they do not: one reads `git ls-files`, the other walks the disk).

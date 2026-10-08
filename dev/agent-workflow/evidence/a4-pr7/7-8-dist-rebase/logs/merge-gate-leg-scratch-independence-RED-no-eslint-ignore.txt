@@ -1,0 +1,58 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-dist-rebase
+
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts (28 tests | 1 failed | 27 skipped) 39358ms
+     ↓ runs where its instruments can see the tree, and refuses to run anywhere else
+       ↓ is green, asserted by arm name and by absence of a skip — never by the exit code
+       ↓ treats a step that did not run as a failure that says why, even at exit 0
+       ↓ asks where a missing artifact came from before calling it a regression, on synthetic trees
+       ↓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact
+       ↓ reads a never-built checkout as refused, by name, and still refuses to call it green
+       ↓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface
+       ↓ refuses the leg, by name, when the host module closure cannot be traversed
+       ↓ reports every verdict class with its set by path when run at the toplevel
+       ↓ refuses a directory that is not a repository, and is never believed as clean
+       ↓ will not accept a run from below the toplevel as a whole-tree clean (measured false-clean)
+       ↓ classifies a lint run by its verdict line and its universe line, on captured output
+       ↓ lint closes as an identity diff against the named baseline, not against a count
+       ↓ names the three states of a captured stderr, including the arm this gate cannot reach
+       ↓ no tracked file is invisible to lint except under a prefix this leg names
+       ↓ the committed install surface is fresh against the tree, and a missing surface is refused
+       ↓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask
+       ↓ a check:artifacts run from a subdirectory is refused, never an OK over nothing
+       × the scratch the commit-level instrument builds cannot change another instrument's measurement 39356ms
+       ↓ every workspace package that declares a typecheck script typechecks
+       ↓ no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here
+       ↓ the client lane runs, and no failure appears outside the disclosed baseline
+       ↓ tolerates a green trio and refuses a vanished one — the two are different answers
+       ↓ a missing instrument is a refusal that names it, never a pass
+       ↓ an instrument that is killed before reporting is a refusal that says so
+       ↓ a child killed by a signal is refused even when it printed a complete report
+       ↓ every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core
+       ↓ this spec itself is counted by the p4t6 scannable-file ledger
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > the scratch the commit-level instrument builds cannot change another instrument's measurement
+AssertionError: the scratch must not even appear as a gitignored-but-linted file: ESLint does not read `.gitignore`, so appearing here means the flat-config glob is gone: expected 'lint-identities: 160 identity lines, …' not to contain '.scratch/'
+
+- Expected
++ Received
+
+- .scratch/
++ lint-identities: 160 identity lines, 76 distinct (target .)
++ lint-identities: universe: 1114 file(s) linted, 2 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status): .scratch/artifact-at-head/251-fixture/packages/runtime/src/planted-a.mts, .scratch/artifact-at-head/251-fixture/packages/runtime/src/planted-b.mts
++
+
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:1611:199
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 27 skipped (28)
+   Start at  11:58:35
+   Duration  39.70s (transform 148ms, setup 0ms, import 180ms, tests 39.36s, environment 0ms)
+

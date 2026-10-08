@@ -1,0 +1,5 @@
+[check-artifacts-at-head] installing the scratch from store recorded in node_modules/.modules.yaml: /home/user/dsh-plugins/dsh-agent-team/.pnpm-store
+[check-artifacts-at-head] materialised 63ef3936 in a scratch worktree and is building it there
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+[check-artifacts-at-head] NOT-RUN: the check exited 0 without emitting a DSH-ARTIFACT-VERDICT line, so there is nothing to grade.
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=63ef3936 verdict=not-run reason=no-verdict-token code=0

@@ -1,0 +1,2 @@
+[check-artifacts-at-head] NOT-RUN: the only discoverable pnpm store (--store-dir: /usr) is not writable, so the scratch cannot be installed. Pass --store-dir <writable path>; a refusal is not a verdict of "fresh".
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=not-run reason=store-not-writable
