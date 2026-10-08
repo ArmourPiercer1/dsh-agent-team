@@ -1,0 +1,231 @@
+#!/usr/bin/env node
+/**
+ * check-artifacts-at-head.mjs — does the COMMITTED install surface match what a
+ * build of that same commit produces? The question `check:artifacts` cannot ask.
+ *
+ * WHY A SECOND INSTRUMENT AND NOT A FIX TO THE FIRST.
+ * `scripts/check-artifacts-committed.mjs` compares the WORKING TREE against the git
+ * INDEX. That is the right question for one job — "you just built, did you `git add`
+ * it?" — and it is structurally incapable of the other job. A tree whose `dist` was
+ * never rebuilt has working == index, so the check prints
+ * `OK: 1508 files; committed install-surface artifacts match the fresh build` over a
+ * surface no build has produced in days. Measured at `f0485b15`: that exact sentence,
+ * exit 0, while 20 tracked files under `packages/runtime/dist` were one or two merged
+ * commits behind the source that emits them, the shipped `schema.js` still reading
+ * `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [1, 2, 3]` five commits after the tree
+ * narrowed it to `[3]`, and five shipped modules still gating the §E.2 requirements
+ * grammar on `blueprint.schemaVersion === 2` — a version that build no longer admits.
+ * The same gate that prints it passed 26/26 on that tree.
+ * Evidence: dev/agent-workflow/evidence/a4-pr7/7-8-dist-rebase/STALENESS.md.
+ *
+ * THE MECHANISM: never read the working tree's artifacts. Materialise the commit under
+ * test in a throwaway worktree, build it there, and run the EXISTING check inside it —
+ * where "working tree" and "index" are both that commit, so the only way to print OK is
+ * for the commit to carry its own build. No new comparison semantics: the arms (A/B/C/D),
+ * the ignore handling and the non-emptiness guard are the ones already reviewed.
+ *
+ * WHY A WORKTREE AND NOT `/tmp`: tsc bakes the outDir→rootDir relationship into every
+ * `.js.map` / `.d.ts.map` it emits. Built at a different relative path the maps differ
+ * byte-wise from the committed ones, so a scratch build elsewhere would report 20 drifts
+ * that are the harness's own artefact. Under the repo root at a `.tmp-` path the layout
+ * is identical to the real one, the tree is git- and lint-ignored, and the comparison is
+ * a byte comparison. Measured here: two independent builds produced byte-identical
+ * output, so bytes are a sound verdict channel.
+ *
+ * WHAT IT CANNOT SEE, stated rather than implied:
+ *   - uncommitted work — by design, the subject is a commit;
+ *   - a `dist` file a build no longer emits and tsc left on disk (the check's own
+ *     documented "known narrow gap"; it is dead weight in the mirror, not drift);
+ *   - a published tarball that diverges from the repository it came from;
+ *   - nothing about the OTHER eight packages: only `packages/runtime/dist` and
+ *     `packages/client/composition-shim` ship (root `files`), and those are the two
+ *     surfaces `INSTALL_SURFACES` names.
+ *
+ * Exit codes, four answers, never collapsed:
+ *   0 the commit carries its own build (the check said OK, non-empty set)
+ *   1 the commit's committed surface is STALE — the check's own list is relayed
+ *   2 the check REFUSED (empty produced set, missing surface) — relayed verbatim
+ *   3 NOT-RUN — the scratch could not be made, or install/build failed. A build that
+ *     never ran has no opinion about freshness, and this script never reports one.
+ */
+import { spawnSync } from 'node:child_process'
+import { accessSync, constants, existsSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+
+const TAG = '[check-artifacts-at-head]'
+
+function parseArgs(argv) {
+  const opts = { rev: 'HEAD', storeDir: null, keep: false }
+  for (let i = 0; i < argv.length; i += 1) {
+    const a = argv[i]
+    if (a === '--rev') opts.rev = argv[(i += 1)]
+    else if (a === '--store-dir') opts.storeDir = argv[(i += 1)]
+    else if (a === '--keep') opts.keep = true
+    else throw new Error(`unknown argument: ${String(a)}`)
+  }
+  if (!opts.rev) throw new Error('--rev requires a value')
+  return opts
+}
+
+/**
+ * Run one step inside the scratch. A step that could not be spawned or was killed by a
+ * signal is NOT-RUN: it is represented by throwing to `main`, never by `process.exit` —
+ * `process.exit()` inside the `try` below skips its `finally`, and a skipped `finally`
+ * leaks the scratch worktree into `git worktree list` (measured: one leaked registration
+ * per failed run, before this was rewritten).
+ */
+class NotRun extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'NotRun'
+  }
+}
+
+function step(label, command, args, cwd) {
+  const r = spawnSync(command, args, { cwd, encoding: 'utf8', env: process.env })
+  if (r.error) throw new NotRun(`${label} could not be spawned (${r.error.message}) — no verdict about freshness is available`)
+  if (r.signal) throw new NotRun(`${label} was killed by ${r.signal} — the instrument never reported`)
+  return r
+}
+
+function relaunch(r) {
+  const out = `${r.stdout ?? ''}${r.stderr ?? ''}`.trimEnd()
+  return out.split('\n').slice(-12).join('\n')
+}
+
+const opts = parseArgs(process.argv.slice(2))
+
+const top = spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' })
+if (top.status !== 0 || !top.stdout.trim()) {
+  process.stdout.write(`${TAG} NOT-RUN: not inside a git work tree, so there is no commit to materialise.\n`)
+  process.exit(3)
+}
+const ROOT = top.stdout.trim()
+
+// The store has to be one pnpm can write. In a sandboxed harness the default store is
+// read-only and `pnpm install` dies on `unable to open database file` — which MUST surface
+// as NOT-RUN (3), never as a green. Discovery order, widest-scope last:
+//   1. `--store-dir` (an operator saying so explicitly);
+//   2. `DSH_ARTIFACT_CHECK_STORE_DIR`;
+//   3. the store THIS checkout was installed from, read back out of
+//      `node_modules/.modules.yaml` (`storeDir:`) — the scratch then installs from the
+//      same store the reviewed tree used, which is the closest thing to a like-for-like
+//      build the machine can offer;
+//   4. `npm_config_store_dir`, when pnpm itself was invoked with one;
+//   5. nothing: pnpm's default.
+// Whatever is discovered is probed for writability, because the failure mode without a
+// probe is a pnpm stack trace where a one-line cause belongs.
+function storeFromModulesYaml() {
+  const p = join(ROOT, 'node_modules', '.modules.yaml')
+  if (!existsSync(p)) return null
+  // pnpm records the store the install actually used, with the content-version subdir on
+  // the end (`…/.pnpm-store/v11`). `--store-dir` documents the ROOT and appends the version
+  // itself, so the suffix comes off. Measured on pnpm 11.7.0: both forms install cleanly
+  // and neither creates a nested `v11/v11`, so the strip is conformance to the documented
+  // form, not a workaround for an observed failure.
+  const m = /"?storeDir"?\s*:\s*"([^"]+)"/.exec(readFileSync(p, 'utf8'))
+  if (!m?.[1]) return null
+  return resolve(m[1].replace(/\/v\d+$/, ''))
+}
+
+function probe(dir, source) {
+  try {
+    accessSync(dir, constants.W_OK)
+    process.stdout.write(`${TAG} installing the scratch from ${source}: ${dir}\n`)
+    return dir
+  } catch {
+    throw new NotRun(`the only discoverable pnpm store (${source}: ${dir}) is not writable, so the scratch cannot be installed. Pass --store-dir <writable path>; a refusal is not a verdict of "fresh".`)
+  }
+}
+
+const stamp = `${process.pid}-${Date.now()}`
+const SCRATCH = join(ROOT, `.tmp-artifact-at-head-${stamp}`)
+
+function cleanup() {
+  if (opts.keep) {
+    process.stdout.write(`${TAG} --keep: scratch left at ${SCRATCH} (remove it with \`git worktree remove --force ${SCRATCH}\`).\n`)
+    return
+  }
+  spawnSync('git', ['worktree', 'remove', '--force', SCRATCH], { cwd: ROOT, encoding: 'utf8' })
+  if (existsSync(SCRATCH)) rmSync(SCRATCH, { recursive: true, force: true })
+  spawnSync('git', ['worktree', 'prune'], { cwd: ROOT, encoding: 'utf8' })
+}
+
+function discoverStore() {
+  const discovered = opts.storeDir
+    ?? process.env.DSH_ARTIFACT_CHECK_STORE_DIR
+    ?? storeFromModulesYaml()
+    ?? (process.env.npm_config_store_dir ? resolve(process.env.npm_config_store_dir) : null)
+  if (discovered === null) return null
+  const source = opts.storeDir !== null
+    ? '--store-dir'
+    : discovered === process.env.DSH_ARTIFACT_CHECK_STORE_DIR
+      ? 'DSH_ARTIFACT_CHECK_STORE_DIR'
+      : 'store recorded in node_modules/.modules.yaml'
+  return probe(resolve(discovered), source)
+}
+
+function main() {
+  const storeDir = discoverStore()
+  const add = step('git worktree add', 'git', ['worktree', 'add', '--detach', SCRATCH, opts.rev], ROOT)
+  if (add.status !== 0) throw new NotRun(`\`git worktree add --detach <scratch> ${opts.rev}\` failed:\n${relaunch(add)}`)
+  process.stdout.write(`${TAG} materialised ${opts.rev} in a scratch worktree and is building it there\n`)
+
+  const installArgs = ['install', '--frozen-lockfile']
+  if (storeDir !== null) installArgs.push(`--store-dir=${storeDir}`)
+  const install = step('pnpm install', 'pnpm', installArgs, SCRATCH)
+  if (install.status !== 0) {
+    throw new NotRun(`the scratch could not be installed (exit ${String(install.status)}). A build that never installed has no opinion about freshness. Tail:\n${relaunch(install)}`)
+  }
+
+  const build = step('pnpm build', 'pnpm', ['build'], SCRATCH)
+  if (build.status !== 0) {
+    throw new NotRun(`\`pnpm build\` failed in the scratch (exit ${String(build.status)}); a failing build is not a stale artifact. Tail:\n${relaunch(build)}`)
+  }
+
+  const glue = step('place-dist-glue', process.execPath, ['scripts/place-dist-glue.mjs'], SCRATCH)
+  if (glue.status !== 0) throw new NotRun(`glue placement failed (exit ${String(glue.status)}). Tail:\n${relaunch(glue)}`)
+  const comp = step('build-client-composition', process.execPath, ['scripts/build-client-composition.mjs', 'packages/client', 'packages/client/composition-shim'], SCRATCH)
+  if (comp.status !== 0) throw new NotRun(`the client composition build failed (exit ${String(comp.status)}). Tail:\n${relaunch(comp)}`)
+
+  // The reviewed instrument, run where "the tree" IS the commit. Its exit code is the
+  // verdict and its text is the evidence; nothing here re-implements a comparison.
+  const check = step('check-artifacts-committed', process.execPath, ['scripts/check-artifacts-committed.mjs'], SCRATCH)
+  process.stdout.write(check.stdout ?? '')
+  process.stderr.write(check.stderr ?? '')
+  if (check.status === 0) {
+    const n = /OK: (\d+) files/.exec(check.stdout ?? '')
+    const files = n ? Number(n[1]) : 0
+    if (files === 0) {
+      process.stdout.write(`${TAG} NOT-RUN: the check reported OK over zero files — that is a false green, not a verdict.\n`)
+      return 2
+    }
+    process.stdout.write(`${TAG} ${opts.rev} carries its own build: the committed surface IS a fresh build of itself (${String(files)} compared file(s)).\n`)
+    return 0
+  }
+  if (check.status === 1) {
+    process.stdout.write(`${TAG} ${opts.rev} does NOT carry its own build — the ${String((check.stderr ?? '').split('\n').filter((l) => /content-drift|tracked-but-absent|produced-but-untracked|glue placement/.test(l)).length)} listed path(s) (relayed above on stderr) are what a build of this commit changes and this commit did not include.\n`)
+    return 1
+  }
+  process.stdout.write(`${TAG} the check REFUSED (exit ${String(check.status)}) — nothing was compared, so there is no verdict.\n`)
+  return 2
+}
+
+// Sweep scratch trees a killed run could not remove (SIGKILL is not catchable, and a
+// stale registration in `git worktree list` is a side effect on every later lane).
+for (const entry of readdirSync(ROOT)) {
+  if (!entry.startsWith('.tmp-artifact-at-head-')) continue
+  spawnSync('git', ['worktree', 'remove', '--force', join(ROOT, entry)], { cwd: ROOT, encoding: 'utf8' })
+  if (existsSync(join(ROOT, entry))) rmSync(join(ROOT, entry), { recursive: true, force: true })
+}
+
+let code = 3
+try {
+  code = main()
+} catch (e) {
+  if (e instanceof NotRun) process.stdout.write(`${TAG} NOT-RUN: ${e.message}\n`)
+  else throw e
+} finally {
+  cleanup()
+}
+process.exit(code)

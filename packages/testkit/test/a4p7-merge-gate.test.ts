@@ -823,6 +823,51 @@ function classifyArtifactsRun({ stdout, stderr, code }: {
     return { verdict: 'refused' as Verdict, why: `check:artifacts produced no verdict at all (exit ${code}); tail: ${tail(out)}` }
   }
 
+/**
+ * The commit-level sibling of `classifyArtifactsRun` — two classifiers for one subject,
+ * because the subject has two different questions and the tree can only answer one of them.
+ *
+ * `check:artifacts` compares the WORKING TREE to the git INDEX. That answers "you just
+ * built — did you `git add` the build?" and it is structurally blind to the merge question:
+ * a checkout whose `dist` was never rebuilt has working == index, so it prints
+ * `OK: 1508 files; committed install-surface artifacts match the fresh build` over a surface
+ * no build produced. Measured at `f0485b15`: that sentence, exit 0, with 20 tracked files one
+ * to two merged commits behind the source that emits them — the shipped `schema.js` still
+ * advertising `[1, 2, 3]` after the tree narrowed it to `[3]`, and five shipped modules still
+ * gating the §E.2 requirements grammar on `blueprint.schemaVersion === 2`, a version that
+ * build no longer admits. This file passed 26/26 on that tree, its install-surface leg
+ * reporting exactly that `OK` line.
+ *
+ * `check-artifacts-at-head.mjs` asks the other question — does THIS COMMIT carry its own
+ * build — by materialising the commit in a scratch worktree, building it there, and running
+ * the reviewed instrument inside it. Working tree and index are then the same commit, so the
+ * only way to print OK is for the commit to contain its own output. No comparison semantics
+ * are re-implemented here or there. Evidence:
+ * `dev/agent-workflow/evidence/a4-pr7/7-8-dist-rebase/STALENESS.md`.
+ */
+function classifyAtHeadRun({ stdout, stderr, code }: {
+  stdout: string
+  stderr: string
+  code: number | null
+}): { verdict: Verdict; why: string } {
+  const out = `${stdout}${stderr}`
+  // Green only from the verdict channel, same directional rule as its sibling: the scratch
+  // run's stderr carries the instrument's drift list, and a relayed stderr must not fake a pass.
+  if (/carries its own build/.test(stdout)) {
+    return { verdict: 'passed' as Verdict, why: stdout.trimEnd().split('\n').pop() ?? 'carries its own build' }
+  }
+  if (/does NOT carry its own build/.test(out)) {
+    return { verdict: 'failed' as Verdict, why: `the commit does not carry its own build; the rebuild it owes: ${tail(out)}` }
+  }
+  if (/NOT-RUN:/.test(out)) {
+    return {
+      verdict: 'refused' as Verdict,
+      why: `check:artifacts:head never got to compare anything (exit ${code}): ${tail(out)}`,
+    }
+  }
+  return { verdict: 'refused' as Verdict, why: `check:artifacts:head produced no verdict at all (exit ${code}); tail: ${tail(out)}` }
+}
+
 describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => {
   it('runs where its instruments can see the tree, and refuses to run anywhere else', () => {
     const toplevel = repoToplevel()
@@ -1410,6 +1455,47 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
         'a verdict on the wrong stream is not a verdict — green comes from stdout, red may come from either').toBe('refused')
     })
 
+    it('the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask', { timeout: 600_000 }, async () => {
+      // The leg this lane exists for. The leg above is not weak and was not broken: it asks
+      // a different question, and the answer to THAT question stayed green over a surface 20
+      // files stale. A merge gate whose install-surface leg only fires for whoever happens to
+      // build is a gate that fires on memory, so this leg builds — in a throwaway worktree at
+      // the commit under review, never in the tree it is reviewing.
+      const r = await runLeg(process.execPath, ['scripts/check-artifacts-at-head.mjs'], {
+        cwd: REPO_ROOT,
+        timeoutMs: 540_000,
+        label: 'pnpm check:artifacts:head',
+        classify: classifyAtHeadRun,
+      })
+      expect(r.verdict, `check:artifacts:head did not pass. why: ${r.why}`).toBe('passed')
+      // The two red answers stay distinct, pinned against the text the script actually prints.
+      // Collapsing them is how an unwritable store, or a build that died, becomes a green.
+      expect(classifyAtHeadRun({
+        stdout: '[check-artifacts-at-head] f0485b15 does NOT carry its own build — the 20 listed path(s) (relayed above on stderr) are what a build of this commit changes and this commit did not include.',
+        stderr: '[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):',
+        code: 1,
+      }).verdict, 'a commit that owes its own rebuild is a failure, not a refusal').toBe('failed')
+      expect(classifyAtHeadRun({
+        stdout: '[check-artifacts-at-head] NOT-RUN: the scratch could not be installed (exit 1). A build that never installed has no opinion about freshness.',
+        stderr: '',
+        code: 3,
+      }).verdict, 'a scratch that never installed never compared anything — refused, and the refusal must say why').toBe('refused')
+      expect(classifyAtHeadRun({
+        stdout: '[check-artifacts-at-head] 2683653a carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).',
+        stderr: '',
+        code: 0,
+      }).verdict).toBe('passed')
+      // Same directional doctrine as its sibling: a green only counts on stdout. The scratch
+      // run legitimately relays the instrument's drift list on stderr, so a stderr-only
+      // `carries its own build` cannot be believed as a pass.
+      expect(classifyAtHeadRun({
+        stdout: '',
+        stderr: '[check-artifacts-at-head] 2683653a carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).',
+        code: 0,
+      }).verdict, 'a verdict on the wrong stream is not a verdict').toBe('refused')
+      expect(classifyAtHeadRun({ stdout: '', stderr: '', code: 0 }).verdict, 'silence is not a verdict about freshness').toBe('refused')
+    })
+
     it('a check:artifacts run from a subdirectory is refused, never an OK over nothing', async () => {
       // The third cwd instance this phase measured, and the only one the instrument now
       // catches by itself: `ROOT = process.cwd()`, so from `packages/testkit` the surfaces
@@ -1593,6 +1679,7 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       const instruments: { file: string; rootScript: string | null }[] = [
         { file: 'composition-smoke.mjs', rootScript: 'smoke:composition' },
         { file: 'check-artifacts-committed.mjs', rootScript: 'check:artifacts' },
+        { file: 'check-artifacts-at-head.mjs', rootScript: 'check:artifacts:head' },
         { file: 'lint-identities.mjs', rootScript: 'lint:identities' },
         { file: 'verify-blueprint-version-clean.mjs', rootScript: null },
       ]
