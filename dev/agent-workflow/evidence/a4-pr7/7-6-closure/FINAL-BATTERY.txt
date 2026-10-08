@@ -2,7 +2,13 @@ A4-PR7 §7.6 CLOSURE LANE — FINAL BATTERY
 =========================================
 lane      : evidence task "§7.6 closure" (Alpha.4, A4-PR7, plan §7.6 code-merge gate)
 branch    : feat/a4-76-closure        worktree: .worktrees/a4-76-closure
-base      : master @ 0e7004b6         tip     : (this commit; see `git log` — all commits are evidence-only)
+base      : master @ 0e7004b6
+tip       : `git rev-parse --short HEAD` in the worktree at merge time is authoritative (this file is
+            updated by a commit, so it cannot carry its own SHA). History = 4 evidence-only commits
+            (scenario map + client captures; root census + battery + findings; log tidy-up; this
+            line). Nothing else has been added to the branch: `git diff --name-only 0e7004b6 HEAD`
+            is still entirely inside dev/agent-workflow/evidence/a4-pr7/7-6-closure/.
+            Census/battery HEAD was 234dac1c.
 host      : node v24.21.0, 32 cores, CI=true, XDG_CACHE_HOME=/home/user/dsh-plugins/dsh-agent-team/.tmp-xdg/cache
 discipline: NO production source, NO package.json, NO packages/testkit/test/a4p7-merge-gate.test.ts was
             modified. `git diff --name-only 0e7004b6 HEAD` returns ONLY paths under
