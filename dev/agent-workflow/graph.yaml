@@ -61,7 +61,26 @@ exec_autonomy_contract_20260918:
   evidence: "dev/agent-workflow/evidence/exec-contract/（setup-install/baseline-fullsuite/typecheck/build/build-composition/fullsuite/gates 日志）+ live-smoke/exec-live-2026-09-19T11-16-48/（L1/L2/L3 live 三 case 完整 evidence：summary 15/15 + 每 case create/ledger/marker-file/tool-result + L2 resolve-response + blueprint YAML ×3 + instance 日志 + mock corpus + stable 探测）"
   red_lines: "member 契约零改动（H2 pin 字节级保真）；无隐式默认 allow；无 parse 层改动；A3 matcher 零行为改动；无 push（用户授权前禁止）；:3080/:3180 零触碰；冻结锚点未移动"
 
-current_phase: "ALPHA.4 HARD-GOVERNANCE PHASE — EXECUTION, A4-PR7 Task 7 in its closing lap (2026-10-08 round 40). master = 606a0be7 (PR #65-#196 all merged; PR7 work = #100 onward). Landed: 7.3 v3-only flip (#172); 7.4 fixture migration; 7.5 COMPLETE including the leaderEnvelopeCoverage deletion (#187, neutrality re-measured at 36 refusal-identity changes / 0 widenings); 7.6 machine gate 29 legs in tree plus a mechanical scenario-to-leg traceability map (#189, gaps closed #191) with the p6t1 census defect traced to a real activation race and fixed (#194). OUTSTANDING: 7.7 human acceptance (owner=human, NOT_RUN, trigger fired, receipt ready at dev/agent-workflow/evidence/alpha4-final/ALPHA3-HUMAN-ACCEPTANCE.md) and the four review-driven P1 items now in flight: corrupt-control-leg guard, compatibility atomic state, server-side PR CI gate, baseline-red classification. ADR and Spec are Accepted (ADR line 3, three review rounds + Amendment A5) so no acceptance ceremony remains. Stage NOT closed."
+current_phase: "ALPHA.4 HARD-GOVERNANCE PHASE — EXECUTION (A4-PR7 Task 7, closing lap)"
+# state_pointers is the machine-graded recovery pointer, and it exists because the line above used
+# to carry a code revision inside prose: for four rounds and sixteen PRs `current_phase` asserted
+# `master = 606a0be7 (PR #65-#196 all merged)` while presenting itself as the recovery authority, and
+# NOTHING FAILED, because a prose SHA has no grammar to violate. A document a machine parses is an
+# interface, so the mutable claim now lives in a field WITH a grammar, and the `state-freshness` leg
+# of scripts/ci-pr-gate.mjs grades it every run: the round must equal both the newest round record
+# and the last SESSION_ROUTER_LOG heading (drift fails in either direction), the sha must be an
+# ancestor of HEAD (it may lag, it may not invent), round records must be contiguous, and
+# `current_phase` itself is now ILLEGAL if it names a revision or a PR census. One real lesson is
+# baked into that contiguity rule: the leg first ran it against this file and reported a gap at 19-20,
+# which was the LEG being wrong -- those rounds are one combined `s7_round19_20_records` node. A guard
+# whose state space is narrower than reality is a false alarm, so the grammar accepts a range key.
+# Division of labour, stated so nobody re-merges them: git is code truth; this block is orchestration
+# state; SESSION_ROUTER_LOG.md is where a recovery read starts.
+state_pointers:
+  round: 44
+  master_sha: a187d7b0
+  master_sha_note: "may lag behind HEAD; must be an ancestor of it. Never a substitute for git."
+  recovery_read: "SESSION_ROUTER_LOG.md newest entry, then this block, then alpha4_governance_20261007.a4_pr7_task7.s7_round44_records"
 state_convergence: "2026-10-08 round 40, from an external review that caught this file being used as a recovery authority while its top-level pointer had aged: current_phase is refreshed above and is the live pointer; alpha4_governance_20261007.a4_pr7_task7 plus the tail of SESSION_ROUTER_LOG.md carry the per-round truth. The keys integration_branch / integration_sha / p8s_base_sha / p8s_int_tip are FROZEN HISTORICAL ANCHORS of the P8-S closure phase, NOT current integration pointers -- do not resume from them. Rule adopted: any phase-boundary refresh must rewrite current_phase in the same commit that moves the pointer it describes, because a stale authority pointer is worse than no pointer when an agent is resuming unattended."
 integration_branch: int/P9-master-product-closure
 integration_sha: d23c606c5d77cfdb917c1338194be876d76cfddb
