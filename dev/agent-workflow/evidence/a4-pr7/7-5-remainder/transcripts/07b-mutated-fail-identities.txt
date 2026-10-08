@@ -1,0 +1,107 @@
+ ❯ Module.apply packages/runtime/src/plugin/host.ts:2988:45
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:373:11
+ ❯ bootstrap packages/runtime/src/plugin/host.ts:1641:28
+ ❯ checkPluginContract scripts/composition-smoke.mjs:201:24
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+ ❯ fail packages/runtime/src/plugin/host.ts:603:10
+ ❯ packages/runtime/test/a3p3-permission-mutation-authority.test.ts:310:49
+ ❯ packages/runtime/test/a3p3-permission-mutation-authority.test.ts:349:49
+ ❯ packages/runtime/test/a3p3-permission-mutation-authority.test.ts:369:49
+ ❯ packages/runtime/test/a3p3-permission-mutation-authority.test.ts:405:49
+ ❯ packages/runtime/test/a3p3-permission-mutation-authority.test.ts:422:49
+ ❯ packages/runtime/test/a3p3-permission-mutation-authority.test.ts:463:49
+ ❯ packages/runtime/test/a3p3-permission-mutation-authority.test.ts:556:49
+ ❯ packages/runtime/test/a3p3-permission-mutation-authority.test.ts:751:48
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:1043:42
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:1086:212
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:256:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:287:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:382:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:500:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:542:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:579:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:601:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:637:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:661:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:713:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:784:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:828:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:872:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:904:7
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:924:7
+ ❯ packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts:530:43
+ ❯ packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts:592:43
+ ❯ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:1256:32
+ ❯ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:1292:37
+ ❯ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:1414:100
+ ❯ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:1476:35
+ ❯ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:1533:86
+ ❯ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:2038:93
+ ❯ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts:414:71
+ ❯ packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts:1111:30
+ ❯ packages/runtime/test/a3p4-r4-authority-binding.test.ts:527:20
+ ❯ packages/runtime/test/a3p4-r4-authority-binding.test.ts:579:7
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts:251:62
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:417:27
+ ❯ packages/runtime/test/d3-member-identity-context.test.ts:451:50
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:334:36
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:399:31
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:415:29
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:43
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:471:18
+ ❯ packages/runtime/test/p6t3-restart.test.ts:404:18
+ ❯ packages/runtime/test/p6t3-restart.test.ts:451:21
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:1313:118
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:879:9
+ ❯ scripts/composition-smoke.mjs:298:13
+ ❯ scripts/composition-smoke.mjs:422:9
+ ❯ validateTeamPluginConfig packages/runtime/src/plugin/host.ts:609:63
+packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Human mutation (ADR §7) > creates NO permanent priority: the Leader recovers by tightening without any envelope, and still cannot expand beyond it
+packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > a maxEffect ceiling is a CEILING: ask covers deny->ask but never ask->allow
+packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > a subtree envelope matcher with NO injected containment refuses typed fail-closed (round 2: unknown coverage is CONTEXT, never a label on coverage nobody can judge)
+packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > an expansion the envelope does not cover is refused and writes NOTHING
+packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation OUTSIDE the envelope (plan PR3) > exact envelope rules do not cover wider matchers; subtree roots cover what they contain
+packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > TIGHTENINGS need NO expansion authority: all three, with an EMPTY envelope
+packages/runtime/test/a3p3-permission-mutation-authority.test.ts > Leader mutation inside the envelope (plan PR3) > a from-absence GRANT is an expansion measured from the DECLARED-NONE deny fallback (known fact, not a masquerade)
+packages/runtime/test/a3p3-permission-mutation-authority.test.ts > exec exactness (design §5) > an exec expansion is covered ONLY by the identical fingerprint (no subtree, no any)
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused on > a REVEAL (removal that lets a lower rule answer) is a rise the classifier reports, not a no-op
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused on > the extracted classifier and the Leader judgement never disagree about the same input
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > (e) WIDTH-conservative: an envelope covering ONE child of a granted subtree does not pass the other rising regions
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > (f) nested exception: a non-rising child region cannot rescue the rising residual — ceiling ask refuses, ceiling allow passes
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > S6: subtree-deny removal revealing a STATIC allow under its root is refused at empty envelope, needs subtree-ceiling-allow coverage
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > S6c: coverage of the matcher with a too-LOW ceiling refuses (the reveal rises to allow, the envelope says ask)
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > S6d: fallback-ASK region (no rule below, declared ask fallback): subtree-deny removal rises deny->ask — needs ceiling-ask
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > all-or-nothing across mutation rules: one uncovered rising class refuses the WHOLE mutation, zero write
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals are expansions (ladder-strict) — static reveal channel > S1: revoke revealing a STATIC allow refuses under an empty envelope, with ZERO write
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals are expansions (ladder-strict) — static reveal channel > S3: deny->ASK reveal is expansion VERBATIM (ADR §6): refused without ceiling, accepted at ceiling-ask
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals via the REMAINING overlay rule (S7) and same-layer specificity (B1/B2) > B2c (declared deny): over DECLARED-NONE facts the same ask grant IS a real deny->ask expansion — envelope-coded refusal
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals via the REMAINING overlay rule (S7) and same-layer specificity (B1/B2) > S7: lifting a shadowing subtree deny so a surviving child ALLOW answers needs allow-ceiling coverage — refused at empty envelope (reveal channel: the REMAINING overlay rule, under declared-none facts)
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X1p: the SAME revoke WITH the predicate is the decidable deny->allow reveal — EXPANSION-coded refusal (the gate changes nothing when the relation is known)
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X2p: the SAME equal-subtree deny->ask WITH the predicate is refused EXPANSION-coded (ladder-strict: deny->ask VERBATIM needs ceiling-ask coverage)
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X3p: the SAME static-subtree reveal WITH the predicate is the decidable deny->allow expansion — EXPANSION-coded refusal
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X4 GATE SPECIFICITY: EXACT-ONLY context with NO predicate flows NORMALLY — decidable tightening accepted, decidable expansion still EXPANSION-coded (the gate never over-refuses what contains no subtree matcher)
+packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X5 ENVELOPE-side unknown coverage is CONTEXT, not a mislabeled EXPANSION: exact grant over declared-none with ONLY a subtree envelope matcher and NO predicate
+packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg C — the subtree grant rides the injected containment predicate > a FAULTING containment predicate is UNKNOWN coverage, not a negative verdict: typed refusal, zero write
+packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts > PR4 leg C — the subtree grant rides the injected containment predicate > a subtree ENVELOPE with no injected containment refuses the Leader mutation TYPED, zero write (the merged PR3 gate this lane inherits)
+packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > E1 — the root-assembled lane consumes the fact readers and the leader liveness (BLOCK-1 + BLOCK-4) > NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing
+packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-absent — NO carrier is a legal typed absence: the SAME grant round-3 DERIVED to legal now refuses, while tightening keeps working
+packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts > R8-principal — actor role matrix through the ROOT-ASSEMBLED router (BLOCK-5 fix) > Leader claim → NOT the §7 exemption: the row records leader provenance, and expansion runs under the carrier envelope (in-ceiling commits; out-of-ceiling refuses TYPED, zero write)
+packages/runtime/test/a3p4-r4-authority-binding.test.ts > authorizeLeaderPermissionMutation envelope-only algebra (round 5): the carrier is the WHOLE policy — the leader-facts ceiling gate is REMOVED (ADR §6, parent final review) > B2 (envelope-level subtraction) — the carrier's OWN maximumEffect ladder is the cap (ask covers ask, refuses allow)
+packages/runtime/test/a3p4-r4-authority-binding.test.ts > authorizeLeaderPermissionMutation envelope-only algebra (round 5): the carrier is the WHOLE policy — the leader-facts ceiling gate is REMOVED (ADR §6, parent final review) > B5 (R-A shape) — honestly-anchored deny facts make the deny→allow flip a PROVEN rise that refuses (the laundering class stays closed)
+packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts > the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deletion guard) > a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write
+packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched)
+packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) > D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
+packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > is green, asserted by arm name and by absence of a skip — never by the exit code
+packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > lint closes as an identity diff against the named baseline, not against a count

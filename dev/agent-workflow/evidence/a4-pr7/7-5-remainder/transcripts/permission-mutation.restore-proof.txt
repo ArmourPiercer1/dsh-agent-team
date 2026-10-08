@@ -1,0 +1,57 @@
+# The pristine state of the ONE file this lane mutated, recorded so the restore is
+# checkable by anyone without trusting a transcript.
+#
+# A full copy of a production module is a scan-scope hazard, not an archive
+# (`evidence/a4-pr7/scan-scope/FINDINGS.md` round 15 struck a copied production
+# module out of the tree for exactly that reason), so this records the identity of the
+# pristine bytes plus the window the mutation touched.
+
+sha256 of the pristine file:
+  6f957274779b1412573d39779b7ca6c4d58ee4c61bb53a46a706b0e431f27db5
+
+sha256 of `git show HEAD:packages/runtime/governance/permission-mutation.ts` at the
+time this lane finished (must be equal; re-derive with):
+  git show origin/master:packages/runtime/governance/permission-mutation.ts | sha256sum
+
+The mutation (transcripts 02/04/05/07/09/11) replaced exactly one line, 1390:
+
+  - const classification = classifyPermissionRise(input, leaderEnvelopeCoverage(input.envelope, input.subtreeContains))
+  + const classification = classifyPermissionRise(input)
+
+Verified restored by `grep -n 'classifyPermissionRise(input'` (not by exit code) and by
+`diff -q` against this lane's pristine copy, whose hash is the one above.
+
+Window, pristine lines 1385-1394 and 1400-1420:
+
+ * BEFORE a partial rise can be reported as `EXPANSION_OUTSIDE_ENVELOPE`, because
+ * "we cannot evaluate this" and "this exceeds your envelope" are different facts
+ * with different remedies, and the first must never be dressed as the second.
+ */
+export function authorizeLeaderPermissionMutation(input: LeaderMutationAuthorizationInput): void {
+  const classification = classifyPermissionRise(input, leaderEnvelopeCoverage(input.envelope, input.subtreeContains))
+  const firstUndeterminable = classification.undeterminable[0]
+  if (firstUndeterminable !== undefined) {
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE,
+...
+  const firstUnmet = classification.unmet[0]
+  if (firstUnmet !== undefined) {
+    refuse(
+      PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+      'expansion-region-uncovered',
+      `a LEADER mutation raises the EFFECTIVE effect in ${String(classification.unmet.length)} region(s) the envelope does not cover (ladder-strict; reveals included; all-or-nothing) — zero write`,
+      firstUnmet.detail,
+    )
+  }
+}
+
+/**
+ * The Leader's coverage judge: an envelope rule authorizes a rise only if it
+ * speaks this operation class, its `maximumEffect` reaches the risen effect
+ * (ladder-strict), and it covers the WHOLE mutation matcher — the
+ * width-conservative rule that stops a narrow envelope rule from authorizing a
+ * broader mutation. Moved out of the classification loop verbatim so the
+ * judgement has exactly one implementation and one place to be wrong.
+ */
+function leaderEnvelopeCoverage(
+  envelope: PermissionMutationEnvelope,
