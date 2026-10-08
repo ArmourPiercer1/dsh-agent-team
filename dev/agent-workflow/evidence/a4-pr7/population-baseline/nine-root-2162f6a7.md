@@ -1,7 +1,7 @@
 # POPULATION BASELINE — NINE-ROOT SCOPE (authoritative from 2026-10-08)
 # ┌─ READ THIS FIRST ─────────────────────────────────────────────────────────────────────────────┐
-# │ A NEWER CAPTURE SUPERSEDES THE COUNTS BELOW. Skip to SUPERSEDED-BY-94da4a69 at the end of     │
-# │ this file: tip 94da4a69 = 506 files / 6335 registered legs / 10 titled reds / 0               │
+# │ CURRENT TIP IS 02b53c7a AND ITS FIGURES ARE IN "CURRENT CORPUS" AT THE END OF THIS FILE:       │
+# │ 507 files / 6354 registered legs / 10 titled reds / 0 collection-error files. The identity set │
 # │ collection-error files, machine-readable set in nine-root-94da4a69.ids.txt. The numbers in    │
 # │ the header are the 2162f6a7 capture and are kept as history — but a referee that reads only   │
 # │ the header will treat a RESOLVED collection error as expected, which is how 32 legs stayed    │
@@ -22,15 +22,14 @@
 # the p6t1-parallel family). Compare IDENTITY SETS, never totals, and always name your roots.
 #
 ## titled reds (file > full name), sorted:
-packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field
-packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent
-packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly
-packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly
-packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates
-packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema 3. Members can have different capabilities
-packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema 7. Changing capability fields changes the hash
-packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities
-packages/domain/test/t1-capability-schema.test.ts > T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities
+# CURRENT AT 02b53c7a (restated 2026-10-08, round 43). THIS SECTION IS A MACHINE INTERFACE, NOT PROSE.
+# scripts/ci-pr-gate.mjs parses the lines below into the set of TOLERATED red identities. A line here
+# means: this red is known, and a fresh run may not blame it on the change under review. It does NOT
+# mean the obligation is met -- 9 of these are disclosed debt with a named green pin, and 1 (D3-4) is a
+# must-not-stay-exempt whose only check never executes. Twelve lines were removed when #204/#205 retired
+# them; from now on a regression of any retired identity arrives as NEW RED and blocks the merge. The 19
+# earlier entries are in historical-2162f6a7.ids.txt (an artifact, because prose here is mined for
+# load-family names and retired paths must not become tolerances).
 packages/domain/test/t2-blueprint-hash.test.ts > t2 hash: hashable projection projects absent optional singles as explicit null
 packages/runtime/test/d3-member-identity-context.test.ts > D3 the member identity context block (Team D1-D6 repair v2, B2) D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block
 packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
@@ -41,13 +40,12 @@ packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (
 packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
 packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
 packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session
+
 ## collection-error files (a red that resolves into one of these is an ESCALATION, not a fix):
-packages/runtime/test/p8s3b-result-effects.test.ts
-packages/runtime/test/t12a-b2-child-identity.test.ts
-packages/runtime/test/t12a-glue-handoff-ports.test.ts
-# RE-CONFIRMED at 2f06bb44 (PR #185 = the fail-closed law plus the 54 repaired fixture legs, nine-root on both sides):
-# 502 files / 6277 registered legs / 19 titled reds / 3 collection files -- and those 19 are the identities listed
-# below VERBATIM (NEW 0, RESOLVED 0). Totals move with the corpus; the identity SET is the baseline.
+# NONE at 02b53c7a -- all three repaired by PR #205 and their 32 legs register and run. The rule
+# survives the emptiness: a titled red that resolves INTO a collection error is an escalation, never an
+# improvement, because a file that dies at collection contributes no identity to either set -- which is
+# precisely how 32 legs stayed invisible for a whole stage while the red count went down.
 
 ## PUBLISHED CORRECTION (2026-10-08, round 38) — the p6t1-parallel note above was too comfortable
 
@@ -125,3 +123,34 @@ node scripts/fail-set.mjs diff \
 0 legs registered once in 7 coordinator attempts on this tree; 6/6 quiet re-samples and 1/1 under 28 CPU burners were
 green. Mechanism unidentified, not labelled a flake, not exempted — see backlog 20. A capture that shows it as a
 collection error is a NEW red under this baseline, by design.
+---
+
+## CURRENT CORPUS (the sentence scripts/ci-pr-gate.mjs reads for its totals)
+
+At `02b53c7a`: 507 files / 6354 registered legs, 10 titled reds, 0 collection-error files, nine roots
+named (contracts domain legacy remote runtime storage testkit tools client).
+
+Why the figures are written in this grammar and not in a table: `lastDeclaredTotals()` matches
+`N files / M legs` or `files N | registered legs M`, taking the occurrence with the highest character
+offset across both shapes. A markdown table of the same numbers is INVISIBLE to it, which is how this
+document came to declare 505 / 6285 while displaying 506 / 6335 -- the gate printed `COUNTS MOVED` on
+every run and nothing failed, because a moved count is informational by design. **A document a machine
+parses is an interface: what you add to it changes the gate, so re-measure the parse instead of
+trusting the prose.** The shape after this restatement is asserted by
+`node scripts/ci-pr-gate.mjs --self-test`.
+
+**Provenance, stated so the next reader need not re-run everything to trust the numbers above:** the
+capture was taken on a merge commit whose `packages/` tree OID is
+`6c652989e35d70da286f87f6e36276b4d20760b8`, and `master` at `02b53c7a` has the **same** `packages/` tree
+OID (zero differing files). The graded surface is exactly the nine roots under `packages/`, so the
+measurement **transfers by tree equality** rather than by assertion — which is a checkable claim, unlike
+"the same code, roughly".
+
+**Two figures here are load-sensitive and are disclosed instead of smoothed.** Two legs — one in a
+governance-hygiene suite, one in an evidence-sanitizer suite — run bimodally around the suite's own
+5000 ms `testTimeout` and were observed failing at 5.26 s and 5.86 s in 3 of 4 default-clock captures
+this round, while the same captures under the 20000 ms clock the workflow passes came back with an
+identical set and zero such failures. The repair is to give those legs a declared budget in the suite
+(backlog 16), **not** to add their names to the tolerance list above: an exemption granted because a leg
+is slow excuses every genuine red that leg will ever produce. Until then a run that fails them under the
+default clock is reporting something true, and the honest response is the budget fix, not a `skip`.
