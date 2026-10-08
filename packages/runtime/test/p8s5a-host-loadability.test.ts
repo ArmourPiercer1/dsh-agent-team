@@ -73,7 +73,14 @@ describe('P8-S5A T2 entry loadability (source entry)', () => {
     const valid = host.validateTeamPluginConfig({
       bootPhase: 'create',
       rootSessionId: 'session-t2',
-      blueprintSource: 'schemaVersion: 1\nblueprintId: T2-BP\nrevision: "1"\n',
+      // A4-PR7 §7.4 (lane B-runtime-semantics-A): the §7.4 liveness probe raised
+      // the version this string declared to one the product refuses and every
+      // test here stayed green — `validateTeamPluginConfig` checks only that the
+      // field is a non-empty string (src/plugin/host.ts:612) and this file never
+      // boots a world from it. The version claim is therefore deleted rather
+      // than migrated: no reader consults it, and the zero envelope pair is not
+      // spent on a document nothing parses.
+      blueprintSource: 'blueprintId: T2-BP\nrevision: "1"\n',
       generation: 1,
       seedMembers: [],
       staticModel: { provider: 'p', model: 'm' },

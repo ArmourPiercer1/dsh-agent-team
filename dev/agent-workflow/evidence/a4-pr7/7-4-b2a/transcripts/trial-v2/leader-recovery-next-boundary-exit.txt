@@ -1,0 +1,28 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts (1 test | 1 failed) 19ms
+     × L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/leader-recovery-next-boundary-exit.test.ts > W3-C leader-recovery-next-boundary-exit: the F8 leader recovery exit > L3: recovery-mid-recovery keeps the current turn Recovery; the next boundary (fresh probe recovered) exits to Normal
+Error: expected the blocked normal turn to reject
+ ❯ blockedNormal packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:226:15
+    224|     const blockedNormal = await enforceRequirementGate(gateOptions, no…
+    225|       () => {
+    226|         throw new Error('expected the blocked normal turn to reject')
+       |               ^
+    227|       },
+    228|       (error: unknown) => error,
+ ❯ packages/runtime/test/leader-recovery-next-boundary-exit.test.ts:224:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  06:15:01
+   Duration  885ms (transform 613ms, setup 0ms, import 780ms, tests 19ms, environment 0ms)
+

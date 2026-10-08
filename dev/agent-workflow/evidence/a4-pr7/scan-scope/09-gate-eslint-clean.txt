@@ -1,1 +1,30 @@
-npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+# GATE eslint transcript — RE-CAPTURED HONESTLY (round 6, 2026-10-08).
+# WHAT THE OLD FILE WAS: one `npm warn` line and no results. A transcript
+# with no results in it is not evidence, whatever its filename says. The
+# repo lint has NEVER been clean on any tree of this phase.
+#
+# HONEST LINE (b2b form):
+#   merged tree (feat/a4-73-dirty-class-ledger @ post-R3):
+#     `pnpm lint` -> exit 1, 160 problems (128 errors, 32 warnings)
+#   pristine base origin/master @ 14ea8717:
+#     `pnpm lint` -> exit 1, 160 problems (128 errors, 32 warnings)
+#   rule+message multiset (sorted, per-line positions stripped):
+#     diff(pristine, head) = 0 -> BYTE-IDENTICAL. The branch changes lint by
+#     exactly zero.
+#
+# METHOD (no second install needed, no hardlink shortcuts — see FINDINGS §10
+# environmental note): the branch's eslint-scoped delta vs the base is exactly
+# scripts/verify-blueprint-version-clean.mjs and
+# packages/testkit/test/a4p7-blueprint-version-clean.test.ts; both trees were
+# linted in place by swapping ONLY those two files to their base versions and
+# back (both committed, so the swap is reversible by construction).
+#
+# WHAT THE RE-CAPTURE FOUND (this is why it was worth doing): the first
+# head-tree run was 129 errors, not 128 — an unused `deriveForbidden` cast
+# left in the wrapper by the R3 class removal. The old "eslint clean" claim
+# would have shipped it. Fixed in the same round; the transcript below the
+# line is the final state.
+#
+# multiset sha256 (pristine == head):
+#   b919ce0372aa57a578818da72de6f917afdcd3655f18d4deec939bd8a7db1f14  (sorted rule+message multiset, 160 entries)
+# exit=1 errors=128 warnings=32 diff-vs-pristine=0

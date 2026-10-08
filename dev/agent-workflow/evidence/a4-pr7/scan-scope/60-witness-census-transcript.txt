@@ -1,0 +1,98 @@
+# CENSUS 60 — the measurement that retired the class. Fence under test = round-5 (30bbe7c2 code), tree = merged @749243e4 (dirty 87 sites).
+# ADMITTED 59/87 = LOWER BOUND (<=8 nearest candidates per site, stop at first admit). The reviewer's
+# independent census on their base: 63/87 with cheapest-witness code x29 / source x29 / items x15.
+# Both numbers say the same thing: THE MAJORITY OF THE POPULATION ADMITS with ordinary corpus keys.
+# cordis.patch.yml::L60::v1 (the SHIPPED COMPOSITION) admitted here via blueprintSource, there via bootPhase
+# — two different tokens, same site: refusal was per-key, not per-site. a3p4 L1128 (the radius demo site)
+# admits via items. Method: behavioral spawns of the fence under test, nothing re-implemented.
+dirty sites under census: 87
+census base: tree@749243e4 fence=scripts/verify-blueprint-version-clean.mjs
+ADMITTED 59 of 87 dirty sites (lower bound: <=8 nearest candidates probed per site)
+cheapest-witness histogram (admitted sites): source x29, items x11, blueprintSource x4, permissionLines x4, lines x2, rootSessionId x2, FULL_BLOCKS x1, targetKey x1, teamAllow x1, F1f x1, bpId x1, workerModelPreference x1, model x1
+OPEN  cordis.patch.yml::L60::v1  via blueprintSource
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L72::v1  via FULL_BLOCKS
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L242::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L264::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L286::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L323::v4  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L344::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L362::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L383::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L403::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L424::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L445::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L466::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L487::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L512::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L535::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L560::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L586::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L612::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L635::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L659::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L682::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L707::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L732::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L756::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L779::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L801::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L823::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L854::v1  via permissionLines
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L1287::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L1299::v1  via source
+OPEN  packages/domain/blueprint/testdata/fixtures.ts::L1313::v1  via source
+OPEN  packages/runtime/test/a2c1-pwsh-permission.test.ts::L211::v1  via permissionLines
+OPEN  packages/runtime/test/a2c1-pwsh-permission.test.ts::L248::v1  via permissionLines
+OPEN  packages/runtime/test/a2c3-inspect-operation-permission.test.ts::L114::v1  via items
+OPEN  packages/runtime/test/a2c3-inspect-operation-permission.test.ts::L463::v1  via items
+OPEN  packages/runtime/test/a2c7-subtree-matcher.test.ts::L569::v1  via permissionLines
+OPEN  packages/runtime/test/a2c7-subtree-matcher.test.ts::L1473::v1  via items
+OPEN  packages/runtime/test/a2c7-subtree-matcher.test.ts::L1494::v1  via items
+OPEN  packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts::L491::v1  via items
+OPEN  packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts::L843::v1  via targetKey
+OPEN  packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts::L1128::v1  via items
+OPEN  packages/runtime/test/a6a-production-wiring.test.ts::L103::v1  via items
+OPEN  packages/runtime/test/a6a-production-wiring.test.ts::L198::v1  via items
+OPEN  packages/runtime/test/alpha2-explicit-agent-setup.test.ts::L83::v1  via items
+OPEN  packages/runtime/test/consent-scope-hash-binding.test.ts::L130::v2  via lines
+OPEN  packages/runtime/test/exec-contract-dual-gate.test.ts::L491::v1  via teamAllow
+OPEN  packages/runtime/test/exec-contract-dual-gate.test.ts::L626::v1  via F1f
+OPEN  packages/runtime/test/f1-webserver-shim-isolation.test.ts::L123::v1  via blueprintSource
+OPEN  packages/runtime/test/mcp-blueprint-initial-grant.test.ts::L121::v1  via items
+OPEN  packages/runtime/test/mcp-supply-config.test.ts::L320::v1  via rootSessionId
+OPEN  packages/runtime/test/mcp-target-materialization.test.ts::L188::v2  via lines
+OPEN  packages/runtime/test/model-activation-step8.test.ts::L88::v1  via items
+OPEN  packages/runtime/test/model-blueprint-initial-routing.test.ts::L73::v1  via bpId
+OPEN  packages/runtime/test/model-inspect-config.test.ts::L47::v1  via workerModelPreference
+OPEN  packages/runtime/test/p6t2-helpers.ts::L82::v1  via model
+OPEN  packages/runtime/test/p8s3b-result-effects.test.ts::L414::v1  via blueprintSource
+OPEN  packages/runtime/test/p8s5a-host-loadability.test.ts::L76::v1  via rootSessionId
+OPEN  packages/runtime/test/t12a-live-bridge.mjs::L1347::v1  via blueprintSource
+HELD  packages/domain/blueprint/testdata/fixtures.ts::L26::v1  no-candidate
+HELD  packages/domain/blueprint/testdata/fixtures.ts::L1241::v1  all-6-refused
+HELD  packages/domain/blueprint/testdata/fixtures.ts::L1264::v1  all-4-refused
+HELD  packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts::L118::v1  no-candidate
+HELD  packages/runtime/test/bound-blueprint-persona-helpers.ts::L55::v1  no-candidate
+HELD  packages/runtime/test/bound-blueprint-persona-helpers.ts::L73::v1  no-candidate
+HELD  packages/runtime/test/bound-blueprint-persona-helpers.ts::L94::v1  no-candidate
+HELD  packages/runtime/test/bound-blueprint-persona-helpers.ts::L112::v1  no-candidate
+HELD  packages/runtime/test/control-abandon-without-resolve-envelope.test.ts::L121::v1  no-candidate
+HELD  packages/runtime/test/control-subject-cross-kind-alias.test.ts::L60::v1  no-candidate
+HELD  packages/runtime/test/d2-s6-ensure-root-live.test.ts::L402::v1  all-1-refused
+HELD  packages/runtime/test/f15-mcp-live-loss-characterization.test.ts::L97::v1  no-candidate
+HELD  packages/runtime/test/f15-mcp-live-loss.test.ts::L143::v1  all-8-refused
+HELD  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts::L2115::v2  no-candidate
+HELD  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts::L116::v2  no-candidate
+HELD  packages/runtime/test/leader-recovery-next-boundary-exit.test.ts::L51::v2  no-candidate
+HELD  packages/runtime/test/leader-template-required-boundary.test.ts::L77::v2  no-candidate
+HELD  packages/runtime/test/mcp-target-materialization-unit.test.ts::L88::v2  all-1-refused
+HELD  packages/runtime/test/multi-mcp-wiring.test.ts::L157::v1  no-candidate
+HELD  packages/runtime/test/p6t1-checks.test.ts::L393::v1  no-candidate
+HELD  packages/runtime/test/p6t1-checks.test.ts::L427::v1  no-candidate
+HELD  packages/runtime/test/p6t1-checks.test.ts::L556::v1  no-candidate
+HELD  packages/runtime/test/p6t1-helpers.ts::L107::v1  no-candidate
+HELD  packages/runtime/test/p6t1-parallel.test.ts::L42::v1  no-candidate
+HELD  packages/runtime/test/p6t3-helpers.ts::L70::v1  all-1-refused
+HELD  packages/runtime/test/p6t4-helpers.ts::L84::v1  all-1-refused
+HELD  tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs::L447::v1  no-candidate
+HELD  tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs::L376::v1  no-candidate

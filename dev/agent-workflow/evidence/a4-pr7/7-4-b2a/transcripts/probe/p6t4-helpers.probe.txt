@@ -1,0 +1,1970 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ❯ packages/runtime/test/p6t4-allow-once.test.ts (0 test)
+ ❯ packages/runtime/test/a4p3-approval-case.test.ts (0 test)
+ ❯ packages/runtime/test/a4pr0-proposal-corrupt.test.ts (0 test)
+ ❯ packages/runtime/test/control-inline-review.test.ts (0 test)
+ ❯ packages/runtime/test/control-subject-normalization.test.ts (0 test)
+ ❯ packages/runtime/test/control-guard-leader.test.ts (0 test)
+ ❯ packages/runtime/test/a4a-control-exact-scope.test.ts (0 test)
+ ❯ packages/runtime/test/c1-control-notification.test.ts (0 test)
+ ❯ packages/runtime/test/a4p3-approval-escalation.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-stale.test.ts (0 test)
+ ❯ packages/runtime/test/a4pr0-proposal-store.test.ts (0 test)
+ ✓ packages/runtime/test/control-abandon-without-resolve-envelope.test.ts (8 tests) 6ms
+ ❯ packages/runtime/test/a5a-pre-execute.test.ts (0 test)
+ ❯ packages/runtime/test/a4p4-operation-approval-authority.test.ts (0 test)
+ ❯ packages/runtime/test/h1a-pre-execute-endcap.test.ts (0 test)
+ ❯ packages/runtime/test/exec-contract-dual-gate.test.ts (0 test)
+ ❯ packages/runtime/test/a2c5-read-fingerprint.test.ts (0 test)
+ ❯ packages/runtime/test/a4p4-capability-vs-permission.test.ts (0 test)
+ ❯ packages/runtime/test/a4p4-operation-single-shot.test.ts (0 test)
+ ❯ packages/runtime/test/a4p3-intervention-projection.test.ts (0 test)
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts (31 tests | 22 failed) 27ms
+     ✓ R1 — the Blueprint schema REJECTS `{ kind: subtree }` pre-fix (the grammar gap) 3ms
+     × R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees) 1ms
+     ✓ read + subtree is accepted in ask and deny lanes (and all five file-class tools in allow) 1ms
+     ✓ bash/pwsh + subtree is schema-REJECTED in EVERY lane (the A2C-1 shell contract is not regressed) 1ms
+     ✓ the A2C-1 shell rejections are BYTE-IDENTICAL (exact in any lane; any in the allow lane) 5ms
+     ✓ the exact path constraints ride on subtree: trim-normalized, empty/blank/control-char/too-long/extra-field all reject 1ms
+     ✓ a truly-unknown kind (glob) still rejects; exact and any are unchanged (any stays closed) 1ms
+     ✓ containsOperation=true matches; false never matches; rootKey is NEVER consulted 0ms
+     ✓ the tool must match; file-class operations only; deny > ask > allow with RULE provenance 0ms
+     ✓ exact and any are unchanged at A3 1ms
+     × the root itself matches (directory root and file root) 1ms
+     × a child and a deep descendant match (the subtree the exact lane could not express) 1ms
+     × a sibling is a NON-MATCH (the default outcome, zero interference) 1ms
+     × the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved) 1ms
+     × any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny 0ms
+     × deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows 1ms
+     × deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next) 1ms
+     × deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped) 0ms
+     × deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract) 1ms
+     × allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny) 1ms
+     × ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default 1ms
+     × allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted) 1ms
+     × the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside 1ms
+     × the real backend section ran (the prebuilt pinned lib is present on this host) 2ms
+     × G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule 0ms
+     × G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways 0ms
+     × G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds 0ms
+     × G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded) 0ms
+     × G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling) 0ms
+     × G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze) 0ms
+     × G1 (real) the root itself matches on the real backend (contains(self) = true) 0ms
+ ❯ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts (12 tests | 5 failed) 39ms
+     ✓ prices silent hard document at the SAME rung either way 2ms
+     ✓ prices a fingerprint rule (opaque, never widens) at the SAME rung either way 0ms
+     ✓ prices the width capped at ask at the SAME rung either way 0ms
+     ✓ prices the width denied outright at the SAME rung either way 0ms
+     ✓ prices the cell capped below the width at the SAME rung either way 1ms
+     ✓ prices an unrelated subtree denied at the SAME rung either way 1ms
+     ✓ and the shape the review needed is the one the algebra forbids 1ms
+     × a rise is ASKED AT THE RUNG ITS WIDTH NEEDS, not at the rung its cell can pay for 19ms
+     × documents tightened after the approval: ZERO append — never the refused width 4ms
+     × an unreadable ceiling at retry time refuses as CONTEXT, and the approval buys nothing past it 3ms
+     × a commit-time refusal consumes NOTHING: the case stays resolved(allow), the retry re-prices and commits once 3ms
+     × an unchanged world still commits: the re-ask is a guard, not a veto over A4-PR5 3ms
+ ❯ packages/runtime/test/a4p5-self-mutation.test.ts (6 tests | 6 failed) 41ms
+     × self-EXPANSION asks the rung above the LEADER (never a self-review rung), whatever the context labels 24ms
+     × a self-EXPANSION allowed by the Human User commits inline into the Leader overlay 4ms
+     × a self-TIGHTENING needs no proposal at all (no rise -> gate silent) 4ms
+     × proposes (deny -> revealed allow), then commits ONE rule-free snapshot on allow 3ms
+     × ONE region the ladder cannot approve dooms the WHOLE batch: no rows, no commit 3ms
+     × TWO approvable regions open ONE case with one proposal row per rule 3ms
+ ❯ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts (0 test)
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts (33 tests | 13 failed) 105ms
+     ✓ a production v3 context carries the REAL bound hash and the TARGET-DERIVED beneficiary 3ms
+     ✓ a v3 binding resolving WITHOUT a content hash answers an unreadable ceiling — an anchorless proposal still cannot exist 0ms
+     ✓ is deterministic, id-shaped, and order-insensitive over the rule set 1ms
+     ✓ binds the team — changing it changes the fingerprint 0ms
+     ✓ binds the target — changing it changes the fingerprint 0ms
+     ✓ binds the beneficiary — changing it changes the fingerprint 0ms
+     ✓ binds the kind — changing it changes the fingerprint 0ms
+     ✓ binds the requested effect — changing it changes the fingerprint 0ms
+     ✓ binds the matcher kind (root identity class) — changing it changes the fingerprint 0ms
+     ✓ binds the matcher root — changing it changes the fingerprint 0ms
+     ✓ binds the operation class — changing it changes the fingerprint 0ms
+     ✓ binds the blueprint anchor — changing it changes the fingerprint 0ms
+     ✓ EXCLUDES provenance: mutationId / reason / base / actor are not identity (24.5) 0ms
+     ✓ names only the base pair: same base = same correlation, new base = new one (A1-9) 0ms
+     ✓ derives the leader position from the TARGET identity, and the signature admits NOTHING else (A5-1, review item 7b) 0ms
+     ✓ names the first approval rung that reaches (hard silent -> leader for a member rise) 1ms
+     ✓ the batch is the MAX rung over its rising regions (all-or-nothing) 0ms
+     ✓ an undecided ceiling is UNDETERMINED, never a guessed rung 0ms
+     ✓ a capped hard envelope pushes the ask above the ladder -> human-admin 0ms
+     ✓ mirrors intervention TERMINAL_MUTATION_OUTCOMES without importing it 1ms
+     × creates ONE case + one proposal row per rule, commits NOTHING, and says so 14ms
+     × a retry is idempotent: same case, one leg row, no second proposal set 7ms
+     × a different effect asked is a DIFFERENT fingerprint, a DIFFERENT case 5ms
+     × a denied fingerprint at the same base is NOT re-proposable (A1-9): denied is terminal 7ms
+     × a NEW base generation re-asks with a fresh case (A1-9 recovery) 5ms
+     × the requester is the DERIVED principal the lane was given, never a host default 7ms
+     × an operator rise with NO named approval caller behaves as the unwired lane (PR2 throw) 9ms
+     × a Human User rise above the Team Hard cap terminates authority-unavailable: no rows, no pending, durable deny 9ms
+     × member initiation refuses BEFORE any proposal machinery (zero rows, zero cases) 6ms
+     × an unreadable hard envelope REFUSES (never absent, never a proposal) 8ms
+     × an undecided containment is UNDETERMINED — no rung is proposed for an undecided region 5ms
+     × with the approval lane UNWIRED the PR2 refusal is byte-identical 4ms
+     × names the kind EXPLICITLY: a silent LEADER_APPROVAL default can never swallow a mutation case 6ms
+ ❯ packages/runtime/test/a2c1-pwsh-permission.test.ts (0 test)
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-external-policy.test.ts (0 test)
+ ❯ packages/runtime/test/control-template-subject.test.ts (0 test)
+ ❯ packages/runtime/test/control-inline-abandon.test.ts (0 test)
+ ❯ packages/runtime/test/control-review-payload-roundtrip.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-restart.test.ts (0 test)
+ ❯ packages/runtime/test/control-legacy-row-compat.test.ts (0 test)
+ ❯ packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts (0 test)
+ ✓ packages/runtime/test/control-subject-cross-kind-alias.test.ts (2 tests) 5ms
+ ❯ packages/runtime/test/control-team-subject.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-negatives.test.ts (0 test)
+ ❯ packages/runtime/test/control-abandon-storage-fault.test.ts (0 test)
+ ❯ packages/runtime/test/control-inline-wait-abort.test.ts (0 test)
+ ❯ packages/runtime/test/a4pr0-proposal-generation.test.ts (0 test)
+ ❯ packages/runtime/test/control-guard-coupling.test.ts (0 test)
+ ❯ packages/runtime/test/a2c4-external-lastmile.test.ts (0 test)
+ ❯ packages/runtime/test/a4p6-intervention-aggregation.test.ts (0 test)
+ ❯ packages/runtime/test/c1-restart-recovery.test.ts (0 test)
+ ❯ packages/runtime/test/h5-bash-effects.test.ts (0 test)
+ ❯ packages/runtime/test/a4-surface-authority-unavailable.test.ts (0 test)
+ ❯ packages/runtime/test/a4-escalate-act-truth.test.ts (0 test)
+ ❯ packages/runtime/test/f9-control-exactly-once.test.ts (0 test)
+ ❯ packages/runtime/test/p6t4-deny.test.ts (0 test)
+ ❯ packages/runtime/test/h4-rule-identity.test.ts (0 test)
+ ❯ packages/runtime/test/issue2-capability-permission-precedence.test.ts (0 test)
+ ❯ packages/runtime/test/c1-production-wiring.test.ts (0 test)
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts (23 tests | 19 failed) 111ms
+     × commits EXACTLY ONE snapshot with the planned rules 27ms
+     × a risen second leg (escalation to Human User) carries the commit: the higher allow commits 7ms
+     × an unrelated lower-layer change that moves NO approved rise still commits 9ms
+     × the SAME mutation at a moved base is a FRESH ask (A1-9 recovery); the allowed-at-old-base case never commits 5ms
+     × an explicit expectedGeneration pinned at the approved base conflicts typed with ZERO writes 4ms
+     × lifecycle drift: an archived target answers mutation-stale (never a lifecycle throw, never a commit) 4ms
+     × proposal creation on an archived target still refuses typed BEFORE any row 4ms
+     × matcher ROOT drift (containment retarget under the same canonical key) -> stale 3ms
+     × the ceiling NARROWS after approval (required now above approved) -> stale 3ms
+     × denied is terminal: every later call says denied, no new case, no write 3ms
+     × the rise that failed renders authority-unavailable — never "awaiting a successor" 4ms
+     × desired state reached after approval -> plain no-change, the case untouched 3ms
+     ✓ the rise-summary parse law is PURE (probes only — the commit-boundary arm is the two tests below) 1ms
+     × an UNPARSEABLE rise summary on the allowed leg fails the arm closed: stale, ZERO write, never a commit 3ms
+     × a WELL-FORMED summary naming a DIFFERENT rise structure fails the same arm closed (A1-8 structural equality, not format) 4ms
+     ✓ a pending proposal crosses HONESTLY: changed:false + the named reason, closed field set, nothing dropped 5ms
+     ✓ terminal arms ride the same reason slot (denied passes through with changed:false) 2ms
+     ✓ the DERIVED caller — never a wire claim — reaches the lane as approvalCaller 2ms
+     × a blocked mutation opens exactly ONE case, at the mutation door, carrying the mutation fingerprint only 4ms
+     × the control law refuses a hybrid identity AND a fingerprint-less one — the doors cannot forge each other 2ms
+     × a NON-LIFECYCLE fault thrown on the guard stack propagates as itself — never `mutation-stale` 3ms
+     × a lifecycle refusal STILL reinterprets to mutation-stale (the narrowing kept the law it was for) 3ms
+     × an approval reader LYING about the durable identity is refused: stale, ZERO write, never a commit 3ms
+ ❯ packages/runtime/test/remote-control-abandoned-code.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 47 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c1-pwsh-permission.test.ts [ packages/runtime/test/a2c1-pwsh-permission.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/a2c1-pwsh-permission.test.ts:486:17
+ ❯ packages/runtime/test/a2c1-pwsh-permission.test.ts:871:17
+ ❯ packages/runtime/test/a2c1-pwsh-permission.test.ts:824:36
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/112]⎯
+
+ FAIL  packages/runtime/test/a2c2-permission-coverage.test.ts [ packages/runtime/test/a2c2-permission-coverage.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts:335:19
+ ❯ packages/runtime/test/a2c2-permission-coverage.test.ts:280:36
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/112]⎯
+
+ FAIL  packages/runtime/test/a2c4-external-lastmile.test.ts [ packages/runtime/test/a2c4-external-lastmile.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/a2c4-external-lastmile.test.ts:296:17
+ ❯ packages/runtime/test/a2c4-external-lastmile.test.ts:359:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/112]⎯
+
+ FAIL  packages/runtime/test/a2c5-read-fingerprint.test.ts [ packages/runtime/test/a2c5-read-fingerprint.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ oneShotDirection packages/runtime/test/a2c5-read-fingerprint.test.ts:225:17
+ ❯ packages/runtime/test/a2c5-read-fingerprint.test.ts:257:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/112]⎯
+
+ FAIL  packages/runtime/test/a4-escalate-act-truth.test.ts [ packages/runtime/test/a4-escalate-act-truth.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4-escalate-act-truth.test.ts:116:17
+ ❯ packages/runtime/test/a4-escalate-act-truth.test.ts:115:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/112]⎯
+
+ FAIL  packages/runtime/test/a4-surface-authority-unavailable.test.ts [ packages/runtime/test/a4-surface-authority-unavailable.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4-surface-authority-unavailable.test.ts:127:17
+ ❯ packages/runtime/test/a4-surface-authority-unavailable.test.ts:126:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/112]⎯
+
+ FAIL  packages/runtime/test/a4a-control-exact-scope.test.ts [ packages/runtime/test/a4a-control-exact-scope.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4a-control-exact-scope.test.ts:194:17
+ ❯ packages/runtime/test/a4a-control-exact-scope.test.ts:193:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/112]⎯
+
+ FAIL  packages/runtime/test/a4p3-approval-case.test.ts [ packages/runtime/test/a4p3-approval-case.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4p3-approval-case.test.ts:152:17
+ ❯ packages/runtime/test/a4p3-approval-case.test.ts:151:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/112]⎯
+
+ FAIL  packages/runtime/test/a4p3-approval-escalation.test.ts [ packages/runtime/test/a4p3-approval-escalation.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4p3-approval-escalation.test.ts:230:17
+ ❯ packages/runtime/test/a4p3-approval-escalation.test.ts:229:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/112]⎯
+
+ FAIL  packages/runtime/test/a4p3-intervention-projection.test.ts [ packages/runtime/test/a4p3-intervention-projection.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4p3-intervention-projection.test.ts:154:17
+ ❯ packages/runtime/test/a4p3-intervention-projection.test.ts:153:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/112]⎯
+
+ FAIL  packages/runtime/test/a4p4-capability-vs-permission.test.ts [ packages/runtime/test/a4p4-capability-vs-permission.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/a4p4-capability-vs-permission.test.ts:197:17
+ ❯ packages/runtime/test/a4p4-capability-vs-permission.test.ts:262:15
+ ❯ packages/runtime/test/a4p4-capability-vs-permission.test.ts:260:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/112]⎯
+
+ FAIL  packages/runtime/test/a4p4-operation-approval-authority.test.ts [ packages/runtime/test/a4p4-operation-approval-authority.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/a4p4-operation-approval-authority.test.ts:360:17
+ ❯ packages/runtime/test/a4p4-operation-approval-authority.test.ts:426:15
+ ❯ packages/runtime/test/a4p4-operation-approval-authority.test.ts:425:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/112]⎯
+
+ FAIL  packages/runtime/test/a4p4-operation-single-shot.test.ts [ packages/runtime/test/a4p4-operation-single-shot.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/a4p4-operation-single-shot.test.ts:261:17
+ ❯ packages/runtime/test/a4p4-operation-single-shot.test.ts:331:15
+ ❯ packages/runtime/test/a4p4-operation-single-shot.test.ts:323:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/112]⎯
+
+ FAIL  packages/runtime/test/a4p6-intervention-aggregation.test.ts [ packages/runtime/test/a4p6-intervention-aggregation.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4p6-intervention-aggregation.test.ts:139:17
+ ❯ packages/runtime/test/a4p6-intervention-aggregation.test.ts:138:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/112]⎯
+
+ FAIL  packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts [ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts:149:17
+ ❯ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts:263:15
+ ❯ packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts:261:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/112]⎯
+
+ FAIL  packages/runtime/test/a4pr0-proposal-corrupt.test.ts [ packages/runtime/test/a4pr0-proposal-corrupt.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4pr0-proposal-corrupt.test.ts:160:17
+ ❯ packages/runtime/test/a4pr0-proposal-corrupt.test.ts:159:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/112]⎯
+
+ FAIL  packages/runtime/test/a4pr0-proposal-generation.test.ts [ packages/runtime/test/a4pr0-proposal-generation.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4pr0-proposal-generation.test.ts:201:17
+ ❯ packages/runtime/test/a4pr0-proposal-generation.test.ts:200:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/112]⎯
+
+ FAIL  packages/runtime/test/a4pr0-proposal-store.test.ts [ packages/runtime/test/a4pr0-proposal-store.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4pr0-proposal-store.test.ts:194:17
+ ❯ packages/runtime/test/a4pr0-proposal-store.test.ts:193:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/112]⎯
+
+ FAIL  packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts [ packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts:105:17
+ ❯ packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts:104:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/112]⎯
+
+ FAIL  packages/runtime/test/a5a-pre-execute.test.ts [ packages/runtime/test/a5a-pre-execute.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/a5a-pre-execute.test.ts:315:17
+ ❯ packages/runtime/test/a5a-pre-execute.test.ts:372:15
+ ❯ packages/runtime/test/a5a-pre-execute.test.ts:371:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/112]⎯
+
+ FAIL  packages/runtime/test/c1-control-notification.test.ts [ packages/runtime/test/c1-control-notification.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/c1-control-notification.test.ts:122:17
+ ❯ packages/runtime/test/c1-control-notification.test.ts:121:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/112]⎯
+
+ FAIL  packages/runtime/test/c1-production-wiring.test.ts [ packages/runtime/test/c1-production-wiring.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/c1-production-wiring.test.ts:61:28
+ ❯ packages/runtime/test/c1-production-wiring.test.ts:59:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/112]⎯
+
+ FAIL  packages/runtime/test/c1-restart-recovery.test.ts [ packages/runtime/test/c1-restart-recovery.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/c1-restart-recovery.test.ts:40:17
+ ❯ packages/runtime/test/c1-restart-recovery.test.ts:39:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/112]⎯
+
+ FAIL  packages/runtime/test/control-abandon-storage-fault.test.ts [ packages/runtime/test/control-abandon-storage-fault.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-abandon-storage-fault.test.ts:110:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/112]⎯
+
+ FAIL  packages/runtime/test/control-guard-coupling.test.ts [ packages/runtime/test/control-guard-coupling.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-guard-coupling.test.ts:57:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/112]⎯
+
+ FAIL  packages/runtime/test/control-guard-leader.test.ts [ packages/runtime/test/control-guard-leader.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-guard-leader.test.ts:196:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/112]⎯
+
+ FAIL  packages/runtime/test/control-inline-abandon.test.ts [ packages/runtime/test/control-inline-abandon.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-inline-abandon.test.ts:76:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/112]⎯
+
+ FAIL  packages/runtime/test/control-inline-review.test.ts [ packages/runtime/test/control-inline-review.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-inline-review.test.ts:61:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/112]⎯
+
+ FAIL  packages/runtime/test/control-inline-wait-abort.test.ts [ packages/runtime/test/control-inline-wait-abort.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-inline-wait-abort.test.ts:182:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/112]⎯
+
+ FAIL  packages/runtime/test/control-legacy-row-compat.test.ts [ packages/runtime/test/control-legacy-row-compat.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-legacy-row-compat.test.ts:60:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/112]⎯
+
+ FAIL  packages/runtime/test/control-review-payload-roundtrip.test.ts [ packages/runtime/test/control-review-payload-roundtrip.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-review-payload-roundtrip.test.ts:72:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/112]⎯
+
+ FAIL  packages/runtime/test/control-subject-normalization.test.ts [ packages/runtime/test/control-subject-normalization.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-subject-normalization.test.ts:50:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/112]⎯
+
+ FAIL  packages/runtime/test/control-team-subject.test.ts [ packages/runtime/test/control-team-subject.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-team-subject.test.ts:53:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/112]⎯
+
+ FAIL  packages/runtime/test/control-template-subject.test.ts [ packages/runtime/test/control-template-subject.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/control-template-subject.test.ts:66:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/112]⎯
+
+ FAIL  packages/runtime/test/exec-contract-dual-gate.test.ts [ packages/runtime/test/exec-contract-dual-gate.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/exec-contract-dual-gate.test.ts:207:17
+ ❯ packages/runtime/test/exec-contract-dual-gate.test.ts:251:26
+ ❯ packages/runtime/test/exec-contract-dual-gate.test.ts:250:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/112]⎯
+
+ FAIL  packages/runtime/test/f9-control-exactly-once.test.ts [ packages/runtime/test/f9-control-exactly-once.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/f9-control-exactly-once.test.ts:149:17
+ ❯ packages/runtime/test/f9-control-exactly-once.test.ts:148:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/112]⎯
+
+ FAIL  packages/runtime/test/h1a-pre-execute-endcap.test.ts [ packages/runtime/test/h1a-pre-execute-endcap.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createControlWorld packages/runtime/test/h1a-pre-execute-endcap.test.ts:344:17
+ ❯ packages/runtime/test/h1a-pre-execute-endcap.test.ts:446:19
+ ❯ packages/runtime/test/h1a-pre-execute-endcap.test.ts:445:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/112]⎯
+
+ FAIL  packages/runtime/test/h4-rule-identity.test.ts [ packages/runtime/test/h4-rule-identity.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/h4-rule-identity.test.ts:305:17
+ ❯ packages/runtime/test/h4-rule-identity.test.ts:377:15
+ ❯ packages/runtime/test/h4-rule-identity.test.ts:376:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/112]⎯
+
+ FAIL  packages/runtime/test/h5-bash-effects.test.ts [ packages/runtime/test/h5-bash-effects.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createEnv packages/runtime/test/h5-bash-effects.test.ts:353:17
+ ❯ packages/runtime/test/h5-bash-effects.test.ts:550:15
+ ❯ packages/runtime/test/h5-bash-effects.test.ts:549:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/112]⎯
+
+ FAIL  packages/runtime/test/issue2-capability-permission-precedence.test.ts [ packages/runtime/test/issue2-capability-permission-precedence.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ createControlWorld packages/runtime/test/issue2-capability-permission-precedence.test.ts:224:17
+ ❯ packages/runtime/test/issue2-capability-permission-precedence.test.ts:340:19
+ ❯ packages/runtime/test/issue2-capability-permission-precedence.test.ts:338:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/112]⎯
+
+ FAIL  packages/runtime/test/p6t4-allow-once.test.ts [ packages/runtime/test/p6t4-allow-once.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t4-allow-once.test.ts:64:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/112]⎯
+
+ FAIL  packages/runtime/test/p6t4-deny.test.ts [ packages/runtime/test/p6t4-deny.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t4-deny.test.ts:51:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/112]⎯
+
+ FAIL  packages/runtime/test/p6t4-external-policy.test.ts [ packages/runtime/test/p6t4-external-policy.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t4-external-policy.test.ts:79:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/112]⎯
+
+ FAIL  packages/runtime/test/p6t4-negatives.test.ts [ packages/runtime/test/p6t4-negatives.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t4-negatives.test.ts:69:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/112]⎯
+
+ FAIL  packages/runtime/test/p6t4-restart.test.ts [ packages/runtime/test/p6t4-restart.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t4-restart.test.ts:78:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/112]⎯
+
+ FAIL  packages/runtime/test/p6t4-stale.test.ts [ packages/runtime/test/p6t4-stale.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/p6t4-stale.test.ts:67:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/112]⎯
+
+ FAIL  packages/runtime/test/remote-control-abandoned-code.test.ts [ packages/runtime/test/remote-control-abandoned-code.test.ts ]
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ packages/runtime/test/remote-control-abandoned-code.test.ts:85:17
+ ❯ packages/runtime/test/remote-control-abandoned-code.test.ts:84:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/112]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 65 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 RED probes (fail on the base tree; the file LOADS on the base tree) > R2 — the prefix trap: the labeled startsWith fixture WRONGLY matches, the REAL contains() rejects (demonstration on both trees)
+TypeError: Cannot read properties of undefined (reading 'startsWithAuthorityTrap')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1433:17
+    1431|       realContainsRejectsTrap: boolean
+    1432|     }
+    1433|     expect(trap.startsWithAuthorityTrap).toBe(true)
+       |                 ^
+    1434|     expect(trap.realContainsRejectsTrap).toBe(false)
+    1435|     // The root and operation keys really differ only by the sibling p…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > the root itself matches (directory root and file root)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1559:28
+    1557| describe('A2C-7 G1-G4 — root itself / child / deep descendant / siblin…
+    1558|   it('the root itself matches (directory root and file root)', () => {
+    1559|     expect(FLOWS.g1DirRoot.decisionKind).toBe('allow')
+       |                            ^
+    1560|     expect(FLOWS.g1DirRoot.nextCalls).toBe(1)
+    1561|     expect((FLOWS.g1DirRoot.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > a child and a deep descendant match (the subtree the exact lane could not express)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1567:26
+    1565|
+    1566|   it('a child and a deep descendant match (the subtree the exact lane …
+    1567|     expect(FLOWS.g2Child.decisionKind).toBe('allow')
+       |                          ^
+    1568|     expect(FLOWS.g2Child.nextCalls).toBe(1)
+    1569|     expect((FLOWS.g2Child.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G1-G4 — root itself / child / deep descendant / sibling (fake backend) > a sibling is a NON-MATCH (the default outcome, zero interference)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1578:28
+    1576|
+    1577|   it('a sibling is a NON-MATCH (the default outcome, zero interference…
+    1578|     expect(FLOWS.g4Sibling.decisionKind).toBe('deny')
+       |                            ^
+    1579|     expect(hasFrag(FLOWS.g4Sibling.decisionReason, 'the template\'s de…
+    1580|     expect((FLOWS.g4Sibling.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > the exact lane is unchanged; a different-tool rule is NEVER canonicalized (H4: rules that cannot match are never resolved)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1587:32
+    1585| describe('A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>a…
+    1586|   it('the exact lane is unchanged; a different-tool rule is NEVER cano…
+    1587|     expect(FLOWS.g11ExactMatch.decisionKind).toBe('allow')
+       |                                ^
+    1588|     expect((FLOWS.g11ExactMatch.request) === undefined).toBe(true)
+    1589|     expect(FLOWS.g11ExactMismatch.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > any is unchanged: file-class any allow (static allow + external recheck + next) and shell-class any deny
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1600:30
+    1598|
+    1599|   it('any is unchanged: file-class any allow (static allow + external …
+    1600|     expect(FLOWS.g12AnyAllow.decisionKind).toBe('allow')
+       |                              ^
+    1601|     expect(FLOWS.g12AnyAllow.nextCalls).toBe(1)
+    1602|     expect((FLOWS.g12AnyAllow.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G11-G13 — exact unchanged / any unchanged / deny>ask>allow (fake backend) > deny > ask > allow: a subtree rule in ALL three lanes — the deny lane wins with RULE provenance, zero request rows
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1610:30
+    1608|
+    1609|   it('deny > ask > allow: a subtree rule in ALL three lanes — the deny…
+    1610|     expect(FLOWS.g13DenyWins.decisionKind).toBe('deny')
+       |                              ^
+    1611|     expect(hasFrag(FLOWS.g13DenyWins.decisionReason, 'the template\'s …
+    1612|     expect((FLOWS.g13DenyWins.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (the frozen P1-3 reason, no request, zero next)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1621:14
+    1619|   it('deny subtree, unresolvable root → FAIL CLOSED → deny before A3 (…
+    1620|     const f = FLOWS.g15DenyUnresolvable
+    1621|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1622|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1623|     expect(hasFrag(f.decisionReason, 'src')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[55/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, containment UNDETERMINABLE (no opaque handle) → FAIL CLOSED (the rule cannot be dropped)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1633:14
+    1631|   it('deny subtree, containment UNDETERMINABLE (no opaque handle) → FA…
+    1632|     const f = FLOWS.g15DenyUndeterminable
+    1633|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1634|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1635|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[56/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > deny subtree, the containment seam FAULTS (throws) → undeterminable → FAIL CLOSED (same lane, same contract)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1648:14
+    1646|   it('deny subtree, the containment seam FAULTS (throws) → undetermina…
+    1647|     const f = FLOWS.g15DenyContainsFault
+    1648|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1649|     expect(hasFrag(f.decisionReason, 'a static deny rule could not be …
+    1650|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[57/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, unresolvable root → NO positive grant → non-match → the default (ask → the ask flow; deny → deny)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1656:49
+    1654|
+    1655|   it('allow subtree, unresolvable root → NO positive grant → non-match…
+    1656|     expect(FLOWS.g15AllowUnresolvableDefaultAsk.decisionKind).toBe('al…
+       |                                                 ^
+    1657|     expect((FLOWS.g15AllowUnresolvableDefaultAsk.request) !== undefine…
+    1658|     expect(FLOWS.g15AllowUnresolvableDefaultAsk.nextCalls).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[58/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > ask subtree, unresolvable root → the rule contributes NOTHING (the P1-3 asymmetry: the ask lane is never reported) → the default
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1669:14
+    1667|   it('ask subtree, unresolvable root → the rule contributes NOTHING (t…
+    1668|     const f = FLOWS.g15AskUnresolvable
+    1669|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1670|     expect(hasFrag(f.decisionReason, 'the template\'s default (deny)')…
+    1671|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[59/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G15 — canonicalization failure lanes (plan §9.8, pinned per lane) > allow subtree, the containment seam FAULTS → undeterminable → non-match (no escalation, no grant minted)
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1680:14
+    1678|   it('allow subtree, the containment seam FAULTS → undeterminable → no…
+    1679|     const f = FLOWS.g15AllowContainsFault
+    1680|     expect(f.decisionKind).toBe('deny')
+       |              ^
+    1681|     expect(hasFrag(f.decisionReason, 'the template\'s default (deny)')…
+    1682|     expect((f.request) === undefined).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[60/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G16 — cold resume (dispose + fresh install; no stale canonical-rule cache) > the fresh install follows the CURRENT topology: the stale target is outside, the new target is inside
+TypeError: Cannot read properties of undefined (reading 'decisionKind')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1690:33
+    1688| describe('A2C-7 G16 — cold resume (dispose + fresh install; no stale c…
+    1689|   it('the fresh install follows the CURRENT topology: the stale target…
+    1690|     expect(FLOWS.g16T0ViaTarget.decisionKind).toBe('allow')
+       |                                 ^
+    1691|     expect((FLOWS.g16T0ViaTarget.request) === undefined).toBe(true)
+    1692|     const stale = FLOWS.g16StaleTargetNoMatch
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[61/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > the real backend section ran (the prebuilt pinned lib is present on this host)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1704:28
+    1702| describe('A2C-7 G5-G10 — the REAL pinned backend (the authority is the…
+    1703|   it('the real backend section ran (the prebuilt pinned lib is present…
+    1704|     expect(REAL.available).toBe(true)
+       |                            ^
+    1705|   })
+    1706|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[62/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G5 the prefix trap: the deny rule rooted at `src` does NOT deny the sibling-prefix `src2/f.txt` (the default does); a true child IS denied by the rule
+TypeError: Cannot read properties of undefined (reading 'g5TrapDefault')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1708:30
+    1706|
+    1707|   it('G5 the prefix trap: the deny rule rooted at `src` does NOT deny …
+    1708|     const trap = FLOWS2(REAL).g5TrapDefault
+       |                              ^
+    1709|     expect(trap.decisionKind).toBe('deny')
+    1710|     expect(hasFrag(trap.decisionReason, 'the template\'s default (deny…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[63/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G6 relative/absolute aliases: one canonical identity — cross-spelling containment holds both ways
+TypeError: Cannot read properties of undefined (reading 'g6RelRuleAbsOp')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1721:14
+    1719|   it('G6 relative/absolute aliases: one canonical identity — cross-spe…
+    1720|     const f = FLOWS2(REAL)
+    1721|     expect(f.g6RelRuleAbsOp.decisionKind).toBe('allow')
+       |              ^
+    1722|     expect((f.g6RelRuleAbsOp.request) === undefined).toBe(true)
+    1723|     expect(f.g6AbsRuleRelOp.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[64/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G7 `..` traversal: the traversal spelling canonicalizes to the SAME identity — containment holds
+TypeError: Cannot read properties of undefined (reading 'sameIdentity')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1729:14
+    1727|   it('G7 `..` traversal: the traversal spelling canonicalizes to the S…
+    1728|     const c = REAL.cases?.traversal as { directKey: string; traversalK…
+    1729|     expect(c.sameIdentity).toBe(true)
+       |              ^
+    1730|     expect(c.containsDirect).toBe(true)
+    1731|     expect(FLOWS2(REAL).g7Traversal.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[65/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G8 casing semantics BY BACKEND: this (case-sensitive) backend treats the case variant as a DIFFERENT identity → non-match (the module never case-folds; the Windows delta is recorded)
+TypeError: Cannot read properties of undefined (reading 'caseSensitiveBackend')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1737:14
+    1735|   it('G8 casing semantics BY BACKEND: this (case-sensitive) backend tr…
+    1736|     const c = REAL.cases?.casing as { baseKey: string; variantKey: str…
+    1737|     expect(c.caseSensitiveBackend).toBe(true)
+       |              ^
+    1738|     expect(c.containsVariant).toBe(false)
+    1739|     expect(FLOWS2(REAL).g8CaseVariantNoMatch.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[66/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G9 symlink alias identity: the rule `./alias` matches the TARGET's own paths (and the alias spelling)
+TypeError: Cannot read properties of undefined (reading 'sameIdentity')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1746:14
+    1744|   it('G9 symlink alias identity: the rule `./alias` matches the TARGET…
+    1745|     const c = REAL.cases?.aliasIdentity as { aliasKey: string; dirAKey…
+    1746|     expect(c.sameIdentity).toBe(true)
+       |              ^
+    1747|     const f = FLOWS2(REAL)
+    1748|     expect(f.g9ViaTargetPath.decisionKind).toBe('allow')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[67/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G10 junction retarget — the H4 fresh-decision proof: one install, the authority FOLLOWS the new target on the next decision (no install-time freeze)
+TypeError: Cannot read properties of undefined (reading 'g10T0TargetMatches')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1756:14
+    1754|   it('G10 junction retarget — the H4 fresh-decision proof: one install…
+    1755|     const f = FLOWS2(REAL)
+    1756|     expect(f.g10T0TargetMatches.decisionKind).toBe('allow')
+       |              ^
+    1757|     const oldTarget = f.g10T1OldTargetNoMatch
+    1758|     expect(oldTarget.decisionKind).toBe('deny')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[68/112]⎯
+
+ FAIL  packages/runtime/test/a2c7-subtree-matcher.test.ts > A2C-7 G5-G10 — the REAL pinned backend (the authority is the real `FileSystem.contains()`) > G1 (real) the root itself matches on the real backend (contains(self) = true)
+TypeError: Cannot read properties of undefined (reading 'containsSelf')
+ ❯ packages/runtime/test/a2c7-subtree-matcher.test.ts:1767:14
+    1765|   it('G1 (real) the root itself matches on the real backend (contains(…
+    1766|     const c = REAL.cases?.rootItself as { containsSelf: boolean }
+    1767|     expect(c.containsSelf).toBe(true)
+       |              ^
+    1768|     expect(FLOWS2(REAL).g1RealRootItself.decisionKind).toBe('allow')
+    1769|     expect((FLOWS2(REAL).g1RealRootItself.request) === undefined).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[69/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > commits EXACTLY ONE snapshot with the planned rules
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:287:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[70/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > a risen second leg (escalation to Human User) carries the commit: the higher allow commits
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:308:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[71/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > allowed proposal -> inline commit, fully revalidated > an unrelated lower-layer change that moves NO approved rise still commits
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:328:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[72/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > base movement after approval -> the approved mutation never commits > the SAME mutation at a moved base is a FRESH ask (A1-9 recovery); the allowed-at-old-base case never commits
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:353:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[73/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > base movement after approval -> the approved mutation never commits > an explicit expectedGeneration pinned at the approved base conflicts typed with ZERO writes
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:377:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[74/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > lifecycle drift: an archived target answers mutation-stale (never a lifecycle throw, never a commit)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:399:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[75/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > proposal creation on an archived target still refuses typed BEFORE any row
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:413:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[76/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > matcher ROOT drift (containment retarget under the same canonical key) -> stale
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:431:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[77/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > drift after approval -> mutation-stale with ZERO writes > the ceiling NARROWS after approval (required now above approved) -> stale
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:464:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[78/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > denied is terminal: every later call says denied, no new case, no write
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:485:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[79/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > the rise that failed renders authority-unavailable — never "awaiting a successor"
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:501:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[80/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > desired state reached after approval -> plain no-change, the case untouched
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:534:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[81/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > an UNPARSEABLE rise summary on the allowed leg fails the arm closed: stale, ZERO write, never a commit
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:563:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[82/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > the other terminals on the retry path > a WELL-FORMED summary naming a DIFFERENT rise structure fails the same arm closed (A1-8 structural equality, not format)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:581:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[83/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > the two approval doors never share a case (mutation lane vs operation lane) > a blocked mutation opens exactly ONE case, at the mutation door, carrying the mutation fingerprint only
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:754:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[84/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > the two approval doors never share a case (mutation lane vs operation lane) > the control law refuses a hybrid identity AND a fingerprint-less one — the doors cannot forge each other
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:779:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[85/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > a fault never wears a verdict, and the durable identity is VERIFIED at the commit boundary (A3-3, review items 6/7a) > a NON-LIFECYCLE fault thrown on the guard stack propagates as itself — never `mutation-stale`
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:832:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[86/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > a fault never wears a verdict, and the durable identity is VERIFIED at the commit boundary (A3-3, review items 6/7a) > a lifecycle refusal STILL reinterprets to mutation-stale (the narrowing kept the law it was for)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:855:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[87/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts > a fault never wears a verdict, and the durable identity is VERIFIED at the commit boundary (A3-3, review items 6/7a) > an approval reader LYING about the durable identity is refused: stale, ZERO write, never a commit
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openWorld2 packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:141:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts:868:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[88/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > creates ONE case + one proposal row per rule, commits NOTHING, and says so
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:584:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[89/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a retry is idempotent: same case, one leg row, no second proposal set
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:632:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[90/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a different effect asked is a DIFFERENT fingerprint, a DIFFERENT case
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:648:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[91/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a denied fingerprint at the same base is NOT re-proposable (A1-9): denied is terminal
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:660:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[92/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > a NEW base generation re-asks with a fresh case (A1-9 recovery)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:685:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[93/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > the requester is the DERIVED principal the lane was given, never a host default
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:711:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[94/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > a rise beyond the initiator ceiling inside approval reach -> durable proposal > an operator rise with NO named approval caller behaves as the unwired lane (PR2 throw)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:730:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[95/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > a Human User rise above the Team Hard cap terminates authority-unavailable: no rows, no pending, durable deny
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:748:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[96/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > member initiation refuses BEFORE any proposal machinery (zero rows, zero cases)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:775:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[97/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > an unreadable hard envelope REFUSES (never absent, never a proposal)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:792:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[98/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > an undecided containment is UNDETERMINED — no rung is proposed for an undecided region
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:810:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[99/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the refusals that must never propose > with the approval lane UNWIRED the PR2 refusal is byte-identical
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:830:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[100/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-permission-mutation-proposal.test.ts > the identity the case is opened with > names the kind EXPLICITLY: a silent LEADER_APPROVAL default can never swallow a mutation case
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:196:14
+ ❯ packages/runtime/test/a4p5-permission-mutation-proposal.test.ts:845:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[101/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > self-EXPANSION asks the rung above the LEADER (never a self-review rung), whatever the context labels
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ buildWorld packages/runtime/test/a4p5-self-mutation.test.ts:109:14
+ ❯ packages/runtime/test/a4p5-self-mutation.test.ts:190:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[102/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > a self-EXPANSION allowed by the Human User commits inline into the Leader overlay
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ buildWorld packages/runtime/test/a4p5-self-mutation.test.ts:109:14
+ ❯ packages/runtime/test/a4p5-self-mutation.test.ts:213:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[103/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-self-mutation.test.ts > the Leader mutating its OWN overlay > a self-TIGHTENING needs no proposal at all (no rise -> gate silent)
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ buildWorld packages/runtime/test/a4p5-self-mutation.test.ts:109:14
+ ❯ packages/runtime/test/a4p5-self-mutation.test.ts:239:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[104/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-self-mutation.test.ts > the revoke that reveals a lower allow is an expansion > proposes (deny -> revealed allow), then commits ONE rule-free snapshot on allow
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ buildWorld packages/runtime/test/a4p5-self-mutation.test.ts:109:14
+ ❯ packages/runtime/test/a4p5-self-mutation.test.ts:265:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[105/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-self-mutation.test.ts > the batch is all-or-nothing > ONE region the ladder cannot approve dooms the WHOLE batch: no rows, no commit
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ buildWorld packages/runtime/test/a4p5-self-mutation.test.ts:109:14
+ ❯ packages/runtime/test/a4p5-self-mutation.test.ts:306:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[106/112]⎯
+
+ FAIL  packages/runtime/test/a4p5-self-mutation.test.ts > the batch is all-or-nothing > TWO approvable regions open ONE case with one proposal row per rule
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ buildWorld packages/runtime/test/a4p5-self-mutation.test.ts:109:14
+ ❯ packages/runtime/test/a4p5-self-mutation.test.ts:326:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[107/112]⎯
+
+ FAIL  packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > a rise is ASKED AT THE RUNG ITS WIDTH NEEDS, not at the rung its cell can pay for
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:215:14
+ ❯ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:384:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[108/112]⎯
+
+ FAIL  packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > documents tightened after the approval: ZERO append — never the refused width
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:215:14
+ ❯ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:424:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[109/112]⎯
+
+ FAIL  packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > an unreadable ceiling at retry time refuses as CONTEXT, and the approval buys nothing past it
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:215:14
+ ❯ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:463:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[110/112]⎯
+
+ FAIL  packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > a commit-time refusal consumes NOTHING: the case stays resolved(allow), the retry re-prices and commits once
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:215:14
+ ❯ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:489:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[111/112]⎯
+
+ FAIL  packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts > the ceiling is re-asked at the commit boundary, at every claimed point > an unchanged world still commits: the re-ask is a guard, not a veto over A4-PR5
+TeamContractError: unsupported blueprint schema version 9; this build supports [1, 2, 3]
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1196:11
+ ❯ parseBlueprint packages/domain/blueprint/src/validate.ts:1538:16
+ ❯ createP6T1World packages/runtime/test/p6t1-helpers.ts:362:9
+ ❯ openApprovalWorld packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:215:14
+ ❯ packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts:531:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[112/112]⎯
+
+
+ Test Files  52 failed | 2 passed (54)
+      Tests  65 failed | 50 passed (115)
+   Start at  06:07:36
+   Duration  2.53s (transform 30.67s, setup 0ms, import 10.43s, tests 335ms, environment 6ms)
+

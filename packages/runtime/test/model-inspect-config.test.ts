@@ -42,9 +42,18 @@ import { P6T1_FIXTURE, createP6T1World, destroyP6T1World, type P6T1World } from 
 
 // ── the worker template's declared modelPreference (per scenario) ─────────────
 function blueprintSource(workerModelPreference: string | undefined): string {
+  // A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+  // supported version, and the two envelope documents that version REQUIRES are
+  // declared — in their zero form `rules: []`, which is a POSITION: on the
+  // expansion plane a no-match answers `no-authority` (the document claims no
+  // expansion authority for its Leader), on the approval plane a no-match is
+  // identity (it removes no rung). The zeros are honest here rather than
+  // convenient: this world is built root-direct, and the only production producer
+  // of `permissionAuthorityCeiling` is the plugin host, so no ceiling reader ever
+  // consults these documents. (The same disposition covers every document below.)
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: MP-IC-BP',
     'revision: "1"',
     'leader:',
@@ -85,6 +94,10 @@ function blueprintSource(workerModelPreference: string | undefined): string {
     '  members:',
     '    maxInstances: 2',
     'metadata: {}',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     '---',
     '',
   ].join('\n')

@@ -67,6 +67,7 @@ import {
 import { TEAM_RUNTIME_ERROR_CODES, TeamRuntimeError } from '../admission/index.js'
 import type { TeamRuntimeActionRequest } from '../admission/index.js'
 import { RECOVERY_INCIDENT_OPENED_FACT_TYPE, RECOVERY_INCIDENT_CLOSED_FACT_TYPE } from '../requirements/facts.js'
+import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 
 // --- the production glue resolvability (the t12a symlink marker) --------------
 
@@ -129,6 +130,24 @@ const L7_SERVER = 'mtm_srv_l7'
 // --- the v2 blueprints (template-level required mcpServer) ----------------------
 
 /**
+ * The version this fixture's document declares is the SUBJECT of the file, not
+ * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+ * a home here instead of in the fence's sight: production compiles the
+ * requirement scopes this document declares only when the document declares
+ * version 2 — five sites compare the declared version against 2
+ * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+ * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+ * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+ * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version took the file down at module scope: the target-specific block these tests assert (16 of them, green at base) disappeared and the Finding F false OPEN returned. 
+ * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+ * emits are byte-for-byte what they were; only the carrier moved. And the
+ * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+ * surviving version this line stops compiling and names THIS FILE — which is the
+ * loud failure §7.4 exists to arrange, in place of a document that would
+ * otherwise become a silent parse refusal.
+ */
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+/**
  * One v2 blueprint: the `worker` member template carries the REQUIRED
  * mcpServer subject (the materialization axis under test); `leaderCaps`
  * / `workerCaps` decide which templates' consumption views admit the
@@ -185,7 +204,7 @@ function mtmBlueprint(
   ]
   const lines: string[] = [
     '---',
-    'schemaVersion: 2',
+    `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
     `blueprintId: ${bpId}`,
     'revision: "1"',
     'leader:',

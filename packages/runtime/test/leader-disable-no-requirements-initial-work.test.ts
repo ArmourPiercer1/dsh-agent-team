@@ -100,9 +100,28 @@ import {
   makeActionRequest,
   memberCaller,
 } from './p6t2-helpers.js'
+import type { TeamBlueprint } from '../../domain/blueprint/src/index.js'
 
 // --- the fixture (schema v2: NO template requirements — the empty case) ------------
 
+/**
+ * The version this fixture's document declares is the SUBJECT of the file, not
+ * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+ * a home here instead of in the fence's sight: production compiles the
+ * requirement scopes this document declares only when the document declares
+ * version 2 — five sites compare the declared version against 2
+ * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+ * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+ * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+ * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddened the file's premise test (1 of 5, all green at base): the leader scope had no verdict inputs left to read. 
+ * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+ * emits are byte-for-byte what they were; only the carrier moved. And the
+ * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+ * surviving version this line stops compiling and names THIS FILE — which is the
+ * loud failure §7.4 exists to arrange, in place of a document that would
+ * otherwise become a silent parse refusal.
+ */
+const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
 /**
  * The finding-I-residual fixture: a REQUIRED team-level `skill/base`
  * (passing — the Team scope stays healthy) + a LEADER template and a
@@ -113,7 +132,7 @@ import {
  */
 const FNLI_BLUEPRINT_SOURCE = [
   '---',
-  'schemaVersion: 2',
+  `schemaVersion: ${DECLARED_DOCUMENT_VERSION}`,
   'blueprintId: FNLI-BP',
   'revision: "1"',
   'leader:',
@@ -274,7 +293,9 @@ describe('finding I residual: a disabled requirement-free LEADER blocks the init
     expect(inputs.scopes.map((scope) => scopeKey(scope))).toEqual(['team'])
     // The bound blueprint is v2 (the gate's template-scope surface is live)
     // and the leader templateId is `leader`.
-    expect(world.blueprint.schemaVersion).toBe(2)
+    // The witness constant, not a second digit: the assertion proves the runtime
+    // read the version this file declares (the file's own carrier, see above).
+    expect(world.blueprint.schemaVersion).toBe(DECLARED_DOCUMENT_VERSION)
     expect(world.blueprint.leader.templateId).toBe('leader')
   })
 

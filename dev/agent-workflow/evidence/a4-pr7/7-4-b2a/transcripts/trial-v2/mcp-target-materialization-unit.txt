@@ -1,0 +1,87 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts (5 tests | 5 failed) 6ms
+     × U1 — the boundary scope reaches the memberMaterialization port verbatim (instance + root on the target read; root only on the template read) 3ms
+     × U2 — the failed target in the masked window: the feed fact is available:false and the gate BLOCKS the impact (typed FATAL-down) 2ms
+     × U3 — the healthy target passes while the scope verdict keeps the conservative worst case (dual evaluation: decision on the target boundary, bookkeeping on the scope) 0ms
+     × U4 — the masked in-flight target is NOT spurious-PENDING-blocked (liveness: the mount attempt is admissible — bootstrap; a same-passage failed mount is gated at the delivery gate, the next admission as failed) 0ms
+     × U5 — the guards: unreachable + healthy materialization still blocks; the cold member never blocks 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U1 — the boundary scope reaches the memberMaterialization port verbatim (instance + root on the target read; root only on the template read)
+AssertionError: expected 0 to be greater than or equal to 1
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:433:33
+    431|     // the template-scope read with the action's target instance conte…
+    432|     const targetScopes = U6.u2.scopesSeen.filter((s) => s.templateId =…
+    433|     expect(targetScopes.length).toBeGreaterThanOrEqual(1)
+       |                                 ^
+    434|     const firstTargetScope = targetScopes[0]
+    435|     expect(firstTargetScope).toBeDefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U2 — the failed target in the masked window: the feed fact is available:false and the gate BLOCKS the impact (typed FATAL-down)
+AssertionError: expected 'allowed' to be 'blocked' // Object.is equality
+
+Expected: "blocked"
+Received: "allowed"
+
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:453:28
+    451|
+    452|   it('U2 — the failed target in the masked window: the feed fact is av…
+    453|     expect(U6.u2Gate.kind).toBe('blocked')
+       |                            ^
+    454|     if (U6.u2Gate.kind !== 'blocked') return
+    455|     expect(U6.u2Gate.status).toBe('BLOCKED_FATAL')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U3 — the healthy target passes while the scope verdict keeps the conservative worst case (dual evaluation: decision on the target boundary, bookkeeping on the scope)
+AssertionError: expected undefined to be defined
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:481:27
+    479|     // convergence, never on a healthy sibling's fresh verdict).
+    480|     const workerVerdict = U6.u3Gate.scopeVerdicts.find((v) => v.key ==…
+    481|     expect(workerVerdict).toBeDefined()
+       |                           ^
+    482|     expect(workerVerdict?.state).toBe(SCOPE_STATES.blocked)
+    483|     // The decision itself used the target boundary (A mounted → the
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U4 — the masked in-flight target is NOT spurious-PENDING-blocked (liveness: the mount attempt is admissible — bootstrap; a same-passage failed mount is gated at the delivery gate, the next admission as failed)
+AssertionError: expected undefined to be defined
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:511:17
+    509|     expect(U6.u4Read).toBeDefined()
+    510|     const obs = U6.u4Read?.observations.find((o) => o.subject === SERV…
+    511|     expect(obs).toBeDefined()
+       |                 ^
+    512|     expect(obs?.materialization).toBe('pending')
+    513|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  packages/runtime/test/mcp-target-materialization-unit.test.ts > Finding F T6 — the scoped-identity plumbing + materialization axis (unit: provider + classifier + gate) > U5 — the guards: unreachable + healthy materialization still blocks; the cold member never blocks
+AssertionError: expected 'allowed' to be 'blocked' // Object.is equality
+
+Expected: "blocked"
+Received: "allowed"
+
+ ❯ packages/runtime/test/mcp-target-materialization-unit.test.ts:518:29
+    516|     // U5a — the server truth wins: a required capability observed DOWN
+    517|     // blocks even when the (other instance's) mount is healthy.
+    518|     expect(U6.u5aGate.kind).toBe('blocked')
+       |                             ^
+    519|     if (U6.u5aGate.kind === 'blocked') {
+    520|       expect(U6.u5aGate.status).toBe('BLOCKED_FATAL')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed (5)
+   Start at  06:14:59
+   Duration  733ms (transform 493ms, setup 0ms, import 639ms, tests 6ms, environment 0ms)
+

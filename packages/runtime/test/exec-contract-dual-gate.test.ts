@@ -213,6 +213,15 @@ async function createEnv(basename: string, options: EnvOptions): Promise<{ env: 
     waitPollIntervalMs: 10,
   })
   const ctx = makeFakeAgentCtx()
+  // A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+  // supported version, and the two envelope documents that version REQUIRES are
+  // declared — in their zero form `rules: []`, which is a POSITION: on the
+  // expansion plane a no-match answers `no-authority` (the document claims no
+  // expansion authority for its Leader), on the approval plane a no-match is
+  // identity (it removes no rung). The zeros are honest here rather than
+  // convenient: this world is built root-direct, and the only production producer
+  // of `permissionAuthorityCeiling` is the plugin host, so no ceiling reader ever
+  // consults these documents. (The same disposition covers every document below.)
   const observations: Record<string, unknown>[] = []
   const isLeader = options.isLeader
   const caller = isLeader ? leaderCaller() : memberCaller(WORKER_ID)
@@ -488,7 +497,7 @@ const G6 = await (async () => {
 function formulaSource(teamAllow: string[], teamDeny: string[], entries: string): string {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: exec.formula',
     'revision: "1"',
     'leader:',
@@ -506,6 +515,10 @@ function formulaSource(teamAllow: string[], teamDeny: string[], entries: string)
     ...(entries === '' ? [] : ['memberEnvelopes:', ...entries.split('\n')]),
     'policyStates: []',
     'metadata: {}',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     '---',
     '',
   ].join('\n')
@@ -623,7 +636,7 @@ describe('exec-autonomy-contract: the leaderExecEnvelopeOps formula (pure)', () 
   it('F1f: a MEMBER template entry never applies to the leader computation', () => {
     const source = [
       '---',
-      'schemaVersion: 1',
+      'schemaVersion: 3',
       'blueprintId: exec.formula',
       'revision: "1"',
       'leader:',
@@ -643,6 +656,10 @@ describe('exec-autonomy-contract: the leaderExecEnvelopeOps formula (pure)', () 
       'requirements: []',
       'policyStates: []',
       'metadata: {}',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
       '---',
       '',
     ].join('\n')

@@ -1,0 +1,45 @@
+p6t1-parallel.test.ts — declared load-sensitive flake: both numbers, nothing "fixed"
+=====================================================================================
+
+Every run: `npx vitest run packages/runtime/test/p6t1-parallel.test.ts` (one file per
+invocation), `rm -rf packages/testkit/test/.tmp-fault` before each. The base copy was
+re-materialized with `git show HEAD:packages/runtime/test/p6t1-parallel.test.ts > <path>`
+(never `git checkout --`), and the migrated head version was restored from a copy and
+verified by sha256 (d7129c3ae2918332e183710f8fd7a927a8021803fd959de5152172190aee8b88).
+
+HEAD (migrated: supported version + `rules: []` pair)
+-----------------------------------------------------
+Quiet machine, six consecutive runs:
+  head#1: Tests 9 passed (9)
+  head#2: Tests 9 passed (9)
+  head#3: Tests 9 passed (9)
+  head#4: Tests 9 passed (9)
+  head#5: Tests 9 passed (9)
+  head#6: Tests 9 passed (9)
+Runs taken while other vitest processes were running in parallel (this lane fans out
+consumer-set runs, so the machine was loaded):
+  Tests  3 failed | 6 passed (9)
+  Tests  2 failed | 7 passed (9)
+  Tests  2 failed | 7 passed (9)
+
+BASE (`git show HEAD:` copy, same method)
+-----------------------------------------
+Quiet machine, six consecutive runs:
+  base#1: Tests 9 passed (9)
+  base#2: Tests 9 passed (9)
+  base#3: Tests 9 passed (9)
+  base#4: Tests 9 passed (9)
+  base#5: Tests 1 failed | 8 passed (9)      <-- flaked at base
+  base#6: Tests 9 passed (9)
+Parallel-load runs:
+  Tests  3 failed | 6 passed (9)
+
+Reading
+-------
+The signature is identical at base and head (activation-count assertions reading one behind,
+e.g. `expected 1 to be 2`), and it correlates with machine load at both versions: standalone
+on a quiet machine both migrate and base are 9/9 (base 5/6 in the sample above). The file was
+migrated like every other decoration fixture and NOT "fixed": changing a load-sensitive
+timing assertion to make a flake look gone would be exactly the silent change of subject this
+lane exists to refuse. Reported as-is per the §7.4 plan instruction ("migrate, report both
+numbers, do not fix it").

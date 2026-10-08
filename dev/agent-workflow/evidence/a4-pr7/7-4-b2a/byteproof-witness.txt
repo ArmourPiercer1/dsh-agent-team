@@ -1,0 +1,142 @@
+consent-scope-hash-binding: 18 intentional prose/code residuals
+    +/**
+    + * The version this fixture's document declares is the SUBJECT of the file, not
+    + * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+    + * a home here instead of in the fence's sight: production compiles the
+    + * requirement scopes this document declares only when the document declares
+    + * version 2 — five sites compare the declared version against 2
+    + * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+    + * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+    + * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+    + * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version took th
+    + * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+    + * emits are byte-for-byte what they were; only the carrier moved. And the
+    + * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+    + * surviving version this line stops compiling and names THIS FILE — which is the
+    + * loud failure §7.4 exists to arrange, in place of a document that would
+    + * otherwise become a silent parse refusal.
+    + */
+    +const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+fix-control-authz-c-abandon-terminal: 27 intentional prose/code residuals
+    -//    (`targetTemplateInputs` is present only for schemaVersion 2). The
+    -//    P6-T2 fixture blueprint is schemaVersion 1 — the await is
+    -//    structurally absent here (the boundary check is placed in code
+    -//    after that await regardless).
+    +//    (`targetTemplateInputs` is compiled only from a document that carries the
+    +//    v2 requirement surface). The P6-T2 fixture blueprint does not carry it —
+    +//    it rides the supported version, whose requirement surface is the two
+    +//    envelope documents — so the await is structurally absent here (the
+    +//    boundary check is placed in code after that await regardless).
+    +/**
+    + * The version this fixture's document declares is the SUBJECT of the file, not
+    + * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+    + * a home here instead of in the fence's sight: production compiles the
+    + * requirement scopes this document declares only when the document declares
+    + * version 2 — five sites compare the declared version against 2
+    + * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+    + * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+    + * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+    + * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddene
+    + * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+    + * emits are byte-for-byte what they were; only the carrier moved. And the
+    + * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+    + * surviving version this line stops compiling and names THIS FILE — which is the
+    + * loud failure §7.4 exists to arrange, in place of a document that would
+    + * otherwise become a silent parse refusal.
+    + */
+    +const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+leader-disable-no-requirements-initial-work: 18 intentional prose/code residuals
+    +/**
+    + * The version this fixture's document declares is the SUBJECT of the file, not
+    + * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+    + * a home here instead of in the fence's sight: production compiles the
+    + * requirement scopes this document declares only when the document declares
+    + * version 2 — five sites compare the declared version against 2
+    + * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+    + * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+    + * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+    + * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddene
+    + * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+    + * emits are byte-for-byte what they were; only the carrier moved. And the
+    + * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+    + * surviving version this line stops compiling and names THIS FILE — which is the
+    + * loud failure §7.4 exists to arrange, in place of a document that would
+    + * otherwise become a silent parse refusal.
+    + */
+    +const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+leader-recovery-next-boundary-exit: 18 intentional prose/code residuals
+    +/**
+    + * The version this fixture's document declares is the SUBJECT of the file, not
+    + * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+    + * a home here instead of in the fence's sight: production compiles the
+    + * requirement scopes this document declares only when the document declares
+    + * version 2 — five sites compare the declared version against 2
+    + * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+    + * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+    + * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+    + * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddene
+    + * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+    + * emits are byte-for-byte what they were; only the carrier moved. And the
+    + * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+    + * surviving version this line stops compiling and names THIS FILE — which is the
+    + * loud failure §7.4 exists to arrange, in place of a document that would
+    + * otherwise become a silent parse refusal.
+    + */
+    +const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+leader-template-required-boundary: 18 intentional prose/code residuals
+    +/**
+    + * The version this fixture's document declares is the SUBJECT of the file, not
+    + * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+    + * a home here instead of in the fence's sight: production compiles the
+    + * requirement scopes this document declares only when the document declares
+    + * version 2 — five sites compare the declared version against 2
+    + * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+    + * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+    + * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+    + * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddene
+    + * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+    + * emits are byte-for-byte what they were; only the carrier moved. And the
+    + * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+    + * surviving version this line stops compiling and names THIS FILE — which is the
+    + * loud failure §7.4 exists to arrange, in place of a document that would
+    + * otherwise become a silent parse refusal.
+    + */
+    +const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+mcp-target-materialization: 18 intentional prose/code residuals
+    +/**
+    + * The version this fixture's document declares is the SUBJECT of the file, not
+    + * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+    + * a home here instead of in the fence's sight: production compiles the
+    + * requirement scopes this document declares only when the document declares
+    + * version 2 — five sites compare the declared version against 2
+    + * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+    + * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+    + * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+    + * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version took th
+    + * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+    + * emits are byte-for-byte what they were; only the carrier moved. And the
+    + * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+    + * surviving version this line stops compiling and names THIS FILE — which is the
+    + * loud failure §7.4 exists to arrange, in place of a document that would
+    + * otherwise become a silent parse refusal.
+    + */
+    +const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2
+mcp-target-materialization-unit: 18 intentional prose/code residuals
+    +/**
+    + * The version this fixture's document declares is the SUBJECT of the file, not
+    + * a formality, so §7.4 (lane B-runtime-semantics-A) leaves it at 2 and gives it
+    + * a home here instead of in the fence's sight: production compiles the
+    + * requirement scopes this document declares only when the document declares
+    + * version 2 — five sites compare the declared version against 2
+    + * (requirements/scope-requirements.ts:108, requirements/creation-preflight.ts:217,
+    + * admission/requirement-gate.ts:460, compatibility/blueprint.ts:81,
+    + * activation/provider.ts:821). Raising the digit therefore does not upgrade the
+    + * fixture, it deletes the surface the fixture observes: the trial promotion to the supported version reddene
+    + * dev/agent-workflow/evidence/a4-pr7/7-4-b2a/trial-v2/. The YAML bytes this file
+    + * emits are byte-for-byte what they were; only the carrier moved. And the
+    + * carrier is typed, so when §7.3 narrows TeamBlueprint['schemaVersion'] to the
+    + * surviving version this line stops compiling and names THIS FILE — which is the
+    + * loud failure §7.4 exists to arrange, in place of a document that would
+    + * otherwise become a silent parse refusal.
+    + */
+    +const DECLARED_DOCUMENT_VERSION: TeamBlueprint['schemaVersion'] = 2

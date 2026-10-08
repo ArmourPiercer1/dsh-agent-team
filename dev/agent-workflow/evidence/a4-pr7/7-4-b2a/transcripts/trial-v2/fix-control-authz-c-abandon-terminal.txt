@@ -1,0 +1,96 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts (74 tests | 1 failed) 9123ms
+     ✓ C1: pending → parked waiter → explicit abandon: the waiter settles terminal, the router keeps the typed block, ZERO work 80ms
+     ✓ C2: allow → abandon → a fresh await on the abandoned row settles REJECTED terminal (bounded — the cold-retry liveness) 8ms
+     ✓ C3: the abort race over the stale decision (mid-wait abort with BOTH marks durable): the abandon mark wins the cascade (the stale allow never settles the waiter) 23ms
+     ✓ C4: the wait→admission race (allow + abandon both land while the router waits): the typed zero-effect block holds for EVERY interleaving; the abandoned allow never executes 39ms
+     ✓ C5: the effect-admission boundary (the external-review TOCTOU) — a durable abandon landing DURING the gate re-probe (AFTER the pre-dispatch snapshot) NEVER admits the reviewed work: zero admitted / zero effect, the typed abandoned block, the durable close stands 19ms
+     ✓ C6: the COORDINATION reentry (send-message — the recoveryWork impact that bypasses the gated branch) hits the SAME effect-admission boundary — the reentry queued behind the shared runtime lock, a real abandon on the control lock, release ⇒ the coordination fact is NEVER committed unchecked (zero fact / zero delivery, the typed block, the durable close stands) over the REAL MessagingCoordinator 18ms
+     ✓ C7 (residual C-2 leg a): an AbortSignal aborting DURING the gate re-probe await (no explicit abandon) — the serialized boundary sees the live signal, PERSISTS the abandon (the durable close, the same footprint as an explicit abandon) and rejects typed; ZERO work 18ms
+     ✓ C8 (residual C-2 leg b): the signal aborting while the unit is BLOCKED WAITING for the control lock (between queue and acquisition) — the commit is STILL rejected with a durable close; ZERO work 82ms
+     ✓ c9-1: delegate × decision-settle × no-mark 18ms
+     ✓ c9-2: delegate × decision-settle × already-abandoned 16ms
+     ✓ c9-3: delegate × terminal-snapshot × no-mark 17ms
+     ✓ c9-4: delegate × terminal-snapshot × already-abandoned 16ms
+     ✓ c9-5: delegate × outer-queue × no-mark 17ms
+     ✓ c9-6: delegate × outer-queue × already-abandoned 16ms
+     ✓ c9-7: delegate × gate-success × no-mark 17ms
+     ✓ c9-8: delegate × gate-success × already-abandoned 17ms
+     ✓ c9-9: delegate × gate-reject × no-mark 16ms
+     ✓ c9-10: delegate × gate-reject × already-abandoned 16ms
+     ✓ c9-11: delegate × control-queue × no-mark 80ms
+     ✓ c9-12: delegate × control-queue × already-abandoned 78ms
+     ✓ c9-13: delegate × pre-flight-authority × no-mark 19ms
+     ✓ c9-14: delegate × pre-flight-authority × already-abandoned 16ms
+     ✓ c9-15: delegate × pre-flight-provider-lock × no-mark 41ms
+     ✓ c9-16: delegate × pre-flight-provider-lock × already-abandoned 40ms
+     ✓ c9-17: delegate × pre-flight-external-facts × no-mark 19ms
+     ✓ c9-18: delegate × pre-flight-external-facts × already-abandoned 19ms
+     ✓ c9-19: delegate × post-commit × no-mark 20ms
+     ✓ c9-20: follow-up × decision-settle × no-mark 15ms
+     ✓ c9-21: follow-up × decision-settle × already-abandoned 15ms
+     ✓ c9-22: follow-up × terminal-snapshot × no-mark 16ms
+     ✓ c9-23: follow-up × terminal-snapshot × already-abandoned 15ms
+     ✓ c9-24: follow-up × outer-queue × no-mark (the external named repro) 16ms
+     ✓ c9-25: follow-up × outer-queue × already-abandoned 16ms
+     ✓ c9-26: follow-up × gate-success × no-mark 16ms
+     ✓ c9-27: follow-up × gate-success × already-abandoned 16ms
+     ✓ c9-28: follow-up × gate-reject × no-mark 16ms
+     ✓ c9-29: follow-up × gate-reject × already-abandoned 15ms
+     ✓ c9-30: follow-up × control-queue × no-mark 79ms
+     ✓ c9-31: follow-up × control-queue × already-abandoned 79ms
+     ✓ c9-32: follow-up × post-commit × no-mark 18ms
+     ✓ c9-33: follow-up × fault-admission × no-mark 79ms
+     ✓ c9-34: send-message × decision-settle × no-mark 16ms
+     ✓ c9-35: send-message × decision-settle × already-abandoned 15ms
+     ✓ c9-36: send-message × terminal-snapshot × no-mark 16ms
+     ✓ c9-37: send-message × terminal-snapshot × already-abandoned 15ms
+     ✓ c9-38: send-message × outer-queue × no-mark 16ms
+     ✓ c9-39: send-message × outer-queue × already-abandoned 16ms
+     ✓ c9-40: send-message × control-queue × no-mark 77ms
+     ✓ c9-41: send-message × control-queue × already-abandoned 77ms
+     ✓ c9-42: create-member × decision-settle × no-mark 17ms
+     ✓ c9-43: create-member × decision-settle × already-abandoned 14ms
+     ✓ c9-44: create-member × terminal-snapshot × no-mark 16ms
+     ✓ c9-45: create-member × terminal-snapshot × already-abandoned 15ms
+     ✓ c9-46: create-member × outer-queue × no-mark 15ms
+     ✓ c9-47: create-member × outer-queue × already-abandoned 17ms
+     ✓ c9-48: create-member × gate-success × no-mark 16ms
+     ✓ c9-49: create-member × gate-success × already-abandoned 17ms
+     ✓ c9-50: create-member × gate-reject × no-mark 16ms
+     ✓ c9-51: create-member × gate-reject × already-abandoned 15ms
+     ✓ c9-52: create-member × control-queue × no-mark 77ms
+     ✓ c9-53: create-member × control-queue × already-abandoned 78ms
+     ✓ c9-54: create-member × pre-flight-authority × no-mark 16ms
+     ✓ c9-55: create-member × pre-flight-authority × already-abandoned 18ms
+     ✓ c9-56: create-member × pre-flight-provider-lock × no-mark 38ms
+     ✓ c9-57: create-member × pre-flight-provider-lock × already-abandoned 38ms
+     ✓ c9-58: create-member × pre-flight-external-facts × no-mark 18ms
+     ✓ c9-59: create-member × pre-flight-external-facts × already-abandoned 18ms
+     ✓ c9-60: create-member × fault-preflight × no-mark 18ms
+     ✓ c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end)  2003ms
+     × c9-r3-1: v2 templateFeed — park at B's templateFacts feed await (ENTERED proven), abort, the feed REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal) 5006ms
+     ✓ c9-r3-2: legacy externalFacts — park at B's step-8 probe (ENTERED proven), abort, the probe REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal) 21ms
+     ✓ c9-r3-3: one-shot close-failure on the reject path — the FIRST close fault propagates UNCHANGED (typed DURABLE_WRITE_FAILED carrying the injected error), zero effects, zero marks, EXACTLY ONE abandon put attempt (never re-attempted — a second attempt would succeed and mask the fault) 17ms
+     ✓ c9-pcb-1: GATED branch (follow-up reentry) — the unit C-2 abort-close faults ONCE before the commitEffect callback enters: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged (not masked by a typed-abandoned terminal), the close attempted EXACTLY ONCE, zero effects, zero marks 78ms
+     ✓ c9-pcb-2: FALLBACK branch (send-message reentry) — same one-shot pre-callback close fault on the fallback D2 settle path: the ORIGINAL typed DURABLE_WRITE_FAILED propagates unchanged, the close attempted EXACTLY ONCE, zero effects, zero marks 79ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts > fix-control-authz C9 residual-3: the pre-reservation REJECT region > c9-r3-1: v2 templateFeed — park at B's templateFacts feed await (ENTERED proven), abort, the feed REJECTS: the pre-reservation reject converges to the durable close (zero provisioning, exactly one mark, the typed abandon terminal)
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts:2378:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 73 passed (74)
+   Start at  06:15:08
+   Duration  9.99s (transform 620ms, setup 0ms, import 787ms, tests 9.12s, environment 0ms)
+

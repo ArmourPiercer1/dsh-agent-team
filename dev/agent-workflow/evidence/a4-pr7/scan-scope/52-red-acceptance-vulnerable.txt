@@ -1,0 +1,10 @@
+ok   A-doc-members          exit=1 admitted=true 
+ok   B-doc-templateid       exit=1 admitted=true 
+ok   H-doc-persona          exit=1 admitted=true 
+ok   P-wide-range           exit=1 admitted=true 
+ok   O-doc-narrow           exit=2 admitted=false reason="RESULT not-run :: adjudication ledger entries fail the "hand-verified <own full path>:<line-range containing the site>" rule (/home/user/dsh-plugins/d"
+ok   N-not-a-dirty-site     exit=1 admitted=true 
+ok   L-no-such-line         exit=2 admitted=false reason="RESULT not-run :: adjudication ledger entries fail the "hand-verified <own full path>:<line-range containing the site>" rule (/home/user/dsh-plugins/d"
+ok   G-no-such-file         exit=2 admitted=false reason="RESULT not-run :: adjudication ledger entries fail the "hand-verified <own full path>:<line-range containing the site>" rule (/home/user/dsh-plugins/d"
+ok   CONTROL-honest-p7t6    exit=1 admitted=true 
+mode=vulnerable verdict=ALL CASES AS EXPECTED

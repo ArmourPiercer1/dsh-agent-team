@@ -1,0 +1,9 @@
+=== item-2 mutation record (module-level, tree untouched) ===
+file: packages/domain/blueprint/testdata/fixtures.ts
+rewrite L26 `schemaVersion: 2` -> `schemaVersion: +2`
+dirty before: 34 -> after: 33: THE SITE VANISHES from the text classifier
+node: {schemaVersion:+1} is number 1; YAML parses +1 as 1 — the runtime is not fooled.
+disposition: PRINTED not widened — the SCOPE-NOTE blind-spot line names the family
+(+N unary plus, 0x hex, template-string, computed-key) with a live count (28 sites
+today, template-carriers dominant); widen red-first only if a named mutation
+shows a variant actually laundering a retired digit into a shipped fixture.

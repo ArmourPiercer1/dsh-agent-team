@@ -1,0 +1,40 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts (5 tests | 1 failed) 47ms
+     × premise: the leader template declares NO requirements (its scope has no verdict inputs) 16ms
+     ✓ IL1: a DISABLED requirement-free leader BLOCKS admitInitialWork (zero model, zero work) 9ms
+     ✓ IL2: the SUBSEQUENT root-boundary admission (follow-up to the leader instance) is blocked the same way 7ms
+     ✓ IL3: with the leader disabled the legitimate control/recovery lanes still function 6ms
+     ✓ IL4: re-enable RESUMES the initial work through the same checks (allowed again) 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts > finding I residual: a disabled requirement-free LEADER blocks the initial-work boundary > premise: the leader template declares NO requirements (its scope has no verdict inputs)
+AssertionError: expected [] to deeply equal [ 'req-team-core' ]
+
+- Expected
++ Received
+
+- [
+-   "req-team-core",
+- ]
++ []
+
+ ❯ packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts:272:61
+    270|     const inputs = scopeRequirementInputsOf(world.blueprint)
+    271|     // The team scope carries the ONLY requirement (passing).
+    272|     expect(inputs.team.map((input) => input.requirementId)).toEqual(['…
+       |                                                             ^
+    273|     // The leader (and the worker) declare nothing: NO template requir…
+    274|     // inputs, NO template scope in the extraction (the empty case the
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  06:15:03
+   Duration  906ms (transform 607ms, setup 0ms, import 767ms, tests 47ms, environment 0ms)
+

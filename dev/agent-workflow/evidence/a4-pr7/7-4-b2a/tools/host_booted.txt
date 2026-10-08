@@ -1,0 +1,8 @@
+// A4-PR7 §7.4 (lane B-runtime-semantics-A): this fixture document rides the
+// supported version, and the two envelope documents that version REQUIRES are
+// declared — in their zero form `rules: []`, which is a POSITION: on the
+// expansion plane a no-match answers `no-authority`, on the approval plane a
+// no-match is identity. Unlike most of this lane's fixtures this world boots
+// through `hostEntry.apply`, where the ceiling reader IS live, so the zeros are
+// a claim: this file drives no permission mutation and no approval-driven
+// operation, so an empty hard document narrows nothing it exercises.

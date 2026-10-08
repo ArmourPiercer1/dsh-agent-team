@@ -1,0 +1,28 @@
+# RED transcript, round 5. FENCE UNDER TEST = 4b7ca211 (round-4.5).
+# What to read: R5-resource-doc ADMITTED (exit 1) — `witness-key: resource` laundered
+#   a live v1 document site with ONE LEDGER ROW and NO source edit: the trapdoor the reviewer
+#   named, demonstrated against the fence it was reported against.
+# R5-radius-doc / R5-comment-witness: exit 2 with reason "does not classify dirty" — the
+#   R4.5 fence PASSED the comment witness and the doc-cluster witness at admission; only the
+#   unrelated foreign-site guard stopped them. Reason-level red: acceptance did not refuse.
+# Replay mode is an expectation, not a switch (self-falsifying property preserved).
+ok   R5-resource-doc        exit=1 admitted=true 
+ok   R5-radius-doc          exit=2 admitted=false reason="RESULT not-run :: dirty-class ledger rows for sites the fence does not classify dirty: .tmp-rr/r5-doc.ts::L4::v1 — an annotation must annotate a real "
+ok   R5-comment-witness     exit=2 admitted=false reason="RESULT not-run :: dirty-class ledger rows for sites the fence does not classify dirty: .tmp-rr/r5-comment.ts::L4::v1 — an annotation must annotate a r"
+mode=r45 verdict=ALL CASES AS EXPECTED
+
+# full r45 run (original-case expectations are mode=vulnerable-era; 7 mismatches are that mix,
+# NOT new defects — the R5-prefixed lines above are the round-5 red):
+FAIL A-doc-members          exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-A-doc-members.js"
+FAIL B-doc-templateid       exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-B-doc-templateid"
+FAIL H-doc-persona          exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-H-doc-persona.js"
+ok   P-wide-range           exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-P-wide-range.jso"
+FAIL O-doc-narrow           exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-O-doc-narrow.jso"
+FAIL N-not-a-dirty-site     exit=2 admitted=false reason="RESULT not-run :: dirty-class ledger rows for sites the fence does not classify dirty: packages/legacy/test/p7t6-teammates-adapter.test.ts::L119::v1 —"
+FAIL L-no-such-line         exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-L-no-such-line.j"
+FAIL G-no-such-file         exit=2 admitted=false reason="RESULT not-run :: adjudication ledger rows rejected (/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-fence-dirtyclass/.tmp-rr/acc-G-no-such-file.j"
+ok   CONTROL-honest-p7t6    exit=1 admitted=true 
+ok   R5-resource-doc        exit=1 admitted=true 
+ok   R5-radius-doc          exit=2 admitted=false reason="RESULT not-run :: dirty-class ledger rows for sites the fence does not classify dirty: .tmp-rr/r5-doc.ts::L4::v1 — an annotation must annotate a real "
+ok   R5-comment-witness     exit=2 admitted=false reason="RESULT not-run :: dirty-class ledger rows for sites the fence does not classify dirty: .tmp-rr/r5-comment.ts::L4::v1 — an annotation must annotate a r"
+mode=r45 verdict=7 MISMATCHES

@@ -1,0 +1,12 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-74-b2a
+
+ ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (58 tests) 865ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  338ms
+
+ Test Files  1 passed (1)
+      Tests  58 passed (58)
+   Start at  07:38:20
+   Duration  1.14s (transform 44ms, setup 0ms, import 195ms, tests 865ms, environment 0ms)
+

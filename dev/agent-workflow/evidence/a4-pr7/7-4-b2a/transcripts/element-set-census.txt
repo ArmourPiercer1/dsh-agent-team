@@ -1,0 +1,38 @@
+a2c1-pwsh-permission.test.ts                         elements  126  changed regions  4  anomalies 0
+a2c3-inspect-operation-permission.test.ts            elements  179  changed regions  4  anomalies 0
+a2c7-subtree-matcher.test.ts                         elements  129  changed regions  6  anomalies 0
+a6a-production-wiring.test.ts                        elements  154  changed regions  4  anomalies 0
+alpha2-explicit-agent-setup.test.ts                  elements   49  changed regions  2  anomalies 0
+bound-blueprint-persona-helpers.ts                   elements   83  changed regions  8  anomalies 0
+consent-scope-hash-binding.test.ts                   elements   55  changed regions  1  anomalies 0
+control-abandon-without-resolve-envelope.test.ts     elements   54  changed regions  2  anomalies 0
+control-subject-cross-kind-alias.test.ts             elements   41  changed regions  2  anomalies 0
+d2-s6-ensure-root-live.test.ts                       elements   50  changed regions  2  anomalies 0
+exec-contract-dual-gate.test.ts                      elements   62  changed regions  4  anomalies 0
+f1-webserver-shim-isolation.test.ts                  elements   17  changed regions  2  anomalies 0
+f15-mcp-live-loss-characterization.test.ts           elements   30  changed regions  2  anomalies 0
+f15-mcp-live-loss.test.ts                            elements   35  changed regions  2  anomalies 0
+fix-control-authz-c-abandon-terminal.test.ts         elements   85  changed regions  1  anomalies 0
+leader-disable-no-requirements-initial-work.test.ts  elements   57  changed regions  1  anomalies 0
+leader-recovery-next-boundary-exit.test.ts           elements   62  changed regions  1  anomalies 0
+leader-template-required-boundary.test.ts            elements   70  changed regions  1  anomalies 0
+mcp-blueprint-initial-grant.test.ts                  elements   18  changed regions  2  anomalies 0
+mcp-supply-config.test.ts                            elements    2  changed regions  1  anomalies 0
+mcp-target-materialization-unit.test.ts              elements   45  changed regions  1  anomalies 0
+mcp-target-materialization.test.ts                   elements   87  changed regions  1  anomalies 0
+model-activation-step8.test.ts                       elements   65  changed regions  2  anomalies 0
+model-blueprint-initial-routing.test.ts              elements   22  changed regions  2  anomalies 0
+model-inspect-config.test.ts                         elements   45  changed regions  2  anomalies 0
+multi-mcp-wiring.test.ts                             elements   19  changed regions  2  anomalies 0
+p6t1-checks.test.ts                                  elements   93  changed regions  6  anomalies 0
+p6t1-helpers.ts                                      elements   54  changed regions  2  anomalies 0
+p6t1-parallel.test.ts                                elements   59  changed regions  2  anomalies 0
+p6t2-helpers.ts                                      elements   65  changed regions  2  anomalies 0
+p6t3-helpers.ts                                      elements   73  changed regions  2  anomalies 0
+p6t4-helpers.ts                                      elements   81  changed regions  2  anomalies 0
+p8s3b-result-effects.test.ts                         elements   39  changed regions  2  anomalies 0
+p8s5a-host-loadability.test.ts                       elements    4  changed regions  1  anomalies 0
+--------------------------------------------------------------------------------------------
+files 34   head document elements seen 2109   changed element regions 81   anomalies 0
+  ~~ packages/runtime/test/mcp-supply-config.test.ts: version-carrying elements 1 -> 0 — DISCLOSED delete-lie: blueprintSource is only checked to be a non-empty string (src/plugin/host.ts:612); the version claim is deleted with the document body, not migrated
+  ~~ packages/runtime/test/p8s5a-host-loadability.test.ts: version-carrying elements 1 -> 0 — DISCLOSED delete-lie: same: no reader consults the version in this string, so the claim is deleted
