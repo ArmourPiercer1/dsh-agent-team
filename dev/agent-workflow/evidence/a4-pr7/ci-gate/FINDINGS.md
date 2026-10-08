@@ -307,3 +307,17 @@ shipped **never started a single job**.
   `git ls-tree <head> .github/workflows/`). So **a workflow cannot gate its own introduction** — and the
   advice in this file, *watch one run report before you require it*, is the reason the repo was not locked
   behind a check that had never once executed.
+
+## Erratum and extension (round 44): three hosted runs, the refusal vocabulary, and a shell comment
+
+Everything above this line was measured locally. The hosted runner has now measured it too, and disagreed once:
+
+| run | head | verdict | what it actually means |
+| --- | --- | --- | --- |
+| 37794562230 | d0745aed | `fail pass=6 fail=1 legs=7` 475.3 s | the census accused a fine tree of 57 failures; 38 file-level errors name the missing pristine test host, and 19 named-leg assertions were the same cause wearing product assertions (base control: hide the directory, get the identical strings) |
+| 37801019804 | 1489fb11 | `fail ... refused=0 refusedlegs=none` | my refusal flag never reached argv: a `#` comment between backslash-continued lines ate it, `--census-test-timeout`, `--store-dir` and `--transcript-dir` too; the runner log still echoed them |
+| 37802172564 | e968a01f | **`pass pass=6 fail=0 legs=7 refused=1 refusedlegs=census` 41.7 s** | the nine-root census is declared-not-run on hosted, in 0 s instead of 412 s of misattribution; merged as #210 -> master `29d5e857` |
+
+Two permanent rules come out of this: **(1) a hosted workflow file is an interface** -- lint the shell, not just the YAML, and prefer reading the run's log to re-deriving it from a local copy of the file (mine was on another branch); **(2) a leg that could not grade the tree is a different fact from a leg that found the tree broken**, and the channel must say which. `verdict=refused` is legal only when declared (`--allow-refused <leg>`); `DSH-CI-RUN` now echoes `allow-refused=` so the received flags are auditable from the transcript.
+
+Unmoved by all of this: the census population claims in this directory were restated in #212, the F1 kit-wording repair is still open, and the gate has never been the authority for 7.7 -- which remains BLOCKED/NOT_RUN with owner=human.
