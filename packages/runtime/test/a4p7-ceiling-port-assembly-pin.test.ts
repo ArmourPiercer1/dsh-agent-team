@@ -427,8 +427,11 @@ const measured: Measured = await (async () => {
   // World D — world B stripped of ONE collaborator: the `fs` public service.
   // Same shipped host entry, same COVERING hard ceiling (the world where the
   // drive COMMITS), only the canonicalization partner absent from the bundle.
-  // If a rise can die here too, its death must name a DIFFERENT law than the
-  // ceiling's — else "no authority" carries no attribution (a4-76 PIN-5).
+  // If a rise can die here too, its death must name a DISTINCT law — else "no
+  // authority" carries no attribution (a4-76 PIN-5). Post-§7.5 it names the
+  // UNREADABLE-DOCUMENT law: without `fs` the very documents the ceiling would
+  // consult cannot be canonicalized, which is a different fact (and a different
+  // remedy) from the ceiling reaching a lower value or the port being absent.
   const worldD = await makePinWorld(`${SCRATCH_BASE}-nofs`)
   let noFsVerdict: Measured['noFsVerdict']
   try {
@@ -580,8 +583,9 @@ describe('a4-76 — the shipped composition consults the authority ceiling; the 
     expect(String(v.code)).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE)
     expect(String(v.code)).not.toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
     // Told apart from the sibling context fault (an UNREADABLE document) by the
-    // problem slot, and from the ceiling's own zero (world A) by the code: three
-    // distinct identities, none of them internal-error.
+    // problem slot — post-§7.5 they share the CONTEXT code by design — and from
+    // the ceiling's own zero (world A) by the code: three distinct identities,
+    // none of them internal-error.
     expect(v.problem).toBe('authority-ceiling-port-absent')
     expect(v.reason).toContain('no authority-ceiling reader')
     // Zero write, at the identity the drive addressed.
@@ -589,29 +593,26 @@ describe('a4-76 — the shipped composition consults the authority ceiling; the 
     expect(v.approvalCaseId, `an unread ceiling must mint no proposal: ${JSON.stringify(v)}`).toBeUndefined()
   })
 
-  it('PIN-5 attribution: zero-authority-by-absent-fs and zero-authority-by-ceiling are TOLD APART at the verdict — the absent `fs` public service zeroes authority through the CARRIER law (typed EXPANSION_DENIED throw), never through the ceiling\'s proposal shape (world D = world B minus exactly the fs double, same COVERING ceiling that commits in PIN-2)', () => {
+  it('PIN-5 attribution: zero-authority-by-absent-fs and zero-authority-by-ceiling are TOLD APART at the verdict — the absent `fs` public service zeroes authority through the UNREADABLE-DOCUMENT law (typed CONTEXT throw, problem authority-ceiling-document-unavailable), never through the ceiling\'s proposal shape (world D = world B minus exactly the fs double, same COVERING ceiling that commits in PIN-2)', () => {
     // The disclosure this leg repays: the E2-pattern world doubles hide that
     // the permission fact readers canonicalize through the `fs` PUBLIC SERVICE;
     // without it every canonicalized fact abstains and the envelope reads as
     // UNKNOWN — a collaborator-absence that FAILS CLOSED, but by the same
     // "gate satisfied by an absent thing" shape as the missing ceiling port.
-    // Measured (raw pin-5-POSTFLIP-GREEN.log): world D does NOT commit — but
-    // its refusal is NOT ceiling-shaped:
-    //   world A (ceiling zero, fs present): {changed:false, reason:
-    //     'mutation-proposal-pending', requiredAuthority:'leader', approvalCaseId}
-    //   world D (ceiling OPEN, fs absent):  {changed:false, code:
-    //     'PERMISSION_ENVELOPE_EXPANSION_DENIED', problem expansion-region-uncovered}
-    // so the two zeros are distinguishable at identity level TODAY. What this
-    // leg does NOT claim: that the distinction is structural. It holds because
-    // Alpha.3's coverage law consults the same abstaining envelope reader and
-    // runs BEFORE the ceiling gate — if envelope reading ever detaches from fs
-    // canonicalization, world D's verdict would move toward the ceiling's
-    // shape, and a fs-less root-direct world would commit with nobody
-    // consulted. That drift is the hazard; this leg is the tripwire.
+    // RETITLED by A4-PR7 §7.5 (the deletion this pin was watching): world D used
+    // to refuse `PERMISSION_ENVELOPE_EXPANSION_DENIED` because Alpha.3's coverage
+    // law consulted the same abstaining envelope reader BEFORE the ceiling gate.
+    // That law is deleted; world D now reaches the gate, whose documents are
+    // unreadable without `fs`, and the refusal is CONTEXT carrying the ceiling's
+    // inner code — the honest identity for "could not read". The claim this leg
+    // has ALWAYS owned survives: every zero-authority shape is told apart and
+    // none is a commit. The fs-less and port-less zeros now SHARE the CONTEXT
+    // code and MUST therefore differ at the problem label — the finer grain that
+    // carries the remedy ("fix the read" vs "wire the port").
     const d = measured.noFsVerdict
     expect(d.changed, `fs-less world must NOT commit: ${JSON.stringify(d)}`).toBe(false)
-    expect(String(d.code)).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
-    expect(String(d.reason)).toContain('expansion-region-uncovered')
+    expect(String(d.code)).toBe('PERMISSION_EFFECT_CONTEXT_UNAVAILABLE')
+    expect(d.problem).toBe('authority-ceiling-document-unavailable')
     expect(d.reason).not.toBe('mutation-proposal-pending')
     expect(d.approvalCaseId).toBeUndefined()
     expect(d.requiredAuthority).toBeUndefined()
@@ -634,13 +635,18 @@ describe('a4-76 — the shipped composition consults the authority ceiling; the 
     }
     // (a) the ceiling's zero: proposal-shaped, no code.
     expect(measured.emptyVerdict.code ?? '').toBe('')
-    // (b) the carrier's zero (fs absent): expansion-shaped code, no proposal.
-    expect(String(measured.noFsVerdict.code)).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+    // (b) the unreadable-documents zero (fs absent): CONTEXT with the document
+    // problem — post-§7.5 the ONLY voice an unread authority document has.
+    expect(String(measured.noFsVerdict.code)).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE)
+    expect(measured.noFsVerdict.problem).toBe('authority-ceiling-document-unavailable')
     // (c) the wiring's zero (no port): context-shaped code with its own problem.
     expect(String(measured.rootDirectVerdict.code)).toBe(PERMISSION_MUTATION_ERROR_CODES.EFFECT_CONTEXT_UNAVAILABLE)
     expect(measured.rootDirectVerdict.problem).toBe('authority-ceiling-port-absent')
-    // The three are pairwise distinct at code level, not just in prose.
-    expect(measured.rootDirectVerdict.code).not.toBe(measured.noFsVerdict.code)
+    // Told apart: (b) and (c) share the CONTEXT code — and MUST therefore differ
+    // at the problem label, which is what routes the remedy. (a) differs from
+    // both at code level; (c) and (a) at reason.
+    expect(measured.noFsVerdict.problem).not.toBe(measured.rootDirectVerdict.problem)
+    expect(measured.rootDirectVerdict.code).not.toBe(measured.emptyVerdict.code ?? '')
     expect(measured.rootDirectVerdict.reason).not.toBe(measured.emptyVerdict.reason)
   })
 

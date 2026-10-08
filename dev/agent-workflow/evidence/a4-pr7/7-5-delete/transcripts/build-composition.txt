@@ -1,0 +1,23 @@
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: done (1 placement(s))
+build-client-composition: 95 modules, 12 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-delete/packages/client/composition-shim/client-bundle.js (1261130 B)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-delete/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-delete/packages/client/composition-shim/package.json
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=stale compared=1508 drift=11 sites=11
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/runtime/governance/permission-mutation.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/governance/permission-mutation.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/governance/permission-mutation.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/governance/permission-mutation.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/governance/service.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/governance/service.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/governance/service.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/governance/service.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/permission-plane.js.map
+[ELIFECYCLE] Command failed with exit code 1.

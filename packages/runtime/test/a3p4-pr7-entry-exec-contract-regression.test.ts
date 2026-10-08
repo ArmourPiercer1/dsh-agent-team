@@ -1128,7 +1128,9 @@ describe('R8-principal — actor role matrix through the ROOT-ASSEMBLED router (
       expect(allowed.kind, JSON.stringify(allowed)).toBe('allow')
       // OUT of the carrier ceiling: the envelope carries only the three
       // EXACT write rules (+ the exec fingerprint) — a SUBTREE expansion
-      // must die at the §6 envelope gate. If the old default-to-operator
+      // must die. Post-A4-PR7 §7.5 it dies at the v3 ceiling (the documents say
+      // nothing about the rest of wsA and absence is no-authority), NOT at the
+      // deleted §6 coverage aggregate. If the old default-to-operator
       // were still in play this would COMMIT (the §7 surface is exempt).
       const overCeiling = await call(world, {
         teamSessionId: R7_ROOT,
@@ -1146,7 +1148,13 @@ describe('R8-principal — actor role matrix through the ROOT-ASSEMBLED router (
         ],
       })
       expect(overCeiling.ok).toBe(false)
-      expect(overCeiling.error?.code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+      // The insufficient verdict on an approval-wired lane opens the A4-PR5 ask;
+      // THIS world has no team-root binding, so the LeaderInstance caller the ask
+      // must derive cannot resolve and the mint fault propagates. Measured: the
+      // drive writes NOTHING (asserted below) and mints no case — admission
+      // faults before the case store. The ceiling identity itself is pinned by
+      // the a4p7 pins; this leg owns "the denied expansion wrote NOTHING".
+      expect(overCeiling.error?.code).toBe('TEAM_RUNTIME_CALLER_NOT_FOUND')
       const after = (await world.overlay.latest({
         teamSessionId: R7_ROOT,
         memberInstanceId: R7_WORKER,

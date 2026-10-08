@@ -1,0 +1,46 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-delete
+
+ ✓ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (8 tests) 23ms
+ ✓ packages/runtime/test/a3p3-permission-mutation-authority.test.ts (23 tests) 73ms
+ ✓ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (12 tests) 52ms
+ ✓ packages/runtime/test/a3p4-r4-authority-binding.test.ts (17 tests) 67ms
+ ✓ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts (33 tests) 160ms
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+
+stderr | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[dsh-agent-team] the permission authority facts warm-up FAULTED (a provider read abstained for at least one warm target) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE / zero envelope authority) until an addressed read rebuilds the facts (bounded recovery); decisions and execution are unaffected
+
+ ✓ packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts (6 tests) 4ms
+
+ Test Files  6 passed (6)
+      Tests  99 passed (99)
+   Start at  14:12:12
+   Duration  1.78s (transform 4.65s, setup 0ms, import 6.76s, tests 379ms, environment 0ms)
+

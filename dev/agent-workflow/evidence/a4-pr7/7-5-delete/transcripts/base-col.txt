@@ -1,0 +1,131 @@
+### [BASE] leader (a) operationClass mismatch: carrier says write, mutation says bash
+unwired (port absent): PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+wired   (v3 context) : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+abstain (undefined)  : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+ceiling ALONE (pure) : PERMISSION_AUTHORITY_CEILING_INSUFFICIENT/authority-ceiling-insufficient
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > human: (a) operationClass mismatch: carrier says write, mutation says bash
+
+### [BASE] human (a) operationClass mismatch: carrier says write, mutation says bash
+wired   (v3 context) : PERMISSION_AUTHORITY_CEILING_INSUFFICIENT/authority-ceiling-insufficient
+abstain (undefined)  : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > leader: (b) effect shortfall: carrier maximumEffect=ask, risen effect=allow
+
+### [BASE] leader (b) effect shortfall: carrier maximumEffect=ask, risen effect=allow
+unwired (port absent): PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+wired   (v3 context) : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+abstain (undefined)  : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+ceiling ALONE (pure) : PERMISSION_AUTHORITY_CEILING_INSUFFICIENT/authority-ceiling-insufficient
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > human: (b) effect shortfall: carrier maximumEffect=ask, risen effect=allow
+
+### [BASE] human (b) effect shortfall: carrier maximumEffect=ask, risen effect=allow
+wired   (v3 context) : PERMISSION_AUTHORITY_CEILING_INSUFFICIENT/authority-ceiling-insufficient
+abstain (undefined)  : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > leader: (c) WIDTH: carrier exact FILE, mutation claims subtree SUB, ONLY FILE rises
+
+### [BASE] leader (c) WIDTH: carrier exact FILE, mutation claims subtree SUB, ONLY FILE rises
+unwired (port absent): PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+wired   (v3 context) : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+abstain (undefined)  : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+ceiling ALONE (pure) : PERMISSION_AUTHORITY_CEILING_INSUFFICIENT/authority-ceiling-insufficient
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > human: (c) WIDTH: carrier exact FILE, mutation claims subtree SUB, ONLY FILE rises
+
+### [BASE] human (c) WIDTH: carrier exact FILE, mutation claims subtree SUB, ONLY FILE rises
+wired   (v3 context) : PERMISSION_AUTHORITY_CEILING_INSUFFICIENT/authority-ceiling-insufficient
+abstain (undefined)  : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > leader: (c2) WIDTH control: carrier is the subtree root (width satisfied, should commit)
+
+### [BASE] leader (c2) WIDTH control: carrier is the subtree root (width satisfied, should commit)
+unwired (port absent): PERMISSION_EFFECT_CONTEXT_UNAVAILABLE/authority-ceiling-port-absent
+wired   (v3 context) : COMMITTED
+abstain (undefined)  : COMMITTED
+ceiling ALONE (pure) : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > human: (c2) WIDTH control: carrier is the subtree root (width satisfied, should commit)
+
+### [BASE] human (c2) WIDTH control: carrier is the subtree root (width satisfied, should commit)
+wired   (v3 context) : COMMITTED
+abstain (undefined)  : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > leader: (c3) WIDTH with the whole subtree rising (carrier exact FILE)
+
+### [BASE] leader (c3) WIDTH with the whole subtree rising (carrier exact FILE)
+unwired (port absent): PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+wired   (v3 context) : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+abstain (undefined)  : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+ceiling ALONE (pure) : PERMISSION_AUTHORITY_CEILING_INSUFFICIENT/authority-ceiling-insufficient
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > human: (c3) WIDTH with the whole subtree rising (carrier exact FILE)
+
+### [BASE] human (c3) WIDTH with the whole subtree rising (carrier exact FILE)
+wired   (v3 context) : COMMITTED
+abstain (undefined)  : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > leader: (g) NARROW mutation (exact FILE) inside a broad carrier (control, should commit)
+
+### [BASE] leader (g) NARROW mutation (exact FILE) inside a broad carrier (control, should commit)
+unwired (port absent): PERMISSION_EFFECT_CONTEXT_UNAVAILABLE/authority-ceiling-port-absent
+wired   (v3 context) : COMMITTED
+abstain (undefined)  : COMMITTED
+ceiling ALONE (pure) : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > human: (g) NARROW mutation (exact FILE) inside a broad carrier (control, should commit)
+
+### [BASE] human (g) NARROW mutation (exact FILE) inside a broad carrier (control, should commit)
+wired   (v3 context) : COMMITTED
+abstain (undefined)  : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > leader: (d) coverage-unknown: subtree carrier, exact mutation, NO subtreeContains injected
+
+### [BASE] leader (d) coverage-unknown: subtree carrier, exact mutation, NO subtreeContains injected
+unwired (port absent): PERMISSION_EFFECT_CONTEXT_UNAVAILABLE/effect-context-unavailable
+wired   (v3 context) : PERMISSION_EFFECT_CONTEXT_UNAVAILABLE/effect-context-unavailable
+abstain (undefined)  : PERMISSION_EFFECT_CONTEXT_UNAVAILABLE/effect-context-unavailable
+ceiling ALONE (pure) : PERMISSION_EFFECT_CONTEXT_UNAVAILABLE/authority-ceiling-undetermined
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > human: (d) coverage-unknown: subtree carrier, exact mutation, NO subtreeContains injected
+
+### [BASE] human (d) coverage-unknown: subtree carrier, exact mutation, NO subtreeContains injected
+wired   (v3 context) : PERMISSION_EFFECT_CONTEXT_UNAVAILABLE/authority-ceiling-undetermined
+abstain (undefined)  : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > leader: (e) control: exact carrier, exact mutation, allow reaches (should commit today)
+
+### [BASE] leader (e) control: exact carrier, exact mutation, allow reaches (should commit today)
+unwired (port absent): PERMISSION_EFFECT_CONTEXT_UNAVAILABLE/authority-ceiling-port-absent
+wired   (v3 context) : COMMITTED
+abstain (undefined)  : COMMITTED
+ceiling ALONE (pure) : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > human: (e) control: exact carrier, exact mutation, allow reaches (should commit today)
+
+### [BASE] human (e) control: exact carrier, exact mutation, allow reaches (should commit today)
+wired   (v3 context) : COMMITTED
+abstain (undefined)  : COMMITTED
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > leader: (f) carrier covers nothing (empty), mutation rises
+
+### [BASE] leader (f) carrier covers nothing (empty), mutation rises
+unwired (port absent): PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+wired   (v3 context) : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+abstain (undefined)  : PERMISSION_ENVELOPE_EXPANSION_DENIED/expansion-region-uncovered
+ceiling ALONE (pure) : PERMISSION_AUTHORITY_CEILING_INSUFFICIENT/authority-ceiling-insufficient
+
+stdout | packages/runtime/test/a475-scratch-probe.test.ts > PROBE a475: leader-envelope coverage vs the v3 ceiling gate (post-prereq re-measure) > human: (f) carrier covers nothing (empty), mutation rises
+
+### [BASE] human (f) carrier covers nothing (empty), mutation rises
+wired   (v3 context) : PERMISSION_AUTHORITY_CEILING_INSUFFICIENT/authority-ceiling-insufficient
+abstain (undefined)  : COMMITTED
+
+ ✓ packages/runtime/test/a475-scratch-probe.test.ts (18 tests) 246ms
+
+ Test Files  1 passed (1)
+    Tests  18 passed (18)
+ Start at  13:45:33
+ Duration  2.16s (transform 1.32s, setup 0ms, import 1.72s, tests 246ms, environment 0ms)
+

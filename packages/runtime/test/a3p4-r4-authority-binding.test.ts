@@ -41,12 +41,18 @@ import { isAbsolute, relative, resolve, sep } from 'node:path'
 import { parseBlueprint } from '../../domain/blueprint/src/index.js'
 import { createPermissionAuthorityFacts } from '../src/plugin/permission-plane.js'
 import {
+  authorizeCeilingBoundedPermissionRise,
   authorizeLeaderPermissionMutation,
+  classifyPermissionRise,
   PermissionMutationError,
   renderPermissionResourceText,
+  type LeaderMutationAuthorizationInput,
   type PermissionMutationEnvelope,
   type PermissionStaticLayerFacts,
 } from '../governance/permission-mutation.js'
+import { createPermissionAuthorityCeilingJudge } from '../governance/service.js'
+import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import type { PermissionAuthorityCeilingContext } from '../governance/types.js'
 import type { PermissionOverlayRule } from '../permission-governance/types.js'
 import { PERMISSION_MUTATION_ERROR_CODES } from '../governance/index.js'
 import { LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
@@ -487,7 +493,35 @@ const ENVELOPE_WORK_ALLOW: PermissionMutationEnvelope = {
   rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: '/work' }, maximumEffect: 'allow' }],
 }
 
-describe('authorizeLeaderPermissionMutation envelope-only algebra (round 5): the carrier is the WHOLE policy — the leader-facts ceiling gate is REMOVED (ADR §6, parent final review)', () => {
+/** THE successor law in one call (A4-PR7 §7.5): classify — which now reports
+ *  facts and refuses only CONTEXT — then judge every rise against the TWO bound
+ *  documents exactly as `service.ts` wires it. Returns the typed refusal, or
+ *  `undefined` when the ceiling passes. */
+function ceilingRefusal(
+  input: Parameters<typeof classifyPermissionRise>[0],
+  documents: AuthorityEnvelopeDocuments,
+): unknown {
+  const judge = createPermissionAuthorityCeilingJudge({ subtreeContains: keyContainment })
+  const context: PermissionAuthorityCeilingContext = {
+    beneficiaryAuthority: 'member',
+    initiatorAuthority: 'leader',
+    documents,
+    blueprintContentHash: `sha256:${'e'.repeat(64)}`,
+  }
+  try {
+    authorizeCeilingBoundedPermissionRise(classifyPermissionRise(input).rising, (region) => judge(context, region))
+  } catch (error) {
+    return error
+  }
+  return undefined
+}
+
+const DECLARED_ZERO_DOCUMENTS: AuthorityEnvelopeDocuments = {
+  teamHardEnvelope: { status: 'declared', document: { rules: [] } } as AuthorityEnvelopeDocuments['teamHardEnvelope'],
+  permissionMutationEnvelope: { status: 'declared', document: { rules: [] } } as AuthorityEnvelopeDocuments['permissionMutationEnvelope'],
+}
+
+describe('authorizeLeaderPermissionMutation post-§7.5: the pure step reports rises and refuses only CONTEXT — authority is the v3 ceiling\'s (round 5\'s "carrier is the WHOLE policy" SUPERSEDED)', () => {
   it('B1 (round-5 inversion of the X1 demo-1 shape) — the carrier subtree covering the member ALLOW COMMITS; a leader lane that denies X never gates the member expansion', () => {
     const base = {
       latestRules: [] as PermissionOverlayRule[],
@@ -497,11 +531,13 @@ describe('authorizeLeaderPermissionMutation envelope-only algebra (round 5): the
     }
     // Round 4 REFUSED this shape via the leader-facts ceiling fold; the
     // parent's final review ruled that fold a SECOND policy condition the
-    // frozen §6 does not carry. The envelope is the whole expansion policy:
-    // a covering carrier commits, and what the leader's OWN lane holds is
-    // the leader's execution question, not the grantor's gate. Carrier
-    // breadth over a leader deny is a content-hash-pinned blueprint AUTHOR
-    // choice (§6), pinned here as the ruled semantics.
+    // frozen §6 does not carry — and that ruling STANDS: what the leader's OWN
+    // lane holds is the leader's execution question, never the grantor's gate.
+    // A4-PR7 §7.5 then superseded the OTHER half of this comment's era: the
+    // carrier stopped being "the whole expansion policy" — at the service the
+    // carrier is one of TWO bound documents the v3 ceiling meets (world-level
+    // a3p3 legs pin the covered case committing end to end). What this unit leg
+    // still owns: the pure step must not answer a leader-lane question.
     expect(() =>
       authorizeLeaderPermissionMutation({
         ...base,
@@ -520,38 +556,41 @@ describe('authorizeLeaderPermissionMutation envelope-only algebra (round 5): the
   })
 
   it('B2 (envelope-level subtraction) — the carrier\'s OWN maximumEffect ladder is the cap (ask covers ask, refuses allow)', () => {
-    // The subtraction that SURVIVES the ceiling removal is the envelope's
-    // own ladder-strictness: a carrier rule with maximumEffect `ask` never
-    // contributes `allow` coverage (this is the same math the entry
-    // R4-ceiling leg pins at host apply — envelope arithmetic, not leader
-    // facts). The R-A ruling: carrier exception lanes are structural;
-    // breadth is the author\'s declared choice.
+    // The subtraction SURVIVES; its OWNER moved. A carrier rule with
+    // `maximumEffect: ask` never contributes `allow` — post-§7.5 that cap is
+    // decided by the v3 ceiling MEET, with the hard document declared `allow`
+    // (strictly wider, so the carrier stays the only binding constraint — the
+    // isolation discipline the host-entry R4-ceiling leg keeps). The pure step
+    // is pinned to refuse NOTHING here: an authority answer must never creep
+    // back into the classifier.
     const envelope: PermissionMutationEnvelope = {
       rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/b' }, maximumEffect: 'ask' }],
     }
-    let thrown: unknown
-    try {
-      authorizeLeaderPermissionMutation({
-        latestRules: [],
-        plannedRules: [ov('write', { kind: 'exact', resource: '/work/b' }, 'allow')],
-        mutationRules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/b' }, effect: 'allow' }],
-        envelope,
-        staticFacts: { layers: [] } as PermissionStaticLayerFacts,
-        subtreeContains: keyContainment,
-      })
-    } catch (error) {
-      thrown = error
+    const input: LeaderMutationAuthorizationInput = {
+      latestRules: [] as PermissionOverlayRule[],
+      plannedRules: [ov('write', { kind: 'exact', resource: '/work/b' }, 'allow')],
+      mutationRules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/b' }, effect: 'allow' }],
+      envelope,
+      staticFacts: { layers: [] } as PermissionStaticLayerFacts,
+      subtreeContains: keyContainment,
     }
-    expect(thrown).toBeInstanceOf(PermissionMutationError)
-    expect((thrown as PermissionMutationError).code).toBe(PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE)
+    expect(() => authorizeLeaderPermissionMutation(input)).not.toThrow()
+    const ceilingError = ceilingRefusal(input, {
+      teamHardEnvelope: {
+        status: 'declared',
+        document: {
+          rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/b' }, maximumEffect: 'allow' }],
+        },
+      } as AuthorityEnvelopeDocuments['teamHardEnvelope'],
+      permissionMutationEnvelope: { status: 'declared', document: envelope } as AuthorityEnvelopeDocuments['permissionMutationEnvelope'],
+    })
+    expect(ceilingError).toBeInstanceOf(PermissionMutationError)
+    expect((ceilingError as PermissionMutationError).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
     expect(() =>
       authorizeLeaderPermissionMutation({
-        latestRules: [],
+        ...input,
         plannedRules: [ov('write', { kind: 'exact', resource: '/work/b' }, 'ask')],
         mutationRules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: '/work/b' }, effect: 'ask' }],
-        envelope,
-        staticFacts: { layers: [] } as PermissionStaticLayerFacts,
-        subtreeContains: keyContainment,
       }),
     ).not.toThrow()
   })
@@ -560,10 +599,10 @@ describe('authorizeLeaderPermissionMutation envelope-only algebra (round 5): the
   // unknown leader had no meaning once the leader facts are out of the
   // grant decision (round-5 FIX-1; R-C classification).
 
-  it('B4 — the envelope-only judgement is the UNCONDITIONAL algebra (post-removal this is the whole decision)', () => {
-    // The exact B1 input shape: after the round-5 removal there is no
-    // ceiling input to omit — this is the PR3 algebra every caller gets
-    // (the a3p3 suite, 80/80 family, pins the same envelope-only math).
+  it('B4 — the pure step accepts the same input UNCONDITIONALLY (authority moved; B2/B5 pin where it landed)', () => {
+    // The exact B1 input shape: post-§7.5 this function is not an authority
+    // decision at all — the ceiling owns it (the a3p3 suite, 80/80 family,
+    // pins the same shapes end to end at the service).
     expect(() =>
       authorizeLeaderPermissionMutation({
         latestRules: [],
@@ -577,24 +616,29 @@ describe('authorizeLeaderPermissionMutation envelope-only algebra (round 5): the
   })
 
   it('B5 (R-A shape) — honestly-anchored deny facts make the deny→allow flip a PROVEN rise that refuses (the laundering class stays closed)', () => {
-    // The round-3 laundering needed MIS-ANCHORED facts (the deny key at the
-    // wrong root so the cell "saw no rise"). With the facts at the target's
-    // basis (Group A2), the flip is decidable and the envelope-free grant
-    // refuses typed — never commits.
-    expect(() =>
-      authorizeLeaderPermissionMutation({
-        latestRules: [],
-        plannedRules: [ov('write', { kind: 'exact', resource: '/members/m1/data/g.json' }, 'allow')],
-        mutationRules: [
-          { operationClass: 'write', matcher: { kind: 'exact', resource: '/members/m1/data/g.json' }, effect: 'allow' },
-        ],
-        envelope: { rules: [] },
-        staticFacts: staticLayer([
-          { operationClass: 'write', matcher: { kind: 'subtree', resource: '/members/m1/data' }, effect: 'deny' },
-        ]),
-        subtreeContains: keyContainment,
-      }),
-    ).toThrowError(expect.objectContaining({ code: PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE }))
+    // Same law, successor owner (A4-PR7 §7.5): with the facts at the target's
+    // basis (Group A2) the flip is DECIDABLE, so the classifier proves the rise
+    // and the pure step has nothing to refuse — the refusal comes from the v3
+    // ceiling, and with both bound documents declared empty the expansion meet
+    // is `no-authority`: `AUTHORITY_CEILING_INSUFFICIENT`. Never commits, never
+    // laundered — the mis-anchored round-3 shape is still refused upstream as
+    // CONTEXT by the binding group above.
+    const input: LeaderMutationAuthorizationInput = {
+      latestRules: [] as PermissionOverlayRule[],
+      plannedRules: [ov('write', { kind: 'exact', resource: '/members/m1/data/g.json' }, 'allow')],
+      mutationRules: [
+        { operationClass: 'write', matcher: { kind: 'exact', resource: '/members/m1/data/g.json' }, effect: 'allow' },
+      ],
+      envelope: { rules: [] },
+      staticFacts: staticLayer([
+        { operationClass: 'write', matcher: { kind: 'subtree', resource: '/members/m1/data' }, effect: 'deny' },
+      ]),
+      subtreeContains: keyContainment,
+    }
+    expect(() => authorizeLeaderPermissionMutation(input)).not.toThrow()
+    const ceilingError = ceilingRefusal(input, DECLARED_ZERO_DOCUMENTS)
+    expect(ceilingError).toBeInstanceOf(PermissionMutationError)
+    expect((ceilingError as PermissionMutationError).code).toBe(PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT)
   })
 })
 

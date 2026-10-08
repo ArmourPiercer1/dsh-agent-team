@@ -401,21 +401,23 @@ describe('the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 
     }
   })
 
-  it('9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched)', async () => {
-    // This prerequisite moves no law. The Alpha.3 Leader block
-    // (`governance/service.ts:1104`) still runs BEFORE the ceiling gate (`:1158`),
-    // so a Leader whose carrier does not cover the claim still meets
-    // `PERMISSION_ENVELOPE_EXPANSION_DENIED` — with NO ceiling code in its details,
-    // which is the observable proof that the ceiling was never consulted. WHICH
+  it('9. the Leader rise the deleted Alpha.3 law used to refuse now meets the ceiling OWN CONTEXT identity', async () => {
+    // THE RETITLE this leg's own predecessor comment pre-authorized: "WHICH
     // identity survives is §7.3's retitle decision (the deletion of
-    // `leaderEnvelopeCoverage`), not this prerequisite's, and
-    // `a4p7-carrier-width-under-ceiling.test.ts` legs 3-5 are why the ceiling gate
-    // can take the law over when that deletion lands.
+    // `leaderEnvelopeCoverage`), not this prerequisite's". The deletion landed
+    // (A4-PR7 §7.5): the Leader block no longer consults the carrier, so this
+    // drive — an UNREADABLE binding whose carrier would not have covered the
+    // claim — reaches the ceiling gate, whose reader answers the unreadable
+    // context, and an unread document is CONTEXT with the inner code, never a
+    // guessed authority. Zero write stands exactly as before; what flipped is
+    // the observable proof: the ceiling code is now DEFINED, because the
+    // ceiling WAS consulted and honestly said it could not read.
     const w = await openWorldAtEntry(UNREADABLE, { carrier: oneRule(OTHER, 'allow') })
     try {
       const error = await w.mutateLeader(RISE)
-      expect(error?.code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
-      expect(error?.details?.['authorityCeilingCode'], 'refused before the ceiling was consulted').toBeUndefined()
+      expect(error?.code).toBe('PERMISSION_EFFECT_CONTEXT_UNAVAILABLE')
+      expect(error?.details?.['problem']).toBe('authority-ceiling-document-unavailable')
+      expect(error?.details?.['authorityCeilingCode'], 'the ceiling WAS consulted; it answered unreadable').toBeDefined()
       expect(await w.listRules()).toBeUndefined()
     } finally {
       await w.close()

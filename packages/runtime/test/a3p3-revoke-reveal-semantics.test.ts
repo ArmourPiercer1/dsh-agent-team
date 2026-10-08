@@ -43,7 +43,7 @@ import {
 // from its module rather than through the barrel — the barrel's exported subset is
 // pinned in `a3p3-governance-lane-hygiene.test.ts` and PR2 has no business growing
 // it for a symbol nothing outside the lane calls.
-import { authorizeLeaderPermissionMutation, classifyPermissionRise, PERMISSION_EFFECT_PRECEDENCE } from '../governance/permission-mutation.js'
+import { authorizeLeaderPermissionMutation, classifyPermissionRise } from '../governance/permission-mutation.js'
 import { assembleEffectivePermission } from '../effective-policy/index.js'
 /** A4-PR7 §7.5: this suite's world now DECLARES the Team authority ceiling its
  *  reveal/revoke drives need. See the helper for why the declaration is a cell set
@@ -146,9 +146,10 @@ async function world(options: {
         // empty context carrier would silently become a SECOND, narrower envelope
         // over the one each leg deliberately chose — and `S1b`/`S3`/`S6`/`S7b` are
         // precisely the legs that vary that document to ask whether the ceiling
-        // reaches. Mirroring makes the v3 meet equal to the Alpha.3 law, never below
+        // reaches. Mirroring makes the v3 meet equal to the carrier law, never below
         // it; where a leg injects no carrier the context says `{ rules: [] }`, which
-        // Alpha.3's Leader path already refuses before the gate is reached.
+        // the ceiling gate decides as the declared zero — the refusal the pre-§7.5
+        // Leader path used to issue before the gate, now issued by the gate itself.
         ...(envelopeRulesRaw === undefined
           ? {}
           : { carrier: () => ({ rules: envelopeRulesRaw }) as unknown as PermissionMutationEnvelope }),
@@ -289,7 +290,7 @@ describe('reveals are expansions (ladder-strict) — static reveal channel', () 
       const before = effective(TEMPLATE_ALLOW_DENY, overlayLayer((await latest(w)) as PermissionOverlaySnapshot))
       await expectRefusedWith(
         () => service.mutatePermission(leaderMutation({ ...revokeExactDeny, mutationId: 's1-revoke' })),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
       expect((await latest(w))?.metadata.generation).toBe(generationBefore) // zero write
       expect(before).toEqual({ decision: 'deny', winningLayer: 'overlay' })
@@ -320,7 +321,7 @@ describe('reveals are expansions (ladder-strict) — static reveal channel', () 
       await a.service.mutatePermission(humanGrant([{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'deny' }], 'seed-s3a'))
       await expectRefusedWith(
         () => a.service.mutatePermission(leaderMutation({ ...revokeExactDeny, mutationId: 's3a-revoke' })),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
       expect(effective(TEMPLATE_ASK_DENY, overlayLayer((await latest(a.w)) as PermissionOverlaySnapshot))).toEqual({ decision: 'deny', winningLayer: 'overlay' })
     } finally {
@@ -422,7 +423,7 @@ describe('reveals via the REMAINING overlay rule (S7) and same-layer specificity
               rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
       expect(before).toEqual({ decision: 'deny', winningLayer: 'overlay' })
     } finally {
@@ -540,7 +541,7 @@ describe('reveals via the REMAINING overlay rule (S7) and same-layer specificity
               rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'ask' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
     } finally {
       await w.store.close()
@@ -582,7 +583,7 @@ describe('regions: subtree partition, width conservatism, all-or-nothing', () =>
               rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
       expect(before).toEqual({ decision: 'deny', winningLayer: 'overlay' })
     } finally {
@@ -619,7 +620,7 @@ describe('regions: subtree partition, width conservatism, all-or-nothing', () =>
               rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
     } finally {
       await w.store.close()
@@ -641,7 +642,7 @@ describe('regions: subtree partition, width conservatism, all-or-nothing', () =>
               rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
       expect(effective(TEMPLATE_EMPTY_ASK, undefined)).toEqual({ decision: 'ask', winningLayer: null })
     } finally {
@@ -677,7 +678,7 @@ describe('regions: subtree partition, width conservatism, all-or-nothing', () =>
               rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'allow' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
       expect((await latest(w))?.metadata.generation).toBe(generationBefore) // all-or-nothing: zero write
     } finally {
@@ -701,7 +702,7 @@ describe('regions: subtree partition, width conservatism, all-or-nothing', () =>
               rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'allow' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
     } finally {
       await a.w.store.close()
@@ -756,7 +757,7 @@ describe('regions: subtree partition, width conservatism, all-or-nothing', () =>
               ],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
       expect((await latest(w))?.metadata.generation).toBe(generationBefore)
     } finally {
@@ -828,7 +829,7 @@ describe('unknown subtree relation refuses typed — never a silent non-match (r
               rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: FILE_KEY }, effect: 'deny' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
     } finally {
       await w.store.close()
@@ -877,7 +878,7 @@ describe('unknown subtree relation refuses typed — never a silent non-match (r
               rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'ask' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
     } finally {
       await w.store.close()
@@ -926,7 +927,7 @@ describe('unknown subtree relation refuses typed — never a silent non-match (r
               rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: SUBTREE_ROOT }, effect: 'deny' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
     } finally {
       await w.store.close()
@@ -958,7 +959,7 @@ describe('unknown subtree relation refuses typed — never a silent non-match (r
               rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: OTHER_KEY }, effect: 'ask' }],
             }),
           ),
-        PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
+        PERMISSION_MUTATION_ERROR_CODES.AUTHORITY_CEILING_INSUFFICIENT,
       )
     } finally {
       await w.store.close()
@@ -999,10 +1000,13 @@ describe('unknown subtree relation refuses typed — never a silent non-match (r
 //
 // The refactor moves the closed-region partition and the before/after comparison
 // out of `authorizeLeaderPermissionMutation` so the v3 ceiling gate can read the
-// SAME rise facts the Leader envelope judgement was computed from. Two properties
-// make that safe and both are pinned below: the RISE FACTS are unchanged, and the
-// REFUSAL ORDER is unchanged (an unevaluable region still beats an uncovered one,
-// because "we cannot tell" must never be reported as "you are not allowed").
+// SAME rise facts the classification was computed from. Two properties make that
+// safe and both are pinned below: the RISE FACTS are unchanged, and the REFUSAL
+// ORDER is unchanged — an unevaluable region still refuses as CONTEXT, because
+// "we cannot tell" must never be reported as anything else. (A4-PR7 §7.5 deleted
+// the coverage judge that used to ride the same classification: the actor-side
+// "uncovered" answer no longer exists here — the v3 ceiling decides authority —
+// so what agrees below is CONTEXT ⟺ undeterminable, and everything else stays ok.)
 describe('A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused on', () => {
   const exact = (resource: string) => ({ kind: 'exact' as const, resource })
   const rule = (resource: string, effect: 'allow' | 'ask' | 'deny') => ({
@@ -1040,9 +1044,10 @@ describe('A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused 
     expect(classification.rising[0]?.before).toMatchObject({ status: 'decided', effect: 'ask' })
     expect(classification.rising[0]?.after).toMatchObject({ status: 'decided', effect: 'allow' })
     expect(classification.undeterminable).toEqual([])
-    // No coverage callback was given, so NO actor-specific judgement was made:
-    // this is the mode the v3 ceiling gate uses, and it never reports `unmet`.
-    expect(classification.unmet).toEqual([])
+    // Since A4-PR7 §7.5 the classification has NO third array: no actor-specific
+    // judgement was ever made here (the deleted `unmet` one included), and the
+    // closed shape of the fact record is what the ceiling gate consumes.
+    expect(Object.keys(classification).sort()).toEqual(['rising', 'undeterminable'])
   })
 
   it('a tightening and an identity are NOT rises (the region partition reports nothing to gate)', () => {
@@ -1078,27 +1083,30 @@ describe('A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused 
     const classification = classifyPermissionRise(reveal)
     expect(classification.rising.length).toBe(1)
     expect(classification.rising[0]?.risenEffect).toBe('ask')
-    // And the Actor-specific half still refuses when the envelope does not reach
-    // the risen effect: reveal is an expansion (Alpha.3's central finding).
+    // The actor-specific half MOVED (A4-PR7 §7.5): `authorizeLeaderPermissionMutation`
+    // no longer consults the envelope at all — the judge that asked "does a rule
+    // reach the risen effect" was deleted — so a too-shallow carrier must NOT
+    // change the pure step's answer (both shapes pass through it now). The refusal
+    // itself survives one gate later, on the v3 ceiling: the world-level legs of
+    // this file pin it (S1 refuses `AUTHORITY_CEILING_INSUFFICIENT` at
+    // `no-authority`, S6c at a too-low ceiling). What must survive HERE is the
+    // FACT the ceiling consumes: the reveal still reports exactly one rise,
+    // whatever the carrier document says.
     expect(() => authorizeLeaderPermissionMutation(reveal)).not.toThrow()
     const cannotAsk = { ...reveal, envelope: envelopeAt('file:/root/a', 'deny') }
-    let raised: unknown
-    try {
-      authorizeLeaderPermissionMutation(cannotAsk)
-    } catch (error) {
-      raised = error
-    }
-    expect((raised as { code?: string }).code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
-    expect(classifyPermissionRise(cannotAsk, () => 'unmet').unmet.length).toBe(1)
+    expect(() => authorizeLeaderPermissionMutation(cannotAsk)).not.toThrow()
+    expect(classifyPermissionRise(cannotAsk).rising.length).toBe(1)
   })
 
   it('the extracted classifier and the Leader judgement never disagree about the same input', () => {
     // THE regression leg. Across a matrix of revoke/reveal/envelope shapes, the
     // terminal answer of the unchanged entry point must correspond exactly to what
-    // the extracted classification reports: CONTEXT ⟺ something undeterminable,
-    // EXPANSION ⟺ something unmet and nothing undeterminable, OK ⟺ neither. If the
-    // refactor drops a case (a partition branch, an independence rule), this is
-    // where the two stop agreeing.
+    // the extracted classification reports. POST §7.5 the correspondence is:
+    // CONTEXT ⟺ something undeterminable, ok ⟺ nothing undeterminable — an
+    // envelope shape can no longer change the pure step's answer at all (the
+    // coverage judge that made it possible was deleted; authority moved to the
+    // ceiling gate, which world-level legs pin). If a refactor drops a partition
+    // branch or an independence rule, this is where the two stop agreeing.
     const cases = [
       { latestRules: [rule('file:/root/a', 'ask')], plannedRules: [rule('file:/root/a', 'allow')], mutationRules: [mutation('file:/root/a', 'allow')], envelope: envelopeAt('file:/root/a', 'allow') },
       { latestRules: [rule('file:/root/a', 'ask')], plannedRules: [rule('file:/root/a', 'allow')], mutationRules: [mutation('file:/root/a', 'allow')], envelope: envelopeAt('file:/root/other', 'allow') },
@@ -1109,17 +1117,7 @@ describe('A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused 
     ]
     for (const [index, base] of cases.entries()) {
       const input = { ...base, staticFacts: NO_STATIC }
-      const classification = classifyPermissionRise(input, (region) => {
-        // The same judgement the Leader path applies internally, recomputed here
-        // from the region: an envelope rule must cover the mutation matcher.
-        const covers = input.envelope.rules.some(
-          (envelopeRule) =>
-            envelopeRule.operationClass === region.operationClass &&
-            envelopeRule.matcher.resource === region.mutationMatcher.resource &&
-            PERMISSION_EFFECT_PRECEDENCE[region.risenEffect] <= PERMISSION_EFFECT_PRECEDENCE[envelopeRule.maximumEffect],
-        )
-        return covers ? 'covered' : 'unmet'
-      })
+      const classification = classifyPermissionRise(input)
       let code: string | 'ok' = 'ok'
       try {
         authorizeLeaderPermissionMutation(input)
@@ -1128,20 +1126,19 @@ describe('A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused 
       }
       const expected = classification.undeterminable.length > 0
         ? 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE'
-        : classification.unmet.length > 0
-          ? 'PERMISSION_ENVELOPE_EXPANSION_DENIED'
-          : 'ok'
-      expect(code, `case ${String(index)}: classifier said ${JSON.stringify({ rising: classification.rising.length, unmet: classification.unmet.length, undeterminable: classification.undeterminable.length })}`).toBe(expected)
+        : 'ok'
+      expect(code, `case ${String(index)}: classifier said ${JSON.stringify({ rising: classification.rising.length, undeterminable: classification.undeterminable.length })}`).toBe(expected)
     }
   })
 
-  it('an undeterminable region still beats an uncovered one (the refusal order is data, not luck)', () => {
-    // Two mutation rules in one batch over UNKNOWN lower facts: one rises outside
-    // the envelope (an EXPANSION fact), one cannot be evaluated at all (a CONTEXT
-    // fact). Alpha.3 refuses CONTEXT, never EXPANSION — a caller routed on
-    // "get your envelope in order" would chase the wrong remedy when the truth is
-    // "we cannot evaluate this batch". The order used to fall out of the loop's
-    // shape; now it is carried by two arrays, which is exactly why it needs a leg.
+  it('an undeterminable region still beats a reported rise (the refusal order is data, not luck)', () => {
+    // Two mutation rules in one batch over UNKNOWN lower facts: one rises in a
+    // region the envelope does not reach, one cannot be evaluated at all (a
+    // CONTEXT fact). The pure step refuses CONTEXT — a caller routed on "get
+    // your envelope in order" would chase the wrong remedy when the truth is
+    // "we cannot evaluate this batch", and post-§7.5 an envelope fact cannot
+    // even be reported from here: the rise rides the ceiling gate downstream,
+    // the unevaluable one refuses HERE, first, byte-identically.
     const input = {
       latestRules: [rule('file:/root/a', 'ask')],
       plannedRules: [rule('file:/root/a', 'allow'), rule('file:/root/b', 'allow')],
@@ -1150,8 +1147,8 @@ describe('A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused 
       // UNKNOWN lower facts — never conflated with `{ layers: [] }`.
       staticFacts: undefined,
     }
-    const classification = classifyPermissionRise(input, () => 'unmet')
-    expect(classification.unmet.length, 'the rising cell must be reported as unmet').toBe(1)
+    const classification = classifyPermissionRise(input)
+    expect(classification.rising.length, 'the rising cell must be reported for the ceiling gate downstream').toBe(1)
     expect(classification.undeterminable.length, 'the unevaluable cell must be reported').toBe(1)
     let raised: unknown
     try {

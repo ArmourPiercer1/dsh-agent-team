@@ -95,13 +95,15 @@ export declare function createGovernanceMutationService(deps: GovernanceMutation
  * a refusal.
  *
  * WHY THE WIDTH BELONGS HERE AT ALL: `leaderEnvelopeCoverage` — Alpha.3's
- * whole-matcher coverage law, judged inside `authorizeLeaderPermissionMutation` — is
- * the only current owner of that width, and 7.3 deletes it. The deletion is NOT part
- * of this change and stays gated on the prerequisites in
- * `dev/agent-workflow/evidence/a4-pr7/7-3-prereq/FINDINGS.md`; what lands here is the
- * surviving law being able to say NO on the same rise. Pinned by
- * `test/a4p7-carrier-width-under-ceiling.test.ts` (legs 1-2 = the law being deleted,
- * legs 3-5 = this law, leg 5 = the direction a swap gets wrong).
+ * whole-matcher coverage law, judged inside `authorizeLeaderPermissionMutation` —
+ * used to be the only owner of that width, and A4-PR7 §7.5 DELETED it. The
+ * deletion shipped only after the prerequisite law above could say NO on the same
+ * rise and after the §7.5 mutation re-measurement confirmed nothing newly commits
+ * (`dev/agent-workflow/evidence/a4-pr7/7-5-delete/FINDINGS.md`; the gating
+ * prerequisite record is `dev/agent-workflow/evidence/a4-pr7/7-3-prereq/FINDINGS.md`).
+ * Pinned by `test/a4p7-carrier-width-under-ceiling.test.ts` (legs 1-2 = the width
+ * refusal, now owned by THIS law; legs 3-5 = the meet's shape, leg 5 = the
+ * direction a swap gets wrong).
  */
 export declare function createPermissionAuthorityCeilingJudge(deps: {
     readonly subtreeContains?: SubtreeContains;

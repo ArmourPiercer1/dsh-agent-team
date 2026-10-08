@@ -440,7 +440,7 @@ describe('E1 — the root-assembled lane consumes the fact readers and the leade
     }
   })
 
-  it('NEGATIVE: an envelope region WITHOUT coverage refuses typed EXPANSION_DENIED and writes nothing', async () => {
+  it('NEGATIVE: an envelope region WITHOUT coverage never commits — post-§7.5 the ceiling-refused drive dies at the escalation seam and writes nothing', async () => {
     const world = await openEntryWorld()
     try {
       const error = await world.root.mutation.governance
@@ -462,7 +462,21 @@ describe('E1 — the root-assembled lane consumes the fact readers and the leade
         .then(() => undefined)
         .catch((caught: unknown) => caught)
       const code = (error as { code?: string })?.code
+      // A4-PR7 §7.5 retitle: the drive still dies, but NOT at the deleted
+      // aggregate. It reaches the v3 ceiling gate, which decides insufficient
+      // (no document covers this cell), and the A4-PR5 escalation law converts a
+      // DECIDED-insufficient rise into an approval ask on a wired lane. THIS
+      // entry world has no team-root binding, so the LeaderInstance caller the
+      // ask must derive cannot resolve — the mint fault propagates carrying
+      // `TEAM_RUNTIME_CALLER_NOT_FOUND`. Measured construction-level, this drive
+      // writes NOTHING (the assertion below) and mints no case (admission faults
+      // before the case store). The ceiling-shaped refusal itself is owned by
+      // `a4p7-carrier-width-under-ceiling` and the R4 legs below; what THIS leg
+      // owns is "no authority moved", and it still owns it.
       expect(typeof code === 'string' ? code : JSON.stringify(error)).toContain(
+        'TEAM_RUNTIME_CALLER_NOT_FOUND',
+      )
+      expect(typeof code === 'string' ? code : '').not.toBe(
         PERMISSION_MUTATION_ERROR_CODES.EXPANSION_OUTSIDE_ENVELOPE,
       )
       // Nothing was written: the target keeps NO overlay authority.
@@ -1287,8 +1301,9 @@ function r4BlueprintSource(opts: R4Blueprint): string {
  * their fixture was INCOMPLETE for v3, not that the product broke.
  *
  * Why `allow` and not the carrier's own effect: the hard ceiling has to be
- * strictly WIDER than the mutation carrier, or the `EXPANSION_DENIED` a leg
- * asserts could have come from either document and the leg stops proving the
+ * strictly WIDER than the mutation carrier, or the refusal a leg asserts (the
+ * ceiling value the meet reports post-§7.5, the `EXPANSION_DENIED` before it)
+ * could have come from either document and the leg stops proving the
  * carrier is what refused. `maximumEffect: allow` keeps the carrier the only
  * binding constraint — which is the thing every leg in this group is about.
  */
@@ -1389,7 +1404,11 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
         rules: [{ operationClass: 'bash', matcher: { kind: 'fingerprint', resource: FP_B }, effect: 'allow' }],
       }))
       expect(over.changed).not.toBe(true)
-      expect(String(over.code)).toContain('EXPANSION_DENIED')
+      // A4-PR7 §7.5: this over-ceiling leader drive now reaches the v3 ceiling gate;
+      // on this approval-wired lane the DECIDED-insufficient verdict rides the
+      // closed projection as a durable ask (A4-PR5) — the refusal is `mutation-proposal-pending`, never `changed`. No commit, and the
+      // ceiling law itself is pinned in code by a4p7-carrier-width-under-ceiling.
+      expect(String(over.reason)).toContain('mutation-proposal-pending')
       // …and a TIGHTENING exec revoke-ask stays legal envelope-free (ADR §6).
       const tighten = await settleMutation(root.mutation.governance.mutatePermission({
         authority: { kind: 'leader' },
@@ -1426,7 +1445,11 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
         rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: target }, effect: 'allow' }],
       }))
       expect(overGrant.changed).not.toBe(true)
-      expect(String(overGrant.code)).toContain('EXPANSION_DENIED')
+      // A4-PR7 §7.5: this over-ceiling leader drive now reaches the v3 ceiling gate;
+      // on this approval-wired lane the DECIDED-insufficient verdict rides the
+      // closed projection as a durable ask (A4-PR5) — ask-capped allow goes to the human rung. No commit, and the
+      // ceiling law itself is pinned in code by a4p7-carrier-width-under-ceiling.
+      expect(String(overGrant.reason)).toContain('mutation-proposal-pending')
       const legal = await settleMutation(root.mutation.governance.mutatePermission({
         authority: { kind: 'leader' },
         teamSessionId: HOST_ROOT,
@@ -1570,7 +1593,11 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
         rules: [{ operationClass: 'write', matcher: { kind: 'exact', resource: target }, effect: 'allow' }],
       }))
       expect(expand.changed, 'the static lane still DERIVES an envelope — BLOCK-4 regression').not.toBe(true)
-      expect(String(expand.code)).toContain('EXPANSION_DENIED')
+      // A4-PR7 §7.5: this over-ceiling leader drive now reaches the v3 ceiling gate;
+      // on this approval-wired lane the DECIDED-insufficient verdict rides the
+      // closed projection as a durable ask (A4-PR5) — the static lane derives no envelope and nothing commits (BLOCK-4). No commit, and the
+      // ceiling law itself is pinned in code by a4p7-carrier-width-under-ceiling.
+      expect(String(expand.reason)).toContain('mutation-proposal-pending')
       // Not a hard fail: the world answers every UNAFFECTED mutation — a
       // TIGHTENING grant (no envelope needed) commits normally.
       const tighten = await settleMutation(root.mutation.governance.mutatePermission({
@@ -1633,7 +1660,11 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
         ],
       }))
       expect(foreign.changed).not.toBe(true)
-      expect(String(foreign.code)).toContain('EXPANSION_DENIED')
+      // A4-PR7 §7.5: this over-ceiling leader drive now reaches the v3 ceiling gate;
+      // on this approval-wired lane the DECIDED-insufficient verdict rides the
+      // closed projection as a durable ask (A4-PR5) — a foreign-basis key has no ceiling and opens its ask instead. No commit, and the
+      // ceiling law itself is pinned in code by a4p7-carrier-width-under-ceiling.
+      expect(String(foreign.reason)).toContain('mutation-proposal-pending')
     } finally {
       await world.dispose()
     }
@@ -1687,22 +1718,23 @@ describe('R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 +
           const err = e as { code?: string; message?: string }
           return { changed: false, code: String(err.code ?? ''), reason: String(err.message ?? '') }
         })
-      // While the provider faults: the expansion refuses TYPED (zero
-      // envelope / UNKNOWN facts) — never commits, never crashes.
+      // While the provider faults: the expansion refuses TYPED — never commits,
+      // never crashes.
       const during = await mutate('mut-r4-recover-during', 'allow')
       expect(during.changed, 'a faulted authority must not authorize expansion').not.toBe(true)
-      // Pinned EXACTLY on the wired fail-closed label. During the fault BOTH
-      // authority reads abstain: the envelope reader yields zero authority
-      // (the kernel's coverage judgement therefore refuses FIRST), so this
-      // fixture's route is ENVELOPE-EXPANSION_DENIED — the pure
-      // facts-abstention CONTEXT route (envelope covered, target facts
-      // UNKNOWN) is pinned where only the facts abstain:
-      // a3p3-permission-mutation-authority.test.ts:454. What this leg pins:
-      // a fault NEVER authorizes, and it refuses TYPED (not a crash, not a
-      // silent false).
+      // Pinned EXACTLY on the wired fail-closed label. RETITLED by A4-PR7 §7.5:
+      // during the fault BOTH authority reads abstain, and with the deleted
+      // coverage law the first gate that can see them is the ceiling gate — an
+      // UNREADABLE authority document is CONTEXT (`authority-ceiling-document-
+      // unavailable`), never a guessed zero, never a bare INSUFFICIENT. The pure
+      // facts-abstention CONTEXT route is pinned where only the facts abstain:
+      // a3p3-permission-mutation-authority.test.ts:454. What this leg pins is
+      // unchanged: a fault NEVER authorizes, and it refuses TYPED (not a crash,
+      // not a silent false).
       expect(String(during.code), `unexpected refusal path: ${during.code ?? during.reason}`).toBe(
-        'PERMISSION_ENVELOPE_EXPANSION_DENIED',
+        'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE',
       )
+      expect(String(during.reason)).toContain('could not be read')
       // UNAFFECTED decisions keep reading correct current facts: the
       // envelope-free tightening commits even while the fault persists.
       const unaffected = await mutate('mut-r4-recover-unaffected', 'deny')
@@ -2214,7 +2246,13 @@ describe('R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2
         ],
       }))
       expect(aBasisGrant.changed, 'the acting row-A tail leaked into the Team B basis').not.toBe(true)
-      expect(String(aBasisGrant.code)).toContain('EXPANSION_DENIED')
+      // A4-PR7 §7.5 retitle: the drive reaches the ceiling gate (no Team B
+      // document covers a row-A-basis key), the insufficient verdict tries the
+      // approval ask, and the ask cannot be minted for a Leader caller this Team
+      // B never bound — the mint fault propagates. What the leg owns is the
+      // NON-LEAK: the row-A tail did not become Team B's basis and nothing
+      // committed; both assertions above and the zero-write checks hold.
+      expect(String(aBasisGrant.code)).toContain('TEAM_RUNTIME_CALLER_NOT_FOUND')
       // (3) LEADER POSITION of Team B (NO member row at all): the same
       // durable team default supplies the basis.
       const bLeaderGrant = await settleMutation(root.mutation.governance.mutatePermission({
