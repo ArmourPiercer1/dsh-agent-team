@@ -641,11 +641,12 @@ against.**
 - Residue at handover: `packages/testkit/test/.tmp-fault/` was left by a completed 7.5 run (normal,
   gitignored, and the exact tree §13 excludes from lint); everything else is the evidence set below.
 
-## 15. Two instrument-shape discoveries, neither of which the review asked for
+## 15. Three instrument-shape discoveries, none of which the review asked for
 
-Both are recorded because they are the class of bug this lane exists to catch, and in one case the
-victim was this round's own new code. Transcripts: `review-round-eslint-instrument-shape.txt`,
-`review-round-eslint-argv-invocation.txt`.
+All three are recorded because they are the class of bug this lane exists to catch; in the first the
+victim was this round's own new code, and in the third it was this round's own verification commands.
+Transcripts: `review-round-eslint-instrument-shape.txt`, `review-round-eslint-argv-invocation.txt`,
+`review-round-confirmation-at-67689c7c.txt`.
 
 1. **A detector test that invents its instrument's shape is worse than no test.** The F6 leg
    counts files eslint reports as ignored. Written against a message object recalled from memory —
@@ -669,6 +670,21 @@ victim was this round's own new code. Transcripts: `review-round-eslint-instrume
    exit 1 in 9.3 s with 3 754 774 bytes of JSON), and eslint **de-duplicates** repeated paths, so a
    report can legitimately be shorter than its argv — which is why the census refuses on a count
    mismatch against its own candidate list rather than trusting any count it did not construct.
+3. **The same bug, committed twice by me, while writing this report.** The first confirmation run at
+   the receipts head invoked `scripts/a4-evidence-provenance.mjs`, which is not what this repository
+   calls the fence (`scripts/verify-blueprint-version-clean.mjs` is). Node answered
+   `MODULE_NOT_FOUND`, exit **1**; `cmp` of the two runs said **byte-identical**; and exit 1 plus
+   byte-identity is precisely what the fence's standing `dirty-or-unknown` red looks like. Both files
+   were 18-line stack traces. Second misfire: the wrapper path typed as `…-clean.test.mjs` instead of
+   `…-clean.test.ts`, and **vitest ran the single file that existed and reported `Test Files 1 passed
+   (1)` / `Tests 10 passed (10)`** — a green over half of the 68-leg pair, no error, no warning. The
+   corrected run is `2 passed (2)` / `68 passed (68)`; `review-round-confirmation-at-67689c7c.txt`
+   carries both misfires in its own header rather than only the corrected numbers. Neither would have
+   been possible inside the gate: a leg parses a report and refuses on a missing one. But a battery is
+   a pile of ad-hoc commands, and an ad-hoc command has no contract to violate — so the defense has
+   to be the habit of printing the instrument's **identity** and its own denominator on every line
+   (`scanned-in-scope:`, `universe:`, `N of M`, per-arm `PASS` lines) and quoting §14's numbers with
+   the command that produced them. A number with no command next to it is where this round started.
 
 ## 16. What this round does not claim, and the files it touched
 
@@ -700,4 +716,4 @@ Not claimed, still, after F1–F6:
 | `scripts/lint-identities.mjs` | `describeStderr` extracted and exported; CLI body wrapped in `runCli()` behind an `invokedDirectly` guard |
 | `scripts/lint-identities.d.mts` | **new** typed sidecar so §7.6 can import the instrument instead of re-implementing its notion of an identity |
 | `eslint.config.mjs` | `'**/.tmp-fault/**'` → `'**/.tmp-*/**'`; the unreproducible `62 identities` paragraph replaced by the four measured cases and the correction that they supersede it |
-| `dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/` | §§5–8 corrected and labelled by base; §§12–16 added; transcripts `review-round-merged-head-before-fix`, `review-round-f1-gate-across-trees`, `review-round-verdicts-battery-and-f5-ab`, `review-round-f5-narrow-and-root-case`, `review-round-f5-f6-first-measurements`, `review-round-eslint-instrument-shape`, `review-round-eslint-argv-invocation`, `review-round-battery-at-992b416b`, `reproduce-off-path-output.sh` |
+| `dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/` | §§5–8 corrected and labelled by base; §§12–16 added; transcripts `review-round-merged-head-before-fix`, `review-round-confirmation-at-67689c7c`, `review-round-f1-gate-across-trees`, `review-round-verdicts-battery-and-f5-ab`, `review-round-f5-narrow-and-root-case`, `review-round-f5-f6-first-measurements`, `review-round-eslint-instrument-shape`, `review-round-eslint-argv-invocation`, `review-round-battery-at-992b416b`, `reproduce-off-path-output.sh` |

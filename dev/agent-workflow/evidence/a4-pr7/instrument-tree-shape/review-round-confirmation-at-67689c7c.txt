@@ -1,0 +1,50 @@
+### Confirmation at the receipts head (evidence-only commit on top of code head 992b416b)
+### HEAD: 67689c7c docs(a4-pr7): review-round receipts — §§12–16, the four-tree transcripts, and the numbers labelled by base
+### (first attempt at this confirmation invoked scripts/a4-evidence-provenance.mjs, which does not exist: 'exit=1/1' and 'byte-identical' there were two identical node MODULE_NOT_FOUND crashes, and vitest was run with an unsupported --reporter=basic. Corrected below.)
+
+== fence x2 (scripts/verify-blueprint-version-clean.mjs)
+run1 exit=1
+run2 exit=1
+scanned-in-scope: 751 tracked files
+RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+two runs byte-identical (22626 bytes, sha256 0eb00e1aee85f44d)
+
+== machine gate (25 legs)
+lint-visibility: eslint read 1105 of 2418 tracked lintable file(s); 1313 are hidden by an ignore pattern (dev/ 442, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116) — 1 tracked lintable path(s) are not a file on disk and were skipped: dev/agent-workflow/evidence/alpha2-capability-completion/a2c-1/src/plugin/upstream-resolver.mjs
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+
+== classifier suite
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+
+== p4t6 + wrapper (68 legs)
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+
+== check:artifacts
+$ node scripts/check-artifacts-committed.mjs
+[check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+
+== tree state
+  modified tracked: 0  untracked: 0  client dist files: 400
+
+== p4t6 + wrapper, corrected filename (.test.ts, not the .mjs I first typed)
+##  the mistyped run printed 'Test Files 1 passed (1) / Tests 10 passed (10)' with no error: vitest silently
+##  ignored the non-matching path and reported a green over half the pair. Recorded in §15 of FINDINGS.
+ Test Files  2 passed (2)
+      Tests  68 passed (68)
+
+== lint identity diff at this head
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1105 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+
+== node --check x3
+  scripts/a4-artifact-provenance.mjs -> exit 0
+  scripts/lint-identities.mjs -> exit 0
+  eslint.config.mjs -> exit 0
+== eslint on the files this round touched (exit code without a pipe)
+  exit=0
+== typecheck
+  exit=0  Done=8  error-TS=0
