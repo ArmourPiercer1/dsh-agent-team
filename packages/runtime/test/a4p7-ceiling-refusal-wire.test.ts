@@ -53,7 +53,6 @@ import type {
   GovernanceMutationServiceDeps,
   GovernancePermissionMutationArgs,
   PermissionMutationEnvelope,
-  PermissionResourceMatcher,
 } from '../governance/index.js'
 import type { PermissionAuthorityCeilingContext } from '../governance/types.js'
 import type {
@@ -151,7 +150,6 @@ function absent(): AuthorityDocumentSlot {
  */
 async function openWireWorld(ceiling: 'zero' | 'covering' | 'absent'): Promise<{
   dispatch: (params: Record<string, unknown>) => Promise<RemoteResponse>
-  listRules: () => Promise<unknown>
   close: () => Promise<void>
 }> {
   const base = scratchDir(`a474wire-${ceiling}-${Math.random().toString(36).slice(2, 8)}`)
@@ -224,7 +222,6 @@ async function openWireWorld(ceiling: 'zero' | 'covering' | 'absent'): Promise<{
         version: REMOTE_CONTRACT_VERSION_V7,
         params,
       } as never) as Promise<RemoteResponse>,
-    listRules: async () => undefined,
     close: async () => {
       destroyDir(base)
     },

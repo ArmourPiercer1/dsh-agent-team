@@ -2022,6 +2022,25 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4P76PIN: readonly string[] = [
       'packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts',
     ]
+    // A4-PR7 Task 7.4 the fail-closed lane (`feat/a4-74-failclosed`): TWO new scannable
+    // files, both instruments of the §7.5 prerequisite-3 ruling and of the wire gap it
+    // exposed. (1) `a4p7-ceiling-no-port-refusal.test.ts` — the refusal itself pinned at
+    // the kernel: a lane that wired no `authorityCeiling` port REFUSES a rising batch
+    // (context code, `authority-ceiling-port-absent` problem, zero write), still commits a
+    // tightening, refuses the Leader too, lets the classification's OWN refusal propagate as
+    // itself, and pins that the pre-v3 reader `undefined` — the one existential skip — is
+    // untouched. (2) `a4p7-ceiling-refusal-wire.test.ts` — measured proof, through the REAL
+    // throw-proof dispatcher, that `PERMISSION_AUTHORITY_CEILING_INSUFFICIENT` used to
+    // arrive as `internal-error` and now arrives as itself, that the three ceiling answers
+    // stay told apart across the transport, and that the approval-pending outcome stayed out
+    // of the closed vocabulary. Everything else this lane writes is an EDIT to a path this
+    // scan already counts (service.ts, governance/types.ts, the a4-76 assembly pin,
+    // remote/handlers/dispatch.ts) plus evidence under `dev/agent-workflow/evidence/`
+    // outside `packages/**`. An edit is not an increment.
+    const SCANNED_PATHS_A474FAILCLOSED: readonly string[] = [
+      'packages/runtime/test/a4p7-ceiling-no-port-refusal.test.ts',
+      'packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2038,7 +2057,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4P76GATE.length +
         SCANNED_PATHS_A4P73FLIP.length +
         SCANNED_PATHS_A4P73GRAMMAR.length +
-        SCANNED_PATHS_A4P76PIN.length,
+        SCANNED_PATHS_A4P76PIN.length +
+        SCANNED_PATHS_A474FAILCLOSED.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2056,7 +2076,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4P76GATE.length +
         SCANNED_PATHS_A4P73FLIP.length +
         SCANNED_PATHS_A4P73GRAMMAR.length +
-        SCANNED_PATHS_A4P76PIN.length,
+        SCANNED_PATHS_A4P76PIN.length +
+        SCANNED_PATHS_A474FAILCLOSED.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2100,6 +2121,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4P73FLIP,
       ...SCANNED_PATHS_A4P73GRAMMAR,
       ...SCANNED_PATHS_A4P76PIN,
+      ...SCANNED_PATHS_A474FAILCLOSED,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2218,6 +2240,18 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // movement — an edit is not an increment, which is exactly why a landed file without its
     // path here turns this sum RED instead of moving it silently.
     expect(SCANNED_PATHS_A4P73GRAMMAR.length).toBe(1031 - 1029)
+    // The A4-PR7 Task 7.4 fail-closed tie, same form: the movement equals the two
+    // instruments this lane names, each asserted present by path in the loop above. Both
+    // endpoints MEASURED on this branch, not inferred: with the two files on disk and this
+    // entry stripped the run reads `expected 1035 to be 1033` (capture
+    // `dev/agent-workflow/evidence/a4-pr7/7-4-failclosed/p4t6-PRE-EXTEND-RED.txt`), 1033 is
+    // the derived merged-base total the ceiling-pin tie above ends on, and 1035 is what the
+    // scanner counts with this lane's files present. The production change itself (the
+    // fail-closed branch in `service.ts`, the one vocabulary member in
+    // `remote/handlers/dispatch.ts`, the PORTED-IN `problem` slot and the PIN-3 inversion in
+    // the a4-76 pin) is EDITS to already-counted paths and moves nothing — which is the
+    // point: a law change with no new instrument would leave this sum untouched, and a new
+    // instrument without its path here turns it RED.
     // The A4-PR7 Task 7.6 ceiling-pin tie, same form: the movement equals the one
     // instrument this lane names, asserted present by path in the loop above. Its
     // endpoints were RE-MEASURED on the merged tree when §7.3 landed under this lane
