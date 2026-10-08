@@ -849,3 +849,112 @@ the same round: the header prose was written inside double quotes with backticks
 **command-substituted** into `command not found` errors on the way into the receipt; re-run with
 single quotes, and the previous run's mangled output is what prompted the re-run rather than being
 quietly overwritten in place.
+
+---
+
+## 18. The two authorised changes, the third merge, and what comparing a phantom cost
+
+§§15 and §17 are left exactly as written, per instruction — including §17's quoted census line and
+its prediction, both of which describe the tree they were measured in. Where wording has since moved
+on, this section says so and quotes both versions.
+
+### The precondition is now enforced, and the enforcement has a test
+
+`absentArtifactVerdict` answers the wrong question with a refusal, ahead of every absence branch:
+
+> `client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js **IS on
+> disk**, so there is no absence to classify — **you asked the absent-artifact helper the wrong
+> question**. This function never reads the artifact's contents; every sentence it can produce is
+> about a missing file, and returning one over a present file would state something false about the
+> tree (which is what it did before this guard existed). Judge the artifact itself, or route the
+> present case elsewhere: packages/client/dist currently holds 400 file(s)… refused is not passed — a
+> leg that reaches this branch has a caller bug to fix, and fixing it is not the same act as making
+> the tree green.`
+
+Measured on the healthy tree after the change, the same call that used to lie:
+
+```
+healthy tree, the misuse itself: exists=true verdict=refused
+asserts absence anywhere in that sentence? false
+```
+
+The committed leg is `'refuses the wrong question: the absent-artifact helper, called over a PRESENT
+artifact'`, and it does three things beyond the obvious one: it asserts the string `is missing` is
+**absent** from the answer (the lie itself is pinned out of existence, not just the verdict); it
+asserts presence outranks the branches that used to sit earlier in the function — `tracked`,
+install-surface, `unreadable` — because a guard placed *below* them would be decoration, those three
+would still fire and still say the artifact is missing; and its live half asserts whichever half the
+tree supports, a present entry must refuse and an absent entry must not claim presence, so there is no
+tree shape in which the leg asserts nothing and no branch that passes vacuously. In the never-built
+run below it shows as `✓ refuses the wrong question…`, green in both shapes for the reason it exists.
+
+The gate is **26 legs**: 25 + this one. That is the leg count that moved this round, and it is the
+authorised change, not drift — healthy **`26 passed (26)`**, never-built **`1 failed | 25 passed
+(26)`**, the one failure still being the composition leg.
+
+### The census line now checks its own arithmetic
+
+```
+lint-visibility: eslint read 1105 of 2421 OFFERED tracked lintable file(s); 1316 are hidden by an
+ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116);
+1105 + 1316 = 2421 offered, + 0 skipped = 2421 tracked lintable path(s); nothing skipped
+```
+
+Three words for three sets — `offered`, `hidden`, `tracked` — and the sum spelled out, so the line can
+be checked without re-running anything. History, so the earlier sections still read correctly: the same
+leg printed `read 1105 of 2418 tracked lintable file(s)` at `992b416b` (where **2419** paths were
+tracked) and `…of 2421…` at `d6e786c7`/`c951104c` (**2422** tracked then, **2421** now). The middle
+number was always tracked ∩ on-disk, i.e. what eslint was handed; the word "tracked" over a number
+that excludes a tracked path was the F3 failure in my own instrument.
+
+### The third merge (`d4eb9f39`) and the four numbers
+
+`c951104c` = `68e1dff5` + `origin/master` `d4eb9f39`; the merge brought **two** files — the symlink
+deleted (`932a5497`) and its replacement note `REMOVED-symlink-upstream-resolver.md`. Battery:
+`review-round-battery-at-c951104c.txt`.
+
+| requested | measured on `c951104c` |
+| --- | --- |
+| F6 after the removal | `1105 read`, **`1316`** hidden, `+ **0** skipped = 2421 tracked`, `nothing skipped` — your prediction exactly, and mechanically so: the symlink was *skipped*, never *offered*, so removing it moves `tracked` (2422 → 2421) and nothing else. `git ls-files` agrees: 2421 lintable paths tracked, 2421 on disk |
+| identity diff | exit 0, `160 identity lines, 76 distinct`, `universe: 1105 file(s) linted, 0 gitignored`, **`new 0, resolved 0`** |
+| fence | exit 1, `scanned-in-scope: 751`, **`dirty(7, 51)` `unknown(0,0)` `refused(52,115)` `adjudicated(16,24)`** (+`advisory(8,10)`, `prose(5,5)`), two runs byte-identical (20 987 bytes, `sha256 58e60496…`), and 0 OFFENDING/UNKNOWN lines naming a lane-owned file |
+| gate, both shapes | healthy `26 passed (26)`; never-built instrument exit 1 with `10 PASS` + one step `FAIL` + footer `FAIL composition-smoke`, gate `1 failed \| 25 passed (26)`; classifier `54 passed (54)` in both |
+| typecheck | exit 0, 8 `Done`, 0 `error TS` |
+| the rest | 70-leg pair `70 passed (70)`, `check:artifacts OK: 1508 files`, `node --check` × 4, eslint exit 0 on the lane's 7 files, tree C still `failed` at 399 siblings, entry handed back (400 files, no off-path leftovers) |
+
+Extended scope attribution — `isScanScopePath` extracted from each head is **the same 9 lines with
+the same digest** (`3074181c52c2`) at `14ea8717`, `4a11694a`, `d4eb9f39` and `c951104c`, and the
+counts computed with it are 748 / 748 / 748 / **751**. The rule has not moved; the +3 is this lane's
+three `scripts/` files, measured rather than asserted.
+
+### Two more misfires, both of the same family, both mine
+
+1. **I stopped a correct run on a belief about the tree.** I launched the battery, then believed I had
+   not yet performed the merge, killed the job, and wrote a note saying the transcript header would be
+   false. The header was *right*: `HEAD c951104c`, parents `68e1dff5 d4eb9f39`, symlink untracked. I
+   asserted an absence about the tree I was about to measure, without measuring it — the mirror image
+   of the credited misfire, and it cost a run that had done nothing wrong. Every battery from here
+   opens with a pre-flight it actually runs: `git rev-parse --short HEAD`, the parent list, and
+   `git merge-base --is-ancestor <master> HEAD` printed before any leg executes.
+2. **The `cmp` that compared a phantom.** The battery's predicate check read
+   `/tmp/scope-14ea8717.txt`, written in an earlier bash call; every call here gets a private `/tmp`,
+   so the operand did not exist, `cmp -s` exited non-zero, and the script printed `NO — differs`. Had
+   I reported that line instead of re-measuring it, the record would have carried a fence-predicate
+   change that does not exist, and the instruction attached to it — *stop and tell me before anything
+   else, those are the numbers the phase is tracked against* — would have fired on a phantom. The
+   correction is appended to the transcript rather than edited into it, and the two rules it produced
+   are: anything compared across calls lives in the workspace, never `/tmp`; and a comparison whose
+   operand is absent must fail as "operand missing", not as a result.
+
+Third time this round the same failure mode showed up wearing different clothes — a green over two
+crashes, a refusal to see an operand, and an assertion about a tree I had not looked at. The rule is
+not "be careful", it is: **the check has to be capable of distinguishing the case it claims to
+distinguish, and the tree it names has to be the tree it ran in.**
+
+### State
+
+Code `68e1dff5`, third merge `c951104c`, receipts in this directory. The branch is pushed **on the
+coordinator's explicit instruction for this branch only**, and this lane stops there — no merge into
+`master`, no push of `master`, no force-push anywhere (`master`/`stable` advancement is the main
+agent's call at the Gate). CORE PATCH BUDGET still 0; no retry anywhere; `packages/client/dist` handed
+back at 400 files after every experiment, and no off-path leftovers.

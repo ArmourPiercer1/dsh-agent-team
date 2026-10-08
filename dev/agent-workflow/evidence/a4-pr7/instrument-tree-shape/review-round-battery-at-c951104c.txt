@@ -1,0 +1,128 @@
+### Re-derivation on the third merged tree
+### HEAD c951104c = merge of 68e1dff5 + origin/master d4eb9f39; dirty 1
+### the tracked symlink is gone: 932a5497 evidence(a4): remove the tracked symlink into a gitignored worktree, which made eslint exit 2
+### client dist: 400 files
+
+== 1. (the removal's whole point) F6 census, and the skipped count
+   lint-visibility: eslint read 1105 of 2421 OFFERED tracked lintable file(s); 1316 are hidden by an ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1105 + 1316 = 2421 offered, + 0 skipped = 2421 tracked lintable path(s); nothing skipped
+   tracked lintable paths from git: 2421  on disk: 2421
+
+== 2. identity diff against the pinned baseline
+   exit=0
+   lint-identities: 160 identity lines, 76 distinct (target .)
+   lint-identities: universe: 1105 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+   baseline /home/user/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+
+== 3. fence x2, byte-identity, and the four phase-tracked numbers
+   run1 exit=1
+   run2 exit=1
+   scanned-in-scope: 751 tracked files
+   RESULT dirty(7 files, 51 sites)
+   RESULT unknown(0 files, 0 sites)
+   RESULT advisory(8 files, 10 sites)
+   RESULT refused(52 files, 115 sites)
+   RESULT prose(5 files, 5 sites)
+   RESULT adjudicated(16 files, 24 sites)
+   RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+   byte-identical (20987 bytes, sha256 58e60496d4bc6ac6)
+   is the scope predicate still the same 9 lines? NO — differs, attribute the scope numbers by predicate version
+   does any OFFENDING/UNKNOWN line name a file this lane owns? 0
+
+== 3b. the per-head scope table, computed with the fence's own isScanScopePath
+   14ea8717                       tracked  16262  fence-in-scope  748
+   4a11694a                       tracked  16521  fence-in-scope  748
+   d4eb9f39 (symlink removal)     tracked  16521  fence-in-scope  748
+   c951104c (this merge)          tracked  16558  fence-in-scope  751
+
+== 4. gate + classifier in a healthy tree (and the new precondition leg by name)
+lint-visibility: eslint read 1105 of 2421 OFFERED tracked lintable file(s); 1316 are hidden by an ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1105 + 1316 = 2421 offered, + 0 skipped = 2421 tracked lintable path(s); nothing skipped
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+
+== 5. the 70-leg pair
+    Test Files  2 passed (2)
+         Tests  70 passed (70)
+
+== 6. check:artifacts, typecheck, node --check, eslint
+   check:artifacts exit=0 :: [check-artifacts-committed] OK: 1508 files; committed install-surface artifacts match the fresh build (incl. 1 glue placement(s))
+   typecheck exit=0 Done=8 error-TS=0
+   node --check a4-artifact-provenance.mjs -> exit 0
+   node --check lint-identities.mjs -> exit 0
+   node --check eslint.config.mjs -> exit 0
+   node --check verify-blueprint-version-clean.mjs -> exit 0
+   eslint on this lane's 7 files exit=0
+
+== 7. instrument, healthy tree
+   exit=0 PASS=12 FAIL=0 SKIP=0
+
+== 8. the never-built tree: instrument exit 1 with one step FAIL, gate RED, classifier still green
+   moved aside (was 400 files)
+   instrument exit=1 PASS=10 FAIL=2 SKIP=0
+     FAIL client plugin (packages/client): built entry is missing — run `pnpm build` first (a missing artifact is a failure, never a skip)
+     FAIL composition-smoke
+   composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD c951104c, 0 tracked file(s) changed vs HEAD, 1 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+   lint-visibility: eslint read 1105 of 2421 OFFERED tracked lintable file(s); 1316 are hidden by an ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1105 + 1316 = 2421 offered, + 0 skipped = 2421 tracked lintable path(s); nothing skipped
+          × is green, asserted by arm name and by absence of a skip — never by the exit code 567ms
+          ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact 148ms
+    Test Files  1 failed (1)
+         Tests  1 failed | 25 passed (26)
+     classifier:  Test Files  1 passed (1)
+     classifier:       Tests  54 passed (54)
+   handed back: 400 files, entry present
+
+== 9. tree C verdict, and the precondition guard's live half in a healthy tree
+    tree C: exists=false outputFileCount=399 verdict=failed
+   entry restored: YES (400 files)
+   healthy tree, the misuse itself: exists=true verdict=refused
+   why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js IS on disk, so there is no absence to classify — you asked the absent-artifact helper the wrong question. This function never reads the artifact's contents; every sentence it can produce is about a missing fil
+   asserts absence anywhere in that sentence? false
+
+== 10. healthy re-confirmation after every mutation
+lint-visibility: eslint read 1105 of 2421 OFFERED tracked lintable file(s); 1316 are hidden by an ignore pattern (dev/ 445, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1105 + 1316 = 2421 offered, + 0 skipped = 2421 tracked lintable path(s); nothing skipped
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   fence exit=1
+   scanned-in-scope: 751 tracked files
+   RESULT dirty(7 files, 51 sites)
+   RESULT unknown(0 files, 0 sites)
+   RESULT refused(52 files, 115 sites)
+   RESULT adjudicated(16 files, 24 sites)
+
+== HANDOVER
+   modified 0  untracked 1
+     ?? dev/agent-workflow/evidence/a4-pr7/instrument-tree-shape/review-round-battery-at-c951104c.txt
+   dist 400 files, entry present
+   off-path leftovers: (none expected)
+
+## Correction, appended after the run rather than edited into it
+
+Section 3 printed:
+
+  is the scope predicate still the same 9 lines? NO — differs, attribute the scope numbers by predicate version
+
+**That line is false, and it is false for a reason worth keeping in the transcript.** The script
+compared `git show HEAD:…` against `/tmp/scope-14ea8717.txt`, a file written in an *earlier bash
+call* — and every call here runs with a private `/tmp`, so the operand could not exist. `cmp -s` on a
+missing operand exits non-zero, and the script printed its failure branch. Nothing was compared.
+
+Measured again in one call, with the extracts written into the workspace scratch instead of `/tmp`
+(`isScanScopePath` extracted from each head, 9 lines each):
+
+  14ea8717  sha256[:12] 3074181c52c2
+  4a11694a  sha256[:12] 3074181c52c2
+  d4eb9f39  sha256[:12] 3074181c52c2
+  c951104c  sha256[:12] 3074181c52c2
+
+IDENTICAL across all four heads, so §7's per-head table and this run's section 3b stand without any
+predicate caveat: the fence's scope rule has not moved since `14ea8717`, and the 748 → 751 delta is
+this lane's three `scripts/` files.
+
+The failure family is the one already credited in §15 — comparing two things and calling the
+agreement (or disagreement) a result — and this instance cut the other way: an earlier run of the
+same check produced a *green* over two MODULE_NOT_FOUND crashes, this one produced a *red* over a
+missing operand. Reported as fact it would have stopped a merge over a predicate change that does not
+exist. Two rules follow, both now in FINDINGS §18: artifacts compared across calls live in the
+workspace, never in `/tmp`; and a comparison whose operand is absent must say "operand missing"
+rather than take the failure branch.
