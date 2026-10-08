@@ -201,11 +201,23 @@ function expectSingle(f: Fixture, want: SiteClass | 'none'): Classification {
  * (Task 7.4). A file leaves this list by being migrated to a v3 document with
  * an explicit `teamHardEnvelope` (or by its literal being probed and deleted
  * as a lie), never by being added to a skip list in the scanner.
+ *
+ * REMOVED ROWS, so a deletion here is never mistaken for a mute:
+ *   - `packages/domain/blueprint/testdata/fixtures.ts` — its ratified
+ *     three-phase STOP CLOSED by this commit. Phase 1 (the B-lane
+ *     witness-ownership rewrite of the three `revisionSource(...)` derivations)
+ *     had already landed; Phase 2 is this commit — the factory migrated to v3
+ *     with both authority documents at `rules: []`, and this wrapper's archetype
+ *     leg moved WITH it in the same commit, as the ruling required. Phase 3 (the
+ *     file stays dirty until both land) is therefore satisfied and the row is
+ *     gone because the SET EQUALITY below, not a judgement call, is what decides
+ *     membership. Measured: the dirty set fell 7 files / 51 sites to 6 / 17, and
+ *     every one of the 34 sites that left was this file's. Evidence:
+ *     dev/agent-workflow/evidence/a4-pr7/7-3-fixtures/.
  */
 const DEFERRALS: ReadonlyMap<string, string> = new Map([
   ['tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 1 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
   ['tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs', 'C-testkit: migrated group 4; stays dirty ON PURPOSE — the V1_ANCHOR_SOURCE literal is historical pre-PR-E bytes, hash is derived from the embedded source (verify at flip: parseBlueprint(V1_ANCHOR_SOURCE).contentHash must equal the pinned sha256:6a7fba9f… today, and REFUSE post-flip). Disposition: post-§7.3-flip refusal proof — see dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 2 (invert-to-refusal). Deleting this entry before that flip goes the stale-check red, which is the design.'],
-  ['packages/domain/blueprint/testdata/fixtures.ts', 'C-domain STOP, ratified by the coordinator: stays dirty pending (1) the B-lane witness-ownership rewrite of the three revisionSource(...) derivations that splice the factory\'s declared-version line into their v1/v2/99 witnesses (a4f1-row-version-not-document-version, a4p7-v3-cutover-acceptance, a4p7-v8-catalog-migration-state) and (2) the coupled fixtures.ts -> v3 plus empty-rules-envelope PR that updates this file\'s own archetype test in the same PR, owned by the fence/wrapper owner, enumerating the factory\'s full consumer set. Measured evidence: dev/agent-workflow/evidence/a4-pr7/7-4-cdom/FINDINGS.md §5 (v3 without envelopes fails a consumer at COLLECTION; with them, 39 witness tests across the three deriving files). Deliberately avoids quoting the literal carrier pattern here: the fence flags its own author — an earlier draft of this justification made THIS file a dirty site.'],
   ['packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
   ['packages/runtime/test/t12a-live-bridge.mjs', 'B-runtime-semantics-B STOP (measured 2026-10-08): this path is the wrapper\'s own packages/*/test by-path positive control (the leg "packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path"), so cleaning it is a coupled wrapper edit. COORDINATOR RULING 2026-10-08 (reviewer recommendation adopted): this path stays DIRTY BY DESIGN -- it is the only .mjs emitter in the scan class and its 38 importers make it the most-shared fixture in the runtime tree, so retargeting the pin would retire the sole witness of that class to accommodate a migration that is neutral for every consumer. Cited by leg title, never by line number: line numbers in a persistent row go stale on contact. The default document is LIVE (a probe digit no build runs reddens t12a-m2-persona, t12a-h1-nullable-mcp and t4a-capability-wiring); promoting it to v3 with both documents declared rules: [] keeps 5/5 measurable consumers green. Evidence + the retarget options: dev/agent-workflow/evidence/a4-pr7/7-4-b2b/FINDINGS.md'],
   ['packages/legacy/test/p7t6-teammates-adapter.test.ts', 'NO §7.4 LANE ROW (package not in the lane table) — C-testkit STOPPED, file byte-identical: this is the legacy .md teammate-file format\'s OWN version axis, not a TeamBlueprint document (L380 is a NEGATIVE test of which legacy versions the adapter rejects); migrating would delete the adapter\'s acceptance proof. Awaiting the fence\'s dirty-class adjudication row — disposition recorded in dev/agent-workflow/evidence/a4-pr7/7-3-flip/intentional-retired.md row 3 (legitimate non-Blueprint version axis pending adjudication; owner: fence owner + §7.3 emitter). Carriers: L118=string-carrier-in-typed-file, L248=string-carrier-in-typed-file, L275=string-carrier-in-typed-file, L380=string-carrier-in-typed-file, L398=string-carrier-in-typed-file, L416=string-carrier-in-typed-file, L458=string-carrier-in-typed-file, L460=string-carrier-in-typed-file, L462=string-carrier-in-typed-file'],
@@ -405,7 +417,14 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
         .sort()
       expect([...(printed.get(path) ?? [])].sort(), `report must print EXACTLY the sites of ${path}`).toEqual(expected)
     }
-    expect(report).toContain('OFFENDING packages/domain/blueprint/testdata/fixtures.ts :: ')
+    // Re-homed when fixtures.ts was migrated out of the dirty set (see the REMOVED
+    // ROWS note): the control needs a path that is DIRTY, and it must not be the
+    // by-path control's own path or the two controls collapse into one. This is a
+    // YAML string-carrier factory in a packages/*/test .ts file, i.e. the same class
+    // the archetype leg below pins.
+    expect(report).toContain(
+      'OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: ',
+    )
     expect(report).toMatch(/OFFENDING \S+ :: L\d+=v[12]/)
     expect(report).toContain(`RESULT dirty(${String(dirtyPaths.length)} files, ${String(run.dirty.length)} sites)`)
   })
@@ -413,15 +432,26 @@ describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)', () => {
   // --- the 7.4-scope extension: the third class is covered by path ---------
 
   it("the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line", () => {
-    // The 2026-10-08 probe finding: the largest fixture factory stores its
-    // version as a YAML string fragment, so a property-level or AST probe
-    // edits NOTHING in the one file that most needs editing. The scan must
-    // name those exact lines: 26, 72, 242, 264 (fragment) and 286 (quoted).
-    const archetype = 'packages/domain/blueprint/testdata/fixtures.ts'
-    const lines = run.dirty.filter((s) => s.path === archetype).map((s) => s.line)
-    for (const l of [26, 72, 242, 264, 286]) {
-      expect(lines, `fixtures.ts:L${l} must be a DIRTY site (YAML string carrier)`).toContain(l)
-    }
+    // The 2026-10-08 probe finding: a fixture factory stores its version as a
+    // YAML string fragment, so a property-level or AST probe edits NOTHING in
+    // the file that most needs editing. The scan must name those exact lines.
+    //
+    // THE ARCHETYPE MOVED, AND THAT IS NOT A MUTE. It was
+    // `packages/domain/blueprint/testdata/fixtures.ts` lines 26/72/242/264
+    // (fragment) and 286 (quoted); §7.4 migrated that file, so pinning it by
+    // line forever would be a control that goes red on SUCCESS — the exact
+    // red-on-success shape the leg above was rewritten to escape. What the leg
+    // claims is unchanged: SOME YAML-string-fragment factory in the scan class
+    // is reached by path AND by exact line. It now names
+    // `a3p4-pr4-production-entry-regression.test.ts`, whose blueprint documents
+    // are `.ts` array literals of YAML fragments (four of them, at the lines
+    // pinned below) and whose lane deferral keeps it dirty for its own reasons.
+    // The set is asserted by EQUALITY, not membership, so the archetype cannot
+    // quietly accumulate or lose a site without this leg reddening.
+    const archetype =
+      'packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts'
+    const lines = run.dirty.filter((s) => s.path === archetype).map((s) => s.line).sort((a, b) => a - b)
+    expect(lines, `${archetype}: the YAML string-carrier sites the fence must name`).toEqual([118, 491, 843, 1128])
     expect(report).toContain(`OFFENDING ${archetype} :: `)
   })
 

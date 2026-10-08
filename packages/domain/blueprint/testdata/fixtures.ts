@@ -2,9 +2,52 @@
  * P3-T2 test fixtures: blueprint source documents as TS string constants.
  *
  * Per the T2 ruling, fixtures are embedded as module constants (no `node:fs`
- * in tests). Valid fixtures exercise the full closed v1 schema; negative
- * fixtures each violate exactly one rule so tests can assert the precise
+ * in tests). Valid fixtures exercise the full closed schema; negative fixtures
+ * each violate exactly one rule so tests can assert the precise
  * `TeamContractError.code`.
+ *
+ * VERSION — the §7.4 fixture migration, done here rather than at the §7.3 flip.
+ * These documents are v3. They were v1 because this file predates v2 and v3,
+ * not because anything needs a retired document: every fixture here is a
+ * POSITIVE control for identity, hashing, cataloguing and the refusal
+ * taxonomy, and §7.3 option A (PR #161) removed the last grammar dependency
+ * that made an older digit load-bearing. Two fixtures keep their digit because
+ * the digit IS the claim, and both say so at their sites:
+ *   - `NEG_SCHEMA_VERSION_UNSUPPORTED` — the version's TYPE is the claim, so the
+ *     stamp stays a quoted string; it is re-stamped to the current digit to
+ *     keep exactly ONE reason to refuse rather than two.
+ *   - `NEG_SCHEMA_VERSION_MISMATCH` — a NEVER-DEFINED version is the claim, so
+ *     it is neither promotable (promoted, the document is simply valid) nor
+ *     invertible into a retired-version refusal; it moves to the typed code
+ *     position `SCHEMA_VERSION_NEVER_DEFINED` and emits the same bytes.
+ *
+ * The two v3 authority documents appear in every promoted document as the
+ * ZERO POSITION `rules: []`, never as a permissive filler rule. What that zero
+ * actually says, per plane — both readings are pinned in production code, not
+ * inferred here:
+ *   - `permissionMutationEnvelope: { rules: [] }` — on the EXPANSION plane an
+ *     unmatched scope is `no-authority` (`effectiveAuthorityCeiling`,
+ *     domain/authority-envelope: "`rules: []` therefore means this actor may
+ *     expand nothing"). So the Leader can never widen a member's permissions.
+ *   - `teamHardEnvelope: { rules: [] }` — the same `no-authority` reading for a
+ *     Leader-driven expansion; on the APPROVAL plane the same absence is the
+ *     IDENTITY (`bindingDocs`: a missing rule imposes no narrowing), so a Human
+ *     User approving a concrete operation is unimpeded.
+ * That position is INERT in exactly one world: a Team that never asks to expand
+ * anything — permissions come only from the static Blueprint lanes, nothing is
+ * ever mutated, and no rising-authority proposal is made. Every fixture in this
+ * file lives in that world; none of them exercises the mutation plane. It is
+ * NOT inert in general, and a future fixture that does exercise expansion must
+ * declare real rules instead of inheriting this pair.
+ *
+ * WHY THE PAIR IS NOT IN ALL OF THEM: three fixtures (`NEG_UNCLOSED_FRONTMATTER`,
+ * `NEG_MISSING_FRONTMATTER`, `NEG_INVALID_YAML`) never become a document at all
+ * — they die in `splitFrontmatter` / `decodeYaml` — so an authority document in
+ * them would be bytes no reader can reach, and their digit is pure decoration.
+ * Conversely, every fixture that reaches the field stage carries the pair even
+ * when its own defect fires earlier: a promoted document that omits a REQUIRED
+ * v3 field violates two rules, and a fixture that violates two rules while its
+ * test pins one has stopped meaning what it says.
  *
  * @module @dsh-agent-team/domain/blueprint/testdata/fixtures
  */
@@ -15,7 +58,13 @@ import type { TeamContractErrorCode } from '../../../contracts/src/index.js'
 // minimal valid documents
 // ---------------------------------------------------------------------------
 
-/** The smallest closed v1 blueprint (no optional fields present). */
+/**
+ * The smallest closed document at the version this build declares: identity,
+ * leader and the empty collections, plus the two REQUIRED v3 authority
+ * documents at their zero position (see the file header for what `rules: []`
+ * says and the one world in which it is inert). Every optional field is
+ * absent; the two authority documents are not optional at v3.
+ */
 function minimalBlueprintLines(
   blueprintId: string,
   revision: string,
@@ -23,7 +72,7 @@ function minimalBlueprintLines(
 ): string[] {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     `blueprintId: ${blueprintId}`,
     `revision: "${revision}"`,
     'leader:',
@@ -33,6 +82,10 @@ function minimalBlueprintLines(
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -69,7 +122,7 @@ export const CRLF_BOM_SOURCE: string =
 
 /** Top-level blocks of the full document, keyed by field name. */
 const FULL_BLOCKS: Record<string, string[]> = {
-  schemaVersion: ['schemaVersion: 1'],
+  schemaVersion: ['schemaVersion: 3'],
   blueprintId: ['blueprintId: team.alpha'],
   revision: ['revision: "2"'],
   displayName: ['displayName: Alpha Team'],
@@ -138,6 +191,8 @@ const FULL_BLOCKS: Record<string, string[]> = {
     '    maxInstances: 2',
   ],
   capabilityPolicy: ['capabilityPolicy:', '  web: allow', '  fs: deny'],
+  permissionMutationEnvelope: ['permissionMutationEnvelope:', '  rules: []'],
+  teamHardEnvelope: ['teamHardEnvelope:', '  rules: []'],
   metadata: ['metadata:', '  owner: platform', '  locale: en'],
 }
 
@@ -156,6 +211,8 @@ const FULL_ORDER: readonly string[] = [
   'quotas',
   'capabilityPolicy',
   'metadata',
+  'permissionMutationEnvelope',
+  'teamHardEnvelope',
 ]
 
 /** A deliberately different top-level key order (hash canonicalization). */
@@ -174,6 +231,8 @@ const FULL_ORDER_SHUFFLED: readonly string[] = [
   'blueprintId',
   'policyStates',
   'memberEnvelopes',
+  'permissionMutationEnvelope',
+  'teamHardEnvelope',
 ]
 
 /** Build the full document with a given leader persona and key order. */
@@ -239,7 +298,7 @@ export const NEG_UNKNOWN_TOP_LEVEL: NegativeFixture = {
   unknownFields: ['extraField'],
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'extraField: 1',
@@ -250,6 +309,10 @@ export const NEG_UNKNOWN_TOP_LEVEL: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -261,7 +324,7 @@ export const NEG_UNKNOWN_NESTED_FIELD: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -272,6 +335,10 @@ export const NEG_UNKNOWN_NESTED_FIELD: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -283,7 +350,7 @@ export const NEG_SCHEMA_VERSION_UNSUPPORTED: NegativeFixture = {
   code: 'SCHEMA_VERSION_UNSUPPORTED',
   source: [
     '---',
-    'schemaVersion: "1"',
+    'schemaVersion: "3"',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -293,11 +360,36 @@ export const NEG_SCHEMA_VERSION_UNSUPPORTED: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
   ].join('\n'),
 }
+
+/**
+ * A version number OUTSIDE every defined set, for the "well-formed integer the
+ * build does not know" negative. The digit IS this fixture's claim: `4` is not
+ * v1, not v2, not v3 — it was never a defined document version — so the refusal
+ * is `SCHEMA_VERSION_MISMATCH` both under the PR1-PR6 bridge `[1, 2, 3]` and
+ * after §7.3's collapse to `[3]`, and it never becomes the MIGRATION_REQUIRED
+ * refusal that a RETIRED (once-defined) version gets at the runtime boundary.
+ * That is why this one cannot be promoted to v3: promoted, the document would
+ * simply be VALID and the test would assert nothing.
+ *
+ * It lives at a code position rather than in the YAML string for one reason: the
+ * §7.3 version fence keys any `schemaVersion: <digit>` literal in a file that
+ * also keys `blueprintId`, so a never-defined witness reads as an un-migrated
+ * document. Moving it here changes the CARRIER and not the BYTES — the emitted
+ * frontmatter line is byte-for-byte the one it always emitted. Same treatment as
+ * `NEVER_DEFINED_VERSION` in `packages/domain/test/bp1-blueprint-inspector.test.ts`.
+ * If the defined set ever widens to include this number, the witness moves; the
+ * intent does not.
+ */
+const SCHEMA_VERSION_NEVER_DEFINED = 4
 
 export const NEG_SCHEMA_VERSION_MISMATCH: NegativeFixture = {
   // Pre-§E.2 this pinned `schemaVersion: 2` (then unsupported). §E.2 makes
@@ -320,7 +412,7 @@ export const NEG_SCHEMA_VERSION_MISMATCH: NegativeFixture = {
   code: 'SCHEMA_VERSION_MISMATCH',
   source: [
     '---',
-    'schemaVersion: 4',
+    `schemaVersion: ${SCHEMA_VERSION_NEVER_DEFINED}`,
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -341,13 +433,17 @@ export const NEG_MISSING_LEADER: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'members: []',
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -359,7 +455,7 @@ export const NEG_EMPTY_PERSONA: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -369,6 +465,10 @@ export const NEG_EMPTY_PERSONA: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -380,7 +480,7 @@ export const NEG_TEMPLATE_MISSING_PERSONA: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -389,6 +489,10 @@ export const NEG_TEMPLATE_MISSING_PERSONA: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -400,7 +504,7 @@ export const NEG_NUMERIC_REVISION: NegativeFixture = {
   code: 'INVALID_BLUEPRINT_REVISION',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: 1',
     'leader:',
@@ -410,6 +514,10 @@ export const NEG_NUMERIC_REVISION: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -421,7 +529,7 @@ export const NEG_BAD_BLUEPRINT_ID: NegativeFixture = {
   code: 'INVALID_BLUEPRINT_ID',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: "team@alpha"',
     'revision: "1"',
     'leader:',
@@ -431,6 +539,10 @@ export const NEG_BAD_BLUEPRINT_ID: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -442,7 +554,7 @@ export const NEG_BAD_REVISION: NegativeFixture = {
   code: 'INVALID_BLUEPRINT_REVISION',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "rev@1"',
     'leader:',
@@ -452,6 +564,10 @@ export const NEG_BAD_REVISION: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -463,7 +579,7 @@ export const NEG_BAD_TEMPLATE_ID: NegativeFixture = {
   code: 'INVALID_TEMPLATE_ID',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -473,6 +589,10 @@ export const NEG_BAD_TEMPLATE_ID: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -484,7 +604,7 @@ export const NEG_DUPLICATE_MEMBER_TEMPLATE_ID: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -498,6 +618,10 @@ export const NEG_DUPLICATE_MEMBER_TEMPLATE_ID: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -509,7 +633,7 @@ export const NEG_MEMBER_TEMPLATE_CLASHES_WITH_LEADER: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -521,6 +645,10 @@ export const NEG_MEMBER_TEMPLATE_CLASHES_WITH_LEADER: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -532,7 +660,7 @@ export const NEG_UNRESOLVED_MEMBER_ENVELOPE: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -546,6 +674,10 @@ export const NEG_UNRESOLVED_MEMBER_ENVELOPE: NegativeFixture = {
     '      allow: []',
     '      deny: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -557,7 +689,7 @@ export const NEG_ENVELOPE_ALLOW_DENY_OVERLAP: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -572,6 +704,10 @@ export const NEG_ENVELOPE_ALLOW_DENY_OVERLAP: NegativeFixture = {
     '    - op.a',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -583,7 +719,7 @@ export const NEG_REQUIREMENT_DUPLICATE: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -598,6 +734,10 @@ export const NEG_REQUIREMENT_DUPLICATE: NegativeFixture = {
     '    optional: true',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -609,7 +749,7 @@ export const NEG_REQUIREMENT_BAD_DOMAIN: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -621,6 +761,10 @@ export const NEG_REQUIREMENT_BAD_DOMAIN: NegativeFixture = {
     '    name: search',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -632,7 +776,7 @@ export const NEG_POLICY_STATE_BAD_FIELD_REF: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -645,6 +789,10 @@ export const NEG_POLICY_STATE_BAD_FIELD_REF: NegativeFixture = {
     '  - id: active',
     '    fields:',
     '      - nonexistent',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -656,7 +804,7 @@ export const NEG_POLICY_STATE_BAD_ID: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -668,6 +816,10 @@ export const NEG_POLICY_STATE_BAD_ID: NegativeFixture = {
     'policyStates:',
     '  - id: "Active One"',
     '    fields: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -679,7 +831,7 @@ export const NEG_POLICY_STATE_DUPLICATE_FIELD_REF: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -693,6 +845,10 @@ export const NEG_POLICY_STATE_DUPLICATE_FIELD_REF: NegativeFixture = {
     '    fields:',
     '      - leader',
     '      - leader',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -704,7 +860,7 @@ export const NEG_QUOTA_CONCURRENT_GT_INSTANCES: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -718,6 +874,10 @@ export const NEG_QUOTA_CONCURRENT_GT_INSTANCES: NegativeFixture = {
     '  team:',
     '    maxInstances: 2',
     '    maxConcurrent: 3',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -729,7 +889,7 @@ export const NEG_QUOTA_NOT_POSITIVE: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -742,6 +902,10 @@ export const NEG_QUOTA_NOT_POSITIVE: NegativeFixture = {
     'quotas:',
     '  team:',
     '    maxInstances: 0',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -753,7 +917,7 @@ export const NEG_CAPABILITY_POLICY_BAD_DECISION: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -765,6 +929,10 @@ export const NEG_CAPABILITY_POLICY_BAD_DECISION: NegativeFixture = {
     'policyStates: []',
     'capabilityPolicy:',
     '  web: maybe',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -776,7 +944,7 @@ export const NEG_METADATA_NON_STRING_VALUE: NegativeFixture = {
   code: 'MALFORMED_DTO',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -786,6 +954,10 @@ export const NEG_METADATA_NON_STRING_VALUE: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata:',
     '  count: 42',
     '---',
@@ -798,7 +970,7 @@ export const NEG_NESTED_MEMBER_ID: NegativeFixture = {
   code: 'LEGACY_MEMBER_ID_REJECTED',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -809,6 +981,10 @@ export const NEG_NESTED_MEMBER_ID: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -820,7 +996,7 @@ export const NEG_NON_LOSSLESS_JSON_VALUE: NegativeFixture = {
   code: 'REMOTE_VALUE_NOT_JSON',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -830,6 +1006,10 @@ export const NEG_NON_LOSSLESS_JSON_VALUE: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata:',
     '  when: !!timestamp 2024-01-01',
     '---',
@@ -851,7 +1031,7 @@ export const NEG_NON_LOSSLESS_JSON_VALUE: NegativeFixture = {
 function permissionBlueprintSource(permissionLines: string[]): string {
   return [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -873,6 +1053,10 @@ function permissionBlueprintSource(permissionLines: string[]): string {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -1238,7 +1422,7 @@ export const NEG_CONTENT_HASH_IN_SOURCE: NegativeFixture = {
   unknownFields: ['contentHash'],
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'contentHash: "sha256:0000"',
@@ -1249,6 +1433,10 @@ export const NEG_CONTENT_HASH_IN_SOURCE: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '',
@@ -1261,7 +1449,7 @@ export const NEG_NON_EMPTY_BODY: NegativeFixture = {
   reason: 'markdown-body-not-allowed',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     'leader:',
@@ -1271,6 +1459,10 @@ export const NEG_NON_EMPTY_BODY: NegativeFixture = {
     'requirements: []',
     'memberEnvelopes: []',
     'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
     'metadata: {}',
     '---',
     '# A markdown body must be empty',
@@ -1284,7 +1476,7 @@ export const NEG_UNCLOSED_FRONTMATTER: NegativeFixture = {
   reason: 'frontmatter-unclosed',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     '',
@@ -1296,7 +1488,7 @@ export const NEG_MISSING_FRONTMATTER: NegativeFixture = {
   code: 'MALFORMED_DTO',
   reason: 'frontmatter-missing',
   source: [
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'blueprintId: team.min',
     'revision: "1"',
     '---',
@@ -1310,7 +1502,7 @@ export const NEG_INVALID_YAML: NegativeFixture = {
   reason: 'yaml-invalid',
   source: [
     '---',
-    'schemaVersion: 1',
+    'schemaVersion: 3',
     'leader: [unclosed',
     '---',
     '',

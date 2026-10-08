@@ -20,19 +20,20 @@ import {
 import { expectErrorDetails } from './t2-helpers.js'
 
 /**
- * §7.4 carrier migration (pre-flip half): the declared stamp of the
- * `MINIMAL_BLUEPRINT_SOURCE` factory fixture. The frontmatter-text test
- * below pins that fixture's bytes VERBATIM — a live v1 mirror, not a choice
- * of this file: fixtures.ts stays v1 until the flip (byte-coupled to
- * cross-lane consumers; see evidence 7-4-cdom FINDINGS). Change this
- * constant only together with fixtures.ts, never to make the scan pass.
+ * The declared stamp of the `MINIMAL_BLUEPRINT_SOURCE` factory fixture.
+ *
+ * This is a LIVE MIRROR, not a choice of this file: the frontmatter-text test
+ * below pins that fixture's bytes VERBATIM, and §7.4 moved fixtures.ts to the
+ * current document version in the same PR that moved this constant. Change it
+ * only together with fixtures.ts, never to make the version scan pass — a
+ * mirror that is edited to silence a tool stops being a mirror.
  */
-const MINIMAL_FACTORY_DECLARED_VERSION = 1
+const MINIMAL_FACTORY_DECLARED_VERSION = 3
 
 describe('t2 parse: minimal blueprint', () => {
-  it('parses the minimal closed v1 document', () => {
+  it('parses the minimal closed document at the version this build declares', () => {
     const bp = parseBlueprint(MINIMAL_BLUEPRINT_SOURCE)
-    expect(bp.schemaVersion).toBe(1)
+    expect(bp.schemaVersion).toBe(MINIMAL_FACTORY_DECLARED_VERSION)
     expect(bp.blueprintId).toBe('team.min')
     expect(bp.revision).toBe('1')
     expect(bp.leader.templateId).toBe('leader')
@@ -41,6 +42,13 @@ describe('t2 parse: minimal blueprint', () => {
     expect(bp.requirements).toEqual([])
     expect(bp.memberEnvelopes).toEqual([])
     expect(bp.policyStates).toEqual([])
+    // The two v3 authority documents are REQUIRED there, and the fixture
+    // declares the ZERO position rather than a permissive filler. Pinned as
+    // data because the validator would also accept a document that omits
+    // them by refusing it, which is a different fact from "this minimal
+    // document grants no expansion authority".
+    expect(bp.permissionMutationEnvelope).toEqual({ rules: [] })
+    expect(bp.teamHardEnvelope).toEqual({ rules: [] })
     expect(bp.metadata).toEqual({})
     expect(bp.displayName).toBe(undefined)
     expect(bp.description).toBe(undefined)
@@ -169,6 +177,10 @@ describe('t2 parse: splitFrontmatter', () => {
         'requirements: []',
         'memberEnvelopes: []',
         'policyStates: []',
+        'permissionMutationEnvelope:',
+        '  rules: []',
+        'teamHardEnvelope:',
+        '  rules: []',
         'metadata: {}',
       ].join('\n'),
     )
