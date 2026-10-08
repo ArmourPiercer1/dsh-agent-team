@@ -881,13 +881,13 @@ const D = await (async () => {
       blueprint: bp,
       environmentFacts: () => world.source(bp),
       environmentFactsRead: () => world.readSource(bp),
-      // §7.3 flip-relevant: this mirrors production's own
-      // `blueprint.schemaVersion === 2` gate (creation-preflight.ts:217) — the
-      // template-scope read port exists only for that grammar. When §7.3
-      // narrows the version union this comparison stops compiling; the flip
-      // owner decides whether the gate widens to v3 or the v2 template-scope
-      // legs retire with it (see FINDINGS §5). NOT a fixture decoration to edit.
-      ...(world.templateReadSource !== undefined && bp.schemaVersion === 2
+      // §7.3 Option A (decision record: dev/agent-workflow/evidence/a4-pr7/7-3-decision/Dossier.md):
+      // this mirrors production's template-scope read gate (creation-preflight.ts:217). That gate is now
+      // version-AGNOSTIC — the §E.2 grammar is a property of the blueprint SHAPE, not of its version
+      // digit — so the mirror drops its own `bp.schemaVersion === 2` conjunct and widens WITH the gate.
+      // (Leaving the digit here would not be a type error; it would silently make this file's E6 leg a
+      // v2-only leg — the second silent-drop surface the decision record names.)
+      ...(world.templateReadSource !== undefined
         ? { templateEnvironmentFactsRead: (templateId: string) => world.templateReadSource(bp, templateId) }
         : {}),
       ...(extra.availability !== undefined ? { availability: extra.availability } : {}),
