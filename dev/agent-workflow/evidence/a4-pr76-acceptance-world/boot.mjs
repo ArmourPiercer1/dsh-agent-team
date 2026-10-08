@@ -80,6 +80,10 @@ const HOST_JS = join(REPO, 'packages/runtime/dist/packages/runtime/src/plugin/ho
 const GLUE_MJS = join(REPO, 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs')
 const SEAM_MJS = join(REPO, 'packages/runtime/root-binding/harness/seam.mjs')
 const P6T6_MJS = join(REPO, 'packages/tools/harness/plugin.mjs')
+// The shipped CLIENT row entry: a tracked composition output (packages/client/composition-shim, among
+// the 1508 files check-artifacts-at-head compares). Round 43 found this world mounting only the
+// runtime row, which left the browser with no team surface at all.
+const CLIENT_SHIM = join(REPO, 'packages/client/composition-shim/index.js')
 const MOCK_HARNESS = join(REPO, 'packages/tools/harness/mock-deepseek.mjs')
 for (const p of [HOST_JS, GLUE_MJS, SEAM_MJS, P6T6_MJS, MOCK_HARNESS]) {
   if (!existsSync(p)) fail(`missing required artifact (is the main checkout built?): ${p}`)
@@ -250,8 +254,20 @@ writeFileSync(join(WORLD, 'profiles/web/cordis.patch.yml'), [
   `        seamUrl: "${fileUrl(SEAM_MJS)}"`,
   '    - id: "p6t6-team-tools"',
   `      name: "${fileUrl(P6T6_MJS)}"`,
+  '# The CLIENT half of the install surface. TeamView and TeamLedger — including the live Allow/Deny',
+  '# affordance a human needs for §7.7 steps 3/4/5 — live in packages/client, and without this row the',
+  '# browser renders only the host shell: no team entry in the sidebar footer, no ledger, nothing to',
+  '# click (evidence/a4-pr76-acceptance-world/GUI-20261008-R43.md). Mounted by file URL, the same',
+  '# tradeoff the host row already makes, from the tracked composition shim rather than a worktree.',
+  '- insert:',
+  '    - id: "dsh-agent-team-client"',
+  `      name: "${fileUrl(CLIENT_SHIM)}"`,
   '',
 ].join('\n'))
+if (!existsSync(CLIENT_SHIM)) {
+  log(`WARNING client row UNAVAILABLE: ${CLIENT_SHIM} is absent (run pnpm build:composition). ` +
+    `The host will boot, but no team surface exists in the browser, so the GUI team legs are ungradeable here.`)
+}
 log(`world materialized at ${WORLD} (profiles, blueprints, p6t6 directive, workspace/grants)`)
 
 // ── detached supervision mode: relaunch self with --supervise ──────────────

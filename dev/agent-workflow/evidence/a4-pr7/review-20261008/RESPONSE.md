@@ -63,3 +63,38 @@ Three implementations it verified in production code rather than in ADR prose, a
 - **R-1 closed by PR #202.** The measured base behaviour was stronger than "a constraint vanishes": a durable recorded **DENY** was returned as `{ proceed: true }` with zero consumption, and the runtime plane had *already refused* (`allowed:false, reason:'no-request'`) before the tool plane mapped that refusal into a green light — **one token, opposite polarity across a seam; neither side locally wrong, which is why it survived**. The law is now pinned on `NO_REQUEST` itself. Two items spun out of it as their own backlog entries: **14** the client inverse compound (the operator sees a decidable approval while enforcement drops it, and cannot see which case they are deciding), and **15** case-less corrupt rows, deliberately **not** widened here because the risk direction flips to over-refusal and `approvalCaseId` is optional at the write boundary.
 - **R-5 closed by PRs #200/#201.** `MUST-NOT-STAY-EXEMPT 13 · REGISTERED-DEBT 9 · unrelated-historical 0`, plus the two findings an identity diff cannot express (**93 of 129 assertions in exempted legs never execute**; five green negative legs passing on their own fixture's YAML syntax error, which I reproduced with the repository parser). Two test-only repair lanes are running on it.
 - **What this review changed in my method, recorded where I will meet it again:** I audited my own §7.6 map and found I had verified that cited legs *existed* and were green-or-disclosed, and had never verified that their assertions *ran* — so the map now carries dated errata and the rule **"where coverage is the claim, measure execution, not registration."**
+
+
+## Outcomes appended as the work landed (round 43)
+
+- **R-2 closed by PR #208, on the escalating lane's own instrument.** The p6t1 reproducer that measured
+  `chainOk:OPEN 12 / chainFail:reprobe-failed 12` at base now measures `chainOk:OPEN 24` and nothing else.
+  The mechanism was one state change performed as three durable writes under a module comment claiming
+  serialization it did not have; the repair is a generation-checked atomic write **at the seam**
+  (`replaceIfGeneration`), so activation, both admission gates and the memoized root authority inherit it
+  rather than each carrying a hotfix. Two pinned behaviours were revised **on the owner's ruling and named
+  in the commit**, not quietly superseded, and the one unavoidable test-identity transition was carried with
+  its reason. **Disclosed residual:** no conditional CREATE exists at the seam, so a cold create can still
+  race unobservably — bounded in the PR, and `CORE_SEAM_BLOCKER` rather than a todo.
+- **R-3 partially closed, and I am writing the word partially deliberately.** The local entry point is now
+  proven in my own hands: `DSH-CI-VERDICT pass pass=7 fail=0 legs=7` on a merge of the branch into master,
+  two red controls I ran myself (a planted red inside an already-red file, named under `NEW RED(S)`; the
+  exact `graph.yaml` bytes PR #195 merged, refused in 0.2 s), and a refusal of **my own** tree because I had
+  skipped `pnpm build:composition` — the strongest thing I can report about an instrument is that it
+  rejected its author. **But the hosted half was worse than unverified: it had never executed a job.** Four
+  runs, all red, zero jobs, no logs — two of them on `master` — because `runner.temp` was used in
+  `jobs.<id>.env`, an illegal context, and GitHub refuses the whole file for that. Fixed on PR #210
+  (`actionlint` names the line in a second; the API tells you nothing), which also builds before grading so
+  a runner cannot repeat the composition-build miss that cost me 224 s. Branch protection is still not
+  enabled, and the order is unchanged: **one run that reports, then decide.**
+- **R-5's lanes are merged and the reference now matches the ledger.** Exemptions went 22 → 10 in the
+  classification, and PR #209 moves the gate's tolerated set to the same **10** — two different instruments,
+  finally agreeing because one was moved to the other, not because both were edited until they looked alike.
+  Control D proves the move bought enforcement: a retired identity resurrected at its exact path and full
+  name is now `NEW RED(S) 1`, where for a whole stage it would have been tolerated.
+- **Two self-corrections worth the ink, because both are the kind nobody catches by reading the diff.** I
+  retargeted a *grammar fixture's* expected totals to the live corpus after a leg printed newer numbers —
+  that is deleting a test, not updating a pin. And I glued a second condition into the same `ok(...)` call
+  so it silently became the assertion's *message*, producing `SELFTEST FAIL: false`: a harness that prints a
+  value instead of naming an assertion is itself the weak instrument. Both were caught because the
+  self-test runs in seconds and I read its output instead of wanting it to be green.
