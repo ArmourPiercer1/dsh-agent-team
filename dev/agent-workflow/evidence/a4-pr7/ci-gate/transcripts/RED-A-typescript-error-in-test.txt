@@ -1,0 +1,16 @@
+=== RED CONTROL A — a TypeScript error in a test file ===
+start 2026-10-08T13:31:13Z
+head=606a0be7 porcelain=3
+planted: packages/testkit/test/ci-gate-red-control-a.test.ts (never committed; removed by this script's revert)
+?? .github/workflows/pr-gate.yml
+?? dev/agent-workflow/evidence/a4-pr7/ci-gate/
+?? packages/testkit/test/ci-gate-red-control-a.test.ts
+?? scripts/ci-pr-gate.mjs
+DSH-CI-RUN head=606a0be7 mode=default node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store
+  [typecheck] exit=2 [WARN]  Local package.json exists, but node_modules missing, did you mean to install? | [ELIFECYCLE] Command failed with exit code 2. | $ pnpm -r run typecheck
+DSH-CI-LEG leg=typecheck verdict=fail seconds=3.1 detail=pnpm typecheck exited 2: Scope: 9 of 10 workspace projects | packages/contracts typecheck$ tsc -p tsconfig.json | packages/domain typecheck$ tsc -p tsconfig.json | packages/remote typecheck$ tsc -p tsconfig.json | packages/runtime typecheck$ tsc -p tsconfig.json | packages/contracts typecheck: Done | packages/storage typecheck$ tsc -p tsconfig.json | packages/remote typecheck: Done | packages/test
+  detail[typecheck]: pnpm typecheck exited 2: Scope: 9 of 10 workspace projects | packages/contracts typecheck$ tsc -p tsconfig.json | packages/domain typecheck$ tsc -p tsconfig.json | packages/remote typecheck$ tsc -p tsconfig.json | packages/runtime typecheck$ tsc -p tsconfig.json | packages/contracts typecheck: Done | packages/storage typecheck$ tsc -p tsconfig.json | packages/remote typecheck: Done | packages/testkit typecheck$ tsc -p tsconfig.json | packages/domain typecheck: Done | packages/tools typecheck$ tsc -p tsconfig.json | packages/storage typecheck: Done | packages/testkit typecheck: test/ci-gate-red-control-a.test.ts(2,7): error TS2322: Type 'string' is not assignable to type 'number'. | packages/testkit typecheck: Failed | /home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate/packages/testkit: | [ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/testkit@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json` | Exit status 2 | [WARN] Local package.json exists, but node_modules missing, did you mean to install? | [ELIFECYCLE] Command failed with exit code 2. | $ pnpm -r run typecheck
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=3.1
+[gate exit 1]
+reverted; porcelain now: 3
+end 2026-10-08T13:31:16Z

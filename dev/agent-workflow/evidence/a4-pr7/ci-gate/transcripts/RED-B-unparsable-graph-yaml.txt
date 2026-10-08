@@ -1,0 +1,26 @@
+=== RED CONTROL B — the unparsable graph.yaml that landed on master twice ===
+start 2026-10-08T13:31:16Z
+head=606a0be7 porcelain=3
+source of the planted bytes: git show 34ef63ed:dev/agent-workflow/graph.yaml
+  (34ef63ed = merge of PR #195; the defect is the 5-space sequence indent under
+   alpha4_governance_20261007.post_alpha4_backlog, repaired in fed9ac91)
+planted bytes sha256: a03759a7faacfe29…
+and the defect line, from the tree now:
+876:     - "compatibility-authority race, ESCALATED by the p6t1-flake lane and NOT closed by its fix (PR #194): activation step 6 was serialized, but the underlying write is still unguarded for every other caller -- two concurrent authority.evaluate() calls over one repositories object lose exactly one per round (reproducer dev/agent-workflow/evidence/a4-pr7/p6t1-flake/probe/repro.probe.ts), and admission/gate.ts:100, admission/requirement-gate.ts:435 and the memoized authority at src/plugin/root.ts:1388 all consult it outside any chain. replaceState is still delete-then-put with a millisecond computedAt, so a crash between the two loses the compatibility state, and its module doc CLAIMS it is serialized on the team_domain write chain while putRecord/deleteRow go straight to table.put/table.delete (repositories/base.ts:140-170; only updateRaw is chained). RECOMMENDED DISPOSITION (coordinator): an ATOMIC REPLACE primitive in storage -- it removes the interleaving AND the crash window for all callers at once -- with convergence-on-lost-race added afterwards as an availability law, never as a substitute; convergence alone leaves durability broken and the doc still false. This is a semantic decision on the compatibility plane and P7-T1 currently pins the crash window, so it goes to the project owner as one decision at Alpha.4 close rather than being decided inside an instrument lane."
+DSH-CI-RUN head=606a0be7 mode=default node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=default
+DSH-CI-LEG leg=graph-parse verdict=fail seconds=0.2 detail=dev/agent-workflow/graph.yaml does not parse — PARSE-ERROR ParserError: while parsing a block mapping | in "<unicode string>", line 775, column 3: | status: "IN_PROGRESS — 执行阶段：A4-P ... | ^ | expected <block end>, but found '<block sequence start>' | in "<unicode string>", line 877, column 5: | - "intervention.list 无界：需要 cap+c ... | ^
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=0.2
+[gate exit 1]
+--- second half: the local guard and this gate must agree ---
+installed hook: /home/user/dsh-plugins/dsh-agent-team/.git/hooks/pre-commit
+-rwxr-xr-x 1 user user 1341 Oct  8 17:03 /home/user/dsh-plugins/dsh-agent-team/.git/hooks/pre-commit
+pre-commit REFUSED: dev/agent-workflow/graph.yaml in the index does not parse.
+Fix the YAML (indentation of sequence items under a mapping key is the usual
+cause) and re-stage. Unparsable authority state must never reach a commit.
+HOOK RESULT: the hook EXITED NON-ZERO — with a staged unparsable graph.yaml, git would have refused the commit
+reverted; graph.yaml sha256 now: d5b1bf0914944bad…
+DSH-CI-RUN head=606a0be7 mode=default node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=default
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.2 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 48
+DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 seconds=0.2
+[post-revert gate exit 0 — must be 0]
+end 2026-10-08T13:31:17Z

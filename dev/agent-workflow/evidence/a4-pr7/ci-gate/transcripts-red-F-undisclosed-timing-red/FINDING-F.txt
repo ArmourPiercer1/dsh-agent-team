@@ -1,0 +1,92 @@
+=== RED CONTROL F (unplanned, and the more credible for it) — an undisclosed load-sensitive leg refused the tip ===
+
+This is not a planted control. It is the second  run of this gate, on the unmodified tip,
+and the gate said NO where a count-based gate would have said yes.
+
+What happened, in one line: capture 1 of 2 of the nine-root census saw the published 22 reds;
+capture 2 saw 23. The extra identity is not in the population baseline and not in the one load
+family the baseline discloses. The census leg therefore had no tolerance to apply, reported
+NEW RED(S) 1 naming the identity, and the run ended DSH-CI-VERDICT fail.
+
+--- the identity, and the two timings behind it ---
+TEST packages/runtime/test/a3p3-governance-lane-hygiene.test.ts::the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-3) the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name
+
+  capture 1: passed in 4443 ms
+  capture 2: FAILED — "Error: Test timed out in 5000ms." after 6938 ms (vitest default testTimeout, no override in vitest.config.*)
+
+--- measured durations of that same leg, from the stored vitest JSON reports ---
+  closure lane @9df5535f (a tree before this lane existed): 4589 ms  passed
+  this lane, run 1 capture 1:                              4424 ms  passed
+  this lane, run 1 capture 2:                              4094 ms  passed
+  this lane, run 2 capture 1:                              4444 ms  passed
+  this lane, run 2 capture 2:                              6938 ms  FAILED (timeout)
+
+So the leg runs at 80-92% of its own timeout under a full-suite load, and one capture in four
+of this lane's runs crossed it. Its cost is a full readdirSync walk over every shipped package
+(packages/runtime/test/a3p3-governance-lane-hygiene.test.ts:153, :261, :351, :550), which is why
+load moves it. Whether this lane's own ~1400 added lines contributed is NOT established: the
+walk is over packages/** and this lane adds no file under packages/.
+
+--- what the gate did, and did not, do about it ---
+  DID  : graded the union of the two captures (a red seen once is a red), named the identity,
+         and exited 1 — see RED-F-full-run-refused-the-tip.txt, DSH-CI-VERDICT fail pass=6 fail=1.
+  DID NOT: add the file to the tolerance. The first draft of scripts/ci-pr-gate.mjs hardcoded
+         one family name (p6t1-parallel.test.ts), which is an exemption list kept by the gate's
+         author; parseLoadFamilies() now reads the disclosed families out of the baseline
+         document instead, so the remedy is a disclosure by whoever owns that leg (or a raised
+         timeout / narrowed walk), and the gate cannot be quietly taught to forgive this one.
+
+Reproduce: node scripts/ci-pr-gate.mjs --full --census-captures 2
+Observed rate of THIS leg going red under a full run: 1 of 4 captures, on one machine, n small.
+
+
+================================================================================
+CORRECTION, appended later — the duration table re-derived from the committed bytes
+================================================================================
+
+The table above was transcribed while the runs were still warm, and it has two faults a reader
+should not have to discover: a ±1 ms drift against the vitest JSON (the table says 4443 / 6938, the
+reporter and the JSON both say 4444 / 6939), and no statement of which rows survive in this commit.
+Re-derived from bytes under ../scratch/ (the six default-clock captures are stored gzipped; gunzip
+restores them) and from the reporter lines kept in this directory:
+
+  clock      source                                          ms      verdict
+  5000 ms    7-6-closure/scratch/root-census-after-1.json    4589    passed   (a tree before this lane)
+  5000 ms    run 1 capture 1 (reporter line only)            4424    passed
+  5000 ms    run 1 capture 2 (reporter line only)            4094    passed
+  5000 ms    census-47-1 (this file's run, capture 1)        4444    passed
+  5000 ms    census-47-2 (this file's run, capture 2)        6939    FAILED
+  5000 ms    census-39-1                                     6962    FAILED
+  5000 ms    census-39-2                                     6627    FAILED
+  20000 ms   census-32-1                                     4905    passed
+  20000 ms   census-32-2                                     6775    passed
+  20000 ms   census-raise-timeout (DIAGNOSTIC-G)             5270    passed
+
+3 failures in 7 default-clock observations — but the number matters less than the shape. The
+passing runs cluster in 4.09–4.91 s and the failing ones in 6.63–6.96 s. There is nothing in
+between: the leg is bimodal, and the 5000 ms budget sits INSIDE the gap between its two modes.
+That is a stronger statement than "it is load-sensitive under a full-suite run", and a different
+remedy: a budget has to clear the upper mode (~7 s) or the walk has to get cheaper, and any budget
+in the 4.6–6.6 s range would be a coin flip wearing a confident number.
+
+The 20000 ms rows are the same leg on the same tree, and one of them passed at 6775 ms — the upper
+mode is normal, not pathological.
+
+WHAT THIS LANE OBSERVED AND COULD NOT KEEP. In one earlier run of RED control C, this leg was joined
+by `packages/testkit/test/rc2-sanitize-evidence.test.ts::…S13 file aliases…`: the census named it as
+a new red, that capture's reporter had printed `✓ …S13… 4379ms` for the same leg, and the capture's
+JSON recorded it `failed` at `6280 ms`. Neither the capture (deleted under the retention rule in
+../scratch/README.md) nor that run's transcript survives any more: the battery was re-run so that
+every committed transcript comes from the delivered build, and the run that final battery made
+arrived at load ~9 with exactly ONE new red — the planted one. So the reporter-vs-JSON divergence is
+recorded here as an observation this lane made and lost, not as a claim a reader can check, and the
+fair summary of it is: it happened once, at load ~19, on a leg whose retained timings sit within 12%
+of the same 5000 ms budget.
+
+That loss is itself the argument for finding F9. Artifacts that share a name across runs are
+overwritten by the next run, silently — and this lane did that to its own transcript.
+
+S13's retained durations (2401, 2578, 3440, 4098,
+4143, 4379, 4418, 4451 ms — all passing) sit within 12% of the same 5000 ms budget, so it is a second
+leg waiting to do this in CI.
+================================================================================

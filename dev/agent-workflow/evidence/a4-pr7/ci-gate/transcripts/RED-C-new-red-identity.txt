@@ -1,0 +1,31 @@
+=== RED CONTROL C — a NEW red leg identity, added inside a file the baseline already lists as red ===
+start 2026-10-08T13:31:17Z
+head=606a0be7 porcelain=3
+baseline: dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md
+  that document already carries this file as debt:
+    26:packages/domain/test/t2-blueprint-hash.test.ts > t2 hash: hashable projection projects absent optional singles as explicit null
+why this file: a gate that compares PER FILE or PER COUNT would see an already-red file go
+  red and call the tree unchanged. Only a per-IDENTITY diff can see one more red in a
+  already-red file, which is the whole reason §7.6 says identity sets and not counts.
+planted: one top-level it() that asserts 1 === 2, appended to packages/domain/test/t2-blueprint-hash.test.ts (tracked file; reverted below)
+ packages/domain/test/t2-blueprint-hash.test.ts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+$ node scripts/ci-pr-gate.mjs --only census --census-captures 1
+DSH-CI-RUN head=606a0be7 mode=default node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store
+  [census-capture-1] exit=1     375|     ) |  ❯ packages/runtime/test/p6t3-restart.test.ts:451:21 | ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/23]⎯
+DSH-CI-LEG leg=census verdict=fail seconds=89.3 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6289l vs baseline-declared 505 / 6285; single capture — clock: the suite's own testTimeout (set nowhere, so vitest's 5000 ms default) — COUNTS ALSO MOVED (505f/6289l vs the baseline document's own 505 / 
+  detail[census]: roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6289l vs baseline-declared 505 / 6285; single capture — clock: the suite's own testTimeout (set nowhere, so vitest's 5000 ms default) — COUNTS ALSO MOVED (505f/6289l vs the baseline document's own 505 / 6285) — and the identity set moved too, so the set, not the counts, is what this verdict is drawn from — NEW RED(S) 1: TEST packages/domain/test/t2-blueprint-hash.test.ts::CI-GATE RED CONTROL C a new red identity inside an already-red file — comparison written to dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261008T133117Z-6893.json
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=89.3
+[gate exit 1 — must be 1, naming the planted identity under NEW RED(S)]
+
+--- the machine-readable comparison the leg wrote ---
+  dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261008T133117Z-6893.json
+  verdict       : fail
+  newReds       : 1
+    + TEST packages/domain/test/t2-blueprint-hash.test.ts::CI-GATE RED CONTROL C a new red identity inside an already-red file
+  resolved      : 0
+  escalations   : 0
+  counts moved? : True (files 505 vs baseline-declared 505 )
+reverted: 0 modified path(s) remain for packages/domain/test/t2-blueprint-hash.test.ts
+end 2026-10-08T13:32:47Z

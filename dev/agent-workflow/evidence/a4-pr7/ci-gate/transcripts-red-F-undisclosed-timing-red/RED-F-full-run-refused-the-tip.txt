@@ -1,0 +1,29 @@
+=== GREEN RUN — the full gate on the tip, census captured twice ===
+run 2. Run 1 is preserved as RUN-1-first-full-run-found-F1.txt: it found a bug in this
+lane's own code — the artifacts leg passed --store-dir=PATH while the instrument parses
+--store-dir PATH — and the leg FAILED rather than going green on it. Same command, same
+tree, after the fix.
+start 2026-10-08T12:40:28Z
+host: node v24.21.0, 32 cores, CI=true
+head: 606a0be772b908f333ba0822ff93cb94df737065
+dirty paths at start: 3 — this lane's own files only: .github/workflows/pr-gate.yml, scripts/ci-pr-gate.mjs, dev/agent-workflow/evidence/a4-pr7/ci-gate/
+
+$ node scripts/ci-pr-gate.mjs --full --census-captures 2 --store-dir /home/user/dsh-plugins/dsh-agent-team/.pnpm-store --transcript-dir dev/agent-workflow/evidence/a4-pr7/ci-gate/transcripts
+DSH-CI-RUN head=606a0be7 mode=full node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.2 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 48
+DSH-CI-LEG leg=install verdict=pass seconds=0.4 detail=pnpm install --frozen-lockfile --store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store ok (store-dir workaround in force)
+  [blueprint-fence] exit=1 RESULT prose(5 files, 5 sites) | RESULT adjudicated(16 files, 24 sites) | RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=0.2 detail=no new offending path (dirty 6 files/15 sites, unknown 0 files, universe 764 tracked files, baseline 6 identities)
+  [typecheck] exit=0 packages/client typecheck$ tsc -p tsconfig.json | packages/client typecheck: Done | $ pnpm -r run typecheck
+DSH-CI-LEG leg=typecheck verdict=pass seconds=12.4 detail=pnpm typecheck clean (all packages, tests included — tsc is the only leg that sees a bad .test.ts)
+  [lint-identities] exit=0 lint-identities: 160 identity lines, 76 distinct (target .) | lint-identities: universe: 1119 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status) | baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+DSH-CI-LEG leg=lint-identities verdict=pass seconds=12.5 detail=identity diff clean (baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0) — exit code of `pnpm lint` is NOT the authority here; the identity set is
+  [artifacts-at-head] exit=0 [check-artifacts-committed] OK: 1508 files — working tree equals the git INDEX for both install surfaces (incl. 1 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build. | DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0 | [check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).
+DSH-CI-LEG leg=artifacts-at-head verdict=pass seconds=8.9 detail=HEAD carries its own build (DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0)
+  [census-capture-1] exit=1     375|     ) |  ❯ packages/runtime/test/p6t3-restart.test.ts:451:21 | ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯
+  [census-capture-2] exit=1     375|     ) |  ❯ packages/runtime/test/p6t3-restart.test.ts:451:21 | ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/23]⎯
+DSH-CI-LEG leg=census verdict=fail seconds=241.6 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6288l, 505f/6288l vs baseline-declared 505 / 6285; 2 captures, identity sets DIFFER — graded as the union, so a red seen once is a red — COUNTS MOVED, SET DID NOT — the counts differ from the baseline do
+  detail[census]: roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6288l, 505f/6288l vs baseline-declared 505 / 6285; 2 captures, identity sets DIFFER — graded as the union, so a red seen once is a red — COUNTS MOVED, SET DID NOT — the counts differ from the baseline document's own figures and that is not a verdict; the identity set is — NEW RED(S) 1: TEST packages/runtime/test/a3p3-governance-lane-hygiene.test.ts::the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-3) the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name
+DSH-CI-VERDICT fail pass=6 fail=1 skip=0 skipped=none legs=7 seconds=276.2
+[gate exit 1]
+end 2026-10-08T12:45:04Z

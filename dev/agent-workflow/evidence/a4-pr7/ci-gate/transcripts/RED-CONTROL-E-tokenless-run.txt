@@ -1,0 +1,51 @@
+=== THE TOKENLESS RUN — the defect this whole gate is built around, reproduced on demand ===
+
+recorded 2026-10-08T13:20Z by the ci-a4-pr-gate lane (branch ci-a4-pr-gate, head 606a0be7)
+
+WHAT HAPPENED, in order. The first draft of scripts/ci-pr-gate.mjs kept the skipped-leg NAMES in a
+local array while the final-token builder read `counts.skipped`. A `--only census --census-json …`
+run therefore threw between its last leg line and its verdict token:
+
+    DSH-CI-LEG leg=census verdict=pass seconds=0.1 detail=…
+    TypeError: Cannot read properties of undefined (reading 'length')
+        at finalToken (…/scripts/ci-pr-gate.mjs:124:59)
+        at main (…/scripts/ci-pr-gate.mjs:892:27)
+    [exit 1 — and no DSH-CI-VERDICT line, ever]
+
+That transcript was real; it was also, at the time, the file I was about to publish as evidence for a
+rule I had just written — "a missing verdict token means fail, never not-run". The gate could not
+have caught it from the outside: exit 1 looks like a red gate, and grepping for the token finds
+silence. Only the rule catches it, because the rule says silence IS the red.
+
+WHY THIS FILE IS A REPRODUCTION AND NOT THAT TRANSCRIPT: the draft's line numbers no longer exist and
+its stdout was not saved to a file before I edited it, so quoting it here would be a transcription of
+memory dressed up as a capture. Instead the defect is reproduced against the CURRENT module by
+../scratch/reproduce-tokenless-crash.mjs, which calls the current `finalToken` with the counts object
+the draft used to hand it. Same function, same throw, verifiable by anyone who runs the script.
+
+WHAT REPLACED IT, and where it is pinned:
+  - one object owns every number the token states (`counts` holds pass/fail/skip/legs AND `skipped`);
+  - the leg loop is wrapped in `try { … } finally { printToken(…) }`, so a throw inside a leg still
+    produces a verdict — with `harness=aborted` in its detail rather than nothing;
+  - `--self-test` pins `finalToken` directly, plus the four transcript classes
+    (missing-token / truncated / token-legs-disagree / red-run).
+
+--- $ node dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/reproduce-tokenless-crash.mjs ---
+=== reproduction: what a run looked like when the verdict builder could throw ===
+the leg line printed first, exactly as the draft printed it:
+  DSH-CI-LEG leg=census verdict=pass seconds=0.1 detail=identity set IDENTICAL to the published baseline
+reproduced: TypeError: Cannot read properties of undefined (reading 'length')
+and nothing after this point would have run, so the run had no verdict token.
+exit code would have been non-zero, and a reader who only greps for the token sees silence.
+[repro exit 0]
+
+--- and the guard that keeps an import from running a gate (the other half of F3) ---
+$ node -e "import(\"./scripts/ci-pr-gate.mjs\").then(()=>console.log(\"imported, executed nothing\"))"
+imported, executed nothing
+[import exit 0]
+
+--- the live transcript checker, on four real transcripts (see RED-E-missing-verdict-token.txt) ---
+DSH-CI-TRANSCRIPT-CHECK pass class=ok :: 7 leg(s), final token pass
+[green transcript exit 0]
+DSH-CI-TRANSCRIPT-CHECK fail class=red-run :: the gate ran and refused: artifacts-at-head reported fail
+[F1 transcript exit 1]

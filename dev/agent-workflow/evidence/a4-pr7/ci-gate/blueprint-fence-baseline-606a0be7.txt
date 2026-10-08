@@ -1,0 +1,24 @@
+# A4-PR7 §7.6 blueprint-fence BASELINE for scripts/ci-pr-gate.mjs
+# recorded at: master@606a0be7 (porcelain 0), main checkout, 2026-10-09
+# command:     node scripts/verify-blueprint-version-clean.mjs   (exit 1, "dirty-or-unknown")
+# lines:       every OFFENDING/UNKNOWN line, verbatim, sorted; one identity per line.
+#
+# WHY A BASELINE AT ALL WHEN THE FENCE IS RED AT BASE. The fence's own closure rule is "dirty
+# empty AND no unadjudicated unknown", and 6 paths are still dirty at master because the §7.4
+# fixture migration is not finished — that debt belongs to the 7.4 lanes and to the adjudication
+# ledger, not to this gate. §7.6's wording is "the blueprint-version fence reports offending
+# paths", and §7.6's lint rule is the pattern to follow: the AUTHORITY is the identity diff, so a
+# PR that ADDS an offending path fails here and a PR that removes one does not. The gate never
+# writes this file; re-recording it is a coordinator act in the open (Baseline Verification
+# Discipline: "at the next PR base, the coordinator re-captures ... publishes the new baseline
+# file"), and a lane that quietly replaces it has deleted the only thing making this leg mean
+# something.
+#
+# Standing condition at recording time: dirty(6 files, 15 sites), unknown(0 files, 0 sites),
+# adjudicated(16 files, 24 sites), refused(52 files, 115 sites), prose(5 files, 5 sites).
+OFFENDING packages/domain/test/blueprint-v1-frozen-resume.test.ts :: L156=v1
+OFFENDING packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L356=v1
+OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: L119=v1, L258=v1, L285=v1, L390=v2, L408=v1, L426=v1, L468=v1, L470=v1, L472=v1
+OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L726=v1
+OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
+OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1

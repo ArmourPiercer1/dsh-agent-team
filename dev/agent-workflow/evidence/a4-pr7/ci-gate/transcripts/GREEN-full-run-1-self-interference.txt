@@ -1,0 +1,34 @@
+=== GREEN RUN — the full gate on the tip, two captures, the clock disclosed ===
+The two earlier full runs of this same command are preserved beside it:
+  RUN-1-first-full-run-found-F1.txt — found a bug in this lane's own code: the artifacts leg
+     passed --store-dir=PATH while the instrument parses --store-dir PATH, so it died before
+     emitting any verdict token, and the leg REFUSED instead of going green on it;
+  ../transcripts-red-F-undisclosed-timing-red/ — the gate refusing the unmodified tip because a
+     walk leg crossed vitest's 5000 ms default budget under load (FINDING-F, DIAGNOSTIC-G).
+This run adds --census-test-timeout 20000, the one deviation CI makes from the suite's own
+settings; the leg line prints the clock it ran under, and the reason is in the workflow comment.
+start 2026-10-08T13:07:51Z
+load: 4.42 9.26 9.22  cores: 32  node: v24.21.0  CI=true
+head: 606a0be772b908f333ba0822ff93cb94df737065
+dirty at start: 3 paths — this lane's own files only
+
+$ node scripts/ci-pr-gate.mjs --full --census-captures 2 --census-test-timeout 20000 --store-dir /home/user/dsh-plugins/dsh-agent-team/.pnpm-store --transcript-dir dev/agent-workflow/evidence/a4-pr7/ci-gate/transcripts
+DSH-CI-RUN head=606a0be7 mode=full node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.2 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 48
+DSH-CI-LEG leg=install verdict=pass seconds=0.6 detail=pnpm install --frozen-lockfile --store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store ok (store-dir workaround in force)
+  [blueprint-fence] exit=1 RESULT prose(5 files, 5 sites) | RESULT adjudicated(16 files, 24 sites) | RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=0.3 detail=no new offending path (dirty 6 files/15 sites, unknown 0 files, universe 764 tracked files, baseline 6 identities)
+  [typecheck] exit=0 packages/client typecheck$ tsc -p tsconfig.json | packages/client typecheck: Done | $ pnpm -r run typecheck
+DSH-CI-LEG leg=typecheck verdict=pass seconds=16.7 detail=pnpm typecheck clean (all packages, tests included — tsc is the only leg that sees a bad .test.ts)
+  [lint-identities] exit=0 lint-identities: 160 identity lines, 76 distinct (target .) | lint-identities: universe: 1119 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status) | baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+DSH-CI-LEG leg=lint-identities verdict=pass seconds=12.6 detail=identity diff clean (baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0) — exit code of `pnpm lint` is NOT the authority here; the identity set is
+  [artifacts-at-head] exit=0 [check-artifacts-committed] OK: 1508 files — working tree equals the git INDEX for both install surfaces (incl. 1 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build. | DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0 | [check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).
+DSH-CI-LEG leg=artifacts-at-head verdict=pass seconds=14.4 detail=HEAD carries its own build (DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0)
+  [census-capture-1] exit=1     375|     ) |  ❯ packages/runtime/test/p6t3-restart.test.ts:451:21 | ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯
+  [census-capture-2] exit=1     375|     ) |  ❯ packages/runtime/test/p6t3-restart.test.ts:451:21 | ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯
+DSH-CI-LEG leg=census verdict=pass seconds=315.6 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6288l, 505f/6288l vs baseline-declared 505 / 6285; 2 captures, identical identity sets — clock: --testTimeout=20000 ms, an operator override above the 5000 ms default — COUNTS MOVED, SET DID NOT — 505f/6
+  detail[census]: roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6288l, 505f/6288l vs baseline-declared 505 / 6285; 2 captures, identical identity sets — clock: --testTimeout=20000 ms, an operator override above the 5000 ms default — COUNTS MOVED, SET DID NOT — 505f/6288l, 505f/6288l vs the baseline document's own 505 / 6285; the counts are context and the identity set is the verdict — identity set IDENTICAL to the published baseline
+DSH-CI-VERDICT pass pass=7 fail=0 skip=0 skipped=none legs=7 seconds=360.4
+[gate exit 0]
+load at end: 13.64 11.40 10.16
+end 2026-10-08T13:13:52Z

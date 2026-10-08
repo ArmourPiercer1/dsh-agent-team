@@ -1,0 +1,248 @@
+================================================================================
+A4-PR7 §7.6 — CI GATE FINAL BATTERY
+lane: ci-a4-pr-gate   branch: ci-a4-pr-gate   base: master @ 606a0be7
+recorded 2026-10-08, single writer, worktree .worktrees/ci-a4-pr-gate
+handoff state: UNMERGED, NOT PUSHED (no push authority in this lane)
+================================================================================
+
+HEADLINE ----------------------------------------------------------------------
+  Server-enforced merge gating : NONE. branches/master/protection = 404.
+                                 0 self-hosted runners. pr-gate.yml has never
+                                 been parsed by GitHub (branch unmerged).
+  Coordinator-enforced         : everything, via
+                                     node scripts/ci-pr-gate.mjs --full
+                                 which is one command, seven legs, machine-
+                                 readable verdict, and observed refusing.
+  Why no lock was set          : a required check that never reports locks every
+                                 non-admin merge and produces habitual --admin
+                                 bypassing — strictly worse than no protection;
+                                 and every actor here holds admin, so any lock
+                                 is bypassable by the actor it would bind.
+                                 FINDINGS.md §6, with the exact gh api call and
+                                 the precondition to run it under.
+
+THE DELIVERABLES --------------------------------------------------------------
+  scripts/ci-pr-gate.mjs               ~1230 lines  eslint exit 0
+                                       --self-test: 38 assertions pass
+  .github/workflows/pr-gate.yml         164 lines  PyYAML parses
+                                       triggers: pull_request(master) + push(master)
+                                       job name (== required-check context): pr-gate
+  evidence/a4-pr7/ci-gate/blueprint-fence-baseline-606a0be7.txt
+                                       the fence leg's identity baseline, with
+                                       provenance: the fence is RED at base by
+                                       standing §7.4 debt — dirty(6 files, 15
+                                       sites), unknown(0,0) — and the leg grades
+                                       identity diffs, never exit codes.
+
+LEG ORDER AND COST (published green run: 32 cores, load 8-9, warm store) --------
+  graph-parse         0.2 s
+  install             0.4 s
+  blueprint-fence     0.2 s
+  typecheck          10.2 s     <- the only leg that sees a bad *.test.ts
+  lint-identities    10.7 s     <- identity diff, 76 distinct baseline identities
+  artifacts-at-head   8.7 s     <- compared=1508 drift=0
+  census            192.1 s     <- nine roots, 2 captures, identity-set diff
+  the same legs on the earlier green run at load ~11: typecheck 16.7 / lint 12.6 /
+  artifacts 14.4 / census 274.1 -> 312.8 s end to end. Cheap checks first is not
+  cosmetic: on a red tree the lane learns it broke typecheck in ~11 s, not in ~4 min.
+  TOTAL             222.4 s     (the five full runs this lane measured:
+                                 221.4 refused-F1 / 276.2 refused-F8 / 222.4 GREEN /
+                                 312.8 and 360.4 -- earlier green runs, both kept)
+  COST CORRECTION TO THE BRIEF: a census capture is ~90-150 s here (load-dependent),
+                                 not ~9 min -- 96 s/capture at load 8-9, 137 s at ~11, ~150 s at ~19.
+
+THE BATTERY (every run, in order, with its verdict line) ----------------------
+  BATTERY 0  self-test
+    node scripts/ci-pr-gate.mjs --self-test
+      DSH-CI-SELFTEST pass 38 assertions (verdict algebra: identity sets,
+        escalation, missing-token, fence refusal, evidence naming)
+
+  BATTERY 1  GREEN — the full gate on the unmodified tip
+    node scripts/ci-pr-gate.mjs --full --census-captures 2 \
+      --census-test-timeout 20000 --store-dir …/.pnpm-store
+      DSH-CI-VERDICT pass pass=7 fail=0 skip=0 skipped=none legs=7 seconds=312.8
+    transcripts/GREEN-full-run.txt
+    census detail, verbatim tail: "clock: --testTimeout=20000 ms, an operator
+      override above the 5000 ms default — COUNTS MOVED, SET DID NOT —
+      505f/6288l, 505f/6288l vs the baseline document's own 505 / 6285 …
+      identity set IDENTICAL to the published baseline"
+
+  BATTERY 2  RED — this lane's own bug, caught on run 1 (F1)
+    first --full run, nothing planted: the artifacts leg handed
+    --store-dir=PATH to a script that parses --store-dir PATH, that script threw
+    before emitting any verdict token, and the leg refused:
+      detail: no DSH-ARTIFACT-VERDICT line with script=check-artifacts-at-head
+              (exit 1): Error: unknown argument: --store-dir=…
+      DSH-CI-VERDICT fail pass=6 fail=1 skip=0 skipped=none legs=7 seconds=221.4
+    transcripts/RUN-1-first-full-run-found-F1.txt
+    transcripts-green-run1-found-F1/first/   (its per-leg captures)
+
+  BATTERY 3  RED — the gate refuses the UNMODIFIED tip (finding F / F8)
+    a census walk leg crossed vitest's 5000 ms default budget under load:
+      DSH-CI-VERDICT fail pass=6 fail=1 skip=0 skipped=none legs=7 seconds=276.2
+    transcripts-red-F-undisclosed-timing-red/  (FINDING-F.txt + full run)
+    NOT excused: the file was deliberately not added to the baseline's
+    disclosed families. Diagnosis in BATTERY 9.
+
+  BATTERY 4  RED CONTROL A — a TypeScript error in a TEST file
+    planted packages/testkit/test/ci-gate-red-control-a.test.ts,
+    const wrongType: number = 'a string in a number slot'
+      DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=8.1
+      naming: test/ci-gate-red-control-a.test.ts(2,7): error TS2322: Type
+              'string' is not assignable to type 'number'.
+    reverted inside the transcript; porcelain back to 3 lane paths.
+    transcripts/RED-A-typescript-error-in-test.txt
+    -> this is the 27-TS-errors-merge-ready incident, made reproducible in 8 s.
+
+  BATTERY 5  RED CONTROL B — the unparsable graph.yaml that reached master twice
+    planted the exact bytes from git show 34ef63ed:dev/agent-workflow/graph.yaml
+    (34ef63ed = merge of PR #195):
+      DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=0.3
+      naming: PARSE-ERROR ParserError: while parsing a block mapping … line 877,
+              column 5: expected <block end>, but found '<block sequence start>'
+    second half of the same transcript: with those bytes STAGED, the installed
+    dev/agent-workflow/hooks/pre-commit exits non-zero too — local guard and gate
+    agree because both shell to the same PyYAML. Then reverted:
+      DSH-CI-VERDICT pass pass=1 … legs=1 seconds=0.3
+    transcripts/RED-B-unparsable-graph-yaml.txt
+
+  BATTERY 6  RED CONTROL C — a NEW red identity, inside an already-red file
+    appended one failing it() to packages/domain/test/t2-blueprint-hash.test.ts,
+    which the baseline ALREADY lists as red -- so a per-file gate sees nothing, and
+    neither does a count over red FILES (505 before, 505 after; only the leg total
+    moved, 6288 -> 6289):
+      DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=89.3
+      NEW RED(S) 1:
+        + TEST packages/domain/test/t2-blueprint-hash.test.ts::CI-GATE RED CONTROL C …
+      resolved 0, escalations 0
+    machine-readable sidecar: scratch/census-comparison-20261008T133117Z-6893.json
+    C runs at the SUITE'S OWN 5000 ms clock, on purpose. An earlier run of this same
+    control, at load ~19, reported NEW RED(S) 3: the planted identity plus the two F8
+    legs crossing the default budget. Load reds are named, never tuned away -- which is
+    also why this control's older transcript is gone: re-running the battery replaced it
+    (finding F9; see transcripts-red-F-undisclosed-timing-red/FINDING-F.txt).
+    reverted; transcripts/RED-C-new-red-identity.txt
+
+  BATTERY 7  RED CONTROL D — "the count moved but the set did not", and its twin
+    D1, a real stored nine-root report (502f/6277l) vs the baseline's 505/6285:
+      DSH-CI-VERDICT pass … — COUNTS MOVED, SET DID NOT
+    D2, that report doctored so one titled red vanishes AND its file becomes a
+      collection error — the red count goes DOWN:
+      DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=0.1
+      — ESCALATION (a lower red count is NOT a fix here): 1 titled red(s)
+        vanished and the file now reports a collection error
+    transcripts/RED-D-escalation-not-a-decrease.txt
+    SIDE EFFECT, kept as a finding: this control caught the gate printing
+    "COUNTS MOVED, SET DID NOT" on a case where the set HAD moved (F7).
+
+  BATTERY 8  RED CONTROL E — the verdict channel itself
+    E2 complete real transcript          -> class=ok             exit 0
+    E1 same transcript, token line cut   -> class=missing-token  exit 1
+    E3 transcript truncated after leg 2  -> class=truncated      exit 1
+    E4 faithful transcript of a RED run  -> class=red-run        exit 1
+    transcripts/RED-E-missing-verdict-token.txt
+    plus transcripts/RED-CONTROL-E-tokenless-run.txt — the crash this rule exists
+    for, REPRODUCED ON DEMAND against the current module
+    (scratch/reproduce-tokenless-crash.mjs), labelled a reproduction because the
+    draft's original stdout was never saved.
+
+  BATTERY 9  DIAGNOSTIC G — is the census red an assertion or a clock?
+    same tree, same suite, --testTimeout=20000:
+      the leg:  status passed   duration 5270 ms
+      capture:  505 files / 6288 legs / the published 22 identities
+      grade:    DSH-CI-VERDICT pass — identity set IDENTICAL to the published baseline
+    transcripts/DIAGNOSTIC-G-timeout-not-assertion.txt
+    => the refusal in BATTERY 3 was the 5000 ms default budget, not a changed
+       assertion set. Re-derived from the committed captures, the leg is BIMODAL:
+       passes at 4094/4424/4444/4589/4905 ms, failures at 6627/6939/6962 ms, with
+       nothing in between (3 of 7 default-clock observations failed). The budget
+       sits inside the gap between its modes, so the fix is a budget that clears
+       ~7 s or a cheaper walk -- any value in 4.9-6.6 s is a coin flip with a
+       confident number on it. CI carries --census-test-timeout 20000 with the
+       measurement quoted next to it, and the leg prints the clock it ran under.
+       Table and provenance: transcripts-red-F-undisclosed-timing-red/FINDING-F.txt.
+
+  BATTERY 11 THE GATE'S OWN EVIDENCE NAMING (finding F9)
+    artifacts were named census-comparison-<pid>.json; every tool call here gets a
+    fresh PID namespace, so pids REPEAT and a later run overwrote an earlier run's
+    sidecar -- the instrument could destroy evidence it had already published.
+    Fixed: census-<stamp>-<pid>-<n>.json / census-comparison-<stamp>-<pid>.json,
+    the leg prints the sidecar path, evidenceStamp() pinned (3 assertions).
+    The fix caught itself: the first cut referenced the name before declaring it,
+    the leg threw in the temporal dead zone, and the F4 finally-guard still printed
+      DSH-CI-LEG leg=census verdict=fail detail=leg threw: Cannot access 'sidecar' …
+      DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1
+    -- a broken leg produced a verdict instead of silence, which is the whole rule.
+
+  BATTERY 10 SERVER REALITY
+    transcripts/SERVER-enforcement-reality.txt   protection 404, runners 0,
+                                                 actions enabled, admin token
+    transcripts/SERVER-when-pr-ci-stopped.txt    32 pull_request runs on
+                                                 ubuntu-latest 2026-09-11 → 09-17,
+                                                 demoted by 61990035 on 2026-09-17
+                                                 with the user's rationale quoted
+
+WHAT THE GATE WILL NOT MEASURE (design rules, in the script header) -----------
+  1. lint and the fence grade IDENTITY DIFFS, never exit codes (both are red at
+     base by standing debt; an exit code there is noise).
+  2. the census grades an IDENTITY SET, never counts.
+  3. an ESCALATION is a failure even though the red count dropped.
+  4. a missing DSH-CI-VERDICT token is FAIL, never "not run" — and the token is
+     printed from a `finally`, so a harness throw still produces one.
+  5. a skip is NAMED (verdict=skip … skipped=census) and under --full any skip is
+     a failure. There is no silent skip anywhere in this gate.
+  6. tolerance authority is the BASELINE DOCUMENT, not this script: flaky families
+     are parsed out of the baseline's prose (parseLoadFamilies). F6 below.
+  7. the census leg states its CLOCK, so a pass says what it passed under.
+
+DEFECTS THIS LANE FOUND IN ITS OWN CODE (all fixed, all pinned) ---------------
+  F1  --store-dir=PATH handed to a parser wanting --store-dir PATH -> leg refused
+      its own author on run 1 (BATTERY 2).
+  F2  `node … | tee file` under Actions' `bash -e` returns TEE's status: the
+      workflow would have reported a red gate as GREEN. Fixed: shell: bash +
+      set -o pipefail.
+  F3  importing scripts/ci-pr-gate.mjs EXECUTED the gate (bare top-level
+      process.exit(main())). An evidence script ran a seven-leg gate as an import
+      side effect and raced a run in flight. Fixed with an entry guard; the
+      contaminated run is kept as transcripts/GREEN-full-run-1-self-interference.txt
+      and superseded by GREEN-full-run.txt.
+  F4  the verdict builder could throw and emit NO token — the exact failure class
+      the gate defines (BATTERY 8).
+  F5  the fence classifier parsed its counts with a regex missing the `m` flag:
+      right answer, wrong reason, caught by a self-test assertion.
+  F6  the draft HARDCODED p6t1-parallel.test.ts as "the" flaky family — an
+      unnamed exemption written into the instrument. Replaced by reading the
+      baseline document's prose; 5 pins added, one of which asserts the real
+      committed baseline still yields p6t1-parallel.
+  F7  the counts sentence contradicted the set it was reporting (caught by RED D).
+  F9  evidence files were named after a pid that is not unique in this environment,
+      so runs overwrote each other's comparison sidecars (caught by reading my own
+      scratch/ listing after a later run reused the pid of an earlier one).
+
+OPEN ITEMS FOR THE COORDINATOR ------------------------------------------------
+  1. Decide branch protection with the one-line gh api in FINDINGS.md §6 — after
+     watching one pr-gate run report on a PR. Do not set it blind.
+  2. Runtime lane: give a3p3-governance-lane-hygiene.test.ts a testTimeout that
+     clears its upper mode (~7 s, so 10 s+) or narrow the walk; until then CI
+     carries the disclosed 20 s override and the default-clock census stays a race.
+     rc2-sanitize-evidence.test.ts's S13 leg is next in line (max 4451 ms kept,
+     same 5000 ms budget, already went red once).
+  3. §7.4 fence debt: dirty(6 files, 15 sites) is baselined, not fixed. Re-
+     recording that baseline is a coordinator act in the open, per its header.
+  4. Wall-clock on ubuntu-latest (2 cores) is unmeasured; timeout-minutes: 45 is a
+     reasoned guess. If the census blows it there, drop to --census-captures 1 on
+     the runner and say so in the file.
+  5. Whether a pull_request event resolves pr-gate.yml from the head or the
+     default branch is UNVERIFIED from here (no push authority; docs unreachable).
+
+NOT DONE, DELIBERATELY --------------------------------------------------------
+  - not pushed, not merged (no authority; branch handed back unmerged);
+  - no server state touched (no PUT to /branches/master/protection);
+  - dev/agent-workflow/SESSION_ROUTER_LOG.md untouched (the main agent's alone);
+  - characterization.yml untouched, its workflow_dispatch-only demotion preserved
+    verbatim — pr-gate.yml implements the "active gates" that demotion named;
+  - packages/testkit/test/a4p7-merge-gate.test.ts untouched;
+  - no production source edited: every planted file was reverted inside its own
+    transcript, and each transcript ends with the porcelain count back at this
+    lane's 3 untracked paths.
+================================================================================

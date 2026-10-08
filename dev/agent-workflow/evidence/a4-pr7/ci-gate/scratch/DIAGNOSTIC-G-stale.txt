@@ -1,0 +1,27 @@
+=== DIAGNOSTIC G — is the census red an ASSERTION or the 5000 ms default timeout? ===
+start 2026-10-08T12:56:37Z   load at start: 12.84 11.26 8.17   cores: 32
+
+The full gate refused the tip twice on one identity:
+  TEST packages/runtime/test/a3p3-governance-lane-hygiene.test.ts::the shared authority grammar
+  stays a DOMAIN LEAF … the ceiling adapter and the PR2 evaluator each have ONE audited consumer
+  set per name
+and in both cases vitest said `Error: Test timed out in 5000ms.` rather than showing an
+assertion diff. One root vitest config sets no testTimeout, so the default 5000 ms applies.
+
+Hypothesis: the leg's WORK fits inside the budget and only its WALL CLOCK does not, because
+a 505-file suite on a box already at load ~19 makes a 4.4 s readdir-walk leg cross 5 s.
+Test: re-run the identical census with --testTimeout=20000 and grade the report unchanged.
+If the raised-budget capture yields exactly the published 22 identities, the red is a timeout
+policy, not a changed assertion set — and the fix belongs to the leg's owner (raise the
+budget it needs, or narrow the walk), NOT to the gate, which must keep refusing what it sees.
+
+$ pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-raise-timeout.json --testTimeout=20000
+DSH-CI-RUN head=606a0be7 mode=default node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=default
+DSH-CI-LEG leg=census verdict=fail seconds=0 detail=--census-json points at nothing: dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-raise-timeout.json
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=0
+[the line above is only the leg's summary; the capture itself:]
+DSH-CI-RUN head=606a0be7 mode=default node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=default
+DSH-CI-LEG leg=census verdict=fail seconds=0 detail=--census-json points at nothing: dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-raise-timeout.json
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 seconds=0
+[grade exit 1]
+end 2026-10-08T12:56:37Z

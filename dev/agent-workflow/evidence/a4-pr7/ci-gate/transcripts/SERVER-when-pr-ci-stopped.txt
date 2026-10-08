@@ -1,0 +1,109 @@
+=== WHEN AUTOMATIC PR CI STOPPED EXISTING — the gap has a commit and a date ===
+captured 2026-10-08T12:42:21Z by the ci-a4-pr-gate lane, in the MAIN checkout at master@606a0be7
+
+Premise tested: the brief says 'no automatic CI on PRs'. True at master today. The stronger
+form is: this repository HAS run automatic PR CI, on GitHub-hosted runners, 25 times, and
+then turned it off. That matters twice over — it dates the gap, and it proves the runner
+precondition for required status checks is satisfiable HERE rather than assumed.
+
+--- 1. every run this repo ever had, with its event (gh api, per_page=100) ---
+2026-09-17T15:42:13Z  workflow_dispatch  characterization  head=fix/rc2-runtime-compat  failure
+2026-09-17T15:25:28Z  pull_request  characterization  head=fix/rc2-runtime-compat  failure
+2026-09-17T15:23:14Z  pull_request  characterization  head=fix/rc2-runtime-compat  failure
+2026-09-17T15:22:52Z  pull_request  characterization  head=fix/rc2-runtime-compat  cancelled
+2026-09-14T11:46:55Z  pull_request  characterization  head=fix/alpha2-explicit-agent-setup-compat  failure
+2026-09-14T11:45:40Z  pull_request  characterization  head=fix/alpha2-explicit-agent-setup-compat  failure
+2026-09-14T07:58:24Z  pull_request  characterization  head=fix/alpha2-explicit-agent-setup-compat  failure
+2026-09-13T18:58:11Z  pull_request  characterization  head=int/multi-mcp-quick-fix  failure
+2026-09-13T18:56:00Z  pull_request  characterization  head=int/multi-mcp-quick-fix  failure
+2026-09-13T18:39:47Z  pull_request  characterization  head=int/multi-mcp-quick-fix  failure
+2026-09-13T18:33:45Z  pull_request  characterization  head=int/multi-mcp-quick-fix  failure
+2026-09-13T18:23:16Z  pull_request  characterization  head=int/multi-mcp-quick-fix  failure
+2026-09-13T18:22:06Z  pull_request  characterization  head=int/multi-mcp-quick-fix  failure
+2026-09-13T18:07:06Z  pull_request  characterization  head=int/multi-mcp-quick-fix  failure
+2026-09-13T18:04:46Z  pull_request  characterization  head=int/multi-mcp-quick-fix  failure
+2026-09-13T17:49:17Z  pull_request  characterization  head=int/multi-mcp-quick-fix  failure
+2026-09-13T16:29:48Z  pull_request  characterization  head=task/team-skills-provider  failure
+2026-09-12T19:25:52Z  pull_request  characterization  head=int/alpha2-capability-completion  failure
+2026-09-12T19:23:49Z  pull_request  characterization  head=int/alpha2-capability-completion  failure
+2026-09-12T19:23:16Z  pull_request  characterization  head=int/alpha2-capability-completion  failure
+2026-09-12T19:22:57Z  pull_request  characterization  head=int/alpha2-capability-completion  cancelled
+2026-09-12T19:18:42Z  pull_request  characterization  head=task/a2c-3-inspect-operation-permission  failure
+2026-09-12T18:57:32Z  pull_request  characterization  head=task/a2c-7-subtree-matcher  failure
+2026-09-12T18:20:32Z  pull_request  characterization  head=task/a2c-2-permission-coverage-gate  failure
+2026-09-12T17:55:58Z  pull_request  characterization  head=task/a2c-5-read-fingerprint  failure
+2026-09-12T17:38:56Z  pull_request  characterization  head=task/a2c-1-pwsh-permission  failure
+2026-09-12T15:59:37Z  pull_request  characterization  head=task/a2c-4-external-hard-last-mile  failure
+2026-09-12T15:59:10Z  pull_request  characterization  head=task/a2c-4-external-hard-last-mile  cancelled
+2026-09-12T15:27:59Z  pull_request  characterization  head=docs/alpha2-capability-completion-review  failure
+2026-09-12T15:14:15Z  pull_request  characterization  head=task/pr-test-file  failure
+2026-09-11T15:50:16Z  dynamic  Running Copilot Code Review  head=pr/issue1-async-delegation-closure  success
+2026-09-11T15:50:10Z  pull_request  characterization  head=pr/issue1-async-delegation-closure  failure
+2026-09-11T15:38:57Z  dynamic  Running Copilot Code Review  head=fix/alpha2-issue2-permission  success
+2026-09-11T15:38:52Z  pull_request  characterization  head=fix/alpha2-issue2-permission  failure
+2026-09-11T14:40:20Z  pull_request  characterization  head=fix/alpha2-blueprint-loading  failure
+
+--- 2. counts by event ---
+[{"event":"dynamic","n":2},{"event":"pull_request","n":32},{"event":"workflow_dispatch","n":1}]
+
+--- 3. the newest run of any kind, and what its job actually did ---
+{"event":"workflow_dispatch","head_branch":"fix/rc2-runtime-compat","html_url":"https://github.com/ArmourPiercer1/dsh-agent-team/actions/runs/35241952535","name":"characterization","run_started_at":"2026-09-17T15:42:13Z"}
+  step: Set up job — success
+  step: Checkout team repo — success
+  step: Checkout pinned pristine upstream (test-use tree) — success
+  step: Setup Node — success
+  step: Setup pnpm — success
+  step: Install upstream dependencies (no lifecycle scripts) — success
+  step: Build upstream runtime closure (TEST_METHODS §2) — success
+  step: Run characterization self-test (one command) — failure
+  step: Upload evidence artifact — failure
+  step: Post Setup pnpm — success
+  step: Post Setup Node — skipped
+  step: Post Checkout pinned pristine upstream (test-use tree) — success
+  step: Post Checkout team repo — success
+  step: Complete job — success
+
+  runner: GitHub Actions 1000000265  labels: ubuntu-latest
+  (steps Set up job / Checkout / Setup Node / Setup pnpm / Install / Build all succeeded, so the
+   hosted runner installs this workspace and builds it; only the harness step went red.)
+
+--- 4. the commit that removed the pull_request trigger ---
+61990035 2026-09-17 chore(rc2-repair): PR #18 closure — p4t6 pin 710, characterization CI migrated + demoted to manual
+@@ -3,6 +3,9 @@
+ # Runs the P2-T1 characterization harness (tests/characterization) against a
+ # pristine, pinned checkout of upstream deepseek-ai/deepseek-harness.
+ #
++# Pin: fb2c4b9e69 (0.1.5-rc.2 official release point) since 2026-09-17
++# (rc2-repair closure, user-directed; DSH 0.1.2 no longer supported).
++#
+ # The harness self-test is ONE command:
+ #
+ #   node tests/characterization/run.mjs
+@@ -20,8 +23,29 @@
+ 
+ name: characterization
+ 
++# 2026-09-17 (rc2-repair closure, user-directed): the ACTIVE gate is demoted
++# to manual (workflow_dispatch only). Why: the pin infrastructure was
++# migrated to fb2c4b9e (0.1.5-rc.2) — checkout ref, DSH_CLIENT_COMMIT_HASH,
++# the pin-drift fixture re-recorded via --fixture-write, and the build step
++# moved to `pnpm run build` (the npm_execpath contract that made every
++# pre-migration run red at the build step, PR #16/#17/#18). But the P2-era
+
+--- 5. what the file said when it was added (2026-08-30) ---
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+
+--- 6. what it says at master today ---
+on:
+  workflow_dispatch:
+
+concurrency:
+
+--- 7. server state (no protection, Actions on, zero self-hosted runners) ---
+$ gh api repos/ArmourPiercer1/dsh-agent-team/branches/master/protection
+{"message":"Branch not protected","documentation_url":"https://docs.github.com/rest/branches/branch-protection#get-branch-protection","status":"404"}gh: Branch not protected (HTTP 404)
+{"enabled":true,"allowed_actions":"all","sha_pinning_required":false}{"self_hosted":0}

@@ -1,0 +1,26 @@
+=== GREEN RUN — full gate on the tip, census captured twice ===
+start 2026-10-08T12:36:02Z
+host: node v24.21.0, 32 cores, CI=true
+cmd: node scripts/ci-pr-gate.mjs --full --census-captures 2 --store-dir /home/user/dsh-plugins/dsh-agent-team/.pnpm-store --transcript-dir dev/agent-workflow/evidence/a4-pr7/ci-gate/transcripts-green
+606a0be772b908f333ba0822ff93cb94df737065
+dirty paths at start: 3 (this lane's own new files: .github/workflows/pr-gate.yml, scripts/ci-pr-gate.mjs, evidence/)
+
+DSH-CI-RUN head=606a0be7 mode=full node=v24.21.0 cwd=/home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.2 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 48
+DSH-CI-LEG leg=install verdict=pass seconds=0.4 detail=pnpm install --frozen-lockfile --store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store ok (store-dir workaround in force)
+  [blueprint-fence] exit=1 RESULT prose(5 files, 5 sites) | RESULT adjudicated(16 files, 24 sites) | RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=0.2 detail=no new offending path (dirty 6 files/15 sites, unknown 0 files, universe 764 tracked files, baseline 6 identities)
+  [typecheck] exit=0 packages/client typecheck$ tsc -p tsconfig.json | packages/client typecheck: Done | $ pnpm -r run typecheck
+DSH-CI-LEG leg=typecheck verdict=pass seconds=10 detail=pnpm typecheck clean (all packages, tests included — tsc is the only leg that sees a bad .test.ts)
+  [lint-identities] exit=0 lint-identities: 160 identity lines, 76 distinct (target .) | lint-identities: universe: 1119 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status) | baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+DSH-CI-LEG leg=lint-identities verdict=pass seconds=10.7 detail=identity diff clean (baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0) — exit code of `pnpm lint` is NOT the authority here; the identity set is
+  [artifacts-at-head] exit=1     at async node:internal/modules/esm/loader:647:26 |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) | Node.js v24.21.0
+DSH-CI-LEG leg=artifacts-at-head verdict=fail seconds=0 detail=no DSH-ARTIFACT-VERDICT line with script=check-artifacts-at-head (exit 1): ^ | Error: unknown argument: --store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store | at parseArgs (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate/scripts/check-artifacts-at-head.mjs:106:16) | at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate/scripts/check-artifacts-at-he
+  detail[artifacts-at-head]: no DSH-ARTIFACT-VERDICT line with script=check-artifacts-at-head (exit 1): ^ | Error: unknown argument: --store-dir=/home/user/dsh-plugins/dsh-agent-team/.pnpm-store | at parseArgs (file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate/scripts/check-artifacts-at-head.mjs:106:16) | at file:///home/user/dsh-plugins/dsh-agent-team/.worktrees/ci-a4-pr-gate/scripts/check-artifacts-at-head.mjs:140:14 | at ModuleJob.run (node:internal/modules/esm/module_job:561:25) | at async node:internal/modules/esm/loader:647:26 | at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) | Node.js v24.21.0
+  [census-capture-1] exit=1     375|     ) |  ❯ packages/runtime/test/p6t3-restart.test.ts:451:21 | ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯
+  [census-capture-2] exit=1     375|     ) |  ❯ packages/runtime/test/p6t3-restart.test.ts:451:21 | ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯
+DSH-CI-LEG leg=census verdict=pass seconds=200 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6288l, 505f/6288l vs baseline-declared 505 / 6285; 2 captures, identical identity sets — COUNTS MOVED, SET DID NOT — the counts differ from the baseline document's own figures and that is not a verdict; 
+  detail[census]: roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 19 titled reds + 3 collection files; captured 505f/6288l, 505f/6288l vs baseline-declared 505 / 6285; 2 captures, identical identity sets — COUNTS MOVED, SET DID NOT — the counts differ from the baseline document's own figures and that is not a verdict; the identity set is — identity set IDENTICAL to the published baseline
+DSH-CI-VERDICT fail pass=6 fail=1 skip=0 skipped=none legs=7 seconds=221.4
+[gate exit 1]
+end 2026-10-08T12:39:44Z

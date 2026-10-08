@@ -1,0 +1,9 @@
+$ /home/user/.nvm/versions/node/v24.21.0/bin/node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+# exit=0 signal=null error=none seconds=10.7
+--- stdout ---
+lint-identities: 160 identity lines, 76 distinct (target .)
+lint-identities: universe: 1119 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+
+--- stderr ---
+
