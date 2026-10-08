@@ -14986,6 +14986,23 @@ REMOTE_INTERVENTION_AUTHORITY_POSITIONS });
 			    'PERMISSION_MUTATION_UNAUTHORIZED_ACTOR',
 			    'PERMISSION_ENVELOPE_EXPANSION_DENIED',
 			    'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE',
+			    // A4-PR7 (7-4 fail-closed lane): THE CEILING'S OWN VERDICT MUST REACH THE
+			    // OPERATOR AS ITSELF. The v3 gate throws this code whenever a DECIDED rise
+			    // lacks authority and the approval lane cannot absorb it — an unwired approval
+			    // seam, a nameless human caller, or an ask whose plan is not `required`, all
+			    // live production shapes. It was NOT a member, so invariant 4b dropped it into
+			    // invariant 5 and the operator read `internal-error` / `reason: untyped-error`:
+			    // the one answer that was NOT a crash was reported as one, while
+			    // `team_grant_permission`'s own description had been promising this code by
+			    // name since A4-PR2. Measured before the join — a real ceiling refusal through
+			    // the real throw-proof dispatcher returned `internal-error`
+			    // (`test/a4p7-ceiling-refusal-wire.test.ts`, leg W1). This is the ONLY ceiling
+			    // code joining: the approval-PENDING outcome stays out by A4-PR5's law (it
+			    // rides `{changed:false, reason:'mutation-proposal-pending'}` on the closed
+			    // projection, never a code), and this lane's new fail-closed refusal needs no
+			    // new member at all because it rides the CONTEXT code above — a refusal to
+			    // read the ceiling is told apart, on the wire, from a verdict of the ceiling.
+			    'PERMISSION_AUTHORITY_CEILING_INSUFFICIENT',
 			    'PERMISSION_OVERLAY_GENERATION_CONFLICT',
 			    'PERMISSION_MUTATION_NOT_CONFIGURED',
 			    'PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN',
