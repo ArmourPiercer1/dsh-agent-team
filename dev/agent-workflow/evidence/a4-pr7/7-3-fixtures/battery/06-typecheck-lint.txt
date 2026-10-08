@@ -1,0 +1,16 @@
+# 06 typecheck (both modes, reported separately) and lint-identities
+$ pnpm -r run typecheck
+  exit 0   errors: 0 x 'error TS'
+  packages/client typecheck$ tsc -p tsconfig.json
+  packages/client typecheck: Done
+$ pnpm -r --no-bail run typecheck
+  exit 0   errors: 0 x 'error TS'
+  (run separately on purpose: with --no-bail a per-package failure cannot be hidden by an
+   earlier package's non-zero exit stopping the walk, and without it a failure cannot be
+   hidden by a later package succeeding. Both had to be 0 and 0x TS.)
+
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+  lint-identities: 160 identity lines, 76 distinct (target .)
+  lint-identities: universe: 1107 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+  baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+  -> new 0 / resolved 0 => the STOP condition (nonzero) did NOT trigger, so no re-baseline.

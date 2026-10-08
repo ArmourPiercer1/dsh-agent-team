@@ -1,0 +1,27 @@
+# 05 §7.6 machine gate 26 / classifier 54 / §7.3 twins 13 and 8
+BASE (base-gates.txt)              AFTER (mig-gates.txt + final-gates.txt)
+  a4p7-merge-gate              26      26  (1 failed -- known refusal, NOT fixed by building)
+  a4p75-composition-smoke-clf  54      54
+  a4p7-v3-identity-binds-grammar 13    13
+  a4p7-v3-grammar-enforced      8       8
+ ✓ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts (13 tests) 40ms
+ ✓ packages/runtime/test/a4p7-v3-grammar-enforced.test.ts (8 tests) 7ms
+ ✓ packages/testkit/test/a4p75-composition-smoke-classification.test.ts (54 tests) 3170ms
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts (26 tests | 1 failed) 40145ms
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:879:9
+
+## the one failing leg, and the byte-comparison that proves base-equality
+It refuses because this checkout has no built client artifact. Per instruction I did NOT run
+pnpm build; I compared the diagnostic instead. Two fields differ, and both are the leg
+describing the tree it is standing in, which is the entire purpose of that sentence:
+  - the HEAD sha (41ba59f4 -> 79152fb5), and
+  - the tree-state count it self-reports.
+BASE : Tree: HEAD 41ba59f4, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies).
+AFTER: Tree: HEAD 79152fb5, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies).
+       (see 05b-merge-gate-clean-tree.txt for the captured clean-tree run)
+Everything else is byte-identical, including the failing stack frames:
+  checkPluginContract scripts/composition-smoke.mjs:201:24 / :298:13 / :422:9
+NOTE captured mid-work: one intermediate run said '5 tracked file(s) changed vs HEAD' and
+another said '1 untracked entr(ies)'. Both were TRUE statements about a mid-work tree (the
+second was a __pycache__ my census tool had written -- see FINDINGS Instruments 9). They are
+kept here rather than edited out: a leg that reports the tree is not a regression signal.

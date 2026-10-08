@@ -77,17 +77,84 @@ import {
 import { expectCode, expectErrorDetails, isDeepFrozen } from './t2-helpers.js'
 
 /**
- * §7.4 carrier migration (pre-flip half): the declared stamp of the
- * `PERMISSION_SOURCE_ASK` factory fixture. The lane-movement hash test
- * below compares an inline document against THAT fixture's content hash
- * and asserts they DIFFER when a rule moves ask->deny; for that
- * difference to prove anything, both documents must carry the SAME
- * schemaVersion. The fixture stays v1 until the flip (fixtures.ts is
- * byte-coupled to cross-lane consumers — see evidence 7-4-cdom FINDINGS),
- * so this mirror stays v1 too. Change this constant only together with
- * fixtures.ts, never to make the scan pass.
+ * §7.4: the declared stamp of the `PERMISSION_SOURCE_ASK` factory fixture.
+ * The lane-movement hash test below compares an inline document against THAT
+ * fixture's content hash and asserts they DIFFER when a rule moves ask->deny;
+ * for that difference to prove anything, both documents must carry the SAME
+ * schemaVersion. This mirror tracks the fixture rather than choosing a value;
+ * change it only together with fixtures.ts, never to make the scan pass.
  */
-const ASK_FIXTURE_DECLARED_VERSION = 1
+const ASK_FIXTURE_DECLARED_VERSION = 3
+
+/**
+ * `PERMISSION_SOURCE_ASK` rebuilt locally, with the `write`-on-exact rule in the
+ * lane named by `writeLane`. With `'ask'` it is byte-identical to the fixture
+ * (that equality is ASSERTED by the test that uses it, so this copy cannot drift
+ * away unnoticed the way the single hand-copied variant did).
+ */
+function askFixtureVariant(writeLane: 'ask' | 'deny'): string {
+  return [
+    '---',
+    `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`,
+    'blueprintId: team.min',
+    'revision: "1"',
+    'leader:',
+    '  templateId: leader',
+    '  persona: "Lead."',
+    '  capabilities:',
+    '    teamTools:',
+    '      kind: allow',
+    '      items: []',
+    '    builtinToolDeny: []',
+    '    skills:',
+    '      kind: allow',
+    '      items: []',
+    '    mcp:',
+    '      kind: allow',
+    '      items: []',
+    '    permissions:',
+    '      default: ask',
+    '      allow:',
+    '        - tool: read',
+    '          resource:',
+    '            kind: exact',
+    '            path: "/data/notes.md"',
+    ...(writeLane === 'ask'
+      ? [
+          '      ask:',
+          '        - tool: write',
+          '          resource:',
+          '            kind: exact',
+          '            path: "/data/notes.md"',
+          '      deny:',
+          '        - tool: lsp',
+          '          resource:',
+          '            kind: any',
+        ]
+      : [
+          '      ask: []',
+          '      deny:',
+          '        - tool: write',
+          '          resource:',
+          '            kind: exact',
+          '            path: "/data/notes.md"',
+          '        - tool: lsp',
+          '          resource:',
+          '            kind: any',
+        ]),
+    'members: []',
+    'requirements: []',
+    'memberEnvelopes: []',
+    'policyStates: []',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
+    'metadata: {}',
+    '---',
+    '',
+  ].join('\n')
+}
 
 /** The expected normalized policy of `PERMISSION_SOURCE_ASK`.
  *
@@ -663,49 +730,17 @@ describe('A1: content hash binds to the permissions policy', () => {
 
   it('changes when a rule moves between lanes (declaration order is content)', () => {
     const askLane = parseBlueprint(PERMISSION_SOURCE_ASK) // write-exact in ask
-    const movedToDeny = parseBlueprint([
-      '---',
-      `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`,
-      'blueprintId: team.min',
-      'revision: "1"',
-      'leader:',
-      '  templateId: leader',
-      '  persona: "Lead."',
-      '  capabilities:',
-      '    teamTools:',
-      '      kind: allow',
-      '      items: []',
-      '    builtinToolDeny: []',
-      '    skills:',
-      '      kind: allow',
-      '      items: []',
-      '    mcp:',
-      '      kind: allow',
-      '      items: []',
-      '    permissions:',
-      '      default: ask',
-      '      allow:',
-      '        - tool: read',
-      '          resource:',
-      '            kind: exact',
-      '            path: "/data/notes.md"',
-      '      ask: []',
-      '      deny:',
-      '        - tool: write',
-      '          resource:',
-      '            kind: exact',
-      '            path: "/data/notes.md"',
-      '        - tool: lsp',
-      '          resource:',
-      '            kind: any',
-      'members: []',
-      'requirements: []',
-      'memberEnvelopes: []',
-      'policyStates: []',
-      'metadata: {}',
-      '---',
-      '',
-    ].join('\n'))
+    const movedToDeny = parseBlueprint(askFixtureVariant('deny'))
+    // THE PRECONDITION, ASSERTED. This leg claims the hash difference is caused
+    // by the LANE MOVE, so the compared document must differ from the fixture
+    // in the lane move and NOTHING ELSE. That precondition used to be held only
+    // by a comment plus a hand-copied body, and when fixtures.ts moved to a new
+    // document version the copy silently stopped satisfying it: the `not.toBe`
+    // below stayed GREEN while the difference it proves came from the version
+    // stamp instead of from the lane. Asserting the zero-difference direction
+    // (the ask-lane variant must reproduce the fixture's hash EXACTLY) is what
+    // turns any future byte drift here into a red instead of a vacuous pass.
+    expect(parseBlueprint(askFixtureVariant('ask')).contentHash).toBe(askLane.contentHash)
     expect(askLane.contentHash).not.toBe(movedToDeny.contentHash)
   })
 

@@ -1,0 +1,45 @@
+# 02 wrapper: DEFERRALS row + control re-homing, leg count before/after
+
+BASE (41ba59f4) MEASURED, not inherited: the base wrapper file, run on the migrated tree,
+registers 60 legs and fails exactly 3:
+
+  ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (60 tests | 3 failed) 899ms
+     × every deferred path is still dirty (a migrated path must leave the list)
+     × the fence reports sites, not a bare count, and names a file the reader can open
+     × the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line
+
+AFTER (79152fb5):
+   ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (60 tests) 967ms
+
+LEG COUNT: 60 -> 60. No leg deleted; two legs RE-HOMED, one row deleted.
+
+The three reds above are the strongest evidence in this file: the base wrapper, told nothing,
+named precisely the three obligations this commit had to discharge and nothing else —
+(a) a migrated path must leave DEFERRALS, (b) the report-shape leg's one literal path must point at
+a file that is still dirty, (c) the archetype leg's path+lines must be re-homed. Had my edit been
+insufficient any of them would still be red; had it been excessive, the AFTER count would be under
+60 or the mutation (c) control would not fire.
+
+DEFERRALS row for fixtures.ts: REMOVED in this commit (the ruling requires the same commit as the
+fence-quieting). The leg "every deferred path is still dirty (a migrated path must leave the list)"
+is an EXACT SET EQUALITY between DEFERRALS keys and the fence's dirty paths, so the row could not
+have been left behind silently — and mutation (c) shows the leg reddens by name if it comes back.
+
+Control 1, archetype by exact line: OLD fixtures.ts L26/72/242/264/286 (fragment + quoted)
+  -> NEW a3p4-pr4-production-entry-regression.test.ts [118, 491, 843, 1128], asserted by SET
+     EQUALITY so it can neither gain nor lose a site unnoticed. Chosen because it is the same
+     carrier class: a .ts test-tree file whose blueprint documents are array literals of YAML
+     fragments ('---', 'schemaVersion: 1', ...), four of them, and whose own lane deferral
+     (B-runtime-semantics) keeps it dirty for reasons unrelated to this commit.
+Control 2, the one literal path the report-shape leg names so a reader can open it: re-homed to the
+  SAME a3p4 file, and deliberately NOT to t12a-live-bridge.mjs -- that path is already Control 3's
+  target, and pointing two controls at one file would quietly reduce three independent witnesses
+  to two.
+Control 3, "packages/*/test is in scope ... by path": UNCHANGED, still t12a-live-bridge.mjs,
+  which the coordinator ruled stays DIRTY BY DESIGN.
+
+Which file took the control: packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts.
+  221:  ['packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts', 'B-runtime-semantics (string/YAML carriers — the 7.4-scope third class; migrate-by-hand or invert per the 2026-10-08 dispositions)'],
+  426:      'OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: ',
+  446:    // `a3p4-pr4-production-entry-regression.test.ts`, whose blueprint documents
+  452:      'packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts'

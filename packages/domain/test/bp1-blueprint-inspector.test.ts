@@ -45,14 +45,17 @@ import {
 const NEVER_DEFINED_VERSION = 99
 
 /**
- * The declared stamp of the `MINIMAL_BLUEPRINT_SOURCE` factory fixture —
- * still v1 pre-flip (fixtures.ts is byte-coupled to cross-lane consumers;
- * its migration is a flip-PR move, see evidence 7-4-cdom FINDINGS). The
- * expected identity below mirrors that fixture's bytes as a LIVE claim, so
- * it tracks the factory, not this file's choice: change this constant only
- * together with fixtures.ts.
+ * The declared stamp of the `MINIMAL_BLUEPRINT_SOURCE` factory fixture. The
+ * expected identity below mirrors that fixture's bytes as a LIVE claim, so it
+ * tracks the factory, not this file's choice: change this constant only
+ * together with fixtures.ts (§7.4 moved both in the same PR).
+ *
+ * What this leg claims is UNCHANGED by that move: the inspector reports back
+ * the version the document declares. Only the value it reports tracked the
+ * fixture. Promoting the fixture could not weaken it, because the assertion
+ * reads the constant rather than remembering a number.
  */
-const MINIMAL_FACTORY_DECLARED_VERSION = 1
+const MINIMAL_FACTORY_DECLARED_VERSION = 3
 
 function rejectedReason(result: BlueprintInspectionResult): string {
   if (result.status !== 'rejected') {

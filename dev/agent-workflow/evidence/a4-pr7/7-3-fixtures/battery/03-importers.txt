@@ -1,0 +1,30 @@
+# 03 importers: enumerated from the tree, per-file pass/fail IDENTITIES vs base
+enumeration command: grep -rln 'testdata/fixtures' packages --include=*.ts --include=*.mjs
+     1	packages/domain/test/a1-permission-policy.test.ts
+     2	packages/domain/test/a4p1-blueprint-v3-governance.test.ts
+     3	packages/domain/test/bp1-blueprint-inspector.test.ts
+     4	packages/domain/test/t2-blueprint-catalog.test.ts
+     5	packages/domain/test/t2-blueprint-hash.test.ts
+     6	packages/domain/test/t2-blueprint-immutability.test.ts
+     7	packages/domain/test/t2-blueprint-parse.test.ts
+     8	packages/domain/test/t2-blueprint-revision.test.ts
+     9	packages/domain/test/t2-blueprint-validation.test.ts
+    10	packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+    11	packages/runtime/test/bp1-blueprint-authority.test.ts
+    12	packages/runtime/test/policy-state-bound-blueprint-production-wiring.test.ts
+    13	packages/testkit/test/t6-2-template-n-instances.test.ts
+    14	packages/testkit/test/t6-6-snapshot-immutability.test.ts
+    15	packages/testkit/test/t6-8-serialization-roundtrip.test.ts
+    16	packages/testkit/test/t6-9-negative-matrix.test.ts
+
+BASE  : TOTALROWS 370 {"passed":369,"failed":1}
+AFTER : TOTALROWS 370 {"passed":369,"failed":1}
+probe (fixtures.ts change ONLY, before the 3 coupled consumer edits): TOTALROWS 370 {"passed":366,"failed":4}
+  -> exactly 3 new reds, all mirror pins; 4th failure = pre-existing t2-blueprint-hash debt
+
+IDENTITY DIFF across all 370 legs (base vs after):
+137c137
+< packages/domain/test/t2-blueprint-parse.test.ts	passed	t2 parse: minimal blueprint > parses the minimal closed v1 document
+---
+> packages/domain/test/t2-blueprint-parse.test.ts	passed	t2 parse: minimal blueprint > parses the minimal closed document at the version this build declares
+  -> the ONLY difference is one deliberate title rename, 'passed' on both sides.

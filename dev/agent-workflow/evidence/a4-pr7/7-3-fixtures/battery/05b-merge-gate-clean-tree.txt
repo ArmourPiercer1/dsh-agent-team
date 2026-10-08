@@ -1,0 +1,31 @@
+# 05b merge-gate refusal, base-equality proof, clean committed tree
+This file does NOT prove the leg passes -- it proves the leg fails EXACTLY as it does at
+base, which is what was asked: prove base-equality by byte-comparing the diagnostic instead
+of running pnpm build. pnpm build was never run in this worktree.
+
+$ git status --porcelain | wc -l  ->  0
+$ <the same four suites base ran, same order>   -> exit 1
+   ✓ packages/runtime/test/a4p7-v3-grammar-enforced.test.ts (8 tests) 4ms
+   ✓ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts (13 tests) 35ms
+   ✓ packages/testkit/test/a4p75-composition-smoke-classification.test.ts (54 tests) 2974ms
+   ❯ packages/testkit/test/a4p7-merge-gate.test.ts (26 tests | 1 failed) 39530ms
+   ❯ packages/testkit/test/a4p7-merge-gate.test.ts:879:9
+        Tests  1 failed | 100 passed (101)
+
+## the two refusal sentences, sha-normalised, diffed against base: EMPTY
+  composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD <SHA>, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+  composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD <SHA>, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+  diff: EMPTY -> byte-identical, both legs
+## failing stack frames, both sides identical:
+  BASE and AFTER: checkPluginContract scripts/composition-smoke.mjs:201:24, :298:13, :422:9
+
+## TWO method errors found while producing this, both kept here
+1. The 'composition-smoke live leg:' line is NOT printed by a4p7-merge-gate.test.ts; it comes
+   from a4p75-composition-smoke-classification.test.ts. Comparing a merge-gate-only run against
+   a four-suite base log showed a 'missing' line that had never belonged to the merge gate.
+   Fix: re-run the same suite set base ran, in the same order.
+2. Twice, the tree-state field in the refusal said '1 untracked entr(ies)' when base said 0.
+   Both times the untracked entry was THIS VERY EVIDENCE FILE, uncommitted while the gate read
+   the tree. The instrument was accurate and the observer was the disturbance. Fix: write the
+   evidence outside the tree, run, then bring it back. A gate that describes the working tree
+   cannot be byte-compared while you are in the middle of writing files into it.
