@@ -55,9 +55,17 @@
       config:
         bootPhase: "create-or-open"
         rootSessionId: "team-root"
+        # The embedded Team design is a schema version 3 document: it carries
+        # the two authority documents that this version makes REQUIRED
+        # (`permissionMutationEnvelope` — optional at every earlier version and
+        # a hard requirement here, ADR A1-19; `teamHardEnvelope` — introduced
+        # by this version and never optional, spec §3.2 "no implicit default is
+        # permitted"). §7.4 promotion, landed BEFORE the §7.3 version flip:
+        # v3 parses today and is the only form the flip keeps, so this row is
+        # unchanged in acceptance by the cutover it precedes.
         blueprintSource: |
           ---
-          schemaVersion: 1
+          schemaVersion: 3
           blueprintId: my-team-bp-1
           revision: "1"
           leader:
@@ -89,6 +97,28 @@
               maxInstances: 4
               maxConcurrent: 4
           metadata: {}
+          # The two authority documents this version requires, at the HONEST
+          # ZERO position `rules: []` — never a permissive filler rule. The two
+          # planes read this same absence differently, and both readings are
+          # pinned in production code, so the claim is stated per plane:
+          #   - EXPANSION plane (domain/authority-envelope effectiveAuthority-
+          #     Ceiling): an unmatched scope is no-authority — with an empty
+          #     rule list the Leader of this Team may expand NOTHING.
+          #   - APPROVAL plane (domain/permission-plane bindingDocs): an absent
+          #     rule imposes NO narrowing — a Human User approving a concrete
+          #     operation is impeded only by the host-side law, never by a
+          #     narrowing from this document.
+          # This zero is inert in exactly one world, and this shipped design
+          # lives in it: a Team that never asks to expand anything — member
+          # permissions come solely from the static lanes declared above, no
+          # permission mutation ever runs, and no rising-authority proposal is
+          # made. It is NOT inert in general: an operator whose profile-layer
+          # override of this row designs for expansion must declare real rules
+          # in these documents, not inherit this pair.
+          permissionMutationEnvelope:
+            rules: []
+          teamHardEnvelope:
+            rules: []
           ---
         seedMembers: []
         generation: 1

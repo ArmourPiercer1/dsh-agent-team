@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-cordis
+
+ ✓ packages/runtime/test/a4p7-v3-grammar-enforced.test.ts (8 tests) 4ms
+ ✓ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts (13 tests) 31ms
+
+ Test Files  2 passed (2)
+      Tests  21 passed (21)
+   Start at  09:47:13
+   Duration  295ms (transform 287ms, setup 0ms, import 390ms, tests 35ms, environment 0ms)
+

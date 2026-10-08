@@ -1,0 +1,5 @@
+a2c7-subtree-matcher.test.ts                         elements  127  changed regions  6  anomalies 2
+--------------------------------------------------------------------------------------------
+files 1   head document elements seen 127   changed element regions 6   anomalies 2
+  !! packages/runtime/test/a2c7-subtree-matcher.test.ts: removal that is not a version element: ['metadata: {}']
+  !! packages/runtime/test/a2c7-subtree-matcher.test.ts: removal that is not a version element: ['metadata: {}']

@@ -1,0 +1,9 @@
+base elements 34  work elements 36  (comments removed, document order)
+  LOST ok 'schemaVersion: 1' x1
+  GAINED ok '  rules: []' x1
+  GAINED ok 'permissionMutationEnvelope:' x1
+  GAINED ok 'schemaVersion: 3' x1
+------------------------------------------------------------------------
+  Y3 pair elements not adjacent/ordered in the work stream: ['permissionMutationEnvelope:', '  rules: []']
+  Y3 expected exactly 4 pair elements in the work stream, found 2
+anomalies 2

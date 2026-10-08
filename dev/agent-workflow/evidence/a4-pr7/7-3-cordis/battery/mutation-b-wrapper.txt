@@ -1,0 +1,94 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-cordis
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (60 tests | 1 failed) 901ms
+     ✓ the scan ran (a scan that could not run is never reported as clean) 1ms
+     ✓ invoking the script by name is a real gate: non-zero exit while dirty sites exist 175ms
+     ✓ a directory that is not a repository reports not-run with exit 2, never clean 39ms
+     ✓ run from a SUBDIRECTORY the fence reports not-run with exit 2, never a false clean (round-3 F3) 38ms
+     × the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path) 5ms
+     ✓ every deferred path is still dirty (a migrated path must leave the list) 0ms
+     ✓ the fence needs no exemption for its own author 0ms
+     ✓ the fence reports sites, not a bare count, and names a file the reader can open 1ms
+     ✓ the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line 0ms
+     ✓ packages/*/test is in scope: a test-tree string-carried emitter reaches the dirty set by path 0ms
+     ✓ the named namespace traps are never reported as Blueprint sites 0ms
+     ✓ the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused 0ms
+     ✓ the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable 0ms
+     ✓ every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2) 1ms
+     ✓ unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated 1ms
+     ✓ every ledger entry cites hand-verified <its own path>:<line> — silence costs a written row 0ms
+     ✓ the ledger is keyed path::L<line>::v<version>: an old two-part key is NOT-RUN naming it (G2) 39ms
+     ✓ dropping ONE row sends THAT site back to UNKNOWN — a second literal on a ledgered line costs its own row (G2) 170ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  342ms
+     ✓ the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4) 43ms
+     ✓ the blind-spot note prints the load-bearing sentence and the two-number audit clause is gone 0ms
+     ✓ the blind-spot line names the numeric-form family the text predicate does not read 0ms
+     ✓ the RETIRED intentionally-dirty row kind is refused as not-run — a retired class never silently ignores its old rows (R3) 38ms
+     ✓ the scope function is the plan's list plus the measured third class — no more, no less 0ms
+     ✓ f01 YAML-string carrier is DIRTY (the type system cannot see it) 0ms
+     ✓ f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here) 0ms
+     ✓ f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it) 0ms
+     ✓ f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide) 0ms
+     ✓ f05 untyped .mjs object literal is DIRTY (nothing type-checks the file) 0ms
+     ✓ f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions) 0ms
+     ✓ f07 overlay/projection-service option is UNKNOWN (deciding text on the enclosing line may not refuse) 0ms
+     ✓ f08 projection wire envelope is REFUSED (projection-envelope) 0ms
+     ✓ f09 session-binding row is REFUSED (session-binding) 0ms
+     ✓ f10 MemberInstance row is REFUSED (member-instance-record) 0ms
+     ✓ f11 registry ROW stamps are UNKNOWN (same-line name but SPREAD-hidden keys; head-line name) — F1 adjudicated by hand 0ms
+     ✓ f12 ledger row (shorthand sequence/payload) is UNKNOWN — outer-line evidence gates, never a silent drop 0ms
+     ✓ f13 TeamSessionRecordDto row is REFUSED (team-session-record) 0ms
+     ✓ f14 governance-override row is REFUSED (governance-override) 0ms
+     ✓ f15 approval-case + operation rows are REFUSED (governance-ledger) 0ms
+     ✓ f16 artifact-grant payload is REFUSED (artifact-grant-payload) 0ms
+     ✓ f17 prose document without the blueprintId half is not a site at all 0ms
+     ✓ f18 ambiguous hybrid shape is UNKNOWN and gates (no silent drop, no guessed verdict) 0ms
+     ✓ f19 JSON data is DIRTY (data is never type-checked) 0ms
+     ✓ f20 YAML config blueprintSource block is DIRTY (cordis.patch.yml shape) 0ms
+     ✓ f21 supported-version fixtures stay clean in every carrier (reading decision) 0ms
+     ✓ f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string) 0ms
+     ✓ f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId) 0ms
+     ✓ f24 string-carried YAML WITH document siblings stays DIRTY (no own-pool ns signature, no refusal) 0ms
+     ✓ f25 a complete document smuggled under a row-type annotation is UNKNOWN, never REFUSED 0ms
+     ✓ f26 document fields + row signature in ONE literal is a conflict UNKNOWN (widened doc-only set) 0ms
+     ✓ f27 backtick carriers reach the SAME verdict AND channel as the single-quoted twin 0ms
+     ✓ f28 a document in a multi-line backtick under a row call is UNKNOWN, never refused by the row 0ms
+     ✓ f29 a backtick inside a regex literal opens no phantom template (YAML stays DIRTY) 0ms
+     ✓ f30 a backslash-newline string continuation keeps the carrier a carrier (DIRTY) 0ms
+     ✓ f31 quoted and bare key spellings of one typed object share ONE class 0ms
+     ✓ f33 one document, two brace spellings under a row: SAME class, both visible (round-3 F1) 0ms
+     ✓ f32 V3: members + identity triple under a row conflict is UNKNOWN; f32b: members WITHOUT the triple stays refused (round-3 F2) 0ms
+     ✓ f35 + scope notes: a closed continuation revives CODE on the line tail; both blind spots print (round-3 D) 0ms
+     ✓ the fixture corpus exists and every fixture was exercised 0ms
+     ✓ a real in-scope file that keys blueprintId WITHOUT a version literal is not a site 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path)
+AssertionError: expected [ 'cordis.patch.yml' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "cordis.patch.yml",
++ ]
+
+ ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts:364:24
+    362|   it('the dirty set is EXACTLY the recorded Task 7.4 deferral set (no …
+    363|     const unexpected = dirtyPaths.filter((p) => !DEFERRALS.has(p))
+    364|     expect(unexpected).toEqual([])
+       |                        ^
+    365|   })
+    366|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 59 passed (60)
+   Start at  09:53:18
+   Duration  1.17s (transform 42ms, setup 0ms, import 191ms, tests 901ms, environment 0ms)
+

@@ -1,0 +1,14 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-cordis
+
+ ✓ packages/runtime/test/team-spill-local-composition.test.ts (3 tests) 18ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 4ms
+ ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (60 tests) 939ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  349ms
+ ✓ packages/runtime/test/pbf-default-artifact-urls.test.ts (9 tests) 4ms
+
+ Test Files  4 passed (4)
+      Tests  82 passed (82)
+   Start at  09:51:36
+   Duration  1.47s (transform 1.27s, setup 0ms, import 2.02s, tests 965ms, environment 0ms)
+
