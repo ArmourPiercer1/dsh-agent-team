@@ -778,6 +778,117 @@ function isActionCaller(caller) {
  *  distinct from any present fingerprint; legacy rows (fingerprint
  *  absent) recompute the SAME key they always had for their own
  *  retries, so old durable rows stay idempotent under the extended key. */
+/**
+ * A4 corrupt-leg guard (ADR A2-9 + A1-14): does a leg row the STRICT reader
+ * refused still have a claim on THIS call?
+ *
+ * THE LAW. `parseRequestPayload` refusing a row is a statement about the ROW
+ * ("this cannot be reconstructed"), never about the CALL ("nothing governs
+ * it"). `loadControlState` files such a row that names a case into
+ * `ControlState.corruptLegs`, and the read plane reports it
+ * (`buildApprovalCaseState` names the typed problem,
+ * `findApprovalCaseByIdentity` verifies against it). `guardOperation` was the
+ * one consumer that treated the row's INVISIBILITY as an answer: an unreadable
+ * row matched nothing, the verdict was `no-request`, and
+ * `packages/tools/src/guard.ts` maps `no-request` to "proceed" — so a stored
+ * constraint vanished from the enforcement plane at exactly the moment the
+ * storage became least trustworthy. A control record that cannot be parsed must
+ * never REDUCE what the guard can see.
+ *
+ * THE TEST, and why it is agreement-over-what-can-still-be-read rather than a
+ * derived case id. The guard's own scope identity is `scopeKey`'s member set, so
+ * a corrupt leg is indistinguishable from the request that would govern this
+ * call when every member the row still discloses AGREES. A member the row
+ * discloses that DISAGREES is positive evidence the leg governs some OTHER call,
+ * and this one stays a legitimate `no-request` — that is the direction that
+ * keeps one damaged row from freezing a whole Team. A member the row does NOT
+ * disclose (absent where the shape allows absence, or present-but-unreadable
+ * where it does not) is evidence about nothing, and the conservative reading of
+ * evidence-about-nothing is that the leg may still govern. Nothing cheaper is
+ * honest here: the case identity of a leg whose members are damaged is precisely
+ * what cannot be recomputed, which is why this compares members instead of
+ * hashing them.
+ *
+ * @param payload - the raw payload of one `corruptLegs` entry (never defaulted).
+ * @param scope - the validated guard scope of the call.
+ * @param subjectIdentity - the canonical subject identity the call resolved to.
+ * @returns `true` when the leg cannot be ruled out as this call's governing row.
+ */
+function corruptLegCouldGovern(payload, scope, subjectIdentity) {
+    // Every member answers AGREES / DISAGREES / NOTHING (`undefined`); the row
+    // stays a candidate unless some member positively says "not this call".
+    const memberAgrees = (key, expected) => {
+        const raw = payload[key];
+        if (raw === undefined)
+            return expected.length === 0;
+        if (typeof raw !== 'string')
+            return undefined;
+        return raw === expected;
+    };
+    const subjectAgrees = () => {
+        if (payload['subject'] !== undefined) {
+            const parsed = parseSubject(payload['subject']);
+            return parsed === undefined ? undefined : subjectIdentityOf(parsed) === subjectIdentity;
+        }
+        // The legacy projection `parseSubject`-derived rows carry: a present
+        // `targetInstanceId` IS the instance subject, read the same way here.
+        const legacyTarget = payload['targetInstanceId'];
+        if (typeof legacyTarget !== 'string')
+            return undefined;
+        return (subjectIdentityOf({ kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: legacyTarget }) ===
+            subjectIdentity);
+    };
+    const verdicts = [
+        subjectAgrees(),
+        memberAgrees('actionName', scope.actionName),
+        memberAgrees('toolName', scope.toolName ?? ''),
+        memberAgrees('correlation', scope.correlation),
+        memberAgrees('operationFingerprint', scope.operationFingerprint ?? ''),
+    ];
+    return !verdicts.some((agrees) => agrees === false);
+}
+/**
+ * The typed refusal for ONE corrupt leg that could govern this call, plus the
+ * requestId to point the operator at (echoed only when the row still discloses
+ * one — a refusal must never invent an identity it did not read).
+ *
+ * THE TWO-MEMBER MAPPING, and why neither name is a stretch. This mints no new
+ * reason code; the closed vocabulary already carries both laws, and the defect
+ * was that the second never got applied on this route.
+ *
+ * - `authority-scope-unbound` — an OPERATION-CASE leg whose authority point
+ *   cannot be read, whether the key is absent (the readable-row sibling is
+ *   pinned by `a4p7-a1-14-consumption-revalidation.test.ts` leg A4) or PRESENT
+ *   AND REFUSED by `parseAuthorityScopeField`. To the guard those are one fact:
+ *   the row names no point that an allow over it could be re-run over. That
+ *   member's own documentation says it exists because "naming this (rather than
+ *   dropping the row to `no-request`) is what keeps a corrupt authority row from
+ *   executing" — a corrupt leg is the case the rule was written for and never
+ *   reached.
+ * - `authority-undetermined` — every other corrupt leg: the refusal sits in some
+ *   other member, the `kind` is unreadable, or the kind is `envelope-mutation`
+ *   (whose ceiling question belongs to the proposal's own region, so "no
+ *   authority point" would name the wrong thing). Its law is the one under
+ *   attack here: "could not confirm is not confirmed — and an unreadable
+ *   document is never an empty one".
+ */
+function corruptLegVerdictOf(payload) {
+    const reasons = CONTROL_GUARD_BLOCK_REASONS;
+    const requestId = payload['requestId'];
+    const echo = typeof requestId === 'string' && requestId.length > 0 ? { requestId } : {};
+    const kind = payload['kind'];
+    const fingerprint = payload['operationFingerprint'];
+    const isOperationCase = typeof kind === 'string' &&
+        CONTROL_REQUEST_KIND_VALUES.includes(kind) &&
+        kind !== CONTROL_REQUEST_KINDS.ENVELOPE_MUTATION &&
+        typeof fingerprint === 'string' &&
+        fingerprint.length > 0;
+    if (!isOperationCase)
+        return { allowed: false, reason: reasons.AUTHORITY_UNDETERMINED, ...echo };
+    return parseAuthorityScopeField(payload['authorityScope']) === undefined
+        ? { allowed: false, reason: reasons.AUTHORITY_SCOPE_UNBOUND, ...echo }
+        : { allowed: false, reason: reasons.AUTHORITY_UNDETERMINED, ...echo };
+}
 function scopeKey(rootSessionId, subjectIdentity, actionName, toolName, correlation, operationFingerprint) {
     return [
         rootSessionId,
@@ -2105,6 +2216,11 @@ export function createControlService(options) {
             }
             const state = loadControlState(root);
             const key = scopeKey(root, subjectIdentityOf(subject), scope.actionName, scope.toolName, scope.correlation, scope.operationFingerprint);
+            // A4 (ADR A2-9): a leg the strict reader refused but that CANNOT be ruled
+            // out as this call's governing row. `undefined` — the overwhelming common
+            // case, and the whole point of the read — costs one pass over a list that
+            // is empty on every healthy Team's ledger. See `corruptLegCouldGovern`.
+            const corruptLeg = state.corruptLegs.find((row) => corruptLegCouldGovern(row.payload, scope, subjectIdentityOf(subject)));
             const matching = state.requests.filter((r) => {
                 // NOTE (B2 lane disjointness): an INLINE request IS matched here so
                 // its TERMINAL marks are reported correctly (abandon →
@@ -2120,6 +2236,14 @@ export function createControlService(options) {
                 return rowKey === key;
             });
             if (matching.length === 0) {
+                // A4 (ADR A2-9): "no readable row matches" is NOT "nothing guards this
+                // call" while a leg that could govern it sits unread in `corruptLegs`.
+                // `no-request` is the ONE reason `packages/tools/src/guard.ts` proceeds
+                // on, so emitting it here on a damaged ledger is the inversion this fix
+                // exists to close — the runtime refused, and the tool plane read the
+                // refusal as a green light.
+                if (corruptLeg !== undefined)
+                    return corruptLegVerdictOf(corruptLeg.payload);
                 return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST };
             }
             // Alpha.4 A4-PR3 (spec 11.3, ADR A1-10): the legs of one case share a
@@ -2301,6 +2425,14 @@ export function createControlService(options) {
                         decisionSequence: decision.entry.sequence,
                     };
                 }
+                // A4 (ADR A2-9): the LAST look before the durable write. An unreadable
+                // sibling leg that could govern this call means the constraint set this
+                // allow is being spent against is not fully known — so the allow is NOT
+                // burned (zero effect, the same discipline as the two rechecks above),
+                // and the operator gets a typed refusal naming the damaged ledger
+                // instead of an execution whose approval nobody can re-verify.
+                if (corruptLeg !== undefined)
+                    return corruptLegVerdictOf(corruptLeg.payload);
                 await putEntry({
                     schemaVersion: 2,
                     sequence: await allocateSequence(),
@@ -2319,6 +2451,13 @@ export function createControlService(options) {
                     requestId: request.payload.requestId,
                     decisionSequence: decision.entry.sequence,
                 };
+            }
+            // An inline allow authorizes its OWN frozen invocation and writes no
+            // consumption, so a candidate list of nothing-but-inline-allows falls
+            // through here as `no-request` — the same polarity trap as the branch
+            // above if a leg that could govern this call is unread.
+            if (fallback.reason === CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST && corruptLeg !== undefined) {
+                return corruptLegVerdictOf(corruptLeg.payload);
             }
             return fallback;
         });

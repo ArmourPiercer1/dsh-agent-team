@@ -1,0 +1,168 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-corrupt-leg-guard
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts (11 tests | 7 failed) 12ms
+     × W1: a leg whose authority point is present-but-malformed is refused by name, never as no-request 6ms
+     × W2: a durable DENY survives the corruption of the leg it refuses (zero side effects) 1ms
+     × W3: an allow over an unreadable point cannot be spent and is not burned 1ms
+     × W4: a leg broken in some OTHER member, with NO authority point to read, is refused by the same name 0ms
+     × W4b: a leg broken elsewhere whose authority point IS readable is refused as undetermined 0ms
+     × W5: the PRODUCER never answers no-request for a leg it could not read, and still does for an empty ledger 0ms
+     ✓ W6: a genuinely un-requested call in a clean Team proceeds, exactly as before 0ms
+     ✓ W7: a corrupt leg at a DIFFERENT scope does not freeze the Team 0ms
+     ✓ W8 (disclosed boundary): a corrupt row that names no case keeps today's no-request 0ms
+     ✓ W9: the reporting routes still name the corrupt leg, and neither one gates execution 0ms
+     × W10: the TOOL-plane claim, named — a corrupt leg plus a durable DENY never reaches the facade 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W1: a leg whose authority point is present-but-malformed is refused by name, never as no-request
+AssertionError: expected { proceed: true } to deeply equal { proceed: false, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "proceed": false,
+-   "reason": "authority-scope-unbound",
+-   "requestId": "req-a4cl-w1",
++   "proceed": true,
+  }
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:643:24
+    641|   it('W1: a leg whose authority point is present-but-malformed is refu…
+    642|     expect(w1.error).toBe('none')
+    643|     expect(w1.consult).toEqual({
+       |                        ^
+    644|       proceed: false,
+    645|       reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_SCOPE_UNBOUND,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W2: a durable DENY survives the corruption of the leg it refuses (zero side effects)
+AssertionError: expected { proceed: true } to deeply equal { proceed: false, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "proceed": false,
+-   "reason": "authority-scope-unbound",
+-   "requestId": "req-a4cl-w2",
++   "proceed": true,
+  }
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:655:24
+    653|   it('W2: a durable DENY survives the corruption of the leg it refuses…
+    654|     expect(w2.error).toBe('none')
+    655|     expect(w2.consult).toEqual({
+       |                        ^
+    656|       proceed: false,
+    657|       reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_SCOPE_UNBOUND,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W3: an allow over an unreadable point cannot be spent and is not burned
+AssertionError: expected { proceed: true } to deeply equal { proceed: false, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "proceed": false,
+-   "reason": "authority-scope-unbound",
+-   "requestId": "req-a4cl-w3",
++   "proceed": true,
+  }
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:667:24
+    665|   it('W3: an allow over an unreadable point cannot be spent and is not…
+    666|     expect(w3.error).toBe('none')
+    667|     expect(w3.consult).toEqual({
+       |                        ^
+    668|       proceed: false,
+    669|       reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_SCOPE_UNBOUND,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W4: a leg broken in some OTHER member, with NO authority point to read, is refused by the same name
+AssertionError: expected { proceed: true } to deeply equal { proceed: false, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "proceed": false,
+-   "reason": "authority-scope-unbound",
+-   "requestId": "req-a4cl-w4",
++   "proceed": true,
+  }
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:683:24
+    681|     // point to bind to. That is the SAME fact, and therefore the SAME…
+    682|     // the readable-row path gives (`a4p7-a1-14-consumption-revalidati…
+    683|     expect(w4.consult).toEqual({
+       |                        ^
+    684|       proceed: false,
+    685|       reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_SCOPE_UNBOUND,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W4b: a leg broken elsewhere whose authority point IS readable is refused as undetermined
+AssertionError: expected { proceed: true } to deeply equal { proceed: false, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "proceed": false,
+-   "reason": "authority-undetermined",
+-   "requestId": "req-a4cl-w4b",
++   "proceed": true,
+  }
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:697:25
+    695|     // reconstructed" — `authority-undetermined`, whose law is that an…
+    696|     // document is never an empty one.
+    697|     expect(w4b.consult).toEqual({
+       |                         ^
+    698|       proceed: false,
+    699|       reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W5: the PRODUCER never answers no-request for a leg it could not read, and still does for an empty ledger
+AssertionError: unreadable point: expected 'no-request' not to be 'no-request' // Object.is equality
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:709:59
+    707|     // reason `packages/tools/src/guard.ts` proceeds on; it must mean …
+    708|     // nothing to guard" and never "I could not read what guards this …
+    709|     expect(w5CorruptPoint.reason, 'unreadable point').not.toBe(
+       |                                                           ^
+    710|       CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
+    711|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > A4 corrupt control leg — the guard must never see LESS than the ledger holds > W10: the TOOL-plane claim, named — a corrupt leg plus a durable DENY never reaches the facade
+AssertionError: facade said: {"status":"executed","action":"follow-up","rootSessionId":"session-root-p6t1","callerRole":"leader","targetInstanceId":"inst-p6t2seedw01","effect":{"kind":"work-admitted","instanceId":"inst-p6t2seedw01","fromLifecycle":"RUNNING","lifecycleCommitted":false,"sequence":3},"requestToken":"tok-a4cl-w10"}: expected 'executed' to be 'blocked' // Object.is equality
+
+Expected: "blocked"
+Received: "executed"
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:762:61
+    760|     // guard and the facade is never reached.
+    761|     expect(w10.error ?? 'none').toBe('none')
+    762|     expect(w10.status, `facade said: ${w10.facadeOutcome}`).toBe('bloc…
+       |                                                             ^
+    763|     // A row with no operation fingerprint is not an OPERATION CASE (t…
+    764|     // law this file already applies), so the honest name is `undeterm…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 4 passed (11)
+   Start at  20:39:06
+   Duration  1.17s (transform 757ms, setup 0ms, import 1.06s, tests 12ms, environment 0ms)
+

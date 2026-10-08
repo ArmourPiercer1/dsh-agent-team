@@ -1,0 +1,37 @@
+COUNTERFACTUAL — does the fix bite, and is every mutant reachable?
+Base of comparison: the landed fix at HEAD of fix-a4-corrupt-leg-guard.
+Method: one line mutated in packages/runtime/control/service.ts, both affected suites
+re-run (packages/tools/test/a4-corrupt-leg-guard.test.ts + packages/runtime/test/a4p3-approval-case.test.ts),
+file restored from scratch/service.mutbase and sha256-verified after every mutation.
+
+=== M1-neuter-veto
+  reddened 8 / stayed green 31  → reachable: YES
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W1: a leg whose authority point is present-but-malformed is refused by name, never as no-request
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W2: a durable DENY survives the corruption of the leg it refuses (zero side effects)
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W3: an allow over an unreadable point cannot be spent and is not burned
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W4: a leg broken in some OTHER member, with NO authority point to read, is refused by the same name
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W4b: a leg broken elsewhere whose authority point IS readable is refused as undetermined
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W5: the PRODUCER never answers no-request for a leg it could not read, and still does for an empty ledger
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W10: the TOOL-plane claim, named — a corrupt leg plus a durable DENY never reaches the facade
+    RED   the corrupt durable shapes are reported, never defaulted (A2-9) refuses to authorize on a row the case read refuses, even with a durable allow (A2-9)
+
+=== M2-veto-everything
+  reddened 2 / stayed green 37  → reachable: YES
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W7: a corrupt leg at a DIFFERENT scope does not freeze the Team
+    RED   the corrupt durable shapes are reported, never defaulted (A2-9) refuses to authorize on a row the case read refuses, even with a durable allow (A2-9)
+
+=== M3-reason-collapse
+  reddened 5 / stayed green 34  → reachable: YES
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W1: a leg whose authority point is present-but-malformed is refused by name, never as no-request
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W2: a durable DENY survives the corruption of the leg it refuses (zero side effects)
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W3: an allow over an unreadable point cannot be spent and is not burned
+    RED   A4 corrupt control leg — the guard must never see LESS than the ledger holds W4: a leg broken in some OTHER member, with NO authority point to read, is refused by the same name
+    RED   the corrupt durable shapes are reported, never defaulted (A2-9) refuses to authorize on a row the case read refuses, even with a durable allow (A2-9)
+
+Reading: M1 is the fix itself (the veto can never fire) — 8 legs reddened, including the re-pinned
+Alpha.4 A2-9 acceptance leg. M2 removes the LEG-IDENTITY half (every corrupt leg governs every call) and
+is caught by exactly the legs that police over-refusal: W7 (a corrupt leg at a different scope must not
+freeze the Team) and the a4p3 leg. M3 keeps the refusal but stops naming the unreadable authority point,
+and is caught by every leg that asserts the UNBOUND cell of the mapping table. So the fix is load-bearing,
+the scope test that keeps it from refusing everything is load-bearing, and the reason MAPPING is
+load-bearing — no green mutant in the set.
