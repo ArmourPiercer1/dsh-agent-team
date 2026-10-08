@@ -1,0 +1,97 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/f2-coldstart-interleave
+
+ ❯ packages/runtime/test/a4-compat-coldstart-interleave.test.ts (14 tests | 4 failed) 14ms
+     ✓ FACTS_A and FACTS_B produce DIFFERENT fingerprints 1ms
+     ✓ and BOTH are status OPEN on their own, so no status check can tell them apart 0ms
+     ✓ the interleave is real: BOTH creators read the key as ABSENT and BOTH creates committed (F2.1) 1ms
+     ✓ the durable truth is still exactly ONE complete record: the winner's, at generation 1, never absent, never torn 0ms
+     ✓ every consultation that returns a verdict returns the row's generation (no false generation is ever reported) 0ms
+     × THE LAW — a verdict carries the fingerprint of the consultation that reports it, never another environment's (F2.2) 5ms
+     × a consultation whose re-probe left a row of a DIFFERENT environment fails closed (state-mismatch) 1ms
+     ✓ the refusal is transient: the next consultation of the same environment establishes its own generation 0ms
+     ✓ each creator stamped the team generation for its own create (two advances, one surviving state row) 0ms
+     ✓ both creators carry one fingerprint, so both consultations agree with the row and neither is refused 0ms
+     ✓ the two candidates are still distinct records and the row is one of them whole (no merge, no tear) 0ms
+     × every chainOk evaluation reports ONE fingerprint: its own result's and the row's 1ms
+     × and the chain that cannot honour that fails closed instead of returning a mixed verdict 1ms
+     ✓ BOTH creates still commit unreported, and the caller that finished first reports a fingerprint the row no longer carries 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C1: two creators, one cold generation, both occupancy reads before either commit > THE LAW — a verdict carries the fingerprint of the consultation that reports it, never another environment's (F2.2)
+AssertionError: expected 'fp-v1:723624ddbcad80ab' to be 'fp-v1:97fc230e9949b8d8' // Object.is equality
+
+Expected: "fp-v1:97fc230e9949b8d8"
+Received: "fp-v1:723624ddbcad80ab"
+
+ ❯ packages/runtime/test/a4-compat-coldstart-interleave.test.ts:837:36
+    835|       if (one.view.decision === 'reprobe') continue // a chain that fa…
+    836|       // The fingerprint of the facts THIS consultation read …
+    837|       expect(one.view.fingerprint).toBe(one.live)
+       |                                    ^
+    838|       // … and the fingerprint of the durable row, which are one and t…
+    839|       // for any consultation allowed to answer at all.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C1: two creators, one cold generation, both occupancy reads before either commit > a consultation whose re-probe left a row of a DIFFERENT environment fails closed (state-mismatch)
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ packages/runtime/test/a4-compat-coldstart-interleave.test.ts:855:27
+    853|     const agreed = [a, b].filter((d) => d.decision !== 'reprobe' && d.…
+    854|     const refused = [a, b].filter((d) => d.decision === 'reprobe')
+    855|     expect(agreed.length).toBe(1)
+       |                           ^
+    856|     expect(refused.length).toBe(1)
+    857|     expect(refused[0]?.reprobeReason).toBe('state-mismatch')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C3: the RAW evaluation entry point cannot carry two fingerprints in one object > every chainOk evaluation reports ONE fingerprint: its own result's and the row's
+AssertionError: expected 'fp-v1:723624ddbcad80ab' to be 'fp-v1:97fc230e9949b8d8' // Object.is equality
+
+Expected: "fp-v1:97fc230e9949b8d8"
+Received: "fp-v1:723624ddbcad80ab"
+
+ ❯ packages/runtime/test/a4-compat-coldstart-interleave.test.ts:935:38
+    933|       // One object, one environment: the fingerprint of the row it re…
+    934|       // fingerprint of the engine result it re-derived.
+    935|       expect(evaluation.fingerprint).toBe(evaluation.result.environmen…
+       |                                      ^
+    936|     }
+    937|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/a4-compat-coldstart-interleave.test.ts > A4 f2 C3: the RAW evaluation entry point cannot carry two fingerprints in one object > and the chain that cannot honour that fails closed instead of returning a mixed verdict
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ packages/runtime/test/a4-compat-coldstart-interleave.test.ts:950:27
+    948|     const agreed = views.filter((v) => v.decision === 'evaluate')
+    949|     expect(agreed.length + refused.length).toBe(2)
+    950|     expect(agreed.length).toBe(1)
+       |                           ^
+    951|     expect(refused[0]?.reprobeReason).toBe('state-mismatch')
+    952|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 10 passed (14)
+   Start at  00:30:07
+   Duration  972ms (transform 601ms, setup 0ms, import 848ms, tests 14ms, environment 0ms)
+
