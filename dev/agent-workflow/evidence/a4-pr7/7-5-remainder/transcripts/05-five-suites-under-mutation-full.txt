@@ -1,0 +1,466 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder
+
+ ✓ packages/runtime/test/a4p2-dual-envelope-mutation.test.ts (26 tests) 17ms
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (8 tests | 1 failed) 25ms
+     × a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write 15ms
+     ✓ the SAME mutation with a carrier as wide as the matcher commits (the refusal is width, not the documents) 4ms
+     ✓ the ceiling is asked at the WIDTH the mutation claims, not only at the rising cell 1ms
+     ✓ at the real entry, with NO Alpha.3 Leader law in the way, the width refusal commits nothing 2ms
+     ✓ asking the width never LOOSENS the cell: a cell the ceiling does not reach still refuses 0ms
+     ✓ when BOTH points refuse, the refusal keeps the CELL's identity, not the width's 0ms
+     ✓ the dedupe: a region whose cell IS its width asks ONE question and answers today's refusal 1ms
+     ✓ 12. the malformed-static posture: a parse fault is ONCE, OUTSIDE the point loop (review FU-2) 1ms
+ ❯ packages/runtime/test/a3p4-r4-authority-binding.test.ts (17 tests | 2 failed) 53ms
+     ✓ A1 — each addressed team reads its OWN bound Blueprint (identical template ids, row-wide constant dead) 16ms
+     ✓ A2 — relative matchers canonicalize at the TARGET member workspace, never a shared anchor 4ms
+     ✓ A3 — exec fingerprints carry VERBATIM with ZERO provider calls (BLOCK-1 grammar reachability) 2ms
+     ✓ A4 — an absent carrier is a LEGAL typed absence (zero authority, zero fs calls), never a read failure 2ms
+     ✓ A5 — unknown bindings abstain fail-closed (typed downstream), never hard-fail reads 4ms
+     ✓ A6 — a provider fault abstains WITHOUT caching (bounded recovery: the next read rebuilds) 3ms
+     ✓ A7 — drift ACROSS the canonicalization await discards the mixed-identity document (never cached, never served) 2ms
+     ✓ A8 (round 5 rewrite) — NO cross-call authority cache: every read canonicalizes FRESH; a rebind lands on the next read 4ms
+     ✓ A9 (round 5 rewrite) — the LEADER POSITION reads its own template through the SAME addressed staticLayers reader 2ms
+     ✓ B1 (round-5 inversion of the X1 demo-1 shape) — the carrier subtree covering the member ALLOW COMMITS; a leader lane that denies X never gates the member expansion 1ms
+     × B2 (envelope-level subtraction) — the carrier's OWN maximumEffect ladder is the cap (ask covers ask, refuses allow) 3ms
+     ✓ B4 — the envelope-only judgement is the UNCONDITIONAL algebra (post-removal this is the whole decision) 0ms
+     × B5 (R-A shape) — honestly-anchored deny facts make the deny→allow flip a PROVEN rise that refuses (the laundering class stays closed) 1ms
+     ✓ C1 — a v1 Blueprint reads `absent`, and the reader NEVER synthesizes { rules: [] } 2ms
+     ✓ C2 — a v3 hard ceiling resolves file matchers at the TARGET WORKSPACE and carries a fingerprint verbatim 2ms
+     ✓ C3 — a declared-empty v3 ceiling is `declared` with zero rules and ZERO provider calls 2ms
+     ✓ C4 — a provider fault is `unavailable`, never `absent` (the widening this outcome exists to prevent) 2ms
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (12 tests | 1 failed) 44ms
+     ✓ 1. an UNREADABLE binding refuses a rising operator mutation with ZERO WRITE 9ms
+     ✓ 2. the refusal is the CONTEXT law, not an authorization law, and it mints nothing 3ms
+     ✓ 3. a v3 binding whose ANCHOR vanished takes the same refusal, not the skip 3ms
+     ✓ 4. a TIGHTENING under the same unreadable binding still commits 4ms
+     ✓ 5. a DECIDED v1/v2 binding still answers NO context and the same rise commits (A5-12 existential) 2ms
+     ✓ 6. a readable, anchored v3 binding commits the same rise (the refusal is specific) 4ms
+     ✓ 7. the reader has THREE answers, and the abstention is not the existential one 6ms
+     ✓ 8. a Leader rise the carrier COVERS also refused (the fail-open was not operator-only) 2ms
+     × 9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched) 5ms
+     ✓ 10. a bound-Blueprint read that THROWS is the same refusal, not a crash (review FU-3) 2ms
+     ✓ 11. the abstention reaches the OPERATION lane too, and flips its arm on purpose (review FU-1) 1ms
+     ✓ 12. a MALFORMED static document refuses the whole mutation, once, before any point (review FU-2) 2ms
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts (33 tests | 17 failed) 107ms
+     × S1: revoke revealing a STATIC allow refuses under an empty envelope, with ZERO write 13ms
+     ✓ S1b: the same revoke passes ONLY with allow-ceiling coverage of the WHOLE matcher 4ms
+     × S3: deny->ASK reveal is expansion VERBATIM (ADR §6): refused without ceiling, accepted at ceiling-ask 3ms
+     ✓ S2: deny revealing DENY (equal) is legal with no envelope 4ms
+     ✓ S4: DECLARED-NONE facts (declared deny fallback) is DECIDABLE — reveal-equal is legal… 3ms
+     ✓ S4b: …but UNKNOWN facts refuse EFFECT_CONTEXT_UNAVAILABLE even when the envelope would cover (unknown ≠ declared-none; the envelope cannot substitute for facts) 5ms
+     ✓ S5: revoking an ALLOW rule can never raise anything — legal WITHOUT any facts (provable case iii) 2ms
+     × S7: lifting a shadowing subtree deny so a surviving child ALLOW answers needs allow-ceiling coverage — refused at empty envelope (reveal channel: the REMAINING overlay rule, under declared-none facts) 3ms
+     ✓ S7c: the SAME revoke under UNKNOWN facts refuses EFFECT_CONTEXT_UNAVAILABLE — the subtree RESIDUAL reveal is genuinely undecidable and is never assumed harmless 3ms
+     ✓ S7b: the same revoke with envelope coverage of the removed matcher (ceiling allow) commits; the surviving allow now ANSWERS 3ms
+     ✓ B1 (BUG2): exact ask under an overlay-matching subtree allow is a TIGHTENING — accepted with no envelope and no facts, for EVERY fallback hypothesis 17ms
+     ✓ B2 (unknown): a first-ever overlay rule over UNKNOWN lower facts refuses CONTEXT — never a deny-masquerade EXPANSION label 2ms
+     × B2c (declared deny): over DECLARED-NONE facts the same ask grant IS a real deny->ask expansion — envelope-coded refusal 2ms
+     ✓ B2b (known allow): over a STATIC allow layer the same ask grant is a KNOWN tightening — accepted 2ms
+     × S6: subtree-deny removal revealing a STATIC allow under its root is refused at empty envelope, needs subtree-ceiling-allow coverage 2ms
+     × S6c: coverage of the matcher with a too-LOW ceiling refuses (the reveal rises to allow, the envelope says ask) 2ms
+     × S6d: fallback-ASK region (no rule below, declared ask fallback): subtree-deny removal rises deny->ask — needs ceiling-ask 2ms
+     × (e) WIDTH-conservative: an envelope covering ONE child of a granted subtree does not pass the other rising regions 2ms
+     × (f) nested exception: a non-rising child region cannot rescue the rising residual — ceiling ask refuses, ceiling allow passes 2ms
+     × all-or-nothing across mutation rules: one uncovered rising class refuses the WHOLE mutation, zero write 3ms
+     ✓ X1 CANONICAL (parent fixture): subtree(R)=allow + exact(R/file)=deny; DECLARED-NONE; EMPTY envelope; revoke the exact deny with NO subtreeContains ⇒ truth deny->allow reveal must REFUSE (pre-fix build ACCEPTS) 3ms
+     × X1p: the SAME revoke WITH the predicate is the decidable deny->allow reveal — EXPANSION-coded refusal (the gate changes nothing when the relation is known) 3ms
+     ✓ X2 EQUAL-SUBTREE REWRITE (parent addition): subtree(R)=deny updated to ask with NO predicate; DECLARED-NONE; EMPTY envelope ⇒ truth deny->ask VERBATIM expansion must REFUSE (pre-fix drops the rule BOTH sides => false deny/deny identity, ACCEPTS) 2ms
+     × X2p: the SAME equal-subtree deny->ask WITH the predicate is refused EXPANSION-coded (ladder-strict: deny->ask VERBATIM needs ceiling-ask coverage) 3ms
+     ✓ X3 STATIC subtree allow exposed by revoking the overlay subtree deny, NO predicate ⇒ typed refusal (pre-fix drops BOTH the overlay deny and the static allow => declared-none deny/deny identity, ACCEPTS) 2ms
+     × X3p: the SAME static-subtree reveal WITH the predicate is the decidable deny->allow expansion — EXPANSION-coded refusal 2ms
+     × X4 GATE SPECIFICITY: EXACT-ONLY context with NO predicate flows NORMALLY — decidable tightening accepted, decidable expansion still EXPANSION-coded (the gate never over-refuses what contains no subtree matcher) 3ms
+     × X5 ENVELOPE-side unknown coverage is CONTEXT, not a mislabeled EXPANSION: exact grant over declared-none with ONLY a subtree envelope matcher and NO predicate 3ms
+     ✓ a grant that raises ask->allow is ONE rise region carrying the risen effect and the mutation width 1ms
+     ✓ a tightening and an identity are NOT rises (the region partition reports nothing to gate) 1ms
+     × a REVEAL (removal that lets a lower rule answer) is a rise the classifier reports, not a no-op 1ms
+     × the extracted classifier and the Leader judgement never disagree about the same input 1ms
+     ✓ an undeterminable region still beats an uncovered one (the refusal order is data, not luck) 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 21 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals are expansions (ladder-strict) — static reveal channel > S1: revoke revealing a STATIC allow refuses under an empty envelope, with ZERO write
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:256:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals are expansions (ladder-strict) — static reveal channel > S3: deny->ASK reveal is expansion VERBATIM (ADR §6): refused without ceiling, accepted at ceiling-ask
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:287:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals via the REMAINING overlay rule (S7) and same-layer specificity (B1/B2) > S7: lifting a shadowing subtree deny so a surviving child ALLOW answers needs allow-ceiling coverage — refused at empty envelope (reveal channel: the REMAINING overlay rule, under declared-none facts)
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:382:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > reveals via the REMAINING overlay rule (S7) and same-layer specificity (B1/B2) > B2c (declared deny): over DECLARED-NONE facts the same ask grant IS a real deny->ask expansion — envelope-coded refusal
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:500:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > S6: subtree-deny removal revealing a STATIC allow under its root is refused at empty envelope, needs subtree-ceiling-allow coverage
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:542:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > S6c: coverage of the matcher with a too-LOW ceiling refuses (the reveal rises to allow, the envelope says ask)
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:579:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > S6d: fallback-ASK region (no rule below, declared ask fallback): subtree-deny removal rises deny->ask — needs ceiling-ask
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:601:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > (e) WIDTH-conservative: an envelope covering ONE child of a granted subtree does not pass the other rising regions
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:637:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > (f) nested exception: a non-rising child region cannot rescue the rising residual — ceiling ask refuses, ceiling allow passes
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:661:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > regions: subtree partition, width conservatism, all-or-nothing > all-or-nothing across mutation rules: one uncovered rising class refuses the WHOLE mutation, zero write
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:713:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X1p: the SAME revoke WITH the predicate is the decidable deny->allow reveal — EXPANSION-coded refusal (the gate changes nothing when the relation is known)
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:784:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X2p: the SAME equal-subtree deny->ask WITH the predicate is refused EXPANSION-coded (ladder-strict: deny->ask VERBATIM needs ceiling-ask coverage)
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:828:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X3p: the SAME static-subtree reveal WITH the predicate is the decidable deny->allow expansion — EXPANSION-coded refusal
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:872:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X4 GATE SPECIFICITY: EXACT-ONLY context with NO predicate flows NORMALLY — decidable tightening accepted, decidable expansion still EXPANSION-coded (the gate never over-refuses what contains no subtree matcher)
+AssertionError: expected typed refusal PERMISSION_ENVELOPE_EXPANSION_DENIED: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:904:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > unknown subtree relation refuses typed — never a silent non-match (round 2) > X5 ENVELOPE-side unknown coverage is CONTEXT, not a mislabeled EXPANSION: exact grant over declared-none with ONLY a subtree envelope matcher and NO predicate
+AssertionError: expected typed refusal PERMISSION_EFFECT_CONTEXT_UNAVAILABLE: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusedWith packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:245:80
+    243| ): Promise<void> {
+    244|   const outcome = await run().catch((error: unknown) => error)
+    245|   expect(isPermissionMutationError(outcome), `expected typed refusal $…
+       |                                                                                ^
+    246|   expect((outcome as { code: string }).code).toBe(code)
+    247| }
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:924:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused on > a REVEAL (removal that lets a lower rule answer) is a rise the classifier reports, not a no-op
+TypeError: Cannot read properties of undefined (reading 'code')
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:1043:42
+    1041|       raised = error
+    1042|     }
+    1043|     expect((raised as { code?: string }).code).toBe('PERMISSION_ENVELO…
+       |                                          ^
+    1044|     expect(classifyPermissionRise(cannotAsk, () => 'unmet').unmet.leng…
+    1045|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/21]⎯
+
+ FAIL  packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts > A4-PR2 lane B: the extracted rise facts are the facts Alpha.3 refused on > the extracted classifier and the Leader judgement never disagree about the same input
+AssertionError: case 1: classifier said {"rising":1,"unmet":1,"undeterminable":0}: expected 'ok' to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+Expected: "PERMISSION_ENVELOPE_EXPANSION_DENIED"
+Received: "ok"
+
+ ❯ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts:1086:212
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/21]⎯
+
+ FAIL  packages/runtime/test/a3p4-r4-authority-binding.test.ts > authorizeLeaderPermissionMutation envelope-only algebra (round 5): the carrier is the WHOLE policy — the leader-facts ceiling gate is REMOVED (ADR §6, parent final review) > B2 (envelope-level subtraction) — the carrier's OWN maximumEffect ladder is the cap (ask covers ask, refuses allow)
+AssertionError: expected undefined to be an instance of PermissionMutationError
+ ❯ packages/runtime/test/a3p4-r4-authority-binding.test.ts:527:20
+    525|       thrown = error
+    526|     }
+    527|     expect(thrown).toBeInstanceOf(PermissionMutationError)
+       |                    ^
+    528|     expect((thrown as PermissionMutationError).code).toBe(PERMISSION_M…
+    529|     expect(() =>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/21]⎯
+
+ FAIL  packages/runtime/test/a3p4-r4-authority-binding.test.ts > authorizeLeaderPermissionMutation envelope-only algebra (round 5): the carrier is the WHOLE policy — the leader-facts ceiling gate is REMOVED (ADR §6, parent final review) > B5 (R-A shape) — honestly-anchored deny facts make the deny→allow flip a PROVEN rise that refuses (the laundering class stays closed)
+AssertionError: expected function to throw an error, but it didn't
+ ❯ packages/runtime/test/a3p4-r4-authority-binding.test.ts:579:7
+    577|         subtreeContains: keyContainment,
+    578|       }),
+    579|     ).toThrowError(expect.objectContaining({ code: PERMISSION_MUTATION…
+       |       ^
+    580|   })
+    581| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/21]⎯
+
+ FAIL  packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts > the carrier width law, pinned on the v3 ceiling wiring (pre-7.3 deletion guard) > a carrier that covers the rising cell but NOT the whole mutation matcher refuses the wider mutation, zero write
+AssertionError: expected 'PERMISSION_AUTHORITY_CEILING_INSUFFIC…' to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+Expected: "PERMISSION_ENVELOPE_EXPANSION_DENIED"
+Received: "PERMISSION_AUTHORITY_CEILING_INSUFFICIENT"
+
+ ❯ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts:251:62
+    249|       // moment `leaderEnvelopeCoverage` is deleted — legs 3-5 are why…
+    250|       // surviving ceiling gate CAN then take the law over.
+    251|       expect((error as { code?: string } | undefined)?.code).toBe('PER…
+       |                                                              ^
+    252|       expect((error as { details?: Record<string, unknown> } | undefin…
+    253|       expect((error as { details?: Record<string, unknown> } | undefin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/21]⎯
+
+ FAIL  packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts > the ceiling no-context branch is a refusal (A4-PR7 §7.3 prerequisite 3) > 9. a Leader rise Alpha.3 itself refuses keeps its OWN refusal identity (ordering untouched)
+AssertionError: expected 'PERMISSION_EFFECT_CONTEXT_UNAVAILABLE' to be 'PERMISSION_ENVELOPE_EXPANSION_DENIED' // Object.is equality
+
+Expected: "PERMISSION_ENVELOPE_EXPANSION_DENIED"
+Received: "PERMISSION_EFFECT_CONTEXT_UNAVAILABLE"
+
+ ❯ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts:417:27
+    415|     try {
+    416|       const error = await w.mutateLeader(RISE)
+    417|       expect(error?.code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+       |                           ^
+    418|       expect(error?.details?.['authorityCeilingCode'], 'refused before…
+    419|       expect(await w.listRules()).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/21]⎯
+
+
+ Test Files  4 failed | 1 passed (5)
+      Tests  21 failed | 75 passed (96)
+   Start at  08:57:09
+   Duration  1.04s (transform 3.02s, setup 0ms, import 4.15s, tests 246ms, environment 0ms)
+

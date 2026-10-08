@@ -1,0 +1,6 @@
+PROBE-RECORD {"refused":false,"code":null,"problem":null,"durable_snapshot_written":true,"rules":["write:exact:file:/srv/a475probe/out.txt:allow"]}
+PROBE-RESULT {}
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+    160|       console.log('PROBE-RESULT', JSON.stringify({ code: error?.code, …
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)

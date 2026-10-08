@@ -1,0 +1,4 @@
+A475-PROBE {"population":"v2-decided","refused":false,"code":null,"problem":null,"durable_snapshot_written":true,"rules":["write:exact:file:/srv/a475probe/out.txt:allow"]}
+A475-PROBE {"population":"v3-wired-width","refused":true,"code":"PERMISSION_AUTHORITY_CEILING_INSUFFICIENT","problem":"authority-ceiling-insufficient","durable_snapshot_written":false,"rules":null}
+ Test Files  1 passed (1)
+      Tests  2 passed (2)

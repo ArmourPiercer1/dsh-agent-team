@@ -1,0 +1,7 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+/home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder/packages/runtime/governance/permission-mutation.ts
+  1419:10  error  'leaderEnvelopeCoverage' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (1 error, 0 warnings)
+

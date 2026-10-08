@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder
+
+stdout | packages/runtime/test/tmp-a475probe.test.ts > PROBE: is the Alpha.3 aggregate the only law on a decided v2 Team? > a v2 Team Leader rise its carrier does not cover refuses and writes nothing
+PROBE-RESULT {}
+
+ ❯ packages/runtime/test/tmp-a475probe.test.ts (2 tests | 1 failed) 11ms
+     ✓ the production reader answers NO ceiling context for a decided v2 binding 5ms
+     × a v2 Team Leader rise its carrier does not cover refuses and writes nothing 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/tmp-a475probe.test.ts > PROBE: is the Alpha.3 aggregate the only law on a decided v2 Team? > a v2 Team Leader rise its carrier does not cover refuses and writes nothing
+AssertionError: expected a refusal at base: expected undefined to be defined
+ ❯ packages/runtime/test/tmp-a475probe.test.ts:140:51
+    138|       // eslint-disable-next-line no-console
+    139|       console.log('PROBE-RESULT', JSON.stringify({ code: error?.code, …
+    140|       expect(error, 'expected a refusal at base').toBeDefined()
+       |                                                   ^
+    141|       expect(error?.code).toBe('PERMISSION_ENVELOPE_EXPANSION_DENIED')
+    142|       expect(await w.listRules(), 'ZERO WRITE').toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  08:56:44
+   Duration  909ms (transform 651ms, setup 0ms, import 816ms, tests 11ms, environment 0ms)
+

@@ -1,0 +1,14 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-75-remainder
+
+ ✓ packages/runtime/test/a4p2-dual-envelope-mutation.test.ts (26 tests) 12ms
+ ✓ packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts (8 tests) 20ms
+ ✓ packages/runtime/test/a3p4-r4-authority-binding.test.ts (17 tests) 43ms
+ ✓ packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts (12 tests) 37ms
+ ✓ packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts (33 tests) 94ms
+
+ Test Files  5 passed (5)
+      Tests  96 passed (96)
+   Start at  08:55:20
+   Duration  978ms (transform 2.90s, setup 0ms, import 3.95s, tests 205ms, environment 0ms)
+

@@ -1,0 +1,4 @@
+A475-PROBE {"population":"v2-decided","refused":true,"code":"PERMISSION_ENVELOPE_EXPANSION_DENIED","problem":"expansion-region-uncovered","durable_snapshot_written":false,"rules":null}
+A475-PROBE {"population":"v3-wired-width","refused":true,"code":"PERMISSION_ENVELOPE_EXPANSION_DENIED","problem":"expansion-region-uncovered","durable_snapshot_written":false,"rules":null}
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
