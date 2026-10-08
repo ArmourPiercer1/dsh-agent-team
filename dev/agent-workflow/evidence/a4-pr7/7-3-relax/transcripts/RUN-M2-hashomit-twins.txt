@@ -1,0 +1,83 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/a4-73-relax
+
+ ✓ packages/runtime/test/a4p7-v3-grammar-enforced.test.ts (8 tests) 5ms
+ ❯ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts (13 tests | 4 failed) 37ms
+     ✓ a v3 document that declares the grammar parses (the digit is never the reason) 13ms
+     ✓ contentHash equals deriveContentHash(toHashableBlueprint(...)) for both legs 3ms
+     ✓ is deterministic across parses 3ms
+     × a declared teamRequirements puts the key into the v3 projection 4ms
+     ✓ an undeclared document carries NO teamRequirements key in the v3 projection 1ms
+     ✓ the template-level declarations are in the v3 projection too 1ms
+     ✓ the hash changes when the grammar is removed entirely 2ms
+     × the hash changes when a requirement flips complete true -> false 2ms
+     × the hash changes when a requirement subject changes 1ms
+     × the hash changes when a requirement id changes 2ms
+     ✓ the hash changes when a LEADER template requirement is removed 1ms
+     ✓ the hash changes when a MEMBER template requirement is removed 1ms
+     ✓ blueprintId is NOT the discriminator (same id, different content identity) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts > §7.3 v3 identity: the §E.2 grammar is IN the hashable projection > a declared teamRequirements puts the key into the v3 projection
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts:153:65
+    151| describe('§7.3 v3 identity: the §E.2 grammar is IN the hashable projec…
+    152|   it('a declared teamRequirements puts the key into the v3 projection'…
+    153|     expect(Object.hasOwn(hashableOf(WITH), 'teamRequirements')).toBe(t…
+       |                                                                 ^
+    154|   })
+    155|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts > §7.3 v3 identity: the §E.2 grammar BINDS the content hash > the hash changes when a requirement flips complete true -> false
+AssertionError: expected 'sha256:ecb9431cf9d163cff647994b8694b8…' not to be 'sha256:ecb9431cf9d163cff647994b8694b8…' // Object.is equality
+ ❯ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts:182:52
+    180|
+    181|   it('the hash changes when a requirement flips complete true -> false…
+    182|     expect(hashOf(v3Source(TEAM_REQUIREMENT))).not.toBe(hashOf(v3Sourc…
+       |                                                    ^
+    183|   })
+    184|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts > §7.3 v3 identity: the §E.2 grammar BINDS the content hash > the hash changes when a requirement subject changes
+AssertionError: expected 'sha256:ecb9431cf9d163cff647994b8694b8…' not to be 'sha256:ecb9431cf9d163cff647994b8694b8…' // Object.is equality
+ ❯ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts:186:52
+    184|
+    185|   it('the hash changes when a requirement subject changes', () => {
+    186|     expect(hashOf(v3Source(TEAM_REQUIREMENT))).not.toBe(hashOf(v3Sourc…
+       |                                                    ^
+    187|   })
+    188|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts > §7.3 v3 identity: the §E.2 grammar BINDS the content hash > the hash changes when a requirement id changes
+AssertionError: expected 'sha256:ecb9431cf9d163cff647994b8694b8…' not to be 'sha256:ecb9431cf9d163cff647994b8694b8…' // Object.is equality
+ ❯ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts:190:52
+    188|
+    189|   it('the hash changes when a requirement id changes', () => {
+    190|     expect(hashOf(v3Source(TEAM_REQUIREMENT))).not.toBe(hashOf(v3Sourc…
+       |                                                    ^
+    191|   })
+    192|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 17 passed (21)
+   Start at  08:46:29
+   Duration  311ms (transform 302ms, setup 0ms, import 403ms, tests 42ms, environment 0ms)
+
+VITEST_EXIT=1
