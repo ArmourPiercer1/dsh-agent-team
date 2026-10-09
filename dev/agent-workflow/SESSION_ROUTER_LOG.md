@@ -6099,3 +6099,17 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
 **新发现（未修，交操作者权衡）**：同一行拒收记录，`ControlService` 说 `requests=0 / corruptCount=1`，**服务端投影**却说 **`pendingControlCount: 1`**，UI 因此列出"控制请求 · 等待裁决"（`渲染模式 unsupported-subject`，**允许禁用、拒绝可点**）并挂上待裁决角标。客户端"未知 subject 仍显示"是 PR #56 的既有有意策略，**本轮未改**——它此前不可测只是因为世界上从未存在过被拒收的行。要紧的是投影侧：**把守卫永远无从治理的记录计成"待裁决"，等于请人来裁决一个幽灵。** **我没有点拒绝**；服务对未知 requestId 的既有实测是 `no-request` 拒收（W2 Case 2b），但点击的真实后果**仍未验证**。
 
 **运维事实（全部实测并披露）**：杀 supervisor 不带走宿主（端口一直听到沙箱父进程退出才被 `--die-with-parent` 收走）；bash 调用之间 pid 命名空间隔离，**任何调用都杀不掉别的调用的宿主**——这才是 `boot.mjs --stop` 跨调用失效的真因；每次 boot 铸新 token，旧 URL 静默失效；我在发现守卫读的是 `.accept-host.json` 之前**删错了标记**（`.accept-launch.json`，boot 会重写，无害）——**如实写出而不是悄悄重来**。
+
+## 2026-10-09 round 56 (coordinator): 操作者点了"拒绝"→"裁决失败"——**拒收是设计，可点的按钮才是缺陷**；并推翻我自己一句过强的话
+
+操作者在幽灵项上点了"拒绝"，得到 `裁决失败 (CONTROL_REQUEST_NOT_FOUND) : ControlService: no durable control request 'req-a4w5-…'`。回答分两半：
+
+**拒收本身正是设计。** [service.ts:2537-2546](packages/runtime/control/service.ts) 在**团队锁内**、用那同一次 `loadControlState(root)` 查 `state.requests`——该行已被严格读者归入 `corruptLegs`，故 `undefined` → **在任何写入之前 throw**；此路径由 `p6t4-negatives.test.ts:713`（"decision without a request"）钉住。反过来才可怕：**给一条守卫从未接受的记录写下"已裁决"，等于把不可治理的记录洗成决定。**
+**实测零副作用**：点击后该团队账本仍是 **3 行、最大 `sequence` 仍是 18、decision/abandonment/consumption 行 = 0**；v9 仍是 `1 / #18 / disclosesMember false`；投影仍 `pendingControlCount: 1`。**状态一字未改，重复点击同理。**
+**缺陷在入口不在结果**：一条守卫永远治理不到的记录被投影计成待裁决、还给可点按钮，把人引向注定失败的裁决。
+
+**"会干扰团队运行吗"逼我收回自己一句过强的话。** 我本要说 `corruptLegs` 只是报告面、生产里只有一个出口——**不对**：守卫咨询自己就读它。规则是**故障关闭**（ADR A2-9）：无匹配请求而某条被拒收的行"**可能是这次调用的治理行**"时，`guardOperation` 返回损坏裁决而**不是** `no-request`——而 `no-request` 正是工具面唯一放行的理由（[guard.ts:76-82](packages/tools/src/guard.ts)）。**所以损坏账本确实能挡住执行，且是设计。**
+救下这一行的是**行级前提**：**不披露可比较成员的行根本不是候选**（`corruptLegDisclosesMember` 为 false 直接返回），代码里写的理由正是——否则**一条不可读行会同时治理整个团队的所有调用**。
+⇒ 本世界的不可归属行**没有阻断能力**，咨询路径与健康账本一致；**但披露了可比较身份/操作的损坏行可能故障关闭匹配的操作，这不是回归。** 披露清单已补第 11 条，因为 RULING 5-B 那句"团队继续运行"是**限定在不可归属那一类**的，否则会被读成"损坏永不阻断"。
+
+**仍未测**：在这台实例上做一次端到端委派（警告条在屏时）——那正是验收包自己的第 2 项，且会写操作者的团队，**等他一句话再做**。
