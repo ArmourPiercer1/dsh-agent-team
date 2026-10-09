@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/w4-ui/packages/client
+
+ ✓ test/control-corruption-model.test.ts (10 tests) 4ms
+ ✓ test/a4w4-corrupt-warning-ui.client.spec.tsx (8 tests) 478ms
+
+ Test Files  2 passed (2)
+      Tests  18 passed (18)
+   Start at  20:06:09
+   Duration  2.69s (transform 1.23s, setup 18ms, import 1.84s, tests 483ms, environment 307ms)
+

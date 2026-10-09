@@ -1,0 +1,450 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/w4-ui/packages/client
+
+ ✓ test/team-refresh-coordinator.test.ts (24 tests) 10ms
+ ✓ test/team-ledger-model.client.spec.ts (27 tests) 22ms
+ ✓ test/team-intent-model.test.ts (24 tests) 9ms
+ ✓ test/ledger-adapter.test.ts (32 tests) 17ms
+ ✓ test/pr56-control-subject-payload.test.ts (42 tests) 18ms
+ ✓ test/projection-adapter.test.ts (16 tests) 11ms
+ ✓ test/team-timeline-model.client.spec.ts (31 tests) 10ms
+ ✓ test/team-projection-store-v6.test.ts (13 tests) 5ms
+ ✓ test/team-remote-client.test.ts (18 tests) 8ms
+ ✓ test/team-ledger-store.test.ts (24 tests) 12ms
+ ✓ test/team-projection-store.test.ts (27 tests) 17ms
+ ✓ test/d2-open-team-mode.test.ts (6 tests) 4ms
+ ✓ test/d3-open-ordinary-mode.test.ts (22 tests) 9ms
+ ✓ test/team-remote-categories.test.ts (8 tests) 3ms
+ ✓ test/client-plugin-mount.test.ts (47 tests) 19ms
+ ✓ test/team-dock-model.client.spec.ts (9 tests) 4ms
+ ✓ test/team-governance.test.ts (43 tests) 14ms
+ ✓ test/team-create-flow.test.ts (10 tests) 12ms
+ ✓ test/d1-team-remote-v3.test.ts (8 tests) 11ms
+ ✓ test/team-command-flow.test.ts (6 tests) 8ms
+ ✓ test/team-members-model.client.spec.ts (10 tests) 11ms
+ ✓ test/team-handoff.test.ts (23 tests) 10ms
+ ✓ test/control-corruption-model.test.ts (10 tests) 11ms
+ ✓ test/client-architecture-negatives.test.ts (9 tests) 8ms
+ ✓ test/team-legacy.test.ts (12 tests) 9ms
+ ✓ test/f9-remote-client-v4.test.ts (5 tests) 4ms
+ ✓ test/team-session-resolution.test.ts (9 tests) 4ms
+ ✓ test/team-member-commands.test.ts (11 tests) 6ms
+ ✓ test/team-read-state.test.ts (25 tests) 6ms
+ ✓ test/f9u-control-surface-model.test.ts (11 tests) 7ms
+ ✓ test/team-members-model.test.ts (5 tests) 4ms
+ ✓ test/client.test.ts (2 tests) 2ms
+stdout | test/s3-client-generation-spike.test.ts > S3 same-page generation characterization (evidence only, no product workaround) > traces the same-SID reopen, the failed-generation lifetime, and the public seams
+S3-SPIKE-TRACE [
+  {
+    "step": "S1 openSession #1 (ordinary open of the cold Team root)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "loading",
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S1 probe reference ready (open #1 succeeded)",
+    "retain": {
+      "referenceCount": 2,
+      "retainedBy": {
+        "mainView": 1,
+        "s3SpikeProbe": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S2 api-session/error (fence veto: \"intercepted foreign Agent activation\")",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": "resume failed … intercepted foreign Agent activation for Team-managed session \"s3-spike-root\"",
+    "followOpens": 1
+  },
+  {
+    "step": "S3 takeover success + ctx.sessions.refresh() (current product step c)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": "resume failed … intercepted foreign Agent activation for Team-managed session \"s3-spike-root\"",
+    "followOpens": 1
+  },
+  {
+    "step": "S4 openSession #2 (same-SID reopen, Team-mode entry)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": "resume failed … intercepted foreign Agent activation for Team-managed session \"s3-spike-root\"",
+    "followOpens": 1
+  },
+  {
+    "step": "S5 handleConnected (connection/reset rebuilds baselines)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G1",
+    "openState": "open",
+    "lastAgentError": "resume failed … intercepted foreign Agent activation for Team-managed session \"s3-spike-root\"",
+    "followOpens": 1
+  },
+  {
+    "step": "S6 uiWorkspace.archiveSession (public release path; host-archive side effect)",
+    "retain": {
+      "referenceCount": 0,
+      "retainedBy": {}
+    },
+    "generation": null,
+    "openState": null,
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S6b uiWorkspace.unarchiveSession (second side effect of the public repair)",
+    "retain": {
+      "referenceCount": 0,
+      "retainedBy": {}
+    },
+    "generation": null,
+    "openState": null,
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S7 openSession #3 (same id after retire — fresh generation)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "mainView": 1
+      }
+    },
+    "generation": "G2",
+    "openState": "loading",
+    "lastAgentError": null,
+    "followOpens": 2
+  },
+  {
+    "step": "S7 fresh generation ready (clean open)",
+    "retain": {
+      "referenceCount": 2,
+      "retainedBy": {
+        "mainView": 1,
+        "s3SpikeProbe": 1
+      }
+    },
+    "generation": "G2",
+    "openState": "open",
+    "lastAgentError": null,
+    "followOpens": 2
+  },
+  {
+    "step": "S8 retain ROOT2 → open FAILED (error state, sticky generation)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "s3SpikeProbe": 1
+      }
+    },
+    "generation": "GF1",
+    "openState": "error",
+    "lastAgentError": null,
+    "followOpens": 1
+  },
+  {
+    "step": "S8 second retain of the failed generation (new open attempt, fails again)",
+    "retain": {
+      "referenceCount": 2,
+      "retainedBy": {
+        "s3SpikeProbe": 2
+      }
+    },
+    "generation": "GF1",
+    "openState": "error",
+    "lastAgentError": null,
+    "followOpens": 2
+  },
+  {
+    "step": "S8 release-to-0 (failed generation retired)",
+    "retain": {
+      "referenceCount": 0,
+      "retainedBy": {}
+    },
+    "generation": null,
+    "openState": null,
+    "lastAgentError": null,
+    "followOpens": 2
+  },
+  {
+    "step": "S8 re-retain ROOT2 (fresh generation, clean open)",
+    "retain": {
+      "referenceCount": 1,
+      "retainedBy": {
+        "s3SpikeProbe": 1
+      }
+    },
+    "generation": "GF2",
+    "openState": "open",
+    "lastAgentError": null,
+    "followOpens": 3
+  }
+]
+S3-SPIKE-SEAMS {
+  "uiWorkspaceSeams": [
+    "archiveSession",
+    "clearArchivedCurrent",
+    "clearMain",
+    "connectWorkspace",
+    "createDirectory",
+    "forkSession",
+    "initializeDefaultWorkspace",
+    "listDirectory",
+    "notify",
+    "openSession",
+    "openWorkspace",
+    "pickDirectory",
+    "pinSession",
+    "replaceMain",
+    "restoreSelection",
+    "reuseBlank",
+    "reuseOrCreateBlank",
+    "startSession",
+    "unarchiveSession",
+    "unpinSession",
+    "watchNavigation"
+  ],
+  "sessionServiceSeams": [
+    "binding",
+    "create",
+    "drainScopeDrops",
+    "dropScope",
+    "fork",
+    "handleConnected",
+    "handleControlFrame",
+    "handleSessionActivity",
+    "handleSessionAdded",
+    "handleSessionError",
+    "handleSessionRemoved",
+    "handleSessionStatus",
+    "materializeScope",
+    "projectList",
+    "publishRetention",
+    "refresh",
+    "refreshProjections",
+    "retain",
+    "retainAgentScope",
+    "retainInfo",
+    "retainScope",
+    "retentionSnapshot",
+    "retireScope",
+    "scope",
+    "scopeOf",
+    "search",
+    "sessionOf",
+    "startScopeDrop",
+    "subagentAddress",
+    "using"
+  ],
+  "sessionServiceProperties": [
+    "list",
+    "manager",
+    "scopes",
+    "retainObservers",
+    "closed"
+  ],
+  "followCounts": {
+    "s3-spike-root": 2,
+    "s3-spike-root2": 3
+  }
+}
+
+ ✓ test/s3-client-generation-spike.test.ts (1 test) 101ms
+ ✓ test/team-activity.client.spec.tsx (7 tests) 57ms
+ ✓ test/team-members.client.spec.tsx (12 tests) 123ms
+ ✓ test/team-creation-panel-refresh.client.spec.tsx (1 test) 144ms
+ ✓ test/team-dock.client.spec.tsx (12 tests) 183ms
+ ✓ test/a4p6-permission-administration.client.spec.tsx (4 tests) 49ms
+ ✓ test/a4p6-interventions.client.spec.tsx (11 tests) 75ms
+ ✓ test/team-timeline.client.spec.tsx (18 tests) 260ms
+ ✓ test/f9u-control-panel.client.spec.tsx (15 tests) 138ms
+ ✓ test/f9-resolve-control-ui.client.spec.tsx (9 tests) 151ms
+ ✓ test/pr56-control-panel-payload.client.spec.tsx (32 tests) 202ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a successful two-stage create (with initial work) keeps the overlay open until the DEFERRED admit settles (plan §7 minimum UI constraint)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/team-legacy.client.spec.tsx (8 tests) 205ms
+ ✓ test/d2-team-mode-entry.client.spec.tsx (7 tests) 270ms
+ ✓ test/team-members-actions.client.spec.tsx (19 tests) 607ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a second-stage (admit) failure keeps the overlay on the opened Root with the work lane + retry; the retry re-sends ONLY the admit and the success closes (plan §7; never a New Session)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/d3-ordinary-mode-entry.client.spec.tsx (12 tests) 382ms
+ ✓ test/team-ledger.client.spec.tsx (20 tests) 565ms
+ ✓ test/f9u-control-surface-probe.client.spec.tsx (6 tests) 396ms
+ ✓ test/new-team-entry.client.spec.tsx (8 tests) 722ms
+ ✓ test/team-roots-zero-state.client.spec.tsx (11 tests) 436ms
+ ✓ test/a4w4-corrupt-warning-ui.client.spec.tsx (8 tests) 478ms
+ ✓ test/team-view.client.spec.tsx (30 tests) 530ms
+ ✓ test/team-creation-handoff.client.spec.tsx (15 tests) 1179ms
+ ✓ test/team-d4-a1-ui-pull.client.spec.tsx (14 tests) 1966ms
+ ❯ test/team-creation-panel.client.spec.tsx (19 tests | 2 failed) 2369ms
+     ✓ loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2) 88ms
+     ✓ shows the verbatim catalog failure note and keeps the picker disabled (loud, never silent) 57ms
+     × selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7) 126ms
+     ✓ an OPEN verdict enables Create with the work-aware label (UI §9) 59ms
+     ✓ a BLOCKED_WARNING verdict lists the warnings and gates Create behind the explicit ack (UI §9.2) 59ms
+     ✓ a new probe verdict resets the local ack (the frozen engine drift semantics, UI §9.2) 57ms
+     ✓ a complete-persona preset FATAL disables Create with the §7.4 remedy and no Continue-anyway 54ms
+     × switching the runtime preset re-runs the probe with the new persona fact (UI §7.3) 1057ms
+     ✓ create happy path (TCM M4 two-stage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6) 58ms
+     ✓ empty initial work performs ONLY the v2 create + open (no admit RPC at all; onCreated after the open) 105ms
+     ✓ an unknown selected workspace sends NO RPC (a local typed refusal, no retry lane for a never-started attempt) 55ms
+     ✓ a typed v2 team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5) 107ms
+     ✓ a failed creation-path open surfaces the native-error marker (stage open) with the retained root (D-3) 107ms
+     ✓ a typed second-stage (admit) failure keeps the REAL ROOT open: the work lane + retry re-send ONLY the admit with the SAME stable token + prompt (plan §7; never a re-create, never a New Session) 157ms
+     ✓ a changed draft cannot alter a started create: the admit uses the SNAPSHOT prompt (plan §7 必须测试) 56ms
+     ✓ the workspace picker renders only when the native feed has rows (UI §8) 5ms
+     ✓ a loud unknown probe verdict disables Create (never a silent ready) 53ms
+     ✓ create-cancel: closing the panel mutates nothing (no team.create, draft intact) 54ms
+     ✓ R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path) 55ms
+ ❯ test/team-governance.client.spec.tsx (30 tests | 1 failed) 2324ms
+     ✓ renders the Projection-driven compatibility badge (the §10.2 four admission states) 35ms
+     ✓ renders an unknown future compatibility status verbatim (loud, never silent) 2ms
+     ✓ renders the aggregate counts and generation from the Projection 6ms
+     ✓ keeps the ack control disabled with the explicit wire-gap reason (UI §38) 13ms
+     ✓ a compat review is a read: it never pulls the projection 11ms
+     ✓ renders a compat review typed failure verbatim as a local note (no projection pull) 56ms
+     ✓ renders the compat review fresh-read detail on success (labeled, not authority) 56ms
+     ✓ the human Recheck re-probes with the closed CAPABILITY_GENERATION_CHANGE trigger and pulls once on success 56ms
+     ✓ a Recheck typed failure renders verbatim (code + message + token echo) and never pulls 56ms
+     ✓ a Recheck transport loss (the only rejection kind) records the local transport-loss note 56ms
+     ✓ a policy review loads the cell view (a read: no projection pull) 57ms
+     ✓ a policy commit sends a PARTIAL cell map on the projection state id (never invented) and pulls once 113ms
+     ✓ keeps the policy commit inert (no command, no preview) when the only draft is an allow with no items 56ms
+     ✓ a policy commit typed failure renders verbatim and never pulls 108ms
+     ✓ an override set targets the member instance (scope instance) and pulls once on success 56ms
+     ✓ keeps the override set inert until an allow cell has items (no empty allow commit) 3ms
+     × an override reset targets the member instance (scope instance) and pulls once on success 1007ms
+     ✓ an override set typed failure renders verbatim and never pulls 56ms
+     ✓ an override show is a read (no projection pull) and renders the recorded override verbatim 55ms
+     ✓ an override show renders the no-override note when the record is null (a read) 55ms
+     ✓ renders the effective-config lanes (model/workspace/permissions-sorted/autonomy) with the §18.3 state words 3ms
+     ✓ renders the §19 hard-policy display for a denied lane (never pretend an override wins) 3ms
+     ✓ shows the effective-config empty note when no member carries a config DTO 2ms
+     ✓ a SUCCESSFUL recheck whose pull fails shows the split result on its own lane and never re-fires the mutation (S1-C2) 65ms
+     ✓ a SUCCESSFUL recheck whose pull returns a typed rpc-error shows the split result with the typed code (S1-C2) 55ms
+     ✓ a SUCCESSFUL command whose pull is a VALID round trip (apply / duplicate / stale) shows NO pull-error lane (S1-C2) 163ms
+     ✓ the pull-error lane is cleared by the NEXT dispatch on the same command key (the note is per-invocation, not sticky) (S1-C2) 107ms
+     ✓ pairs the zh and en dictionaries for the governance surface 4ms
+     ✓ renders the interventions section when the face carries the v8 slice 6ms
+     ✓ an older face (no v8 slice) keeps the section absent — the pre-v8 rendering is byte-identical 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)
+AssertionError: expected "vi.fn()" to be called with arguments: [ { blueprintId: 'bp-1', …(2) } ]
+
+Received:
+
+  1st vi.fn() call:
+
+@@ -2,11 +2,11 @@
+    {
+      "blueprintId": "bp-1",
+      "blueprintRevision": 2,
+      "environmentFacts": [
+        {
+-         "available": true,
++         "available": false,
+          "domain": "persona",
+          "generation": 0,
+          "subject": "team",
+        },
+      ],
+
+
+Number of calls: 1
+
+ ❯ test/team-creation-panel.client.spec.tsx:291:37
+    289|     // environment fact (the only frozen environment channel).
+    290|     expect(face.probeCompatibility).toHaveBeenCalledTimes(1)
+    291|     expect(face.probeCompatibility).toHaveBeenCalledWith({
+       |                                     ^
+    292|       blueprintId: BP,
+    293|       blueprintRevision: 2,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > switching the runtime preset re-runs the probe with the new persona fact (UI §7.3)
+AssertionError: expected last "vi.fn()" call to have been called with [ { blueprintId: 'bp-1', …(2) } ]
+
+- Expected
++ Received
+
+@@ -2,11 +2,11 @@
+    {
+      "blueprintId": "bp-1",
+      "blueprintRevision": 2,
+      "environmentFacts": [
+        {
+-         "available": true,
++         "available": false,
+          "domain": "persona",
+          "generation": 0,
+          "subject": "solo",
+        },
+      ],
+
+ ❯ test/team-creation-panel.client.spec.tsx:389:39
+    387|     fireEvent.change(presetSelect(view.container), { target: { value: …
+    388|     await vi.waitFor(() => {
+    389|       expect(face.probeCompatibility).toHaveBeenLastCalledWith({
+       |                                       ^
+    390|         blueprintId: BP,
+    391|         blueprintRevision: 2,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-governance.client.spec.tsx:556:35
+    554|     } satisfies RemoteOverrideResetParams)
+    555|     await vi.waitFor(() => {
+    556|       expect(face.pullProjection).toHaveBeenCalledTimes(1)
+       |                                   ^
+    557|       expect(memberBlock.querySelector('[data-governance-override-rese…
+    558|     })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 55 passed (57)
+      Tests  3 failed | 895 passed (898)
+   Start at  20:04:27
+   Duration  7.11s (transform 52.54s, setup 1.52s, import 93.38s, tests 14.22s, environment 18.24s)
+

@@ -1,0 +1,2 @@
+lint-visibility: eslint read 1129 of 2482 OFFERED tracked lintable file(s); 1353 are hidden by an ignore pattern (dev/ 482, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1129 + 1353 = 2482 offered, + 0 skipped = 2482 tracked lintable path(s); nothing skipped
+JSON report written to /home/user/dsh-plugins/dsh-agent-team/.worktrees/w4-ui/dev/agent-workflow/evidence/a4-pr7/w1-ui-fixes/raw/root-base.json

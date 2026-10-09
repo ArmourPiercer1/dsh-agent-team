@@ -1,0 +1,129 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/w4-ui/packages/client
+
+ ❯ test/a4w4-corrupt-warning-ui.client.spec.tsx (8 tests | 5 failed) 3315ms
+     × a typed read failure shows ONE neutral notice and never a corrupt-record bar 1025ms
+     × a malformed payload and a transport loss take the same notice lane (every failure branch) 1004ms
+     × a transport rejection takes the same notice lane 1003ms
+     ✓ the notice is visually and textually distinct from a clean report (no bar, no notice) 58ms
+     × the English locale carries the same key with the same neutrality (no blocked-action claim) 2ms
+     × a Team switch invalidates the previous Team bar BEFORE the new read answers 58ms
+     ✓ switching to a clean Team clears the previous Team bar (no stale attribution) 106ms
+     ✓ a same-Team refresh failure KEEPS the last good bar (the W1 branch this fix does not touch) 58ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4w4-corrupt-warning-ui.client.spec.tsx > A4-PR7 W4 F1 — an unavailable integrity check is visible > a typed read failure shows ONE neutral notice and never a corrupt-record bar
+AssertionError: expected null not to be null
+ ❯ test/a4w4-corrupt-warning-ui.client.spec.tsx:183:56
+    181|
+    182|     await vi.waitFor(() => {
+    183|       expect(view.container.querySelector(NOTICE)).not.toBeNull()
+       |                                                        ^
+    184|     })
+    185|     // The bar is NOT the fallback: a failed check must not read as "c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  test/a4w4-corrupt-warning-ui.client.spec.tsx > A4-PR7 W4 F1 — an unavailable integrity check is visible > a malformed payload and a transport loss take the same notice lane (every failure branch)
+AssertionError: expected null not to be null
+ ❯ test/a4w4-corrupt-warning-ui.client.spec.tsx:204:56
+    202|     const { view } = mountTeamView(control)
+    203|     await vi.waitFor(() => {
+    204|       expect(view.container.querySelector(NOTICE)).not.toBeNull()
+       |                                                        ^
+    205|     })
+    206|     expect(view.container.querySelector(BAR)).toBeNull()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  test/a4w4-corrupt-warning-ui.client.spec.tsx > A4-PR7 W4 F1 — an unavailable integrity check is visible > a transport rejection takes the same notice lane
+AssertionError: expected null not to be null
+ ❯ test/a4w4-corrupt-warning-ui.client.spec.tsx:216:56
+    214|     const { view } = mountTeamView(control)
+    215|     await vi.waitFor(() => {
+    216|       expect(view.container.querySelector(NOTICE)).not.toBeNull()
+       |                                                        ^
+    217|     })
+    218|     expect(view.container.querySelector(BAR)).toBeNull()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/a4w4-corrupt-warning-ui.client.spec.tsx > A4-PR7 W4 F1 — an unavailable integrity check is visible > the English locale carries the same key with the same neutrality (no blocked-action claim)
+AssertionError: expected 'view.corruption.checkUnavailable' to contain 'integrity check'
+
+Expected: "integrity check"
+Received: "view.corruption.checkUnavailable"
+
+ ❯ test/a4w4-corrupt-warning-ui.client.spec.tsx:250:18
+    248|     const translate = makeTranslate(en)
+    249|     const text = translate('view.corruption.checkUnavailable', {})
+    250|     expect(text).toContain('integrity check')
+       |                  ^
+    251|     expect(text.toLowerCase()).not.toContain('blocked')
+    252|     expect(text.toLowerCase()).not.toContain('denied')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/a4w4-corrupt-warning-ui.client.spec.tsx > A4-PR7 W4 F2 — a warning never outlives its Team > a Team switch invalidates the previous Team bar BEFORE the new read answers
+AssertionError: expected <div …(3)>…(2)</div> to be null
+
+- Expected:
+null
+
++ Received:
+<div
+  class="_corruptionBar_e14284"
+  data-team-control-corruption="true"
+  role="alert"
+>
+  <span
+    data-team-control-corruption-summary="true"
+  >
+    控制账本存在无法解析的损坏记录（仅提示，不改变执行语义）
+    : 3
+  </span>
+  <ul
+    class="_corruptionRows_e14284"
+    data-team-control-corruption-rows="true"
+  >
+    <li
+      data-team-control-corruption-attributable="no"
+      data-team-control-corruption-leg="true"
+    >
+      记录 #1
+       — 无法归属到具体成员（团队级提示）
+    </li>
+    <li
+      data-team-control-corruption-attributable="no"
+      data-team-control-corruption-leg="true"
+    >
+      记录 #2
+       — 无法归属到具体成员（团队级提示）
+    </li>
+    <li
+      data-team-control-corruption-attributable="no"
+      data-team-control-corruption-leg="true"
+    >
+      记录 #3
+       — 无法归属到具体成员（团队级提示）
+    </li>
+  </ul>
+</div>
+
+ ❯ test/a4w4-corrupt-warning-ui.client.spec.tsx:277:47
+    275|     // NO waiting: the previous Team's bar is gone the moment the key
+    276|     // changes — the state carries the key it belongs to.
+    277|     expect(view.container.querySelector(BAR)).toBeNull()
+       |                                               ^
+    278|     expect(view.container.textContent).not.toContain('控制账本存在无法解析的损坏记录')
+    279|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 3 passed (8)
+   Start at  20:01:41
+   Duration  5.67s (transform 1.28s, setup 13ms, import 1.94s, tests 3.32s, environment 317ms)
+
