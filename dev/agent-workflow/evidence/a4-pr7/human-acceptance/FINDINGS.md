@@ -88,7 +88,28 @@ corruptCount 2
 ```
 
 同一份损伤：`toolName: 42` → `disclosesMember: false`；`toolName: ""` → `disclosesMember: true`。
-探针脚本是一次性的 `.tmp-w5-scratch/disclosure-probe.mjs`（未纳入交付）；探针世界按 TEST_METHODS §7 留在原位，
+
+探针没被保留成第五个交付脚本（它写盘，不该混进"验证"命令里），但它可以照着这六行复现——
+把 `tests/homes/a4-w5-corrupt-acceptance` 复制一份，然后在新世界里：
+
+```js
+const seam = await import('./world-seam.mjs')
+const opened = await seam.openWorld('<repo>', '<copied world>')
+const r = opened.domain.repositories
+const root = r.teamSessions.list()[0].rootSessionId
+await r.ledger.put({
+  schemaVersion: 2, sequence: await r.ledger.allocateSequence(), rootSessionId: root,
+  factType: 'control-request-recorded', createdAt: new Date().toISOString(),
+  payload: { requestId: 'req-a4w5-disclosure-probe-empty-toolname', kind: 'leader-approval',
+             requester: { kind: 'human', humanId: 'probe' }, subject: 42, targetInstanceId: '',
+             actionName: '', toolName: '',            // ← 唯一与验收行不同的一处
+             correlation: '', operationFingerprint: 42, executionCoupling: 'guarded' },
+})
+```
+
+再用 `verify-corrupt-world.mjs --world <copied world> --expect-count 2` 读即可。
+
+探针世界按 TEST_METHODS §7 留在原位，
 清理 = `rm -rf tests/homes/a4-w5-disclosure-probe`（它比验收世界多一条行，`corruptCount` 是 2，别和 RECIPE 的世界混用）。
 
 登记只取决于损伤本身，不取决于归属（RULING 5-A / W8），所以这条行必然进 `corruptLegs`。
