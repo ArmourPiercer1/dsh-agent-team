@@ -74,6 +74,7 @@ import {
   REMOTE_V6_ONLY_METHODS,
   REMOTE_V7_ONLY_METHODS,
   REMOTE_V8_ONLY_METHODS,
+  REMOTE_V9_ONLY_METHODS,
   type RemoteErrorResult,
   type RemoteSafeRecord,
 } from '../src/index.js'
@@ -345,8 +346,8 @@ const RT = await (async () => {
 // ---------------------------------------------------------------------------
 
 describe('F9 (remote contract v4): catalog facts', () => {
-  it('the catalog is the 35-method versioned union; the v4-only set is still exactly team.resolveControl (the C1 v5 bump adds team.prepareOrdinaryOpen; the team-view-sync v6 bump adds team.getReadState; PR4 round 5 adds override.mutatePermission v7-only; the PR5 ROOT BLOCK fix batch adds its co-tenant READ pair override.getPermission v7-only; A4-PR6 adds the four v8-only intervention-plane methods)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(35)
+  it('the catalog is the 36-method versioned union; the v4-only set is still exactly team.resolveControl (the C1 v5 bump adds team.prepareOrdinaryOpen; the team-view-sync v6 bump adds team.getReadState; PR4 round 5 adds override.mutatePermission v7-only; the PR5 ROOT BLOCK fix batch adds its co-tenant READ pair override.getPermission v7-only; A4-PR6 adds the four v8-only intervention-plane methods; A4-PR7 W1 adds the one v9-only corrupt-leg read)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(36)
     expect(REMOTE_METHOD_NAMES.includes('team.resolveControl')).toBe(true)
     expect([...REMOTE_V4_ONLY_METHODS].sort()).toEqual(['team.resolveControl'])
     // the v4-only method is disjoint from the v2/v3/v5/v6-only surfaces
@@ -359,7 +360,8 @@ describe('F9 (remote contract v4): catalog facts', () => {
       REMOTE_V5_ONLY_METHODS.length -
       REMOTE_V6_ONLY_METHODS.length -
       REMOTE_V7_ONLY_METHODS.length -
-      REMOTE_V8_ONLY_METHODS.length
+      REMOTE_V8_ONLY_METHODS.length -
+      REMOTE_V9_ONLY_METHODS.length
     expect(v1Count).toBe(23)
   })
 

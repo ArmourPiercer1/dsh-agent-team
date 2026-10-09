@@ -238,3 +238,32 @@
   gap: 12px;
   min-width: 0;
 }
+
+/* A4-PR7 W1 (remote contract v9, RULING 5-B warning-first) — the fixed
+   corrupt-record warning bar at the top of the team body: visibility
+   only, never dismissible, warning-lane colours. The rows carry the
+   server's own disclosure (Ledger sequence + the real disclosesMember
+   flag); the bar persists while the ledger fact exists (ledger-derived,
+   immune to Member destroy/rebuild). */
+.corruptionBar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-state-warn-primary);
+  border-radius: 6px;
+  background: var(--dsw-alias-state-warn-tertiary);
+  color: var(--dsw-alias-state-warn-label);
+  font: var(--dsw-font-xxxs-11);
+}
+
+.corruptionRows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding-left: 16px;
+  word-break: break-all;
+}

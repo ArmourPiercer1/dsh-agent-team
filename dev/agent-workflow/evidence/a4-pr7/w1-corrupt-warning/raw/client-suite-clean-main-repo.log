@@ -1,0 +1,214 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/packages/client
+
+ ✓ test/ledger-adapter.test.ts (32 tests) 22ms
+ ✓ test/team-ledger-model.client.spec.ts (27 tests) 27ms
+ ✓ test/team-intent-model.test.ts (24 tests) 10ms
+ ✓ test/pr56-control-subject-payload.test.ts (42 tests) 17ms
+ ✓ test/team-timeline-model.client.spec.ts (31 tests) 13ms
+ ✓ test/team-legacy.test.ts (12 tests) 9ms
+ ✓ test/team-ledger-store.test.ts (24 tests) 25ms
+ ✓ test/team-projection-store.test.ts (27 tests) 20ms
+ ✓ test/team-dock-model.client.spec.ts (9 tests) 6ms
+ ✓ test/team-governance.test.ts (43 tests) 14ms
+ ✓ test/client-architecture-negatives.test.ts (9 tests) 17ms
+ ✓ test/team-members-model.client.spec.ts (10 tests) 13ms
+ ✓ test/team-refresh-coordinator.test.ts (24 tests) 16ms
+ ✓ test/f9u-control-surface-model.test.ts (11 tests) 9ms
+ ✓ test/d1-team-remote-v3.test.ts (8 tests) 6ms
+ ✓ test/d3-open-ordinary-mode.test.ts (22 tests) 12ms
+ ✓ test/team-remote-client.test.ts (18 tests) 11ms
+ ✓ test/client-plugin-mount.test.ts (47 tests) 25ms
+ ✓ test/team-read-state.test.ts (25 tests) 25ms
+ ✓ test/team-handoff.test.ts (23 tests) 18ms
+ ✓ test/team-members-model.test.ts (5 tests) 6ms
+ ✓ test/team-member-commands.test.ts (11 tests) 9ms
+ ✓ test/team-projection-store-v6.test.ts (13 tests) 5ms
+ ✓ test/team-create-flow.test.ts (10 tests) 6ms
+ ✓ test/d2-open-team-mode.test.ts (6 tests) 6ms
+ ✓ test/team-remote-categories.test.ts (8 tests) 6ms
+ ✓ test/projection-adapter.test.ts (16 tests) 8ms
+ ✓ test/team-session-resolution.test.ts (9 tests) 5ms
+ ✓ test/f9-remote-client-v4.test.ts (5 tests) 4ms
+ ✓ test/team-command-flow.test.ts (6 tests) 5ms
+ ✓ test/client.test.ts (2 tests) 3ms
+ ❯ test/s3-client-generation-spike.test.ts (0 test)
+ ✓ test/team-activity.client.spec.tsx (7 tests) 71ms
+ ✓ test/team-members.client.spec.tsx (12 tests) 122ms
+ ✓ test/team-creation-panel-refresh.client.spec.tsx (1 test) 148ms
+ ✓ test/team-dock.client.spec.tsx (12 tests) 171ms
+ ✓ test/a4p6-permission-administration.client.spec.tsx (4 tests) 66ms
+ ✓ test/team-timeline.client.spec.tsx (18 tests) 272ms
+ ✓ test/a4p6-interventions.client.spec.tsx (11 tests) 95ms
+ ✓ test/f9u-control-panel.client.spec.tsx (15 tests) 179ms
+ ✓ test/f9-resolve-control-ui.client.spec.tsx (9 tests) 202ms
+ ✓ test/pr56-control-panel-payload.client.spec.tsx (32 tests) 269ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a successful two-stage create (with initial work) keeps the overlay open until the DEFERRED admit settles (plan §7 minimum UI constraint)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/team-legacy.client.spec.tsx (8 tests) 249ms
+ ✓ test/d2-team-mode-entry.client.spec.tsx (7 tests) 303ms
+stderr | test/new-team-entry.client.spec.tsx > NewTeamEntry (sidebar.footer.action) > a second-stage (admit) failure keeps the overlay on the opened Root with the work lane + retry; the retry re-sends ONLY the admit and the success closes (plan §7; never a New Session)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ test/team-members-actions.client.spec.tsx (19 tests) 751ms
+ ✓ test/new-team-entry.client.spec.tsx (8 tests) 764ms
+ ✓ test/d3-ordinary-mode-entry.client.spec.tsx (12 tests) 434ms
+ ✓ test/f9u-control-surface-probe.client.spec.tsx (6 tests) 435ms
+ ✓ test/team-roots-zero-state.client.spec.tsx (11 tests) 488ms
+ ✓ test/team-ledger.client.spec.tsx (20 tests) 803ms
+     ✓ deepens the window on load-earlier clicks (local axis only)  327ms
+ ✓ test/team-view.client.spec.tsx (30 tests) 596ms
+ ✓ test/team-creation-handoff.client.spec.tsx (15 tests) 1220ms
+ ✓ test/team-d4-a1-ui-pull.client.spec.tsx (14 tests) 1993ms
+ ❯ test/team-creation-panel.client.spec.tsx (19 tests | 2 failed) 2396ms
+     ✓ loads the catalog rows with the per-row display names and preselects the team preset (S0 seam, UI §6/§7.2) 87ms
+     ✓ shows the verbatim catalog failure note and keeps the picker disabled (loud, never silent) 56ms
+     × selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7) 127ms
+     ✓ an OPEN verdict enables Create with the work-aware label (UI §9) 65ms
+     ✓ a BLOCKED_WARNING verdict lists the warnings and gates Create behind the explicit ack (UI §9.2) 68ms
+     ✓ a new probe verdict resets the local ack (the frozen engine drift semantics, UI §9.2) 66ms
+     ✓ a complete-persona preset FATAL disables Create with the §7.4 remedy and no Continue-anyway 60ms
+     × switching the runtime preset re-runs the probe with the new persona fact (UI §7.3) 1058ms
+     ✓ create happy path (TCM M4 two-stage v2): the workspace PATH enters the v2 create (CREATE-ONLY), the Root opens BEFORE the admit, and the admit reuses the same root + stable token + prompt (UI §4.3 order; plan §15.6) 57ms
+     ✓ empty initial work performs ONLY the v2 create + open (no admit RPC at all; onCreated after the open) 104ms
+     ✓ an unknown selected workspace sends NO RPC (a local typed refusal, no retry lane for a never-started attempt) 55ms
+     ✓ a typed v2 team.create failure keeps the verbatim error, the retained-root note, and a root-reusing retry (G5) 106ms
+     ✓ a failed creation-path open surfaces the native-error marker (stage open) with the retained root (D-3) 106ms
+     ✓ a typed second-stage (admit) failure keeps the REAL ROOT open: the work lane + retry re-send ONLY the admit with the SAME stable token + prompt (plan §7; never a re-create, never a New Session) 157ms
+     ✓ a changed draft cannot alter a started create: the admit uses the SNAPSHOT prompt (plan §7 必须测试) 55ms
+     ✓ the workspace picker renders only when the native feed has rows (UI §8) 4ms
+     ✓ a loud unknown probe verdict disables Create (never a silent ready) 54ms
+     ✓ create-cancel: closing the panel mutates nothing (no team.create, draft intact) 54ms
+     ✓ R119: a non-empty catalog with no explicit pick keeps a LOUD unselected state (the disabled placeholder owns the empty value; the probe never fires; an explicit pick flips to the live path) 56ms
+ ❯ test/team-governance.client.spec.tsx (30 tests | 1 failed) 2391ms
+     ✓ renders the Projection-driven compatibility badge (the §10.2 four admission states) 55ms
+     ✓ renders an unknown future compatibility status verbatim (loud, never silent) 7ms
+     ✓ renders the aggregate counts and generation from the Projection 5ms
+     ✓ keeps the ack control disabled with the explicit wire-gap reason (UI §38) 27ms
+     ✓ a compat review is a read: it never pulls the projection 27ms
+     ✓ renders a compat review typed failure verbatim as a local note (no projection pull) 60ms
+     ✓ renders the compat review fresh-read detail on success (labeled, not authority) 60ms
+     ✓ the human Recheck re-probes with the closed CAPABILITY_GENERATION_CHANGE trigger and pulls once on success 59ms
+     ✓ a Recheck typed failure renders verbatim (code + message + token echo) and never pulls 62ms
+     ✓ a Recheck transport loss (the only rejection kind) records the local transport-loss note 60ms
+     ✓ a policy review loads the cell view (a read: no projection pull) 58ms
+     ✓ a policy commit sends a PARTIAL cell map on the projection state id (never invented) and pulls once 114ms
+     ✓ keeps the policy commit inert (no command, no preview) when the only draft is an allow with no items 56ms
+     ✓ a policy commit typed failure renders verbatim and never pulls 106ms
+     ✓ an override set targets the member instance (scope instance) and pulls once on success 55ms
+     ✓ keeps the override set inert until an allow cell has items (no empty allow commit) 3ms
+     × an override reset targets the member instance (scope instance) and pulls once on success 1006ms
+     ✓ an override set typed failure renders verbatim and never pulls 55ms
+     ✓ an override show is a read (no projection pull) and renders the recorded override verbatim 55ms
+     ✓ an override show renders the no-override note when the record is null (a read) 55ms
+     ✓ renders the effective-config lanes (model/workspace/permissions-sorted/autonomy) with the §18.3 state words 3ms
+     ✓ renders the §19 hard-policy display for a denied lane (never pretend an override wins) 3ms
+     ✓ shows the effective-config empty note when no member carries a config DTO 2ms
+     ✓ a SUCCESSFUL recheck whose pull fails shows the split result on its own lane and never re-fires the mutation (S1-C2) 64ms
+     ✓ a SUCCESSFUL recheck whose pull returns a typed rpc-error shows the split result with the typed code (S1-C2) 54ms
+     ✓ a SUCCESSFUL command whose pull is a VALID round trip (apply / duplicate / stale) shows NO pull-error lane (S1-C2) 163ms
+     ✓ the pull-error lane is cleared by the NEXT dispatch on the same command key (the note is per-invocation, not sticky) (S1-C2) 107ms
+     ✓ pairs the zh and en dictionaries for the governance surface 5ms
+     ✓ renders the interventions section when the face carries the v8 slice 4ms
+     ✓ an older face (no v8 slice) keeps the section absent — the pre-v8 rendering is byte-identical 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/s3-client-generation-spike.test.ts [ test/s3-client-generation-spike.test.ts ]
+Error: Cannot find module '../../../../../tests/deepseek-harness-test-use/packages/api/session-controller/src/client/sessions/service.ts' imported from /home/user/dsh-plugins/dsh-agent-team/packages/client/test/s3-client-generation-spike.test.ts
+ ❯ test/s3-client-generation-spike.test.ts:91:1
+     89| // — the same module copies the redirect produces for the linked packa…
+     90| // (one singleton world, no built lib).
+     91| import { ClientSessions } from '../../../../../tests/deepseek-harness-…
+       | ^
+     92| import { UiWorkspaceService } from '../../../../../tests/deepseek-harn…
+     93| import { createWorkspaceViewStore } from '../../../../../tests/deepsee…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)
+AssertionError: expected "vi.fn()" to be called with arguments: [ { blueprintId: 'bp-1', …(2) } ]
+
+Received:
+
+  1st vi.fn() call:
+
+@@ -2,11 +2,11 @@
+    {
+      "blueprintId": "bp-1",
+      "blueprintRevision": 2,
+      "environmentFacts": [
+        {
+-         "available": true,
++         "available": false,
+          "domain": "persona",
+          "generation": 0,
+          "subject": "team",
+        },
+      ],
+
+
+Number of calls: 1
+
+ ❯ test/team-creation-panel.client.spec.tsx:291:37
+    289|     // environment fact (the only frozen environment channel).
+    290|     expect(face.probeCompatibility).toHaveBeenCalledTimes(1)
+    291|     expect(face.probeCompatibility).toHaveBeenCalledWith({
+       |                                     ^
+    292|       blueprintId: BP,
+    293|       blueprintRevision: 2,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > switching the runtime preset re-runs the probe with the new persona fact (UI §7.3)
+AssertionError: expected last "vi.fn()" call to have been called with [ { blueprintId: 'bp-1', …(2) } ]
+
+- Expected
++ Received
+
+@@ -2,11 +2,11 @@
+    {
+      "blueprintId": "bp-1",
+      "blueprintRevision": 2,
+      "environmentFacts": [
+        {
+-         "available": true,
++         "available": false,
+          "domain": "persona",
+          "generation": 0,
+          "subject": "solo",
+        },
+      ],
+
+ ❯ test/team-creation-panel.client.spec.tsx:389:39
+    387|     fireEvent.change(presetSelect(view.container), { target: { value: …
+    388|     await vi.waitFor(() => {
+    389|       expect(face.probeCompatibility).toHaveBeenLastCalledWith({
+       |                                       ^
+    390|         blueprintId: BP,
+    391|         blueprintRevision: 2,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/team-governance.client.spec.tsx:556:35
+    554|     } satisfies RemoteOverrideResetParams)
+    555|     await vi.waitFor(() => {
+    556|       expect(face.pullProjection).toHaveBeenCalledTimes(1)
+       |                                   ^
+    557|       expect(memberBlock.querySelector('[data-governance-override-rese…
+    558|     })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed | 52 passed (55)
+      Tests  3 failed | 876 passed (879)
+   Start at  18:16:24
+   Duration  10.01s (transform 63.28s, setup 2.59s, import 114.02s, tests 14.80s, environment 52.87s)
+

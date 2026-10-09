@@ -285,14 +285,17 @@ const wireOk = await handler1(
 // `team.getReadState`), the pre-alpha3 W1 fix-A (F10) v7 bump (NO new
 // method — the version-aware `override.set` / `override.reset` closed
 // sets gain the optional `expectedGeneration` field; v1–v6 stay
-// byte-identical), and the A4-PR6 §6.B v8 bump (a CONTRACT CHANGE, reason
+// byte-identical), the A4-PR6 §6.B v8 bump (a CONTRACT CHANGE, reason
 // in the PR body: the closed intervention plane `intervention.list/get/act`
-// + `override.getPermissionAdministration`; v1–v7 stay byte-identical) —
-// the unsupported-version negative moves to 9 (versions 1–8 are legal;
+// + `override.getPermissionAdministration`; v1–v7 stay byte-identical),
+// and the A4-PR7 W1 v9 bump (a CONTRACT CHANGE: the read-only corrupt-leg
+// report method `team.listCorruptControlLegs`, the ONLY v9-only method;
+// v1–v8 stay byte-identical) —
+// the unsupported-version negative moves to 10 (versions 1–9 are legal;
 // version 2 is served with provenance echoing 2).
 const wireVersion = await handler1(
   'team.getProjection',
-  { version: 9, params: { teamSessionId: ROOT_SID } },
+  { version: 10, params: { teamSessionId: ROOT_SID } },
   undefined,
 )
 // Row stop: the backstop must release the /team-remote channel ownership.

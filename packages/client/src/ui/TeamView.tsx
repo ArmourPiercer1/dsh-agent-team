@@ -24,6 +24,7 @@ import type {
   RemoteResponse,
   RemoteTeamAdmitInitialWorkParams,
   RemoteTeamCreateParamsV2,
+  RemoteTeamListCorruptControlLegsParams,
   RemoteTeamResolveControlParams,
 } from '../../../remote/src/index.js'
 import type { TeamProjectionMirror } from '../state/team-session-resolution.js'
@@ -43,6 +44,12 @@ import {
   interpretResolveControlProbe,
   RESOLVE_CONTROL_PROBE_REQUEST_ID,
 } from '../model/control-surface.js'
+import {
+  controlCorruptionVisible,
+  corruptControlLegsParams,
+  parseControlCorruption,
+  type ControlCorruptionView,
+} from '../model/control-corruption.js'
 import type { TeamOpenModeOutcome } from '../plugin/team-mount-core.js'
 import type { TeamIntentDraft, TeamPresetRow } from '../model/team-intent-model.js'
 import {
@@ -158,6 +165,18 @@ export interface TeamViewControlFace {
    * never exception-ified).
    */
   readonly resolveControl: (params: RemoteTeamResolveControlParams) => Promise<RemoteResponse>
+  /**
+   * A4-PR7 W1 (contract v9, RULING 5-B warning-first): the corrupt-leg
+   * visibility read `team.listCorruptControlLegs` (raw RemoteResponse;
+   * a pre-v9 host refuses typed `method-version-unsupported`). This is a
+   * PURE READ feeding the fixed warning bar ONLY — it changes no
+   * execution semantics and never re-derives legality client-side (the
+   * server `runtime/control` is the sole strict reader). Absent → the
+   * warning bar never renders (the surface is unchanged).
+   */
+  readonly listCorruptControlLegs?: (
+    params: RemoteTeamListCorruptControlLegsParams,
+  ) => Promise<RemoteResponse>
 }
 
 /**
@@ -705,6 +724,78 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     }, 3000)
     return () => clearInterval(id)
   }, [inZeroState, roots, creationOpen, sessionId, loadRoots])
+  // A4-PR7 W1 (remote contract v9, RULING 5-B warning-first) — the
+  // corrupt-leg visibility read for the FIXED warning bar: one read per
+  // resolved team session, re-read on every manual refresh. The bar is
+  // LEDGER-DERIVED (the read rides the durable control ledger, not the
+  // live member set), so a Member destroy/rebuild cannot clear it — the
+  // fact is the Team's, never a member's, and the wording stays
+  // Team-level. Failure posture is CONSERVATIVE-HIDE: a typed refusal
+  // (a pre-v9 host answers `method-version-unsupported`), a malformed
+  // payload, or a transport loss all keep the bar hidden — the warning
+  // NEVER blocks or alters the ledger surface below it, and the client
+  // never re-derives which records are corrupt (the server
+  // `runtime/control` is the sole strict reader; 严禁客户端复刻严格读者).
+  const [corruption, setCorruption] = useState<{
+    readonly view: ControlCorruptionView | null
+    readonly error: { readonly code: string; readonly message: string } | null
+  }>({ view: null, error: null })
+  const corruptionEpoch = useRef(0)
+  const corruptionUnmounted = useRef(false)
+  useEffect(() => {
+    corruptionUnmounted.current = false
+    return () => { corruptionUnmounted.current = true }
+  }, [])
+  const corruptionTeamKey = inZeroState ? null : snapshot?.teamSessionId ?? null
+  const loadControlCorruption = useCallback((): Promise<void> => {
+    const face = control?.listCorruptControlLegs
+    if (face === undefined || corruptionTeamKey === null) return Promise.resolve()
+    corruptionEpoch.current += 1
+    const epoch = corruptionEpoch.current
+    return face(corruptControlLegsParams(corruptionTeamKey)).then(response => {
+      if (corruptionUnmounted.current || corruptionEpoch.current !== epoch) return
+      if (!response.ok) {
+        // Conservative-hide: the bar stays hidden; the note is kept for
+        // diagnostics only — never a modal, never a blocker.
+        setCorruption(prev => ({
+          ...prev,
+          error: { code: response.error.code, message: response.error.message },
+        }))
+        return
+      }
+      const view = parseControlCorruption(response.value.data)
+      if (view === null) {
+        setCorruption(prev => ({
+          ...prev,
+          error: {
+            code: 'malformed-response',
+            message: 'the team.listCorruptControlLegs response did not carry the closed corruption wire',
+          },
+        }))
+        return
+      }
+      setCorruption({ view, error: null })
+    }).catch(error => {
+      if (corruptionUnmounted.current || corruptionEpoch.current !== epoch) return
+      setCorruption(prev => ({
+        ...prev,
+        error: {
+          code: 'native-error',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      }))
+    })
+  }, [control, corruptionTeamKey])
+  useEffect(() => {
+    if (corruptionTeamKey === null || control?.listCorruptControlLegs === undefined) {
+      // No face / no resolved team: no read, no bar (the legacy surface).
+      setCorruption(prev => (prev.view === null && prev.error === null
+        ? prev
+        : { view: null, error: null }))
+      return
+    }
+    void loadControlCorruption()
+  }, [corruptionTeamKey, control, loadControlCorruption])
   // (repair 20260927, S1-C2; PR #35 follow-up, P1-4) the manual "refresh
   // team view" — the one awaitable read-only re-read. Captures THIS
   // invocation's session id and a request epoch at call time:
@@ -739,6 +830,9 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     const epoch = refreshEpoch.current
     setRefreshPending(true)
     void loadRoots()
+    // A4-PR7 W1: the manual refresh re-reads the corrupt-leg visibility
+    // alongside the roots (the same read-not-command discipline).
+    void loadControlCorruption()
     void (async () => {
       // P1-4: does the refresh CONFIRM a team? (the explicit ledger
       // retry below runs only then.)
@@ -789,7 +883,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     })().finally(() => {
       if (refreshEpoch.current === epoch) setRefreshPending(false)
     })
-  }, [refreshPending, sessionId, resolution, refreshCoordinator, loadRoots, pullProjection, refreshTeamLedger])
+  }, [refreshPending, sessionId, resolution, refreshCoordinator, loadRoots, loadControlCorruption, pullProjection, refreshTeamLedger])
   // D2 (Team D1-D6 repair v2, D6): the in-flight explicit open per picker
   // row (root id → pending) and the last typed failure per row (ONE
   // verbatim note, the UI §38 greyed-surface discipline). Page-run UI
@@ -1328,6 +1422,42 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           {t('view.refresh')}
         </button>
       </div>
+      {controlCorruptionVisible(corruption.view) && corruption.view !== null ? (
+        // A4-PR7 W1 (RULING 5-B) — the FIXED, non-dismissible corrupt-record
+        // warning bar at the TOP of the team body: visibility only (no
+        // action, no dismiss — it persists while the ledger fact exists and
+        // survives Member destroy/rebuild because the read is ledger-derived,
+        // never member-derived). The count/sequences are the server's own
+        // facts; `disclosesMember` marks a row that carries its OWN
+        // attribution clue — an identity OR an operation member — which is
+        // never a claim that a named Member caused the corruption; a false
+        // row gets Team-level wording, never an invented name.
+        <div className={styles.corruptionBar} data-team-control-corruption role="alert">
+          <span data-team-control-corruption-summary>
+            {t('view.corruption.summary')}
+            {`: ${corruption.view.corruptCount}`}
+          </span>
+          <ul className={styles.corruptionRows} data-team-control-corruption-rows>
+            {corruption.view.legs.map(leg => (
+              <li
+                key={leg.sequence}
+                data-team-control-corruption-leg
+                data-team-control-corruption-attributable={leg.disclosesMember ? 'yes' : 'no'}
+              >
+                {`${t('view.corruption.leg')} #${leg.sequence}`}
+                {leg.disclosesMember
+                  ? ` — ${t('view.corruption.attributed')}`
+                  : ` — ${t('view.corruption.unattributed')}`}
+                {leg.requestId !== null ? ` · request ${leg.requestId}` : ''}
+                {leg.approvalCaseId !== null ? ` · case ${leg.approvalCaseId}` : ''}
+              </li>
+            ))}
+          </ul>
+          {corruption.view.truncated
+            ? <span data-team-control-corruption-truncated>{t('view.corruption.truncated')}</span>
+            : null}
+        </div>
+      ) : null}
       <section className={styles.section} data-team-section="timeline">
         <h3 className={styles.sectionTitle}>{t('view.timeline.title')}</h3>
         <TeamTimeline

@@ -41,6 +41,7 @@ import {
   createRemoteDispatcher,
   isRemoteMethodAvailableInVersion,
   REMOTE_V7_ONLY_METHODS,
+  REMOTE_V9_ONLY_METHODS,
   REMOTE_CONTRACT_VERSION,
   REMOTE_CONTRACT_VERSION_V2,
   REMOTE_CONTRACT_VERSION_V3,
@@ -49,6 +50,7 @@ import {
   REMOTE_CONTRACT_VERSION_V6,
   REMOTE_CONTRACT_VERSION_V7,
   REMOTE_CONTRACT_VERSION_V8,
+  REMOTE_CONTRACT_VERSION_V9,
   REMOTE_CONTRACT_ERROR_CODES,
   REMOTE_METHOD_NAMES,
   REMOTE_TEAM_ADMIT_INITIAL_WORK_FIELDS,
@@ -577,11 +579,14 @@ describe('TCM M1: catalog facts (versioned union, closed)', () => {
     expect(REMOTE_CONTRACT_VERSION_V6).toBe(6)
     expect(REMOTE_CONTRACT_VERSION_V7).toBe(7)
     expect(REMOTE_CONTRACT_VERSION_V8).toBe(8)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    expect(REMOTE_CONTRACT_VERSION_V9).toBe(9)
+    // A4-PR7 W1 mechanical pin move: the ladder gained v9 (a bump ADDS,
+    // it never edits the v1–v8 surface).
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9])
   })
 
-  it('the closed catalog is the versioned union: 35 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only + 4 v8-only)', () => {
-    expect(REMOTE_METHOD_NAMES.length).toBe(35)
+  it('the closed catalog is the versioned union: 36 methods (23 v1 + 1 v2-only + 2 v3-only + 1 v4-only + 1 v5-only + 1 v6-only + 2 v7-only + 4 v8-only + 1 v9-only)', () => {
+    expect(REMOTE_METHOD_NAMES.length).toBe(36)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     // the D1 (Team D1-D6 repair v2) v3-only closed set
     expect([...REMOTE_V3_ONLY_METHODS].sort()).toEqual(['team.ensureRootLive', 'team.listRoots'])
@@ -602,6 +607,13 @@ describe('TCM M1: catalog facts (versioned union, closed)', () => {
     expect(isRemoteMethodAvailableInVersion('override.mutatePermission', 7)).toBe(true)
     expect(isRemoteMethodAvailableInVersion('override.mutatePermission', 6)).toBe(false)
     expect(isRemoteMethodAvailableInVersion('override.mutatePermission', 1)).toBe(false)
+    // A4-PR7 W1 (contract v9) v9-only closed set — the corrupt-leg
+    // visibility READ; unavailable (typed method-version-unsupported) at
+    // every version below 9.
+    expect([...REMOTE_V9_ONLY_METHODS].sort()).toEqual(['team.listCorruptControlLegs'])
+    expect(isRemoteMethodAvailableInVersion('team.listCorruptControlLegs', 9)).toBe(true)
+    expect(isRemoteMethodAvailableInVersion('team.listCorruptControlLegs', 8)).toBe(false)
+    expect(isRemoteMethodAvailableInVersion('team.listCorruptControlLegs', 1)).toBe(false)
   })
 
   it('the closed field sets are frozen per version', () => {

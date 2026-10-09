@@ -372,4 +372,46 @@ export interface RemoteInterventionWireAdministration {
 }
 /** The closed field set of the administration wire value. */
 export declare const REMOTE_PERMISSION_ADMINISTRATION_FIELDS: readonly string[];
+/**
+ * The closed cap of the wire `legs` list (v9). The corruptCount stays
+ * EXACT (never capped — the human must see the true size of the ledger
+ * fault); `legs` carries at most this many rows in ascending sequence
+ * order with `truncated` disclosed when fewer than `corruptCount` ride.
+ * The cap keeps a pathological ledger from minting an unbounded wire.
+ */
+export declare const REMOTE_CORRUPT_CONTROL_LEGS_CAP = 20;
+/**
+ * One corrupt leg on the wire (v9). The fields are the REAL
+ * `ControlCorruptLegRecord` echo fields (`runtime/control/types.ts`) —
+ * the read PLANE projects, it never re-derives: `disclosesMember` is the
+ * control service's own candidacy verdict (false = fully unattributable,
+ * which per RULING 5-B blocks nothing); `requestId` / `approvalCaseId`
+ * are present ONLY when the damaged row itself still discloses them
+ * (the report never invents an identity it did not read — the same law
+ * `toCorruptLegRecord` applies at the service edge).
+ */
+export interface RemoteCorruptControlLegWire {
+    readonly sequence: number;
+    readonly disclosesMember: boolean;
+    readonly requestId?: string;
+    readonly approvalCaseId?: string;
+}
+/** The closed field set of one corrupt leg (optional cells: echo-only). */
+export declare const REMOTE_CORRUPT_CONTROL_LEG_FIELDS: readonly string[];
+/**
+ * The `team.listCorruptControlLegs` wire value (v9), carried as the
+ * single `corruption` response field. A REPORT, not a gate: nothing in
+ * this shape selects execution semantics (RULING 5-B), and it carries
+ * NO member attribution beyond what a row discloses itself.
+ */
+export interface RemoteCorruptControlLegsWire {
+    readonly teamSessionId: string;
+    /** The FULL count of corrupt legs (never capped). */
+    readonly corruptCount: number;
+    /** True when `legs` was capped to {@link REMOTE_CORRUPT_CONTROL_LEGS_CAP}. */
+    readonly truncated: boolean;
+    readonly legs: readonly RemoteCorruptControlLegWire[];
+}
+/** The closed field set of the corrupt-legs wire value. */
+export declare const REMOTE_CORRUPT_CONTROL_LEGS_FIELDS: readonly string[];
 //# sourceMappingURL=types.d.ts.map

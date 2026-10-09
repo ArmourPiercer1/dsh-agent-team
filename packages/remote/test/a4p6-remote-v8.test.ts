@@ -155,7 +155,9 @@ function fakeInterventionPort(overrides: Partial<RemoteInterventionPort> = {}): 
 describe('A4-PR6 §6.B: the Remote contract v8 surface', () => {
   it('v8 is a supported version that ADDS to the ladder (v1–v7 stay members)', () => {
     expect(V8).toBe(8)
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS]).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    // A4-PR7 W1 mechanical pin move: the ladder now tops out at v9 (the
+    // corrupt-leg visibility read); v8's ADDS-only law is unchanged.
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS]).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9])
     expect(parseRemoteContractVersion(8)).toBe(8)
     expect(parseRemoteContractVersion(1)).toBe(1)
   })
@@ -168,9 +170,10 @@ describe('A4-PR6 §6.B: the Remote contract v8 surface', () => {
       'intervention.list',
       'override.getPermissionAdministration',
     ])
-    // 31 v7 methods + the four v8-only methods = 35, and the category set
-    // is the nine frozen categories plus `intervention`.
-    expect(REMOTE_METHOD_NAMES.length).toBe(35)
+    // 31 v7 methods + the four v8-only methods + the one A4-PR7 W1 v9-only
+    // method = 36, and the category set is the nine frozen categories plus
+    // `intervention`.
+    expect(REMOTE_METHOD_NAMES.length).toBe(36)
     expect([...REMOTE_CATEGORY_VALUES]).toEqual([
       'catalog',
       'intent',

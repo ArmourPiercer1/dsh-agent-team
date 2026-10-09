@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/w1-warning
+
+ ✓ packages/runtime/test/a4w1-corrupt-warning.test.ts (8 tests) 3ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  18:38:32
+   Duration  1.13s (transform 811ms, setup 0ms, import 1.05s, tests 3ms, environment 0ms)
+

@@ -41,6 +41,7 @@
  */
 import { type RemoteLedgerEntryValue } from '../../../remote/src/contracts/types.js';
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js';
+import type { ControlCorruptLegRecord } from '../../control/types.js';
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js';
 import type { TeamRootWireRow } from '../team-ownership-index.js';
 import type { BlueprintVersionState } from './blueprint-authority.js';
@@ -661,6 +662,24 @@ export interface S6RemoteInterventionPort {
         readonly memberInstanceId?: string;
     }): Promise<RemoteSafeRecord>;
 }
+/**
+ * A4-PR7 W1 (remote contract v9) — the port behind
+ * `team.listCorruptControlLegs`: the bound-root-guarded READ of the
+ * control service's `listControlState().corruptLegs` echo (the strict
+ * reader's refusal list). The port READS the ONE authority's already
+ * built records — it re-reads, re-parses, re-judges and attributes
+ * nothing (RULING 5-B: visibility only, never a gate). The closed wire
+ * projection + list bound run in the shared
+ * `corruptControlLegsValue` law (the remote handler), identical on both
+ * dispatchers.
+ */
+export interface S6RemoteCorruptControlLegsPort {
+    listCorruptLegs(request: {
+        readonly teamSessionId: string;
+    }): Promise<{
+        readonly corruptLegs: readonly ControlCorruptLegRecord[];
+    }>;
+}
 export interface S6RemotePorts {
     readonly catalog: S6RemoteCatalogPort;
     readonly intent: S6RemoteIntentPort;
@@ -722,6 +741,13 @@ export interface S6RemotePorts {
      *  `{instanceId, residency}` pairs — no clock facts, frozen decisions
      *  3 + 7. */
     readonly liveToken: S6RemoteLiveTokenPort;
+    /** A4-PR7 W1 (remote contract v9) — the v9-only
+     *  `team.listCorruptControlLegs` port: the corrupt-leg VISIBILITY read
+     *  over the control service's `listControlState().corruptLegs`
+     *  (bound-root guarded; unwired host → the typed `internal-error`
+     *  refusal, NEVER a silently empty report — an empty list must mean
+     *  "the strict reader refused nothing", not "nobody was listening"). */
+    readonly teamControlCorruption: S6RemoteCorruptControlLegsPort;
 }
 /** The P6-T3 messaging coordinator port (T12-V16). */
 export interface S6RemoteMessagingPort {
@@ -1043,6 +1069,17 @@ export interface S6RemoteOptions {
      * plane is a test world).
      */
     readonly interventionControl?: InterventionControlSource;
+    /**
+     * A4-PR7 W1 (plan W1, remote contract v9) — the corrupt-leg reader
+     * behind `team.listCorruptControlLegs`: the closure returns ONLY the
+     * `corruptLegs` echo of the control service's `listControlState()`
+     * (root.ts assembles it from the ONE ControlService; this module
+     * re-reads and re-judges NOTHING — the strict reader stays the sole
+     * authority, RULING 5-B visibility-first). Absent → the read fails
+     * closed with the typed `internal-error` (reason `port-unwired`) —
+     * never a silently empty report.
+     */
+    readonly corruptControlLegs?: (rootSessionId: string) => Promise<readonly ControlCorruptLegRecord[]>;
     /**
      * A4-PR6 — the fresh required-authority facts reader behind the
      * projection's legality law (the lane-B reader-callback ruling at the

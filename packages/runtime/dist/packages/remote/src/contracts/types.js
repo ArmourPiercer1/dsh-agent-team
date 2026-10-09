@@ -115,4 +115,29 @@ export const REMOTE_PERMISSION_ADMINISTRATION_FIELDS = [
     'effective',
     'diagnostics',
 ];
+// ---------------------------------------------------------------------------
+// A4-PR7 W1 — contract v9: the corrupt-leg visibility read
+// ---------------------------------------------------------------------------
+/**
+ * The closed cap of the wire `legs` list (v9). The corruptCount stays
+ * EXACT (never capped — the human must see the true size of the ledger
+ * fault); `legs` carries at most this many rows in ascending sequence
+ * order with `truncated` disclosed when fewer than `corruptCount` ride.
+ * The cap keeps a pathological ledger from minting an unbounded wire.
+ */
+export const REMOTE_CORRUPT_CONTROL_LEGS_CAP = 20;
+/** The closed field set of one corrupt leg (optional cells: echo-only). */
+export const REMOTE_CORRUPT_CONTROL_LEG_FIELDS = [
+    'sequence',
+    'disclosesMember',
+    'requestId',
+    'approvalCaseId',
+];
+/** The closed field set of the corrupt-legs wire value. */
+export const REMOTE_CORRUPT_CONTROL_LEGS_FIELDS = [
+    'teamSessionId',
+    'corruptCount',
+    'truncated',
+    'legs',
+];
 //# sourceMappingURL=types.js.map

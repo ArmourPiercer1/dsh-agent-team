@@ -1232,6 +1232,9 @@ export function parseRemoteMethodParams(version, method, params) {
         case 'override.getPermissionAdministration':
             // v8-only (A4-PR6 §6.B): the closed permission-administration READ.
             return wrapParsed(method, parseRemoteOverrideGetPermissionAdministrationParams(method, params));
+        case 'team.listCorruptControlLegs':
+            // v9-only (A4-PR7 W1; the availability check guarantees version 9).
+            return wrapParsed(method, parseRemoteTeamListCorruptControlLegsParams(method, params));
         case 'team.getProjection':
             return wrapParsed(method, parseRemoteTeamGetProjectionParams(method, params));
         case 'team.getLedgerPage':
@@ -1382,6 +1385,16 @@ export function parseRemoteOverrideGetPermissionAdministrationParams(method, par
             memberInstanceId: parseRemoteInstanceId(memberInstanceId, 'memberInstanceId'),
         };
     }
+    return {
+        teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
+    };
+}
+export const REMOTE_TEAM_LIST_CORRUPT_CONTROL_LEGS_FIELDS = [
+    'teamSessionId',
+];
+/** Parse `team.listCorruptControlLegs` params. */
+export function parseRemoteTeamListCorruptControlLegsParams(method, params) {
+    assertNoUnknownFields(method, params, REMOTE_TEAM_LIST_CORRUPT_CONTROL_LEGS_FIELDS);
     return {
         teamSessionId: parseRemoteTeamSessionId(requiredField(method, params, 'teamSessionId'), 'teamSessionId'),
     };

@@ -275,10 +275,12 @@ describe('p8s7r4 W6 (BC-23/BC-24) — the failure decisions are client-side with
     // exactly the one method that has no v1 counterpart.
     // A4-PR6 (contract v8) CONTRACT CHANGE: 31 -> 35 methods — the four
     // v8-only intervention-plane methods (intervention.list/get/act +
-    // override.getPermissionAdministration). The HANDOFF category this
+    // override.getPermissionAdministration). A4-PR7 W1 (contract v9)
+    // CONTRACT CHANGE: 35 -> 36 — the one v9-only corrupt-leg visibility
+    // read (team.listCorruptControlLegs). The HANDOFF category this
     // test guards is UNCHANGED (prepare + create); the count rides the
     // versioned union, not the guarded category.
-    expect(REMOTE_METHOD_NAMES.length).toBe(35)
+    expect(REMOTE_METHOD_NAMES.length).toBe(36)
     expect(REMOTE_V2_ONLY_METHODS).toEqual(['team.admitInitialWork'])
     expect(REMOTE_V4_ONLY_METHODS).toEqual(['team.resolveControl'])
     expect(REMOTE_V6_ONLY_METHODS).toEqual(['team.getReadState'])

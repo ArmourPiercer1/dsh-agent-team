@@ -130,16 +130,36 @@ export declare const REMOTE_CONTRACT_VERSION_V7: 7;
  */
 export declare const REMOTE_CONTRACT_VERSION_V8: 8;
 /**
+ * The remote contract v9 (A4-PR7 W1, RULING 5-B warning-first — a
+ * CONTRACT CHANGE, reason recorded in the PR body): ONE new READ-ONLY
+ * method, `team.listCorruptControlLegs` — the human read-plane surface
+ * for the control ledger's CORRUPT LEGS (the `control-request-recorded`
+ * rows the strict reader `parseRequestPayload` refuses; the
+ * `corruptLegs` list of `ControlService.listControlState()`, the ONE
+ * authority — nothing on this lane re-reads or re-judges ledger rows).
+ * The v8 intervention plane CANNOT carry this: its items are actionable
+ * approval/warning cases, and a corrupt leg is deliberately NOT a work
+ * item (RULING 5-B: no governance isolation state machine; execution
+ * semantics are unchanged — this is VISIBILITY ONLY, a report, never a
+ * gate). Closed param set `{ teamSessionId }`; closed response shape
+ * (`types.ts`); the legs echo ONLY what a damaged row still discloses
+ * (the report never invents an identity it did not read). Every v1–v8
+ * method stays available in v9 and every v1–v8 wire shape is preserved
+ * byte-for-byte (a version bump ADDS; it never edits older semantics).
+ */
+export declare const REMOTE_CONTRACT_VERSION_V9: 9;
+/**
  * Type of a remote contract version field this build accepts: exactly
- * `1 | 2 | 3 | 4 | 5 | 6 | 7 | 8` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`,
+ * `1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9` (TCM vNext §15.3: `RemoteContractVersion = 1 | 2`,
  * extended by the D1 v3 bump, the F9 v4 bump, the C1 restart-recovery
  * v5 bump, the team-view-sync-complete v6 bump, the pre-alpha3 W1
- * fix-A v7 bump, and the A4-PR6 v8 governance-UX bump).
+ * fix-A v7 bump, the A4-PR6 v8 governance-UX bump, and the A4-PR7 W1
+ * v9 corrupt-leg visibility bump).
  */
-export type RemoteContractVersion = typeof REMOTE_CONTRACT_VERSION | typeof REMOTE_CONTRACT_VERSION_V2 | typeof REMOTE_CONTRACT_VERSION_V3 | typeof REMOTE_CONTRACT_VERSION_V4 | typeof REMOTE_CONTRACT_VERSION_V5 | typeof REMOTE_CONTRACT_VERSION_V6 | typeof REMOTE_CONTRACT_VERSION_V7 | typeof REMOTE_CONTRACT_VERSION_V8;
+export type RemoteContractVersion = typeof REMOTE_CONTRACT_VERSION | typeof REMOTE_CONTRACT_VERSION_V2 | typeof REMOTE_CONTRACT_VERSION_V3 | typeof REMOTE_CONTRACT_VERSION_V4 | typeof REMOTE_CONTRACT_VERSION_V5 | typeof REMOTE_CONTRACT_VERSION_V6 | typeof REMOTE_CONTRACT_VERSION_V7 | typeof REMOTE_CONTRACT_VERSION_V8 | typeof REMOTE_CONTRACT_VERSION_V9;
 /**
  * All remote contract versions this build accepts:
- * `[1, 2, 3, 4, 5, 6, 7, 8]`.
+ * `[1, 2, 3, 4, 5, 6, 7, 8, 9]`.
  * v1 was frozen by P8-T3; v2 was added by the TCM vNext §15.6 revision;
  * v3 by the Team D1-D6 repair v2 D1 task; v4 by the F3/F11/F9/T1.4
  * repair round r1 F9 task; v5 by the C1 restart-0.1.7-rc.1 recovery
@@ -149,7 +169,9 @@ export type RemoteContractVersion = typeof REMOTE_CONTRACT_VERSION | typeof REMO
  * `durableGeneration` / `liveToken`); v7 by the pre-alpha3 W1 fix-A task
  * (F10: the version-aware `override.set` / `override.reset` closed sets
  * gain the optional `expectedGeneration` slot-guard field — additive,
- * NO new method) (a version bump ADDS supported versions, never edits
+ * NO new method); v8 by A4-PR6 (the intervention plane); v9 by A4-PR7 W1
+ * (the v9-only `team.listCorruptControlLegs` corrupt-leg visibility
+ * read) (a version bump ADDS supported versions, never edits
  * v1/v2/v3/v4/v5/v6 semantics).
  */
 export declare const SUPPORTED_REMOTE_CONTRACT_VERSIONS: readonly number[];

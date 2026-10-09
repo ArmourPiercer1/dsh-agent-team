@@ -55,6 +55,12 @@ import { REMOTE_BACKING_ERROR_CODE_SET } from '../../../remote/src/handlers/disp
 // SAME functions on the same port edge — a drift between the two would be a
 // contract bug the tests of either lane could not see).
 import { validateAdministration as validateRemotePermissionAdministration, validateItem as validateRemoteInterventionItem, } from '../../../remote/src/handlers/intervention.js';
+// A4-PR7 W1 (contract v9) — the corrupt-legs wire law (closed shape +
+// bounded list). ONE law, two dispatchers (the `validateItem` precedent
+// directly above): the generic dispatcher runs it on its port edge, this
+// production lane runs the SAME function — a drift would be a contract
+// bug neither lane's tests could see.
+import { corruptControlLegsValue } from '../../../remote/src/handlers/team.js';
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js';
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
 import { createLedgerPageTracker } from '../../../remote/src/push/ledger-page.js';
@@ -1493,6 +1499,39 @@ export function createS6RemotePorts(options) {
                 }
             },
         },
+        // --- A4-PR7 W1 (remote contract v9): the corrupt-leg visibility read --
+        teamControlCorruption: {
+            async listCorruptLegs(request) {
+                // TEAM-SCOPED read: the bound-root guard runs FIRST (a foreign
+                // teamSessionId fails closed FOREIGN_TEAM before any control
+                // read — the same law every team-scoped method runs). The
+                // closure is the host's ONE control service
+                // (`listControlState().corruptLegs`); absent → the typed
+                // `internal-error` refusal (reason `port-unwired`, the v8
+                // intervention-lane vocabulary) — never a silently empty
+                // report. The service's typed failures (e.g.
+                // TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND — an unknown root reads
+                // NOTHING, invariant 4b) pass through UNMAPPED; only an
+                // untyped throw is re-wrapped typed.
+                const root = assertBoundRoot('team.listCorruptControlLegs', request.teamSessionId);
+                const read = options.corruptControlLegs;
+                if (read === undefined) {
+                    throw remoteContractError('internal-error', 'team.listCorruptControlLegs: the v9 corrupt-leg read seam is unwired on this surface — zero read', { reason: 'port-unwired' });
+                }
+                try {
+                    return { corruptLegs: await read(root) };
+                }
+                catch (error) {
+                    if (error instanceof TeamPluginError)
+                        throw error;
+                    const code = error instanceof Error ? error.code : undefined;
+                    if (typeof code === 'string' && REMOTE_BACKING_ERROR_CODE_SET.has(code)) {
+                        throw error;
+                    }
+                    throw remoteContractError('internal-error', `team.listCorruptControlLegs failed reading the control state: ${error instanceof Error ? error.message : String(error)}`, { reason: 'corrupt-leg-read-failed' });
+                }
+            },
+        },
         // --- team-view-sync-complete (remote contract v6): the live token ----
         liveToken: {
             async token(teamSessionId) {
@@ -2468,6 +2507,23 @@ function buildS6CategoryHandlers(ports, principal) {
                         }
                         return { data: { entries: page, nextAfterSequence, total } };
                     });
+                }
+                case 'team.listCorruptControlLegs': {
+                    // v9-only (the frozen param-parse chain rejects v<9
+                    // envelopes): the corrupt-leg VISIBILITY read (A4-PR7 W1,
+                    // RULING 5-B warning-first). A READ — the principal is the
+                    // DERIVED caller by the EXISTING host-operator default and
+                    // this lane carries NO caller claim (the wire params are
+                    // exactly `{ teamSessionId }`); the bound-root guard + the
+                    // unwired refusal live in the port. The closed projection
+                    // (count exact, list bounded, per-row echo validated) is the
+                    // SHARED `corruptControlLegsValue` law — the same function
+                    // the generic dispatcher runs, so the two lanes can never
+                    // serve two different shapes of this report.
+                    const corruptParams = params;
+                    return ports.teamControlCorruption
+                        .listCorruptLegs({ teamSessionId: corruptParams.teamSessionId })
+                        .then(({ corruptLegs }) => corruptControlLegsValue(corruptParams.teamSessionId, corruptLegs));
                 }
                 default:
                     return Promise.reject(new Error(`team handler routed an unknown method: ${method}`));
