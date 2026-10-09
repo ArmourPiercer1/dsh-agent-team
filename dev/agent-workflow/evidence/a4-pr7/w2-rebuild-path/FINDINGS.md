@@ -1,6 +1,8 @@
 # A4-PR7 W2 lane B — rebuild success criteria, pinned as tests (FINDINGS)
 
-- Branch: `test/a4-w2-rebuild-guarantees` (base `origin/master@ea417956`), one lane worktree, one writer.
+- Branch: `test/a4-w2-rebuild-guarantees` (cut at `origin/master@ea417956`, rebased onto
+  `origin/master@92e14fc2` = round 50 before push; p4t6 re-derived green post-rebase), one lane
+  worktree, one writer. PR: #228.
 - Human ruling in force: **RULING 5-B** (2026-10-09, warning-first) — an unattributable corrupt
   approval record does NOT block execution; recovery REUSES THE EXISTING LIFECYCLE; dispose means
   *instance rebuild*, **not history deletion** (`packages/runtime/lifecycle/dispose.ts` header:
