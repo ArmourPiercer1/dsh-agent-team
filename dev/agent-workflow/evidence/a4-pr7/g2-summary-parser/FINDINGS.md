@@ -29,7 +29,7 @@ The styled/unstyled boundary is now measured on both sides of it, same instrumen
 leg), same flags, piped output both times — the coordinator's pair:
 
 * local `dev/agent-workflow/evidence/a4-pr7/ci-gate/transcripts-green-run1-found-F1/first/census-capture-1.txt` — **0 ESC bytes**;
-* hosted run 37814101108 `census-transcripts/census-capture-1.txt` — **1290 ESC bytes**, same line rendered `^[[2m Test Files ^[[22m ^[[1m^[[31m5 failed…`.
+* hosted run 37814101108 `census-transcripts/census-capture-1.txt` — **1290 ESC-bearing lines, 9036 ESC bytes**, same line rendered `^[[2m Test Files ^[[22m ^[[1m^[[31m5 failed…`.
 
 ## Why the runner styles and this box does not — BOUNDED, not explained
 
@@ -48,7 +48,12 @@ written here as what was measured instead (transcript `06-colour-matrix.txt`, al
   measured dominant; a negative local repro therefore proves nothing about the runner. The
   identical repro shapes with `NO_COLOR` removed print styled.
 
-What is known: the runner emitted 1290 ESC bytes through a pipe; this box emits 0 while
+What is known: the runner emitted 9036 ESC bytes across 1290 lines through a pipe; this box emits 0 while
+  (A correction dated 2026-10-09: the coordinator's original figure of 1290 was the count of
+   ESC-BEARING LINES from `grep -c`, not bytes; the byte count is 9036. Local is 0 either way.
+   The unit was wrong because the instrument that counted it was never checked against the
+   claim being made -- grep -c counts lines.)
+
 `NO_COLOR` suppresses and styles the instant it does not. What is NOT known: which variables
 the runner exports — never observed from here. **That is precisely why the fix cannot depend
 on the trigger**: the parser grades the hosted bytes themselves, is colour-independent by
