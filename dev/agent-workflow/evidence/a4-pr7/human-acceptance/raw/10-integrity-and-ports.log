@@ -1,0 +1,12 @@
+# after the live leg:
+$ sha256sum tests/homes/a4-accept-20261007T16-57-26Z/storages/team_domain.json
+969588a7a4f98ca96f854ea2637acdeb0f76674eebbc1e740c53065b9f33daaa  tests/homes/a4-accept-20261007T16-57-26Z/storages/team_domain.json
+# (pre-boot value recorded before any of this task's runs: 969588a7a4f98ca96f854ea2637acdeb0f76674eebbc1e740c53065b9f33daaa)
+
+$ find tests/homes/a4-accept-20261007T16-57-26Z -newermt '2026-10-09 18:00' | head
+(empty above = the SOURCE acceptance world was never written by any step of this recipe)
+
+$ (ss -ltn) | grep -E ':318[0-9]|:349[0-9]|:3080|:3081'   # after cleanup
+LISTEN 0      511         127.0.0.1:3081       0.0.0.0:*   
+LISTEN 0      511         127.0.0.1:3080       0.0.0.0:*   
+# 3181/3492 released by stopping the supervisor job; :3080/:3081 are the stable dev instances, never touched (boot.mjs probed :3080 before boot -> status=401, see 08-boot-supervisor.log)

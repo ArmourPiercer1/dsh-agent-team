@@ -1,0 +1,17 @@
+# raw bytes of the injected row, next to a row the product itself wrote
+# file: tests/homes/a4-w5-corrupt-acceptance/storages/team_domain.json
+# ledger table keys (sorted): ['1', '10', '11', '12', '13', '14', '15', '2', '3', '4', '5', '6', '7', '8', '9']
+# counter row __ledger_sequence_counter = {"kind":"ledger-sequence-counter","schemaVersion":2,"value":15}
+
+## sequence 14 (written by the product during the acceptance boot):
+{"createdAt":"2026-10-08T04:49:30.988Z","factType":"provision-member-instance","operationId":"op-1jruotp11ap1uk0iim17f1gw","payload":{"instanceId":"inst-00o6p7r1q73w","label":"a4w-fresh-20261008T044850","rootSessionId":"session-a4-accept-boot","templateId":"worker","workspace":"/home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-accept-20261007T16-57-26Z/workspace"},"rootSessionId":"session-a4-accept-boot","schemaVersion":2,"sequence":14}
+
+## sequence 15 (appended by make-corrupt-world.mjs through LedgerRepository.put):
+{"createdAt":"2026-10-09T12:42:22.100Z","factType":"control-request-recorded","payload":{"actionName":"","correlation":"","executionCoupling":"guarded","kind":"leader-approval","operationFingerprint":42,"requestId":"req-a4w5-human-acceptance-damage","requester":{"humanId":"a4-w5-human-acceptance","kind":"human"},"subject":42,"targetInstanceId":"","toolName":42},"rootSessionId":"session-a4-accept-boot","schemaVersion":2,"sequence":15}
+
+# both values are canonical key-sorted JSON strings, exactly like every other row;
+# the ONLY difference is the payload content (the damage), not the encoding.
+
+## team_sessions row (generation advanced by the same append: 16 -> 17, the S1-A stamp):
+   key=session-a4-accept-boot generation=17 rootSessionId=session-a4-accept-boot
+   defaultWorkspace=/home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-accept-20261007T16-57-26Z/workspace

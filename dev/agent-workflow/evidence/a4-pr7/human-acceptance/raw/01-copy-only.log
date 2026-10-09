@@ -1,0 +1,9 @@
+copied world   : /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-accept-20261007T16-57-26Z
+            -> /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance
+skipped        : .accept-host.json, .accept-launch.json, .credentials.yaml, accept-probe.log, logs, .tmp-home, .tmp-xdg, .tmp-npm-cache, p6t6-directive.json, profiles/web/cordis.patch.yml
+
+--copy-only    : the copy is in place and NOTHING WAS APPENDED (ledger untouched).
+WORLD        : /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance
+LEDGER FILE  : /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance/storages/team_domain.json
+next: node verify-corrupt-world.mjs --expect-count 0   (the BEFORE reading)
+then: node make-corrupt-world.mjs                      (appends exactly one row)
