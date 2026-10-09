@@ -1,0 +1,1769 @@
+$ pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=/home/runner/work/dsh-agent-team/dsh-agent-team/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261008T171125Z-2942-1.json --testTimeout=20000
+# exit=1 signal=null error=none seconds=178.6
+--- stdout ---
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/runner/work/dsh-agent-team/dsh-agent-team[39m
+
+ [32m✓[39m packages/testkit/test/p4t6-session-event-scan.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/mcp-target-materialization.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+[90mstdout[2m | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts[2m > [22m[2mE2 — the REAL host entry resolves the addressed facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5)[2m > [22m[2ma booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4E2-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+[90mstdout[2m | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts[2m > [22m[2mR4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3)[2m > [22m[2mR4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+[90mstdout[2m | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts[2m > [22m[2mR4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3)[2m > [22m[2mR4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+[90mstdout[2m | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts[2m > [22m[2mR4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3)[2m > [22m[2mR5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+[90mstdout[2m | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts[2m > [22m[2mR4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3)[2m > [22m[2mR4-absent (§7.3) — a DECLARED-EMPTY carrier refuses the grant round-3 used to derive, tightening still commits, and an UNDECLARED document is refused before any of that
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+[90mstdout[2m | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts[2m > [22m[2mR4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3)[2m > [22m[2mR4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ [32m✓[39m packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts [2m([22m[2m74 tests[22m[2m)[22m[33m 5354[2mms[22m[39m
+     [33m[2m✓[22m[39m c9-serial: a cancelled waiter KEEPS its queue slot — a later writer never overtakes the still-running holder (the reviewer sequence: holder start → cancel waiter → later writer → holder end) [33m 2005[2mms[22m[39m
+[90mstdout[2m | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts[2m > [22m[2mR4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3)[2m > [22m[2mR4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+
+[90mstdout[2m | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts[2m > [22m[2mR5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt)[2m > [22m[2mR5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ [32m✓[39m packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 2372[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts [2m([22m[2m70 tests[22m[2m)[22m[32m 61[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/a4p75-composition-smoke-classification.test.ts [2m([22m[2m54 tests[22m[2m)[22m[33m 4877[2mms[22m[39m
+     [33m[2m✓[22m[39m requires by id every arm this repository actually reports [33m 2203[2mms[22m[39m
+     [33m[2m✓[22m[39m never reports a passing gate over a step it did not run [33m 1694[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a2c1-pwsh-permission.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p3-governance-lane-hygiene.test.ts [2m([22m[2m21 tests[22m[2m)[22m[33m 2449[2mms[22m[39m
+     [33m[2m✓[22m[39m the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name [33m 2275[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a2c7-subtree-matcher.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p3-approval-escalation.test.ts [2m([22m[2m57 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/client/test/client-plugin-mount.test.ts [2m([22m[2m47 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts [2m([22m[2m42 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s3b-result-effects.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a5a-pre-execute.test.ts [2m([22m[2m50 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p3-revoke-reveal-semantics.test.ts [2m([22m[2m33 tests[22m[2m)[22m[33m 600[2mms[22m[39m
+     [33m[2m✓[22m[39m S1: revoke revealing a STATIC allow refuses under an empty envelope, with ZERO write [33m 301[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-projection-store.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/a4p7-blueprint-version-clean.test.ts [2m([22m[2m60 tests[22m[2m)[22m[33m 1772[2mms[22m[39m
+     [33m[2m✓[22m[39m invoking the script by name is a real gate: non-zero exit while dirty sites exist [33m 356[2mms[22m[39m
+     [33m[2m✓[22m[39m dropping ONE row sends THAT site back to UNKNOWN — a second literal on a ledgered line costs its own row (G2) [33m 405[2mms[22m[39m
+     [33m[2m✓[22m[39m evidence must cite the key's FULL tracked path with a real range containing the site line (G3) [33m 696[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r2-effective-config.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 900[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a2c2-permission-coverage.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/h1a-pre-execute-endcap.test.ts [2m([22m[2m49 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 254[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a6a-production-wiring.test.ts [2m([22m[2m52 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4a-control-exact-scope.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r2-model-state.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/team-compatibility-scope.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a2c4-external-lastmile.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/tools/test/a4-corrupt-leg-guard.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p1-authority-envelope.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/team-session-activation-glue.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-refresh-coordinator.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t2-actions.test.ts [2m([22m[2m30 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/multi-mcp-wiring.test.ts [2m([22m[2m49 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s3-work-chain.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p3-permission-mutation-authority.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 248[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/issue1-async-delegation.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/persona-kind-provider-preflight.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p3-approval-case.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p4-r4-authority-binding.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/remote-override-expected-generation.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/h5-bash-effects.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s5a-production-assembly.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4-compat-atomic-state.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/mcp-blueprint-initial-grant.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p5-permission-mutation-proposal.test.ts [2m([22m[2m33 tests[22m[2m)[22m[33m 534[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 901[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/f3a-lock-scope.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4-compat-coldstart-interleave.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t6-fresh-member.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s5b-operation-fencing.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/artifact-read-authority.test.ts [2m([22m[2m34 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p6-intervention-aggregation.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t1-capability-schema.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 95[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/consent-scope-hash-binding.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a2-canonical-operation.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p2-permission-assembler-provenance.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [31m❯[39m packages/tools/test/p6t6-actions.test.ts [2m([22m[2m14 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 11[2mms[22m[39m
+     [32m✓[39m reads: list-members / list-templates / inspect-config execute with lossless effects[32m 2[2mms[22m[39m
+     [32m✓[39m E1/E4: template-addressed creations admit DISTINCT new instances (member-activated)[32m 1[2mms[22m[39m
+     [32m✓[39m E6: at-limit admitted; over the TEMPLATE limit rejected; over the TEAM limit rejected[32m 0[2mms[22m[39m
+     [32m✓[39m E3: persistent follow-up keeps the SAME bound child session (durable read-back)[32m 0[2mms[22m[39m
+     [32m✓[39m E2: label and template addressing on instance-addressed tools are live-rejected[32m 0[2mms[22m[39m
+[31m     [31m×[31m messaging: worker -> leader is delivered direct to the leader bound session[39m[32m 5[2mms[22m[39m
+     [32m✓[39m progress: per-subject sequences (1,2 on unit-a; the other subject restarts at 1)[32m 1[2mms[22m[39m
+     [32m✓[39m the request-token contract: missing/empty/over-long -> BAD_ARGUMENTS[32m 0[2mms[22m[39m
+     [32m✓[39m argument-shape rejections: missing/non-string root, non-object args -> BAD_ARGUMENTS[32m 0[2mms[22m[39m
+     [32m✓[39m caller resolution: no agent / unknown session / throwing resolver -> CALLER_UNRESOLVED[32m 0[2mms[22m[39m
+     [32m✓[39m delegate XOR: neither or both delegation fields -> BAD_ARGUMENTS[32m 0[2mms[22m[39m
+     [32m✓[39m closed vocabularies: bad progress / kind / decision -> BAD_ARGUMENTS[32m 0[2mms[22m[39m
+     [32m✓[39m a well-formed unknown instance id is blocked target-stale by the guard (SD-GUARD)[32m 0[2mms[22m[39m
+     [32m✓[39m the stale-head retry: one ACTIVITY_SEQUENCE_STALE is retried with a fresh head[32m 0[2mms[22m[39m
+ [32m✓[39m packages/domain/test/a1-permission-policy.test.ts [2m([22m[2m49 tests[22m[2m)[22m[32m 114[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 502[2mms[22m[39m
+     [33m[2m✓[22m[39m exact: the member install creates the durable approval row (leader-approval), waits, and a human allow executes [33m 313[2mms[22m[39m
+ [32m✓[39m packages/client/test/pr56-control-subject-payload.test.ts [2m([22m[2m42 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-ledger-store.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t1-explicit.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4f1-row-version-not-document-version.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/tcm-m3-root-initial-work.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+[90mstdout[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ [32m✓[39m packages/tools/test/archive-member-tool.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+[90mstdout[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+[90mstdout[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-a476pinroot: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A476-PIN-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+
+ [32m✓[39m packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/d2-s6-ensure-root-live.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/client/test/d3-open-ordinary-mode.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p3-intervention-projection.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/model-blueprint-initial-routing.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4pr0-proposal-store.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p2-dual-envelope-mutation.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m packages/remote/test/f9-remote-v4.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-live-descendant-authority.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 94[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r2-disposed-history.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m packages/client/test/ledger-adapter.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s6-principal.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/h4-rule-identity.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/s6t-remote-v6.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t2-escalation.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t4-negatives.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t4-policy-negative.test.ts [2m([22m[2m34 tests[22m[2m)[22m[32m 104[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 77[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/d3-member-identity-context.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r2-policy-state-durable.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s6-projection.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/f15-mcp-live-loss.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mprecondition: the human-user leg is listed OPEN before the act, and the terminate case is not yet terminal
+[22m[39m=== A4-SURFACE MEASUREMENT === list ids before the act: ["int-case-0i2xub60hidd411pdt2ow1kt","int-case-10pftk01a87yv51miv3gy1u3","int-case-1a621jc05lr8vr0h4kony0r0","int-case-1mkax560agy4ep145guvk00i"]
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mTHE TELLING: after the escalate terminates the case, intervention.list carries the case as a TERMINAL authority-unavailable item — informational, zero legal actions, nothing held, no-resolver named
+[22m[39m=== A4-SURFACE MEASUREMENT === list ids after the act: ["int-case-10pftk01a87yv51miv3gy1u3","int-case-1a621jc05lr8vr0h4kony0r0","int-case-1mkax560agy4ep145guvk00i"]; terminate item: {"interventionId":"int-case-10pftk01a87yv51miv3gy1u3","kind":"approval","responseBehavior":"informational","blockScope":null,"source":{"kind":"control-case","id":"case-10pftk01a87yv51miv3gy1u3","requestId":"ctrl-0xf6qxr1okoq3e11qyejd06i","legOrdinal":1,"carrierKind":"leader-approval"},"status":"authority-unavailable","requiredAuthority":"human-user","currentReviewAuthority":"human-user","legalActions":[],"derivationReasons":["no-resolver"],"fingerprint":"fp-a4-surface-wire","createdAt":"2026-09-01T09:00:00Z"}
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2ma RISEN escalation is NOT terminal: the risen leg surfaces (exactly one item, open, with affordances) and the case never gains the authority-unavailable cell
+[22m[39m=== A4-SURFACE MEASUREMENT === risen items: [{"interventionId":"int-case-1a621jc05lr8vr0h4kony0r0","kind":"approval","responseBehavior":"wait-for-response","blockScope":{"kind":"operation","operationFingerprint":"fp-a4-surface-risen"},"source":{"kind":"control-case","id":"case-1a621jc05lr8vr0h4kony0r0","requestId":"ctrl-1wyhscs0axceub0iwr8021lf","legOrdinal":2,"carrierKind":"leader-approval"},"status":"open","requiredAuthority":"human-user","currentReviewAuthority":"human-user","legalActions":["allow","escalate","deny"],"derivationReasons":["leg-open"],"fingerprint":"fp-a4-surface-risen","createdAt":"2026-09-01T09:00:00Z"}]
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mthe born-terminal zero-review close surfaces CONSISTENTLY with the escalate-terminate close (same terminal cells), not silently differently
+[22m[39m=== A4-SURFACE MEASUREMENT === born-terminal item: {"interventionId":"int-case-1mkax560agy4ep145guvk00i","kind":"approval","responseBehavior":"informational","blockScope":null,"source":{"kind":"control-case","id":"case-1mkax560agy4ep145guvk00i","requestId":"ctrl-0rcar3m1xlpmdh19eqbq81y5","legOrdinal":1,"carrierKind":"leader-approval"},"status":"authority-unavailable","requiredAuthority":"human-user","currentReviewAuthority":"human-admin","legalActions":[],"derivationReasons":["no-resolver"],"fingerprint":"fp-a4-surface-born","createdAt":"2026-09-01T09:00:00Z"}
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mCONTROL arm (this lane widens NOTHING else): an ordinary allow-decided case (no terminalReason) still leaves the list exactly as before
+[22m[39m=== A4-SURFACE MEASUREMENT === ordinary decided item present? true
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mread-side only: a bare intervention.list appends ZERO durable rows (the PR #118 pinned rows stay the only writes)
+[22m[39m=== A4-SURFACE MEASUREMENT === ledger rows appended by one list call: 0
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mfail-closed act on the terminal item: acting by id on a terminated case stays refused (the act lane re-reads OPEN cases only)
+[22m[39m=== A4-SURFACE MEASUREMENT === act-on-terminal: {"code":"INTERVENTION_NOT_FOUND","message":"intervention.act: no OPEN approval case backs 'int-case-10pftk01a87yv51miv3gy1u3' on team 'session-root-p6t1' (the case left the open projection — decided or never existed)","details":{"method":"intervention.act","endpoint":"intervention.act","contractVersion":8,"requestToken":null}}
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mfetch semantics MEASURED (claim corrected): intervention.get SEARCHES THE PROJECTION SET (s6-remote.ts:3667-3680), it is not an independent decided-refusal read — so the surfaced terminal row now answers get too; the decided-vs-never-existed conflation the follow-up report carries survives for ORDINARY closes, pinned here
+[22m[39m=== A4-SURFACE MEASUREMENT === get-after on the surfaced terminal id: ok=true
+=== A4-SURFACE MEASUREMENT === get on the ordinary decided id: {"code":"INTERVENTION_NOT_FOUND","message":"intervention.get: no intervention item 'int-case-0i2xub60hidd411pdt2ow1kt' is currently projected for team 'session-root-p6t1'","details":{"method":"intervention.get","endpoint":"intervention.get","contractVersion":8,"requestToken":null}}
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mabsence is fail-safe: a control source WITHOUT the terminated read (the pre-existing structural shape) projects exactly the open set — no crash, no synthesized terminal row
+[22m[39m=== A4-SURFACE MEASUREMENT === fake-control projection ids: ["int-case-1a621jc05lr8vr0h4kony0r0"]
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mtorn-window dedupe (the two control reads run under SEPARATE locks): one case appearing in the OPEN snapshot AND the DECIDED snapshot surfaces EXACTLY ONE item, the OPEN snapshot wins, and the act lane — re-reading OPEN fresh — still refuses acting on the truly-decided id
+[22m[39m=== A4-SURFACE MEASUREMENT === torn-window projection ids: ["int-case-10pftk01a87yv51miv3gy1u3"]
+=== A4-SURFACE MEASUREMENT === act 'allow' on the truly-decided id: {"code":"INTERVENTION_NOT_FOUND","message":"intervention.act: no OPEN approval case backs 'int-case-10pftk01a87yv51miv3gy1u3' on team 'session-root-p6t1' (the case left the open projection — decided or never existed)","details":{"method":"intervention.act","endpoint":"intervention.act","contractVersion":8,"requestToken":null}}
+
+[90mstdout[2m | packages/runtime/test/a4-surface-authority-unavailable.test.ts[2m > [22m[2ma4-surface: an A1-12 escalate-terminate close is TOLD as a terminal authority-unavailable item (spec 11.6; plan 6.D:651; the PR #118 recorded-half gets its rendered half)[2m > [22m[2mthe generic decided read lives in CONTROL and carries EVERY decided case (the resolver-unavailable FILTER is the intervention lane law, not a control-lane opinion)
+[22m[39m=== A4-SURFACE MEASUREMENT === decided read: ["case-10pftk01a87yv51miv3gy1u3","case-1mkax560agy4ep145guvk00i","case-0i2xub60hidd411pdt2ow1kt"]
+
+ [32m✓[39m packages/runtime/test/a4-surface-authority-unavailable.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/tools/test/rc2-team-deny-least-privilege.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/tools/test/c1-list-pending-control.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p2-authority-ceiling.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-approved-retry-ceiling-at-commit.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 525[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/policy-state-bound-blueprint-production-wiring.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 298[2mms[22m[39m
+ [32m✓[39m packages/remote/test/tcm-m1-remote-v2.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s2-leader-contract.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/tcm-g1-s6-integration.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s6-remote-commands.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p5-permission-delivery-binding.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 188[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a2c3-inspect-operation-permission.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r1-initial-work.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-inline-wait-abort.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4pr0-proposal-corrupt.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/requirement-probe-blueprint-scoping.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p4-operation-single-shot.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t3-send-delivery.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p4-operation-approval-authority.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p4-production-permission-plane.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 188[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/shell-result-observer.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12b6-handoff-agent-start.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/issue2-capability-permission-precedence.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/mcp-target-materialization-unit.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t1-recovery.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+[90mstdout[2m | packages/runtime/test/rc2a1-fs-containment.test.ts
+[22m[39m[dsh-agent-team] durable permission authority ACTIVE for row session-rc2a1-a: anchor templates declaring capabilities.permissions = ["leader"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor rc2a1.bp@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ [32m✓[39m packages/runtime/test/rc2a1-fs-containment.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/runtime-requirement-facts-provider.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t4a-capability-wiring.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t14h-probe-merge.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/exec-contract-dual-gate.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/legacy/test/p7t6-teammates-adapter.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/bp1-blueprint-authority.test.ts [2m([22m[2m29 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m packages/domain/test/a4p1-blueprint-v3-governance.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/remote/test/c6-remote-v6.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p5-permission-splice.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 2118[2mms[22m[39m
+     [33m[2m✓[22m[39m changed:false commits no row and notifies nobody [33m 435[2mms[22m[39m
+     [33m[2m✓[22m[39m a pure lifecycle restore commits the lifecycle row only: zero overlay writes, zero emissions [33m 446[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/team-session-activation.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 645[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r4-handoff-wiring.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/team-session-startup-fence.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/bound-blueprint-persona-root.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-9-negative-matrix.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 102[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-ceiling-no-port-refusal.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p2-permission-assembler-precedence.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t6-cold-member.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-abandon-without-resolve-envelope.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+[90mstdout[2m | packages/runtime/test/a4-escalate-act-truth.test.ts[2m > [22m[2ma4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it[2m > [22m[2moffer: the human-user leg projects escalate — the offer reads off the FROZEN ladder, never off resolver availability (settled 2026-10-08 ruling; NOT touched by this fix)
+[22m[39m=== A4-ESCALATE-TRUTH MEASUREMENT === legalActions offered on the human-user leg before the act: ["allow","escalate","deny"]
+
+[90mstdout[2m | packages/runtime/test/a4-escalate-act-truth.test.ts[2m > [22m[2ma4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it[2m > [22m[2mMEASURED RECEIPT (disclosed misrepresentation, pinned as tripwire): the wire answers outcome "escalated" although no successor took the case — the truthful value is outside the CLOSED v8 set REMOTE_INTERVENTION_ACT_OUTCOMES (remote/src/contracts/types.ts:485-490); adding one is a wire-version decision the writer may not make (BLOCKER reported)
+[22m[39m=== A4-ESCALATE-TRUTH MEASUREMENT === intervention.act wire response: {"ok":true,"value":{"data":{"outcome":"escalated"},"provenance":{"origin":"team-remote","method":"intervention.act","endpoint":"intervention.act","contractVersion":8,"requestToken":null,"projectionGeneration":null,"effectSequence":null}}}
+
+[90mstdout[2m | packages/runtime/test/a4-escalate-act-truth.test.ts[2m > [22m[2ma4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it[2m > [22m[2mservice-level truth the receipt discards: caseOutcome is "authority-unavailable" and no leg rose (A1-12, spec 11.6)
+[22m[39m=== A4-ESCALATE-TRUTH MEASUREMENT === escalateApprovalLeg return (discarded by s6-remote.ts:3770-3776): caseOutcome=authority-unavailable nextLeg=ABSENT
+
+[90mstdout[2m | packages/runtime/test/a4-escalate-act-truth.test.ts[2m > [22m[2ma4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it[2m > [22m[2mthe case is CLOSED, not destroyed: the leg row stays durable, exactly one closing deny and one escalation fact join, no second leg, nothing pending, zero consumption
+[22m[39m=== A4-ESCALATE-TRUTH MEASUREMENT === durable ledger rows for the wire case after the act: [{"factType":"control-request-recorded","legOrdinal":1},{"factType":"control-decision-recorded","decision":"deny","reason":"escalated","terminalReason":"resolver-unavailable"},{"factType":"control-escalation-recorded","reason":"above my rung — send it up","legOrdinal":1}]
+
+[90mstdout[2m | packages/runtime/test/a4-escalate-act-truth.test.ts[2m > [22m[2ma4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it[2m > [22m[2mDURABLE TRUTH (the fix): the closing deny carries terminalReason "resolver-unavailable" — the A2-8 destination field for an unavailable-resolver close, which the born-terminal twin (requestApprovalLeg's close) stamped and this branch omitted
+[22m[39m=== A4-ESCALATE-TRUTH MEASUREMENT === terminalReason on the wire-lane closing deny: "resolver-unavailable"; on the service-lane closing deny: "resolver-unavailable"
+
+[90mstdout[2m | packages/runtime/test/a4-escalate-act-truth.test.ts[2m > [22m[2ma4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it[2m > [22m[2mCONTROL arm of the fix: a RISEN escalation (leader leg -> Human User) writes no terminalReason and mints leg 2 — absence keeps its A2-8 meaning, the stamp is bound to the terminate branch only
+[22m[39m=== A4-ESCALATE-TRUTH MEASUREMENT === risen case: caseOutcome=escalated nextLeg=leg 2 closing-deny terminalReason=undefined legRows=2
+
+[90mstdout[2m | packages/runtime/test/a4-escalate-act-truth.test.ts[2m > [22m[2ma4 escalate-act truth: escalate at a human-user leg closes the case and must be recorded as closing it[2m > [22m[2mre-read law RETIRED-AND-RE-PINNED by feat/a4-surface-authority-unavailable (NOT renumbered): the terminal item is now VISIBLE in the re-read — status authority-unavailable, informational, zero legal actions; the old lie (a terminated close surfacing as NOTHING, or as PENDING) is what this pin now reddens; get answers the same item because get searches the projection (s6-remote.ts:3667-3680), and the fetch-semantics conflation for ORDINARY closes stays a reported follow-up
+[22m[39m=== A4-ESCALATE-TRUTH MEASUREMENT === intervention.list ids after the act: ["int-case-01gn3u61ds4oyx1rntg681ow","int-case-0ut3uko1s1uisr1n2rv3u11h","int-case-0yyf56w0ijfn4b0kmftky0tn"]; terminate item after the act: {"interventionId":"int-case-0ut3uko1s1uisr1n2rv3u11h","kind":"approval","responseBehavior":"informational","blockScope":null,"source":{"kind":"control-case","id":"case-0ut3uko1s1uisr1n2rv3u11h","requestId":"ctrl-1qm14zp1750o0i0l9fkf31ry","legOrdinal":1,"carrierKind":"leader-approval"},"status":"authority-unavailable","requiredAuthority":"human-user","currentReviewAuthority":"human-user","legalActions":[],"derivationReasons":["no-resolver"],"fingerprint":"fp-a4-esc-truth-wire","createdAt":"2026-09-01T09:00:00Z"}; intervention.get ok: true
+
+ [32m✓[39m packages/runtime/test/a4-escalate-act-truth.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/tcm-d4-root-context.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/f9-control-exactly-once.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3-permission-resolver.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/tcm-m2-workspace-attach.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s6-pagination.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-governance-warning-restart-reconstruction.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 174[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/d1-team-ownership-index.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-4-policy-precedence.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 78[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t1-checks.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/governance-restart.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/team-spill-local.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/startup-consent-production.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/remote/test/d1-remote-v3.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/work-completion-async-wakeup.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4pr0-proposal-generation.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-remote-client.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p6-start-gate-entrances.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12b2-resume-separation.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t4-policy-explain.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/governance-reset-tombstone.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/leader-disable-no-requirements-initial-work.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 122[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/issue2-real-preset-restriction.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p5-permission-read-wiring.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 204[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t4-policy-matrix.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/p4t5-retry-restart.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/p4t5-corrupt-version.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/tools/test/issue1-collect-tools.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/artifact-read-permission-lane.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t5-failure-before-root-create.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-guard-leader.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/bp1-dual-team-gate.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/remote/test/p8t4-sync.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/f9-s6-resolve-control.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/startup-template-disable-production.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t4-one-committed-invariant.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p5-permission-notification.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 127[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t4-intersection.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 109[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-projection-store-v6.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/remote/test/a4p6-remote-v8.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p6-governance-warning-service.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/send-message-liveness.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/g8s1-generation-stamp.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t2-blueprint-v2-requirements.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p4-capability-vs-permission.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/f3c-messaging-sibling.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/governance-mutation-authority.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/legacy/test/p7t7-legacy-read.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t1-delegate.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/startup-preflight-production-create.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p5-glue-permission-receipt.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 398[2mms[22m[39m
+     [33m[2m✓[22m[39m positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived [33m 357[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/s6t-read-state-resolver.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-governance.test.ts [2m([22m[2m43 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t2-policy-state.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p6-governance-warning.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/alpha2-explicit-agent-setup.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t1-ack-fingerprint.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/remote/test/p8t3-round-trip.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a2c5-read-fingerprint.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/tools/test/p6t6-guard.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t1-parallel.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t2-future-boundary.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s4a-entrypoints.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/d1-member-base-tools.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [31m❯[39m packages/runtime/test/p6t3-mediation.test.ts [2m([22m[2m7 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 15[2mms[22m[39m
+[31m     [31m×[31m 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient[39m[32m 9[2mms[22m[39m
+     [32m✓[39m 2. the sender holds the peer-direct grant → DIRECT to the peer session[32m 1[2mms[22m[39m
+[31m     [31m×[31m 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact[39m[32m 2[2mms[22m[39m
+     [32m✓[39m 6. the confirmation facts record the path actually taken for both modes[32m 0[2mms[22m[39m
+[31m     [31m×[31m 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)[39m[32m 0[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r4-fork-describe.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s4b-override-admission.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/leader-template-required-boundary.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 103[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/rmr-remote-mount-race.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t6-evict-readmit.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t5-progress.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/tools/test/c1-caller-root-binding.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [31m❯[39m packages/runtime/test/p6t3-restart.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 9[2mms[22m[39m
+     [32m✓[39m 1. the pending DIRECT intent is recovered exactly once, through the fresh port, with the ORIGINAL correlation[32m 2[2mms[22m[39m
+[31m     [31m×[31m 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)[39m[32m 4[2mms[22m[39m
+     [32m✓[39m 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once)[32m 0[2mms[22m[39m
+     [32m✓[39m 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4)[32m 0[2mms[22m[39m
+[31m     [31m×[31m 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder[39m[32m 1[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s6-push-reconnect.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t2-conflicts.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/rc2-kit-preset-seam.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 106[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-intent-model.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t4-restart.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/p4t5-crash-matrix.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s4b-mcp-facet.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12m4-remote-mount.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/rmr-create-or-open-boot.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/client/test/d2-open-team-mode.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t4-root-fork.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12a-glue-handoff-ports.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t1-probe-generation.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/a3p1-team-domain-tenth-store.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-inline-abandon.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/template-disable-no-requirements-gate.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 110[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/d1-s6-remote-v3.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t5-fresh-root.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/remote/test/p8t4-engine.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/client/test/projection-adapter.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-ceiling-refusal-wire.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 104[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t4-external-policy.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/remote/test/p8t3-version.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12b1-real-create.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/bp1-red-probe.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-5-compat-complete-true.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/mcp-supply-config.test.ts [2m([22m[2m39 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t1-inflight-drift.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/work-completion-notification-glue.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p2-ceiling-reachability.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/startup-all-templates-real-authority.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/c1-control-notification.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t4-orphan-detect.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-10-composition-pipeline.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t2-crash-recovery.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t3-archive-running.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p5-self-mutation.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 384[2mms[22m[39m
+ [32m✓[39m packages/legacy/test/p7t7-integrated-fork-handoff.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/remote/test/c1-remote-v5.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/prf-inspect-same-source.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t4-stale.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t5-cold-root.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t3-member-n-instances.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/f1-webserver-shim-isolation.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 233[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/live-persona-observer.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/governance-concurrency.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/tools/test/h3-hostile-seam.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+[90mstdout[2m | packages/runtime/test/team-skills.test.ts
+[22m[39m[dsh-agent-team] registered 2 bundled team skill(s) from /home/runner/work/dsh-agent-team/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+
+ [32m✓[39m packages/runtime/test/team-skills.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t2-creation-fields.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t3-member-context-policy.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r4-bc23-24-no-mutation.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t3-lifecycle-transitions.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/governance-stale-ui-generation.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-subject-normalization.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p5-permission-notification-lane-hygiene.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t3-reconciler.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/rc2-kit-wire-shape.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t2-override-precedence.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-abandon-storage-fault.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t5-authority.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/f15-mcp-live-loss-characterization.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t1-cold-resume.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p3-effective-parity.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-legacy-row-compat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12a-m2-persona.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t2-authority.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t5-intervals.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/fix-control-authz-d-restart-fresh-human.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 182[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t4-per-stage-retry.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/rc2-kit-fixture-invariants.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t1-double-bind.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t5-snapshot-once.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t2-addressing.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t3-future-boundary.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t1-fresh-cold-paths.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s4b-model-consumption.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-remote-categories.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/domain/test/exec-contract-a1-leader-allow.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 93[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-create-flow.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/storage/test/bp1-blueprint-registry.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t3-dispose-race.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p01-team-scoped-overlay.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t5-projection.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/tcm-m3-root-work-glue.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t3-restore-no-agent.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p8s3-member-cas.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/client/test/d1-team-remote-v3.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/tcm-m1-s6-v2-routing.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/domain/test/bp1-blueprint-inspector.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/bp1-freeze-barrier.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t1-overlay-slots.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r1-create-params.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-review-payload-roundtrip.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t3-member-workspace.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s4a-chain.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t4-repeat-reconcile.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s4b-cell-provenance.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t4-allow-once.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-command-flow.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t3-member-lifecycle.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/tools/test/p6t6-bypass-scan.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-7-fresh-per-delegation.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/fix-control-authz-h-send-message.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 153[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r4-bc22-idempotency.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t2-quota.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p5-permission-read-projection.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 59[2mms[22m[39m
+ [32m✓[39m packages/storage/test/g8s1-stamp-advance.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/fix-control-authz-b-frozen-snapshot.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 179[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t2-provenance.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/plugin-dsh-compat.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 106[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/model-activation-step8.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 152[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t5-restart.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/p8t1-projection-negative.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/leader-instance-record.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/permission-overlay-validation.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 131[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t3-lifecycle-fact.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/tools/test/t2-tool-selector-deny.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/s6t-live-token.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t4-adapter.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/rc2-persona-probe.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t2-blueprint-validation.test.ts [2m([22m[2m69 tests[22m[2m)[22m[32m 79[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t3-binding-service.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/u6-mcp-017-regression.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 122[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-8-serialization-roundtrip.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-inline-review.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/c1-production-wiring.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/leader-recovery-next-boundary-exit.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 59[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12b4-principal-context.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/governance-idempotence.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-template-subject.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/recovery-abandon-commit-fault.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 174[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/required-mcp-live-outage-recovery.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 683[2mms[22m[39m
+     [33m[2m✓[22m[39m 1. the live unreachable verdict overrides the static available:true seed → the required scope BLOCKs (typed, recovery offered) [33m 334[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t5-admission.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/rc2-sanitize-evidence.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 2680[2mms[22m[39m
+     [33m[2m✓[22m[39m S13 file aliases, quoted values, and capture formats pass the standalone regressions [33m 1938[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t2-blueprint-v2-hash.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/recovery-send-message-review.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 180[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/runtime-substrate-resolver.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4pr0a-abandon-projection-closure.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-handoff.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/a4-artifacts-nonempty.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 395[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p6-driven-principal-act.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/remote/test/p8t3-admission.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/artifact-read-digest-fact.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/permission-overlay-generation-conflict.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 77[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t4-crash-sidecar.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/negative.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/model-inspect-config.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/a3p1-seam-additive-tables.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t1-binder-core.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/d5-instance-contract.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/permission-overlay-append.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 139[2mms[22m[39m
+ [32m✓[39m packages/legacy/test/p7t7-integrated-lifecycle-restore.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/requirement-authority-negatives.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4-06-journal.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t3-lifecycle-property.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 577[2mms[22m[39m
+ [32m✓[39m packages/client/test/client-architecture-negatives.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4-01-schema-meta.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/rc2-kit-fault-injection.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 4679[2mms[22m[39m
+     [33m[2m✓[22m[39m F0 the healthy path completes, stops its child, touches nothing else [33m 461[2mms[22m[39m
+     [33m[2m✓[22m[39m F1 the total-request ceiling trips on distinct states and aborts via the owner [33m 471[2mms[22m[39m
+     [33m[2m✓[22m[39m F2 a repeated state trips even with other sessions interleaved [33m 480[2mms[22m[39m
+     [33m[2m✓[22m[39m F3 consecutive wait timeouts trip and unwind through the owner [33m 459[2mms[22m[39m
+     [33m[2m✓[22m[39m F4 an unrecognized wire shape fails loudly and still runs cleanup [33m 454[2mms[22m[39m
+     [33m[2m✓[22m[39m F5 the independent lifetime watchdog fires with no progress at all [33m 871[2mms[22m[39m
+     [33m[2m✓[22m[39m F6 the abort reason is written where the next reader will look [33m 471[2mms[22m[39m
+     [33m[2m✓[22m[39m F7 the actual runner callback and owned-process cleanup regressions pass [33m 992[2mms[22m[39m
+ [32m✓[39m packages/legacy/test/p7t7-integrated-override-admission.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/client/test/f9-remote-client-v4.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12a-h1-nullable-mcp.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/serialization.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t3-restart.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-3-lifecycle-matrix.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t3-skills-mcp-adapter.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r4-handoff-surface.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s7r2-residency-resuming.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/team-spill-local-composition.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t3-descendant-drain.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 64[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-v3-grammar-enforced.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/legacy/test/p7t7-mutation-reject.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/legacy/test/p7t7-integrated-drift-ack.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t2-blueprint-parse.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/issue1-serial-blocking.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/restart-readiness-unknown.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 78[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-read-state.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/bound-blueprint-persona-live.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p6t4-deny.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8t2-cold.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/bp1h-blueprint-authoring.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/template-model-preference.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-legacy.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/requirement-facts.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/boundary-committed-applied.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-guard-coupling.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-subject-cross-kind-alias.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/remote-control-abandoned-code.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/tools/test/issue2-builtin-deny-focused.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/rc2-kit-pin-hygiene.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 172[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/restart-effective-policy.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8t2-negative.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/runtime-substrate-root-member-persona.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t3-fork-reconciliation.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t4-ordinary-fork.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8t2-overlay.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t2-persona-complete-fatal.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/domain/test/blueprint-v1-frozen-resume.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t2-persona-compatible.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/persona-kind-shipped-dist-smoke.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/effective-policy-policy-state-live.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-session-resolution.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t4-member-fork.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/permission-overlay-port-surface.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-member-commands.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t2-persona-cold-bind.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12a-team-tools-registration.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4t2-journal.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/optional-mcp-live-outage-degraded.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12a-b3-external-deny.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/bp1-red-glue-probe.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4-05-governance.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t4-cold-resume.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-6-snapshot-immutability.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/effective-policy-single-source.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/ids.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [31m❯[39m packages/domain/test/t2-blueprint-hash.test.ts [2m([22m[2m18 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 72[2mms[22m[39m
+     [32m✓[39m matches the NIST vector for "abc"[32m 2[2mms[22m[39m
+     [32m✓[39m matches the NIST vector for the empty string[32m 0[2mms[22m[39m
+     [32m✓[39m matches the NIST vector for the 448-bit message[32m 0[2mms[22m[39m
+     [32m✓[39m hashes multi-byte UTF-8 deterministically[32m 1[2mms[22m[39m
+     [32m✓[39m is independent of key order (canonical JSON binding)[32m 1[2mms[22m[39m
+     [32m✓[39m changes when any value changes[32m 0[2mms[22m[39m
+     [32m✓[39m returns a sha256-prefixed 64-hex string[32m 0[2mms[22m[39m
+     [32m✓[39m is deterministic across parses[32m 23[2mms[22m[39m
+     [32m✓[39m is independent of YAML key order[32m 6[2mms[22m[39m
+     [32m✓[39m changes when semantic content changes[32m 6[2mms[22m[39m
+     [32m✓[39m changes across revisions of the same id[32m 2[2mms[22m[39m
+     [32m✓[39m changes across ids with identical content[32m 3[2mms[22m[39m
+     [32m✓[39m binds exactly to the canonical hashable projection[32m 3[2mms[22m[39m
+[31m     [31m×[31m projects absent optional singles as explicit null[39m[32m 15[2mms[22m[39m
+     [32m✓[39m preserves present optional values (including nested quota nulls)[32m 3[2mms[22m[39m
+     [32m✓[39m changes when only the leader modelPreference changes[32m 1[2mms[22m[39m
+     [32m✓[39m absent vs present modelPreference hash differently[32m 1[2mms[22m[39m
+     [32m✓[39m is deterministic for the same token[32m 1[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12a-b2-child-identity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t5-target-inspect.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/work-completion-notification.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/c1-leader-notification-glue.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/capability-telemetry.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/storage/test/rmr-create-or-open.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a3p2-effective-policy-lane-import.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t2-blueprint-catalog.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t5-source-mutate.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8t2-fifty.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/remote/test/p8t3-negative.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m packages/client/test/f9u-control-surface-model.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-2-template-n-instances.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 84[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/c1-restart-recovery.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s3-work-request.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/remote/test/p8t4-negative.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/team-session-durability.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/p8t1-projection-serialization.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m packages/remote/test/p8t3-invalid-ids.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t1-ordinary-noop.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/control-team-subject.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/pbf-default-artifact-urls.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12h4-s6-fail-closed.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8t2-terminal.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/a4p7-shipped-composition-blueprint.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/permission-overlay-history-immutability.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 59[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12a-m3-recursive-drain.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/client/test/team-members-model.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p7t5-no-creation-scan.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/degradation-consent.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/t6-1-no-agent-dependency.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/template-disable-enable.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/permission-overlay-latest-generation.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 241[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/startup-preflight-all-templates.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/persona-runtime-substrate-equality.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4-03-member-instances.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4-07-durability-crash.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/capability-readiness-provider.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/identity.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p5t2-persona-no-persona.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/recovery-leader-dispatch-review.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 74[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/requirement-action-impact.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4-02-team-sessions.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4-04-session-bindings.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m packages/storage/test/p4-08-independence-negative.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/permission-overlay-restart-persistence.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 122[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/p8s5a-host-loadability.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/remote-safe.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/p8t1-projection-overlay.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/requirement-applicability.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/persona-requirement-v2.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/types.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/optional-runtime-degradation.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t2-blueprint-immutability.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/capability-runtime-status.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/team-required-recovery.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/runtime.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/t12a-m1-effective-cwd.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/errors.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 98[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/startup-required-team-fatal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t2-blueprint-revision.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 83[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/recovery-dispatch-abort-zero-effect.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 151[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/persona-observed-kind.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/recovery-exit-next-boundary.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/recovery-member-reduced-authority.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m packages/runtime/test/template-required-recovery.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/p8t1-projection-generation.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m packages/domain/test/t5-compatibility-bridge.test.ts [2m([22m[2m76 tests[22m[2m)[22m[32m 91[2mms[22m[39m
+ [32m✓[39m packages/client/test/client.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/contracts/test/contracts.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/storage/test/storage.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/domain/test/domain.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/testkit/test/testkit.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/remote/test/remote.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/tools/test/tools.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [31m❯[39m packages/testkit/test/a4p7-merge-gate.test.ts [2m([22m[2m29 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 177295[2mms[22m[39m
+     [32m✓[39m runs where its instruments can see the tree, and refuses to run anywhere else[32m 10[2mms[22m[39m
+       [33m[2m✓[22m[39m is green, asserted by arm name and by absence of a skip — never by the exit code [33m 1526[2mms[22m[39m
+       [32m✓[39m treats a step that did not run as a failure that says why, even at exit 0[32m 1[2mms[22m[39m
+       [33m[2m✓[22m[39m asks where a missing artifact came from before calling it a regression, on synthetic trees [33m 1175[2mms[22m[39m
+       [33m[2m✓[22m[39m refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact [33m 360[2mms[22m[39m
+       [33m[2m✓[22m[39m reads a never-built checkout as refused, by name, and still refuses to call it green [33m 1024[2mms[22m[39m
+       [33m[2m✓[22m[39m reads a partial build output as failed, not refused: a build ran and produced the wrong surface [33m 1005[2mms[22m[39m
+       [33m[2m✓[22m[39m refuses the leg, by name, when the host module closure cannot be traversed [33m 578[2mms[22m[39m
+       [33m[2m✓[22m[39m reports every verdict class with its set by path when run at the toplevel [33m 407[2mms[22m[39m
+       [32m✓[39m refuses a directory that is not a repository, and is never believed as clean[32m 63[2mms[22m[39m
+       [32m✓[39m will not accept a run from below the toplevel as a whole-tree clean (measured false-clean)[32m 64[2mms[22m[39m
+       [32m✓[39m classifies a lint run by its verdict line and its universe line, on captured output[32m 1[2mms[22m[39m
+       [33m[2m✓[22m[39m lint closes as an identity diff against the named baseline, not against a count [33m 19582[2mms[22m[39m
+       [32m✓[39m names the three states of a captured stderr, including the arm this gate cannot reach[32m 1[2mms[22m[39m
+       [33m[2m✓[22m[39m no tracked file is invisible to lint except under a prefix this leg names [33m 19899[2mms[22m[39m
+       [32m✓[39m the committed install surface is fresh against the tree, and a missing surface is refused[32m 190[2mms[22m[39m
+       [33m[2m✓[22m[39m the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask [33m 20078[2mms[22m[39m
+       [32m✓[39m a check:artifacts run from a subdirectory is refused, never an OK over nothing[32m 49[2mms[22m[39m
+       [33m[2m✓[22m[39m the scratch the commit-level instrument builds cannot change another instrument's measurement [33m 65970[2mms[22m[39m
+       [32m✓[39m a crashed run's scratch is swept, and a live one is not[32m 41[2mms[22m[39m
+       [33m[2m✓[22m[39m every workspace package that declares a typecheck script typechecks [33m 21644[2mms[22m[39m
+       [32m✓[39m no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here[32m 1[2mms[22m[39m
+[31m       [31m×[31m the client lane runs, and no failure appears outside the disclosed baseline[39m[33m 23092[2mms[22m[39m
+       [32m✓[39m tolerates a green trio and refuses a vanished one — the two are different answers[32m 1[2mms[22m[39m
+       [32m✓[39m a missing instrument is a refusal that names it, never a pass[32m 9[2mms[22m[39m
+       [33m[2m✓[22m[39m an instrument that is killed before reporting is a refusal that says so [33m 509[2mms[22m[39m
+       [32m✓[39m a child killed by a signal is refused even when it printed a complete report[32m 8[2mms[22m[39m
+       [32m✓[39m every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core[32m 3[2mms[22m[39m
+       [32m✓[39m this spec itself is counted by the p4t6 scannable-file ledger[32m 1[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m503 passed[39m[22m[90m (508)[39m
+[2m      Tests [22m [1m[31m10 failed[39m[22m[2m | [22m[1m[32m6363 passed[39m[22m[90m (6373)[39m
+[2m   Start at [22m 17:11:25
+[2m   Duration [22m 177.84s[2m (transform 12.30s, setup 0ms, import 164.85s, tests 222.99s, environment 61ms)[22m
+
+JSON report written to /home/runner/work/dsh-agent-team/dsh-agent-team/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261008T171125Z-2942-1.json
+
+--- stderr ---
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/mcp-target-materialization.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-effective-config.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-effective-config.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-effective-config.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-effective-config.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-effective-config.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-effective-config.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-effective-config.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-effective-config.test.ts[2m > [22m[2mp8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-08, projection v2)[2m > [22m[2mthe R2-2 worlds are disposed (close + stop semantics)
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-model-state.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-model-state.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-model-state.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-model-state.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-model-state.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/team-compatibility-scope.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-model-state.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-model-state.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/team-compatibility-scope.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-model-state.test.ts[2m > [22m[2mR2-3 (P8-S7-R2): BQ-11 the model state view[2m > [22m[2mR23.16: every world root closed cleanly and the scratch dirs are destroyed (reversible)
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+[90mstderr[2m | packages/runtime/test/team-compatibility-scope.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/team-compatibility-scope.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/team-compatibility-scope.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/team-compatibility-scope.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: bootPhase must be "create", "resume" or "create-or-open"
+    at fail (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:603:11)
+    at validateTeamPluginConfig (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:610:97)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1641:29)
+    at Module.apply (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/p8s5a-production-assembly.test.ts:718:16
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/p8s5a-production-assembly.test.ts:706:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "agents" public service is absent from the plugin context
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1648:13)
+    at Module.apply (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/p8s5a-production-assembly.test.ts:745:16
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/p8s5a-production-assembly.test.ts:706:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s5a-production-assembly.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r1" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r1" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r2" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r2" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r3" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-fndj-r3" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/consent-scope-hash-binding.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+[22m[39m[dsh-agent-team] the permission authority facts warm-up FAULTED (a provider read abstained for at least one warm target) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE / zero envelope authority) until an addressed read rebuilds the facts (bounded recovery); decisions and execution are unaffected
+
+[90mstderr[2m | packages/runtime/test/p8s6-principal.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s6-principal.test.ts[2m > [22m[2mp8s6-principal teardown[2m > [22m[2mthe C3 world is disposed (stop semantics)
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+lint-visibility: eslint read 1122 of 2472 OFFERED tracked lintable file(s); 1350 are hidden by an ignore pattern (dev/ 479, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1122 + 1350 = 2472 offered, + 0 skipped = 2472 tracked lintable path(s); nothing skipped
+[90mstderr[2m | packages/runtime/test/p8s7r2-policy-state-durable.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-policy-state-durable.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r2-policy-state-durable.test.ts[2m > [22m[2mp8s7r2-policy-state-durable teardown[2m > [22m[2mthe R2-1 worlds are disposed (stop semantics)
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+[90mstderr[2m | packages/runtime/test/p8s6-projection.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s6-projection.test.ts[2m > [22m[2mp8s6-projection teardown[2m > [22m[2mthe C2 world is disposed (stop semantics)
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+[90mstderr[2m | packages/runtime/test/p8s6-remote-commands.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s6-remote-commands.test.ts[2m > [22m[2mp8s6-remote-commands teardown[2m > [22m[2mthe C4 world is disposed (stop semantics)
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+[90mstderr[2m | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b6-handoff-agent-start.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rc2a1-fs-containment.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rc2a1-fs-containment.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rc2a1-fs-containment.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: Error: agent-bindings: alpha.2 permission fs containment unavailable for 'session-rc2a1-b' (the fs provider exposes no public contains() seam while the template declares exact/subtree file permission (the containment authority is incomplete), instanceId=inst-leader) (code: alpha2-permission-fs-containment-unavailable)
+    at permissionFsContainmentUnavailable (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/live/agent-bindings.mjs:4368:19)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/live/agent-bindings.mjs:2391:19
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/live/agent-bindings.mjs:990:18
+    at makeHandle (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/t12a-live-bridge.mjs:870:7)
+    at Object.create (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/t12a-live-bridge.mjs:902:22)
+    at Object.runOwned (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/team-session-activation.ts:571:16)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/live/agent-bindings.mjs:1023:16
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/live/agent-bindings.mjs:814:14
+    at singleFlightTeamActivation (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/live/agent-bindings.mjs:818:14)
+    at runOwnedActivation (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/live/agent-bindings.mjs:1021:12)
+
+[90mstderr[2m | packages/runtime/test/team-session-startup-fence.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/team-session-startup-fence.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/team-session-startup-fence.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/team-session-startup-fence.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/team-session-startup-fence.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/team-session-startup-fence.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/team-session-startup-fence.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/team-session-startup-fence.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamDomainError: storage seam failure during 'open' on store 'team_domain': injected domain-open failure (startup-failure isolation world)
+    at normalizeSeamError (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/schema/errors.ts:177:10)
+    at openHandle (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/repositories/team-domain.ts:151:11)
+    at createOrOpenTeamDomainDetailed (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/repositories/team-domain.ts:368:18)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1732:21)
+
+[90mstderr[2m | packages/runtime/test/p8s7r4-handoff-wiring.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s7r4-handoff-wiring.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/bound-blueprint-persona-root.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/bound-blueprint-persona-root.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is absent from the plugin context (the web profile provides it through the workspace row — the team row hard-injects it)
+    at assertWorkspaceRegistryLike (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/workspace-attach.ts:65:11)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1665:7)
+    at Module.apply (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/tcm-m2-workspace-attach.test.ts:431:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+[90mstderr[2m | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "workspaceRegistry" public service is malformed: expected resolveByPath and list to be functions
+    at assertWorkspaceRegistryLike (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/workspace-attach.ts:75:11)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1665:7)
+    at Module.apply (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/tcm-m2-workspace-attach.test.ts:452:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+[90mstderr[2m | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/tcm-m2-workspace-attach.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+[90mstderr[2m | packages/runtime/test/p8s6-pagination.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s6-pagination.test.ts[2m > [22m[2mp8s6-pagination teardown[2m > [22m[2mthe C6 world is disposed (stop semantics)
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-scp-r5" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-scp-r8" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-consent-production.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/t12b2-resume-separation.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b2-resume-separation.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b2-resume-separation.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b2-resume-separation.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b2-resume-separation.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b2-resume-separation.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamDomainError: schema_meta stamp for store 'schema_meta' is missing (partial create or corruption)
+    at teamDomainError (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/schema/errors.ts:98:10)
+    at verifyStamps (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/repositories/team-domain.ts:226:13)
+    at openTeamDomain (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/repositories/team-domain.ts:314:11)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1729:14)
+
+[90mstderr[2m | packages/runtime/test/t12b2-resume-separation.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b2-resume-separation.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b2-resume-separation.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-t12b2foreign" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4036:15)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-std-r3" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-std-r3x" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-template-disable-production.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-std-r3x" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-preflight-production-create.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-preflight-production-create.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-preflight-production-create.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-spfc-fat1" is 'fatal' — the durable Team bind is refused (zero durable effect; a Team-level required requirement is down — it cannot be bypassed by disabling a template; repair the environment and re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-preflight-production-create.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-preflight-production-create.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-preflight-production-create.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-spfc-fix1" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-preflight-production-create.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-preflight-production-create.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-preflight-production-create.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-spfc-con1" is 'consentRequired' — the durable Team bind is refused (zero durable effect; an optional requirement is down and not consented — grant the consent (requirementAuthority.grantDegradationConsent), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/p8s7r4-fork-describe.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 101ms — the connection service appeared after the mount step)
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service was absent at the mount step and did not appear within 200ms (headless host, or the web connection service was not provided in time)
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] remote mount: FAILED — the "connection" public service appeared malformed: expected connection.rpc.handle to be a function
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-remote-mount-race.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: remoteMountWaitMs must be a non-negative integer (milliseconds) when present
+    at fail (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:603:11)
+    at validateTeamPluginConfig (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:686:5)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1641:29)
+    at Module.apply (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/rmr-remote-mount-race.test.ts:337:17
+    at VitestModuleEvaluator._runInlinedModule (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+
+[90mstderr[2m | packages/runtime/test/p8s6-push-reconnect.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/p8s6-push-reconnect.test.ts[2m > [22m[2mp8s6-push-reconnect teardown[2m > [22m[2mthe C5 world is disposed (stop semantics)
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+[90mstderr[2m | packages/runtime/test/t12m4-remote-mount.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12m4-remote-mount.test.ts
+[22m[39m[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[90mstderr[2m | packages/runtime/test/t12m4-remote-mount.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12m4-remote-mount.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/t12m4-remote-mount.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/t12m4-remote-mount.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "connection" public service is malformed: expected connection.rpc.handle to be a function; a headless host should not provide a partial service
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2920:11)
+
+[90mstderr[2m | packages/runtime/test/t12m4-remote-mount.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12m4-remote-mount.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): webserver: route /team-remote is already registered
+    at mountRemoteNow (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1542:15)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2925:27)
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+    at teamDomainError (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/schema/errors.ts:98:10)
+    at createTeamDomain (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/repositories/team-domain.ts:280:13)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1726:14)
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-rmrcooroot" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4036:15)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/rmr-create-or-open-boot.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/t12b1-real-create.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b1-real-create.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b1-real-create.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/bp1-red-probe.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b1-real-create.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/bp1-red-probe.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/t12b1-real-create.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/t12b1-real-create.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamDomainError: team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain
+    at teamDomainError (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/schema/errors.ts:98:10)
+    at createTeamDomain (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/storage/repositories/team-domain.ts:280:13)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1726:14)
+
+[90mstderr[2m | packages/runtime/test/bp1-red-probe.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/bp1-red-probe.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/bp1-red-probe.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/bp1-red-probe.test.ts
+[22m[39m[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[90mstderr[2m | packages/runtime/test/bp1-red-probe.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: the resume of root "session-bp1rednofit" found no durable TeamSession record — a resume loads the existing Team identity, it never mints one (the create boots it)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4036:15)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamRuntimeError: TeamRuntime: the creation preflight of "session-sa-r6" is 'fixOrDisable' — the durable Team bind is refused (zero durable effect; a required template requirement is down — repair + recheck, or disable the template (requirementAuthority.setTemplateAvailability with available: false), then re-drive the creation)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:1803:13
+    at createAndStartTeam (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:2624:20)
+    at Object.boot (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/root.ts:4008:9)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2934:5)
+
+[90mstderr[2m | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/startup-all-templates-real-authority.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/f1-webserver-shim-isolation.test.ts[2m > [22m[2mF1 the scoped webServer compatibility seam (host.ts internal/get)[2m > [22m[2mF1-T1: the team remote registration is served by the scoped shim (0.1.5 topology)
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/f1-webserver-shim-isolation.test.ts[2m > [22m[2mF1 the scoped webServer compatibility seam (host.ts internal/get)[2m > [22m[2mF1-T1: the team remote registration is served by the scoped shim (0.1.5 topology)
+[22m[39m[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[90mstderr[2m | packages/runtime/test/f1-webserver-shim-isolation.test.ts[2m > [22m[2mF1 the scoped webServer compatibility seam (host.ts internal/get)[2m > [22m[2mF1-T2: unrelated contexts keep the native Cordis failure (the key regression)
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/f1-webserver-shim-isolation.test.ts[2m > [22m[2mF1 the scoped webServer compatibility seam (host.ts internal/get)[2m > [22m[2mF1-T2: unrelated contexts keep the native Cordis failure (the key regression)
+[22m[39m[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[90mstderr[2m | packages/runtime/test/f1-webserver-shim-isolation.test.ts[2m > [22m[2mF1 the scoped webServer compatibility seam (host.ts internal/get)[2m > [22m[2mF1-T3: 0.1.2-era behavior is unchanged (the native walk resolves)
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/f1-webserver-shim-isolation.test.ts[2m > [22m[2mF1 the scoped webServer compatibility seam (host.ts internal/get)[2m > [22m[2mF1-T3: 0.1.2-era behavior is unchanged (the native walk resolves)
+[22m[39m[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+[90mstderr[2m | packages/runtime/test/team-skills.test.ts
+[22m[39m[dsh-agent-team] bundled team skill "bad-name" skipped: the frontmatter name "Bad_Name" is not a valid kebab-case skill name
+[dsh-agent-team] bundled team skill "missing-description" skipped: SKILL.md frontmatter must carry a kebab-case "name" and a non-empty "description"
+
+[90mstderr[2m | packages/runtime/test/team-skills.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/team-skills.test.ts
+[22m[39m[dsh-agent-team] no bundled skills directory is resolvable from the host entry location — the bundled team skills are NOT registered (install-surface anomaly); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/bp1-freeze-barrier.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/bp1-freeze-barrier.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/bp1-freeze-barrier.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/bp1-freeze-barrier.test.ts
+[22m[39m[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+[90mstderr[2m | packages/runtime/test/runtime.test.ts
+[22m[39m[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+[90mstderr[2m | packages/runtime/test/runtime.test.ts
+[22m[39m[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: must be a plain object
+    at fail (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:603:11)
+    at validateTeamPluginConfig (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:609:64)
+    at bootstrap (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:1641:29)
+    at Module.apply (/home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/host.ts:2988:46)
+    at /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/test/runtime.test.ts:28:20
+    at VitestModuleEvaluator._runInlinedModule (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/runner/work/dsh-agent-team/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 10 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m packages/domain/test/t2-blueprint-hash.test.ts[2m > [22mt2 hash: hashable projection[2m > [22mprojects absent optional singles as explicit null
+[31m[1mAssertionError[22m: expected { templateId: 'leader', …(6) } to deeply equal { templateId: 'leader', …(5) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,6 +1,7 @@[39m
+[2m  {[22m
+[31m+   "capabilities": null,[39m
+[2m    "contextPolicy": null,[22m
+[2m    "description": null,[22m
+[2m    "displayName": null,[22m
+[2m    "modelPreference": null,[22m
+[2m    "persona": "Lead.",[22m
+
+[36m [2m❯[22m packages/domain/test/t2-blueprint-hash.test.ts:[2m116:29[22m[39m
+    [90m114|[39m     [34mexpect[39m(hashable[33m.[39mquotas)[33m.[39m[34mtoBe[39m([35mnull[39m)
+    [90m115|[39m     [34mexpect[39m(hashable[33m.[39mcapabilityPolicy)[33m.[39m[34mtoBe[39m([35mnull[39m)
+    [90m116|[39m     [34mexpect[39m(hashable[33m.[39mleader)[33m.[39m[34mtoEqual[39m({
+    [90m   |[39m                             [31m^[39m
+    [90m117|[39m       templateId[33m:[39m [32m'leader'[39m[33m,[39m
+    [90m118|[39m       displayName[33m:[39m [35mnull[39m[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/testkit/test/a4p7-merge-gate.test.ts[2m > [22mA4-PR7 §7.6 — the code merge gate, driven by real commands[2m > [22mthe client lane (the root suite cannot see it, and this gate says why)[2m > [22mthe client lane runs, and no failure appears outside the disclosed baseline
+[31m[1mAssertionError[22m: client lane did not close. why: the client lane produced no vitest summary at all; tail:     [90m391|[31m         blueprintRevision[33m:[31m [34m2[31m[33m,[31m
+    [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[31m
+    [41m[1m FAIL [22m[49m test/team-governance.client.spec.tsx[2m > [22mTeamGovernance[2m > [22man override reset targets the member instance (scope instance) and pulls once on success
+    [31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 0 times[31m
+    [36m [2m❯[22m test/team-governance.client.spec.tsx:[2m556:35[22m[31m
+        [90m554|[31m     } satisfies [33mRemoteOverrideResetParams[31m)
+        [90m555|[31m     [35mawait[31m vi[33m.[31m[34mwaitFor[31m(() [33m=>[31m {
+        [90m556|[31m       [34mexpect[31m(face[33m.[31mpullProjection)[33m.[31m[34mtoHaveBeenCalledTimes[31m([34m1[31m)
+        [90m   |[31m                                   [31m^[31m
+        [90m557|[31m       expect(memberBlock.querySelector('[data-governance-override-rese…
+        [90m558|[31m     })
+    [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[31m
+    tail:
+    [32m-         "available": true,[31m
+    [31m+         "available": false,[31m
+    [2m          "domain": "persona",[22m
+    [2m          "generation": 0,[22m
+    [2m          "subject": "solo",[22m
+    [2m        },[22m
+    [2m      ],[22m
+    [36m [2m❯[22m test/team-creation-panel.client.spec.tsx:[2m389:39[22m[31m
+        [90m387|[31m     fireEvent.change(presetSelect(view.container), { target: { value: …
+        [90m388|[31m     [35mawait[31m vi[33m.[31m[34mwaitFor[31m(() [33m=>[31m {
+        [90m389|[31m       [34mexpect[31m(face[33m.[31mprobeCompatibility)[33m.[31m[34mtoHaveBeenLastCalledWith[31m({
+        [90m   |[31m                                       [31m^[31m
+        [90m390|[31m         blueprintId[33m:[31m [33mBP[31m[33m,[31m
+        [90m391|[31m         blueprintRevision[33m:[31m [34m2[31m[33m,[31m
+    [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[31m
+    [41m[1m FAIL [22m[49m test/team-governance.client.spec.tsx[2m > [22mTeamGovernance[2m > [22man override reset targets the member instance (scope instance) and pulls once on success
+    [31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 0 times[31m
+    [36m [2m❯[22m test/team-governance.client.spec.tsx:[2m556:35[22m[31m
+        [90m554|[31m     } satisfies [33mRemoteOverrideResetParams[31m)
+        [90m555|[31m     [35mawait[31m vi[33m.[31m[34mwaitFor[31m(() [33m=>[31m {
+        [90m556|[31m       [34mexpect[31m(face[33m.[31mpullProjection)[33m.[31m[34mtoHaveBeenCalledTimes[31m([34m1[31m)
+        [90m   |[31m                                   [31m^[31m
+        [90m557|[31m       expect(memberBlock.querySelector('[data-governance-override-rese…
+        [90m558|[31m     })
+    [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[31m: expected 'refused' to be 'passed' // Object.is equality[39m
+
+Expected: [32m"[7mpas[27msed"[39m
+Received: [31m"[7mrefu[27msed"[39m
+
+[36m [2m❯[22m packages/testkit/test/a4p7-merge-gate.test.ts:[2m1763:125[22m[39m
+    [90m1761|[39m         classify: ({ stdout, stderr }) => classifyClientLaneReport({ o…
+    [90m1762|[39m       })
+    [90m1763|[39m       expect(r.verdict, `client lane did not close. why: ${r.why}\n   …
+    [90m   |[39m                                                                                                                             [31m^[39m
+    [90m1764|[39m     })
+    [90m1765|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/tools/test/p6t6-actions.test.ts[2m > [22mP6-T6 tool set — delegated actions (unit level)[2m > [22mmessaging: worker -> leader is delivered direct to the leader bound session
+[31m[1mAssertionError[22m: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality[39m
+
+Expected: [32m"session-[7mchild-p6t2-leader[27m"[39m
+Received: [31m"session-[7mroot-p6t1[27m"[39m
+
+[36m [2m❯[22m packages/tools/test/p6t6-actions.test.ts:[2m893:46[22m[39m
+    [90m891|[39m       [34mexpect[39m(delivered[33m.[39mdeliveryMode)[33m.[39m[34mtoBe[39m([32m'direct'[39m)
+    [90m892|[39m       [34mexpect[39m(delivered[33m.[39mdeliveredToInstanceId)[33m.[39m[34mtoBe[39m([33mLEADER_ID[39m)
+    [90m893|[39m       expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.le…
+    [90m   |[39m                                              [31m^[39m
+    [90m894|[39m     }
+    [90m895|[39m     [35mconst[39m inputs [33m=[39m [33mA[39m[33m.[39mrecordedInputs
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/runtime/test/p6t3-mediation.test.ts[2m > [22mP6-T3 member→member mediation (the documented rule, end to end)[2m > [22m1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+[31m[1mAssertionError[22m: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality[39m
+
+Expected: [32m"session-[7mchild-p6t3-leader[27m"[39m
+Received: [31m"session-[7mroot-p6t1[27m"[39m
+
+[36m [2m❯[22m packages/runtime/test/p6t3-mediation.test.ts:[2m334:36[22m[39m
+    [90m332|[39m     [34mexpect[39m(o[33m.[39mrecipientInstanceId)[33m.[39m[34mtoBe[39m(scout[33m.[39minstanceId)
+    [90m333|[39m     [34mexpect[39m(o[33m.[39mdeliveredToInstanceId)[33m.[39m[34mtoBe[39m([32m'inst-leader'[39m)
+    [90m334|[39m     [34mexpect[39m(o[33m.[39mdeliveredToSessionId)[33m.[39m[34mtoBe[39m(leader[33m.[39mchildSessionId)
+    [90m   |[39m                                    [31m^[39m
+    [90m335|[39m
+    [90m336|[39m     [90m// (a) the coordination fact addresses the INTENDED recipient —[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/runtime/test/p6t3-mediation.test.ts[2m > [22mP6-T3 member→member mediation (the documented rule, end to end)[2m > [22m3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'sessionId')[39m
+[36m [2m❯[22m packages/runtime/test/p6t3-mediation.test.ts:[2m399:31[22m[39m
+    [90m397|[39m     [34mexpect[39m(o[33m.[39mdeliveredToInstanceId)[33m.[39m[34mtoBe[39m([32m'inst-leader'[39m)
+    [90m398|[39m     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    [90m399|[39m     [34mexpect[39m(md[33m.[39mperSender[33m.[39minput[33m.[39msessionId)[33m.[39m[34mtoBe[39m(
+    [90m   |[39m                               [31m^[39m
+    [90m400|[39m       [33mP6T3_SEEDS[39m[33m.[39mleader[33m.[39mchildSessionId[33m,[39m
+    [90m401|[39m     )
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/runtime/test/p6t3-mediation.test.ts[2m > [22mP6-T3 member→member mediation (the documented rule, end to end)[2m > [22m4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'sessionId')[39m
+[36m [2m❯[22m packages/runtime/test/p6t3-mediation.test.ts:[2m415:29[22m[39m
+    [90m413|[39m     [34mexpect[39m(o[33m.[39mdeliveredToInstanceId)[33m.[39m[34mtoBe[39m([32m'inst-leader'[39m)
+    [90m414|[39m     [34mexpect[39m(md[33m.[39mrevoked[33m.[39mconfirm[33m.[39mpayload[[32m'deliveryMode'[39m])[33m.[39m[34mtoBe[39m([32m'mediated'[39m)
+    [90m415|[39m     [34mexpect[39m(md[33m.[39mrevoked[33m.[39minput[33m.[39msessionId)[33m.[39m[34mtoBe[39m(
+    [90m   |[39m                             [31m^[39m
+    [90m416|[39m       [33mP6T3_SEEDS[39m[33m.[39mleader[33m.[39mchildSessionId[33m,[39m
+    [90m417|[39m     )
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/runtime/test/p6t3-mediation.test.ts[2m > [22mP6-T3 member→member mediation (the documented rule, end to end)[2m > [22m5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+[31m[1mAssertionError[22m: expected 4 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 4[39m
+
+[36m [2m❯[22m packages/runtime/test/p6t3-mediation.test.ts:[2m429:43[22m[39m
+    [90m427|[39m     [34mexpect[39m(md[33m.[39menvelopeBlocked[33m.[39merrorName)[33m.[39m[34mtoBe[39m([32m'TeamRuntimeError'[39m)
+    [90m428|[39m     [34mexpect[39m(md[33m.[39menvelopeBlocked[33m.[39mnewWrites)[33m.[39m[34mtoBe[39m([34m0[39m)
+    [90m429|[39m     [34mexpect[39m(md[33m.[39menvelopeBlocked[33m.[39minputCount)[33m.[39m[34mtoBe[39m(
+    [90m   |[39m                                           [31m^[39m
+    [90m430|[39m       md[33m.[39mleaderInputs [33m+[39m md[33m.[39mscoutInputs[33m,[39m
+    [90m431|[39m     )
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/runtime/test/p6t3-mediation.test.ts[2m > [22mP6-T3 member→member mediation (the documented rule, end to end)[2m > [22m7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'attribution')[39m
+[36m [2m❯[22m packages/runtime/test/p6t3-mediation.test.ts:[2m471:18[22m[39m
+    [90m469|[39m     [35mconst[39m scout [33m=[39m [33mP6T3_SEEDS[39m[33m.[39mscout
+    [90m470|[39m     [35mconst[39m input [33m=[39m md[33m.[39mnoGrant[33m.[39minput
+    [90m471|[39m     [34mexpect[39m(input[33m.[39mattribution[33m.[39mkind)[33m.[39m[34mtoBe[39m([32m'team-relay'[39m)
+    [90m   |[39m                  [31m^[39m
+    [90m472|[39m     [34mexpect[39m(input[33m.[39mattribution[33m.[39mfromInstanceId)[33m.[39m[34mtoBe[39m(
+    [90m473|[39m       [33mP6T3_SEEDS[39m[33m.[39mworker[33m.[39minstanceId[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/runtime/test/p6t3-restart.test.ts[2m > [22mP6-T3 restart durability + pending-delivery recovery[2m > [22m2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'sessionId')[39m
+[36m [2m❯[22m packages/runtime/test/p6t3-restart.test.ts:[2m404:18[22m[39m
+    [90m402|[39m
+    [90m403|[39m     [35mconst[39m input [33m=[39m rt[33m.[39minputMed
+    [90m404|[39m     [34mexpect[39m(input[33m.[39msessionId)[33m.[39m[34mtoBe[39m([33mP6T3_SEEDS[39m[33m.[39mleader[33m.[39mchildSessionId)
+    [90m   |[39m                  [31m^[39m
+    [90m405|[39m     [34mexpect[39m(input[33m.[39mattribution)[33m.[39m[34mtoEqual[39m({
+    [90m406|[39m       kind[33m:[39m [32m'team-relay'[39m[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m packages/runtime/test/p6t3-restart.test.ts[2m > [22mP6-T3 restart durability + pending-delivery recovery[2m > [22m5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+[31m[1mError[22m: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined[39m
+[36m [2m❯[22m assertMessagingCode packages/runtime/test/p6t3-helpers.ts:[2m373:11[22m[39m
+    [90m371|[39m ): { readonly code: string; readonly details?: Record<string, unknown>…
+    [90m372|[39m   [35mif[39m ([33m![39m[34misMessagingError[39m(error)) {
+    [90m373|[39m     [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   |[39m           [31m^[39m
+    [90m374|[39m       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    [90m375|[39m     )
+[90m [2m❯[22m packages/runtime/test/p6t3-restart.test.ts:[2m451:21[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯[22m[39m
+
+

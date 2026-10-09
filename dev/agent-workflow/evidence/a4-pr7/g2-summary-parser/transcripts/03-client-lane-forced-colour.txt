@@ -1,0 +1,27 @@
+G2 proof: the client lane under FORCED COLOUR still parses — 2026-10-09
+
+capture command (worktree root):
+  env -u NO_COLOR -u TERM FORCE_COLOR=1 pnpm --filter ./packages/client run test --reporter=default --reporter=json --outputFile.json=$PWD/.tmp-g2/forced.json
+  exit status: 1 (the trio is red — expected); 181 output lines carry ESC bytes
+  why -u NO_COLOR: this harness exports NO_COLOR=1, and measured (transcript 06), while it is present
+  the summary stays unstyled through a pipe EVEN with FORCE_COLOR=1 — the local accident that hid
+  this bug. Removing the suppression reproduces the hosted styled shape; the runner trigger itself
+  is NOT identified by this lane and the parser does not depend on it (see FINDINGS.md).
+  raw bytes: fixtures/client-lane-forced-colour.raw.txt; JSON: fixtures/client-lane-report.sample.json
+
+--- coloured summary lines, verbatim (cat -v) ---
+^[[2m Test Files ^[[22m ^[[1m^[[31m2 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m53 passed^[[39m^[[22m^[[90m (55)^[[39m
+^[[2m      Tests ^[[22m ^[[1m^[[31m3 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m877 passed^[[39m^[[22m^[[90m (880)^[[39m
+
+--- coloured FAIL identity lines (the disclosed trio) ---
+^[[41m^[[1m FAIL ^[[22m^[[49m test/team-creation-panel.client.spec.tsx^[[2m > ^[[22mTeamCreationPanel^[[2m > ^[[22mselecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI M-BM-'6/M-BM-'7)
+^[[41m^[[1m FAIL ^[[22m^[[49m test/team-creation-panel.client.spec.tsx^[[2m > ^[[22mTeamCreationPanel^[[2m > ^[[22mswitching the runtime preset re-runs the probe with the new persona fact (UI M-BM-'7.3)
+^[[41m^[[1m FAIL ^[[22m^[[49m test/team-governance.client.spec.tsx^[[2m > ^[[22mTeamGovernance^[[2m > ^[[22man override reset targets the member instance (scope instance) and pulls once on success
+
+--- grading (node --input-type=module from the worktree root; utf8 decode = the lane bytes encoding) ---
+old origin/master anchor /^\\s*(Test Files|Tests)\\s/ on these bytes: 0 matching lines
+JSON+text : passed — machine-readable (vitest JSON reporter): 3 failed of 880 tests across 3 disclosed failing identities, exit 1; 3 of the baseline trio matched by name (the s3 spike is location-dependent, see a4-client-baseline/README.md)
+  observed: parsed 3 failing identities from the vitest JSON report; child stdout contained ANSI: yes(1320 ESC bytes)
+text only : passed — fallback text (ANSI-stripped, pnpm prefixes tolerated) after no JSON report file was written: Test Files  2 failed | 53 passed (55) / Tests  3 failed | 877 passed (880) — every reported failure is disclosed, the trio's 2 spec files are present, and 3 of the baseline trio matched by name (the s3 spike is location-dependent, see a4-client-baseline/README.md)
+  observed: parsed 3 failing identities from the ANSI-stripped text stream (no JSON report was written; 2 summary line(s) seen); child stdout contained ANSI: yes(1320 ESC bytes)
+proof exit=0

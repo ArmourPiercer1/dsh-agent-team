@@ -1,0 +1,55 @@
+
+### hosted census capture (verbatim GitHub-runner bytes)
+expect: failed — with the summary SEEN (never "no vitest summary at all")
+verdict: failed
+observed: parsed 12 failing identities from the ANSI-stripped text stream (no JSON report was written; 2 summary line(s) seen); child stdout contained ANSI: yes(9036 ESC bytes)
+why: new client-lane failures outside the disclosed baseline: packages/domain/test/t2-blueprint-hash.test.ts > t2 hash: hashable projection > projects absent optional singles as explicit null | packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the client lane (the root suite cannot see it, and this gate says why) > the client lane runs, and no failure appears outside the disclosed baseline | packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session | packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient | packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+
+### client lane, coloured, disclosed trio
+expect: passed — three disclosed failures by name
+verdict: passed
+observed: parsed 3 failing identities from the ANSI-stripped text stream (no JSON report was written; 2 summary line(s) seen); child stdout contained ANSI: yes(58 ESC bytes)
+why: fallback text (ANSI-stripped, pnpm prefixes tolerated) after no JSON report file was written: Test Files  2 failed | 53 passed (55) / Tests  3 failed | 877 passed (880) — every reported failure is disclosed, the trio's 2 spec files are present, and 3 of the baseline trio matched by name (the s3 spike is location-dependent, see a4-client-baseline/README.md)
+
+### client lane, same bytes unstyled
+expect: passed — identical verdict, styling did not move it
+verdict: passed
+observed: parsed 3 failing identities from the ANSI-stripped text stream (no JSON report was written; 2 summary line(s) seen); child stdout contained ANSI: no
+why: fallback text (ANSI-stripped, pnpm prefixes tolerated) after no JSON report file was written: Test Files  2 failed | 53 passed (55) / Tests  3 failed | 877 passed (880) — every reported failure is disclosed, the trio's 2 spec files are present, and 3 of the baseline trio matched by name (the s3 spike is location-dependent, see a4-client-baseline/README.md)
+
+### client lane, coloured, + a synthesised FOURTH failure
+expect: failed — naming the intruder
+verdict: failed
+observed: parsed 4 failing identities from the ANSI-stripped text stream (no JSON report was written; 2 summary line(s) seen); child stdout contained ANSI: yes(64 ESC bytes)
+why: new client-lane failures outside the disclosed baseline: test/whatever-broke-next.client.spec.tsx > WhateverBrokeNext > a fourth failure outside the disclosed baseline
+
+### client lane, no summary at all
+expect: refused — "no vitest summary at all" (the refusal survives)
+verdict: refused
+observed: parsed 0 failing identities from nothing readable (no JSON report was written; the text stream carried no summary line); child stdout contained ANSI: yes(22 ESC bytes)
+why: the client lane produced no vitest summary at all (no JSON report file was written; tail: # fixture: a lane that died before it summarised: progress lines only, no `Test Files`/`Tests` line
+      # assembled by make-fixtures.mjs from fixtures/hosted-census-capture-1.raw.txt (hosted bytes verbatim;
+      # provenance of every line is in FINDINGS.md). ANSI escape bytes are the hosted token sequence.
+       RUN  v4.1.11 /home/runner/work/dsh-agent-team/dsh-agent-team/packages/client
+       ✓ test/team-ledger-model.client.spec.ts (27 tests) 122ms
+      ELIFECYCLE Command failed with exit code 137.)
+
+### client lane, summary present but unparseable
+expect: refused — naming the shape, NOT claiming absence
+verdict: refused
+observed: parsed 0 failing identities from the ANSI-stripped text stream (no JSON report was written; 2 summary line(s) seen); child stdout contained ANSI: yes(6 ESC bytes)
+why: the client lane's summary line exists but nothing in it reads as a count — the shape seen: `Tests   ??? ??? ???` (a count token is e.g. "3 failed | 877 passed (880)"; "no tests", truncation, or a format this reader does not know all land here — this is deliberately NOT the "no summary at all" answer, because the summary exists and the instrument must say what it saw) (no JSON report file was written)
+
+### client lane, real JSON report from the forced-colour run, text stream destroyed
+expect: passed — machine-readable first
+verdict: passed
+observed: parsed 3 failing identities from the vitest JSON report; child stdout contained ANSI: no
+why: machine-readable (vitest JSON reporter): 3 failed of 880 tests across 3 disclosed failing identities, exit 1; 3 of the baseline trio matched by name (the s3 spike is location-dependent, see a4-client-baseline/README.md)
+
+### client lane, LIVE forced-colour capture (env -u NO_COLOR -u TERM FORCE_COLOR=1), text only
+expect: passed — the coloured text fallback reads what the old parser called "no summary"
+verdict: passed
+observed: parsed 3 failing identities from the ANSI-stripped text stream (no JSON report was written; 2 summary line(s) seen); child stdout contained ANSI: yes(1320 ESC bytes)
+why: fallback text (ANSI-stripped, pnpm prefixes tolerated) after no JSON report file was written: Test Files  2 failed | 53 passed (55) / Tests  3 failed | 877 passed (880) — every reported failure is disclosed, the trio's 2 spec files are present, and 3 of the baseline trio matched by name (the s3 spike is location-dependent, see a4-client-baseline/README.md)
+
+style-independence: coloured=passed plain=passed AGREE

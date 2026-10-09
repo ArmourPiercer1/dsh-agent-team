@@ -1,0 +1,36 @@
+G2 colour matrix — what actually styles vitest's reporter on THIS box (all runs piped to a file, no TTY), 2026-10-09
+
+instrument: pnpm --filter ./packages/client exec vitest run team-ledger-model.client --reporter=default   (one green spec file)
+probe: does the `Test Files` summary line contain ESC bytes (cat -v)
+
+A  NO_COLOR=1 TERM=dumb FORCE_COLOR=1 (harness env + force)
+    summary styled: no    Test Files  1 passed (1)
+B  NO_COLOR removed, TERM=dumb, FORCE_COLOR=1
+    summary styled: YES   ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+C  NO_COLOR+TERM removed, no FORCE_COLOR (CI=true)
+    summary styled: YES   ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+D  harness env bare (NO_COLOR=1 TERM=dumb)
+    summary styled: no    Test Files  1 passed (1)
+E  NO_COLOR+TERM removed + FORCE_COLOR=1 (the 03 capture lever)
+    summary styled: YES   ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+R1  coordinator repro as sent: CI=true TERM=xterm, NO_COLOR KEPT
+    summary styled: no    Test Files  1 passed (1)
+R2  coordinator repro + NO_COLOR removed: CI=true TERM=xterm
+    summary styled: YES   ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+R3  NO_COLOR removed, TERM=xterm, CI removed
+    summary styled: YES   ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+
+READ: the switch measured on this box is NO_COLOR. While it is exported (the harness default,
+and rows A/D/R1), the summary stays unstyled through a pipe — even under FORCE_COLOR=1 and even
+with TERM=xterm. Remove it and the SAME command styles the summary through the same pipe,
+whatever else is set (B: even TERM=dumb; C: without FORCE_COLOR; R2/R3: the coordinator's own
+repro shapes). This is why every reproduction attempt in this sandbox printed plain: the shell
+exports NO_COLOR=1, so a negative local repro proves nothing about the runner.
+
+BOUNDS OF THE CLAIM: what the GitHub runner actually exports was never observed from here.
+The only facts are the byte counts on the two same-instrument captures — the coordinator's
+pair: local dev/agent-workflow/evidence/a4-pr7/ci-gate/transcripts-green-run1-found-F1/first/
+census-capture-1.txt = 0 ESC bytes, hosted run 37814101108 census-capture-1.txt = 1290 ESC
+bytes — and that this box styles the moment NO_COLOR stops suppressing. The runner's trigger is
+NOT identified by this file, and the fix does not depend on identifying it: the parser grades
+the hosted bytes directly and the leg now REPORTS its ANSI measurement beside its verdict.

@@ -1,0 +1,10 @@
+# fixture: the same client-lane report with the ANSI bytes removed (the local, unstyled shape)
+# assembled by make-fixtures.mjs from fixtures/hosted-census-capture-1.raw.txt (hosted bytes verbatim;
+# provenance of every line is in FINDINGS.md). ANSI escape bytes are the hosted token sequence.
+ RUN  v4.1.11 /home/runner/work/dsh-agent-team/dsh-agent-team/packages/client
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)
+ FAIL  test/team-creation-panel.client.spec.tsx > TeamCreationPanel > switching the runtime preset re-runs the probe with the new persona fact (UI §7.3)
+     FAIL  test/team-governance.client.spec.tsx > TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success
+ Test Files  2 failed | 53 passed (55)
+      Tests  3 failed | 877 passed (880)
+   Start at  00:00:00

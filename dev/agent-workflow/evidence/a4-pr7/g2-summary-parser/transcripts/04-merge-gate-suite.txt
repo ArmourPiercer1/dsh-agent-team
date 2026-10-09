@@ -1,0 +1,28 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/g2-summary-parser
+
+lint-visibility: eslint read 1124 of 2477 OFFERED tracked lintable file(s); 1353 are hidden by an ignore pattern (dev/ 482, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1124 + 1353 = 2477 offered, + 0 skipped = 2477 tracked lintable path(s); nothing skipped
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (35 tests) 87511ms
+       ✓ is green, asserted by arm name and by absence of a skip — never by the exit code  900ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  608ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  643ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  461ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  10174ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  10134ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  9378ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  33693ms
+       ✓ every workspace package that declares a typecheck script typechecks  11327ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  8700ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  508ms
+
+ Test Files  1 passed (1)
+      Tests  35 passed (35)
+   Start at  14:30:14
+   Duration  87.71s (transform 91ms, setup 0ms, import 114ms, tests 87.51s, environment 0ms)
+
+
+real	1m28.134s
+user	3m36.284s
+sys	0m26.603s
+gate exit=0

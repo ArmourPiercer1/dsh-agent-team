@@ -1,0 +1,5 @@
+# fixture: a summary-shaped pair of lines whose counts cannot be parsed (truncated/hostile shape)
+# assembled by make-fixtures.mjs from fixtures/hosted-census-capture-1.raw.txt (hosted bytes verbatim;
+# provenance of every line is in FINDINGS.md). ANSI escape bytes are the hosted token sequence.
+[2m Test Files [22m unknown  truncated 
+[2m      Tests [22m [1m ??? ??? ??? [22m

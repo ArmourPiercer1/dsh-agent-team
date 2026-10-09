@@ -67,6 +67,7 @@ import { INSTALL_SURFACES } from '../../../scripts/client-composition-surface.mj
 import { resolveScratchPath, sweepStaleScratches } from '../../../scripts/artifact-check-scratch.mjs'
 import { describeStderr } from '../../../scripts/lint-identities.mjs'
 import { absentArtifactVerdict, artifactProvenance, classifyAbsentArtifact, treeShape } from '../../../scripts/a4-artifact-provenance.mjs'
+import { classifyClientLaneReport, CLIENT_BASELINE_FAILURES, CLIENT_TRIO_FILES } from '../../../scripts/a4-client-lane-report.mjs'
 import type { ArtifactProvenance } from '../../../scripts/a4-artifact-provenance.mjs'
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url))
@@ -81,89 +82,20 @@ const REPO_ROOT = resolve(TEST_DIR, '..', '..', '..')
 const LINT_BASELINE = 'dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt'
 
 /**
- * The client lane's disclosed pre-existing failures, by NAME, from
- * `dev/agent-workflow/evidence/a4-client-baseline/README.md` (the trio is identical at
- * `11e1609c` and `d21effba`, i.e. pre-Alpha.4) with their titles as the suite prints
- * them today. Matching is by file + title, so a renamed test inside these files fails
- * the gate and forces the baseline record to be updated on purpose rather than by
- * drift. `s3-client-generation-spike.test.ts` is disclosed separately below: it is
- * location-dependent (its import climbs five directories, so it collects in a worktree
- * and fails in the main checkout), and that fact is in the same README.
+ * THE CLIENT LANE READER lives in `scripts/a4-client-lane-report.mjs` as of G2, and this file
+ * imports BOTH the classifier and the disclosed-baseline names from it. It moved because the
+ * hosted runner proved the in-file text parser could not read the runner's own output: the
+ * summary lines vitest writes there are ANSI-coloured, and every anchor here assumed unstyled
+ * bytes — the leg failed with "no vitest summary at all" on a lane that had printed a complete
+ * report (evidence: `dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/`). The module reads
+ * the vitest JSON report FIRST and the human text only as a normalised (ANSI-stripped, prefix-
+ * tolerant, exit-status-cross-checked) fallback, and the witness script that pins the before/
+ * after on the real hosted bytes imports the same module — one baseline list, one parser, two
+ * consumers. The refusal laws are unchanged and pinned in `the client lane` describe below:
+ * a missing summary is still a refusal, a fourth failure beyond the disclosed trio is still a
+ * failure, and a summary that exists but cannot be parsed must now NAME the shape it saw
+ * instead of claiming absence.
  */
-const CLIENT_BASELINE_FAILURES: readonly string[] = [
-  'test/team-creation-panel.client.spec.tsx > TeamCreationPanel > selecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)',
-  'test/team-creation-panel.client.spec.tsx > TeamCreationPanel > switching the runtime preset re-runs the probe with the new persona fact (UI §7.3)',
-  'test/team-governance.client.spec.tsx > TeamGovernance > an override reset targets the member instance (scope instance) and pulls once on success',
-]
-const CLIENT_DISCLOSED_LOCATION_DEPENDENT = 'test/s3-client-generation-spike.test.ts'
-
-/**
- * The spec FILES the disclosed trio lives in, derived from the names above rather than
- * written out a second time: 3 named tests across 2 files, and a list that could drift
- * from the list it is supposed to guard is its own small defect.
- */
-const CLIENT_TRIO_FILES: readonly string[] = [
-  ...new Set(CLIENT_BASELINE_FAILURES.map((name) => (name.split(' > ')[0] ?? '').replace(/^test\//, ''))),
-]
-
-/**
- * Read the client lane's vitest report. This lives at module scope so the tolerance below
- * can be tested directly against reports it has never seen — including the one this file
- * could not previously tell apart (F5).
- *
- * THE TOLERANCE AND ITS LIMIT. §7.6 closes on three NAMED pre-existing client failures, so
- * a run reporting zero failures is acceptable: the trio may be fixed, and a gate that
- * requires failure would block the fix. It was implemented as "zero failures and zero name
- * matches ⇒ passed", which is vacuous in a way that matters — deleting the trio's spec
- * files also reports zero failures and zero matches, so the loudest way to satisfy this leg
- * was to erase what it inspects. Absence is now a separate answer from green: the files the
- * trio lives in must be in the directory listing, checked before the report is even read.
- * Green with the files present is a pass; a vanished file is a failure that says which one
- * and what to update if the removal was deliberate.
- */
-function classifyClientLaneReport(run: { out: string; missingTrioFiles: readonly string[] }): {
-  verdict: Verdict
-  why: string
-} {
-  const out = run.out
-  const summary = out.split('\n').filter((l) => /^\s*(Test Files|Tests)\s/.test(l)).join(' / ')
-  if (summary.length === 0) {
-    return { verdict: 'refused', why: `the client lane produced no vitest summary at all; tail: ${tail(out)}` }
-  }
-  const reportedFailures = /Tests\s+(\d+) failed/.exec(out)?.[1] ?? '0'
-  const failed = [...out.matchAll(/^\s*FAIL\s+(.+)$/gm)].map((m) => (m[1] as string).trim())
-  const outside = failed.filter(
-    (f) => !CLIENT_BASELINE_FAILURES.some((b) => f.startsWith(b)) && !f.startsWith(CLIENT_DISCLOSED_LOCATION_DEPENDENT),
-  )
-  if (outside.length > 0) {
-    return { verdict: 'failed', why: `new client-lane failures outside the disclosed baseline: ${outside.slice(0, 5).join(' | ')}` }
-  }
-  if (run.missingTrioFiles.length > 0) {
-    return {
-      verdict: 'failed',
-      why:
-        `${String(run.missingTrioFiles.length)} of the ${String(CLIENT_TRIO_FILES.length)} files the disclosed client baseline lives in is not in ` +
-        `packages/client/test (${run.missingTrioFiles.join(', ')}) — a test that is not in the tree cannot fail, so a zero-failure ` +
-        `report from this lane measures nothing. §7.6 closes ON the three named failures; if they were fixed or the files renamed, ` +
-        `update dev/agent-workflow/evidence/a4-client-baseline/README.md and this file's CLIENT_BASELINE_FAILURES in the same change ` +
-        `rather than letting the absence pass as a green.`,
-    }
-  }
-  const matched = CLIENT_BASELINE_FAILURES.filter((b) => out.includes(b))
-  if (reportedFailures !== '0' && matched.length === 0) {
-    // The guard against a vacuous name set: failures were reported, none of them matched
-    // the disclosed names, and nothing above caught it because the filter is a prefix match
-    // over a set that may itself have drifted.
-    return {
-      verdict: 'failed',
-      why: `${reportedFailures} client-lane failure(s) reported and NONE matched the disclosed names — the baseline record in a4-client-baseline/README.md has drifted and must be re-derived, not re-pinned silently: ${failed.slice(0, 5).join(' | ')}`,
-    }
-  }
-  return {
-    verdict: 'passed',
-    why: `${summary} — every reported failure is disclosed, the trio's ${String(CLIENT_TRIO_FILES.length)} spec files are present, and ${String(matched.length)} of the baseline trio matched by name${reportedFailures === '0' ? '; the trio is GREEN, which §7.6 allows because the files are there to be re-run' : ''} (the s3 spike is location-dependent, see a4-client-baseline/README.md)`,
-  }
-}
 
 type Verdict = 'passed' | 'failed' | 'refused'
 
@@ -1751,16 +1683,51 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       // is in the tree must not be shapeable by the run whose honesty is in question.
       const listing = readdirSync(join(REPO_ROOT, 'packages', 'client', 'test'))
       const missingTrioFiles = CLIENT_TRIO_FILES.filter((f) => !listing.includes(f))
-      const r = await runLeg('pnpm', ['--filter', './packages/client', 'run', 'test'], {
-        cwd: REPO_ROOT,
-        timeoutMs: 1_800_000,
-        label: 'pnpm --filter @dsh-agent-team/client run test',
-        // vitest writes its report to stderr and pnpm prefixes it with the package name, so
-        // the lane is read from BOTH streams. Reading only stdout is how a lane that failed
-        // loudly reads as a lane that said nothing.
-        classify: ({ stdout, stderr }) => classifyClientLaneReport({ out: `${stdout}\n${stderr}`, missingTrioFiles }),
-      })
-      expect(r.verdict, `client lane did not close. why: ${r.why}\n    tail:\n    ${tail(`${r.stdout}\n${r.stderr}`, 25)}`).toBe('passed')
+      // G2, and the reason this leg's argv changed. The hosted runners colourise vitest's human
+      // report; the text-only parser read that as "no summary at all" on a lane that had printed
+      // everything (evidence: a4-pr7/g2-summary-parser, hosted capture verbatim). The lane is now
+      // driven with vitest's JSON reporter into a file — exactly the flags the root census legs
+      // in `scripts/ci-pr-gate.mjs` already use — and the JSON is the machine-readable source of
+      // truth. The human text still streams in as the fallback, because a run that dies before
+      // writing the report file must be refused from what it DID print, not mistaken for one that
+      // printed nothing. NO_COLOR/FORCE_COLOR is deliberately NOT set here: a styling switch in
+      // somebody else's child process is a mitigation, not an instrument, and the day it fails
+      // the gate is blind again in the same way. The stale report is deleted before the spawn —
+      // a verdict may never be graded off a previous run's bytes.
+      const jsonDir = join(TEST_DIR, '.tmp-fault', 'a4p7-client-lane')
+      const jsonPath = join(jsonDir, 'client-lane-report.json')
+      rmSync(jsonDir, { recursive: true, force: true })
+      mkdirSync(jsonDir, { recursive: true })
+      try {
+        let observed = 'not graded (classify never ran)'
+        const r = await runLeg('pnpm', [
+          '--filter', './packages/client', 'run', 'test',
+          '--reporter=default', '--reporter=json', `--outputFile.json=${jsonPath}`,
+        ], {
+          cwd: REPO_ROOT,
+          timeoutMs: 1_800_000,
+          label: 'pnpm --filter @dsh-agent-team/client run test',
+          // vitest writes its report to stderr and pnpm prefixes it with the package name, so
+          // the lane is read from BOTH streams. Reading only stdout is how a lane that failed
+          // loudly reads as a lane that said nothing. The exit status goes in too: a report and
+          // an exit code that disagree is not a verdict either one of them gets to make alone.
+          // `observed` rides beside the verdict: the failure text must be able to SAY what the
+          // stream looked like (styled or not, which source graded it), not just what it concluded.
+          classify: ({ stdout, stderr, code }) => {
+            const v = classifyClientLaneReport({
+              out: `${stdout}\n${stderr}`,
+              jsonText: existsSync(jsonPath) ? readFileSync(jsonPath, 'utf8') : null,
+              code,
+              missingTrioFiles,
+            })
+            observed = v.observed
+            return v
+          },
+        })
+        expect(r.verdict, `client lane did not close. why: ${r.why}\n    observed: ${observed}\n    tail:\n    ${tail(`${r.stdout}\n${r.stderr}`, 25)}`).toBe('passed')
+      } finally {
+        rmSync(jsonDir, { recursive: true, force: true })
+      }
     })
 
     it('tolerates a green trio and refuses a vanished one — the two are different answers', () => {
@@ -1795,6 +1762,142 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
         'team-creation-panel.client.spec.tsx',
         'team-governance.client.spec.tsx',
       ])
+    })
+
+    // G2 (CI integrity, 2026-10-09). The leg above tolerates the trio and refuses a vanished one.
+    // These legs pin what the hosted runner taught this gate: the report must be read
+    // machine-first, styling may not move a verdict, and the three refusals — absent summary,
+    // fourth failure, exit-status contradiction — survive the rewrite. The fixtures under
+    // `dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/fixtures/` are the runner's own
+    // bytes (the census capture verbatim; the coloured transcripts assembled from its ANSI
+    // token sequence and byte-exact identities — provenance table in that directory's
+    // FINDINGS.md). Reading them from EVIDENCE rather than from string literals is the point:
+    // the witness script grades the same bytes, before and after, outside this file.
+    const G2_FIXTURES = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'a4-pr7', 'g2-summary-parser', 'fixtures')
+    const g2Fixture = (name: string): string => {
+      const path = join(G2_FIXTURES, name)
+      expect(existsSync(path), `the G2 fixture ${name} is missing — the hosted-bytes regression has no bytes; restore it from the evidence directory`).toBe(true)
+      return readFileSync(path, 'utf8')
+    }
+
+    it('the hosted census capture reads as a report — never again as "no vitest summary at all"', () => {
+      const hosted = g2Fixture('hosted-census-capture-1.raw.txt')
+      // The fixture must keep carrying the disease: on origin/master this exact predicate found
+      // ZERO summary lines (every hosted summary line starts with an escape byte), and THAT was
+      // the whole failure. If a re-baked fixture ever matches the old anchor, it no longer
+      // witnesses anything and this leg says so.
+      expect(
+        hosted.split('\n').filter((l) => /^\s*(Test Files|Tests)\s/.test(l)).length,
+        'the hosted capture no longer contains the shape that blinded the origin/master parser — the fixture drifted',
+      ).toBe(0)
+      expect(hosted).toContain('\u001B[2m Test Files \u001B[22m')
+      // The capture is the ROOT census text, so grading it through the client-lane classifier
+      // honestly yields `failed` naming the root-lane identities inside it. What is pinned is
+      // the direction of the answer: the parser SEES the summary and the failures. It does not
+      // cry absence — crying absence is what cost a census run and a misdiagnosed timeout.
+      const r = classifyClientLaneReport({ out: hosted, missingTrioFiles: [] })
+      expect(r.verdict, `the hosted bytes must not read as an absent summary: ${r.why}`).toBe('failed')
+      expect(r.why).not.toContain('no vitest summary at all')
+      expect(r.why).toContain('outside the disclosed baseline')
+      // The measurement beside the verdict: the leg must REPORT that the child stream carried
+      // styling (and how much), so the next environment surprise is a one-line diagnosis —
+      // "the parser read a styled stream fine" — not another hunt for a broken timeout.
+      expect(r.observed, `the hosted capture must be observed as styled: ${r.observed}`).toMatch(/child stdout contained ANSI: yes\(\d+ ESC bytes\)/)
+    })
+
+    it('reads a coloured client-lane transcript with the disclosed trio — styling may not change the verdict', () => {
+      const coloured = g2Fixture('client-lane-coloured-trio.raw.txt')
+      expect(coloured).toContain('\u001B[41m')
+      const plain = g2Fixture('client-lane-plain-trio.raw.txt')
+      const observedByLabel = new Map<string, string>()
+      for (const [label, out] of [['coloured', coloured], ['plain', plain]] as const) {
+        const r = classifyClientLaneReport({ out, missingTrioFiles: [], code: 1 })
+        expect(r.verdict, `the ${label} transcript must read as the disclosed trio, not as a refusal: ${r.why}`).toBe('passed')
+        expect(r.why).toContain('3 of the baseline trio matched by name')
+        observedByLabel.set(label, r.observed)
+      }
+      // And the measurement itself must tell the two streams apart: styled where the bytes are
+      // styled, unstyled where they are not — the leg reports styling, it does not inherit it.
+      expect(observedByLabel.get('coloured')).toMatch(/ANSI: yes\(\d+ ESC bytes\)/)
+      expect(observedByLabel.get('plain'), 'the plain twin must measure as unstyled, or the ANSI counter is noise').toContain('ANSI: no')
+      // The property the whole lane exists for, proven on the LIVE capture: the client lane run
+      // with colour forced on. This harness's env exports NO_COLOR=1, which measured (witness
+      // transcript 06) keeps the lane's summary unstyled EVEN UNDER FORCE_COLOR=1 — the exact
+      // local accident that hid this bug for a census cycle; removing NO_COLOR (and TERM) with
+      // FORCE_COLOR=1 reproduces the hosted styled shape through a pipe. The capture's summary
+      // lines carry the hosted shape `ESC[2m Test Files ESC[22m …`; the origin/master anchors
+      // match ZERO of its lines, and the shipped parser must still read three disclosed
+      // failures from it, with the JSON stripped, so the coloured TEXT fallback is on the hook.
+      const live = g2Fixture('client-lane-forced-colour.raw.txt')
+      expect(live).toContain('\u001B[2m Test Files \u001B[22m')
+      const liveOldAnchor = live.split('\n').filter((l) => /^\s*(Test Files|Tests)\s/.test(l)).length
+      expect(liveOldAnchor, 'the forced-colour capture must still be the shape the old parser could not read').toBe(0)
+      const liveRun = classifyClientLaneReport({ out: live, jsonText: null, code: 1, missingTrioFiles: [] })
+      expect(liveRun.verdict, `the live forced-colour text stream must grade, not be refused: ${liveRun.why}`).toBe('passed')
+      expect(liveRun.why).toContain('3 of the baseline trio matched by name')
+      expect(liveRun.observed).toContain('the ANSI-stripped text stream')
+      expect(liveRun.observed).toMatch(/ANSI: yes\(\d+ ESC bytes\)/)
+      // …and with the JSON report attached, the same bytes grade from the machine-readable side.
+      const jsonRun = classifyClientLaneReport({ out: live, jsonText: g2Fixture('client-lane-report.sample.json'), code: 1, missingTrioFiles: [] })
+      expect(jsonRun.verdict, jsonRun.why).toBe('passed')
+      expect(jsonRun.why).toContain('machine-readable')
+      expect(jsonRun.observed).toContain('from the vitest JSON report')
+    })
+
+    it('a synthesised FOURTH failure past the disclosed trio is refused by name, coloured included', () => {
+      const fourth = g2Fixture('client-lane-coloured-fourth-failure.raw.txt')
+      expect(fourth).toContain('\u001B[41m')
+      const r = classifyClientLaneReport({ out: fourth, missingTrioFiles: [], code: 1 })
+      expect(r.verdict).toBe('failed')
+      expect(r.why, 'the refusal has to name the intruder, or the next reader re-runs the whole lane blind').toContain('test/whatever-broke-next.client.spec.tsx')
+    })
+
+    it('a capture with no summary is still refused — the refusal G2 could have quietly deleted to get green', () => {
+      const empty = g2Fixture('client-lane-no-summary.raw.txt')
+      const r = classifyClientLaneReport({ out: empty, missingTrioFiles: [] })
+      expect(r.verdict).toBe('refused')
+      expect(r.why).toContain('no vitest summary at all')
+      // The refusal is an ABSENCE claim now backed by a measurement: it may only say "no
+      // summary" when it measured no summary line — the G2 lie was absence claimed over presence.
+      expect(r.observed).toContain('the text stream carried no summary line')
+    })
+
+    it('a summary that exists but cannot be parsed names the shape it saw', () => {
+      // The difference between an instrument and a black box. "There was no summary" and "there
+      // was a summary I cannot read" are different facts; conflating them is what pointed the
+      // coordinator at clocks instead of at the parser.
+      const weird = g2Fixture('client-lane-summary-unparseable.raw.txt')
+      const r = classifyClientLaneReport({ out: weird, missingTrioFiles: [] })
+      expect(r.verdict).toBe('refused')
+      expect(r.why).not.toContain('no vitest summary at all')
+      expect(r.why, 'the refusal must quote the shape it saw').toContain('??? ??? ???')
+      // The measurement agrees: a summary was SEEN (it could not be read — that is different).
+      expect(r.observed).toContain('summary line(s) seen')
+    })
+
+    it('the JSON report is the machine-readable source, and the exit status is part of the report', () => {
+      // A real client-lane JSON report (captured by the forced-colour run in the G2 evidence
+      // dir). Its text stream is replaced by noise here: the verdict must survive on the JSON
+      // alone, which is the whole point of driving the lane with the JSON reporter.
+      const jsonText = g2Fixture('client-lane-report.sample.json')
+      const r = classifyClientLaneReport({ out: '(the text stream died mid-spinner)', jsonText, code: 1, missingTrioFiles: [] })
+      expect(r.verdict, r.why).toBe('passed')
+      expect(r.why).toContain('machine-readable')
+      // A green report that exits nonzero is an unaccounted crash, not a green lane…
+      const greenJson = JSON.stringify({ numFailedTests: 0, numPassedTests: 880, numTotalTests: 880, success: true, testResults: [] })
+      const c = classifyClientLaneReport({ out: '', jsonText: greenJson, code: 137, missingTrioFiles: [] })
+      expect(c.verdict, 'a JSON report that contradicts the exit status is a refusal, not a green with a strange tail').toBe('refused')
+      expect(c.why).toContain('contradicts')
+      // …and the text fallback is held to the same law.
+      const t = classifyClientLaneReport({ out: ' Test Files  55 passed (55)\n      Tests  880 passed (880)\n', code: 1, missingTrioFiles: [] })
+      expect(t.verdict).toBe('refused')
+      expect(t.why).toContain('exited 1')
+      // A half-written JSON file must not erase what the text stream managed to print: the
+      // fallback still refuses cleanly and says the JSON was unreadable.
+      const h = classifyClientLaneReport({ out: 'nothing resembling a report', jsonText: '{"numFailedTests": 3, "testResu', code: null, missingTrioFiles: [] })
+      expect(h.verdict).toBe('refused')
+      expect(h.why).toContain('no vitest summary at all')
+      expect(h.why).toContain('not parseable JSON')
     })
   })
 
