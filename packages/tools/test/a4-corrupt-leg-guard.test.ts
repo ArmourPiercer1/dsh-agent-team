@@ -97,6 +97,24 @@
  *      row that discloses no comparable member is REPORTED and still does not
  *      block (W12-c, the boundary RULING 5-B owns); and the new read surface
  *      counts the whole refused set without gating anything (W12-d);
+ *  W13 A MEMBER THE ROW IS REQUIRED TO STATE AND DOES NOT STATE IS DAMAGE, NOT A
+ *      DIFFERENT CALL (external review G1). `actionName` and `correlation` are
+ *      REQUIRED members of a persisted request — `parseRequestPayload` refuses a
+ *      row that omits either — yet `memberAgrees` answered a missing member with
+ *      `expected.length === 0`, i.e. `false` against any real call. Absence was
+ *      therefore read as DISAGREES, the one verdict that rules a leg out, so a row
+ *      that fails to state its correlation was disqualified for exactly the call it
+ *      governs: `no-request`, proceed, the leg gone from the tool plane. W13 drives
+ *      the counterexample and its controls through the same real
+ *      `team_follow_up.execute` harness as W12: the two required members missing
+ *      (a, b), the same damage as an EMPTY value (f), the same member PRESENT AND
+ *      DIFFERENT (c, the anti-freeze half), unrelated calls that differ on a
+ *      positively-stated member (d, e), and the three cells this fix must NOT widen
+ *      — an OPTIONAL member legitimately absent (h), one stated EMPTY (i), and the
+ *      third optional member `toolName` absent (j), all of which stay the positive
+ *      rule-outs they were;
+ *   k: the requirement probe itself, read and pinned key by key, because an
+ *      instrument no test can read is an instrument that can go blind;
  *  W11 THE IDENTITY MEMBER OF A ROW THAT DISCLOSES TWO. `parseRequestPayload`
  *      refuses a leg whose explicit `subject` disagrees with its legacy
  *      `targetInstanceId` — an ambiguous identity fails closed — so a row whose
@@ -121,6 +139,11 @@ import {
   createControlService,
 } from '../../runtime/control/index.js'
 import type { ControlService } from '../../runtime/control/index.js'
+// The candidacy algebra's requirement probe, read directly. A deep import (the
+// barrel publishes the service, not its instruments; precedent:
+// `p6t6-helpers.ts:48` imports `operation-permission/canonical-operation.js` the
+// same way) because `W13-k` exists to read an INSTRUMENT, not the service.
+import { requestMemberRequirements } from '../../runtime/control/service.js'
 import type { TeamRuntime } from '../../runtime/admission/index.js'
 import type { P6T1World } from '../../runtime/test/p6t1-helpers.js'
 import { destroyP6T1World } from '../../runtime/test/p6t1-helpers.js'
@@ -1563,5 +1586,445 @@ describe('W12 a refused row that names NO case is a leg on the ledger too (RULIN
       facadeReached: 1,
       allowConsumptions: 0,
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// W13 — A MEMBER THE ROW IS REQUIRED TO STATE, AND DOES NOT STATE, IS DAMAGE.
+//
+// `memberAgrees` (`packages/runtime/control/service.ts`) read a member the row
+// does not carry as `expected.length === 0`. For an OPTIONAL member that is a
+// value (a legacy row states no fingerprint, and a call that carries one is
+// genuinely outside its scope). For a REQUIRED member it is a verdict the row
+// never made: `parseRequestPayload` refuses a request row that omits
+// `actionName` or `correlation` (`if (typeof correlation !== 'string' ||
+// correlation.length === 0) return undefined`), so an omitted required member is
+// the damage that put the row in `corruptLegs` in the first place — and the
+// answer `false` converted that damage into "this leg governs some OTHER call".
+// DISAGREES is the only verdict that rules a corrupt leg out, so the row was
+// disqualified for exactly the call it claims: `no-request` → proceed (W11 read
+// one identity field of a self-contradictory row; W8 filed on the one field
+// candidacy refuses to trust; this is the same disease — a guard whose state
+// space is narrower than reality's).
+//
+// ONE ROW, ONE MISSING MEMBER, MANY CALLS. Every leg below is its own durable
+// world holding one hand-written refused row and one real `team_follow_up`
+// call behind the facade spy, so the only variable is the STATE of the compared
+// member:
+//
+//   W13-a `correlation`   ABSENT, call agrees with everything else  → BLOCKED
+//   W13-b `actionName`    ABSENT, call agrees with everything else  → BLOCKED
+//   W13-c `correlation`   PRESENT AND DIFFERENT                     → proceed
+//   W13-d identity        PRESENT AND DIFFERENT (call at another instance) → proceed
+//   W13-e `actionName`    PRESENT AND DIFFERENT                     → proceed
+//   W13-f `correlation`   PRESENT AND EMPTY (the reader refuses empty too)  → BLOCKED
+//   W13-g every compared member absent-or-unreadable-or-empty-required → UNATTRIBUTABLE
+//   W13-i `toolName` (OPTIONAL, empty legal) PRESENT AND EMPTY                    → proceed
+//   W13-j `toolName` (OPTIONAL) ABSENT + damage elsewhere, tool-named call        → proceed
+//   W13-k (no call) the probe's derived table, pinned key by key             table read
+//
+// a/b/f are the counterexample (RED before the fix: the call was executed);
+// c/d/e are the anti-freeze half and are green on BOTH sides — a fix that blocks
+// here has not narrowed the algebra, it has frozen the Team; g is the disclosed
+// read-plane marker of the class RULING 5-B reserves to a human.
+//
+// W13-h is the negative space, on the direct-consult plane: an OPTIONAL member
+// legitimately absent keeps today's semantics. A legacy row that states no
+// `operationFingerprint` does not govern a fingerprinted call — its durable
+// scope key carries an empty fingerprint segment, which is distinct from any
+// present fingerprint — and that remains a positive rule-out, not "nothing".
+// Without this leg the fix could be "absence always means nothing", which is
+// the same mistake pointed at the other members.
+// ---------------------------------------------------------------------------
+
+const W13_TOKEN = 'tok-a4cl-w13'
+const W13_INSTANCE = String(P6T2_SEEDS.worker.instanceId)
+/** An instance the W13 rows positively do NOT name (the unrelated call, W13-d). */
+const W13_OTHER_INSTANCE = String(P6T2_SEEDS.worker2.instanceId)
+
+/**
+ * THE ROW: a durable control leg refused for ONE omitted member and nothing
+ * else. It carries no `approvalCaseId` (so this law does not lean on the field
+ * RULING 5-A removed from filing) and no `operationFingerprint` (the scope shape
+ * `packages/tools/src/tools.ts` sends, as in W10/W12).
+ *
+ * @param omit - a member to leave off the row entirely (the damage under test).
+ * @param overrides - literal values to write, so a member can be present-and-
+ *   empty or present-and-different instead of absent.
+ */
+function w13Row(
+  overrides: {
+    readonly omit?: 'actionName' | 'correlation' | 'toolName'
+    readonly actionName?: unknown
+    readonly correlation?: unknown
+    readonly toolName?: unknown
+    readonly authorityScope?: unknown
+    readonly instanceId?: string
+    readonly requestId?: string
+  } = {},
+): Record<string, unknown> {
+  const instanceId = overrides.instanceId ?? W13_INSTANCE
+  const row: Record<string, unknown> = {
+    requestId: overrides.requestId ?? 'req-a4cl-w13',
+    kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+    requester: { kind: 'instance', instanceId, role: 'member' },
+    subject: { kind: 'instance', instanceId },
+    targetInstanceId: instanceId,
+    actionName: overrides.actionName ?? 'follow-up',
+    toolName: overrides.toolName ?? 'team_follow_up',
+    correlation: overrides.correlation ?? W13_TOKEN,
+    executionCoupling: 'guarded',
+    ...(overrides.authorityScope !== undefined ? { authorityScope: overrides.authorityScope } : {}),
+  }
+  if (overrides.omit !== undefined) delete row[overrides.omit]
+  return row
+}
+
+/** Every member the candidacy algebra compares, stated as damage: the required
+ *  ones present-and-EMPTY (which the strict reader refuses), the optional ones
+ *  present-and-unreadable, and no identity the row can be tied to. This is the
+ *  row that used to count as "disclosing a member" on the strength of the very
+ *  empty values the algebra cannot read. */
+function w13AllDamageRow(): Record<string, unknown> {
+  return {
+    requestId: 'req-a4cl-w13-empty',
+    kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+    requester: { kind: 'instance', instanceId: W13_INSTANCE, role: 'member' },
+    subject: 42,
+    targetInstanceId: '',
+    actionName: '',
+    toolName: 42,
+    correlation: '',
+    operationFingerprint: 42,
+    executionCoupling: 'guarded',
+  }
+}
+
+/** A required member the row omits: the call it governs is BLOCKED, not un-gated. */
+const w13MissingCorrelation = await w12Leg(
+  'a4cl-w13-missing-correlation',
+  [w13Row({ omit: 'correlation' })],
+  { targetInstanceId: W13_INSTANCE, correlation: W13_TOKEN },
+)
+const w13MissingActionName = await w12Leg(
+  'a4cl-w13-missing-action-name',
+  [w13Row({ omit: 'actionName' })],
+  { targetInstanceId: W13_INSTANCE, correlation: W13_TOKEN },
+)
+/** The same row with the member PRESENT AND DIFFERENT: positive evidence the leg
+ *  governs some other call, so the call proceeds (the anti-freeze half). */
+const w13OtherCorrelation = await w12Leg(
+  'a4cl-w13-present-other-correlation',
+  [w13Row({ correlation: 'tok-a4cl-w13-some-other-call' })],
+  { targetInstanceId: W13_INSTANCE, correlation: W13_TOKEN },
+)
+/** The missing-correlation row read at a call it positively does not name. */
+const w13OtherInstance = await w12Leg(
+  'a4cl-w13-other-instance',
+  [w13Row({ omit: 'correlation' })],
+  { targetInstanceId: W13_OTHER_INSTANCE, correlation: W13_TOKEN },
+)
+/** The missing-correlation damage on a row that names a DIFFERENT action. */
+const w13OtherAction = await w12Leg(
+  'a4cl-w13-other-action',
+  [w13Row({ omit: 'correlation', actionName: 'collect-result' })],
+  { targetInstanceId: W13_INSTANCE, correlation: W13_TOKEN },
+)
+/** The same damage written as an EMPTY value: the reader refuses an empty
+ *  `correlation` exactly as it refuses a missing one, so it is the same
+ *  absence — and it ruled the row out all the same. */
+const w13EmptyCorrelation = await w12Leg(
+  'a4cl-w13-empty-correlation',
+  [w13Row({ correlation: '' })],
+  { targetInstanceId: W13_INSTANCE, correlation: W13_TOKEN },
+)
+/** The all-damage row: it states nothing readable, so it is UNATTRIBUTABLE. */
+const w13AllDamage = await w12Leg(
+  'a4cl-w13-all-damage',
+  [w13AllDamageRow()],
+  { targetInstanceId: W13_INSTANCE, correlation: W13_TOKEN },
+)
+/** The mirror image of W13-f: an OPTIONAL member the reader TOLERATES empty is a
+ *  STATED value, and a stated value that differs still rules the row out. The only
+ *  damage here is the one that files the row (an authority point the reader
+ *  refuses), so every compared member is readable and the algebra decides. */
+const w13EmptyOptionalToolName = await w12Leg(
+  'a4cl-w13-empty-optional-tool-name',
+  [w13Row({ toolName: '', authorityScope: SCOPE_SUBTREE })],
+  { targetInstanceId: W13_INSTANCE, correlation: W13_TOKEN },
+)
+/** W13-j: the THIRD scalar member. `toolName` is absent from a refused row whose
+ *  only other damage is the authority point, read by a call that names
+ *  `team_follow_up`. The reader (`parseRequestPayload`) does NOT require this
+ *  member — its line is `toolName !== undefined && typeof toolName !== 'string'`,
+ *  so a row with no `toolName` is a well-formed row (the `length === 0` refusal
+ *  the review of this fix quoted is `guardOperation`/`requestApprovalLeg`
+ *  validating the CALL's scope, which constrains what a call may carry, not what
+ *  a row must state). Absence of an optional member is therefore the W13-h cell,
+ *  and the measured verdict is PROCEED. This leg is also the third witness that
+ *  the requirement probe is not blind: a probe that answered `required: true` for
+ *  every key would block here. */
+const w13MissingToolName = await w12Leg(
+  'a4cl-w13-missing-tool-name',
+  [w13Row({ omit: 'toolName', authorityScope: SCOPE_SUBTREE })],
+  { targetInstanceId: W13_INSTANCE, correlation: W13_TOKEN },
+)
+/** W13-h: an OPTIONAL member legitimately absent, on the direct-consult plane
+ *  (the fingerprint is the shape only that lane carries). */
+const w13OptionalFingerprint = await w8Leg(
+  'a4cl-w13-optional-fingerprint',
+  corruptRequestRow({
+    requestId: 'req-a4cl-w13h',
+    correlation: CORRELATION,
+    includeAuthorityKey: true,
+    authorityScope: SCOPE_SUBTREE,
+    includeFingerprint: false,
+  }),
+  callScope(),
+)
+
+describe('W13 a required member the refused row does not state is damage, not a different call (G1)', () => {
+  it('W13-premise: each row is durable, refused by the strict reader, and filed as a leg that discloses something', () => {
+    for (const leg of [
+      w13MissingCorrelation,
+      w13MissingActionName,
+      w13OtherCorrelation,
+      w13AllDamage,
+    ]) {
+      expect(leg.error).toBe('none')
+    }
+    // Refused, so never a readable request — otherwise the verdicts below would
+    // be about the readable-row path and not about candidacy at all.
+    expect(w13MissingCorrelation.durableRequestRows).toBe(1)
+    expect(w13MissingCorrelation.readableRequestRows, 'missing correlation').toBe(0)
+    expect(w13MissingActionName.readableRequestRows, 'missing actionName').toBe(0)
+    expect(w13EmptyCorrelation.readableRequestRows, 'empty correlation').toBe(0)
+    // And the reason the row can be attributed to a call at all: it still states
+    // members the algebra can read (so this is NOT the unattributable class).
+    expect(w13MissingCorrelation.corruptLegs).toEqual([
+      { sequence: expect.any(Number), requestId: 'req-a4cl-w13', disclosesMember: true },
+    ])
+  })
+
+  it('W13-a (the counterexample): a refused row that states NO `correlation` blocks the call its own leg governs', () => {
+    // THE REPRODUCTION. Pre-fix this call is GREEN-LIT on the real tool entry:
+    // `memberAgrees('correlation', 'tok-a4cl-w13')` answered `false` purely
+    // because the damaged row does not mention correlation, `false` is the one
+    // verdict that rules a leg out, the producer answered `no-request`,
+    // `packages/tools/src/guard.ts` maps that to proceed, and the durable leg
+    // vanished from the tool plane for the only call it claims.
+    expect(
+      w12Observed(w13MissingCorrelation),
+      `the tool said: ${w13MissingCorrelation.toolReason}`,
+    ).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+      namesRow: 'req-a4cl-w13',
+      toolStatus: 'blocked',
+      facadeReached: 0,
+      allowConsumptions: 0,
+    })
+  })
+
+  it('W13-b: the same shape through the other required member — a row that states NO `actionName` blocks too', () => {
+    expect(
+      w12Observed(w13MissingActionName),
+      `the tool said: ${w13MissingActionName.toolReason}`,
+    ).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+      namesRow: 'req-a4cl-w13',
+      toolStatus: 'blocked',
+      facadeReached: 0,
+      allowConsumptions: 0,
+    })
+  })
+
+  it('W13-c: the same row carrying a DIFFERENT `correlation` is still ruled out and the call proceeds (the anti-freeze half)', () => {
+    // Present and different is evidence, absence is not. This leg is the
+    // anti-freeze half of the fix and is green on BOTH sides: without it the fix
+    // could satisfy W13-a by ruling nothing out ever, which freezes a Team on one
+    // damaged row — the failure mode this guard exists to prevent.
+    expect(
+      w12Observed(w13OtherCorrelation),
+      `the tool said: ${w13OtherCorrelation.toolReason}`,
+    ).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
+      namesRow: 'none',
+      toolStatus: 'executed',
+      facadeReached: 1,
+      allowConsumptions: 0,
+    })
+  })
+
+  it('W13-d: a call at an instance the row positively does NOT name still proceeds', () => {
+    // The row states BOTH of its identity fields and both disagree with this
+    // call: that is the positive rule-out W11-c pins, and a missing correlation
+    // must not eat it.
+    expect(
+      w12Observed(w13OtherInstance),
+      `the tool said: ${w13OtherInstance.toolReason}`,
+    ).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
+      namesRow: 'none',
+      toolStatus: 'executed',
+      facadeReached: 1,
+      allowConsumptions: 0,
+    })
+  })
+
+  it('W13-e: a damaged row that names a DIFFERENT action proceeds for the call it is not about', () => {
+    // The missing member is damage; the stated one is evidence. The row omits
+    // `correlation` AND positively names `collect-result`, so this `follow-up`
+    // call is ruled out by the member the row did state.
+    expect(
+      w12Observed(w13OtherAction),
+      `the tool said: ${w13OtherAction.toolReason}`,
+    ).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
+      namesRow: 'none',
+      toolStatus: 'executed',
+      facadeReached: 1,
+      allowConsumptions: 0,
+    })
+  })
+
+  it('W13-f: an EMPTY required member is the same absence, and rules the row out no more than a missing one', () => {
+    // `parseRequestPayload` refuses `correlation: ''` for the same reason it
+    // refuses an absent one, so an empty value is a member the row failed to
+    // state — not a value that differs from this call's token.
+    expect(
+      w12Observed(w13EmptyCorrelation),
+      `the tool said: ${w13EmptyCorrelation.toolReason}`,
+    ).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+      namesRow: 'req-a4cl-w13',
+      toolStatus: 'blocked',
+      facadeReached: 0,
+      allowConsumptions: 0,
+    })
+  })
+
+  it('W13-g (DISCLOSED, the read-plane half): a row whose only stated members are damage is UNATTRIBUTABLE — named as such, and it does not block', () => {
+    // The execution effect is unchanged and stays non-blocking (RULING 5-B owns
+    // that call). What moves is the honesty of the marker: this row states
+    // `actionName`/`correlation` as EMPTY values the strict reader refuses, so it
+    // discloses nothing the algebra can read and must not be counted as
+    // attributable on the strength of the damage itself.
+    expect(
+      w12Observed(w13AllDamage),
+      `the tool said: ${w13AllDamage.toolReason}`,
+    ).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
+      namesRow: 'none',
+      toolStatus: 'executed',
+      facadeReached: 1,
+      allowConsumptions: 0,
+    })
+    expect(w13AllDamage.corruptLegs).toEqual([
+      { sequence: expect.any(Number), requestId: 'req-a4cl-w13-empty', disclosesMember: false },
+    ])
+  })
+
+  it('W13-j: `toolName` is OPTIONAL to the reader, so a refused row that omits it is the optional-absent cell — and it is the third witness that the probe is not blind', () => {
+    // Stated plainly because the natural reading of "the durable scope key names
+    // the tool" is that a row naming no tool is damaged: it is not. The reader
+    // accepts the row, so the row never reached `corruptLegs` through THIS member
+    // (the damage here is the authority point), and the algebra reads the absence
+    // as the value it is — a call naming a tool is outside that row's key.
+    // What this leg really buys is the direction a reviewer worried about: if the
+    // probe ever answers `required: true` for every member — the blind-probe
+    // failure — this row stops being a rule-out and this leg goes red naming it.
+    expect(
+      w12Observed(w13MissingToolName),
+      `the tool said: ${w13MissingToolName.toolReason}`,
+    ).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
+      namesRow: 'none',
+      toolStatus: 'executed',
+      facadeReached: 1,
+      allowConsumptions: 0,
+    })
+  })
+
+  it('W13-k: the requirement probe\'s own table is pinned, key by key — an instrument nobody can read can go quietly blind', () => {
+    // This leg does not exercise a call at all. It reads the instrument
+    // `memberAgrees` consults and pins what the reader actually requires of the
+    // four scalar members the candidacy algebra compares.
+    //
+    // Its REAL job is the failure the review of this fix named: the probe derives
+    // `required` by asking what the reader refuses when one member is taken away,
+    // and that question is meaningless against a canonical row the reader no
+    // longer accepts — the schema gains a field, an enum value moves, a subject
+    // kind is renamed — at which point every key would answer the same way and the
+    // guard would slip back to the pre-G1 rule under a passing suite. Pinned
+    // key-by-key, that state cannot hide: `toolName` and `operationFingerprint`
+    // would both come back `required: true`, and this leg names them. The probe
+    // itself fails CLOSED on that path (see `requestMemberRequirement`), which is
+    // why the visible symptom is this leg and three OPTIONAL-cell legs red, not a
+    // suite that went quietly permissive.
+    const table = requestMemberRequirements([
+      'actionName',
+      'correlation',
+      'toolName',
+      'operationFingerprint',
+    ])
+    expect(table).toEqual({
+      // REQUIRED: the reader refuses the row without them, and refuses them empty.
+      // These are the members whose absence is the damage, never an alibi.
+      actionName: { required: true, rejectsEmpty: true },
+      correlation: { required: true, rejectsEmpty: true },
+      // OPTIONAL: absent is a value (a legacy row names no tool / no fingerprint),
+      // and for `toolName` the reader even accepts the empty string.
+      toolName: { required: false, rejectsEmpty: false },
+      operationFingerprint: { required: false, rejectsEmpty: true },
+    })
+    // The identity member is NOT one of the four on purpose: it is the one member a
+    // row can state twice (`subject` and the legacy `targetInstanceId` projection),
+    // so it is read by `subjectAgrees` and its third cell is contradiction, not
+    // absence — `memberAgrees` is never asked about it. It is still in the probe's
+    // reach, and the measured answer is worth keeping in view: the canonical row
+    // addresses identity through the EXPLICIT subject alone, so taking that key
+    // away leaves no identity element at all and the reader refuses. Requiredness
+    // here is the reader's rule for identity-as-a-whole ("an explicit subject, or a
+    // non-empty `targetInstanceId`"), not a fact about the `subject` key — the same
+    // question against a row carrying the legacy projection would answer `false`.
+    // Pinning the measured value rather than the assumed one is the whole point of
+    // reading an instrument instead of describing it: this leg's first draft
+    // asserted `required: false` and the probe said otherwise.
+    expect(requestMemberRequirements(['subject'])).toEqual({
+      subject: { required: true, rejectsEmpty: true },
+    })
+  })
+
+  it('W13-i: an OPTIONAL member stated EMPTY is still a stated value — it rules the row out like any other difference', () => {
+    // The other half of the boundary W13-f draws. `parseRequestPayload` ACCEPTS an
+    // empty `toolName`, so this row really does state one, and a call carrying
+    // `team_follow_up` is not that call. Reading every empty value as "unstated" —
+    // the opposite mistake from the one G1 fixes — would block here, and this leg
+    // is what turns that mutant red.
+    expect(
+      w12Observed(w13EmptyOptionalToolName),
+      `the tool said: ${w13EmptyOptionalToolName.toolReason}`,
+    ).toEqual({
+      verdict: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST,
+      namesRow: 'none',
+      toolStatus: 'executed',
+      facadeReached: 1,
+      allowConsumptions: 0,
+    })
+  })
+
+  it('W13-h: an OPTIONAL member legitimately absent keeps today\'s semantics — a fingerprint-less legacy row does not govern a fingerprinted call', () => {
+    // The negative space of the fix. `operationFingerprint` is optional in the
+    // reader, so its absence IS a statement (the durable scope key carries an
+    // empty fingerprint segment, distinct from any present fingerprint), and this
+    // call — which carries one — is genuinely outside the row's scope. Flattening
+    // every absence into "nothing" would block it; that is the same narrower-than-
+    // reality mistake aimed at the other members, so it is pinned, not asserted.
+    expect(w13OptionalFingerprint.error).toBe('none')
+    expect(
+      w13OptionalFingerprint.consult,
+      'an absent optional member still rules the row out',
+    ).toEqual({ proceed: true })
+    expect(w13OptionalFingerprint.producerReason).toBe(CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST)
   })
 })
