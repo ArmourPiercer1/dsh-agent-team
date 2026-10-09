@@ -1497,45 +1497,108 @@ describe('composition-smoke verdict: an unrun step is not a passing gate', () =>
 })
 
 describe('composition-smoke verdict against this repository', () => {
+  /**
+   * One reading of this checkout's build state, for DISCLOSURE only, in the words this leg has
+   * always used. It is a read of a path this file does not own and cannot pin, and the census is
+   * exactly where that matters: `a4p7-merge-gate.test.ts` — a sibling file of the SAME nine-root
+   * capture, running in another worker — proves its own `refused`/`failed` classification by
+   * MOVING this very artifact out of place for the duration of a gate run
+   * (`…/packages/client/dist/…/client.js.held-by-7-6-gate`, `packages/client/dist` wholesale, and
+   * `node_modules/.pnpm/node_modules/clsx`; legs at its :1049, :1083, :1137). The hygiene lane
+   * already documents that window as a fact of the full-population run
+   * (`a3p3-governance-lane-hygiene.test.ts:59-74`: "…in the same full-population run, in another
+   * worker"). So the shape is sampled and printed, and is NEVER a premise. Sampled twice — around
+   * the gate run — so a reader can see whether the tree moved underneath the leg.
+   */
+  function buildStateDisclosure(): string {
+    const prov = artifactProvenance({ repoRoot: REPO_ROOT, rel: CLIENT_ARM.rel, label: CLIENT_ARM.label })
+    return `${treeShape({ repoRoot: REPO_ROOT })}; ${CLIENT_ARM.rel} ${
+      prov.exists ? 'present' : `absent (build output root ${prov.outputRoot ?? 'none'} carries ${String(prov.outputFileCount)} file(s))`}`
+  }
+
   it('never reports a passing gate over a step it did not run', () => {
-    // The real gate, the real artifact, this workspace's real install surface: whichever way
-    // the client closure falls out here, the verdict and the output have to agree. At the base
-    // of this change the output said `NOT RUN and NOT passed` while the exit code said 0.
+    // The real gate, the real artifact, this workspace's real install surface: whichever way the
+    // client closure falls out here, the verdict and the output have to agree. At the base of
+    // this change the output said `NOT RUN and NOT passed` while the exit code said 0 — which is
+    // the defect this leg is NAMED for, and remains the thing it catches.
     //
-    // THREE states, because this tree has three and the leg used to admit two. Which one it is
-    // in is MEASURED from the artifact the gate declares, never assumed from the report being
-    // checked: an unbuilt checkout (the state a fresh worktree, and every clean-worktree
-    // receipt, is in) has no SKIP line and is not green either, and a leg that demanded
-    // `notGreenBecause(run) === []` outside the skip case was red there — which is how this
-    // leg reached B1 as "the client leg prints no PASS" instead of "this tree was never built".
+    // WHAT MOVED (round 49, `fix/a4-w3-census-coupling`). This leg used to run the gate and THEN
+    // read this checkout's build state, and pick from that read WHICH contract to assert. The gate
+    // had already read the same path inside its own process, at +0.40 s of its ~0.8 s run (measured);
+    // this leg read it again after the gate exited. Two reads of mutable state, ~0.4 s apart, nothing
+    // pinning the path between them — and the later read decided the expectation applied to the
+    // earlier one. Hosted run `37897691322` graded this file green in census capture 1 and red in
+    // capture 2, same tree and same runner minutes apart, capture 2's own message declaring the entry
+    // absent while its build root `packages/client/dist` carries 400 files. That is not two verdicts
+    // about one tree: it is one leg whose SUBJECT (a gate that loaded the artifact and printed
+    // `PASS composition-smoke` at exit 0) and whose PREMISE (the tree, read afterwards, finding the
+    // entry held away — a window this sibling's own legs keep open for 2.4-3.2 s, longer than this
+    // leg takes) sampled opposite sides of that window. The leg's verdict was not a function of the
+    // tree under test. Mechanism, instruments, before/after pair:
+    // `dev/agent-workflow/evidence/a4-pr7/census-runtime/COUPLING-20261009.md`.
+    //
+    // WHAT IS NOT WEAKENED. Clause 1 below is the agreement all three old branches spelled out,
+    // and it now holds in every tree state instead of in whichever one the leg happened to
+    // measure. The per-shape WORDINGS stay pinned where the tree state is under the pinning leg's
+    // control rather than observed: the four fixture cases above (`green` / `skipped` / `failed`
+    // / `absent`) build their own repositories and set their own state, and
+    // `a4p7-merge-gate.test.ts` holds the three real-tree mutations that put this checkout into the
+    // never-built (:1049), partial-output (:1083) and untraversable-closure (:1137) shapes, each of
+    // which asserts the shape it created. And the property "the real built client arm must RUN and
+    // be green" is owned by that file's healthy composition leg — :837, "is green, asserted by arm
+    // name and by absence of a skip — never by the exit code" — which admits only `passed` and
+    // requires the unqualified footer (:894). What this leg owns is the sentence in its title, so it
+    // asserts exactly that, from one observation, in whatever state the tree happens to be in.
+    const before = buildStateDisclosure()
     const run = runGate(REPO_ROOT)
-    const gated = PLUGIN_TARGETS.find((target) => target.closureGate === true)
-    const prov = gated === undefined ? null : artifactProvenance({ repoRoot: REPO_ROOT, rel: gated.rel, label: gated.label })
-    const shape = `${treeShape({ repoRoot: REPO_ROOT })}; ${gated?.rel ?? '(no closure-gated arm)'} ${
-      prov === null ? 'unmeasurable' : prov.exists ? 'present' : `absent (build output root ${prov.outputRoot ?? 'none'} carries ${String(prov.outputFileCount)} file(s))`}`
-    if (prov !== null && !prov.exists) {
-      // Say the tree state out of the leg's own mouth: the receipt this produces is read by
-      // someone deciding whether a red is a regression, and they should not have to diff a
-      // worktree to find out which tree they are looking at.
-      process.stderr.write(`composition-smoke live leg: this checkout has no built artifact for ${gated?.rel ?? '?'} — ${shape}\n`)
-      expect(run.status, `a gate that could not load its artifact must not exit 0 — ${shape}`).not.toBe(0)
-      expect(run.footer, `the absent-artifact state must not print the PASS footer — ${shape}`).toBe('FAIL composition-smoke')
-      expect(run.stdout).not.toContain('PASS composition-smoke')
-      const line = run.failures.find((l) => l.includes(gated?.label ?? '')) ?? '(no FAIL line naming the closure-gated arm)'
-      expect(line, `the run must say WHICH artifact is missing and how to produce it — ${shape}`).toContain('built entry is missing')
-      expect(line, `the run must name the command that produces the artifact — ${shape}`).toContain('pnpm build')
+    const after = buildStateDisclosure()
+    const moved = before === after ? '' : ' || THE TREE MOVED UNDER THIS LEG between the two samples; neither sample is a premise of any assertion below.'
+    const shape = `tree before: ${before}\n    tree after:  ${after}${moved}`
+
+    // Clause 1 — the contract, in one observation: the report and the exit code may not disagree.
+    const reasons = notGreenBecause(run)
+    if (reasons.length === 0) {
+      expect(run.status, `a report with nothing unverified in it is the only one entitled to exit 0 — ${shape}`).toBe(0)
+      expect(run.footer, `a green report owes the unqualified footer — ${shape}`).toBe('PASS composition-smoke')
+    } else {
+      expect(run.status, `a gate with an unverified step may not exit 0 (${reasons.join('; ')}) — ${shape}`).not.toBe(0)
+      expect(run.stdout, `an unverified run must not print the PASS footer (${reasons.join('; ')}) — ${shape}`).not.toContain('PASS composition-smoke')
+      if (run.skips.length > 0) {
+        expect(run.footer, `a skipped step must be reported as NOT RUN — ${shape}`).toContain('NOT RUN and NOT passed')
+        for (const skip of run.skips) {
+          expect(run.footer, `the footer must name the step it is refusing — ${shape}`).toContain(skip.slice('SKIP '.length).split(':')[0] ?? '')
+        }
+      }
+    }
+
+    // Clause 2 — anti-vacuity: the run owes exactly one line per arm of BOTH derived lists, so a
+    // report that goes quiet cannot satisfy clause 1 by saying nothing. Derived, never a literal:
+    // an arm added to the gate adds a requirement here in the same commit that adds it there.
+    expect(run.steps, `the run printed the wrong number of step lines — ${shape}`).toHaveLength(EXPECTED_STEP_LINES)
+    for (const target of PLUGIN_TARGETS) {
+      expect(run.steps.filter((line) => line.includes(`${target.label}:`)), `the ${target.label} arm must be reported exactly once — ${shape}`).toHaveLength(1)
+    }
+    for (const id of REQUIRED_CHECK_IDS) {
+      expect(run.steps.filter((line) => line.includes(`bundle ${id} (`)), `bundle arm "${id}" must be reported exactly once — ${shape}`).toHaveLength(1)
+    }
+
+    // Clause 3 — report integrity per shape, keyed on the gate's OWN line for the closure-gated
+    // arm instead of on a second read of the tree. A missing built entry still has to name itself
+    // and the command that produces it, and still may not be dressed up as a SKIP; a skipped arm
+    // still has to be named by the footer. Both clauses are assertions about a report, which is
+    // the only thing this leg can observe atomically.
+    const clientLine = run.steps.find((line) => line.includes(`${CLIENT_ARM.label}:`)) ?? '(no line for the closure-gated arm)'
+    if (clientLine.includes('built entry is missing')) {
+      // Say the tree state out of the run's own mouth: whoever reads this receipt is deciding
+      // whether a red is a regression, and they should not have to diff a worktree for that.
+      process.stderr.write(`composition-smoke live leg: this checkout has no built artifact for ${CLIENT_ARM.rel} — ${shape}\n`)
+      expect(clientLine, `the run must say WHICH artifact is missing and how to produce it — ${shape}`).toContain('pnpm build')
       expect(run.skips, `a missing artifact is not a step that declined to run — ${shape}`).toEqual([])
-      return
+      expect(run.footer, `the absent-artifact state must not print the PASS footer — ${shape}`).toBe('FAIL composition-smoke')
     }
-    if (run.skips.length === 0) {
-      expect(notGreenBecause(run), `the gate reported green and this tree entitles it: ${shape}`).toEqual([])
-      expect(run.status).toBe(0)
-      return
-    }
-    expect(run.status).not.toBe(0)
-    expect(run.footer).toContain('NOT RUN and NOT passed')
-    for (const skip of run.skips) {
-      expect(run.footer).toContain(skip.slice('SKIP '.length).split(':')[0] ?? '')
+    if (clientLine.startsWith('SKIP ')) {
+      expect(run.footer, `a skipped closure must be named by the footer — ${shape}`).toContain(CLIENT_ARM.label)
+      expect(run.footer, `a skipped closure is a step NOT RUN — ${shape}`).toContain('NOT RUN and NOT passed')
     }
   }, 120_000)
 })
