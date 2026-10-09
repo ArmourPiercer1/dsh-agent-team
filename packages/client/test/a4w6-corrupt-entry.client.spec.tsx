@@ -108,10 +108,15 @@ function wireEntry(
 ): RemoteLedgerEntryValue {
   return {
     schemaVersion: 2,
-    sequence,
+    // Explicit keys, not shorthand: the blueprint-version fence's
+    // ledger-row sibling classifier reads depth-1 KEY NAMES and shorthand
+    // properties are invisible to it (precedent: the adjudicated
+    // `ledger-adapter.test.ts` builder). The row itself is the canonical
+    // RemoteLedgerEntryValue shape.
+    sequence: sequence,
     rootSessionId: LEADER,
-    factType,
-    payload,
+    factType: factType,
+    payload: payload,
     operationId: null,
     createdAt: new Date(T).toISOString(),
   } as unknown as RemoteLedgerEntryValue
