@@ -6025,3 +6025,19 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
 **验收只有三条测试**，不是全路径拦截矩阵：注入不可归属记录 → 警告出现且正常团队运行不受阻；经现有生命周期接口销毁 → 旧实例停止、新实例拥有独立权限覆盖历史；确认警告**不会仅因 member 重建而错误消失**。**Ledger 修复、完整治理隔离、跨进程原子性（putIfAbsent）移出本阶段**，进入后续 backlog，不再是这一阶段的功能要求。Alpha.4 的收口标准：W1 + W2 + W3 与三条验收测试完成，然后做**既有的 §7.7 人工验收**。
 
 **一处我在裁决前就撤回的话**：我此前说过这类损坏"不算很 corner-case"——那是未经测量的说法，撤回。已确立的只是这条路**结构上可达**（账本 durable 且跨版本、严格读者用闭合集、宿主不提供 pre-execute seam），而**所有具体样本至今都是测试注入的**。**频率未测**，测频率现在是一条待办而不是话术。本轮按此裁决派出三条 lane：W1 警告读面 + Team 警告条；W2 把重建判据钉成测试；W3 托管 census 的捕获耦合（人把它留在收口线内）。**PR 合并 ≠ 实现完成 ≠ 人工验收 ≠ 阶段关闭。**
+
+## 2026-10-09 round 51 (coordinator): RULING 5-B 的最小验收落地为代码与测试；同时记录一处**我自己的错误**与一处因此被抓到的措辞缺陷
+
+**已合并**：W2 重建判据（PR 228，squash `ed9b0552`）与 W1 损坏记录可见性（PR 230，squash `45b30498`）。
+
+**W2 把你裁决的"重建成功判据"钉成 15 个断言**（我本地复跑 15/15 + p4t6 10/10）：dispose 提交 DISPOSED 终态的同时**控制面账本行逐字节存活**（比的是整行 JSON，不只是计数）；新实例**没有**动态权限覆盖（`latest` 为 undefined、`history` 为空，按 [overlay-repository.ts:73-77](packages/runtime/permission-governance/overlay-repository.ts#L73) 的 `(teamSessionId, memberInstanceId)` 键控，并明写基线权限是另一层，免得有人把"没有 overlay"读成"没有权限"）；配额约束作为**既有行为**钉住（DISPOSED 仍占 `maxInstances` 且拒绝时零写入；`maxConcurrent` 随 dispose 释放，并带全 live 对照拒，使断言不可能为空）；守卫**在工具面**断言（`consultGuard` proceed）并并记服务面；两条损坏行（一条不可归属、一条写了非空 `actionName`）跨 dispose+rebuild **条目与 sequence 不变**。
+
+**W1 开出 `corruptLegs` 的第一条生产读出口**（此前为零）：插件自有契约 v9 只读方法 `team.listCorruptControlLegs`，**无 `CORE_SEAM_BLOCKER`**（wire DTO 本就在插件自有冻结契约里）；Team 页面固定警告条（`role=alert`、非模态、不可关闭）；客户端模型 fail-safe 解析为 null 且**从不自行判定哪些行损坏**。托管 `pr-gate` 与 `census-runtime`（10m11s）在新 head 上双绿，我另在本地跑过 97 tests。
+
+**协调者错误，直说**：我给 W2 的简报里断言"身份不参与 `corruptLegDisclosesMember`"。**这是错的**，而且被 lane 用四形状实测矩阵顶了回来：该谓词**还包括**可解析 `subject` **单独**为 true（[service.ts:1218](packages/runtime/control/service.ts#L1218)）与非空 legacy `targetInstanceId` **单独**为 true（[:1221](packages/runtime/control/service.ts#L1221)），四标量只是其中一路。这个字段名叫 `disclosesMember`，实际含义是"该行披露了**可比较的**归属信息——身份**或**操作"。
+
+**这个纠正顺带抓出的缺陷，已在合并前修掉**：客户端正面文案原本写"该记录自带**成员**归属"。对一条只写了 `actionName`、通篇没有任何成员身份的行，那是在对人宣称行里从未说过的事——**正是你裁决第 1 条禁止的**。已改中英文案与注释（并明写"该标记不构成某成员造成损坏的结论"）；**行为零变、未加 DTO 字段、`control/**` 未碰、未改任何测试期望值**（model spec 断言的是 boolean，不是字符串；grep 全树无 spec 断言旧文案）。**署名取舍，由我承担，不留成默认共识**：区分"点名身份"与"只点名操作"需要新增读字段，那属于已推迟的 ledger-repair 一层；Alpha.4 用一个诚实的合并措辞替代。
+
+**串行集成是测出来的，不是算出来的**：W2 先合，W1 把 master 合进自己分支（**merge 而非 rebase，gated 历史不 force-push**），p4t6 冲突按"两条列表与两个加项都保留、W2 的常量与 tie 一字不动"解决，然后报**扫描器直调读数 `filesScanned` 1047**，对照它自己实测的 1042→1046。
+
+**接受但未验证、交回人工的**：警告条**没有 jsdom 渲染 spec、没有真实浏览器检查**，所以它的**视觉行为属人工验收范围**，三条自动测试各有一条手工对应动作（见新增 backlog）。census-runtime 在 W1 head 上通过，只是该仪器又一个正常样本，**不构成**把它提为必需检查的理由；W3（捕获耦合）仍未结。**PR 合并 ≠ 实现完成 ≠ 人工验收 ≠ 阶段关闭。**
