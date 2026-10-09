@@ -30,7 +30,7 @@ exports NO_COLOR=1, so a negative local repro proves nothing about the runner.
 BOUNDS OF THE CLAIM: what the GitHub runner actually exports was never observed from here.
 The only facts are the byte counts on the two same-instrument captures — the coordinator's
 pair: local dev/agent-workflow/evidence/a4-pr7/ci-gate/transcripts-green-run1-found-F1/first/
-census-capture-1.txt = 0 ESC bytes, hosted run 37814101108 census-capture-1.txt = 1290 ESC
+census-capture-1.txt = 0 ESC bytes / 0 ESC lines, hosted run 37814101108 census-capture-1.txt = 9036 ESC bytes across 1290 ESC lines ESC
 bytes — and that this box styles the moment NO_COLOR stops suppressing. The runner's trigger is
 NOT identified by this file, and the fix does not depend on identifying it: the parser grades
 the hosted bytes directly and the leg now REPORTS its ANSI measurement beside its verdict.
