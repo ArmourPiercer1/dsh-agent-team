@@ -1,0 +1,325 @@
+# A4 external review item 4 — the census RUNTIME gate: the second, honest green.
+#
+# WHY A SECOND WORKFLOW INSTEAD OF FIXING `pr-gate`. `pr-gate` runs 7 legs and passes today with
+# `refused=1 refusedlegs=census`: its census leg REFUSES, honestly and out loud, because the
+# gitignored pristine test host (`tests/deepseek-harness-test-use`, TEST_METHODS §2) is absent from
+# a runner checkout, and the 57 legs that resolve it are ungradeable without it (hosted run
+# 37794562230 produced 57 failures wearing the product's name for exactly that absence). A refusal
+# is the right answer for THAT job — but a gate that cannot run must not share one green state with
+# a gate that passed, and no amount of `refusedlegs=census` prose makes a reader's "CI is green"
+# mean "the nine-root census ran". So this file changes no verdict `pr-gate` already gives (its
+# semantics are untouched, including its declared exemption) and adds the check that has to be true
+# for the census to be believed: a run that PROVISIONS the pinned host, and where a refusal is a
+# FAILURE. Two names, two meanings: `pr-gate` = static + build legs, census declared-refused;
+# `census-runtime` = the census ran against the pinned host, no refusal permitted.
+#
+# NO NEW GATE CODE. `scripts/ci-pr-gate.mjs` already refuses to grade a missing host and already
+# turns an UNDECLARED refusal into a named failure (`undeclared refusal — … declare it:
+# --allow-refused census`, pinned by `--self-test`). This job therefore only withholds the
+# exemption: it passes no `--allow-refused`, so a host that fails to provision cannot come back
+# green — it comes back `verdict=fail` on the leg line, and the transcript re-grade step grades the
+# same claim a second time.
+#
+# WHY THE HOST IS PROVISIONABLE ON A RUNNER AT ALL. The local checkout's `origin` is a local path
+# (the read-only shared baseline), which is why this looked un-provisionable from a sandbox. Its
+# upstream is PUBLIC: `https://github.com/ArmourPiercer1/deepseek-harness`, branch
+# `stable-3-0.2.0-rc.2`, whose tip IS the pinned SHA — re-confirmed 2026-10-08 (UTC) from this sandbox
+# (`git ls-remote … stable-3-0.2.0-rc.2` → `639ed015397290b3745d163aafe02ffee4aa3f84`), and the
+# exact-SHA shallow fetch used below was executed here, not assumed (evidence
+# `dev/agent-workflow/evidence/a4-pr7/census-runtime/PROVISION-PROBE.txt`). No secret, no token,
+# `permissions: contents: read` and nothing else.
+#
+# THE PIN IS READ, NEVER COPIED. `tests/paths.mjs` is the declared single source of truth for
+# `TEST_USE_BASELINE_SHA` / `DSH_BASELINE_VERSION` / `CLIENT_COMMIT_HASH`, so this file parses them
+# at run time. Hardcoding the SHA here would create a second pin that can drift from the one the
+# suite resolves — which is the exact failure this job exists to catch. The URL and the branch NAME
+# are written here because they are transport, not the pin: the branch is only the fallback ref,
+# and the assertion after the fetch is what decides, so a moved branch tip FAILS this job by name
+# instead of silently testing a different host.
+#
+# EVERY `run:` BLOCK SAYS `set -euo pipefail`. Actions already runs a block under `bash -e`, but a
+# step whose safety depends on an implicit default is one `shell:` edit away from not failing: the
+# end-to-end local simulation (e2e-provision-run.sh → E2E-PROVISION-THEN-CENSUS.txt) reproduced
+# precisely this — with the provisioning step's failure ignored, the NEXT step's `cd "$HOST_DIR"`
+# failed quietly and the step built the WRONG tree (this repo instead of the host) and reported
+# success. Writing `-e` down makes a `cd` that cannot land abort the step, makes the text behave the
+# same when a reviewer runs it by hand, and keeps `| tee` from substituting tee's exit status for
+# the gate's (FINDINGS F2).
+name: census-runtime
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: census-runtime-${{ github.ref }}
+  # cancel-in-progress TRUE here where `pr-gate` deliberately says false, and the asymmetry is the
+  # point: `pr-gate` is a cheap merge verdict that a PR must always be able to read, while this job
+  # is tens of minutes of host build whose only product is a statement about the tip. A push that
+  # supersedes it makes the in-flight run's answer about a dead SHA, and letting both finish buys
+  # nothing. DISCLOSED COST: a cancelled required status check reports `cancelled`, which is neither
+  # green nor red — the failure mode `pr-gate`'s comment warns about. That is acceptable here ONLY
+  # while this check is informational; if anyone ever marks it required, either flip this to false
+  # or stop running it on `push`. Stated here so the next reader does not have to rediscover it.
+  cancel-in-progress: true
+
+jobs:
+  census-runtime:
+    # The required-check context string, same rule as `pr-gate`: short, ASCII, typeable.
+    name: census-runtime
+    runs-on: ubuntu-latest
+    # MEASURED, not guessed — and it is a FLOOR with its provenance, because no sandbox can measure
+    # a 2-core runner. The whole job was run as ONE local sequence (E2E-PROVISION-THEN-CENSUS.txt:
+    # throwaway directory, host fetched from github.com in the moment, each step given the `env:` the
+    # runner would give it): pin resolve 0 s + provision 8 s + host build 218 s + census (2 captures,
+    # --testTimeout=20000) 254.8 s + re-grade 0 s = 481 s ≈ 8 minutes, plus the Actions harness this
+    # sandbox cannot run (checkout, setup-node, setup-pnpm, cold pnpm downloads of BOTH trees,
+    # artifact upload). Component figures and a second, independent provisioning probe are in
+    # dev/agent-workflow/evidence/a4-pr7/census-runtime/MEASURED-TIMINGS.txt.
+    # The one hosted fact for the factor: `pr-gate`'s 7-leg run took 475.3 s on `ubuntu-latest`
+    # against 222.4 s locally for the SAME legs while doing strictly LESS work (its census refused),
+    # so 2–4x per leg is conservative, and the census is the part that scales with cores because each
+    # capture spawns real DSH hosts. 4x the local floor is ~32 min; 60 leaves room for cold pnpm
+    # downloads and a slow census without turning "grading" into "stuck". A timeout expiry is itself
+    # a legible verdict — the job then says "could not grade in 60 minutes" instead of pretending to
+    # abstain — so this margin costs queue time, never correctness. NARROW IT from the first hosted
+    # run's per-step timings; that is the one measurement this lane cannot make.
+    timeout-minutes: 60
+    env:
+      # ONLY `CI` here. `runner` is not an available context in `jobs.<id>.env` (permitted: github,
+      # inputs, matrix, needs, secrets, strategy, vars), and GitHub's answer to a file that asks
+      # anyway is a failed run with NO jobs and no log — measured four times over on `pr-gate` (see
+      # the note in that file, and FINDINGS.md §"four job-less runs"). Every step below that wants
+      # `runner.temp` sets it at step level, where the context is legal.
+      CI: 'true'
+    steps:
+      - name: Checkout
+        # fetch-depth 1 on purpose: the leg this job runs never materialises HEAD in a linked
+        # worktree (that is `artifacts-at-head`, which stays `pr-gate`'s job), so the deep history
+        # `pr-gate` conservatively asks for buys nothing here except download time. The census leg's
+        # only git read is `git rev-parse --short HEAD` for the DSH-CI-RUN line, which a shallow
+        # checkout answers.
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        # Node 24 and pnpm 11.7.0 are the versions BOTH trees declare: this repo's `packageManager`
+        # and the host's `engines: ^22.19 || >=24` + `packageManager pnpm@11.7.0` (TEST_METHODS §2).
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - name: Resolve the pinned pristine host from tests/paths.mjs
+        # Read, never copied: see the header. The regex is the fail-closed part — an empty or
+        # truncated value here would otherwise become a `git fetch` of nothing, and a fetch that
+        # quietly falls back to a branch tip is precisely the drift this job is meant to catch.
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHA=$(node -e "import('./tests/paths.mjs').then((m) => console.log(m.TEST_USE_BASELINE_SHA))")
+          VER=$(node -e "import('./tests/paths.mjs').then((m) => console.log(m.DSH_BASELINE_VERSION))")
+          CH=$(node -e "import('./tests/paths.mjs').then((m) => console.log(m.CLIENT_COMMIT_HASH))")
+          if ! printf '%s' "$SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::tests/paths.mjs gave no 40-hex TEST_USE_BASELINE_SHA (got '${SHA}') — refusing to provision an unpinned host"
+            exit 1
+          fi
+          if [ -z "$VER" ] || [ -z "$CH" ]; then
+            echo "::error::tests/paths.mjs gave DSH_BASELINE_VERSION='${VER}' CLIENT_COMMIT_HASH='${CH}'"
+            exit 1
+          fi
+          echo "TEST_USE_SHA=$SHA" >> "$GITHUB_ENV"
+          echo "TEST_USE_VERSION=$VER" >> "$GITHUB_ENV"
+          echo "TEST_USE_CLIENT_HASH=$CH" >> "$GITHUB_ENV"
+          # The values are echoed from the LOCAL names, not the env vars just written: `GITHUB_ENV`
+          # publishes to the NEXT step, so reading them back here would print empty lines and a
+          # reader would have nothing to check the run against. (Caught by running this step
+          # verbatim in a dry run before spending a hosted one — evidence LOCAL-STEP-DRYRUNS.txt.)
+          echo "pinned pristine host: $SHA = $VER (client commit $CH)"
+
+      - name: Provision the pinned pristine test host
+        # tests/deepseek-harness-test-use is gitignored and self-gits, so a runner checkout does not
+        # have it and populating it cannot dirty this repo's status. TEST_METHODS §2/AGENTS.md give
+        # the full provenance: baseline 0.2.0-rc.2 @ 639ed01539, detached, porcelain must stay empty.
+        shell: bash
+        env:
+          HOST_URL: https://github.com/ArmourPiercer1/deepseek-harness
+          HOST_BRANCH: stable-3-0.2.0-rc.2
+          HOST_DIR: tests/deepseek-harness-test-use
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOST_DIR"
+          git -C "$HOST_DIR" init -q .
+          git -C "$HOST_DIR" remote add origin "$HOST_URL"
+          # Fetch the PINNED OBJECT. GitHub answers `fetch <sha>` for anything reachable from a ref,
+          # so a moved branch tip cannot substitute for the pin. The fallback below is for a server
+          # that refuses SHA fetches: it lands on a tip, and the assertion AFTER it is what makes
+          # that substitution a red job naming the drift rather than a green job testing something
+          # else. Shallow (--depth 1) because the census needs a working tree and a build, not
+          # history; the build's git version lookup is pinned off by DSH_CLIENT_COMMIT_HASH.
+          if ! git -C "$HOST_DIR" fetch -q --depth 1 --no-tags origin "$TEST_USE_SHA"; then
+            echo "::warning::exact-SHA fetch was refused; falling back to branch tip — the assertion below will fail the job if the tip is not the pin"
+            if ! git -C "$HOST_DIR" fetch -q --depth 1 --no-tags origin "$HOST_BRANCH"; then
+              echo "::error::could not fetch $HOST_URL ($HOST_BRANCH) — no pristine host, so the census would be ungradeable here"
+              exit 1
+            fi
+          fi
+          git -C "$HOST_DIR" checkout -q --detach FETCH_HEAD
+          HEAD_SHA=$(git -C "$HOST_DIR" rev-parse HEAD)
+          if [ "$HEAD_SHA" != "$TEST_USE_SHA" ]; then
+            echo "::error::PRISTINE HOST DRIFT: checked out $HEAD_SHA but tests/paths.mjs pins $TEST_USE_SHA — this job tests a PINNED host, so a different one is a failure, not a variation"
+            exit 1
+          fi
+          DIRTY=$(git -C "$HOST_DIR" status --porcelain | wc -l)
+          if [ "$DIRTY" != "0" ]; then
+            echo "::error::pristine host checkout is not clean after detach ($DIRTY porcelain line(s)) — the pinned tree must arrive as pinned"
+            exit 1
+          fi
+          HOST_VERSION=$(node -p "require('./${HOST_DIR}/package.json').version")
+          if [ "$HOST_VERSION" != "$TEST_USE_VERSION" ]; then
+            echo "::error::host at $HEAD_SHA reports version $HOST_VERSION, tests/paths.mjs declares $TEST_USE_VERSION — the pin and the content disagree"
+            exit 1
+          fi
+          echo "provisioned pristine host $HEAD_SHA version=$HOST_VERSION (porcelain clean)"
+
+      - name: Build the pristine host (TEST_METHODS §2 chain)
+        # The census legs spawn THIS host, so its build is not a nicety: an unbuilt host turns the
+        # runtime-root legs red, and a red census that is really a missing build is the false
+        # accusation `pr-gate` was written to avoid. Two §2 facts are load-bearing and both are
+        # reproduced verbatim here: `--ignore-scripts` (the chain was measured with it — sandboxed
+        # lifecycle spawns are EPERM, and staying on the measured chain beats inventing a second
+        # one), and `pnpm run build` rather than `node scripts/build.ts`, because the host's own
+        # build orchestrator resolves the package-manager entry via `npm_execpath` and throws
+        # "pnpm invocation: npm_execpath is unavailable" when invoked directly.
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+          HOST_DIR: tests/deepseek-harness-test-use
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          cd "$HOST_DIR"
+          pnpm install --ignore-scripts --store-dir "$PNPM_STORE_DIR"
+          ESBUILD_WORKER_THREADS=1 DSH_CLIENT_COMMIT_HASH="$TEST_USE_CLIENT_HASH" pnpm run build
+          cd "$GITHUB_WORKSPACE"
+          # The runtime entry the harnesses actually exec. Checked by name because "the build
+          # succeeded" and "the build produced the thing the census runs" are different claims, and
+          # the census leg cannot tell them apart — it only sees a host that will not boot.
+          if [ ! -f "$HOST_DIR/apps/cli/lib/bin.js" ]; then
+            echo "::error::host build exited 0 but produced no $HOST_DIR/apps/cli/lib/bin.js — census legs would spawn a host that cannot start"
+            exit 1
+          fi
+          # Re-assert the pin AFTER provisioning, immediately before anything grades anything: the
+          # census is about to run against whatever is in this directory, and "it was pinned at
+          # fetch time" is a weaker claim than "it is pinned now". Measured that a build does not
+          # dirty the pinned tree (porcelain 0 lines after `pnpm run build`), so HEAD is the whole
+          # check. `$TEST_USE_SHA` and not a shell variable from an earlier step, because a step's
+          # shell dies with the step and only `GITHUB_ENV` crosses the boundary — the first draft of
+          # this line echoed `$HEAD_SHA`, which is empty here, and a dry run of the step text
+          # printed "present at " with nothing after it (LOCAL-STEP-DRYRUNS.txt).
+          BUILT_SHA=$(git -C "$HOST_DIR" rev-parse HEAD)
+          if [ "$BUILT_SHA" != "$TEST_USE_SHA" ]; then
+            echo "::error::PRISTINE HOST DRIFT AFTER BUILD: $BUILT_SHA, tests/paths.mjs pins $TEST_USE_SHA — the census would grade the wrong host"
+            exit 1
+          fi
+          echo "host build ok: $HOST_DIR/apps/cli/lib/bin.js present at $BUILT_SHA"
+
+      - name: Build this repo (packages + composition) — the census leg REFUSES without this
+        # Verbatim `pr-gate`'s working step. A fresh checkout has the committed package artifacts
+        # but no composition build, and the composition-smoke arm inside the census answers
+        # `refused` ("this checkout was never built"), which the census then reports as a NEW RED
+        # identity. `--frozen-lockfile` keeps the install an assertion about the lockfile, not a
+        # write to it.
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          pnpm install --frozen-lockfile --store-dir "$PNPM_STORE_DIR"
+          pnpm run build
+          pnpm build:composition
+
+      # `--full --only census`, chosen over a full 7-leg re-run, and the reason is that the other
+      # six legs grade the checkout and the build, not the host: `graph-parse`, `install`,
+      # `blueprint-fence`, `typecheck`, `lint-identities`, `artifacts-at-head` run on the identical
+      # commit against the identical tree inside `pr-gate`, minutes earlier, for free. Re-running
+      # them here would double an already expensive job to re-derive a verdict another job already
+      # states, and would blur the one thing this check's name promises. `--full` is still there
+      # because it changes what an abstention MEANS inside the selected set (under `--full` a skip
+      # is a failure), and `--only census` keeps the job's meaning singular.
+      #
+      # NO `--allow-refused`. That absence is the whole deliverable: with the exemption withheld, a
+      # missing or unusable host comes back `verdict=fail` —
+      # `(undeclared refusal — … declare it: --allow-refused census)` — so this check cannot be
+      # green on a run that did not measure the population. `pr-gate`'s declared exemption and its
+      # `refusedlegs=census` token are untouched; that job still means "static + build legs passed,
+      # census not measured here", and THIS check is where the census actually ran.
+      #
+      # `--census-captures 2` carries over for the reason recorded in `pr-gate.yml` (two captures
+      # graded as their union). The CLOCK deliberately does NOT carry over, and the value chosen is
+      # declared and reasoned on the step below — including an admission that it is not yet measured
+      # on hosted hardware. The clock in force is printed on every leg line either way.
+      # THE CLOCK. `--census-test-timeout` is an operator override above vitest's 5000 ms default and
+      # the value in force is printed on every leg line, because a clock below a leg's own budget does
+      # not measure that leg, it forfeits it. Two legs in the corpus state budgets above the 20000 used
+      # elsewhere: the client-lane leg of `a4p7-merge-gate` takes ~23 s on a 32-core box (it spawns
+      # nested builds), and `rc2-sanitize-evidence` S13 declares `timeout: 60_000` for a nested
+      # `node --test`. 90000 is sized to dominate those. SAYING WHAT THIS IS NOT: it is NOT a hosted
+      # measurement — no green hosted run of this job has happened yet — and an earlier revision of
+      # this comment claimed the first run forfeited S13 at 20000 and that raising the clock cleared
+      # it. That was FALSE. Read off the uploaded transcripts, S13 passed in all four captures
+      # (1938/1967/2827/2459 ms) and BOTH runs failed the SAME identity, the client-lane leg, because
+      # its parser could not read a coloured vitest summary (0 lines match `^\s*(Test Files|Tests)\s`
+      # as written, 2 after stripping ANSI). See the dated correction on PR #219. Replace this value
+      # with the first green run's per-step numbers, or drop it back to 20000 if that run shows
+      # nothing needs more.
+      - name: Census — nine roots, two captures, NO refusal permitted
+        shell: bash
+        env:
+          # The `runner` context is legal HERE (it is not in `jobs.<id>.env`; see the note up there).
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          DSH_CI_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          node scripts/ci-pr-gate.mjs --full \
+            --only census \
+            --census-captures 2 \
+            --census-test-timeout 90000 \
+            --store-dir "$DSH_CI_STORE_DIR" \
+            --transcript-dir "$RUNNER_TEMP/census-transcripts" \
+            2>&1 | tee "$RUNNER_TEMP/census-run.txt"
+
+      # Second reader, same rule as `pr-gate`: the job's exit code is not the authority, the
+      # transcript is. No DSH-CI-VERDICT line means FAIL, a run that stopped mid-leg means FAIL, and
+      # a leg that refused without a declaration — the shape of "the host vanished and nobody
+      # noticed" — means FAIL here in both directions, because this job declares nothing.
+      - name: Census — re-grade the transcript by the missing-token rule
+        shell: bash
+        if: always()
+        run: |
+          set -euo pipefail
+          node scripts/ci-pr-gate.mjs --check-transcript "$RUNNER_TEMP/census-run.txt"
+
+      - name: Upload census transcripts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: census-runtime-transcripts-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/census-run.txt
+            ${{ runner.temp }}/census-transcripts/
+          if-no-files-found: warn
