@@ -229,6 +229,16 @@ export function checkStatePointers({ graphText, logText, isAncestor }) {
     info.declared_sha = sha
     if (!isAncestor(sha)) findings.push(`state_pointers.master_sha ${sha} is not reachable from HEAD: the pointer names a revision this tree cannot produce`)
   }
+  // recovery_read is prose a HUMAN follows at recovery time, and prose rots: it carried
+  // `s7_round44_records` and was two rounds stale when an external reviewer pointed at it. Naming a
+  // round here is the same silent-staleness defect that moved master_sha into a graded field, so it is
+  // refused the same way: point at the NEWEST s7_round*_records key, never a pinned one.
+  const rec = /^ {2}recovery_read:\s*(.*)$/m.exec(g)
+  if (!rec) findings.push('state_pointers.recovery_read missing; the recovery path is not declared')
+  else {
+    const named = /s7_round(\d+)_records/.exec(rec[1])
+    if (named) findings.push(`state_pointers.recovery_read pins s7_round${named[1]}_records: a recovery pointer with a round number in it is stale the moment a round lands — point at the newest s7_round*_records instead`)
+  }
   return { findings, info }
 }
 
@@ -1556,11 +1566,21 @@ function selfTest() {
   ok(findContinuationComments('set -o pipefail\nmkdir -p x\nnode a.mjs --b\n').length === 0, 'a plain multi-line script reports nothing')
 
   const spGood = {
-    graphText: 'current_phase: "PHASE — EXECUTION"\nstate_pointers:\n  round: 7\n  master_sha: abc1234\ns7_round6_records: x\ns7_round7_records: y',
+    graphText: 'current_phase: "PHASE — EXECUTION"\nstate_pointers:\n  round: 7\n  master_sha: abc1234\n  recovery_read: "read the newest s7_round*_records"\ns7_round6_records: x\ns7_round7_records: y',
     logText: '## 2026-10-07 round 6\nbody\n## 2026-10-08 round 7\nbody',
     isAncestor: () => true,
   }
   ok(checkStatePointers(spGood).findings.length === 0, 'a coherent pointer passes: round = newest record = last log heading, sha reachable')
+  ok(
+    checkStatePointers({
+      ...spGood,
+      graphText: spGood.graphText.replace(
+        '  recovery_read: "read the newest s7_round*_records"\n',
+        '  recovery_read: "then read s7_round44_records"\n',
+      ),
+    }).findings.some((f) => f.includes('recovery_read pins s7_round44_records')),
+    'a recovery_read that PINS a round is refused -- the real one carried s7_round44_records two rounds past its expiry',
+  )
   ok(
     checkStatePointers({ ...spGood, logText: '## 2026-10-08 round 6\nbody' }).findings.some((f) => f.includes('last SESSION_ROUTER_LOG heading')),
     'a graph updated without the log (or the reverse) fails — the recovery pair must move together',
