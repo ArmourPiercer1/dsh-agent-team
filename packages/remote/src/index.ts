@@ -73,6 +73,7 @@ export {
   REMOTE_CONTRACT_VERSION_V6,
   REMOTE_CONTRACT_VERSION_V7,
   REMOTE_CONTRACT_VERSION_V8,
+  REMOTE_CONTRACT_VERSION_V9,
   SUPPORTED_REMOTE_CONTRACT_VERSIONS,
   isSupportedRemoteContractVersion,
   assertSupportedRemoteContractVersion,
@@ -113,6 +114,7 @@ export {
   REMOTE_V6_ONLY_METHODS,
   REMOTE_V7_ONLY_METHODS,
   REMOTE_V8_ONLY_METHODS,
+  REMOTE_V9_ONLY_METHODS,
   REMOTE_GOVERNANCE_WRITING_METHODS,
   isRemoteMethod,
   isRemoteMethodAvailableInVersion,
@@ -269,6 +271,8 @@ export type {
   RemoteInterventionGetParams,
   RemoteInterventionActParams,
   RemoteOverrideGetPermissionAdministrationParams,
+  // A4-PR7 W1 (contract v9): the closed corrupt-leg read param shape.
+  RemoteTeamListCorruptControlLegsParams,
   RemoteMethodParams,
   RemoteParsedParams,
 } from './contracts/params.js'
@@ -283,6 +287,11 @@ export {
   REMOTE_INTERVENTION_SOURCE_FIELDS,
   REMOTE_INTERVENTION_ACT_OUTCOMES,
   REMOTE_PERMISSION_ADMINISTRATION_FIELDS,
+  // A4-PR7 W1 (contract v9): the corrupt-leg visibility wire (closed
+  // field sets + the bounded-list cap).
+  REMOTE_CORRUPT_CONTROL_LEGS_CAP,
+  REMOTE_CORRUPT_CONTROL_LEG_FIELDS,
+  REMOTE_CORRUPT_CONTROL_LEGS_FIELDS,
 } from './contracts/types.js'
 
 export type {
@@ -320,6 +329,9 @@ export type {
   RemoteInterventionWireSource,
   RemoteInterventionWireItem,
   RemoteInterventionWireAdministration,
+  // A4-PR7 W1 (contract v9): the corrupt-leg visibility wire DTOs.
+  RemoteCorruptControlLegWire,
+  RemoteCorruptControlLegsWire,
 } from './contracts/types.js'
 
 export type {
@@ -353,6 +365,8 @@ export type {
   // A4-PR6 §6.B (contract v8): the intervention seam.
   RemoteInterventionActRequest,
   RemoteInterventionPort,
+  // A4-PR7 W1 (contract v9): the corrupt-leg visibility seam.
+  RemoteTeamCorruptControlLegsPort,
 } from './handlers/ports.js'
 
 export {
@@ -363,8 +377,14 @@ export {
   createRemoteIntentHandler,
 } from './handlers/intent.js'
 
+/**
+ * A4-PR7 W1 (contract v9): the ONE corrupt-legs wire law, exported so
+ * the production s6 dispatcher serves through the SAME projection/cap
+ * (the `validateItem` single-law precedent).
+ */
 export {
   createRemoteTeamHandler,
+  corruptControlLegsValue,
 } from './handlers/team.js'
 
 export type {

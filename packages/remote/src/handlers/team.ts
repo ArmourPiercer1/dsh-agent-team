@@ -45,13 +45,17 @@ import type {
   RemoteTeamGetLedgerPageParams,
   RemoteTeamGetProjectionParams,
   RemoteTeamGetReadStateParams,
+  RemoteTeamListCorruptControlLegsParams,
   RemoteTeamPrepareOrdinaryOpenParams,
   RemoteTeamResolveControlParams,
   RemoteMethodParams,
 } from '../contracts/params.js'
 import {
+  REMOTE_CORRUPT_CONTROL_LEGS_CAP,
+  REMOTE_CORRUPT_CONTROL_LEG_FIELDS,
   REMOTE_LEDGER_ENTRY_FIELDS,
   REMOTE_PROJECTION_FIELDS,
+  type RemoteCorruptControlLegWire,
   type RemoteLedgerEntryValue,
   type RemoteTeamGetReadStateValue,
 } from '../contracts/types.js'
@@ -69,6 +73,7 @@ import type {
   RemoteLiveTokenPort,
   RemoteProjectionPort,
   RemoteTeamAdmitInitialWorkPort,
+  RemoteTeamCorruptControlLegsPort,
   RemoteTeamCreateEmbeddedWorkPort,
   RemoteTeamCreateWorkspacePort,
   RemoteTeamEnsureRootLivePort,
@@ -111,6 +116,16 @@ export interface RemoteTeamHandlerPorts {
   readonly liveToken: RemoteLiveTokenPort
   readonly projection: RemoteProjectionPort
   readonly ledger: RemoteLedgerPort
+  /**
+   * A4-PR7 W1 (contract v9): the corrupt-leg visibility read over the
+   * control service's `listControlState().corruptLegs` (the ONE strict
+   * reader — this lane re-reads and re-judges nothing). OPTIONAL on
+   * purpose (the v8 `intervention` precedent): pre-v9 fakes and surfaces
+   * keep compiling unchanged; an UNWIRED v9 surface answers
+   * `team.listCorruptControlLegs` with the typed refusal (`internal-error`,
+   * reason `port-unwired`) and every v1–v8 method byte-for-byte.
+   */
+  readonly teamControlCorruption?: RemoteTeamCorruptControlLegsPort
 }
 
 /**
@@ -630,6 +645,87 @@ function normalizeTeamGetReadStateValue(raw: unknown): RemoteTeamGetReadStateVal
  * version-aware param parser validated the closed field set per wire
  * version before dispatch).
  */
+/**
+ * Validate ONE port leg against the closed v9 corrupt-leg wire shape and
+ * project it down to exactly the closed fields (echo-only cells).
+ * A4-PR7 W1 (RULING 5-B): the port carries the control service's
+ * `ControlCorruptLegRecord` echo rows UNCHANGED — this function judges
+ * nothing about the ledger (no re-read, no re-parse, no attribution
+ * beyond the service's own `disclosesMember` cell); it only refuses a
+ * structurally wrong port value as a typed `port-contract` failure.
+ */
+function validateCorruptControlLeg(raw: unknown, label: string): RemoteCorruptControlLegWire {
+  if (!isPlainRecord(raw)) {
+    throw portContractError(label, 'expected an object')
+  }
+  for (const key of Object.keys(raw)) {
+    if (!(REMOTE_CORRUPT_CONTROL_LEG_FIELDS as readonly string[]).includes(key)) {
+      throw portContractError(label, `unknown corrupt-leg field '${key}'`)
+    }
+  }
+  const sequence = raw['sequence']
+  if (typeof sequence !== 'number' || !Number.isSafeInteger(sequence) || sequence < 1) {
+    throw portContractError(`${label}.sequence`, 'must be a safe integer >= 1')
+  }
+  const disclosesMember = raw['disclosesMember']
+  if (typeof disclosesMember !== 'boolean') {
+    throw portContractError(`${label}.disclosesMember`, 'must be a boolean')
+  }
+  const leg: {
+    sequence: number
+    disclosesMember: boolean
+    requestId?: string
+    approvalCaseId?: string
+  } = { sequence, disclosesMember }
+  for (const cell of ['requestId', 'approvalCaseId'] as const) {
+    const value = raw[cell]
+    if (value === undefined) continue
+    if (typeof value !== 'string' || value.length === 0) {
+      throw portContractError(`${label}.${cell}`, 'must be a non-empty string when present')
+    }
+    leg[cell] = value
+  }
+  return leg
+}
+
+/**
+ * THE ONE corrupt-legs wire law (A4-PR7 W1, contract v9): project the
+ * port's full corrupt-leg list to the closed `corruption` response —
+ * `corruptCount` stays EXACT (the fault size is never capped), the listed
+ * `legs` are capped to {@link REMOTE_CORRUPT_CONTROL_LEGS_CAP} in the
+ * SERVICE's own order (ascending ledger sequence; the report preserves
+ * the authoritative order, it never re-sorts or re-derives), and
+ * `truncated` is disclosed when fewer rows ride than exist.
+ *
+ * EXPORTED so the production s6 dispatcher serves through the SAME law
+ * the generic dispatcher runs (the `validateItem` precedent) — the cap,
+ * the count, and the closed leg shape must never have two copies.
+ */
+export function corruptControlLegsValue(
+  teamSessionId: string,
+  rawLegs: readonly unknown[],
+): { readonly data: { readonly corruption: RemoteSafeRecord } } {
+  if (!Array.isArray(rawLegs)) {
+    throw portContractError('corruption.corruptLegs', 'expected an array')
+  }
+  const corruptCount = rawLegs.length
+  const listed = rawLegs.slice(0, REMOTE_CORRUPT_CONTROL_LEGS_CAP)
+  const legs = listed.map((raw, index) => validateCorruptControlLeg(raw, `corruption.legs[${String(index)}]`))
+  if (legs.length > REMOTE_CORRUPT_CONTROL_LEGS_CAP) {
+    throw portContractError('corruption.legs', 'internal slicing error')
+  }
+  return {
+    data: {
+      corruption: {
+        teamSessionId,
+        corruptCount,
+        truncated: corruptCount > listed.length,
+        legs: legs as unknown as RemoteSafeRecord[],
+      },
+    },
+  }
+}
+
 export function createRemoteTeamHandler(ports: RemoteTeamHandlerPorts) {
   return (method: string, params: RemoteMethodParams, version: number) => {
     switch (method) {
@@ -825,6 +921,31 @@ export function createRemoteTeamHandler(ports: RemoteTeamHandlerPorts) {
             total: ports.ledger.countEntries(pageParams.teamSessionId),
           },
         }
+      }
+      case 'team.listCorruptControlLegs': {
+        // v9-only (the availability check guarantees version === 9). The
+        // corrupt-leg VISIBILITY read (A4-PR7 W1, RULING 5-B
+        // warning-first): the port carries the control service's
+        // `listControlState().corruptLegs` — the ONE strict reader's
+        // refusal list — and `corruptControlLegsValue` is the single law
+        // (closed shape + bounded list). A REPORT, never a gate: nothing
+        // here selects execution semantics, and an unwired seam refuses
+        // typed (never a silently empty success — an empty report must
+        // mean "the service read nothing corrupt", not "nobody is
+        // listening").
+        const corruptionParams = params as RemoteTeamListCorruptControlLegsParams
+        const corruptionPort = ports.teamControlCorruption
+        if (corruptionPort === undefined) {
+          throw remoteContractError(
+            'internal-error',
+            'team.listCorruptControlLegs: the v9 corrupt-leg read seam is unwired on this surface — zero read',
+            { reason: 'port-unwired' },
+          )
+        }
+        const { corruptLegs } = corruptionPort.listCorruptLegs({
+          teamSessionId: corruptionParams.teamSessionId,
+        })
+        return corruptControlLegsValue(corruptionParams.teamSessionId, corruptLegs)
       }
       default:
         throw new Error(`team handler routed an unknown method: ${method}`)

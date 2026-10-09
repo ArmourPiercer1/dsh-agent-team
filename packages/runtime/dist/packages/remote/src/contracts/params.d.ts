@@ -405,7 +405,7 @@ export interface RemoteLegacyInspectParams {
     readonly projectDir?: string;
 }
 /** The union of every method's parsed param object. */
-export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideSetParamsV7 | RemoteOverrideResetParams | RemoteOverrideResetParamsV7 | RemoteOverrideMutatePermissionParams | RemoteOverrideGetPermissionParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams | RemoteInterventionListParams | RemoteInterventionGetParams | RemoteInterventionActParams | RemoteOverrideGetPermissionAdministrationParams;
+export type RemoteMethodParams = RemoteCatalogListParams | RemoteCatalogGetParams | RemoteIntentProbeParams | RemoteTeamCreateParams | RemoteTeamCreateParamsV2 | RemoteTeamAdmitInitialWorkParams | RemoteTeamListRootsParams | RemoteTeamEnsureRootLiveParams | RemoteTeamResolveControlParams | RemoteTeamPrepareOrdinaryOpenParams | RemoteTeamGetProjectionParams | RemoteTeamGetLedgerPageParams | RemoteMemberCreateParams | RemoteMemberSendParams | RemoteMemberFollowupParams | RemoteMemberLifecycleParams | RemoteOverrideGetParams | RemoteOverrideSetParams | RemoteOverrideSetParamsV7 | RemoteOverrideResetParams | RemoteOverrideResetParamsV7 | RemoteOverrideMutatePermissionParams | RemoteOverrideGetPermissionParams | RemotePolicyStateGetParams | RemotePolicyStateSetParams | RemoteCompatibilityGetParams | RemoteCompatibilityAckParams | RemoteCompatibilityReprobeParams | RemoteHandoffPrepareParams | RemoteHandoffCreateParams | RemoteLegacyInspectParams | RemoteInterventionListParams | RemoteInterventionGetParams | RemoteInterventionActParams | RemoteOverrideGetPermissionAdministrationParams | RemoteTeamListCorruptControlLegsParams;
 /** The parse result of one request's `params` (typed + token echo). */
 export interface RemoteParsedParams {
     /** The catalog method the params were parsed for. */
@@ -680,4 +680,20 @@ export declare function parseRemoteInterventionGetParams(method: string, params:
 export declare function parseRemoteInterventionActParams(method: string, params: RemoteSafeRecord): RemoteInterventionActParams;
 /** Parse `override.getPermissionAdministration` params. */
 export declare function parseRemoteOverrideGetPermissionAdministrationParams(method: string, params: RemoteSafeRecord): RemoteOverrideGetPermissionAdministrationParams;
+/**
+ * `team.listCorruptControlLegs` (v9, RULING 5-B warning-first) — the
+ * team-scoped READ of the control ledger's corrupt legs (the rows
+ * `parseRequestPayload` refuses; the control service's
+ * `listControlState().corruptLegs`). Closed set: exactly
+ * `{ teamSessionId }` — no page token, no filter, no member/instance
+ * selector (this is a TEAM-level report; the read attributes nothing the
+ * damaged row itself does not disclose, and a future identity or
+ * isolation field cannot exist on the wire without a version bump).
+ */
+export interface RemoteTeamListCorruptControlLegsParams {
+    readonly teamSessionId: string;
+}
+export declare const REMOTE_TEAM_LIST_CORRUPT_CONTROL_LEGS_FIELDS: readonly string[];
+/** Parse `team.listCorruptControlLegs` params. */
+export declare function parseRemoteTeamListCorruptControlLegsParams(method: string, params: RemoteSafeRecord): RemoteTeamListCorruptControlLegsParams;
 //# sourceMappingURL=params.d.ts.map

@@ -38,6 +38,13 @@ export type TeamKey =
   | 'view.ownership.malformed'
   | 'view.ownership.transport'
   | 'view.ownership.stale'
+  // A4-PR7 W1 — the corrupt-record warning bar (Team-level wording only;
+  // RULING 5-B: visibility, never an action label).
+  | 'view.corruption.summary'
+  | 'view.corruption.leg'
+  | 'view.corruption.attributed'
+  | 'view.corruption.unattributed'
+  | 'view.corruption.truncated'
   | 'view.refresh'
   | 'view.refreshing'
   | 'view.refresh.failed'
@@ -325,6 +332,11 @@ export const zh: Record<TeamKey, string> = {
   'view.ownership.malformed': '团队归属响应异常 — {reason}',
   'view.ownership.transport': '无法读取团队归属，等待连接恢复',
   'view.ownership.stale': '团队归属刷新失败，当前显示上次成功的数据',
+  'view.corruption.summary': '控制账本存在无法解析的损坏记录（仅提示，不改变执行语义）',
+  'view.corruption.leg': '记录',
+  'view.corruption.attributed': '该记录自带成员归属',
+  'view.corruption.unattributed': '无法归属到具体成员（团队级提示）',
+  'view.corruption.truncated': '其余损坏记录未在此列出',
   'view.refresh': '刷新团队视图',
   'view.refreshing': '正在更新…',
   'view.refresh.failed': '更新失败，当前显示上次成功的数据',
@@ -603,6 +615,11 @@ export const en: Record<TeamKey, string> = {
   'view.ownership.malformed': 'Malformed team ownership response — {reason}',
   'view.ownership.transport': 'Cannot read team ownership; waiting for the connection to restore',
   'view.ownership.stale': 'Team ownership refresh failed; showing the last successfully loaded data',
+  'view.corruption.summary': 'The control ledger carries corrupt records that cannot be parsed (visibility notice only — execution semantics are unchanged)',
+  'view.corruption.leg': 'record',
+  'view.corruption.attributed': 'the record carries its own member attribution',
+  'view.corruption.unattributed': 'not attributable to a specific member (team-level notice)',
+  'view.corruption.truncated': 'further corrupt records are not listed here',
   'view.refresh': 'Refresh team view',
   'view.refreshing': 'Refreshing…',
   'view.refresh.failed': 'Update failed — showing the last successfully loaded data',

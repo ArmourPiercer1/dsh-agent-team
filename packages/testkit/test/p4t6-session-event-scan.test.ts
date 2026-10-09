@@ -2117,6 +2117,33 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4F2COLDSTART: readonly string[] = [
       'packages/runtime/test/a4-compat-coldstart-interleave.test.ts',
     ]
+    // a4w1-corrupt-warning (A4-PR7 W1, branch `feat/a4-w1-corrupt-warning`): the
+    // corrupt-leg VISIBILITY lane (remote contract v9, RULING 5-B warning-first).
+    // FOUR new scannable files: the closed-wire spec for the v9 read
+    // (`remote/test/a4w1-corrupt-legs.test.ts`), the world-backed acceptance spec
+    // proving warning-data-without-execution-change
+    // (`runtime/test/a4w1-corrupt-warning.test.ts`), the pure client model spec
+    // (`client/test/control-corruption-model.test.ts`) and the pure client model
+    // itself (`client/src/model/control-corruption.ts`). Every other path this
+    // lane touched is an EDIT to already-counted sources (the v9 contract
+    // additions in `remote/src/contracts/{version,catalog,params,types}.ts` +
+    // `remote/src/handlers/{team,ports,dispatch}.ts` + `remote/src/index.ts`, the
+    // production seam in `runtime/src/plugin/{s6-remote,root}.ts`, the client
+    // surface in `transport/team-remote-client.ts` + `ui/TeamView.{tsx,module.css}`
+    // + `ui/locales.ts` + `plugin/team-mount-core.ts`, and the mechanical v9 pin
+    // moves in six existing pin files) or evidence under
+    // `dev/agent-workflow/evidence/a4-pr7/w1-corrupt-warning/`, outside
+    // `packages/**`. An edit is not an increment. Both endpoints MEASURED on this
+    // branch: with the four files on disk and this entry absent the run reads
+    // `expected 1046 to be 1042` (capture
+    // `dev/agent-workflow/evidence/a4-pr7/w1-corrupt-warning/raw/p4t6-pre-extend-RED.log`);
+    // 1042 is the derived base total the a4-f2-coldstart tie below ends on.
+    const SCANNED_PATHS_A4W1: readonly string[] = [
+      'packages/remote/test/a4w1-corrupt-legs.test.ts',
+      'packages/runtime/test/a4w1-corrupt-warning.test.ts',
+      'packages/client/test/control-corruption-model.test.ts',
+      'packages/client/src/model/control-corruption.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2138,7 +2165,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A476GAPS.length +
         SCANNED_PATHS_A4CORRUPTLEG.length +
         SCANNED_PATHS_A4COMPATATOMIC.length +
-        SCANNED_PATHS_A4F2COLDSTART.length,
+        SCANNED_PATHS_A4F2COLDSTART.length +
+        SCANNED_PATHS_A4W1.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2161,7 +2189,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A476GAPS.length +
         SCANNED_PATHS_A4CORRUPTLEG.length +
         SCANNED_PATHS_A4COMPATATOMIC.length +
-        SCANNED_PATHS_A4F2COLDSTART.length,
+        SCANNED_PATHS_A4F2COLDSTART.length +
+        SCANNED_PATHS_A4W1.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2210,6 +2239,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4CORRUPTLEG,
       ...SCANNED_PATHS_A4COMPATATOMIC,
       ...SCANNED_PATHS_A4F2COLDSTART,
+      ...SCANNED_PATHS_A4W1,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2378,6 +2408,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // the scanner counts exactly one more file with it on disk (1041 -> 1042).
     expect(SCANNED_PATHS_A4COMPATATOMIC.length).toBe(1041 - 1040)
     expect(SCANNED_PATHS_A4F2COLDSTART.length).toBe(1042 - 1041)
+    // The a4w1-corrupt-warning tie, same form: the movement equals the four files
+    // this lane names, each asserted present by path in the loop above. Both
+    // endpoints MEASURED on this branch, not inferred: with the four files on disk
+    // and this entry absent the run reads `expected 1046 to be 1042` (capture
+    // `dev/agent-workflow/evidence/a4-pr7/w1-corrupt-warning/raw/p4t6-pre-extend-RED.log`),
+    // and 1042 is the derived base total the a4-f2-coldstart line above ends on.
+    // The v9 contract additions, the production seam, the client surface and the
+    // mechanical pin moves are all EDITS to already-counted paths and move
+    // nothing — an edit is not an increment.
+    expect(SCANNED_PATHS_A4W1.length).toBe(1046 - 1042)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

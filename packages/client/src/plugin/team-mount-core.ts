@@ -1067,6 +1067,9 @@ export function applyTeamMount(
   // production host always builds the A25 control service).
   const control: TeamViewControlFace = {
     resolveControl: (params) => teamRemote.resolveControl(params),
+    // A4-PR7 W1 (contract v9) — the corrupt-leg visibility read (frozen
+    // Remote wrapper verbatim; a pure READ — RULING 5-B warning-first).
+    listCorruptControlLegs: (params) => teamRemote.listCorruptControlLegs(params),
   }
 
   // (16) D-T9-1: the parameterless legacyInspect face binds the `dshHome`

@@ -109,6 +109,11 @@ function buildCategoryHandlers(deps: RemoteHandlerDeps): Readonly<Record<RemoteC
       liveToken: deps.liveToken,
       projection: deps.projection,
       ledger: deps.ledger,
+      // A4-PR7 W1 (contract v9): the optional corrupt-leg visibility
+      // seam. ABSENT (a pre-v9 surface) makes the team handler answer the
+      // v9-only method with the typed `internal-error` / `port-unwired`
+      // refusal — never a partial success, never a v1–v8 side effect.
+      teamControlCorruption: deps.teamControlCorruption,
     }),
     [REMOTE_CATEGORIES.MEMBER]: createRemoteMemberHandler({
       admission: deps.admission,

@@ -251,11 +251,13 @@ export interface RemoteOverrideResetRequest {
 /** Re-exported so handler/test authors import wire DTOs from the seam they
  *  already import (the frozen home stays `contracts/types.ts`). */
 export type {
+  RemoteCorruptControlLegWire,
   RemoteInterventionWireAdministration,
   RemoteInterventionWireItem,
   RemoteInterventionWireSource,
 } from '../contracts/types.js'
 import type {
+  RemoteCorruptControlLegWire,
   RemoteInterventionWireAdministration,
   RemoteInterventionWireItem,
 } from '../contracts/types.js'
@@ -710,6 +712,29 @@ export interface RemoteInterventionPort {
   }): { readonly administration: RemoteInterventionWireAdministration }
 }
 
+// ---------------------------------------------------------------------------
+// A4-PR7 W1 — contract v9: the corrupt-leg visibility read seam
+// ---------------------------------------------------------------------------
+
+/**
+ * The v9 corrupt-leg visibility seam. The single method is a pure READ
+ * that surfaces the control service's `listControlState().corruptLegs` —
+ * the strict reader's refusal list. The port is the ONLY channel: it does
+ * NOT re-parse or re-judge ledger rows (the control service stays the
+ * SOLE authority on approval state, `packages/tools/src/guard.ts`), it
+ * re-exposes the service's already-built `ControlCorruptLegRecord` echo.
+ * RULING 5-B warning-first: this is VISIBILITY only — the read never
+ * isolates, gates, or selects execution semantics. The handler projects
+ * it to the closed bounded wire (`corruptControlLegsValue`, `team.ts`).
+ */
+export interface RemoteTeamCorruptControlLegsPort {
+  /** The team's full corrupt-leg list (ascending ledger sequence,
+   *  exactly as `ControlService.listControlState()` returns it). */
+  listCorruptLegs(request: {
+    readonly teamSessionId: string
+  }): { readonly corruptLegs: readonly RemoteCorruptControlLegWire[] }
+}
+
 export interface RemoteHandlerDeps {
   readonly catalog: RemoteCatalogPort
   readonly intent: RemoteIntentPort
@@ -742,6 +767,17 @@ export interface RemoteHandlerDeps {
    * host that serves v8 MUST wire this port.
    */
   readonly intervention?: RemoteInterventionPort
+  /**
+   * A4-PR7 W1 (contract v9): the corrupt-leg visibility read over the
+   * control service's `listControlState().corruptLegs`. OPTIONAL on
+   * purpose (the v8 `intervention` precedent): the pre-v9 fakes and
+   * surfaces keep compiling UNCHANGED; an UNWIRED v9 surface answers
+   * `team.listCorruptControlLegs` with a typed refusal (`internal-error`,
+   * reason `port-unwired` — never a silently empty success) and every
+   * v1–v8 method byte-for-byte. A production host that serves v9 MUST
+   * wire this port.
+   */
+  readonly teamControlCorruption?: RemoteTeamCorruptControlLegsPort
 }
 
 /**

@@ -3663,6 +3663,15 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // to the closed wire fields (the strip is the remote package's law,
     // imported, not mirrored).
     interventionControl: control,
+    // A4-PR7 W1 (contract v9) — the corrupt-leg VISIBILITY read. The ONE
+    // control service's `listControlState()` is the sole reader: this
+    // closure reads its ALREADY-BUILT `corruptLegs` echo (the strict
+    // reader's refusal list) and re-judges nothing (RULING 5-B visibility
+    // first — never a second strict reader, never a gate). An unknown
+    // root makes `listControlState` throw TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND,
+    // which the s6 port passes through UNMAPPED (invariant 4b, fail closed).
+    corruptControlLegs: (rootSessionId) =>
+      control.listControlState(rootSessionId).then((state) => state.corruptLegs),
     interventionEscalate: async ({ rootSessionId, caller, requestId, reason }) => {
       const result = await control.escalateApprovalLeg({
         rootSessionId,

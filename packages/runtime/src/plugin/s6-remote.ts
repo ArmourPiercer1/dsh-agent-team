@@ -88,6 +88,7 @@ import type {
   RemoteTeamGetLedgerPageParams,
   RemoteTeamGetProjectionParams,
   RemoteTeamGetReadStateParams,
+  RemoteTeamListCorruptControlLegsParams,
   RemoteTeamResolveControlParams,
 } from '../../../remote/src/contracts/params.js'
 import { parseRemoteRequest } from '../../../remote/src/contracts/request.js'
@@ -127,6 +128,17 @@ import {
   validateAdministration as validateRemotePermissionAdministration,
   validateItem as validateRemoteInterventionItem,
 } from '../../../remote/src/handlers/intervention.js'
+// A4-PR7 W1 (contract v9) — the corrupt-legs wire law (closed shape +
+// bounded list). ONE law, two dispatchers (the `validateItem` precedent
+// directly above): the generic dispatcher runs it on its port edge, this
+// production lane runs the SAME function — a drift would be a contract
+// bug neither lane's tests could see.
+import { corruptControlLegsValue } from '../../../remote/src/handlers/team.js'
+// A4-PR7 W1 — the control service's corrupt-leg echo record (the type the
+// host closure hands this lane). Direct `control/types.js` import (the
+// `permission-plane.ts` precedent): a pure type import, the control
+// package stays unmodified and this lane reads/judges NOTHING itself.
+import type { ControlCorruptLegRecord } from '../../control/types.js'
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js'
 import type { RemoteHandlerOutcome } from '../../../remote/src/handlers/ports.js'
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js'
@@ -946,6 +958,23 @@ export interface S6RemoteInterventionPort {
   }): Promise<RemoteSafeRecord>
 }
 
+/**
+ * A4-PR7 W1 (remote contract v9) — the port behind
+ * `team.listCorruptControlLegs`: the bound-root-guarded READ of the
+ * control service's `listControlState().corruptLegs` echo (the strict
+ * reader's refusal list). The port READS the ONE authority's already
+ * built records — it re-reads, re-parses, re-judges and attributes
+ * nothing (RULING 5-B: visibility only, never a gate). The closed wire
+ * projection + list bound run in the shared
+ * `corruptControlLegsValue` law (the remote handler), identical on both
+ * dispatchers.
+ */
+export interface S6RemoteCorruptControlLegsPort {
+  listCorruptLegs(request: {
+    readonly teamSessionId: string
+  }): Promise<{ readonly corruptLegs: readonly ControlCorruptLegRecord[] }>
+}
+
 export interface S6RemotePorts {
   readonly catalog: S6RemoteCatalogPort
   readonly intent: S6RemoteIntentPort
@@ -1007,6 +1036,13 @@ export interface S6RemotePorts {
    *  `{instanceId, residency}` pairs — no clock facts, frozen decisions
    *  3 + 7. */
   readonly liveToken: S6RemoteLiveTokenPort
+  /** A4-PR7 W1 (remote contract v9) — the v9-only
+   *  `team.listCorruptControlLegs` port: the corrupt-leg VISIBILITY read
+   *  over the control service's `listControlState().corruptLegs`
+   *  (bound-root guarded; unwired host → the typed `internal-error`
+   *  refusal, NEVER a silently empty report — an empty list must mean
+   *  "the strict reader refused nothing", not "nobody was listening"). */
+  readonly teamControlCorruption: S6RemoteCorruptControlLegsPort
 }
 
 /** The P6-T3 messaging coordinator port (T12-V16). */
@@ -1353,6 +1389,19 @@ export interface S6RemoteOptions {
    * plane is a test world).
    */
   readonly interventionControl?: InterventionControlSource
+  /**
+   * A4-PR7 W1 (plan W1, remote contract v9) — the corrupt-leg reader
+   * behind `team.listCorruptControlLegs`: the closure returns ONLY the
+   * `corruptLegs` echo of the control service's `listControlState()`
+   * (root.ts assembles it from the ONE ControlService; this module
+   * re-reads and re-judges NOTHING — the strict reader stays the sole
+   * authority, RULING 5-B visibility-first). Absent → the read fails
+   * closed with the typed `internal-error` (reason `port-unwired`) —
+   * never a silently empty report.
+   */
+  readonly corruptControlLegs?: (
+    rootSessionId: string,
+  ) => Promise<readonly ControlCorruptLegRecord[]>
   /**
    * A4-PR6 — the fresh required-authority facts reader behind the
    * projection's legality law (the lane-B reader-callback ruling at the
@@ -2985,6 +3034,51 @@ export function createS6RemotePorts(options: S6RemoteOptions): S6RemotePorts {
       },
     },
 
+    // --- A4-PR7 W1 (remote contract v9): the corrupt-leg visibility read --
+    teamControlCorruption: {
+      async listCorruptLegs(request): Promise<{
+        readonly corruptLegs: readonly ControlCorruptLegRecord[]
+      }> {
+        // TEAM-SCOPED read: the bound-root guard runs FIRST (a foreign
+        // teamSessionId fails closed FOREIGN_TEAM before any control
+        // read — the same law every team-scoped method runs). The
+        // closure is the host's ONE control service
+        // (`listControlState().corruptLegs`); absent → the typed
+        // `internal-error` refusal (reason `port-unwired`, the v8
+        // intervention-lane vocabulary) — never a silently empty
+        // report. The service's typed failures (e.g.
+        // TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND — an unknown root reads
+        // NOTHING, invariant 4b) pass through UNMAPPED; only an
+        // untyped throw is re-wrapped typed.
+        const root = assertBoundRoot('team.listCorruptControlLegs', request.teamSessionId)
+        const read = options.corruptControlLegs
+        if (read === undefined) {
+          throw remoteContractError(
+            'internal-error',
+            'team.listCorruptControlLegs: the v9 corrupt-leg read seam is unwired on this surface — zero read',
+            { reason: 'port-unwired' },
+          )
+        }
+        try {
+          return { corruptLegs: await read(root) }
+        } catch (error) {
+          if (error instanceof TeamPluginError) throw error
+          const code =
+            error instanceof Error ? (error as Error & { readonly code?: unknown }).code : undefined
+          if (typeof code === 'string' && REMOTE_BACKING_ERROR_CODE_SET.has(code)) {
+            throw error
+          }
+          throw remoteContractError(
+            'internal-error',
+            `team.listCorruptControlLegs failed reading the control state: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+            { reason: 'corrupt-leg-read-failed' },
+          )
+        }
+      },
+    },
+
     // --- team-view-sync-complete (remote contract v6): the live token ----
     liveToken: {
       async token(teamSessionId: string): Promise<string> {
@@ -4140,6 +4234,25 @@ function buildS6CategoryHandlers(ports: S6RemotePorts, principal: ServerPrincipa
               }
               return { data: { entries: page, nextAfterSequence, total } }
             })
+          }
+          case 'team.listCorruptControlLegs': {
+            // v9-only (the frozen param-parse chain rejects v<9
+            // envelopes): the corrupt-leg VISIBILITY read (A4-PR7 W1,
+            // RULING 5-B warning-first). A READ — the principal is the
+            // DERIVED caller by the EXISTING host-operator default and
+            // this lane carries NO caller claim (the wire params are
+            // exactly `{ teamSessionId }`); the bound-root guard + the
+            // unwired refusal live in the port. The closed projection
+            // (count exact, list bounded, per-row echo validated) is the
+            // SHARED `corruptControlLegsValue` law — the same function
+            // the generic dispatcher runs, so the two lanes can never
+            // serve two different shapes of this report.
+            const corruptParams = params as RemoteTeamListCorruptControlLegsParams
+            return ports.teamControlCorruption
+              .listCorruptLegs({ teamSessionId: corruptParams.teamSessionId })
+              .then(({ corruptLegs }) =>
+                corruptControlLegsValue(corruptParams.teamSessionId, corruptLegs),
+              )
           }
           default:
             return Promise.reject(new Error(`team handler routed an unknown method: ${method}`))

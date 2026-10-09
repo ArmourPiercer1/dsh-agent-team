@@ -35,7 +35,8 @@
  * @module @dsh-agent-team/remote/handlers/team
  */
 import type { RemoteMethodParams } from '../contracts/params.js';
-import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteLiveTokenPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCreateEmbeddedWorkPort, RemoteTeamCreateWorkspacePort, RemoteTeamEnsureRootLivePort, RemoteTeamPrepareOrdinaryOpenPort, RemoteTeamReadStatePort, RemoteTeamResolveControlPort, RemoteTeamRootsPort } from './ports.js';
+import type { RemoteSafeRecord } from '../contracts/remote-safe.js';
+import type { RemoteHandlerOutcome, RemoteLedgerPort, RemoteLiveTokenPort, RemoteProjectionPort, RemoteTeamAdmitInitialWorkPort, RemoteTeamCorruptControlLegsPort, RemoteTeamCreateEmbeddedWorkPort, RemoteTeamCreateWorkspacePort, RemoteTeamEnsureRootLivePort, RemoteTeamPrepareOrdinaryOpenPort, RemoteTeamReadStatePort, RemoteTeamResolveControlPort, RemoteTeamRootsPort } from './ports.js';
 /** The ports the team category needs (the create-flavor ports + the
  *  initial-work admission + the root list / ensure ports + the control
  *  resolution port + the ordinary-activation permit port + the
@@ -69,23 +70,38 @@ export interface RemoteTeamHandlerPorts {
     readonly liveToken: RemoteLiveTokenPort;
     readonly projection: RemoteProjectionPort;
     readonly ledger: RemoteLedgerPort;
+    /**
+     * A4-PR7 W1 (contract v9): the corrupt-leg visibility read over the
+     * control service's `listControlState().corruptLegs` (the ONE strict
+     * reader — this lane re-reads and re-judges nothing). OPTIONAL on
+     * purpose (the v8 `intervention` precedent): pre-v9 fakes and surfaces
+     * keep compiling unchanged; an UNWIRED v9 surface answers
+     * `team.listCorruptControlLegs` with the typed refusal (`internal-error`,
+     * reason `port-unwired`) and every v1–v8 method byte-for-byte.
+     */
+    readonly teamControlCorruption?: RemoteTeamCorruptControlLegsPort;
 }
 /**
- * The team category handler (`team.create` [the two create flavors],
- * `team.admitInitialWork` [v2-only], `team.listRoots` [v3-only],
- * `team.ensureRootLive` [v3-only], `team.resolveControl` [v4-only],
- * `team.prepareOrdinaryOpen` [v5-only], `team.getReadState` [v6-only],
- * `team.getProjection` [the `base` shape for v1-v5; the `live` shape for
- * v6 adds `durableGeneration` + `liveToken`], `team.getLedgerPage`).
+ * THE ONE corrupt-legs wire law (A4-PR7 W1, contract v9): project the
+ * port's full corrupt-leg list to the closed `corruption` response —
+ * `corruptCount` stays EXACT (the fault size is never capped), the listed
+ * `legs` are capped to {@link REMOTE_CORRUPT_CONTROL_LEGS_CAP} in the
+ * SERVICE's own order (ascending ledger sequence; the report preserves
+ * the authoritative order, it never re-sorts or re-derives), and
+ * `truncated` is disclosed when fewer rows ride than exist.
  *
- * Semantic routing (pre-alpha3 PR-F, plan §F.3): the dispatcher passes
- * the request's contract version (the transport adapter's concern); this
- * handler translates it to the SEMANTIC create flavor / projection shape
- * through the contracts semantic adapter and branches on those — no
- * literal version comparison in the handler body. The version-specific
- * parsed param object is already the matching typed shape (the shared
- * version-aware param parser validated the closed field set per wire
- * version before dispatch).
+ * EXPORTED so the production s6 dispatcher serves through the SAME law
+ * the generic dispatcher runs (the `validateItem` precedent) — the cap,
+ * the count, and the closed leg shape must never have two copies.
  */
-export declare function createRemoteTeamHandler(ports: RemoteTeamHandlerPorts): (method: string, params: RemoteMethodParams, version: number) => RemoteHandlerOutcome;
+export declare function corruptControlLegsValue(teamSessionId: string, rawLegs: readonly unknown[]): {
+    readonly data: {
+        readonly corruption: RemoteSafeRecord;
+    };
+};
+export declare function createRemoteTeamHandler(ports: RemoteTeamHandlerPorts): (method: string, params: RemoteMethodParams, version: number) => RemoteHandlerOutcome | {
+    readonly data: {
+        readonly corruption: RemoteSafeRecord;
+    };
+};
 //# sourceMappingURL=team.d.ts.map

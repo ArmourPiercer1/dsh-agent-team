@@ -98,10 +98,12 @@ const RT = await (async () => {
   // W1 fix-A bump admitted contract version 7, so the pin moves to 8).
   // A4-PR6 §6.B CONTRACT CHANGE: v8 is now SUPPORTED (the bump adds the
   // closed intervention plane), so the unsupported-version sentinel moves
-  // 8 -> 9. The LAW this test owns (an out-of-set version is
+  // 8 -> 9. A4-PR7 W1 CONTRACT CHANGE (v9): v9 is now supported too (the
+  // bump adds the closed corrupt-leg visibility read), so the sentinel
+  // moves 9 -> 10. The LAW this test owns (an out-of-set version is
   // contract-version-unsupported, no throw) is unchanged.
-  const version9 = await dispatch('team.getProjection', {
-    version: 9,
+  const version10 = await dispatch('team.getProjection', {
+    version: 10,
     params: { teamSessionId: P8T3_TEAM_SESSION_ID },
   })
   const version15 = await dispatch('catalog.list', { version: 1.5, params: {} })
@@ -139,7 +141,7 @@ const RT = await (async () => {
     version99,
     version6,
     version7,
-    version9,
+    version10,
     version15,
     versionString,
     versionMissing,
@@ -216,15 +218,16 @@ describe('P8-T3 version mismatch + envelope negatives (versioned contract, TCM v
     expect(success.value.provenance.contractVersion).toBe(REMOTE_CONTRACT_VERSION_V7)
     expect(success.value.provenance.method).toBe('catalog.list')
     expect(success.value.provenance.endpoint).toBe('catalog.list')
-    // The closed supported set admits exactly v1–v8 (A4-PR6 §6.B CONTRACT
-    // CHANGE, reason in the PR body: v8 ADDS the closed intervention plane
-    // and makes v8 the supported maximum; the merge-gate law holds
-    // unchanged — a bump ADDS a version, it never edits the v1–v7 surface).
-    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS]).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    // The closed supported set admits exactly v1–v9 (A4-PR6 §6.B CONTRACT
+    // CHANGE, reason in the PR body: v8 ADDS the closed intervention plane;
+    // A4-PR7 W1 CONTRACT CHANGE: v9 ADDS the closed corrupt-leg visibility
+    // read and makes v9 the supported maximum; the merge-gate law holds
+    // unchanged — a bump ADDS a version, it never edits the v1–v8 surface).
+    expect([...SUPPORTED_REMOTE_CONTRACT_VERSIONS]).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9])
   })
 
-  it('an unsupported contract version (9) → contract-version-unsupported, no throw', () => {
-    const error = expectError(RT.version9)
+  it('an unsupported contract version (10) → contract-version-unsupported, no throw', () => {
+    const error = expectError(RT.version10)
     expect(error.error.code).toBe(REMOTE_CONTRACT_ERROR_CODES.CONTRACT_VERSION_UNSUPPORTED)
     expect(error.error.code).toBe('contract-version-unsupported')
     const details = error.error.details as unknown as Record<string, unknown>

@@ -58,6 +58,7 @@ import {
   REMOTE_CONTRACT_VERSION_V6,
   REMOTE_CONTRACT_VERSION_V7,
   REMOTE_CONTRACT_VERSION_V8,
+  REMOTE_CONTRACT_VERSION_V9,
   REMOTE_RPC_CHANNEL,
   PushTransportLossError,
   assessProjectionSync,
@@ -82,6 +83,7 @@ import {
   type RemoteInterventionGetParams,
   type RemoteInterventionListParams,
   type RemoteOverrideGetPermissionAdministrationParams,
+  type RemoteTeamListCorruptControlLegsParams,
   type RemoteOverrideResetParamsV7,
   type RemoteOverrideSetParamsV7,
   type RemotePolicyStateGetParams,
@@ -223,6 +225,18 @@ export interface TeamRemoteClient {
    * version 4.
    */
   resolveControl(params: RemoteTeamResolveControlParams): Promise<RemoteResponse>
+  /**
+   * `team.listCorruptControlLegs` (contract v9, v9-only method, A4-PR7 W1)
+   * — the corrupt-leg visibility READ (RULING 5-B warning-first): the
+   * closed v9 param set is `{ teamSessionId }`; the success value is
+   * `{ corruption }` of the closed wire (`corruptCount`, `truncated`,
+   * `legs[]` with the service's own `disclosesMember` cell). Stamps
+   * contract version 9. A pure read: the wire carries no caller/authority
+   * field, and the response changes NO execution semantics — visibility
+   * only. A pre-v9 host refuses with the typed `method-version-unsupported`
+   * error (never an exception), which the UI renders as no bar.
+   */
+  listCorruptControlLegs(params: RemoteTeamListCorruptControlLegsParams): Promise<RemoteResponse>
   /**
    * `team.prepareOrdinaryOpen` (contract v5, v5-only method, C1
    * restart-0.1.7-rc.1 recovery — guide §10.2) — the narrow one-shot
@@ -522,6 +536,12 @@ export function createTeamRemoteClient(carrier: TeamRpcCarrier): TeamRemoteClien
     // principal — the closed v4 param set carries no caller fields).
     resolveControl: (params) =>
       callWithVersion('team.resolveControl', params, REMOTE_CONTRACT_VERSION_V4),
+    // A4-PR7 W1 (contract v9) — the corrupt-leg visibility read. The
+    // version literal appears ONLY here (TCM vNext §15.3); the params
+    // object is the caller's frozen closed set `{ teamSessionId }`,
+    // spread verbatim — the wrapper adds NOTHING.
+    listCorruptControlLegs: (params) =>
+      callWithVersion('team.listCorruptControlLegs', params, REMOTE_CONTRACT_VERSION_V9),
     // C1 restart-0.1.7-rc.1 recovery (guide §10.2) — the v5-only one-shot
     // ordinary-activation permit (contract version 5; a Team control-plane
     // RPC — NO Team ensure, NO Team Agent side effect, no revoke RPC: an

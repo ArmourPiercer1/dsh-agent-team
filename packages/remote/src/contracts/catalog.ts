@@ -89,6 +89,7 @@ export const REMOTE_METHOD_CATALOG: Readonly<Record<string, RemoteMethodSpec>> =
   'team.resolveControl': { category: REMOTE_CATEGORIES.TEAM },
   'team.prepareOrdinaryOpen': { category: REMOTE_CATEGORIES.TEAM },
   'team.getReadState': { category: REMOTE_CATEGORIES.TEAM },
+  'team.listCorruptControlLegs': { category: REMOTE_CATEGORIES.TEAM },
   'member.create': { category: REMOTE_CATEGORIES.MEMBER },
   'member.send': { category: REMOTE_CATEGORIES.MEMBER },
   'member.followup': { category: REMOTE_CATEGORIES.MEMBER },
@@ -256,6 +257,27 @@ export const REMOTE_V8_ONLY_METHODS: readonly string[] = [
 ]
 
 /**
+ * A4-PR7 W1 (contract v9, RULING 5-B warning-first): the v9-only methods
+ * — the single READ-ONLY corrupt-leg visibility read
+ * `team.listCorruptControlLegs` (the human surface for the control
+ * service's `listControlState().corruptLegs`: rows the strict reader
+ * refuses are MADE VISIBLE, never isolated; execution semantics are
+ * RULING 5-B unchanged and the read judges nothing — the control
+ * service stays the SOLE authority on approval state). Requests at v1–v8
+ * are the typed `method-version-unsupported` rejection (the same
+ * availability machinery as every prior version-only method). The param
+ * field set is closed (`params.ts`, `{ teamSessionId }`) and the
+ * response shape is closed (`types.ts`): a corrupt leg echoes ONLY the
+ * identity fields the damaged row itself still discloses. Being a pure
+ * read, it is deliberately ABSENT from
+ * {@link REMOTE_GOVERNANCE_WRITING_METHODS} — it writes nothing and the
+ * principal default branch exists for host-initiated reads.
+ */
+export const REMOTE_V9_ONLY_METHODS: readonly string[] = [
+  'team.listCorruptControlLegs',
+]
+
+/**
  * ADR A1-2 classification (frozen at the CONTRACT layer): every catalog
  * method that WRITES governance state. This list is the enumeration
  * source for the law that each such method is EXPLICITLY principal-routed
@@ -301,10 +323,12 @@ export const REMOTE_GOVERNANCE_WRITING_METHODS: readonly string[] = [
  *
  * @param method - the candidate method name (must be in the catalog).
  * @param version - the request's contract version (supported:
- *   1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 — the v7 bump adds NO method; its
+ *   1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 — the v7 bump adds NO method; its
  *   version-aware surface is the `override.set` / `override.reset`
  *   closed field sets in `params.ts`; the v8 bump (A4-PR6) adds the
- *   closed intervention plane + `override.getPermissionAdministration`).
+ *   closed intervention plane + `override.getPermissionAdministration`;
+ *   the v9 bump (A4-PR7 W1) adds the closed corrupt-leg visibility
+ *   read).
  */
 export function isRemoteMethodAvailableInVersion(method: string, version: number): boolean {
   if (!(method in REMOTE_METHOD_CATALOG)) return false
@@ -316,7 +340,8 @@ export function isRemoteMethodAvailableInVersion(method: string, version: number
       !REMOTE_V5_ONLY_METHODS.includes(method) &&
       !REMOTE_V6_ONLY_METHODS.includes(method) &&
       !REMOTE_V7_ONLY_METHODS.includes(method) &&
-      !REMOTE_V8_ONLY_METHODS.includes(method)
+      !REMOTE_V8_ONLY_METHODS.includes(method) &&
+      !REMOTE_V9_ONLY_METHODS.includes(method)
     )
   }
   if (version === 2) {
@@ -326,7 +351,8 @@ export function isRemoteMethodAvailableInVersion(method: string, version: number
       !REMOTE_V5_ONLY_METHODS.includes(method) &&
       !REMOTE_V6_ONLY_METHODS.includes(method) &&
       !REMOTE_V7_ONLY_METHODS.includes(method) &&
-      !REMOTE_V8_ONLY_METHODS.includes(method)
+      !REMOTE_V8_ONLY_METHODS.includes(method) &&
+      !REMOTE_V9_ONLY_METHODS.includes(method)
     )
   }
   if (version === 3) {
@@ -335,7 +361,8 @@ export function isRemoteMethodAvailableInVersion(method: string, version: number
       !REMOTE_V5_ONLY_METHODS.includes(method) &&
       !REMOTE_V6_ONLY_METHODS.includes(method) &&
       !REMOTE_V7_ONLY_METHODS.includes(method) &&
-      !REMOTE_V8_ONLY_METHODS.includes(method)
+      !REMOTE_V8_ONLY_METHODS.includes(method) &&
+      !REMOTE_V9_ONLY_METHODS.includes(method)
     )
   }
   if (version === 4) {
@@ -343,19 +370,23 @@ export function isRemoteMethodAvailableInVersion(method: string, version: number
       !REMOTE_V5_ONLY_METHODS.includes(method) &&
       !REMOTE_V6_ONLY_METHODS.includes(method) &&
       !REMOTE_V7_ONLY_METHODS.includes(method) &&
-      !REMOTE_V8_ONLY_METHODS.includes(method)
+      !REMOTE_V8_ONLY_METHODS.includes(method) &&
+      !REMOTE_V9_ONLY_METHODS.includes(method)
     )
   }
   if (version === 5) {
     return (
       !REMOTE_V6_ONLY_METHODS.includes(method) &&
       !REMOTE_V7_ONLY_METHODS.includes(method) &&
-      !REMOTE_V8_ONLY_METHODS.includes(method)
+      !REMOTE_V8_ONLY_METHODS.includes(method) &&
+      !REMOTE_V9_ONLY_METHODS.includes(method)
     )
   }
   if (version === 6) {
     return (
-      !REMOTE_V7_ONLY_METHODS.includes(method) && !REMOTE_V8_ONLY_METHODS.includes(method)
+      !REMOTE_V7_ONLY_METHODS.includes(method) &&
+      !REMOTE_V8_ONLY_METHODS.includes(method) &&
+      !REMOTE_V9_ONLY_METHODS.includes(method)
     )
   }
   if (version === 7) {
@@ -363,12 +394,23 @@ export function isRemoteMethodAvailableInVersion(method: string, version: number
     // PR4-round-5 v7-only `override.mutatePermission` /
     // `override.getPermission` (the v7 bump's other version-aware surface
     // is the `override.set` / `override.reset` closed field sets in
-    // `params.ts`) — but NOT the A4-PR6 v8-only intervention plane.
-    return !REMOTE_V8_ONLY_METHODS.includes(method)
+    // `params.ts`) — but NOT the A4-PR6 v8-only intervention plane and
+    // NOT the A4-PR7 W1 v9-only corrupt-leg read.
+    return (
+      !REMOTE_V8_ONLY_METHODS.includes(method) &&
+      !REMOTE_V9_ONLY_METHODS.includes(method)
+    )
   }
-  // version === 8 (A4-PR6): every v1..v7 method plus the intervention
-  // plane and the permission-administration read (the v8 bump ADDS; the
-  // v1–v7 wire shapes are byte-for-byte preserved for older requests).
+  if (version === 8) {
+    // version === 8 (A4-PR6): every v1..v7 method plus the intervention
+    // plane and the permission-administration read (the v8 bump ADDS; the
+    // v1–v7 wire shapes are byte-for-byte preserved for older requests)
+    // — but NOT the A4-PR7 W1 v9-only corrupt-leg read.
+    return !REMOTE_V9_ONLY_METHODS.includes(method)
+  }
+  // version === 9 (A4-PR7 W1): every v1..v8 method plus the closed
+  // corrupt-leg visibility read (the v9 bump ADDS; the v1–v8 wire shapes
+  // are byte-for-byte preserved for older requests).
   return true
 }
 
