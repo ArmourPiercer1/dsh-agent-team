@@ -374,7 +374,7 @@ describe('PR56 render — compat modes', () => {
     expect(allow?.disabled).toBe(false)
   })
 
-  it('an UNKNOWN subject stays visible in the unsupported mode with Allow disabled (Deny stays)', () => {
+  it('an UNKNOWN subject stays visible in the unsupported mode with BOTH commands disabled (A4-W6)', () => {
     const model = pipeline([wireEntry(1, 'control-request-recorded', {
       requestId: 'r-unknown',
       kind: 'user-approval',
@@ -389,8 +389,12 @@ describe('PR56 render — compat modes', () => {
     const allow = panel.querySelector('[data-ledger-resolve-allow]') as HTMLButtonElement | null
     const deny = panel.querySelector('[data-ledger-resolve-deny]') as HTMLButtonElement | null
     expect(allow?.disabled).toBe(true)
+    // The button RENDERS (never a silent drop) but is inert: the server
+    // refuses any resolution of an unknown-subject row
+    // (`CONTROL_REQUEST_NOT_FOUND` before any write) — A4-W6 owner ruling
+    // 2026-10-09, see the batch#2 block below for the full disclosure.
     expect(deny).not.toBeNull()
-    expect(deny?.disabled).toBe(false)
+    expect(deny?.disabled).toBe(true)
   })
 
   it('a decided non-instance fact leaves no resolve bar (no orphaned pending)', () => {
@@ -542,10 +546,17 @@ describe('PR56 batch#1 render — null/scalar/array payloads are SAFE TEXT end-t
 // non-decidable END-TO-END (explicit malformed subject → unsupported
 // presentation, Allow disabled; the server rejects these at write time —
 // display-side fail-closed, no protocol change).
+// A4-W6 EXPECTATION CHANGE (owner ruling 2026-10-09, disclosed, not
+// slipped): the DENY expectation below FLIPPED from enabled to DISABLED.
+// The original "deny safe" premise is false — an unsupported-subject row
+// is REFUSED by the server's strict reader before any write
+// (`CONTROL_REQUEST_NOT_FOUND`), so a clickable Deny invited a guaranteed
+// error (the same ghost the whole lane removes). This pin now records the
+// ruled semantics; it is the ruling's test, not a weakened one.
 // ---------------------------------------------------------------------------
 
 describe('PR56 batch#2 render — contradictory subjects are non-decidable end-to-end', () => {
-  it('template subject + EXTRA instanceId leaf → unsupported-subject panel + Allow DISABLED + Deny enabled', () => {
+  it('template subject + EXTRA instanceId leaf → unsupported-subject panel + Allow DISABLED + Deny DISABLED (A4-W6)', () => {
     const model = pipeline([wireEntry(1, 'control-request-recorded', {
       requestId: 'r-b2a-p',
       kind: 'user-approval',
@@ -560,7 +571,10 @@ describe('PR56 batch#2 render — contradictory subjects are non-decidable end-t
     const allow = panel.querySelector('[data-ledger-resolve-allow]') as HTMLButtonElement | null
     const deny = panel.querySelector('[data-ledger-resolve-deny]') as HTMLButtonElement | null
     expect(allow?.disabled).toBe(true)
-    expect(deny?.disabled).toBe(false)
+    // A4-W6: no human can resolve this row either way — both commands
+    // are inert, the row STAYS visible.
+    expect(deny?.disabled).toBe(true)
+    expect(deny?.getAttribute('data-deny-blocked')).toBe('true')
     // the row STAYS visible (never a silent drop).
     expect(view.container.querySelector('[data-ledger-row]')).not.toBeNull()
   })

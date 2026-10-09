@@ -234,7 +234,23 @@ export interface TeamUiControlSubject {
  *    ONLY the kind's own id leaf with the other two kind leaves absent,
  *    service.ts L436-462, and a legacy targetInstanceId outside an
  *    instance subject, L610-616): the request STAYS VISIBLE,
- *    non-decidable (Allow disabled), never a silent drop.
+ *    non-decidable (Allow disabled), never a silent drop. A4-W6 (owner
+ *    ruling 2026-10-09): such a row is not governable at all — the
+ *    server refuses ANY resolution of it (`CONTROL_REQUEST_NOT_FOUND`),
+ *    so Deny is DISABLED too (the pre-fix clickable Deny invited a
+ *    guaranteed error, and a pre-v9 host without the corrupt-leg read
+ *    plane would otherwise keep offering it);
+ *  - `corrupt-record` — A4-W6, CLIENT-OWNED and CLIENT-DERIVED ONLY: the
+ *    ledger row at this SEQUENCE is named by the v9 corrupt-leg read
+ *    (`team.listCorruptControlLegs` — the strict reader already refused
+ *    it server-side). The row STAYS VISIBLE with the honest marker
+ *    (locale `view.corruption.entryCorrupt`), BOTH commands disabled:
+ *    the record cannot be adjudicated by anyone, and the row keeps its
+ *    full display (whatever the tolerant adapter could read). This mode
+ *    is assigned at RENDER time by the sequence join (TeamLedger's
+ *    `corruptControlSequences` prop) — the adapter never assigns it (it
+ *    does not see the corruption read), which is why it never crosses
+ *    the frozen remote contract: no new wire value exists.
  * DIGEST NOTE: the client ships NO canonicalization / hash (display ≠
  * verification): the digest renders verbatim as WIRE-SOURCED evidence,
  * never as a client-verified value.
@@ -244,6 +260,7 @@ export type TeamUiControlRenderMode =
   | 'legacy-compat'
   | 'recovery-v1'
   | 'unsupported-subject'
+  | 'corrupt-record'
 
 /**
  * One control request paired with its decision when a loaded page carries

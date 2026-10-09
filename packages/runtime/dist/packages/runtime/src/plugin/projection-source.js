@@ -64,8 +64,17 @@
  * `node:` builtin imports.
  * @module @dsh-agent-team/runtime/plugin/projection-source
  */
-import { ADMISSION_STATES, EFFECTIVE_CONFIG_SOURCES, EFFECTIVE_CONFIG_STATES, MEMBER_LIFECYCLE_STATES, isAdmissionState, } from '../../../contracts/src/index.js';
+import { ADMISSION_STATES, EFFECTIVE_CONFIG_SOURCES, EFFECTIVE_CONFIG_STATES, MEMBER_LIFECYCLE_STATES, isAdmissionState, isRemoteSafeJsonValue, } from '../../../contracts/src/index.js';
 import { DEFAULT_CONTEXT_POLICY } from '../../../domain/member/src/index.js';
+import { CAPABILITY_NAME_VALUES } from '../../../domain/policy/src/index.js';
+import { PERMISSION_OVERLAY_EFFECT_VALUES } from '../../../storage/schema/permission-overlay.js';
+// A4-W6: the closed tables and predicates the strict control-request reader
+// (`control/service.ts parseRequestPayload`) itself uses. `control/types.js`
+// is the SAME module the service imports those from (it imports `./types.js`)
+// and it is pure (type-only imports), so this preserves the module's
+// no-I/O/no-node purity law while keeping the fold on the guard's OWN
+// vocabulary rather than a hand-copied one.
+import { CONTROL_EXECUTION_COUPLING_VALUES, CONTROL_REQUEST_KIND_VALUES, CONTROL_SUBJECT_KINDS, isControlAuthorityScope, isProposalAuthorityPosition, } from '../../control/types.js';
 import { ARTIFACT_READ_GRANTED_FACT_TYPE } from '../../artifact-read/fact.js';
 /**
  * The closed error-code vocabulary of the production read port (see the
@@ -699,6 +708,14 @@ export function createTeamDomainReadPort(domain, deps) {
         // never counted). A4-PR3's escalation rows close a LEG and always carry
         // the terminal decision row this set already reads, so they need no
         // third rule here — that is why `previousRequestId` is not consulted.
+        // A4-W6 closes the last gap in that parity claim on the CANDIDATE axis:
+        // "requestId is a string" is WIDER than the service's parse — a row the
+        // strict reader refuses (a corrupt leg: malformed subject, an A2-9 leg
+        // without ordinal/authority, a malformed authorityScope, an unreadable
+        // requester, …) still carries a string requestId and used to be counted
+        // here while being ungovernable there. Candidacy is now the service's
+        // own rejection rule (`controlRequestRowIsGovernable`), so a refused row
+        // never appears pending in `pendingControlCount` either.
         const decidedRequestIds = new Set();
         for (const entry of rootEntries) {
             if (entry.factType !== FACT_CONTROL_DECISION_RECORDED) {
@@ -722,6 +739,16 @@ export function createTeamDomainReadPort(domain, deps) {
         let pendingControlCount = 0;
         for (const entry of rootEntries) {
             if (entry.factType !== FACT_CONTROL_REQUEST_RECORDED) {
+                continue;
+            }
+            // A4-W6: a row the strict reader REFUSES is not pending anywhere —
+            // the control service files it as a corrupt leg, keeps it out of
+            // `listOpenApprovalCases`, and `resolveControl` refuses it before any
+            // write, so counting it here invited adjudication of a ghost. The
+            // candidacy test is the service's OWN rejection rule (see
+            // `controlRequestRowIsGovernable`), never a wider "has a requestId"
+            // heuristic.
+            if (!controlRequestRowIsGovernable(entry.payload)) {
                 continue;
             }
             const requestId = stringField(entry.payload, 'requestId');
@@ -901,5 +928,239 @@ function recordField(record, key) {
 /** A NON-NEGATIVE INTEGER outcome count as a defensive read (malformed → 0). */
 function nonNegativeInt(value) {
     return typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : 0;
+}
+// --- A4-W6: the control-request governability mirror --------------------------
+/**
+ * A4-W6 — does the strict control-request reader GOVERN this
+ * `control-request-recorded` payload?
+ *
+ * `pendingControlCount` is the one place outside the control service that
+ * answers "is this request awaiting adjudication", and until A4-W6 it
+ * answered with a WIDER classifier than the service: any payload whose
+ * `requestId` was a non-empty string counted, while the strict reader
+ * (`control/service.ts parseRequestPayload`) can REFUSE the very same row —
+ * a refused row is filed as a corrupt leg (`listControlState.corruptLegs`),
+ * is absent from `listOpenApprovalCases`, and `resolveControl` refuses it
+ * with `CONTROL_REQUEST_NOT_FOUND` BEFORE any write. The fold counting such
+ * a row as pending invites a human to adjudicate a ghost: the UI shows a
+ * decision point that can only ever error.
+ *
+ * This function is a clause-for-clause transcription of that rejection rule
+ * (service.ts `parseRequestPayload`, plus the private `parseCallerRef` /
+ * `parseSubject` / `parseAuthorityScopeField` it delegates to — all four
+ * module-private there). Equivalence notes, each verified against the
+ * service source:
+ * - the closed tables and `isControlAuthorityScope` / `isProposalAuthorityPosition`
+ *   are imported from `control/types.js` — the SAME module the service
+ *   imports them from, so the vocabularies cannot drift;
+ * - `parseAuthorityScopeField` parses exactly when `isControlAuthorityScope`
+ *   accepts, so the service's "present but unparseable authorityScope →
+ *   refuse" is the same predicate here, no transcription needed;
+ * - the checks below are evaluated in the service's order, but equivalence
+ *   is ORDER-INDEPENDENT: every clause is a boolean AND of refusals, so the
+ *   accept/reject verdict is their conjunction whichever order they run in;
+ * - the A2-9 strict leg rule (`approvalCaseId` present requires
+ *   `legOrdinal` AND `reviewAuthority`) is the last clause, as there.
+ *
+ * Why a transcription and not a call: `parseRequestPayload` is module-private
+ * (service.ts exports only `RequestMemberRequirement`, `requestMemberRequirements`
+ * and `createControlService`); the fold is SYNCHRONOUS inside the frozen
+ * P8-T2 read order (four repository reads, each exactly once, no other
+ * channel), while the service's classification is only reachable through the
+ * async, team-lock-guarded `listControlState`. Importing the service into
+ * the fold would await inside a sync fold and add a fifth read channel — both
+ * forbidden. The differential test `test/a4w6-corrupt-not-pending.test.ts`
+ * pins this mirror against the service's own verdict row-for-row, so drift
+ * between this transcription and `parseRequestPayload` FAILS a test rather
+ * than shipping. Do not add rules here; change the service first, then this
+ * transcription with it.
+ *
+ * @param payload - the durable fact payload of a `control-request-recorded`
+ *   ledger entry.
+ * @returns true exactly when `parseRequestPayload` would accept the row
+ *   (i.e. the guard can govern it).
+ */
+function controlRequestRowIsGovernable(payload) {
+    if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
+        return false;
+    }
+    const row = payload;
+    const requestId = row['requestId'];
+    const kind = row['kind'];
+    const targetInstanceId = row['targetInstanceId'];
+    const actionName = row['actionName'];
+    const correlation = row['correlation'];
+    if (typeof requestId !== 'string' || requestId.length === 0) {
+        return false;
+    }
+    if (typeof kind !== 'string' || !CONTROL_REQUEST_KIND_VALUES.includes(kind)) {
+        return false;
+    }
+    if (typeof actionName !== 'string' || actionName.length === 0) {
+        return false;
+    }
+    if (typeof correlation !== 'string' || correlation.length === 0) {
+        return false;
+    }
+    if (!callerRefRowIsParseable(row['requester'])) {
+        return false;
+    }
+    if (row['subject'] !== undefined) {
+        const subject = subjectRowIdentity(row['subject']);
+        if (subject === undefined) {
+            return false;
+        }
+        if (targetInstanceId !== undefined &&
+            (subject.kind !== CONTROL_SUBJECT_KINDS.INSTANCE || subject.id !== targetInstanceId)) {
+            // An explicit subject disagreeing with the legacy projection is an
+            // ambiguous identity — the service refuses, so the row is not governable.
+            return false;
+        }
+    }
+    else if (typeof targetInstanceId !== 'string' || targetInstanceId.length === 0) {
+        // No subject AND no targetInstanceId: no identity element at all.
+        return false;
+    }
+    const toolName = row['toolName'];
+    if (toolName !== undefined && typeof toolName !== 'string') {
+        return false;
+    }
+    const capabilityDomain = row['capabilityDomain'];
+    if (capabilityDomain !== undefined &&
+        !CAPABILITY_NAME_VALUES.includes(capabilityDomain)) {
+        return false;
+    }
+    const summary = row['summary'];
+    if (summary !== undefined && typeof summary !== 'string') {
+        return false;
+    }
+    const operationFingerprint = row['operationFingerprint'];
+    if (operationFingerprint !== undefined &&
+        (typeof operationFingerprint !== 'string' || operationFingerprint.length === 0)) {
+        return false;
+    }
+    const reviewPayload = row['reviewPayload'];
+    if (reviewPayload !== undefined && !isRemoteSafeJsonValue(reviewPayload)) {
+        return false;
+    }
+    const reviewPayloadDigest = row['reviewPayloadDigest'];
+    if (reviewPayloadDigest !== undefined &&
+        (typeof reviewPayloadDigest !== 'string' || reviewPayloadDigest.length === 0)) {
+        return false;
+    }
+    if (reviewPayloadDigest !== undefined && reviewPayload === undefined) {
+        // A digest of a payload the row does not carry is ambiguous input.
+        return false;
+    }
+    const executionCoupling = row['executionCoupling'];
+    if (executionCoupling !== undefined &&
+        !CONTROL_EXECUTION_COUPLING_VALUES.includes(executionCoupling)) {
+        return false;
+    }
+    const approvalCaseId = row['approvalCaseId'];
+    if (approvalCaseId !== undefined &&
+        (typeof approvalCaseId !== 'string' || approvalCaseId.length === 0)) {
+        return false;
+    }
+    const legOrdinal = row['legOrdinal'];
+    if (legOrdinal !== undefined &&
+        (typeof legOrdinal !== 'number' || !Number.isInteger(legOrdinal) || legOrdinal < 1)) {
+        return false;
+    }
+    const reviewAuthority = row['reviewAuthority'];
+    if (reviewAuthority !== undefined && !isProposalAuthorityPosition(reviewAuthority)) {
+        return false;
+    }
+    const requiredAuthorityAtCreation = row['requiredAuthorityAtCreation'];
+    if (requiredAuthorityAtCreation !== undefined &&
+        !isProposalAuthorityPosition(requiredAuthorityAtCreation)) {
+        return false;
+    }
+    const beneficiaryAuthority = row['beneficiaryAuthority'];
+    if (beneficiaryAuthority !== undefined &&
+        !isProposalAuthorityPosition(beneficiaryAuthority)) {
+        return false;
+    }
+    const requestedEffect = row['requestedEffect'];
+    if (requestedEffect !== undefined &&
+        !PERMISSION_OVERLAY_EFFECT_VALUES.includes(requestedEffect)) {
+        return false;
+    }
+    const previousRequestId = row['previousRequestId'];
+    if (previousRequestId !== undefined &&
+        (typeof previousRequestId !== 'string' || previousRequestId.length === 0)) {
+        return false;
+    }
+    const mutationProposalFingerprint = row['mutationProposalFingerprint'];
+    if (mutationProposalFingerprint !== undefined &&
+        (typeof mutationProposalFingerprint !== 'string' || mutationProposalFingerprint.length === 0)) {
+        return false;
+    }
+    if (row['authorityScope'] !== undefined && !isControlAuthorityScope(row['authorityScope'])) {
+        return false;
+    }
+    // The strict half of ADR A2-9 (same final clause as the service): a row
+    // that NAMES a case without its ordinal or reviewing authority is a leg
+    // that cannot be ordered or decided — refused, filed corrupt, governable
+    // by nobody.
+    if (approvalCaseId !== undefined && (legOrdinal === undefined || reviewAuthority === undefined)) {
+        return false;
+    }
+    return true;
+}
+/** Transcription of the service's private `parseCallerRef` (acceptance only). */
+function callerRefRowIsParseable(value) {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        return false;
+    }
+    const row = value;
+    if (row['kind'] === 'human') {
+        const humanId = row['humanId'];
+        return typeof humanId === 'string' && humanId.length > 0;
+    }
+    if (row['kind'] === 'instance') {
+        const instanceId = row['instanceId'];
+        const role = row['role'];
+        return (typeof instanceId === 'string' &&
+            instanceId.length > 0 &&
+            (role === 'leader' || role === 'member'));
+    }
+    return false;
+}
+/** Transcription of the service's private `parseSubject`, reduced to the
+ *  (kind, id) identity the disagreement check needs (acceptance only). */
+function subjectRowIdentity(value) {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        return undefined;
+    }
+    const row = value;
+    const instanceId = row['instanceId'];
+    const templateId = row['templateId'];
+    const rootSessionId = row['rootSessionId'];
+    if (row['kind'] === CONTROL_SUBJECT_KINDS.INSTANCE) {
+        return typeof instanceId === 'string' &&
+            instanceId.length > 0 &&
+            templateId === undefined &&
+            rootSessionId === undefined
+            ? { kind: CONTROL_SUBJECT_KINDS.INSTANCE, id: instanceId }
+            : undefined;
+    }
+    if (row['kind'] === CONTROL_SUBJECT_KINDS.TEMPLATE) {
+        return typeof templateId === 'string' &&
+            templateId.length > 0 &&
+            instanceId === undefined &&
+            rootSessionId === undefined
+            ? { kind: CONTROL_SUBJECT_KINDS.TEMPLATE, id: templateId }
+            : undefined;
+    }
+    if (row['kind'] === CONTROL_SUBJECT_KINDS.TEAM) {
+        return typeof rootSessionId === 'string' &&
+            rootSessionId.length > 0 &&
+            instanceId === undefined &&
+            templateId === undefined
+            ? { kind: CONTROL_SUBJECT_KINDS.TEAM, id: rootSessionId }
+            : undefined;
+    }
+    return undefined;
 }
 //# sourceMappingURL=projection-source.js.map

@@ -890,6 +890,15 @@ var __dshFactory = (require) => {
 			    // state row owned by another key contributes nothing, and the disclosure
 			    // bar and the neutral notice are mutually exclusive (F1).
 			    const { bar: corruptionBar, unavailableNotice: corruptionNotice } = planControlCorruptionRender(corruption, corruptionTeamKey);
+			    // A4-W6 — the ENTRY-level join, derived from the SAME read the bar above
+			    // already renders: the set of ledger SEQUENCES the corrupt-leg read names
+			    // (never requestIds — a corrupt row may disclose none). W4's bar/notice
+			    // plan is untouched; this is only the sequence set handed to the ledger
+			    // so a corrupt entry can stop offering an adjudication the server will
+			    // refuse. NO NEW HOST READ: the legs are the ones already on screen.
+			    const corruptControlSequences = useMemo(() => (corruptionBar === null
+			        ? undefined
+			        : new Set(corruptionBar.legs.map(leg => leg.sequence))), [corruptionBar]);
 			    // (repair 20260927, S1-C2; PR #35 follow-up, P1-4) the manual "refresh
 			    // team view" — the one awaitable read-only re-read. Captures THIS
 			    // invocation's session id and a request epoch at call time:
@@ -1317,7 +1326,7 @@ var __dshFactory = (require) => {
 			                                    ? ` — ${t('view.corruption.attributed')}`
 			                                    : ` — ${t('view.corruption.unattributed')}`, leg.requestId !== null ? ` · request ${leg.requestId}` : '', leg.approvalCaseId !== null ? ` · case ${leg.approvalCaseId}` : ''] }, leg.sequence))) }), corruptionBar.truncated
 			                        ? _jsx("span", { "data-team-control-corruption-truncated": true, children: t('view.corruption.truncated') })
-			                        : null] })) : corruptionNotice !== null ? (_jsxs("div", { className: styles.corruptionCheckNote, "data-team-control-corruption-check-unavailable": true, role: "status", children: [t('view.corruption.checkUnavailable'), ` — ${corruptionNotice.code}`] })) : null, _jsxs("section", { className: styles.section, "data-team-section": "timeline", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.timeline.title') }), _jsx(TeamTimeline, { snapshot: snapshot, ledger: ledger, currentInstanceId: currentInstanceId, onSelectSession: openSession, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "members", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.members.title') }), _jsx(TeamMembers, { snapshot: snapshot, ledger: ledger, currentSessionId: sessionId, onSelectSession: openSession, memberCommands: memberCommands, openTeamMode: openTeamMode, openOrdinaryMode: openOrdinaryMode, teamOpenMode: teamOpenMode, workspaces: workspaceOptions, t: t })] }), governance !== undefined && (_jsxs("section", { className: styles.section, "data-team-section": "governance", children: [_jsx("h3", { className: styles.sectionTitle, children: t('governance.title') }), _jsx(TeamGovernance, { snapshot: snapshot, governance: governance, t: t })] })), _jsxs("section", { className: styles.section, "data-team-section": "activity", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.activity.title') }), _jsx(TeamActivity, { activity: snapshot.activity, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "ledger", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.ledger.title') }), _jsx(TeamLedger, { snapshot: snapshot, ledger: ledger, ledgerState: ledgerState, onRetry: refreshTeamLedger, onSelectSession: openSession, onResolveControl: onResolveControl, controlSurfaceMode: controlSurfaceMode, t: t })] })] }));
+			                        : null] })) : corruptionNotice !== null ? (_jsxs("div", { className: styles.corruptionCheckNote, "data-team-control-corruption-check-unavailable": true, role: "status", children: [t('view.corruption.checkUnavailable'), ` — ${corruptionNotice.code}`] })) : null, _jsxs("section", { className: styles.section, "data-team-section": "timeline", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.timeline.title') }), _jsx(TeamTimeline, { snapshot: snapshot, ledger: ledger, currentInstanceId: currentInstanceId, onSelectSession: openSession, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "members", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.members.title') }), _jsx(TeamMembers, { snapshot: snapshot, ledger: ledger, currentSessionId: sessionId, onSelectSession: openSession, memberCommands: memberCommands, openTeamMode: openTeamMode, openOrdinaryMode: openOrdinaryMode, teamOpenMode: teamOpenMode, workspaces: workspaceOptions, t: t })] }), governance !== undefined && (_jsxs("section", { className: styles.section, "data-team-section": "governance", children: [_jsx("h3", { className: styles.sectionTitle, children: t('governance.title') }), _jsx(TeamGovernance, { snapshot: snapshot, governance: governance, t: t })] })), _jsxs("section", { className: styles.section, "data-team-section": "activity", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.activity.title') }), _jsx(TeamActivity, { activity: snapshot.activity, t: t })] }), _jsxs("section", { className: styles.section, "data-team-section": "ledger", children: [_jsx("h3", { className: styles.sectionTitle, children: t('view.ledger.title') }), _jsx(TeamLedger, { snapshot: snapshot, ledger: ledger, ledgerState: ledgerState, onRetry: refreshTeamLedger, onSelectSession: openSession, onResolveControl: onResolveControl, controlSurfaceMode: controlSurfaceMode, corruptControlSequences: corruptControlSequences, t: t })] })] }));
 			}
 			Object.defineProperty(exports, "TeamView", { enumerable: true, get: () => TeamView });
 			//# sourceMappingURL=TeamView.js.map
@@ -5462,7 +5471,7 @@ var __dshFactory = (require) => {
 			 * tokens — deliberately identical across dictionaries, never
 			 * translated).
 			 */
-			function controlRenderModeLabel(mode) {
+			function controlRenderModeLabel(mode, t) {
 			    switch (mode) {
 			        case 'recovery-v1':
 			            return 'recovery-dispatch/v1';
@@ -5470,6 +5479,13 @@ var __dshFactory = (require) => {
 			            return 'legacy-compatible';
 			        case 'unsupported-subject':
 			            return 'unsupported-subject';
+			        case 'corrupt-record':
+			            // A4-W6 — the deliberate departure from the wire-token rule: this
+			            // label is not protocol, it is the truth a human must read in place
+			            // ("this record cannot be adjudicated"), and it is the ONLY mode the
+			            // client derives itself (from the v9 corrupt-leg read), so it is
+			            // locale copy (owner-ruled wording 2026-10-09).
+			            return t('view.corruption.entryCorrupt');
 			        case 'standard':
 			            return 'standard';
 			    }
@@ -5539,14 +5555,17 @@ var __dshFactory = (require) => {
 			 * while unpaired (no loaded decision) and green once the chain settles;
 			 * the settled control facts and the interval close read as done; a
 			 * progress row reads by its frozen value (absent: ongoing); everything
-			 * else reads as ongoing.
+			 * else reads as ongoing. A4-W6: a control request the corrupt-leg read
+			 * names reads as ERROR (the governance §6.C precedent: a corrupt record
+			 * is never a quiet wait).
 			 * @param row - the ledger row.
+			 * @param corrupt - A4-W6: the corrupt-leg read names this row's sequence.
 			 * @returns the dot state.
 			 */
-			function rowDot(row) {
+			function rowDot(row, corrupt) {
 			    switch (row.kind) {
 			        case 'control-request':
-			            return row.pending ? 'warning' : 'done';
+			            return corrupt ? 'error' : row.pending ? 'warning' : 'done';
 			        case 'control-decision':
 			        case 'control-consumed':
 			        case 'interval-closed':
@@ -5572,13 +5591,21 @@ var __dshFactory = (require) => {
 			/**
 			 * The row's trailing state badge: the waiting badge on a pending control
 			 * request, the decision label (+ optional reason) on a control decision,
-			 * the progress label on a progress row; no badge otherwise.
+			 * the progress label on a progress row; no badge otherwise. A4-W6: a
+			 * control request the corrupt-leg read names carries the HONEST marker
+			 * INSTEAD of the waiting badge — whatever its client-side `pending` read
+			 * is (a corrupt row with an unreadable requestId never reads pending in
+			 * the row model, yet it is exactly the class that must disclose itself).
 			 * @param row - the ledger row.
 			 * @param t - the team dictionary translate seat.
+			 * @param corrupt - A4-W6: the corrupt-leg read names this row's sequence.
 			 * @returns the badge element, or null.
 			 */
-			function stateBadge(row, t) {
+			function stateBadge(row, t, corrupt) {
 			    if (row.kind === 'control-request') {
+			        if (corrupt) {
+			            return (_jsx("span", { className: styles.state, "data-ledger-state": true, "data-corrupt-record": "true", children: t('view.corruption.entryCorrupt') }));
+			        }
 			        if (row.pending === false)
 			            return null;
 			        return _jsx("span", { className: styles.state, "data-ledger-state": true, "data-pending": "true", children: t('view.ledger.pending') });
@@ -5611,13 +5638,13 @@ var __dshFactory = (require) => {
 			    return null;
 			}
 			/** One durable-ledger row: time, type marker, actor, one-line summary, and the family's state badge. */
-			function LedgerRow({ row, onSelect, t }) {
+			function LedgerRow({ row, onSelect, corrupt = false, t }) {
 			    const marker = row.kind === 'unknown'
 			        ? row.factType
 			        : t(FACT_MARKER_KEYS[row.kind]);
-			    return (_jsxs("button", { type: "button", className: styles.row, "data-ledger-row": true, "data-ledger-kind": row.kind, "data-ledger-fact": row.factType, disabled: onSelect === undefined, onClick: onSelect, children: [_jsx("span", { className: styles.dotSlot, "aria-hidden": "true", children: _jsx(StateDot, { state: rowDot(row) }) }), _jsx("span", { className: styles.time, "data-ledger-time": true, children: formatTeamClock(row.at) }), _jsx("span", { className: styles.marker, "data-ledger-marker": true, children: marker }), row.actorLabel !== ''
+			    return (_jsxs("button", { type: "button", className: styles.row, "data-ledger-row": true, "data-ledger-kind": row.kind, "data-ledger-fact": row.factType, disabled: onSelect === undefined, onClick: onSelect, children: [_jsx("span", { className: styles.dotSlot, "aria-hidden": "true", children: _jsx(StateDot, { state: rowDot(row, corrupt) }) }), _jsx("span", { className: styles.time, "data-ledger-time": true, children: formatTeamClock(row.at) }), _jsx("span", { className: styles.marker, "data-ledger-marker": true, children: marker }), row.actorLabel !== ''
 			                ? _jsx("span", { className: styles.actor, "data-ledger-actor": true, children: row.actorLabel })
-			                : null, _jsx("span", { className: styles.summary, "data-ledger-summary": true, title: row.detail, children: row.summary }), stateBadge(row, t)] }));
+			                : null, _jsx("span", { className: styles.summary, "data-ledger-summary": true, title: row.detail, children: row.summary }), stateBadge(row, t, corrupt)] }));
 			}
 			/**
 			 * The durable-ledger Events section with the top control bar (the client
@@ -5704,6 +5731,19 @@ var __dshFactory = (require) => {
 			        return map;
 			    }, [ledger.controls]);
 			    /**
+			     * A4-W6 — the SEQUENCE join (the whole point of the join, stated once):
+			     * a corrupt row may not disclose a readable requestId, so the id is
+			     * useless as the join key; the durable LEDGER SEQUENCE is the identity
+			     * both the ledger read and the v9 corrupt-leg read carry. This is the
+			     * ONLY corruption predicate in this component: the strict reader is
+			     * never re-implemented client-side (a client mirror of it would be a
+			     * second authority over governability), and no ledger field is
+			     * re-interpreted here.
+			     * @param row - the ledger row.
+			     * @returns true when the corrupt-leg read names this row's sequence.
+			     */
+			    const isCorruptRow = (row) => props.corruptControlSequences?.has(row.sequence) === true;
+			    /**
 			     * F9 / F9U — the contextual decision panel under one row: rendered
 			     * ONLY for a pending control-request row that carries a durable
 			     * request id, while the `onResolveControl` face is present (absent
@@ -5733,6 +5773,10 @@ var __dshFactory = (require) => {
 			        }
 			        const requestId = row.requestId;
 			        const chain = chainByRequest.get(requestId);
+			        // A4-W6 — sequence join (see `isCorruptRow`); the chain's own
+			        // `requestSequence` is the same durable fact, asserted equal by the
+			        // adapter's construction, so the row's sequence is the key used.
+			        const corrupt = isCorruptRow(row);
 			        const state = resolveStates.get(requestId);
 			        const busy = state !== undefined && state.phase === 'busy';
 			        // F9U — the kind-aware affordance (supplement 3): the closed human
@@ -5769,9 +5813,18 @@ var __dshFactory = (require) => {
 			        // hash: display ≠ verification.
 			        const cannotFullyReview = chain?.reviewIntegrity === 'incomplete';
 			        // PR #56 (1) — an unsupported subject is non-decidable too (the
-			        // request stays VISIBLE, Allow disabled, deny safe).
-			        const allowBlocked = cannotFullyReview || chain?.renderMode === 'unsupported-subject';
-			        return (_jsxs("div", { className: styles.resolveBar, "data-ledger-resolve-bar": true, "data-request-id": requestId, "data-control-surface": props.controlSurfaceMode ?? 'unresolved', children: [_jsxs("dl", { className: styles.controlDetail, "data-control-detail": true, children: [requesterLabel !== undefined
+			        // request stays VISIBLE, Allow disabled).
+			        // A4-W6 (owner ruling 2026-10-09) closes the remaining half: an
+			        // unsupported-subject row is NOT GOVERNABLE AT ALL — the server
+			        // refuses any resolution of it (`CONTROL_REQUEST_NOT_FOUND` before
+			        // any write) — so DENY is disabled too, and a corrupt row (named by
+			        // the sequence join) disables both. The rows stay VISIBLE: truth
+			        // shown, invalid entry point removed. The `unsupported-subject` arm
+			        // needs NO corruption read, so a pre-v9 host without the corrupt-leg
+			        // read plane stays consistent.
+			        const allowBlocked = cannotFullyReview || chain?.renderMode === 'unsupported-subject' || corrupt;
+			        const denyBlocked = corrupt || chain?.renderMode === 'unsupported-subject';
+			        return (_jsxs("div", { className: styles.resolveBar, "data-ledger-resolve-bar": true, "data-request-id": requestId, "data-control-surface": props.controlSurfaceMode ?? 'unresolved', "data-corrupt-record": corrupt ? 'true' : undefined, children: [_jsxs("dl", { className: styles.controlDetail, "data-control-detail": true, children: [requesterLabel !== undefined
 			                            ? (_jsxs("div", { className: styles.controlField, "data-control-detail-requester": true, children: [_jsx("dt", { children: t('view.ledger.control.requester') }), _jsx("dd", { children: requesterLabel })] }))
 			                            : null, chain?.kind !== undefined
 			                            ? (_jsxs("div", { className: styles.controlField, "data-control-detail-kind": true, children: [_jsx("dt", { children: t('view.ledger.control.kind') }), _jsx("dd", { children: chain.kind })] }))
@@ -5781,14 +5834,14 @@ var __dshFactory = (require) => {
 			                            ? (_jsxs("div", { className: styles.controlField, "data-control-detail-tool": true, children: [_jsx("dt", { children: t('view.ledger.control.tool') }), _jsx("dd", { children: chain.toolName })] }))
 			                            : null, chain?.summary !== undefined
 			                            ? (_jsxs("div", { className: styles.controlField, "data-control-detail-reason": true, children: [_jsx("dt", { children: t('view.ledger.control.reason') }), _jsx("dd", { children: chain.summary })] }))
-			                            : null, _jsxs("div", { className: styles.controlField, "data-control-detail-time": true, children: [_jsx("dt", { children: t('view.ledger.control.time') }), _jsx("dd", { children: formatTeamClock(row.at) })] }), _jsxs("div", { className: styles.controlField, "data-control-detail-status": true, children: [_jsx("dt", { children: t('view.ledger.control.status') }), _jsx("dd", { children: t('view.ledger.control.status.pending') })] }), authority !== undefined
+			                            : null, _jsxs("div", { className: styles.controlField, "data-control-detail-time": true, children: [_jsx("dt", { children: t('view.ledger.control.time') }), _jsx("dd", { children: formatTeamClock(row.at) })] }), _jsxs("div", { className: styles.controlField, "data-control-detail-status": true, children: [_jsx("dt", { children: t('view.ledger.control.status') }), _jsx("dd", { "data-status-corrupt": corrupt ? 'true' : undefined, children: corrupt ? t('view.corruption.entryCorrupt') : t('view.ledger.control.status.pending') })] }), authority !== undefined
 			                            ? (_jsxs("div", { className: styles.controlField, "data-control-detail-authority": true, children: [_jsx("dt", { children: t('view.ledger.control.authority') }), _jsx("dd", { children: authority.join(' / ') })] }))
 			                            : null, chain?.subject !== undefined
 			                            ? (_jsxs("div", { className: styles.controlField, "data-control-detail-subject": true, "data-subject-kind": chain.subject.kind, "data-subject-id": chain.subject.id, children: [_jsx("dt", { children: t('view.ledger.control.subject') }), _jsx("dd", { children: `${chain.subject.kind}:${chain.subject.id}` })] }))
 			                            : chain?.subjectKindRaw !== undefined
 			                                ? (_jsxs("div", { className: styles.controlField, "data-control-detail-subject": true, "data-subject-kind": "unsupported", children: [_jsx("dt", { children: t('view.ledger.control.subject') }), _jsx("dd", { children: `unsupported (${chain.subjectKindRaw})` })] }))
-			                                : null, _jsxs("div", { className: styles.controlField, "data-control-detail-request-id": true, children: [_jsx("dt", { children: t('view.ledger.control.requestId') }), _jsx("dd", { children: requestId })] }), chain?.renderMode !== undefined
-			                            ? (_jsxs("div", { className: styles.controlField, "data-control-detail-render-mode": true, "data-render-mode": chain.renderMode, children: [_jsx("dt", { children: t('view.ledger.control.renderMode') }), _jsx("dd", { children: controlRenderModeLabel(chain.renderMode) })] }))
+			                                : null, _jsxs("div", { className: styles.controlField, "data-control-detail-request-id": true, children: [_jsx("dt", { children: t('view.ledger.control.requestId') }), _jsx("dd", { children: requestId })] }), (corrupt ? true : chain?.renderMode !== undefined)
+			                            ? (_jsxs("div", { className: styles.controlField, "data-control-detail-render-mode": true, "data-render-mode": corrupt ? 'corrupt-record' : chain?.renderMode, children: [_jsx("dt", { children: t('view.ledger.control.renderMode') }), _jsx("dd", { children: controlRenderModeLabel(corrupt ? 'corrupt-record' : chain?.renderMode ?? 'standard', t) })] }))
 			                            : null, chain?.reviewPayloadDigest !== undefined
 			                            ? (_jsxs("div", { className: styles.controlField, "data-control-detail-digest": true, "data-digest-source": "ledger-wire", children: [_jsx("dt", { children: t('view.ledger.control.digest') }), _jsx("dd", { className: styles.controlDigestValue, children: chain.reviewPayloadDigest })] }))
 			                            : null, chain?.reviewPayload !== undefined
@@ -5796,7 +5849,7 @@ var __dshFactory = (require) => {
 			                            : null] }), cannotFullyReview
 			                    ? (_jsx("span", { className: styles.cannotReview, "data-control-detail-cannot-review": true, role: "alert", children: t('view.ledger.control.cannotReview') }))
 			                    : null, showCommands
-			                    ? (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", className: styles.resolveBtn, "data-ledger-resolve-allow": true, "data-allow-blocked": allowBlocked ? 'true' : undefined, disabled: busy || allowBlocked, onClick: () => { runResolve(requestId, 'allow'); }, children: t('view.ledger.resolve.allow') }), _jsx("button", { type: "button", className: styles.resolveBtn, "data-ledger-resolve-deny": true, disabled: busy, onClick: () => { runResolve(requestId, 'deny'); }, children: t('view.ledger.resolve.deny') }), busy
+			                    ? (_jsxs(_Fragment, { children: [_jsx("button", { type: "button", className: styles.resolveBtn, "data-ledger-resolve-allow": true, "data-allow-blocked": allowBlocked ? 'true' : undefined, disabled: busy || allowBlocked, onClick: () => { runResolve(requestId, 'allow'); }, children: t('view.ledger.resolve.allow') }), _jsx("button", { type: "button", className: styles.resolveBtn, "data-ledger-resolve-deny": true, "data-deny-blocked": denyBlocked ? 'true' : undefined, disabled: busy || denyBlocked, onClick: () => { runResolve(requestId, 'deny'); }, children: t('view.ledger.resolve.deny') }), busy
 			                                ? _jsx("span", { className: styles.resolveBusy, "data-ledger-resolve-busy": true, children: t('view.ledger.resolve.busy') })
 			                                : null] }))
 			                    : null, props.controlSurfaceMode === 'read-only'
@@ -5830,7 +5883,7 @@ var __dshFactory = (require) => {
 			                                ? (_jsx("button", { type: "button", className: styles.loadEarlier, "data-ledger-load-earlier": true, disabled: loading, onClick: loadEarlier, children: t('view.ledger.loadEarlier') }))
 			                                : null, section.complete === false && section.remainingCount > 0
 			                                ? _jsx("span", { className: styles.truncated, "data-ledger-remaining": true, children: t('view.ledger.remaining', { count: section.remainingCount }) })
-			                                : null] }), _jsx("div", { className: styles.rows, children: section.rows.map(row => (_jsxs(Fragment, { children: [_jsx(LedgerRow, { row: row, onSelect: row.navigationSessionId === '' ? undefined : () => { onSelectSession(row.navigationSessionId); }, t: t }), renderControlPanel(row)] }, row.key))) })] })) }));
+			                                : null] }), _jsx("div", { className: styles.rows, children: section.rows.map(row => (_jsxs(Fragment, { children: [_jsx(LedgerRow, { row: row, onSelect: row.navigationSessionId === '' ? undefined : () => { onSelectSession(row.navigationSessionId); }, corrupt: isCorruptRow(row), t: t }), renderControlPanel(row)] }, row.key))) })] })) }));
 			}
 			Object.defineProperty(exports, "TeamLedger", { enumerable: true, get: () => TeamLedger });
 			//# sourceMappingURL=TeamLedger.js.map
@@ -8249,6 +8302,7 @@ var __dshFactory = (require) => {
 			    'view.corruption.unattributed': '无法归属到具体成员（团队级提示）',
 			    'view.corruption.truncated': '其余损坏记录未在此列出',
 			    'view.corruption.checkUnavailable': '审批记录完整性检查暂不可用，无法确认是否存在损坏记录（仅提示，不改变执行语义）— 请刷新重试',
+			    'view.corruption.entryCorrupt': '损坏 · 不可裁决',
 			    'view.refresh': '刷新团队视图',
 			    'view.refreshing': '正在更新…',
 			    'view.refresh.failed': '更新失败，当前显示上次成功的数据',
@@ -8533,6 +8587,7 @@ var __dshFactory = (require) => {
 			    'view.corruption.unattributed': 'not attributable to a specific member (team-level notice)',
 			    'view.corruption.truncated': 'further corrupt records are not listed here',
 			    'view.corruption.checkUnavailable': 'The approval-record integrity check is unavailable: corrupt records can be neither confirmed nor ruled out (notice only — execution semantics are unchanged) — refresh to retry',
+			    'view.corruption.entryCorrupt': 'corrupt record — cannot be adjudicated',
 			    'view.refresh': 'Refresh team view',
 			    'view.refreshing': 'Refreshing…',
 			    'view.refresh.failed': 'Update failed — showing the last successfully loaded data',

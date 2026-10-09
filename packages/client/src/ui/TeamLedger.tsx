@@ -109,6 +109,18 @@ export interface TeamLedgerProps {
    * only.
    */
   readonly controlSurfaceMode?: ControlSurfaceMode
+  /**
+   * A4-W6 (owner ruling 2026-10-09) — the ledger SEQUENCES the v9
+   * corrupt-leg read (`team.listCorruptControlLegs`, fetched by the view)
+   * names as refused by the strict control reader. The join key is the
+   * durable LEDGER SEQUENCE, never the requestId: a corrupt row may not
+   * even disclose one. Rows in this set render the client-owned
+   * `corrupt-record` presentation — honest marker, BOTH commands
+   * disabled, entry STAYS visible. ABSENT (pre-v9 host, or the read not
+   * yet settled / failed) → no corruption marking, exactly the previous
+   * behaviour; the strict reader is never re-implemented here.
+   */
+  readonly corruptControlSequences?: ReadonlySet<number>
   /** The team dictionary translate seat. */
   readonly t: PropsLocale<'team'>['t']
 }
@@ -132,7 +144,10 @@ type ResolveControlState =
  * tokens — deliberately identical across dictionaries, never
  * translated).
  */
-function controlRenderModeLabel(mode: TeamUiControlRenderMode): string {
+function controlRenderModeLabel(
+  mode: TeamUiControlRenderMode,
+  t: PropsLocale<'team'>['t'],
+): string {
   switch (mode) {
     case 'recovery-v1':
       return 'recovery-dispatch/v1'
@@ -140,6 +155,13 @@ function controlRenderModeLabel(mode: TeamUiControlRenderMode): string {
       return 'legacy-compatible'
     case 'unsupported-subject':
       return 'unsupported-subject'
+    case 'corrupt-record':
+      // A4-W6 — the deliberate departure from the wire-token rule: this
+      // label is not protocol, it is the truth a human must read in place
+      // ("this record cannot be adjudicated"), and it is the ONLY mode the
+      // client derives itself (from the v9 corrupt-leg read), so it is
+      // locale copy (owner-ruled wording 2026-10-09).
+      return t('view.corruption.entryCorrupt')
     case 'standard':
       return 'standard'
   }
@@ -214,14 +236,17 @@ const STATUS_KEYS: Readonly<Record<ProgressValue, TeamKey>> = {
  * while unpaired (no loaded decision) and green once the chain settles;
  * the settled control facts and the interval close read as done; a
  * progress row reads by its frozen value (absent: ongoing); everything
- * else reads as ongoing.
+ * else reads as ongoing. A4-W6: a control request the corrupt-leg read
+ * names reads as ERROR (the governance §6.C precedent: a corrupt record
+ * is never a quiet wait).
  * @param row - the ledger row.
+ * @param corrupt - A4-W6: the corrupt-leg read names this row's sequence.
  * @returns the dot state.
  */
-function rowDot(row: TeamLedgerEventRow): StateDotState {
+function rowDot(row: TeamLedgerEventRow, corrupt: boolean): StateDotState {
   switch (row.kind) {
     case 'control-request':
-      return row.pending ? 'warning' : 'done'
+      return corrupt ? 'error' : row.pending ? 'warning' : 'done'
     case 'control-decision':
     case 'control-consumed':
     case 'interval-closed':
@@ -248,13 +273,29 @@ function rowDot(row: TeamLedgerEventRow): StateDotState {
 /**
  * The row's trailing state badge: the waiting badge on a pending control
  * request, the decision label (+ optional reason) on a control decision,
- * the progress label on a progress row; no badge otherwise.
+ * the progress label on a progress row; no badge otherwise. A4-W6: a
+ * control request the corrupt-leg read names carries the HONEST marker
+ * INSTEAD of the waiting badge — whatever its client-side `pending` read
+ * is (a corrupt row with an unreadable requestId never reads pending in
+ * the row model, yet it is exactly the class that must disclose itself).
  * @param row - the ledger row.
  * @param t - the team dictionary translate seat.
+ * @param corrupt - A4-W6: the corrupt-leg read names this row's sequence.
  * @returns the badge element, or null.
  */
-function stateBadge(row: TeamLedgerEventRow, t: PropsLocale<'team'>['t']): React.JSX.Element | null {
+function stateBadge(
+  row: TeamLedgerEventRow,
+  t: PropsLocale<'team'>['t'],
+  corrupt: boolean,
+): React.JSX.Element | null {
   if (row.kind === 'control-request') {
+    if (corrupt) {
+      return (
+        <span className={styles.state} data-ledger-state data-corrupt-record="true">
+          {t('view.corruption.entryCorrupt')}
+        </span>
+      )
+    }
     if (row.pending === false) return null
     return <span className={styles.state} data-ledger-state data-pending="true">{t('view.ledger.pending')}</span>
   }
@@ -299,11 +340,13 @@ interface LedgerRowProps {
   readonly row: TeamLedgerEventRow
   /** Switch to the row's session; absent when the row binds none. */
   readonly onSelect?: (() => void) | undefined
+  /** A4-W6: the corrupt-leg read names this row's ledger sequence. */
+  readonly corrupt?: boolean
   readonly t: PropsLocale<'team'>['t']
 }
 
 /** One durable-ledger row: time, type marker, actor, one-line summary, and the family's state badge. */
-function LedgerRow({ row, onSelect, t }: LedgerRowProps): React.JSX.Element {
+function LedgerRow({ row, onSelect, corrupt = false, t }: LedgerRowProps): React.JSX.Element {
   const marker = row.kind === 'unknown'
     ? row.factType
     : t(FACT_MARKER_KEYS[row.kind])
@@ -318,7 +361,7 @@ function LedgerRow({ row, onSelect, t }: LedgerRowProps): React.JSX.Element {
       onClick={onSelect}
     >
       <span className={styles.dotSlot} aria-hidden="true">
-        <StateDot state={rowDot(row)} />
+        <StateDot state={rowDot(row, corrupt)} />
       </span>
       <span className={styles.time} data-ledger-time>{formatTeamClock(row.at)}</span>
       <span className={styles.marker} data-ledger-marker>{marker}</span>
@@ -326,7 +369,7 @@ function LedgerRow({ row, onSelect, t }: LedgerRowProps): React.JSX.Element {
         ? <span className={styles.actor} data-ledger-actor>{row.actorLabel}</span>
         : null}
       <span className={styles.summary} data-ledger-summary title={row.detail}>{row.summary}</span>
-      {stateBadge(row, t)}
+      {stateBadge(row, t, corrupt)}
     </button>
   )
 }
@@ -417,6 +460,20 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
     return map
   }, [ledger.controls])
   /**
+   * A4-W6 — the SEQUENCE join (the whole point of the join, stated once):
+   * a corrupt row may not disclose a readable requestId, so the id is
+   * useless as the join key; the durable LEDGER SEQUENCE is the identity
+   * both the ledger read and the v9 corrupt-leg read carry. This is the
+   * ONLY corruption predicate in this component: the strict reader is
+   * never re-implemented client-side (a client mirror of it would be a
+   * second authority over governability), and no ledger field is
+   * re-interpreted here.
+   * @param row - the ledger row.
+   * @returns true when the corrupt-leg read names this row's sequence.
+   */
+  const isCorruptRow = (row: TeamLedgerEventRow): boolean =>
+    props.corruptControlSequences?.has(row.sequence) === true
+  /**
    * F9 / F9U — the contextual decision panel under one row: rendered
    * ONLY for a pending control-request row that carries a durable
    * request id, while the `onResolveControl` face is present (absent
@@ -448,6 +505,10 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
     }
     const requestId = row.requestId
     const chain = chainByRequest.get(requestId)
+    // A4-W6 — sequence join (see `isCorruptRow`); the chain's own
+    // `requestSequence` is the same durable fact, asserted equal by the
+    // adapter's construction, so the row's sequence is the key used.
+    const corrupt = isCorruptRow(row)
     const state = resolveStates.get(requestId)
     const busy = state !== undefined && state.phase === 'busy'
     // F9U — the kind-aware affordance (supplement 3): the closed human
@@ -485,14 +546,25 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
     // hash: display ≠ verification.
     const cannotFullyReview = chain?.reviewIntegrity === 'incomplete'
     // PR #56 (1) — an unsupported subject is non-decidable too (the
-    // request stays VISIBLE, Allow disabled, deny safe).
-    const allowBlocked = cannotFullyReview || chain?.renderMode === 'unsupported-subject'
+    // request stays VISIBLE, Allow disabled).
+    // A4-W6 (owner ruling 2026-10-09) closes the remaining half: an
+    // unsupported-subject row is NOT GOVERNABLE AT ALL — the server
+    // refuses any resolution of it (`CONTROL_REQUEST_NOT_FOUND` before
+    // any write) — so DENY is disabled too, and a corrupt row (named by
+    // the sequence join) disables both. The rows stay VISIBLE: truth
+    // shown, invalid entry point removed. The `unsupported-subject` arm
+    // needs NO corruption read, so a pre-v9 host without the corrupt-leg
+    // read plane stays consistent.
+    const allowBlocked =
+      cannotFullyReview || chain?.renderMode === 'unsupported-subject' || corrupt
+    const denyBlocked = corrupt || chain?.renderMode === 'unsupported-subject'
     return (
       <div
         className={styles.resolveBar}
         data-ledger-resolve-bar
         data-request-id={requestId}
         data-control-surface={props.controlSurfaceMode ?? 'unresolved'}
+        data-corrupt-record={corrupt ? 'true' : undefined}
       >
         <dl className={styles.controlDetail} data-control-detail>
           {requesterLabel !== undefined
@@ -541,7 +613,12 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
           </div>
           <div className={styles.controlField} data-control-detail-status>
             <dt>{t('view.ledger.control.status')}</dt>
-            <dd>{t('view.ledger.control.status.pending')}</dd>
+            {/* A4-W6: a corrupt record is NOT awaiting adjudication — the
+                waiting label would restart the ghost invitation inside the
+                panel the row badge just made honest. */}
+            <dd data-status-corrupt={corrupt ? 'true' : undefined}>
+              {corrupt ? t('view.corruption.entryCorrupt') : t('view.ledger.control.status.pending')}
+            </dd>
           </div>
           {authority !== undefined
             ? (
@@ -586,12 +663,20 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
             <dd>{requestId}</dd>
           </div>
           {/* PR #56 — the explicit rendering mode label (compat classes
-              stay distinguishable on screen and in evidence). */}
-          {chain?.renderMode !== undefined
+              stay distinguishable on screen and in evidence). A4-W6: a
+              corrupt row's EFFECTIVE mode is the client-owned
+              `corrupt-record` — it outranks the adapter's chain-level
+              class (the strict reader refused the whole row, whatever
+              fragment the tolerant adapter could still read). */}
+          {(corrupt ? true : chain?.renderMode !== undefined)
             ? (
-              <div className={styles.controlField} data-control-detail-render-mode data-render-mode={chain.renderMode}>
+              <div
+                className={styles.controlField}
+                data-control-detail-render-mode
+                data-render-mode={corrupt ? 'corrupt-record' : chain?.renderMode}
+              >
                 <dt>{t('view.ledger.control.renderMode')}</dt>
-                <dd>{controlRenderModeLabel(chain.renderMode)}</dd>
+                <dd>{controlRenderModeLabel(corrupt ? 'corrupt-record' : chain?.renderMode ?? 'standard', t)}</dd>
               </div>
             )
             : null}
@@ -646,7 +731,8 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
                 type="button"
                 className={styles.resolveBtn}
                 data-ledger-resolve-deny
-                disabled={busy}
+                data-deny-blocked={denyBlocked ? 'true' : undefined}
+                disabled={busy || denyBlocked}
                 onClick={() => { runResolve(requestId, 'deny') }}
               >
                 {t('view.ledger.resolve.deny')}
@@ -781,6 +867,7 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
                   <LedgerRow
                     row={row}
                     onSelect={row.navigationSessionId === '' ? undefined : () => { onSelectSession(row.navigationSessionId) }}
+                    corrupt={isCorruptRow(row)}
                     t={t}
                   />
                   {renderControlPanel(row)}
