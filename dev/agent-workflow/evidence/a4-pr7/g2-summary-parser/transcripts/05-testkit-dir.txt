@@ -1,0 +1,72 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/g2-summary-parser
+
+ ✓ packages/testkit/test/rc2-kit-wire-shape.test.ts (17 tests) 34ms
+ ✓ packages/testkit/test/testkit.test.ts (2 tests) 3ms
+ ✓ packages/testkit/test/rc2-kit-fixture-invariants.test.ts (7 tests) 19ms
+ ✓ packages/testkit/test/rc2-kit-preset-seam.test.ts (15 tests) 159ms
+ ✓ packages/testkit/test/rc2-kit-pin-hygiene.test.ts (7 tests) 187ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts (7 tests) 407ms
+     ✓ the canonical pin is the 0.2.0-rc.2 generation, and the pinned test-use runtime self-reports exactly that version  311ms
+ ✓ packages/testkit/test/a4-artifacts-nonempty.test.ts (4 tests) 411ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 8ms
+ ✓ packages/testkit/test/bp1h-blueprint-authoring.test.ts (8 tests) 53ms
+ ✓ packages/testkit/test/a3p1-seam-additive-tables.test.ts (8 tests) 13ms
+ ✓ packages/testkit/test/t6-5-compat-complete-true.test.ts (6 tests) 19ms
+ ✓ packages/testkit/test/t6-7-fresh-per-delegation.test.ts (6 tests) 26ms
+ ✓ packages/testkit/test/t6-8-serialization-roundtrip.test.ts (9 tests) 40ms
+ ✓ packages/testkit/test/t6-3-lifecycle-matrix.test.ts (8 tests) 9ms
+ ✓ packages/testkit/test/t6-10-composition-pipeline.test.ts (5 tests) 18ms
+ ✓ packages/testkit/test/t6-6-snapshot-immutability.test.ts (8 tests) 62ms
+ ✓ packages/testkit/test/t6-4-policy-precedence.test.ts (11 tests) 79ms
+ ✓ packages/testkit/test/t6-1-no-agent-dependency.test.ts (6 tests) 20ms
+ ✓ packages/testkit/test/t6-9-negative-matrix.test.ts (12 tests) 79ms
+ ✓ packages/testkit/test/t6-2-template-n-instances.test.ts (8 tests) 77ms
+ ✓ packages/testkit/test/a3p1-team-domain-tenth-store.test.ts (10 tests) 38ms
+ ✓ packages/testkit/test/p4t5-corrupt-version.test.ts (10 tests) 4ms
+ ✓ packages/testkit/test/p4t5-retry-restart.test.ts (11 tests) 4ms
+ ✓ packages/testkit/test/p4t5-crash-matrix.test.ts (13 tests) 7ms
+ ✓ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (60 tests) 1284ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  447ms
+ ✓ packages/testkit/test/rc2-sanitize-evidence.test.ts (13 tests) 2813ms
+     ✓ S13 file aliases, quoted values, and capture formats pass the standalone regressions  2053ms
+ ✓ packages/testkit/test/rc2-kit-fault-injection.test.ts (8 tests) 4437ms
+     ✓ F0 the healthy path completes, stops its child, touches nothing else  456ms
+     ✓ F1 the total-request ceiling trips on distinct states and aborts via the owner  463ms
+     ✓ F2 a repeated state trips even with other sessions interleaved  482ms
+     ✓ F3 consecutive wait timeouts trip and unwind through the owner  449ms
+     ✓ F4 an unrecognized wire shape fails loudly and still runs cleanup  438ms
+     ✓ F5 the independent lifetime watchdog fires with no progress at all  853ms
+     ✓ F6 the abort reason is written where the next reader will look  441ms
+     ✓ F7 the actual runner callback and owned-process cleanup regressions pass  849ms
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — HEAD 11c08013, 8 tracked file(s) changed vs HEAD, 2 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 400 file(s))
+ ✓ packages/testkit/test/a4p75-composition-smoke-classification.test.ts (54 tests) 4487ms
+     ✓ requires by id every arm this repository actually reports  2497ms
+     ✓ never reports a passing gate over a step it did not run  679ms
+lint-visibility: eslint read 1124 of 2477 OFFERED tracked lintable file(s); 1353 are hidden by an ignore pattern (dev/ 482, packages/client/composition-shim/ 2, packages/runtime/dist/ 753, tests/ 116); 1124 + 1353 = 2477 offered, + 0 skipped = 2477 tracked lintable path(s); nothing skipped
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (35 tests) 93498ms
+       ✓ is green, asserted by arm name and by absence of a skip — never by the exit code  1486ms
+       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees  360ms
+       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  481ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  1216ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  1156ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  450ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  10974ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  11174ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  10021ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  35162ms
+       ✓ every workspace package that declares a typecheck script typechecks  10667ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  9099ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  515ms
+
+ Test Files  29 passed (29)
+      Tests  378 passed (378)
+   Start at  14:31:42
+   Duration  94.47s (transform 19.32s, setup 0ms, import 24.85s, tests 108.30s, environment 3ms)
+
+
+real	1m34.872s
+user	4m7.943s
+sys	0m35.510s
+testkit exit=0

@@ -1,0 +1,6 @@
+# fixture: a lane that died before it summarised: progress lines only, no `Test Files`/`Tests` line
+# assembled by make-fixtures.mjs from fixtures/hosted-census-capture-1.raw.txt (hosted bytes verbatim;
+# provenance of every line is in FINDINGS.md). ANSI escape bytes are the hosted token sequence.
+[1m[46m RUN [39m[24m v4.1.11 /home/runner/work/dsh-agent-team/dsh-agent-team/packages/client
+ [32m✓[39m test/team-ledger-model.client.spec.ts [2m([22m[2m27 tests[22m[2m)[22m[33m 122[2mms[22m[39m
+[2m[22m[31m[1mELIFECYCLE[22m[39m Command failed with exit code 137.

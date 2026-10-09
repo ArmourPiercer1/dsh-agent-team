@@ -1,0 +1,10 @@
+# fixture: coloured client lane, exactly the three disclosed baseline failures
+# assembled by make-fixtures.mjs from fixtures/hosted-census-capture-1.raw.txt (hosted bytes verbatim;
+# provenance of every line is in FINDINGS.md). ANSI escape bytes are the hosted token sequence.
+[1m[46m RUN [39m[24m v4.1.11 /home/runner/work/dsh-agent-team/dsh-agent-team/packages/client
+[41m[1m FAIL [22m[49m test/team-creation-panel.client.spec.tsx[2m > [22mTeamCreationPanel[2m > [22mselecting a blueprint loads the detail block and fires the persona-fact probe (S5-A, UI §6/§7)
+[41m[1m FAIL [22m[49m test/team-creation-panel.client.spec.tsx[2m > [22mTeamCreationPanel[2m > [22mswitching the runtime preset re-runs the probe with the new persona fact (UI §7.3)
+    [41m[1m FAIL [22m[49m test/team-governance.client.spec.tsx[2m > [22mTeamGovernance[2m > [22man override reset targets the member instance (scope instance) and pulls once on success
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m53 passed[39m[22m[90m (55)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m877 passed[39m[22m[90m (880)[39m
+[2m   Start at  00:00:00[22m

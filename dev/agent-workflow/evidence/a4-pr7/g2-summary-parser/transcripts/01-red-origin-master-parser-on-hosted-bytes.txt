@@ -1,0 +1,169 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/g2-summary-parser
+
+ ❯ packages/testkit/test/g2-red-witness.test.ts (36 tests | 6 failed | 29 skipped) 13ms
+     ↓ runs where its instruments can see the tree, and refuses to run anywhere else
+       ↓ is green, asserted by arm name and by absence of a skip — never by the exit code
+       ↓ treats a step that did not run as a failure that says why, even at exit 0
+       ↓ asks where a missing artifact came from before calling it a regression, on synthetic trees
+       ↓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact
+       ↓ reads a never-built checkout as refused, by name, and still refuses to call it green
+       ↓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface
+       ↓ refuses the leg, by name, when the host module closure cannot be traversed
+       ↓ reports every verdict class with its set by path when run at the toplevel
+       ↓ refuses a directory that is not a repository, and is never believed as clean
+       ↓ will not accept a run from below the toplevel as a whole-tree clean (measured false-clean)
+       ↓ classifies a lint run by its verdict line and its universe line, on captured output
+       ↓ lint closes as an identity diff against the named baseline, not against a count
+       ↓ names the three states of a captured stderr, including the arm this gate cannot reach
+       ↓ no tracked file is invisible to lint except under a prefix this leg names
+       ↓ the committed install surface is fresh against the tree, and a missing surface is refused
+       ↓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask
+       ↓ a check:artifacts run from a subdirectory is refused, never an OK over nothing
+       ↓ the scratch the commit-level instrument builds cannot change another instrument's measurement
+       ↓ a crashed run's scratch is swept, and a live one is not
+       ↓ every workspace package that declares a typecheck script typechecks
+       ↓ no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here
+       ↓ the client lane runs, and no failure appears outside the disclosed baseline
+       ↓ tolerates a green trio and refuses a vanished one — the two are different answers
+       ↓ a missing instrument is a refusal that names it, never a pass
+       ↓ an instrument that is killed before reporting is a refusal that says so
+       ↓ a child killed by a signal is refused even when it printed a complete report
+       ↓ every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core
+       ↓ this spec itself is counted by the p4t6 scannable-file ledger
+     × witness: the coloured trio transcript reads as the disclosed trio 7ms
+     × witness: the hosted census capture is never reported as having no summary 2ms
+     × witness: a synthesised fourth failure is refused by name 1ms
+     ✓ witness: a capture with no summary is refused as no-summary (this one the base already gets right) 0ms
+     × witness: a summary that exists but cannot be parsed names its shape 1ms
+     × witness: a JSON report grades even when the text stream is unusable 1ms
+     × witness: a green text summary with a nonzero exit is refused, not passed 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/g2-red-witness.test.ts > G2 red witness — the origin/master parser against hosted-derived fixtures > witness: the coloured trio transcript reads as the disclosed trio
+AssertionError: expected verdict passed: expected 'BASE-PARSER ANSWER: refused — the cli…' to be 'passed' // Object.is equality
+
+- Expected
++ Received
+
+- passed
++ BASE-PARSER ANSWER: refused — the client lane produced no vitest summary at all; tail: # fixture: coloured client lane, exactly the three disclosed baseline failures
++     # assembled by make-fixtures.mjs from fixtures/hosted-census-capture-1.raw.txt (hosted bytes verbatim;
++     # provenance of every line is in FINDINGS.md). ANSI escape bytes are the hosted token sequence.
++     [1m[46m RUN [39m[24m v4.1.11 /home/runner/work/ds
+
+ ❯ packages/testkit/test/g2-red-witness.test.ts:1921:49
+    1919|   it('witness: the coloured trio transcript reads as the disclosed tri…
+    1920|     const r = classifyClientLaneReport({ out: g2('client-lane-coloured…
+    1921|     expect(quote(r), 'expected verdict passed').toBe('passed')
+       |                                                 ^
+    1922|   })
+    1923|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/testkit/test/g2-red-witness.test.ts > G2 red witness — the origin/master parser against hosted-derived fixtures > witness: the hosted census capture is never reported as having no summary
+AssertionError: expected 'BASE-PARSER ANSWER: refused — the cli…' not to contain 'no vitest summary at all'
+
+- Expected
++ Received
+
+- no vitest summary at all
++ BASE-PARSER ANSWER: refused — the client lane produced no vitest summary at all; tail: [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯[22m[39m
++     [41m[1m FAIL [22m[49m packages/runtime/test/p6t3-restart.test.ts[2m > [22mP6-T3 restart durability + pending-delivery recovery[2m > [22m5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
++     [31m[1mE
+
+ ❯ packages/testkit/test/g2-red-witness.test.ts:1926:26
+    1924|   it('witness: the hosted census capture is never reported as having n…
+    1925|     const r = classifyClientLaneReport({ out: g2('hosted-census-captur…
+    1926|     expect(quote(r)).not.toContain('no vitest summary at all')
+       |                          ^
+    1927|     expect(quote(r), 'expected verdict failed (root-lane identities ar…
+    1928|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/testkit/test/g2-red-witness.test.ts > G2 red witness — the origin/master parser against hosted-derived fixtures > witness: a synthesised fourth failure is refused by name
+AssertionError: expected verdict failed: expected 'BASE-PARSER ANSWER: refused — the cli…' to be 'failed' // Object.is equality
+
+- Expected
++ Received
+
+- failed
++ BASE-PARSER ANSWER: refused — the client lane produced no vitest summary at all; tail: # fixture: the same coloured transcript plus a SYNTHESISED fourth failure; counts updated to match
++     # assembled by make-fixtures.mjs from fixtures/hosted-census-capture-1.raw.txt (hosted bytes verbatim;
++     # provenance of every line is in FINDINGS.md). ANSI escape bytes are the hosted token sequence.
++     [1m[46m RUN [39m[24m v4.1.11 
+
+ ❯ packages/testkit/test/g2-red-witness.test.ts:1933:42
+    1931|     const r = classifyClientLaneReport({ out: g2('client-lane-coloured…
+    1932|     const q = quote(r)
+    1933|     expect(q, 'expected verdict failed').toBe('failed')
+       |                                          ^
+    1934|     expect(q).toContain('test/whatever-broke-next.client.spec.tsx')
+    1935|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/testkit/test/g2-red-witness.test.ts > G2 red witness — the origin/master parser against hosted-derived fixtures > witness: a summary that exists but cannot be parsed names its shape
+AssertionError: expected 'BASE-PARSER ANSWER: refused — the cli…' not to contain 'no vitest summary at all'
+
+- Expected
++ Received
+
+- no vitest summary at all
++ BASE-PARSER ANSWER: refused — the client lane produced no vitest summary at all; tail: # fixture: a summary-shaped pair of lines whose counts cannot be parsed (truncated/hostile shape)
++     # assembled by make-fixtures.mjs from fixtures/hosted-census-capture-1.raw.txt (hosted bytes verbatim;
++     # provenance of every line is in FINDINGS.md). ANSI escape bytes are the hosted token sequence.
++     [2m Test Files [22m unknown  t
+
+ ❯ packages/testkit/test/g2-red-witness.test.ts:1945:19
+    1943|     const r = classifyClientLaneReport({ out: g2('client-lane-summary-…
+    1944|     const q = quote(r)
+    1945|     expect(q).not.toContain('no vitest summary at all')
+       |                   ^
+    1946|     expect(q).toContain('??? ??? ???')
+    1947|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/testkit/test/g2-red-witness.test.ts > G2 red witness — the origin/master parser against hosted-derived fixtures > witness: a JSON report grades even when the text stream is unusable
+AssertionError: expected verdict passed: expected 'BASE-PARSER ANSWER: refused — the cli…' to be 'passed' // Object.is equality
+
+Expected: "passed"
+Received: "BASE-PARSER ANSWER: refused — the client lane produced no vitest summary at all; tail: (the text stream died mid-spinner)"
+
+ ❯ packages/testkit/test/g2-red-witness.test.ts:1952:49
+    1950|     const greenJson = JSON.stringify({ numFailedTests: 0, numPassedTes…
+    1951|     const r = classifyClientLaneReport({ out: '(the text stream died m…
+    1952|     expect(quote(r), 'expected verdict passed').toBe('passed')
+       |                                                 ^
+    1953|   })
+    1954|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/testkit/test/g2-red-witness.test.ts > G2 red witness — the origin/master parser against hosted-derived fixtures > witness: a green text summary with a nonzero exit is refused, not passed
+AssertionError: expected verdict refused: expected 'BASE-PARSER ANSWER: passed —  Test Fi…' to be 'refused' // Object.is equality
+
+Expected: "refused"
+Received: "BASE-PARSER ANSWER: passed —  Test Files  55 passed (55) /       Tests  880 passed (880) — every reported failure is disclosed, the trio's 2 spec files are present, and 0 of the baseline trio matched by name; the trio is GREEN, which §7.6 allows because the files are there to be re-run (the s3 spike is location-dependent, see a4-client-baseline/README.md)"
+
+ ❯ packages/testkit/test/g2-red-witness.test.ts:1957:50
+    1955|   it('witness: a green text summary with a nonzero exit is refused, no…
+    1956|     const r = classifyClientLaneReport({ out: ' Test Files  55 passed …
+    1957|     expect(quote(r), 'expected verdict refused').toBe('refused')
+       |                                                  ^
+    1958|   })
+    1959| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 1 passed | 29 skipped (36)
+   Start at  14:14:45
+   Duration  246ms (transform 98ms, setup 0ms, import 125ms, tests 13ms, environment 0ms)
+
