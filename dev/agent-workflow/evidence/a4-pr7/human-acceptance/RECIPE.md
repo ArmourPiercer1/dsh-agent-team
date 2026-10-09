@@ -161,3 +161,14 @@ rm -rf tests/homes/a4-w5-corrupt-acceptance
 - 损坏记录只有**一种形状**（不可归属）。自带归属线索的那一行（`disclosesMember: true`）仍只有
   `packages/runtime/test/a4w1-corrupt-warning.test.ts` 的自动验收覆盖，本配方没造。
 - 更多细节、限制与未验证清单都在 [`FINDINGS.md`](FINDINGS.md)。
+
+## 重启后端后恢复会话（必读，否则会被「会话不可用」卡住）
+
+后端重启后进入既有 Team 会话时 composer 会显示 **「会话不可用」**（输入框与工具条均禁用，实测）。恢复流程：
+
+1. 打开 **团队** 标签；
+2. 在 **成员组** 的 Leader 行点 **「以 Team 模式打开 / 回到 Leader」**；
+3. 等按钮右侧出现 **「Team 模式」** 字样；
+4. **刷新页面**（这一步承重，缺它输入框一直是禁用）。
+
+刷新后输入框才可用。机制与归档 gate 的冲突记录见 `RUN-20261010-check2-and-reopen.md` 第 2 节。
