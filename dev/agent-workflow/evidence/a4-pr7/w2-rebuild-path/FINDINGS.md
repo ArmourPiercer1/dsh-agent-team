@@ -241,3 +241,21 @@ numbers (process, not regression).
 9. The a3p3-hygiene red in §7.5 is claimed load-flaky ONLY on the strength of 3 solo greens + the
    runner-internal error shape — if the resampled gate still fails it, this lane re-reads it as
    real, not flaky.
+
+## 9. CI results (PR #228, head 9bd419f6, 2026-10-09)
+
+- `pr-gate` workflow: **pass** (1m42s, run 37915508970) — the PR-loop gate named by the W2 brief.
+- `census-runtime` workflow: **fail** (11m44s, run 37915508956) — `NEW RED(S) 1:
+  a4p75-composition-smoke-classification :: composition-smoke verdict against this repository never
+  reports a passing gate over a step it did not run`, under the workflow's own `--testTimeout=90000`
+  override, from the union of 2 captures whose identity sets DIFFER (the red appeared in ONE capture).
+- CAUSALITY, measured: **`origin/master@92e14fc2` (round 50 — the commit this branch was rebased
+  onto, a docs-only move over round-49) fails census-runtime with the IDENTICAL single NEW RED**
+  (run 37911727240, `NEW RED(S) 1: TEST packages/testkit/test/a4p75-composition-smoke-classification…`).
+  Round 49's master (7899482275) passed; round 48's (7897691322) failed. Locally the file runs
+  54/54 green on this branch. The red is therefore a property of the BASE and of that instrument's
+  CI-state sensitivity — the very "reading build state it does not own" disease round 49 recorded —
+  not of this lane. This lane's own identities: zero reds in either capture; captured 509f/6412l
+  (= base + this lane's 1 file + 15 legs) with exactly the 9 tolerated reds otherwise.
+- Not silently worked around: no rebase to round-49 to dodge it, no re-run roulette — reported to
+  the router as BASE-side census debt for the integration decision.
