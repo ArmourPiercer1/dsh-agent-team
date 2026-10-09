@@ -32,6 +32,20 @@
  *        [--source-world <dir>]    default: tests/homes/a4-accept-20261007T16-57-26Z
  *        [--world <dir>]           default: tests/homes/a4-w5-corrupt-acceptance
  *        [--root <rootSessionId>]  default: the world's single team_sessions row
+ *        [--request-id <id>]       default: req-a4w5-human-acceptance-damage — the
+ *                                  idempotence sentinel. A world holding MORE THAN
+ *                                  ONE damaged Team needs one id per Team, because
+ *                                  a world's ledger table is shared across its
+ *                                  Teams and idempotence is keyed by this id.
+ *
+ * A Team created in the GUI after the copy is a SECOND team_sessions row, so the
+ * default (which insists on exactly one) refuses and names `--root`. That is the
+ * intended way to corrupt the Team a person is actually looking at: read the id
+ * off `team_sessions` (or the GUI's session banner) and pass it. It is NOT
+ * possible to make the copied world's pre-built Team appear in this workspace by
+ * moving its session directory — the session log records its own cwd and the
+ * host declares a mismatched log corrupt (measured 2026-10-09: the whole
+ * `@deepseek-ai/dsh-workspace` service then fails to activate).
  *
  * `--copy-only` stops after the copy, so the BEFORE reading of the SAME world
  * can be taken (`verify-corrupt-world.mjs --expect-count 0`) before anything is
@@ -133,7 +147,8 @@ if (!destExists) {
   say(`world already present (copy skipped): ${DEST}`)
 }
 
-const row = damagedControlRow()
+const REQUEST_ID = String(opts.get('request-id') ?? DAMAGE_REQUEST_ID)
+const row = damagedControlRow(undefined, REQUEST_ID)
 
 /** Record what this tool did to the world (ownership + cross-checkable facts). */
 function writeMarker(fields) {
@@ -142,7 +157,7 @@ function writeMarker(fields) {
     at: new Date().toISOString(),
     sourceWorld: SOURCE,
     world: DEST,
-    damagedRequestId: DAMAGE_REQUEST_ID,
+    damagedRequestId: REQUEST_ID,
     ledgerFile: LEDGER_FILE,
     ...fields,
   }, null, 2)}\n`, 'the world marker')
@@ -191,7 +206,7 @@ try {
   }
 
   const entries = repositories.ledger.list()
-  const existing = findDamagedRowSequence(entries)
+  const existing = findDamagedRowSequence(entries, REQUEST_ID)
 
   if (existing !== undefined) {
     say(`already injected : the damaged row is durable at sequence ${existing} — NOTHING WRITTEN (idempotent).`)
