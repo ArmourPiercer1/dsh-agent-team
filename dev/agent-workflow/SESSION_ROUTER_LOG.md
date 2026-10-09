@@ -6069,3 +6069,19 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
 **一条值得知道的已测边界**：新 spec 是 `.client.spec.tsx`，而扫描器只数 `.ts/.mts/.mjs`，所以 p4t6 **正确地**未被触及——直调测量 `filesScanned` 仍是 **1047**。这不是可利用的空子，是仪器真实的边缘。
 
 **这次暴露的缺口与正在做的补救**：**至今没有任何一份被真实损坏过的耐久账本存在**，W1 与 W4 都把这条写进未验证清单，而 `writeRawControlFact` 只服务于测试自建世界、**人在 GUI 前无法复用**。所以派出 W5 把它变成**可测量配方**：复制验收世界、在应用停止状态下按存储层真实格式追加**恰好一条**不可归属的被拒行、从**生产读面**证明 `team.listCorruptControlLegs` 报出 count 1 与该 sequence 且 `disclosesMember` 为 false，最后交人一份止于 Team 页面的 `RECIPE.md`。**W5 回报之前，"GUI 里看到损坏警告"这一步没有已验证的准备方式——这一点如实写出，不当它已存在。**
+
+## 2026-10-09 round 54 (coordinator): W5 合并——**"从未存在过真实损坏记录"这个缺口用可测量配方补上了**，并交付人工验收附加包（含它自己的两条限制）
+
+**W5 已合并**（PR 235，squash `217c8ab6`，纯 evidence，产品代码/产品测试/`boot.mjs` 零改动）。在此之前**没有任何一份被真实损坏过的耐久账本存在**。现在 `dev/agent-workflow/evidence/a4-pr7/human-acceptance/` 下有：复制-注入器（把验收世界复制到 `tests/homes/a4-w5-corrupt-acceptance`，**应用停止时**经**生产写路径**追加恰好一条严格读者拒收的不可归属行，幂等、只写 `tests/homes/**`、宿主在监听就拒绝）；验证器（**两条读路**同时断言：`ControlService.listControlState()` 与 s6 dispatcher 契约 v9，不符即 `exit 2`）；第三条腿在**真实 HTTP** 上对活宿主复现同一读数。
+
+**实测**：注入前 0 → 注入后 `corruptCount 1 / sequence 15`（两条读路 + 活宿主一致）；负控制会咬（`--expect-count 2` → `MISMATCH … exit 2`）；宿主照常回答 `getProjection` 与 `getLedgerPage total=15`——**这才是要紧的区分：拒收一行 ≠ 整本账本读失败**。安全面成立：源验收世界 `team_domain.json` sha256 前后同值（`969588a7…`）、从未连过 `:3080`、测试端口已释放、token 已脱敏并披露脱敏这件事本身。
+
+**量出来的陷阱，不是猜的**：同样损伤只把 `toolName` 从"类型错误"改成**空串**，`disclosesMember` 就变成 **true**。"**存在但为空**"算已披露——所以不可归属的行必须**违反类型**，不能只是留空。这条和本轮收集到的其他披露语义意外放在一起。
+
+**给人的操作事实**：`boot.mjs --stop` 跨沙箱进程调用不可靠（marker 里的 pid 是命名空间局部；实测把自己 shell 打成 143 而宿主仍在监听）——**要停就停 supervisor 本身**。`boot.mjs` **没有被改**来让配方顺手，改为把坑写进文档。
+
+**交付的验收包**：`dev/agent-workflow/evidence/alpha4-final/ALPHA4-ACCEPTANCE-ADDENDUM.md`——准备命令、外部复审点名的 5 项附加 GUI 检查（含**逐字预期文案**）、内部 Alpha 必须随附的 9 条披露、以及一张**协调者无权签署**的签署表。**承诺不存在的文案本身就是一种缺陷**，所以写下来之前先在源码里核过：不可归属措辞在 [locales.ts:344](packages/client/src/ui/locales.ts#L344)，行内确实渲染 request 回显。
+
+**包里自declared的两条限制（都是真的）**：(1) 中性"检查暂不可用"提示**没有已验证的 GUI 触发方法**——代码路径有渲染层测试，建议的"停 supervisor 后点刷新"**未实测**，包里明确标注；(2) 只造了**不可归属**这一种形状，`disclosesMember: true` 与超过 20 条的 `truncated` 状态**仍无视觉核对**。两条都已进 backlog。
+
+**Alpha.4 状态**：审查要求的工作全部落地（W1-W5）。剩下的是人类所有——既有九步 + 本包五项，然后才是阶段关闭决定。**PR 合并 ≠ 实现完成 ≠ 人工验收 ≠ 阶段关闭。**
