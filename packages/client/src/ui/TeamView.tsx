@@ -1428,8 +1428,10 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
         // action, no dismiss — it persists while the ledger fact exists and
         // survives Member destroy/rebuild because the read is ledger-derived,
         // never member-derived). The count/sequences are the server's own
-        // facts; `disclosesMember` decides whether a row may claim a Member
-        // attribution (false → Team-level wording, never an invented name).
+        // facts; `disclosesMember` marks a row that carries its OWN
+        // attribution clue — an identity OR an operation member — which is
+        // never a claim that a named Member caused the corruption; a false
+        // row gets Team-level wording, never an invented name.
         <div className={styles.corruptionBar} data-team-control-corruption role="alert">
           <span data-team-control-corruption-summary>
             {t('view.corruption.summary')}

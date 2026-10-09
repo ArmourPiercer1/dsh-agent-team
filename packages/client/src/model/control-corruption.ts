@@ -31,9 +31,17 @@ export interface CorruptControlLegRow {
   /** The durable Ledger sequence of the corrupt record (service order). */
   readonly sequence: number
   /**
-   * The service's own disclosure flag (`disclosesMember`): `true` only
-   * when the corrupt record itself discloses a Member attribution;
-   * `false` = unattributable — Team-level wording only, never a name.
+   * The service's own disclosure flag (`disclosesMember`). MEASURED truth
+   * (the disclosure predicate in `runtime/control/service.ts`: the four
+   * scalar operation members at :1210-1215, a parseable `subject` alone at
+   * :1218, a non-empty legacy `targetInstanceId` alone at :1221): `true`
+   * means the row disclosed COMPARABLE ATTRIBUTION INFORMATION — an
+   * identity (`subject` / legacy `targetInstanceId`) OR an operation
+   * member (one of the four scalars). A row naming ONLY an operation (say
+   * `actionName`, no identity at all) is `true` too, so this flag is
+   * explicitly NOT a conclusion that "that member caused the corruption";
+   * the warning wording must not claim one. `false` = unattributable —
+   * Team-level wording only, never a name.
    */
   readonly disclosesMember: boolean
   /** The recorded identity echo when the row carries one (`requestId`). */
