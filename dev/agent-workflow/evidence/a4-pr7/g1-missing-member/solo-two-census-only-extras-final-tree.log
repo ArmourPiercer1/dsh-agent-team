@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/g1-missing-member
+
+ ✓ packages/testkit/test/rc2-sanitize-evidence.test.ts (13 tests) 2406ms
+     ✓ S13 file aliases, quoted values, and capture formats pass the standalone regressions  1858ms
+ ✓ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (21 tests) 1553ms
+     ✓ the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name  1430ms
+
+ Test Files  2 passed (2)
+      Tests  34 passed (34)
+   Start at  14:35:43
+   Duration  2.67s (transform 810ms, setup 0ms, import 1.04s, tests 3.96s, environment 0ms)
+

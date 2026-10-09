@@ -166,6 +166,76 @@
  * @module @dsh-agent-team/runtime/control/service
  */
 import type { ControlService, ControlServiceOptions } from './types.js';
+/** The stable logical-request key (the request idempotency identity AND
+ *  the scope's durable identity; NUL-separated per the provisioning
+ *  identity convention). The second element is the KIND-PREFIXED SUBJECT
+ *  IDENTITY (pre-alpha3 PR-D, D.2 + review B1: `subjectIdentityOf` —
+ *  `instance:<instanceId>` / `template:<templateId>` /
+ *  `team:<rootSessionId>`). The kind prefix makes the three subject kinds
+ *  DISJOINT in the key — an instance id, a template id and a root session
+ *  id that happen to be equal strings can no longer alias across kinds
+ *  (a valid template slug and a valid instance id can both be `inst-abc`).
+ *  For a LEGACY instance row the subject is derived from `targetInstanceId`
+ *  (kind `instance`), so the second element is `instance:<targetInstanceId>`;
+ *  BOTH the new request and the existing-row lookup recompute through the
+ *  SAME `subjectIdentityOf`, so old durable rows stay idempotent —
+ *  behavioral backward compatibility is preserved even though the literal
+ *  key now carries the kind prefix (no longer byte-identical to the
+ *  pre-PR-D string). The optional
+ *  operation fingerprint, WHEN PRESENT, participates in the key (alpha.2
+ *  exact-scope extension): two requests identical except for the
+ *  fingerprint are DIFFERENT logical requests (different keys, different
+ *  requestIds, no idempotency collision — a payload/resource mismatch
+ *  must never reuse another operation's request or approval). When
+ *  ABSENT the key carries an empty fingerprint segment, which is
+ *  distinct from any present fingerprint; legacy rows (fingerprint
+ *  absent) recompute the SAME key they always had for their own
+ *  retries, so old durable rows stay idempotent under the extended key. */
+/**
+ * WHAT THE STRICT READER REQUIRES OF ONE MEMBER, answered by the reader itself.
+ *
+ * `corruptLegCouldGovern` may not flatten every absent member into one cell. An
+ * OPTIONAL member the row leaves out states something (a legacy row carries no
+ * `operationFingerprint`, its durable scope key carries an empty fingerprint
+ * segment, and a call that carries a fingerprint is outside that key). A REQUIRED
+ * member the row leaves out states nothing — `parseRequestPayload` refuses such a
+ * row, which is exactly why the row is in `corruptLegs` — and absence is not
+ * evidence that the leg governs a DIFFERENT call. Which of the two a member is is
+ * a fact about the reader, not about this call, and a list of keys maintained
+ * here would be one parser edit away from being wrong (that is the same
+ * narrower-than-reality mistake this function exists to close, relocated into a
+ * comment). So the requirement is PROBED from the only place that defines it: take
+ * a row the reader ACCEPTS and ask what the reader does when one member is taken
+ * away, and again when it is left empty.
+ *
+ *   - `required`     — the reader refuses the row once the member is absent;
+ *   - `rejectsEmpty` — the reader refuses the row once the member is present but
+ *     an empty string.
+ *
+ * The answers are a pure function of this file's parser, derived per key on first
+ * use and cached; nothing here is written to a ledger or read from one. The
+ * probe's canonical row is load-bearing: if it ever stops parsing, both answers
+ * degrade to `false` for every key — i.e. precisely the pre-G1 semantics, the
+ * looser rule — and that cannot pass silently, because `W13-premise` and the
+ * refusals asserted by `W13-a`/`W13-b`/`W13-f` in
+ * `packages/tools/test/a4-corrupt-leg-guard.test.ts` fail the moment the
+ * requirement stops being derived.
+ */
+export type RequestMemberRequirement = {
+    readonly required: boolean;
+    readonly rejectsEmpty: boolean;
+};
+/**
+ * THE PROBE'S ANSWERS, readable by the law that depends on them.
+ * `corruptLegCouldGovern` never consults this snapshot — it asks
+ * `requestMemberRequirement` per member — so it exists for exactly one purpose:
+ * an instrument nobody can read is an instrument that can go quietly blind.
+ * `W13-k` reads it and pins, key by key, which members the reader REQUIRES,
+ * which it refuses EMPTY, which it tolerates absent, and (because a probe whose
+ * canonical row no longer parses answers `required: true` for all of them) that
+ * `probeRequestRow()` is still a row the reader accepts at all.
+ */
+export declare function requestMemberRequirements(keys: readonly string[]): Readonly<Record<string, RequestMemberRequirement>>;
 /**
  * Create the durable control plane service over one open TeamDomain.
  *

@@ -1,0 +1,102 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/g1-missing-member
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts (33 tests | 2 failed) 17ms
+     ✓ W1: a leg whose authority point is present-but-malformed is refused by name, never as no-request 3ms
+     ✓ W2: a durable DENY survives the corruption of the leg it refuses (zero side effects) 0ms
+     ✓ W3: an allow over an unreadable point cannot be spent and is not burned 0ms
+     ✓ W4: a leg broken in some OTHER member, with NO authority point to read, is refused by the same name 0ms
+     ✓ W4b: a leg broken elsewhere whose authority point IS readable is refused as undetermined 0ms
+     ✓ W5: the PRODUCER never answers no-request for a leg it could not read, and still does for an empty ledger 1ms
+     ✓ W6: a genuinely un-requested call in a clean Team proceeds, exactly as before 0ms
+     ✓ W7: a corrupt leg at a DIFFERENT scope does not freeze the Team 0ms
+     ✓ W8-a (RULING 5-A behaviour change): a refused row that names no case but NAMES this call is filed, and is refused by name — never as no-request 1ms
+     ✓ W8-b (DISCLOSED BOUNDARY, execution effect pending RULING 5-B): a refused row that names no case and discloses NO comparable member keeps today's no-request — and is named on the read plane 0ms
+     ✓ W9: the reporting routes still name the corrupt leg, and neither one gates execution 0ms
+     ✓ W10: the TOOL-plane claim, named — a corrupt leg plus a durable DENY never reaches the facade 0ms
+     ✓ W11-premise: the row is refused by the reader, filed as a corrupt leg, and its DENY survives 0ms
+     ✓ W11-a: a call on the instance named by `subject` is refused by name, not ruled out 0ms
+     ✓ W11-b: a call on the instance named by the legacy `targetInstanceId` is refused TOO (the counterexample) 0ms
+     ✓ W11-c: a call on an instance NEITHER field names proceeds (the anti-freeze half) 0ms
+     ✓ W12-premise: every row below is durable, refused by the strict reader, and read as no request at all 0ms
+     ✓ W12-a (RULING 5-A, the counterexample): a refused row that names no case but NAMES this call blocks the call its own row governs 0ms
+     ✓ W12-b: the same refused row at a call it does NOT name still proceeds (the anti-freeze half) 0ms
+     ✓ W12-c (DISCLOSED BOUNDARY, execution effect pending RULING 5-B): a refused row that discloses NO comparable member is counted and named on the read plane, and does not block 0ms
+     ✓ W12-d: the read plane counts the WHOLE refused set, case-naming and case-less alike, and the count gates nothing 0ms
+     ✓ W13-premise: each row is durable, refused by the strict reader, and filed as a leg that discloses something 0ms
+     × W13-a (the counterexample): a refused row that states NO `correlation` blocks the call its own leg governs 6ms
+     × W13-b: the same shape through the other required member — a row that states NO `actionName` blocks too 1ms
+     ✓ W13-c: the same row carrying a DIFFERENT `correlation` is still ruled out and the call proceeds (the anti-freeze half) 0ms
+     ✓ W13-d: a call at an instance the row positively does NOT name still proceeds 0ms
+     ✓ W13-e: a damaged row that names a DIFFERENT action proceeds for the call it is not about 0ms
+     ✓ W13-f: an EMPTY required member is the same absence, and rules the row out no more than a missing one 0ms
+     ✓ W13-g (DISCLOSED, the read-plane half): a row whose only stated members are damage is UNATTRIBUTABLE — named as such, and it does not block 0ms
+     ✓ W13-j: `toolName` is OPTIONAL to the reader, so a refused row that omits it is the optional-absent cell — and it is the third witness that the probe is not blind 0ms
+     ✓ W13-k: the requirement probe's own table is pinned, key by key — an instrument nobody can read can go quietly blind 0ms
+     ✓ W13-i: an OPTIONAL member stated EMPTY is still a stated value — it rules the row out like any other difference 0ms
+     ✓ W13-h: an OPTIONAL member legitimately absent keeps today's semantics — a fingerprint-less legacy row does not govern a fingerprinted call 0ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 31 passed (33)
+   Start at  14:37:17
+   Duration  2.60s (transform 1.66s, setup 0ms, import 2.48s, tests 17ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > W13 a required member the refused row does not state is damage, not a different call (G1) > W13-a (the counterexample): a refused row that states NO `correlation` blocks the call its own leg governs
+AssertionError: the tool said: none: expected { verdict: 'no-request', …(4) } to deeply equal { …(5) }
+
+- Expected
++ Received
+
+  {
+    "allowConsumptions": 0,
+-   "facadeReached": 0,
+-   "namesRow": "req-a4cl-w13",
+-   "toolStatus": "blocked",
+-   "verdict": "authority-undetermined",
++   "facadeReached": 1,
++   "namesRow": "none",
++   "toolStatus": "executed",
++   "verdict": "no-request",
+  }
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:1819:7
+    1817|       w12Observed(w13MissingCorrelation),
+    1818|       `the tool said: ${w13MissingCorrelation.toolReason}`,
+    1819|     ).toEqual({
+       |       ^
+    1820|       verdict: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+    1821|       namesRow: 'req-a4cl-w13',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/tools/test/a4-corrupt-leg-guard.test.ts > W13 a required member the refused row does not state is damage, not a different call (G1) > W13-b: the same shape through the other required member — a row that states NO `actionName` blocks too
+AssertionError: the tool said: none: expected { verdict: 'no-request', …(4) } to deeply equal { …(5) }
+
+- Expected
++ Received
+
+  {
+    "allowConsumptions": 0,
+-   "facadeReached": 0,
+-   "namesRow": "req-a4cl-w13",
+-   "toolStatus": "blocked",
+-   "verdict": "authority-undetermined",
++   "facadeReached": 1,
++   "namesRow": "none",
++   "toolStatus": "executed",
++   "verdict": "no-request",
+  }
+
+ ❯ packages/tools/test/a4-corrupt-leg-guard.test.ts:1832:7
+    1830|       w12Observed(w13MissingActionName),
+    1831|       `the tool said: ${w13MissingActionName.toolReason}`,
+    1832|     ).toEqual({
+       |       ^
+    1833|       verdict: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+    1834|       namesRow: 'req-a4cl-w13',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

@@ -753,31 +753,70 @@ function isActionCaller(caller) {
     }
     return false;
 }
-/** The stable logical-request key (the request idempotency identity AND
- *  the scope's durable identity; NUL-separated per the provisioning
- *  identity convention). The second element is the KIND-PREFIXED SUBJECT
- *  IDENTITY (pre-alpha3 PR-D, D.2 + review B1: `subjectIdentityOf` —
- *  `instance:<instanceId>` / `template:<templateId>` /
- *  `team:<rootSessionId>`). The kind prefix makes the three subject kinds
- *  DISJOINT in the key — an instance id, a template id and a root session
- *  id that happen to be equal strings can no longer alias across kinds
- *  (a valid template slug and a valid instance id can both be `inst-abc`).
- *  For a LEGACY instance row the subject is derived from `targetInstanceId`
- *  (kind `instance`), so the second element is `instance:<targetInstanceId>`;
- *  BOTH the new request and the existing-row lookup recompute through the
- *  SAME `subjectIdentityOf`, so old durable rows stay idempotent —
- *  behavioral backward compatibility is preserved even though the literal
- *  key now carries the kind prefix (no longer byte-identical to the
- *  pre-PR-D string). The optional
- *  operation fingerprint, WHEN PRESENT, participates in the key (alpha.2
- *  exact-scope extension): two requests identical except for the
- *  fingerprint are DIFFERENT logical requests (different keys, different
- *  requestIds, no idempotency collision — a payload/resource mismatch
- *  must never reuse another operation's request or approval). When
- *  ABSENT the key carries an empty fingerprint segment, which is
- *  distinct from any present fingerprint; legacy rows (fingerprint
- *  absent) recompute the SAME key they always had for their own
- *  retries, so old durable rows stay idempotent under the extended key. */
+/** A row the strict reader ACCEPTS, carrying every member the candidacy algebra
+ *  compares as a well-formed value. Input to `parseRequestPayload` and to nothing
+ *  else — it never reaches a repository. */
+function probeRequestRow() {
+    return {
+        requestId: 'ctrl-member-probe',
+        kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+        requester: { kind: 'instance', instanceId: 'inst-member-probe', role: 'member' },
+        subject: { kind: 'instance', instanceId: 'inst-member-probe' },
+        actionName: 'probe-action',
+        correlation: 'probe-correlation',
+        toolName: 'probe_tool',
+        operationFingerprint: 'probe-fingerprint',
+        executionCoupling: CONTROL_EXECUTION_COUPLINGS.GUARDED,
+    };
+}
+const memberRequirementProbe = new Map();
+/** Derive (once per key) what `parseRequestPayload` requires of one member. */
+function requestMemberRequirement(key) {
+    const probed = memberRequirementProbe.get(key);
+    if (probed !== undefined)
+        return probed;
+    const base = probeRequestRow();
+    // A BLIND INSTRUMENT FAILS CLOSED. Both probes below are meaningful only
+    // against a row the reader accepts; if this canonical row ever stops parsing
+    // (a required field is added, an enum value changes, a subject kind is
+    // renamed) every answer would degrade to `false` — every member would look
+    // OPTIONAL, every absence would answer DISAGREES again, and the guard would
+    // silently revert to the exact rule G1 removed. Absence of evidence must not
+    // become evidence of a different call, so a probe that cannot answer declares
+    // the strictest reading: every member required, every empty refused. That
+    // cannot pass unnoticed: `W13-k` in
+    // `packages/tools/test/a4-corrupt-leg-guard.test.ts` pins this table key by
+    // key, and `W13-h`/`W13-i`/`W13-j` pin the OPTIONAL cells it would erase.
+    if (parseRequestPayload(base) === undefined) {
+        const blind = { required: true, rejectsEmpty: true };
+        memberRequirementProbe.set(key, blind);
+        return blind;
+    }
+    const without = probeRequestRow();
+    delete without[key];
+    const derived = {
+        required: parseRequestPayload(without) === undefined,
+        rejectsEmpty: parseRequestPayload({ ...base, [key]: '' }) === undefined,
+    };
+    memberRequirementProbe.set(key, derived);
+    return derived;
+}
+/**
+ * THE PROBE'S ANSWERS, readable by the law that depends on them.
+ * `corruptLegCouldGovern` never consults this snapshot — it asks
+ * `requestMemberRequirement` per member — so it exists for exactly one purpose:
+ * an instrument nobody can read is an instrument that can go quietly blind.
+ * `W13-k` reads it and pins, key by key, which members the reader REQUIRES,
+ * which it refuses EMPTY, which it tolerates absent, and (because a probe whose
+ * canonical row no longer parses answers `required: true` for all of them) that
+ * `probeRequestRow()` is still a row the reader accepts at all.
+ */
+export function requestMemberRequirements(keys) {
+    const table = {};
+    for (const key of keys)
+        table[key] = requestMemberRequirement(key);
+    return table;
+}
 /**
  * THE ROW-LEVEL PRECONDITION of the candidacy test below: does this refused row
  * disclose even ONE member the candidacy algebra can compare?
@@ -805,12 +844,25 @@ function isActionCaller(caller) {
  * change is less strict than its predecessor, and it is the cell RULING 5-B
  * exists to settle. `disclosesMember: false` on the read plane is its marker.
  *
- * A present-and-EMPTY string IS a disclosure: `memberAgrees` compares it as a
- * value (a legacy row's empty fingerprint agrees with a fingerprint-less call),
- * so treating it as silence would invent a disagreement the algebra does not see.
+ * A present-and-EMPTY string is a disclosure ONLY where the reader accepts an
+ * empty value: a legacy row's empty fingerprint really does agree with a
+ * fingerprint-less call, so counting that as silence would invent a disagreement
+ * the algebra does not see. Under a member the reader REFUSES empty (`actionName`,
+ * `correlation` — see `requestMemberRequirement`) an empty string is not a value
+ * at all, it is the damage, and `memberAgrees` reads it as NOTHING; counting it
+ * as a disclosure would call a row attributable on the strength of the very value
+ * that says nothing. That is the one place this predicate is LESS strict than its
+ * predecessor, and it moves a marker on the read plane only: such a row was ruled
+ * out before by those same empties, so it proceeded then and proceeds now
+ * (`W13-g`, `packages/tools/test/a4-corrupt-leg-guard.test.ts`).
  */
 function corruptLegDisclosesMember(payload) {
-    const statesMember = (key) => typeof payload[key] === 'string';
+    const statesMember = (key) => {
+        const raw = payload[key];
+        if (typeof raw !== 'string')
+            return false;
+        return raw.length > 0 || !requestMemberRequirement(key).rejectsEmpty;
+    };
     if (statesMember('actionName') ||
         statesMember('toolName') ||
         statesMember('correlation') ||
@@ -882,6 +934,47 @@ function corruptLegDisclosesMember(payload) {
  * disclosure of it disagreeing — is what rules a leg out, and an instance no
  * disclosure names is genuinely ungoverned by it (W11-c).
  *
+ * ABSENCE HAS TWO CELLS, and only one of them is evidence. A member the row does
+ * not carry is not automatically a disagreement: whether the row was REQUIRED to
+ * carry it is a fact about the reader, not about this call.
+ * `parseRequestPayload` refuses a request row that omits `actionName` or
+ * `correlation`, and refuses it for carrying either EMPTY, so such an omission IS
+ * the damage that filed the row here — and reading it as "this leg governs some
+ * OTHER call" was the third cell again: the row was disqualified for exactly the
+ * call it claims, `no-request` answered, the tool plane proceeded, and a durable
+ * control leg vanished from the enforcement plane (`W13-a`/`W13-b`/`W13-f`, the
+ * same disease as `W11-b` one member over and `W8` one level up: a guard whose
+ * state space is narrower than reality's). An OPTIONAL member left out keeps its
+ * old reading, because there the absence is a value: a fingerprint-less legacy row
+ * has an empty fingerprint segment in its durable scope key, which is distinct
+ * from any present fingerprint, so a fingerprinted call really is outside it
+ * (`W13-h`). Whether a member is required is PROBED from the reader rather than
+ * listed here — see `requestMemberRequirement`.
+ *
+ * THE CELL THIS SPLITS, stated exactly. `expected` is what the CALL named for
+ * this member, and `expected.length === 0` means the call named nothing; the old
+ * line used the same test for "the row omits it", which is how the two got
+ * conflated. The cell where BOTH hold — a required member the row omits and the
+ * call does not name either — now answers NOTHING where it answered AGREES. At
+ * the row level that is no move at all (neither AGREES nor NOTHING ever rules a
+ * leg out; only DISAGREES does), and on the frozen route it is unreachable
+ * anyway: `guardOperation` refuses a scope whose `actionName` or `correlation` is
+ * empty (`CONTROL_GUARD_MALFORMED`) long before candidacy is computed, so a
+ * required member's expectation is always non-empty here. It is written down
+ * because the next reader must be able to tell a disclosed cell from an
+ * unexamined one — and because no test can pin what no caller can reach.
+ *
+ * WHAT MOVED, in both directions, for the record. STRICTER: a required member
+ * absent, or present and empty, answers NOTHING instead of DISAGREES, so a row
+ * damaged in one of the two required members is now a candidate that fails closed
+ * rather than an alibi (`W13-a`/`W13-b`/`W13-f`). LOOSER: nothing on the execution
+ * plane — no row that blocked before stops blocking, because a row whose only
+ * readable-looking members were such absences or empties was already answered
+ * `false` by them, which ruled it out and let the call through; on the READ PLANE
+ * `corruptLegDisclosesMember` now names that class UNATTRIBUTABLE
+ * (`disclosesMember: false`) instead of counting the damage as a disclosure
+ * (`W13-g`), and that class is the boundary RULING 5-B reserves to a human.
+ *
  * @param payload - the raw payload of one `corruptLegs` entry (never defaulted).
  * @param scope - the validated guard scope of the call.
  * @param subjectIdentity - the canonical subject identity the call resolved to.
@@ -900,12 +993,27 @@ function corruptLegCouldGovern(payload, scope, subjectIdentity) {
     if (!corruptLegDisclosesMember(payload))
         return false;
     // Every member answers AGREES / DISAGREES / NOTHING (`undefined`); the row
-    // stays a candidate unless some member positively says "not this call".
+    // stays a candidate unless some member POSITIVELY says "not this call" — which
+    // a member the row was required to state and did not state never does.
     const memberAgrees = (key, expected) => {
+        const requirement = requestMemberRequirement(key);
         const raw = payload[key];
-        if (raw === undefined)
-            return expected.length === 0;
+        if (raw === undefined) {
+            // Two cells, split by what the READER asks of this member (see
+            // `requestMemberRequirement` and the doc above). A REQUIRED member the row
+            // does not state is damage — the omission is why the row is here — and
+            // damage is evidence about nothing, so it never rules the leg out. An
+            // OPTIONAL member left out is a value: a legacy row carries no operation
+            // fingerprint and agrees with a fingerprint-less call, and against a call
+            // that carries one it genuinely disagrees (that call is outside the row's
+            // durable scope key). Flattening either cell into the other is the bug.
+            return requirement.required ? undefined : expected.length === 0;
+        }
         if (typeof raw !== 'string')
+            return undefined;
+        // Present-and-empty under a member the reader refuses empty is the same
+        // absence by another route: the row failed to state the member.
+        if (raw.length === 0 && requirement.rejectsEmpty)
             return undefined;
         return raw === expected;
     };
@@ -921,6 +1029,14 @@ function corruptLegCouldGovern(payload, scope, subjectIdentity) {
         //   ever rules a corrupt row out (see above: without it one damaged row
         //   freezes the Team);
         // - the disclosures CONTRADICT each other -> the member says NOTHING.
+        //
+        // THE PAIR. This is the algebra every member of this function obeys, and
+        // `memberAgrees` below now reads the same third cell for the same reason: a
+        // disclosure it cannot read and a member the row never stated are the SAME
+        // epistemic state, and only a positive disagreement ever rules a leg out.
+        // What differs is only HOW a member fails to be readable — the identity member
+        // contradicts itself, a scalar member omits (or empties) a value the reader
+        // REQUIRES of it (G1). Neither leg may manufacture an alibi out of damage.
         //
         // The third cell is not a corner: `parseRequestPayload` REFUSES a row whose
         // explicit subject disagrees with its legacy projection (its own words: "an

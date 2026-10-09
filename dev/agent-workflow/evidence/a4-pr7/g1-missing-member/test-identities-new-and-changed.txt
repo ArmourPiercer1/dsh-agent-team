@@ -1,0 +1,36 @@
+# A4-PR7 G1 — test identities this branch adds
+
+`packages/tools/test/a4-corrupt-leg-guard.test.ts` — the single home of the corrupt-leg law.
+All 33 legs of the file ran in the census of the committed tree (scratch/census-final.json),
+every one of them passing; 12 of them are new. The file diff against origin/master is
+463 insertions / 0 deletions, so no pre-existing identity (W1, W3, W4, W5, W6, W7, W8, W9, W10,
+W11, W12) was renamed, retitled or removed.
+
+## New identities (verbatim: describe title + it title, normalized whitespace)
+
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-premise: each row is durable, refused by the strict reader, and filed as a leg that discloses something
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-a (the counterexample): a refused row that states NO `correlation` blocks the call its own leg governs
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-b: the same shape through the other required member — a row that states NO `actionName` blocks too
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-c: the same row carrying a DIFFERENT `correlation` is still ruled out and the call proceeds (the anti-freeze half)
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-d: a call at an instance the row positively does NOT name still proceeds
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-e: a damaged row that names a DIFFERENT action proceeds for the call it is not about
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-f: an EMPTY required member is the same absence, and rules the row out no more than a missing one
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-g (DISCLOSED, the read-plane half): a row whose only stated members are damage is UNATTRIBUTABLE — named as such, and it does not block
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-j: `toolName` is OPTIONAL to the reader, so a refused row that omits it is the optional-absent cell — and it is the third witness that the probe is not blind
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-k: the requirement probe's own table is pinned, key by key — an instrument nobody can read can go quietly blind
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-i: an OPTIONAL member stated EMPTY is still a stated value — it rules the row out like any other difference
+- [passed] TEST packages/tools/test/a4-corrupt-leg-guard.test.ts::W13 a required member the refused row does not state is damage, not a different call (G1) W13-h: an OPTIONAL member legitimately absent keeps today's semantics — a fingerprint-less legacy row does not govern a fingerprinted call
+
+## Changed identities
+
+None. No pre-existing `describe`/`it` string in the file was modified (0 deleted lines), and the
+root-suite fail-set diff against the published nine-identity tolerance baseline is `NEW=0 FIXED=0`
+(root-suite-failset-diff-vs-published.txt).
+
+## Red-before-fix identities (the four that move)
+
+On `origin/master` with this file (minus the instrument leg, which the base source cannot answer):
+W13-a, W13-b, W13-f, W13-g were red (red-W13-before-fix.log). The other eight — the premise leg and
+the six control/boundary legs plus the instrument pin — were green before the fix as well, which is
+the point: they are what stops the fix from being a blanket block.
+
