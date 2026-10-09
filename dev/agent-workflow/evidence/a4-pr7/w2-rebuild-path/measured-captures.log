@@ -1,0 +1,117 @@
+W2-EVIDENCE {
+ "S1": {
+  "aId": "inst-1tz0nl01hv98",
+  "bId": "inst-1uszgnx1i58u",
+  "requestId": "ctrl-0zrtb4t1hx99p01ejvv3z0rr",
+  "decisionId": "ctrl-0zrtb4t1hx99p01ejvv3z0rr",
+  "requestCountBefore": 1,
+  "requestCountAfter": 1,
+  "decisionCountBefore": 1,
+  "decisionCountAfter": 1,
+  "requestRowsJsonBefore": "[{\"sequence\":2,\"factType\":\"control-request-recorded\",\"payload\":{\"actionName\":\"team.a4w2.deploy\",\"correlation\":\"corr-a4-w2-alloc\",\"kind\":\"leader-approval\",\"requestId\":\"ctrl-0zrtb4t1hx99p01ejvv3z0rr\",\"requester\":{\"instanceId\":\"inst-1tz0nl01hv98\",\"kind\":\"instance\",\"role\":\"member\"},\"subject\":{\"instanceId\":\"inst-1tz0nl01hv98\",\"kind\":\"instance\"},\"targetInstanceId\":\"inst-1tz0nl01hv98\",\"toolName\":\"bash\"}}]",
+  "requestRowsJsonAfter": "[{\"sequence\":2,\"factType\":\"control-request-recorded\",\"payload\":{\"actionName\":\"team.a4w2.deploy\",\"correlation\":\"corr-a4-w2-alloc\",\"kind\":\"leader-approval\",\"requestId\":\"ctrl-0zrtb4t1hx99p01ejvv3z0rr\",\"requester\":{\"instanceId\":\"inst-1tz0nl01hv98\",\"kind\":\"instance\",\"role\":\"member\"},\"subject\":{\"instanceId\":\"inst-1tz0nl01hv98\",\"kind\":\"instance\"},\"targetInstanceId\":\"inst-1tz0nl01hv98\",\"toolName\":\"bash\"}}]",
+  "decisionRowsJsonBefore": "[{\"sequence\":3,\"factType\":\"control-decision-recorded\",\"payload\":{\"decider\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"decision\":\"allow\",\"note\":\"a4-w2 fixture decision\",\"requestId\":\"ctrl-0zrtb4t1hx99p01ejvv3z0rr\",\"requestSequence\":2,\"scope\":{\"actionName\":\"team.a4w2.deploy\",\"correlation\":\"corr-a4-w2-alloc\",\"rootSessionId\":\"session-root-p6t1\",\"subject\":{\"instanceId\":\"inst-1tz0nl01hv98\",\"kind\":\"instance\"},\"targetInstanceId\":\"inst-1tz0nl01hv98\",\"toolName\":\"bash\"}}}]",
+  "decisionRowsJsonAfter": "[{\"sequence\":3,\"factType\":\"control-decision-recorded\",\"payload\":{\"decider\":{\"instanceId\":\"inst-leader\",\"kind\":\"instance\",\"role\":\"leader\"},\"decision\":\"allow\",\"note\":\"a4-w2 fixture decision\",\"requestId\":\"ctrl-0zrtb4t1hx99p01ejvv3z0rr\",\"requestSequence\":2,\"scope\":{\"actionName\":\"team.a4w2.deploy\",\"correlation\":\"corr-a4-w2-alloc\",\"rootSessionId\":\"session-root-p6t1\",\"subject\":{\"instanceId\":\"inst-1tz0nl01hv98\",\"kind\":\"instance\"},\"targetInstanceId\":\"inst-1tz0nl01hv98\",\"toolName\":\"bash\"}}}]",
+  "disposeLifecycle": "DISPOSED",
+  "disposeLastStep": "commit-dispose",
+  "memberRowAfterLifecycle": "DISPOSED",
+  "identityBefore": "{\"instanceId\":\"inst-1tz0nl01hv98\",\"templateId\":\"worker\",\"label\":\"p6t1-member\",\"childSessionId\":\"session-child-p6t1-1tz0nl01hv98\",\"createdAt\":\"2026-10-09T09:43:49.425Z\"}",
+  "identityAfter": "{\"instanceId\":\"inst-1tz0nl01hv98\",\"templateId\":\"worker\",\"label\":\"p6t1-member\",\"childSessionId\":\"session-child-p6t1-1tz0nl01hv98\",\"createdAt\":\"2026-10-09T09:43:49.425Z\"}",
+  "cCode": "ACTIVATION_QUOTA_TEAM_MAX_INSTANCES",
+  "cDetails": {
+   "maxInstances": 3,
+   "current": 3
+  },
+  "refusalZeroWrites": true
+ },
+ "S1B": {
+  "contrastCode": "ACTIVATION_QUOTA_TEAM_MAX_CONCURRENT",
+  "contrastDetails": {
+   "maxConcurrent": 2,
+   "active": 2
+  },
+  "disposeLifecycle": "DISPOSED",
+  "acceptedAfterDispose": "inst-1bf9h0l1bzgt"
+ },
+ "S2": {
+  "aId": "inst-0n4h9t90em84",
+  "bId": "inst-0maigqc0ec8i",
+  "grantChanged": true,
+  "grantGeneration": 1,
+  "grantMember": "inst-0n4h9t90em84",
+  "grantSnapshotCarriesA": true,
+  "latestAGen": 1,
+  "historyABeforeLen": 1,
+  "latestB": "undefined",
+  "historyBLen": 0,
+  "latestAGenAfterRebuild": 1,
+  "historyAAfterLen": 1
+ },
+ "S3": {
+  "selfVerdictBefore": {
+   "allowed": false,
+   "reason": "request-pending",
+   "requestId": "ctrl-12qye3w1hrydel1nq9tmq0ao"
+  },
+  "selfDecisionBefore": {
+   "proceed": false,
+   "reason": "request-pending",
+   "requestId": "ctrl-12qye3w1hrydel1nq9tmq0ao"
+  },
+  "requestsCountAfterDispose": 1,
+  "aLegStillListed": true,
+  "bVerdict": {
+   "allowed": false,
+   "reason": "no-request"
+  },
+  "bDecision": {
+   "proceed": true
+  },
+  "aVerdictAfter": {
+   "allowed": false,
+   "reason": "target-stale"
+  },
+  "aDecisionAfter": {
+   "proceed": false,
+   "reason": "target-stale"
+  }
+ },
+ "S4": {
+  "aId": "inst-1kqvbrc1x3x7",
+  "bId": "inst-1lku4u91xdwt",
+  "seqA": 2,
+  "seqB": 3,
+  "corruptBefore": [
+   {
+    "sequence": 2,
+    "disclosesMember": false
+   },
+   {
+    "sequence": 3,
+    "requestId": "req-a4-w2-damaged-attributable",
+    "disclosesMember": true
+   }
+  ],
+  "corruptAfter": [
+   {
+    "sequence": 2,
+    "disclosesMember": false
+   },
+   {
+    "sequence": 3,
+    "requestId": "req-a4-w2-damaged-attributable",
+    "disclosesMember": true
+   }
+  ],
+  "corruptRequestRowsBefore": 2,
+  "corruptRequestRowsAfter": 2
+ }
+}
+
+ ✓ test/a4-w2-evidence-probe.test.ts (15 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  17:43:48
+   Duration  1.24s (transform 835ms, setup 0ms, import 1.15s, tests 4ms, environment 0ms)
+
