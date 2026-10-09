@@ -820,6 +820,18 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
     corruption,
     corruptionTeamKey,
   )
+  // A4-W6 — the ENTRY-level join, derived from the SAME read the bar above
+  // already renders: the set of ledger SEQUENCES the corrupt-leg read names
+  // (never requestIds — a corrupt row may disclose none). W4's bar/notice
+  // plan is untouched; this is only the sequence set handed to the ledger
+  // so a corrupt entry can stop offering an adjudication the server will
+  // refuse. NO NEW HOST READ: the legs are the ones already on screen.
+  const corruptControlSequences = useMemo(
+    () => (corruptionBar === null
+      ? undefined
+      : new Set(corruptionBar.legs.map(leg => leg.sequence))),
+    [corruptionBar],
+  )
   // (repair 20260927, S1-C2; PR #35 follow-up, P1-4) the manual "refresh
   // team view" — the one awaitable read-only re-read. Captures THIS
   // invocation's session id and a request epoch at call time:
@@ -1547,6 +1559,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           onSelectSession={openSession}
           onResolveControl={onResolveControl}
           controlSurfaceMode={controlSurfaceMode}
+          corruptControlSequences={corruptControlSequences}
           t={t}
         />
       </section>

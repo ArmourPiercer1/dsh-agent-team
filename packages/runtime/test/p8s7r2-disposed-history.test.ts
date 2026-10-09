@@ -232,6 +232,19 @@ const ROOT_ENTRIES: readonly Record<string, unknown>[] = [
   entry(10, ROOT_SID, 'control-request-recorded', {
     targetInstanceId: DH1_ID,
     requestId: 'req-c6-1',
+    // A4-W6 FIXTURE REPAIR (disclosed — NOT an expectation change): this
+    // row predated the alpha.4 strict reader. Without kind/actionName/
+    // correlation/requester it is exactly a row the strict parse REFUSES
+    // (the corrupt class this lane removes from the pending count, owner
+    // ruling 2026-10-09), so on a v9 host it would settle `pending 0` and
+    // the assertions below would pin a fiction. The row is made the
+    // minimal shape `requestControl` durably writes and the strict reader
+    // ACCEPTS; every assertion this suite owns (categories, spans, the
+    // pending count itself) stays byte-identical.
+    kind: 'leader-approval',
+    actionName: 'delegate',
+    correlation: 'corr-req-c6-1',
+    requester: { kind: 'instance', instanceId: LEADER_ID, role: 'leader' },
     at: '2026-08-02T00:15:00.000Z',
     requestToken: 'tok-ctrl',
   }),

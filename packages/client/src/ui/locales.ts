@@ -51,6 +51,11 @@ export type TeamKey =
   // distinguishable; it claims no blocked or altered action (RULING 5-B
   // stays warning-first).
   | 'view.corruption.checkUnavailable'
+  // A4-PR7 W6 — the marker on the LEDGER ENTRY the corrupt-leg read names by
+  // sequence: the strict reader refused the row, so it is not governable and
+  // no human can adjudicate it. Owner-ruled copy (2026-10-09); deliberately
+  // NOT "失效" — abandonment and stale-denial are different terminal facts.
+  | 'view.corruption.entryCorrupt'
   | 'view.refresh'
   | 'view.refreshing'
   | 'view.refresh.failed'
@@ -344,6 +349,7 @@ export const zh: Record<TeamKey, string> = {
   'view.corruption.unattributed': '无法归属到具体成员（团队级提示）',
   'view.corruption.truncated': '其余损坏记录未在此列出',
   'view.corruption.checkUnavailable': '审批记录完整性检查暂不可用，无法确认是否存在损坏记录（仅提示，不改变执行语义）— 请刷新重试',
+  'view.corruption.entryCorrupt': '损坏 · 不可裁决',
   'view.refresh': '刷新团队视图',
   'view.refreshing': '正在更新…',
   'view.refresh.failed': '更新失败，当前显示上次成功的数据',
@@ -628,6 +634,7 @@ export const en: Record<TeamKey, string> = {
   'view.corruption.unattributed': 'not attributable to a specific member (team-level notice)',
   'view.corruption.truncated': 'further corrupt records are not listed here',
   'view.corruption.checkUnavailable': 'The approval-record integrity check is unavailable: corrupt records can be neither confirmed nor ruled out (notice only — execution semantics are unchanged) — refresh to retry',
+  'view.corruption.entryCorrupt': 'corrupt record — cannot be adjudicated',
   'view.refresh': 'Refresh team view',
   'view.refreshing': 'Refreshing…',
   'view.refresh.failed': 'Update failed — showing the last successfully loaded data',

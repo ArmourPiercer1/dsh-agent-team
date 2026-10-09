@@ -2152,6 +2152,25 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4W2: readonly string[] = [
       'packages/runtime/test/a4-w2-rebuild-guarantees.test.ts',
     ]
+    // a4-w6-corrupt-not-pending (A4-PR7 W6, branch `fix/a4-w6-corrupt-not-pending`):
+    // the corrupt-entry lane (refused ⇒ never pending, owner ruling 2026-10-09).
+    // ONE new scannable file: the differential fold instrument
+    // (`packages/runtime/test/a4w6-corrupt-not-pending.test.ts` — live pending
+    // stays counted, an injected corrupt row is not, 10 accept-probes / 47
+    // refuse-probes pin the fold gate against the REAL service parse). The
+    // lane's client surfaces are an EDIT to already-counted sources
+    // (`client/src/ui/TeamLedger.tsx`, `client/src/ui/TeamView.tsx`,
+    // `client/src/ui/locales.ts`, `client/src/model/team-ui-snapshot.ts`, the
+    // owner-ruled pin update in `pr56-control-panel-payload.client.spec.tsx`)
+    // plus `a4w6-corrupt-entry.client.spec.tsx` — a `.tsx`, outside the frozen
+    // scanner extension set — and the fold gate itself in
+    // `runtime/src/plugin/projection-source.ts`; an edit is not an increment.
+    // Both endpoints MEASURED on this branch: with the file on disk and this
+    // entry absent the run reads `expected 1048 to be 1047`; 1047 is the
+    // derived merged-tip total the a4-w2 tie above ends on.
+    const SCANNED_PATHS_A4W6: readonly string[] = [
+      'packages/runtime/test/a4w6-corrupt-not-pending.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2175,7 +2194,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4COMPATATOMIC.length +
         SCANNED_PATHS_A4F2COLDSTART.length +
         SCANNED_PATHS_A4W1.length +
-        SCANNED_PATHS_A4W2.length,
+        SCANNED_PATHS_A4W2.length +
+        SCANNED_PATHS_A4W6.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2200,7 +2220,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4COMPATATOMIC.length +
         SCANNED_PATHS_A4F2COLDSTART.length +
         SCANNED_PATHS_A4W1.length +
-        SCANNED_PATHS_A4W2.length,
+        SCANNED_PATHS_A4W2.length +
+        SCANNED_PATHS_A4W6.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2251,6 +2272,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4F2COLDSTART,
       ...SCANNED_PATHS_A4W1,
       ...SCANNED_PATHS_A4W2,
+      ...SCANNED_PATHS_A4W6,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
