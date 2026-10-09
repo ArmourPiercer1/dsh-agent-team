@@ -256,3 +256,60 @@ From the worktree root unless stated:
   `disclosesMember` semantics) is INHERITED from the control module and its `a4-corrupt-leg-
   guard.test.ts` W8-b/W12-c/W13-g pins — this lane re-serves that flag, and the acceptance
   spec asserts the flag's PROJECTION, not its derivation.
+
+## 12. Review round (coordinator): wording honesty fix + merge with master (MEASURED)
+
+**12a. Wording fix (behavior unchanged, honesty only).** The disclosure
+predicate's MEASURED truth (`packages/runtime/control/service.ts`): any of
+the four scalar operation members returns true (:1210-1215), a parseable
+`subject` ALONE returns true (**:1218**), a non-empty legacy
+`targetInstanceId` ALONE returns true (**:1221**) — so a row naming ONLY an
+operation, with no member identity anywhere, is `disclosesMember: true`
+(W2 lane's four-shape matrix `disclosure-predicate-probe.log` confirms).
+The old positive label claimed a Member attribution such rows do not carry.
+Changed: zh `'该记录自带归属线索（行内披露，未必指明是哪个成员）'`, en
+`'the record carries its own attribution clue (disclosed in-row; it may not
+name which member)'`; the NEGATIVE label is byte-identical (it was honest);
+the model doc (`control-corruption.ts`) now states the measured semantics
+and says explicitly the flag is NOT a conclusion that "that member caused
+the corruption"; the TeamView bar comment aligned. **No assertion moved**:
+no spec in the tree asserted the old UI strings (verified by grep
+before/after — the model spec asserts the boolean, not locale text). No DTO
+field added; `packages/runtime/control/**` untouched. Commit `46ed4b68`.
+
+**12b. Merge with master (`ed9b0552`, carries W2).** `git merge
+origin/master` (no rebase, no force-push — gated history). The single
+conflict was p4t6, five hunks, resolved keeping BOTH lists:
+`SCANNED_PATHS_A4W1` and `SCANNED_PATHS_A4W2` each with their own constant,
+presence spread, and their own `+ …length` term on both derived sums; the
+two ties coexist verbatim (`W1: toBe(1046 - 1042)`, `W2: toBe(1043 - 1042)`
+— each lane's own Δ, never summed). W2's constant and tie were NOT touched
+by a single character.
+
+**12c. MEASURED after the merge (no arithmetic derivation of the total):**
+
+- scanner actual total (direct `scanSessionEventVocabulary()` call, probe
+  outside `packages/**` so nothing self-counted):
+  `filesScanned = 1047`
+- this lane's own Δ: 1042 → 1046 (`SCANNED_PATHS_A4W1.length = 4`, the
+  RED capture `expected 1046 to be 1042`, unchanged)
+- list memberships: `SCANNED_PATHS_A4W1` = **4**
+  (`remote/test/a4w1-corrupt-legs.test.ts`,
+  `runtime/test/a4w1-corrupt-warning.test.ts`,
+  `client/test/control-corruption-model.test.ts`,
+  `client/src/model/control-corruption.ts`);
+  `SCANNED_PATHS_A4W2` = **1**
+  (`runtime/test/a4-w2-rebuild-guarantees.test.ts`)
+
+**12d. Post-merge runs (the agreement is the test, not arithmetic):**
+
+- `packages/testkit/test/p4t6-session-event-scan.test.ts` →
+  `Test Files 1 passed (1)` / `Tests 10 passed (10)`
+  (raw/p4t6-post-merge-GREEN.log) — the derived sums (with BOTH terms)
+  equal the scanner's actual reading: had the merged total disagreed with
+  the lists, `filesScanned`'s `toBe` would be RED. No discrepancy to
+  report: no file was counted outside the named lists.
+- `packages/client/test/control-corruption-model.test.ts` →
+  `Tests 5 passed (5)` (with the reworded locale/model present)
+- `packages/runtime/test/a4w1-corrupt-warning.test.ts` →
+  `Tests 8 passed (8)` (raw/acceptance-post-merge.log)

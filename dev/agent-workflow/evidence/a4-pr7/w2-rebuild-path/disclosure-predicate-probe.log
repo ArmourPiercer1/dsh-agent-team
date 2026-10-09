@@ -1,0 +1,22 @@
+# corruptLegDisclosesMember — shape matrix measured with a THROWAWAY scratch probe
+# (packages/runtime/test/a4-w2-disclosure-probe.test.ts, written, run once, DELETED — not
+# committed; the committed Case 3 keeps the approved two rows). Raw output line:
+W2-DISCLOSURE {"aId":"inst-1avulpp1d0x9","corrupt":[{"sequence":2,"disclosesMember":true},{"sequence":3,"disclosesMember":true},{"sequence":4,"disclosesMember":true},{"sequence":5,"disclosesMember":true}]}
+# Row shapes, in sequence order (all refused by the strict reader, hence corrupt):
+#   seq2 = {subject:{kind:'instance',instanceId:A}}                     -> true  (subject ALONE discloses)
+#   seq3 = {targetInstanceId:A}                                          -> true  (legacy non-empty ALONE discloses)
+#   seq4 = {actionName:'',toolName:'',correlation:'',operationFingerprint:''}
+#                                                                        -> true  (EMPTY operationFingerprint is a
+#                                                                          disclosure: the fingerprint reader
+#                                                                          ACCEPTS empty, rejectsEmpty=false)
+#   seq5 = {operationFingerprint:'fp-only'}                              -> true
+# Code: packages/runtime/control/service.ts:1206-1223 — statesMember(key) = string AND
+# (non-empty OR !requestMemberRequirement(key).rejectsEmpty); parseable `subject` -> true
+# (:1217-1219); non-empty legacy targetInstanceId -> true (:1221-1222). The empty-fingerprint
+# relaxation is DOCUMENTED INTENT at service.ts:1189-1202 (an empty legacy fingerprint really
+# does agree with a fingerprint-less call; W13-g).
+# Consequence for the brief: "disclosesMember counts only the four scalars" UNDER-DESCRIBES the
+# code (subject and legacy target also disclose; the fingerprint slot tolerates empty). The
+# committed Case 3(b) row sets a NON-EMPTY actionName AND carries A's subject AND is refused on
+# the missing requester, so its measured `disclosesMember: true` does not depend on any of the
+# broader paths; the spec asserts only measured values.

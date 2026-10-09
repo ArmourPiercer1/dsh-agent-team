@@ -2144,6 +2144,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/client/test/control-corruption-model.test.ts',
       'packages/client/src/model/control-corruption.ts',
     ]
+    // a4-w2-rebuild-guarantees (test/a4-w2-rebuild-guarantees, A4-PR7 W2 lane B):
+    // the rebuild-guarantee spec pinning the human RULING 5-B judgement (dispose
+    // = instance rebuild, not history cleanup). Exactly one new scannable file;
+    // the lane's only other path is THIS pin — an edit, not an increment.
+    // Evidence: dev/agent-workflow/evidence/a4-pr7/w2-rebuild-path/.
+    const SCANNED_PATHS_A4W2: readonly string[] = [
+      'packages/runtime/test/a4-w2-rebuild-guarantees.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2166,7 +2174,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4CORRUPTLEG.length +
         SCANNED_PATHS_A4COMPATATOMIC.length +
         SCANNED_PATHS_A4F2COLDSTART.length +
-        SCANNED_PATHS_A4W1.length,
+        SCANNED_PATHS_A4W1.length +
+        SCANNED_PATHS_A4W2.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2190,7 +2199,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4CORRUPTLEG.length +
         SCANNED_PATHS_A4COMPATATOMIC.length +
         SCANNED_PATHS_A4F2COLDSTART.length +
-        SCANNED_PATHS_A4W1.length,
+        SCANNED_PATHS_A4W1.length +
+        SCANNED_PATHS_A4W2.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2240,6 +2250,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4COMPATATOMIC,
       ...SCANNED_PATHS_A4F2COLDSTART,
       ...SCANNED_PATHS_A4W1,
+      ...SCANNED_PATHS_A4W2,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2418,6 +2429,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // mechanical pin moves are all EDITS to already-counted paths and move
     // nothing — an edit is not an increment.
     expect(SCANNED_PATHS_A4W1.length).toBe(1046 - 1042)
+    // The a4-w2-rebuild-guarantees tie, same form: the movement equals the named
+    // file. BOTH endpoint numbers are MEASURED scanner readings, captured in
+    // dev/agent-workflow/evidence/a4-pr7/w2-rebuild-path/ (p4t6-before-measured.log
+    // and p4t6-after-measured.log), not written by hand.
+    expect(SCANNED_PATHS_A4W2.length).toBe(1043 - 1042)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

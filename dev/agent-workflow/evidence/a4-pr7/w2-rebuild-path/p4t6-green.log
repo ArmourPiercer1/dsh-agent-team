@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/dsh-plugins/dsh-agent-team/.worktrees/w2-rebuild/packages/testkit
+
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 7ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  17:43:31
+   Duration  487ms (transform 74ms, setup 0ms, import 348ms, tests 7ms, environment 0ms)
+
