@@ -43,6 +43,13 @@ node verify-corrupt-world.mjs --repo /home/user/dsh-plugins/dsh-agent-team --exp
 
 （`--repo` 只决定"用哪套构建产物 + 哪个 `tests/homes/`"，世界路径始终是 `<repo>/tests/homes/<name>`。）
 
+第 0 步实测过的期望末行（`check:artifacts:head`，2026-10-09，主检出 `f1e2a3af`）：
+
+```text
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1508 drift=0
+[check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1508 compared file(s)).
+```
+
 > 为什么第 0 步不能跳：`make-corrupt-world.mjs` 的"写"就是 `packages/runtime/dist/**` 里的
 > `openTeamDomain` + `LedgerRepository`，`verify-corrupt-world.mjs` 的"读"也是。缺产物时脚本会明确报缺哪个文件。
 
