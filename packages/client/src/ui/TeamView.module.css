@@ -267,3 +267,22 @@
   padding-left: 16px;
   word-break: break-all;
 }
+
+/* A4-PR7 W4 (finding F1) — the NEUTRAL "integrity check unavailable" notice,
+   rendered in the warning bar's own position when the corrupt-record READ
+   itself failed. It is deliberately NOT the warning bar: no warn border, no
+   warn fill, no alert semantics — the client holds no record-level fact to
+   disclose, only the availability of its own check. It uses the secondary
+   label lane (the same neutral colour as the other read-lane notes), so a
+   human can tell three states apart at a glance: bar = corrupt records
+   disclosed, this line = the check did not answer, nothing = a clean report.
+   Non-dismissible, non-modal, never blocking (RULING 5-B unchanged). */
+.corruptionCheckNote {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 2px 12px;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+  word-break: break-all;
+}

@@ -45,10 +45,15 @@ import {
   RESOLVE_CONTROL_PROBE_REQUEST_ID,
 } from '../model/control-surface.js'
 import {
-  controlCorruptionVisible,
   corruptControlLegsParams,
+  corruptionReadFailed,
+  corruptionReadSucceeded,
+  corruptionStateCleared,
+  corruptionStateForKey,
+  EMPTY_CONTROL_CORRUPTION_READ_STATE,
   parseControlCorruption,
-  type ControlCorruptionView,
+  planControlCorruptionRender,
+  type ControlCorruptionReadState,
 } from '../model/control-corruption.js'
 import type { TeamOpenModeOutcome } from '../plugin/team-mount-core.js'
 import type { TeamIntentDraft, TeamPresetRow } from '../model/team-intent-model.js'
@@ -736,10 +741,21 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   // NEVER blocks or alters the ledger surface below it, and the client
   // never re-derives which records are corrupt (the server
   // `runtime/control` is the sole strict reader; 严禁客户端复刻严格读者).
-  const [corruption, setCorruption] = useState<{
-    readonly view: ControlCorruptionView | null
-    readonly error: { readonly code: string; readonly message: string } | null
-  }>({ view: null, error: null })
+  //
+  // A4-PR7 W4 (external review of the merged W1) repairs two P2 UI defects
+  // in THIS block and its render, and changes no execution semantics:
+  //   F1 — a read that did not SUCCEED is now visible: W1 stored
+  //        `error` and rendered nothing, so "this Team has no corrupt
+  //        records" was indistinguishable from "the integrity check never
+  //        ran successfully". The same position now carries one NEUTRAL,
+  //        non-dismissible, non-modal notice (see `planControlCorruptionRender`).
+  //   F2 — the state is bound to the `teamSessionId` it was read for, so a
+  //        disclosure can never be displayed for a different Team.
+  // KNOWN LIMITATION (recorded, deliberately NOT "fixed" here): this read
+  // fires on entry to the Team page, on a manual refresh, and on a Team-key
+  // change — it is NOT a continuous watch, so a corrupt record that appears
+  // mid-session only becomes visible at the next read. No polling is added.
+  const [corruption, setCorruption] = useState<ControlCorruptionReadState>(EMPTY_CONTROL_CORRUPTION_READ_STATE)
   const corruptionEpoch = useRef(0)
   const corruptionUnmounted = useRef(false)
   useEffect(() => {
@@ -749,53 +765,61 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
   const corruptionTeamKey = inZeroState ? null : snapshot?.teamSessionId ?? null
   const loadControlCorruption = useCallback((): Promise<void> => {
     const face = control?.listCorruptControlLegs
-    if (face === undefined || corruptionTeamKey === null) return Promise.resolve()
+    const key = corruptionTeamKey
+    if (face === undefined || key === null) return Promise.resolve()
     corruptionEpoch.current += 1
     const epoch = corruptionEpoch.current
-    return face(corruptControlLegsParams(corruptionTeamKey)).then(response => {
+    return face(corruptControlLegsParams(key)).then(response => {
       if (corruptionUnmounted.current || corruptionEpoch.current !== epoch) return
       if (!response.ok) {
-        // Conservative-hide: the bar stays hidden; the note is kept for
-        // diagnostics only — never a modal, never a blocker.
-        setCorruption(prev => ({
-          ...prev,
-          error: { code: response.error.code, message: response.error.message },
+        // W4 F1: the failed check becomes VISIBLE as the neutral notice (never
+        // a modal, never a blocker, never a claim that anything was refused);
+        // a same-key failure still KEEPS the last good view (W1 semantics).
+        setCorruption(prev => corruptionReadFailed(prev, key, {
+          code: response.error.code,
+          message: response.error.message,
         }))
         return
       }
       const view = parseControlCorruption(response.value.data)
       if (view === null) {
-        setCorruption(prev => ({
-          ...prev,
-          error: {
-            code: 'malformed-response',
-            message: 'the team.listCorruptControlLegs response did not carry the closed corruption wire',
-          },
+        setCorruption(prev => corruptionReadFailed(prev, key, {
+          code: 'malformed-response',
+          message: 'the team.listCorruptControlLegs response did not carry the closed corruption wire',
         }))
         return
       }
-      setCorruption({ view, error: null })
+      setCorruption(prev => corruptionReadSucceeded(prev, key, view))
     }).catch(error => {
       if (corruptionUnmounted.current || corruptionEpoch.current !== epoch) return
-      setCorruption(prev => ({
-        ...prev,
-        error: {
-          code: 'native-error',
-          message: error instanceof Error ? error.message : String(error),
-        },
+      setCorruption(prev => corruptionReadFailed(prev, key, {
+        code: 'native-error',
+        message: error instanceof Error ? error.message : String(error),
       }))
     })
   }, [control, corruptionTeamKey])
   useEffect(() => {
-    if (corruptionTeamKey === null || control?.listCorruptControlLegs === undefined) {
-      // No face / no resolved team: no read, no bar (the legacy surface).
-      setCorruption(prev => (prev.view === null && prev.error === null
-        ? prev
-        : { view: null, error: null }))
+    const key = corruptionTeamKey
+    if (key === null || control?.listCorruptControlLegs === undefined) {
+      // No face / no resolved team: no read, no bar, no notice (the legacy surface).
+      setCorruption(prev => corruptionStateCleared(prev))
       return
     }
+    // W4 F2: the moment the Team key moves, the previous round's result is
+    // dropped — a disclosure is a fact about ONE Team and must not sit on
+    // another one's page while its own read is in flight. The epoch guard in
+    // `loadControlCorruption` still orders interleaved reads; this is the
+    // ownership gate on top of it.
+    setCorruption(prev => corruptionStateForKey(prev, key))
     void loadControlCorruption()
   }, [corruptionTeamKey, control, loadControlCorruption])
+  // The single render decision for the Team CURRENTLY on screen (W4 F2): a
+  // state row owned by another key contributes nothing, and the disclosure
+  // bar and the neutral notice are mutually exclusive (F1).
+  const { bar: corruptionBar, unavailableNotice: corruptionNotice } = planControlCorruptionRender(
+    corruption,
+    corruptionTeamKey,
+  )
   // (repair 20260927, S1-C2; PR #35 follow-up, P1-4) the manual "refresh
   // team view" — the one awaitable read-only re-read. Captures THIS
   // invocation's session id and a request epoch at call time:
@@ -1422,7 +1446,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
           {t('view.refresh')}
         </button>
       </div>
-      {controlCorruptionVisible(corruption.view) && corruption.view !== null ? (
+      {corruptionBar !== null ? (
         // A4-PR7 W1 (RULING 5-B) — the FIXED, non-dismissible corrupt-record
         // warning bar at the TOP of the team body: visibility only (no
         // action, no dismiss — it persists while the ledger fact exists and
@@ -1432,13 +1456,15 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
         // attribution clue — an identity OR an operation member — which is
         // never a claim that a named Member caused the corruption; a false
         // row gets Team-level wording, never an invented name.
+        // W4 (finding F2): the bar renders ONLY from the state row owned by
+        // the Team on screen (`corruptionBar`), never from an inherited one.
         <div className={styles.corruptionBar} data-team-control-corruption role="alert">
           <span data-team-control-corruption-summary>
             {t('view.corruption.summary')}
-            {`: ${corruption.view.corruptCount}`}
+            {`: ${corruptionBar.corruptCount}`}
           </span>
           <ul className={styles.corruptionRows} data-team-control-corruption-rows>
-            {corruption.view.legs.map(leg => (
+            {corruptionBar.legs.map(leg => (
               <li
                 key={leg.sequence}
                 data-team-control-corruption-leg
@@ -1453,9 +1479,27 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
               </li>
             ))}
           </ul>
-          {corruption.view.truncated
+          {corruptionBar.truncated
             ? <span data-team-control-corruption-truncated>{t('view.corruption.truncated')}</span>
             : null}
+        </div>
+      ) : corruptionNotice !== null ? (
+        // A4-PR7 W4 (finding F1) — the NEUTRAL companion of the bar, in the
+        // SAME position: THIS Team's integrity read did not succeed, so the
+        // absence of a bar proves nothing either way. Same posture as the bar
+        // (fixed, non-dismissible, no action, no modal, never a blocker, and
+        // it never touches the ledger surface below) and deliberately NOT the
+        // warning-lane styling: it reports the availability of the CHECK, not
+        // a claim about records, and it asserts nothing about execution. The
+        // typed code travels with it for diagnostics (the W1 note lane was
+        // recorded but never rendered — that invisibility WAS finding F1).
+        <div
+          className={styles.corruptionCheckNote}
+          data-team-control-corruption-check-unavailable
+          role="status"
+        >
+          {t('view.corruption.checkUnavailable')}
+          {` — ${corruptionNotice.code}`}
         </div>
       ) : null}
       <section className={styles.section} data-team-section="timeline">

@@ -1,0 +1,1 @@
+NEW  TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused
