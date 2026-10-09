@@ -1,0 +1,16 @@
+# p4t6 AFTER-state measured total (W2 lane)
+# Tree state: the W2 lane's own p4t6 edit present (const SCANNED_PATHS_A4W2 + its entry, the
+#             derived-sum extensions, the presence spread, the tie `1043 - 1042`) PLUS the new
+#             file packages/runtime/test/a4-w2-rebuild-guarantees.test.ts; + a temporary `+ 1`
+#             probe on ONE expect() of the derived sum.
+# Command: pnpm -C packages/testkit exec vitest run test/p4t6-session-event-scan.test.ts
+# Raw assertion line (grep-filtered from the run):
+AssertionError: expected 1043 to be 1044 // Object.is equality
+      Tests  1 failed | 9 passed (10)
+# Reading: scanner measured filesScanned = 1043 (the before-state 1042 + exactly this lane's
+# one added scannable file); derived expression (983 + all lane-list lengths incl.
+# SCANNED_PATHS_A4W2.length) evaluated to 1043+1 (the probe).
+# Counting method: filesScanned = the scanner's own walk (all packages/** source minus the two
+# self-referential exclusions); the assertion total is ALWAYS derived (983 + Σ lane lengths),
+# never hand-written. Tie movement: expect(SCANNED_PATHS_A4W2.length).toBe(1043 - 1042).
+# Probe temporary; reverted before commit (GREEN run recorded in p4t6-green.log).

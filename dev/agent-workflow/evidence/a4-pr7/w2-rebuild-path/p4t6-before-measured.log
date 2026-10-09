@@ -1,0 +1,12 @@
+# p4t6 BEFORE-state measured total (W2 lane)
+# Tree state: packages/testkit/test/p4t6-session-event-scan.test.ts = origin/master@ea417956 copy
+#             + a temporary `+ 1` probe appended to the derived sum expression;
+#             the W2 lane file packages/runtime/test/a4-w2-rebuild-guarantees.test.ts temporarily
+#             OUT of the tree (moved to .tmp-review/w2/). So the scanner counts the merged tip exactly.
+# Command: pnpm -C packages/testkit exec vitest run test/p4t6-session-event-scan.test.ts
+# Raw assertion line (grep-filtered from the run):
+AssertionError: expected 1042 to be 1043 // Object.is equality
+      Tests  1 failed | 9 passed (10)
+# Reading: scanner measured filesScanned = 1042; derived expression evaluated to 1042+1 (the probe).
+# The probe was applied to exactly ONE of the two expect() totals; the probe is temporary
+# and reverted before commit. Hand-written totals: none — this number is a scanner reading.
