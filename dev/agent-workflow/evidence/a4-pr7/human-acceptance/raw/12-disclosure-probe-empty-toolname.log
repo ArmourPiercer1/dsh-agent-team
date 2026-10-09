@@ -1,0 +1,14 @@
+appended sequence 16
+corruptCount 2
+[
+ {
+  "sequence": 15,
+  "requestId": "req-a4w5-human-acceptance-damage",
+  "disclosesMember": false
+ },
+ {
+  "sequence": 16,
+  "requestId": "req-a4w5-disclosure-probe-empty-toolname",
+  "disclosesMember": true
+ }
+]

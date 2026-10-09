@@ -1,0 +1,9 @@
+# captured 2026-10-09T12:4xZ — the live leg: boot.mjs --supervise (managed background job), world=tests/homes/a4-w5-corrupt-acceptance, port 3181, mock 3492, repo=/home/user/dsh-plugins/dsh-agent-team
+$ node boot.mjs --supervise --world /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance --port 3181 --mock-port 3492 --repo /home/user/dsh-plugins/dsh-agent-team   # run in background
+[a4-boot 2026-10-09T12:42:51.797Z] world materialized at /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance (profiles, blueprints, p6t6 directive, workspace/grants)
+[a4-boot 2026-10-09T12:42:51.810Z] stable :3080 probe (before-boot): status=401
+[a4-boot 2026-10-09T12:42:51.817Z] mock DeepSeek endpoint up at 127.0.0.1:3492 (delay 0ms)
+[a4-boot 2026-10-09T12:42:51.820Z] host spawned pid=26 (log /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance/logs/host-2026-10-09T12-42-51-817Z.log)
+http://127.0.0.1:3181/?token=<REDACTED>
+[a4-boot 2026-10-09T12:42:53.321Z] host booted (launch line above). Row surface: GET /__p6t6/health; remote: POST /team-remote/<method>.
+[a4-boot 2026-10-09T12:42:53.321Z] idle as supervisor — Ctrl-C (or node boot.mjs --stop from another shell) shuts the host + mock down.

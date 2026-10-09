@@ -1,0 +1,58 @@
+═══ a4-w5 corrupt-world verification (production read plane, no server) ═══
+WORLD        : /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance
+LEDGER FILE  : /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance/storages/team_domain.json
+TEAM (root)  : session-a4-accept-boot
+SERVICE      : ControlService over the open TeamDomain, catalog over blueprints/a4-accept-team.yaml
+
+── READ A  ControlService.listControlState() ──
+requests=0 decisions=0 consumptions=0 abandonments=0 escalations=<not exposed on this route>
+corruptCount = 1
+corruptLegs  = [
+  {
+    "sequence": 15,
+    "requestId": "req-a4w5-human-acceptance-damage",
+    "approvalCaseId": null,
+    "disclosesMember": false
+  }
+]
+
+── READ B  s6 dispatcher → team.listCorruptControlLegs (contract v9) ──
+{
+  "teamSessionId": "session-a4-accept-boot",
+  "corruptCount": 1,
+  "truncated": false,
+  "legs": [
+    {
+      "sequence": 15,
+      "disclosesMember": false,
+      "requestId": "req-a4w5-human-acceptance-damage"
+    }
+  ]
+}
+
+corruptCount = 1   (expect 2)
+disclosesMember = [
+  false
+]
+marker cross-check: injector recorded sequence 15 and the wire served it
+
+MISMATCH: corruptCount 1 !== expected 2
+
+── STILL READABLE  (the same world, other durable reads) ──
+ledger rows      : 15
+by factType      : {
+  "provision-member-instance": 4,
+  "team-work-admitted": 2,
+  "activity-interval-opened": 2,
+  "activity-interval-closed": 2,
+  "member-lifecycle-changed": 4,
+  "control-request-recorded": 1
+}
+team_sessions    : 1 row(s), generation=17
+member_instances : 5
+control requests : 0 (a refused leg row is excluded; accepted rows are not)
+
+NOTE: this is the ledger the STRICT control reader refuses ONE row of. The storage
+      layer read above enumerated every row including the damaged one; the control
+      reader filed it as a corrupt leg instead of defaulting it. Both facts are part
+      of the limitation statement — see FINDINGS.md.

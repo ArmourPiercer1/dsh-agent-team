@@ -1,0 +1,10 @@
+world already present (copy skipped): /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance
+appended row     : sequence 15 (factType control-request-recorded)
+ledger rows      : 14 -> 15
+
+WORLD        : /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance
+LEDGER FILE  : /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance/storages/team_domain.json
+TEAM (root)  : session-a4-accept-boot
+
+next: node verify-corrupt-world.mjs    (production read plane, no GUI, no server)
+then: RECIPE.md step "boot it" points boot.mjs --world at this directory.

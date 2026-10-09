@@ -1,0 +1,79 @@
+origin       : http://127.0.0.1:3181   (world /home/user/dsh-plugins/dsh-agent-team/tests/homes/a4-w5-corrupt-acceptance)
+auth         : ok
+
+── team.listCorruptControlLegs (contract v9) ──
+{
+  "teamSessionId": "session-a4-accept-boot",
+  "corruptCount": 1,
+  "truncated": false,
+  "legs": [
+    {
+      "sequence": 15,
+      "disclosesMember": false,
+      "requestId": "req-a4w5-human-acceptance-damage"
+    }
+  ]
+}
+
+── team.getProjection (contract v1) — the rest of the Team must still read ──
+keys: schemaVersion, teamSessionId, blueprint, generation, generatedAt, root, templates, members, ledger
+{
+  "teamSessionId": "session-a4-accept-boot",
+  "generation": 17,
+  "blueprint": {
+    "blueprintId": "a4.accept.team",
+    "revision": "1",
+    "contentHash": "sha256:af9df261e24f7ffeb50875748d8b0c33a2c53d5b58fd3a4bd5bcc02296e3c912"
+  },
+  "members": [
+    {
+      "instanceId": "inst-00o6p7r1q73w",
+      "state": "CREATED"
+    },
+    {
+      "instanceId": "inst-0j5egdr0mug1",
+      "state": "ARCHIVED"
+    },
+    {
+      "instanceId": "inst-1ivfmm71p1qu",
+      "state": "ARCHIVED"
+    },
+    {
+      "instanceId": "inst-1kchdpf029n7",
+      "state": "CREATED"
+    },
+    {
+      "instanceId": "inst-leader",
+      "state": "RUNNING"
+    }
+  ]
+}
+
+── team.getLedgerPage (contract v1) — the rest of the Team must still read ──
+total=15 served=15 nextAfterSequence=n/a
+by factType: {
+  "provision-member-instance": 4,
+  "team-work-admitted": 2,
+  "activity-interval-opened": 2,
+  "activity-interval-closed": 2,
+  "member-lifecycle-changed": 4,
+  "control-request-recorded": 1
+}
+the damaged row IS served on this route: {
+  "sequence": 15,
+  "factType": "control-request-recorded",
+  "payloadKeys": [
+    "actionName",
+    "correlation",
+    "executionCoupling",
+    "kind",
+    "operationFingerprint",
+    "requestId",
+    "requester",
+    "subject",
+    "targetInstanceId",
+    "toolName"
+  ]
+}
+
+VERDICT: PASS — the booted host serves corruptCount=1 and the other Team reads answer too.
