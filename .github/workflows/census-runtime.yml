@@ -269,22 +269,23 @@ jobs:
       # census not measured here", and THIS check is where the census actually ran.
       #
       # `--census-captures 2` carries over for the reason recorded in `pr-gate.yml` (two captures
-      # graded as their union). The CLOCK deliberately does NOT: `pr-gate` runs where the tolerance
-      # set was measured, and this job runs on a 2-core runner, so it carries 90000 for the reason
-      # spelled out on the step below. The clock in force is printed on every leg line either way.
-      # THE CLOCK IS A MEASUREMENT, NOT A PREFERENCE, and the first hosted execution of this job is
-      # what set it: run 37814101108 on a 2-core runner took 358.9 s, captured 508f/6373l TWICE with
-      # IDENTICAL identity sets (so this was not noise), and came back with exactly one NEW red —
-      # `S13 file aliases, quoted values, and capture formats pass the standalone regressions`, which
-      # spawns a nested `node --test` and declares its OWN budget of 60_000 ms
-      # (packages/testkit/test/rc2-sanitize-evidence.test.ts:230). A clock of 20000 does not measure a
-      # leg that budgets 60000, it forfeits it: the census would have reported a red that was really
-      # this job's own timeout. So the override here must DOMINATE the largest per-leg budget in the
-      # corpus, with margin for a runner that has 2 cores where the published baseline was recorded on
-      # 32. That is 90000. What this does NOT do: it does not touch the tolerance list, and it is not
-      # `--allow-refused` — a forfeited leg still shows up as a NEW red if it fails for a real reason.
-      # The published 9-red set was recorded at 32 cores / 20000 ms; this job's clock is its own
-      # disclosed condition, printed on every leg line.
+      # graded as their union). The CLOCK deliberately does NOT carry over, and the value chosen is
+      # declared and reasoned on the step below — including an admission that it is not yet measured
+      # on hosted hardware. The clock in force is printed on every leg line either way.
+      # THE CLOCK. `--census-test-timeout` is an operator override above vitest's 5000 ms default and
+      # the value in force is printed on every leg line, because a clock below a leg's own budget does
+      # not measure that leg, it forfeits it. Two legs in the corpus state budgets above the 20000 used
+      # elsewhere: the client-lane leg of `a4p7-merge-gate` takes ~23 s on a 32-core box (it spawns
+      # nested builds), and `rc2-sanitize-evidence` S13 declares `timeout: 60_000` for a nested
+      # `node --test`. 90000 is sized to dominate those. SAYING WHAT THIS IS NOT: it is NOT a hosted
+      # measurement — no green hosted run of this job has happened yet — and an earlier revision of
+      # this comment claimed the first run forfeited S13 at 20000 and that raising the clock cleared
+      # it. That was FALSE. Read off the uploaded transcripts, S13 passed in all four captures
+      # (1938/1967/2827/2459 ms) and BOTH runs failed the SAME identity, the client-lane leg, because
+      # its parser could not read a coloured vitest summary (0 lines match `^\s*(Test Files|Tests)\s`
+      # as written, 2 after stripping ANSI). See the dated correction on PR #219. Replace this value
+      # with the first green run's per-step numbers, or drop it back to 20000 if that run shows
+      # nothing needs more.
       - name: Census — nine roots, two captures, NO refusal permitted
         shell: bash
         env:
