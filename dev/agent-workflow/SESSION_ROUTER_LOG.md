@@ -6001,3 +6001,15 @@ The acceptance-world gap closed a different way: `boot.mjs` mounts `dsh-agent-te
 **账本重述，因为它差点被写错：** 已公布的容差集**仍是 9 个具名红**，从未包含 a4p7 身份；变化的是 a4p7 自己的判定，它测的是运行环境（未构建的 `packages/client/dist`、未提交的 `dist`、负载下 eslint scratch 的 ENOENT——三次红、三个外部原因），而 c9f20ace 消除的正是这种抖动。对已公布集合：`NEW=0 FIXED=0`。master 总量 508 文件 / 6385 条腿；基线文档自带的 6373 只是上下文，**判定看身份集合**。
 
 **本轮改动的待办：** merge-gate 的 typecheck 腿仍在 grep pnpm/tsc 人类文本，属**已发现但刻意留下**（着色是包住那些片段而非插入其中；修它等于重写另一条腿的契约，另开一个改动）；runner 着色触发因子仍未识别（workflow 里 dump 一次 env 就能定）；`--census-test-timeout 90000` 不再是无根据的猜测——它压过语料里最大的自带预算（S13 的 60 s），而首次托管绿就是在它之下达成的，但仍**从未被逐腿测量收窄**；`census-runtime` 要成为 required，需**下一个独立提交上连续第二次绿**，因为"修好仪器的那次运行"恰是最容易自我恭维的一次。RULING 5-B 仍归人（复审提出的治理隔离中间路径已记为首选候选）。**§7.7 人工验收 owner=人、NOT_RUN。PR 合并 ≠ 实现完成 ≠ 人工验收 ≠ 阶段关闭。**
+
+## 2026-10-09 round 49 (coordinator): 托管 census 在 master 上第一次变红——两条捕获对同一棵树给出了不同答案
+
+Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个新红 —— `a4p75-composition-smoke-classification.test.ts > composition-smoke verdict against this repository > never reports a passing gate over a step it did not run`。捕获 `508f/6397l` 两次（6397 = 6385 + G1 的 12 条 W13，说明 census 正确数到了新立的法）。
+
+**关键测量：同一棵树、同一台 runner、相隔几分钟的两条捕获互相不同意。** 捕获 1 里这个文件是绿的（54 tests、6453 ms、0 条 FAIL）；捕获 2 里 54 条中 1 条红，失败文本点出一个缺失的构建产物——`this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js … （build output root packages/client/dist carries 400 file(s)）`。也就是说：**composition-smoke 的 live leg 在 census 仍在跑别的腿的时候，用工作区的实时构建状态来判定**，而两次捕获取并集的评级方式把这份耦合变成了一次抛硬币。
+
+**已经确立的**：那条腿的判定不是被测树的函数——实测，同一提交两条捕获互相矛盾。**尚未确立的**：是谁在两次读之间移除或重写了那个路径，还是读与一次仍在进行的 placement 撞上了。下一步是把机制指出来；把它改名叫"flaky"是本仓库在 round 39 干过、并为此付了一整个阶段房租的事。
+
+**因此被这份发现钉住的决定**：`census-runtime` **不**设为 required——我定的"第二个独立绿"其实已被 run 1842a4a 与 61e5822 满足，但我选择用眼前的 master 红推翻自己的规则，而不是把规则合理化成能放过这次红的形状；**不加豁免**、不用 `--allow-refused`、不把该身份放进容差集；那两次绿仍然成立，但它们证明的是 runner 有能力判这份 census，不是 census 是确定性的。
+
+同轮记录：master 上的一次 push（`c4e4c0b7`）被本 workflow 自己的 `cancel-in-progress` 取消了（记录落地时）——按它的设计是对的（"master 指最新状态"），但这意味着**这个 job 不提供逐提交的 master census 审计**，把它读成那种审计的人会被误导。**PR 合并 ≠ 实现完成 ≠ 人工验收 ≠ 阶段关闭。**
