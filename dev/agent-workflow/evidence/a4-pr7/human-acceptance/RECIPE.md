@@ -32,6 +32,17 @@ pnpm run check:artifacts:head                     # 提交产物 = HEAD 一致
 ln -sfn /home/user/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use tests/deepseek-harness-test-use
 ```
 
+脚本的 `--repo` 默认是**脚本自己所在的那个检出**。在 worktree 里跑本目录的脚本时，那个 worktree 通常没有
+`packages/*/dist`，脚本会明确报缺哪个产物——此时要么在 worktree 里 `pnpm install && pnpm build`，
+要么直接指向已构建好的主检出：
+
+```bash
+node make-corrupt-world.mjs   --repo /home/user/dsh-plugins/dsh-agent-team --copy-only
+node verify-corrupt-world.mjs --repo /home/user/dsh-plugins/dsh-agent-team --expect-count 0
+```
+
+（`--repo` 只决定"用哪套构建产物 + 哪个 `tests/homes/`"，世界路径始终是 `<repo>/tests/homes/<name>`。）
+
 > 为什么第 0 步不能跳：`make-corrupt-world.mjs` 的"写"就是 `packages/runtime/dist/**` 里的
 > `openTeamDomain` + `LedgerRepository`，`verify-corrupt-world.mjs` 的"读"也是。缺产物时脚本会明确报缺哪个文件。
 
