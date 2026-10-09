@@ -354,12 +354,15 @@ export async function refuseRunningHost(label, world) {
  * recognisable one makes the row findable by the person cleaning up.
  *
  * @param {string} rootSessionId - the TeamSession this row is filed under.
+ * @param {string} [requestId] - the sentinel identity; one per damaged row, so a
+ *   world holding MORE THAN ONE damaged Team can carry both (the ledger of a world
+ *   is shared, and idempotence is keyed by this id — see `findDamagedRowSequence`).
  * @returns {Record<string, unknown>} the payload (canonicalisation is the repository's job).
  */
-export function damagedControlRow(rootSessionId) {
+export function damagedControlRow(rootSessionId, requestId = DAMAGE_REQUEST_ID) {
   void rootSessionId // the entry carries the root; the payload deliberately names nobody
   return {
-    requestId: DAMAGE_REQUEST_ID,
+    requestId,
     kind: 'leader-approval',
     requester: { kind: 'human', humanId: 'a4-w5-human-acceptance' },
     subject: 42,
@@ -375,13 +378,14 @@ export function damagedControlRow(rootSessionId) {
 /**
  * Find the damaged row (idempotence probe) among the durable ledger entries.
  * @param {Array<{factType: string, sequence: number, payload: unknown}>} entries - `ledger.list()`.
+ * @param {string} [requestId] - which damaged row to look for (defaults to the recipe's own).
  * @returns {number|undefined} the ledger sequence when present.
  */
-export function findDamagedRowSequence(entries) {
+export function findDamagedRowSequence(entries, requestId = DAMAGE_REQUEST_ID) {
   for (const entry of entries) {
     if (entry.factType !== 'control-request-recorded') continue
     const payload = entry.payload
-    if (payload !== null && typeof payload === 'object' && payload['requestId'] === DAMAGE_REQUEST_ID) {
+    if (payload !== null && typeof payload === 'object' && payload['requestId'] === requestId) {
       return entry.sequence
     }
   }
