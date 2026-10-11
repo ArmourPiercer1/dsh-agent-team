@@ -119,6 +119,25 @@ Structural rules (all fail loudly with a classified reason):
   `displayName` (≤128), `description` (≤4096), `persona` (**required**,
   non-empty, ≤32768), `modelPreference`, `contextPolicy`, `capabilities`.
   (v2 ADDITIONALLY accepts a per-template `requirements` — §4.2.)
+- **Control characters: prose fields and identifier fields have different
+  rules.** `persona` and `description` (top level, per template, and per
+  policy state) are prose, so tab, newline and carriage return are legal in
+  them — write a long `persona` as a YAML block scalar and its newlines are
+  part of the text:
+
+  ```yaml
+  leader:
+    templateId: leader
+    persona: |
+      You lead this team.
+
+      Follow TEAM_DESIGN.md section by section.
+  ```
+
+  Every OTHER control character (the rest of C0, plus DEL) is refused in prose
+  as well. Identifier-shaped fields — `blueprintId`, `revision`, `templateId`,
+  `displayName`, `modelPreference`, `contextPolicy` — keep the strict ban: no
+  control character, no whitespace, so a `displayName` never spans two lines.
 - **capabilities**: `teamTools`, `builtinToolDeny`, `skills`, `mcp` (all four
   REQUIRED when the block is present) + optional `permissions`.
 - **permissions policy**: `default`, `allow`, `ask`, `deny` (all required).

@@ -49,9 +49,30 @@ import { BLUEPRINT_AUTHORITY_ENVELOPE_EXEC_MATCHER_FIELDS, BLUEPRINT_AUTHORITY_E
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
 import { deriveContentHash } from './hash.js';
 import { parseModelPreferenceToken } from './model-preference.js';
-/** Control characters forbidden in any string field (mirrors contracts). */
+/**
+ * Control characters forbidden in an identifier-shaped string field
+ * (mirrors contracts). One scanner for everything would have been simpler
+ * and wrong: `persona` and `description` are prose, and a YAML block scalar
+ * (`persona: |`) decodes to a string whose newlines ARE the text, so this
+ * pattern rejects every multi-line role brief a blueprint can be authored
+ * with. So the ban stays here — where a control character is actually
+ * hostile (template ids, model tokens, context-policy names, display names
+ * that get rendered into a list) — and prose is read through the prose
+ * scanner below instead.
+ */
 // eslint-disable-next-line no-control-regex -- intentional scanner: rejects control characters in blueprint strings
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
+/**
+ * The prose scanner: the same C0/DEL ban MINUS the three characters a
+ * document legitimately contains — tab (0x09), newline (0x0A) and carriage
+ * return (0x0D). `carriage return` is included because a CRLF-authored
+ * blueprint is a normal thing an operator does in a Windows editor, not a
+ * smuggling attempt. Every other C0 control and DEL stays banned in prose
+ * too: they have no use in text a human reads, and they are what a log line
+ * or a terminal render would end up hiding.
+ */
+// eslint-disable-next-line no-control-regex -- intentional scanner: prose allows tab, newline and carriage return only
+const CONTROL_CHARS_IN_PROSE = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 // ---------------------------------------------------------------------------
 // small strict field readers (fail loudly, never default)
 // ---------------------------------------------------------------------------
@@ -69,6 +90,13 @@ function requireField(record, field, path) {
  * Read a string field (optional or required) with length/control-char
  * rules. Optional fields, when present, must also be non-empty after
  * trimming. Returns `undefined` when the field is absent.
+ *
+ * `multiline: true` selects the prose scanner: the field is free text, so
+ * tab / newline / carriage return are legal and only the remaining C0
+ * controls plus DEL are refused. Every field that is NOT free text keeps the
+ * default strict scanner — leaving this flag off an identifier is what keeps
+ * a newline out of an id, which is exactly the mistake this split was made
+ * to avoid repeating in the other direction.
  */
 function takeString(record, field, path, opts) {
     const fieldPath = `${path}.${field}`;
@@ -87,8 +115,10 @@ function takeString(record, field, path, opts) {
     if (value.length > opts.maxLength) {
         throw teamContractError('MALFORMED_DTO', `field ${fieldPath} exceeds max length ${opts.maxLength} (${value.length})`, { path: fieldPath, maxLength: opts.maxLength });
     }
-    if (CONTROL_CHARS.test(value)) {
-        throw teamContractError('MALFORMED_DTO', `field ${fieldPath} contains control characters`, { path: fieldPath });
+    if ((opts.multiline === true ? CONTROL_CHARS_IN_PROSE : CONTROL_CHARS).test(value)) {
+        throw teamContractError('MALFORMED_DTO', opts.multiline === true
+            ? `field ${fieldPath} contains control characters (prose allows tab, newline and carriage return)`
+            : `field ${fieldPath} contains control characters`, { path: fieldPath });
     }
     const trimmed = value.trim();
     if (trimmed.length === 0) {
@@ -197,10 +227,12 @@ function validateTemplate(raw, path, role, schemaVersion) {
     const description = takeString(record, 'description', path, {
         required: false,
         maxLength: DESCRIPTION_MAX_LENGTH,
+        multiline: true,
     });
     const persona = takeString(record, 'persona', path, {
         required: true,
         maxLength: PERSONA_MAX_LENGTH,
+        multiline: true,
     }); // required:true never yields undefined: takeString throws instead
     const modelPreference = takeString(record, 'modelPreference', path, {
         required: false,
@@ -789,6 +821,7 @@ export function validateBlueprintDocument(raw) {
     const description = takeString(record, 'description', '$', {
         required: false,
         maxLength: DESCRIPTION_MAX_LENGTH,
+        multiline: true,
     });
     // --- exactly one complete LeaderTemplate (Architecture §5.3) -------------
     const leader = validateTemplate(requireField(record, 'leader', '$'), '$.leader', 'leader', schemaVersion);
@@ -894,6 +927,7 @@ export function validateBlueprintDocument(raw) {
         const stateDescription = takeString(state, 'description', statePath, {
             required: false,
             maxLength: DESCRIPTION_MAX_LENGTH,
+            multiline: true,
         });
         const fieldsRaw = takeArray(state, 'fields', statePath) ?? [];
         const fields = fieldsRaw.map((field, fieldIndex) => {
