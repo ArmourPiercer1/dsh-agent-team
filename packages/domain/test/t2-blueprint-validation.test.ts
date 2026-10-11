@@ -64,6 +64,42 @@ describe('t2 validation: whole-document, all-or-nothing', () => {
       unknownFields: ['extraField'],
     })
   })
+
+  it('accepts a YAML block-scalar persona — how a real blueprint is authored', () => {
+    // The authored form, not a hand-decoded object: `persona: |` is the
+    // normal way to write a long role brief, and it decodes to a string
+    // containing newlines. Before the split scanner this threw
+    // `MALFORMED_DTO: field $.leader.persona contains control characters`.
+    const src = [
+      '---',
+      'schemaVersion: 3',
+      'blueprintId: team.min',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: |',
+      '    你是本团队的 Leader。',
+      '',
+      '    严格按 TEAM_DESIGN.md 的分层执行。',
+      'members: []',
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
+      'quotas:',
+      '  team:',
+      '    maxInstances: 1',
+      'metadata: {}',
+      '---',
+      '',
+    ].join('\n')
+    const core = parseBlueprint(src)
+    expect(core.leader.persona).toContain('\n')
+    expect(core.leader.persona).toBe('你是本团队的 Leader。\n\n严格按 TEAM_DESIGN.md 的分层执行。')
+  })
 })
 
 /** A valid minimal document as a plain JS object (no YAML involved). */
@@ -115,6 +151,59 @@ describe('t2 validation: validateBlueprintDocument on decoded values', () => {
   it('rejects control characters in string fields', () => {
     expectCode(
       () => validateBlueprintDocument(jsDoc({ leader: { templateId: 'leader', persona: 'Bad\u0001persona' } })),
+      'MALFORMED_DTO',
+    )
+  })
+
+  // Prose fields are prose. `persona` is a long role brief and `description`
+  // is free text; a YAML block scalar (`persona: |`) decodes to a string
+  // whose newlines ARE the text, so the scanner that bans every C0 character
+  // rejected every multi-line persona a blueprint could be authored with.
+  // These pin the split: the three document whitespaces (tab, newline,
+  // carriage return) pass in prose, every other C0 control and DEL still
+  // fails, and identifier-shaped fields keep the strict ban.
+  it('accepts a multi-line persona and keeps its inner newlines', () => {
+    const core = validateBlueprintDocument(
+      jsDoc({ leader: { templateId: 'leader', persona: '你是 Leader。\n\n严格按设计执行。\n' } }),
+    )
+    expect(core.leader.persona).toContain('\n')
+    // takeString trims the value, so a block scalar's trailing newline is
+    // dropped — the inner blank line is what has to survive.
+    expect(core.leader.persona).toBe('你是 Leader。\n\n严格按设计执行。')
+  })
+
+  it('accepts tab and carriage return in prose fields', () => {
+    const core = validateBlueprintDocument(
+      jsDoc({
+        description: '第一行\r\n\t缩进的续行',
+        leader: { templateId: 'leader', persona: '角色:\ta\r\nb' },
+      }),
+    )
+    expect(core.leader.persona).toBe('角色:\ta\r\nb')
+    expect(core.description).toBe('第一行\r\n\t缩进的续行')
+  })
+
+  it('still rejects the other C0 controls and DEL in prose', () => {
+    for (const control of ['\u0000', '\u001f', '\u007f']) {
+      expectCode(
+        () =>
+          validateBlueprintDocument(
+            jsDoc({ leader: { templateId: 'leader', persona: `好${control}的 persona` } }),
+          ),
+        'MALFORMED_DTO',
+      )
+    }
+  })
+
+  it('keeps the strict control-character ban on identifier-shaped fields', () => {
+    // A newline in a display name would break every list that renders it;
+    // the prose fix must not reach these.
+    expectCode(() => validateBlueprintDocument(jsDoc({ displayName: '一行\n二行' })), 'MALFORMED_DTO')
+    expectCode(
+      () =>
+        validateBlueprintDocument(
+          jsDoc({ leader: { templateId: 'leader', persona: 'Lead.', displayName: 'a\nb' } }),
+        ),
       'MALFORMED_DTO',
     )
   })
