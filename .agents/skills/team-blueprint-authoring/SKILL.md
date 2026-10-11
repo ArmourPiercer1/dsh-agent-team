@@ -240,6 +240,25 @@ requirement's subject is matched against that observed kind.
   the pre-Alpha.3 series (PR-E §E.3, incl. the live host-side observer).
   Naming a requirement after a preset id (e.g. `team-small-ctb`) is NO
   LONGER matched — the world fact is keyed by the observed kind.
+- **Known gap: a bespoke preset id cannot satisfy `standard` from the client
+  today, and no blueprint edit can fix that.** The client builds the persona
+  fact from a static id table
+  (`PRESET_PERSONA_KIND_ROSTER[row.id] ?? row.id`,
+  `packages/client/src/model/team-intent-model.ts`) instead of a host-side
+  observation, so a preset whose id is not in that table is observed as
+  **its own id** — a guess, which this section forbids above. The result is a
+  FATAL `PERSONA_INCOMPATIBLE` for a preset that may well have a composable
+  persona. Two blueprint-side "fixes" do NOT work and must not be tried:
+  naming the requirement after the bespoke id (the closed set is exactly
+  `standard`, so it is refused at parse time as
+  `unknown required persona kind`), and `optional: true` (a `persona`-type
+  requirement is FATAL at the engine level regardless of `complete` —
+  `packages/runtime/activation/checks.ts`, the documented `optional` mapping).
+  What a blueprint CAN do is omit the `persona` requirement entirely (an
+  empty `requirements` list parses), which stops asserting the kind — accept
+  that loss explicitly rather than silently. The real fix is client-side
+  (report `unresolved`, never the id) plus a seam that carries the preset's
+  observed persona kind.
 - Validation split: a **v2** document's structured persona requirement
   subjects are validated against the closed set at parse time (any other
   subject → `MALFORMED_DTO`, `unknown required persona kind`). A **v1**
