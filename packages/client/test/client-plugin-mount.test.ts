@@ -41,7 +41,7 @@
  * the coordinator's round internals (the dedicated coordinator unit
  * test — this file drives the coordinator through the MOUNT's wiring).
  */
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { TeamSessionId } from '../../contracts/src/index.js'
 import {
@@ -1406,6 +1406,10 @@ describe('repair 20260927 client mount — the projection states in the view hoo
 // disabled → default-only (never the full roster, never an empty roster);
 // disabled + no usable default → fail-visible (no fallback to another
 // usable preset — the plugin must not decide the host's policy).
+// The policy belongs to an EXPLICIT `false` only: the field's state space is
+// `{ true, false, ABSENT }` and every host since the preset registry retired
+// the key sends ABSENT (T5–T7) — reading that as `false` trimmed the roster
+// to the default row on every real host.
 // ---------------------------------------------------------------------------
 
 describe('F2 preset roster policy (0.1.7 modeSelectionEnabled)', () => {
@@ -1485,6 +1489,83 @@ describe('F2 preset roster policy (0.1.7 modeSelectionEnabled)', () => {
       await expect(m.listAgentPresets()).rejects.toThrow(
         /modeSelectionEnabled=false.*no usable default/,
       )
+    } finally {
+      m.dispose()
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // T5–T7 — the THIRD payload state. T1–T4 cover the two the F2 fix read;
+  // the field's state space is `{ true, false, ABSENT }`, and ABSENT is what
+  // every current host sends: `modeSelectionEnabled` is a RETIRED field the
+  // registry no longer declares — the roster it answers is `{ presets }`
+  // alone (host `packages/preset/agent-preset-registry/src/types.ts`
+  // `AgentPresetRoster`, `src/index.ts` `remoteExportList`), and a profile
+  // patch that still carries the key is neither read nor rewritten (host
+  // `tests/registry.spec.ts` — "ignores a retired modeSelectionEnabled field
+  // in the user patch"). Reading the absent key as `false` is what pinned the
+  // runtime-preset chooser to the single default row on every real host; an
+  // absent key means the host imposed no such policy, so it shows the full
+  // usable roster exactly like `true`. The trimming and the fail-visible
+  // branch belong to an EXPLICIT `false` and to nothing else.
+  // -------------------------------------------------------------------------
+
+  /** Mount one fixture whose roster payload carries NO retired key. */
+  const mountPresetsWithoutTheRetiredKey = (
+    presets: readonly TeamAgentPresetRow[],
+  ): { readonly listAgentPresets: () => Promise<readonly unknown[]>; readonly dispose: () => void } => {
+    const f = makeMount({ presets })
+    // The payload shape the pinned host baseline actually answers with
+    // (`{ presets }`), replacing the fixture default of `true`.
+    vi.spyOn(f.ctx.remote.agentPresets, 'list').mockResolvedValue({
+      ok: true,
+      value: { presets },
+    })
+    applyTeamMount(f.ctx, { config: undefined, components: f.components })
+    const viewFace = viewFaceOf(f, 't1')
+    const creation = viewFace.creation
+    if (creation === undefined) throw new Error('F2 retired-key test: creation face missing')
+    return {
+      listAgentPresets: () => creation.listAgentPresets(),
+      dispose: f.disposeAll,
+    }
+  }
+
+  it('T5 — retired key ABSENT (every current host): the full usable roster stays visible, broken rows still filtered', async () => {
+    const m = mountPresetsWithoutTheRetiredKey([
+      { id: 'standard', name: 'Standard', isDefault: true },
+      { id: 'minimal', name: 'Minimal', isDefault: false },
+      { id: 'ptc', name: 'PTC', isDefault: false, broken: 'preset activation failed' },
+    ])
+    try {
+      expect(await m.listAgentPresets()).toEqual([
+        { id: 'standard', name: 'Standard', description: undefined, isDefault: true },
+        { id: 'minimal', name: 'Minimal', description: undefined, isDefault: false },
+      ])
+    } finally {
+      m.dispose()
+    }
+  })
+
+  it('T6 — retired key ABSENT and no row flagged default: the full roster still shows (no fail-visible, no policy invented)', async () => {
+    const m = mountPresetsWithoutTheRetiredKey([
+      { id: 'minimal', name: 'Minimal', isDefault: false },
+      { id: 'standard', name: 'Standard', isDefault: false },
+    ])
+    try {
+      expect(await m.listAgentPresets()).toEqual([
+        { id: 'minimal', name: 'Minimal', description: undefined, isDefault: false },
+        { id: 'standard', name: 'Standard', description: undefined, isDefault: false },
+      ])
+    } finally {
+      m.dispose()
+    }
+  })
+
+  it('T7 — retired key ABSENT with an EMPTY roster: the empty roster is returned, never a fail-visible throw', async () => {
+    const m = mountPresetsWithoutTheRetiredKey([])
+    try {
+      expect(await m.listAgentPresets()).toEqual([])
     } finally {
       m.dispose()
     }

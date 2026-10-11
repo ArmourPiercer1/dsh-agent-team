@@ -1961,16 +1961,29 @@ var __dshFactory = (require) => {
 			            // the chooser is disabled but no usable default exists, fail
 			            // VISIBLE — never fall back to another usable preset (that would be
 			            // the plugin deciding the host's policy).
+			            //
+			            // The policy keys on an EXPLICIT `false` and on nothing else. The
+			            // field is retired on the host — see `TeamAgentPresetsListResult`: the
+			            // preset registry no longer declares it (`remoteExportList` answers
+			            // `{ presets }`) and leaves a stale patch entry unread, so an ABSENT
+			            // key is what every current host actually answers, and absence carries
+			            // no statement about mode selection. The previous
+			            // `modeSelectionEnabled ? … : …` read folded absence into `false`, so
+			            // every real host was rendered as "chooser closed" and the runtime
+			            // preset control showed the one default row — the state an operator
+			            // reads as "the plugin cannot see the presets". Absence therefore
+			            // behaves exactly like `true`: the full usable roster.
 			            const result = await ctx.remote.agentPresets.list();
 			            if (result.ok === false) {
 			                throw new Error(`agentPresets/list: ${result.error.code} ${result.error.message}`);
 			            }
 			            const { presets, modeSelectionEnabled } = result.value;
 			            const usable = presets.filter((row) => row.broken === undefined);
-			            const visible = modeSelectionEnabled
-			                ? usable
-			                : usable.filter((row) => row.isDefault === true);
-			            if (!modeSelectionEnabled && visible.length === 0) {
+			            const chooserClosed = modeSelectionEnabled === false;
+			            const visible = chooserClosed
+			                ? usable.filter((row) => row.isDefault === true)
+			                : usable;
+			            if (chooserClosed && visible.length === 0) {
 			                throw new Error('agentPresets/list: mode selection is disabled (modeSelectionEnabled=false) ' +
 			                    'but the host roster declares no usable default preset');
 			            }
