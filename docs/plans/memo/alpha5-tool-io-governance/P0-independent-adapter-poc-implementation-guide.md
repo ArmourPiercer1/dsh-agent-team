@@ -4,7 +4,7 @@
 >
 > **编写日期：2026-10-16**。目标宿主 **DSH `0.2.0-rc.2` @ `639ed015397290b3745d163aafe02ffee4aa3f84`**，版本与测试路径仍以 `tests/paths.mjs` 为运行时唯一来源。对更新版 DSH 的实验必须单独标注，不可替代 pinned baseline。
 >
-> **权威与约束：** [Alpha.5 ADR](./ADR-alpha5-tool-io-governance.md) `8、[Architecture V2](./architecture.md) `14、[A5-FORK-001](./tool-fork-debt.md)、[仓库红线](../../../AGENTS.md)、[执行路由](../../../../docs/ROUTER_RULES.md) `0、[测试规程](../../../../docs/TEST_METHODS.md)。本文件为 `docs/plans/memo/` 中的设计阶段计划，不能覆盖在行 Alpha.4 计划或冻结历史文档。涉及路径如不确定，以文件真实位置为准；每个 PoC 执行前重新读取这些规范。
+> **权威与约束：** [Alpha.5 ADR](./ADR-alpha5-tool-io-governance.md) §8、[Architecture V2](./architecture.md) §14、[A5-FORK-001](./tool-fork-debt.md)、[仓库红线](../../../../AGENTS.md)、[执行路由](../../../ROUTER_RULES.md) §0、[测试规程](../../../TEST_METHODS.md)。本文件为 `docs/plans/memo/` 中的设计阶段计划，不能覆盖在行 Alpha.4 计划或冻结历史文档。涉及路径如不确定，以文件真实位置为准；每个 PoC 执行前重新读取这些规范。
 
 ## 0. 决策目标与研究方法
 
