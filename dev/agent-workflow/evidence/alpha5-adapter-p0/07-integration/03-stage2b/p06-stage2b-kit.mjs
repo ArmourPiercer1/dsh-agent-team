@@ -114,6 +114,10 @@ const DISPOSE_TOKEN = `A5P0DISP_${RUN_STAMP}`
 const ADAPTER_MARK = `A5P0_ADAPTER_RAN_${RUN_STAMP}`
 const SEED_UNIQUE = `A5P0_SEED_CONTENT_${RUN_STAMP}`
 const SEED_FILE = join(WORKSPACE, `a5p0-seed-${RUN_STAMP}.txt`)
+// Token carriers ride the ALLOWED `read` name (alpha.2: the allow lane must
+// not carry a whole-tool bash rule), so the tokens travel in the file path.
+const ARM_FILE = join(WORKSPACE, `a5p0-arm-${ARM_TOKEN}.txt`)
+const DISPOSE_FILE = join(WORKSPACE, `a5p0-dispose-${DISPOSE_TOKEN}.txt`)
 
 const TRIGGER_RE = /A5P0MK_[A-Z0-9]+_[0-9T:.-]+/
 
@@ -304,7 +308,6 @@ function savedBlueprintYaml(denyList) {
     '      permissions:', '        default: ask',
     '        allow:',
     '          - tool: read', '            resource:', '              kind: any',
-    '          - tool: bash', '            resource:', '              kind: any',
     '        ask: []',
     '        deny:', '          - tool: read', '            resource:', '              kind: subtree', '              path: runtime',
   ]
@@ -481,7 +484,7 @@ function discoverReadArgKey(req) {
   return first ?? 'file_path'
 }
 
-const M1_PROMPT = `${MK_M1} Follow this script EXACTLY, one tool call per turn: (1) read the seed file ${SEED_FILE}; (2) bash: echo ${ARM_TOKEN}; (3) read ${SEED_FILE} again; (4) bash: echo ${DISPOSE_TOKEN}; (5) read ${SEED_FILE} again; (6) finish. Reply with the final marker when done.`
+const M1_PROMPT = `${MK_M1} Follow this script EXACTLY, one tool call per turn: (1) read ${SEED_FILE}; (2) read ${ARM_FILE}; (3) read ${SEED_FILE} again; (4) read ${DISPOSE_FILE}; (5) read ${SEED_FILE} again; (6) finish. Reply with the final marker when done.`
 const M2_PROMPT = `${MK_M2} Call read on ${SEED_FILE} exactly once, then finish.`
 
 function makeDecide() {
@@ -496,9 +499,9 @@ function makeDecide() {
     if (lastUser.includes(MK_M1)) {
       switch (tools) {
         case 0: st.readArgKey = discoverReadArgKey(req); return toolCall('read', { [st.readArgKey]: SEED_FILE })
-        case 1: return toolCall('bash', { command: `echo ${ARM_TOKEN}`, timeoutMs: 30000 })
+        case 1: return toolCall('read', { [st.readArgKey]: ARM_FILE })
         case 2: return toolCall('read', { [st.readArgKey]: SEED_FILE })
-        case 3: return toolCall('bash', { command: `echo ${DISPOSE_TOKEN}`, timeoutMs: 30000 })
+        case 3: return toolCall('read', { [st.readArgKey]: DISPOSE_FILE })
         case 4: return toolCall('read', { [st.readArgKey]: SEED_FILE })
         case 5: return { kind: 'text', content: 'A5P0_M1_DONE' }
         default: return { kind: 'text', content: `A5P0_M1_FALLTHROUGH tools=${String(tools)}` }
@@ -575,6 +578,8 @@ async function main() {
   rmSync(HOME, { recursive: true, force: true })
   mkdirSync(WORKSPACE, { recursive: true })
   writeFileSync(SEED_FILE, `a5p0 stage2b seed file (run ${RUN_STAMP})\nsecond line\n${SEED_UNIQUE}\nfourth line\n`)
+  writeFileSync(ARM_FILE, `arm carrier file (native content irrelevant: the path token arms the scope) ${ARM_TOKEN}\n`)
+  writeFileSync(DISPOSE_FILE, `dispose carrier file ${DISPOSE_TOKEN}\n`)
   log(`world materialized; seed file written (${SEED_FILE})`)
 
   const mock = await startMockModel({ port: 0, decide: makeDecide(), log: (l) => { try { writeFileSync(join(RUN_DIR, 'mock.log'), l + '\n', { flag: 'a' }) } catch { /* best-effort */ } } })
@@ -627,7 +632,7 @@ async function main() {
     if (!catOk) fail('I2b')
 
     // Leader chain: create_member x2 + async delegate M1.
-    const l1Done = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_L1) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'A5P0_L1_DONE', 300_000, 'L1 leader chain done')
+    const l1Done = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_L1) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'A5P0_L1_DONE', 180_000, 'L1 leader chain done')
     if (l1Done === null) { check('I2c', 'I2: Leader (mock script) created both members and delegated to M1', false, `requests=${String(mock.requests.length)}`); fail('I2c') }
     const createResults = l1Done === null ? [] : toolMsgsOf(l1Done).slice(0, 2).map((m) => String(m.content ?? ''))
     writeEvidence('i2-member-create-results.json', createResults.map((c) => c.slice(0, 1500)))
@@ -651,7 +656,7 @@ async function main() {
     if (!(projHasMembers && newLive.length >= 2)) fail('I2d')
 
     // ══ I3: M1 native read (real body) ══
-    const m1native = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 1, 300_000, 'M1 native read result')
+    const m1native = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 1, 180_000, 'M1 native read result')
     const nativeResult = m1native === null ? '' : toolResultText(m1native, 0)
     writeEvidence('i3-native-read.json', { seq: m1native?.seq ?? null, result: nativeResult.slice(0, 1200) })
     const i3ok = check('I3', 'I3: member native tool REAL execution — scripted read returned the unique on-disk seed content',
@@ -659,47 +664,54 @@ async function main() {
       `result=${nativeResult.slice(0, 200)}`)
     if (!i3ok) fail('I3')
 
-    // ══ I4a: ARM (bash token) then same-name Adapter ══
-    const m1armed = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 3, 300_000, 'M1 ARM bash result')
+    // ══ I4a: ARM (token-bearing read) then same-name Adapter ══
+    // The pre-execute listener arms synchronously BEFORE the token call's own
+    // dispatch, so the arm call itself already lands on the Adapter (marker
+    // line 1); the next seed read is the asserted leg (marker line 2) and its
+    // native characteristics must be gone.
+    const m1armed = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 3, 180_000, 'M1 ARM read result')
     const armResult = m1armed === null ? '' : toolResultText(m1armed, 1)
-    writeEvidence('i4-arm-bash.json', { seq: m1armed?.seq ?? null, result: armResult.slice(0, 800) })
-    const m1adp = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 4, 300_000, 'M1 adapter read result')
+    writeEvidence('i4-arm-read.json', { seq: m1armed?.seq ?? null, result: armResult.slice(0, 800) })
+    const m1adp = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 4, 180_000, 'M1 adapter read result')
     const adpResult = m1adp === null ? '' : toolResultText(m1adp, 2)
     writeEvidence('i4-adapter-read.json', { seq: m1adp?.seq ?? null, result: adpResult.slice(0, 1200) })
     writeEvidence('i4-plugin-log.json', { pluginLog: existsSync(PLUGIN_LOG) ? readFileSync(PLUGIN_LOG, 'utf8').split('\n').slice(-40) : '<missing>' })
     const i4aok = check('I4a', 'I4: after restrict-first + same-name register (preset plugin, armed member scope) — the same read call yields the Adapter marker text and the native output characteristics are GONE',
-      adpResult.includes(ADAPTER_MARK) && !adpResult.includes(SEED_UNIQUE) && markerLineCount() === 1 && armResult.includes(ARM_TOKEN),
-      `adapterResult=${adpResult.slice(0, 160)} markerLines=${String(markerLineCount())}`)
+      adpResult.includes(ADAPTER_MARK) && !adpResult.includes(SEED_UNIQUE) && markerLineCount() === 2,
+      `adapterResult=${adpResult.slice(0, 160)} armResult=${armResult.slice(0, 120)} markerLines=${String(markerLineCount())}`)
     if (!i4aok) fail('I4a')
 
     // ══ I4b: control member (same boot, same preset, own scope never armed) ══
     const d2 = await apiPrompt(booted.origin, booted.cookie, CREATE_ROOT, `${MK_D2} Now delegate the control script to m-ctl (second member): one read of the seed file. rootSessionId=${CREATE_ROOT}`)
     if (d2.status !== 200) fail('I4b')
-    const m2done = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M2) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'A5P0_M2_DONE', 300_000, 'M2 control chain done')
+    const m2done = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M2) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'A5P0_M2_DONE', 180_000, 'M2 control chain done')
     const m2req = m2done === null ? null : mock.requests.find((r) => r.body !== null && lastUserTextOf(r).includes(MK_M2) && toolMsgsOf(r).length === 1)
     const ctlResult = m2req === undefined || m2req === null ? '' : toolResultText(m2req, 0)
     writeEvidence('i4-control-read.json', { seq: m2req?.seq ?? null, result: ctlResult.slice(0, 1200) })
     const i4bok = check('I4b', 'I4: control member (own scope NOT armed) keeps the native body — read returns seed content, no Adapter marker, marker file unchanged',
-      ctlResult.includes(SEED_UNIQUE) && !ctlResult.includes(ADAPTER_MARK) && markerLineCount() === 1,
+      ctlResult.includes(SEED_UNIQUE) && !ctlResult.includes(ADAPTER_MARK) && markerLineCount() === 2,
       `ctlResult=${ctlResult.slice(0, 160)} markerLines=${String(markerLineCount())}`)
     if (!i4bok) fail('I4b')
 
     // ══ I5: dispose (restrict KEPT) -> typed unknown, no native fallback ══
-    const m1disp = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 5, 300_000, 'M1 dispose bash result')
+    const m1disp = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 5, 180_000, 'M1 dispose-token read result')
     const dispResult = m1disp === null ? '' : toolResultText(m1disp, 3)
-    const m1unk = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 6, 300_000, 'M1 unknown-tool read result')
+    const m1unk = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 6, 180_000, 'M1 unknown-tool read result')
     const unkResult = m1unk === null ? '' : toolResultText(m1unk, 4)
     writeEvidence('i5-unknown-read.json', { seq: m1unk?.seq ?? null, disposeResult: dispResult.slice(0, 400), result: unkResult.slice(0, 1200) })
-    const m1Session = [...liveAfter].find((s) => newLive.includes(s)) ?? null
-    let sessionPage = null
-    if (m1Session !== null) {
-      sessionPage = await apiCall(booted.origin, booted.cookie, 'session/page', { sessionId: m1Session, limit: 200 }, 'a5page')
-      writeEvidence('i5-session-page.json', sessionPage.body ?? sessionPage)
+    // Session-event evidence: the public core read (session/page) over every
+    // member session (which id is M1 is not fixed, so scan all new sessions).
+    const memberPages = []
+    for (const sid of newLive.filter((s) => s !== CREATE_ROOT)) {
+      const page = await apiCall(booted.origin, booted.cookie, 'session/page', { sessionId: sid, limit: 200 }, 'a5page')
+      memberPages.push({ sessionId: sid, status: page.status, raw: page.body })
     }
-    const pageHasUnknown = sessionPage !== null && JSON.stringify(sessionPage.body ?? '').toLowerCase().includes('unknown')
-    const pageHasAdapter = sessionPage !== null && JSON.stringify(sessionPage.body ?? '').includes(ADAPTER_MARK)
+    writeEvidence('i5-session-pages.json', memberPages)
+    const pagesText = JSON.stringify(memberPages.map((p) => p.raw ?? null))
+    const pageHasUnknown = pagesText.toLowerCase().includes('unknown')
+    const pageHasAdapter = pagesText.includes(ADAPTER_MARK)
     const i5ok = check('I5', 'I5: safe-unload — after dispose (restrict kept) the same name yields the typed unknown-tool result in the turn (no native fallback: seed content absent, marker count unchanged)',
-      /unknown tool|unknown_tool/i.test(unkResult) && !unkResult.includes(SEED_UNIQUE) && markerLineCount() === 1,
+      /unknown tool|unknown_tool/i.test(unkResult) && !unkResult.includes(SEED_UNIQUE) && markerLineCount() === 2,
       `unkResult=${unkResult.slice(0, 200)} markerLines=${String(markerLineCount())} sessionPageUnknown=${String(pageHasUnknown)} sessionPageAdapter=${String(pageHasAdapter)}`)
     if (!i5ok) fail('I5')
     const m1done = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'A5P0_M1_DONE', 120_000, 'M1 chain done')

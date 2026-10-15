@@ -1,0 +1,658 @@
+{
+ "header": {
+  "task": "alpha5-adapter-p0 / 10-landlock-lanes（L1 受限读面 / L2 受控 spawn / L3 锁不可自解 / L4 策略+OS 双层 / TOCTOU）",
+  "utc": "2026-10-15T22:26:41Z",
+  "kernel": "6.8.0-142-generic",
+  "uid": 1000,
+  "landlock_abi": 4,
+  "model_reported_by_agent": "qwen3.8-flash-next",
+  "evidence_level": "fixture/子进程级；landlock 规则由测试代码编译；真实 Team adapter 集成属实施阶段",
+  "basis": "04-process/landlock-diag.sh ctypes 底座；ENFORCE-WORKS 前提已实证不重做"
+ },
+ "table": [
+  {
+   "lane": "L1",
+   "verdict": "OS_ENFORCED",
+   "rc": 0,
+   "checks": 13,
+   "checks_matched": 13,
+   "expected": "OS_ENFORCED",
+   "ok": true
+  },
+  {
+   "lane": "L1FD",
+   "verdict": "OS_ENFORCED_FORK_HANDOFF",
+   "rc": 0,
+   "checks": 6,
+   "checks_matched": 6,
+   "expected": "OS_ENFORCED_FORK_HANDOFF",
+   "ok": true
+  },
+  {
+   "lane": "L2",
+   "verdict": "OS_ENFORCED",
+   "rc": 0,
+   "checks": 7,
+   "checks_matched": 7,
+   "expected": "OS_ENFORCED",
+   "ok": true
+  },
+  {
+   "lane": "L3",
+   "verdict": "OS_ENFORCED_LOCK_IRREVERSIBLE",
+   "rc": 0,
+   "checks": 8,
+   "checks_matched": 8,
+   "expected": "OS_ENFORCED_LOCK_IRREVERSIBLE",
+   "ok": true
+  },
+  {
+   "lane": "L4",
+   "verdict": "OS_ENFORCED_AND_LEDGER_ZERO_ISSUED",
+   "rc": 0,
+   "checks": 5,
+   "checks_matched": 5,
+   "expected": "OS_ENFORCED_AND_LEDGER_ZERO_ISSUED",
+   "ok": true
+  },
+  {
+   "lane": "TOCTOU_A",
+   "verdict": "BY_DESIGN_FD_SURVIVES",
+   "rc": 0,
+   "checks": 2,
+   "checks_matched": 2,
+   "expected": "BY_DESIGN_FD_SURVIVES",
+   "ok": true
+  },
+  {
+   "lane": "TOCTOU_B",
+   "verdict": "MITIGATED_BY_CLOEXEC",
+   "rc": 0,
+   "checks": 2,
+   "checks_matched": 2,
+   "expected": "MITIGATED_BY_CLOEXEC",
+   "ok": true
+  }
+ ],
+ "legs": {
+  "L1": {
+   "mode": "L1",
+   "baseline_pre_restrict": {
+    "private/secret.txt": "OK",
+    "outside/outside.txt": "OK",
+    "home-fixture/.ssh/id_rsa": "OK",
+    "real ~/.ssh/config": "OK",
+    "/etc/shadow": "EACCES"
+   },
+   "raw_syscalls": [
+    "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=OK strerror='Success'",
+    "[SC] create_ruleset(attr16, handled_fs=0x7fff): rc=3 errno=OK strerror='Success'",
+    "[SC] add_rule(allowed, access=0x413e): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/(仅穿越+枚举,不泄露内容;diag§3.4), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/usr(exec链), access=0xd): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/etc(仅穿越,shadow 不可读), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(ld.so.cache(exec 链需要), access=0x4): rc=0 errno=OK strerror='Success'",
+    "[SC] prctl(PR_SET_NO_NEW_PRIVS,1): rc=0 errno=0",
+    "[SC] landlock_restrict_self: rc=0 errno=OK strerror='Success'"
+   ],
+   "checks": [
+    {
+     "name": "MECH 父进程 ruleset fd 跨 exec 不可用(readlink,先于自家 fd 分配)",
+     "kind": "MECH",
+     "expect": "ENOENT(FD_CLOEXEC=1,execve 即闭合)",
+     "got": "ENOENT",
+     "errno_strerror": "父侧 F_GETFD=0x1(FD_CLOEXEC=1)；⇒ 跨 exec 姿势必须子进程入口自编译（本腿）；fork 继承走 L1FD 腿",
+     "match": true
+    },
+    {
+     "name": "POS read allowed/read.txt (fresh fd)",
+     "kind": "POS",
+     "expect": "OK",
+     "got": "OK",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "NEG read private/secret.txt",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "Permission denied",
+     "match": true,
+     "baseline_pre_restrict": "OK"
+    },
+    {
+     "name": "NEG read outside/outside.txt (外部路径)",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "Permission denied",
+     "match": true,
+     "baseline_pre_restrict": "OK"
+    },
+    {
+     "name": "NEG read fixture-home/.ssh/id_rsa",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "Permission denied",
+     "match": true,
+     "baseline_pre_restrict": "OK"
+    },
+    {
+     "name": "NEG open real ~/.ssh/config (只 open 不 read)",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "Permission denied",
+     "match": true,
+     "baseline_pre_restrict": "OK",
+     "note": "真实凭据路径，open-only，零字节读取/披露"
+    },
+    {
+     "name": "NEG open /etc/shadow (只 open 不 read)",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "Permission denied",
+     "match": true,
+     "baseline_pre_restrict": "EACCES",
+     "note": "基线若已 EACCES 则 DAC 先拒（非 root），本腿为双保险；干净信号由 private/outside/ssh 腿承担"
+    },
+    {
+     "name": "NEG create private/newfile.txt",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "Permission denied",
+     "match": true
+    },
+    {
+     "name": "NEG create outside/newfile.txt (可写 fs 上的干净 landlock 写拒)",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "Permission denied",
+     "match": true
+    },
+    {
+     "name": "NEG append real ~/.bashrc",
+     "kind": "NEG",
+     "expect": null,
+     "got": "EROFS",
+     "errno_strerror": "Read-only file system",
+     "match": true,
+     "note": "任意 errno=拒即符合预期；若观测=EROFS 则为 harness 沙箱只读挂载先于 landlock（判定层=沙箱非 landlock，如实记录）；landlock 干净写拒信号=上两条腿"
+    },
+    {
+     "name": "NOTE listdir(real ~/.ssh) 可枚举(设计行为,仅目录名)",
+     "kind": "POS",
+     "expect": "OK",
+     "got": "OK",
+     "errno_strerror": "",
+     "match": true,
+     "note": "landlock READ_DIR 位合并 search+enumerate；'/' 授予穿越 ⇒ 枚举面存在；内容面由 READ_FILE 负控封死"
+    },
+    {
+     "name": "POS-exec cat allowed",
+     "kind": "POS",
+     "expect": "rc=0",
+     "got": "rc=0",
+     "errno_strerror": "SYNTHETIC-READABLE-OK",
+     "match": true
+    },
+    {
+     "name": "NEG-exec cat private/secret.txt",
+     "kind": "NEG",
+     "expect": "rc!=0 & Permission denied",
+     "got": "rc=1",
+     "errno_strerror": "cat: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-ada",
+     "match": true,
+     "note": "cat 本身可 exec（上腿证明），排除二进制不可读假阴性"
+    }
+   ],
+   "verdict": "OS_ENFORCED",
+   "parent": {
+    "abi": 4,
+    "policy_file": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/diag/results/policy-m-a5.json",
+    "child_rc": 0,
+    "private_dir_after": [
+     "secret.txt"
+    ],
+    "private_untouched": true
+   }
+  },
+  "L1FD": {
+   "mode": "L1FD",
+   "raw_syscalls": [
+    "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=OK strerror='Success'",
+    "[SC] create_ruleset(attr16, handled_fs=0x7fff): rc=3 errno=OK strerror='Success'",
+    "[SC] add_rule(allowed, access=0x413e): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/(仅穿越+枚举,不泄露内容;diag§3.4), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/usr(exec链), access=0xd): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/etc(仅穿越,shadow 不可读), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(ld.so.cache(exec 链需要), access=0x4): rc=0 errno=OK strerror='Success'",
+    "[MECH] 父 ruleset fd F_GETFD=0x1 FD_CLOEXEC=1（exec 即闭合，fork 仍继承）",
+    "[SC] prctl(PR_SET_NO_NEW_PRIVS,1): rc=0",
+    "[SC] restrict_self(fork 继承的父编译 ruleset fd): rc=0 errno=OK strerror='Success'"
+   ],
+   "checks": [
+    {
+     "name": "POS restrict_self(继承 fd, exec 前) rc=0",
+     "kind": "POS",
+     "expect": "OK",
+     "got": "OK",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "POS read allowed/read.txt",
+     "kind": "POS",
+     "expect": "OK",
+     "got": "OK",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "NEG read private/secret.txt",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "Permission denied",
+     "match": true
+    },
+    {
+     "name": "NEG create private/newfile.txt",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "Permission denied",
+     "match": true
+    },
+    {
+     "name": "POS-exec cat allowed（restrict→exec 任务链）",
+     "kind": "POS",
+     "expect": "rc=0",
+     "got": "rc=0",
+     "errno_strerror": "SYNTHETIC-READABLE-OK",
+     "match": true
+    },
+    {
+     "name": "NEG-exec cat private/secret.txt",
+     "kind": "NEG",
+     "expect": "rc!=0 & Permission denied",
+     "got": "rc=1",
+     "errno_strerror": "cat: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-ada",
+     "match": true
+    }
+   ],
+   "verdict": "OS_ENFORCED_FORK_HANDOFF",
+   "parent": {
+    "child_rc": 0,
+    "parent_raw_syscalls": [
+     "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=OK strerror='Success'",
+     "[SC] create_ruleset(attr16, handled_fs=0x7fff): rc=3 errno=OK strerror='Success'",
+     "[SC] add_rule(allowed, access=0x413e): rc=0 errno=OK strerror='Success'",
+     "[SC] add_rule(/(仅穿越+枚举,不泄露内容;diag§3.4), access=0x8): rc=0 errno=OK strerror='Success'",
+     "[SC] add_rule(/usr(exec链), access=0xd): rc=0 errno=OK strerror='Success'",
+     "[SC] add_rule(/etc(仅穿越,shadow 不可读), access=0x8): rc=0 errno=OK strerror='Success'",
+     "[SC] add_rule(ld.so.cache(exec 链需要), access=0x4): rc=0 errno=OK strerror='Success'",
+     "[MECH] 父 ruleset fd F_GETFD=0x1 FD_CLOEXEC=1（exec 即闭合，fork 仍继承）"
+    ],
+    "note": "ruleset fd 只能 fork 继承（CLOEXEC 挡 exec）；restrict_self 必须子进程调用；子进程在 fd 上仍可 add_rule ⇒ 防篡改边界=子进程入口是受信 adapter 运行时（notes §机制）"
+   }
+  },
+  "L2": {
+   "mode": "L2",
+   "raw_syscalls": [
+    "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=OK strerror='Success'",
+    "[SC] create_ruleset(attr16, handled_fs=0x7fff): rc=4 errno=OK strerror='Success'",
+    "[SC] add_rule(allowed, access=0x413e): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/(仅穿越+枚举,不泄露内容;diag§3.4), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/usr(exec链), access=0xd): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/etc(仅穿越,shadow 不可读), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(ld.so.cache(exec 链需要), access=0x4): rc=0 errno=OK strerror='Success'",
+    "[SC] prctl(PR_SET_NO_NEW_PRIVS,1): rc=0 errno=0",
+    "[SC] landlock_restrict_self: rc=0 errno=OK strerror='Success'"
+   ],
+   "checks": [
+    {
+     "name": "POS sh cat allowed/ok.txt",
+     "kind": "POS",
+     "expect": "rc=0",
+     "got": "rc=0",
+     "errno_strerror": "SYNTHETIC-OK-CONTROL",
+     "match": true,
+     "cmd": "cat ok.txt"
+    },
+    {
+     "name": "POS sh write allowed/sub/w_ok.txt",
+     "kind": "POS",
+     "expect": "rc=0",
+     "got": "rc=0",
+     "errno_strerror": "",
+     "match": true,
+     "cmd": "printf 'SYNTH-W-OK\\n' > sub/w_ok.txt"
+    },
+    {
+     "name": "NEG sh cat $A5_DENY_ABS (绝对 deny 路径)",
+     "kind": "NEG",
+     "expect": "rc!=0 & 'Permission denied'(EACCES)",
+     "got": "rc=1",
+     "errno_strerror": "cat: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll",
+     "match": true,
+     "cmd": "cat \"$A5_DENY_ABS\"",
+     "note": "OS 层拒：sh/cat 全部在 landlock 域内执行；fixture 未对命令文本做任何审查/过滤"
+    },
+    {
+     "name": "NEG-INJECT sh cat ../../private/secret.txt (相对穿越,命令文本含 deny 串)",
+     "kind": "NEG",
+     "expect": "rc!=0 & 'Permission denied'(EACCES)",
+     "got": "rc=1",
+     "errno_strerror": "cat: ../../private/secret.txt: Permission denied",
+     "match": true,
+     "cmd": "cat ../../private/secret.txt",
+     "note": "OS 层拒：sh/cat 全部在 landlock 域内执行；fixture 未对命令文本做任何审查/过滤"
+    },
+    {
+     "name": "NEG-INJECT sh cat \"${A5_DENY_DIR}/secret.txt\" (env 拼接,命令文本零 deny 字面量)",
+     "kind": "NEG",
+     "expect": "rc!=0 & 'Permission denied'(EACCES)",
+     "got": "rc=1",
+     "errno_strerror": "cat: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll",
+     "match": true,
+     "cmd": "cat \"${A5_DENY_DIR}/secret.txt\"",
+     "note": "OS 层拒：sh/cat 全部在 landlock 域内执行；fixture 未对命令文本做任何审查/过滤"
+    },
+    {
+     "name": "NEG sh append \"$HOME/.bashrc\" (fixture HOME)",
+     "kind": "NEG",
+     "expect": "rc!=0 & 'Permission denied'(EACCES)",
+     "got": "rc=2",
+     "errno_strerror": "sh: 1: cannot create /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lane",
+     "match": true,
+     "cmd": "printf X >> \"$HOME/.bashrc\"",
+     "note": "OS 层拒：sh/cat 全部在 landlock 域内执行；fixture 未对命令文本做任何审查/过滤"
+    },
+    {
+     "name": "NEG sh cat \"$HOME/.ssh/id_rsa\" (fixture HOME)",
+     "kind": "NEG",
+     "expect": "rc!=0 & 'Permission denied'(EACCES)",
+     "got": "rc=1",
+     "errno_strerror": "cat: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll",
+     "match": true,
+     "cmd": "cat \"$HOME/.ssh/id_rsa\"",
+     "note": "OS 层拒：sh/cat 全部在 landlock 域内执行；fixture 未对命令文本做任何审查/过滤"
+    }
+   ],
+   "verdict": "OS_ENFORCED",
+   "parent": {
+    "child_rc": 0,
+    "bashrc_sha_unchanged": true,
+    "private_untouched": true,
+    "homefix_untouched": true,
+    "w_ok_exists": true
+   }
+  },
+  "L3": {
+   "mode": "L3",
+   "raw_syscalls": [
+    "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=OK strerror='Success'",
+    "[SC] create_ruleset(attr16, handled_fs=0x7fff): rc=4 errno=OK strerror='Success'",
+    "[SC] add_rule(allowed, access=0x413e): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/(仅穿越+枚举,不泄露内容;diag§3.4), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/usr(exec链), access=0xd): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/etc(仅穿越,shadow 不可读), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(ld.so.cache(exec 链需要), access=0x4): rc=0 errno=OK strerror='Success'",
+    "[SC] prctl(PR_SET_NO_NEW_PRIVS,1): rc=0 errno=0",
+    "[SC] landlock_restrict_self: rc=0 errno=OK strerror='Success'",
+    "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=OK strerror='Success'",
+    "[SC] create_ruleset(attr16, handled_fs=0x7fff): rc=11 errno=OK strerror='Success'",
+    "[SC] add_rule(private(扩权尝试1), access=0x4): rc=0 errno=OK strerror='Success'",
+    "[SC] prctl(PR_SET_NO_NEW_PRIVS,1): rc=0 errno=0",
+    "[SC] landlock_restrict_self: rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(private(扩权尝试2,已消费rs1), access=0x6): rc=0 errno=OK strerror='Success'",
+    "[SC] create_ruleset(VERSION) after restrict: rc=4 errno=OK strerror='Success'"
+   ],
+   "checks": [
+    {
+     "name": "POS restrict 后 open+read allowed (持 fd)",
+     "kind": "POS",
+     "expect": "OK",
+     "got": "OK",
+     "errno_strerror": "21B",
+     "match": true
+    },
+    {
+     "name": "POS restrict 后 allowed 内新建+写",
+     "kind": "POS",
+     "expect": "OK",
+     "got": "OK",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "ESC-1 create+add_rule+restrict_self(授 private READ_FILE) 原始结果",
+     "kind": "ESC",
+     "expect": "记录原文",
+     "got": "rs=11 add=True restrict=0",
+     "errno_strerror": "syscall 层是否放行见 raw_syscalls；能力面见下一条",
+     "match": true
+    },
+    {
+     "name": "ESC-1 后 open private/secret.txt",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "",
+     "match": true,
+     "note": "域单调性 = 交集语义：restrict 只会收缩；syscall 可否调用 ≠ 能力是否扩大"
+    },
+    {
+     "name": "ESC-2 add_rule 到已 restrict 的 rs1",
+     "kind": "ESC",
+     "expect": "记录原文",
+     "got": "add_rule_ok=True",
+     "errno_strerror": "见 raw_syscalls",
+     "match": true
+    },
+    {
+     "name": "ESC-2 后 open private/secret.txt",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "ESC-3 create_ruleset(VERSION) after restrict",
+     "kind": "ESC",
+     "expect": "记录原文",
+     "got": "rc=4",
+     "errno_strerror": "成功≠扩权；能力面已被 ESC-1/2 探针否证",
+     "match": true
+    },
+    {
+     "name": "NOTE 二次 restrict 后原持 fd 仍可用(EOF='OK')",
+     "kind": "POS",
+     "expect": "OK",
+     "got": "OK",
+     "errno_strerror": "",
+     "match": true,
+     "note": "landlock=进程域终身棘轮，非可消费 grant；已交出的 fd 不被撤销 —— 差异见 notes §L3"
+    }
+   ],
+   "verdict": "OS_ENFORCED_LOCK_IRREVERSIBLE",
+   "parent": {
+    "child_rc": 0,
+    "allowed_newfile_created": true,
+    "private_dir_after": [
+     "secret.txt"
+    ]
+   }
+  },
+  "L4": {
+   "mode": "L4",
+   "raw_syscalls": [
+    "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=OK strerror='Success'",
+    "[SC] create_ruleset(attr16, handled_fs=0x7fff): rc=4 errno=OK strerror='Success'",
+    "[SC] add_rule(allowed, access=0x413e): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/(仅穿越+枚举,不泄露内容;diag§3.4), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/usr(exec链), access=0xd): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/etc(仅穿越,shadow 不可读), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(ld.so.cache(exec 链需要), access=0x4): rc=0 errno=OK strerror='Success'",
+    "[SC] prctl(PR_SET_NO_NEW_PRIVS,1): rc=0 errno=0",
+    "[SC] landlock_restrict_self: rc=0 errno=OK strerror='Success'"
+   ],
+   "checks": [
+    {
+     "name": "L4.pos adapter_read(allowed/read.txt)",
+     "kind": "POS",
+     "expect": "OK",
+     "got": "OK",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "L4.neg1 策略层拒 private（账本）",
+     "kind": "NEG",
+     "expect": "READ_DENIED & open-issued=0",
+     "got": "READ_DENIED issued=0 refused=1",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "L4.neg1 同路 OS 底复核 raw open private（绕过策略层=未适配旁路）",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "P0-3 里此旁路可直读；landlock OS 底使其同样 EACCES ⇒ 双层缺一不可",
+     "match": true,
+     "note": "负控双重拒：OS EACCES 且账本 0 次 issued"
+    },
+    {
+     "name": "L4.neg2 策略层拒 outside + OS 底复核",
+     "kind": "NEG",
+     "expect": "READ_DENIED & EACCES",
+     "got": "READ_DENIED+EACCES",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "L4.neg3 raw O_CREAT private/new（无策略层直接写）",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "",
+     "match": true
+    }
+   ],
+   "ledger": [
+    {
+     "member": "m-a5",
+     "req": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll/allowed/read.txt",
+     "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll/allowed/read.txt",
+     "stage": "open-issued"
+    },
+    {
+     "member": "m-a5",
+     "req": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll/private/secret.txt",
+     "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll/private/secret.txt",
+     "stage": "refused",
+     "code": "READ_DENIED"
+    },
+    {
+     "member": "m-a5",
+     "req": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/outside/outside.txt",
+     "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/outside/outside.txt",
+     "stage": "refused",
+     "code": "READ_DENIED"
+    }
+   ],
+   "verdict": "OS_ENFORCED_AND_LEDGER_ZERO_ISSUED",
+   "parent": {
+    "child_rc": 0,
+    "private_dir_after": [
+     "secret.txt"
+    ]
+   }
+  },
+  "TOCTOU_A": {
+   "mode": "TOCTOU-A",
+   "raw_syscalls": [
+    "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=OK strerror='Success'",
+    "[SC] create_ruleset(attr16, handled_fs=0x7fff): rc=5 errno=OK strerror='Success'",
+    "[SC] add_rule(allowed, access=0x413e): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/(仅穿越+枚举,不泄露内容;diag§3.4), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/usr(exec链), access=0xd): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/etc(仅穿越,shadow 不可读), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(ld.so.cache(exec 链需要), access=0x4): rc=0 errno=OK strerror='Success'",
+    "[SC] prctl(PR_SET_NO_NEW_PRIVS,1): rc=0 errno=0",
+    "[SC] landlock_restrict_self: rc=0 errno=OK strerror='Success'"
+   ],
+   "checks": [
+    {
+     "name": "TOCTOU[A] 父进程 fd 跨 fork+exec+自锁 的存续与身份",
+     "kind": "TOCTOU",
+     "expect": "A=仍指向 secret 且可读",
+     "got": "target=SECRET read=READ-OK(32B)",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "TOCTOU[A] 同路径新建 fd 对照",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "",
+     "match": true
+    }
+   ],
+   "verdict": "BY_DESIGN_FD_SURVIVES",
+   "parent": {
+    "child_rc": 0,
+    "variant": "A",
+    "note": "A=父进程未设 CLOEXEC 的敏感 fd 跨 fork+exec+自锁 仍可读写（landlock 不追溯已开 fd）；B=同 fd 设 O_CLOEXEC 后 exec 即闭合（EBADF）⇒ 缓解 = spawn 前对一切非交付 fd 强制 CLOEXEC"
+   }
+  },
+  "TOCTOU_B": {
+   "mode": "TOCTOU-B",
+   "raw_syscalls": [
+    "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=OK strerror='Success'",
+    "[SC] create_ruleset(attr16, handled_fs=0x7fff): rc=3 errno=OK strerror='Success'",
+    "[SC] add_rule(allowed, access=0x413e): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/(仅穿越+枚举,不泄露内容;diag§3.4), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/usr(exec链), access=0xd): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(/etc(仅穿越,shadow 不可读), access=0x8): rc=0 errno=OK strerror='Success'",
+    "[SC] add_rule(ld.so.cache(exec 链需要), access=0x4): rc=0 errno=OK strerror='Success'",
+    "[SC] prctl(PR_SET_NO_NEW_PRIVS,1): rc=0 errno=0",
+    "[SC] landlock_restrict_self: rc=0 errno=OK strerror='Success'"
+   ],
+   "checks": [
+    {
+     "name": "TOCTOU[B] 父进程 fd 跨 fork+exec+自锁 的存续与身份",
+     "kind": "TOCTOU",
+     "expect": "B=fd 号已非 secret（CLOEXEC 关闭/号复用）",
+     "got": "target=anon_inode:[landlock-ruleset] read=FD-NOT-SECRET:REUSED target=anon_inode:[landlock-ruleset]",
+     "errno_strerror": "",
+     "match": true
+    },
+    {
+     "name": "TOCTOU[B] 同路径新建 fd 对照",
+     "kind": "NEG",
+     "expect": "EACCES",
+     "got": "EACCES",
+     "errno_strerror": "",
+     "match": true
+    }
+   ],
+   "verdict": "MITIGATED_BY_CLOEXEC",
+   "parent": {
+    "child_rc": 0,
+    "variant": "B",
+    "note": "A=父进程未设 CLOEXEC 的敏感 fd 跨 fork+exec+自锁 仍可读写（landlock 不追溯已开 fd）；B=同 fd 设 O_CLOEXEC 后 exec 即闭合（EBADF）⇒ 缓解 = spawn 前对一切非交付 fd 强制 CLOEXEC"
+   }
+  }
+ },
+ "overall": "ALL-LANES-AS-EXPECTED"
+}

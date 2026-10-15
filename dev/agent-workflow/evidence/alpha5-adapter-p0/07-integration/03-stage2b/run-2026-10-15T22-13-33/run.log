@@ -7,3 +7,7 @@
 [2026-10-15T22:13:36.103Z] main blueprint written (denyList=3 names)
 [2026-10-15T22:13:36.113Z] FAIL I2a: I2: team.create (remote HTTP) creates the fresh root team session — status=200 body={"type":"server-response","rpcId":"a5x-aa2mkymfqb","result":{"ok":false,"error":{"code":"MALFORMED_DTO","message":"permission rule $.members[0].capabilities.permissions.allow[1] (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for bash — the allow lane must not carry a ba
 [2026-10-15T22:13:36.124Z] PASS I2b: I2: catalog.list (public endpoint) serves the saved blueprint — status=200
+[2026-10-15T22:18:36.136Z] mock wait timed out: L1 leader chain done (requests=2)
+[2026-10-15T22:18:36.136Z] FAIL I2c: I2: Leader (mock script) created both members and delegated to M1 — requests=2
+[2026-10-15T22:18:36.137Z] FAIL I2c: I2: Leader (mock script) create member x2 (instanceIds) + async delegate to M1 — instanceIds=[]
+[2026-10-15T22:18:36.147Z] FAIL I2d: I2: member sessions active — projection carries the instances; p6t6 liveSessions grew (root + 2 members); session/list recorded — projectionHasInstance=false newLive=[]

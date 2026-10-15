@@ -27,3 +27,4 @@
 
 web/jobs/MCP 族 = NOT RUN（本会话无网络授权，非阻塞项：§5 允许登记后补）。
 | 续-4 web/jobs/MCP 回环/mock | 代理 e2630132 → 09-web-jobs-mcp/run-all.sh（web/jobs/mcp 三 runner） | 0（幂等×2） | ~13m | web=INCONCLUSIVE(方向支持组合 Adapter；30 断言中 10：拒绝在 fetch 前、零 socket/零 DNS、tripwire 0、重定向/超限/超时闭环、卸载零泄漏)；jobs=INCONCLUSIVE(生产 service 直调闭环 12/12；族形态钉死：无 job-start 工具面，owner-scoped 腿 NOT_RUN)；MCP=INCONCLUSIVE(mcp-client 注入路径与 P0-1 一致 8/8，真 OS 子进程+代际回收)；raw-SDK 腿 BLOCKED-SKIPPED 留痕 | §P0-2/§P0-5 同型 | 本轮提交 |
+| 续-5 landlock 通路补做 | 代理 0892a58c → 10-landlock-lanes/run-landlock-lanes.sh | 0（幂等×3） | ~8m | L1 受限读 OS_ENFORCED 13/13；L1FD fork-hint 自锁 6/6；L2 受控 spawn 不可信命令注入负控 7/7 全 EACCES；L3 锁不可自解 8/8（扩权 syscall 放行但能力面恒 EACCES=域交集语义，预期 EPERM 未复现如实记）；L4 双层拒 5/5；TOCTOU：非 CLOEXEC fd 按设计存活/ CLOEXEC exec 即闭⇒适配要求=spawn 前强制 O_CLOEXEC。bwrap/netns/uid_map 维持各自 ENV_BLOCK | §P0-3/§P0-4 适用腿 | 本轮提交 |

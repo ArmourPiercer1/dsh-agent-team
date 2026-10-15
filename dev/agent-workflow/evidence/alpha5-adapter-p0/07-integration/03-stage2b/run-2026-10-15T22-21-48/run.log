@@ -1,0 +1,13 @@
+[2026-10-15T22:21:48.937Z] a5p0 stage2b kit — stamp 2026-10-15T22-21-48
+[2026-10-15T22:21:48.937Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016; testuse=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use @ 639ed01539; evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/run-2026-10-15T22-21-48
+[2026-10-15T22:21:48.992Z] world materialized; seed file written (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-21-48/workspace/a5p0-seed-2026-10-15T22-21-48.txt)
+[2026-10-15T22:21:48.996Z] mock model listening on ephemeral port 33625
+[2026-10-15T22:21:51.258Z] host booted at http://127.0.0.1:3185 (pid 37); row ready — toolCount=15
+[2026-10-15T22:21:51.260Z] PASS I1: host cold boot on :3185: boot line + no-token 401 + auth 303 + p6t6 row health/state — port=3185 bootLines=1 noToken=401 healthOk=true
+[2026-10-15T22:21:51.685Z] main blueprint written (denyList=3 names)
+[2026-10-15T22:21:51.740Z] FAIL I2a: I2: team.create (remote HTTP) creates the fresh root team session — status=200 body={"type":"server-response","rpcId":"a5x-f49z3lora5","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: starting the root (leader) agent for 'session-a5p0-team-2026-10-15T22-21-48' failed: tools.restrict() names unknown global tools \"team_archive_
+[2026-10-15T22:21:51.750Z] PASS I2b: I2: catalog.list (public endpoint) serves the saved blueprint — status=200
+[2026-10-15T22:24:52.044Z] mock wait timed out: L1 leader chain done (requests=2)
+[2026-10-15T22:24:52.044Z] FAIL I2c: I2: Leader (mock script) created both members and delegated to M1 — requests=2
+[2026-10-15T22:24:52.044Z] FAIL I2c: I2: Leader (mock script) create member x2 (instanceIds) + async delegate to M1 — instanceIds=[]
+[2026-10-15T22:24:52.065Z] FAIL I2d: I2: member sessions active — projection carries the instances; p6t6 liveSessions grew (root + 2 members); session/list recorded — projectionHasInstance=false newLive=[]
