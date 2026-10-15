@@ -293,3 +293,80 @@ describe('deriveTeamMembers', () => {
     expect(model.leader.templateId).toBe('tpl-lead')
   })
 })
+
+// ---------------------------------------------------------------------------
+// G5 (2026-10-16 authorized round): a control row the STRICT reader already
+// refused server-side (named by the v9 `team.listCorruptControlLegs` read at
+// its ledger sequence) is not adjudicable by ANYONE — the ledger renders it
+// with both commands disabled — yet the tolerant ledger fold still counted it
+// into `pendingControlByInstance`, so the member badge advertised a pending
+// approval that can never be resolved. The badge must subtract the rows the
+// corruption read names (the same sequence join the ledger row uses); the
+// pre-v9 posture (no corruption read at all) is byte-identical to the old
+// behavior.
+// ---------------------------------------------------------------------------
+
+describe('deriveTeamMembers — corrupt control rows never badge (G5 consistency)', () => {
+  const corruptLedger = () =>
+    ledger({
+      completeness: 'complete',
+      pendingControlByInstance: { [A]: 2 },
+      controls: [
+        { requestId: 'r5', requestSequence: 5, targetInstanceId: A, actionName: 'write_file', requestedAt: iso(1700000005000), pending: true },
+        { requestId: 'r6', requestSequence: 6, targetInstanceId: A, actionName: 'read_file', requestedAt: iso(1700000006000), pending: true },
+      ] as never,
+    })
+
+  const badgeA = (model: ReturnType<typeof deriveTeamMembers>): number | null =>
+    model.groups[0]?.instances[0]?.pendingControlCount ?? null
+
+  it('G5-1 a corrupt-named pending row is NOT counted in the member badge', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      corruptLedger(),
+      new Set<number>([6]),
+    )
+    expect(badgeA(model)).toBe(1)
+  })
+
+  it('G5-2 all-corrupt instance pending collapses to a known zero', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      corruptLedger(),
+      new Set<number>([5, 6]),
+    )
+    expect(badgeA(model)).toBe(0)
+  })
+
+  it('G5-3 an absent corruption read (pre-v9 host) keeps the legacy count', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      corruptLedger(),
+    )
+    expect(badgeA(model)).toBe(2)
+  })
+
+  it('G5-4 a corrupt sequence that names no pending chain never subtracts (no drift)', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      corruptLedger(),
+      new Set<number>([99]),
+    )
+    expect(badgeA(model)).toBe(2)
+  })
+
+  it('G5-5 partial ledger stays unknown regardless of the corruption read', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      ledger({
+        completeness: 'partial',
+        pendingControlByInstance: { [A]: 2 },
+        controls: [
+          { requestId: 'r5', requestSequence: 5, targetInstanceId: A, actionName: 'write_file', requestedAt: iso(1700000005000), pending: true },
+        ] as never,
+      }),
+      new Set<number>([5]),
+    )
+    expect(badgeA(model)).toBeNull()
+  })
+})

@@ -1529,6 +1529,7 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
         <TeamMembers
           snapshot={snapshot}
           ledger={ledger}
+          corruptControlSequences={corruptControlSequences}
           currentSessionId={sessionId}
           onSelectSession={openSession}
           memberCommands={memberCommands}

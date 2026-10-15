@@ -82,6 +82,15 @@ export interface TeamMembersProps {
   snapshot: TeamUiSnapshot
   /** The durable ledger model (the completeness-aware badge authority). */
   ledger: TeamUiLedgerModel
+  /**
+   * G5 (2026-10-16 round): the ledger sequences named by the v9
+   * `team.listCorruptControlLegs` read (the same set the ledger joins for
+   * its corrupt-record marker). A pending row the strict reader refused is
+   * not adjudicable by anyone, so it must not inflate a member's pending
+   * badge. Absent (pre-v9 host / no corruption read wired) → the legacy
+   * count stands unchanged.
+   */
+  corruptControlSequences?: ReadonlySet<number>
   /** The current session id (the framework session kit); its group and instance rows highlight. */
   currentSessionId: string
   /** Switch the current session to the clicked row's child session. */
@@ -512,10 +521,10 @@ function MemberGroup({
  * @returns the members section.
  */
 export function TeamMembers({
-  snapshot, ledger, currentSessionId, onSelectSession,
+  snapshot, ledger, corruptControlSequences, currentSessionId, onSelectSession,
   memberCommands, openTeamMode, openOrdinaryMode, teamOpenMode, workspaces, t,
 }: TeamMembersProps): React.JSX.Element {
-  const model = deriveTeamMembers(snapshot, ledger)
+  const model = deriveTeamMembers(snapshot, ledger, corruptControlSequences)
   const [open, setOpen] = useState<OpenMemberDialog | null>(null)
   const [pending, setPending] = useState<Readonly<Record<string, MemberCommandKind>>>({})
   const [errors, setErrors] = useState<Readonly<Record<string, MemberCommandError>>>({})

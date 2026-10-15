@@ -83,16 +83,53 @@ interface GroupBuild {
 }
 
 /**
+ * G5 — the per-instance count of PENDING control chains the STRICT server
+ * reader already refused, named by the v9 corruption read at their ledger
+ * sequence. `pendingControlByInstance` is built tolerantly (it counts every
+ * pending instance-subject request), so these rows inflate the badge even
+ * though no one can ever adjudicate them — the ledger renders each with both
+ * commands disabled. Subtracting this set aligns the badge with what is
+ * actually pending a human decision. An absent corruption read (pre-v9 host)
+ * yields an empty map → byte-identical to the legacy count.
+ * @param ledger - the durable ledger model (the pending chains carry the
+ *   request sequence + instance subject).
+ * @param corruptControlSequences - the sequences the corrupt-leg read named.
+ * @returns instance-id → corrupt-pending count (empty when no read).
+ */
+function corruptPendingByInstance(
+  ledger: TeamUiLedgerModel,
+  corruptControlSequences: ReadonlySet<number> | undefined,
+): Readonly<Record<string, number>> {
+  if (corruptControlSequences === undefined || corruptControlSequences.size === 0) return {}
+  const counts: Record<string, number> = {}
+  for (const chain of ledger.controls) {
+    if (chain.pending === false) continue
+    if (chain.targetInstanceId === undefined) continue
+    if (!corruptControlSequences.has(chain.requestSequence)) continue
+    counts[chain.targetInstanceId] = (counts[chain.targetInstanceId] ?? 0) + 1
+  }
+  return counts
+}
+
+/**
  * Plan §7.3 completeness-aware pending count: the per-instance badge comes
  * only from known-complete control facts; a partial ledger leaves it
- * unknown.
+ * unknown. Corrupt-named pending rows (G5) are subtracted from the known-
+ * complete count.
  * @param member - the snapshot member instance.
  * @param ledger - the durable ledger model.
+ * @param corruptPending - per-instance corrupt-pending subtraction (G5).
  * @returns the count, or `null` when the ledger is not known complete.
  */
-function pendingOf(member: TeamUiMemberInstance, ledger: TeamUiLedgerModel): number | null {
+function pendingOf(
+  member: TeamUiMemberInstance,
+  ledger: TeamUiLedgerModel,
+  corruptPending: Readonly<Record<string, number>>,
+): number | null {
   if (ledger.completeness !== 'complete') return null
-  return ledger.pendingControlByInstance[member.instanceId] ?? 0
+  const base = ledger.pendingControlByInstance[member.instanceId] ?? 0
+  const corrupt = corruptPending[member.instanceId] ?? 0
+  return Math.max(0, base - corrupt)
 }
 
 /**
@@ -103,7 +140,12 @@ function pendingOf(member: TeamUiMemberInstance, ledger: TeamUiLedgerModel): num
  * @param member - the snapshot member instance.
  * @param ledger - the durable ledger model (for the completeness-aware count).
  */
-function appendRow(group: GroupBuild, member: TeamUiMemberInstance, ledger: TeamUiLedgerModel): void {
+function appendRow(
+  group: GroupBuild,
+  member: TeamUiMemberInstance,
+  ledger: TeamUiLedgerModel,
+  corruptPending: Readonly<Record<string, number>>,
+): void {
   group.instances.push({
     key: `${member.instanceId}:${member.childSessionId ?? ''}:${group.instances.length}`,
     childSessionId: member.childSessionId ?? '',
@@ -111,7 +153,7 @@ function appendRow(group: GroupBuild, member: TeamUiMemberInstance, ledger: Team
     label: member.label,
     status: member.displayStatus,
     ...(member.currentAction !== undefined ? { currentAction: member.currentAction } : {}),
-    pendingControlCount: pendingOf(member, ledger),
+    pendingControlCount: pendingOf(member, ledger, corruptPending),
     fromHistory: member.fromHistory,
   })
   if (member.lifecycle === 'RUNNING') group.activeCount += 1
@@ -131,7 +173,11 @@ function appendRow(group: GroupBuild, member: TeamUiMemberInstance, ledger: Team
 export function deriveTeamMembers(
   snapshot: TeamUiSnapshot,
   ledger: TeamUiLedgerModel,
+  corruptControlSequences?: ReadonlySet<number>,
 ): TeamMembersModel {
+  // G5: subtract server-refused (corrupt-named) pending rows from every badge
+  // exactly once for the whole fold.
+  const corruptPending = corruptPendingByInstance(ledger, corruptControlSequences)
   const groups: TeamMemberGroupRow[] = []
   const groupById = new Map<string, GroupBuild>()
   const templateById = new Map(
@@ -150,7 +196,7 @@ export function deriveTeamMembers(
           instances: [],
         }
       }
-      appendRow(leader, member, ledger)
+      appendRow(leader, member, ledger, corruptPending)
       continue
     }
     let group = groupById.get(member.templateId)
@@ -165,7 +211,7 @@ export function deriveTeamMembers(
       groupById.set(member.templateId, group)
       groups.push(group)
     }
-    appendRow(group, member, ledger)
+    appendRow(group, member, ledger, corruptPending)
   }
   // UI §16.1 fixed hierarchy: the template rows are constant — every
   // non-leader template gets its group row even with zero instances (the
